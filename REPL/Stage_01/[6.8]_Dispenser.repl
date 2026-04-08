@@ -1,0 +1,389 @@
+(print "")
+(print "===================Last Dispenser Tests============================")
+(begin-tx "INIT TX 000 - Chain Data Time SetUp Definition")
+(namespace "ouronet-ns")
+(env-chain-data
+    {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
+     "block-time": TV.TIME00}
+)
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-gas)
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "Manual Ouro Price Update")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs 
+    [   
+        { "key": "PK_AOZ", "caps": [] }
+        { "key": "PK_AncientHodler", "caps": [] }
+        ;{ "key": "PK_DHV", "caps": [] }
+        ;{ "key": "PK_CST", "caps": [] }
+        { "key": "PK_DSP", "caps": [] }
+    ]
+)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DSP:module{Dispenser} DSP)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-ATS:module{AutostakeV1} ATS)
+        (ouro:string (ref-DALOS::UR_OuroborosID))
+        (os:decimal (ref-DPTF::UR_Supply ouro))
+
+        (treasury:string (ref-DALOS::GOV|DHV1|SC_NAME))
+        (validators:string (ref-DSP::GOV|CST1|SC_NAME))
+        (dispenser:string (ref-DSP::GOV|DSP1|SC_NAME))
+
+        (auryn:string (ref-DALOS::UR_AurynID))
+        (elite-auryn:string (ref-DALOS::UR_EliteAurynID))
+        (auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken auryn)))
+        (elite-auryndex:string (at 0 (ref-DPTF::UR_RewardBearingToken elite-auryn)))
+    )
+    ;(ref-DSP::A_ManualOuroPriceUpdate)
+    ;(ref-DSP::A_OuroMinterStageOne)
+    [
+        (format "Minting Ouro Daily is {}" [(ref-DSP::A_OuroMinterStageOne)])
+        (format "Ouro Price is {}" [(ref-DALOS::UR_OuroborosPrice)])
+        (format "Ouro Supply is {}" [os])
+        (format "OURO on Treasury is {}" [(ref-DPTF::UR_AccountSupply ouro treasury)])
+        (format "OURO on Validators is {}" [(ref-DPTF::UR_AccountSupply ouro validators)])
+        (format "OURO on Dispenser is {}" [(ref-DPTF::UR_AccountSupply ouro dispenser)])
+
+        (format "Auryndex is {}" [(ref-ATS::URC_Index auryndex)])
+        (format "Elite-Auryndex is {}" [(ref-ATS::URC_Index elite-auryndex)])
+
+    ]
+    
+)
+
+(print "")
+(print "")
+(format "<<<<<<<Manual Ouro Price Update Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "Koson Minter FullTilt Testing")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs 
+    [   
+        { "key": "PK_AOZ", "caps": [] }
+        { "key": "PK_AncientHodler", "caps": [] }
+        ;{ "key": "PK_DHV", "caps": [] }
+        ;{ "key": "PK_CST", "caps": [] }
+        { "key": "PK_DSP", "caps": [] }
+    ]
+)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DSP:module{Dispenser} DSP)
+    )
+    (ref-DSP::A_KosonMinterStageOne)
+)
+
+(print "")
+(print "")
+(format "<<<<<<<Minting Koson FullTilt Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "Koson Minter 1of3 Testing")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs 
+    [   
+        { "key": "PK_AOZ", "caps": [] }
+        { "key": "PK_AncientHodler", "caps": [] }
+        ;{ "key": "PK_DHV", "caps": [] }
+        ;{ "key": "PK_CST", "caps": [] }
+        { "key": "PK_DSP", "caps": [] }
+    ]
+)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DSP:module{Dispenser} DSP)
+    )
+    ;(ref-DSP::A_OuroMinterStageOne)
+    (ref-DSP::A_KosonMinterStageOne_1of3)
+)
+
+(print "")
+(print "")
+(format "<<<<<<<Minting Koson 1of3 Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "Koson Minter 2of3 Testing")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs 
+    [   
+        { "key": "PK_AOZ", "caps": [] }
+        { "key": "PK_AncientHodler", "caps": [] }
+        ;{ "key": "PK_DHV", "caps": [] }
+        ;{ "key": "PK_CST", "caps": [] }
+        { "key": "PK_DSP", "caps": [] }
+    ]
+)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DSP:module{Dispenser} DSP)
+    )
+    ;(ref-DSP::A_OuroMinterStageOne)
+    (ref-DSP::A_KosonMinterStageOne_2of3)
+)
+
+(print "")
+(print "")
+(format "<<<<<<<Minting Koson 2of3 Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "Koson Minter 3of3 Testing")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs 
+    [   
+        { "key": "PK_AOZ", "caps": [] }
+        { "key": "PK_AncientHodler", "caps": [] }
+        ;{ "key": "PK_DHV", "caps": [] }
+        ;{ "key": "PK_CST", "caps": [] }
+        { "key": "PK_DSP", "caps": [] }
+    ]
+)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TFT:module{TrueFungibleTransferV1} TFT)
+        (ref-DSP:module{Dispenser} DSP)
+        (patron:string  KST.ANHD)
+        (ats:string KST.ATSTK)
+        (vst:string KST.VESTG)
+        (orb:string KST.OURBR)
+        (tls:string KST.TALOS)
+        (swp:string KST.SWAPR)
+        (ignis:string (ref-DALOS::UR_IgnisID))
+        (ignis1:decimal (ref-DPTF::UR_AccountSupply ignis ats))
+        (ignis2:decimal (ref-DPTF::UR_AccountSupply ignis vst))
+        (ignis3:decimal (ref-DPTF::UR_AccountSupply ignis orb))
+        (ignis4:decimal (ref-DPTF::UR_AccountSupply ignis tls))
+        (ignis5:decimal (ref-DPTF::UR_AccountSupply ignis swp))
+        (discount:decimal 0.415)
+        (ds:string (ref-IGNIS::UDC_MakeIDP discount))
+    )
+    ;(ref-DSP::A_OuroMinterStageOne)
+    (ref-DSP::A_KosonMinterStageOne_3of3)
+    ;[ds]
+    [
+        true
+    ]
+    ;[
+    ;    (ref-TFT::DPTF-DPMF-ATS|UR_OwnedTokens vst 1)
+    ;    (ref-TFT::DPTF-DPMF-ATS|UR_OwnedTokens vst 2)
+    ;    (ref-TFT::DPTF-DPMF-ATS|UR_OwnedTokens vst 3)
+    ;]
+    
+    ;(ref-TFT::DPTF-DPMF-ATS|UR_FilterKeysForInfo patron 1 true)
+    
+    
+)
+
+(print "")
+(print "")
+(format "<<<<<<<Minting Koson 3of3 Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "Dispenser - Ouro transfer to Emma")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs 
+    [   
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (patron:string  KST.ANHD)
+        (emma:string  KST.EMMA)
+        (ouro:string "OURO-98c486052a51")
+        (auryn:string "AURYN-98c486052a51")
+        (e-auryn:string "ELITEAURYN-98c486052a51")
+    )
+    ;(format "Ouro FeePromile is {}" [id-fee])
+    (ref-TS01-C1::DPTF|C_Transfer patron ouro patron emma 1.0 false)
+)
+
+(print "")
+(print "")
+(format "<<<<<<<TransferV3 for Ouro costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "Dispenser - AURYN transfer to Emma")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs 
+    [   
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (patron:string  KST.ANHD)
+        (emma:string  KST.EMMA)
+        (ouro:string "OURO-98c486052a51")
+        (auryn:string "AURYN-98c486052a51")
+        (e-auryn:string "ELITEAURYN-98c486052a51")
+    )
+    ;(format "Ouro FeePromile is {}" [id-fee])
+    (ref-TS01-C1::DPTF|C_Transfer patron auryn patron emma 1.0 false)
+)
+
+(print "")
+(print "")
+(format "<<<<<<<TransferV3 for AURYN costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "Dispenser - ELITEAURYN transfer to Emma")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs 
+    [   
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (patron:string  KST.ANHD)
+        (emma:string  KST.EMMA)
+        (ouro:string "OURO-98c486052a51")
+        (auryn:string "AURYN-98c486052a51")
+        (e-auryn:string "ELITEAURYN-98c486052a51")
+    )
+    ;(format "Ouro FeePromile is {}" [id-fee])
+    (ref-TS01-C1::DPTF|C_Transfer patron e-auryn patron emma 1.0 false)
+)
+
+(print "")
+(print "")
+(format "<<<<<<<TransferV3 for ELITEAURYN costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "TransmuteV2")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs 
+    [   
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (patron:string  KST.ANHD)
+        (emma:string  KST.EMMA)
+        (ignis:string "GAS-98c486052a51")
+        (e-auryn:string "ELITEAURYN-98c486052a51")
+    )
+    (ref-TS01-C1::DPTF|C_Transmute patron ignis patron 1200.0)
+)
+
+(print "")
+(print "")
+(format "<<<<<<<TransmuteV2 with OURO costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "TransmuteV2")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs 
+    [   
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (patron:string  KST.ANHD)
+        (emma:string  KST.EMMA)
+        (ignis:string "GAS-98c486052a51")
+        (e-auryn:string "ELITEAURYN-98c486052a51")
+    )
+    (ref-TS01-C1::DPTF|C_Transmute patron e-auryn patron 1.0)
+)
+
+(print "")
+(print "")
+(format "<<<<<<<TransmuteV2 with EA costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;

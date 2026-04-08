@@ -1,0 +1,12 @@
+;; StoaChain REPL sandbox — genesis order using live sources under 00_StoaSandbox/
+;; Load after 00_KadenaSandbox (kadena-coin + kip/util for Kadena-side helpers).
+(print "")
+(print "************************ StoaSandbox init (phased genesis) *********************************")
+(load "init-phase-01-ns.repl")
+(load "init-phase-02-stoa-ns.repl")
+(load "init-phase-03-util.repl")
+(load "init-phase-04-coin.repl")
+(load "init-phase-05-stoic-xchain.repl")
+(load "init-phase-06-test-accounts.repl")
+(print "************************ StoaSandbox COMPLETE *************************************************")
+(print "")

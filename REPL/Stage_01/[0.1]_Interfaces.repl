@@ -1,0 +1,47 @@
+;;
+;;
+;;================================================================================
+;;                                                                              ;;
+;;                      [3 TXs]                                                 ;;
+;;              LOAD    [0.01]_Utilities.pact (NO PreL; No PostL)               ;;
+;;              LOAD    [0.02]_Core.pact (NO PreL; No PostL)                    ;;
+;;              LOAD    [0.03]_Talos.pact (NO PreL; No PostL)                   ;;
+;;                                                                              ;;
+;;                                                                              ;;
+;;================================================================================
+;;
+;;
+(print "")
+(begin-tx "TX-01 [0.01] - Deploy Stage One Utility Interfaces")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../1_SOVEREIGN/STAGE_01/0_Interfaces/01_Utilities.pact")
+(format "<<<<<<<Stage One Utility Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+;;
+;;
+(print "")
+(begin-tx "TX-02 [0.02] - Deploy Stage One Core Interfaces")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact")
+(format "<<<<<<<Core Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+;;
+;;
+(print "")
+(begin-tx "TX-03 [0.03] - Deploy Stage One Talos Interfaces")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact")
+(format "<<<<<<<Talos Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)

@@ -1,0 +1,28 @@
+;; Stage 00 — sandboxes then Stoa coin tests, then Ouronet stages
+(print "")
+(load "Stage00_Sanboxes.repl")
+(print "************************ LOADED - STAGE 00 — Sandboxes (Kadena + Stoa) ******************************")
+(print "")
+
+(print "")
+(load "Stage00a_StoaTests.repl")
+(print "************************ LOADED - STAGE 00a — Stoa coin tests *****************************************")
+(print "")
+
+;;Load Stage 01 - Ouronet Stage 1 Deployment
+(print "")
+(load "Stage01_Tester.repl")
+(print "************************LOADED - STAGE 01 - OuronetENV**********************************************")
+(print "")
+
+;;Load Stage 02 — Ouronet Stage 2 deployment (required for Stage_Z DPL-UR DPDC readers)
+(print "")
+(load "Stage02_Tester.repl")
+(print "************************ LOADED - STAGE 02 — Ouronet Stage 2 ***************************************")
+(print "")
+
+;;Load Stage ZZ — deploy DPL-UR only (no bundled REPL tests)
+;(print "")
+;(load "StageZZ_Tester.repl")
+;(print "************************ LOADED - STAGE ZZ — DPL-UR deploy ********************************************")
+;(print "")

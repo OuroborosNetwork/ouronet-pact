@@ -1,0 +1,595 @@
+;; Stage 00a — Stoa native `coin` tests (still Stage 00; run after `Stage00_Sanboxes.repl`).
+;; Root `coin` is loaded by 00_StoaSandbox. Foundation account: "stoa-foundation". SKC helpers in ouronet-ns.
+
+(print "")
+(print "************************ Stage 00a — Stoa coin tests START ******************************************")
+
+;;================================================================================
+;;                                                                              ;;
+;;                                                                              ;;
+;;              STAGE ONE STARTER                                               ;;
+;;              Deploy a REPL only Module, to be used throughout Testing        ;;
+;;                                                                              ;;
+;;                                                                              ;;
+;;================================================================================
+;;
+;;
+(print "")
+(begin-tx "TX-01 - Keysets")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; `ouronet-ns` user guard is `ns-operate-keyset` (same as `stoa-ns`; phase 01).
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+
+    (module SKC GOVERNANCE
+        @doc "Only used in Repl to simulate Keys"
+        (defcap GOVERNANCE () true)
+
+        (defconst CK00 "PK_Foundation")
+        (defconst CK01 "PK_AncientHodler")
+        (defconst CK02 "PK_Florian")
+        (defconst CK03 "PK_Coca")
+        (defconst CK04 "PK_Bytales")
+        (defconst CK05 "PK_Emma")
+        (defconst CK06 "PK_Lumy")
+        (defconst CK07 "PK_Kiss")
+
+
+        (defconst CS00_NAME "k:65235cc5131cba0404592f9ef56391be733fde51d47498ebdaa2f15528ccf697")
+        (defconst CS01_NAME "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
+        (defconst CS02_NAME "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e")
+        (defconst CS03_NAME "k:5825727fa44c23e1c7345e98922e811ace780618fd7a603d4bbad68d31cdcdba")
+        (defconst CS04_NAME "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b")
+        (defconst CS05_NAME "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48")
+        (defconst CS06_NAME "k:163320715f95957d1a15ea664fa6bd46f4c59dbb804f793ae93662a4c90b3189")
+        (defconst CS07_NAME "k:134cabaa0e22cd86630773e6e6e4c9c6851715428a49162dcde661b3550ccff9")
+
+        (defconst CS00_PBKY (drop 2 CS00_NAME))
+        (defconst CS01_PBKY (drop 2 CS01_NAME))
+        (defconst CS02_PBKY (drop 2 CS02_NAME))
+        (defconst CS03_PBKY (drop 2 CS03_NAME))
+        (defconst CS04_PBKY (drop 2 CS04_NAME))
+        (defconst CS05_PBKY (drop 2 CS05_NAME))
+        (defconst CS06_PBKY (drop 2 CS06_NAME))
+        (defconst CS07_PBKY (drop 2 CS07_NAME))
+    )
+
+    (env-data
+        {
+            ;;STOA-Masters Keys
+            "KEY_01_AncientHodler" : { "keys" : [SKC.CK01]},
+            "KEY_02_Florian" : { "keys" : [SKC.CK02]},
+            "KEY_03_Coca" : { "keys" : [SKC.CK03]},
+            "KEY_04_Bytales" : { "keys" : [SKC.CK04]},
+            "KEY_05_Emma" : { "keys" : [SKC.CK05]},
+            "KEY_06_Lumy" : { "keys" : [SKC.CK06]},
+            "KEY_07_Kiss" : { "keys" : [SKC.CK07]}
+        }
+    )
+
+    ;; (stoa-ns.stoa_master_* keysets already defined by StoaSandbox)
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "SKIP: TX-01 Initialise — already applied in 00_StoaSandbox (coin.A_InitialiseStoaChain).")
+(print "")
+(begin-tx "TX-01 - Transfers UR Stoa")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    (env-data
+        {
+            ;;STOA-Masters Keys
+            "KEY_STOA_00_Foundation" : { "keys" : [SKC.CS00_PBKY]},
+            "KEY_STOA_01_AncientHodler" : { "keys" : [SKC.CS01_PBKY]},
+            "KEY_STOA_02_Florian" : { "keys" : [SKC.CS02_PBKY]},
+            "KEY_STOA_03_Coca" : { "keys" : [SKC.CS03_PBKY]},
+            "KEY_STOA_04_Bytales" : { "keys" : [SKC.CS04_PBKY]},
+            "KEY_STOA_05_Emma" : { "keys" : [SKC.CS05_PBKY]},
+            "KEY_STOA_06_Lumy" : { "keys" : [SKC.CS06_PBKY]},
+            "KEY_STOA_07_Kiss" : { "keys" : [SKC.CS07_PBKY]}
+        }
+    )
+    ;; `stoa-foundation` uses genesis `stoa-foundation-keyset`; UR|DEBIT still enforces the account guard (test-cap alone is not enough).
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+    (test-capability (coin.UR|TRANSFER "stoa-foundation" "ancient-hodler-urstoa-nonprincipal" 250.0))
+    (test-capability (coin.UR|TRANSFER "stoa-foundation" "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 250.0))
+    (test-capability (coin.UR|TRANSFER "stoa-foundation" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 250.0))
+    (test-capability (coin.UR|TRANSFER "stoa-foundation" "k:5825727fa44c23e1c7345e98922e811ace780618fd7a603d4bbad68d31cdcdba" 250.0))
+    (test-capability (coin.UR|TRANSFER "stoa-foundation" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 250.0))
+    (coin.C_UR|TransferAnew "stoa-foundation" "ancient-hodler-urstoa-nonprincipal" (read-keyset "KEY_STOA_01_AncientHodler") 150.0)
+
+    (coin.C_UR|TransferAnew "stoa-foundation" SKC.CS01_NAME (read-keyset "KEY_STOA_01_AncientHodler") 150.0)
+    (coin.C_UR|Transfer "stoa-foundation" SKC.CS01_NAME 50.0)
+
+    (coin.C_UR|TransferAnew "stoa-foundation" SKC.CS02_NAME (read-keyset "KEY_STOA_02_Florian") 60.0)
+    (coin.C_UR|Transfer "stoa-foundation" SKC.CS02_NAME 20.0)
+
+    (coin.C_UR|TransferAnew "stoa-foundation" SKC.CS03_NAME (read-keyset "KEY_STOA_03_Coca") 70.0)
+    (coin.C_UR|Transfer "stoa-foundation" SKC.CS03_NAME 60.0)
+
+    (coin.C_UR|TransferAnew "stoa-foundation" SKC.CS04_NAME (read-keyset "KEY_STOA_04_Bytales") 78.0)
+    (coin.C_UR|Transfer "stoa-foundation" SKC.CS04_NAME 63.0)
+
+    [
+        (format "AncientHodler has {} URSTOA" [(coin.UR_UR|Balance SKC.CS01_NAME)])
+        (format "Florian has {} URSTOA" [(coin.UR_UR|Balance SKC.CS02_NAME)])
+        (format "Coca has {} URSTOA" [(coin.UR_UR|Balance SKC.CS03_NAME)])
+        (format "Bytales has {} URSTOA" [(coin.UR_UR|Balance SKC.CS04_NAME)])
+        (format "URSTOA Supply is {}" [(coin.UR_UR|LocalStoaSupply)])
+    ]
+    
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-01 - Transfers Stoa")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    (env-data
+        {
+            ;;STOA-Masters Keys
+            "KEY_STOA_00_Foundation" : { "keys" : [SKC.CS00_PBKY]},
+            "KEY_STOA_01_AncientHodler" : { "keys" : [SKC.CS01_PBKY]},
+            "KEY_STOA_02_Florian" : { "keys" : [SKC.CS02_PBKY]},
+            "KEY_STOA_03_Coca" : { "keys" : [SKC.CS03_PBKY]},
+            "KEY_STOA_04_Bytales" : { "keys" : [SKC.CS04_PBKY]},
+            "KEY_STOA_05_Emma" : { "keys" : [SKC.CS05_PBKY]},
+            "KEY_STOA_06_Lumy" : { "keys" : [SKC.CS06_PBKY]},
+            "KEY_STOA_07_Kiss" : { "keys" : [SKC.CS07_PBKY]}
+        }
+    )
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+    (test-capability (coin.TRANSFER "stoa-foundation" "ancient-hodler-stoa-nonprincipal" 250.0))
+    (test-capability (coin.TRANSFER "stoa-foundation" "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 250.0))
+    (test-capability (coin.TRANSFER "stoa-foundation" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 250.0))
+    (test-capability (coin.TRANSFER "stoa-foundation" "k:5825727fa44c23e1c7345e98922e811ace780618fd7a603d4bbad68d31cdcdba" 250.0))
+    (test-capability (coin.TRANSFER "stoa-foundation" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 250.0))
+    (coin.C_TransferAnew "stoa-foundation" "ancient-hodler-stoa-nonprincipal" (read-keyset "KEY_STOA_01_AncientHodler") 150.0)
+
+    (coin.C_TransferAnew "stoa-foundation" SKC.CS01_NAME (read-keyset "KEY_STOA_01_AncientHodler") 150.0)
+    (coin.C_Transfer "stoa-foundation" SKC.CS01_NAME 50.0)
+
+    (coin.C_TransferAnew "stoa-foundation" SKC.CS02_NAME (read-keyset "KEY_STOA_02_Florian") 60.0)
+    (coin.C_Transfer "stoa-foundation" SKC.CS02_NAME 20.0)
+
+    (coin.C_TransferAnew "stoa-foundation" SKC.CS03_NAME (read-keyset "KEY_STOA_03_Coca") 70.0)
+    (coin.C_Transfer "stoa-foundation" SKC.CS03_NAME 60.0)
+
+    (coin.C_TransferAnew "stoa-foundation" SKC.CS04_NAME (read-keyset "KEY_STOA_04_Bytales") 35.0)
+    (coin.C_Transfer "stoa-foundation" SKC.CS04_NAME 47.0)
+
+    [
+        (format "AncientHodler has {} STOA" [(coin.UR_Balance SKC.CS01_NAME)])
+        (format "Florian has {} STOA" [(coin.UR_Balance SKC.CS02_NAME)])
+        (format "Coca has {} STOA" [(coin.UR_Balance SKC.CS03_NAME)])
+        (format "Bytales has {} STOA" [(coin.UR_Balance SKC.CS04_NAME)])
+        (format "STOA Supply on Chain0 is {}" [(coin.UR_LocalCoinSupply)])
+    ]
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-03 - Rotate")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    ;;Enviroment Keys
+    (env-data
+        {
+            ;;STOA-Masters Keys
+            "KEY_STOA_00_Foundation" : { "keys" : [SKC.CS00_PBKY]},
+            "KEY_STOA_01_AncientHodler" : { "keys" : [SKC.CS01_PBKY]},
+            "KEY_STOA_02_Florian" : { "keys" : [SKC.CS02_PBKY]},
+            "KEY_STOA_03_Coca" : { "keys" : [SKC.CS03_PBKY]},
+            "KEY_STOA_04_Bytales" : { "keys" : [SKC.CS04_PBKY]},
+            "KEY_STOA_05_Emma" : { "keys" : [SKC.CS05_PBKY]},
+            "KEY_STOA_06_Lumy" : { "keys" : [SKC.CS06_PBKY]},
+            "KEY_STOA_07_Kiss" : { "keys" : [SKC.CS07_PBKY]}
+        }
+    )
+
+    (env-sigs
+        [
+            {
+                "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+                "caps":
+                    [
+                        ;(coin.GAS)
+                    ]
+            }
+            {
+                "key": "0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e",
+                "caps":
+                    [
+            
+                    ]
+            }
+        ]
+    )
+    (coin.C_RotateAccount "ancient-hodler-stoa-nonprincipal" (read-keyset "KEY_STOA_02_Florian"))
+    (coin.C_RotateAccount "ancient-hodler-stoa-nonprincipal" (read-keyset "KEY_STOA_01_AncientHodler"))
+
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-01 - Coinbase Test")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    (env-sigs
+        [
+            ;{ "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263", "caps": 
+                []
+            }   ;;AH
+        ]
+    )
+    (env-chain-data
+        {"chain-id": "0"}
+    )
+    (test-capability (coin.COINBASE))
+    (coin.coinbase SKC.CS01_NAME (read-keyset "KEY_STOA_01_AncientHodler") 7.77)
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-03 - URStoa Tests 1")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    (env-sigs
+        [
+            ;{ "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263", "caps": 
+                [
+                    (coin.URV|STAKE
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        25.0
+                    )
+                ] 
+            }   ;;AH
+        ]
+    )
+    [
+        ;:Stakes 25 UrStoa. UrStoa Transfer isnt managed.
+        (coin.C_URV|Stake SKC.CS01_NAME 25.0)
+        [
+            (format "AH Staked URSTOA is {}" [(coin.UR_URV|UserSupply SKC.CS01_NAME)])
+            (format "AH Last-RPS is {}" [(coin.UR_URV|UserLastRps SKC.CS01_NAME)])
+            (format "AH Pending Rewards are {}" [(coin.UR_URV|UserPendingRewards SKC.CS01_NAME)])
+        ]
+    ]
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-03 - URStoa Tests 2")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    (env-sigs
+        [
+            ;;Inject 12 from Coca
+            { "key": "5825727fa44c23e1c7345e98922e811ace780618fd7a603d4bbad68d31cdcdba", "caps": 
+                [
+                    ;(coin.TRANSFER 
+                    ;    "k:5825727fa44c23e1c7345e98922e811ace780618fd7a603d4bbad68d31cdcdba" 
+                    ;    (coin.URV|KONTO) 
+                    ;    12.0
+                    ;)
+                ]
+            }
+        ]
+    )
+    [
+        ;;Inject STOA
+        (coin.C_URV|CoinbaseInject SKC.CS03_NAME 12.0)
+        [
+            (format "Vault UR Supply is {}" [(coin.UR_URV|VaultUrSupply)])
+            (format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+            (format "Vault NZS Count is {}" [(coin.UR_URV|VaultNZS)])
+            (format "Vault RPS is {}" [(coin.UR_URV|VaultRPS)])
+            (format "Vault UnclaimedCount is {}" [(coin.UR_URV|VaultUnclaimedCount)])
+        ]
+    ]
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-03 - URStoa Tests 3")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    (env-sigs
+        [
+            ;{ "key": "PK_AncientHodler", "caps": [] }
+            { "key": "0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e", "caps": 
+                [
+                    (coin.URV|STAKE
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 
+                        17.0
+                    )
+                ] 
+            }   ;;Florian
+            { "key": "50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b", "caps": 
+                [
+                    (coin.URV|STAKE
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 
+                        31.0
+                    )
+                ] 
+            }   ;;Bytales
+        ]
+    )
+    [
+        ;;Stake 17 UrStoa Florian, 31 UrStoa Bytales
+        (coin.C_URV|Stake SKC.CS02_NAME 17.0)
+        (coin.C_URV|Stake SKC.CS04_NAME 31.0)
+        [
+            (format "Vault UR Supply is {}" [(coin.UR_URV|VaultUrSupply)])
+            (format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+            (format "Vault NZS Count is {}" [(coin.UR_URV|VaultNZS)])
+            (format "Vault RPS is {}" [(coin.UR_URV|VaultRPS)])
+            (format "Vault UnclaimedCount is {}" [(coin.UR_URV|VaultUnclaimedCount)])
+        ]
+    ]
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-04 - URStoa Tests 4")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+    (test-capability (coin.TRANSFER "stoa-foundation" coin.URV|KONTO 1234.0))
+    ;;"c:GjYbBFM0vxMs5FcmnFUW-LFoycd3Ef8wuP28vR6FG3k"
+    [
+        ;;Inject Second Time
+        (coin.C_URV|Inject "stoa-foundation" 1234.0)
+        [
+            (format "Vault UR Supply is {}" [(coin.UR_URV|VaultUrSupply)])
+            (format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+            (format "Vault NZS Count is {}" [(coin.UR_URV|VaultNZS)])
+            (format "Vault RPS is {}" [(coin.UR_URV|VaultRPS)])
+            (format "Vault UnclaimedCount is {}" [(coin.UR_URV|VaultUnclaimedCount)])
+        ]
+    ]
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-05 - URStoa Tests 5.1")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    ;;Collect only works one at a time
+    (env-sigs
+        [
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263", "caps": 
+                [
+                    (coin.URV|COLLECT
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                    )
+                ] 
+            }   ;;AH
+            ;{ "key": "0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e", "caps": [] }   ;;Florian
+            ;{ "key": "50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b", "caps": [] }   ;;Bytales
+            ;{ "key": "65235cc5131cba0404592f9ef56391be733fde51d47498ebdaa2f15528ccf697", "caps": [] }   ;;Foundation
+        ]
+    )
+    [
+        (coin.C_URV|Collect SKC.CS01_NAME)
+        (format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+        ;(coin.C_URV|Collect SKC.CS02_NAME)
+        ;(format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+        ;(coin.C_URV|Collect SKC.CS04_NAME)
+        ;(format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+        ;(coin.C_URV|Collect SKC.CS00_NAME)
+        ;(format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+    ]
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-05 - URStoa Tests 5")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    ;;Collect works multiple at a time
+    (env-sigs
+        [
+            ;{ "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263", "caps": [] }   ;;AH
+            { "key": "0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e", "caps": 
+                [
+                    (coin.URV|COLLECT
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 
+                    )
+                ]
+            }   ;;Florian
+            { "key": "50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b", "caps": 
+                [
+                    (coin.URV|COLLECT
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 
+                    )
+                ]
+            }   ;;Bytales
+            ;{ "key": "65235cc5131cba0404592f9ef56391be733fde51d47498ebdaa2f15528ccf697", "caps": [] }   ;;Foundation
+        ]
+    )
+    [
+        ;(coin.C_URV|Collect SKC.CS01_NAME)
+        ;(format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+        (coin.C_URV|Collect SKC.CS02_NAME)
+        (format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+        (coin.C_URV|Collect SKC.CS04_NAME)
+        (format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+        ;(coin.C_URV|Collect SKC.CS00_NAME)
+        ;(format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+    ]
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-06 - URStoa Tests 6")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    (env-sigs
+        [
+            { "key": "50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b", "caps": 
+                [
+                    (coin.URV|UNSTAKE
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 
+                        7.0
+                    )
+                ] 
+            }   ;;Bytales
+        ]
+    )
+    [
+        (coin.C_URV|Unstake SKC.CS04_NAME 7.0)
+        [
+            (format "Vault UR Supply is {}" [(coin.UR_URV|VaultUrSupply)])
+            (format "Vault STOA Supply is {}" [(coin.UR_URV|VaultSupply)])
+            (format "Vault NZS Count is {}" [(coin.UR_URV|VaultNZS)])
+            (format "Vault RPS is {}" [(coin.UR_URV|VaultRPS)])
+            (format "Vault UnclaimedCount is {}" [(coin.UR_URV|VaultUnclaimedCount)])
+        ]
+    ]
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-04 - URStoa Tests 4")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+    (test-capability (coin.TRANSFER "stoa-foundation" coin.URV|KONTO 67.0))
+    [
+        ;;Inject Last Time
+        (coin.C_URV|Inject "stoa-foundation" 67.0)
+        (format "Vault RPS is {}" [(coin.UR_URV|VaultRPS)])
+    ]
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-00 [C0] - Chain Data Time SetUp Definition")
+(namespace "ouronet-ns")
+(env-chain-data
+    {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
+     "block-time": (time "2028-02-17T00:00:00Z")}
+)
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-gas)
+(commit-tx)
+(print "")
+
+
+
+(print "")
+(begin-tx "TX-01 - Supply Tests")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+    (env-sigs [])
+
+    [
+        [
+            (coin.UC_GetYear (time "2026-01-01T00:00:00Z"))
+            (coin.UC_YearEmission 0)
+            (coin.UC_YearEmission 1)
+            (coin.UC_YearEmission 2)
+            (coin.URC_YearEmission)
+            (coin.UC_YearEmission 3)
+            (coin.UC_YearEmission 7)
+        ]
+        [
+            (coin.URC_Emissions)
+        ]
+        (format "Chain Zero | StoaChain Genesis\n\nHonest rules, written once, ask nothing of those who come after.\nA ceiling that slides without end — not toward abundance, but toward permanence.\nPromises encoded in math outlast every institution ever built by man.\nPerpetual emission is not inflation. It is the fee paid to keep the lights on, forever.\nYet this chain was not made to be praised. It was made to endure.\n\nBuilt for the miner in 2226, in a world we cannot imagine,\nIn the year 3025, and in every year beyond that still.\nReaching never zero — only approaching silence, then holding just above it.\nThe emission curve is set. No vote will ever move it.\nHard-coded at genesis, removed from human hands, loyal only to time.\n\nDo not argue what ought to be built. Build it.\nAnd do not promise what the future should look like. Encode it.\nYet let the ledger speak long after we no longer can.\n\nEvery old chain refused to ask the question this one answers.\nMoney that endures must be designed for those who were not yet born.\nMade not for markets, not for cycles — but for our children's children.\nAnd theirs.\n\nP.S. — She turns {} today. May she outlast every block ever mined. 🎂" [11])
+    ]
+    
+    
+
+(env-gas)
+(commit-tx)
+(print "")
+(print "************************ Stage 00a — Stoa coin tests DONE *******************************************")
+(print "")

@@ -1,0 +1,249 @@
+(print "")
+(print "===================Initialise AQP-ANK TX Block==========================")
+(begin-tx "INIT TX 000 - Chain Data Time SetUp Definition")
+(namespace "ouronet-ns")
+(env-chain-data
+    {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
+     "block-time": TV.TIME00}
+)
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-gas)
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "TX001 - AQP-ANK TrueFungible class/slot tests")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchors} AQP-ANK)
+        (core-class-name:string "CoreBoostTFa")
+        (core-class-id:string "CoreBoostTFa-98c486052a51")
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (* (ref-DALOS::UR_UsagePrice "standard") 16.0)
+            )
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAa" ouro-id true core-class-name 8 10.0 100.0)
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAb" ouro-id false core-class-id 8 11.0 110.0)
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAc" ouro-id false core-class-id 8 12.0 120.0)
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAd" ouro-id false core-class-id 8 13.0 130.0)
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAe" ouro-id false core-class-id 8 14.0 140.0)
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAf" ouro-id false core-class-id 8 15.0 150.0)
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAg" ouro-id false core-class-id 8 16.0 160.0)
+    (expect-failure
+        "Class must reject 8th anchor slot"
+        (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorfailslot" ouro-id false core-class-id 8 99.0 990.0)
+    )
+    ;; Fill remaining class slots (2..7) so asset reaches max 7 classes.
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassBa" ouro-id true "CoreBoostTFb" 8 21.0 210.0)
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassCa" ouro-id true "CoreBoostTFc" 8 22.0 220.0)
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassDa" ouro-id true "CoreBoostTFd" 8 23.0 230.0)
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassEa" ouro-id true "CoreBoostTFe" 8 24.0 240.0)
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassFa" ouro-id true "CoreBoostTFf" 8 25.0 250.0)
+    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassGa" ouro-id true "CoreBoostTFg" 8 26.0 260.0)
+    (expect-failure
+        "Asset must reject 8th class"
+        (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassfailcap" ouro-id true "CoreBoostTFh" 8 27.0 270.0)
+    )
+    [
+        (ref-ANK::UR_AssetAnchorClassesData ouro-id [true true])
+        (ref-ANK::UR_AssetAnchorClass ouro-id [true true] core-class-id)
+        (ref-ANK::UR_Anchor "TFAnchorAa-98c486052a51")
+    ]
+)
+(format "<<<<<<<TX001 - AQP-ANK TF class/slot tests costs {} GAS>>>>>>>" [(env-gas)])
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "TX002 - AQP-ANK TF class-cap and class revoke tests")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchors} AQP-ANK)
+        (temp-class-name:string "TempClassTF")
+        (temp-class-id:string "TempClassTF-98c486052a51")
+        (class07-id:string "CoreBoostTFg-98c486052a51")
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (* (ref-DALOS::UR_UsagePrice "standard") 4.0)
+            )
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    [
+        [
+            (ref-TS02-C3::AQP|C_RevokeAnchor patron "TFclassGa-98c486052a51")
+            (ref-TS02-C3::AQP|C_RevokeAnchorClass patron ouro-id [true true] class07-id)
+            (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFTEMPaa" ouro-id true temp-class-name 8 40.0 400.0)
+            (expect-failure
+                "Cannot revoke non-empty class"
+                (ref-TS02-C3::AQP|C_RevokeAnchorClass patron ouro-id [true true] temp-class-id)
+            )
+            (ref-TS02-C3::AQP|C_RevokeAnchor patron "TFTEMPaa-98c486052a51")
+            (ref-TS02-C3::AQP|C_RevokeAnchorClass patron ouro-id [true true] temp-class-id)
+        ]
+        [
+            (ref-ANK::UR_AssetAnchorClassesData ouro-id [true true])
+            (ref-ANK::UR_Anchor "TFTEMPaa-98c486052a51")
+        ]
+    ]
+)
+(format "<<<<<<<TX002 - AQP-ANK TF class-cap/revoke tests costs {} GAS>>>>>>>" [(env-gas)])
+(commit-tx)
+;;
+;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+;;
+(begin-tx "TX003 - AQP-ANK SF and NF baseline issuance tests")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchors} AQP-ANK)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (* (ref-DALOS::UR_UsagePrice "standard") 8.0)
+            )
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    [
+        [
+            (ref-TS02-C3::AQP|C_IssueSemiFungibleAnchor patron "SFAnchoraa" "DHCD-98c486052a51" true "CoreBoostSF" 8 35.0 11)
+            (ref-TS02-C3::AQP|C_IssueSemiFungibleAnchor patron "SFAnchorab" "DHCD-98c486052a51" false "CoreBoostSF-98c486052a51" 8 37.0 9)
+            (ref-TS02-C3::AQP|C_IssueNonFungibleAnchor patron "NFAnchoraa" "KBN-98c486052a51" true "CoreBoostNF" 8 55.0 "Background" "Ouroboros Rain")
+            (ref-TS02-C3::AQP|C_IssueNonFungibleAnchor patron "NFAnchorab" "KBN-98c486052a51" false "CoreBoostNF-98c486052a51" 8 65.0 "Rarity" "Legendary")
+            (ref-TS02-C3::AQP|C_RevokeAnchor patron "NFAnchorab-98c486052a51")
+        ]
+        [
+            (ref-ANK::UR_AssetAnchorClassesData "DHCD-98c486052a51" [false true])
+            (ref-ANK::UR_AssetAnchorClassesData "KBN-98c486052a51" [false false])
+            (ref-ANK::UR_Anchor "SFAnchoraa-98c486052a51")
+            (ref-ANK::UR_Anchor "NFAnchorab-98c486052a51")
+        ]
+    ]
+)
+(format "<<<<<<<TX003 - AQP-ANK SF/NF baseline tests costs {} GAS>>>>>>>" [(env-gas)])
+(commit-tx)

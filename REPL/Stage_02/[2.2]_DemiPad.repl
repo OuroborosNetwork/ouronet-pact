@@ -1,0 +1,99 @@
+;;
+;;
+;;================================================================================
+;;                                                                              ;;
+;;                      [15 TXs]                                                ;;
+;;              1.1     NONE: [REPL] Pre-Loads execs (already done)             ;;
+;;              1.2     NONE: LIVE Pre-Loads execs [only comment]               ;;
+;;              2       LAUNCHPAD Deployment                                    ;;
+;;              3       [REPL] Post-Loads execs                                 ;;
+;;                                                                              ;;
+;;                                                                              ;;
+;;================================================================================
+;;                                                                              ;;
+;;              2       LAUNCHPAD Deployment                                    ;;
+;;                                                                              ;;
+;;================================================================================
+;;
+;;
+(print "")
+(begin-tx "TX-01 [2] - LAUNCHPAD Module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact")
+(format "<<<<<<<LAUNCHPAD Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-01 [2] - SPARK Module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/01_Spark.pact")
+(format "<<<<<<<SPARK Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-01 [2] - PAD-SH Module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/02_Snakes.pact")
+(format "<<<<<<<PAD-SH Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-01 [2] - PAD-CUSTODIANS Module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/03_Custodians.pact")
+(format "<<<<<<<PAD-CUSTODIANS Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-01 [3] - STOICPAY Module (DEMIPAD-STOICPAY)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/04_STOICPAY.pact")
+(format "<<<<<<<STOICPAY Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-01 [4] - STOAICO Module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/05_STOAICO.pact")
+(format "<<<<<<<STOAICO Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")

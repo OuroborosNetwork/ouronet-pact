@@ -1,0 +1,26 @@
+;; Phase 6 — REPL test principals on root `coin` (parallels `00_KadenaSandbox/kda-env/init-test-accounts.repl`).
+(begin-tx)
+(namespace "")
+
+(env-data
+  {
+    "payload_stoa-alice-ks": { "keys": ["alice-key"]},
+    "payload_stoa-bob-ks": { "keys": ["bob-key"]}
+  }
+)
+
+(let ((ks-a:guard (read-keyset "payload_stoa-alice-ks")))
+  (if (= (try false (coin.details "alice")) false)
+      (let ((_:string (coin.create-account "alice" ks-a)))
+        (let ((_tc (test-capability (coin.CREDIT "alice"))))
+          (coin.credit "alice" ks-a 10000000.0)))
+      ""))
+(let ((ks-b:guard (read-keyset "payload_stoa-bob-ks")))
+  (if (= (try false (coin.details "bob")) false)
+      (let ((_:string (coin.create-account "bob" ks-b)))
+        (let ((_tc (test-capability (coin.CREDIT "bob"))))
+          (coin.credit "bob" ks-b 10000000.0)))
+      ""))
+
+(commit-tx)
+(print "Stoa sandbox phase 06: root coin test accounts alice + bob (10M STOA each, idempotent)")

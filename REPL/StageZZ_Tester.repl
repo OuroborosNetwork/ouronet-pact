@@ -1,0 +1,25 @@
+;;
+;;
+;;================================================================================
+;;                                                                              ;;
+;;              STAGE ZZ — unified DPL-UR (read-only / UI helpers)             ;;
+;;                                                                              ;;
+;;  Deploys 2_SLAVE/Stage_Z/01_DPL-UR.pact (canonical DPL-UR module).           ;;
+;;                                                                              ;;
+;;  Requires Stage 1 + Stage 2 (incl. DPDC for URC_0021–0026). Run after        ;;
+;;  Stage02_Tester.repl (e.g. from Z.repl). Loads only this module — no REPL tests. ;;
+;;                                                                              ;;
+;;================================================================================
+;;
+;;
+(print "")
+(begin-tx "TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../2_SLAVE/Stage_Z/01_DPL-UR.pact")
+(format "<<<<<<<DPL-UR (Stage_Z unified) Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")

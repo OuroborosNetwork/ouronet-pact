@@ -1,0 +1,9 @@
+;; Stage 00 — sandboxes only: Kadena REPL sandbox, then Stoa REPL sandbox.
+;; Next (same stage): Stage00a_StoaTests.repl for Stoa coin tests.
+(print "")
+(load "../00_KadenaSandbox/kda-env/init.repl")
+(print "************************ 00_KadenaSandbox (kda-env/init.repl) LOADED *******************************")
+(print "")
+(load "../00_StoaSandbox/stoa-env/init.repl")
+(print "************************ 00_StoaSandbox (stoa-env/init.repl) LOADED *******************************")
+(print "")

@@ -1,0 +1,11 @@
+;; Phase 3 — util.guards + util.gas-guards (stoa-genesis-3 util segment; live util/*.pact)
+(begin-tx)
+(namespace "util")
+;; `util` namespace user guard is `util-ns-users` (keys-all; phase 01).
+(env-sigs
+  [{"key": "b836c5c6b989d97737c954934c24686b876b78082bd03475878c245794d6ef80", "caps": []}
+   {"key": "5047d039d1d918e3489f42a52a46b54cb5b3b259e42dd2e43c071fe2b77863f2", "caps": []}])
+(load "../util/guards.pact")
+(load "../util/gas-guards.pact")
+(commit-tx)
+(print "Stoa sandbox phase 03: util.guards + util.gas-guards")

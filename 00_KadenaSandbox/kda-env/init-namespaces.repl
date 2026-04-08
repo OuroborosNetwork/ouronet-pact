@@ -1,0 +1,14 @@
+
+(begin-tx)
+
+(use basic-guards)
+(define-namespace 'util GUARD_SUCCESS GUARD_SUCCESS)
+;; `free` is required here for Kadena `init-pact-util-lib.repl` (modules under `free.util-*`).
+;; 00_StoaSandbox phase 01 may rotate `free` to Stoa registry guards when the full pipeline runs.
+(define-namespace 'free GUARD_SUCCESS GUARD_SUCCESS)
+(define-namespace 'kip GUARD_SUCCESS GUARD_SUCCESS)
+(define-namespace 'user GUARD_SUCCESS GUARD_SUCCESS)
+(define-namespace 'marmalade GUARD_SUCCESS GUARD_SUCCESS)
+
+(print "Standard namespaces initialized")
+(commit-tx)

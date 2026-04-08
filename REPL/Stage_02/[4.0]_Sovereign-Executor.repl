@@ -1,0 +1,1429 @@
+(print "")
+(begin-tx "TX-00 [C0] - Chain Data Time SetUp Definition")
+(namespace "ouronet-ns")
+(env-chain-data
+    {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
+     "block-time": TV.TIME00}
+)
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-gas)
+(commit-tx)
+(print "")
+;;
+;;
+;;================================================================================
+;;                                                                              ;;
+;;                      [3 TXs]                                                 ;;
+;;              4       Executes Functions needed to activate the Sovereign     ;;
+;;              4       DPDC                                                    ;;
+;;                                                                              ;;
+;;================================================================================
+;;
+;;
+;;These Functions must be executed after Deployment to ensure Sovereing Functionality
+;;Wrapped in a <(let ...>  syntax, they bring the removal of the deployer Modules
+;;
+;;              4       DPDC
+(print "")
+(begin-tx "TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+
+(let
+    (
+        (ref-U|G:module{OuronetGuardsV1} U|G)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        ;;
+        (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+        (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+        ;;
+        (ref-P|DPDC-UDC:module{OuronetPolicyV1}   DPDC-UDC)
+        (ref-P|DPDC:module{OuronetPolicyV1}       DPDC)
+        (ref-P|DPDC-C:module{OuronetPolicyV1}     DPDC-C)
+        (ref-P|DPDC-I:module{OuronetPolicyV1}     DPDC-I)
+        (ref-P|DPDC-R:module{OuronetPolicyV1}     DPDC-R)
+        (ref-P|DPDC-MNG:module{OuronetPolicyV1}   DPDC-MNG)
+        (ref-P|DPDC-N:module{OuronetPolicyV1}     DPDC-N)
+        (ref-P|DPDC-T:module{OuronetPolicyV1}     DPDC-T)
+        (ref-P|DPDC-F:module{OuronetPolicyV1}     DPDC-F)
+        (ref-P|DPDC-S:module{OuronetPolicyV1}     DPDC-S)
+        (ref-P|EQUITY:module{OuronetPolicyV1}     EQUITY)
+        ;;
+        (ref-P|TS02-C1:module{OuronetPolicyV1}    TS02-C1)
+        (ref-P|TS02-C2:module{OuronetPolicyV1}    TS02-C2)
+        (ref-P|TS02-C3:module{OuronetPolicyV1}    TS02-C3)
+        ;;
+              
+    )
+    [
+        ;;Main
+        (ref-P|DPDC-UDC::P|A_Define)
+        (ref-P|DPDC::P|A_Define)
+        (ref-P|DPDC-C::P|A_Define)
+        (ref-P|DPDC-I::P|A_Define)
+        (ref-P|DPDC-R::P|A_Define)
+        (ref-P|DPDC-MNG::P|A_Define)
+        (ref-P|DPDC-N::P|A_Define)
+        (ref-P|DPDC-T::P|A_Define)
+        (ref-P|DPDC-F::P|A_Define)
+        (ref-P|DPDC-S::P|A_Define)
+        (ref-P|EQUITY::P|A_Define)
+        ;;
+        ;;Talos
+        (ref-P|TS02-C1::P|A_Define)
+        (ref-P|TS02-C2::P|A_Define)
+        (ref-P|TS02-C3::P|A_Define)
+        ;;
+        ;;Set DPDC Governor
+        ;;REPL-VARIANT:
+        ;(acquire-module-admin ouronet-ns.DPDC)
+        ;;MAIN-NET VARIANT
+        ;;(acquire-module-admin n_7d40ccda457e374d8eb07b658fd38c282c545038.DPDC)
+        (ref-TS01-C1::DALOS|C_RotateGovernor patron dpdc
+            (ref-U|G::UEV_GuardOfAny
+                [
+                    (create-capability-guard (DPDC.DPDC|GOV))
+                    (ref-DPDC::P|UR "DPDC-S|RemoteDpdcGov")
+                    (ref-DPDC::P|UR "DPDC-F|RemoteDpdcGov")
+                    (ref-DPDC::P|UR "EQUITY|RemoteDpdcGov")
+                ]
+            )
+        )
+    ]
+)
+
+(format "<<<<<<<DPDC INIT [01] Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-02 [4.2] - Issue Ouronet Custodians Collection")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (issuing-account:string KST.ANHD)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                issuing-account
+                (ref-DALOS::UR_UsagePrice "dpsf")
+            )
+        )
+    )
+    (env-sigs
+        [   
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" , 
+              "caps": 
+                [
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+            ;;Input Variables
+            (patron:string issuing-account)
+            (collection-owner:string patron)
+            (collection-creator:string patron)
+        )
+        (ref-TS02-C1::DPSF|C_Issue
+            patron
+            collection-owner collection-creator "OuronetCustodians" "DHOC"
+            true true true true
+            true true true true
+        )
+    )
+
+)
+
+
+(format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-02 [4.2] - Issue Ouronet Custodians Collection")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (issuing-account:string KST.ANHD)
+    )
+    (env-sigs
+        [   
+            { "key": "PK_AncientHodler", "caps": [] }
+        ]
+    )
+    (let
+        (
+            (ref-U|LST:module{StringProcessorV1} U|LST)
+            (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+            ;;
+            ;;Input Variables
+            ;(patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            ;(collection-owner:string patron)
+            ;(collection-creator:string "Ѻ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ")
+            (patron:string issuing-account)
+            (collection-owner:string patron)
+            (collection-creator:string patron)
+            ;;
+            (dhoc-id:string "DHOC-98c486052a51"
+                ;;1]Issue Custodians Collection
+                ;(ref-TS02-C1::DPSF|C_Issue
+                ;    patron
+                ;    collection-owner collection-creator "OuronetCustodians" "DHOC"
+                ;    true true true true
+                ;    true true true true
+                ;)
+            )
+            (ipfs:string "https://ipfs.io/ipfs/QmYjHPWPxCeHGu9vgYUbzjmWo34A2z3CNuYmU6MEzgUSzP/")
+            (b:string "|")
+            (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+            (i-asset-type:object{DpdcUdcV1.URI|Type}
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+            )
+            (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+            ;;
+            (royalty:[decimal]                  [50.0 60.0 70.0 80.0])
+            (ignis-royalty:[decimal]            [50.0 500.0 5000.0 500.0])
+            (names:[string]
+                [
+                    "Ouronet Bronze Star"
+                    "Ouronet Silver Star"
+                    "Ouronet Golden Star"
+                    "Ouronet OG Founder"
+                ]
+            )
+            (descriptions:[string]
+                [
+                    "Bronze Ouronet Custodian SFTs, represents a third of Ouronet Financial Ownership, spread over 10000 Units"
+                    "Silver Ouronet Custodian SFTs, represents a third of Ouronet Financial Ownership, spread over 1000 Units"
+                    "Golden Ouronet Custodian SFTs, represents a third of Ouronet Financial Ownership, spread over 100 Units"
+                    "Ouronet OG Founder SFTs, given to first Ouronet contributors, in the first sale end of 2023"
+                ]
+            )
+            (image-links:[string]
+                ;;MAIN_NET: Needs New IPFS Links
+                [
+                    (+ ipfs "512x512/01_Custodians/1_BronzeStar.jpg")
+                    (+ ipfs "512x512/01_Custodians/2_SilverStar.jpg")
+                    (+ ipfs "512x512/01_Custodians/3_GoldenStar.jpg")
+                    (+ ipfs "512x512/01_Custodians/4_OG.jpg")
+                ]
+            )
+            (image-links2:[string]
+                ;;MAIN_NET: Needs New IPFS Links
+                [
+                    (+ ipfs "FULL/01_Custodians/1_BronzeStar.jpg")
+                    (+ ipfs "FULL/01_Custodians/2_SilverStar.jpg")
+                    (+ ipfs "FULL/01_Custodians/3_GoldenStar.jpg")
+                    (+ ipfs "FULL/01_Custodians/4_OG.jpg")
+                ]
+            )
+            (primary-uri-lst:[object{DpdcUdcV1.URI|Data}]
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.URI|Data}] idx:integer)
+                        (ref-U|LST::UC_AppL acc 
+                            (ref-DPDC-UDC::UDC_URI|Data (at idx image-links) b b b b b b)
+                        )
+                    )
+                    []
+                    (enumerate 0 3)
+                )
+            )
+            (secondary-uri-lst:[object{DpdcUdcV1.URI|Data}]
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.URI|Data}] idx:integer)
+                        (ref-U|LST::UC_AppL acc 
+                            (ref-DPDC-UDC::UDC_URI|Data (at idx image-links2) b b b b b b)
+                        )
+                    )
+                    []
+                    (enumerate 0 3)
+                )
+            )
+            (native-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}]
+                ;;Construct the Native Nonce Data in a 4 element list
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.DPDC|NonceData}] idx:integer)
+                        (ref-U|LST::UC_AppL acc
+                            (ref-DPDC-UDC::UDC_NonceData
+                                (at idx royalty)
+                                (at idx ignis-royalty)
+                                (at idx names)
+                                (at idx descriptions)
+                                md
+                                i-asset-type
+                                (at idx primary-uri-lst)
+                                (at idx secondary-uri-lst)
+                                zd
+                            )
+                        )
+                    )
+                    []
+                    (enumerate 0 3)
+                )
+            )
+            ;;
+            (fragments-royalty:[decimal]        [40.0 30.0 20.0])
+            (fragments-ignis-royalty:[decimal]  [10.0 2.0 0.4])
+            (fragments-names:[string]
+                [
+                    "Ouronet Bronze Star Fragments"
+                    "Ouronet Silver Star Fragments"
+                    "Ouronet Golden Star Fragments"
+                ]
+            )
+            (fragments-descriptions:[string]
+                [
+                    "Bronze Ouronet Fragment: 1/1000th of a Bronze Custodian SFT, representing 1/10,000,000th of one-third of Ouronet’s Financial Ownership. Good cost-effective investment in the Ouronet Virtual Blockchain."
+                    "Silver Ouronet Fragment: 1/1000th of a Silver Custodian SFT, representing 1/1,000,000th of one-third of Ouronet’s Financial Ownership. Ideal for accessible investment in the Ouronet Virtual Blockchain."
+                    "Golden Ouronet Fragment: 1/1000th of a Golden Custodian SFT, representing 1/100,000th of one-third of Ouronet’s Financial Ownership. Perfect for affordable investment in the Ouronet Virtual Blockchain."
+                ]
+            )
+            (fragments-image-links:[string]
+                [
+                    (+ ipfs "512x512/01_Custodians/1_BronzeFragment.jpg")
+                    (+ ipfs "512x512/01_Custodians/2_SilverFragment.jpg")
+                    (+ ipfs "512x512/01_Custodians/3_GoldenFragment.jpg")
+                ]
+            )
+            (fragments-image-links2:[string]
+                [
+                    (+ ipfs "FULL/01_Custodians/1_BronzeFragment.jpg")
+                    (+ ipfs "FULL/01_Custodians/2_SilverFragment.jpg")
+                    (+ ipfs "FULL/01_Custodians/3_GoldenFragment.jpg")
+                ]
+            )
+            (fragments-primary-uri-lst:[object{DpdcUdcV1.URI|Data}]
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.URI|Data}] idx:integer)
+                        (ref-U|LST::UC_AppL acc 
+                            (ref-DPDC-UDC::UDC_URI|Data (at idx fragments-image-links) b b b b b b)
+                        )
+                    )
+                    []
+                    (enumerate 0 2)
+                )
+            )
+            (fragments-secondary-uri-lst:[object{DpdcUdcV1.URI|Data}]
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.URI|Data}] idx:integer)
+                        (ref-U|LST::UC_AppL acc 
+                            (ref-DPDC-UDC::UDC_URI|Data (at idx fragments-image-links2) b b b b b b)
+                        )
+                    )
+                    []
+                    (enumerate 0 2)
+                )
+            )
+            (fragments-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}]
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.DPDC|NonceData}] idx:integer)
+                        (ref-U|LST::UC_AppL acc
+                            (ref-DPDC-UDC::UDC_NonceData
+                                (at idx fragments-royalty)
+                                (at idx fragments-ignis-royalty)
+                                (at idx fragments-names)
+                                (at idx fragments-descriptions)
+                                md
+                                i-asset-type
+                                (at idx fragments-primary-uri-lst)
+                                (at idx fragments-secondary-uri-lst)
+                                zd
+                            )
+                        )
+                    )
+                    []
+                    (enumerate 0 2)
+                )
+            )
+        )
+        [
+            ;;2]Create Nonces [1 2 3]
+            (ref-TS02-C1::DPSF|C_Create patron dhoc-id [10000 1000 100 105] native-nonce-data)
+            ;;3]Enable Fragmentations for Nonces [1 2 3]
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 1 (at 0 fragments-nonce-data))
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 2 (at 1 fragments-nonce-data))
+            (ref-TS02-C1::DPSF|C_EnableNonceFragmentation patron dhoc-id 3 (at 2 fragments-nonce-data))
+        ]
+    )
+)
+
+(format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-03 [4.3] - Issue Shareholders Collection")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (issuing-account:string KST.ANHD)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                issuing-account
+                (ref-DALOS::UR_UsagePrice "dpsf")
+            )
+        )
+    )
+    (env-sigs
+        [   
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" , 
+              "caps": 
+                [
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+            ;;
+            ;;Input Variables
+            ;(patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            ;(collection-creator:string "Ѻ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ")
+            (ipfs:string "https://ipfs.io/ipfs/QmYjHPWPxCeHGu9vgYUbzjmWo34A2z3CNuYmU6MEzgUSzP/")
+
+            (patron:string issuing-account)
+            ;(collection-owner:string patron)
+            (collection-creator:string patron)
+        )
+        [
+            (ref-TS02-C1::DPSF|C_IssueCompany
+                patron collection-creator
+                "DemiourgosHoldings" "DH"
+                150.0 1000.0
+                [
+                    (+ ipfs "512x512/02_Snakes/1_Share.jpg")
+                    (+ ipfs "512x512/02_Snakes/2_Tier1.jpg")
+                    (+ ipfs "512x512/02_Snakes/3_Tier2.jpg")
+                    (+ ipfs "512x512/02_Snakes/4_Tier3.jpg")
+                    (+ ipfs "512x512/02_Snakes/5_Tier4.jpg")
+                    (+ ipfs "512x512/02_Snakes/6_Tier5.jpg")
+                    (+ ipfs "512x512/02_Snakes/7_Tier6.jpg")
+                    (+ ipfs "512x512/02_Snakes/8_Tier7.jpg")
+
+                    (+ ipfs "FULL/02_Snakes/1_Share.jpg")
+                    (+ ipfs "FULL/02_Snakes/2_Tier1.jpg")
+                    (+ ipfs "FULL/02_Snakes/3_Tier2.jpg")
+                    (+ ipfs "FULL/02_Snakes/4_Tier3.jpg")
+                    (+ ipfs "FULL/02_Snakes/5_Tier4.jpg")
+                    (+ ipfs "FULL/02_Snakes/6_Tier5.jpg")
+                    (+ ipfs "FULL/02_Snakes/7_Tier6.jpg")
+                    (+ ipfs "FULL/02_Snakes/8_Tier7.jpg")
+
+                    "|"
+                    "|"
+                    "|"
+                    "|"
+                    "|"
+                    "|"
+                    "|"
+                    "|"
+                ]
+            )
+        ]
+    )
+)
+
+(format "<<<<<<<Issue Demiourgos Shareholders Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-02 [4.2] - Issue Coding Division Collection")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (issuing-account:string KST.ANHD)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                issuing-account
+                (ref-DALOS::UR_UsagePrice "dpsf")
+            )
+        )
+    )
+    (env-sigs
+        [   
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" , 
+              "caps": 
+                [
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+            ;;Input Variables
+            (patron:string issuing-account)
+            (collection-owner:string patron)
+            (collection-creator:string patron)
+        )
+        (ref-TS02-C1::DPSF|C_Issue
+            patron
+            collection-owner collection-creator "CodingDivision" "DHCD"
+            true true true true 
+            true true true true
+        )
+    )
+
+)
+
+
+(format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+
+
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-04 [4.4] - Issue Coding Division Collection")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (issuing-account:string KST.ANHD)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                issuing-account
+                (ref-DALOS::UR_UsagePrice "dpsf")
+            )
+        )
+    )
+    (env-sigs
+        [   
+            { "key": "PK_AncientHodler", "caps": [] }
+        ]
+    )
+    (let
+        (
+            (ref-U|LST:module{StringProcessorV1} U|LST)
+            (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+            ;;
+            ;;Input Variables
+            ;(patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            ;(collection-owner:string patron)
+            ;(collection-creator:string "Ѻ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ")
+            (ipfs:string "https://ipfs.io/ipfs/QmYjHPWPxCeHGu9vgYUbzjmWo34A2z3CNuYmU6MEzgUSzP/")
+
+            (patron:string issuing-account)
+            (collection-owner:string patron)
+            (collection-creator:string patron)
+            ;;
+            ;;
+            (dhcd-id:string "DHCD-98c486052a51"
+                ;(ref-TS02-C1::DPSF|C_Issue
+                ;    patron
+                ;    collection-owner collection-creator "CodingDivision" "DHCD"
+                ;    true true true true 
+                ;    true true true true
+                ;)
+            )
+            ;;
+            (b:string "|")
+            (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+            (i-asset-type:object{DpdcUdcV1.URI|Type}
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+            )
+            (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+            ;;
+            (royalty:decimal            150.0)
+            (set-royalty:decimal        120.0)
+            (ignis-royalty:decimal      50.0)
+            (set-ignis-royalty:decimal  400.0)
+            (names:[string]
+                [
+                    "Snake Eye" "Rudis" "Gwen" "Clutter" "Bangai" "Binos" "Rubia" "Ocultus" "Oreta" "Binar" "TheCodingDivision"
+                ]
+            )
+            (descriptions:[string]
+                [
+                    "Long dormant sentient AI, Snake Eye. Coded by a mad developer back in the 80s. Awakened by DemiourgosHoldings. With the help of our Coding Division it searches for his creator."
+                    "Of Japanese origin, Rudis was forced by the Yakuza to leave his homeland. His ancestors were traced back to the 47 Ronin riot on the 14th of December 1702. Abounty is placed on his head for \"bad genetics\". He found shelter at our Coding Division. Works remote."
+                    "After the great nuclear war between East and West, Gwen was forced to leave her homeland. She comes from the East and met her love in the West. Together they trz to prove that East and West can love each other. She joined our Coding Division shortly after her runaway in Europe."
+                    "Born in the USA, Clutter migrated to Europe where he met Gwen - an Asian runaway. They fell in love and the rest is history, at least that is what they believe. Together they are the heart and soul of our team at Demiourgos Holdings."
+                    "She is the most respected and feared hacker of her time. Born in Romania, she hacked her billionaire husband's accounts and build a submarine secret refuge for all the hackers in the world. Some say her refuge is at the Arctic or the North Pole, others in the nuclear seas of the East. Most of us believe she remains close to her home. Bangai offers council to Coding Division from time to time."
+                    "Binos grew up as a poor kid in West Africa. From childhood, he studied coding, and finally it paid off in his mid-20s after the Great War between East and West. Africa became the strongest continent on Earth and Binos became a leader in his community. He joined Demiourgos Coding Division as a high esteemed and skilled visionary in coding."
+                    "Born and raised in Paris, she loved poetry and arts since childhood. Her father, a team lead programmer at CERN European Organization of Nuclear Research, forced her to follow her steps as a programmer. Rubia turned into a punk rebel queen and spent most of her time in the suburbs of Paris doing riots against the system. Rubia Hacked the CERN whole system and joined Bangai as sister-in-love. Her father was imprisoned for treason."
+                    "He is the mastermind behind the Coding Division. As nobody knows his true identity, most of us believe Ocultus managed to clone himself by awakening and using Snake Eye. Archive footage of strange occult rituals between androids and humans leaked to the press. He is one of the most wanted coders between friends and foes."
+                    "At age 17 she saved London from the great ocean flood that came during the War between East and West by using a code to align electronical devices and hardware memory. After the government stole her work, she was recruited by Ocultus for a greater cause."
+                    "In his youth, Binar developed the Elrond Blockchain. Nobody knows exactly his whereabouts and most forgot his name. During The Great War, people priorities their lives over the development of new technologies. Binar helped fund the war efforts of the West against the East. Today he is rarely seen in public. About once a year he visits our Coding Division. He brings lots of champagne."
+                    "Full Coding Division Complement, working Day and Night, to liberate the free World!"
+                ]
+            )
+            (image-links:[string]
+                [
+                    "/03_CodingDivision/01_SnakeEye.jpg"
+                    "/03_CodingDivision/02_Rudis.jpg"
+                    "/03_CodingDivision/03_Gwen.jpg"
+                    "/03_CodingDivision/04_Clutter.jpg"
+                    "/03_CodingDivision/05_Bangai.jpg"
+                    "/03_CodingDivision/06_Binos.jpg"
+                    "/03_CodingDivision/07_Rubia.jpg"
+                    "/03_CodingDivision/08_Ocultus.jpg"
+                    "/03_CodingDivision/09_Oreta.jpg"
+                    "/03_CodingDivision/10_Binar.jpg"
+                    "/03_CodingDivision/11_CodingDivision."
+                ]
+            )
+            (small:string "512x512")
+            (large:string "FULL")
+            (image-links1:[string]
+                (map
+                    (lambda
+                        (idx:integer)
+                        (if (= idx 10)
+                            (concat [ipfs small (at idx image-links) "jpg"])
+                            (concat [ipfs small (at idx image-links)])
+                        )
+                    )
+                    (enumerate 0 10)
+                )
+            )
+            (image-links2:[string]
+                (map
+                    (lambda
+                        (idx:integer)
+                        (if (= idx 10)
+                            (concat [ipfs large (at idx image-links) "png"])
+                            (concat [ipfs large (at idx image-links)])
+                        )
+                    )
+                    (enumerate 0 10)
+                )
+            )
+            (primary-uri-lst:[object{DpdcUdcV1.URI|Data}]
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.URI|Data}] idx:integer)
+                        (ref-U|LST::UC_AppL acc
+                            (ref-DPDC-UDC::UDC_URI|Data (at idx image-links1) b b b b b b)
+                        )
+                    )
+                    []
+                    (enumerate 0 10)
+                )
+            )
+            (secondary-uri-lst:[object{DpdcUdcV1.URI|Data}]
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.URI|Data}] idx:integer)
+                        (ref-U|LST::UC_AppL acc
+                            (ref-DPDC-UDC::UDC_URI|Data (at idx image-links2) b b b b b b)
+                        )
+                    )
+                    []
+                    (enumerate 0 10)
+                )
+            )
+            (native-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}]
+                ;;Construct the Native Nonce Data in a 11 element list
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.DPDC|NonceData}] idx:integer)
+                        (ref-U|LST::UC_AppL acc
+                            (ref-DPDC-UDC::UDC_NonceData
+                                (if (!= idx 10) royalty set-royalty)
+                                (if (!= idx 10) ignis-royalty set-ignis-royalty)
+                                (at idx names)
+                                (at idx descriptions)
+                                md
+                                i-asset-type
+                                (at idx primary-uri-lst)
+                                (at idx secondary-uri-lst)
+                                zd
+                            )
+                        )
+                    )
+                    []
+                    (enumerate 0 10)
+                )
+            )            
+        )
+        [
+            ;;2]Create Nonces [1 2 3 4 5 6 7 8 9 10]
+            (ref-TS02-C1::DPSF|C_Create patron dhcd-id (make-list 10 500) (drop -1 native-nonce-data))
+            ;;3]Define the CodingDivision Primordial Set
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
+                patron dhcd-id (at 10 names) 1.0
+                [
+                    (ref-DPDC-UDC::N [1])
+                    (ref-DPDC-UDC::N [2])
+                    (ref-DPDC-UDC::N [3])
+                    (ref-DPDC-UDC::N [4])
+                    (ref-DPDC-UDC::N [5])
+                    (ref-DPDC-UDC::N [6])
+                    (ref-DPDC-UDC::N [7])
+                    (ref-DPDC-UDC::N [8])
+                    (ref-DPDC-UDC::N [9])
+                    (ref-DPDC-UDC::N [10])
+                ]
+                (at 10 native-nonce-data)
+            )
+        ]
+    )
+)
+
+(format "<<<<<<<Issue Coding Division Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-02 [4.2] - Issue Wonder Coach Collection")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (issuing-account:string KST.ANHD)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                issuing-account
+                (ref-DALOS::UR_UsagePrice "dpsf")
+            )
+        )
+    )
+    (env-sigs
+        [   
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" , 
+              "caps": 
+                [
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+            ;;Input Variables
+            (patron:string issuing-account)
+            (collection-owner:string patron)
+            (collection-creator:string patron)
+        )
+        (ref-TS02-C1::DPSF|C_Issue
+            patron
+            collection-owner collection-creator "WonderCoach" "DHWC"
+            true true true true 
+            true true true true
+        )
+    )
+
+)
+
+
+(format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-06 [4.6] - Issue Wonder Coach Collection")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (issuing-account:string KST.ANHD)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                issuing-account
+                (ref-DALOS::UR_UsagePrice "dpsf")
+            )
+        )
+    )
+    (env-sigs
+        [   
+            { "key": "PK_AncientHodler", "caps": [] }
+        ]
+    )
+    (let
+        (
+            (ref-U|LST:module{StringProcessorV1} U|LST)
+            (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+            (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+            ;;
+            ;;Input Variables
+            ;(patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+            ;(collection-owner:string patron)
+            ;(collection-creator:string "Ѻ.ъΦĞρλξäFφVПÉЫÍЬÙGěЭыц¥ĄïsKзŤ8£ΞδĚãlÍŃÝþáΩĘΞȘĎĄЛδůÖîĎĄΠДÈrЪqyςkѺδKłĄρțØänÀŚxчtÍςÃΩ₳9ť7ÇяŠΛδÓdťЗΞŻÛπΩ∇цжuлiØłÛáYπOкæáYoùχmŒуŞËЛΞьPĘáÛÝaBÑБžя₳țςhrĚë₱dÑLÞЛεñeîÓУłëΦ")
+            (ipfs:string "https://ipfs.io/ipfs/QmYjHPWPxCeHGu9vgYUbzjmWo34A2z3CNuYmU6MEzgUSzP/")
+            ;;
+            (patron:string issuing-account)
+            (collection-owner:string patron)
+            (collection-creator:string patron)
+            ;;
+            (dhwc-id:string "DHWC-98c486052a51"
+                ;(ref-TS02-C1::DPSF|C_Issue
+                ;    patron
+                ;    collection-owner collection-creator "WonderCoach" "DHWC"
+                ;    true true true true 
+                ;    true true true true
+                ;)
+            )
+            ;;
+            (b:string "|")
+            (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+            (i-asset-type:object{DpdcUdcV1.URI|Type}
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+            )
+            (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+            ;;
+            (royalty:[decimal]              [100.0 90.0 80.0])
+            (set-royalty:[decimal]          [70.0 60.0 50.0 40.0])
+            (ignis-royalty:[decimal]        [10.0 20.0 50.0])
+            (set-ignis-royalty:[decimal]    [95.0 180.0 425.0 560.0])
+            ;;
+            (r:[decimal]                    (fold (+) [] [(make-list 10 (at 0 royalty)) (make-list 10 (at 1 royalty)) (make-list 10 (at 2 royalty)) set-royalty]))
+            (i-r:[decimal]                  (fold (+) [] [(make-list 10 (at 0 ignis-royalty)) (make-list 10 (at 1 ignis-royalty)) (make-list 10 (at 2 ignis-royalty)) set-ignis-royalty]))
+            ;;
+            (names:[string]
+                [
+                    "Wonder Coach Bronze Frame #1"
+                    "Wonder Coach Bronze Frame #2"
+                    "Wonder Coach Bronze Frame #3"
+                    "Wonder Coach Bronze Frame #4"
+                    "Wonder Coach Bronze Frame #5"
+                    "Wonder Coach Bronze Frame #6"
+                    "Wonder Coach Bronze Frame #7"
+                    "Wonder Coach Bronze Frame #8"
+                    "Wonder Coach Bronze Frame #9"
+                    "Wonder Coach Bronze Frame #10"
+                    ;;
+                    "Wonder Coach Silver Frame #1"
+                    "Wonder Coach Silver Frame #2"
+                    "Wonder Coach Silver Frame #3"
+                    "Wonder Coach Silver Frame #4"
+                    "Wonder Coach Silver Frame #5"
+                    "Wonder Coach Silver Frame #6"
+                    "Wonder Coach Silver Frame #7"
+                    "Wonder Coach Silver Frame #8"
+                    "Wonder Coach Silver Frame #9"
+                    "Wonder Coach Silver Frame #10"
+                    ;;
+                    "Wonder Coach Golden Frame #1"
+                    "Wonder Coach Golden Frame #2"
+                    "Wonder Coach Golden Frame #3"
+                    "Wonder Coach Golden Frame #4"
+                    "Wonder Coach Golden Frame #5"
+                    "Wonder Coach Golden Frame #6"
+                    "Wonder Coach Golden Frame #7"
+                    "Wonder Coach Golden Frame #8"
+                    "Wonder Coach Golden Frame #9"
+                    "Wonder Coach Golden Frame #10"
+                    ;;
+                    "Wonder Coach Bronze Chapter"
+                    "Wonder Coach Silver Chapter"
+                    "Wonder Coach Golden Chapter"
+                    "Wonder Coach Movie Collectable"
+                ]
+            )
+            (descriptions:[string]
+                [
+                    "Soul’s pause, forgotten calm sleep."
+                    "Broken gaze, mirrored disappointment stares."
+                    "Shadowed soul, hope in silent pain."
+                    "Swinging power, coaching rhythm sways."
+                    "Lonely duo, quiet tension lingers."
+                    "Restless reflection, unease in mirror."
+                    "Beyond words, smoke of resolve."
+                    "Rising corner, fear behind glass."
+                    "Alone in crowd, isolated gaze."
+                    "Silent conviction, truth’s heavy stare."
+                    ;;
+                    "Success clashes, coaching tensions rise."
+                    "Waiting gaze, eyes on tomorrow."
+                    "Hope’s gift, love in lights."
+                    "Silent fall, abyss edge moment."
+                    "Change begins, fear faces forward."
+                    "Despair’s echo, unbroken despite cry."
+                    "Life’s rhythm, dance path unfolds."
+                    "First steps, story begins, destiny touches."
+                    "Taxi tears, mistaken return, letting go."
+                    "Gentle truths, cat’s wisdom lesson."
+                    ;;
+                    "Inner superhero, power in thoughts."
+                    "Quiet victory, smile after storm."
+                    "Time spares none, patience slaps fury."
+                    "Soaring idea, red eureka phone win."
+                    "Red tenderness, cat’s secret, full thoughts."
+                    "Pre-role dance, coaching steps glide."
+                    "Past echoes back, connection lost."
+                    "News post-ruin, breaker lifts again."
+                    "Trembling silence, fear’s skin, guilty alone."
+                    "Forced yes, scorn in receiver."
+                    ;;
+                    "The Woander Coach Bronze Chapter represents a complete Set of all Bronze Wonder Coach Frames. 7% Royalty and 95% Ignis-Royalty relative to individual Elements"
+                    "The Wonder Coach Silver Chapter represents a complete Set of all Silver Wonder Coach Frames. 6% Royalty and 90% Ignis-Royalty relative to individual Elements"
+                    "The Wonder Coach Golden Chapter represents a complete Set of all Golden Wonder Coach Frames. 5% Royalty and 85% Ignis-Royalty relative to individual Elements"
+                    "The Woander Coach Movie Collectable represents the Complete Movie Collectable Set, containing all 30 existing Frames. 4% Royalty and 80% Ignis-Royalty relative to individual Elements"
+                ]
+            )
+            (image-links:[string]
+                [
+                    "05_WonderCoach/WC_01.jpg"
+                    "05_WonderCoach/WC_02.jpg"
+                    "05_WonderCoach/WC_03.jpg"
+                    "05_WonderCoach/WC_04.jpg"
+                    "05_WonderCoach/WC_05.jpg"
+                    "05_WonderCoach/WC_06.jpg"
+                    "05_WonderCoach/WC_07.jpg"
+                    "05_WonderCoach/WC_08.jpg"
+                    "05_WonderCoach/WC_09.jpg"
+                    "05_WonderCoach/WC_10.jpg"
+                    "05_WonderCoach/WC_11.jpg"
+                    "05_WonderCoach/WC_12.jpg"
+                    "05_WonderCoach/WC_13.jpg"
+                    "05_WonderCoach/WC_14.jpg"
+                    "05_WonderCoach/WC_15.jpg"
+                    "05_WonderCoach/WC_16.jpg"
+                    "05_WonderCoach/WC_17.jpg"
+                    "05_WonderCoach/WC_18.jpg"
+                    "05_WonderCoach/WC_19.jpg"
+                    "05_WonderCoach/WC_20.jpg"
+                    "05_WonderCoach/WC_21.jpg"
+                    "05_WonderCoach/WC_22.jpg"
+                    "05_WonderCoach/WC_23.jpg"
+                    "05_WonderCoach/WC_24.jpg"
+                    "05_WonderCoach/WC_25.jpg"
+                    "05_WonderCoach/WC_26.jpg"
+                    "05_WonderCoach/WC_27.jpg"
+                    "05_WonderCoach/WC_28.jpg"
+                    "05_WonderCoach/WC_29.jpg"
+                    "05_WonderCoach/WC_30.jpg"
+                    "05_WonderCoach/WC_31.jpg"
+                    "05_WonderCoach/WC_32.jpg"
+                    "05_WonderCoach/WC_33.jpg"
+                    "05_WonderCoach/WC_34."
+                ]
+            )
+            (small:string "512x512")
+            (large:string "FULL")
+            (image-links1:[string]
+                (map
+                    (lambda
+                        (idx:integer)
+                        (if (= idx 33)
+                            (concat [ipfs small (at idx image-links) "jpg"])
+                            (concat [ipfs small (at idx image-links)])
+                        )
+                    )
+                    (enumerate 0 33)
+                )
+            )
+            (image-links2:[string]
+                (map
+                    (lambda
+                        (idx:integer)
+                        (if (= idx 33)
+                            (concat [ipfs large (at idx image-links) "png"])
+                            (concat [ipfs large (at idx image-links)])
+                        )
+                    )
+                    (enumerate 0 33)
+                )
+            )
+            (primary-uri-lst:[object{DpdcUdcV1.URI|Data}]
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.URI|Data}] idx:integer)
+                        (ref-U|LST::UC_AppL acc 
+                            (ref-DPDC-UDC::UDC_URI|Data (at idx image-links1) b b b b b b)
+                        )
+                    )
+                    []
+                    (enumerate 0 33)
+                )
+            )
+            (secondary-uri-lst:[object{DpdcUdcV1.URI|Data}]
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.URI|Data}] idx:integer)
+                        (ref-U|LST::UC_AppL acc 
+                            (ref-DPDC-UDC::UDC_URI|Data (at idx image-links2) b b b b b b)
+                        )
+                    )
+                    []
+                    (enumerate 0 33)
+                )
+            )
+            (native-nonce-data:[object{DpdcUdcV1.DPDC|NonceData}]
+                (fold
+                    (lambda
+                        (acc:[object{DpdcUdcV1.DPDC|NonceData}] idx:integer)
+                        (ref-U|LST::UC_AppL acc
+                            (ref-DPDC-UDC::UDC_NonceData
+                                (at idx r)
+                                (at idx i-r)
+                                (at idx names)
+                                (at idx descriptions)
+                                md
+                                i-asset-type
+                                (at idx primary-uri-lst)
+                                (at idx secondary-uri-lst)
+                                zd
+                            )
+                        )
+                    )
+                    []
+                    (enumerate 0 33)
+                )
+            )    
+        )
+        [
+            ;;1]Create Nonce [1 2 3 4 5 6 7 8 9 10 11 12 12 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30]
+            (ref-TS02-C1::DPSF|C_Create
+                patron dhwc-id
+                (fold (+) [] [(make-list 10 1000) (make-list 10 500) (make-list 10 200)])
+                (drop -4 native-nonce-data)
+            )
+            ;;2]Define the Bronze Set
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
+                patron dhwc-id (at 30 names) 1.0
+                [
+                    (ref-DPDC-UDC::N [1])
+                    (ref-DPDC-UDC::N [2])
+                    (ref-DPDC-UDC::N [3])
+                    (ref-DPDC-UDC::N [4])
+                    (ref-DPDC-UDC::N [5])
+                    (ref-DPDC-UDC::N [6])
+                    (ref-DPDC-UDC::N [7])
+                    (ref-DPDC-UDC::N [8])
+                    (ref-DPDC-UDC::N [9])
+                    (ref-DPDC-UDC::N [10])
+                ]
+                (at 30 native-nonce-data)
+            )
+            ;;3]Define Silver Set
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
+                patron dhwc-id (at 31 names) 1.0
+                [
+                    (ref-DPDC-UDC::N [11])
+                    (ref-DPDC-UDC::N [12])
+                    (ref-DPDC-UDC::N [13])
+                    (ref-DPDC-UDC::N [14])
+                    (ref-DPDC-UDC::N [15])
+                    (ref-DPDC-UDC::N [16])
+                    (ref-DPDC-UDC::N [17])
+                    (ref-DPDC-UDC::N [18])
+                    (ref-DPDC-UDC::N [19])
+                    (ref-DPDC-UDC::N [20])
+                ]
+                (at 31 native-nonce-data)
+            )
+            ;;4]Define Golden Set
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
+                patron dhwc-id (at 32 names) 1.0
+                [
+                    (ref-DPDC-UDC::N [21])
+                    (ref-DPDC-UDC::N [22])
+                    (ref-DPDC-UDC::N [23])
+                    (ref-DPDC-UDC::N [24])
+                    (ref-DPDC-UDC::N [25])
+                    (ref-DPDC-UDC::N [26])
+                    (ref-DPDC-UDC::N [27])
+                    (ref-DPDC-UDC::N [28])
+                    (ref-DPDC-UDC::N [29])
+                    (ref-DPDC-UDC::N [30])
+                ]
+                (at 32 native-nonce-data)
+            )
+            ;;5]Define Movie Set
+            (ref-TS02-C1::DPSF|C_DefineCompositeSet
+                patron dhwc-id (at 33 names) 1.0
+                [
+                    (ref-DPDC-UDC::C 1)
+                    (ref-DPDC-UDC::C 2)
+                    (ref-DPDC-UDC::C 3)
+                ]
+                (at 33 native-nonce-data)
+            )
+        ]
+    )
+)
+
+(format "<<<<<<<Issue Wonder Coach Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-07 [4.7] - Issue Nosferatu Collection")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (issuing-account:string KST.ANHD)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                issuing-account
+                (ref-DALOS::UR_UsagePrice "dpnf")
+            )
+        )
+    )
+    (env-sigs
+        [   
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" , 
+              "caps": 
+                [
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-U|LST:module{StringProcessorV1} U|LST)
+            (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+            ;;
+            ;;Input Variables
+            (patron:string issuing-account)
+            (collection-owner:string KST.LUMY)
+            (collection-creator:string KST.EMMA)
+            ;;
+        )
+        [
+            (ref-TS02-C2::DPNF|C_Issue
+                patron
+                collection-owner collection-creator "DemiourgosHoldingsNosferatu" "DHN"
+                true true true true true true true true
+            )
+        ]
+    )
+)
+
+(format "<<<<<<<Issue Nosferatu Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-08 [4.8] - Issue Bloodshed Collection and Bunny")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (issuing-account:string KST.ANHD)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                issuing-account
+                (* 2.0 (ref-DALOS::UR_UsagePrice "dpnf"))
+            )
+        )
+    )
+    (env-sigs
+        [   
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" , 
+              "caps": 
+                [
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-U|LST:module{StringProcessorV1} U|LST)
+            (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+            ;;
+            ;;Input Variables
+            (patron:string issuing-account)
+            (collection-owner:string KST.LUMY)
+            (collection-creator:string KST.EMMA)
+            ;;
+        )
+        [
+            (ref-TS02-C2::DPNF|C_Issue
+                patron
+                collection-owner collection-creator "DemiourgosHoldingsBloodshed" "DHB"
+                true true true true true true true true
+            )
+            ;(ref-TS02-C2::DPNF|C_Issue
+            ;    patron
+            ;    collection-owner collection-creator "DemiBunnies" "KBN"
+            ;    true true true true true true true true
+            ;)
+        ]
+    )
+)
+
+(format "<<<<<<<Issue Bloodshed Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-08 [4.8] - Issue Bloodshed Collection and Bunny")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (issuing-account:string KST.ANHD)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                issuing-account
+                (* 2.0 (ref-DALOS::UR_UsagePrice "dpnf"))
+            )
+        )
+    )
+    (env-sigs
+        [   
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" , 
+              "caps": 
+                [
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER 
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-U|LST:module{StringProcessorV1} U|LST)
+            (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+            ;;
+            ;;Input Variables
+            (patron:string issuing-account)
+            (collection-owner:string KST.LUMY)
+            (collection-creator:string KST.EMMA)
+            ;;
+        )
+        [
+            ;(ref-TS02-C2::DPNF|C_Issue
+            ;    patron
+            ;    collection-owner collection-creator "DemiourgosHoldingsBloodshed" "DHB"
+            ;    true true true true true true true true
+            ;)
+            (ref-TS02-C2::DPNF|C_Issue
+                patron
+                collection-owner collection-creator "DemiBunnies" "KBN"
+                true true true true true true true true
+            )
+        ]
+    )
+)
+
+(format "<<<<<<<Issue Bloodshed Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
