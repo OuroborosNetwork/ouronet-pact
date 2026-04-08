@@ -31,17 +31,32 @@
     (defcap GOV ()                          (compose-capability (GOV|ANK_ADMIN)))
     (defcap GOV|ANK_ADMIN ()                (enforce-guard GOV|MD_AQP-ANK))
     ;;{G3}
-    (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|Demiurgoi ()
+        @doc "Resolves the governance keyset from DALOS."
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi))
+    )
     ;;
     ;; [Keys]
-    (defun GOV|NS_Use ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun GOV|AqpKey ()                    (+ (GOV|NS_Use) ".dh_sc_aqp-keyset"))
+    (defun GOV|NS_Use ()
+        @doc "Returns namespace prefix constant used by ANK."
+        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE))
+    )
+    (defun GOV|AqpKey ()
+        @doc "Builds the governance keyset name for AQP."
+        (+ (GOV|NS_Use) ".dh_sc_aqp-keyset")
+    )
     ;;
     ;; [SC-Names]
-    (defun GOV|AQP|SC_NAME ()               (at 0 ["Σ.ЖřÎzэóΣQз3ÌĄăådìÜλÅË9γğ7χûПæ0₳ПûÖŞrĄθXtFìмkщsGвÅgλąÇπЩAĚЭDíéαэБùđáżñИïПÆΣтцξsηåäялÃБц¢r6ÁíäзуμþĄĐЫîÉAćýìЧыQPнŁзßξĂйjay£üѺçRЫfУQșÏΠÜqîÔĄťß6ЗSρŠeΦñëdmûΦøШâΞýκъиřк"]))
+    (defun GOV|AQP|SC_NAME ()
+        @doc "Returns ANK module symbolic name."
+        (at 0 ["Σ.ЖřÎzэóΣQз3ÌĄăådìÜλÅË9γğ7χûПæ0₳ПûÖŞrĄθXtFìмkщsGвÅgλąÇπЩAĚЭDíéαэБùđáżñИïПÆΣтцξsηåäялÃБц¢r6ÁíäзуμþĄĐЫîÉAćýìЧыQPнŁзßξĂйjay£üѺçRЫfУQșÏΠÜqîÔĄťß6ЗSρŠeΦñëdmûΦøШâΞýκъиřк"])
+    )
     ;;
     ;; [PBLs]
-    (defun GOV|AQP|PBL ()                   (at 0 ["9G.632vHq208xaznBw9AfwrFGmLBqkr7tqEzf2Msq389xqEknmfAk8qI5MM1MaszdgMtEBpo6rbuC09Do7F6pjc91jzy3JxI6fjCkyuIbDpDD5i8CxeCBL0dKdDu3d2uAAwl6wE6npnm4Mjxx6JhiFq1sKddsGjLH9BjHF0ljtegHrn39qIADru76Ftr9Kgxh6Ds2aj4EufG07uK9sFG38ej5vooDMr0wp8alqGdnIiJxbhmwEKEg44l8pI5LDq2EotoM2jq86x1EJ5hM4wkfhtq4ye610tkAMIdLrDD87Euk14aJgMwnrLmytzcCc3Kakrnhs8Jxy5dFeowGxzlx1bGHqfwEen0pLcd6nl9udGE9hfFucLjM1seKzv542nwzz5jrpKmvzebI4BLK00Br1ocvxs4uor2nEv2Fng1l6qAiLcbv0hMnbLDEEcLpF1bD55gw55of7H2c3ieozahorkuCe5FEkAkEAhcGwJ35HCletrbcn2Ebo0fsD0tf2zxKsbzinpcJCtpv4EF4AyyhwD1LbtEd6qsEbgyJkA2DqdGBE5Fuqudzf8082Ei88d"]))
+    (defun GOV|AQP|PBL ()
+        @doc "Returns immutable public branding/license payload constant."
+        (at 0 ["9G.632vHq208xaznBw9AfwrFGmLBqkr7tqEzf2Msq389xqEknmfAk8qI5MM1MaszdgMtEBpo6rbuC09Do7F6pjc91jzy3JxI6fjCkyuIbDpDD5i8CxeCBL0dKdDu3d2uAAwl6wE6npnm4Mjxx6JhiFq1sKddsGjLH9BjHF0ljtegHrn39qIADru76Ftr9Kgxh6Ds2aj4EufG07uK9sFG38ej5vooDMr0wp8alqGdnIiJxbhmwEKEg44l8pI5LDq2EotoM2jq86x1EJ5hM4wkfhtq4ye610tkAMIdLrDD87Euk14aJgMwnrLmytzcCc3Kakrnhs8Jxy5dFeowGxzlx1bGHqfwEen0pLcd6nl9udGE9hfFucLjM1seKzv542nwzz5jrpKmvzebI4BLK00Br1ocvxs4uor2nEv2Fng1l6qAiLcbv0hMnbLDEEcLpF1bD55gw55of7H2c3ieozahorkuCe5FEkAkEAhcGwJ35HCletrbcn2Ebo0fsD0tf2zxKsbzinpcJCtpv4EF4AyyhwD1LbtEd6qsEbgyJkA2DqdGBE5Fuqudzf8082Ei88d"])
+    )
     ;;
     ;;<====>
     ;;POLICY
@@ -59,14 +74,20 @@
     )
     ;;{P4}
     (defconst P|I                   (P|Info))
-    (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun P|Info ()
+        @doc "Returns policy metadata key from DALOS policy module."
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info))
+    )
     (defun P|UR:guard (policy-name:string)
+        @doc "Reads one policy guard by policy name."
         (at "policy" (read P|T policy-name ["policy"]))
     )
     (defun P|UR_IMP:[guard] ()
+        @doc "Reads imported policy guards list."
         (at "m-policies" (read P|MT P|I ["m-policies"]))
     )
     (defun P|A_Add (policy-name:string policy-guard:guard)
+        @doc "Writes or updates one local policy guard entry."
         (with-capability (GOV|ANK_ADMIN)
             (write P|T policy-name
                 {"policy" : policy-guard}
@@ -74,6 +95,7 @@
         )
     )
     (defun P|A_AddIMP (policy-guard:guard)
+        @doc "Appends one imported policy guard entry."
         (with-capability (GOV|ANK_ADMIN)
             (let
                 (
@@ -91,6 +113,7 @@
         )
     )
     (defun P|A_Define ()
+        @doc "Registers ANK secure caller guard in DALOS policies."
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
@@ -100,6 +123,7 @@
         )
     )
     (defun UEV_IMC ()
+        @doc "Enforces that caller matches an imported policy guard."
         (let
             (
                 (ref-U|G:module{OuronetGuardsV1} U|G)
@@ -151,7 +175,6 @@
         anchor-senary:string        ;;[M]   6th Asset Anchor
         anchor-septenary:string     ;;[M]   7th Asset Anchor
         ;;
-        class-name:string           ;;[.]   Class name used to derive class-id
         class-active:bool           ;;[M]   Stores if class is active
         ;;
         anchors:integer             ;;[M]   Stores number of active anchors in this class (0 to 7)
@@ -202,7 +225,10 @@
     ;;
     (deftable ANK|T|Anchors:{ANK|UserSchema})                   ;;Key = <Ouronet-Account> | <Anchor-ID>
     ;;{3}
-    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defun CT_Bar ()
+        @doc "Returns CT_BAR constant."
+        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR))
+    )
     (defconst BAR                   (CT_Bar))
     (defconst E-ANK
         {"promile"                  : 0.0
@@ -419,10 +445,12 @@
     ;;<=======>
     ;;FUNCTIONS
     (defun UC_UserAnchor:string 
+        @doc "Builds user-anchor composite key."
         (account:string anchor-id:string)
         (concat [account BAR anchor-id])
     )
     (defun UC_AssetAnchorClassesTable (ank-fungibility:[bool])
+        @doc "Resolves asset-class summary table by fungibility."
         (if (= ank-fungibility [true true])
             ANK|T|TF|AnchorClasses
             (if (= ank-fungibility [false true])
@@ -432,6 +460,7 @@
         )
     )
     (defun UC_AnchorClassTable (ank-fungibility:[bool])
+        @doc "Resolves per-class table by fungibility."
         (if (= ank-fungibility [true true])
             ANK|T|TF|AnchorClass
             (if (= ank-fungibility [false true])
@@ -441,46 +470,71 @@
         )
     )
     (defun UC_AssetClassKey:string (asset-id:string class-id:string)
+        @doc "Builds asset-class composite key."
         (concat [asset-id BAR class-id])
     )
     ;;{F0}  [UR]
-    ;;[1] - <ANK|T|Anchor>
+    ;; Reads follow deftable order in SCHEMAS-TABLES-CONSTANTS / {2}:
+    ;; Policy P|T, P|MT — not ANK rows; use P|Info, P|UR, P|UR_IMP above.
+    ;;
+    ;; [1] ANK|T|Anchor  (ANK|Schema)  Key = <Anchor-ID>
+    ;; Core row: UR_Anchor
     (defun UR_Anchor:object{ANK|Schema} (anchor-id:string)
+        @doc "Reads full anchor definition row from ANK|T|Anchor."
         (read ANK|T|Anchor anchor-id)
     )
     (defun UR_AnchoredAsset:string (anchor-id:string)
+        @doc "Reads anchored asset id from anchor row."
         (at "ank-asset" (read ANK|T|Anchor anchor-id ["ank-asset"]))
     )
     (defun UR_AnchorFungibility:[bool] (anchor-id:string)
+        @doc "Reads anchor fungibility marker."
         (at "ank-fungibility" (read ANK|T|Anchor anchor-id ["ank-fungibility"]))
     )
     (defun UR_AnchorPrecision:decimal (anchor-id:string)
+        @doc "Reads anchor precision as decimal."
         (at "ank-precision" (read ANK|T|Anchor anchor-id ["ank-precision"]))
     )
     (defun UR_AnchorState:bool (anchor-id:string)
+        @doc "Reads anchor active flag."
         (at "ank-active" (read ANK|T|Anchor anchor-id ["ank-active"]))
     )
     (defun UR_AnchorPromile:decimal (anchor-id:string)
+        @doc "Reads anchor promile value."
         (at "ank-promile" (read ANK|T|Anchor anchor-id ["ank-promile"]))
     )
     ;;
     (defun UR_TF|AnchorAmount:decimal (anchor-id:string)
+        @doc "Reads DPTF amount for TF anchor."
         (at "dptf-amount" (read ANK|T|Anchor anchor-id ["dptf-amount"]))
     )
     (defun UR_SF|AnchorNonce:integer (anchor-id:string)
+        @doc "Reads DPSF nonce for SF anchor."
         (at "dpsf-nonce" (read ANK|T|Anchor anchor-id ["dpsf-nonce"]))
     )
     (defun UR_NF|AnchorTraitKey:string (anchor-id:string)
+        @doc "Reads DPNF trait key for NF anchor."
         (at "dpnf-trait-key" (read ANK|T|Anchor anchor-id ["dpnf-trait-key"]))
     )
     (defun UR_NF|AnchorTraitValue:string (anchor-id:string)
+        @doc "Reads DPNF trait value for NF anchor."
         (at "dpnf-trait-value" (read ANK|T|Anchor anchor-id ["dpnf-trait-value"]))
     )
     (defun UR_AnchorID:string (anchor-id:string)
+        @doc "Reads anchor-id field from anchor row."
         (at "anchor-id" (UR_Anchor anchor-id))
     )
-    ;;2] - <ANK|T|TF|AnchorClasses>|<ANK|T|SF|AnchorClasses>|<ANK|T|NF|AnchorClasses>
+    (defun UR_AnchorAnkClass:string (anchor-id:string)
+        @doc "Reads bound anchor-class-id (ank-class) from the anchor row."
+        (at "ank-class" (read ANK|T|Anchor anchor-id ["ank-class"]))
+    )
+    ;;
+    ;; [2] ANK|T|TF|AnchorClasses | ANK|T|SF|AnchorClasses | ANK|T|NF|AnchorClasses
+    ;;     (ANK|AssetAnchorClasses)  Key = <DPTF-ID>|<DPSF-ID>|<DPNF-ID>
+    ;; Core row: UR_TF|AnchorClasses / UR_SF|AnchorClasses / UR_NF|AnchorClasses
+    ;; Dispatch: UR_AssetAnchorClassesData
     (defun UR_AssetAnchorClassesData:object{ANK|AssetAnchorClasses} (ank-asset:string ank-fungibility:[bool])
+        @doc "Reads asset class-summary row by asset and fungibility."
         (UEV_AnkFungibility ank-fungibility)
         (if (= ank-fungibility [true true])
             (UR_TF|AnchorClasses ank-asset)
@@ -491,6 +545,7 @@
         )
     )
     (defun UR_TF|AnchorClasses:object{ANK|AssetAnchorClasses} (dptf-id:string)
+        @doc "Core read: TF asset class-summary row from ANK|T|TF|AnchorClasses (default empty)."
         (with-default-read ANK|T|TF|AnchorClasses dptf-id
             (UDC_AssetAnchorClasses BAR BAR BAR BAR BAR BAR BAR 0 0 dptf-id)
             {"class-primary"        := c1
@@ -507,6 +562,7 @@
         )
     )
     (defun UR_SF|AnchorClasses:object{ANK|AssetAnchorClasses} (dpsf-id:string)
+        @doc "Core read: SF asset class-summary row from ANK|T|SF|AnchorClasses (default empty)."
         (with-default-read ANK|T|SF|AnchorClasses dpsf-id
             (UDC_AssetAnchorClasses BAR BAR BAR BAR BAR BAR BAR 0 0 dpsf-id)
             {"class-primary"        := c1
@@ -523,6 +579,7 @@
         )
     )
     (defun UR_NF|AnchorClasses:object{ANK|AssetAnchorClasses} (dpnf-id:string)
+        @doc "Core read: NF asset class-summary row from ANK|T|NF|AnchorClasses (default empty)."
         (with-default-read ANK|T|NF|AnchorClasses dpnf-id
             (UDC_AssetAnchorClasses BAR BAR BAR BAR BAR BAR BAR 0 0 dpnf-id)
             {"class-primary"        := c1
@@ -538,15 +595,28 @@
             (UDC_AssetAnchorClasses c1 c2 c3 c4 c5 c6 c7 cs a id)
         )
     )
+    (defun UR_ANK|AssetClassesCount:integer (input:object{ANK|AssetAnchorClasses})
+        @doc "Reads classes count from an asset class-summary object."
+        (at "classes" input)
+    )
+    (defun UR_ANK|AssetAnchorsTotal:integer (input:object{ANK|AssetAnchorClasses})
+        @doc "Reads total anchors count from an asset class-summary object."
+        (at "anchors" input)
+    )
+    ;;
+    ;; [3] ANK|T|TF|AnchorClass | ANK|T|SF|AnchorClass | ANK|T|NF|AnchorClass
+    ;;     (ANK|AnchorClass)  Key = <Asset-ID> | <Class-ID>
+    ;; Core row: UR_AssetAnchorClass (alias UR_AnchorClass)
     (defun UR_AssetAnchorClass:object{ANK|AnchorClass}
         (asset-id:string ank-fungibility:[bool] class-id:string)
+        @doc "Core read: one anchor-class row (up to seven anchor slots per class)."
         (let
             (
                 (table-ref (UC_AnchorClassTable ank-fungibility))
                 (class-key:string (UC_AssetClassKey asset-id class-id))
             )
             (with-default-read table-ref class-key
-                (UDC_AnchorClass BAR BAR BAR BAR BAR BAR BAR BAR false 0 asset-id class-id)
+                (UDC_AnchorClass BAR BAR BAR BAR BAR BAR BAR false 0 asset-id class-id)
                 {"anchor-primary"       := a1
                 ,"anchor-secondary"     := a2
                 ,"anchor-tertiary"      := a3
@@ -554,44 +624,68 @@
                 ,"anchor-quinary"       := a5
                 ,"anchor-senary"        := a6
                 ,"anchor-septenary"     := a7
-                ,"class-name"           := cn
                 ,"class-active"         := ca
                 ,"anchors"              := a
                 ,"asset-id"             := id
                 ,"class-id"             := cid}
-                (UDC_AnchorClass a1 a2 a3 a4 a5 a6 a7 cn ca a id cid)
+                (UDC_AnchorClass a1 a2 a3 a4 a5 a6 a7 ca a id cid)
             )
         )
     )
+    (defun UR_AnchorClass:object{ANK|AnchorClass}
+        (asset-id:string ank-fungibility:[bool] class-id:string)
+        @doc "Alias for UR_AssetAnchorClass; full ANK|AnchorClass row from ANK|T|*|AnchorClass."
+        (UR_AssetAnchorClass asset-id ank-fungibility class-id)
+    )
+    (defun UR_ANK|ClassActive:bool (input:object{ANK|AnchorClass})
+        @doc "Reads class-active from an anchor-class row object."
+        (at "class-active" input)
+    )
+    (defun UR_ANK|RowClassId:string (input:object{ANK|AnchorClass})
+        @doc "Reads class-id from an anchor-class row object."
+        (at "class-id" input)
+    )
     (defun UR_ANK|First:string (input:object{ANK|AnchorClass})
+        @doc "Reads first anchor-id in class row."
         (at "anchor-primary" input)
     )
     (defun UR_ANK|Second:string (input:object{ANK|AnchorClass})
+        @doc "Reads second anchor-id in class row."
         (at "anchor-secondary" input)
     )
     (defun UR_ANK|Third:string (input:object{ANK|AnchorClass})
+        @doc "Reads third anchor-id in class row."
         (at "anchor-tertiary" input)
     )
     (defun UR_ANK|Fourth:string (input:object{ANK|AnchorClass})
+        @doc "Reads fourth anchor-id in class row."
         (at "anchor-quaternary" input)
     )
     (defun UR_ANK|Fifth:string (input:object{ANK|AnchorClass})
+        @doc "Reads fifth anchor-id in class row."
         (at "anchor-quinary" input)
     )
     (defun UR_ANK|Sixth:string (input:object{ANK|AnchorClass})
+        @doc "Reads sixth anchor-id in class row."
         (at "anchor-senary" input)
     )
     (defun UR_ANK|Seventh:string (input:object{ANK|AnchorClass})
+        @doc "Reads seventh anchor-id in class row."
         (at "anchor-septenary" input)
     )
     (defun UR_ANK|Quantity:integer (input:object{ANK|AnchorClass})
+        @doc "Reads active anchor count in class row."
         (at "anchors" input)
     )
     (defun UR_AssetAnchorClassAssetID:string (input:object{ANK|AnchorClass})
+        @doc "Reads asset-id from class row."
         (at "asset-id" input)
     )
-    ;;4] - <ANK|T|Anchors>
+    ;;
+    ;; [4] ANK|T|Anchors  (ANK|UserSchema)  Key = <Ouronet-Account> | <Anchor-ID>
+    ;; Core row: UR_UserAnchor
     (defun UR_UserAnchor:object{ANK|UserSchema} (account:string anchor-id:string)
+        @doc "Core read: user cumulative promile row for account x anchor."
         (with-default-read ANK|T|Anchors (UC_UserAnchor account anchor-id)
             (UDC_AccountAnchor 0.0 BAR BAR)
             {"promile"                  := p
@@ -601,12 +695,15 @@
         )
     )
     (defun UR_UserAnchorPromile:decimal (account:string anchor-id:string)
+        @doc "Reads promile from user-anchor row."
         (at "promile" (UR_UserAnchor account anchor-id))
     )
     (defun UR_UserAnchorAccount:string (account:string anchor-id:string)
+        @doc "Reads account id from user-anchor row."
         (at "ouronet-account" (UR_UserAnchor account anchor-id))
     )
     (defun UR_UserAnchorID:string (account:string anchor-id:string)
+        @doc "Reads anchor id from user-anchor row."
         (at "anchor-id" (UR_UserAnchor account anchor-id))
     )
     ;;
@@ -628,6 +725,7 @@
         )
     )
     (defun URC_SemiFungibleAnchorPromile:decimal
+        @doc "Computes SF anchor promile from nonce equality model."
         (account:string anchor-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
         (let
             (
@@ -654,6 +752,7 @@
         )
     )
     (defun URC_NonFungibleAnchorPromile:decimal
+        @doc "Computes NF anchor promile from trait key/value model."
         (account:string anchor-id:string nonces:[integer] direction:bool)
         (let
             (
@@ -710,6 +809,7 @@
     )
     ;;{F2}  [UEV]
     (defun UEV_AnkFungibility (ank-fungibility:[bool])
+        @doc "Validates fungibility tuple is one supported anchor class."
         (let
             (
                 (l:integer (length ank-fungibility))
@@ -734,6 +834,7 @@
         )
     )
     (defun UEV_AnchorClassSlot (anchor-class-slot:string)
+        @doc "Validates class slot name belongs to supported slots."
         (enforce
             (fold (or) false
                 [
@@ -750,6 +851,7 @@
         )
     )
     (defun UR_ANK|HasClass:bool (input:object{ANK|AssetAnchorClasses} class-id:string)
+        @doc "Checks if class-id exists in asset class-summary row."
         (fold (or) false
             [
                 (= (at "class-primary" input) class-id)
@@ -787,6 +889,7 @@
         )
     )
     (defun UEV_LiveAnchor (anchor-id:string)
+        @doc "Validates anchor exists and is active."
         (let
             (
                 (iz-anchor-active:bool (UR_AnchorState anchor-id))
@@ -796,6 +899,7 @@
     )
     ;;{F3}  [UDC]
     (defun UDC_RevokedAnchorClass:object{ANK|AnchorClass}
+        @doc "Builds class row after removing one anchor id."
         (anchors:object{ANK|AnchorClass} anchor-id:string)
         (let
             (
@@ -827,12 +931,13 @@
                 (lst-v2 (ref-U|LST::UC_AppL lst-v1 BAR))
             )
             (UDC_AnchorClass (at 0 lst-v2) (at 1 lst-v2) (at 2 lst-v2) (at 3 lst-v2)
-                (at 4 lst-v2) (at 5 lst-v2) (at 6 lst-v2) (at "class-name" anchors) (at "class-active" anchors) (- ank-qt 1) asset-id class-id
+                (at 4 lst-v2) (at 5 lst-v2) (at 6 lst-v2) (at "class-active" anchors) (- ank-qt 1) asset-id class-id
             )
         )
     )
     (defun UDC_AnchorClass:object{ANK|AnchorClass}
-        (a:string b:string c:string d:string e:string f:string g:string h:string ia:bool i:integer j:string k:string)
+        @doc "Constructs AnchorClass object (identity is class-id only; no stored display name)."
+        (a:string b:string c:string d:string e:string f:string g:string class-active:bool anchors:integer asset-id:string class-id:string)
         {"anchor-primary"       : a
         ,"anchor-secondary"     : b
         ,"anchor-tertiary"      : c
@@ -840,13 +945,13 @@
         ,"anchor-quinary"       : e
         ,"anchor-senary"        : f
         ,"anchor-septenary"     : g
-        ,"class-name"           : h
-        ,"class-active"         : ia
-        ,"anchors"              : i
-        ,"asset-id"             : j
-        ,"class-id"             : k}
+        ,"class-active"         : class-active
+        ,"anchors"              : anchors
+        ,"asset-id"             : asset-id
+        ,"class-id"             : class-id}
     )
     (defun UDC_AssetAnchorClasses:object{ANK|AssetAnchorClasses}
+        @doc "Constructs AssetAnchorClasses object."
         (c1:string c2:string c3:string c4:string c5:string c6:string c7:string c:integer a:integer id:string)
         {"class-primary"        : c1
         ,"class-secondary"      : c2
@@ -860,6 +965,7 @@
         ,"asset-id"             : id}
     )
     (defun UDC_AddAssetClass:object{ANK|AssetAnchorClasses}
+        @doc "Adds class-id to first free class slot."
         (input:object{ANK|AssetAnchorClasses} class-id:string)
         (let
             (
@@ -896,6 +1002,7 @@
         )
     )
     (defun UDC_RemoveAssetClass:object{ANK|AssetAnchorClasses}
+        @doc "Removes class-id from slots and appends BAR."
         (input:object{ANK|AssetAnchorClasses} class-id:string)
         (let
             (
@@ -918,6 +1025,7 @@
         )
     )
     (defun UDC_SetAssetClassAnchorsAndCounts:object{ANK|AssetAnchorClasses}
+        @doc "Applies class-slot updates and adjusts class/anchor counters."
         (input:object{ANK|AssetAnchorClasses} class-id:string add-class:bool class-delta:integer anchor-delta:integer)
         (let
             (
@@ -943,24 +1051,26 @@
         )
     )
     (defun UDC_ClassWithAddedAnchor:object{ANK|AnchorClass}
+        @doc "Builds class row with one appended anchor id."
         (input:object{ANK|AnchorClass} anchor-id:string)
         (let
             (
                 (quantity:integer (UR_ANK|Quantity input))
             )
             (cond
-                ((= quantity 0) (UDC_AnchorClass anchor-id BAR BAR BAR BAR BAR BAR (at "class-name" input) (at "class-active" input) 1 (at "asset-id" input) (at "class-id" input)))
-                ((= quantity 1) (UDC_AnchorClass (UR_ANK|First input) anchor-id BAR BAR BAR BAR BAR (at "class-name" input) (at "class-active" input) 2 (at "asset-id" input) (at "class-id" input)))
-                ((= quantity 2) (UDC_AnchorClass (UR_ANK|First input) (UR_ANK|Second input) anchor-id BAR BAR BAR BAR (at "class-name" input) (at "class-active" input) 3 (at "asset-id" input) (at "class-id" input)))
-                ((= quantity 3) (UDC_AnchorClass (UR_ANK|First input) (UR_ANK|Second input) (UR_ANK|Third input) anchor-id BAR BAR BAR (at "class-name" input) (at "class-active" input) 4 (at "asset-id" input) (at "class-id" input)))
-                ((= quantity 4) (UDC_AnchorClass (UR_ANK|First input) (UR_ANK|Second input) (UR_ANK|Third input) (UR_ANK|Fourth input) anchor-id BAR BAR (at "class-name" input) (at "class-active" input) 5 (at "asset-id" input) (at "class-id" input)))
-                ((= quantity 5) (UDC_AnchorClass (UR_ANK|First input) (UR_ANK|Second input) (UR_ANK|Third input) (UR_ANK|Fourth input) (UR_ANK|Fifth input) anchor-id BAR (at "class-name" input) (at "class-active" input) 6 (at "asset-id" input) (at "class-id" input)))
-                ((= quantity 6) (UDC_AnchorClass (UR_ANK|First input) (UR_ANK|Second input) (UR_ANK|Third input) (UR_ANK|Fourth input) (UR_ANK|Fifth input) (UR_ANK|Sixth input) anchor-id (at "class-name" input) (at "class-active" input) 7 (at "asset-id" input) (at "class-id" input)))
+                ((= quantity 0) (UDC_AnchorClass anchor-id BAR BAR BAR BAR BAR BAR (at "class-active" input) 1 (at "asset-id" input) (at "class-id" input)))
+                ((= quantity 1) (UDC_AnchorClass (UR_ANK|First input) anchor-id BAR BAR BAR BAR BAR (at "class-active" input) 2 (at "asset-id" input) (at "class-id" input)))
+                ((= quantity 2) (UDC_AnchorClass (UR_ANK|First input) (UR_ANK|Second input) anchor-id BAR BAR BAR BAR (at "class-active" input) 3 (at "asset-id" input) (at "class-id" input)))
+                ((= quantity 3) (UDC_AnchorClass (UR_ANK|First input) (UR_ANK|Second input) (UR_ANK|Third input) anchor-id BAR BAR BAR (at "class-active" input) 4 (at "asset-id" input) (at "class-id" input)))
+                ((= quantity 4) (UDC_AnchorClass (UR_ANK|First input) (UR_ANK|Second input) (UR_ANK|Third input) (UR_ANK|Fourth input) anchor-id BAR BAR (at "class-active" input) 5 (at "asset-id" input) (at "class-id" input)))
+                ((= quantity 5) (UDC_AnchorClass (UR_ANK|First input) (UR_ANK|Second input) (UR_ANK|Third input) (UR_ANK|Fourth input) (UR_ANK|Fifth input) anchor-id BAR (at "class-active" input) 6 (at "asset-id" input) (at "class-id" input)))
+                ((= quantity 6) (UDC_AnchorClass (UR_ANK|First input) (UR_ANK|Second input) (UR_ANK|Third input) (UR_ANK|Fourth input) (UR_ANK|Fifth input) (UR_ANK|Sixth input) anchor-id (at "class-active" input) 7 (at "asset-id" input) (at "class-id" input)))
                 input
             )
         )
     )
     (defun UDC_AccountAnchor:object{ANK|UserSchema}
+        @doc "Constructs user-anchor contribution object."
         (a:decimal b:string c:string)
         {"promile"              : a
         ,"ouronet-account"      : b
@@ -1177,6 +1287,7 @@
         )
     )
     (defun C_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator}
+        @doc "Revokes an anchor and updates its class linkage tables."
         (anchor-id:string)
         ;;
         (UEV_IMC)
@@ -1228,9 +1339,9 @@
                 (class-table-ref (UC_AnchorClassTable ank-fungibility))
                 (asset-table-ref (UC_AssetAnchorClassesTable ank-fungibility))
             )
-            ;;3]Insert empty active class row
+            ;;3]Insert empty active class row (identity is class-id only)
             (insert class-table-ref class-key
-                (UDC_AnchorClass BAR BAR BAR BAR BAR BAR BAR class-name true 0 asset-id class-id)
+                (UDC_AnchorClass BAR BAR BAR BAR BAR BAR BAR true 0 asset-id class-id)
             )
             ;;4]Link class-id into first free class slot and increment classes count
             (write asset-table-ref asset-id
@@ -1291,8 +1402,8 @@
             (write class-table-ref class-key revoked-class)
             (write asset-table-ref ank-asset
                 (if class-now-empty
-                    (UDC_SetAssetClassAnchorsAndCounts asset-classes class-key false 0 -1)
-                    (UDC_SetAssetClassAnchorsAndCounts asset-classes class-key false 0 -1)
+                    (UDC_SetAssetClassAnchorsAndCounts asset-classes ank-class false 0 -1)
+                    (UDC_SetAssetClassAnchorsAndCounts asset-classes ank-class false 0 -1)
                 )
             )
         )
