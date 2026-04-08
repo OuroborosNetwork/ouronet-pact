@@ -90,7 +90,7 @@
     )
     [
         (ref-ANK::UR_AssetAnchorClassesData ouro-id [true true])
-        (ref-ANK::UR_AssetAnchorClass ouro-id [true true] core-class-id)
+        (ref-ANK::UR_AnchorClass ouro-id [true true] core-class-id)
         (ref-ANK::UR_Anchor "TFAnchorAa-98c486052a51")
     ]
 )

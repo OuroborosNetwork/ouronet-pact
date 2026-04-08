@@ -1,6 +1,6 @@
 # Ouronet — accumulated context
 
-_Last updated: 2026-04-07_
+_Last updated: 2026-04-08_
 
 ## What Ouronet is
 
@@ -75,7 +75,7 @@ Repository layout mirrors this: **`1_SOVEREIGN/`** and **`2_SLAVE/`**, each with
 
 ### Module structure, function prefixes, and Talos
 
-Sovereign code follows a fixed **layout and naming system**: Stage‑1 **utilities** (`U|CT`, `U|G`, `U|LST`, …), **core** modules with **policy tables** up front, capability bands **C1–C4**, then **unprotected** helpers (**UC**, **UR**, **URC**, **UEV**, **UDC**, **CAP**) and **protected** entrypoints (**A_** admin, **C_** client, **X**/XI/XE/XB). Because of deploy size limits, modules depend on **earlier** deploys and use **interface-heavy** APIs (version bumps cascade refactors). **Talos** modules are the only intended place to chain **A_**/**C_** for users, enforce **IGNIS** gas collection after **C_** paths, and match **gas-station** payout rules. Full detail: **`OuronetInformational/MODULE_ARCHITECTURE.md`**; sample layout: **`0_Sample/C0s>>01|01_ModuleSample.pact`**.
+Sovereign code follows a fixed **layout and naming system**: Stage‑1 **utilities** (`U|CT`, `U|G`, `U|LST`, …), **core** modules with **policy tables** up front, capability bands **C1–C4**, then **unprotected** helpers (**UC**, **UR**, **URC**, **UEV**, **UDC**, **CAP**) and **protected** entrypoints (**A_** admin, **C_** client, **X**/XI/XE/XB). Because of deploy size limits, modules depend on **earlier** deploys and use **interface-heavy** APIs (version bumps cascade refactors). **Talos** modules are the only intended place to chain **A_**/**C_** for users, enforce **IGNIS** gas collection after **C_** paths, and match **gas-station** payout rules. Full detail: **`OuronetInformational/MODULE_ARCHITECTURE.md`**; sample layout: **`0_Sample/C0s>>01|01_ModuleSample.pact`**. For **greenfield features**, that doc also defines the workflow: schema → client API intent → **`UR_*`** (grouped like schemas, ordered like schema keys) → implement each **`C_`** path with caps and **`X_*`**, adding **`URC`**/**`UEV`** as needed per path.
 
 ### DPMF historical note
 

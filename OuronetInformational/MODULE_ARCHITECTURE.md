@@ -43,6 +43,9 @@ Code readability is a hard requirement, not a cosmetic preference.
 - Preserve existing layout patterns in sovereign modules (section bars, block comments, grouped `let` bindings, aligned multi-line arguments).
 - Prefer small structural edits that **do not churn formatting** unrelated to the behavioral change.
 - New code should match nearby style in the same file so the module does not become visually mixed.
+- Prefer **`let`** when a bound name is **used more than once**; if each binding is used **only once**, **inline** the expression (common with **`with-default-read (UC_*Table …) (UC_*Key …)`**). Avoid duplicate **`defun`** names that differ only as aliases to the same implementation.
+- **`@doc` placement:** Put **`@doc "..."` immediately after the function’s **parameter list** (including when parameters are on following lines), before the body. Do not place **`@doc`** between the function name and the parameter **`(`** list.
+- **Evented `defcap`:** If a capability uses **`@event`**, order metadata as **`@doc`** first, then **`@event`**, then the capability body (required for Pact).
 
 ## Unprotected utility prefixes (callable without capability gates)
 
@@ -85,3 +88,24 @@ When we add modules or functions together, we will:
 2. Place new code in the right **section** (schemas → caps by C1–C4 → FUNCTIONS with **UC** first, etc.).
 3. Name with the correct **prefix** (**UC / UR / URC / UEV / UDC / CAP / A_ / C_ / X***).
 4. Register **Talos** sequences and **policy** guards where inter-module or client access requires it.
+
+## UR helpers: schema order and field order
+
+**Group order:** **`UR_*`** definitions are grouped in **the same order as the schema definitions** in the module (first declared schema → first UR block, second schema → second block, and so on). Table / `deftable` blocks in source should stay aligned with that same ordering so reads stay easy to navigate.
+
+**Within each group:** define **`UR_*` in an order that mirrors the schema keys** (row fields): e.g. full-row reader first when you have one, then per-field readers following the **field order in the `defschema`**, then any helpers that take an **object** of that schema type (aggregates, predicates on the row object). Example reference: **`1_SOVEREIGN/STAGE_02/2_Core/03_AQP/01_ANK.pact`** — `{F0} [UR]` blocks labeled `[1]`…`[4]` for **`ANK|Schema`**, **`ANK|AnchorClass`**, **`ANK|AssetAnchorClasses`**, **`ANK|UserSchema`**.
+
+**Per-field `UR_*` take table keys, not row objects:** Field-level readers use the **same key components** as the full-row read (e.g. **`anchor-id`** for **`ANK|T|Anchor`**; **`asset-id`**, **`asset-fungibility`**, **`class-id`** for per-class rows — **`asset-fungibility`** names the TF/SF/NF discriminator for **`UC_*Table`**, distinct from **`ank-fungibility`** as the field name on the anchor definition row). **`UDC_*`** may still assemble **`object{…}`** values; **`UR_*`** stay keyed reads unless the schema group is intentionally object-only (e.g. in-memory summary).
+
+**Multi-table dispatch (same schema):** When one **`UR_*`** chooses among several tables but returns the **same object type** (e.g. fungibility → TF vs SF vs NF), prefer a **single entry `UR_*`** whose body uses **`with-default-read (UC_*Table discriminator) row-key ...`** when a **`UC_*Table`** resolver already exists — no need for a separate **`let`** binding unless the table ref is reused. Same idea as variable table polling in **`02_DPDC.pact`** (search **`tbl`**); there **`let`** is used when **`tbl`** appears multiple times. That avoids three copy-pasted **`UR_*`** that only differ by table name. Put that **entry reader first** in the UR block for that schema; only split into separate per-table **`UR_*`** when the read logic actually diverges. If you do keep per-table helpers, list the **dispatch** reader above them (see earlier note).
+
+## Greenfield feature workflow (schemas → clients → UR → implementation)
+
+When adding a new slice of behavior (new or extended schemas, tables, and client entrypoints), use this **sequence**. Future module work should follow it unless a task explicitly says otherwise.
+
+1. **Decide on the schema** — Fix **`defschema`** shapes, keys, and **`deftable`** layout; keep schema and table declaration order consistent with how you want UR grouped later.
+2. **Decide on the client functions** — Name and specify **`C_`** outcomes (and which policies / Talos flows will call them). This is the intended **surface**, not implementation yet.
+3. **Populate the UR reading functions** — Implement **`UR_*`** grouped by schema/table, **field order inside each group** as above (including **multi-table reads**: **`with-default-read (UC_*Table …) …`** when tables share the same row shape — see preceding subsection). Add branching readers where the domain requires them.
+4. **Create the client functions one at a time** — For **each** **`C_`** (or protected **`X`** path you add), implement it **end-to-end** for that function: **defcap** / capability wiring, **`X_`** / **XI** / **XE** / **XB** as needed, **`UDC`** for persisted objects, and **`URC`** / **`UEV`** **as they become required** by that path. Do **not** front-load all **`URC`**/**`UEV`** before the client code; they are introduced **alongside** the client and cap layers as each flow needs them.
+
+Steps 1–3 establish **data shape and reads**; step 4 layers **writes, validation, and capabilities** incrementally so dependencies stay honest.
