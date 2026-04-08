@@ -7,6 +7,7 @@ This file ties **`OuronetInformational/ARCHITECTURE/`** to **external-facing** d
 1. **Executive summary** — What Ouronet is (virtual chain on Pact, IGNIS, Talos, stages).
 2. **Architecture** — Utilities → Core → Talos; policy spine; deploy-order constraints.
 3. **Stage 1** — Account model (DALOS), tokens (DPTF/DPMF/DPOF), liquidity (SWP*), autostake (ATS), vesting (VST), IGNIS.
+   - Historical mapping: `DPMF` is legacy MetaFungible retained for migration/history; `DPOF` (OrtoFungible) is the active path used for live metadata-rich fungibles.
 4. **Stage 2** — Collectables (DPDC sharded modules), DemiPad ecosystem, AQP, INFO-TWO.
 5. **Security model** — Capabilities C1–C4 naming, `P|TS` / GAP, inter-module policy guards, why `C_` is Talos-only.
 6. **Economics** — IGNIS cumulators, native KDA hooks where applicable, gas station (conceptual).

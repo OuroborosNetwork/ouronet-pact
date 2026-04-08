@@ -33,11 +33,11 @@ Deploy order in production follows dependency edges (earlier modules first). **U
 | Path | Module | Role (summary) |
 |------|--------|----------------|
 | `01_DALOS.pact` | `DALOS` | **Account registry**, KDA mapping, GAP, pricing, smart accounts; hub for many policies |
-| `00_DPMF.pact` | `DPMF` | **Demiourgos Pact Meta Fungible** — shared infra for fungible families |
+| `00_DPMF.pact` | `DPMF` | **Demiourgos Pact Meta Fungible** (legacy) — retained for historical/migration context, not the active live meta-token path |
 | `03_INFO-ZERO.pact` | `INFO-ZERO` | Early **client-info** / primordial read layer for Talos |
 | `04_BRD.pact` | `BRD` | **Branding** registry and updates |
 | `05_DPTF.pact` | `DPTF` | **True fungible** token (balances, roles, transfers) |
-| `06_DPOF.pact` | `DPOF` | **Orto fungible** (batch metadata) |
+| `06_DPOF.pact` | `DPOF` | **Orto fungible** (batch metadata) — active live path for meta-token style assets |
 | `07_ELITE.pact` | `ELITE` | **Elite** tier mechanics |
 | `09_TFT.pact` | `TFT` | **True fungible transfer** orchestration / cross-token paths |
 | `08_ATS.pact` | `ATS` | **Autostake** pools |
@@ -68,7 +68,8 @@ Deploy order in production follows dependency edges (earlier modules first). **U
 ## Intricacies (how Stage 1 fits together)
 
 1. **DALOS** holds account truth; **IGNIS** prices operations via cumulators; **Talos** wraps domain `C_` with `P|TS` (GAP) and `IGNIS::C_Collect` where applicable.
-2. **DPTF / DPMF / DPOF** separate true fungible, meta framework, and orto fungible concerns under deploy limits.
+2. **DPTF / DPMF / DPOF** separate true fungible, legacy meta framework, and active orto fungible concerns under deploy limits.
+3. `DPMF` remains in-tree for historical traceability; `DPOF` is the module used for live network metadata-rich fungible behavior.
 3. **SWP*** modules split swapper into trace, pool, issue, liquidity, usage, and matrix layers.
 4. **INFO-ZERO / INFO-ONE** lift signer and account constraints into structured objects consumed by Talos before calling core `C_`.
 

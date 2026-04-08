@@ -103,7 +103,9 @@ Stage 2 aggregate prefix totals from scan (file-level, with caveat on co-located
 |--------|------------------|
 | Accounts/governance/policy | `DALOS`, `OuronetPolicyV1` implementers, Talos policy defs |
 | Gas economics / IGNIS | `IGNIS`, Talos wrappers |
-| Fungibles (true/meta/orto) | `DPTF`, `DPMF`, `DPOF`, `TFT` |
+| Fungibles (true/meta/orto) | `DPTF`, `DPMF` (legacy), `DPOF` (active), `TFT` |
+
+> Note: `DPMF` is preserved for historical/migration purposes. The active live-network path for metadata-rich fungible ("meta-token") behavior is `DPOF` (OrtoFungible).
 | Autostake / vesting / liquid | `ATS`, `ATSU`, `VST`, `LIQUID`, `OUROBOROS` |
 | Swapper stack | `SWPT`, `SWP`, `SWPI`, `SWPL`, `SWPLC`, `SWPU`, `MTX-SWP` |
 | Collectables | `DPDC*`, `EQUITY` |
