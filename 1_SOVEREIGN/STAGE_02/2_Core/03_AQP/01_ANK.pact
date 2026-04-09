@@ -14,6 +14,8 @@
         (asset-id:string ank-fungibility:[bool] anchor-class-id:string)
     )
     (defun C_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} (anchor-id:string))
+    ;;
+    (defun UR_AnchorID:string (anchor-id:string))
 )
 (module AQP-ANK GOV
     ;;

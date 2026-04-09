@@ -260,6 +260,19 @@
             )
         )
     )
+    (defun AQP|C_EnableDebBoost:string (patron:string score-id:string)
+        @doc "Enables irreversible DEB boost on the score row. Medium IGNIS cost; no native STOA."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionPoolsScore} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron (ref-SCR::C_EnableDebBoost score-id))
+                (format "Successfully enabled DEB boost for score {}." [score-id])
+            )
+        )
+    )
     ;;{F7}  [X]
     ;;
 )

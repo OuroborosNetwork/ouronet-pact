@@ -70,6 +70,36 @@ These are **not** wrapped in admin/client locks; they are safe by construction (
 
 **A_** and **C_** are **locked inside** the module where they are defined: they are **not** meant as the normal public entry surface for integrators.
 
+## Client flows: `C_`, client `defcap`, and `XI` / `XE` / `XB` writes
+
+This is the **intended decomposition** for sovereign modules that expose **`C_`** entrypoints (see e.g. **`AQP-SCORE`**: **`SCR|XI>ISSUE-SCORE`** vs **`SCR|C>ISSUE-*`**, **`SCR|C>ROTATE-OWNERSHIP-SCORE`** / **`XI_RotateOwnership`**).
+
+| Layer | Responsibility |
+|--------|----------------|
+| **Client `defcap`** (often **`@event`**, may **`compose-capability`** a core cap or **`SECURE`**) | **All authorization and validation** for that operation: **`CAP_EnforceAccountOwnership`**, **`UEV_*`**, **`UEV_Fee`**, reads from tables, etc. **Boolean predicates** combined in **one** **`enforce`**: see **§ Combining boolean checks in one `enforce`** below (non-boolean / helper validations stay as separate calls before that block). |
+| **`XI` / `XB`** | **Database writes only** under **`require-capability`** on a cap that composes **`SECURE`** or a core cap (e.g. **`SCR|XI>ISSUE-SCORE`**). Validations live in the **client `defcap`**; **`XI`** does not re-validate. **Do not** return **`object{IgnisCollectorV1.OutputCumulator}`**. The **`defun`** body ends at **`insert` / `update` / `write`** (Pact’s native **`string`** return from those ops is incidental — **do not** add **`true`** or other sentinels). **`C_`** builds **IGNIS** cumulators and merges them when several **`X*`** run in one flow. |
+| **`XE`** | **Forward-module** entrypoints: **`UEV_IMC`**, then **`with-capability (…\|XE>…)`** **inside** the **`defun`**. The **`defcap`** holds checks local to **this** module + deployed deps (e.g. **`AQP-SCORE`** link caps). The **caller** adds domain rules **before** **`XE_*`**. Body = **write only**; **no** **`OutputCumulator`** return — the **forward module’s `C_`** composes IGNIS. |
+| **`C_`** | **Wiring + billing shape**: **`UEV_IMC`**, **`with-capability (ClientCap …)`**, one or more **`XI`/`XE`/`XB`** calls, optional **STOA** / **`KDA|C_Collect`**, then **`IGNIS::UDC_*`** / **`UDC_ConstructOutputCumulator`** as needed so the **returned** **`OutputCumulator`** reflects the whole operation. |
+
+**Several writes:** If one user operation must touch **multiple tables** or **distinct write sites**, use **multiple** **`XI`** or **`XB`** functions (one focused write path each, or a clear split), composed from the same or different capabilities as the domain requires — do not cram unrelated persistence into a single **`XI`** when the caps and auditing should stay separable.
+
+### Combining boolean checks in one `enforce`
+
+When several **boolean** conditions should share one failure path, use **one** **`enforce`**, choosing the combinator by **count**:
+
+| # of boolean conditions | Form |
+|-------------------------|------|
+| **1** | **`(enforce predicate "message")`** |
+| **2** | **`(enforce (and p q) "message")`** |
+| **3 or more** | **`(enforce (fold (and) true [p q r ...]) "message")`** |
+
+**`CAP_*`**, **`UEV_*`**, **`UEV_Fee`**, etc. stay **outside** that block when they are not plain booleans (same pattern as **`SCR|XI>ISSUE-SCORE`**: fee and ownership calls, then **`fold (and)`** for the numeric / enum predicates). Reference: **`1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact`** — **`SCR|XI>ISSUE-SCORE`** (six booleans → **`fold`**); **`SCR|C>ROTATE-OWNERSHIP-SCORE`** (two → **`and`**); **`SCR|C>CONTROL-SCORE`** (one → plain **`enforce`**).
+
+### Reference: **`AQP-SCORE`** link fields (`anchor-link`, `boost-link`, `aqpool-link`, `fvt-link`)
+
+- **Internal client path:** **`C_CreateAnchorLink` / `C_CreateBoostLink`** → **`SCR|C>CREATE-*`** (validations + **`compose-capability (SECURE)`**) → **`XI_Create*`** (**`require-capability (SECURE)`**, **`update`** only) → **`C_*`** calls **`UDC_BiggestCumulator`** on the pre-write owner. No native STOA on these links.
+- **Forward path:** **`XE_CreateAqpoolLink` / `XE_CreateFvtLink`** → **`UEV_IMC`**, **`with-capability (SCR|XE>CREATE-…)`**, **`update`** only; **`AQP` / `FVT`** (or Talos) supplies **IGNIS** **`OutputCumulator`** after **`XE_*`**. **`defcap`** enforces score ownership, link slot **`BAR`**, non-**`BAR`** target id; pool/FVT consistency stays in the caller. **`AcquisitionAnchors.UR_AnchorID`** proves anchor row exists for anchor-link (**`01_ANK.pact`** interface).
+
 ## Talos: the only supported client path and gas (IGNIS)
 
 **Talos modules** are where **A_** and **C_** are **composed** into **allowed sequences** (e.g. one module’s **C_** followed by another’s, or preceded/followed by admin-only steps). Consequences:
@@ -90,6 +120,8 @@ When we add modules or functions together, we will:
 4. Register **Talos** sequences and **policy** guards where inter-module or client access requires it.
 
 ## UR helpers: schema order and field order
+
+**No raw read outside `UR_*` (domain tables):** Capabilities, client functions, and other non-`UR_*` code must use the module's **`UR_*`** helpers for business **`deftable`** rows; **`read`** / **`at`**+**`read`** on those tables belongs only in **`UR_*`** bodies (typically the **`{F0} [UR]`** block). Per-field **`UR_*`** may keep **`(at "field" (read table key ["field"]))`** as the efficient pattern; they do not need to delegate through the full-row **`UR_*`** unless you want a single read path. Policy **`P|T`** / **`P|MT`** bootstrap reads follow each module's existing policy pattern.
 
 **Group order:** **`UR_*`** definitions are grouped in **the same order as the schema definitions** in the module (first declared schema → first UR block, second schema → second block, and so on). Table / `deftable` blocks in source should stay aligned with that same ordering so reads stay easy to navigate.
 

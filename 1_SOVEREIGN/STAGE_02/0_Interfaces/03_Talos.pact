@@ -325,4 +325,8 @@
     )
     (defun AQP|C_RevokeAnchor:string (patron:string anchor-id:string))
     (defun AQP|C_RevokeAnchorClass:string (patron:string asset-id:string ank-fungibility:[bool] anchor-class-id:string))
+    ;;
+    ;;  [AQP-SCORE]
+    ;;
+    (defun AQP|C_EnableDebBoost:string (patron:string score-id:string))
 )
