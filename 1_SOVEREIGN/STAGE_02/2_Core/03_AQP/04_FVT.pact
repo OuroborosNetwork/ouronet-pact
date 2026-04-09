@@ -1,6 +1,10 @@
-(module FVT GOV
+(interface AcquisitionFarmsVaultsTreasuriesV1
+    (defun GOV|Demiurgoi ())
+)
+(module AQP-FVT GOV
     ;;
     (implements OuronetPolicyV1)
+    (implements AcquisitionFarmsVaultsTreasuriesV1)
     ;(implements DemiourgosPactDigitalCollectibles-UtilityPrototype)
     ;;
     ;;<========>

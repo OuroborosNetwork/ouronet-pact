@@ -26,7 +26,7 @@
         (ouro-id:string "OURO-98c486052a51")
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-        (ref-ANK:module{AcquisitionAnchors} AQP-ANK)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (core-class-name:string "CoreBoostTFa")
         (core-class-id:string "CoreBoostTFa-98c486052a51")
         (split-kda:[decimal]
@@ -66,27 +66,27 @@
             }
         ]
     )
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAa" ouro-id true core-class-name 8 10.0 100.0)
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAb" ouro-id false core-class-id 8 11.0 110.0)
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAc" ouro-id false core-class-id 8 12.0 120.0)
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAd" ouro-id false core-class-id 8 13.0 130.0)
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAe" ouro-id false core-class-id 8 14.0 140.0)
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAf" ouro-id false core-class-id 8 15.0 150.0)
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorAg" ouro-id false core-class-id 8 16.0 160.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAa" ouro-id true core-class-name 8 10.0 100.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAb" ouro-id false core-class-id 8 11.0 110.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAc" ouro-id false core-class-id 8 12.0 120.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAd" ouro-id false core-class-id 8 13.0 130.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAe" ouro-id false core-class-id 8 14.0 140.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAf" ouro-id false core-class-id 8 15.0 150.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAg" ouro-id false core-class-id 8 16.0 160.0)
     (expect-failure
         "Class must reject 8th anchor slot"
-        (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFAnchorfailslot" ouro-id false core-class-id 8 99.0 990.0)
+        (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorfailslot" ouro-id false core-class-id 8 99.0 990.0)
     )
     ;; Fill remaining class slots (2..7) so asset reaches max 7 classes.
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassBa" ouro-id true "CoreBoostTFb" 8 21.0 210.0)
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassCa" ouro-id true "CoreBoostTFc" 8 22.0 220.0)
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassDa" ouro-id true "CoreBoostTFd" 8 23.0 230.0)
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassEa" ouro-id true "CoreBoostTFe" 8 24.0 240.0)
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassFa" ouro-id true "CoreBoostTFf" 8 25.0 250.0)
-    (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassGa" ouro-id true "CoreBoostTFg" 8 26.0 260.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassBa" ouro-id true "CoreBoostTFb" 8 21.0 210.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassCa" ouro-id true "CoreBoostTFc" 8 22.0 220.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassDa" ouro-id true "CoreBoostTFd" 8 23.0 230.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassEa" ouro-id true "CoreBoostTFe" 8 24.0 240.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassFa" ouro-id true "CoreBoostTFf" 8 25.0 250.0)
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassGa" ouro-id true "CoreBoostTFg" 8 26.0 260.0)
     (expect-failure
         "Asset must reject 8th class"
-        (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFclassfailcap" ouro-id true "CoreBoostTFh" 8 27.0 270.0)
+        (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassfailcap" ouro-id true "CoreBoostTFh" 8 27.0 270.0)
     )
     [
         (ref-ANK::UR_AssetAnchorClassesData ouro-id [true true])
@@ -113,7 +113,7 @@
         (ouro-id:string "OURO-98c486052a51")
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-        (ref-ANK:module{AcquisitionAnchors} AQP-ANK)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (temp-class-name:string "TempClassTF")
         (temp-class-id:string "TempClassTF-98c486052a51")
         (class07-id:string "CoreBoostTFg-98c486052a51")
@@ -156,15 +156,15 @@
     )
     [
         [
-            (ref-TS02-C3::AQP|C_RevokeAnchor patron "TFclassGa-98c486052a51")
-            (ref-TS02-C3::AQP|C_RevokeAnchorClass patron ouro-id [true true] class07-id)
-            (ref-TS02-C3::AQP|C_IssueTrueFungibleAnchor patron "TFTEMPaa" ouro-id true temp-class-name 8 40.0 400.0)
+            (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFclassGa-98c486052a51")
+            (ref-TS02-C3::AQP-ANK|C_RevokeAnchorClass patron ouro-id [true true] class07-id)
+            (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFTEMPaa" ouro-id true temp-class-name 8 40.0 400.0)
             (expect-failure
                 "Cannot revoke non-empty class"
-                (ref-TS02-C3::AQP|C_RevokeAnchorClass patron ouro-id [true true] temp-class-id)
+                (ref-TS02-C3::AQP-ANK|C_RevokeAnchorClass patron ouro-id [true true] temp-class-id)
             )
-            (ref-TS02-C3::AQP|C_RevokeAnchor patron "TFTEMPaa-98c486052a51")
-            (ref-TS02-C3::AQP|C_RevokeAnchorClass patron ouro-id [true true] temp-class-id)
+            (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFTEMPaa-98c486052a51")
+            (ref-TS02-C3::AQP-ANK|C_RevokeAnchorClass patron ouro-id [true true] temp-class-id)
         ]
         [
             (ref-ANK::UR_AssetAnchorClassesData ouro-id [true true])
@@ -190,7 +190,7 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-        (ref-ANK:module{AcquisitionAnchors} AQP-ANK)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (split-kda:[decimal]
             (ref-DALOS::URC_SplitKDAPrices
                 patron
@@ -231,11 +231,11 @@
     )
     [
         [
-            (ref-TS02-C3::AQP|C_IssueSemiFungibleAnchor patron "SFAnchoraa" "DHCD-98c486052a51" true "CoreBoostSF" 8 35.0 11)
-            (ref-TS02-C3::AQP|C_IssueSemiFungibleAnchor patron "SFAnchorab" "DHCD-98c486052a51" false "CoreBoostSF-98c486052a51" 8 37.0 9)
-            (ref-TS02-C3::AQP|C_IssueNonFungibleAnchor patron "NFAnchoraa" "KBN-98c486052a51" true "CoreBoostNF" 8 55.0 "Background" "Ouroboros Rain")
-            (ref-TS02-C3::AQP|C_IssueNonFungibleAnchor patron "NFAnchorab" "KBN-98c486052a51" false "CoreBoostNF-98c486052a51" 8 65.0 "Rarity" "Legendary")
-            (ref-TS02-C3::AQP|C_RevokeAnchor patron "NFAnchorab-98c486052a51")
+            (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SFAnchoraa" "DHCD-98c486052a51" true "CoreBoostSF" 8 35.0 11)
+            (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SFAnchorab" "DHCD-98c486052a51" false "CoreBoostSF-98c486052a51" 8 37.0 9)
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "NFAnchoraa" "KBN-98c486052a51" true "CoreBoostNF" 8 55.0 "Background" "Ouroboros Rain")
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "NFAnchorab" "KBN-98c486052a51" false "CoreBoostNF-98c486052a51" 8 65.0 "Rarity" "Legendary")
+            (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "NFAnchorab-98c486052a51")
         ]
         [
             (ref-ANK::UR_AssetAnchorClassesData "DHCD-98c486052a51" [false true])

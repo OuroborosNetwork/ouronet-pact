@@ -74,8 +74,8 @@
                 (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 (ref-P|ANK:module{OuronetPolicyV1} AQP-ANK)
                 (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
-                (ref-P|AQP:module{OuronetPolicyV1} AQP)
-                (ref-P|FVT:module{OuronetPolicyV1} FVT)
+                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
+                (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -128,7 +128,7 @@
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
-    (defun AQP|C_IssueTrueFungibleAnchor:string
+    (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
         (patron:string anchor-name:string dptf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
         @doc "Issues an Anchor with an underlying DPTF Asset. Anchors are used for percentual score boosting."
         (with-capability (P|TS)
@@ -136,7 +136,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchors} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-ANK::C_IssueTrueFungibleAnchor 
                             patron anchor-name dptf-id acnoi anchor-class-name-or-id anchor-precision anchor-promile dptf-amount
@@ -160,7 +160,7 @@
             )
         )
     )
-    (defun AQP|C_IssueSemiFungibleAnchor:string
+    (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
         (patron:string anchor-name:string dpsf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
         @doc "Issues an Anchor with an underlying DPSF Asset. Anchors are used for percentual score boosting."
         (with-capability (P|TS)
@@ -168,7 +168,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchors} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-ANK::C_IssueSemiFungibleAnchor 
                             patron anchor-name dpsf-id acnoi anchor-class-name-or-id anchor-precision anchor-promile dpsf-nonce
@@ -192,7 +192,7 @@
             )
         )
     )
-    (defun AQP|C_IssueNonFungibleAnchor:string
+    (defun AQP-ANK|C_IssueNonFungibleAnchor:string
         (patron:string anchor-name:string dpnf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
         @doc "Issues an Anchor with an underlying DPSF Asset. Anchors are used for percentual score boosting."
         (with-capability (P|TS)
@@ -200,7 +200,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-ANK:module{AcquisitionAnchors} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-ANK::C_IssueNonFungibleAnchor 
                             patron anchor-name dpnf-id acnoi anchor-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value
@@ -224,14 +224,14 @@
             )
         )
     )
-    (defun AQP|C_RevokeAnchorClass:string
+    (defun AQP-ANK|C_RevokeAnchorClass:string
         (patron:string asset-id:string ank-fungibility:[bool] anchor-class-id:string)
         @doc "Revokes an existing Anchor Class that has no active anchors."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchors} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-ANK::C_RevokeAnchorClass asset-id ank-fungibility anchor-class-id)
@@ -240,7 +240,7 @@
             )
         )
     )
-    (defun AQP|C_RevokeAnchor:string (patron:string anchor-id:string)
+    (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string)
         @doc "Revokes an existing Anchor, unbinding it from its underlying Asset \
             \ This frees an Anchor Spot from the possible maximum 7 that can exist for any given DPTF, DPSF or DPNF \
             \ To be used in case an existing Anchor has been issued incorrectly \
@@ -251,7 +251,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchors} AQP-ANK)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 )
                 (ref-IGNIS::C_Collect patron 
                     (ref-ANK::C_RevokeAnchor anchor-id)
@@ -260,16 +260,182 @@
             )
         )
     )
-    (defun AQP|C_EnableDebBoost:string (patron:string score-id:string)
+    (defun AQP-SCR|C_IssueLiquidityScore:string
+        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal mx-sleeping:decimal)
+        @doc "Issues score-class 0 (LP) in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-SCR::C_IssueLiquidityScore patron owner-konto score-name precision mx-frozen mx-sleeping)
+                )
+                (format "Successfully issued Liquidity Score {} for owner {}." [score-name owner-konto])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueTrueFungibleScore:string
+        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
+        @doc "Issues score-class 1 (DPTF) in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-SCR::C_IssueTrueFungibleScore patron owner-konto score-name precision mx-frozen)
+                )
+                (format "Successfully issued TrueFungible Score {} for owner {}." [score-name owner-konto])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueOrtoFungibleScore:string
+        (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
+        @doc "Issues score-class 2 (DPOF) in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-SCR::C_IssueOrtoFungibleScore patron owner-konto score-name precision mx-sleeping mx-hibernated)
+                )
+                (format "Successfully issued OrtoFungible Score {} for owner {}." [score-name owner-konto])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueSemiFungibleScore:string
+        (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
+        @doc "Issues score-class 3 (DPSF) in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-SCR::C_IssueSemiFungibleScore patron owner-konto score-name precision sft-equality)
+                )
+                (format "Successfully issued SemiFungible Score {} for owner {}." [score-name owner-konto])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueNonFungibleScore:string
+        (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
+        @doc "Issues score-class 4 (DPNF) in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-SCR::C_IssueNonFungibleScore patron owner-konto score-name precision nft-score-model)
+                )
+                (format "Successfully issued NonFungible Score {} for owner {}." [score-name owner-konto])
+            )
+        )
+    )
+    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string score-id:string new-owner-konto:string)
+        @doc "Rotates score ownership in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron (ref-SCR::C_RotateOwnership score-id new-owner-konto))
+                (format "Successfully rotated ownership for score {} to {}." [score-id new-owner-konto])
+            )
+        )
+    )
+    (defun AQP-SCR|C_ControlScore:string (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        @doc "Updates score control flags in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-SCR::C_Control score-id new-can-upgrade new-can-change-owner)
+                )
+                (format "Successfully updated control flags for score {}." [score-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_CreateScoreAnchorLink:string (patron:string score-id:string anchor-id:string)
+        @doc "Creates score -> anchor link in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron (ref-SCR::C_CreateAnchorLink score-id anchor-id))
+                (format "Successfully linked score {} to anchor {}." [score-id anchor-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string)
+        @doc "Creates score -> boost-score link in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron (ref-SCR::C_CreateBoostLink score-id boost-score-id))
+                (format "Successfully linked score {} to boost score {}." [score-id boost-score-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_EnableDebBoost:string (patron:string score-id:string)
         @doc "Enables irreversible DEB boost on the score row. Medium IGNIS cost; no native STOA."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-SCR:module{AcquisitionPoolsScore} AQP-SCORE)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron (ref-SCR::C_EnableDebBoost score-id))
                 (format "Successfully enabled DEB boost for score {}." [score-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
+        (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+        @doc "Writes DPSF nonce score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-SCR::C_IssueSemiFungibleScoreDefinition score-id dpsf-id nonces nonce-score-values)
+                )
+                (format "Successfully issued SemiFungible score definitions for score {} and dpsf-id {}." [score-id dpsf-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
+        (patron:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+        @doc "Writes DPNF trait score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-SCR::C_IssueNonFungibleScoreDefinition score-id dpnf-id trait-keys trait-values trait-score-values)
+                )
+                (format "Successfully issued NonFungible score definitions for score {} and dpnf-id {}." [score-id dpnf-id])
             )
         )
     )

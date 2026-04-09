@@ -1,6 +1,10 @@
-(module AQP GOV
+(interface AcquisitionPoolsV1
+    (defun GOV|Demiurgoi ())
+)
+(module AQP-POOL GOV
     ;;
     (implements OuronetPolicyV1)
+    (implements AcquisitionPoolsV1)
     ;(implements DemiourgosPactDigitalCollectibles-UtilityPrototype)
     ;;
     ;;<========>

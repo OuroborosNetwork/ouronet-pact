@@ -1,6 +1,98 @@
-(interface AcquisitionAnchors
-    (defun GOV|AQP|SC_NAME ())
+(interface AcquisitionAnchorsV1
+    ;;  [UC]
+    (defun UC_UserAnchor:string (account:string anchor-id:string))
+    (defun UC_AnchorClassTable (asset-fungibility:[bool]))
+    (defun UC_AssetAnchorClassesTable (asset-fungibility:[bool]))
+    (defun UC_AssetClassKey:string (asset-id:string class-id:string))
     ;;
+    ;;  [UR]
+    (defun UR_Anchor:object{ANK|Schema} (anchor-id:string))
+    (defun UR_AnchoredAsset:string (anchor-id:string))
+    (defun UR_AnchorFungibility:[bool] (anchor-id:string))
+    (defun UR_AnchorAnkClass:string (anchor-id:string))
+    (defun UR_AnchorPrecision:decimal (anchor-id:string))
+    (defun UR_AnchorState:bool (anchor-id:string))
+    (defun UR_AnchorPromile:decimal (anchor-id:string))
+    (defun UR_TF|AnchorAmount:decimal (anchor-id:string))
+    (defun UR_SF|AnchorNonce:integer (anchor-id:string))
+    (defun UR_NF|AnchorTraitKey:string (anchor-id:string))
+    (defun UR_NF|AnchorTraitValue:string (anchor-id:string))
+    (defun UR_AnchorID:string (anchor-id:string))
+    (defun UR_AnchorClass:object{ANK|AnchorClass}
+        (asset-id:string asset-fungibility:[bool] class-id:string)
+    )
+    (defun UR_ANK|First:string (asset-id:string asset-fungibility:[bool] class-id:string))
+    (defun UR_ANK|Second:string (asset-id:string asset-fungibility:[bool] class-id:string))
+    (defun UR_ANK|Third:string (asset-id:string asset-fungibility:[bool] class-id:string))
+    (defun UR_ANK|Fourth:string (asset-id:string asset-fungibility:[bool] class-id:string))
+    (defun UR_ANK|Fifth:string (asset-id:string asset-fungibility:[bool] class-id:string))
+    (defun UR_ANK|Sixth:string (asset-id:string asset-fungibility:[bool] class-id:string))
+    (defun UR_ANK|Seventh:string (asset-id:string asset-fungibility:[bool] class-id:string))
+    (defun UR_ANK|ClassActive:bool (asset-id:string asset-fungibility:[bool] class-id:string))
+    (defun UR_ANK|Quantity:integer (asset-id:string asset-fungibility:[bool] class-id:string))
+    (defun UR_AnchorClassAssetID:string (asset-id:string asset-fungibility:[bool] class-id:string))
+    (defun UR_ANK|RowClassId:string (asset-id:string asset-fungibility:[bool] class-id:string))
+    (defun UR_AssetAnchorClassesData:object{ANK|AssetAnchorClasses} (asset-id:string asset-fungibility:[bool]))
+    (defun UR_AssetAnchorClassesClassPrimary:string (asset-id:string asset-fungibility:[bool]))
+    (defun UR_AssetAnchorClassesClassSecondary:string (asset-id:string asset-fungibility:[bool]))
+    (defun UR_AssetAnchorClassesClassTertiary:string (asset-id:string asset-fungibility:[bool]))
+    (defun UR_AssetAnchorClassesClassQuaternary:string (asset-id:string asset-fungibility:[bool]))
+    (defun UR_AssetAnchorClassesClassQuinary:string (asset-id:string asset-fungibility:[bool]))
+    (defun UR_AssetAnchorClassesClassSenary:string (asset-id:string asset-fungibility:[bool]))
+    (defun UR_AssetAnchorClassesClassSeptenary:string (asset-id:string asset-fungibility:[bool]))
+    (defun UR_ANK|AssetClassesCount:integer (asset-id:string asset-fungibility:[bool]))
+    (defun UR_ANK|AssetAnchorsTotal:integer (asset-id:string asset-fungibility:[bool]))
+    (defun UR_AssetAnchorClassesAssetID:string (asset-id:string asset-fungibility:[bool]))
+    (defun UR_UserAnchor:object{ANK|UserSchema} (account:string anchor-id:string))
+    (defun UR_UserAnchorPromile:decimal (account:string anchor-id:string))
+    (defun UR_UserAnchorAccount:string (account:string anchor-id:string))
+    (defun UR_UserAnchorID:string (account:string anchor-id:string))
+    (defun URC_TrueFungibleAnchorPromile:decimal
+        (account:string dptf-id:string dptf-amount:decimal anchor-id:string)
+    )
+    (defun URC_SemiFungibleAnchorPromile:decimal
+        (account:string dpsf-id:string nonces:[integer] anchor-id:string)
+    )
+    (defun URC_NonFungibleAnchorPromile:decimal
+        (account:string dpnf-id:string nonces:[integer] anchor-id:string)
+    )
+    (defun URC_ConformNonces:integer (dpnf-id:string nonces:[integer] trait-key:string trait-value:string))
+    ;;
+    ;;  [UEV]
+    (defun UEV_IMC ())
+    (defun UEV_AnkFungibility (asset-fungibility:[bool]))
+    (defun UEV_Promile (anchor-precision:integer anchor-promile:decimal))
+    (defun UEV_AnchorClassSlot (anchor-class-slot:string))
+    (defun UEV_IssueAnchor (ank-asset:string ank-fungibility:[bool] acnoi:bool anchor-class-name-or-id:string))
+    (defun UEV_LiveAnchor (anchor-id:string))
+    ;;
+    ;;  [UDC]
+    (defun UDC_RevokedAnchorClass:object{ANK|AnchorClass}
+        (asset-id:string class-id:string)
+    )
+    (defun UDC_AnchorClass:object{ANK|AnchorClass}
+        (a:string b:string c:string d:string e:string f:string g:string class-active:bool anchors:integer asset-id:string class-id:string)
+    )
+    (defun UDC_AssetAnchorClasses:object{ANK|AssetAnchorClasses}
+        (a:string b:string c:string d:string e:string f:string g:string classes:integer anchors:integer asset-id:string)
+    )
+    (defun UDC_AddAssetClass:object{ANK|AssetAnchorClasses}
+        (asset-anchor-classes:object{ANK|AssetAnchorClasses} new-class-id:string)
+    )
+    (defun UDC_RemoveAssetClass:object{ANK|AssetAnchorClasses}
+        (asset-anchor-classes:object{ANK|AssetAnchorClasses} class-id:string)
+    )
+    (defun UDC_SetAssetClassAnchorsAndCounts:object{ANK|AssetAnchorClasses}
+        (asset-anchor-classes:object{ANK|AssetAnchorClasses} class-id:string class-anchor-count:integer class-was-active:bool class-now-active:bool)
+    )
+    (defun UDC_ClassWithAddedAnchor:object{ANK|AnchorClass}
+        (ac:object{ANK|AnchorClass} anchor-id:string)
+    )
+    (defun UDC_AccountAnchor:object{ANK|UserSchema}
+        (promile:decimal ouronet-account:string anchor-id:string)
+    )
+    ;;
+    ;;  [C]
     (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV1.OutputCumulator}
         (patron:string anchor-name:string dptf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
     )
@@ -10,17 +102,26 @@
     (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV1.OutputCumulator}
         (patron:string anchor-name:string dpnf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
     )
+    (defun C_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} (anchor-id:string))
     (defun C_RevokeAnchorClass:object{IgnisCollectorV1.OutputCumulator}
         (asset-id:string ank-fungibility:[bool] anchor-class-id:string)
     )
-    (defun C_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} (anchor-id:string))
     ;;
-    (defun UR_AnchorID:string (anchor-id:string))
+    ;;  [XE]
+    (defun XE_UpdateTrueFungibleAnchor
+        (account:string anchor-id:string total-dptf-amount:decimal)
+    )
+    (defun XE_UpdateSemiFungibleAnchor
+        (account:string anchor-id:string nonces:[integer])
+    )
+    (defun XE_UpdateNonFungibleAnchor
+        (account:string anchor-id:string nonces:[integer] son:bool)
+    )
 )
 (module AQP-ANK GOV
     ;;
     (implements OuronetPolicyV1)
-    (implements AcquisitionAnchors)
+    (implements AcquisitionAnchorsV1)
     ;;
     ;;<========>
     ;;GOVERNANCE
