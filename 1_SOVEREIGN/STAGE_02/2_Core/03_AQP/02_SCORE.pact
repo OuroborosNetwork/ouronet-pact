@@ -7,53 +7,53 @@
     (defun UC_NFDefRevisionKey:string (score-id:string dpnf-id:string))
     ;;
     ;;  [UR]
-    (defun UR_Score:object{SCR|Schema} (score-id:string))
-    (defun UR_ScoreOwnerKonto:string (score-id:string))
-    (defun UR_ScoreCanUpgrade:bool (score-id:string))
-    (defun UR_ScoreCanChangeOwner:bool (score-id:string))
-    (defun UR_ScoreAnchorLink:string (score-id:string))
-    (defun UR_ScoreBoostLink:string (score-id:string))
-    (defun UR_ScoreAqpoolLink:string (score-id:string))
-    (defun UR_ScoreFvtLink:string (score-id:string))
-    (defun UR_ScoreDebBoost:bool (score-id:string))
-    (defun UR_ScorePrecision:integer (score-id:string))
-    (defun UR_ScoreTotalBaseScore:decimal (score-id:string))
-    (defun UR_ScoreTotalBoostedScore:decimal (score-id:string))
-    (defun UR_ScoreTotalDebScore:decimal (score-id:string))
-    (defun UR_ScoreNzsCount:integer (score-id:string))
-    (defun UR_ScoreClass:integer (score-id:string))
-    (defun UR_ScoreMxFrozen:decimal (score-id:string))
-    (defun UR_ScoreMxSleeping:decimal (score-id:string))
-    (defun UR_ScoreMxHibernated:decimal (score-id:string))
-    (defun UR_ScoreSftEquality:bool (score-id:string))
-    (defun UR_ScoreNftScoreModel:integer (score-id:string))
-    (defun UR_ScoreScoreId:string (score-id:string))
-    (defun UR_UserScore:object{SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_UserScoreBoostedScore:decimal (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_UserScoreDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_UserScoreOuronetAccount:string (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_UserScorePoolId:string (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_UserScoreScoreId:string (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_SFScore:object{SCR|SF|Schema} (score-id:string dpsf-id:string nonce:integer))
-    (defun UR_SFScoreNonceScoreValue:decimal (score-id:string dpsf-id:string nonce:integer))
-    (defun UR_SFScoreScoreId:string (score-id:string dpsf-id:string nonce:integer))
-    (defun UR_SFScoreDpsfId:string (score-id:string dpsf-id:string nonce:integer))
-    (defun UR_SFScoreNonce:integer (score-id:string dpsf-id:string nonce:integer))
-    (defun UR_NFScore:object{SCR|NF|Schema} (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_NFScoreTraitScoreValue:decimal (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_NFScoreScoreId:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_NFScoreDpnfId:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_NFScoreTraitKey:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_NFScoreTraitValue:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_SFDefRevision:object{SCR|SF|DefRevision} (score-id:string dpsf-id:string))
-    (defun UR_SFDefRevisionRevisionNonce:integer (score-id:string dpsf-id:string))
-    (defun UR_SFDefRevisionScoreId:string (score-id:string dpsf-id:string))
-    (defun UR_SFDefRevisionDpsfId:string (score-id:string dpsf-id:string))
-    (defun UR_NFDefRevision:object{SCR|NF|DefRevision} (score-id:string dpnf-id:string))
-    (defun UR_NFDefRevisionRevisionNonce:integer (score-id:string dpnf-id:string))
-    (defun UR_NFDefRevisionScoreId:string (score-id:string dpnf-id:string))
-    (defun UR_NFDefRevisionDpnfId:string (score-id:string dpnf-id:string))
+    (defun UR_SCR|Score:object{SCR|Schema} (score-id:string))
+    (defun UR_SCR|ScoreOwnerKonto:string (score-id:string))
+    (defun UR_SCR|ScoreCanUpgrade:bool (score-id:string))
+    (defun UR_SCR|ScoreCanChangeOwner:bool (score-id:string))
+    (defun UR_SCR|ScoreAnchorLink:string (score-id:string))
+    (defun UR_SCR|ScoreBoostLink:string (score-id:string))
+    (defun UR_SCR|ScoreAqpoolLink:string (score-id:string))
+    (defun UR_SCR|ScoreFvtLink:string (score-id:string))
+    (defun UR_SCR|ScoreDebBoost:bool (score-id:string))
+    (defun UR_SCR|ScorePrecision:integer (score-id:string))
+    (defun UR_SCR|ScoreTotalBaseScore:decimal (score-id:string))
+    (defun UR_SCR|ScoreTotalBoostedScore:decimal (score-id:string))
+    (defun UR_SCR|ScoreTotalDebScore:decimal (score-id:string))
+    (defun UR_SCR|ScoreNzsCount:integer (score-id:string))
+    (defun UR_SCR|ScoreClass:integer (score-id:string))
+    (defun UR_SCR|ScoreMxFrozen:decimal (score-id:string))
+    (defun UR_SCR|ScoreMxSleeping:decimal (score-id:string))
+    (defun UR_SCR|ScoreMxHibernated:decimal (score-id:string))
+    (defun UR_SCR|ScoreSftEquality:bool (score-id:string))
+    (defun UR_SCR|ScoreNftScoreModel:integer (score-id:string))
+    (defun UR_SCR|ScoreScoreId:string (score-id:string))
+    (defun UR_U-SCR|UserScore:object{SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreBoostedScore:decimal (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreOuronetAccount:string (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScorePoolId:string (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreScoreId:string (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_S-DEF|SFScore:object{SCR|SF|Schema} (score-id:string dpsf-id:string nonce:integer))
+    (defun UR_S-DEF|SFScoreNonceScoreValue:decimal (score-id:string dpsf-id:string nonce:integer))
+    (defun UR_S-DEF|SFScoreScoreId:string (score-id:string dpsf-id:string nonce:integer))
+    (defun UR_S-DEF|SFScoreDpsfId:string (score-id:string dpsf-id:string nonce:integer))
+    (defun UR_S-DEF|SFScoreNonce:integer (score-id:string dpsf-id:string nonce:integer))
+    (defun UR_N-DEF|NFScore:object{SCR|NF|Schema} (score-id:string dpnf-id:string trait-key:string trait-value:string))
+    (defun UR_N-DEF|NFScoreTraitScoreValue:decimal (score-id:string dpnf-id:string trait-key:string trait-value:string))
+    (defun UR_N-DEF|NFScoreScoreId:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
+    (defun UR_N-DEF|NFScoreDpnfId:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
+    (defun UR_N-DEF|NFScoreTraitKey:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
+    (defun UR_N-DEF|NFScoreTraitValue:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
+    (defun UR_S-DEF-REV|SFDefRevision:object{SCR|SF|DefRevision} (score-id:string dpsf-id:string))
+    (defun UR_S-DEF-REV|SFDefRevisionRevisionNonce:integer (score-id:string dpsf-id:string))
+    (defun UR_S-DEF-REV|SFDefRevisionScoreId:string (score-id:string dpsf-id:string))
+    (defun UR_S-DEF-REV|SFDefRevisionDpsfId:string (score-id:string dpsf-id:string))
+    (defun UR_N-DEF-REV|NFDefRevision:object{SCR|NF|DefRevision} (score-id:string dpnf-id:string))
+    (defun UR_N-DEF-REV|NFDefRevisionRevisionNonce:integer (score-id:string dpnf-id:string))
+    (defun UR_N-DEF-REV|NFDefRevisionScoreId:string (score-id:string dpnf-id:string))
+    (defun UR_N-DEF-REV|NFDefRevisionDpnfId:string (score-id:string dpnf-id:string))
     ;;
     ;;  [UEV]
     (defun UEV_IMC ())
@@ -63,22 +63,22 @@
     ;;
     ;;  [UDC]
     (defun UDC_SCR|Schema:object{SCR|Schema}
-        (owner-konto:string can-upgrade:bool can-change-owner:bool anchor-link:string boost-link:string aqpool-link:string fvt-link:string deb-boost:bool precision:integer total-base-score:decimal total-boosted-score:decimal total-deb-score:decimal nzs-count:integer score-class:integer mx-frozen:decimal mx-sleeping:decimal mx-hibernated:decimal sft-equality:bool nft-score-model:integer score-id:string)
+        (a:string b:bool c:bool d:string e:string f:string g:string h:bool i:integer j:decimal k:decimal l:decimal m:integer n:integer o:decimal p:decimal q:decimal r:bool s:integer t:string)
     )
     (defun UDC_SCR|UserSchema:object{SCR|UserSchema}
-        (base-score:decimal boosted-score:decimal deb-score:decimal ouronet-account:string pool-id:string score-id:string)
+        (a:decimal b:decimal c:decimal d:string e:string f:string)
     )
     (defun UDC_SCR|SF|Schema:object{SCR|SF|Schema}
-        (nonce-score-value:decimal score-id:string dpsf-id:string nonce:integer)
+        (a:decimal b:string c:string d:integer)
     )
     (defun UDC_SCR|SF|DefRevision:object{SCR|SF|DefRevision}
-        (revision-nonce:integer score-id:string dpsf-id:string)
+        (a:integer b:string c:string)
     )
     (defun UDC_SCR|NF|Schema:object{SCR|NF|Schema}
-        (trait-score-value:decimal score-id:string dpnf-id:string trait-key:string trait-value:string)
+        (a:decimal b:string c:string d:string e:string)
     )
     (defun UDC_SCR|NF|DefRevision:object{SCR|NF|DefRevision}
-        (revision-nonce:integer score-id:string dpnf-id:string)
+        (a:integer b:string c:string)
     )
     ;;
     ;;  [C]
@@ -473,8 +473,8 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (owner-now:string (UR_ScoreOwnerKonto score-id))
-                (can-change-owner:bool (UR_ScoreCanChangeOwner score-id))
+                (owner-now:string (UR_SCR|ScoreOwnerKonto score-id))
+                (can-change-owner:bool (UR_SCR|ScoreCanChangeOwner score-id))
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-now)
             (ref-DALOS::UEV_EnforceAccountType new-owner-konto false)
@@ -491,8 +491,8 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
-                (can-upgrade:bool (UR_ScoreCanUpgrade score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (can-upgrade:bool (UR_SCR|ScoreCanUpgrade score-id))
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce can-upgrade "Score control requires can-upgrade true")
@@ -505,8 +505,8 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
-                (deb-boost:bool (UR_ScoreDebBoost score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (deb-boost:bool (UR_SCR|ScoreDebBoost score-id))
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce (not deb-boost) "DEB boost is already enabled and cannot be disabled")
@@ -525,10 +525,10 @@
                 (ref-U|INT:module{OuronetIntegersV1} U|INT)
                 (ref-DPDC:module{DpdcV1} DPDC)
                 (ref-DPDC-F:module{DpdcFragmentsV1} DPDC-F)
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
-                (score-row-id:string (UR_ScoreScoreId score-id))
-                (sft-equality:bool (UR_ScoreSftEquality score-id))
-                (precision:integer (UR_ScorePrecision score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (score-row-id:string (UR_SCR|ScoreScoreId score-id))
+                (sft-equality:bool (UR_SCR|ScoreSftEquality score-id))
+                (precision:integer (UR_SCR|ScorePrecision score-id))
                 (l-nonces:integer (length nonces))
                 (l-values:integer (length nonce-score-values))
                 (max-input-nonce:integer (if (> l-nonces 0) (ref-U|INT::UC_MaxInteger nonces) 0))
@@ -585,9 +585,9 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPDC:module{DpdcV1} DPDC)
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
-                (score-row-id:string (UR_ScoreScoreId score-id))
-                (precision:integer (UR_ScorePrecision score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (score-row-id:string (UR_SCR|ScoreScoreId score-id))
+                (precision:integer (UR_SCR|ScorePrecision score-id))
                 (meta-data:object
                     (ref-DPDC::UR_N|RawMetaData
                         (ref-DPDC::UR_NativeNonceData dpnf-id false 1)
@@ -649,15 +649,15 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
-                (anchor-link:string (UR_ScoreAnchorLink score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (anchor-link:string (UR_SCR|ScoreAnchorLink score-id))
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce
                 (and (= anchor-link BAR) (!= anchor-id BAR))
                 "Anchor link slot must be unset and anchor-id must be non-BAR"
             )
-            (ref-ANK::UR_AnchorID anchor-id)
+            (ref-ANK::UR_ANK|ID anchor-id)
             (compose-capability (SECURE))
         )
     )
@@ -667,9 +667,9 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
-                (boost-link:string (UR_ScoreBoostLink score-id))
-                (boost-row-sid:string (UR_ScoreScoreId boost-score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (boost-link:string (UR_SCR|ScoreBoostLink score-id))
+                (boost-row-sid:string (UR_SCR|ScoreScoreId boost-score-id))
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce
@@ -692,8 +692,8 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
-                (aqpool-link:string (UR_ScoreAqpoolLink score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (aqpool-link:string (UR_SCR|ScoreAqpoolLink score-id))
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce
@@ -708,8 +708,8 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
-                (fvt-link:string (UR_ScoreFvtLink score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (fvt-link:string (UR_SCR|ScoreFvtLink score-id))
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce
@@ -731,7 +731,7 @@
             \ base/boosted/deb must match score precision. Cap is not evented — composed inside AQP stake/unstake client caps."
         (let
             (
-                (pool-link:string (UR_ScoreAqpoolLink score-id))
+                (pool-link:string (UR_SCR|ScoreAqpoolLink score-id))
             )
             (enforce (= pool-link pool-id) "pool-id must match score aqpool-link for UserScore update")
             (UEV_UserScoreTriple score-id base-score boosted-score deb-score)
@@ -766,175 +766,175 @@
     ;; Reads follow schema order: (1) SCR|Schema (2) SCR|UserSchema (3) SCR|SF|Schema (4) SCR|NF|Schema (5) SF DefRevision (6) NF DefRevision
     ;;
     ;; [1] SCR|T|Score  (SCR|Schema)  Key = <Score-ID>
-    (defun UR_Score:object{SCR|Schema} (score-id:string)
+    (defun UR_SCR|Score:object{SCR|Schema} (score-id:string)
         @doc "Reads full score definition row from SCR|T|Score."
         (read SCR|T|Score score-id)
     )
-    (defun UR_ScoreOwnerKonto:string (score-id:string)
+    (defun UR_SCR|ScoreOwnerKonto:string (score-id:string)
         @doc "Reads owner-konto from score row."
         (at "owner-konto" (read SCR|T|Score score-id ["owner-konto"]))
     )
-    (defun UR_ScoreCanUpgrade:bool (score-id:string)
+    (defun UR_SCR|ScoreCanUpgrade:bool (score-id:string)
         @doc "Reads can-upgrade from score row."
         (at "can-upgrade" (read SCR|T|Score score-id ["can-upgrade"]))
     )
-    (defun UR_ScoreCanChangeOwner:bool (score-id:string)
+    (defun UR_SCR|ScoreCanChangeOwner:bool (score-id:string)
         @doc "Reads can-change-owner from score row."
         (at "can-change-owner" (read SCR|T|Score score-id ["can-change-owner"]))
     )
-    (defun UR_ScoreAnchorLink:string (score-id:string)
+    (defun UR_SCR|ScoreAnchorLink:string (score-id:string)
         @doc "Reads anchor-link from score row."
         (at "anchor-link" (read SCR|T|Score score-id ["anchor-link"]))
     )
-    (defun UR_ScoreBoostLink:string (score-id:string)
+    (defun UR_SCR|ScoreBoostLink:string (score-id:string)
         @doc "Reads boost-link from score row."
         (at "boost-link" (read SCR|T|Score score-id ["boost-link"]))
     )
-    (defun UR_ScoreAqpoolLink:string (score-id:string)
+    (defun UR_SCR|ScoreAqpoolLink:string (score-id:string)
         @doc "Reads aqpool-link from score row."
         (at "aqpool-link" (read SCR|T|Score score-id ["aqpool-link"]))
     )
-    (defun UR_ScoreFvtLink:string (score-id:string)
+    (defun UR_SCR|ScoreFvtLink:string (score-id:string)
         @doc "Reads fvt-link from score row."
         (at "fvt-link" (read SCR|T|Score score-id ["fvt-link"]))
     )
-    (defun UR_ScoreDebBoost:bool (score-id:string)
+    (defun UR_SCR|ScoreDebBoost:bool (score-id:string)
         @doc "Reads deb-boost from score row."
         (at "deb-boost" (read SCR|T|Score score-id ["deb-boost"]))
     )
-    (defun UR_ScorePrecision:integer (score-id:string)
+    (defun UR_SCR|ScorePrecision:integer (score-id:string)
         @doc "Reads precision (decimal places for user score weights) from score row."
         (at "precision" (read SCR|T|Score score-id ["precision"]))
     )
-    (defun UR_ScoreTotalBaseScore:decimal (score-id:string)
+    (defun UR_SCR|ScoreTotalBaseScore:decimal (score-id:string)
         @doc "Reads total-base-score from score row."
         (at "total-base-score" (read SCR|T|Score score-id ["total-base-score"]))
     )
-    (defun UR_ScoreTotalBoostedScore:decimal (score-id:string)
+    (defun UR_SCR|ScoreTotalBoostedScore:decimal (score-id:string)
         @doc "Reads total-boosted-score from score row."
         (at "total-boosted-score" (read SCR|T|Score score-id ["total-boosted-score"]))
     )
-    (defun UR_ScoreTotalDebScore:decimal (score-id:string)
+    (defun UR_SCR|ScoreTotalDebScore:decimal (score-id:string)
         @doc "Reads total-deb-score from score row."
         (at "total-deb-score" (read SCR|T|Score score-id ["total-deb-score"]))
     )
-    (defun UR_ScoreNzsCount:integer (score-id:string)
+    (defun UR_SCR|ScoreNzsCount:integer (score-id:string)
         @doc "Reads nzs-count from score row."
         (at "nzs-count" (read SCR|T|Score score-id ["nzs-count"]))
     )
-    (defun UR_ScoreClass:integer (score-id:string)
+    (defun UR_SCR|ScoreClass:integer (score-id:string)
         @doc "Reads score-class from score row."
         (at "score-class" (read SCR|T|Score score-id ["score-class"]))
     )
-    (defun UR_ScoreMxFrozen:decimal (score-id:string)
+    (defun UR_SCR|ScoreMxFrozen:decimal (score-id:string)
         @doc "Reads mx-frozen multiplier from score row."
         (at "mx-frozen" (read SCR|T|Score score-id ["mx-frozen"]))
     )
-    (defun UR_ScoreMxSleeping:decimal (score-id:string)
+    (defun UR_SCR|ScoreMxSleeping:decimal (score-id:string)
         @doc "Reads mx-sleeping multiplier from score row."
         (at "mx-sleeping" (read SCR|T|Score score-id ["mx-sleeping"]))
     )
-    (defun UR_ScoreMxHibernated:decimal (score-id:string)
+    (defun UR_SCR|ScoreMxHibernated:decimal (score-id:string)
         @doc "Reads mx-hibernated multiplier from score row."
         (at "mx-hibernated" (read SCR|T|Score score-id ["mx-hibernated"]))
     )
-    (defun UR_ScoreSftEquality:bool (score-id:string)
+    (defun UR_SCR|ScoreSftEquality:bool (score-id:string)
         @doc "Reads sft-equality from score row."
         (at "sft-equality" (read SCR|T|Score score-id ["sft-equality"]))
     )
-    (defun UR_ScoreNftScoreModel:integer (score-id:string)
+    (defun UR_SCR|ScoreNftScoreModel:integer (score-id:string)
         @doc "Reads nft-score-model from score row."
         (at "nft-score-model" (read SCR|T|Score score-id ["nft-score-model"]))
     )
-    (defun UR_ScoreScoreId:string (score-id:string)
+    (defun UR_SCR|ScoreScoreId:string (score-id:string)
         @doc "Reads score-id field from score row (row key should match)."
         (at "score-id" (read SCR|T|Score score-id ["score-id"]))
     )
     ;;
     ;; [2] SCR|T|UserScore  (SCR|UserSchema)  Key = <Ouronet-Account> | <Pool-ID> | <Score-ID>
-    (defun UR_UserScore:object{SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
+    (defun UR_U-SCR|UserScore:object{SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads full user score row from SCR|T|UserScore."
         (read SCR|T|UserScore (UC_UserScoreKey ouronet-account pool-id score-id))
     )
-    (defun UR_UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string)
+    (defun UR_U-SCR|UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads base-score from user score row."
         (at "base-score" (read SCR|T|UserScore (UC_UserScoreKey ouronet-account pool-id score-id) ["base-score"]))
     )
-    (defun UR_UserScoreBoostedScore:decimal (ouronet-account:string pool-id:string score-id:string)
+    (defun UR_U-SCR|UserScoreBoostedScore:decimal (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads boosted-score from user score row."
         (at "boosted-score" (read SCR|T|UserScore (UC_UserScoreKey ouronet-account pool-id score-id) ["boosted-score"]))
     )
-    (defun UR_UserScoreDebScore:decimal (ouronet-account:string pool-id:string score-id:string)
+    (defun UR_U-SCR|UserScoreDebScore:decimal (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads deb-score from user score row."
         (at "deb-score" (read SCR|T|UserScore (UC_UserScoreKey ouronet-account pool-id score-id) ["deb-score"]))
     )
-    (defun UR_UserScoreOuronetAccount:string (ouronet-account:string pool-id:string score-id:string)
+    (defun UR_U-SCR|UserScoreOuronetAccount:string (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads ouronet-account from user score row."
         (at "ouronet-account" (read SCR|T|UserScore (UC_UserScoreKey ouronet-account pool-id score-id) ["ouronet-account"]))
     )
-    (defun UR_UserScorePoolId:string (ouronet-account:string pool-id:string score-id:string)
+    (defun UR_U-SCR|UserScorePoolId:string (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads pool-id from user score row."
         (at "pool-id" (read SCR|T|UserScore (UC_UserScoreKey ouronet-account pool-id score-id) ["pool-id"]))
     )
-    (defun UR_UserScoreScoreId:string (ouronet-account:string pool-id:string score-id:string)
+    (defun UR_U-SCR|UserScoreScoreId:string (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads score-id from user score row."
         (at "score-id" (read SCR|T|UserScore (UC_UserScoreKey ouronet-account pool-id score-id) ["score-id"]))
     )
     ;;
     ;; [3] SCR|T|SF|Score  (SCR|SF|Schema)  Key = <Score-ID> | <DPSF-ID> | <Nonce>
-    (defun UR_SFScore:object{SCR|SF|Schema} (score-id:string dpsf-id:string nonce:integer)
+    (defun UR_S-DEF|SFScore:object{SCR|SF|Schema} (score-id:string dpsf-id:string nonce:integer)
         @doc "Reads full DPSF nonce score definition row."
         (read SCR|T|SF|Score (UC_SFScoreKey score-id dpsf-id nonce))
     )
-    (defun UR_SFScoreNonceScoreValue:decimal (score-id:string dpsf-id:string nonce:integer)
+    (defun UR_S-DEF|SFScoreNonceScoreValue:decimal (score-id:string dpsf-id:string nonce:integer)
         @doc "Reads nonce-score-value from SF score row."
         (at "nonce-score-value" (read SCR|T|SF|Score (UC_SFScoreKey score-id dpsf-id nonce) ["nonce-score-value"]))
     )
-    (defun UR_SFScoreScoreId:string (score-id:string dpsf-id:string nonce:integer)
+    (defun UR_S-DEF|SFScoreScoreId:string (score-id:string dpsf-id:string nonce:integer)
         @doc "Reads score-id from SF score row."
         (at "score-id" (read SCR|T|SF|Score (UC_SFScoreKey score-id dpsf-id nonce) ["score-id"]))
     )
-    (defun UR_SFScoreDpsfId:string (score-id:string dpsf-id:string nonce:integer)
+    (defun UR_S-DEF|SFScoreDpsfId:string (score-id:string dpsf-id:string nonce:integer)
         @doc "Reads dpsf-id from SF score row."
         (at "dpsf-id" (read SCR|T|SF|Score (UC_SFScoreKey score-id dpsf-id nonce) ["dpsf-id"]))
     )
-    (defun UR_SFScoreNonce:integer (score-id:string dpsf-id:string nonce:integer)
+    (defun UR_S-DEF|SFScoreNonce:integer (score-id:string dpsf-id:string nonce:integer)
         @doc "Reads nonce key field from SF score row."
         (at "nonce" (read SCR|T|SF|Score (UC_SFScoreKey score-id dpsf-id nonce) ["nonce"]))
     )
     ;;
     ;; [4] SCR|T|NF|Score  (SCR|NF|Schema)  Key = <Score-ID> | <DPNF-ID> | <Trait-Key> | <Trait-Value>
-    (defun UR_NFScore:object{SCR|NF|Schema} (score-id:string dpnf-id:string trait-key:string trait-value:string)
+    (defun UR_N-DEF|NFScore:object{SCR|NF|Schema} (score-id:string dpnf-id:string trait-key:string trait-value:string)
         @doc "Reads full DPNF trait score definition row."
         (read SCR|T|NF|Score (UC_NFScoreKey score-id dpnf-id trait-key trait-value))
     )
-    (defun UR_NFScoreTraitScoreValue:decimal (score-id:string dpnf-id:string trait-key:string trait-value:string)
+    (defun UR_N-DEF|NFScoreTraitScoreValue:decimal (score-id:string dpnf-id:string trait-key:string trait-value:string)
         @doc "Reads trait-score-value from NF score row."
         (at "trait-score-value" (read SCR|T|NF|Score (UC_NFScoreKey score-id dpnf-id trait-key trait-value) ["trait-score-value"]))
     )
-    (defun UR_NFScoreScoreId:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
+    (defun UR_N-DEF|NFScoreScoreId:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
         @doc "Reads score-id from NF score row."
         (at "score-id" (read SCR|T|NF|Score (UC_NFScoreKey score-id dpnf-id trait-key trait-value) ["score-id"]))
     )
-    (defun UR_NFScoreDpnfId:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
+    (defun UR_N-DEF|NFScoreDpnfId:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
         @doc "Reads dpnf-id from NF score row."
         (at "dpnf-id" (read SCR|T|NF|Score (UC_NFScoreKey score-id dpnf-id trait-key trait-value) ["dpnf-id"]))
     )
-    (defun UR_NFScoreTraitKey:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
+    (defun UR_N-DEF|NFScoreTraitKey:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
         @doc "Reads trait-key from NF score row."
         (at "trait-key" (read SCR|T|NF|Score (UC_NFScoreKey score-id dpnf-id trait-key trait-value) ["trait-key"]))
     )
-    (defun UR_NFScoreTraitValue:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
+    (defun UR_N-DEF|NFScoreTraitValue:string (score-id:string dpnf-id:string trait-key:string trait-value:string)
         @doc "Reads trait-value from NF score row."
         (at "trait-value" (read SCR|T|NF|Score (UC_NFScoreKey score-id dpnf-id trait-key trait-value) ["trait-value"]))
     )
     ;;
     ;; [5] SCR|T|SF|DefRevision  (SCR|SF|DefRevision)  Key = <Score-ID> | <DPSF-ID>
-    (defun UR_SFDefRevision:object{SCR|SF|DefRevision} (score-id:string dpsf-id:string)
+    (defun UR_S-DEF-REV|SFDefRevision:object{SCR|SF|DefRevision} (score-id:string dpsf-id:string)
         @doc "Reads SF definition revision row for (score-id, dpsf-id)."
         (read SCR|T|SF|DefRevision (UC_SFDefRevisionKey score-id dpsf-id))
     )
-    (defun UR_SFDefRevisionRevisionNonce:integer (score-id:string dpsf-id:string)
+    (defun UR_S-DEF-REV|SFDefRevisionRevisionNonce:integer (score-id:string dpsf-id:string)
         @doc "Reads revision-nonce from SF def-revision row; returns 0 when row is absent."
         (with-default-read SCR|T|SF|DefRevision (UC_SFDefRevisionKey score-id dpsf-id)
             (UDC_SCR|SF|DefRevision 0 score-id dpsf-id)
@@ -942,21 +942,21 @@
             revision-nonce
         )
     )
-    (defun UR_SFDefRevisionScoreId:string (score-id:string dpsf-id:string)
+    (defun UR_S-DEF-REV|SFDefRevisionScoreId:string (score-id:string dpsf-id:string)
         @doc "Reads score-id from SF def-revision row."
         (at "score-id" (read SCR|T|SF|DefRevision (UC_SFDefRevisionKey score-id dpsf-id) ["score-id"]))
     )
-    (defun UR_SFDefRevisionDpsfId:string (score-id:string dpsf-id:string)
+    (defun UR_S-DEF-REV|SFDefRevisionDpsfId:string (score-id:string dpsf-id:string)
         @doc "Reads dpsf-id from SF def-revision row."
         (at "dpsf-id" (read SCR|T|SF|DefRevision (UC_SFDefRevisionKey score-id dpsf-id) ["dpsf-id"]))
     )
     ;;
     ;; [6] SCR|T|NF|DefRevision  (SCR|NF|DefRevision)  Key = <Score-ID> | <DPNF-ID>
-    (defun UR_NFDefRevision:object{SCR|NF|DefRevision} (score-id:string dpnf-id:string)
+    (defun UR_N-DEF-REV|NFDefRevision:object{SCR|NF|DefRevision} (score-id:string dpnf-id:string)
         @doc "Reads NF definition revision row for (score-id, dpnf-id)."
         (read SCR|T|NF|DefRevision (UC_NFDefRevisionKey score-id dpnf-id))
     )
-    (defun UR_NFDefRevisionRevisionNonce:integer (score-id:string dpnf-id:string)
+    (defun UR_N-DEF-REV|NFDefRevisionRevisionNonce:integer (score-id:string dpnf-id:string)
         @doc "Reads revision-nonce from NF def-revision row; returns 0 when row is absent."
         (with-default-read SCR|T|NF|DefRevision (UC_NFDefRevisionKey score-id dpnf-id)
             (UDC_SCR|NF|DefRevision 0 score-id dpnf-id)
@@ -964,11 +964,11 @@
             revision-nonce
         )
     )
-    (defun UR_NFDefRevisionScoreId:string (score-id:string dpnf-id:string)
+    (defun UR_N-DEF-REV|NFDefRevisionScoreId:string (score-id:string dpnf-id:string)
         @doc "Reads score-id from NF def-revision row."
         (at "score-id" (read SCR|T|NF|DefRevision (UC_NFDefRevisionKey score-id dpnf-id) ["score-id"]))
     )
-    (defun UR_NFDefRevisionDpnfId:string (score-id:string dpnf-id:string)
+    (defun UR_N-DEF-REV|NFDefRevisionDpnfId:string (score-id:string dpnf-id:string)
         @doc "Reads dpnf-id from NF def-revision row."
         (at "dpnf-id" (read SCR|T|NF|DefRevision (UC_NFDefRevisionKey score-id dpnf-id) ["dpnf-id"]))
     )
@@ -980,7 +980,7 @@
         @doc "Ensures each user-score decimal matches the stored score precision."
         (let
             (
-                (precision:integer (UR_ScorePrecision score-id))
+                (precision:integer (UR_SCR|ScorePrecision score-id))
             )
             (enforce
                 (fold (and) true
@@ -999,90 +999,69 @@
     )
     ;;{F3}  [UDC]
     (defun UDC_SCR|Schema:object{SCR|Schema}
-        (
-            owner-konto:string
-            can-upgrade:bool
-            can-change-owner:bool
-            anchor-link:string
-            boost-link:string
-            aqpool-link:string
-            fvt-link:string
-            deb-boost:bool
-            precision:integer
-            total-base-score:decimal
-            total-boosted-score:decimal
-            total-deb-score:decimal
-            nzs-count:integer
-            score-class:integer
-            mx-frozen:decimal
-            mx-sleeping:decimal
-            mx-hibernated:decimal
-            sft-equality:bool
-            nft-score-model:integer
-            score-id:string
-        )
+        (a:string b:bool c:bool d:string e:string f:string g:string h:bool i:integer j:decimal k:decimal l:decimal m:integer n:integer o:decimal p:decimal q:decimal r:bool s:integer t:string)
         @doc "Core constructor for object{SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers)."
-        {"owner-konto"          : owner-konto
-        ,"can-upgrade"          : can-upgrade
-        ,"can-change-owner"     : can-change-owner
-        ,"anchor-link"          : anchor-link
-        ,"boost-link"           : boost-link
-        ,"aqpool-link"          : aqpool-link
-        ,"fvt-link"             : fvt-link
-        ,"deb-boost"            : deb-boost
-        ,"precision"            : precision
-        ,"total-base-score"     : total-base-score
-        ,"total-boosted-score"  : total-boosted-score
-        ,"total-deb-score"      : total-deb-score
-        ,"nzs-count"            : nzs-count
-        ,"score-class"          : score-class
-        ,"mx-frozen"            : mx-frozen
-        ,"mx-sleeping"          : mx-sleeping
-        ,"mx-hibernated"        : mx-hibernated
-        ,"sft-equality"         : sft-equality
-        ,"nft-score-model"      : nft-score-model
-        ,"score-id"             : score-id}
+        {"owner-konto"          : a
+        ,"can-upgrade"          : b
+        ,"can-change-owner"     : c
+        ,"anchor-link"          : d
+        ,"boost-link"           : e
+        ,"aqpool-link"          : f
+        ,"fvt-link"             : g
+        ,"deb-boost"            : h
+        ,"precision"            : i
+        ,"total-base-score"     : j
+        ,"total-boosted-score"  : k
+        ,"total-deb-score"      : l
+        ,"nzs-count"            : m
+        ,"score-class"          : n
+        ,"mx-frozen"            : o
+        ,"mx-sleeping"          : p
+        ,"mx-hibernated"        : q
+        ,"sft-equality"         : r
+        ,"nft-score-model"      : s
+        ,"score-id"             : t}
     )
     (defun UDC_SCR|UserSchema:object{SCR|UserSchema}
-        (base-score:decimal boosted-score:decimal deb-score:decimal ouronet-account:string pool-id:string score-id:string)
+        (a:decimal b:decimal c:decimal d:string e:string f:string)
         @doc "Core constructor for object{SCR|UserSchema}."
-        {"base-score"       : base-score
-        ,"boosted-score"    : boosted-score
-        ,"deb-score"        : deb-score
-        ,"ouronet-account"  : ouronet-account
-        ,"pool-id"          : pool-id
-        ,"score-id"         : score-id}
+        {"base-score"       : a
+        ,"boosted-score"    : b
+        ,"deb-score"        : c
+        ,"ouronet-account"  : d
+        ,"pool-id"          : e
+        ,"score-id"         : f}
     )
     (defun UDC_SCR|SF|Schema:object{SCR|SF|Schema}
-        (nonce-score-value:decimal score-id:string dpsf-id:string nonce:integer)
+        (a:decimal b:string c:string d:integer)
         @doc "Core constructor for object{SCR|SF|Schema}."
-        {"nonce-score-value" : nonce-score-value
-        ,"score-id"          : score-id
-        ,"dpsf-id"           : dpsf-id
-        ,"nonce"             : nonce}
+        {"nonce-score-value" : a
+        ,"score-id"          : b
+        ,"dpsf-id"           : c
+        ,"nonce"             : d}
     )
     (defun UDC_SCR|SF|DefRevision:object{SCR|SF|DefRevision}
-        (revision-nonce:integer score-id:string dpsf-id:string)
+        (a:integer b:string c:string)
         @doc "Core constructor for object{SCR|SF|DefRevision}."
-        {"revision-nonce" : revision-nonce
-        ,"score-id"       : score-id
-        ,"dpsf-id"        : dpsf-id}
+        {"revision-nonce" : a
+        ,"score-id"       : b
+        ,"dpsf-id"        : c}
     )
     (defun UDC_SCR|NF|Schema:object{SCR|NF|Schema}
-        (trait-score-value:decimal score-id:string dpnf-id:string trait-key:string trait-value:string)
+        (a:decimal b:string c:string d:string e:string)
         @doc "Core constructor for object{SCR|NF|Schema}."
-        {"trait-score-value" : trait-score-value
-        ,"score-id"          : score-id
-        ,"dpnf-id"           : dpnf-id
-        ,"trait-key"         : trait-key
-        ,"trait-value"       : trait-value}
+        {"trait-score-value" : a
+        ,"score-id"          : b
+        ,"dpnf-id"           : c
+        ,"trait-key"         : d
+        ,"trait-value"       : e}
     )
     (defun UDC_SCR|NF|DefRevision:object{SCR|NF|DefRevision}
-        (revision-nonce:integer score-id:string dpnf-id:string)
+        (a:integer b:string c:string)
         @doc "Core constructor for object{SCR|NF|DefRevision}."
-        {"revision-nonce" : revision-nonce
-        ,"score-id"       : score-id
-        ,"dpnf-id"        : dpnf-id}
+        {"revision-nonce" : a
+        ,"score-id"       : b
+        ,"dpnf-id"        : c}
     )
     ;;{F4}  [CAP]
     ;;
@@ -1197,7 +1176,7 @@
         (UEV_IMC)
         (let
             (
-                (owner-pre-rotate:string (UR_ScoreOwnerKonto score-id))
+                (owner-pre-rotate:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
             (with-capability (SCR|C>ROTATE-OWNERSHIP-SCORE score-id new-owner-konto)
@@ -1212,7 +1191,7 @@
         (UEV_IMC)
         (let
             (
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
             (with-capability (SCR|C>CONTROL-SCORE score-id new-can-upgrade new-can-change-owner)
@@ -1228,7 +1207,7 @@
         (UEV_IMC)
         (let
             (
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
             (with-capability (SCR|C>CREATE-ANCHOR-LINK-SCORE score-id anchor-id)
@@ -1243,7 +1222,7 @@
         (UEV_IMC)
         (let
             (
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
             (with-capability (SCR|C>CREATE-BOOST-LINK-SCORE score-id boost-score-id)
@@ -1258,7 +1237,7 @@
         (UEV_IMC)
         (let
             (
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
             (with-capability (SCR|C>ENABLE-DEB-BOOST-SCORE score-id)
@@ -1275,7 +1254,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (big:decimal (ref-DALOS::UR_UsagePrice "ignis|big"))
                 (how-many:decimal (dec (length nonces)))
@@ -1295,7 +1274,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (owner-konto:string (UR_ScoreOwnerKonto score-id))
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
                 (how-many:decimal (dec (length trait-keys)))
@@ -1377,7 +1356,7 @@
         (let
             (
                 (sf-rev-key:string (UC_SFDefRevisionKey score-id dpsf-id))
-                (revision-nonce:integer (UR_SFDefRevisionRevisionNonce score-id dpsf-id))
+                (revision-nonce:integer (UR_S-DEF-REV|SFDefRevisionRevisionNonce score-id dpsf-id))
             )
             (map
                 (lambda
@@ -1407,7 +1386,7 @@
         (let
             (
                 (nf-rev-key:string (UC_NFDefRevisionKey score-id dpnf-id))
-                (revision-nonce:integer (UR_NFDefRevisionRevisionNonce score-id dpnf-id))
+                (revision-nonce:integer (UR_N-DEF-REV|NFDefRevisionRevisionNonce score-id dpnf-id))
             )
             (map
                 (lambda

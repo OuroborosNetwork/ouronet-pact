@@ -89,9 +89,9 @@
         (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassfailcap" ouro-id true "CoreBoostTFh" 8 27.0 270.0)
     )
     [
-        (ref-ANK::UR_AssetAnchorClassesData ouro-id [true true])
-        (ref-ANK::UR_AnchorClass ouro-id [true true] core-class-id)
-        (ref-ANK::UR_Anchor "TFAnchorAa-98c486052a51")
+        (ref-ANK::UR_ANK-CLASSES|Data ouro-id [true true])
+        (ref-ANK::UR_ANK-CLASS|Data ouro-id [true true] core-class-id)
+        (ref-ANK::UR_ANK|Data "TFAnchorAa-98c486052a51")
     ]
 )
 (format "<<<<<<<TX001 - AQP-ANK TF class/slot tests costs {} GAS>>>>>>>" [(env-gas)])
@@ -167,8 +167,8 @@
             (ref-TS02-C3::AQP-ANK|C_RevokeAnchorClass patron ouro-id [true true] temp-class-id)
         ]
         [
-            (ref-ANK::UR_AssetAnchorClassesData ouro-id [true true])
-            (ref-ANK::UR_Anchor "TFTEMPaa-98c486052a51")
+            (ref-ANK::UR_ANK-CLASSES|Data ouro-id [true true])
+            (ref-ANK::UR_ANK|Data "TFTEMPaa-98c486052a51")
         ]
     ]
 )
@@ -238,10 +238,10 @@
             (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "NFAnchorab-98c486052a51")
         ]
         [
-            (ref-ANK::UR_AssetAnchorClassesData "DHCD-98c486052a51" [false true])
-            (ref-ANK::UR_AssetAnchorClassesData "KBN-98c486052a51" [false false])
-            (ref-ANK::UR_Anchor "SFAnchoraa-98c486052a51")
-            (ref-ANK::UR_Anchor "NFAnchorab-98c486052a51")
+            (ref-ANK::UR_ANK-CLASSES|Data "DHCD-98c486052a51" [false true])
+            (ref-ANK::UR_ANK-CLASSES|Data "KBN-98c486052a51" [false false])
+            (ref-ANK::UR_ANK|Data "SFAnchoraa-98c486052a51")
+            (ref-ANK::UR_ANK|Data "NFAnchorab-98c486052a51")
         ]
     ]
 )
