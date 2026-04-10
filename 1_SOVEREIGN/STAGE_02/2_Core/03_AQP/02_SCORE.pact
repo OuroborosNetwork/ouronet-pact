@@ -7,7 +7,6 @@
     (defun UC_NFDefRevisionKey:string (score-id:string dpnf-id:string))
     ;;
     ;;  [UR]
-    (defun UR_SCR|Score:object{SCR|Schema} (score-id:string))
     (defun UR_SCR|ScoreOwnerKonto:string (score-id:string))
     (defun UR_SCR|ScoreCanUpgrade:bool (score-id:string))
     (defun UR_SCR|ScoreCanChangeOwner:bool (score-id:string))
@@ -28,29 +27,24 @@
     (defun UR_SCR|ScoreSftEquality:bool (score-id:string))
     (defun UR_SCR|ScoreNftScoreModel:integer (score-id:string))
     (defun UR_SCR|ScoreScoreId:string (score-id:string))
-    (defun UR_U-SCR|UserScore:object{SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string))
     (defun UR_U-SCR|UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string))
     (defun UR_U-SCR|UserScoreBoostedScore:decimal (ouronet-account:string pool-id:string score-id:string))
     (defun UR_U-SCR|UserScoreDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
     (defun UR_U-SCR|UserScoreOuronetAccount:string (ouronet-account:string pool-id:string score-id:string))
     (defun UR_U-SCR|UserScorePoolId:string (ouronet-account:string pool-id:string score-id:string))
     (defun UR_U-SCR|UserScoreScoreId:string (ouronet-account:string pool-id:string score-id:string))
-    (defun UR_S-DEF|SFScore:object{SCR|SF|Schema} (score-id:string dpsf-id:string nonce:integer))
     (defun UR_S-DEF|SFScoreNonceScoreValue:decimal (score-id:string dpsf-id:string nonce:integer))
     (defun UR_S-DEF|SFScoreScoreId:string (score-id:string dpsf-id:string nonce:integer))
     (defun UR_S-DEF|SFScoreDpsfId:string (score-id:string dpsf-id:string nonce:integer))
     (defun UR_S-DEF|SFScoreNonce:integer (score-id:string dpsf-id:string nonce:integer))
-    (defun UR_N-DEF|NFScore:object{SCR|NF|Schema} (score-id:string dpnf-id:string trait-key:string trait-value:string))
     (defun UR_N-DEF|NFScoreTraitScoreValue:decimal (score-id:string dpnf-id:string trait-key:string trait-value:string))
     (defun UR_N-DEF|NFScoreScoreId:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
     (defun UR_N-DEF|NFScoreDpnfId:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
     (defun UR_N-DEF|NFScoreTraitKey:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
     (defun UR_N-DEF|NFScoreTraitValue:string (score-id:string dpnf-id:string trait-key:string trait-value:string))
-    (defun UR_S-DEF-REV|SFDefRevision:object{SCR|SF|DefRevision} (score-id:string dpsf-id:string))
     (defun UR_S-DEF-REV|SFDefRevisionRevisionNonce:integer (score-id:string dpsf-id:string))
     (defun UR_S-DEF-REV|SFDefRevisionScoreId:string (score-id:string dpsf-id:string))
     (defun UR_S-DEF-REV|SFDefRevisionDpsfId:string (score-id:string dpsf-id:string))
-    (defun UR_N-DEF-REV|NFDefRevision:object{SCR|NF|DefRevision} (score-id:string dpnf-id:string))
     (defun UR_N-DEF-REV|NFDefRevisionRevisionNonce:integer (score-id:string dpnf-id:string))
     (defun UR_N-DEF-REV|NFDefRevisionScoreId:string (score-id:string dpnf-id:string))
     (defun UR_N-DEF-REV|NFDefRevisionDpnfId:string (score-id:string dpnf-id:string))
@@ -59,26 +53,6 @@
     (defun UEV_IMC ())
     (defun UEV_UserScoreTriple:bool
         (score-id:string base-score:decimal boosted-score:decimal deb-score:decimal)
-    )
-    ;;
-    ;;  [UDC]
-    (defun UDC_SCR|Schema:object{SCR|Schema}
-        (a:string b:bool c:bool d:string e:string f:string g:string h:bool i:integer j:decimal k:decimal l:decimal m:integer n:integer o:decimal p:decimal q:decimal r:bool s:integer t:string)
-    )
-    (defun UDC_SCR|UserSchema:object{SCR|UserSchema}
-        (a:decimal b:decimal c:decimal d:string e:string f:string)
-    )
-    (defun UDC_SCR|SF|Schema:object{SCR|SF|Schema}
-        (a:decimal b:string c:string d:integer)
-    )
-    (defun UDC_SCR|SF|DefRevision:object{SCR|SF|DefRevision}
-        (a:integer b:string c:string)
-    )
-    (defun UDC_SCR|NF|Schema:object{SCR|NF|Schema}
-        (a:decimal b:string c:string d:string e:string)
-    )
-    (defun UDC_SCR|NF|DefRevision:object{SCR|NF|DefRevision}
-        (a:integer b:string c:string)
     )
     ;;
     ;;  [C]

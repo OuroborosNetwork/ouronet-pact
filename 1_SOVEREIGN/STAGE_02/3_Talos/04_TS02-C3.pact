@@ -224,6 +224,38 @@
             )
         )
     )
+    (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+        @doc "Issues an Anchor with DPNF nonce-class model (set anchor)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-ANK::C_IssueNonFungibleSetAnchor
+                            patron anchor-name dpnf-id acnoi anchor-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class
+                        )
+                    )
+                    (out:[string] (at "output" ico))
+                    (anchor-id:string (at 0 out))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (if acnoi
+                    (format
+                        "Successfully issued NonFungible Set Anchor {} to new Anchor Class {} for NonFungible {}."
+                        [anchor-id (at 1 out) dpnf-id]
+                    )
+                    (format
+                        "Successfully issued NonFungible Set Anchor {} and attached it to existing Anchor Class {} for NonFungible {}."
+                        [anchor-id anchor-class-name-or-id dpnf-id]
+                    )
+                )
+            )
+        )
+    )
     (defun AQP-ANK|C_RevokeAnchorClass:string
         (patron:string asset-id:string ank-fungibility:[bool] anchor-class-id:string)
         @doc "Revokes an existing Anchor Class that has no active anchors."

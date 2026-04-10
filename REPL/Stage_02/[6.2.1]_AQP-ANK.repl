@@ -194,7 +194,7 @@
         (split-kda:[decimal]
             (ref-DALOS::URC_SplitKDAPrices
                 patron
-                (* (ref-DALOS::UR_UsagePrice "standard") 8.0)
+                (* (ref-DALOS::UR_UsagePrice "standard") 16.0)
             )
         )
     )
@@ -233,15 +233,37 @@
         [
             (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SFAnchoraa" "DHCD-98c486052a51" true "CoreBoostSF" 8 35.0 11)
             (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SFAnchorab" "DHCD-98c486052a51" false "CoreBoostSF-98c486052a51" 8 37.0 9)
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "NFAnchoraa" "KBN-98c486052a51" true "CoreBoostNF" 8 55.0 "Background" "Ouroboros Rain")
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "NFAnchorab" "KBN-98c486052a51" false "CoreBoostNF-98c486052a51" 8 65.0 "Rarity" "Legendary")
-            (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "NFAnchorab-98c486052a51")
+            ;;
+            ;;Bunnies
+            ;;OuroborosBooster (OURO Farm)
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "OuroborosRain" "KBN-98c486052a51" true "SnakeTokenRain" 3 50.0 "Background" "Ouroboros Rain")
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "AurynRain" "KBN-98c486052a51" false "SnakeTokenRain-98c486052a51" 3 100.0 "Background" "Auryn Rain")
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "EliteAurynRain" "KBN-98c486052a51" false "SnakeTokenRain-98c486052a51" 3 200.0 "Background" "Elite-Auryn Rain")
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendarySnakeTokenRain" "KBN-98c486052a51" false "SnakeTokenRain-98c486052a51" 3 400.0 "Rarity" "Legendary")
+            ;;UnityBooster (UNITY Vault)
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Elk0nite" "KBN-98c486052a51" true "UnityBooster" 3 100.0 "Eyes" "Elk0nite Unity Glasses")
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Osmiridium" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 300.0 "Eyes" "Osmiridium Unity Glasses")
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Titanium" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 900.0 "Eyes" "Titaniumgold Unity Glasses")
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryUnityBooster" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 1000.0 "Rarity" "Legendary")
+            ;;StoaBooster (STOA Vault)
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "VegoldEyes" "KBN-98c486052a51" true "StoaBooster" 3 1000.0 "Eyes" "vEGLD Focus")
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryStoaBooster" "KBN-98c486052a51" false "StoaBooster-98c486052a51" 3 3500.0 "Rarity" "Legendary")
+            ;;VestaBooster (VESTA Vault)
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "RedEyes" "KBN-98c486052a51" true "VestaBooster" 3 250.0 "Eyes" "Red")
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "GreenEyes" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 250.0 "Eyes" "Green")
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "BlueEyes" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 250.0 "Eyes" "Blue")
+            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryVestaBooster" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 1000.0 "Rarity" "Legendary")
+
+
+            ;;(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "NFAnchoraa" "KBN-98c486052a51" true "CoreBoostNF" 8 55.0 "Background" "Ouroboros Rain")
+            ;;(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "NFAnchorab" "KBN-98c486052a51" false "CoreBoostNF-98c486052a51" 8 65.0 "Rarity" "Legendary")
+            ;;(ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "NFAnchorab-98c486052a51")
         ]
         [
-            (ref-ANK::UR_ANK-CLASSES|Data "DHCD-98c486052a51" [false true])
+            ;;(ref-ANK::UR_ANK-CLASSES|Data "DHCD-98c486052a51" [false true])
             (ref-ANK::UR_ANK-CLASSES|Data "KBN-98c486052a51" [false false])
-            (ref-ANK::UR_ANK|Data "SFAnchoraa-98c486052a51")
-            (ref-ANK::UR_ANK|Data "NFAnchorab-98c486052a51")
+            ;;(ref-ANK::UR_ANK|Data "SFAnchoraa-98c486052a51")
+            ;;(ref-ANK::UR_ANK|Data "NFAnchorab-98c486052a51")
         ]
     ]
 )

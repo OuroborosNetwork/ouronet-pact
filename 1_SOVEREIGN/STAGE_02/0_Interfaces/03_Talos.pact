@@ -323,6 +323,9 @@
     (defun AQP-ANK|C_IssueNonFungibleAnchor:string
         (patron:string anchor-name:string dpnf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
     )
+    (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+    )
     (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string))
     (defun AQP-ANK|C_RevokeAnchorClass:string (patron:string asset-id:string ank-fungibility:[bool] anchor-class-id:string))
     ;;
