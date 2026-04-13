@@ -1,6 +1,21 @@
+;;
+;; REPL/Stage_02/[5.2]_PopulateBloodshed.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[5.2]_PopulateBloodshed.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (begin-tx "TX-00 [C0] - Chain Data Time SetUp Definition")
 (namespace "ouronet-ns")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -8,6 +23,10 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-gas)
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;
@@ -31,9 +50,15 @@
 (begin-tx "TX-01 [2] - BSD-L Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-01 [2] - BSD-L Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-01 [2] - BSD-L Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [2] - BSD-L Module · 02 · load module ==== ===========================================
+(print "--- [TX-01 [2] - BSD-L Module · 02 · load module] ---")
 (load "../../2_SLAVE/Stage_02/1_Bloodshed/01_BSD-L.pact")
+;;==== TX-01 [2] - BSD-L Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-01 [2] - BSD-L Module · 03 · gas echo] ---")
 (format "<<<<<<<BSD-L Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -45,9 +70,15 @@
 (begin-tx "TX-02 [2] - BSD-E Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-02 [2] - BSD-E Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-02 [2] - BSD-E Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2] - BSD-E Module · 02 · load module ==== ===========================================
+(print "--- [TX-02 [2] - BSD-E Module · 02 · load module] ---")
 (load "../../2_SLAVE/Stage_02/1_Bloodshed/02_BSD-E.pact")
+;;==== TX-02 [2] - BSD-E Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-02 [2] - BSD-E Module · 03 · gas echo] ---")
 (format "<<<<<<<BSD-E Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -59,9 +90,15 @@
 (begin-tx "TX-03 [2] - BSD-R Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-03 [2] - BSD-R Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-03 [2] - BSD-R Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-03 [2] - BSD-R Module · 02 · load module ==== ===========================================
+(print "--- [TX-03 [2] - BSD-R Module · 02 · load module] ---")
 (load "../../2_SLAVE/Stage_02/1_Bloodshed/03_BSD-R.pact")
+;;==== TX-03 [2] - BSD-R Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-03 [2] - BSD-R Module · 03 · gas echo] ---")
 (format "<<<<<<<BSD-R Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -73,9 +110,15 @@
 (begin-tx "TX-04 [2] - BSD-C Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-04 [2] - BSD-C Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-04 [2] - BSD-C Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [2] - BSD-C Module · 02 · load module ==== ===========================================
+(print "--- [TX-04 [2] - BSD-C Module · 02 · load module] ---")
 (load "../../2_SLAVE/Stage_02/1_Bloodshed/04_BSD-C.pact")
+;;==== TX-04 [2] - BSD-C Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-04 [2] - BSD-C Module · 03 · gas echo] ---")
 (format "<<<<<<<BSD-C Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -87,12 +130,22 @@
 (begin-tx "TX-05 [2] - BSD-SETS Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-05 [2] - BSD-SETS Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-05 [2] - BSD-SETS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-05 [2] - BSD-SETS Module · 02 · load module ==== ========================================
+(print "--- [TX-05 [2] - BSD-SETS Module · 02 · load module] ---")
 (load "../../2_SLAVE/Stage_02/1_Bloodshed/05_BSD-SETS.pact")
+;;==== TX-05 [2] - BSD-SETS Module · 03 · gas echo ==== ===========================================
+(print "--- [TX-05 [2] - BSD-SETS Module · 03 · gas echo] ---")
 (format "<<<<<<<BSD-SETS Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;
@@ -106,6 +159,8 @@
 (begin-tx "TX-01 - Bloodshed Legendary (1-160)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 - Bloodshed Legendary (1-160) · 01 · env-sigs (caps) ==== ============================
+(print "--- [TX-01 - Bloodshed Legendary (1-160) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -115,6 +170,8 @@
 (BLOODSHED-L.A_Legendary KST.ANHD "DHB-98c486052a51" (enumerate 1 160))
 (print "")
 (print "")
+;;==== TX-01 - Bloodshed Legendary (1-160) · 02 · gas echo ==== ===================================
+(print "--- [TX-01 - Bloodshed Legendary (1-160) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Legendary (1-160) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -127,6 +184,8 @@
 (begin-tx "TX-02 - Bloodshed Epic (1-790)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-02 - Bloodshed Epic (1-790) · 01 · env-sigs (caps) ==== =================================
+(print "--- [TX-02 - Bloodshed Epic (1-790) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -136,6 +195,8 @@
 (BLOODSHED-E.A_Epic KST.ANHD "DHB-98c486052a51" (enumerate 1 790))
 (print "")
 (print "")
+;;==== TX-02 - Bloodshed Epic (1-790) · 02 · gas echo ==== ========================================
+(print "--- [TX-02 - Bloodshed Epic (1-790) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Epic (1-790) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -148,6 +209,8 @@
 (begin-tx "TX-03 - Bloodshed Epic (791-1536)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-03 - Bloodshed Epic (791-1536) · 01 · env-sigs (caps) ==== ==============================
+(print "--- [TX-03 - Bloodshed Epic (791-1536) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -157,6 +220,8 @@
 (BLOODSHED-E.A_Epic KST.ANHD "DHB-98c486052a51" (enumerate 791 1536))
 (print "")
 (print "")
+;;==== TX-03 - Bloodshed Epic (791-1536) · 02 · gas echo ==== =====================================
+(print "--- [TX-03 - Bloodshed Epic (791-1536) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Epic (791-1536) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -169,6 +234,8 @@
 (begin-tx "TX-04 - Bloodshed Rare (1-780)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-04 - Bloodshed Rare (1-780) · 01 · env-sigs (caps) ==== =================================
+(print "--- [TX-04 - Bloodshed Rare (1-780) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -178,6 +245,8 @@
 (BLOODSHED-R.A_Rare KST.ANHD "DHB-98c486052a51" (enumerate 1 780))
 (print "")
 (print "")
+;;==== TX-04 - Bloodshed Rare (1-780) · 02 · gas echo ==== ========================================
+(print "--- [TX-04 - Bloodshed Rare (1-780) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Rare (1-780) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -190,6 +259,8 @@
 (begin-tx "TX-05 - Bloodshed Rare (781-1560)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-05 - Bloodshed Rare (781-1560) · 01 · env-sigs (caps) ==== ==============================
+(print "--- [TX-05 - Bloodshed Rare (781-1560) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -199,6 +270,8 @@
 (BLOODSHED-R.A_Rare KST.ANHD "DHB-98c486052a51" (enumerate 781 1560))
 (print "")
 (print "")
+;;==== TX-05 - Bloodshed Rare (781-1560) · 02 · gas echo ==== =====================================
+(print "--- [TX-05 - Bloodshed Rare (781-1560) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Rare (781-1560) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -211,6 +284,8 @@
 (begin-tx "TX-06 - Bloodshed Rare (1561-2340)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-06 - Bloodshed Rare (1561-2340) · 01 · env-sigs (caps) ==== =============================
+(print "--- [TX-06 - Bloodshed Rare (1561-2340) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -220,6 +295,8 @@
 (BLOODSHED-R.A_Rare KST.ANHD "DHB-98c486052a51" (enumerate 1561 2340))
 (print "")
 (print "")
+;;==== TX-06 - Bloodshed Rare (1561-2340) · 02 · gas echo ==== ====================================
+(print "--- [TX-06 - Bloodshed Rare (1561-2340) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Rare (1561-2340) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -232,6 +309,8 @@
 (begin-tx "TX-07 - Bloodshed Rare (2341-3120)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-07 - Bloodshed Rare (2341-3120) · 01 · env-sigs (caps) ==== =============================
+(print "--- [TX-07 - Bloodshed Rare (2341-3120) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -241,6 +320,8 @@
 (BLOODSHED-R.A_Rare KST.ANHD "DHB-98c486052a51" (enumerate 2341 3120))
 (print "")
 (print "")
+;;==== TX-07 - Bloodshed Rare (2341-3120) · 02 · gas echo ==== ====================================
+(print "--- [TX-07 - Bloodshed Rare (2341-3120) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Rare (2341-3120) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -253,6 +334,8 @@
 (begin-tx "TX-08 - Bloodshed Rare (3121-3168) with Bloodshed Common (1-17)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-08 - Bloodshed Rare (3121-3168) with Bloodshed Common (1-17) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-08 - Bloodshed Rare (3121-3168) with Bloodshed Common (1-17) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -263,6 +346,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 1 17))
 (print "")
 (print "")
+;;==== TX-08 - Bloodshed Rare (3121-3168) with Bloodshed Common (1-17) · 02 · gas echo ==== =======
+(print "--- [TX-08 - Bloodshed Rare (3121-3168) with Bloodshed Common (1-17) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Rare (3121-3168) with Bloodshed Common (1-17) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -275,6 +360,8 @@
 (begin-tx "TX-09 - Bloodshed Common (18-797)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-09 - Bloodshed Common (18-797) · 01 · env-sigs (caps) ==== ==============================
+(print "--- [TX-09 - Bloodshed Common (18-797) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -284,6 +371,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 18 797))
 (print "")
 (print "")
+;;==== TX-09 - Bloodshed Common (18-797) · 02 · gas echo ==== =====================================
+(print "--- [TX-09 - Bloodshed Common (18-797) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Common (18-797) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -296,6 +385,8 @@
 (begin-tx "TX-10 - Bloodshed Common (798-1577)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-10 - Bloodshed Common (798-1577) · 01 · env-sigs (caps) ==== ============================
+(print "--- [TX-10 - Bloodshed Common (798-1577) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -305,6 +396,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 798 1577))
 (print "")
 (print "")
+;;==== TX-10 - Bloodshed Common (798-1577) · 02 · gas echo ==== ===================================
+(print "--- [TX-10 - Bloodshed Common (798-1577) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Common (798-1577) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -317,6 +410,8 @@
 (begin-tx "TX-11 - Bloodshed Common (1578-2357)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-11 - Bloodshed Common (1578-2357) · 01 · env-sigs (caps) ==== ===========================
+(print "--- [TX-11 - Bloodshed Common (1578-2357) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -326,6 +421,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 1578 2357))
 (print "")
 (print "")
+;;==== TX-11 - Bloodshed Common (1578-2357) · 02 · gas echo ==== ==================================
+(print "--- [TX-11 - Bloodshed Common (1578-2357) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Common (1578-2357) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -338,6 +435,8 @@
 (begin-tx "TX-12 - Bloodshed Common (2358-3137)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-12 - Bloodshed Common (2358-3137) · 01 · env-sigs (caps) ==== ===========================
+(print "--- [TX-12 - Bloodshed Common (2358-3137) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -347,6 +446,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 2358 3137))
 (print "")
 (print "")
+;;==== TX-12 - Bloodshed Common (2358-3137) · 02 · gas echo ==== ==================================
+(print "--- [TX-12 - Bloodshed Common (2358-3137) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Common (2358-3137) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -359,6 +460,8 @@
 (begin-tx "TX-13 - Bloodshed Common (3138-3917)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-13 - Bloodshed Common (3138-3917) · 01 · env-sigs (caps) ==== ===========================
+(print "--- [TX-13 - Bloodshed Common (3138-3917) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -368,6 +471,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 3138 3917))
 (print "")
 (print "")
+;;==== TX-13 - Bloodshed Common (3138-3917) · 02 · gas echo ==== ==================================
+(print "--- [TX-13 - Bloodshed Common (3138-3917) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Common (3138-3917) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -380,6 +485,8 @@
 (begin-tx "TX-14 - Bloodshed Common (3918-4697)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-14 - Bloodshed Common (3918-4697) · 01 · env-sigs (caps) ==== ===========================
+(print "--- [TX-14 - Bloodshed Common (3918-4697) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -389,6 +496,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 3918 4697))
 (print "")
 (print "")
+;;==== TX-14 - Bloodshed Common (3918-4697) · 02 · gas echo ==== ==================================
+(print "--- [TX-14 - Bloodshed Common (3918-4697) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Common (3918-4697) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -401,6 +510,8 @@
 (begin-tx "TX-15 - Bloodshed Common (4698-5477)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-15 - Bloodshed Common (4698-5477) · 01 · env-sigs (caps) ==== ===========================
+(print "--- [TX-15 - Bloodshed Common (4698-5477) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -410,6 +521,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 4698 5477))
 (print "")
 (print "")
+;;==== TX-15 - Bloodshed Common (4698-5477) · 02 · gas echo ==== ==================================
+(print "--- [TX-15 - Bloodshed Common (4698-5477) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Common (4698-5477) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -422,6 +535,8 @@
 (begin-tx "TX-16 - Bloodshed Common (5478-6257)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-16 - Bloodshed Common (5478-6257) · 01 · env-sigs (caps) ==== ===========================
+(print "--- [TX-16 - Bloodshed Common (5478-6257) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -431,6 +546,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 5478 6257))
 (print "")
 (print "")
+;;==== TX-16 - Bloodshed Common (5478-6257) · 02 · gas echo ==== ==================================
+(print "--- [TX-16 - Bloodshed Common (5478-6257) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Common (5478-6257) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -443,6 +560,8 @@
 (begin-tx "TX-17 - Bloodshed Common (6258-7037)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-17 - Bloodshed Common (6258-7037) · 01 · env-sigs (caps) ==== ===========================
+(print "--- [TX-17 - Bloodshed Common (6258-7037) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -452,6 +571,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 6258 7037))
 (print "")
 (print "")
+;;==== TX-17 - Bloodshed Common (6258-7037) · 02 · gas echo ==== ==================================
+(print "--- [TX-17 - Bloodshed Common (6258-7037) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Common (6258-7037) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -464,6 +585,8 @@
 (begin-tx "TX-18 - Bloodshed Common (7038-7817)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-18 - Bloodshed Common (7038-7817) · 01 · env-sigs (caps) ==== ===========================
+(print "--- [TX-18 - Bloodshed Common (7038-7817) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -473,6 +596,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 7038 7817))
 (print "")
 (print "")
+;;==== TX-18 - Bloodshed Common (7038-7817) · 02 · gas echo ==== ==================================
+(print "--- [TX-18 - Bloodshed Common (7038-7817) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Common (7038-7817) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -485,6 +610,8 @@
 (begin-tx "TX-19 - Bloodshed Common (7818-8064)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-19 - Bloodshed Common (7818-8064) · 01 · env-sigs (caps) ==== ===========================
+(print "--- [TX-19 - Bloodshed Common (7818-8064) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -494,6 +621,8 @@
 (BLOODSHED-C.A_Common KST.ANHD "DHB-98c486052a51" (enumerate 7818 8064))
 (print "")
 (print "")
+;;==== TX-19 - Bloodshed Common (7818-8064) · 02 · gas echo ==== ==================================
+(print "--- [TX-19 - Bloodshed Common (7818-8064) · 02 · gas echo] ---")
 (format "<<<<<<<Bloodshed Common (7818-8064) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -527,6 +656,8 @@
 (begin-tx "TX-175 - Tier 1 Comati")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-175 - Tier 1 Comati · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX-175 - Tier 1 Comati · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -537,6 +668,8 @@
 (BLOODSHED-SETS.A01_TierOneCommonComati KST.ANHD "DHB-98c486052a51")
 (print "")
 (print "")
+;;==== TX-175 - Tier 1 Comati · 02 · gas echo ==== ================================================
+(print "--- [TX-175 - Tier 1 Comati · 02 · gas echo] ---")
 (format "<<<<<<<Tier 1 Comati Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -549,6 +682,8 @@
 (begin-tx "TX-176 - Tier 1 Ursoi")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-176 - Tier 1 Ursoi · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [TX-176 - Tier 1 Ursoi · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -559,6 +694,8 @@
 (BLOODSHED-SETS.A02_TierOneCommonUrsoi KST.ANHD "DHB-98c486052a51")
 (print "")
 (print "")
+;;==== TX-176 - Tier 1 Ursoi · 02 · gas echo ==== =================================================
+(print "--- [TX-176 - Tier 1 Ursoi · 02 · gas echo] ---")
 (format "<<<<<<<Tier 1 Ursoi Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -571,6 +708,8 @@
 (begin-tx "TX-177 - Tier 1 Pileati")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-177 - Tier 1 Pileati · 01 · env-sigs (caps) ==== ========================================
+(print "--- [TX-177 - Tier 1 Pileati · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -581,6 +720,8 @@
 (BLOODSHED-SETS.A03_TierOneCommonPileati KST.ANHD "DHB-98c486052a51")
 (print "")
 (print "")
+;;==== TX-177 - Tier 1 Pileati · 02 · gas echo ==== ===============================================
+(print "--- [TX-177 - Tier 1 Pileati · 02 · gas echo] ---")
 (format "<<<<<<<Tier 1 Pileati Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -593,6 +734,8 @@
 (begin-tx "TX-178 - Tier 1 Smardoi")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-178 - Tier 1 Smardoi · 01 · env-sigs (caps) ==== ========================================
+(print "--- [TX-178 - Tier 1 Smardoi · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -603,6 +746,8 @@
 (BLOODSHED-SETS.A04_TierOneCommonSmardoi KST.ANHD "DHB-98c486052a51")
 (print "")
 (print "")
+;;==== TX-178 - Tier 1 Smardoi · 02 · gas echo ==== ===============================================
+(print "--- [TX-178 - Tier 1 Smardoi · 02 · gas echo] ---")
 (format "<<<<<<<Tier 1 Smardoi Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -615,6 +760,8 @@
 (begin-tx "TX-179 - Tier 1 Carpian")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-179 - Tier 1 Carpian · 01 · env-sigs (caps) ==== ========================================
+(print "--- [TX-179 - Tier 1 Carpian · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -625,6 +772,8 @@
 (BLOODSHED-SETS.A05_TierOneCommonCarpian KST.ANHD "DHB-98c486052a51")
 (print "")
 (print "")
+;;==== TX-179 - Tier 1 Carpian · 02 · gas echo ==== ===============================================
+(print "--- [TX-179 - Tier 1 Carpian · 02 · gas echo] ---")
 (format "<<<<<<<Tier 1 Carpian Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -637,6 +786,8 @@
 (begin-tx "TX-180 - Tier 1 Tarabostes")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-180 - Tier 1 Tarabostes · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-180 - Tier 1 Tarabostes · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -647,6 +798,8 @@
 (BLOODSHED-SETS.A06_TierOneCommonTarabostes KST.ANHD "DHB-98c486052a51")
 (print "")
 (print "")
+;;==== TX-180 - Tier 1 Tarabostes · 02 · gas echo ==== ============================================
+(print "--- [TX-180 - Tier 1 Tarabostes · 02 · gas echo] ---")
 (format "<<<<<<<Tier 1 Tarabostes Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -659,6 +812,8 @@
 (begin-tx "TX-181 - Tier 1 Costoboc")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-181 - Tier 1 Costoboc · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-181 - Tier 1 Costoboc · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -669,6 +824,8 @@
 (BLOODSHED-SETS.A07_TierOneCommonCostoboc KST.ANHD "DHB-98c486052a51")
 (print "")
 (print "")
+;;==== TX-181 - Tier 1 Costoboc · 02 · gas echo ==== ==============================================
+(print "--- [TX-181 - Tier 1 Costoboc · 02 · gas echo] ---")
 (format "<<<<<<<Tier 1 Costoboc Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -681,6 +838,8 @@
 (begin-tx "TX-182 - Tier 1 Buridavens Comati")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-182 - Tier 1 Buridavens Comati · 01 · env-sigs (caps) ==== ==============================
+(print "--- [TX-182 - Tier 1 Buridavens Comati · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -691,6 +850,8 @@
 (BLOODSHED-SETS.A08_TierOneCommonBuridavensRareComati KST.ANHD "DHB-98c486052a51")
 (print "")
 (print "")
+;;==== TX-182 - Tier 1 Buridavens Comati · 02 · gas echo ==== =====================================
+(print "--- [TX-182 - Tier 1 Buridavens Comati · 02 · gas echo] ---")
 (format "<<<<<<<Tier 1 Buridavens Comati Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -703,6 +864,8 @@
 (begin-tx "TX-183 - Tier 1 Rare")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-183 - Tier 1 Rare · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [TX-183 - Tier 1 Rare · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -714,6 +877,8 @@
 (BLOODSHED-SETS.A09b_TierOneRare KST.ANHD "DHB-98c486052a51")
 (print "")
 (print "")
+;;==== TX-183 - Tier 1 Rare · 02 · gas echo ==== ==================================================
+(print "--- [TX-183 - Tier 1 Rare · 02 · gas echo] ---")
 (format "<<<<<<<Tier 1 Rare {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -726,6 +891,8 @@
 (begin-tx "TX-184 - Tier 1 Epic")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-184 - Tier 1 Epic · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [TX-184 - Tier 1 Epic · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -736,6 +903,8 @@
 (BLOODSHED-SETS.A10_TierOneEpic KST.ANHD "DHB-98c486052a51")
 (print "")
 (print "")
+;;==== TX-184 - Tier 1 Epic · 02 · gas echo ==== ==================================================
+(print "--- [TX-184 - Tier 1 Epic · 02 · gas echo] ---")
 (format "<<<<<<<Tier 1 Epic {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -748,6 +917,8 @@
 (begin-tx "TX-185 - Tier TierTwoThreeFour")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-185 - Tier TierTwoThreeFour · 01 · env-sigs (caps) ==== =================================
+(print "--- [TX-185 - Tier TierTwoThreeFour · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -758,6 +929,8 @@
 (BLOODSHED-SETS.A11_TierTwoThreeFour KST.ANHD "DHB-98c486052a51")
 (print "")
 (print "")
+;;==== TX-185 - Tier TierTwoThreeFour · 02 · gas echo ==== ========================================
+(print "--- [TX-185 - Tier TierTwoThreeFour · 02 · gas echo] ---")
 (format "<<<<<<<Tier TierTwoThreeFour {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -776,12 +949,16 @@
 (begin-tx "TX 012 -- Make BS Set")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 012 -- Make BS Set · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [TX 012 -- Make BS Set · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== TX 012 -- Make BS Set · 02 · let / invocation ==== =========================================
+(print "--- [TX 012 -- Make BS Set · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV1} DPDC)
@@ -1104,6 +1281,8 @@
 
 (print "")
 (print "")
+;;==== TX 012 -- Make BS Set · 03 · gas echo ==== =================================================
+(print "--- [TX 012 -- Make BS Set · 03 · gas echo] ---")
 (format "<<<<<<<TX 012 -- Make BS Set Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")

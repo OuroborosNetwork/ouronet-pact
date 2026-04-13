@@ -27,3 +27,4 @@ Whoever learns something new in chat with the AI should ask it to **append or ed
 - **Stage 0:** `REPL/Stage00_Sanboxes.repl` (Kadena + Stoa sandboxes), then **`REPL/Stage00a_StoaTests.repl`** (Stoa `coin` tests, same file)
 - **Full chain load:** `REPL/Z.repl`
 - **Ouronet test namespace:** `ouronet-ns` (not `free`)
+- **Integration test `.repl` layout** (mandatory for new suites): **`ARCHITECTURE/REPL_AND_TESTS.md`** and **`skills/repl-integration-test-layout.md`**

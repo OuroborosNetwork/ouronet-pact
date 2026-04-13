@@ -1,4 +1,17 @@
 ;;
+;; REPL/Stage01_Tester.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage01_Tester.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;;
 ;;================================================================================
 ;;                                                                              ;;
@@ -31,8 +44,12 @@
 ;;SLAVE TESTER
 (load "Stage_01/[6.1]_Cumulator.repl")
     ;;
+;; DPTF + SWP: pick ONE path (comment the other).
+;;   Full suites: [6.2] then [6.3] (all DPTF/SWP tests).
+;;   Issuance-only: [6.2+3] (same INIT, DPTF issue+mints through step 004, SWP TX001-014 only; faster for AQP / Stage 2 prep).
 ;(load "Stage_01/[6.2]_DPTF.repl")
 ;(load "Stage_01/[6.3]_SWP.repl")
+(load "Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl")
     ;(load "Stage_01/[6.4]_Admin.repl")
 ;(load "Stage_01/[6.5]_DPOF.repl")
 ;(load "Stage_01/[6.6]_ATS.repl")

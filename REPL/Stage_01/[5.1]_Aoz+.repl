@@ -1,6 +1,21 @@
+;;
+;; REPL/Stage_01/[5.1]_Aoz+.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[5.1]_Aoz+.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (begin-tx "TX-00 [C0] - Chain Data Time SetUp Definition")
 (namespace "ouronet-ns")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -8,6 +23,10 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-gas)
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;
@@ -36,12 +55,22 @@
 (begin-tx "TX-01 [2] - DALOS Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-01 [2] - DALOS Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-01 [2] - DALOS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [2] - DALOS Module · 02 · load module ==== ===========================================
+(print "--- [TX-01 [2] - DALOS Module · 02 · load module] ---")
 (load "../../2_SLAVE/Stage_01/01_AOZ+.pact")
+;;==== TX-01 [2] - DALOS Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-01 [2] - DALOS Module · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;
@@ -56,12 +85,16 @@
 (begin-tx "TX-02 [C3.1] - AOZ Init [01]: Initialise Counters")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-02 [C3.1] - AOZ Init [01]: Initialise Counters · 01 · env-sigs (caps) ==== ==============
+(print "--- [TX-02 [C3.1] - AOZ Init [01]: Initialise Counters · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 
+;;==== TX-02 [C3.1] - AOZ Init [01]: Initialise Counters · 02 · let / invocation ==== =============
+(print "--- [TX-02 [C3.1] - AOZ Init [01]: Initialise Counters · 02 · let / invocation] ---")
     (let
         (
             (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -95,6 +128,8 @@
 
     )
 
+;;==== TX-02 [C3.1] - AOZ Init [01]: Initialise Counters · 03 · gas echo ==== =====================
+(print "--- [TX-02 [C3.1] - AOZ Init [01]: Initialise Counters · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [01] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -107,6 +142,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-03 [3.2] - AOZ Init [02]: Issue Primal True Fungibles · 01 · let / invocation ==== ======
+(print "--- [TX-03 [3.2] - AOZ Init [02]: Issue Primal True Fungibles · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -117,6 +154,8 @@
             )
         )
     )
+;;==== TX-03 [3.2] - AOZ Init [02]: Issue Primal True Fungibles · 02 · env-sigs (caps) ==== =======
+(print "--- [TX-03 [3.2] - AOZ Init [02]: Issue Primal True Fungibles · 02 · env-sigs (caps)] ---")
     (env-sigs
         [
             { "key": "PK_AOZ", "caps": [] }
@@ -179,6 +218,8 @@
     )
 )
 
+;;==== TX-03 [3.2] - AOZ Init [02]: Issue Primal True Fungibles · 03 · gas echo ==== ==============
+(print "--- [TX-03 [3.2] - AOZ Init [02]: Issue Primal True Fungibles · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [02] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -191,12 +232,16 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-04 [3.3] - AOZ Init [03]: Setup Primal True Fungibles · 01 · env-sigs (caps) ==== =======
+(print "--- [TX-04 [3.3] - AOZ Init [03]: Setup Primal True Fungibles · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 
+;;==== TX-04 [3.3] - AOZ Init [03]: Setup Primal True Fungibles · 02 · let / invocation ==== ======
+(print "--- [TX-04 [3.3] - AOZ Init [03]: Setup Primal True Fungibles · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
@@ -236,6 +281,8 @@
 
 )
 
+;;==== TX-04 [3.3] - AOZ Init [03]: Setup Primal True Fungibles · 03 · gas echo ==== ==============
+(print "--- [TX-04 [3.3] - AOZ Init [03]: Setup Primal True Fungibles · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [03] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -248,6 +295,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-05 [3.4] - AOZ Init [04]: Issue Primal Orto Fungibles · 01 · let / invocation ==== ======
+(print "--- [TX-05 [3.4] - AOZ Init [04]: Issue Primal Orto Fungibles · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -258,6 +307,8 @@
             )
         )
     )
+;;==== TX-05 [3.4] - AOZ Init [04]: Issue Primal Orto Fungibles · 02 · env-sigs (caps) ==== =======
+(print "--- [TX-05 [3.4] - AOZ Init [04]: Issue Primal Orto Fungibles · 02 · env-sigs (caps)] ---")
     (env-sigs
         [
             { "key": "PK_AOZ", "caps": [] }
@@ -322,6 +373,8 @@
 )
 
 
+;;==== TX-05 [3.4] - AOZ Init [04]: Issue Primal Orto Fungibles · 03 · gas echo ==== ==============
+(print "--- [TX-05 [3.4] - AOZ Init [04]: Issue Primal Orto Fungibles · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [04] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -334,6 +387,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-06 [3.5] - AOZ Init [05]: Issue Autostake Pair 1 and 2 · 01 · let / invocation ==== =====
+(print "--- [TX-06 [3.5] - AOZ Init [05]: Issue Autostake Pair 1 and 2 · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -344,6 +399,8 @@
             )
         )
     )
+;;==== TX-06 [3.5] - AOZ Init [05]: Issue Autostake Pair 1 and 2 · 02 · env-sigs (caps) ==== ======
+(print "--- [TX-06 [3.5] - AOZ Init [05]: Issue Autostake Pair 1 and 2 · 02 · env-sigs (caps)] ---")
     (env-sigs
         [
             { "key": "PK_AOZ", "caps": [] }
@@ -407,6 +464,8 @@
     )
 )
 
+;;==== TX-06 [3.5] - AOZ Init [05]: Issue Autostake Pair 1 and 2 · 03 · gas echo ==== =============
+(print "--- [TX-06 [3.5] - AOZ Init [05]: Issue Autostake Pair 1 and 2 · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [05] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -419,6 +478,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-07 [3.6] - AOZ Init [06]: Issue Autostake Pair 3 and 4 · 01 · let / invocation ==== =====
+(print "--- [TX-07 [3.6] - AOZ Init [06]: Issue Autostake Pair 3 and 4 · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -429,6 +490,8 @@
             )
         )
     )
+;;==== TX-07 [3.6] - AOZ Init [06]: Issue Autostake Pair 3 and 4 · 02 · env-sigs (caps) ==== ======
+(print "--- [TX-07 [3.6] - AOZ Init [06]: Issue Autostake Pair 3 and 4 · 02 · env-sigs (caps)] ---")
     (env-sigs
         [
             { "key": "PK_AOZ", "caps": [] }
@@ -492,6 +555,8 @@
     )
 )
 
+;;==== TX-07 [3.6] - AOZ Init [06]: Issue Autostake Pair 3 and 4 · 03 · gas echo ==== =============
+(print "--- [TX-07 [3.6] - AOZ Init [06]: Issue Autostake Pair 3 and 4 · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [06] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -504,6 +569,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-08 [3.7] - AOZ Init [07]: Issue Autostake Pair 5 and 6 · 01 · let / invocation ==== =====
+(print "--- [TX-08 [3.7] - AOZ Init [07]: Issue Autostake Pair 5 and 6 · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -514,6 +581,8 @@
             )
         )
     )
+;;==== TX-08 [3.7] - AOZ Init [07]: Issue Autostake Pair 5 and 6 · 02 · env-sigs (caps) ==== ======
+(print "--- [TX-08 [3.7] - AOZ Init [07]: Issue Autostake Pair 5 and 6 · 02 · env-sigs (caps)] ---")
     (env-sigs
         [
             { "key": "PK_AOZ", "caps": [] }
@@ -577,6 +646,8 @@
     ) 
 )
 
+;;==== TX-08 [3.7] - AOZ Init [07]: Issue Autostake Pair 5 and 6 · 03 · gas echo ==== =============
+(print "--- [TX-08 [3.7] - AOZ Init [07]: Issue Autostake Pair 5 and 6 · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [07] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -589,12 +660,16 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-09 [3.8] - AOZ Init [08]: Setup ATS-Pair 1 · 01 · env-sigs (caps) ==== ==================
+(print "--- [TX-09 [3.8] - AOZ Init [08]: Setup ATS-Pair 1 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 
+;;==== TX-09 [3.8] - AOZ Init [08]: Setup ATS-Pair 1 · 02 · let / invocation ==== =================
+(print "--- [TX-09 [3.8] - AOZ Init [08]: Setup ATS-Pair 1 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
@@ -610,6 +685,8 @@
     (ref-TS01-C2::ATS|C_SwitchColdRecovery patron PlebeicStrengthID true)  ;;REPL-ONLY >> When deploying on mainnet must be removed
 )
 
+;;==== TX-09 [3.8] - AOZ Init [08]: Setup ATS-Pair 1 · 03 · gas echo ==== =========================
+(print "--- [TX-09 [3.8] - AOZ Init [08]: Setup ATS-Pair 1 · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [08] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -622,12 +699,16 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-10 [3.9] - AOZ Init [09]: Setup ATS-Pair 2 · 01 · env-sigs (caps) ==== ==================
+(print "--- [TX-10 [3.9] - AOZ Init [09]: Setup ATS-Pair 2 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 
+;;==== TX-10 [3.9] - AOZ Init [09]: Setup ATS-Pair 2 · 02 · let / invocation ==== =================
+(print "--- [TX-10 [3.9] - AOZ Init [09]: Setup ATS-Pair 2 · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -640,6 +721,8 @@
     (ref-AOZ::C_SetupKosonicATS ComatiCommandID AureusFragilisID decay)
 )
 
+;;==== TX-10 [3.9] - AOZ Init [09]: Setup ATS-Pair 2 · 03 · gas echo ==== =========================
+(print "--- [TX-10 [3.9] - AOZ Init [09]: Setup ATS-Pair 2 · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [09] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -652,12 +735,16 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-11 [3.10] - AOZ Init [10]: Setup ATS-Pair 3 · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-11 [3.10] - AOZ Init [10]: Setup ATS-Pair 3 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 
+;;==== TX-11 [3.10] - AOZ Init [10]: Setup ATS-Pair 3 · 02 · let / invocation ==== ================
+(print "--- [TX-11 [3.10] - AOZ Init [10]: Setup ATS-Pair 3 · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -670,6 +757,8 @@
     (ref-AOZ::C_SetupKosonicATS PileatiPowerID SolidusFractusID decay)
 )
 
+;;==== TX-11 [3.10] - AOZ Init [10]: Setup ATS-Pair 3 · 03 · gas echo ==== ========================
+(print "--- [TX-11 [3.10] - AOZ Init [10]: Setup ATS-Pair 3 · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [10] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -682,12 +771,16 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-12 [3.11] - AOZ Init [11]: Setup ATS-Pair 4 · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-12 [3.11] - AOZ Init [11]: Setup ATS-Pair 4 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 
+;;==== TX-12 [3.11] - AOZ Init [11]: Setup ATS-Pair 4 · 02 · let / invocation ==== ================
+(print "--- [TX-12 [3.11] - AOZ Init [11]: Setup ATS-Pair 4 · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -700,6 +793,8 @@
     (ref-AOZ::C_SetupKosonicATS TarabostesTenacityID StaterTenuulusID decay)
 )
 
+;;==== TX-12 [3.11] - AOZ Init [11]: Setup ATS-Pair 4 · 03 · gas echo ==== ========================
+(print "--- [TX-12 [3.11] - AOZ Init [11]: Setup ATS-Pair 4 · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [11] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -712,12 +807,16 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-13 [3.12] - AOZ Init [12]: Setup ATS-Pair 5 · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-13 [3.12] - AOZ Init [12]: Setup ATS-Pair 5 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 
+;;==== TX-13 [3.12] - AOZ Init [12]: Setup ATS-Pair 5 · 02 · let / invocation ==== ================
+(print "--- [TX-13 [3.12] - AOZ Init [12]: Setup ATS-Pair 5 · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -730,6 +829,8 @@
     (ref-AOZ::C_SetupKosonicATS StrategonVigorID DrachmaMinimaID decay)
 )
 
+;;==== TX-13 [3.12] - AOZ Init [12]: Setup ATS-Pair 5 · 03 · gas echo ==== ========================
+(print "--- [TX-13 [3.12] - AOZ Init [12]: Setup ATS-Pair 5 · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [12] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -742,12 +843,16 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-14 [3.13] - AOZ Init [13]: Setup ATS-Pair 6 · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-14 [3.13] - AOZ Init [13]: Setup ATS-Pair 6 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 
+;;==== TX-14 [3.13] - AOZ Init [13]: Setup ATS-Pair 6 · 02 · let / invocation ==== ================
+(print "--- [TX-14 [3.13] - AOZ Init [13]: Setup ATS-Pair 6 · 02 · let / invocation] ---")
 (let
     (
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
@@ -760,6 +865,8 @@
     (ref-AOZ::C_SetupKosonicATS AsAuthorityID AsInfinimusID decay)
 )
 
+;;==== TX-14 [3.13] - AOZ Init [13]: Setup ATS-Pair 6 · 03 · gas echo ==== ========================
+(print "--- [TX-14 [3.13] - AOZ Init [13]: Setup ATS-Pair 6 · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [13] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -772,12 +879,16 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-15 [3.14] - AOZ Init [14]: Mint Kosons · 01 · env-sigs (caps) ==== ======================
+(print "--- [TX-15 [3.14] - AOZ Init [14]: Mint Kosons · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 
+;;==== TX-15 [3.14] - AOZ Init [14]: Mint Kosons · 02 · let / invocation ==== =====================
+(print "--- [TX-15 [3.14] - AOZ Init [14]: Mint Kosons · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
@@ -797,6 +908,8 @@
     (ref-TS01-C1::DPTF|C_Mint patron AncientKosonID     patron ak-amount true)
 )
 
+;;==== TX-15 [3.14] - AOZ Init [14]: Mint Kosons · 03 · gas echo ==== =============================
+(print "--- [TX-15 [3.14] - AOZ Init [14]: Mint Kosons · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [14] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -809,12 +922,16 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-16 [3.15] - AOZ Init [15]: Coil in each ATS Pair 250 of Each Type of Koson · 01 · env-sigs (caps) ==== 
+(print "--- [TX-16 [3.15] - AOZ Init [15]: Coil in each ATS Pair 250 of Each Type of Koson · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 
+;;==== TX-16 [3.15] - AOZ Init [15]: Coil in each ATS Pair 250 of Each Type of Koson · 02 · let / invocation ==== 
+(print "--- [TX-16 [3.15] - AOZ Init [15]: Coil in each ATS Pair 250 of Each Type of Koson · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
@@ -859,6 +976,8 @@
     (ref-TS01-C2::ATS|C_Coil patron patron AsAuthorityID        AncientKosonID      a)
 )
 
+;;==== TX-16 [3.15] - AOZ Init [15]: Coil in each ATS Pair 250 of Each Type of Koson · 03 · gas echo ==== 
+(print "--- [TX-16 [3.15] - AOZ Init [15]: Coil in each ATS Pair 250 of Each Type of Koson · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Init [15] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)

@@ -1,3 +1,382 @@
+;;
+;; REPL/Stage_02/[6.2.2]_AQP-SCORE.repl — source layout mirrors console (same as [6.2.1]_AQP-ANK.repl)
+;;   Inter-tx:   ;;|| NEXT >  (REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== TX-SCORE-nn · mm · <slug> ====  pairs with (print "--- [TX-SCORE-nn · mm · …] ---") on the next line (mm = group within that begin-tx, 01..)
+;;   format "{}": Talos C_* return, ref-SCR::UR_* / U|DALOS::* return, expect doc, or (env-gas).
+;;   REPL tests: (expect …) returns a string — wrap expects in a list and (map print …) so each assertion line appears in the REPL; no nested format wrapping expect.
+;;
 (print "")
-(print "===================AQP-SCORE Test File==========================")
-(print "SCORE module tests pending. ANK suite moved to [6.2.1]_AQP-ANK.repl")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.2]_AQP-SCORE.repl")
+(print "================================================================")
+(print "Legend (terminal observability):")
+(print "  <<…>>     expect doc (format …) — REPL logs pass/fail")
+(print "  <(TS02-C3.AQP-SCR|C_…)> => \"…\"   Talos client → AQP-SCR write (return value)")
+(print "  <(AQP-SCORE|UR_SCR|…)> => \"…\"   ref-SCR utility read (return value)")
+(print "  <(U|DALOS|…)> / <(DALOS|…)>       UDC_Makeid, URC_SplitKDAPrices, …")
+(print "  <(REPL|env-gas)> …               gas after tx (env-gas)")
+(print "")
+(print "Requires prior Stage 02 loads: interfaces, DALOS, DPDC, SCORE module, TS02-C3, KST (e.g. [6.2]_AQP.repl after [6.2.1]).")
+(print "STOA: only score issuance (C_Issue*Score) pays UR_UsagePrice smart — use 4 coin.TRANSFER caps. Rotate/control/links use IGNIS-only paths; no STOA splits.")
+(print "")
+(print "Source: ;;|| NEXT > between txs; ;;==== TX-SCORE-nn · mm · … ==== before each REPL group banner (mm = intra-tx group).")
+(print "REPL tests: (map print [(expect (format \"<<TX-SCORE-nn>> …\" […]) expected actual) …]) — expect returns strings; map print surfaces each line.")
+(print "")
+(print "https://docs.kadena.io/pact-5/repl — expect records pass/fail.")
+(print "")
+(print "===================AQP-SCORE TX Block==========================")
+(begin-tx "TX-SCORE-01 - Issue SemiFungible score TheCodingDivision (class 3, equal SFT weights)")
+(print "")
+(print "=== TX-SCORE-01 — Issue SemiFungible score TheCodingDivision =================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (score-name:string "TheCodingDivision")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (ref-DALOS::UR_UsagePrice "smart"))
+        )
+    )
+    ;;==== TX-SCORE-01 · 01 · U|DALOS UDC_Makeid + DALOS URC_SplitKDAPrices — REPL ====
+    (print "--- [TX-SCORE-01 · 01 · UDC_Makeid + DALOS fee split (smart)] ---")
+    (print (format "<(U|DALOS|UDC_Makeid TheCodingDivision)> => \"{}\"" [score-id]))
+    (print (format "<(DALOS|URC_SplitKDAPrices smart)> => \"{}\"" [split-kda]))
+    ;;==== TX-SCORE-01 · 02 · env-sigs + Talos C_IssueSemiFungibleScore — REPL =========
+    (print "--- [TX-SCORE-01 · 02 · env-sigs + C_IssueSemiFungibleScore (class 3)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore class=3)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto score-name 3 false)]))
+    ;;==== TX-SCORE-01 · 03 · ref-SCR UR_SCR reads + expect — REPL ====================
+    (print "--- [TX-SCORE-01 · 03 · UR_SCR reads + expect] ---")
+    (let
+        (
+            (v-score-id:string (ref-SCR::UR_SCR|ScoreScoreId score-id))
+            (v-class:integer (ref-SCR::UR_SCR|ScoreClass score-id))
+            (v-sft-eq:bool (ref-SCR::UR_SCR|ScoreSftEquality score-id))
+            (v-owner:string (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
+            (v-al:string (ref-SCR::UR_SCR|ScoreBoostClassLink score-id))
+            (v-bl:string (ref-SCR::UR_SCR|ScoreBoostLink score-id))
+            (v-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-id))
+            (v-fvt:string (ref-SCR::UR_SCR|ScoreFvtLink score-id))
+            (v-up:bool (ref-SCR::UR_SCR|ScoreCanUpgrade score-id))
+            (v-co:bool (ref-SCR::UR_SCR|ScoreCanChangeOwner score-id))
+        )
+        (map print
+            [
+                (format "<(AQP-SCORE|UR_SCR|ScoreScoreId)> => \"{}\"" [v-score-id])
+                (format "<(AQP-SCORE|UR_SCR|ScoreClass)> => \"{}\"" [v-class])
+                (format "<(AQP-SCORE|UR_SCR|ScoreSftEquality)> => \"{}\"" [v-sft-eq])
+                (format "<(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> => \"{}\"" [v-owner])
+                (format "<(AQP-SCORE|UR_SCR|ScoreBoostClassLink)> => \"{}\"" [v-al])
+                (format "<(AQP-SCORE|UR_SCR|ScoreBoostLink)> => \"{}\"" [v-bl])
+                (format "<(AQP-SCORE|UR_SCR|ScoreAqpoolLink)> => \"{}\"" [v-pool])
+                (format "<(AQP-SCORE|UR_SCR|ScoreFvtLink)> => \"{}\"" [v-fvt])
+                (format "<(AQP-SCORE|UR_SCR|ScoreCanUpgrade)> => \"{}\"" [v-up])
+                (format "<(AQP-SCORE|UR_SCR|ScoreCanChangeOwner)> => \"{}\"" [v-co])
+            ]
+        )
+        (map print
+            [
+                (expect (format "<<TX-SCORE-01 expect>> <(AQP-SCORE|UR_SCR|ScoreScoreId)> got={} expected={}" [v-score-id score-id]) score-id v-score-id)
+                (expect (format "<<TX-SCORE-01 expect>> <(AQP-SCORE|UR_SCR|ScoreClass)> got={} expected=3" [v-class]) 3 v-class)
+                (expect (format "<<TX-SCORE-01 expect>> <(AQP-SCORE|UR_SCR|ScoreSftEquality)> got={} expected=true" [v-sft-eq]) true v-sft-eq)
+                (expect (format "<<TX-SCORE-01 expect>> <(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> got={} expected={}" [v-owner owner-konto]) owner-konto v-owner)
+                (expect (format "<<TX-SCORE-01 expect>> links anchor={} boost={} (must be equal)" [v-al v-bl]) v-al v-bl)
+                (expect (format "<<TX-SCORE-01 expect>> links boost={} aqpool={} (must be equal)" [v-bl v-pool]) v-bl v-pool)
+                (expect (format "<<TX-SCORE-01 expect>> links aqpool={} fvt={} (must be equal)" [v-pool v-fvt]) v-pool v-fvt)
+                (expect (format "<<TX-SCORE-01 expect>> <(AQP-SCORE|UR_SCR|ScoreCanUpgrade)> got={} expected=true" [v-up]) true v-up)
+                (expect (format "<<TX-SCORE-01 expect>> <(AQP-SCORE|UR_SCR|ScoreCanChangeOwner)> got={} expected=true" [v-co]) true v-co)
+            ]
+        )
+    )
+    ;;==== TX-SCORE-01 · 04 · summary (UR_SCR|ScoreOwnerKonto) — REPL =================
+    (print "--- [TX-SCORE-01 · 04 · UR_SCR|ScoreOwnerKonto summary] ---")
+    (map print [(format "<(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> score-id={} => \"{}\"" [score-id (ref-SCR::UR_SCR|ScoreOwnerKonto score-id)])])
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-01 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-SCORE-01 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-SCORE-02 - Rotate ownership + control flags; restore issued defaults")
+(print "")
+(print "=== TX-SCORE-02 — Rotate ownership + control flags ==========================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+    )
+    ;;==== TX-SCORE-02 · 01 · score-id (U|DALOS UDC_Makeid) — REPL ====================
+    (print "--- [TX-SCORE-02 · 01 · UDC_Makeid (score-id echo)] ---")
+    (print (format "<(U|DALOS|UDC_Makeid TheCodingDivision)> => \"{}\"" [score-id]))
+    ;;==== TX-SCORE-02 · 02 · rotate ownership ANHD -> EMMA — REPL ====================
+    (print "--- [TX-SCORE-02 · 02 · rotate ownership ANHD -> EMMA] ---")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-SCR|C_RotateScoreOwnership to EMMA)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership patron score-id KST.EMMA)]))
+    (let ((own1:string (ref-SCR::UR_SCR|ScoreOwnerKonto score-id)))
+        (print (format "<(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> after rotate to EMMA => \"{}\"" [own1]))
+        (map print [(expect (format "<<TX-SCORE-02 expect>> <(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> got={} expected={}" [own1 KST.EMMA]) KST.EMMA own1)])
+    )
+    ;;==== TX-SCORE-02 · 03 · rotate ownership EMMA -> ANHD — REPL =====================
+    (print "--- [TX-SCORE-02 · 03 · rotate ownership EMMA -> ANHD] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-SCR|C_RotateScoreOwnership to ANHD)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_RotateScoreOwnership patron score-id KST.ANHD)]))
+    (let ((own2:string (ref-SCR::UR_SCR|ScoreOwnerKonto score-id)))
+        (print (format "<(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> after rotate-back to ANHD => \"{}\"" [own2]))
+        (map print [(expect (format "<<TX-SCORE-02 expect>> <(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> got={} expected={}" [own2 KST.ANHD]) KST.ANHD own2)])
+    )
+    ;;==== TX-SCORE-02 · 04 · C_ControlScore (upgrade true, change-owner false) — REPL =
+    (print "--- [TX-SCORE-02 · 04 · C_ControlScore (upgrade on, change-owner off)] ---")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-SCR|C_ControlScore upgrade=true change-owner=false)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_ControlScore patron score-id true false)]))
+    (let
+        (
+            (u:bool (ref-SCR::UR_SCR|ScoreCanUpgrade score-id))
+            (c:bool (ref-SCR::UR_SCR|ScoreCanChangeOwner score-id))
+        )
+        (map print
+            [
+                (format "<(AQP-SCORE|UR_SCR|ScoreCanUpgrade)> => \"{}\"" [u])
+                (format "<(AQP-SCORE|UR_SCR|ScoreCanChangeOwner)> => \"{}\"" [c])
+            ]
+        )
+        (map print
+            [
+                (expect (format "<<TX-SCORE-02 expect>> <(AQP-SCORE|UR_SCR|ScoreCanUpgrade)> got={} expected=true" [u]) true u)
+                (expect (format "<<TX-SCORE-02 expect>> <(AQP-SCORE|UR_SCR|ScoreCanChangeOwner)> got={} expected=false" [c]) false c)
+            ]
+        )
+    )
+    ;;==== TX-SCORE-02 · 05 · C_ControlScore restore defaults (true, true) — REPL =====
+    (print "--- [TX-SCORE-02 · 05 · C_ControlScore restore defaults (on, on)] ---")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-SCR|C_ControlScore upgrade=true change-owner=true)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_ControlScore patron score-id true true)]))
+    (let
+        (
+            (u2:bool (ref-SCR::UR_SCR|ScoreCanUpgrade score-id))
+            (c2:bool (ref-SCR::UR_SCR|ScoreCanChangeOwner score-id))
+        )
+        (map print
+            [
+                (format "<(AQP-SCORE|UR_SCR|ScoreCanUpgrade)> => \"{}\"" [u2])
+                (format "<(AQP-SCORE|UR_SCR|ScoreCanChangeOwner)> => \"{}\"" [c2])
+            ]
+        )
+        (map print
+            [
+                (expect (format "<<TX-SCORE-02 expect>> <(AQP-SCORE|UR_SCR|ScoreCanUpgrade)> got={} expected=true" [u2]) true u2)
+                (expect (format "<<TX-SCORE-02 expect>> <(AQP-SCORE|UR_SCR|ScoreCanChangeOwner)> got={} expected=true" [c2]) true c2)
+            ]
+        )
+    )
+    ;;==== TX-SCORE-02 · 06 · summary UR flags — REPL =================================
+    (print "--- [TX-SCORE-02 · 06 · summary UR flags] ---")
+    (map print
+        [
+            (format "<(AQP-SCORE|UR_SCR|ScoreOwnerKonto)> => \"{}\"" [(ref-SCR::UR_SCR|ScoreOwnerKonto score-id)])
+            (format "<(AQP-SCORE|UR_SCR|ScoreCanUpgrade)> => \"{}\"" [(ref-SCR::UR_SCR|ScoreCanUpgrade score-id)])
+            (format "<(AQP-SCORE|UR_SCR|ScoreCanChangeOwner)> => \"{}\"" [(ref-SCR::UR_SCR|ScoreCanChangeOwner score-id)])
+        ]
+    )
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-02 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-SCORE-02 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-SCORE-03 - Issue additional scores, score definitions, and DEB boost")
+(print "")
+(print "=== TX-SCORE-03 — Issue additional scores, definitions, DEB boost ======")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 8.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    ;;==== TX-SCORE-03 · 01 · env-sigs (8 issuances × smart STOA) ============================
+    (print "--- [TX-SCORE-03 · 01 · env-sigs (8 issuances × smart fee)] ---")
+    (print (format "<(DALOS|URC_SplitKDAPrices 8×smart)> => \"{}\"" [split-kda]))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    ;;==== TX-SCORE-03 · 02 · PureScores — TheCodingDivision SF definitions ===================
+    (print "--- [TX-SCORE-03 · 02 · TheCodingDivision SF score definitions] ---")
+    (print (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonces 1-10 val=1.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" (enumerate 1 10) (make-list 10 1.0))]))
+    (print (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonce 11 val=10.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [10.0])]))
+    ;;==== TX-SCORE-03 · 03 · Bloodshed NF score (class 4, model 0 = native) =================
+    (print "--- [TX-SCORE-03 · 03 · Bloodshed NF score (model 0 = native)] ---")
+    (print (format "<(TS02-C3|C_IssueNFScore Bloodshed prec=6 model=0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "Bloodshed" 6 0)]))
+    ;;==== TX-SCORE-03 · 04 · Demiourgos Shareholder scores + DEB boost =======================
+    (print "--- [TX-SCORE-03 · 04 · DemiourgosShareholder + DemiourgosSnakes + DEB boost] ---")
+    (print (format "<(TS02-C3|C_IssueSFScore DemiourgosShareholder prec=6 equal=true)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "DemiourgosShareholder" 6 true)]))
+    (print (format "<(TS02-C3|C_IssueSFScore DemiourgosSnakes prec=6 equal=false)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "DemiourgosSnakes" 6 false)]))
+    (print (format "<(TS02-C3|C_EnableDebBoost DemiourgosSnakes)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron "DemiourgosSnakes-98c486052a51")]))
+    ;;==== TX-SCORE-03 · 05 · Subsidiary scores + definitions ================================
+    (print "--- [TX-SCORE-03 · 05 · Subsidiary scores + definitions] ---")
+    ;;CodingDivision Subsidiary
+    (print (format "<(TS02-C3|C_IssueSFScore SubsidiaryCodingDivision prec=6 equal=false)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "SubsidiaryCodingDivision" 6 false)]))
+    (print (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonces 1-10 val=5.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" (enumerate 1 10) (make-list 10 5.0))]))
+    (print (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonce 11 val=75.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [75.0])]))
+    ;;WonderCoach Subsidiary
+    (let
+        (
+            (wc-values:[decimal]
+                (fold (+) []
+                    [(make-list 10 1.0) (make-list 10 2.0) (make-list 10 4.0) [15.0 28.0 52.0 114.0]]
+                )
+            )
+        )
+        (map print
+            [
+                (format "<(TS02-C3|C_IssueSFScore SubsidiaryWonderCoach prec=6 equal=false)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "SubsidiaryWonderCoach" 6 false)])
+                (format "<(TS02-C3|C_IssueSFScoreDef WonderCoach nonces 1-34)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "SubsidiaryWonderCoach-98c486052a51" "DHWC-98c486052a51" (enumerate 1 34) wc-values)])
+            ]
+        )
+    )
+    ;;Bloodshed Subsidiary
+    ;(print (format "<(TS02-C3|C_IssueNFScore SubsidiaryBloodshed prec=6 model=1)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryBloodshed" 6 1)]))
+    ;(print (format "<(TS02-C3|C_IssueNFScoreDef Bloodshed DHB Rarity)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron "SubsidiaryBloodshed-98c486052a51" "DHB-98c486052a51" ["Rarity" "Rarity" "Rarity" "Rarity"] ["Legendary" "Epic" "Rare" "Common"] [1.0 3.0 5.0 11.0])]))
+    ;;Nosferatu Subsidiary
+    ;(print (format "<(TS02-C3|C_IssueNFScore SubsidiaryNosferatu prec=6 model=1)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryNosferatu" 6 1)]))
+    ;(print (format "<(TS02-C3|C_IssueNFScoreDef Nosferatu DHN Rarity)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron "SubsidiaryNosferatu-98c486052a51" "DHN-98c486052a51" ["Rarity" "Rarity" "Rarity" "Rarity"] ["Legendary" "Epic" "Rare" "Common"] [2.0 4.0 8.0 16.0])]))
+    ;;Bunnies Subsidiary
+    (print (format "<(TS02-C3|C_IssueNFScore SubsidiaryBunnies prec=6 model=1)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryBunnies" 6 1)]))
+    (print (format "<(TS02-C3|C_IssueNFScoreDef Bunnies KBN Rarity)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron "SubsidiaryBunnies-98c486052a51" "KBN-98c486052a51" ["Rarity" "Rarity"] ["Legendary" "Common"] [2.0 160.0])]))
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-03 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-SCORE-03 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-SCORE-04 - Issued score entities (read-only echo)")
+(print "")
+(print "=== TX-SCORE-04 — Issued score entities ===================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [])
+(let
+    (
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (score-ids:[string] (ref-SCR::UR_SCR|AllScoreIds))
+    )
+    ;;==== TX-SCORE-04 · 01 · list all issued scores (UR_SCR|AllScoreIds) =====================
+    (print "--- [TX-SCORE-04 · 01 · UR_SCR|AllScoreIds] ---")
+    (print (format "<(AQP-SCORE|UR_SCR|AllScoreIds)> count => \"{}\"" [(length score-ids)]))
+    (map
+        (lambda (sid:string)
+            (print (format "  score-id: {} | class: {} | owner: {}" [sid (ref-SCR::UR_SCR|ScoreClass sid) (ref-SCR::UR_SCR|ScoreOwnerKonto sid)]))
+        )
+        score-ids
+    )
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-04 after commit => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+(print "=== END TX-SCORE-04 · FILE [6.2.2]_AQP-SCORE.repl DONE =========================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;; End [6.2.2]; load further Stage_02 REPLs as needed.
+

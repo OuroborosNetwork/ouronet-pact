@@ -1,4 +1,17 @@
 ;;
+;; REPL/Stage_01/[2.2]_Core.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[2.2]_Core.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;;
 ;;================================================================================
 ;;                                                                              ;;
@@ -23,9 +36,15 @@
 (begin-tx "TX-02 [2.1] - IGNIS Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-02 [2.1] - IGNIS Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-02 [2.1] - IGNIS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2.1] - IGNIS Module · 02 · load module ==== =========================================
+(print "--- [TX-02 [2.1] - IGNIS Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/02_IGNIS.pact")
+;;==== TX-02 [2.1] - IGNIS Module · 03 · gas echo ==== ============================================
+(print "--- [TX-02 [2.1] - IGNIS Module · 03 · gas echo] ---")
 (format "<<<<<<<IGNIS Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -37,9 +56,15 @@
 (begin-tx "TX-03 [2.1] - INFO-ZERO Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-03 [2.1] - INFO-ZERO Module · 01 · env-sigs (caps) ==== =================================
+(print "--- [TX-03 [2.1] - INFO-ZERO Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-03 [2.1] - INFO-ZERO Module · 02 · load module ==== =====================================
+(print "--- [TX-03 [2.1] - INFO-ZERO Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/03_INFO-ZERO.pact")
+;;==== TX-03 [2.1] - INFO-ZERO Module · 03 · gas echo ==== ========================================
+(print "--- [TX-03 [2.1] - INFO-ZERO Module · 03 · gas echo] ---")
 (format "<<<<<<<INFO-ZERO Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -51,9 +76,15 @@
 (begin-tx "TX-01 [2.1] - BRD Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-01 [2.1] - BRD Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-01 [2.1] - BRD Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [2.1] - BRD Module · 02 · load module ==== ===========================================
+(print "--- [TX-01 [2.1] - BRD Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/04_BRD.pact")
+;;==== TX-01 [2.1] - BRD Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-01 [2.1] - BRD Module · 03 · gas echo] ---")
 (format "<<<<<<<BRD Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -65,9 +96,15 @@
 (begin-tx "TX-02 [2.2] - DPTF Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-02 [2.2] - DPTF Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-02 [2.2] - DPTF Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2.2] - DPTF Module · 02 · load module ==== ==========================================
+(print "--- [TX-02 [2.2] - DPTF Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/05_DPTF.pact")
+;;==== TX-02 [2.2] - DPTF Module · 03 · gas echo ==== =============================================
+(print "--- [TX-02 [2.2] - DPTF Module · 03 · gas echo] ---")
 (format "<<<<<<<DPTF Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -79,21 +116,37 @@
 (begin-tx "TX-03 [2.3] - DPMF Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-03 [2.3] - DPMF Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-03 [2.3] - DPMF Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-03 [2.3] - DPMF Module · 02 · load module ==== ==========================================
+(print "--- [TX-03 [2.3] - DPMF Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/00_DPMF.pact")
+;;==== TX-03 [2.3] - DPMF Module · 03 · gas echo ==== =============================================
+(print "--- [TX-03 [2.3] - DPMF Module · 03 · gas echo] ---")
 (format "<<<<<<<DPMF Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 (print "")
 (begin-tx "TX-06 [2.1] - DPOF Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-06 [2.1] - DPOF Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-06 [2.1] - DPOF Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-06 [2.1] - DPOF Module · 02 · load module ==== ==========================================
+(print "--- [TX-06 [2.1] - DPOF Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact")
+;;==== TX-06 [2.1] - DPOF Module · 03 · gas echo ==== =============================================
+(print "--- [TX-06 [2.1] - DPOF Module · 03 · gas echo] ---")
 (format "<<<<<<<DPOF Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -105,9 +158,15 @@
 (begin-tx "TX-07 [2.1] - ELITE Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-07 [2.1] - ELITE Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-07 [2.1] - ELITE Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-07 [2.1] - ELITE Module · 02 · load module ==== =========================================
+(print "--- [TX-07 [2.1] - ELITE Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/07_ELITE.pact")
+;;==== TX-07 [2.1] - ELITE Module · 03 · gas echo ==== ============================================
+(print "--- [TX-07 [2.1] - ELITE Module · 03 · gas echo] ---")
 (format "<<<<<<<ELITE Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -119,9 +178,15 @@
 (begin-tx "TX-04 [2.4] - ATS Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-04 [2.4] - ATS Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-04 [2.4] - ATS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [2.4] - ATS Module · 02 · load module ==== ===========================================
+(print "--- [TX-04 [2.4] - ATS Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/08_ATS.pact")
+;;==== TX-04 [2.4] - ATS Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-04 [2.4] - ATS Module · 03 · gas echo] ---")
 (format "<<<<<<<ATS Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -133,9 +198,15 @@
 (begin-tx "TX-05 [2.5] - TFT Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-05 [2.5] - TFT Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-05 [2.5] - TFT Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-05 [2.5] - TFT Module · 02 · load module ==== ===========================================
+(print "--- [TX-05 [2.5] - TFT Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/09_TFT.pact")
+;;==== TX-05 [2.5] - TFT Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-05 [2.5] - TFT Module · 03 · gas echo] ---")
 (format "<<<<<<<TFT Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -147,9 +218,15 @@
 (begin-tx "TX-06 [2.6] - ATSU Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-06 [2.6] - ATSU Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-06 [2.6] - ATSU Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-06 [2.6] - ATSU Module · 02 · load module ==== ==========================================
+(print "--- [TX-06 [2.6] - ATSU Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/10_ATSU.pact")
+;;==== TX-06 [2.6] - ATSU Module · 03 · gas echo ==== =============================================
+(print "--- [TX-06 [2.6] - ATSU Module · 03 · gas echo] ---")
 (format "<<<<<<<ATSU Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -161,9 +238,15 @@
 (begin-tx "TX-07 [2.7] - VST Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-07 [2.7] - VST Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-07 [2.7] - VST Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-07 [2.7] - VST Module · 02 · load module ==== ===========================================
+(print "--- [TX-07 [2.7] - VST Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/11_VST.pact")
+;;==== TX-07 [2.7] - VST Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-07 [2.7] - VST Module · 03 · gas echo] ---")
 (format "<<<<<<<VST Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -175,9 +258,15 @@
 (begin-tx "TX-08 [2.8] - LIQUID Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-08 [2.8] - LIQUID Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-08 [2.8] - LIQUID Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-08 [2.8] - LIQUID Module · 02 · load module ==== ========================================
+(print "--- [TX-08 [2.8] - LIQUID Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/12_LIQUID.pact")
+;;==== TX-08 [2.8] - LIQUID Module · 03 · gas echo ==== ===========================================
+(print "--- [TX-08 [2.8] - LIQUID Module · 03 · gas echo] ---")
 (format "<<<<<<<LIQUID Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -189,9 +278,15 @@
 (begin-tx "TX-09 [2.9] - OUROBOROS Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-09 [2.9] - OUROBOROS Module · 01 · env-sigs (caps) ==== =================================
+(print "--- [TX-09 [2.9] - OUROBOROS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-09 [2.9] - OUROBOROS Module · 02 · load module ==== =====================================
+(print "--- [TX-09 [2.9] - OUROBOROS Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/13_OUROBOROS.pact")
+;;==== TX-09 [2.9] - OUROBOROS Module · 03 · gas echo ==== ========================================
+(print "--- [TX-09 [2.9] - OUROBOROS Module · 03 · gas echo] ---")
 (format "<<<<<<<OUROBOROS Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -203,9 +298,15 @@
 (begin-tx "TX-10 [2.10] - SWPT Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-10 [2.10] - SWPT Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-10 [2.10] - SWPT Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-10 [2.10] - SWPT Module · 02 · load module ==== =========================================
+(print "--- [TX-10 [2.10] - SWPT Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact")
+;;==== TX-10 [2.10] - SWPT Module · 03 · gas echo ==== ============================================
+(print "--- [TX-10 [2.10] - SWPT Module · 03 · gas echo] ---")
 (format "<<<<<<<SWPT Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -217,9 +318,15 @@
 (begin-tx "TX-11 [2.11] - SWP Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-11 [2.11] - SWP Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-11 [2.11] - SWP Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-11 [2.11] - SWP Module · 02 · load module ==== ==========================================
+(print "--- [TX-11 [2.11] - SWP Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact")
+;;==== TX-11 [2.11] - SWP Module · 03 · gas echo ==== =============================================
+(print "--- [TX-11 [2.11] - SWP Module · 03 · gas echo] ---")
 (format "<<<<<<<SWP Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -231,9 +338,15 @@
 (begin-tx "TX-12 [2.12] - SWPI Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-12 [2.12] - SWPI Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-12 [2.12] - SWPI Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-12 [2.12] - SWPI Module · 02 · load module ==== =========================================
+(print "--- [TX-12 [2.12] - SWPI Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact")
+;;==== TX-12 [2.12] - SWPI Module · 03 · gas echo ==== ============================================
+(print "--- [TX-12 [2.12] - SWPI Module · 03 · gas echo] ---")
 (format "<<<<<<<SWPI Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -245,9 +358,15 @@
 (begin-tx "TX-13 [2.13] - SWPL Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-13 [2.13] - SWPL Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-13 [2.13] - SWPL Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-13 [2.13] - SWPL Module · 02 · load module ==== =========================================
+(print "--- [TX-13 [2.13] - SWPL Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact")
+;;==== TX-13 [2.13] - SWPL Module · 03 · gas echo ==== ============================================
+(print "--- [TX-13 [2.13] - SWPL Module · 03 · gas echo] ---")
 (format "<<<<<<<SWPL Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -259,9 +378,15 @@
 (begin-tx "TX-14 [2.14] - SWPLC Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-14 [2.14] - SWPLC Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-14 [2.14] - SWPLC Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-14 [2.14] - SWPLC Module · 02 · load module ==== ========================================
+(print "--- [TX-14 [2.14] - SWPLC Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact")
+;;==== TX-14 [2.14] - SWPLC Module · 03 · gas echo ==== ===========================================
+(print "--- [TX-14 [2.14] - SWPLC Module · 03 · gas echo] ---")
 (format "<<<<<<<SWPLC Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -273,9 +398,15 @@
 (begin-tx "TX-14 [2.15] - SWPU Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-14 [2.15] - SWPU Module · 01 · env-sigs (caps) ==== =====================================
+(print "--- [TX-14 [2.15] - SWPU Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-14 [2.15] - SWPU Module · 02 · load module ==== =========================================
+(print "--- [TX-14 [2.15] - SWPU Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact")
+;;==== TX-14 [2.15] - SWPU Module · 03 · gas echo ==== ============================================
+(print "--- [TX-14 [2.15] - SWPU Module · 03 · gas echo] ---")
 (format "<<<<<<<SWPU Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -287,9 +418,15 @@
 (begin-tx "TX-14 [2.16] - MTX-SWP Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-14 [2.16] - MTX-SWP Module · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-14 [2.16] - MTX-SWP Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-14 [2.16] - MTX-SWP Module · 02 · load module ==== ======================================
+(print "--- [TX-14 [2.16] - MTX-SWP Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact")
+;;==== TX-14 [2.16] - MTX-SWP Module · 03 · gas echo ==== =========================================
+(print "--- [TX-14 [2.16] - MTX-SWP Module · 03 · gas echo] ---")
 (format "<<<<<<<MTX-SWP Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -301,9 +438,15 @@
 (begin-tx "TX-14 [2.17] - INFO-ONE+ Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-14 [2.17] - INFO-ONE+ Module · 01 · env-sigs (caps) ==== ================================
+(print "--- [TX-14 [2.17] - INFO-ONE+ Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-14 [2.17] - INFO-ONE+ Module · 02 · load module ==== ====================================
+(print "--- [TX-14 [2.17] - INFO-ONE+ Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/21_INFO-ONE+.pact")
+;;==== TX-14 [2.17] - INFO-ONE+ Module · 03 · gas echo ==== =======================================
+(print "--- [TX-14 [2.17] - INFO-ONE+ Module · 03 · gas echo] ---")
 (format "<<<<<<<INFO-ONE Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)

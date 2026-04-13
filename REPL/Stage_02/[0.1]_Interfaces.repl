@@ -1,4 +1,17 @@
 ;;
+;; REPL/Stage_02/[0.1]_Interfaces.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[0.1]_Interfaces.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;;
 ;;================================================================================
 ;;                                                                              ;;
@@ -15,21 +28,37 @@
 (begin-tx "TX-02 [0.02] - Deploy Stage One Core Interfaces")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-02 [0.02] - Deploy Stage One Core Interfaces · 01 · env-sigs (caps) ==== ================
+(print "--- [TX-02 [0.02] - Deploy Stage One Core Interfaces · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [0.02] - Deploy Stage One Core Interfaces · 02 · load module ==== ====================
+(print "--- [TX-02 [0.02] - Deploy Stage One Core Interfaces · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact")
+;;==== TX-02 [0.02] - Deploy Stage One Core Interfaces · 03 · gas echo ==== =======================
+(print "--- [TX-02 [0.02] - Deploy Stage One Core Interfaces · 03 · gas echo] ---")
 (format "<<<<<<<Core Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;
 ;;
 (print "")
 (begin-tx "TX-03 [0.03] - Deploy Stage One Talos Interfaces")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-03 [0.03] - Deploy Stage One Talos Interfaces · 01 · env-sigs (caps) ==== ===============
+(print "--- [TX-03 [0.03] - Deploy Stage One Talos Interfaces · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-03 [0.03] - Deploy Stage One Talos Interfaces · 02 · load module ==== ===================
+(print "--- [TX-03 [0.03] - Deploy Stage One Talos Interfaces · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact")
+;;==== TX-03 [0.03] - Deploy Stage One Talos Interfaces · 03 · gas echo ==== ======================
+(print "--- [TX-03 [0.03] - Deploy Stage One Talos Interfaces · 03 · gas echo] ---")
 (format "<<<<<<<Talos Interfaces Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)

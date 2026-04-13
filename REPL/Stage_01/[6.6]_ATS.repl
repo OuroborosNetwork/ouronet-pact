@@ -1,7 +1,22 @@
+;;
+;; REPL/Stage_01/[6.6]_ATS.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[6.6]_ATS.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (print "===================Initialise Ouronet_TX-002============================")
 (begin-tx "INIT TX 000 - Chain Data Time SetUp Definition")
 (namespace "ouronet-ns")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -9,20 +24,26 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-gas)
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Init STEP 001 - Show Tests")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Init STEP 001 - Show Tests · 01 · env-sigs (caps) ==== =====================================
+(print "--- [Init STEP 001 - Show Tests · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Init STEP 001 - Show Tests · 02 · let / invocation ==== ====================================
+(print "--- [Init STEP 001 - Show Tests · 02 · let / invocation] ---")
 (let 
     (
         (aoz:string KST.AOZT)
@@ -80,23 +101,30 @@
 )
 (print "")
 (print "")
+;;==== Init STEP 001 - Show Tests · 03 · gas echo ==== ============================================
+(print "--- [Init STEP 001 - Show Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 001 Show Tests {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Init STEP 001")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Init STEP 001 · 01 · env-sigs (caps) ==== ==================================================
+(print "--- [Init STEP 001 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Init STEP 001 · 02 · let / invocation ==== =================================================
+(print "--- [Init STEP 001 · 02 · let / invocation] ---")
 (let 
     (
         (ref-INFO-ONE:module{InfoOneV1} INFO-ONE)
@@ -130,23 +158,30 @@
 )
 (print "")
 (print "")
+;;==== Init STEP 001 · 03 · gas echo ==== =========================================================
+(print "--- [Init STEP 001 · 03 · gas echo] ---")
 (format "<<<<<<<STEP 002 Coil Fuel Tests {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Init STEP 003 - Show Tests")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Init STEP 003 - Show Tests · 01 · env-sigs (caps) ==== =====================================
+(print "--- [Init STEP 003 - Show Tests · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Init STEP 003 - Show Tests · 02 · let / invocation ==== ====================================
+(print "--- [Init STEP 003 - Show Tests · 02 · let / invocation] ---")
 (let 
     (
         (aoz:string KST.AOZT)
@@ -179,26 +214,34 @@
 )
 (print "")
 (print "")
+;;==== Init STEP 003 - Show Tests · 03 · gas echo ==== ============================================
+(print "--- [Init STEP 003 - Show Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 003 Show Tests Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Hot RBT and Redeem Test 1|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Hot RBT and Redeem Test 1|5 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [Hot RBT and Redeem Test 1|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Hot RBT and Redeem Test 1|5 · 02 · let / invocation ==== ===================================
+(print "--- [Hot RBT and Redeem Test 1|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -256,16 +299,21 @@
 
 (print "")
 (print "")
+;;==== Hot RBT and Redeem Test 1|5 · 03 · gas echo ==== ===========================================
+(print "--- [Hot RBT and Redeem Test 1|5 · 03 · gas echo] ---")
 (format "<<<<<<<Hot RBT and Redeem Test 1|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Hot RBT and Redeem Test 2|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Hot RBT and Redeem Test 2|5 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [Hot RBT and Redeem Test 2|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -273,6 +321,8 @@
 )
 (namespace "ouronet-ns")
 (print "BEFORE BLOCK===================================")
+;;==== Hot RBT and Redeem Test 2|5 · 02 · let / invocation ==== ===================================
+(print "--- [Hot RBT and Redeem Test 2|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -299,22 +349,29 @@
 
 (print "")
 (print "")
+;;==== Hot RBT and Redeem Test 2|5 · 03 · gas echo ==== ===========================================
+(print "--- [Hot RBT and Redeem Test 2|5 · 03 · gas echo] ---")
 (format "<<<<<<<Hot RBT and Redeem Test 2|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Hot RBT and Redeem Test 3|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Hot RBT and Redeem Test 3|5 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [Hot RBT and Redeem Test 3|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Hot RBT and Redeem Test 3|5 · 02 · let / invocation ==== ===================================
+(print "--- [Hot RBT and Redeem Test 3|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -348,22 +405,29 @@
 
 (print "")
 (print "")
+;;==== Hot RBT and Redeem Test 3|5 · 03 · gas echo ==== ===========================================
+(print "--- [Hot RBT and Redeem Test 3|5 · 03 · gas echo] ---")
 (format "<<<<<<<Hot RBT and Redeem Test 3|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Hot RBT and Redeem Test 4|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Hot RBT and Redeem Test 4|5 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [Hot RBT and Redeem Test 4|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Hot RBT and Redeem Test 4|5 · 02 · let / invocation ==== ===================================
+(print "--- [Hot RBT and Redeem Test 4|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -395,22 +459,29 @@
 
 (print "")
 (print "")
+;;==== Hot RBT and Redeem Test 4|5 · 03 · gas echo ==== ===========================================
+(print "--- [Hot RBT and Redeem Test 4|5 · 03 · gas echo] ---")
 (format "<<<<<<<Hot RBT and Redeem Test 4|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Hot RBT and Redeem Test 5|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Hot RBT and Redeem Test 5|5 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [Hot RBT and Redeem Test 5|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Hot RBT and Redeem Test 5|5 · 02 · let / invocation ==== ===================================
+(print "--- [Hot RBT and Redeem Test 5|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -468,24 +539,31 @@
 
 (print "")
 (print "")
+;;==== Hot RBT and Redeem Test 5|5 · 03 · gas echo ==== ===========================================
+(print "--- [Hot RBT and Redeem Test 5|5 · 03 · gas echo] ---")
 (format "<<<<<<<Hot RBT and Redeem Test 5|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;
 (begin-tx "Cold Recovery and Cull Test 1|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Cold Recovery and Cull Test 1|5 · 01 · env-sigs (caps) ==== ================================
+(print "--- [Cold Recovery and Cull Test 1|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Cold Recovery and Cull Test 1|5 · 02 · let / invocation ==== ===============================
+(print "--- [Cold Recovery and Cull Test 1|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -543,16 +621,21 @@
 
 (print "")
 (print "")
+;;==== Cold Recovery and Cull Test 1|5 · 03 · gas echo ==== =======================================
+(print "--- [Cold Recovery and Cull Test 1|5 · 03 · gas echo] ---")
 (format "<<<<<<<Cold Recovery and Cull Test 1|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Cold Recovery and Cull Test 2|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Cold Recovery and Cull Test 2|5 · 01 · env-sigs (caps) ==== ================================
+(print "--- [Cold Recovery and Cull Test 2|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -561,6 +644,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Cold Recovery and Cull Test 2|5 · 02 · let / invocation ==== ===============================
+(print "--- [Cold Recovery and Cull Test 2|5 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -622,16 +707,21 @@
 
 (print "")
 (print "")
+;;==== Cold Recovery and Cull Test 2|5 · 03 · gas echo ==== =======================================
+(print "--- [Cold Recovery and Cull Test 2|5 · 03 · gas echo] ---")
 (format "<<<<<<<Cold Recovery and Cull Test 2|5 Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Cold Recovery and Cull Test 3|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Cold Recovery and Cull Test 3|5 · 01 · env-sigs (caps) ==== ================================
+(print "--- [Cold Recovery and Cull Test 3|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -640,6 +730,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Cold Recovery and Cull Test 3|5 · 02 · let / invocation ==== ===============================
+(print "--- [Cold Recovery and Cull Test 3|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -711,16 +803,21 @@
 
 (print "")
 (print "")
+;;==== Cold Recovery and Cull Test 3|5 · 03 · gas echo ==== =======================================
+(print "--- [Cold Recovery and Cull Test 3|5 · 03 · gas echo] ---")
 (format "<<<<<<<Cold Recovery and Cull Test 3|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Cold Recovery and Cull Test 4|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Cold Recovery and Cull Test 4|5 · 01 · env-sigs (caps) ==== ================================
+(print "--- [Cold Recovery and Cull Test 4|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -729,6 +826,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Cold Recovery and Cull Test 4|5 · 02 · let / invocation ==== ===============================
+(print "--- [Cold Recovery and Cull Test 4|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -807,19 +906,25 @@
 
 (print "")
 (print "")
+;;==== Cold Recovery and Cull Test 4|5 · 03 · gas echo ==== =======================================
+(print "--- [Cold Recovery and Cull Test 4|5 · 03 · gas echo] ---")
 (format "<<<<<<<Cold Recovery and Cull Test 4|4 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Syphon Tests 1|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Syphon Tests 1|3 · 01 · env-sigs (caps) ==== ===============================================
+(print "--- [Syphon Tests 1|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -828,6 +933,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Syphon Tests 1|3 · 02 · let / invocation ==== ==============================================
+(print "--- [Syphon Tests 1|3 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -890,16 +997,21 @@
 
 (print "")
 (print "")
+;;==== Syphon Tests 1|3 · 03 · gas echo ==== ======================================================
+(print "--- [Syphon Tests 1|3 · 03 · gas echo] ---")
 (format "<<<<<<<Syphone Tests 1|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Syphon Tests 2|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Syphon Tests 2|3 · 01 · env-sigs (caps) ==== ===============================================
+(print "--- [Syphon Tests 2|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -908,6 +1020,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Syphon Tests 2|3 · 02 · let / invocation ==== ==============================================
+(print "--- [Syphon Tests 2|3 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -970,19 +1084,25 @@
 
 (print "")
 (print "")
+;;==== Syphon Tests 2|3 · 03 · gas echo ==== ======================================================
+(print "--- [Syphon Tests 2|3 · 03 · gas echo] ---")
 (format "<<<<<<<Syphon Tests 2|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Parameter Unlock with KDA Fee Collection")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Parameter Unlock with KDA Fee Collection · 01 · env-sigs (caps) ==== =======================
+(print "--- [Parameter Unlock with KDA Fee Collection · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -991,6 +1111,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Parameter Unlock with KDA Fee Collection · 02 · let / invocation ==== ======================
+(print "--- [Parameter Unlock with KDA Fee Collection · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -1082,16 +1204,21 @@
 
 (print "")
 (print "")
+;;==== Parameter Unlock with KDA Fee Collection · 03 · gas echo ==== ==============================
+(print "--- [Parameter Unlock with KDA Fee Collection · 03 · gas echo] ---")
 (format "<<<<<<<Parameter Unlock with KDA Fee Collection costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Parameter Unlock with KDA Fee Collection")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Parameter Unlock with KDA Fee Collection · 01 · env-sigs (caps) ==== =======================
+(print "--- [Parameter Unlock with KDA Fee Collection · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1100,6 +1227,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Parameter Unlock with KDA Fee Collection · 02 · let / invocation ==== ======================
+(print "--- [Parameter Unlock with KDA Fee Collection · 02 · let / invocation] ---")
     (let
         (
             (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
@@ -1114,16 +1243,21 @@
 
 (print "")
 (print "")
+;;==== Parameter Unlock with KDA Fee Collection · 03 · gas echo ==== ==============================
+(print "--- [Parameter Unlock with KDA Fee Collection · 03 · gas echo] ---")
 (format "<<<<<<<Parameter Unlock with KDA Fee Collection costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Secondary Remove 1|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Secondary Remove 1|5 · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [Secondary Remove 1|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1132,6 +1266,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Secondary Remove 1|5 · 02 · let / invocation ==== ==========================================
+(print "--- [Secondary Remove 1|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -1187,16 +1323,21 @@
 
 (print "")
 (print "")
+;;==== Secondary Remove 1|5 · 03 · gas echo ==== ==================================================
+(print "--- [Secondary Remove 1|5 · 03 · gas echo] ---")
 (format "<<<<<<<Secondary Remove 1|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Secondary Remove 2|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Secondary Remove 2|5 · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [Secondary Remove 2|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1205,6 +1346,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Secondary Remove 2|5 · 02 · let / invocation ==== ==========================================
+(print "--- [Secondary Remove 2|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -1261,16 +1404,21 @@
 
 (print "")
 (print "")
+;;==== Secondary Remove 2|5 · 03 · gas echo ==== ==================================================
+(print "--- [Secondary Remove 2|5 · 03 · gas echo] ---")
 (format "<<<<<<<Secondary Remove 2|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Secondary Remove 3|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Secondary Remove 3|5 · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [Secondary Remove 3|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1279,6 +1427,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Secondary Remove 3|5 · 02 · let / invocation ==== ==========================================
+(print "--- [Secondary Remove 3|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -1316,16 +1466,21 @@
 
 (print "")
 (print "")
+;;==== Secondary Remove 3|5 · 03 · gas echo ==== ==================================================
+(print "--- [Secondary Remove 3|5 · 03 · gas echo] ---")
 (format "<<<<<<<Secondary Remove 3|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Secondary Remove 4|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Secondary Remove 4|5 · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [Secondary Remove 4|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1334,6 +1489,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Secondary Remove 4|5 · 02 · let / invocation ==== ==========================================
+(print "--- [Secondary Remove 4|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -1402,16 +1559,21 @@
 
 (print "")
 (print "")
+;;==== Secondary Remove 4|5 · 03 · gas echo ==== ==================================================
+(print "--- [Secondary Remove 4|5 · 03 · gas echo] ---")
 (format "<<<<<<<Secondary Remove 4|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Secondary Remove 5|5")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Secondary Remove 5|5 · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [Secondary Remove 5|5 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1420,6 +1582,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Secondary Remove 5|5 · 02 · let / invocation ==== ==========================================
+(print "--- [Secondary Remove 5|5 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -1481,19 +1645,25 @@
 
 (print "")
 (print "")
+;;==== Secondary Remove 5|5 · 03 · gas echo ==== ==================================================
+(print "--- [Secondary Remove 5|5 · 03 · gas echo] ---")
 (format "<<<<<<<Secondary Remove 5|5 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Add Secondary AGAIN with Hybrid Cull Test 1|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Add Secondary AGAIN with Hybrid Cull Test 1|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 1|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1502,6 +1672,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 1|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 1|3 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -1553,16 +1725,21 @@
 
 (print "")
 (print "")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 1|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 1|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 1|2 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Add Secondary AGAIN with Hybrid Cull Test 2|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Add Secondary AGAIN with Hybrid Cull Test 2|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 2|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1571,6 +1748,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 2|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 2|3 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -1641,16 +1820,21 @@
 
 (print "")
 (print "")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 2|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 2|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 2|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Add Secondary AGAIN with Hybrid Cull Test 3|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1660,6 +1844,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -1758,22 +1944,29 @@
 
 (print "")
 (print "")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 3|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Add Secondary AGAIN with Hybrid Cull Test 3|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_Lumy", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
@@ -1791,17 +1984,22 @@
 
 (print "")
 (print "")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<Brumate Self Test {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Add Secondary AGAIN with Hybrid Cull Test 3|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -1813,6 +2011,8 @@
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
     "block-time": (time "2024-11-22T00:00:00Z")}
 )
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -1991,17 +2191,22 @@
 
 (print "")
 (print "")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 3|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Add Secondary AGAIN with Hybrid Cull Test 3|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -2013,6 +2218,8 @@
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
     "block-time": (time "2024-11-22T00:00:00Z")}
 )
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -2113,17 +2320,22 @@
 
 (print "")
 (print "")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 3|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Add Secondary AGAIN with Hybrid Cull Test 3|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -2135,6 +2347,8 @@
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
     "block-time": (time "2024-11-22T00:00:00Z")}
 )
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
     (
         (aoz:string KST.AOZT)
@@ -2235,6 +2449,8 @@
 
 (print "")
 (print "")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<Add Secondary AGAIN with Hybrid Cull Test 3|3 {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2242,12 +2458,15 @@
 (commit-tx)
 
 
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Add Secondary AGAIN with Hybrid Cull Test 3|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps) ==== ==================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
@@ -2255,6 +2474,8 @@
         { "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation ==== =================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
@@ -2279,24 +2500,31 @@
 
 (print "")
 (print "")
+;;==== Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo ==== =========================
+(print "--- [Add Secondary AGAIN with Hybrid Cull Test 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<251th Cold Recovery costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
 
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Cull A LOT")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== Cull A LOT · 01 · env-sigs (caps) ==== =====================================================
+(print "--- [Cull A LOT · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== Cull A LOT · 02 · let / invocation ==== ====================================================
+(print "--- [Cull A LOT · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
@@ -2310,6 +2538,8 @@
 
 (print "")
 (print "")
+;;==== Cull A LOT · 03 · gas echo ==== ============================================================
+(print "--- [Cull A LOT · 03 · gas echo] ---")
 (format "<<<<<<<Cull costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")

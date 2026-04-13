@@ -86,83 +86,87 @@
     ;;SCHEMAS-TABLES-CONSTANTS
     ;;{1}
     (defschema FVT|Schema
-        @doc "FVT aggregates member scores for RPS. Policy: add ScoreLink \
-            \ only when the score has aqpool-link set (employed by a pool), \
-            \ then enforce fvt-class vs score-class and, for farms, \
-            \ common-denominator vs that pool's asset (LP construction). \
-            \ Changing fvt-class or common-denominator after links exist is \
-            \ unsafe for fairness; prefer a new fvt-id. Reward accounting is \
-            \ per reward dptf-id (FVT|RPS|Global / FVT|RPS|User)."
-        ;;FVT Type
-        fvt-class:integer                                       ;; 0 = Farm, 1 = Vault, 2 = Treasury
+        @doc "FVT definition row. Field tags (same legend as SCR|Schema): \
+            \ [.] fixed at issue; [..] fixed once set; [M] mutable; [Mu] mutable only under owner + can-upgrade. \
+            \ \
+            \ **Farm (fvt-class 0):** `common-denominator` + `total-ghost-tvl-weight` (Tier-2 sum S). \
+            \ **Vault / Treasury:** `common-denominator` is sentinel \"|\"; `total-ghost-tvl-weight` stays 0.0 until a vault design uses it."
+        ;;--- All classes ---
+        fvt-class:integer                                       ;;[.]   0 = Farm, 1 = Vault, 2 = Treasury
         ;;
         ;;Management
-        owner-konto:string
-        can-upgrade:bool
-        can-change-owner:bool
+        owner-konto:string                                      ;;[Mu]  FVT owner
+        can-upgrade:bool                                        ;;[Mu]  Settings upgradeable when true
+        can-change-owner:bool                                   ;;[Mu]  Owner rotation when true
         ;;
-        ;; 
-        common-denominator:string                               ;;Farm-only: common DPTF in all LPs (e.g. "OURO"), "|" for Vault/Treasury
+        ;;--- Farm-only (class 0): common LP leg + Tier-2 weight sum S (Vault/Treasury: sentinel + 0.0) ---
+        common-denominator:string                               ;;[Mu]  Farm: DPTF id shared by member LP scores (e.g. OURO); unsafe to change after ScoreLinks; Vault/Treasury: \"|\"
+        total-ghost-tvl-weight:decimal                          ;;[M]   Farm: S = sum of enabled ScoreLinks' ghost-tvl-weight; Vault/Treasury: 0.0
         ;;
-        ;;Aggregated Scores
-        total-base-score:decimal
-        total-boosted-score:decimal
-        total-deb-score:decimal
-        total-nzs-count:integer
+        ;;--- Aggregated SCORE mirrors (all classes) ---
+        total-base-score:decimal                                ;;[M]
+        total-boosted-score:decimal                             ;;[M]
+        total-deb-score:decimal                                 ;;[M]
+        total-nzs-count:integer                                 ;;[M]
         ;;
-        ;; Select Keys
-        fvt-id:string
+        ;;Select Keys
+        fvt-id:string                                           ;;[.]   FVT identity
     )
     ;;FVT Memberships
     (defschema FVT|ScoreLink
-        @doc "Row key (fvt-id, score-id) is permanent; enabled excludes \
-            \ from aggregation. Admission: score must be pool-employed \
-            \ (SCR aqpool-link) so asset checks use Pool -> asset-id."
-        enabled:bool                                            ;;Defines if the Score is active in FVT
+        @doc "Member score row; key (fvt-id, score-id) permanent. Tags: [.] fixed; [..] fixed after admission write; [M] mutable. \
+            \ \
+            \ **All classes:** membership + SCORE aggregate participation. \
+            \ **Farm (parent fvt-class 0) only:** `swpair` through `pending-tranche-rewards` implement Tier-2/Tier-1 RPS for that tranche. \
+            \ **Vault / Treasury (parent class 1|2):** farm-only columns are unused for now — store `swpair` \"|\", numeric fields 0.0 until vault RPS is specified."
+        ;;--- All classes ---
+        enabled:bool                                            ;;[M]   Excludes tranche from S and from user accrual when false
+        ;;
+        ;;--- Farm only (fvt-class 0 member); Vault/Treasury: sentinel / zeros until defined ---
+        swpair:string                                           ;;[..]  Farm: SWP pair id from UR_GetLpSwpair at admission; else \"|\"
+        ghost-tvl-weight:decimal                                ;;[M]   Farm: W_i from SWP ghost TVL; else 0.0
+        last-farm-rps-g:decimal                                 ;;[M]   Farm: checkpoint vs FVT|RPS|Global.current-rps (G); else 0.0
+        tranche-deb-rps:decimal                                 ;;[M]   Farm: Tier-1 L_i (reward per SCR total-deb unit); else 0.0
+        pending-tranche-rewards:decimal                         ;;[M]   Farm: buffer when tranche total-deb = 0; else 0.0
         ;;
         ;;Select Keys
-        fvt-id:string                                           ;;FVT the Score-ID operates in
-        score-id:string                                         ;;ID of the Score that is linked to the FVT
+        fvt-id:string                                           ;;[.]   Parent FVT
+        score-id:string                                         ;;[.]   Member score id
     )
-    (defschema FVT|RewardLink
-        @doc "Row key (fvt-id, dptf-id) is permanent; enabled gates inject/collect for that reward token."
-        enabled:bool                                            ;;Defines if the Reward is active in FVT
-        ;;
-        ;;Select Keys
-        fvt-id:string                                           ;;FVT the Reward-ID operates in
-        dptf-id:string                                          ;;ID of the Reward Token that operates in the FVT
-    )
-    ;;RPS Schemas
-    ;;1]Global RPS per FVT + Reward Token
+    ;;RPS — one row per (fvt-id, dptf-id): replaces separate RewardLink; reward-enabled gates inject/collect.
     (defschema FVT|RPS|Global
-        current-rps:decimal                                     ;; 48 decimals
-        available-rewards:decimal                               ;; 24 decimals
-        unclaimed-count:integer
-        segmentation:bool
+        @doc "Global RPS per FVT per reward DPTF. Key = <FVT-ID> | <DPTF-ID>. Farm: current-rps is Tier-2 G; inject uses S on FVT|T. \
+            \ Vault/Treasury: semantics TBD (single-tier placeholder)."
+        reward-enabled:bool                                     ;;[M]   Gates C_Inject / C_Collect for this reward token (was FVT|RewardLink.enabled)
+        current-rps:decimal                                     ;;[M]   Farm: Tier-2 G (48 dp). Else: legacy index
+        available-rewards:decimal                               ;;[M]   24 dp vault for undistributed balance
+        unclaimed-count:integer                                 ;;[M]   Claimants / dust policy
+        segmentation:bool                                       ;;[.]   Reserved product flag at reward registration
         ;;
         ;;Select Keys
-        fvt-id:string
-        dptf-id:string
+        fvt-id:string                                           ;;[.]   Parent FVT
+        dptf-id:string                                          ;;[.]   Reward token id
     )
-    ;;2]User Rewards per FVT + Reward Token
+    ;;User Tier-1 — per (user, fvt, score tranche, reward token)
     (defschema FVT|RPS|User
-        last-rps:decimal
-        pending-rewards:decimal
+        @doc "User checkpoint against ScoreLink.tranche-deb-rps (L_i) for one reward token."
+        last-rps:decimal                                        ;;[M]   Last seen L_i (same precision as tranche-deb-rps)
+        pending-rewards:decimal                                 ;;[M]   Accrued not yet collected
         ;;
         ;;Select Keys
-        user-id:string                                          ;; <Ouronet-Account>
-        fvt-id:string                                           ;; <FVT-ID>
-        dptf-id:string                                          ;; <DPTF-ID>
+        user-id:string                                          ;;[.]   Ouronet account
+        fvt-id:string                                           ;;[.]   FVT id
+        score-id:string                                         ;;[.]   Member score tranche
+        dptf-id:string                                          ;;[.]   Reward token id
     )
     ;;
     ;;{2}
     (deftable FVT|T:{FVT|Schema})                               ;; Key = <FVT-ID>
     ;;
     (deftable FVT|T|ScoreLink:{FVT|ScoreLink})                  ;; Key = <FVT-ID> | <Score-ID>
-    (deftable FVT|T|RewardLink:{FVT|RewardLink})                ;; Key = <FVT-ID> | <DPTF-ID>
     ;;
     (deftable FVT|T|RPS|Global:{FVT|RPS|Global})                ;; Key = <FVT-ID> | <DPTF-ID>
-    (deftable FVT|T|RPS|User:{FVT|RPS|User})                    ;; Key = <Ouronet-Account> | <FVT-ID> | <DPTF-ID>
+    (deftable FVT|T|RPS|User:{FVT|RPS|User})                    ;; Key = <Ouronet-Account> | <FVT-ID> | <Score-ID> | <DPTF-ID>
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -172,6 +176,11 @@
     )
     ;;{C2}
     ;;{C3}
+    (defcap FVT|XE>SYNC-SCORE-GHOST-TVL (fvt-id:string score-id:string)
+        @doc "Forward (AQP-POOL after SWP ghost TVL refresh): settle Tier-2 for this tranche; update ghost-tvl-weight from SWP; adjust FVT|T.total-ghost-tvl-weight. \
+            \ Not evented — composed under AQP client flows; SWP owns reserve math, FVT owns reward invariants."
+        true
+    )
     ;;{C4}
     ;;
     ;;<=======>
@@ -218,24 +227,22 @@
             \ excludes score from FVT aggregates and RPS denominator."
         true
     )
-    ;;Reward tokens (FVT|T|RewardLink + RPS rows) — key is permanent; no delete. Add = enabled true; Toggle = on/off.
+    ;;Reward token registration — single row FVT|T|RPS|Global per (fvt-id, dptf-id); reward-enabled gates inject/collect
     (defun C_AddRewardLink:object{IgnisCollectorV1.OutputCumulator}
         ()
-        @doc "Register a reward DPTF on this FVT; RewardLink.enabled is true. Row key cannot be removed."
+        @doc "Register reward dptf-id: insert FVT|T|RPS|Global with reward-enabled true and zeroed rps fields; row key permanent."
         true
     )
     (defun C_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator}
         ()
-        @doc "Turn RewardLink.enabled on or off for (fvt-id, \
-            \ reward-dptf-id); off disables emissions/collection for that \
-            \ token."
+        @doc "Toggle FVT|T|RPS|Global.reward-enabled for (fvt-id, reward-dptf-id); off disables inject/collect for that token."
         true
     )
     ;;RPS economics (FVT|T|RPS|Global / FVT|T|RPS|User)
     (defun C_Inject:object{IgnisCollectorV1.OutputCumulator}
         ()
-        @doc "Inject reward amount for a reward dptf-id; updates \
-            \ current-rps and available-rewards when total score non-zero."
+        @doc "Inject reward amount for a reward dptf-id. Farm: G += R / total-ghost-tvl-weight when S>0; \
+            \ Vault/Treasury: legacy path may use aggregated deb until split."
         true
     )
     (defun C_Collect:object{IgnisCollectorV1.OutputCumulator}
@@ -245,40 +252,45 @@
         true
     )
     ;;
-    ;;ACTIONS
+    ;;ACTIONS  (Farm class 0 — two-tier RPS; see README_FVT.md Ghost TVL + Execution order)
     ;;
-    ;;1]INJECT Rewards (can inject only when <total-score> != 0.0)
-    ;;  1a] Update <current-rps> = (+ <current-rps> (/ <reward-amount> <total-score>))
+    ;;1]INJECT Rewards (farm: require total-ghost-tvl-weight S > 0)
+    ;;  1a] Tier-2: current-rps (G) += reward-amount / S
     ;;  1b] Update <available-rewards> = (+ <available-rewards> <reward-amount>)
-    ;;  1c] Update <unclaimed-count> = <nzs-count>
+    ;;  1c] Update <unclaimed-count> = <nzs-count> (aggregate across members; semantics TBD)
     ;;
-    ;;2]STAKE
-    ;;  2a] Check if <deb-score> is different from the stored <deb-score>; if it is different use the newly computed <deb-score> for 2b]
-    ;;  2b] Update <pending-rewards> = <pending-rewards> + (* <deb-score> (- <current-rps> <last-rps>))     
-    ;;      Use the stored <deb-score> is if the same as the newly computed <deb-score>; No score updates yet
-    ;;  2c] Update <total-base-score>/<total-deb-score> and <base-score>/<deb-score> considering the newly staked assets.
-    ;;  2d] If prev <deb-score> was 0, increment <nzs-count>; 
-    ;;      Increment <unclaimed-count> for first-stakers (prev <deb-score> was 0)
-    ;;  2e] Update <last-rps> to the Pools <current-rps>
+    ;;2]STAKE (per user, per member score-id tranche)
+    ;;  2a] settle_tranche_tier2: earned = ghost-tvl-weight * (G - last-farm-rps-g); last-farm-rps-g := G;
+    ;;       if SCR total-deb-score for score-id > 0: tranche-deb-rps (L_i) += earned / total-deb else pending-tranche-rewards += earned
+    ;;  2b] Tier-1: pending-rewards += deb_user * (L_i - last-rps_user); last-rps_user := L_i  (read deb from SCORE user row)
+    ;;  2c] SCORE stake path updates user deb / score totals (AQP-SCORE)
+    ;;  2d] nz / unclaimed bookkeeping
+    ;;  2e] last-rps_user := L_i after score mutation if needed
     ;;
-    ;;3]UNSTAKE
-    ;;  3a] Check if <deb-score> is different from the stored <deb-score>; if it is different use the newly computed <deb-score> for 3b]
-    ;;  3b] Update <pending-rewards> = <pending-rewards> + (* <deb-score> (- <current-rps> <last-rps>))
-    ;;      Use the stored <deb-score> is if the same as the newly computed <deb-score>; No score updates yet.
-    ;;  3c] Update <total-base-score>/<total-deb-score> and <base-score>/<deb-score> considering the newly staked assets.
-    ;;  3d] If <deb-score> becomes 0, decrement <nzs-count>
-    ;;  3e] Update <last-rps> to the Pools <current-rps>
+    ;;3]UNSTAKE — same settle order as STAKE (2a then 2b before mutating deb)
     ;;
     ;;4]COLLECT
-    ;;  4a] Check if <deb-score> is different from the stored <deb-score>; if it is different use the newly computed <deb-score> for 4c]
-    ;;  4b] Update <available-rewards> = <available-rewards> - <collected-rewards>
-    ;;  4c] Computes Current Reward = <pending-reward> + (* <deb-score> (- <current-rps> <last-rps>))
-    ;;      If <unclaimed-count> = 1 (is last user with non zero rewards) , then Current-Reward is the min between computed and exiting (for dust sweaping)
-    ;;  4d] Updates the <pending-reward> to either 0.0 (in case all is collected) or to the remaining amount. (difference between computed and collected)
-    ;;  4e] If all Computed Reward is collected, and the <pending-reward> becomes 0, decrement <unclaimed-count>
-    ;;  4f] Update <last-rps> to the Pools <current-rps>
+    ;;  4a] Repeat 2a (tranche settle) then 2b with current deb for reward line
+    ;;  4b] Decrement available-rewards by payout
+    ;;  4c] Dust / last-claimer rule on available-rewards vs pending
+    ;;  4d-4f] pending and unclaimed-count updates; last-rps_user := L_i
+    ;;
+    ;;5]SWP / AQP — after swap or add/remove liquidity on swpair P:
+    ;;  5a] SWP::XE_RefreshGhostTvlForSwpair(P) — recompute and store ghost TVL for P (SWP module; STOA-equivalent policy)
+    ;;  5b] AQP-POOL resolves affected (pool, score-id, fvt-id) rows and calls FVT::XE_SyncFarmScoreGhostTvlFromSwp for each linked farm member (bounded by scores per pool)
+    ;;  5c] XE path: settle Tier-2 for that tranche at old W_i; set ghost-tvl-weight from SWP read; FVT|T.total-ghost-tvl-weight += (new_W - old_W)
     ;;
     ;;{F7}  [X]
+    ;;
+    (defun XE_SyncFarmScoreGhostTvlFromSwp:string (fvt-id:string score-id:string)
+        @doc "Forward entry: AQP-POOL calls after SWP refreshed ghost TVL for the member score's swpair. \
+            \ UEV_IMC; FVT|XE>SYNC-SCORE-GHOST-TVL; Tier-2 settle + W_i / S update (implementation pending). \
+            \ Caller supplies IGNIS cumulator upstream."
+        (UEV_IMC)
+        (with-capability (FVT|XE>SYNC-SCORE-GHOST-TVL fvt-id score-id)
+            fvt-id
+        )
+    )
     ;;
 )
 
@@ -287,6 +299,5 @@
 ;;
 (create-table FVT|T)
 (create-table FVT|T|ScoreLink)
-(create-table FVT|T|RewardLink)
 (create-table FVT|T|RPS|Global)
 (create-table FVT|T|RPS|User)

@@ -1,6 +1,21 @@
+;;
+;; REPL/Stage_02/[2.1]_DpdcCore.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[2.1]_DpdcCore.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (begin-tx "TX-00 [C0] - Chain Data Time SetUp Definition")
 (namespace "ouronet-ns")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -8,6 +23,10 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-gas)
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;
@@ -31,6 +50,8 @@
 (begin-tx "TX-01 [1.1] - Define Keys Used in Stage 02 Modules")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 01 · env-sigs (caps) ==== =============
+(print "--- [TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 
@@ -94,6 +115,8 @@
             }
         ]
     )
+;;==== TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 02 · let / invocation ==== ============
+(print "--- [TX-01 [1.1] - Define Keys Used in Stage 02 Modules · 02 · let / invocation] ---")
     (let
         (
             (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -130,6 +153,10 @@
 
 (env-gas)
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;
@@ -152,9 +179,15 @@
 (begin-tx "TX-02 [2.1] - DPDC-UDC Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-02 [2.1] - DPDC-UDC Module · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-02 [2.1] - DPDC-UDC Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2.1] - DPDC-UDC Module · 02 · load module ==== ======================================
+(print "--- [TX-02 [2.1] - DPDC-UDC Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/01_DPDC-UDC.pact")
+;;==== TX-02 [2.1] - DPDC-UDC Module · 03 · gas echo ==== =========================================
+(print "--- [TX-02 [2.1] - DPDC-UDC Module · 03 · gas echo] ---")
 (format "<<<<<<<DPDC-UDC Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -166,9 +199,15 @@
 (begin-tx "TX-03 [2.2] - DPDC Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-03 [2.2] - DPDC Module · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX-03 [2.2] - DPDC Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-03 [2.2] - DPDC Module · 02 · load module ==== ==========================================
+(print "--- [TX-03 [2.2] - DPDC Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/02_DPDC.pact")
+;;==== TX-03 [2.2] - DPDC Module · 03 · gas echo ==== =============================================
+(print "--- [TX-03 [2.2] - DPDC Module · 03 · gas echo] ---")
 (format "<<<<<<<DPDC Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -180,9 +219,15 @@
 (begin-tx "TX-04 [2.3] - DPDC-C Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-04 [2.3] - DPDC-C Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-04 [2.3] - DPDC-C Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-04 [2.3] - DPDC-C Module · 02 · load module ==== ========================================
+(print "--- [TX-04 [2.3] - DPDC-C Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/03_DPDC-C.pact")
+;;==== TX-04 [2.3] - DPDC-C Module · 03 · gas echo ==== ===========================================
+(print "--- [TX-04 [2.3] - DPDC-C Module · 03 · gas echo] ---")
 (format "<<<<<<<DPDC-C Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -194,9 +239,15 @@
 (begin-tx "TX-05 [2.4] - DPDC-I Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-05 [2.4] - DPDC-I Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-05 [2.4] - DPDC-I Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-05 [2.4] - DPDC-I Module · 02 · load module ==== ========================================
+(print "--- [TX-05 [2.4] - DPDC-I Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/04_DPDC-I.pact")
+;;==== TX-05 [2.4] - DPDC-I Module · 03 · gas echo ==== ===========================================
+(print "--- [TX-05 [2.4] - DPDC-I Module · 03 · gas echo] ---")
 (format "<<<<<<<DPDC-I Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -208,9 +259,15 @@
 (begin-tx "TX-06 [2.5] - DPDC-R Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-06 [2.5] - DPDC-R Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-06 [2.5] - DPDC-R Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-06 [2.5] - DPDC-R Module · 02 · load module ==== ========================================
+(print "--- [TX-06 [2.5] - DPDC-R Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/05_DPDC-R.pact")
+;;==== TX-06 [2.5] - DPDC-R Module · 03 · gas echo ==== ===========================================
+(print "--- [TX-06 [2.5] - DPDC-R Module · 03 · gas echo] ---")
 (format "<<<<<<<DPDC-R Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -222,9 +279,15 @@
 (begin-tx "TX-07 [2.6] - DPDC-MNG Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-07 [2.6] - DPDC-MNG Module · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-07 [2.6] - DPDC-MNG Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-07 [2.6] - DPDC-MNG Module · 02 · load module ==== ======================================
+(print "--- [TX-07 [2.6] - DPDC-MNG Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/06_DPDC-MNG.pact")
+;;==== TX-07 [2.6] - DPDC-MNG Module · 03 · gas echo ==== =========================================
+(print "--- [TX-07 [2.6] - DPDC-MNG Module · 03 · gas echo] ---")
 (format "<<<<<<<DPDC-MNG Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -236,9 +299,15 @@
 (begin-tx "TX-08 [2.7] - DPDC-T Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-08 [2.7] - DPDC-T Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-08 [2.7] - DPDC-T Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-08 [2.7] - DPDC-T Module · 02 · load module ==== ========================================
+(print "--- [TX-08 [2.7] - DPDC-T Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/07_DPDC-T.pact")
+;;==== TX-08 [2.7] - DPDC-T Module · 03 · gas echo ==== ===========================================
+(print "--- [TX-08 [2.7] - DPDC-T Module · 03 · gas echo] ---")
 (format "<<<<<<<DPDC-T Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -250,9 +319,15 @@
 (begin-tx "TX-09 [2.8] - DPDC-S Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-09 [2.8] - DPDC-S Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-09 [2.8] - DPDC-S Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-09 [2.8] - DPDC-S Module · 02 · load module ==== ========================================
+(print "--- [TX-09 [2.8] - DPDC-S Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/08_DPDC-S.pact")
+;;==== TX-09 [2.8] - DPDC-S Module · 03 · gas echo ==== ===========================================
+(print "--- [TX-09 [2.8] - DPDC-S Module · 03 · gas echo] ---")
 (format "<<<<<<<DPDC-S Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -264,9 +339,15 @@
 (begin-tx "TX-10 [2.9] - DPDC-F Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-10 [2.9] - DPDC-F Module · 01 · env-sigs (caps) ==== ====================================
+(print "--- [TX-10 [2.9] - DPDC-F Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-10 [2.9] - DPDC-F Module · 02 · load module ==== ========================================
+(print "--- [TX-10 [2.9] - DPDC-F Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/09_DPDC-F.pact")
+;;==== TX-10 [2.9] - DPDC-F Module · 03 · gas echo ==== ===========================================
+(print "--- [TX-10 [2.9] - DPDC-F Module · 03 · gas echo] ---")
 (format "<<<<<<<DPDC-F Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -278,9 +359,15 @@
 (begin-tx "TX-11 [2.10] - DPDC-N Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-11 [2.10] - DPDC-N Module · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-11 [2.10] - DPDC-N Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-11 [2.10] - DPDC-N Module · 02 · load module ==== =======================================
+(print "--- [TX-11 [2.10] - DPDC-N Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/10_DPDC-N.pact")
+;;==== TX-11 [2.10] - DPDC-N Module · 03 · gas echo ==== ==========================================
+(print "--- [TX-11 [2.10] - DPDC-N Module · 03 · gas echo] ---")
 (format "<<<<<<<DPDC-N Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -292,9 +379,15 @@
 (begin-tx "TX-12 [2.11] - EQUITY Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-12 [2.11] - EQUITY Module · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-12 [2.11] - EQUITY Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-12 [2.11] - EQUITY Module · 02 · load module ==== =======================================
+(print "--- [TX-12 [2.11] - EQUITY Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/11_EQUITY+.pact")
+;;==== TX-12 [2.11] - EQUITY Module · 03 · gas echo ==== ==========================================
+(print "--- [TX-12 [2.11] - EQUITY Module · 03 · gas echo] ---")
 (format "<<<<<<<EQUITY Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)

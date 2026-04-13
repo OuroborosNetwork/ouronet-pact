@@ -1645,6 +1645,7 @@
     (defun UR_Pools:[string] (pool-category:string))
         ;;
     (defun UR_PoolTokens:[string] (swpair:string))
+    (defun UR_GetLpSwpair:string (lp-id:string))
     (defun UR_PoolTokenSupplies:[decimal] (swpair:string))
     (defun UR_PoolGenesisSupplies:[decimal] (swpair:string))
     (defun UR_PoolTokenPosition:integer (swpair:string id:string))

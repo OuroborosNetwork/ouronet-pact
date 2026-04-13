@@ -128,9 +128,25 @@
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
+    (defun AQP-ANK|C_RevokeBoostClass:string
+        (patron:string boost-class-id:string)
+        @doc "Revokes an empty BoostClass."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-ANK::C_RevokeBoostClass boost-class-id)
+                )
+                (format "Successfully revoked BoostClass {}." [boost-class-id])
+            )
+        )
+    )
     (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
-        (patron:string anchor-name:string dptf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
-        @doc "Issues an Anchor with an underlying DPTF Asset. Anchors are used for percentual score boosting."
+        (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
+        @doc "Issues a DPTF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
             (let
                 (
@@ -139,7 +155,7 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-ANK::C_IssueTrueFungibleAnchor 
-                            patron anchor-name dptf-id acnoi anchor-class-name-or-id anchor-precision anchor-promile dptf-amount
+                            patron anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount
                         )
                     )
                     (out:[string] (at "output" ico))
@@ -148,21 +164,15 @@
                 (ref-IGNIS::C_Collect patron ico)
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (if acnoi
-                    (format
-                        "Successfully issued TrueFungible Anchor {} to new Anchor Class {} for TrueFungible {}."
-                        [anchor-id (at 1 out) dptf-id]
-                    )
-                    (format
-                        "Successfully issued TrueFungible Anchor {} and attached it to existing Anchor Class {} for TrueFungible {}."
-                        [anchor-id anchor-class-name-or-id dptf-id]
-                    )
+                    (format "Successfully issued TrueFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dptf-id])
+                    (format "Successfully issued TrueFungible Anchor {} for {}." [anchor-id dptf-id])
                 )
             )
         )
     )
     (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
-        (patron:string anchor-name:string dpsf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
-        @doc "Issues an Anchor with an underlying DPSF Asset. Anchors are used for percentual score boosting."
+        (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
+        @doc "Issues a DPSF Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
             (let
                 (
@@ -171,7 +181,7 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-ANK::C_IssueSemiFungibleAnchor 
-                            patron anchor-name dpsf-id acnoi anchor-class-name-or-id anchor-precision anchor-promile dpsf-nonce
+                            patron anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce
                         )
                     )
                     (out:[string] (at "output" ico))
@@ -180,21 +190,15 @@
                 (ref-IGNIS::C_Collect patron ico)
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (if acnoi
-                    (format
-                        "Successfully issued SemiFungible Anchor {} to new Anchor Class {} for SemiFungible {}."
-                        [anchor-id (at 1 out) dpsf-id]
-                    )
-                    (format
-                        "Successfully issued SemiFungible Anchor {} and attached it to existing Anchor Class {} for SemiFungible {}."
-                        [anchor-id anchor-class-name-or-id dpsf-id]
-                    )
+                    (format "Successfully issued SemiFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpsf-id])
+                    (format "Successfully issued SemiFungible Anchor {} for {}." [anchor-id dpsf-id])
                 )
             )
         )
     )
     (defun AQP-ANK|C_IssueNonFungibleAnchor:string
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
-        @doc "Issues an Anchor with an underlying DPSF Asset. Anchors are used for percentual score boosting."
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
+        @doc "Issues a DPNF trait-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
             (let
                 (
@@ -203,7 +207,7 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-ANK::C_IssueNonFungibleAnchor 
-                            patron anchor-name dpnf-id acnoi anchor-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value
+                            patron anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value
                         )
                     )
                     (out:[string] (at "output" ico))
@@ -212,21 +216,15 @@
                 (ref-IGNIS::C_Collect patron ico)
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (if acnoi
-                    (format
-                        "Successfully issued NonFungible Anchor {} to new Anchor Class {} for NonFungible {}."
-                        [anchor-id (at 1 out) dpnf-id]
-                    )
-                    (format
-                        "Successfully issued NonFungible Anchor {} and attached it to existing Anchor Class {} for NonFungible {}."
-                        [anchor-id anchor-class-name-or-id dpnf-id]
-                    )
+                    (format "Successfully issued NonFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpnf-id])
+                    (format "Successfully issued NonFungible Anchor {} for {}." [anchor-id dpnf-id])
                 )
             )
         )
     )
     (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
-        @doc "Issues an Anchor with DPNF nonce-class model (set anchor)."
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+        @doc "Issues a DPNF set-Anchor. acnoi=true creates BoostClass inline (2x STOA); false links to existing (1x STOA)."
         (with-capability (P|TS)
             (let
                 (
@@ -235,7 +233,7 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-ANK::C_IssueNonFungibleSetAnchor
-                            patron anchor-name dpnf-id acnoi anchor-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class
+                            patron anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class
                         )
                     )
                     (out:[string] (at "output" ico))
@@ -244,41 +242,14 @@
                 (ref-IGNIS::C_Collect patron ico)
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (if acnoi
-                    (format
-                        "Successfully issued NonFungible Set Anchor {} to new Anchor Class {} for NonFungible {}."
-                        [anchor-id (at 1 out) dpnf-id]
-                    )
-                    (format
-                        "Successfully issued NonFungible Set Anchor {} and attached it to existing Anchor Class {} for NonFungible {}."
-                        [anchor-id anchor-class-name-or-id dpnf-id]
-                    )
+                    (format "Successfully issued NonFungible Set Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpnf-id])
+                    (format "Successfully issued NonFungible Set Anchor {} for {}." [anchor-id dpnf-id])
                 )
-            )
-        )
-    )
-    (defun AQP-ANK|C_RevokeAnchorClass:string
-        (patron:string asset-id:string ank-fungibility:[bool] anchor-class-id:string)
-        @doc "Revokes an existing Anchor Class that has no active anchors."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                )
-                (ref-IGNIS::C_Collect patron
-                    (ref-ANK::C_RevokeAnchorClass asset-id ank-fungibility anchor-class-id)
-                )
-                (format "Successfully revoked Anchor Class {} for Asset {}." [anchor-class-id asset-id])
             )
         )
     )
     (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string)
-        @doc "Revokes an existing Anchor, unbinding it from its underlying Asset \
-            \ This frees an Anchor Spot from the possible maximum 7 that can exist for any given DPTF, DPSF or DPNF \
-            \ To be used in case an existing Anchor has been issued incorrectly \
-            \ Revoked Anchors are permanently taken out of circulation; \
-            \ Therefore if an Anchor was improperly issued, it must be revoked, then re-issued.\
-            \ 5 Ignis Cost"
+        @doc "Revokes an existing Anchor, removing it from its BoostClass and AssetAnchors bookkeeping."
         (with-capability (P|TS)
             (let
                 (
@@ -293,7 +264,7 @@
         )
     )
     (defun AQP-SCR|C_IssueLiquidityScore:string
-        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal mx-sleeping:decimal)
+        (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
         @doc "Issues score-class 0 (LP) in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
@@ -302,7 +273,7 @@
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-SCR::C_IssueLiquidityScore patron owner-konto score-name precision mx-frozen mx-sleeping)
+                    (ref-SCR::C_IssueLiquidityScore patron owner-konto score-name precision lp-denominator mx-frozen mx-sleeping)
                 )
                 (format "Successfully issued Liquidity Score {} for owner {}." [score-name owner-konto])
             )
@@ -400,16 +371,16 @@
             )
         )
     )
-    (defun AQP-SCR|C_CreateScoreAnchorLink:string (patron:string score-id:string anchor-id:string)
-        @doc "Creates score -> anchor link in AQP-SCORE and collects resulting IGNIS output on patron."
+    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string score-id:string boost-class-id:string)
+        @doc "Creates score -> boost-class link in AQP-SCORE and collects resulting IGNIS output on patron."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 )
-                (ref-IGNIS::C_Collect patron (ref-SCR::C_CreateAnchorLink score-id anchor-id))
-                (format "Successfully linked score {} to anchor {}." [score-id anchor-id])
+                (ref-IGNIS::C_Collect patron (ref-SCR::C_CreateBoostClassLink score-id boost-class-id))
+                (format "Successfully linked score {} to BoostClass {}." [score-id boost-class-id])
             )
         )
     )
@@ -468,6 +439,22 @@
                     (ref-SCR::C_IssueNonFungibleScoreDefinition score-id dpnf-id trait-keys trait-values trait-score-values)
                 )
                 (format "Successfully issued NonFungible score definitions for score {} and dpnf-id {}." [score-id dpnf-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
+        (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
+        @doc "Writes DPNF set-mode (nonce-class) score definitions in AQP-SCORE and collects resulting IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-SCR::C_IssueNonFungibleSetScoreDefinition score-id dpnf-id dpnf-nonce-classes class-score-values)
+                )
+                (format "Successfully issued NonFungible set score definitions for score {} and dpnf-id {}." [score-id dpnf-id])
             )
         )
     )

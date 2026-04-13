@@ -1,7 +1,22 @@
+;;
+;; REPL/Stage_01/[6.4]_Admin.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[6.4]_Admin.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (print "===================Initialise Ouronet_TX-002============================")
 (begin-tx "INIT TX 000 - Chain Data Time SetUp Definition")
 (namespace "ouronet-ns")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -9,18 +24,23 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-gas)
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP TX 001 - Admin Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP TX 001 - Admin Tests · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP TX 001 - Admin Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP TX 001 - Admin Tests · 02 · let / invocation ==== ======================================
+(print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -150,18 +170,23 @@
 )
 (print "")
 (print "")
+;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
+(print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 002 Admin Tests {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP TX 001 - Admin Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP TX 001 - Admin Tests · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP TX 001 - Admin Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -169,6 +194,8 @@
     ]
 )
 
+;;==== SWP TX 001 - Admin Tests · 02 · let / invocation ==== ======================================
+(print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-U|CT:module{OuronetConstantsV1} U|CT)
@@ -207,18 +234,23 @@
 
 (print "")
 (print "")
+;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
+(print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 002 Admin Tests {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP TX 001 - Admin Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP TX 001 - Admin Tests · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP TX 001 - Admin Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -226,6 +258,8 @@
     ]
 )
 
+;;==== SWP TX 001 - Admin Tests · 02 · let / invocation ==== ======================================
+(print "--- [SWP TX 001 - Admin Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -315,18 +349,23 @@
 
 (print "")
 (print "")
+;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
+(print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
 (format "<<<<<<<Upgrade Branding costs {} >>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "DPTF - Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== DPTF - Tests · 01 · env-sigs (caps) ==== ===================================================
+(print "--- [DPTF - Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -334,6 +373,8 @@
     ]
 )
 
+;;==== DPTF - Tests · 02 · let / invocation ==== ==================================================
+(print "--- [DPTF - Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-U|CT:module{OuronetConstantsV1} U|CT)
@@ -378,6 +419,8 @@
 
 (print "")
 (print "")
+;;==== DPTF - Tests · 03 · gas echo ==== ==========================================================
+(print "--- [DPTF - Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 002 Admin Tests {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")

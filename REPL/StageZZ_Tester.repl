@@ -1,4 +1,17 @@
 ;;
+;; REPL/StageZZ_Tester.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/StageZZ_Tester.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;;
 ;;================================================================================
 ;;                                                                              ;;
@@ -16,9 +29,15 @@
 (begin-tx "TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 02 · load module ==== ===
+(print "--- [TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 02 · load module] ---")
 (load "../2_SLAVE/Stage_Z/01_DPL-UR.pact")
+;;==== TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 03 · gas echo ==== ======
+(print "--- [TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 03 · gas echo] ---")
 (format "<<<<<<<DPL-UR (Stage_Z unified) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)

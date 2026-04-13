@@ -1,7 +1,22 @@
+;;
+;; REPL/Stage_01/[6.2]_DPTF.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[6.2]_DPTF.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (print "===================Initialise Ouronet_TX-002============================")
 (begin-tx "INIT TX 000 - Chain Data Time SetUp Definition")
 (namespace "ouronet-ns")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -9,18 +24,23 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-gas)
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "REPL_Test_000x - TX03 - Accounts Display")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== REPL_Test_000x - TX03 - Accounts Display · 01 · env-sigs (caps) ==== =======================
+(print "--- [REPL_Test_000x - TX03 - Accounts Display · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== REPL_Test_000x - TX03 - Accounts Display · 02 · let / invocation ==== ======================
+(print "--- [REPL_Test_000x - TX03 - Accounts Display · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -40,18 +60,22 @@
 
 (env-gas)
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;
 ;;DISPO Tests
 ;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "DISPO 1|3 Tests")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DISPO 1|3 Tests · 01 · env-sigs (caps) ==== ================================================
+(print "--- [DISPO 1|3 Tests · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -60,6 +84,8 @@
 )
 
 (print "")
+;;==== DISPO 1|3 Tests · 02 · let / invocation ==== ===============================================
+(print "--- [DISPO 1|3 Tests · 02 · let / invocation] ---")
 (let
     (
         ;;refs
@@ -214,24 +240,31 @@
 
 (print "")
 (print "")
+;;==== DISPO 1|3 Tests · 03 · gas echo ==== =======================================================
+(print "--- [DISPO 1|3 Tests · 03 · gas echo] ---")
 (format "<<<<<<<Dispo 1|3 Tests Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Dispo 2|x Clear Dispo Test")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== Dispo 2|x Clear Dispo Test · 01 · env-sigs (caps) ==== =====================================
+(print "--- [Dispo 2|x Clear Dispo Test · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_Emma", "caps": [] }
     ]
 )
 
+;;==== Dispo 2|x Clear Dispo Test · 02 · let / invocation ==== ====================================
+(print "--- [Dispo 2|x Clear Dispo Test · 02 · let / invocation] ---")
 (let
     (
         ;;refs
@@ -243,18 +276,23 @@
 
 (print "")
 (print "")
+;;==== Dispo 2|x Clear Dispo Test · 03 · gas echo ==== ============================================
+(print "--- [Dispo 2|x Clear Dispo Test · 03 · gas echo] ---")
 (format "<<<<<<<Dispo 2|3 Clear Dispo Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Dispo 3|3 Check After Clear Dispo Checks")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== Dispo 3|3 Check After Clear Dispo Checks · 01 · env-sigs (caps) ==== =======================
+(print "--- [Dispo 3|3 Check After Clear Dispo Checks · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -262,6 +300,8 @@
     ]
 )
 
+;;==== Dispo 3|3 Check After Clear Dispo Checks · 02 · let / invocation ==== ======================
+(print "--- [Dispo 3|3 Check After Clear Dispo Checks · 02 · let / invocation] ---")
 (let
     (
         ;;refs
@@ -289,24 +329,30 @@
 
 (print "")
 (print "")
+;;==== Dispo 3|3 Check After Clear Dispo Checks · 03 · gas echo ==== ==============================
+(print "--- [Dispo 3|3 Check After Clear Dispo Checks · 03 · gas echo] ---")
 (format "<<<<<<<Dispo 3|3 Checks {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; 1] Issue Tests
 ;; 1.1] Issue 34 new DPTFs
 (begin-tx "DPTF Tx 001 Issue 7 DPTFs Part 1|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPTF Tx 001 Issue 7 DPTFs Part 1|3 · 01 · let / invocation ==== ============================
+(print "--- [DPTF Tx 001 Issue 7 DPTFs Part 1|3 · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -319,6 +365,8 @@
             )
         )
     )
+;;==== DPTF Tx 001 Issue 7 DPTFs Part 1|3 · 02 · env-sigs (caps) ==== =============================
+(print "--- [DPTF Tx 001 Issue 7 DPTFs Part 1|3 · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -377,18 +425,23 @@
 )
 (print "")
 (print "")
+;;==== DPTF Tx 001 Issue 7 DPTFs Part 1|3 · 03 · gas echo ==== ====================================
+(print "--- [DPTF Tx 001 Issue 7 DPTFs Part 1|3 · 03 · gas echo] ---")
 (format "<<<<<<<STEP 001 Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "DPTF Tx 002 Issue 7 DPTFs Part 2|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPTF Tx 002 Issue 7 DPTFs Part 2|3 · 01 · let / invocation ==== ============================
+(print "--- [DPTF Tx 002 Issue 7 DPTFs Part 2|3 · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -401,6 +454,8 @@
             )
         )
     )
+;;==== DPTF Tx 002 Issue 7 DPTFs Part 2|3 · 02 · env-sigs (caps) ==== =============================
+(print "--- [DPTF Tx 002 Issue 7 DPTFs Part 2|3 · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -458,18 +513,23 @@
 )
 (print "")
 (print "")
+;;==== DPTF Tx 002 Issue 7 DPTFs Part 2|3 · 03 · gas echo ==== ====================================
+(print "--- [DPTF Tx 002 Issue 7 DPTFs Part 2|3 · 03 · gas echo] ---")
 (format "<<<<<<<STEP 002 Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "DPTF Tx 003 Issue 20 DPTFs Part 3|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPTF Tx 003 Issue 20 DPTFs Part 3|3 · 01 · let / invocation ==== ===========================
+(print "--- [DPTF Tx 003 Issue 20 DPTFs Part 3|3 · 01 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -491,6 +551,8 @@
             )
         )
     )
+;;==== DPTF Tx 003 Issue 20 DPTFs Part 3|3 · 02 · env-sigs (caps) ==== ============================
+(print "--- [DPTF Tx 003 Issue 20 DPTFs Part 3|3 · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -560,18 +622,23 @@
 )
 (print "")
 (print "")
+;;==== DPTF Tx 003 Issue 20 DPTFs Part 3|3 · 03 · gas echo ==== ===================================
+(print "--- [DPTF Tx 003 Issue 20 DPTFs Part 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<STEP 003 Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "DPTF Tx 004 Mint 10 mil of each token")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPTF Tx 004 Mint 10 mil of each token · 01 · env-sigs (caps) ==== ==========================
+(print "--- [DPTF Tx 004 Mint 10 mil of each token · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -579,6 +646,8 @@
     ]
 )
 
+;;==== DPTF Tx 004 Mint 10 mil of each token · 02 · let / invocation ==== =========================
+(print "--- [DPTF Tx 004 Mint 10 mil of each token · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -628,40 +697,52 @@
 
 (print "")
 (print "")
+;;==== DPTF Tx 004 Mint 10 mil of each token · 03 · gas echo ==== =================================
+(print "--- [DPTF Tx 004 Mint 10 mil of each token · 03 · gas echo] ---")
 (format "<<<<<<<STEP 004 Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;TRANSMUTE TESTS
 (begin-tx "TRANSMUTE 01 Test")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TRANSMUTE 01 Test · 01 · env-sigs (caps) ==== ==============================================
+(print "--- [TRANSMUTE 01 Test · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TRANSMUTE 01 Test · 02 · let / invocation ==== =============================================
+(print "--- [TRANSMUTE 01 Test · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -680,24 +761,31 @@
 
 (print "")
 (print "")
+;;==== TRANSMUTE 01 Test · 03 · gas echo ==== =====================================================
+(print "--- [TRANSMUTE 01 Test · 03 · gas echo] ---")
 (format "<<<<<<<STEP 001 Simple Transmute Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TRANSMUTE 02 Test")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TRANSMUTE 02 Test · 01 · env-sigs (caps) ==== ==============================================
+(print "--- [TRANSMUTE 02 Test · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TRANSMUTE 02 Test · 02 · let / invocation ==== =============================================
+(print "--- [TRANSMUTE 02 Test · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -716,18 +804,23 @@
 
 (print "")
 (print "")
+;;==== TRANSMUTE 02 Test · 03 · gas echo ==== =====================================================
+(print "--- [TRANSMUTE 02 Test · 03 · gas echo] ---")
 (format "<<<<<<<STEP 02 Elite Transmute Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TRANSMUTE 02 Test")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TRANSMUTE 02 Test · 01 · env-sigs (caps) ==== ==============================================
+(print "--- [TRANSMUTE 02 Test · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -735,6 +828,8 @@
     ]
 )
 
+;;==== TRANSMUTE 02 Test · 02 · let / invocation ==== =============================================
+(print "--- [TRANSMUTE 02 Test · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -760,6 +855,8 @@
 
 (print "")
 (print "")
+;;==== TRANSMUTE 02 Test · 03 · gas echo ==== =====================================================
+(print "--- [TRANSMUTE 02 Test · 03 · gas echo] ---")
 (format "<<<<<<<STEP 03 Unity Transmute Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -776,17 +873,22 @@
 ;;
 ;;
 ;;TRANSFER TESTS
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Transfer Tests 1|4")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Transfer Tests 1|4 · 01 · env-sigs (caps) ==== =============================================
+(print "--- [Transfer Tests 1|4 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Transfer Tests 1|4 · 02 · let / invocation ==== ============================================
+(print "--- [Transfer Tests 1|4 · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -807,22 +909,29 @@
 
 (print "")
 (print "")
+;;==== Transfer Tests 1|4 · 03 · gas echo ==== ====================================================
+(print "--- [Transfer Tests 1|4 · 03 · gas echo] ---")
 (format "<<<<<<<TransferV3 1|4 for Ouro costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Transfer Tests 2|4")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Transfer Tests 2|4 · 01 · env-sigs (caps) ==== =============================================
+(print "--- [Transfer Tests 2|4 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Transfer Tests 2|4 · 02 · let / invocation ==== ============================================
+(print "--- [Transfer Tests 2|4 · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -842,22 +951,29 @@
 
 (print "")
 (print "")
+;;==== Transfer Tests 2|4 · 03 · gas echo ==== ====================================================
+(print "--- [Transfer Tests 2|4 · 03 · gas echo] ---")
 (format "<<<<<<<TransferV3 2|4 for AURYN costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Transfer Tests 3|4")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Transfer Tests 3|4 · 01 · env-sigs (caps) ==== =============================================
+(print "--- [Transfer Tests 3|4 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 (namespace "ouronet-ns")
+;;==== Transfer Tests 3|4 · 02 · let / invocation ==== ============================================
+(print "--- [Transfer Tests 3|4 · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -877,16 +993,21 @@
 
 (print "")
 (print "")
+;;==== Transfer Tests 3|4 · 03 · gas echo ==== ====================================================
+(print "--- [Transfer Tests 3|4 · 03 · gas echo] ---")
 (format "<<<<<<<TransferV3 3|4 for ELITEAURYN costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "Transfer Tests 4|4")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== Transfer Tests 4|4 · 01 · env-sigs (caps) ==== =============================================
+(print "--- [Transfer Tests 4|4 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -895,6 +1016,8 @@
     ]
 )
 (namespace "ouronet-ns")
+;;==== Transfer Tests 4|4 · 02 · let / invocation ==== ============================================
+(print "--- [Transfer Tests 4|4 · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -923,14 +1046,17 @@
 
 (print "")
 (print "")
+;;==== Transfer Tests 4|4 · 03 · gas echo ==== ====================================================
+(print "--- [Transfer Tests 4|4 · 03 · gas echo] ---")
 (format "<<<<<<<TransferV3 4|4 for UNITY costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;
 ;;
 ;;
@@ -939,18 +1065,23 @@
 ;;
 ;;
 ;;Multi TRANSFER TESTS
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "MultiTransfer 1|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== MultiTransfer 1|3 · 01 · env-sigs (caps) ==== ==============================================
+(print "--- [MultiTransfer 1|3 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== MultiTransfer 1|3 · 02 · let / invocation ==== =============================================
+(print "--- [MultiTransfer 1|3 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -974,6 +1105,8 @@
 
 (print "")
 (print "")
+;;==== MultiTransfer 1|3 · 03 · gas echo ==== =====================================================
+(print "--- [MultiTransfer 1|3 · 03 · gas echo] ---")
 (format "<<<<<<<MultiTransfer 1|3 7 Tokens {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -990,18 +1123,23 @@
 ;    (format "Emma has {} CUSD" [(ref-DPTF::UR_AccountSupply "CUSD-98c486052a51" receiver)])
 ;]
 
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "MultiTransfer 2|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== MultiTransfer 2|3 · 01 · env-sigs (caps) ==== ==============================================
+(print "--- [MultiTransfer 2|3 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== MultiTransfer 2|3 · 02 · let / invocation ==== =============================================
+(print "--- [MultiTransfer 2|3 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1030,20 +1168,25 @@
 
 (print "")
 (print "")
+;;==== MultiTransfer 2|3 · 03 · gas echo ==== =====================================================
+(print "--- [MultiTransfer 2|3 · 03 · gas echo] ---")
 (format "<<<<<<<MultiTransfer 2|3 x10 Costs Before ATS {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;Setup Fees system and Autostake Pools for first 10 Tokens. and repeat MultiTransfer
 (begin-tx "MultiTransfer Autostake Issue")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (use DALOS) 
+;;==== MultiTransfer Autostake Issue · 01 · let / invocation ==== =================================
+(print "--- [MultiTransfer Autostake Issue · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1056,6 +1199,8 @@
             )
         )
     )
+;;==== MultiTransfer Autostake Issue · 02 · env-sigs (caps) ==== ==================================
+(print "--- [MultiTransfer Autostake Issue · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -1112,25 +1257,32 @@
 
 (print "")
 (print "")
+;;==== MultiTransfer Autostake Issue · 03 · gas echo ==== =========================================
+(print "--- [MultiTransfer Autostake Issue · 03 · gas echo] ---")
 (format "<<<<<<<MultiTransfer Autostake Issue  Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;Set transfer fees for first ten metals
 (begin-tx "Setup Autostake RTs")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== Setup Autostake RTs · 01 · env-sigs (caps) ==== ============================================
+(print "--- [Setup Autostake RTs · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== Setup Autostake RTs · 02 · let / invocation ==== ===========================================
+(print "--- [Setup Autostake RTs · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1207,24 +1359,31 @@
 
 (print "")
 (print "")
+;;==== Setup Autostake RTs · 03 · gas echo ==== ===================================================
+(print "--- [Setup Autostake RTs · 03 · gas echo] ---")
 (format "<<<<<<<Setup Autostake RTs Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "MultiTransfer 3|3")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== MultiTransfer 3|3 · 01 · env-sigs (caps) ==== ==============================================
+(print "--- [MultiTransfer 3|3 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== MultiTransfer 3|3 · 02 · let / invocation ==== =============================================
+(print "--- [MultiTransfer 3|3 · 02 · let / invocation] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -1253,6 +1412,8 @@
 
 (print "")
 (print "")
+;;==== MultiTransfer 3|3 · 03 · gas echo ==== =====================================================
+(print "--- [MultiTransfer 3|3 · 03 · gas echo] ---")
 (format "<<<<<<<MultiTransfer 3|3 x10 After ATS Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1269,12 +1430,15 @@
 ;;
 ;;
 ;;BULK TRANSFER TESTS
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "DPTF Tx 006 BulkTransfer Tests")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== DPTF Tx 006 BulkTransfer Tests · 01 · env-sigs (caps) ==== =================================
+(print "--- [DPTF Tx 006 BulkTransfer Tests · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1283,6 +1447,8 @@
     ]
 )
 
+;;==== DPTF Tx 006 BulkTransfer Tests · 02 · let / invocation ==== ================================
+(print "--- [DPTF Tx 006 BulkTransfer Tests · 02 · let / invocation] ---")
 (let
     (
         (smart-patron:string KST.ATSTK)
@@ -1315,6 +1481,8 @@
 
 (print "")
 (print "")
+;;==== DPTF Tx 006 BulkTransfer Tests · 03 · gas echo ==== ========================================
+(print "--- [DPTF Tx 006 BulkTransfer Tests · 03 · gas echo] ---")
 (format "<<<<<<<BulkTrasnfer Custom Costs {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")

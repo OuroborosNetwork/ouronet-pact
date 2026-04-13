@@ -1,6 +1,21 @@
+;;
+;; REPL/Stage_02/[5.3]_Launchpad.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[5.3]_Launchpad.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (begin-tx "TX-00 [C0] - Chain Data Time SetUp Definition")
 (namespace "ouronet-ns")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -8,6 +23,10 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-gas)
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;
@@ -21,6 +40,8 @@
 (begin-tx "TX-01 - Initialise Launchpad Properties Table")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 - Initialise Launchpad Properties Table · 01 · env-sigs (caps) ==== ==================
+(print "--- [TX-01 - Initialise Launchpad Properties Table · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -32,6 +53,8 @@
 
 
 
+;;==== TX-01 - Initialise Launchpad Properties Table · 02 · let / invocation ==== =================
+(print "--- [TX-01 - Initialise Launchpad Properties Table · 02 · let / invocation] ---")
 (let
     (
         (ref-U|G:module{OuronetGuardsV1} U|G)
@@ -82,6 +105,8 @@
 
 (print "")
 (print "")
+;;==== TX-01 - Initialise Launchpad Properties Table · 03 · gas echo ==== =========================
+(print "--- [TX-01 - Initialise Launchpad Properties Table · 03 · gas echo] ---")
 (format "<<<<<<<Init Launchpad (1-75) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -94,6 +119,8 @@
 (begin-tx "TX-01 - Initialise Movie Booster aka Spark")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -101,6 +128,8 @@
     ]
 )
 
+;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
     (let
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
@@ -161,6 +190,8 @@
 
 (print "")
 (print "")
+;;==== TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo ==== ============================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo] ---")
 (format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -173,6 +204,8 @@
 (begin-tx "TX-01 - Initialise Movie Booster aka Spark")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -180,6 +213,8 @@
     ]
 )
 
+;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
     (let
         (
             (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
@@ -229,6 +264,8 @@
     
 (print "")
 (print "")
+;;==== TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo ==== ============================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo] ---")
 (format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -241,12 +278,16 @@
 (begin-tx "TX-01 - Initialise Movie Booster aka Spark")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_LPAD", "caps": [] }
     ]
 )
+;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -309,6 +350,8 @@
 
 (print "")
 (print "")
+;;==== TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo ==== ============================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo] ---")
 (format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -321,12 +364,16 @@
 (begin-tx "TX-01 - Initialise Shareholders")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 - Initialise Shareholders · 01 · env-sigs (caps) ==== ================================
+(print "--- [TX-01 - Initialise Shareholders · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_LPAD", "caps": [] }
     ]
 )
+;;==== TX-01 - Initialise Shareholders · 02 · let / invocation ==== ===============================
+(print "--- [TX-01 - Initialise Shareholders · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
@@ -356,6 +403,8 @@
 
 (print "")
 (print "")
+;;==== TX-01 - Initialise Shareholders · 03 · gas echo ==== =======================================
+(print "--- [TX-01 - Initialise Shareholders · 03 · gas echo] ---")
 (format "<<<<<<<Init Shareholders Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -368,12 +417,16 @@
 (begin-tx "TX-01 - Initialise Custodians")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 - Initialise Custodians · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-01 - Initialise Custodians · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_LPAD", "caps": [] }
     ]
 )
+;;==== TX-01 - Initialise Custodians · 02 · let / invocation ==== =================================
+(print "--- [TX-01 - Initialise Custodians · 02 · let / invocation] ---")
 (let
     (
         (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
@@ -403,6 +456,8 @@
 
 (print "")
 (print "")
+;;==== TX-01 - Initialise Custodians · 03 · gas echo ==== =========================================
+(print "--- [TX-01 - Initialise Custodians · 03 · gas echo] ---")
 (format "<<<<<<<Init Custodians Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -421,6 +476,8 @@
 (begin-tx "TX-01 - Initialise Kadena Pay")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 - Initialise Kadena Pay · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-01 - Initialise Kadena Pay · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -428,6 +485,8 @@
     ]
 )
 
+;;==== TX-01 - Initialise Kadena Pay · 02 · let / invocation ==== =================================
+(print "--- [TX-01 - Initialise Kadena Pay · 02 · let / invocation] ---")
     (let
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
@@ -489,6 +548,8 @@
     
 (print "")
 (print "")
+;;==== TX-01 - Initialise Kadena Pay · 03 · gas echo ==== =========================================
+(print "--- [TX-01 - Initialise Kadena Pay · 03 · gas echo] ---")
 (format "<<<<<<<Init Kpay Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -501,12 +562,16 @@
 (begin-tx "TX-01 - Initialise Movie Booster aka Spark")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_LPAD", "caps": [] }
     ]
 )
+;;==== TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation ==== ====================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -587,6 +652,8 @@
 
 (print "")
 (print "")
+;;==== TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo ==== ============================
+(print "--- [TX-01 - Initialise Movie Booster aka Spark · 03 · gas echo] ---")
 (format "<<<<<<<Init Spark Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")

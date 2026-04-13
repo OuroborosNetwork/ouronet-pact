@@ -1,20 +1,51 @@
+;;
+;; REPL/Stage_02/[6.2.1]_AQP-ANK.repl — source layout mirrors console
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== TXnnn · mm · <slug> ====  pairs with (print "--- [TXnnn · mm · …] ---") (mm = group within that begin-tx, 01..)
+;;   format "{}": only from Talos C_* return, ref-ANK::UR_* return, expect/expect-failure doc, or (env-gas).
+;;   REPL tests: (expect …) / (expect-failure …) return strings — collect in a list and (map print …) so every assertion line appears in the REPL; no nested format wrapping expect.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.1]_AQP-ANK.repl")
+(print "================================================================")
+(print "Legend (terminal observability):")
+(print "  <<…>>     expect / expect-failure doc (format …) — REPL logs pass/fail")
+(print "  <(TS02-C3.AQP-ANK|C_…)> => \"…\"   Talos client → AQP-ANK write (return value)")
+(print "  <(AQP-ANK|UR_…|…)> => \"…\"       ref-ANK utility read (return value)")
+(print "  <(REPL|env-gas)> …               gas after tx (env-gas)")
+(print "")
+(print "Source: ;;|| NEXT > between txs; ;;==== TXnnn · mm · … ==== before each REPL group banner (mm = intra-tx group).")
+(print "REPL tests: (map print [(expect (format \"<<TX…>> …\" […]) expected actual) …]) — expect / expect-failure return strings; map print surfaces each line.")
 (print "")
 (print "===================Initialise AQP-ANK TX Block==========================")
 (begin-tx "INIT TX 000 - Chain Data Time SetUp Definition")
+(print "")
+(print "=== TX000 INIT — chain / gas baseline =================================")
 (namespace "ouronet-ns")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
-)
+    )
+;;==== TX000 · 01 · env gas model — REPL banner follows ============================
+(print "--- [TX000 · 01 · env gas model] ---")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(env-gas)
+(print (format "<(REPL|env-gas)> after gas reset => \"{}\"" [(env-gas)]))
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+(print "")
+(print "=== END TX000 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX001 - AQP-ANK TrueFungible class/slot tests")
+(print "")
+(print "=== TX001 — AQP-ANK TrueFungible class/slot tests =======================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX001 · 01 · env-sigs (patron only) — REPL banner follows ===================
+(print "--- [TX001 · 01 · env-sigs (patron only)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -32,10 +63,15 @@
         (split-kda:[decimal]
             (ref-DALOS::URC_SplitKDAPrices
                 patron
-                (* (ref-DALOS::UR_UsagePrice "standard") 16.0)
+                (* (ref-DALOS::UR_UsagePrice "standard") 20.0)
             )
         )
     )
+    ;;==== TX001 · 02 · DALOS URC_SplitKDAPrices ×20 — REPL banner follows ===========
+    (print "--- [TX001 · 02 · DALOS fee split ×20] ---")
+    (print (format "<(DALOS|URC_SplitKDAPrices)> patron standard×20 => \"{}\"" [split-kda]))
+    ;;==== TX001 · 03 · env-sigs + coin caps for issuance — REPL banner follows ======
+    (print "--- [TX001 · 03 · env-sigs + coin caps for issuance] ---")
     (env-sigs
         [
             { "key": "PK_AncientHodler", "caps": [] }
@@ -66,42 +102,67 @@
             }
         ]
     )
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAa" ouro-id true core-class-name 8 10.0 100.0)
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAb" ouro-id false core-class-id 8 11.0 110.0)
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAc" ouro-id false core-class-id 8 12.0 120.0)
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAd" ouro-id false core-class-id 8 13.0 130.0)
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAe" ouro-id false core-class-id 8 14.0 140.0)
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAf" ouro-id false core-class-id 8 15.0 150.0)
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAg" ouro-id false core-class-id 8 16.0 160.0)
-    (expect-failure
-        "Class must reject 8th anchor slot"
-        (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorfailslot" ouro-id false core-class-id 8 99.0 990.0)
+    ;;==== TX001 · 04 · Talos C_IssueTrueFungibleAnchor acnoi=true (first anchor creates BoostClass) + acnoi=false (rest) =
+    (print "--- [TX001 · 04 · issue 7 TF anchors (acnoi=true for 1st creates BoostClass, acnoi=false for 2..7)] ---")
+    (map print
+        [
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAa acnoi=true CoreBoostTFa)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAa" ouro-id true core-class-name 8 10.0 100.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAb acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAb" ouro-id false core-class-id 8 11.0 110.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAc acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAc" ouro-id false core-class-id 8 12.0 120.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAd acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAd" ouro-id false core-class-id 8 13.0 130.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAe acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAe" ouro-id false core-class-id 8 14.0 140.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAf acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAf" ouro-id false core-class-id 8 15.0 150.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAg acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAg" ouro-id false core-class-id 8 16.0 160.0)])
+        ]
     )
-    ;; Fill remaining class slots (2..7) so asset reaches max 7 classes.
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassBa" ouro-id true "CoreBoostTFb" 8 21.0 210.0)
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassCa" ouro-id true "CoreBoostTFc" 8 22.0 220.0)
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassDa" ouro-id true "CoreBoostTFd" 8 23.0 230.0)
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassEa" ouro-id true "CoreBoostTFe" 8 24.0 240.0)
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassFa" ouro-id true "CoreBoostTFf" 8 25.0 250.0)
-    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassGa" ouro-id true "CoreBoostTFg" 8 26.0 260.0)
-    (expect-failure
-        "Asset must reject 8th class"
-        (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassfailcap" ouro-id true "CoreBoostTFh" 8 27.0 270.0)
+    ;;==== TX001 · 05 · expect-failure (8th anchor slot in BoostClass) — REPL =========
+    (print "--- [TX001 · 05 · expect-failure: 8th slot in BoostClass] ---")
+    (map print
+        [
+            (expect-failure
+                (format "<<TX001 expect-failure>> BoostClass must reject 8th anchor slot: <(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorfailslot)> (must fail)" [])
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorfailslot" ouro-id false core-class-id 8 99.0 990.0)
+            )
+        ]
     )
-    [
-        (ref-ANK::UR_ANK-CLASSES|Data ouro-id [true true])
-        (ref-ANK::UR_ANK-CLASS|Data ouro-id [true true] core-class-id)
-        (ref-ANK::UR_ANK|Data "TFAnchorAa-98c486052a51")
-    ]
+    ;;==== TX001 · 06 · Talos C_IssueTrueFungibleAnchor acnoi=true (6 more classes, 1 anchor each) =
+    (print "--- [TX001 · 06 · issue 6 more TF anchors (acnoi=true each creates its own BoostClass)] ---")
+    (map print
+        [
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassBa acnoi=true CoreBoostTFb)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassBa" ouro-id true "CoreBoostTFb" 8 21.0 210.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassCa acnoi=true CoreBoostTFc)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassCa" ouro-id true "CoreBoostTFc" 8 22.0 220.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassDa acnoi=true CoreBoostTFd)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassDa" ouro-id true "CoreBoostTFd" 8 23.0 230.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassEa acnoi=true CoreBoostTFe)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassEa" ouro-id true "CoreBoostTFe" 8 24.0 240.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassFa acnoi=true CoreBoostTFf)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassFa" ouro-id true "CoreBoostTFf" 8 25.0 250.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassGa acnoi=true CoreBoostTFg)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassGa" ouro-id true "CoreBoostTFg" 8 26.0 260.0)])
+        ]
+    )
+    ;;==== TX001 · 07 · ref-ANK UR_BC|Data / UR_AA|Data / UR_ANK|Data — REPL =========
+    (print "--- [TX001 · 07 · UR reads (BoostClass / AssetAnchors / single anchor)] ---")
+    (map print
+        [
+            (format "<(AQP-ANK|UR_BC|Data CoreBoostTFa)> => \"{}\"" [(ref-ANK::UR_BC|Data core-class-id)])
+            (format "<(AQP-ANK|UR_AA|Data OURO)> => \"{}\"" [(ref-ANK::UR_AA|Data ouro-id)])
+            (format "<(AQP-ANK|UR_ANK|Data TFAnchorAa-98c486052a51)> => \"{}\"" [(ref-ANK::UR_ANK|Data "TFAnchorAa-98c486052a51")])
+        ]
+    )
 )
-(format "<<<<<<<TX001 - AQP-ANK TF class/slot tests costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<(REPL|env-gas)> TX001 after commit => \"{}\"" [(env-gas)]))
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+(print "")
+(print "=== END TX001 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX002 - AQP-ANK TF class-cap and class revoke tests")
+(print "")
+(print "=== TX002 — TF class-cap and class revoke ===============================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX002 · 01 · env-sigs (patron only) — REPL banner follows ===================
+(print "--- [TX002 · 01 · env-sigs (patron only)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -120,10 +181,15 @@
         (split-kda:[decimal]
             (ref-DALOS::URC_SplitKDAPrices
                 patron
-                (* (ref-DALOS::UR_UsagePrice "standard") 4.0)
+                (* (ref-DALOS::UR_UsagePrice "standard") 2.0)
             )
         )
     )
+    ;;==== TX002 · 02 · DALOS URC_SplitKDAPrices ×2 — REPL banner follows ============
+    (print "--- [TX002 · 02 · DALOS fee split ×2] ---")
+    (print (format "<(DALOS|URC_SplitKDAPrices)> patron standard×2 => \"{}\"" [split-kda]))
+    ;;==== TX002 · 03 · env-sigs + coin caps — REPL banner follows ====================
+    (print "--- [TX002 · 03 · env-sigs + coin caps] ---")
     (env-sigs
         [
             { "key": "PK_AncientHodler", "caps": [] }
@@ -154,32 +220,58 @@
             }
         ]
     )
-    [
+    ;;==== TX002 · 04 · Talos revoke / issue (temp anchor acnoi=true creates BoostClass inline) — REPL ============
+    (print "--- [TX002 · 04 · revoke last TF in class-7 + revoke BoostClass-7 + issue temp anchor (acnoi=true)] ---")
+    (map print
         [
-            (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFclassGa-98c486052a51")
-            (ref-TS02-C3::AQP-ANK|C_RevokeAnchorClass patron ouro-id [true true] class07-id)
-            (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFTEMPaa" ouro-id true temp-class-name 8 40.0 400.0)
+            (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor TFclassGa-98c486052a51)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFclassGa-98c486052a51")])
+            (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass CoreBoostTFg)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron class07-id)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFTEMPaa acnoi=true TempClassTF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFTEMPaa" ouro-id true temp-class-name 8 40.0 400.0)])
+        ]
+    )
+    ;;==== TX002 · 05 · expect-failure (revoke non-empty BoostClass) — REPL ===========
+    (print "--- [TX002 · 05 · expect-failure: revoke non-empty BoostClass] ---")
+    (map print
+        [
             (expect-failure
-                "Cannot revoke non-empty class"
-                (ref-TS02-C3::AQP-ANK|C_RevokeAnchorClass patron ouro-id [true true] temp-class-id)
+                (format "<<TX002 expect-failure>> Cannot revoke non-empty BoostClass: <(TS02-C3.AQP-ANK|C_RevokeBoostClass TempClassTF)> (must fail)" [])
+                (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron temp-class-id)
             )
-            (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFTEMPaa-98c486052a51")
-            (ref-TS02-C3::AQP-ANK|C_RevokeAnchorClass patron ouro-id [true true] temp-class-id)
         ]
+    )
+    ;;==== TX002 · 06 · Talos clear temp anchor + revoke BoostClass — REPL ============
+    (print "--- [TX002 · 06 · clear temp anchor then revoke temp BoostClass] ---")
+    (map print
         [
-            (ref-ANK::UR_ANK-CLASSES|Data ouro-id [true true])
-            (ref-ANK::UR_ANK|Data "TFTEMPaa-98c486052a51")
+            (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor TFTEMPaa-98c486052a51)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFTEMPaa-98c486052a51")])
+            (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass TempClassTF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron temp-class-id)])
         ]
-    ]
+    )
+    ;;==== TX002 · 07 · ref-ANK UR_AA|Data / UR_ANK|Data — REPL =======================
+    (print "--- [TX002 · 07 · UR reads] ---")
+    (map print
+        [
+            (format "<(AQP-ANK|UR_AA|Data OURO)> => \"{}\"" [(ref-ANK::UR_AA|Data ouro-id)])
+            (format "<(AQP-ANK|UR_ANK|Data TFTEMPaa-98c486052a51)> => \"{}\"" [(ref-ANK::UR_ANK|Data "TFTEMPaa-98c486052a51")])
+        ]
+    )
 )
-(format "<<<<<<<TX002 - AQP-ANK TF class-cap/revoke tests costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<(REPL|env-gas)> TX002 after commit => \"{}\"" [(env-gas)]))
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+(print "")
+(print "=== END TX002 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX003 - AQP-ANK SF and NF baseline issuance tests")
+(print "")
+(print "=== TX003 — SF and NF baseline issuance ===============================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX003 · 01 · env-sigs (patron only) — REPL banner follows ===================
+(print "--- [TX003 · 01 · env-sigs (patron only)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -194,10 +286,15 @@
         (split-kda:[decimal]
             (ref-DALOS::URC_SplitKDAPrices
                 patron
-                (* (ref-DALOS::UR_UsagePrice "standard") 16.0)
+                (* (ref-DALOS::UR_UsagePrice "standard") 24.0)
             )
         )
     )
+    ;;==== TX003 · 02 · DALOS URC_SplitKDAPrices ×24 — REPL banner follows ============
+    (print "--- [TX003 · 02 · DALOS fee split ×24] ---")
+    (print (format "<(DALOS|URC_SplitKDAPrices)> patron standard×24 => \"{}\"" [split-kda]))
+    ;;==== TX003 · 03 · env-sigs (Lumy + ANHD + payer) — REPL banner follows ==========
+    (print "--- [TX003 · 03 · env-sigs (Lumy + ANHD + payer)] ---")
     (env-sigs
         [
             { "key": "PK_Lumy", "caps": [] }
@@ -229,43 +326,206 @@
             }
         ]
     )
-    [
+    ;;==== TX003 · 04 · Talos C_Issue* with acnoi (SF/NF/NF-set on DHCD/KBN) ===========
+    (print "--- [TX003 · 04 · issue SF + NF + NF set (acnoi=true creates BoostClass inline)] ---")
+    (map print
         [
-            (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SFAnchoraa" "DHCD-98c486052a51" true "CoreBoostSF" 8 35.0 11)
-            (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SFAnchorab" "DHCD-98c486052a51" false "CoreBoostSF-98c486052a51" 8 37.0 9)
+            (format "<(TS02-C3.AQP-ANK|C_IssueSemiFungibleAnchor SFAnchoraa acnoi=true CoreBoostSF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SFAnchoraa" "DHCD-98c486052a51" true "CoreBoostSF" 8 35.0 11)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueSemiFungibleAnchor SFAnchorab acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SFAnchorab" "DHCD-98c486052a51" false "CoreBoostSF-98c486052a51" 8 37.0 9)])
             ;;
-            ;;Bunnies
-            ;;OuroborosBooster (OURO Farm)
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "OuroborosRain" "KBN-98c486052a51" true "SnakeTokenRain" 3 50.0 "Background" "Ouroboros Rain")
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "AurynRain" "KBN-98c486052a51" false "SnakeTokenRain-98c486052a51" 3 100.0 "Background" "Auryn Rain")
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "EliteAurynRain" "KBN-98c486052a51" false "SnakeTokenRain-98c486052a51" 3 200.0 "Background" "Elite-Auryn Rain")
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendarySnakeTokenRain" "KBN-98c486052a51" false "SnakeTokenRain-98c486052a51" 3 400.0 "Rarity" "Legendary")
-            ;;UnityBooster (UNITY Vault)
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Elk0nite" "KBN-98c486052a51" true "UnityBooster" 3 100.0 "Eyes" "Elk0nite Unity Glasses")
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Osmiridium" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 300.0 "Eyes" "Osmiridium Unity Glasses")
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Titanium" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 900.0 "Eyes" "Titaniumgold Unity Glasses")
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryUnityBooster" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 1000.0 "Rarity" "Legendary")
-            ;;StoaBooster (STOA Vault)
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "VegoldEyes" "KBN-98c486052a51" true "StoaBooster" 3 1000.0 "Eyes" "vEGLD Focus")
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryStoaBooster" "KBN-98c486052a51" false "StoaBooster-98c486052a51" 3 3500.0 "Rarity" "Legendary")
-            ;;VestaBooster (VESTA Vault)
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "RedEyes" "KBN-98c486052a51" true "VestaBooster" 3 250.0 "Eyes" "Red")
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "GreenEyes" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 250.0 "Eyes" "Green")
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "BlueEyes" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 250.0 "Eyes" "Blue")
-            (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryVestaBooster" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 1000.0 "Rarity" "Legendary")
-
-
-            ;;(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "NFAnchoraa" "KBN-98c486052a51" true "CoreBoostNF" 8 55.0 "Background" "Ouroboros Rain")
-            ;;(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "NFAnchorab" "KBN-98c486052a51" false "CoreBoostNF-98c486052a51" 8 65.0 "Rarity" "Legendary")
-            ;;(ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "NFAnchorab-98c486052a51")
+            ;;SnakeTokenRain NFTs (OURO Vault)
+            ;;BronzeSnakePower
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor OuroborosRain acnoi=true BronzeSnakePower)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "OuroborosRain" "KBN-98c486052a51" true "BronzeSnakePower" 3 50.0 "Background" "Ouroboros Rain")])
+            ;;SilverSnakePower
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor AurynRain acnoi=true SilverSnakePower)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "AurynRain" "KBN-98c486052a51" true "SilverSnakePower" 3 100.0 "Background" "Auryn Rain")])
+            ;;GoldenSnakePower
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor EliteAurynRain acnoi=true GoldenSnakePower)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "EliteAurynRain" "KBN-98c486052a51" true "GoldenSnakePower" 3 200.0 "Background" "Elite-Auryn Rain")])
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor LegendarySnakeTokenRain acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendarySnakeTokenRain" "KBN-98c486052a51" false "GoldenSnakePower-98c486052a51" 3 400.0 "Rarity" "Legendary")])
+            ;;UnityBooster NFTs (Unity Vault)
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor Elk0nite acnoi=true UnityBooster)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Elk0nite" "KBN-98c486052a51" true "UnityBooster" 3 100.0 "Eyes" "Elk0nite Unity Glasses")])
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor Osmiridium acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Osmiridium" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 300.0 "Eyes" "Osmiridium Unity Glasses")])
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor Titanium acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Titanium" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 900.0 "Eyes" "Titaniumgold Unity Glasses")])
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor LegendaryUnityBooster acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryUnityBooster" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 1000.0 "Rarity" "Legendary")])
+            ;;StoaBooster NFTs (Stoa Vault)
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor VegoldEyes acnoi=true StoaBooster)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "VegoldEyes" "KBN-98c486052a51" true "StoaBooster" 3 1000.0 "Eyes" "vEGLD Focus")])
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor LegendaryStoaBooster acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryStoaBooster" "KBN-98c486052a51" false "StoaBooster-98c486052a51" 3 3500.0 "Rarity" "Legendary")])
+            ;;VestaBooster NFTs (Vesta Vault)
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor RedEyes acnoi=true VestaBooster)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "RedEyes" "KBN-98c486052a51" true "VestaBooster" 3 250.0 "Eyes" "Red")])
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor GreenEyes acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "GreenEyes" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 250.0 "Eyes" "Green")])
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor BlueEyes acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "BlueEyes" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 250.0 "Eyes" "Blue")])
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor LegendaryVestaBooster acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryVestaBooster" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 3500.0 "Rarity" "Legendary")])
+            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleSetAnchor RGBEyes acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleSetAnchor patron "RGBEyes" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 1000.0 1)])
         ]
+    )
+    ;;==== TX003 · 05 · ref-ANK UR_AA|Data KBN — REPL ================================
+    (print "--- [TX003 · 05 · UR read KBN AssetAnchors] ---")
+    (map print
         [
-            ;;(ref-ANK::UR_ANK-CLASSES|Data "DHCD-98c486052a51" [false true])
-            (ref-ANK::UR_ANK-CLASSES|Data "KBN-98c486052a51" [false false])
-            ;;(ref-ANK::UR_ANK|Data "SFAnchoraa-98c486052a51")
-            ;;(ref-ANK::UR_ANK|Data "NFAnchorab-98c486052a51")
+            (format "<(AQP-ANK|UR_AA|Data KBN)> => \"{}\"" [(ref-ANK::UR_AA|Data "KBN-98c486052a51")])
         ]
-    ]
+    )
 )
-(format "<<<<<<<TX003 - AQP-ANK SF/NF baseline tests costs {} GAS>>>>>>>" [(env-gas)])
+(print (format "<(REPL|env-gas)> TX003 after commit => \"{}\"" [(env-gas)]))
 (commit-tx)
+(print "")
+(print "=== END TX003 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;; TX004: After OURO/DHCD usage in TX001–TX003, strip every live TF anchor on OURO and SF anchor on DHCD, then
+;; revoke every associated BoostClass so both assets are bare. KBN NF (Bunnies) anchors stay for [6.2.2]+ repls.
+(print "")
+(begin-tx "TX004 - Strip OURO TF and DHCD SF anchors and BoostClasses (KBN NF retained)")
+(print "")
+(print "=== TX004 — Strip OURO/DHCD (KBN NF retained) ===========================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX004 · 01 · env-sigs — REPL banner follows ==================================
+(print "--- [TX004 · 01 · env-sigs] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (dhcd-id:string "DHCD-98c486052a51")
+        (kbn-id:string "KBN-98c486052a51")
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (tf-ids:[string] (ref-ANK::UR_ANK|AnchorsForAsset ouro-id))
+        (sf-ids:[string] (ref-ANK::UR_ANK|AnchorsForAsset dhcd-id))
+    )
+    ;;==== TX004 · 02 · ref-ANK UR_ANK|AnchorsForAsset (sweep 1) — REPL ==============
+    (print "--- [TX004 · 02 · UR: anchor id lists (sweep 1)] ---")
+    (map print
+        [
+            (format "<(AQP-ANK|UR_ANK|AnchorsForAsset OURO)> => \"{}\"" [tf-ids])
+            (format "<(AQP-ANK|UR_ANK|AnchorsForAsset DHCD)> => \"{}\"" [sf-ids])
+        ]
+    )
+    ;;==== TX004 · 03 · Talos C_RevokeAnchor (sweep 1 OURO/DHCD) — REPL ==============
+    (print "--- [TX004 · 03 · revoke all TF/SF anchors (sweep 1)] ---")
+    (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> OURO id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron id)])) tf-ids))
+    (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> DHCD id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron id)])) sf-ids))
+    (let
+        (
+            (ouro-bcids:[string]
+                (fold
+                    (lambda (acc:[string] aid:string)
+                        (let ((bcid:string (ref-ANK::UR_ANK|BoostClassId aid)))
+                            (if (or (= bcid AQP-ANK.BAR) (contains bcid acc)) acc (+ acc [bcid]))
+                        )
+                    )
+                    []
+                    tf-ids
+                )
+            )
+            (dhcd-bcids:[string]
+                (fold
+                    (lambda (acc:[string] aid:string)
+                        (let ((bcid:string (ref-ANK::UR_ANK|BoostClassId aid)))
+                            (if (or (= bcid AQP-ANK.BAR) (contains bcid acc)) acc (+ acc [bcid]))
+                        )
+                    )
+                    []
+                    sf-ids
+                )
+            )
+        )
+        ;;==== TX004 · 04 · BoostClass IDs derived from anchors — REPL ==================
+        (print "--- [TX004 · 04 · echo BoostClass-id lists to revoke] ---")
+        (map print
+            [
+                (format "<(AQP-ANK|UR derived OURO non-BAR BoostClass-ids)> => \"{}\"" [ouro-bcids])
+                (format "<(AQP-ANK|UR derived DHCD non-BAR BoostClass-ids)> => \"{}\"" [dhcd-bcids])
+            ]
+        )
+        ;;==== TX004 · 05 · Talos C_RevokeBoostClass (OURO/DHCD) — REPL ================
+        (print "--- [TX004 · 05 · revoke non-BAR BoostClasses] ---")
+        (map print (map (lambda (bcid:string) (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass)> OURO bcid={} => \"{}\"" [bcid (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron bcid)])) ouro-bcids))
+        (map print (map (lambda (bcid:string) (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass)> DHCD bcid={} => \"{}\"" [bcid (ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron bcid)])) dhcd-bcids))
+    )
+    ;;==== TX004 · 06 · UR sweep-2 + Talos C_RevokeAnchor stragglers — REPL ===========
+    (print "--- [TX004 · 06 · UR re-query + revoke stragglers (sweep 2)] ---")
+    (let
+        (
+            (tf2:[string] (ref-ANK::UR_ANK|AnchorsForAsset ouro-id))
+            (sf2:[string] (ref-ANK::UR_ANK|AnchorsForAsset dhcd-id))
+        )
+        (map print [(format "<(AQP-ANK|UR_ANK|AnchorsForAsset OURO sweep-2)> => \"{}\"" [tf2]) (format "<(AQP-ANK|UR_ANK|AnchorsForAsset DHCD sweep-2)> => \"{}\"" [sf2])])
+        (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> OURO sweep-2 id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron id)])) tf2))
+        (map print (map (lambda (id:string) (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor)> DHCD sweep-2 id={} => \"{}\"" [id (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron id)])) sf2))
+    )
+    ;;==== TX004 · 07 · expect (strip invariants) — REPL ==============================
+    (print "--- [TX004 · 07 · expect: OURO/DHCD bare; KBN NF still live] ---")
+    (let
+        (
+            (n-ouro:integer (ref-ANK::UR_AA|AnchorsActive ouro-id))
+            (n-dhcd:integer (ref-ANK::UR_AA|AnchorsActive dhcd-id))
+            (g-ouro:integer (ref-ANK::UR_AA|GroupsActive ouro-id))
+            (g-dhcd:integer (ref-ANK::UR_AA|GroupsActive dhcd-id))
+            (n-kbn-nf:integer (length (ref-ANK::UR_ANK|AnchorsForAsset kbn-id)))
+        )
+        (map print
+            [
+                (expect (format "<<TX004 expect>> <(AQP-ANK|UR_AA|AnchorsActive OURO)> anchors: actual={} expected=0" [n-ouro]) 0 n-ouro)
+                (expect (format "<<TX004 expect>> <(AQP-ANK|UR_AA|AnchorsActive DHCD)> anchors: actual={} expected=0" [n-dhcd]) 0 n-dhcd)
+                (expect (format "<<TX004 expect>> <(AQP-ANK|UR_AA|GroupsActive OURO)> groups: actual={} expected=0" [g-ouro]) 0 g-ouro)
+                (expect (format "<<TX004 expect>> <(AQP-ANK|UR_AA|GroupsActive DHCD)> groups: actual={} expected=0" [g-dhcd]) 0 g-dhcd)
+                (expect (format "<<TX004 expect>> <(AQP-ANK|UR_ANK|AnchorsForAsset KBN)> nf-live-count: actual={} expected=true-from->0" [n-kbn-nf]) true (> n-kbn-nf 0))
+            ]
+        )
+    )
+)
+(print (format "<(REPL|env-gas)> TX004 after commit => \"{}\"" [(env-gas)]))
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX004 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX005 - Issued anchor entities (read-only echo)")
+(print "")
+(print "=== TX005 — Issued anchor entities =========================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX005 · 01 · env-sigs cleared — REPL banner follows ==========================
+(print "--- [TX005 · 01 · env-sigs cleared] ---")
+(env-sigs [])
+(let
+    (
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (anchor-ids:[string] (ref-ANK::UR_ANK|AllAnchorIds))
+        (bc-ids:[string] (ref-ANK::UR_BC|AllBoostClassIds))
+    )
+    ;;==== TX005 · 02 · list all issued anchors (UR_ANK|AllAnchorIds) ====================
+    (print "--- [TX005 · 02 · UR_ANK|AllAnchorIds] ---")
+    (print (format "<(AQP-ANK|UR_ANK|AllAnchorIds)> count => \"{}\"" [(length anchor-ids)]))
+    (map
+        (lambda (aid:string)
+            (print (format "  anchor-id: {} | asset: {} | state: {} | boost-class: {}" [aid (ref-ANK::UR_ANK|AnchoredAsset aid) (ref-ANK::UR_ANK|State aid) (ref-ANK::UR_ANK|BoostClassId aid)]))
+        )
+        anchor-ids
+    )
+    ;;==== TX005 · 03 · list all BoostClasses (UR_BC|AllBoostClassIds) ===================
+    (print "--- [TX005 · 03 · UR_BC|AllBoostClassIds] ---")
+    (print (format "<(AQP-ANK|UR_BC|AllBoostClassIds)> count => \"{}\"" [(length bc-ids)]))
+    (map
+        (lambda (bcid:string)
+            (print (format "  boost-class-id: {} | anchors: {} | active: {}" [bcid (ref-ANK::UR_BC|Anchors bcid) (ref-ANK::UR_BC|Active bcid)]))
+        )
+        bc-ids
+    )
+)
+(print (format "<(REPL|env-gas)> TX005 after commit => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+(print "=== END TX005 · FILE [6.2.1]_AQP-ANK.repl DONE =========================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;; Follow with [6.2.2]_AQP-SCORE.repl or Stage02 harness.

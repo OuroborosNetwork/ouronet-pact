@@ -1,7 +1,22 @@
+;;
+;; REPL/Stage_02/[6.1]_DPDC.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.1]_DPDC.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (print "===================Initialise Ouronet_TX-002============================")
 (begin-tx "INIT TX 000 - Chain Data Time SetUp Definition")
 (namespace "ouronet-ns")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -9,9 +24,10 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-gas)
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;TX 001 -- Accounts Display
 ;;TX 002 -- Toggle Tests
 ;;TX 003 -- Nonce Tests
@@ -21,6 +37,8 @@
 (begin-tx "TX001 - Accounts Display")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX001 - Accounts Display · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX001 - Accounts Display · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -28,6 +46,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX001 - Accounts Display · 02 · let / invocation ==== ======================================
+(print "--- [TX001 - Accounts Display · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -53,17 +73,22 @@
 
 (print "")
 (print "")
+;;==== TX001 - Accounts Display · 03 · gas echo ==== ==============================================
+(print "--- [TX001 - Accounts Display · 03 · gas echo] ---")
 (format "<<<<<<<TX001 - Accounts Display costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 002 -- Toggle Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 002 -- Toggle Tests · 01 · env-sigs (caps) ==== =========================================
+(print "--- [TX 002 -- Toggle Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -72,6 +97,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 002 -- Toggle Tests · 02 · let / invocation ==== ========================================
+(print "--- [TX 002 -- Toggle Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -150,17 +177,22 @@
 
 (print "")
 (print "")
+;;==== TX 002 -- Toggle Tests · 03 · gas echo ==== ================================================
+(print "--- [TX 002 -- Toggle Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 002 -- Toggle Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX001 - Accounts Display")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX001 - Accounts Display · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX001 - Accounts Display · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -168,6 +200,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX001 - Accounts Display · 02 · let / invocation ==== ======================================
+(print "--- [TX001 - Accounts Display · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -219,17 +253,22 @@
 
 (print "")
 (print "")
+;;==== TX001 - Accounts Display · 03 · gas echo ==== ==============================================
+(print "--- [TX001 - Accounts Display · 03 · gas echo] ---")
 (format "<<<<<<<TX001 - Accounts Display costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 003 -- Nonce Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 003 -- Nonce Tests · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [TX 003 -- Nonce Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -238,6 +277,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 003 -- Nonce Tests · 02 · let / invocation ==== =========================================
+(print "--- [TX 003 -- Nonce Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -351,17 +392,22 @@
 
 (print "")
 (print "")
+;;==== TX 003 -- Nonce Tests · 03 · gas echo ==== =================================================
+(print "--- [TX 003 -- Nonce Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 003 -- Nonce Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 005 -- NFT Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 005 -- NFT Tests · 01 · env-sigs (caps) ==== ============================================
+(print "--- [TX 005 -- NFT Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -370,6 +416,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 005 -- NFT Tests · 02 · let / invocation ==== ===========================================
+(print "--- [TX 005 -- NFT Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV1} DPDC)
@@ -423,17 +471,22 @@
 
 (print "")
 (print "")
+;;==== TX 005 -- NFT Tests · 03 · gas echo ==== ===================================================
+(print "--- [TX 005 -- NFT Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 005 -- NFT Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 005b -- Wipe Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 005b -- Wipe Tests · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [TX 005b -- Wipe Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -442,6 +495,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 005b -- Wipe Tests · 02 · let / invocation ==== =========================================
+(print "--- [TX 005b -- Wipe Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV1} DPDC)
@@ -480,17 +535,22 @@
 
 (print "")
 (print "")
+;;==== TX 005b -- Wipe Tests · 03 · gas echo ==== =================================================
+(print "--- [TX 005b -- Wipe Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 005b -- Wipe Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX001 - Accounts Display")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX001 - Accounts Display · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX001 - Accounts Display · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -498,6 +558,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX001 - Accounts Display · 02 · let / invocation ==== ======================================
+(print "--- [TX001 - Accounts Display · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -549,19 +611,23 @@
 
 (print "")
 (print "")
+;;==== TX001 - Accounts Display · 03 · gas echo ==== ==============================================
+(print "--- [TX001 - Accounts Display · 03 · gas echo] ---")
 (format "<<<<<<<TX001 - Accounts Display costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
 
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 007 -- SFT Transfer Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 007 -- SFT Transfer Tests · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX 007 -- SFT Transfer Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -570,6 +636,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 007 -- SFT Transfer Tests · 02 · let / invocation ==== ==================================
+(print "--- [TX 007 -- SFT Transfer Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -598,20 +666,26 @@
 
 (print "")
 (print "")
+;;==== TX 007 -- SFT Transfer Tests · 03 · gas echo ==== ==========================================
+(print "--- [TX 007 -- SFT Transfer Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 007a -- SFT Transfer Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 007b -- SFT Transfer Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 007b -- SFT Transfer Tests · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX 007b -- SFT Transfer Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -620,6 +694,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 007b -- SFT Transfer Tests · 02 · let / invocation ==== =================================
+(print "--- [TX 007b -- SFT Transfer Tests · 02 · let / invocation] ---")
 (let
     (
         
@@ -671,17 +747,22 @@
 
 (print "")
 (print "")
+;;==== TX 007b -- SFT Transfer Tests · 03 · gas echo ==== =========================================
+(print "--- [TX 007b -- SFT Transfer Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 007b -- SFT Transfer Tests costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 008 -- SFT Fragment Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 008 -- SFT Fragment Tests · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX 008 -- SFT Fragment Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -689,6 +770,8 @@
     ]
 )
 (print "=============================================BEGIN DPTF TESTS==========================================")
+;;==== TX 008 -- SFT Fragment Tests · 02 · let / invocation ==== ==================================
+(print "--- [TX 008 -- SFT Fragment Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV1} DPDC)
@@ -715,23 +798,30 @@
 
 (print "")
 (print "")
+;;==== TX 008 -- SFT Fragment Tests · 03 · gas echo ==== ==========================================
+(print "--- [TX 008 -- SFT Fragment Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 008 -- SUPPLY TESTS {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 011 -- Make CD Set")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 011 -- Make CD Set · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [TX 011 -- Make CD Set · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== TX 011 -- Make CD Set · 02 · let / invocation ==== =========================================
+(print "--- [TX 011 -- Make CD Set · 02 · let / invocation] ---")
 (let
     (
         (ref-DPDC:module{DpdcV1} DPDC)
@@ -808,27 +898,34 @@
 
 (print "")
 (print "")
+;;==== TX 011 -- Make CD Set · 03 · gas echo ==== =================================================
+(print "--- [TX 011 -- Make CD Set · 03 · gas echo] ---")
 (format "<<<<<<<TX 011 -- Make CD Set Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 014 -- Equity Collection Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 014 -- Equity Collection Tests · 01 · env-sigs (caps) ==== ==============================
+(print "--- [TX 014 -- Equity Collection Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== TX 014 -- Equity Collection Tests · 02 · let / invocation ==== =============================
+(print "--- [TX 014 -- Equity Collection Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -872,22 +969,29 @@
 
 (print "")
 (print "")
+;;==== TX 014 -- Equity Collection Tests · 03 · gas echo ==== =====================================
+(print "--- [TX 014 -- Equity Collection Tests · 03 · gas echo] ---")
 (format "<<<<<<<TX 014 -- Equity Collection Tests Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 015 -- LAUNCHPAD TESTS")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 015 -- LAUNCHPAD TESTS · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== TX 015 -- LAUNCHPAD TESTS · 02 · let / invocation ==== =====================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 02 · let / invocation] ---")
 (let
     (
         (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -938,23 +1042,30 @@
 
 (print "")
 (print "")
+;;==== TX 015 -- LAUNCHPAD TESTS · 03 · gas echo ==== =============================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 03 · gas echo] ---")
 (format "<<<<<<<TX 014 -- LAUNCHPAD TESTS Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 015 -- LAUNCHPAD TESTS")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 015 -- LAUNCHPAD TESTS · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_Lumy", "caps": [] }
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== TX 015 -- LAUNCHPAD TESTS · 02 · let / invocation ==== =====================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -974,25 +1085,33 @@
 
 (print "")
 (print "")
+;;==== TX 015 -- LAUNCHPAD TESTS · 03 · gas echo ==== =============================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 03 · gas echo] ---")
 (format "<<<<<<<TX 014b -- Repurpose Fragments TESTS Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 015 -- LAUNCHPAD TESTS")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 015 -- LAUNCHPAD TESTS · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== TX 015 -- LAUNCHPAD TESTS · 02 · let / invocation ==== =====================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 02 · let / invocation] ---")
 (let
     (
         (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -1119,20 +1238,26 @@
 
 (print "")
 (print "")
+;;==== TX 015 -- LAUNCHPAD TESTS · 03 · gas echo ==== =============================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 03 · gas echo] ---")
 (format "<<<<<<<TX 014 -- LAUNCHPAD TESTS Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 015 -- LAUNCHPAD TESTS")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 015 -- LAUNCHPAD TESTS · 01 · env-sigs (caps) ==== ======================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1142,6 +1267,8 @@
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME02}
 )
+;;==== TX 015 -- LAUNCHPAD TESTS · 02 · let / invocation ==== =====================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 02 · let / invocation] ---")
 (let
     (
         (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -1303,6 +1430,8 @@
 
 (print "")
 (print "")
+;;==== TX 015 -- LAUNCHPAD TESTS · 03 · gas echo ==== =============================================
+(print "--- [TX 015 -- LAUNCHPAD TESTS · 03 · gas echo] ---")
 (format "<<<<<<<TX 014 -- LAUNCHPAD TESTS Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")

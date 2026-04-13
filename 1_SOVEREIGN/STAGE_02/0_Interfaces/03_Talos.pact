@@ -314,25 +314,25 @@
     ;;
     ;;  [ANK]
     ;;
+    (defun AQP-ANK|C_RevokeBoostClass:string (patron:string boost-class-id:string))
     (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
-        (patron:string anchor-name:string dptf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
+        (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
     )
     (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
-        (patron:string anchor-name:string dpsf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
+        (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
     )
     (defun AQP-ANK|C_IssueNonFungibleAnchor:string
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
     )
     (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool anchor-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
     )
     (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string))
-    (defun AQP-ANK|C_RevokeAnchorClass:string (patron:string asset-id:string ank-fungibility:[bool] anchor-class-id:string))
     ;;
     ;;  [AQP-SCORE]
     ;;
     (defun AQP-SCR|C_IssueLiquidityScore:string
-        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal mx-sleeping:decimal)
+        (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
     )
     (defun AQP-SCR|C_IssueTrueFungibleScore:string
         (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
@@ -348,7 +348,7 @@
     )
     (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string score-id:string new-owner-konto:string))
     (defun AQP-SCR|C_ControlScore:string (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool))
-    (defun AQP-SCR|C_CreateScoreAnchorLink:string (patron:string score-id:string anchor-id:string))
+    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string score-id:string boost-class-id:string))
     (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string))
     (defun AQP-SCR|C_EnableDebBoost:string (patron:string score-id:string))
     (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
@@ -356,5 +356,8 @@
     )
     (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
         (patron:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+    )
+    (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
+        (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
     )
 )

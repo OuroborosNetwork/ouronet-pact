@@ -1,6 +1,21 @@
+;;
+;; REPL/Stage_02/[4.0]_Sovereign-Executor.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[4.0]_Sovereign-Executor.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (begin-tx "TX-00 [C0] - Chain Data Time SetUp Definition")
 (namespace "ouronet-ns")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -8,6 +23,10 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-gas)
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;
@@ -29,12 +48,16 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 01 · env-sigs (caps) ==== ==============
+(print "--- [TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 02 · let / invocation ==== =============
+(print "--- [TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 02 · let / invocation] ---")
 (let
     (
         (ref-U|G:module{OuronetGuardsV1} U|G)
@@ -99,6 +122,8 @@
     ]
 )
 
+;;==== TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 03 · gas echo ==== =====================
+(print "--- [TX-01 [4.1] - DPDC INIT [01]: Define IMC Policies · 03 · gas echo] ---")
 (format "<<<<<<<DPDC INIT [01] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -111,6 +136,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation ==== =============
+(print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -122,6 +149,8 @@
             )
         )
     )
+;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 02 · env-sigs (caps) ==== ==============
+(print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -171,6 +200,8 @@
 )
 
 
+;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 03 · gas echo ==== =====================
+(print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 03 · gas echo] ---")
 (format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -183,11 +214,15 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation ==== =============
+(print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (issuing-account:string KST.ANHD)
     )
+;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 02 · env-sigs (caps) ==== ==============
+(print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -396,6 +431,8 @@
     )
 )
 
+;;==== TX-02 [4.2] - Issue Ouronet Custodians Collection · 03 · gas echo ==== =====================
+(print "--- [TX-02 [4.2] - Issue Ouronet Custodians Collection · 03 · gas echo] ---")
 (format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -408,6 +445,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-03 [4.3] - Issue Shareholders Collection · 01 · let / invocation ==== ===================
+(print "--- [TX-03 [4.3] - Issue Shareholders Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -419,6 +458,8 @@
             )
         )
     )
+;;==== TX-03 [4.3] - Issue Shareholders Collection · 02 · env-sigs (caps) ==== ====================
+(print "--- [TX-03 [4.3] - Issue Shareholders Collection · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -500,6 +541,8 @@
     )
 )
 
+;;==== TX-03 [4.3] - Issue Shareholders Collection · 03 · gas echo ==== ===========================
+(print "--- [TX-03 [4.3] - Issue Shareholders Collection · 03 · gas echo] ---")
 (format "<<<<<<<Issue Demiourgos Shareholders Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -512,6 +555,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-02 [4.2] - Issue Coding Division Collection · 01 · let / invocation ==== ================
+(print "--- [TX-02 [4.2] - Issue Coding Division Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -523,6 +568,8 @@
             )
         )
     )
+;;==== TX-02 [4.2] - Issue Coding Division Collection · 02 · env-sigs (caps) ==== =================
+(print "--- [TX-02 [4.2] - Issue Coding Division Collection · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -572,6 +619,8 @@
 )
 
 
+;;==== TX-02 [4.2] - Issue Coding Division Collection · 03 · gas echo ==== ========================
+(print "--- [TX-02 [4.2] - Issue Coding Division Collection · 03 · gas echo] ---")
 (format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -587,6 +636,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-04 [4.4] - Issue Coding Division Collection · 01 · let / invocation ==== ================
+(print "--- [TX-04 [4.4] - Issue Coding Division Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -598,6 +649,8 @@
             )
         )
     )
+;;==== TX-04 [4.4] - Issue Coding Division Collection · 02 · env-sigs (caps) ==== =================
+(print "--- [TX-04 [4.4] - Issue Coding Division Collection · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -773,6 +826,8 @@
     )
 )
 
+;;==== TX-04 [4.4] - Issue Coding Division Collection · 03 · gas echo ==== ========================
+(print "--- [TX-04 [4.4] - Issue Coding Division Collection · 03 · gas echo] ---")
 (format "<<<<<<<Issue Coding Division Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -785,6 +840,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-02 [4.2] - Issue Wonder Coach Collection · 01 · let / invocation ==== ===================
+(print "--- [TX-02 [4.2] - Issue Wonder Coach Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -796,6 +853,8 @@
             )
         )
     )
+;;==== TX-02 [4.2] - Issue Wonder Coach Collection · 02 · env-sigs (caps) ==== ====================
+(print "--- [TX-02 [4.2] - Issue Wonder Coach Collection · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -845,6 +904,8 @@
 )
 
 
+;;==== TX-02 [4.2] - Issue Wonder Coach Collection · 03 · gas echo ==== ===========================
+(print "--- [TX-02 [4.2] - Issue Wonder Coach Collection · 03 · gas echo] ---")
 (format "<<<<<<<Issue Ouronet Custodians Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -858,6 +919,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-06 [4.6] - Issue Wonder Coach Collection · 01 · let / invocation ==== ===================
+(print "--- [TX-06 [4.6] - Issue Wonder Coach Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -869,6 +932,8 @@
             )
         )
     )
+;;==== TX-06 [4.6] - Issue Wonder Coach Collection · 02 · env-sigs (caps) ==== ====================
+(print "--- [TX-06 [4.6] - Issue Wonder Coach Collection · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -1179,6 +1244,8 @@
     )
 )
 
+;;==== TX-06 [4.6] - Issue Wonder Coach Collection · 03 · gas echo ==== ===========================
+(print "--- [TX-06 [4.6] - Issue Wonder Coach Collection · 03 · gas echo] ---")
 (format "<<<<<<<Issue Wonder Coach Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -1191,6 +1258,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-07 [4.7] - Issue Nosferatu Collection · 01 · let / invocation ==== ======================
+(print "--- [TX-07 [4.7] - Issue Nosferatu Collection · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1202,6 +1271,8 @@
             )
         )
     )
+;;==== TX-07 [4.7] - Issue Nosferatu Collection · 02 · env-sigs (caps) ==== =======================
+(print "--- [TX-07 [4.7] - Issue Nosferatu Collection · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -1256,6 +1327,8 @@
     )
 )
 
+;;==== TX-07 [4.7] - Issue Nosferatu Collection · 03 · gas echo ==== ==============================
+(print "--- [TX-07 [4.7] - Issue Nosferatu Collection · 03 · gas echo] ---")
 (format "<<<<<<<Issue Nosferatu Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -1268,6 +1341,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation ==== ============
+(print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1279,6 +1354,8 @@
             )
         )
     )
+;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 02 · env-sigs (caps) ==== =============
+(print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -1338,6 +1415,8 @@
     )
 )
 
+;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 03 · gas echo ==== ====================
+(print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 03 · gas echo] ---")
 (format "<<<<<<<Issue Bloodshed Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -1350,6 +1429,8 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation ==== ============
+(print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1361,6 +1442,8 @@
             )
         )
     )
+;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 02 · env-sigs (caps) ==== =============
+(print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -1420,6 +1503,8 @@
     )
 )
 
+;;==== TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 03 · gas echo ==== ====================
+(print "--- [TX-08 [4.8] - Issue Bloodshed Collection and Bunny · 03 · gas echo] ---")
 (format "<<<<<<<Issue Bloodshed Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)

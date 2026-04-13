@@ -1,7 +1,22 @@
+;;
+;; REPL/Stage_01/[6.3]_SWP.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[6.3]_SWP.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (print "===================Initialise Ouronet_TX-002============================")
 (begin-tx "INIT TX 000 - Chain Data Time SetUp Definition")
 (namespace "ouronet-ns")
+;;==== INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ==================
+(print "--- [INIT TX 000 - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -9,9 +24,10 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-gas)
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;TX 001 -- Make 10 DWK
 ;;TX 002 -- Coil 5k DLK
 ;;TX 003 -- Move 50k OURO from ANHD to AOZ
@@ -69,13 +85,16 @@
 ;;TX 043 -- Migration Testing
 ;;TX 044 -- Treasury Dispo Tests
 ;:TX 045 -- VSE and Swap Math Tests
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=============================================BEGIN SWP TESTS==========================================")
 (begin-tx "SWP|TX 001 - Make 10k DWK")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 001 - Make 10k DWK · 01 · env-sigs (caps) ==== ======================================
+(print "--- [SWP|TX 001 - Make 10k DWK · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -90,6 +109,8 @@
     ]
 )
 
+;;==== SWP|TX 001 - Make 10k DWK · 02 · let / invocation ==== =====================================
+(print "--- [SWP|TX 001 - Make 10k DWK · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
@@ -98,24 +119,31 @@
 )
 (print "")
 (print "")
+;;==== SWP|TX 001 - Make 10k DWK · 03 · gas echo ==== =============================================
+(print "--- [SWP|TX 001 - Make 10k DWK · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 001 WrapKadena ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 002 - Coil 5k DLK")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 002 - Coil 5k DLK · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP|TX 002 - Coil 5k DLK · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 002 - Coil 5k DLK · 02 · let / invocation ==== ======================================
+(print "--- [SWP|TX 002 - Coil 5k DLK · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -147,25 +175,32 @@
 )
 (print "")
 (print "")
+;;==== SWP|TX 002 - Coil 5k DLK · 03 · gas echo ==== ==============================================
+(print "--- [SWP|TX 002 - Coil 5k DLK · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 002 Coil DWK ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=================================AOZ-SECTION============================================")
 (begin-tx "SWP|TX 003 - Move 50k OURO from ANHD to AOZ")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 01 · env-sigs (caps) ==== ====================
+(print "--- [SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 02 · let / invocation ==== ===================
+(print "--- [SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
@@ -182,18 +217,23 @@
     
 (print "")
 (print "")
+;;==== SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 03 · gas echo ==== ===========================
+(print "--- [SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 003 Transfer 50k OURO ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation ==== 
+(print "--- [SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -206,6 +246,8 @@
             )
         )
     )
+;;==== SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 02 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -255,6 +297,8 @@
         )
         (print "")
         (print "")
+;;==== SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 03 · gas echo ==== 
+(print "--- [SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 03 · gas echo] ---")
         (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
     )
 )
@@ -266,12 +310,15 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation ==== 
+(print "--- [SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -284,6 +331,8 @@
             )
         )
     )
+;;==== SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 02 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -339,6 +388,8 @@
         )
         (print "")
         (print "")
+;;==== SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 03 · gas echo ==== 
+(print "--- [SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 · 03 · gas echo] ---")
         (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
     )
 )
@@ -350,17 +401,22 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 01 · env-sigs (caps) ==== =====
+(print "--- [SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
+;;==== SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 02 · let / invocation ==== ====
+(print "--- [SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -420,6 +476,8 @@
         )
         (print "")
         (print "")
+;;==== SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 03 · gas echo ==== ============
+(print "--- [SWP|TX 006 - Issue P|OURO-98c486052a51|PKOSON-98c486052a51 · 03 · gas echo] ---")
         (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
     )
 )
@@ -431,17 +489,22 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
+;;==== SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 02 · let / invocation ==== 
+(print "--- [SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -503,6 +566,8 @@
         )
         (print "")
         (print "")
+;;==== SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 03 · gas echo ==== 
+(print "--- [SWP|TX 007 - Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 · 03 · gas echo] ---")
         (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
     )
 )
@@ -515,17 +580,22 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 01 · env-sigs (caps) ==== =======
+(print "--- [SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 02 · let / invocation ==== ======
+(print "--- [SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -585,6 +655,8 @@
         )
         (print "")
         (print "")
+;;==== SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 03 · gas echo ==== ==============
+(print "--- [SWP|TX 008 - Issue P|OURO-98c486052a51|BUSD-98c486052a51 · 03 · gas echo] ---")
         (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
     )
 )
@@ -596,22 +668,28 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 009 - Mint 100 mil VST Origin")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 009 - Mint 100 mil VST Origin · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 009 - Mint 100 mil VST Origin · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 009 - Mint 100 mil VST Origin · 02 · let / invocation ==== ==========================
+(print "--- [SWP|TX 009 - Mint 100 mil VST Origin · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
@@ -624,23 +702,30 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 009 - Mint 100 mil VST Origin · 03 · gas echo ==== ==================================
+(print "--- [SWP|TX 009 - Mint 100 mil VST Origin · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 009 Origin MInt VST ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps) ==== ========
+(print "--- [SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 02 · let / invocation ==== =======
+(print "--- [SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -700,6 +785,8 @@
         )
         (print "")
         (print "")
+;;==== SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 03 · gas echo ==== ===============
+(print "--- [SWP|TX 010 - Issue P|OURO-98c486052a51|VST-98c486052a51 · 03 · gas echo] ---")
         (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
     )
 )
@@ -711,23 +798,30 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 02 · let / invocation ==== 
+(print "--- [SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -789,6 +883,8 @@
         )
         (print "")
         (print "")
+;;==== SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 03 · gas echo ==== 
+(print "--- [SWP|TX 011 - Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 · 03 · gas echo] ---")
         (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
     )
 )
@@ -800,21 +896,27 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 01 · env-sigs (caps) ==== ===============
+(print "--- [SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 02 · let / invocation ==== ==============
+(print "--- [SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -880,19 +982,24 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 03 · gas echo ==== ======================
+(print "--- [SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 012a Issue Stable 7xUSD STEP 0|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 01 · let / invocation ==== ==============
+(print "--- [SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -903,6 +1010,8 @@
             )
         )
     )
+;;==== SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 02 · env-sigs (caps) ==== ===============
+(print "--- [SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -938,18 +1047,23 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 03 · gas echo ==== ======================
+(print "--- [SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 012b Issue Stable 7xUSD STEP 1|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 01 · env-sigs (caps) ==== ===============
+(print "--- [SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -960,18 +1074,23 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 02 · gas echo ==== ======================
+(print "--- [SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 012c Issue Stable 7xUSD STEP 2|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 · 01 · let / invocation ==== 
+(print "--- [SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 · 01 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -984,6 +1103,8 @@
             )
         )
     )
+;;==== SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 · 02 · env-sigs (caps) ==== 
+(print "--- [SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -1037,6 +1158,8 @@
         )
         (print "")
         (print "")
+;;==== SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 · 03 · gas echo ==== 
+(print "--- [SWP|TX 013 - Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 · 03 · gas echo] ---")
         (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
     )
 )
@@ -1048,9 +1171,10 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;Issued Pools
 ;;
 ;;      W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51
@@ -1062,18 +1186,23 @@
 ;;      P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51
 ;;      S|BUSD-98c486052a51|TUSD-98c486052a51|USDT-98c486052a51|USDC-98c486052a51|USDD-98c486052a51|AUSD-98c486052a51|CUSD-98c486052a51
 ;;      W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 014 - Enable Pools Functionality")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 014 - Enable Pools Functionality · 01 · env-sigs (caps) ==== ========================
+(print "--- [SWP|TX 014 - Enable Pools Functionality · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
+;;==== SWP|TX 014 - Enable Pools Functionality · 02 · let / invocation ==== =======================
+(print "--- [SWP|TX 014 - Enable Pools Functionality · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
@@ -1157,25 +1286,32 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 014 - Enable Pools Functionality · 03 · gas echo ==== ===============================
+(print "--- [SWP|TX 014 - Enable Pools Functionality · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 014 Enable Pools Functionality ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 015 - Slippage Object Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 015 - Slippage Object Tests · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 015 - Slippage Object Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 015 - Slippage Object Tests · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 015 - Slippage Object Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-U|SWP:module{UtilitySwpV1} U|SWP)
@@ -1235,19 +1371,24 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 015 - Slippage Object Tests · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 015 - Slippage Object Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 015 Slippage Object Tests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Smart Swap Tests=================================")
 (begin-tx "SWP|TX 016a - 1x SmartSwaps")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 016a - 1x SmartSwaps · 01 · env-sigs (caps) ==== ====================================
+(print "--- [SWP|TX 016a - 1x SmartSwaps · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1255,6 +1396,8 @@
     ]
 )
 
+;;==== SWP|TX 016a - 1x SmartSwaps · 02 · let / invocation ==== ===================================
+(print "--- [SWP|TX 016a - 1x SmartSwaps · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPU:module{SwapperUsageV2} SWPU)
@@ -1278,25 +1421,32 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 016a - 1x SmartSwaps · 03 · gas echo ==== ===========================================
+(print "--- [SWP|TX 016a - 1x SmartSwaps · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 016a - 1x SmartSwaps ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 016 - 4x Swaps")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 016 - 4x Swaps · 01 · env-sigs (caps) ==== ==========================================
+(print "--- [SWP|TX 016 - 4x Swaps · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 016 - 4x Swaps · 02 · let / invocation ==== =========================================
+(print "--- [SWP|TX 016 - 4x Swaps · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPU:module{SwapperUsageV2} SWPU)
@@ -1365,25 +1515,32 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 016 - 4x Swaps · 03 · gas echo ==== =================================================
+(print "--- [SWP|TX 016 - 4x Swaps · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 016 - 4x Swaps ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 017 - 1x Swap with Slippage")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 017 - 1x Swap with Slippage · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 017 - 1x Swap with Slippage · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 017 - 1x Swap with Slippage · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 017 - 1x Swap with Slippage · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPU:module{SwapperUsageV2} SWPU)
@@ -1415,25 +1572,32 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 017 - 1x Swap with Slippage · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 017 - 1x Swap with Slippage · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 017 1x Swap with Slippage ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 018 1x Add Liq Max Cost")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 018 1x Add Liq Max Cost · 01 · env-sigs (caps) ==== =================================
+(print "--- [SWP|TX 018 1x Add Liq Max Cost · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 (acquire-module-admin ouronet-ns.SWPL)
+;;==== SWP|TX 018 1x Add Liq Max Cost · 02 · let / invocation ==== ================================
+(print "--- [SWP|TX 018 1x Add Liq Max Cost · 02 · let / invocation] ---")
 (let
     (
         ;(ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1503,25 +1667,32 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 018 1x Add Liq Max Cost · 03 · gas echo ==== ========================================
+(print "--- [SWP|TX 018 1x Add Liq Max Cost · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 018 1x Add Liq Max Cost ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 019a - Add Standard Liquidity 0|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 019a - Add Standard Liquidity 0|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 019a - Add Standard Liquidity 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1529,6 +1700,8 @@
     ]
 )
 
+;;==== SWP|TX 019a - Add Standard Liquidity 0|2 · 02 · let / invocation ==== ======================
+(print "--- [SWP|TX 019a - Add Standard Liquidity 0|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV2} TS01-CP)
@@ -1572,19 +1745,24 @@
 
 (print "")
 (print "")
+;;==== SWP|TX 019a - Add Standard Liquidity 0|2 · 03 · gas echo ==== ==============================
+(print "--- [SWP|TX 019a - Add Standard Liquidity 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 019a - Add Standard Liquidity 0|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 019b - Add Standard Liquidity 1|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 019b - Add Standard Liquidity 1|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 019b - Add Standard Liquidity 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1598,20 +1776,25 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 019b - Add Standard Liquidity 1|2 · 02 · gas echo ==== ==============================
+(print "--- [SWP|TX 019b - Add Standard Liquidity 1|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 019b - Add Standard Liquidity 1|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;+++++++++++++
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 019c - Add Standard Liquidity 2|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 019c - Add Standard Liquidity 2|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 019c - Add Standard Liquidity 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1625,6 +1808,8 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 019c - Add Standard Liquidity 2|2 · 02 · gas echo ==== ==============================
+(print "--- [SWP|TX 019c - Add Standard Liquidity 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 019c - Add Standard Liquidity 2|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1633,19 +1818,24 @@ true
 (commit-tx)
 ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 020 - Add Balanced Liqudity")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 020 - Add Balanced Liqudity · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 020 - Add Balanced Liqudity · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 020 - Add Balanced Liqudity · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 020 - Add Balanced Liqudity · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1701,25 +1891,32 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 020 - Add Balanced Liqudity · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 020 - Add Balanced Liqudity · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 020 Add Balanced Liquidity ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 021 - Worth Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 021 - Worth Tests · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP|TX 021 - Worth Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 021 - Worth Tests · 02 · let / invocation ==== ======================================
+(print "--- [SWP|TX 021 - Worth Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1771,25 +1968,32 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 021 - Worth Tests · 03 · gas echo ==== ==============================================
+(print "--- [SWP|TX 021 - Worth Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 021 - Worth Tests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 022 - ORBR Fueling Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 022 - ORBR Fueling Tests · 01 · env-sigs (caps) ==== ================================
+(print "--- [SWP|TX 022 - ORBR Fueling Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 022 - ORBR Fueling Tests · 02 · let / invocation ==== ===============================
+(print "--- [SWP|TX 022 - ORBR Fueling Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-ORBR:module{OuroborosV1} OUROBOROS)
@@ -1820,19 +2024,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 022 - ORBR Fueling Tests · 03 · gas echo ==== =======================================
+(print "--- [SWP|TX 022 - ORBR Fueling Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 022 - ORBR Fueling Tests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Resereve Tests=================================")
 (begin-tx "SWP|TX 023 - Deploy Smart Account")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 023 - Deploy Smart Account · 01 · let / invocation ==== =============================
+(print "--- [SWP|TX 023 - Deploy Smart Account · 01 · let / invocation] ---")
 (let
     (
         (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -1861,6 +2070,8 @@ true
             )
         )
     )
+;;==== SWP|TX 023 - Deploy Smart Account · 02 · env-sigs (caps) ==== ==============================
+(print "--- [SWP|TX 023 - Deploy Smart Account · 02 · env-sigs (caps)] ---")
     (env-sigs
         [   
             { "key": "PK_AncientHodler", "caps": [] }
@@ -1908,25 +2119,32 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 023 - Deploy Smart Account · 03 · gas echo ==== =====================================
+(print "--- [SWP|TX 023 - Deploy Smart Account · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 023 - Deploy Smart Account ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 024 - Reservation Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 024 - Reservation Tests · 01 · env-sigs (caps) ==== =================================
+(print "--- [SWP|TX 024 - Reservation Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 024 - Reservation Tests · 02 · let / invocation ==== ================================
+(print "--- [SWP|TX 024 - Reservation Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1980,25 +2198,32 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 024 - Reservation Tests · 03 · gas echo ==== ========================================
+(print "--- [SWP|TX 024 - Reservation Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 024 - Reservation Tests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 025 - Freeze & Repurpose Frozen")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 025 - Freeze & Repurpose Frozen · 01 · env-sigs (caps) ==== =========================
+(print "--- [SWP|TX 025 - Freeze & Repurpose Frozen · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 025 - Freeze & Repurpose Frozen · 02 · let / invocation ==== ========================
+(print "--- [SWP|TX 025 - Freeze & Repurpose Frozen · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
@@ -2027,19 +2252,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 025 - Freeze & Repurpose Frozen · 03 · gas echo ==== ================================
+(print "--- [SWP|TX 025 - Freeze & Repurpose Frozen · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 025 - Freeze & Repurpose Frozen ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 026 - Sleep & Repurpose Sleep")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 026 - Sleep & Repurpose Sleep · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 026 - Sleep & Repurpose Sleep · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2047,6 +2277,8 @@ true
     ]
 )
 
+;;==== SWP|TX 026 - Sleep & Repurpose Sleep · 02 · let / invocation ==== ==========================
+(print "--- [SWP|TX 026 - Sleep & Repurpose Sleep · 02 · let / invocation] ---")
 (let
     (
         (ref-VST:module{VestingV1} VST)
@@ -2118,19 +2350,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 026 - Sleep & Repurpose Sleep · 03 · gas echo ==== ==================================
+(print "--- [SWP|TX 026 - Sleep & Repurpose Sleep · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 026 - Sleep & Repurpose Sleep ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 027 - Merge Repurpose Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 027 - Merge Repurpose Tests · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 027 - Merge Repurpose Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2138,6 +2375,8 @@ true
     ]
 )
 
+;;==== SWP|TX 027 - Merge Repurpose Tests · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 027 - Merge Repurpose Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -2159,19 +2398,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 027 - Merge Repurpose Tests · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 027 - Merge Repurpose Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 027 - Merge Repurpose Tests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 028 - Vesting Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 028 - Vesting Tests · 01 · env-sigs (caps) ==== =====================================
+(print "--- [SWP|TX 028 - Vesting Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2179,6 +2423,8 @@ true
     ]
 )
 
+;;==== SWP|TX 028 - Vesting Tests · 02 · let / invocation ==== ====================================
+(print "--- [SWP|TX 028 - Vesting Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -2199,19 +2445,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 028 - Vesting Tests · 03 · gas echo ==== ============================================
+(print "--- [SWP|TX 028 - Vesting Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 028 - Vesting Tests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 029 - Unvesting Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 029 - Unvesting Tests · 01 · env-sigs (caps) ==== ===================================
+(print "--- [SWP|TX 029 - Unvesting Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2219,6 +2470,8 @@ true
     ]
 )
 
+;;==== SWP|TX 029 - Unvesting Tests · 02 · let / invocation ==== ==================================
+(print "--- [SWP|TX 029 - Unvesting Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -2246,19 +2499,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 029 - Unvesting Tests · 03 · gas echo ==== ==========================================
+(print "--- [SWP|TX 029 - Unvesting Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 029 - Unvesting Tests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 030 - Vested Ouro Tranasfer RoleTests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 01 · env-sigs (caps) ==== ===================
+(print "--- [SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2266,6 +2524,8 @@ true
     ]
 )
 
+;;==== SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 02 · let / invocation ==== ==================
+(print "--- [SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
@@ -2276,19 +2536,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 03 · gas echo ==== ==========================
+(print "--- [SWP|TX 030 - Vested Ouro Tranasfer RoleTests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 030 - Vested Ouro Tranasfer RoleTests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 031 - Further Vesting Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 031 - Further Vesting Tests · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 031 - Further Vesting Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2296,6 +2561,8 @@ true
     ]
 )
 
+;;==== SWP|TX 031 - Further Vesting Tests · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 031 - Further Vesting Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -2330,19 +2597,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 031 - Further Vesting Tests · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 031 - Further Vesting Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 031 - Further Vesting Tests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 032 - Enable Frozen and Sleeping LP for Pool")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 01 · env-sigs (caps) ==== ============
+(print "--- [SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2350,6 +2622,8 @@ true
     ]
 )
 
+;;==== SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 02 · let / invocation ==== ===========
+(print "--- [SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -2416,19 +2690,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 03 · gas echo ==== ===================
+(print "--- [SWP|TX 032 - Enable Frozen and Sleeping LP for Pool · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 032 - Enable Frozen and Sleeping LP for Pool ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 033 - Add Frozen & Sleeping Liquidity")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 033 - Add Frozen & Sleeping Liquidity · 01 · env-sigs (caps) ==== ===================
+(print "--- [SWP|TX 033 - Add Frozen & Sleeping Liquidity · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2436,6 +2715,8 @@ true
     ]
 )
 
+;;==== SWP|TX 033 - Add Frozen & Sleeping Liquidity · 02 · let / invocation ==== ==================
+(print "--- [SWP|TX 033 - Add Frozen & Sleeping Liquidity · 02 · let / invocation] ---")
 (let
     (
         
@@ -2513,28 +2794,36 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 033 - Add Frozen & Sleeping Liquidity · 03 · gas echo ==== ==========================
+(print "--- [SWP|TX 033 - Add Frozen & Sleeping Liquidity · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 033 - Add Frozen & Sleeping Liquidity ==> ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 034a - Add Iced Liquidity 0|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 034a - Add Iced Liquidity 0|2 · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 034a - Add Iced Liquidity 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 034a - Add Iced Liquidity 0|2 · 02 · let / invocation ==== ==========================
+(print "--- [SWP|TX 034a - Add Iced Liquidity 0|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV2} TS01-CP)
@@ -2558,19 +2847,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 034a - Add Iced Liquidity 0|2 · 03 · gas echo ==== ==================================
+(print "--- [SWP|TX 034a - Add Iced Liquidity 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 034a - Add Iced Liquidity 0|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 034b - Add Iced Liquidity 1|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 034b - Add Iced Liquidity 1|2 · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 034b - Add Iced Liquidity 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2582,20 +2876,25 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 034b - Add Iced Liquidity 1|2 · 02 · gas echo ==== ==================================
+(print "--- [SWP|TX 034b - Add Iced Liquidity 1|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 034b - Add Iced Liquidity 1|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;+++++++++++++
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 034c - Add Iced Liquidity 2|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 034c - Add Iced Liquidity 2|2 · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 034c - Add Iced Liquidity 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2607,28 +2906,36 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 034c - Add Iced Liquidity 2|2 · 02 · gas echo ==== ==================================
+(print "--- [SWP|TX 034c - Add Iced Liquidity 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 034c - Add Iced Liquidity 2|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 035a - Add Glacial Liquidity 0|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 035a - Add Glacial Liquidity 0|2 · 01 · env-sigs (caps) ==== ========================
+(print "--- [SWP|TX 035a - Add Glacial Liquidity 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 035a - Add Glacial Liquidity 0|2 · 02 · let / invocation ==== =======================
+(print "--- [SWP|TX 035a - Add Glacial Liquidity 0|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV2} TS01-CP)
@@ -2655,19 +2962,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 035a - Add Glacial Liquidity 0|2 · 03 · gas echo ==== ===============================
+(print "--- [SWP|TX 035a - Add Glacial Liquidity 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 035a - Add Glacial Liquidity 0|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 035b - Add Glacial Liquidity 1|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 035b - Add Glacial Liquidity 1|2 · 01 · env-sigs (caps) ==== ========================
+(print "--- [SWP|TX 035b - Add Glacial Liquidity 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2679,20 +2991,25 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 035b - Add Glacial Liquidity 1|2 · 02 · gas echo ==== ===============================
+(print "--- [SWP|TX 035b - Add Glacial Liquidity 1|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 035b - Add Glacial Liquidity 1|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;+++++++++++++
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 035c - Add Glacial Liquidity 2|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 035c - Add Glacial Liquidity 2|2 · 01 · env-sigs (caps) ==== ========================
+(print "--- [SWP|TX 035c - Add Glacial Liquidity 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2704,6 +3021,8 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 035c - Add Glacial Liquidity 2|2 · 02 · gas echo ==== ===============================
+(print "--- [SWP|TX 035c - Add Glacial Liquidity 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 035c - Add Glacial Liquidity 2|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2713,13 +3032,16 @@ true
 ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;
 ;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 036 - Making some Sleeping Tokens")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 036 - Making some Sleeping Tokens · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 036 - Making some Sleeping Tokens · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2727,6 +3049,8 @@ true
     ]
 )
 
+;;==== SWP|TX 036 - Making some Sleeping Tokens · 02 · let / invocation ==== ======================
+(print "--- [SWP|TX 036 - Making some Sleeping Tokens · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
@@ -2760,19 +3084,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 036 - Making some Sleeping Tokens · 03 · gas echo ==== ==============================
+(print "--- [SWP|TX 036 - Making some Sleeping Tokens · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 036 - Making some Sleeping Tokens ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 036a - Add Sleeping Liquidity 0|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 036a - Add Sleeping Liquidity 0|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 036a - Add Sleeping Liquidity 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2780,6 +3109,8 @@ true
     ]
 )
 
+;;==== SWP|TX 036a - Add Sleeping Liquidity 0|2 · 02 · let / invocation ==== ======================
+(print "--- [SWP|TX 036a - Add Sleeping Liquidity 0|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV2} TS01-CP)
@@ -2821,19 +3152,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 036a - Add Sleeping Liquidity 0|2 · 03 · gas echo ==== ==============================
+(print "--- [SWP|TX 036a - Add Sleeping Liquidity 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 036a - Add Sleeping Liquidity 0|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 036b - Add Sleeping Liquidity 1|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 036b - Add Sleeping Liquidity 1|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 036b - Add Sleeping Liquidity 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2846,20 +3182,25 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 036b - Add Sleeping Liquidity 1|2 · 02 · gas echo ==== ==============================
+(print "--- [SWP|TX 036b - Add Sleeping Liquidity 1|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 036b - Add Sleeping Liquidity 1|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;+++++++++++++
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 036c - Add Sleeping Liquidity 2|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 036c - Add Sleeping Liquidity 2|2 · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 036c - Add Sleeping Liquidity 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2872,28 +3213,36 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 036c - Add Sleeping Liquidity 2|2 · 02 · gas echo ==== ==============================
+(print "--- [SWP|TX 036c - Add Sleeping Liquidity 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 036c - Add Sleeping Liquidity 2|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 037a - Add Frozen Liquidity 0|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 037a - Add Frozen Liquidity 0|2 · 01 · env-sigs (caps) ==== =========================
+(print "--- [SWP|TX 037a - Add Frozen Liquidity 0|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
+;;==== SWP|TX 037a - Add Frozen Liquidity 0|2 · 02 · let / invocation ==== ========================
+(print "--- [SWP|TX 037a - Add Frozen Liquidity 0|2 · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-CP:module{TalosStageOne_ClientPactsV2} TS01-CP)
@@ -2923,19 +3272,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 037a - Add Frozen Liquidity 0|2 · 03 · gas echo ==== ================================
+(print "--- [SWP|TX 037a - Add Frozen Liquidity 0|2 · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 037a - Add Frozen Liquidity 0|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 037b - Add Frozen Liquidity 1|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 037b - Add Frozen Liquidity 1|2 · 01 · env-sigs (caps) ==== =========================
+(print "--- [SWP|TX 037b - Add Frozen Liquidity 1|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2947,20 +3301,25 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 037b - Add Frozen Liquidity 1|2 · 02 · gas echo ==== ================================
+(print "--- [SWP|TX 037b - Add Frozen Liquidity 1|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 037b - Add Frozen Liquidity 1|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;+++++++++++++
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 037c - Add Frozen Liquidity 2|2")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 037c - Add Frozen Liquidity 2|2 · 01 · env-sigs (caps) ==== =========================
+(print "--- [SWP|TX 037c - Add Frozen Liquidity 2|2 · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2972,19 +3331,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 037c - Add Frozen Liquidity 2|2 · 02 · gas echo ==== ================================
+(print "--- [SWP|TX 037c - Add Frozen Liquidity 2|2 · 02 · gas echo] ---")
 (format "<<<<<<<SWP|TX 037c - Add Frozen Liquidity 2|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 038 - Add Iced Liquidity")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 038 - Add Iced Liquidity · 01 · env-sigs (caps) ==== ================================
+(print "--- [SWP|TX 038 - Add Iced Liquidity · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2992,6 +3356,8 @@ true
     ]
 )
 
+;;==== SWP|TX 038 - Add Iced Liquidity · 02 · let / invocation ==== ===============================
+(print "--- [SWP|TX 038 - Add Iced Liquidity · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV2} TS01-C3)
@@ -3004,19 +3370,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 038 - Add Iced Liquidity · 03 · gas echo ==== =======================================
+(print "--- [SWP|TX 038 - Add Iced Liquidity · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 038 - Add Iced Liquidity ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 039 - Add Glacial Liquidity")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 039 - Add Glacial Liquidity · 01 · env-sigs (caps) ==== =============================
+(print "--- [SWP|TX 039 - Add Glacial Liquidity · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -3024,6 +3395,8 @@ true
     ]
 )
 
+;;==== SWP|TX 039 - Add Glacial Liquidity · 02 · let / invocation ==== ============================
+(print "--- [SWP|TX 039 - Add Glacial Liquidity · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV2} TS01-C3)
@@ -3039,22 +3412,28 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 039 - Add Glacial Liquidity · 03 · gas echo ==== ====================================
+(print "--- [SWP|TX 039 - Add Glacial Liquidity · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 039 - Add Glacial Liquidity ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 040 - Management Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 040 - Management Tests · 01 · env-sigs (caps) ==== ==================================
+(print "--- [SWP|TX 040 - Management Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -3063,6 +3442,8 @@ true
     ]
 )
 
+;;==== SWP|TX 040 - Management Tests · 02 · let / invocation ==== =================================
+(print "--- [SWP|TX 040 - Management Tests · 02 · let / invocation] ---")
 (let
     (
         
@@ -3139,21 +3520,27 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 040 - Management Tests · 03 · gas echo ==== =========================================
+(print "--- [SWP|TX 040 - Management Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 040 - Management Tests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 041 - Issue BVST")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 041 - Issue BVST · 01 · env-sigs (caps) ==== ========================================
+(print "--- [SWP|TX 041 - Issue BVST · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -3161,6 +3548,8 @@ true
         { "key": "PK_AOZ", "caps": [] }
     ]
 )
+;;==== SWP|TX 041 - Issue BVST · 02 · let / invocation ==== =======================================
+(print "--- [SWP|TX 041 - Issue BVST · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -3227,6 +3616,8 @@ true
         )
         (print "")
         (print "")
+;;==== SWP|TX 041 - Issue BVST · 03 · gas echo ==== ===============================================
+(print "--- [SWP|TX 041 - Issue BVST · 03 · gas echo] ---")
         (format "<<<<<<<Issue Data is {} >>>>>>>" [bvst-id])
     )
 )
@@ -3238,13 +3629,16 @@ true
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 042 - BVST Fee Withdrawal Testing")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 042 - BVST Fee Withdrawal Testing · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 042 - BVST Fee Withdrawal Testing · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -3253,6 +3647,8 @@ true
     ]
 )
 
+;;==== SWP|TX 042 - BVST Fee Withdrawal Testing · 02 · let / invocation ==== ======================
+(print "--- [SWP|TX 042 - BVST Fee Withdrawal Testing · 02 · let / invocation] ---")
 (let
     (
         
@@ -3339,19 +3735,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 042 - BVST Fee Withdrawal Testing · 03 · gas echo ==== ==============================
+(print "--- [SWP|TX 042 - BVST Fee Withdrawal Testing · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 042 - BVST Fee Withdrawal Testing ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 043 - Migration Test")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 043 - Migration Test · 01 · env-sigs (caps) ==== ====================================
+(print "--- [SWP|TX 043 - Migration Test · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -3360,6 +3761,8 @@ true
     ]
 )
 
+;;==== SWP|TX 043 - Migration Test · 02 · let / invocation ==== ===================================
+(print "--- [SWP|TX 043 - Migration Test · 02 · let / invocation] ---")
 (let
     (
         
@@ -3401,22 +3804,28 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 043 - Migration Test · 03 · gas echo ==== ===========================================
+(print "--- [SWP|TX 043 - Migration Test · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 043 - Migration Test ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 044 - Treasury Dispo Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 044 - Treasury Dispo Tests · 01 · env-sigs (caps) ==== ==============================
+(print "--- [SWP|TX 044 - Treasury Dispo Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -3426,6 +3835,8 @@ true
     ]
 )
 
+;;==== SWP|TX 044 - Treasury Dispo Tests · 02 · let / invocation ==== =============================
+(print "--- [SWP|TX 044 - Treasury Dispo Tests · 02 · let / invocation] ---")
 (let
     (
 
@@ -3475,6 +3886,8 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 044 - Treasury Dispo Tests · 03 · gas echo ==== =====================================
+(print "--- [SWP|TX 044 - Treasury Dispo Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 044 - Treasury Dispo Tests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -3483,13 +3896,16 @@ true
 (commit-tx)
 ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 045 - VSE and Swap Math Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 045 - VSE and Swap Math Tests · 01 · env-sigs (caps) ==== ===========================
+(print "--- [SWP|TX 045 - VSE and Swap Math Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -3500,6 +3916,8 @@ true
         { "key": "PK_DHV", "caps": [] }
     ]
 )
+;;==== SWP|TX 045 - VSE and Swap Math Tests · 02 · let / invocation ==== ==========================
+(print "--- [SWP|TX 045 - VSE and Swap Math Tests · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
@@ -3729,19 +4147,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 045 - VSE and Swap Math Tests · 03 · gas echo ==== ==================================
+(print "--- [SWP|TX 045 - VSE and Swap Math Tests · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 045 - VSE and Swap Math Tests ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 046 - Empy Emma of GAS")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 046 - Empy Emma of GAS · 01 · env-sigs (caps) ==== ==================================
+(print "--- [SWP|TX 046 - Empy Emma of GAS · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -3751,6 +4174,8 @@ true
     ]
 )
 
+;;==== SWP|TX 046 - Empy Emma of GAS · 02 · let / invocation ==== =================================
+(print "--- [SWP|TX 046 - Empy Emma of GAS · 02 · let / invocation] ---")
 (let
     (
 
@@ -3781,19 +4206,24 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 046 - Empy Emma of GAS · 03 · gas echo ==== =========================================
+(print "--- [SWP|TX 046 - Empy Emma of GAS · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 046 - Empy Emma of GAS ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 046 - Firestarter")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 046 - Firestarter · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SWP|TX 046 - Firestarter · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -3802,6 +4232,8 @@ true
         { "key": "PK_DHV", "caps": [] }
     ]
 )
+;;==== SWP|TX 046 - Firestarter · 02 · let / invocation ==== ======================================
+(print "--- [SWP|TX 046 - Firestarter · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV2} TS01-C3)
@@ -3848,25 +4280,32 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 046 - Firestarter · 03 · gas echo ==== ==============================================
+(print "--- [SWP|TX 046 - Firestarter · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 046 - Firestarter ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 047 - OURO transfer sanity")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 047 - OURO transfer sanity · 01 · env-sigs (caps) ==== ==============================
+(print "--- [SWP|TX 047 - OURO transfer sanity · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
         { "key": "PK_Emma", "caps": [] }
     ]
 )
+;;==== SWP|TX 047 - OURO transfer sanity · 02 · let / invocation ==== =============================
+(print "--- [SWP|TX 047 - OURO transfer sanity · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
@@ -3883,25 +4322,32 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 047 - OURO transfer sanity · 03 · gas echo ==== =====================================
+(print "--- [SWP|TX 047 - OURO transfer sanity · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 047 - OURO transfer sanity ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 048 - Emma pool ops")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 048 - Emma pool ops · 01 · env-sigs (caps) ==== =====================================
+(print "--- [SWP|TX 048 - Emma pool ops · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_Emma", "caps": [] }
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;==== SWP|TX 048 - Emma pool ops · 02 · let / invocation ==== ====================================
+(print "--- [SWP|TX 048 - Emma pool ops · 02 · let / invocation] ---")
 (let
     (
         (ref-SWPU:module{SwapperUsageV2} SWPU)
@@ -3935,13 +4381,15 @@ true
 
 (print "")
 (print "")
+;;==== SWP|TX 048 - Emma pool ops · 03 · gas echo ==== ============================================
+(print "--- [SWP|TX 048 - Emma pool ops · 03 · gas echo] ---")
 (format "<<<<<<<SWP|TX 048 - Emma pool ops ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")

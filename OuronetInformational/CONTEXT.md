@@ -1,6 +1,6 @@
 # Ouronet — accumulated context
 
-_Last updated: 2026-04-08_
+_Last updated: 2026-04-10_
 
 ## What Ouronet is
 
@@ -39,6 +39,7 @@ Repository layout mirrors this: **`1_SOVEREIGN/`** and **`2_SLAVE/`**, each with
   - **Stoa sandbox:** **Live** sources under **`00_StoaSandbox/`** — root **`ns`**, **`coin`**, **`util`**, **`stoa-ns`** interfaces/modules — initialised in **genesis order** with payloads aligned to **`0_Stoa/genesis/*.json`** (phased `init-phase-*.repl` files). Registers **`ouronet-ns`** the same way as on-chain genesis.
 - **REPL namespaces:** All Ouronet deploy / test `.repl` files under **`REPL/`** use **`(namespace "ouronet-ns")`** and qualified refs like **`ouronet-ns.DALOS`** (bulk migration from former `free`).
 - **`REPL/Stage00a_StoaTests.repl`:** Stoa **`coin`** regression script inline (legacy `coinn` / `free` tests adapted: root **`coin`**, foundation **`stoa-foundation`**, **`test-capability`** where genesis keys differ from the old k: foundation). Run after **`Stage00_Sanboxes.repl`**.
+- **Integration REPL suites** (scripted **`begin-tx`** / **`commit-tx`**): follow **`OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md`** (*Canonical layout*) and **`OuronetInformational/skills/repl-integration-test-layout.md`**. Reference **`REPL/Stage_02/[6.2.1]_AQP-ANK.repl`** and **`[6.2.2]_AQP-SCORE.repl`** (`;;|| NEXT >`, **`TX… · mm ·`** group comments + matching **`(print "--- [TX… · mm · …] ---")`**, **`map print`** over **`expect`** / **`expect-failure`**, file header legend).
 - **Genesis reference:** **`0_Stoa/genesis/`** — ordered `stoa-genesis-1` … `stoa-genesis-5` (JSON payloads for 1–4 where applicable); sandbox phases mirror this using **live** `00_StoaSandbox` Pact where it differs from frozen genesis sources.
 
 ## Goals

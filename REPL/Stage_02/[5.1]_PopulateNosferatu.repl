@@ -1,6 +1,21 @@
+;;
+;; REPL/Stage_02/[5.1]_PopulateNosferatu.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[5.1]_PopulateNosferatu.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
 (print "")
 (begin-tx "TX-00 [C0] - Chain Data Time SetUp Definition")
 (namespace "ouronet-ns")
+;;==== TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data ==== ===================
+(print "--- [TX-00 [C0] - Chain Data Time SetUp Definition · 01 · env-chain-data] ---")
 (env-chain-data
     {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
      "block-time": TV.TIME00}
@@ -8,6 +23,10 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-gas)
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;
@@ -31,12 +50,22 @@
 (begin-tx "TX-01 [2] - DALOS Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-01 [2] - DALOS Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-01 [2] - DALOS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-01 [2] - DALOS Module · 02 · load module ==== ===========================================
+(print "--- [TX-01 [2] - DALOS Module · 02 · load module] ---")
 (load "../../2_SLAVE/Stage_02/01_NOSFERATU.pact")
+;;==== TX-01 [2] - DALOS Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-01 [2] - DALOS Module · 03 · gas echo] ---")
 (format "<<<<<<<AOZ Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;
@@ -49,6 +78,8 @@
 ;;
 (begin-tx "TX-02 [3.1] - Mint Nosferatu Legendary (1-70)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 01 · env-sigs (caps) ==== ==================
+(print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -59,6 +90,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 02 · let / invocation ==== =================
+(print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 02 · let / invocation] ---")
 (let
     (
         (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -141,6 +174,8 @@
 )
 (print "")
 (print "")
+;;==== TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo ==== =========================
+(print "--- [TX-02 [3.1] - Mint Nosferatu Legendary (1-70) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Legendary (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -152,6 +187,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 01 · env-sigs (caps) ==== 
+(print "--- [TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -162,6 +199,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 02 · let / invocation ==== 
+(print "--- [TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -245,6 +284,8 @@
 )
 (print "")
 (print "")
+;;==== TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 03 · gas echo ==== =======
+(print "--- [TX-03 [3.2] - Mint Nosferatu Legendary (71-100) and Epic (1-40) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Legendary (71-100) and Epic (1-40) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -256,6 +297,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-04 [3.3] - Mint Nosferatu Epic (41-110)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -266,6 +309,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 02 · let / invocation ==== ====================
+(print "--- [TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -348,6 +393,8 @@
 )
 (print "")
 (print "")
+;;==== TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 03 · gas echo ==== ============================
+(print "--- [TX-04 [3.3] - Mint Nosferatu Epic (41-110) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Epic (41-110) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -359,6 +406,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-05 [3.4] - Mint Nosferatu Epic (111-180)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -369,6 +418,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 02 · let / invocation ==== ===================
+(print "--- [TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -451,6 +502,8 @@
 )
 (print "")
 (print "")
+;;==== TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 03 · gas echo ==== ===========================
+(print "--- [TX-05 [3.4] - Mint Nosferatu Epic (111-180) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Epic (111-180) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -462,6 +515,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 01 · env-sigs (caps) ==== ====
+(print "--- [TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -472,6 +527,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 02 · let / invocation ==== ===
+(print "--- [TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -555,6 +612,8 @@
 )
 (print "")
 (print "")
+;;==== TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 03 · gas echo ==== ===========
+(print "--- [TX-06 [3.5] - Mint Nosferatu Epic (181-200) and Rare (1-50) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Epic (181-200) and Rare (1-50) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -566,6 +625,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-07 [3.6] - Mint Nosferatu Rare (51-120)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 01 · env-sigs (caps) ==== =====================
+(print "--- [TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -576,6 +637,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 02 · let / invocation ==== ====================
+(print "--- [TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -658,6 +721,8 @@
 )
 (print "")
 (print "")
+;;==== TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 03 · gas echo ==== ============================
+(print "--- [TX-07 [3.6] - Mint Nosferatu Rare (51-120) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Rare (51-120) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -669,6 +734,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-08 [3.7] - Mint Nosferatu Rare (121-190)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -679,6 +746,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 02 · let / invocation ==== ===================
+(print "--- [TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -761,6 +830,8 @@
 )
 (print "")
 (print "")
+;;==== TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 03 · gas echo ==== ===========================
+(print "--- [TX-08 [3.7] - Mint Nosferatu Rare (121-190) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Rare (121-190) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -772,6 +843,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-09 [3.8] - Mint Nosferatu Rare (191-260)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -782,6 +855,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 02 · let / invocation ==== ===================
+(print "--- [TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -864,6 +939,8 @@
 )
 (print "")
 (print "")
+;;==== TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 03 · gas echo ==== ===========================
+(print "--- [TX-09 [3.8] - Mint Nosferatu Rare (191-260) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Rare (191-260) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -875,6 +952,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-10 [3.9] - Mint Nosferatu Rare (261-330)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -885,6 +964,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 02 · let / invocation ==== ===================
+(print "--- [TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -967,6 +1048,8 @@
 )
 (print "")
 (print "")
+;;==== TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 03 · gas echo ==== ===========================
+(print "--- [TX-10 [3.9] - Mint Nosferatu Rare (261-330) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Rare (261-330) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -978,6 +1061,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-11 [3.10] - Mint Nosferatu Rare (331-400)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 01 · env-sigs (caps) ==== ===================
+(print "--- [TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -988,6 +1073,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 02 · let / invocation ==== ==================
+(print "--- [TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -1070,6 +1157,8 @@
 )
 (print "")
 (print "")
+;;==== TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 03 · gas echo ==== ==========================
+(print "--- [TX-11 [3.10] - Mint Nosferatu Rare (331-400) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Rare (261-330) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1081,6 +1170,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-12 [3.11] - Mint Nosferatu Common (1-70)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-12 [3.11] - Mint Nosferatu Common (1-70) · 01 · env-sigs (caps) ==== ====================
+(print "--- [TX-12 [3.11] - Mint Nosferatu Common (1-70) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1091,6 +1182,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-12 [3.11] - Mint Nosferatu Common (1-70) · 02 · let / invocation ==== ===================
+(print "--- [TX-12 [3.11] - Mint Nosferatu Common (1-70) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -1173,6 +1266,8 @@
 )
 (print "")
 (print "")
+;;==== TX-12 [3.11] - Mint Nosferatu Common (1-70) · 03 · gas echo ==== ===========================
+(print "--- [TX-12 [3.11] - Mint Nosferatu Common (1-70) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (1-70) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1184,6 +1279,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-13 [3.12] - Mint Nosferatu Common (71-140)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-13 [3.12] - Mint Nosferatu Common (71-140) · 01 · env-sigs (caps) ==== ==================
+(print "--- [TX-13 [3.12] - Mint Nosferatu Common (71-140) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1194,6 +1291,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-13 [3.12] - Mint Nosferatu Common (71-140) · 02 · let / invocation ==== =================
+(print "--- [TX-13 [3.12] - Mint Nosferatu Common (71-140) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -1276,6 +1375,8 @@
 )
 (print "")
 (print "")
+;;==== TX-13 [3.12] - Mint Nosferatu Common (71-140) · 03 · gas echo ==== =========================
+(print "--- [TX-13 [3.12] - Mint Nosferatu Common (71-140) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (71-140) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1287,6 +1388,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-14 [3.13] - Mint Nosferatu Common (141-210)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-14 [3.13] - Mint Nosferatu Common (141-210) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-14 [3.13] - Mint Nosferatu Common (141-210) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1297,6 +1400,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-14 [3.13] - Mint Nosferatu Common (141-210) · 02 · let / invocation ==== ================
+(print "--- [TX-14 [3.13] - Mint Nosferatu Common (141-210) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -1379,6 +1484,8 @@
 )
 (print "")
 (print "")
+;;==== TX-14 [3.13] - Mint Nosferatu Common (141-210) · 03 · gas echo ==== ========================
+(print "--- [TX-14 [3.13] - Mint Nosferatu Common (141-210) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (141-210) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1390,6 +1497,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-14 [3.14] - Mint Nosferatu Common (211-280)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-14 [3.14] - Mint Nosferatu Common (211-280) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-14 [3.14] - Mint Nosferatu Common (211-280) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1400,6 +1509,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-14 [3.14] - Mint Nosferatu Common (211-280) · 02 · let / invocation ==== ================
+(print "--- [TX-14 [3.14] - Mint Nosferatu Common (211-280) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -1482,6 +1593,8 @@
 )
 (print "")
 (print "")
+;;==== TX-14 [3.14] - Mint Nosferatu Common (211-280) · 03 · gas echo ==== ========================
+(print "--- [TX-14 [3.14] - Mint Nosferatu Common (211-280) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (211-280) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1493,6 +1606,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-16 [3.15] - Mint Nosferatu Common (281-350)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-16 [3.15] - Mint Nosferatu Common (281-350) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-16 [3.15] - Mint Nosferatu Common (281-350) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1503,6 +1618,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-16 [3.15] - Mint Nosferatu Common (281-350) · 02 · let / invocation ==== ================
+(print "--- [TX-16 [3.15] - Mint Nosferatu Common (281-350) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -1585,6 +1702,8 @@
 )
 (print "")
 (print "")
+;;==== TX-16 [3.15] - Mint Nosferatu Common (281-350) · 03 · gas echo ==== ========================
+(print "--- [TX-16 [3.15] - Mint Nosferatu Common (281-350) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (281-350) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1596,6 +1715,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-17 [3.16] - Mint Nosferatu Common (351-420)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-17 [3.16] - Mint Nosferatu Common (351-420) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-17 [3.16] - Mint Nosferatu Common (351-420) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1606,6 +1727,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-17 [3.16] - Mint Nosferatu Common (351-420) · 02 · let / invocation ==== ================
+(print "--- [TX-17 [3.16] - Mint Nosferatu Common (351-420) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -1688,6 +1811,8 @@
 )
 (print "")
 (print "")
+;;==== TX-17 [3.16] - Mint Nosferatu Common (351-420) · 03 · gas echo ==== ========================
+(print "--- [TX-17 [3.16] - Mint Nosferatu Common (351-420) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (351-420) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1699,6 +1824,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-18 [3.17] - Mint Nosferatu Common (421-490)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-18 [3.17] - Mint Nosferatu Common (421-490) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-18 [3.17] - Mint Nosferatu Common (421-490) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1709,6 +1836,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-18 [3.17] - Mint Nosferatu Common (421-490) · 02 · let / invocation ==== ================
+(print "--- [TX-18 [3.17] - Mint Nosferatu Common (421-490) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -1791,6 +1920,8 @@
 )
 (print "")
 (print "")
+;;==== TX-18 [3.17] - Mint Nosferatu Common (421-490) · 03 · gas echo ==== ========================
+(print "--- [TX-18 [3.17] - Mint Nosferatu Common (421-490) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (421-490) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1802,6 +1933,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-19 [3.18] - Mint Nosferatu Common (491-560)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-19 [3.18] - Mint Nosferatu Common (491-560) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-19 [3.18] - Mint Nosferatu Common (491-560) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1812,6 +1945,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-19 [3.18] - Mint Nosferatu Common (491-560) · 02 · let / invocation ==== ================
+(print "--- [TX-19 [3.18] - Mint Nosferatu Common (491-560) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -1894,6 +2029,8 @@
 )
 (print "")
 (print "")
+;;==== TX-19 [3.18] - Mint Nosferatu Common (491-560) · 03 · gas echo ==== ========================
+(print "--- [TX-19 [3.18] - Mint Nosferatu Common (491-560) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (491-560) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -1905,6 +2042,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-20 [3.19] - Mint Nosferatu Common (561-630)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-20 [3.19] - Mint Nosferatu Common (561-630) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-20 [3.19] - Mint Nosferatu Common (561-630) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -1915,6 +2054,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-20 [3.19] - Mint Nosferatu Common (561-630) · 02 · let / invocation ==== ================
+(print "--- [TX-20 [3.19] - Mint Nosferatu Common (561-630) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -1997,6 +2138,8 @@
 )
 (print "")
 (print "")
+;;==== TX-20 [3.19] - Mint Nosferatu Common (561-630) · 03 · gas echo ==== ========================
+(print "--- [TX-20 [3.19] - Mint Nosferatu Common (561-630) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (561-630) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2008,6 +2151,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-21 [3.20] - Mint Nosferatu Common (631-700)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-21 [3.20] - Mint Nosferatu Common (631-700) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-21 [3.20] - Mint Nosferatu Common (631-700) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2018,6 +2163,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-21 [3.20] - Mint Nosferatu Common (631-700) · 02 · let / invocation ==== ================
+(print "--- [TX-21 [3.20] - Mint Nosferatu Common (631-700) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -2100,6 +2247,8 @@
 )
 (print "")
 (print "")
+;;==== TX-21 [3.20] - Mint Nosferatu Common (631-700) · 03 · gas echo ==== ========================
+(print "--- [TX-21 [3.20] - Mint Nosferatu Common (631-700) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (631-700) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2111,6 +2260,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-22 [3.21] - Mint Nosferatu Common (701-770)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-22 [3.21] - Mint Nosferatu Common (701-770) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-22 [3.21] - Mint Nosferatu Common (701-770) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2121,6 +2272,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-22 [3.21] - Mint Nosferatu Common (701-770) · 02 · let / invocation ==== ================
+(print "--- [TX-22 [3.21] - Mint Nosferatu Common (701-770) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -2203,6 +2356,8 @@
 )
 (print "")
 (print "")
+;;==== TX-22 [3.21] - Mint Nosferatu Common (701-770) · 03 · gas echo ==== ========================
+(print "--- [TX-22 [3.21] - Mint Nosferatu Common (701-770) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (701-770) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2214,6 +2369,8 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-23 [3.22] - Mint Nosferatu Common (771-800)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-23 [3.22] - Mint Nosferatu Common (771-800) · 01 · env-sigs (caps) ==== =================
+(print "--- [TX-23 [3.22] - Mint Nosferatu Common (771-800) · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2224,6 +2381,8 @@
 (namespace "ouronet-ns")
 
 
+;;==== TX-23 [3.22] - Mint Nosferatu Common (771-800) · 02 · let / invocation ==== ================
+(print "--- [TX-23 [3.22] - Mint Nosferatu Common (771-800) · 02 · let / invocation] ---")
 (let
     (
         (patron:string  "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî") 
@@ -2266,6 +2425,8 @@
 )
 (print "")
 (print "")
+;;==== TX-23 [3.22] - Mint Nosferatu Common (771-800) · 03 · gas echo ==== ========================
+(print "--- [TX-23 [3.22] - Mint Nosferatu Common (771-800) · 03 · gas echo] ---")
 (format "<<<<<<<Mint Nosferatu Common (771-800) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -2281,12 +2442,15 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
-;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX 010 -- Bloodshed Transfer Tests")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX 010 -- Bloodshed Transfer Tests · 01 · env-sigs (caps) ==== =============================
+(print "--- [TX 010 -- Bloodshed Transfer Tests · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [   
         { "key": "PK_AncientHodler", "caps": [] }
@@ -2314,6 +2478,8 @@
 
 (print "")
 (print "")
+;;==== TX 010 -- Bloodshed Transfer Tests · 02 · gas echo ==== ====================================
+(print "--- [TX 010 -- Bloodshed Transfer Tests · 02 · gas echo] ---")
 (format "<<<<<<<TX 010 -- Bloodshed Transfer Tests Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")

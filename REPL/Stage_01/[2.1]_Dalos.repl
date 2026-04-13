@@ -1,4 +1,17 @@
 ;;
+;; REPL/Stage_01/[2.1]_Dalos.repl — canonical integration layout (OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md)
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
+;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[2.1]_Dalos.repl")
+(print "================================================================")
+(print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "")
+;;
 ;;
 ;;================================================================================
 ;;                                                                              ;;
@@ -20,6 +33,8 @@
 (begin-tx "TX-01 [1.1] - Define Keys Used in the DALOS Module")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 01 · env-sigs (caps) ==== =============
+(print "--- [TX-01 [1.1] - Define Keys Used in the DALOS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 
@@ -51,6 +66,8 @@
     (define-keyset "ouronet-ns.dh_sc_dhvault-keyset" (read-keyset "KEY_SC_DHVault"))
 
     ;;Create Autostake and Vesting KDA Accounts (for use in Repl)
+;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation ==== ============
+(print "--- [TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation] ---")
     (let
         (
             (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -71,9 +88,15 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
+;;==== TX-02 [1.2] - Kadena Account Creation and Fuel of 1st Account · 01 · env-sigs (caps) ==== ==
+(print "--- [TX-02 [1.2] - Kadena Account Creation and Fuel of 1st Account · 01 · env-sigs (caps)] ---")
 (env-sigs [])
 (env-gas)
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;;
 ;;
 ;;================================================================================
@@ -102,12 +125,22 @@
 (begin-tx "TX-02 [2] - DALOS Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
+;;==== TX-02 [2] - DALOS Module · 01 · env-sigs (caps) ==== =======================================
+(print "--- [TX-02 [2] - DALOS Module · 01 · env-sigs (caps)] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [2] - DALOS Module · 02 · load module ==== ===========================================
+(print "--- [TX-02 [2] - DALOS Module · 02 · load module] ---")
 (load "../../1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact")
+;;==== TX-02 [2] - DALOS Module · 03 · gas echo ==== ==============================================
+(print "--- [TX-02 [2] - DALOS Module · 03 · gas echo] ---")
 (format "<<<<<<<DALOS Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "")
 ;;
 ;;
@@ -122,6 +155,8 @@
 (begin-tx "TX-03 [C3.1] - Deploy Ouronet Accounts for Testing Purposes")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-03 [C3.1] - Deploy Ouronet Accounts for Testing Purposes · 01 · env-sigs (caps) ==== ====
+(print "--- [TX-03 [C3.1] - Deploy Ouronet Accounts for Testing Purposes · 01 · env-sigs (caps)] ---")
 (env-sigs 
     [ 
         { "key": "PK_AncientHodler", "caps": [] }
