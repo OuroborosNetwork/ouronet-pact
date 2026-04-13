@@ -103,6 +103,17 @@
     (defun XE_UpdateScoreDataForOrtoFungibleLP:string
         (ouronet-account:string pool-id:string score-id:string lp-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
     )
+    (defun XE_UpdateScoreDataForTrueFungible:string
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dptf-id:string
+            dptf-amount:decimal
+            native-or-frozen:bool
+            direction:bool
+        )
+    )
 )
 (module AQP-SCORE GOV
     ;; REPL observability: REPL/Stage_02/[6.2.2]_AQP-SCORE.repl tags each intra-tx group as TX-SCORE-nn · mm · <slug> in ;;==== … ==== lines; mm is 01.. within each begin-tx.
@@ -766,6 +777,29 @@
         )
         (compose-capability (SECURE))
     )
+    (defcap SCR|XE>UPDATE-STAKE-DPTF
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dptf-id:string
+            dptf-amount:decimal
+            native-or-frozen:bool
+            direction:bool
+        )
+        @doc "Forward (AQP-POOL): class-1 DPTF stake/unstake (non-LP). Validates account, pool–score link, score-class 1, DPTF id + amount. \
+            \ native-or-frozen selects multiplier 1.0 vs score mx-frozen (same convention as LP DPTF leg). \
+            \ Alignment of dptf-id with the pool's canonical asset-id is enforced by the composing AQP-POOL path before this cap is installed."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+            )
+            (UEV_DptfStakeScoreContext ouronet-account pool-id score-id)
+            (ref-DPTF::UEV_id dptf-id)
+            (ref-DPTF::UEV_Amount dptf-id dptf-amount)
+        )
+        (compose-capability (SECURE))
+    )
     ;;
     ;;<=======>
     ;;FUNCTIONS
@@ -1118,9 +1152,22 @@
             (floor (* raw-weight (if direction 1.0 -1.0)) p)
         )
     )
+    (defun URC_SignedBaseDeltaForDptfStake:decimal
+        (score-id:string dptf-id:string dptf-amount:decimal native-or-frozen:bool direction:bool)
+        @doc "Signed base delta (score precision) for one class-1 DPTF stake leg; same mx rule as URC_SignedBaseDeltaForDptfLpStake (native vs frozen). \
+            \ Shared by SCR|XE>UPDATE-STAKE-DPTF and XE_UpdateScoreDataForTrueFungible."
+        (let
+            (
+                (mx:decimal (if native-or-frozen 1.0 (UR_SCR|ScoreMxFrozen score-id)))
+                (raw-weight:decimal (* dptf-amount mx))
+                (p:integer (UR_SCR|ScorePrecision score-id))
+            )
+            (floor (* raw-weight (if direction 1.0 -1.0)) p)
+        )
+    )
     (defun URC_SingularUserScoreDeltaFromSignedUserBase:object{SCR|SingularUserScoreDelta}
         (ouronet-account:string pool-id:string score-id:string signed-user-base-delta:decimal)
-        @doc "Core singular user-score step: from one signed user-base delta already at score precision (e.g. LP weight × mx after URC_SignedBaseDeltaForDptfLpStake / URC_SignedBaseDeltaForOrtoLpStake), \
+        @doc "Core singular user-score step: from one signed user-base delta already at score precision (e.g. LP weight × mx after URC_SignedBaseDeltaForDptfLpStake / URC_SignedBaseDeltaForOrtoLpStake / URC_SignedBaseDeltaForDptfStake), \
             \ compute new user base/boosted/deb, nz-delta, and global deltas. When boost-link ≠ BAR and boost-class-link ≠ BAR (foreign anchor + ANK promile), \
             \ user base-score is always 0: the foreign row owns canonical base; promile input is foreign user base + this signed delta; boosted/deb store surplus \
             \ over foreign base only (README_SCORE.md). Otherwise user base is ob + signed. deb-boost applies to nominal boosted before foreign subtraction."
@@ -1271,6 +1318,27 @@
                     ]
                 )
                 "LP stake score context: pool-id, score-class, or LP pair vs lp-denominator mismatch"
+            )
+        )
+    )
+    (defun UEV_DptfStakeScoreContext
+        (ouronet-account:string pool-id:string score-id:string)
+        @doc "Class-1 DPTF (non-LP) stake paths: account exists and is non-principal; aqpool-link equals pool-id; score-class 1. \
+            \ Pool asset-id vs staked dptf-id is validated in AQP-POOL before composing this module's XE_* (see SCR|XE>UPDATE-STAKE-DPTF @doc)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                        (= (UR_SCR|ScoreClass score-id) 1)
+                    ]
+                )
+                "DPTF stake score context: pool-id must match aqpool-link and score-class must be 1 (true fungible score)"
             )
         )
     )
@@ -1957,6 +2025,74 @@
                 score-id
                 (URC_SignedBaseDeltaForOrtoLpStake score-id lp-id nonces nonce-amounts direction)
             )
+        )
+    )
+    (defun XE_UpdateScoreDataForTrueFungible:string
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dptf-id:string
+            dptf-amount:decimal
+            native-or-frozen:bool
+            direction:bool
+        )
+        @doc "Forward (AQP-POOL): class-1 true fungible (non-LP) stake/unstake. Amount × (native 1.0 | frozen mx-frozen) at score precision, signed by direction, then XI core."
+        (UEV_IMC)
+        (with-capability
+            (SCR|XE>UPDATE-STAKE-DPTF
+                ouronet-account pool-id score-id dptf-id dptf-amount native-or-frozen direction
+            )
+            (XI_ApplySingularUserScoreDelta
+                ouronet-account
+                pool-id
+                score-id
+                (URC_SignedBaseDeltaForDptfStake score-id dptf-id dptf-amount native-or-frozen direction)
+            )
+        )
+    )
+    (defun XE_UpdateScoreDataForOrtoFungible
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+    )
+    (defun XE_UpdateScoreDataForSpecialOrtoFungible
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            sleeping-or-hibernating:bool
+            direction:bool
+        )
+    )
+    (defun XE_UpdateScoreDataForSemiFungible
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpsf-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+    )
+    (defun XE_UpdateScoreDataForNonFungible
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            dpnf-id:string
+            nonces:[integer]
+            direction:bool
         )
     )
     ;;

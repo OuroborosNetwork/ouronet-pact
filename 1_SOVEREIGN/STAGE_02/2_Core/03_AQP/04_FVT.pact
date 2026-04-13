@@ -187,6 +187,44 @@
     ;;FUNCTIONS
     ;;{F0}  [UR]
     ;;{F1}  [URC]
+    (defun URC_StoaValue:decimal (swpair:string)
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                ;;
+                (current-lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
+                (pool-token-supplies:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_PoolGenesisSupplies swpair)
+                        (ref-SWP::UR_PoolTokenSupplies swpair)
+                    )
+                )
+                (w:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_GenesisWeigths swpair)
+                        (ref-SWP::UR_Weigths swpair)
+                    )
+                )
+                ;;
+                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                (how-many:integer (length pool-tokens))
+                ;;
+                (first-token:string (at 0 pool-tokens))
+                (first-token-supply:decimal (at 0 pool-token-supplies))
+                (first-token-precision:integer (ref-DPTF::UR_Decimals first-token))
+                (first-weight:decimal (at 0 w))
+                (first-worth:decimal (ref-SWPI::URC_WorthDWK first-token first-token-supply))
+            )
+            (if (or (= pool-type "S") (= pool-type "P"))
+                (floor (* (dec how-many) first-worth) first-token-precision)
+                (floor (/ first-worth first-weight) first-token-precision)
+            )
+        )
+    )
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]
     ;;{F4}  [CAP]
