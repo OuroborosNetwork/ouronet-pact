@@ -191,11 +191,11 @@
     (defschema AQP|DPNFScoreAttribution
         @doc "Last committed base score from this DPNF position for one \
             \ pool score-id. Compare applied-def-revision-nonce to \
-            \ SCR|T|NF|DefRevision at (score-id, dpnf-id). NFT model 1: \
-            \ trait defs bump revision. Model 0 (native): compare \
+            \ SCR|T|NF|DefRevision.global-revision-nonce at (score-id, dpnf-id). NFT model 1: \
+            \ trait or class definition writes bump global (and their branch counter). Model 0 (native): compare \
             \ cached-position-score to live native read when revision unchanged."
         cached-position-score:decimal                           ;;[M] Last applied base score for this score-id
-        applied-def-revision-nonce:integer                      ;;Last applied SCR|T|NF|DefRevision revision
+        applied-def-revision-nonce:integer                      ;;Last applied SCR|T|NF|DefRevision.global-revision-nonce
         ;;
         ;;Select Keys
         pool-id:string

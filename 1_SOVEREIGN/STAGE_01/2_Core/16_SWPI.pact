@@ -1,7 +1,7 @@
 (module SWPI GOV
     ;;
     (implements OuronetPolicyV1)
-    (implements SwapperIssueV2)
+    (implements SwapperIssueV3)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -130,7 +130,7 @@
     ;;{C2}
     ;;{C3}
     ;;{C4}
-    (defcap SWPI|C>ISSUE (account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+    (defcap SWPI|C>ISSUE (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @event
         (UEV_Issue account pool-tokens fee-lp weights amp p)
         (compose-capability (P|DT))
@@ -261,8 +261,8 @@
                 ;;
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-SWP:module{SwapperV2} SWP)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
                 (pool-type:string (ref-U|SWP::UC_PoolType swpair))
                 (input-positions:[integer] (UC_PoolTokenPositions swpair input-ids))
@@ -461,7 +461,7 @@
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (pool-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
                 (are-on-pool:bool (ref-SWP::UEV_CheckAgainst input-ids pool-tokens))
             )
@@ -501,7 +501,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (pool-tokens (ref-SWP::UR_PoolTokens swpair))
                 (are-on-pool:bool (ref-SWP::UEV_CheckAgainst input-ids pool-tokens))
             )
@@ -532,7 +532,7 @@
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
             )
             (ref-U|SWP::UDC_DirectRawSwapInput
                 (ref-SWP::UR_Amplifier swpair)
@@ -557,7 +557,7 @@
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
             )
             (ref-U|SWP::UDC_InverseRawSwapInput
                 (ref-SWP::UR_Amplifier swpair)
@@ -716,7 +716,7 @@
         )
     )
     ;;
-    (defun URC_Hopper:object{SwapperIssueV2.Hopper}
+    (defun URC_Hopper:object{SwapperIssueV3.Hopper}
         (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal)
         @doc "Creates a Hopper Object, by computing \
             \ 1] The trace between <hopper-input-id> and <hopper-output-id>, the <nodes> \
@@ -727,7 +727,7 @@
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-SWPT:module{SwapTracerV1} SWPT)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (swpairs:[string] (ref-SWP::URC_Swpairs))
                 (principal-lst:[string] (ref-SWP::UR_Principals))
                 (nodes:[string] (ref-SWPT::URC_ComputeGraphPath hopper-input-id hopper-output-id swpairs principal-lst))
@@ -735,10 +735,10 @@
             (if (!= nodes [BAR])
                 (let
                     (
-                        (fl:[object{SwapperIssueV2.Hopper}]
+                        (fl:[object{SwapperIssueV3.Hopper}]
                             (fold
                                 (lambda
-                                    (acc:[object{SwapperIssueV2.Hopper}] idx:integer)
+                                    (acc:[object{SwapperIssueV3.Hopper}] idx:integer)
                                     (ref-U|LST::UC_ReplaceAt
                                         acc
                                         0
@@ -783,7 +783,7 @@
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-SWPT:module{SwapTracerV1} SWPT)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (principals:[string] (ref-SWP::UR_Principals))
                 (edges:[string] (ref-SWPT::URC_Edges i o principals))
                 (svl:[decimal]
@@ -826,8 +826,8 @@
                 (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV2} SWP)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
                 (primordial:string (ref-SWP::UR_PrimordialPool))
                 (pts:[decimal] (ref-SWP::UR_PoolTokenSupplies primordial))
@@ -888,7 +888,7 @@
                     )
                     (let
                         (
-                            (h-obj:object{SwapperIssueV2.Hopper} (URC_Hopper id dwk amount))
+                            (h-obj:object{SwapperIssueV3.Hopper} (URC_Hopper id dwk amount))
                             (ovs:[decimal] (at "output-values" h-obj))
                         )
                         (if (= (length ovs) 0)
@@ -911,7 +911,7 @@
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 ;;
                 (current-lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
                 (lp-supply:decimal
@@ -962,7 +962,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
             )
             (fold
@@ -1032,7 +1032,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
                 (zero-positions:[integer] (ref-U|LST::UC_Search input-amounts 0.0))
             )
@@ -1068,7 +1068,7 @@
                 (output-id:string (at "output-id" dsid))
                 ;;
                 (ref-U|INT:module{OuronetIntegersV1} U|INT)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
                 (l1:integer (length input-ids))
                 (l2:integer (length input-amounts))
@@ -1096,7 +1096,7 @@
                 ;;
                 (ref-U|INT:module{OuronetIntegersV1} U|INT)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
                 (t1:bool (contains input-id pool-tokens))
                 (t2:bool (contains output-id pool-tokens))
@@ -1106,11 +1106,11 @@
         )
     )
     (defun UEV_Issue
-        (account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (fee-precision:integer (ref-U|CT::CT_FEE_PRECISION))
                 (principals:[string] (ref-SWP::UR_Principals))
@@ -1184,7 +1184,7 @@
                     (
                         (ref-DALOS:module{OuronetDalosV1} DALOS)
                         (dlk:string (ref-DALOS::UR_SilverStoaID))
-                        (h-obj:object{SwapperIssueV2.Hopper} (URC_Hopper first-pool-token dlk 1.0))
+                        (h-obj:object{SwapperIssueV3.Hopper} (URC_Hopper first-pool-token dlk 1.0))
                     )
                     (enforce
                         (!= h-obj (at 0 EMPTY_HOPPER))
@@ -1270,7 +1270,7 @@
             )
         )
     )
-    (defun UDC_Hopper:object{SwapperIssueV2.Hopper} (a:[string] b:[string] c:[decimal])
+    (defun UDC_Hopper:object{SwapperIssueV3.Hopper} (a:[string] b:[string] c:[decimal])
         {"nodes"            : a
         ,"edges"            : b
         ,"output-values"    : c}
@@ -1280,7 +1280,7 @@
     ;;{F5}  [A]
     ;;{F6}  [C]
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "Issues a new SWPair (Liquidty Pool)"
         (UEV_IMC)
         (with-capability (SWPI|C>ISSUE account pool-tokens fee-lp weights amp p)
@@ -1292,7 +1292,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
                     (ref-SWPT:module{SwapTracerV1} SWPT)
-                    (ref-SWP:module{SwapperV2} SWP)
+                    (ref-SWP:module{SwapperV3} SWP)
                     ;;
                     (kda-dptf-cost:decimal (ref-DALOS::UR_UsagePrice "dptf"))
                     (kda-swp-cost:decimal (ref-DALOS::UR_UsagePrice "swp"))

@@ -154,7 +154,7 @@
                 (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData} yielded-clad)
                 (account:string patron)
                 ;;
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 ;;
                 (balanced-liquidity:[decimal] (at "balanced" (at "sorted-lq" ld)))
                 (asymmetric-liquidity:[decimal] (at "asymmetric" (at "sorted-lq" ld)))
@@ -195,7 +195,7 @@
                                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                                 (ref-ORBR:module{OuroborosV1} OUROBOROS)
-                                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                                (ref-SWPI:module{SwapperIssueV3} SWPI)
                                 ;;
                                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -293,7 +293,7 @@
 (let
     (
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (ref-SWP:module{SwapperV2} SWP)
+        (ref-SWP:module{SwapperV3} SWP)
         (account:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
         (swpair:string "W|LKDA-slLyzPPCo22W|OURO-slLyzPPCo22W|WKDA-slLyzPPCo22W")
         (lp-id:string (ref-SWP::UR_TokenLP swpair))

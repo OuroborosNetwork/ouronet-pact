@@ -330,7 +330,7 @@
         (ref-VST:module{VestingV1} VST)
         (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
         (ref-ORBR:module{OuroborosV1} OUROBOROS)
-        (ref-SWP:module{SwapperV2} SWP)
+        (ref-SWP:module{SwapperV3} SWP)
         (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
         ;;
@@ -1190,7 +1190,7 @@
 (print "--- [TX-18 [4.1.18] - Dalos INIT [18]: SWP Setup 1 · 02 · let / invocation] ---")
 (let
     (
-        (ref-SWP:module{SwapperV2} SWP)
+        (ref-SWP:module{SwapperV3} SWP)
         (u:[string] ["|"])
     )
     [

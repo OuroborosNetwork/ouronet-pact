@@ -190,8 +190,7 @@
     ;;
     (defconst DEMIPAD|SC_KEY                (GOV|LaunchpadKey))
     (defconst DEMIPAD|SC_NAME               (GOV|DEMIPAD|SC_NAME))
-    (defconst MB|SC_KDA-NAME                "k:35d7f82a7754d10fc1128d199aadb51cb1461f0eb52f4fa89790a44434f12ed8")
-    ;;Mainnet ==>                            k:2d4c9cd8d1bd30d9156b65c1259d2be9689f068927d8fee19bfb695619436e01
+    (defconst MB|SC_KDA-NAME                "k:xxx")
     ;;{G2}
     (defcap GOV ()                          (compose-capability (GOV|DEMIPAD_ADMIN)))
     (defcap GOV|DEMIPAD_ADMIN ()            (enforce-guard GOV|MD_DEMIPAD))
@@ -205,6 +204,7 @@
     ;; [Keys]
     (defun GOV|NS_Use ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
     (defun GOV|LaunchpadKey ()              (+ (GOV|NS_Use) ".dh_sc_mb-keyset"))
+    ;;(defun GOV|LaunchpadKey ()              (+ (GOV|NS_Use) ".dh_sc_demipad-keyset"))
     ;;
     ;; [SC-Names]
     (defun GOV|DEMIPAD|SC_NAME ()           (at 0 ["Σ.Îäć$ЬчýφVεÎÿůпΨÖůηüηŞйnюŽXΣşpЩß5ςĂκ£RäbE₳èËłŹŘYшÆgлoюýRαѺÑÏρζt∇ŹÏýжIŒațэVÞÛщŹЭδźvëȘĂтPЖÃÇЭiërđÈÝДÖšжzČđзUĚĂsкιnãñOÔIKпŞΛI₳zÄû$ρśθ6ΨЬпYпĞHöÝйÏюşí2ćщÞΔΔŻTж€₿ŞhTțŽ"]))
@@ -595,8 +595,6 @@
             )
         )
     )
-
-    
     (defun UC_LaunchpadEnviromentSplit:[decimal] (amount-in-kda:decimal)
         @doc "Outputs the Launchpad Enviroment Split, whic is a \
         \ 10%, 20%, 30%, 40% Split, outputed as a 4 element list."
@@ -705,7 +703,7 @@
                 (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
                 (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
                 (lkda-id:string (ref-DALOS::UR_SilverStoaID))

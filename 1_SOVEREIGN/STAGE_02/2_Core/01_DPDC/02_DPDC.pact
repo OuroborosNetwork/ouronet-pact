@@ -104,17 +104,17 @@
     ;;SCHEMAS-TABLES-CONSTANTS
     ;;{1}
     ;;{2}
-    (deftable DPSF|T|Properties:{DpdcUdcV1.DPDC|Properties})        ;;Key = <DPSF-id>      
-    (deftable DPSF|T|Nonces:{DpdcUdcV1.DPDC|NonceElement})            ;;Key = <DSPF-id> + BAR + <nonce>
-    (deftable DPSF|T|VerumRoles:{DpdcUdcV1.DPDC|VerumRoles})          ;;Key = <DPSF-id>
-    (deftable DPSF|T|Account:{DpdcUdcV1.DPSF|AccountRoles})         ;;Key = <DPSF-id> + BAR + <account>
-    (deftable DPSF|T|AccountSupplies:{DpdcUdcV1.DPDC|AccountSupply})  ;;Key = <account> + BAR + <DPSF-id> + BAR + <nonce>
+    (deftable DPSF|T|Properties:{DpdcUdcV1.DPDC|Properties})            ;;Key = <DPSF-id>      
+    (deftable DPSF|T|Nonces:{DpdcUdcV1.DPDC|NonceElement})              ;;Key = <DPSF-id> + BAR + <nonce>
+    (deftable DPSF|T|VerumRoles:{DpdcUdcV1.DPDC|VerumRoles})            ;;Key = <DPSF-id>
+    (deftable DPSF|T|Account:{DpdcUdcV1.DPSF|AccountRoles})             ;;Key = <DPSF-id> + BAR + <account>
+    (deftable DPSF|T|AccountSupplies:{DpdcUdcV1.DPDC|AccountSupply})    ;;Key = <account> + BAR + <DPSF-id> + BAR + <nonce>
     ;;
-    (deftable DPNF|T|Properties:{DpdcUdcV1.DPDC|Properties})        ;;Key = <DPNF-id>      
-    (deftable DPNF|T|Nonces:{DpdcUdcV1.DPDC|NonceElement})            ;;Key = <DSNF-id> + BAR + <nonce>
-    (deftable DPNF|T|VerumRoles:{DpdcUdcV1.DPDC|VerumRoles})          ;;Key = <DPNF-id>
-    (deftable DPNF|T|Account:{DpdcUdcV1.DPNF|AccountRoles})         ;;Key = <DPNF-id> + BAR + <account> 
-    (deftable DPNF|T|AccountSupplies:{DpdcUdcV1.DPDC|AccountSupply})  ;;Key = <account> + BAR + <DPNF-id> + BAR + <nonce>
+    (deftable DPNF|T|Properties:{DpdcUdcV1.DPDC|Properties})            ;;Key = <DPNF-id>      
+    (deftable DPNF|T|Nonces:{DpdcUdcV1.DPDC|NonceElement})              ;;Key = <DSNF-id> + BAR + <nonce>
+    (deftable DPNF|T|VerumRoles:{DpdcUdcV1.DPDC|VerumRoles})            ;;Key = <DPNF-id>
+    (deftable DPNF|T|Account:{DpdcUdcV1.DPNF|AccountRoles})             ;;Key = <DPNF-id> + BAR + <account> 
+    (deftable DPNF|T|AccountSupplies:{DpdcUdcV1.DPDC|AccountSupply})    ;;Key = <account> + BAR + <DPNF-id> + BAR + <nonce>
     ;;{3}
     (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                   (CT_Bar))

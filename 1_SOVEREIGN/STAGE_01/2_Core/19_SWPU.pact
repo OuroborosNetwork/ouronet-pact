@@ -154,8 +154,8 @@
         (if toggle
             (let
                 (
-                    (ref-SWP:module{SwapperV2} SWP)
-                    (ref-SWPI:module{SwapperIssueV2} SWPI)
+                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (pool-worth:decimal (at 0 (ref-SWPI::URC_PoolValue swpair)))
                     (inactive-limit:decimal (ref-SWP::UR_InactiveLimit))
                 )
@@ -218,7 +218,7 @@
                 ;;
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (l1:integer (length input-ids))
                 (l2:integer (length input-amounts))
                 (can-swap:bool (ref-SWP::UR_CanSwap swpair))
@@ -261,10 +261,10 @@
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV2} SWP)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 (all-pool-tokens:[string] (ref-SWP::URC_AllPoolTokens))
-                (h-obj:object{SwapperIssueV2.Hopper} (ref-SWPI::URC_Hopper input-id output-id input-amount))
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper input-id output-id input-amount))
                 (edges:[string] (at "edges" h-obj))
                 (nodes:[string] (at "nodes" h-obj))
             )
@@ -346,8 +346,8 @@
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
-                (h-obj:object{SwapperIssueV2.Hopper} (ref-SWPI::URC_Hopper input-id output-id input-amount))
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper input-id output-id input-amount))
                 (ovs:[decimal] (at "output-values" h-obj))
                 (expected:decimal (at 0 (take -1 ovs)))
                 (o-prec:integer (ref-DPTF::UR_Decimals output-id))
@@ -402,7 +402,7 @@
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 (o-prec:integer (ref-DPTF::UR_Decimals (at "output-id" dsid)))
                 (expected:decimal (ref-SWPI::URC_Swap swpair dsid false))
             )
@@ -433,7 +433,7 @@
         (UEV_IMC)
         (let
             (
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
             )
             (with-capability (SPWU|C>TOGGLE-SWAP swpair toggle)
                 (ref-SWP::C_ToggleAddOrSwap swpair toggle false)
@@ -463,7 +463,7 @@
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (dsid:object{UtilitySwpV1.DirectSwapInputData}
                     (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)
                 )
@@ -518,8 +518,8 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
-                (h-obj:object{SwapperIssueV2.Hopper} (ref-SWPI::URC_Hopper input-id output-id input-amount))
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper input-id output-id input-amount))
                 (nodes:[string] (at "nodes" h-obj))
                 (edges:[string] (at "edges" h-obj))
                 (ovs:[decimal] (at "output-values" h-obj))
@@ -558,7 +558,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (pp:string (ref-SWP::UR_PrimordialPool))
                 (ico-input:object{IgnisCollectorV1.OutputCumulator}
                     (ref-TFT::C_Transfer input-id account SWP|SC_NAME input-amount true)
@@ -569,9 +569,10 @@
                 (final-netto:decimal (at 0 hop-result))
                 (all-icos:[object{IgnisCollectorV1.OutputCumulator}] (at 1 hop-result))
                 (hops:integer (length edges))
-                (pools:integer (length (distinct edges)))
+                (distinct-edges:[string] (distinct edges))
+                (pools:integer (length distinct-edges))
                 (final-ico:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators all-icos [final-netto hops pools])
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators all-icos [final-netto hops pools distinct-edges])
                 )
             )
             (if (> kda-pid 0.0)
@@ -605,8 +606,8 @@
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-SWP:module{SwapperV2} SWP)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
                 (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                 (le:integer (length edges))
@@ -731,7 +732,7 @@
                         (XI_Swap account swpair dsid)
                         (let
                             (
-                                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                                (ref-SWPI:module{SwapperIssueV3} SWPI)
                                 (max-toa:decimal 
                                     ;; Actual output at execution time (pool may have changed since quote)
                                     (ref-SWPI::URC_Swap swpair dsid true)
@@ -786,8 +787,8 @@
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-SWP:module{SwapperV2} SWP)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
                 (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                 ;;
@@ -910,9 +911,9 @@
                 )
                 (let
                     (
-                        (ref-SWPI:module{SwapperIssueV2} SWPI)
+                        (ref-SWPI:module{SwapperIssueV3} SWPI)
                         ;;
-                        (h-obj:object{SwapperIssueV2.Hopper} (ref-SWPI::URC_Hopper id lkda amount))
+                        (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper id lkda amount))
                         (path-to-lkda:[string] (at "nodes" h-obj))
                         (edges:[string] (at "edges" h-obj))
                         (ovs:[decimal] (at "output-values" h-obj))
@@ -934,7 +935,7 @@
         (if (= (length raw-liquid-pump-data) 5)
             (let
                 (
-                    (ref-SWP:module{SwapperV2} SWP)
+                    (ref-SWP:module{SwapperV3} SWP)
                     (path-to-dlk:[string] (at 1 raw-liquid-pump-data))
                     (edges:[string] (at 2 raw-liquid-pump-data))
                     (ovs:[decimal] (at 3 raw-liquid-pump-data))
@@ -981,7 +982,7 @@
                 (let
                     (
                         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                        (ref-SWPI:module{SwapperIssueV2} SWPI)
+                        (ref-SWPI:module{SwapperIssueV3} SWPI)
                         (ouro-id:string (ref-DALOS::UR_OuroborosID))
                         (ouro-prec:integer (ref-DPTF::UR_Decimals ouro-id))
                         (stored-ouro-price:decimal (ref-DALOS::UR_OuroborosPrice))

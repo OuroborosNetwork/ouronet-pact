@@ -1553,7 +1553,7 @@ DEMIPAD
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
         (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV2} TS01-C3)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
         ;;
         (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
         (treasury-sc:string (ref-DALOS::GOV|DHV2|SC_NAME))
@@ -2086,7 +2086,7 @@ EliteAuryndex-ds4il5rO7vDC
 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
         (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-        (ref-TS01-C3:module{TalosStageOne_ClientThreeV2} TS01-C3)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
         ;;
         (patron:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
         (treasury-sc:string (ref-DALOS::GOV|DHV2|SC_NAME))
@@ -2657,7 +2657,7 @@ EliteAuryndex-ds4il5rO7vDC
                     ;;Initialise SWP Module
                     (let
                         (
-                            (ref-SWP:module{SwapperV2} SWP)
+                            (ref-SWP:module{SwapperV3} SWP)
                             (u:[string] ["|"])
                         )
                         [

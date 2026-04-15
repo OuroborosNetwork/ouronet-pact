@@ -192,8 +192,8 @@
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV2} SWP)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
                 (current-lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
                 (pool-token-supplies:[decimal]

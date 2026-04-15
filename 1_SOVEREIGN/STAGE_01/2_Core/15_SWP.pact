@@ -3,7 +3,7 @@
     ;;
     (implements OuronetPolicyV1)
     (implements BrandingUsagePrimaryV1)
-    (implements SwapperV2)
+    (implements SwapperV3)
     ;;{G1}
     (defconst GOV|MD_SWP            (keyset-ref-guard (GOV|Demiurgoi)))
     (defconst GOV|SC_SWP            (keyset-ref-guard SWP|SC_KEY))
@@ -131,26 +131,42 @@
         spawn-limit:decimal
         inactive-limit:decimal
     )
-    (defschema SWP|PairsSchemaV2
-        id:string                                       ;;[x] Added in V2
-        owner-konto:string
-        can-change-owner:bool
-        can-add:bool
-        can-swap:bool
-        genesis-weights:[decimal]
-        weights:[decimal]
-        genesis-ratio:[object{SwapperV2.PoolTokens}]
-        pool-tokens:[object{SwapperV2.PoolTokens}]
-        token-lp:string
-        fee-lp:decimal
-        fee-special:decimal
-        fee-special-targets:[object{SwapperV2.FeeSplit}]
-        fee-lock:bool
-        unlocks:integer
-        amplifier:decimal
-        primality:bool
-        frozen-lp:bool
-        sleeping-lp:bool
+    (defschema SWP|PairsSchemaV3
+        @doc "Per liquidity pool. Table row key is <swpair> (see UC_PoolID in UtilitySwpV1); \
+            \ stored <id> equals that key. V3 adds stoa-value for STOA ledger attribution on \
+            \ the pool; legacy V2 rows omit the column until UR_StoaValue backfills 0.0."
+        ;;
+        ;;Management
+        owner-konto:string                              ;;[M]   Pool owner konto
+        can-change-owner:bool                           ;;[M]
+        can-add:bool                                    ;;[M]
+        can-swap:bool                                   ;;[M]
+        ;;
+        ;;Weights and token composition
+        genesis-weights:[decimal]                       ;;[.]   Weights at issue
+        weights:[decimal]                               ;;[M]   Current weights
+        genesis-ratio:[object{SwapperV3.PoolTokens}]    ;;[.]   Token supplies at issue
+        pool-tokens:[object{SwapperV3.PoolTokens}]      ;;[M]   Current per-token supplies
+        token-lp:string                                 ;;[.]   LP DPTF id for this pool
+        ;;
+        ;;Fees
+        fee-lp:decimal                                  ;;[M]   LP fee (promille semantics per module)
+        fee-special:decimal                             ;;[M]
+        fee-special-targets:[object{SwapperV3.FeeSplit}];;[M]
+        fee-lock:bool                                   ;;[M]
+        unlocks:integer                                 ;;[M]   Fee-target edit generation counter
+        ;;
+        ;;Curve / flags
+        amplifier:decimal                               ;;[M]
+        primality:bool                                  ;;[.]   Pool construction (primality) at issue
+        frozen-lp:bool                                  ;;[.]   Once true, frozen LP path enabled
+        sleeping-lp:bool                                ;;[.]   Once true, sleeping LP path enabled
+        ;;
+        ;;STOA (V3)
+        stoa-value:decimal                              ;;[M]   STOA amount attributed to this pool; 0.0 at issue
+        ;;
+        ;;Select Keys
+        id:string                                       ;;[.]   Pool id (= SWP|Pairs row key <swpair>)
     )
     (defschema SWP|PoolsSchema
         pools:[string]
@@ -163,7 +179,7 @@
     )
     ;;{2}
     (deftable SWP|Properties:{SWP|PropertiesSchema})    ;;Key = SWP|INFO
-    (deftable SWP|Pairs:{SWP|PairsSchemaV2})            ;;Key = <swpair>
+    (deftable SWP|Pairs:{SWP|PairsSchemaV3})            ;;Key = <swpair>
     (deftable SWP|Pools:{SWP|PoolsSchema})              ;;Key = <pool-category>
     (deftable SWP|Asymmetry:{SWP|AsymmetrySchema})      ;;Key = SWP|INFO
     (deftable SWP|LP:{SWP|LpTracker})                   ;;Key = <LP-string>
@@ -303,7 +319,7 @@
             (enforce (> current-amp 0.0) "Amplifier can only be updated for Stable Pools")
         )
     )
-    (defcap SPW|S>UPDATE_SPECIAL-FEE-TARGETS (swpair:string targets:[object{SwapperV2.FeeSplit}])
+    (defcap SPW|S>UPDATE_SPECIAL-FEE-TARGETS (swpair:string targets:[object{SwapperV3.FeeSplit}])
         @event
         (let
             (
@@ -325,7 +341,7 @@
             (CAP_Owner swpair)
             (map
                 (lambda
-                    (obj:object{SwapperV2.FeeSplit})
+                    (obj:object{SwapperV3.FeeSplit})
                     (UEV_FeeSplit obj)
                 )
                 targets
@@ -438,14 +454,14 @@
         )
     )
     ;;{FC}
-    (defun UC_ExtractTokens:[string] (input:[object{SwapperV2.PoolTokens}])
+    (defun UC_ExtractTokens:[string] (input:[object{SwapperV3.PoolTokens}])
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
             )
             (fold
                 (lambda
-                    (acc:[string] item:object{SwapperV2.PoolTokens})
+                    (acc:[string] item:object{SwapperV3.PoolTokens})
                     (ref-U|LST::UC_AppL acc (at "token-id" item))
                 )
                 []
@@ -453,14 +469,14 @@
             )
         )
     )
-    (defun UC_ExtractTokenSupplies:[decimal] (input:[object{SwapperV2.PoolTokens}])
+    (defun UC_ExtractTokenSupplies:[decimal] (input:[object{SwapperV3.PoolTokens}])
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
             )
             (fold
                 (lambda
-                    (acc:[decimal] item:object{SwapperV2.PoolTokens})
+                    (acc:[decimal] item:object{SwapperV3.PoolTokens})
                     (ref-U|LST::UC_AppL acc (at "token-supply" item))
                 )
                 []
@@ -468,7 +484,7 @@
             )
         )
     )
-    (defun UC_CustomSpecialFeeTargets:[string] (io:[object{SwapperV2.FeeSplit}])
+    (defun UC_CustomSpecialFeeTargets:[string] (io:[object{SwapperV3.FeeSplit}])
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -486,7 +502,7 @@
             )
         )
     )
-    (defun UC_CustomSpecialFeeTargetsProportions:[decimal] (io:[object{SwapperV2.FeeSplit}])
+    (defun UC_CustomSpecialFeeTargetsProportions:[decimal] (io:[object{SwapperV3.FeeSplit}])
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -542,10 +558,10 @@
     (defun UR_Weigths:[decimal] (swpair:string)
         (at "weights" (read SWP|Pairs swpair ["weights"]))
     )
-    (defun UR_GenesisRatio:[object{SwapperV2.PoolTokens}] (swpair:string)
+    (defun UR_GenesisRatio:[object{SwapperV3.PoolTokens}] (swpair:string)
         (at "genesis-ratio" (read SWP|Pairs swpair ["genesis-ratio"]))
     )
-    (defun UR_PoolTokenObject:[object{SwapperV2.PoolTokens}] (swpair:string)
+    (defun UR_PoolTokenObject:[object{SwapperV3.PoolTokens}] (swpair:string)
         (at "pool-tokens" (read SWP|Pairs swpair ["pool-tokens"]))
     )
     (defun UR_TokenLP:string (swpair:string)
@@ -557,7 +573,7 @@
     (defun UR_FeeSP:decimal (swpair:string)
         (at "fee-special" (read SWP|Pairs swpair ["fee-special"]))
     )
-    (defun UR_FeeSPT:[object{SwapperV2.FeeSplit}] (swpair:string)
+    (defun UR_FeeSPT:[object{SwapperV3.FeeSplit}] (swpair:string)
         (at "fee-special-targets" (read SWP|Pairs swpair ["fee-special-targets"]))
     )
     (defun UR_FeeLock:bool (swpair:string)
@@ -577,6 +593,23 @@
     )
     (defun UR_IzSleepingLP:bool (swpair:string)
         (at "sleeping-lp" (read SWP|Pairs swpair ["sleeping-lp"]))
+    )
+    (defun UR_StoaValue:decimal (swpair:string)
+        @doc "STOA pool ledger scalar. Same row existence semantics as other UR_* on SWP|Pairs: \
+            \ <read SWP|Pairs swpair …> fails if <swpair> is not a pool. Legacy V2 rows without \
+            \ stoa-value are updated to 0.0 on first read (narrow read returns {})."
+        (let
+            (
+                (temp (read SWP|Pairs swpair ["stoa-value"]))
+                (needs-populate:bool (= temp {}))
+                (v:decimal (if needs-populate 0.0 (at "stoa-value" temp)))
+            )
+            (if needs-populate
+                (update SWP|Pairs swpair {"stoa-value": 0.0})
+                true
+            )
+            v
+        )
     )
     (defun UR_Pools:[string] (pool-category:string)
         (at "pools" (read SWP|Pools pool-category ["pools"]))
@@ -756,7 +789,7 @@
             (fold (+) [] (ref-U|LST::UC_RemoveItem fl [BAR]))
         )
     )
-    (defun URC_LpComposer:[string] (pool-tokens:[object{SwapperV2.PoolTokens}] weights:[decimal] amp:decimal)
+    (defun URC_LpComposer:[string] (pool-tokens:[object{SwapperV3.PoolTokens}] weights:[decimal] amp:decimal)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -807,7 +840,7 @@
         )
     )
     ;;{F2}
-    (defun UEV_FeeSplit (input:object{SwapperV2.FeeSplit})
+    (defun UEV_FeeSplit (input:object{SwapperV3.FeeSplit})
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1318,7 +1351,7 @@
         )
     )
     (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV1.OutputCumulator}
-        (swpair:string targets:[object{SwapperV2.FeeSplit}])
+        (swpair:string targets:[object{SwapperV3.FeeSplit}])
         (UEV_IMC)
         (let
             (
@@ -1346,7 +1379,7 @@
             (let
                 (
                     (pool-tokens:[string] (UR_PoolTokens swpair))
-                    (new-pool-tokens:[object{SwapperV2.PoolTokens}]
+                    (new-pool-tokens:[object{SwapperV3.PoolTokens}]
                         (zip (lambda (x:string y:decimal) { "token-id": x, "token-supply": y }) pool-tokens new-supplies)
                     )
                 )
@@ -1361,10 +1394,10 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (current-pool-tokens:[object{SwapperV2.PoolTokens}] (UR_PoolTokenObject swpair))
+                (current-pool-tokens:[object{SwapperV3.PoolTokens}] (UR_PoolTokenObject swpair))
                 (id-pos:integer (UR_PoolTokenPosition swpair id))
-                (new:object{SwapperV2.PoolTokens} { "token-id" : id, "token-supply" : new-supply})
-                (new-pool-tokens:[object{SwapperV2.PoolTokens}] (ref-U|LST::UC_ReplaceAt current-pool-tokens id-pos new))
+                (new:object{SwapperV3.PoolTokens} { "token-id" : id, "token-supply" : new-supply})
+                (new-pool-tokens:[object{SwapperV3.PoolTokens}] (ref-U|LST::UC_ReplaceAt current-pool-tokens id-pos new))
             )
             (with-capability (SWP|S>UPDATE-SUPPLY swpair id new-supply)
                 (update SWP|Pairs swpair
@@ -1373,7 +1406,14 @@
             )
         )
     )
-    (defun XE_Issue:string (account:string pool-tokens:[object{SwapperV2.PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+    (defun XE_UpdateStoaValue (swpair:string new-stoa-value:decimal)
+        @doc "Forward writer: sets stoa-value on SWP|Pairs. Requires UEV_IMC; pool row must exist (UEV_id)."
+        (UEV_IMC)
+        (update SWP|Pairs swpair
+            {"stoa-value" : new-stoa-value}
+        )
+    )
+    (defun XE_Issue:string (account:string pool-tokens:[object{SwapperV3.PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         (UEV_IMC)
         (let
             (
@@ -1414,6 +1454,7 @@
                 ,"primality"            : p
                 ,"frozen-lp"            : false
                 ,"sleeping-lp"          : false
+                ,"stoa-value"           : 0.0
                 }
             )
             (with-capability (P|SECURE-CALLER)
@@ -1540,7 +1581,7 @@
             )
         )
     )
-    (defun XI_UpdateSpecialFeeTargets (swpair:string targets:[object{SwapperV2.FeeSplit}])
+    (defun XI_UpdateSpecialFeeTargets (swpair:string targets:[object{SwapperV3.FeeSplit}])
         (require-capability (SPW|S>UPDATE_SPECIAL-FEE-TARGETS swpair targets))
         (update SWP|Pairs swpair
             {"fee-special-targets"                : targets}

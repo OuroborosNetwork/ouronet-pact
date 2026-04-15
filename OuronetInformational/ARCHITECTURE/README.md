@@ -9,6 +9,7 @@ This folder is the **canonical map** of what exists in the repo: modules, interf
 | [`00_MASTER_INVENTORY.md`](00_MASTER_INVENTORY.md) | Counts, paths, and navigation to everything |
 | [`STAGE_01_MODULES.md`](STAGE_01_MODULES.md) | Stage 1: utilities → core → Talos (per-module notes) |
 | [`STAGE_01_INTERFACES.md`](STAGE_01_INTERFACES.md) | Stage 1 interface files and named interfaces |
+| [`INTERFACE_VERSIONING.md`](INTERFACE_VERSIONING.md) | Rule: when interface B bumps, every interface that names B bumps too; modules implement only the latest |
 | [`STAGE_02_MODULES.md`](STAGE_02_MODULES.md) | Stage 2: DPDC slice, DemiPad, AQP, Talos |
 | [`STAGE_02_INTERFACES.md`](STAGE_02_INTERFACES.md) | Stage 2 DPDC/DemiPad/Talos interfaces |
 | [`SLAVE_AND_SAMPLES.md`](SLAVE_AND_SAMPLES.md) | `2_SLAVE/`, `0_Sample/` |

@@ -108,6 +108,7 @@
     ;;SCHEMAS-TABLES-CONSTANTS
     ;;{1}
     (defschema HibernatedNoncesView
+        nonce:integer
         nonce-supply:decimal
         mint-time:time
         release-time:time
@@ -146,7 +147,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
                 ;;
                 (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))
@@ -206,7 +207,6 @@
                     (format "{}" [(at "special-text" clad)])
                     (format "{}" [(at "lqboost-text" clad)])
                     (format "{}" [(at "fueling-text" clad)])
-                    (format "Fitting Operation in a single TX is {} IGNIS cheaper" [100.0])
                 ]
                 [
                     (if (not asymmetric-collection)
@@ -226,6 +226,7 @@
             )
         )
     )
+    ;;
     (defun UCX_Swap:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData})
         (let
@@ -235,8 +236,8 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-SWP:module{SwapperV2} SWP)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
                 (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                 (ref-SWPU:module{SwapperUsageV2} SWPU)
@@ -1187,9 +1188,10 @@
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (a-id:string (ref-DALOS::UR_AurynID))
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
-                (ouro-amount:decimal (abs (ref-DPTF::UR_AccountSupply ouro-id account)))
+                (ouro-a:decimal (ref-DPTF::UR_AccountSupply ouro-id account))
+                (ouro-amount:decimal (abs ouro-a)) 
             )
-            (enforce (< ouro-amount 0.0) "Dispo Clear requires Negative OURO")
+            (enforce (< ouro-a 0.0) "Dispo Clear requires Negative OURO")
             (let
                 (
                     (account-ea-supply:decimal (ref-DPTF::UR_AccountSupply ea-id account))
@@ -1219,7 +1221,7 @@
                     (ifp3:decimal (SIP|URC_Biggest))
                     (ifp4:decimal (SIP|URC_Burn a-id ats-sc))
                     (ifp5:decimal (SIP|URC_Burn ouro-id ats-sc))
-                    (ifp:decimal (fold [+] 0.0 [ifp1 ifp2 ifp3 ifp4 ifp5]))
+                    (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3 ifp4 ifp5]))
                 )
                 (ref-I|OURONET::OI|UDC_ClientInfo
                     [
@@ -1482,7 +1484,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
                     (format "Operation: Awakens {} Nonce {}, returning its underlying DPTF, {}." [dpof nonce dptf-id])
-                    (format "The maximum awakening fee of 800‰ is currently at {}‰." [hibernating-fee-promile])
+                    (format "The maximum awakening fee of 800‰ (promille) is currently at {}‰." [hibernating-fee-promile])
                     (if (= hibernating-fee 0.0)
                         (format "This will release {} DPTF Tokens, with no awakening fee." [remainder])  
                         (format "This will release {} DPTF Tokens, while witholding {} as awakening fee." [remainder hibernating-fee])
@@ -1597,7 +1599,7 @@
             (
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 ;;
-                (owned-nonces:[integer] (ref-DPOF::URD_AccountNonces account dpof))
+                (owned-nonces:[integer] (sort (ref-DPOF::URD_AccountNonces account dpof)))
                 (l:integer (length owned-nonces))
             )
             (map
@@ -1642,7 +1644,7 @@
                 (hibernating-fee:decimal (- nonce-supply remainder))
             )
             (UDC_HibernatedNoncesView
-                nonce-supply mint-time release-time hibernating-fee-promile remainder hibernating-fee
+                nonce nonce-supply mint-time release-time hibernating-fee-promile remainder hibernating-fee
             )
         )
     )
@@ -1970,7 +1972,7 @@
                 (ico2:object{IgnisCollectorV1.OutputCumulator}
                     (if (!= usable-cold-recovery-position -1)
                         EOC
-                        (ref-ATSU::UDC_UnlimitedUncoilCumulator ats recoverer)
+                        (try EOC (ref-ATSU::UDC_UnlimitedUncoilCumulator ats recoverer))
                     )
                 )
                 (ifp2:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico2))
@@ -1997,16 +1999,16 @@
                 [
                     (format "Operation: Places {} {} into Cold Recovery" [ra c-rbt])
                     (if (= usable-cold-recovery-position -1)
-                        (format "You have 250 Recovery Slots")
+                        (format "You have {} Recovery Slots" [250])
                         (if elite
-                            (format "You have up to 7 Recovery Slots")
-                            (format "You have 7 Recovery Slots ")
+                            (format "You have up to {} Recovery Slots" [7])
+                            (format "You have {} Recovery Slots" [7])
                         )
                     )
                     (if (!= c-rbt-fee 0.0)
                         (format "{}\n{}\n{}"
                             [
-                                (format "Cold Recovery will incurr a Col-Recovery-Fee of {}‰ (promile)" [fee-promile])
+                                (format "Cold Recovery will incurr a Cold-Recovery-Fee of {}‰ (promile)" [fee-promile])
                                 (if c-fr
                                     (format "This Fee is collected by strengthening the {}" [index-name])
                                     (format "This Fee is collected by burning the Reward Tokens {}" [rt-lst])
@@ -2014,7 +2016,7 @@
                                 (format "And Amounts to {} {}" [(ref-ATS::URC_RTSplitAmounts ats c-rbt-fee) rt-lst])
                             ]
                         )
-                        (format "Cold Recovery will be executed without any Cold-Recovery-Fee")
+                        (format "Cold Recovery will be executed {} Cold-Recovery-Fee" [0])
                     )
                     (format "{} {} will be recovarable after {} hour(s)" [(ref-ATS::URC_RTSplitAmounts ats c-rbt-remainder) rt-lst h])
                 ]
@@ -2025,7 +2027,6 @@
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount ra)]
             )
-
         )
     )
     (defun ATS|INFO_Cull:object{OuronetInfoV1.ClientInfo}
@@ -2107,7 +2108,7 @@
                 ;;Operation 1 Transfer
                 (wt1:integer (at "type" (ref-TFT::URC_TransferClasses c-rbt recoverer ats-sc ra)))
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator c-rbt recoverer ats-sc)
+                    (ref-TFT::UDC_TransferCumulator wt1 c-rbt recoverer ats-sc)
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 ;;Operation 2 Burn DPTF
@@ -2174,7 +2175,6 @@
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 []
             )
-            (if (= (typeof ()) "bool") false true)
         )
     )
     (defun LIQUID|INFO_WrapUrStoa:object{OuronetInfoV1.ClientInfo}
@@ -2212,7 +2212,6 @@
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
                 ;;
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
@@ -2306,7 +2305,7 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ORBR:module{OuroborosV1} OUROBOROS)
                 (sa1:string (ref-I|OURONET::OI|UC_ShortAccount client))
-                (sa2:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                (sa2:string (ref-I|OURONET::OI|UC_ShortAccount target))
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
@@ -2345,7 +2344,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 ;;
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
                 (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
@@ -2409,7 +2408,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 ;;
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
                 (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
@@ -2420,7 +2419,7 @@
                 (ifp1:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
                 (ifp2:decimal (ref-DALOS::UR_UsagePrice "ignis|big"))
                 (ifp-issue:decimal (fold (+) 0.0 [ifp0 ifp1 ifp2]))
-                (kfp-issue:decimal (ref-DALOS::UR_UsagePrice "dpof"))
+                (kfp-issue:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
                 (ifp:decimal
                     (if (= current-sleeping-link BAR)
                         (+ ifp-m ifp-issue)
@@ -2473,8 +2472,8 @@
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-SWP:module{SwapperV2} SWP)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
                 (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))
                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
@@ -2524,8 +2523,8 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ORBR:module{OuroborosV1} OUROBOROS)
-                (ref-SWP:module{SwapperV2} SWP)
-                (ref-SWPI:module{SwapperIssueV2} SWPI)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
                 ;;
                 (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
@@ -2615,7 +2614,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
                 ;;
                 (dptf:string (ref-DPTF::UR_Frozen frozen-dptf))
@@ -2646,7 +2645,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
                 ;;
                 (dptf:string (ref-DPOF::UR_Sleeping sleeping-dpof))
@@ -2679,7 +2678,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-SWP:module{SwapperV2} SWP)
+                (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
                 ;;
                 (pool-token-ids:[string] (ref-SWP::UR_PoolTokens swpair))
@@ -2730,14 +2729,14 @@
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]
     (defun UDC_HibernatedNoncesView:object{HibernatedNoncesView}
-        (a:decimal b:time c:time d:decimal e:decimal f:decimal)
-        {"nonce-supply"             : a
+        (n:integer a:decimal b:time c:time d:decimal e:decimal f:decimal)
+        {"nonce"                    : n
+        ,"nonce-supply"             : a
         ,"mint-time"                : b
         ,"release-time"             : c
         ,"hibernating-fee-promile"  : d
         ,"remainder"                : e
-        ,"hibernating-fee"          : f
-        }
+        ,"hibernating-fee"          : f}
     )
     ;;{F4}  [CAP]
     ;;
