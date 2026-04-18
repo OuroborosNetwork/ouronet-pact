@@ -1,6 +1,6 @@
 # Ouronet — module architecture & nomenclature
 
-_Authoritative vocabulary for how sovereign modules are structured, named, and wired. Refer to **`0_Sample/C0s>>01|01_ModuleSample.pact`** for a concrete layout (policies, section ordering, and examples)._
+_Authoritative vocabulary for how sovereign modules are structured, named, and wired. Refer to **`0_Sample/C0s__01_01_ModuleSample.pact`** for a concrete layout (policies, section ordering, and examples)._
 
 _Last updated: 2026-04-12._
 

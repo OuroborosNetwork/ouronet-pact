@@ -19,5 +19,5 @@
 
 | File | Role |
 |------|------|
-| `C0s>>01|01_ModuleSample.pact` | Reference module layout |
+| `C0s__01_01_ModuleSample.pact` | Reference module layout |
 | `Code.pact`, `CodeStoa.pact`, `Empty.pact`, `Empty2.pact` | Snippets |
