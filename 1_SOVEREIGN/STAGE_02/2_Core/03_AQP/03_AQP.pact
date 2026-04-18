@@ -1,5 +1,132 @@
 (interface AcquisitionPoolsV1
     (defun GOV|Demiurgoi ())
+    ;;
+    ;;  [UC]
+    (defun UC_DPTFTrackerKey:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
+    (defun UC_DPOFTrackerKey:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UC_DPSFTrackerKey:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UC_DPNFTrackerKey:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UC_DPSFScoreAttributionKey:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UC_DPNFScoreAttributionKey:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    ;;
+    ;;  [UR] AQP|Schema (AQP|T|Pool)
+    (defun UR_AQP|AllPoolIds:[string] ())
+    (defun UR_AQP|Pool:object{AQP|Schema} (pool-id:string))
+    (defun UR_AQP|PoolAqpClass:integer (pool-id:string))
+    (defun UR_AQP|PoolAssetId:string (pool-id:string))
+    (defun UR_AQP|PoolScorePrimary:string (pool-id:string))
+    (defun UR_AQP|PoolScoreSecondary:string (pool-id:string))
+    (defun UR_AQP|PoolScoreTertiary:string (pool-id:string))
+    (defun UR_AQP|PoolScoreQuaternary:string (pool-id:string))
+    (defun UR_AQP|PoolScoreQuinary:string (pool-id:string))
+    (defun UR_AQP|PoolScoreSenary:string (pool-id:string))
+    (defun UR_AQP|PoolScoreSeptenary:string (pool-id:string))
+    (defun UR_AQP|PoolAqpId:string (pool-id:string))
+    ;;
+    ;;  [UR] AQP|TrueFungibleTracker (AQP|T|DPTFTracker)
+    (defun UR_AQP|DPTFTracker:object{AQP|TrueFungibleTracker}
+        (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
+    )
+    (defun UR_AQP|DPTFTrackerBalance:decimal (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
+    (defun UR_AQP|DPTFTrackerPoolId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
+    (defun UR_AQP|DPTFTrackerDptfId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
+    (defun UR_AQP|DPTFTrackerOwnerId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
+    (defun UR_AQP|DPTFTrackerBeneficiaryId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
+    ;;
+    ;;  [UR] AQP|OrtoFungibleTracker (AQP|T|DPOFTracker)
+    (defun UR_AQP|DPOFTracker:object{AQP|OrtoFungibleTracker}
+        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+    )
+    (defun UR_AQP|DPOFTrackerBalance:decimal (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPOFTrackerPoolId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPOFTrackerDpofId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPOFTrackerOwnerId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPOFTrackerBeneficiaryId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPOFTrackerNonce:integer (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
+    ;;
+    ;;  [UR] AQP|SemiFungibleTracker (AQP|T|DPSFTracker)
+    (defun UR_AQP|DPSFTracker:object{AQP|SemiFungibleTracker}
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+    )
+    (defun UR_AQP|DPSFTrackerBalance:decimal (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPSFTrackerPoolId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPSFTrackerDpsfId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPSFTrackerOwnerId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPSFTrackerBeneficiaryId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPSFTrackerNonce:integer (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    ;;
+    ;;  [UR] AQP|NonFungibleTracker (AQP|T|DPNFTracker)
+    (defun UR_AQP|DPNFTracker:object{AQP|NonFungibleTracker}
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+    )
+    (defun UR_AQP|DPNFTrackerBalance:decimal (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPNFTrackerPoolId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPNFTrackerDpnfId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPNFTrackerOwnerId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPNFTrackerBeneficiaryId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UR_AQP|DPNFTrackerNonce:integer (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    ;;
+    ;;  [UR] AQP|DPSFScoreAttribution (AQP|T|DPSFScoreAttribution)
+    (defun UR_AQP|DPSFScoreAttribution:object{AQP|DPSFScoreAttribution}
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPSFScoreAttributionCachedPositionScore:decimal
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPSFScoreAttributionAppliedDefRevisionNonce:integer
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPSFScoreAttributionPoolId:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPSFScoreAttributionDpsfId:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPSFScoreAttributionOwnerId:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPSFScoreAttributionBeneficiaryId:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPSFScoreAttributionNonce:integer
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPSFScoreAttributionScoreId:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    ;;
+    ;;  [UR] AQP|DPNFScoreAttribution (AQP|T|DPNFScoreAttribution)
+    (defun UR_AQP|DPNFScoreAttribution:object{AQP|DPNFScoreAttribution}
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPNFScoreAttributionCachedPositionScore:decimal
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPNFScoreAttributionAppliedDefRevisionNonce:integer
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPNFScoreAttributionPoolId:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPNFScoreAttributionDpnfId:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPNFScoreAttributionOwnerId:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPNFScoreAttributionBeneficiaryId:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPNFScoreAttributionNonce:integer
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
+    (defun UR_AQP|DPNFScoreAttributionScoreId:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+    )
 )
 (module AQP-POOL GOV
     ;;
@@ -129,8 +256,7 @@
         beneficiary-id:string                                   ;;Beneficiary-ID
     )
     (defschema AQP|OrtoFungibleTracker
-        owner-id:string                                         ;;Owner-ID
-        beneficiary-id:string                                   ;;Beneficiary-ID
+        balance:decimal                                         ;;Staked DPOF amount for this nonce slot
         ;;
         ;;Select Keys
         pool-id:string                                          ;;Pool-ID
@@ -230,10 +356,436 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    (defun CT_Bar:string
+        ()
+        @doc "Returns CT_BAR constant."
+        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR))
+    )
+    (defconst BAR                                               (CT_Bar))
+    ;;
+    ;;{F0}  [UC]
+    (defun UC_DPTFTrackerKey:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
+        @doc "Composite key for AQP|T|DPTFTracker: pool-id | dptf-id | owner-id | beneficiary-id."
+        (concat [pool-id BAR dptf-id BAR owner-id BAR beneficiary-id])
+    )
+    (defun UC_DPOFTrackerKey:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Composite key for AQP|T|DPOFTracker: pool-id | dpof-id | owner-id | beneficiary-id | nonce."
+        (concat [pool-id BAR dpof-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce])])
+    )
+    (defun UC_DPSFTrackerKey:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Composite key for AQP|T|DPSFTracker: pool-id | dpsf-id | owner-id | beneficiary-id | nonce."
+        (concat [pool-id BAR dpsf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce])])
+    )
+    (defun UC_DPNFTrackerKey:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Composite key for AQP|T|DPNFTracker: pool-id | dpnf-id | owner-id | beneficiary-id | nonce."
+        (concat [pool-id BAR dpnf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce])])
+    )
+    (defun UC_DPSFScoreAttributionKey:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Composite key for AQP|T|DPSFScoreAttribution: pool | dpsf | owner | beneficiary | nonce | score-id."
+        (concat [pool-id BAR dpsf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce]) BAR score-id])
+    )
+    (defun UC_DPNFScoreAttributionKey:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Composite key for AQP|T|DPNFScoreAttribution: pool | dpnf | owner | beneficiary | nonce | score-id."
+        (concat [pool-id BAR dpnf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce]) BAR score-id])
+    )
+    ;;
+    ;;{F3}  [UDC]
+    ;; Default tracker and attribution rows for UR with-default-read.
+    (defun UDC_AQP|TrueFungibleTracker:object{AQP|TrueFungibleTracker}
+        (bal:decimal pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
+        @doc "Default DPTF tracker row (zero balance, key fields from arguments)."
+        {"balance"          : bal
+        ,"pool-id"          : pool-id
+        ,"dptf-id"          : dptf-id
+        ,"owner-id"         : owner-id
+        ,"beneficiary-id"   : beneficiary-id}
+    )
+    (defun UDC_AQP|OrtoFungibleTracker:object{AQP|OrtoFungibleTracker}
+        (bal:decimal pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Default DPOF tracker row (zero balance, key fields from arguments)."
+        {"balance"          : bal
+        ,"pool-id"          : pool-id
+        ,"dpof-id"          : dpof-id
+        ,"owner-id"         : owner-id
+        ,"beneficiary-id"   : beneficiary-id
+        ,"nonce"            : nonce}
+    )
+    (defun UDC_AQP|SemiFungibleTracker:object{AQP|SemiFungibleTracker}
+        (bal:decimal pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Default DPSF tracker row (zero balance, key fields from arguments)."
+        {"balance"          : bal
+        ,"pool-id"          : pool-id
+        ,"dpsf-id"          : dpsf-id
+        ,"owner-id"         : owner-id
+        ,"beneficiary-id"   : beneficiary-id
+        ,"nonce"            : nonce}
+    )
+    (defun UDC_AQP|NonFungibleTracker:object{AQP|NonFungibleTracker}
+        (bal:decimal pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Default DPNF tracker row (zero balance, key fields from arguments)."
+        {"balance"          : bal
+        ,"pool-id"          : pool-id
+        ,"dpnf-id"          : dpnf-id
+        ,"owner-id"         : owner-id
+        ,"beneficiary-id"   : beneficiary-id
+        ,"nonce"            : nonce}
+    )
+    (defun UDC_AQP|DPSFScoreAttribution:object{AQP|DPSFScoreAttribution}
+        (cached:decimal rev:integer pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Default DPSF score attribution row."
+        {"cached-position-score"         : cached
+        ,"applied-def-revision-nonce"   : rev
+        ,"pool-id"                      : pool-id
+        ,"dpsf-id"                      : dpsf-id
+        ,"owner-id"                     : owner-id
+        ,"beneficiary-id"               : beneficiary-id
+        ,"nonce"                        : nonce
+        ,"score-id"                     : score-id}
+    )
+    (defun UDC_AQP|DPNFScoreAttribution:object{AQP|DPNFScoreAttribution}
+        (cached:decimal rev:integer pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Default DPNF score attribution row."
+        {"cached-position-score"         : cached
+        ,"applied-def-revision-nonce"   : rev
+        ,"pool-id"                      : pool-id
+        ,"dpnf-id"                      : dpnf-id
+        ,"owner-id"                     : owner-id
+        ,"beneficiary-id"               : beneficiary-id
+        ,"nonce"                        : nonce
+        ,"score-id"                     : score-id}
+    )
+    ;;
     ;;{F0}  [UR]
+    ;; Reads follow schema order: (1) AQP|Schema (2) TrueFungibleTracker (3) OrtoFungibleTracker \
+    ;;     (4) SemiFungibleTracker (5) NonFungibleTracker (6) DPSFScoreAttribution (7) DPNFScoreAttribution
+    ;;
+    ;; [1] AQP|T|Pool  (AQP|Schema)  Key = <Pool-ID>
+    (defun UR_AQP|AllPoolIds:[string] ()
+        @doc "Returns all row keys from AQP|T|Pool."
+        (keys AQP|T|Pool)
+    )
+    (defun UR_AQP|Pool:object{AQP|Schema} (pool-id:string)
+        @doc "Reads full pool definition row from AQP|T|Pool."
+        (read AQP|T|Pool pool-id)
+    )
+    (defun UR_AQP|PoolAqpClass:integer (pool-id:string)
+        @doc "Reads aqp-class from pool row."
+        (at "aqp-class" (read AQP|T|Pool pool-id ["aqp-class"]))
+    )
+    (defun UR_AQP|PoolAssetId:string (pool-id:string)
+        @doc "Reads canonical asset-id from pool row."
+        (at "asset-id" (read AQP|T|Pool pool-id ["asset-id"]))
+    )
+    (defun UR_AQP|PoolScorePrimary:string (pool-id:string)
+        @doc "Reads score-primary slot from pool row."
+        (at "score-primary" (read AQP|T|Pool pool-id ["score-primary"]))
+    )
+    (defun UR_AQP|PoolScoreSecondary:string (pool-id:string)
+        @doc "Reads score-secondary slot from pool row."
+        (at "score-secondary" (read AQP|T|Pool pool-id ["score-secondary"]))
+    )
+    (defun UR_AQP|PoolScoreTertiary:string (pool-id:string)
+        @doc "Reads score-tertiary slot from pool row."
+        (at "score-tertiary" (read AQP|T|Pool pool-id ["score-tertiary"]))
+    )
+    (defun UR_AQP|PoolScoreQuaternary:string (pool-id:string)
+        @doc "Reads score-quaternary slot from pool row."
+        (at "score-quaternary" (read AQP|T|Pool pool-id ["score-quaternary"]))
+    )
+    (defun UR_AQP|PoolScoreQuinary:string (pool-id:string)
+        @doc "Reads score-quinary slot from pool row."
+        (at "score-quinary" (read AQP|T|Pool pool-id ["score-quinary"]))
+    )
+    (defun UR_AQP|PoolScoreSenary:string (pool-id:string)
+        @doc "Reads score-senary slot from pool row."
+        (at "score-senary" (read AQP|T|Pool pool-id ["score-senary"]))
+    )
+    (defun UR_AQP|PoolScoreSeptenary:string (pool-id:string)
+        @doc "Reads score-septenary slot from pool row."
+        (at "score-septenary" (read AQP|T|Pool pool-id ["score-septenary"]))
+    )
+    (defun UR_AQP|PoolAqpId:string (pool-id:string)
+        @doc "Reads aqp-id field from pool row."
+        (at "aqp-id" (read AQP|T|Pool pool-id ["aqp-id"]))
+    )
+    ;;
+    ;; [2] AQP|T|DPTFTracker  (AQP|TrueFungibleTracker)
+    (defun UR_AQP|DPTFTracker:object{AQP|TrueFungibleTracker}
+        (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
+        @doc "Reads DPTF tracker row; absent rows read as zero balance via default object."
+        (with-default-read AQP|T|DPTFTracker (UC_DPTFTrackerKey pool-id dptf-id owner-id beneficiary-id)
+            (UDC_AQP|TrueFungibleTracker 0.0 pool-id dptf-id owner-id beneficiary-id)
+            {"balance"          := bal
+            ,"pool-id"          := pid
+            ,"dptf-id"          := did
+            ,"owner-id"         := oid
+            ,"beneficiary-id"   := bid}
+            (UDC_AQP|TrueFungibleTracker bal pid did oid bid)
+        )
+    )
+    (defun UR_AQP|DPTFTrackerBalance:decimal (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
+        @doc "Reads staked DPTF balance from tracker row."
+        (at "balance" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
+    )
+    (defun UR_AQP|DPTFTrackerPoolId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
+        @doc "Reads pool-id from DPTF tracker row."
+        (at "pool-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
+    )
+    (defun UR_AQP|DPTFTrackerDptfId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
+        @doc "Reads dptf-id from DPTF tracker row."
+        (at "dptf-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
+    )
+    (defun UR_AQP|DPTFTrackerOwnerId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
+        @doc "Reads owner-id from DPTF tracker row."
+        (at "owner-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
+    )
+    (defun UR_AQP|DPTFTrackerBeneficiaryId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
+        @doc "Reads beneficiary-id from DPTF tracker row."
+        (at "beneficiary-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
+    )
+    ;;
+    ;; [3] AQP|T|DPOFTracker  (AQP|OrtoFungibleTracker)
+    (defun UR_AQP|DPOFTracker:object{AQP|OrtoFungibleTracker}
+        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads DPOF tracker row; absent rows read as zero balance via default object."
+        (with-default-read AQP|T|DPOFTracker (UC_DPOFTrackerKey pool-id dpof-id owner-id beneficiary-id nonce)
+            (UDC_AQP|OrtoFungibleTracker 0.0 pool-id dpof-id owner-id beneficiary-id nonce)
+            {"balance"          := bal
+            ,"pool-id"          := pid
+            ,"dpof-id"          := did
+            ,"owner-id"         := oid
+            ,"beneficiary-id"   := bid
+            ,"nonce"            := n}
+            (UDC_AQP|OrtoFungibleTracker bal pid did oid bid n)
+        )
+    )
+    (defun UR_AQP|DPOFTrackerBalance:decimal (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads staked DPOF balance from tracker row."
+        (at "balance" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPOFTrackerPoolId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads pool-id from DPOF tracker row."
+        (at "pool-id" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPOFTrackerDpofId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads dpof-id from DPOF tracker row."
+        (at "dpof-id" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPOFTrackerOwnerId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads owner-id from DPOF tracker row."
+        (at "owner-id" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPOFTrackerBeneficiaryId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads beneficiary-id from DPOF tracker row."
+        (at "beneficiary-id" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPOFTrackerNonce:integer (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads nonce from DPOF tracker row."
+        (at "nonce" (UR_AQP|DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce))
+    )
+    ;;
+    ;; [4] AQP|T|DPSFTracker  (AQP|SemiFungibleTracker)
+    (defun UR_AQP|DPSFTracker:object{AQP|SemiFungibleTracker}
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads DPSF tracker row; absent rows read as zero balance via default object."
+        (with-default-read AQP|T|DPSFTracker (UC_DPSFTrackerKey pool-id dpsf-id owner-id beneficiary-id nonce)
+            (UDC_AQP|SemiFungibleTracker 0.0 pool-id dpsf-id owner-id beneficiary-id nonce)
+            {"balance"          := bal
+            ,"pool-id"          := pid
+            ,"dpsf-id"          := did
+            ,"owner-id"         := oid
+            ,"beneficiary-id"   := bid
+            ,"nonce"            := n}
+            (UDC_AQP|SemiFungibleTracker bal pid did oid bid n)
+        )
+    )
+    (defun UR_AQP|DPSFTrackerBalance:decimal (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads staked DPSF balance from tracker row."
+        (at "balance" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPSFTrackerPoolId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads pool-id from DPSF tracker row."
+        (at "pool-id" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPSFTrackerDpsfId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads dpsf-id from DPSF tracker row."
+        (at "dpsf-id" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPSFTrackerOwnerId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads owner-id from DPSF tracker row."
+        (at "owner-id" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPSFTrackerBeneficiaryId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads beneficiary-id from DPSF tracker row."
+        (at "beneficiary-id" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPSFTrackerNonce:integer (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads nonce from DPSF tracker row."
+        (at "nonce" (UR_AQP|DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce))
+    )
+    ;;
+    ;; [5] AQP|T|DPNFTracker  (AQP|NonFungibleTracker)
+    (defun UR_AQP|DPNFTracker:object{AQP|NonFungibleTracker}
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads DPNF tracker row; absent rows read as zero balance via default object."
+        (with-default-read AQP|T|DPNFTracker (UC_DPNFTrackerKey pool-id dpnf-id owner-id beneficiary-id nonce)
+            (UDC_AQP|NonFungibleTracker 0.0 pool-id dpnf-id owner-id beneficiary-id nonce)
+            {"balance"          := bal
+            ,"pool-id"          := pid
+            ,"dpnf-id"          := did
+            ,"owner-id"         := oid
+            ,"beneficiary-id"   := bid
+            ,"nonce"            := n}
+            (UDC_AQP|NonFungibleTracker bal pid did oid bid n)
+        )
+    )
+    (defun UR_AQP|DPNFTrackerBalance:decimal (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads staked DPNF balance from tracker row."
+        (at "balance" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPNFTrackerPoolId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads pool-id from DPNF tracker row."
+        (at "pool-id" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPNFTrackerDpnfId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads dpnf-id from DPNF tracker row."
+        (at "dpnf-id" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPNFTrackerOwnerId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads owner-id from DPNF tracker row."
+        (at "owner-id" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPNFTrackerBeneficiaryId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads beneficiary-id from DPNF tracker row."
+        (at "beneficiary-id" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
+    )
+    (defun UR_AQP|DPNFTrackerNonce:integer (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Reads nonce from DPNF tracker row."
+        (at "nonce" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
+    )
+    ;;
+    ;; [6] AQP|T|DPSFScoreAttribution  (AQP|DPSFScoreAttribution)
+    (defun UR_AQP|DPSFScoreAttribution:object{AQP|DPSFScoreAttribution}
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads DPSF score attribution row; absent rows read as zero cache and revision 0."
+        (with-default-read AQP|T|DPSFScoreAttribution
+            (UC_DPSFScoreAttributionKey pool-id dpsf-id owner-id beneficiary-id nonce score-id)
+            (UDC_AQP|DPSFScoreAttribution 0.0 0 pool-id dpsf-id owner-id beneficiary-id nonce score-id)
+            {"cached-position-score"         := cps
+            ,"applied-def-revision-nonce"   := arn
+            ,"pool-id"                      := pid
+            ,"dpsf-id"                      := did
+            ,"owner-id"                     := oid
+            ,"beneficiary-id"               := bid
+            ,"nonce"                        := n
+            ,"score-id"                     := sid}
+            (UDC_AQP|DPSFScoreAttribution cps arn pid did oid bid n sid)
+        )
+    )
+    (defun UR_AQP|DPSFScoreAttributionCachedPositionScore:decimal
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads cached-position-score from DPSF score attribution row."
+        (at "cached-position-score" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPSFScoreAttributionAppliedDefRevisionNonce:integer
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads applied-def-revision-nonce from DPSF score attribution row."
+        (at "applied-def-revision-nonce" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPSFScoreAttributionPoolId:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads pool-id from DPSF score attribution row."
+        (at "pool-id" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPSFScoreAttributionDpsfId:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads dpsf-id from DPSF score attribution row."
+        (at "dpsf-id" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPSFScoreAttributionOwnerId:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads owner-id from DPSF score attribution row."
+        (at "owner-id" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPSFScoreAttributionBeneficiaryId:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads beneficiary-id from DPSF score attribution row."
+        (at "beneficiary-id" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPSFScoreAttributionNonce:integer
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads nonce from DPSF score attribution row."
+        (at "nonce" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPSFScoreAttributionScoreId:string
+        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads score-id from DPSF score attribution row."
+        (at "score-id" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
+    )
+    ;;
+    ;; [7] AQP|T|DPNFScoreAttribution  (AQP|DPNFScoreAttribution)
+    (defun UR_AQP|DPNFScoreAttribution:object{AQP|DPNFScoreAttribution}
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads DPNF score attribution row; absent rows read as zero cache and revision 0."
+        (with-default-read AQP|T|DPNFScoreAttribution
+            (UC_DPNFScoreAttributionKey pool-id dpnf-id owner-id beneficiary-id nonce score-id)
+            (UDC_AQP|DPNFScoreAttribution 0.0 0 pool-id dpnf-id owner-id beneficiary-id nonce score-id)
+            {"cached-position-score"         := cps
+            ,"applied-def-revision-nonce"   := arn
+            ,"pool-id"                      := pid
+            ,"dpnf-id"                      := did
+            ,"owner-id"                     := oid
+            ,"beneficiary-id"               := bid
+            ,"nonce"                        := n
+            ,"score-id"                     := sid}
+            (UDC_AQP|DPNFScoreAttribution cps arn pid did oid bid n sid)
+        )
+    )
+    (defun UR_AQP|DPNFScoreAttributionCachedPositionScore:decimal
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads cached-position-score from DPNF score attribution row."
+        (at "cached-position-score" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPNFScoreAttributionAppliedDefRevisionNonce:integer
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads applied-def-revision-nonce from DPNF score attribution row."
+        (at "applied-def-revision-nonce" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPNFScoreAttributionPoolId:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads pool-id from DPNF score attribution row."
+        (at "pool-id" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPNFScoreAttributionDpnfId:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads dpnf-id from DPNF score attribution row."
+        (at "dpnf-id" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPNFScoreAttributionOwnerId:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads owner-id from DPNF score attribution row."
+        (at "owner-id" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPNFScoreAttributionBeneficiaryId:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads beneficiary-id from DPNF score attribution row."
+        (at "beneficiary-id" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPNFScoreAttributionNonce:integer
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads nonce from DPNF score attribution row."
+        (at "nonce" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
+    )
+    (defun UR_AQP|DPNFScoreAttributionScoreId:string
+        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
+        @doc "Reads score-id from DPNF score attribution row."
+        (at "score-id" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
+    )
+    ;;
     ;;{F1}  [URC]
     ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]

@@ -2,7 +2,7 @@
 
 Module: `AQP-POOL` | Interface: `AcquisitionPoolsV1` | File: `03_AQP.pact`
 
-**Status: Stub module -- schemas and tables defined, C_ functions are placeholders.**
+**Status: In progress — schemas, tables, UC key helpers, UDC defaults for absent tracker/attribution rows, and UR\_\* readers are implemented; C\_\* writers remain placeholders.**
 
 ## Purpose
 
