@@ -62,6 +62,7 @@
     (defun URC_0023_CollectablesNonceData (dpdc-id:string son:bool nonces:[integer]))
     (defun URC_0024_SetReader:[object{DpdcUdcV1.DPDC|Set}] (dpdc-id:string son:bool))
     (defun URC_0025_FilterNoncesByClass:[integer] (dpdc-id:string son:bool nonces:[integer] nonce-class:integer))
+    (defun URC_0025a_FilterNoncesByClasses:[[integer]] (dpdc-id:string son:bool nonces:[integer] nonce-classes:[integer]))
     (defun URC_0026_CollectablesButtons (account:string dpdc-id:string son:bool selected-nonces:[integer]))
     (defun URC_0027_AccountSelectorMapper (accounts:[string]))
     (defun URC_0027a_AccountSelectorSingle (account:string))
@@ -2013,6 +2014,29 @@
                     (= (ref-DPDC::UR_NonceClass dpdc-id son nonce) nonce-class)
                 )
                 nonces
+            )
+        )
+    )
+    (defun URC_0025a_FilterNoncesByClasses:[[integer]]
+        (dpdc-id:string son:bool nonces:[integer] nonce-classes:[integer])
+        @doc "For each entry in <nonce-classes>, keeps only nonces in <nonces> whose \
+            \ (DPDC.UR_NonceClass dpdc-id son nonce) equals that class. \
+            \ Result[i] is the filtered list for nonce-classes[i]; same read discipline as \
+            \ URC_0025_FilterNoncesByClass."
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (map
+                (lambda (nonce-class:integer)
+                    (filter
+                        (lambda (nonce:integer)
+                            (= (ref-DPDC::UR_NonceClass dpdc-id son nonce) nonce-class)
+                        )
+                        nonces
+                    )
+                )
+                nonce-classes
             )
         )
     )
