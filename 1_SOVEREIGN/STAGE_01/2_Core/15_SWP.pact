@@ -1065,7 +1065,7 @@
                 (
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (ref-ATS:module{AutostakeV1} ATS)
+                    (ref-ATS:module{AutostakeV2} ATS)
                     ;;
                     (ignis-id:string (ref-DALOS::UR_IgnisID))
                     (ouro-id:string (ref-DALOS::UR_OuroborosID))
@@ -1230,7 +1230,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
                 (price:decimal (* 5.0 biggest))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -1552,7 +1552,7 @@
         (require-capability (SWP|C>TG_FEE-LOCK swpair toggle))
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
             )
             (update SWP|Pairs swpair
                 { "fee-lock" : toggle}

@@ -1,6 +1,6 @@
 (module U|ATS GOV
     ;;
-    (implements UtilityAtsV1)
+    (implements UtilityAtsV2)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -40,7 +40,7 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun UC_IzCullable:bool (input:object{UtilityAtsV1.Awo})
+    (defun UC_IzCullable:bool (input:object{UtilityAtsV2.Awo})
         (let*
             (
                 (present-time:time (at "block-time" (chain-data)))
@@ -53,7 +53,7 @@
             )
         )
     )
-    (defun UC_IzUnstakeObjectValid:bool (input:object{UtilityAtsV1.Awo})
+    (defun UC_IzUnstakeObjectValid:bool (input:object{UtilityAtsV2.Awo})
         (let*
             (
                 (values:[decimal] (at "reward-tokens" input))
@@ -113,14 +113,14 @@
             (reverse final-lst)
         )
     )
-    (defun UC_MultiReshapeUnstakeObject:[object{UtilityAtsV1.Awo}] (input:[object{UtilityAtsV1.Awo}] remove-position:integer)
+    (defun UC_MultiReshapeUnstakeObject:[object{UtilityAtsV2.Awo}] (input:[object{UtilityAtsV2.Awo}] remove-position:integer)
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
             )
             (fold
                 (lambda
-                    (acc:[object{UtilityAtsV1.Awo}] item:object{UtilityAtsV1.Awo})
+                    (acc:[object{UtilityAtsV2.Awo}] item:object{UtilityAtsV2.Awo})
                     (ref-U|LST::UC_AppL
                         acc
                         (UC_ReshapeUnstakeObject item remove-position)
@@ -142,7 +142,7 @@
             [remainder fee]
         )
     )
-    (defun UC_ReshapeUnstakeObject:object{UtilityAtsV1.Awo} (input:object{UtilityAtsV1.Awo} remove-position:integer)
+    (defun UC_ReshapeUnstakeObject:object{UtilityAtsV2.Awo} (input:object{UtilityAtsV2.Awo} remove-position:integer)
         (let
             (
                 (is-valid:bool (UC_IzUnstakeObjectValid input))
@@ -153,7 +153,7 @@
             )
         )
     )
-    (defun UC_SolidifyUnstakeObject:object{UtilityAtsV1.Awo} (input:object{UtilityAtsV1.Awo} remove-position:integer)
+    (defun UC_SolidifyUnstakeObject:object{UtilityAtsV2.Awo} (input:object{UtilityAtsV2.Awo} remove-position:integer)
         (let*
             (
                 (values:[decimal] (at "reward-tokens" input))
@@ -305,6 +305,49 @@
                 )
                 "Atspair does not conform to the ATS-Pair Standards for Size!"
             )
+        )
+    )
+    (defun UC_IzStoicTagIndexChar:bool (c:string)
+        @doc "True when <c> is a lowercase letter or digit (StoicTag index charset)."
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ncl:[string] (ref-U|CT::CT_NON_CAPITAL_LETTERS))
+                (n:[string] (ref-U|CT::CT_NUMBERS))
+            )
+            (or (contains c ncl) (contains c n))
+        )
+    )
+    (defun UC_IzStoicTagIndex:bool (name:string)
+        @doc "True when <name> meets Autostake index rules (charset 0, prohibited chars, length) but lowercase letters and digits only."
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (aipc:[string] (ref-U|CT::CT_ACCOUNT_ID_PROH-CHAR))
+                (min:integer (ref-U|CT::CT_MIN_DESIGNATION_LENGTH))
+                (max:integer (ref-U|CT::CT_ACCOUNT_ID_MAX_LENGTH))
+                (al:integer (length name))
+            )
+            (fold (and) true
+                [
+                    (is-charset 0 name)
+                    (not (contains name aipc))
+                    (fold
+                        (lambda (ok:bool c:string) (and ok (UC_IzStoicTagIndexChar c)))
+                        true
+                        (str-to-list name)
+                    )
+                    (>= al min)
+                    (<= al max)
+                ]
+            )
+        )
+    )
+    (defun UEV_StoicTagIndex (name:string)
+        @doc "Enforces StoicTag name: same rules as UEV_AutostakeIndex, but no capital letters."
+        (enforce
+            (UC_IzStoicTagIndex name)
+            (format "StoicTag name {} does not conform to index standards (Autostake rules, lowercase only)" [name])
         )
     )
     (defun UEV_UniqueAtspair (ats:string)

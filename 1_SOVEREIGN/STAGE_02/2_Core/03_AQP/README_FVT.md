@@ -73,7 +73,56 @@ If a transaction **only** touches SWP and skips steps 2–3, **FVT** rows can re
 
 ## Common denominator (farms only)
 
-For class-0 FVTs, `common-denominator` is the DPTF id that must appear in every member LP score’s `lp-denominator`. On `C_AddScoreLink`, FVT validates against `SCORE` and sets `fvt-link` on the score via `XE_CreateFvtLink`.
+For class-0 FVTs, `common-denominator` is the **full native DPTF token-id** of the shared pool leg (e.g. `OURO-98c486052a51`), not a ticker alone. It must match every admitted member score’s `lp-denominator`. On `C_AddScoreLink`, FVT validates against `SCORE` and sets `fvt-link` on the score via `XE_CreateFvtLink`.
+
+## Multi-LP farms (one FVT, many pools)
+
+A **single Farm FVT** can aggregate **many OURO-denominated LPs** that share the same `common-denominator`. Users **stake in AQP pools**, not in the FVT; the farm only registers member scores and splits injected rewards.
+
+### Entity pattern (per distinct LP)
+
+Each native LP line gets its **own** provisioning chain:
+
+1. **Issue** a class-0 pool (`C_Issue`) with that LP’s native `asset-id`.
+2. **Issue** a score set for that LP (bootstrap uses a **triplet**: Silver / Bronze / Golden class-0 scores with shared `lp-denominator` — see `AQP-BOOT` Step 6).
+3. **`C_AddScore`** on the pool for each score (≤ 7 slots per pool; triplet uses 3).
+4. **`C_AddScoreLink`** on the farm **once per score** — one permanent `FVT|T|ScoreLink` row per `(fvt-id, score-id)`.
+
+```
+Farm FVT (common-denominator = OURO-…)
+  ├── ScoreLink ← Silver₁   (pool LP₁, swpair₁, W₁)
+  ├── ScoreLink ← Bronze₁
+  ├── ScoreLink ← Golden₁
+  ├── ScoreLink ← Silver₂   (pool LP₂, swpair₂, W₂)
+  …
+  └── (typically 3 ScoreLink rows per LP when using the OURO triplet)
+```
+
+**Injection** updates farm-wide **G** using **S = Σ W_i** over **enabled** links. Each link keeps its own **`swpair`** and **`ghost-tvl-weight`**, so different LPs with the same OURO leg still split by economic weight.
+
+### One-time links (cannot share scores across pools)
+
+| Field | Rule |
+|-------|------|
+| `aqpool-link` | One score → **one** employing pool. A second LP needs **new** score issuances. |
+| `fvt-link` | One score → **one** FVT. Many scores may point at the **same** farm id. |
+
+Adding a second LP is **not** “attach the same triplet to another pool”; it is **new pool + new triplet + new `C_AddScoreLink` calls**.
+
+### Scale (ScoreLink row count)
+
+| LPs on farm | Triplet (3 scores/LP) | `FVT|T|ScoreLink` rows |
+|-------------|----------------------|-------------------------|
+| 1 | yes | 3 |
+| 2 | yes | 6 |
+| 10 | yes | 30 |
+| 20 | yes | 60 |
+
+There is **no protocol cap** on how many ScoreLink rows one farm may hold. Row count is a **product choice** (scores per LP), not a table limit.
+
+**Hot-path cost stays bounded per pool:** when SWP liquidity changes on one pair, AQP syncs ghost TVL only for scores **employed on that pool** (≤ 7), not for every link on the farm. Avoid single transactions that settle or sync **all** farm members at once — use per-pool orchestration and `C_ToggleScoreLink` to disable a tranche without deleting its row.
+
+If 3 links per LP is heavy for ops or gas planning, issue **one** class-0 score per LP instead of a triplet; the farm model is unchanged.
 
 ## Schema field tags (same legend as `SCR|Schema` in AQP-SCORE)
 

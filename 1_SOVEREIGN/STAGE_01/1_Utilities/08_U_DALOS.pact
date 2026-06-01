@@ -1,7 +1,7 @@
 (module U|DALOS GOV
     ;;
     (implements UtilityDalosV1)
-    (implements UtilityDalosGlyphsV1)
+    (implements UtilityDalosGlyphsV2)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -81,6 +81,8 @@
         )
     )
     (defconst DALOS|EXTENDED        (+ DALOS|CHR_AUX DALOS|CHARSET))
+    (defconst GLYPH|STOICTAG-MIN-LEN:integer   3)
+    (defconst GLYPH|STOICTAG-MAX-LEN:integer   256)
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -266,19 +268,21 @@
         (let
             (
                 (account-len:integer (length account))
-                (t1:bool (= account-len 162))
                 (ouroboros:string "Ѻ")
                 (sigma:string "Σ")
                 (first:string (take 1 account))
-                (t2:bool (or (= first ouroboros)(= first sigma)))
-                (t3:bool (and t1 t2))
                 (second:string (drop 1 (take 2 account)))
                 (point:string ".")
-                (t4:bool (= second point))
-                (t5:bool (GLYPH|UEV_MsDc (drop 2 account)))
-                (t6:bool (and t4 t5))
+                (iz-prefix:bool (or (= first ouroboros) (= first sigma)))
             )
-            (and t3 t6)
+            (fold (and) true
+                [
+                    (= account-len 162)
+                    iz-prefix
+                    (= second point)
+                    (GLYPH|UEV_MsDc (drop 2 account))
+                ]
+            )
         )
     )
     (defun GLYPH|UEV_DalosAccount (account:string)
@@ -309,6 +313,58 @@
             )
         )
     )
+    (defun GLYPH|UEV_ApolloAccountCheck (account:string smart:bool)
+        @doc "True when <account> is a 162-char Apollo string: Standard ₱. or Smart Π. plus DALOS|CHARSET body."
+        (let
+            (
+                (account-len:integer (length account))
+                (apollo-standard:string "₱")
+                (apollo-smart:string "Π")
+                (first:string (take 1 account))
+                (second:string (drop 1 (take 2 account)))
+                (point:string ".")
+                (iz-prefix:bool
+                    (if smart
+                        (= first apollo-smart)
+                        (= first apollo-standard)
+                    )
+                )
+            )
+            (fold (and) true
+                [
+                    (= account-len 162)
+                    iz-prefix
+                    (= second point)
+                    (GLYPH|UEV_MsDc (drop 2 account))
+                ]
+            )
+        )
+    )
+    (defun GLYPH|UEV_ApolloAccount (account:string smart:bool)
+        @doc "Enforces Apollo Codex identity half (Standard ₱. or Smart Π.) — same length and charset as DALOS accounts."
+        (let
+            (
+                (account-len:integer (length account))
+                (apollo-standard:string "₱")
+                (apollo-smart:string "Π")
+                (first:string (take 1 account))
+                (second:string (drop 1 (take 2 account)))
+                (point:string ".")
+            )
+            (enforce (= account-len 162) "Apollo account string does not conform to length 162")
+            (if smart
+                (enforce (= first apollo-smart) "Apollo Smart account must begin with Π")
+                (enforce (= first apollo-standard) "Apollo Standard account must begin with ₱")
+            )
+            (enforce (= second point) "Apollo account format is invalid, second character must be <.>")
+            (let
+                (
+                    (checkup:bool (GLYPH|UEV_MsDc (drop 2 account)))
+                )
+                (enforce checkup "Apollo account characters do not conform to the DALOS|CHARSET")
+            )
+        )
+    )
     (defun GLYPH|UEV_MsDc:bool (multi-s:string)
         @doc "Enforce a multistring is part of the DALOS|CHARSET"
         (let
@@ -328,6 +384,32 @@
                 false
                 (enumerate 0 (- (length str-lst) 1))
             )
+        )
+    )
+    (defun UC_IzStoicTagName:bool (name:string)
+        @doc "True when <name> is 3–256 chars and every glyph is in DALOS|CHARSET."
+        (let 
+            (
+                (nlen:integer (length name))
+            )
+            (fold (and) true
+                [
+                    (>= nlen GLYPH|STOICTAG-MIN-LEN)
+                    (<= nlen GLYPH|STOICTAG-MAX-LEN)
+                    (fold
+                        (lambda (ok:bool c:string) (and ok (contains c DALOS|CHARSET)))
+                        true
+                        (str-to-list name)
+                    )
+                ]
+            )
+        )
+    )
+    (defun UEV_StoicTagName (name:string)
+        @doc "Enforces CODEX StoicTag name length and DALOS|CHARSET."
+        (enforce
+            (UC_IzStoicTagName name)
+            (format "StoicTag name {} must be 3–256 glyphs from DALOS|CHARSET" [name])
         )
     )
     (defun UEV_Decimals:bool (decimals:integer)

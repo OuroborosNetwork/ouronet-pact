@@ -878,7 +878,7 @@
                     (let
                         (
                             (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                            (ref-ATS:module{AutostakeV1} ATS)
+                            (ref-ATS:module{AutostakeV2} ATS)
                             (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk))
                             (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
                             (index-value:decimal (ref-ATS::URC_Index kdaliquindex))

@@ -350,7 +350,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (fourth:string (drop 3 (take 4 dptf-id)))
                 (first-two:string (take 2 dptf-id))
@@ -387,7 +387,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-DPDC:module{DpdcV1} DPDC)
             )
             (ref-U|ATS::UEV_AutostakeIndex anchor-name)
@@ -455,7 +455,7 @@
         @doc "Common DPNF issuance checks shared by trait and set modes."
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-DPDC:module{DpdcV1} DPDC)
             )
             (ref-U|ATS::UEV_AutostakeIndex anchor-name)

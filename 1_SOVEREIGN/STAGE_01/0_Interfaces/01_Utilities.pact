@@ -238,6 +238,15 @@
     (defun GLYPH|UEV_DalosAccount (account:string))
     (defun GLYPH|UEV_MsDc:bool (multi-s:string))
 )
+(interface UtilityDalosGlyphsV2
+    (defun GLYPH|UEV_DalosAccountCheck (account:string))
+    (defun GLYPH|UEV_DalosAccount (account:string))
+    (defun GLYPH|UEV_ApolloAccountCheck (account:string smart:bool))
+    (defun GLYPH|UEV_ApolloAccount (account:string smart:bool))
+    (defun GLYPH|UEV_MsDc:bool (multi-s:string))
+    (defun UC_IzStoicTagName:bool (name:string))
+    (defun UEV_StoicTagName (name:string))
+)
 ;;
 ;;  [9]      [U|ATS]
 ;;
@@ -262,6 +271,43 @@
     (defun UC_UnlockPrice:[decimal] (unlocks:integer))
     ;;
     (defun UEV_AutostakeIndex (ats:string))
+    (defun UEV_UniqueAtspair (ats:string))
+        ;;
+    (defun UEV_CRF|Positions (fee-positions:integer))
+    (defun UEV_CRF|FeeThresholds (fee-thresholds:[decimal] c-rbt-prec:integer))
+    (defun UEV_CRF|FeeArray (fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
+    (defun UEV_Fee (fee:decimal))
+    (defun UEV_Decay (decay:integer))
+    (defun UEV_HibernationFees (peak:decimal decay:decimal))
+        ;;
+    (defun UEV_ColdDurationParameters (soft-or-hard:bool base:integer growth:integer))
+    ;;
+    (defun UDC_Elite (x:decimal))
+)
+(interface UtilityAtsV2
+    @doc "Exported Utility Functions for the ATS and ATSU Modules (V2: StoicTag index helpers)"
+    ;;
+    (defschema Awo
+        reward-tokens:[decimal]
+        cull-time:time
+    )
+    ;;
+    (defun UC_IzCullable:bool (input:object{Awo}))
+    (defun UC_IzUnstakeObjectValid:bool (input:object{Awo}))
+    (defun UC_MakeHardIntervals:[integer] (start:integer growth:integer))
+    (defun UC_MakeSoftIntervals:[integer] (start:integer growth:integer))
+    (defun UC_MultiReshapeUnstakeObject:[object{Awo}] (input:[object{Awo}] remove-position:integer))
+    (defun UC_PromilleSplit:[decimal] (promille:decimal input:decimal input-precision:integer))
+    (defun UC_ReshapeUnstakeObject:object{Awo} (input:object{Awo} remove-position:integer))
+    (defun UC_SolidifyUnstakeObject:object{Awo} (input:object{Awo} remove-position:integer))
+    (defun UC_SplitBalanceWithBooleans:[decimal] (precision:integer amount:decimal milestones:integer boolean:[bool]))
+    (defun UC_SplitByIndexedRBT:[decimal] (rbt-amount:decimal pair-rbt-supply:decimal index:decimal resident-amounts:[decimal] rt-precisions:[integer]))
+    (defun UC_UnlockPrice:[decimal] (unlocks:integer))
+    ;;
+    (defun UEV_AutostakeIndex (ats:string))
+    (defun UC_IzStoicTagIndexChar:bool (c:string))
+    (defun UC_IzStoicTagIndex:bool (name:string))
+    (defun UEV_StoicTagIndex (name:string))
     (defun UEV_UniqueAtspair (ats:string))
         ;;
     (defun UEV_CRF|Positions (fee-positions:integer))

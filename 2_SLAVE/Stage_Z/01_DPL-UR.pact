@@ -1,5 +1,6 @@
 ;; DPL-UR — single deployer read module (canonical; keep aligned with live net).
 ;; Load only after Stage 1 and Stage 2 (REPL/StageZZ_Tester.repl after Stage02_Tester.repl).
+;; Implements DeployerReadsV7 + additive DeployerReadsV8 (StoicTag inverse reads 27b/27c; CODEX required).
 ;;
 (interface DeployerReadsV7
     ;;
@@ -71,9 +72,15 @@
     (defun URC_0029_AccountOverview (selected-ouronet-account:string))
     (defun URC_0030_StoicPay (account:string))
 )
+(interface DeployerReadsV8
+    ;; CODEX / StoicTag reads (V8 additive — requires CODEX on chain)
+    (defun URC_0027b_StoicTagSelectorMapper (tag-names:[string]))
+    (defun URC_0027c_StoicTagSelectorSingle (tag-name:string))
+)
 (module DPL-UR GOV
     ;;
     (implements DeployerReadsV7)
+    (implements DeployerReadsV8)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -309,7 +316,7 @@
                 (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
                 (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
@@ -422,7 +429,7 @@
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
@@ -478,7 +485,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-ELITE:module{EliteV1} ELITE)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
@@ -630,7 +637,7 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 ;;
                 (p-ids:[string] (URC_PrimordialIDs))
                 (pp:[decimal] (URC_PrimordialPrices))
@@ -1383,7 +1390,7 @@
             (
                 (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-ATSU:module{AutostakeUsageV1} ATSU)
                 ;;
                 (toggle-cold:bool (ref-ATS::UR_ToggleColdRecovery ats))
@@ -1402,8 +1409,8 @@
                     )
                 )
                 ;;
-                (free-positions-data:[object{UtilityAtsV1.Awo}] (try [] (ref-ATS::UR_P0 ats account)))
-                (seven-positions-data:[object{UtilityAtsV1.Awo}] (try [] (ref-ATS::UR_P-Seven ats account)))
+                (free-positions-data:[object{UtilityAtsV2.Awo}] (try [] (ref-ATS::UR_P0 ats account)))
+                (seven-positions-data:[object{UtilityAtsV2.Awo}] (try [] (ref-ATS::UR_P-Seven ats account)))
                 (how-many-free-positions:integer (length free-positions-data))
                 ;;
                 (zr-output:[decimal] (make-list (length (ref-ATS::UR_RewardTokens ats)) 0.0))
@@ -1431,24 +1438,24 @@
                 )
                 (total-to-cull:decimal (fold (+) 0.0 cull-values))
                 ;;
-                (zr:object{UtilityAtsV1.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject ats))
-                (ng:object{UtilityAtsV1.Awo} (ref-ATS::UDC_MakeNegativeUnstakeObject ats))
+                (zr:object{UtilityAtsV2.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject ats))
+                (ng:object{UtilityAtsV2.Awo} (ref-ATS::UDC_MakeNegativeUnstakeObject ats))
                 ;;
-                (default-1:object{UtilityAtsV1.Awo} zr)
-                (default-2:object{UtilityAtsV1.Awo} (if (not iz-elite) (if (<= 2 cold-positions ) zr ng) (if (> major-tier 1) zr ng)))
-                (default-3:object{UtilityAtsV1.Awo} (if (not iz-elite) (if (<= 3 cold-positions ) zr ng) (if (> major-tier 2) zr ng)))
-                (default-4:object{UtilityAtsV1.Awo} (if (not iz-elite) (if (<= 4 cold-positions ) zr ng) (if (> major-tier 3) zr ng)))
-                (default-5:object{UtilityAtsV1.Awo} (if (not iz-elite) (if (<= 5 cold-positions ) zr ng) (if (> major-tier 4) zr ng)))
-                (default-6:object{UtilityAtsV1.Awo} (if (not iz-elite) (if (<= 6 cold-positions ) zr ng) (if (> major-tier 5) zr ng)))
-                (default-7:object{UtilityAtsV1.Awo} (if (not iz-elite) (if (<= 7 cold-positions ) zr ng) (if (> major-tier 6) zr ng)))
+                (default-1:object{UtilityAtsV2.Awo} zr)
+                (default-2:object{UtilityAtsV2.Awo} (if (not iz-elite) (if (<= 2 cold-positions ) zr ng) (if (> major-tier 1) zr ng)))
+                (default-3:object{UtilityAtsV2.Awo} (if (not iz-elite) (if (<= 3 cold-positions ) zr ng) (if (> major-tier 2) zr ng)))
+                (default-4:object{UtilityAtsV2.Awo} (if (not iz-elite) (if (<= 4 cold-positions ) zr ng) (if (> major-tier 3) zr ng)))
+                (default-5:object{UtilityAtsV2.Awo} (if (not iz-elite) (if (<= 5 cold-positions ) zr ng) (if (> major-tier 4) zr ng)))
+                (default-6:object{UtilityAtsV2.Awo} (if (not iz-elite) (if (<= 6 cold-positions ) zr ng) (if (> major-tier 5) zr ng)))
+                (default-7:object{UtilityAtsV2.Awo} (if (not iz-elite) (if (<= 7 cold-positions ) zr ng) (if (> major-tier 6) zr ng)))
                 ;;
-                (p1-obj:object{UtilityAtsV1.Awo} (try default-1 (ref-ATS::UR_P1-7 ats account 1)))
-                (p2-obj:object{UtilityAtsV1.Awo} (try default-2 (ref-ATS::UR_P1-7 ats account 2)))
-                (p3-obj:object{UtilityAtsV1.Awo} (try default-3 (ref-ATS::UR_P1-7 ats account 3)))
-                (p4-obj:object{UtilityAtsV1.Awo} (try default-4 (ref-ATS::UR_P1-7 ats account 4)))
-                (p5-obj:object{UtilityAtsV1.Awo} (try default-5 (ref-ATS::UR_P1-7 ats account 5)))
-                (p6-obj:object{UtilityAtsV1.Awo} (try default-6 (ref-ATS::UR_P1-7 ats account 6)))
-                (p7-obj:object{UtilityAtsV1.Awo} (try default-7 (ref-ATS::UR_P1-7 ats account 7)))
+                (p1-obj:object{UtilityAtsV2.Awo} (try default-1 (ref-ATS::UR_P1-7 ats account 1)))
+                (p2-obj:object{UtilityAtsV2.Awo} (try default-2 (ref-ATS::UR_P1-7 ats account 2)))
+                (p3-obj:object{UtilityAtsV2.Awo} (try default-3 (ref-ATS::UR_P1-7 ats account 3)))
+                (p4-obj:object{UtilityAtsV2.Awo} (try default-4 (ref-ATS::UR_P1-7 ats account 4)))
+                (p5-obj:object{UtilityAtsV2.Awo} (try default-5 (ref-ATS::UR_P1-7 ats account 5)))
+                (p6-obj:object{UtilityAtsV2.Awo} (try default-6 (ref-ATS::UR_P1-7 ats account 6)))
+                (p7-obj:object{UtilityAtsV2.Awo} (try default-7 (ref-ATS::UR_P1-7 ats account 7)))
                 ;;
                 (iz-button:bool
                     (or
@@ -1489,15 +1496,15 @@
             }
         )
     )
-    (defun URC_0012b_PosObjSt:integer (atspair:string input-obj:object{UtilityAtsV1.Awo})
+    (defun URC_0012b_PosObjSt:integer (atspair:string input-obj:object{UtilityAtsV2.Awo})
         @doc "Computes the state of an uncoil positional object, \
             \ to see if it the position it is on can be used for uncoiling \
             \ <-1> = closed; <0> = occupied; <1> = opened"
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
-                (zero:object{UtilityAtsV1.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject atspair))
-                (negative:object{UtilityAtsV1.Awo} (ref-ATS::UDC_MakeNegativeUnstakeObject atspair))
+                (ref-ATS:module{AutostakeV2} ATS)
+                (zero:object{UtilityAtsV2.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject atspair))
+                (negative:object{UtilityAtsV2.Awo} (ref-ATS::UDC_MakeNegativeUnstakeObject atspair))
             )
             (if (= input-obj zero)
                 1
@@ -1859,7 +1866,7 @@
     (defun URC_0020_HibernatingNonceData (dpof:string nonce:integer)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 ;;
                 (dptf-id:string (ref-DPOF::UR_Hibernation dpof))
@@ -2239,6 +2246,45 @@
                         false
                     )
                 )
+                ;;
+                (public-key
+                    (if iz-activated
+                        (ref-DALOS::UR_AccountPublicKey account)
+                        BAR
+                    )
+                )
+                (sovereign
+                    (if iz-activated
+                        (ref-DALOS::UR_AccountSovereign account)
+                        BAR
+                    )
+                )
+                (governor
+                    (if iz-activated
+                        (ref-DALOS::UR_AccountGovernor account)
+                        false
+                    )
+                )
+                (ref-CODEX:module{CodexV1} CODEX)
+                (stba-data:object
+                    (if iz-activated
+                        (ref-CODEX::UR_STBA|DataOrNull account)
+                        {"has-stoictag": false, "tag-name": BAR}
+                    )
+                )
+                (stoic-tag-has:bool (at "has-stoictag" stba-data))
+                (stoic-tag-name:string
+                    (if stoic-tag-has
+                        (at "tag-name" stba-data)
+                        "No StoicTag yet"
+                    )
+                )
+                (stoic-tag-registered-at
+                    (if stoic-tag-has
+                        (ref-CODEX::UR_STG|RegisteredAt (at "tag-name" stba-data))
+                        false
+                    )
+                )
             )
             {"iz-activated"                     : iz-activated  ;;if account is activate
             ,"ouronet-account"                  : account       ;;the account string itself
@@ -2252,6 +2298,60 @@
             ,"payment-key-guard"                : pkg           ;;guard of payment key; false for non-existance
             ,"ignis-discount"                   : ignis-d       ;;the IGNIS discount; false for non-existance
             ,"stoa-discount"                    : stoa-d        ;;the STOA discount; false for non-existance
+            ;;
+            ,"public-key"                       : public-key    ;;the public key of the account; BAR for non-existance
+            ,"sovereign"                        : sovereign     ;;the sovereign of the account; BAR for non-existance
+            ,"governor"                         : governor      ;;the governor of the account; false for non-existance
+            ;;
+            ,"stoic-tag-has"                    : stoic-tag-has             ;;true when account has an active StoicTag
+            ,"stoic-tag"                        : stoic-tag-name            ;;tag name or "No StoicTag yet"
+            ,"stoic-tag-registered-at"          : stoic-tag-registered-at   ;;block time at registration; false if none
+            }
+        )
+    )
+    (defun URC_0027b_StoicTagSelectorMapper (tag-names:[string])
+        @doc "Inverse StoicTag selector: batch read for tag-name list (Mnemosyne tag picker)."
+        (map
+            (lambda
+                (tag-name:string)
+                (URC_0027c_StoicTagSelectorSingle tag-name)
+            )
+            tag-names
+        )
+    )
+    (defun URC_0027c_StoicTagSelectorSingle (tag-name:string)
+        @doc "Inverse StoicTag selector: existence, active/released, bound Ouronet account."
+        (let
+            (
+                (ref-CODEX:module{CodexV1} CODEX)
+                (row-exists:bool (not (= (try false (ref-CODEX::UR_STG|Data tag-name)) false)))
+                (iz-active:bool
+                    (if row-exists
+                        (ref-CODEX::UR_STG|IzActive tag-name)
+                        false
+                    )
+                )
+                (iz-released:bool (and row-exists (not iz-active)))
+                (bound-account:string
+                    (if iz-active
+                        (ref-CODEX::UR_STG|AccountAddress tag-name)
+                        BAR
+                    )
+                )
+                (registered-at
+                    (if row-exists
+                        (ref-CODEX::UR_STG|RegisteredAt tag-name)
+                        false
+                    )
+                )
+            )
+            {"stoic-tag"                        : tag-name
+            ,"iz-row-exists"                    : row-exists    ;;row in CODEX|T|StoicTags (incl. released)
+            ,"iz-active"                        : iz-active     ;;true = tied to an Ouronet account
+            ,"iz-released"                      : iz-released   ;;row exists but iz-active false
+            ,"iz-never-registered"              : (not row-exists)
+            ,"ouronet-account"                  : bound-account ;;account when active; BAR otherwise
+            ,"registered-at"                    : registered-at ;;immutable row timestamp; false if never registered
             }
         )
     )

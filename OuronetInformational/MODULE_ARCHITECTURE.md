@@ -95,6 +95,8 @@ When several **boolean** conditions should share one failure path, use **one** *
 
 **`CAP_*`**, **`UEV_*`**, **`UEV_Fee`**, etc. stay **outside** that block when they are not plain booleans (same pattern as **`SCR|XI>ISSUE-SCORE`**: fee and ownership calls, then **`fold (and)`** for the numeric / enum predicates). Reference: **`1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact`** — **`SCR|XI>ISSUE-SCORE`** (six booleans → **`fold`**); **`SCR|C>ROTATE-OWNERSHIP-SCORE`** (two → **`and`**); **`SCR|C>CONTROL-SCORE`** (one → plain **`enforce`**).
 
+The same **1 / 2 / 3+** rule applies to **`:bool` utilities** (e.g. **`GLYPH|UEV_ApolloAccountCheck`**, **`UC_IzStoicTagIndex`**) — not only **`enforce`**. Using **`(and a b c d)`** causes **`Attempted to apply a closure to too many arguments`**. Detail: **`OuronetInformational/skills/pact-enforce-boolean-grouping.md`**; Cursor: **`.cursor/skills/ouronet-pact-enforce/SKILL.md`**.
+
 ### Reference: **`AQP-SCORE`** link fields (`anchor-link`, `boost-link`, `aqpool-link`, `fvt-link`)
 
 - **Internal client path:** **`C_CreateAnchorLink` / `C_CreateBoostLink`** → **`SCR|C>CREATE-*`** (validations + **`compose-capability (SECURE)`**) → **`XI_Create*`** (**`require-capability (SECURE)`**, **`update`** only) → **`C_*`** calls **`UDC_BiggestCumulator`** on the pre-write owner. No native STOA on these links.

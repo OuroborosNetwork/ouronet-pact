@@ -25,16 +25,16 @@
 (print "https://docs.kadena.io/pact-5/repl — expect records pass/fail.")
 (print "")
 (print "===================AQP-SCORE TX Block==========================")
-(begin-tx "TX-SCORE-01 - Issue SemiFungible score TheCodingDivision (class 3, equal SFT weights)")
+(begin-tx "TX-SCORE-01 - Issue SemiFungible score BootPhaseProbe (class 3, equal SFT weights)")
 (print "")
-(print "=== TX-SCORE-01 — Issue SemiFungible score TheCodingDivision =================")
+(print "=== TX-SCORE-01 — Issue SemiFungible score BootPhaseProbe =====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
     (
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
-        (score-name:string "TheCodingDivision")
+        (score-name:string "BootPhaseProbe")
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
@@ -46,7 +46,7 @@
     )
     ;;==== TX-SCORE-01 · 01 · U|DALOS UDC_Makeid + DALOS URC_SplitKDAPrices — REPL ====
     (print "--- [TX-SCORE-01 · 01 · UDC_Makeid + DALOS fee split (smart)] ---")
-    (print (format "<(U|DALOS|UDC_Makeid TheCodingDivision)> => \"{}\"" [score-id]))
+    (print (format "<(U|DALOS|UDC_Makeid BootPhaseProbe)> => \"{}\"" [score-id]))
     (print (format "<(DALOS|URC_SplitKDAPrices smart)> => \"{}\"" [split-kda]))
     ;;==== TX-SCORE-01 · 02 · env-sigs + Talos C_IssueSemiFungibleScore — REPL =========
     (print "--- [TX-SCORE-01 · 02 · env-sigs + C_IssueSemiFungibleScore (class 3)] ---")
@@ -151,11 +151,11 @@
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "BootPhaseProbe"))
     )
     ;;==== TX-SCORE-02 · 01 · score-id (U|DALOS UDC_Makeid) — REPL ====================
     (print "--- [TX-SCORE-02 · 01 · UDC_Makeid (score-id echo)] ---")
-    (print (format "<(U|DALOS|UDC_Makeid TheCodingDivision)> => \"{}\"" [score-id]))
+    (print (format "<(U|DALOS|UDC_Makeid BootPhaseProbe)> => \"{}\"" [score-id]))
     ;;==== TX-SCORE-02 · 02 · rotate ownership ANHD -> EMMA — REPL ====================
     (print "--- [TX-SCORE-02 · 02 · rotate ownership ANHD -> EMMA] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -243,114 +243,9 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX-SCORE-03 - Issue additional scores, score definitions, and DEB boost")
+(begin-tx "TX-SCORE-07 - Issued score entities (read-only echo)")
 (print "")
-(print "=== TX-SCORE-03 — Issue additional scores, definitions, DEB boost ======")
-(namespace "ouronet-ns")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(let
-    (
-        (patron:string KST.ANHD)
-        (owner-konto:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 8.0 (ref-DALOS::UR_UsagePrice "smart")))
-        )
-    )
-    ;;==== TX-SCORE-03 · 01 · env-sigs (8 issuances × smart STOA) ============================
-    (print "--- [TX-SCORE-03 · 01 · env-sigs (8 issuances × smart fee)] ---")
-    (print (format "<(DALOS|URC_SplitKDAPrices 8×smart)> => \"{}\"" [split-kda]))
-    (env-sigs
-        [
-            { "key": "PK_AncientHodler", "caps": [] }
-            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
-              "caps":
-                [
-                    (coin.TRANSFER
-                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
-                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
-                    )
-                    (coin.TRANSFER
-                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
-                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
-                    )
-                    (coin.TRANSFER
-                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
-                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
-                    )
-                    (coin.TRANSFER
-                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
-                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
-                    )
-                ]
-            }
-        ]
-    )
-    ;;==== TX-SCORE-03 · 02 · PureScores — TheCodingDivision SF definitions ===================
-    (print "--- [TX-SCORE-03 · 02 · TheCodingDivision SF score definitions] ---")
-    (print (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonces 1-10 val=1.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" (enumerate 1 10) (make-list 10 1.0))]))
-    (print (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonce 11 val=10.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [10.0])]))
-    ;;==== TX-SCORE-03 · 03 · Bloodshed NF score (class 4, model 0 = native) =================
-    (print "--- [TX-SCORE-03 · 03 · Bloodshed NF score (model 0 = native)] ---")
-    (print (format "<(TS02-C3|C_IssueNFScore Bloodshed prec=6 model=0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "Bloodshed" 6 0)]))
-    ;;==== TX-SCORE-03 · 04 · Demiourgos Shareholder scores + DEB boost =======================
-    (print "--- [TX-SCORE-03 · 04 · DemiourgosShareholder + DemiourgosSnakes + DEB boost] ---")
-    (print (format "<(TS02-C3|C_IssueSFScore DemiourgosShareholder prec=6 equal=true)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "DemiourgosShareholder" 6 true)]))
-    (print (format "<(TS02-C3|C_IssueSFScore DemiourgosSnakes prec=6 equal=false)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "DemiourgosSnakes" 6 false)]))
-    (print (format "<(TS02-C3|C_EnableDebBoost DemiourgosSnakes)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron "DemiourgosSnakes-98c486052a51")]))
-    ;;==== TX-SCORE-03 · 05 · Subsidiary scores + definitions ================================
-    (print "--- [TX-SCORE-03 · 05 · Subsidiary scores + definitions] ---")
-    ;;CodingDivision Subsidiary
-    (print (format "<(TS02-C3|C_IssueSFScore SubsidiaryCodingDivision prec=6 equal=false)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "SubsidiaryCodingDivision" 6 false)]))
-    (print (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonces 1-10 val=5.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" (enumerate 1 10) (make-list 10 5.0))]))
-    (print (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonce 11 val=75.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [75.0])]))
-    ;;WonderCoach Subsidiary
-    (let
-        (
-            (wc-values:[decimal]
-                (fold (+) []
-                    [(make-list 10 1.0) (make-list 10 2.0) (make-list 10 4.0) [15.0 28.0 52.0 114.0]]
-                )
-            )
-        )
-        (map print
-            [
-                (format "<(TS02-C3|C_IssueSFScore SubsidiaryWonderCoach prec=6 equal=false)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto "SubsidiaryWonderCoach" 6 false)])
-                (format "<(TS02-C3|C_IssueSFScoreDef WonderCoach nonces 1-34)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "SubsidiaryWonderCoach-98c486052a51" "DHWC-98c486052a51" (enumerate 1 34) wc-values)])
-            ]
-        )
-    )
-    ;;Bloodshed Subsidiary
-    ;(print (format "<(TS02-C3|C_IssueNFScore SubsidiaryBloodshed prec=6 model=1)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryBloodshed" 6 1)]))
-    ;(print (format "<(TS02-C3|C_IssueNFScoreDef Bloodshed DHB Rarity)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron "SubsidiaryBloodshed-98c486052a51" "DHB-98c486052a51" ["Rarity" "Rarity" "Rarity" "Rarity"] ["Legendary" "Epic" "Rare" "Common"] [1.0 3.0 5.0 11.0])]))
-    ;;Nosferatu Subsidiary
-    ;(print (format "<(TS02-C3|C_IssueNFScore SubsidiaryNosferatu prec=6 model=1)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryNosferatu" 6 1)]))
-    ;(print (format "<(TS02-C3|C_IssueNFScoreDef Nosferatu DHN Rarity)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron "SubsidiaryNosferatu-98c486052a51" "DHN-98c486052a51" ["Rarity" "Rarity" "Rarity" "Rarity"] ["Legendary" "Epic" "Rare" "Common"] [2.0 4.0 8.0 16.0])]))
-    ;;Bunnies Subsidiary
-    (print (format "<(TS02-C3|C_IssueNFScore SubsidiaryBunnies prec=6 model=1)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-konto "SubsidiaryBunnies" 6 1)]))
-    (print (format "<(TS02-C3|C_IssueNFScoreDef Bunnies KBN Rarity)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron "SubsidiaryBunnies-98c486052a51" "KBN-98c486052a51" ["Rarity" "Rarity"] ["Legendary" "Common"] [2.0 160.0])]))
-)
-(print "")
-(print (format "<(REPL|env-gas)> TX-SCORE-03 after commit => \"{}\"" [(env-gas)]))
-(print "")
-(env-sigs [])
-(commit-tx)
-(print "")
-(print "=== END TX-SCORE-03 ==========================================================")
-(print "")
-;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-;;|| NEXT                   >
-;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-(print "")
-(begin-tx "TX-SCORE-04 - Issued score entities (read-only echo)")
-(print "")
-(print "=== TX-SCORE-04 — Issued score entities ===================================")
+(print "=== TX-SCORE-07 — Issued score entities ===================================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-sigs [])
@@ -359,8 +254,8 @@
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (score-ids:[string] (ref-SCR::UR_SCR|AllScoreIds))
     )
-    ;;==== TX-SCORE-04 · 01 · list all issued scores (UR_SCR|AllScoreIds) =====================
-    (print "--- [TX-SCORE-04 · 01 · UR_SCR|AllScoreIds] ---")
+    ;;==== TX-SCORE-07 · 01 · list all issued scores (UR_SCR|AllScoreIds) =====================
+    (print "--- [TX-SCORE-07 · 01 · UR_SCR|AllScoreIds] ---")
     (print (format "<(AQP-SCORE|UR_SCR|AllScoreIds)> count => \"{}\"" [(length score-ids)]))
     (map
         (lambda (sid:string)
@@ -370,10 +265,188 @@
     )
 )
 (print "")
-(print (format "<(REPL|env-gas)> TX-SCORE-04 after commit => \"{}\"" [(env-gas)]))
+(print (format "<(REPL|env-gas)> TX-SCORE-07 after commit => \"{}\"" [(env-gas)]))
 (commit-tx)
 (print "")
-(print "=== END TX-SCORE-04 · FILE [6.2.2]_AQP-SCORE.repl DONE =========================")
+(print "=== END TX-SCORE-07 =========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+;; Step phases are intentionally last in this file.
+(begin-tx "TX-SCORE-08 - AQP-BOOT Step4 core score issuance")
+(print "")
+(print "=== TX-SCORE-08 — AQP-BOOT Step4 core score issuance ====================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart"))))
+    )
+    (print "--- [TX-SCORE-08 · 01 · env-sigs (4 issuances × smart fee)] ---")
+    (print (format "<(DALOS|URC_SplitKDAPrices 4×smart)> => \"{}\"" [split-kda]))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (print "--- [TX-SCORE-08 · 02 · AQP-BOOT C_Step4_CreateCoreScores] ---")
+    (print (format "<(AQP-BOOT|C_Step4_CreateCoreScores)> => \"{}\"" [(AQP-BOOT.C_Step4_CreateCoreScores patron owner-konto)]))
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-08 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-SCORE-08 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SCORE-09 - AQP-BOOT Step5 subsidiary score issuance")
+(print "")
+(print "=== TX-SCORE-09 — AQP-BOOT Step5 subsidiary score issuance ==============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices patron (* 5.0 (ref-DALOS::UR_UsagePrice "smart"))))
+    )
+    (print "--- [TX-SCORE-09 · 01 · env-sigs (5 issuances × smart fee)] ---")
+    (print (format "<(DALOS|URC_SplitKDAPrices 5×smart)> => \"{}\"" [split-kda]))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (print "--- [TX-SCORE-09 · 02 · AQP-BOOT C_Step5_CreateSubsidiaryScores] ---")
+    (print (format "<(AQP-BOOT|C_Step5_CreateSubsidiaryScores)> => \"{}\"" [(AQP-BOOT.C_Step5_CreateSubsidiaryScores patron owner-konto)]))
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-09 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-SCORE-09 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SCORE-10 - AQP-BOOT Step6 OURO LP triplet")
+(print "")
+(print "=== TX-SCORE-10 — AQP-BOOT Step6 OURO LP triplet ========================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices patron (* 3.0 (ref-DALOS::UR_UsagePrice "smart"))))
+        (silver-boost-class-id:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+        (bronze-boost-class-id:string (ref-U|DALOS::UDC_Makeid "BronzeSnakePower"))
+        (golden-boost-class-id:string (ref-U|DALOS::UDC_Makeid "GoldenSnakePower"))
+        (ouro-dptf-id:string "OURO-98c486052a51")
+    )
+    (print "--- [TX-SCORE-10 · 01 · env-sigs (3 issuances × smart fee)] ---")
+    (print (format "<(DALOS|URC_SplitKDAPrices 3×smart)> => \"{}\"" [split-kda]))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (print "--- [TX-SCORE-10 · 02 · AQP-BOOT C_Step6_CreateOuroLpTriplet] ---")
+    (print (format "<(AQP-BOOT|C_Step6_CreateOuroLpTriplet lp-denom={})> => \"{}\"" [ouro-dptf-id (AQP-BOOT.C_Step6_CreateOuroLpTriplet patron owner-konto ouro-dptf-id [silver-boost-class-id bronze-boost-class-id golden-boost-class-id])]))
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-10 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-SCORE-10 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-SCORE-11 - Score definition vectors (after boot scores)")
+(print "")
+(print "=== TX-SCORE-11 — Score definition vectors ===================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (wc-values:[decimal]
+            (fold (+) []
+                [(make-list 10 1.0) (make-list 10 2.0) (make-list 10 4.0) [15.0 28.0 52.0 114.0]]
+            )
+        )
+    )
+    ;;==== TX-SCORE-11 · 01 · score definitions ==============================================
+    (print "--- [TX-SCORE-11 · 01 · score definitions] ---")
+    (map print
+        [
+            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonces 1-10 val=1.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" (enumerate 1 10) (make-list 10 1.0))])
+            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonce 11 val=10.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [10.0])])
+            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonces 1-10 val=5.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" (enumerate 1 10) (make-list 10 5.0))])
+            (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonce 11 val=75.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [75.0])])
+            (format "<(TS02-C3|C_IssueSFScoreDef WonderCoach nonces 1-34)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "SubsidiaryWonderCoach-98c486052a51" "DHWC-98c486052a51" (enumerate 1 34) wc-values)])
+            (format "<(TS02-C3|C_IssueNFScoreDef Bunnies KBN Rarity)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron "SubsidiaryBunnies-98c486052a51" "KBN-98c486052a51" ["Rarity" "Rarity"] ["Legendary" "Common"] [2.0 160.0])])
+        ]
+    )
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-SCORE-11 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(commit-tx)
+(print "")
+(print "=== END TX-SCORE-11 · FILE [6.2.2]_AQP-SCORE.repl DONE =========================")
 (print "")
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >

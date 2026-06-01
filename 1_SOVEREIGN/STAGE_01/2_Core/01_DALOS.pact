@@ -378,6 +378,7 @@
             )
             (enforce (= first ouroboros) (format "Account {} doesn|t have the corrrect Format for a Standard DALOS Account" [account]))
             (UEV_Glyph account)
+            (UEV_EnforceGuardProtocol guard true)
             (compose-capability (SECURE))
         )
     )
@@ -398,14 +399,26 @@
             (enforce (= first sigma) (format "Account {} doesn|t have the corrrect Format for a Smart DALOS Account" [account]))
             (UEV_Glyph account)
             (UEV_EnforceAccountType sovereign false)
+            (UEV_EnforceGuardProtocol guard true)
             (compose-capability (SECURE))
         )
     )
-    (defcap DALOS|C>ROTATE-OA_GOVERNOR (account:string)
+    (defcap DALOS|C>ROTATE-OA_GOVERNOR (account:string governor:guard)
         @event
+        (UEV_EnforceGuardProtocol governor false)
         (compose-capability (DALOS|F>GOV account))
     )
-    (defcap DALOS|C>ROTATE-OA-GUARD (account:string)
+    (defcap DALOS|C>ROTATE-OA-GUARD (account:string new-guard:guard safe:bool)
+        @event
+        (UEV_EnforceGuardProtocol new-guard true)
+        (if safe
+            (enforce-guard new-guard)
+            true
+        )
+        (compose-capability (SECURE))
+        (compose-capability (DALOS|F>OWNER account))
+    )
+    (defcap DALOS|C>ROTATE-OA-KADENA (account:string)
         @event
         (compose-capability (SECURE))
         (compose-capability (DALOS|F>OWNER account))
@@ -413,6 +426,10 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    (defun UC_GuardProtocol:string (g:guard)
+        @doc "Principal protocol prefix for a guard (k:/w:/r:/u:/c:/m:/p:)."
+        (typeof-principal (create-principal g))
+    )
     ;;{F0}  [UR]
     (defun URD_AccountCounter ()
         (format "Ouronet has {} real Accounts!"
@@ -809,11 +826,19 @@
     (defun UEV_Glyph (account:string)
         (let
             (
-                (ref-U|GLYPHS:module{UtilityDalosGlyphsV1} U|DALOS)
+                (ref-U|GLYPHS:module{UtilityDalosGlyphsV2} U|DALOS)
             )
             (ref-U|GLYPHS::GLYPH|UEV_DalosAccount account)
         )
     )
+    (defun UEV_EnforceGuardProtocol (g:guard is-keyset-based:bool)
+        @doc "When is-keyset-based is true, guard must be k:/w:/r:. When false, must be u:/c:/m:/p:."
+        (let ((proto (UC_GuardProtocol g)))
+            (if is-keyset-based
+                (enforce (contains proto ["k:" "w:" "r:"])
+                    (format "Guard must be key-based (keyset/keyset-ref); got '{}'" [proto]))
+                (enforce (contains proto ["u:" "c:" "m:" "p:"])
+                    (format "Governor must be non-key-based (user/capability/module/pact); got '{}'" [proto])))))
     ;;{F3}  [UDC]
     (defun UDC_TrueFungibleAccount:object{OuronetDalosV1.DPTF|BalanceSchema}
         (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
@@ -949,21 +974,21 @@
     (defun C_RotateGovernor
         (account:string governor:guard)
         (UEV_IMC)
-        (with-capability (DALOS|C>ROTATE-OA_GOVERNOR account)
+        (with-capability (DALOS|C>ROTATE-OA_GOVERNOR account governor)
             (XI_RotateGovernor account governor)
         )
     )
     (defun C_RotateGuard
         (account:string new-guard:guard safe:bool)
         (UEV_IMC)
-        (with-capability (DALOS|C>ROTATE-OA-GUARD account)
+        (with-capability (DALOS|C>ROTATE-OA-GUARD account new-guard safe)
             (XI_RotateGuard account new-guard safe)
         )
     )
     (defun C_RotateKadena
         (account:string kadena:string)
         (UEV_IMC)
-        (with-capability (DALOS|C>ROTATE-OA-GUARD account)
+        (with-capability (DALOS|C>ROTATE-OA-KADENA account)
             (XI_RotateKadena account kadena)
             (XI_UpdateKadenaLedger (UR_AccountKadena account) account false)
             (XI_UpdateKadenaLedger kadena account true)
@@ -1055,17 +1080,15 @@
         )
     )
     (defun XI_RotateGovernor (account:string governor:guard)
-        (require-capability (DALOS|F>GOV account))
+        @doc "Under DALOS|C>ROTATE-OA_GOVERNOR: update governor only. Write only."
+        (require-capability (DALOS|C>ROTATE-OA_GOVERNOR account governor))
         (update DALOS|AccountTable account
             {"governor" : governor}
         )
     )
     (defun XI_RotateGuard (account:string new-guard:guard safe:bool)
-        (require-capability (DALOS|F>OWNER account))
-        (if safe
-            (enforce-guard new-guard)
-            true
-        )
+        @doc "Under DALOS|C>ROTATE-OA-GUARD: update guard (and governor on standard accounts). Write only."
+        (require-capability (DALOS|C>ROTATE-OA-GUARD account new-guard safe))
         (if (UR_AccountType account)
             (update DALOS|AccountTable account
                 {"guard"    : new-guard}
@@ -1077,7 +1100,8 @@
         )
     )
     (defun XI_RotateKadena (account:string kadena:string)
-        (require-capability (DALOS|F>OWNER account))
+        @doc "Under DALOS|C>ROTATE-OA-KADENA: update kadena-konto only. Write only."
+        (require-capability (DALOS|C>ROTATE-OA-KADENA account))
         (update DALOS|AccountTable account
             {"kadena-konto"                  : kadena}
         )
@@ -1163,7 +1187,7 @@
         (UEV_IMC)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
             )
             (if (= (UR_AccountType account) false)
                 (update DALOS|AccountTable account

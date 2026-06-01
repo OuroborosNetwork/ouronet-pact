@@ -360,4 +360,13 @@
     (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
         (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
     )
+    ;;
+    ;;  [AQP-POOL]
+    ;;
+    (defun AQP-POOL|C_Issue:string
+        (patron:string pool-name:string asset-id:string aqp-class:integer)
+    )
+    (defun AQP-POOL|C_AddScore:string
+        (patron:string pool-id:string score-id:string)
+    )
 )

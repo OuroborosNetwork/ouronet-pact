@@ -15,7 +15,6 @@
     ;;
     ;;  [UR] AQP|Schema (AQP|T|Pool)
     (defun UR_AQP|AllPoolIds:[string] ())
-    (defun UR_AQP|Pool:object{AQP|Schema} (pool-id:string))
     (defun UR_AQP|PoolAqpClass:integer (pool-id:string))
     (defun UR_AQP|PoolAssetId:string (pool-id:string))
     (defun UR_AQP|PoolScorePrimary:string (pool-id:string))
@@ -28,9 +27,6 @@
     (defun UR_AQP|PoolAqpId:string (pool-id:string))
     ;;
     ;;  [UR] AQP|TrueFungibleTracker (AQP|T|DPTFTracker)
-    (defun UR_AQP|DPTFTracker:object{AQP|TrueFungibleTracker}
-        (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
-    )
     (defun UR_AQP|DPTFTrackerBalance:decimal (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
     (defun UR_AQP|DPTFTrackerPoolId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
     (defun UR_AQP|DPTFTrackerDptfId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
@@ -38,9 +34,6 @@
     (defun UR_AQP|DPTFTrackerBeneficiaryId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
     ;;
     ;;  [UR] AQP|OrtoFungibleTracker (AQP|T|DPOFTracker)
-    (defun UR_AQP|DPOFTracker:object{AQP|OrtoFungibleTracker}
-        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
-    )
     (defun UR_AQP|DPOFTrackerBalance:decimal (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
     (defun UR_AQP|DPOFTrackerPoolId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
     (defun UR_AQP|DPOFTrackerDpofId:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
@@ -49,9 +42,6 @@
     (defun UR_AQP|DPOFTrackerNonce:integer (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
     ;;
     ;;  [UR] AQP|SemiFungibleTracker (AQP|T|DPSFTracker)
-    (defun UR_AQP|DPSFTracker:object{AQP|SemiFungibleTracker}
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
-    )
     (defun UR_AQP|DPSFTrackerBalance:decimal (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
     (defun UR_AQP|DPSFTrackerPoolId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
     (defun UR_AQP|DPSFTrackerDpsfId:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
@@ -60,9 +50,6 @@
     (defun UR_AQP|DPSFTrackerNonce:integer (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
     ;;
     ;;  [UR] AQP|NonFungibleTracker (AQP|T|DPNFTracker)
-    (defun UR_AQP|DPNFTracker:object{AQP|NonFungibleTracker}
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
-    )
     (defun UR_AQP|DPNFTrackerBalance:decimal (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
     (defun UR_AQP|DPNFTrackerPoolId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
     (defun UR_AQP|DPNFTrackerDpnfId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
@@ -71,9 +58,6 @@
     (defun UR_AQP|DPNFTrackerNonce:integer (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
     ;;
     ;;  [UR] AQP|DPSFScoreAttribution (AQP|T|DPSFScoreAttribution)
-    (defun UR_AQP|DPSFScoreAttribution:object{AQP|DPSFScoreAttribution}
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
     (defun UR_AQP|DPSFScoreAttributionCachedPositionScore:decimal
         (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
     )
@@ -100,9 +84,6 @@
     )
     ;;
     ;;  [UR] AQP|DPNFScoreAttribution (AQP|T|DPNFScoreAttribution)
-    (defun UR_AQP|DPNFScoreAttribution:object{AQP|DPNFScoreAttribution}
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
     (defun UR_AQP|DPNFScoreAttributionCachedPositionScore:decimal
         (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
     )
@@ -127,6 +108,14 @@
     (defun UR_AQP|DPNFScoreAttributionScoreId:string
         (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
     )
+    ;;
+    ;;  [C]
+    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string pool-name:string asset-id:string aqp-class:integer)
+    )
+    (defun C_AddScore:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string pool-id:string score-id:string)
+    )
 )
 (module AQP-POOL GOV
     ;;
@@ -143,6 +132,20 @@
     (defcap GOV|AQP_ADMIN ()                (enforce-guard GOV|MD_AQP))
     ;;{G3}
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
+    (defun GOV|NS_Use ()
+        @doc "Namespace prefix for AQP governance keyset name."
+        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE))
+    )
+    (defun GOV|AqpKey ()
+        @doc "Governance keyset name for the AQP smart account (shared with AQP-ANK)."
+        (+ (GOV|NS_Use) ".dh_sc_aqp-keyset")
+    )
+    (defconst AQP|SC_KEY                    (GOV|AqpKey))
+    (defconst AQP|SC_NAME                   (GOV|AQP|SC_NAME))
+    (defun GOV|AQP|SC_NAME ()
+        @doc "Symbolic name of the AQP sovereign smart DALOS account."
+        (at 0 ["Σ.ЖřÎzэóΣQз3ÌĄăådìÜλÅË9γğ7χûПæ0₳ПûÖŞrĄθXtFìмkщsGвÅgλąÇπЩAĚЭDíéαэБùđáżñИïПÆΣтцξsηåäялÃБц¢r6ÁíäзуμþĄĐЫîÉAćýìЧыQPнŁзßξĂйjay£üѺçRЫfУQșÏΠÜqîÔĄťß6ЗSρŠeΦñëdmûΦøШâΞýκъиřк"])
+    )
     ;;
     ;;<====>
     ;;POLICY
@@ -224,11 +227,11 @@
             \ primary asset-id after stake exists."
         ;;
         aqp-class:integer                                       ;;Defines the Pool Class, there are 5
-        ;;                                                        Class 0 = LPs allowed - native|sleeping|freezing
-        ;;                                                        Class 1 = DPTF Allowed (non LP) - native|freezing|sleeping|hibernating
-        ;;                                                        Class 2 = DPOF Allowed (non LP) - native only
-        ;;                                                        Class 3 = DPSF Score (SFTs)
-        ;;                                                        Class 4 = DPNF Score (NFTs)
+        ;;                                                        Class 0 = LP family pool (issue native LP; stake native|F||Z| LP)
+        ;;                                                        Class 1 = DPTF family pool (issue native DPTF; stake native|F| + linked sleep/hib DPOF)
+        ;;                                                        Class 2 = standalone DPOF (issue one dpof; no sleep/hib satellites — use class 0/1)
+        ;;                                                        Class 3 = DPSF collection pool
+        ;;                                                        Class 4 = DPNF collection pool
         asset-id:string                                         ;;ID of the Asset that is allowed to be staked in the Pool.
         ;;                                                        This must be in accordance with the <aqp-class> and together with it
         ;;                                                        Defines which assets can be staked in the Pool
@@ -343,6 +346,15 @@
     ;;
     (deftable AQP|T|DPSFScoreAttribution:{AQP|DPSFScoreAttribution})    ;;Key = <Pool-ID> | <DPSF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce> | <Score-ID>
     (deftable AQP|T|DPNFScoreAttribution:{AQP|DPNFScoreAttribution})    ;;Key = <Pool-ID> | <DPNF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce> | <Score-ID>
+    ;;{3}
+    (defun CT_Bar:string
+        ()
+        @doc "Returns CT_BAR constant."
+        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT))               (ref-U|CT::CT_BAR))
+    )
+    (defconst BAR                                                       (CT_Bar))
+    (defconst GAS|ISSUE-POOL                                            1000.0)
+    (defconst GAS|ADD-SCORE                                             500.0)
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -351,18 +363,38 @@
         true
     )
     ;;{C2}
+    (defcap AQP|C>ISSUE-POOL
+        (pool-name:string asset-id:string aqp-class:integer)
+        @doc "Issue one acquisition pool (single @event). Validates pool-name, class, and asset-id; \
+            \ enforces canonical asset ownership from aqp-class + asset-id; composes SECURE for XI_IssuePool."
+        @event
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+            )
+            ;;1] pool-name is a valid autostake index (unique pool id stem)
+            (ref-U|ATS::UEV_AutostakeIndex pool-name)
+            ;;2] aqp-class in 0..4 and asset-id matches class rules (native id, not a special prefix)
+            (UEV_IssuePoolClassAndAsset aqp-class asset-id)
+            ;;3] tx sender must own the canonical asset behind this pool class + asset-id
+            (CAP_AqpAssetOwner aqp-class asset-id)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap AQP|C>ADD-SCORE
+        (pool-id:string score-id:string slot-index:integer)
+        @doc "Assign score-id to score slot slot-index (first free; computed once in C_AddScore). Validates \
+            \ slot claim, pool/score pairing; CAP_PoolOwner. Score owner in SCR|XE>CREATE-AQPOOL-LINK on XE. \
+            \ Composes SECURE for XI_AddScoreToPool."
+        @event
+        (UEV_AddScorePoolAndScore pool-id score-id slot-index)
+        (CAP_PoolOwner pool-id)
+        (compose-capability (SECURE))
+    )
     ;;{C3}
-    ;;{C4}
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun CT_Bar:string
-        ()
-        @doc "Returns CT_BAR constant."
-        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR))
-    )
-    (defconst BAR                                               (CT_Bar))
-    ;;
     ;;{F0}  [UC]
     (defun UC_DPTFTrackerKey:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
         @doc "Composite key for AQP|T|DPTFTracker: pool-id | dptf-id | owner-id | beneficiary-id."
@@ -435,7 +467,7 @@
     (defun UDC_AQP|DPSFScoreAttribution:object{AQP|DPSFScoreAttribution}
         (cached:decimal rev:integer pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
         @doc "Default DPSF score attribution row."
-        {"cached-position-score"         : cached
+        {"cached-position-score"        : cached
         ,"applied-def-revision-nonce"   : rev
         ,"pool-id"                      : pool-id
         ,"dpsf-id"                      : dpsf-id
@@ -447,7 +479,7 @@
     (defun UDC_AQP|DPNFScoreAttribution:object{AQP|DPNFScoreAttribution}
         (cached:decimal rev:integer pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
         @doc "Default DPNF score attribution row."
-        {"cached-position-score"         : cached
+        {"cached-position-score"        : cached
         ,"applied-def-revision-nonce"   : rev
         ,"pool-id"                      : pool-id
         ,"dpnf-id"                      : dpnf-id
@@ -455,6 +487,20 @@
         ,"beneficiary-id"               : beneficiary-id
         ,"nonce"                        : nonce
         ,"score-id"                     : score-id}
+    )
+    (defun UDC_AQP|Schema:object{AQP|Schema}
+        (aqp-class:integer asset-id:string aqp-id:string)
+        @doc "Default new pool row: all seven score slots BAR; aqp-id equals pool-id (table key)."
+        {"aqp-class"            : aqp-class
+        ,"asset-id"             : asset-id
+        ,"score-primary"        : BAR
+        ,"score-secondary"      : BAR
+        ,"score-tertiary"       : BAR
+        ,"score-quaternary"     : BAR
+        ,"score-quinary"        : BAR
+        ,"score-senary"         : BAR
+        ,"score-septenary"      : BAR
+        ,"aqp-id"               : aqp-id}
     )
     ;;
     ;;{F0}  [UR]
@@ -785,22 +831,308 @@
     )
     ;;
     ;;{F1}  [URC]
+    (defun URC_AqpOwnerKontoFromClassAndAsset:string (aqp-class:integer asset-id:string)
+        @doc "Resolve pool governor konto from aqp-class and canonical native asset-id (issue-time or pre-pool-row)."
+        (let
+            (
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (if (= aqp-class 0)
+                (ref-SWP::UR_OwnerKonto (ref-SWP::UR_GetLpSwpair asset-id))
+                (if (= aqp-class 1)
+                    (ref-DPTF::UR_Konto asset-id)
+                    (if (= aqp-class 2)
+                        (ref-DPOF::UR_Konto asset-id)
+                        (if (= aqp-class 3)
+                            (ref-DPDC::UR_OwnerKonto asset-id true)
+                            (ref-DPDC::UR_OwnerKonto asset-id false)
+                        )
+                    )
+                )
+            )
+        )
+    )
+    (defun URC_AqpOwnerKonto:string (pool-id:string)
+        @doc "Resolve pool governor konto from AQP|T|Pool via URC_AqpOwnerKontoFromClassAndAsset."
+        (URC_AqpOwnerKontoFromClassAndAsset (UR_AQP|PoolAqpClass pool-id) (UR_AQP|PoolAssetId pool-id))
+    )
+    (defun URC_PoolActiveScoreIds:[string] (pool-id:string)
+        @doc "Non-BAR score-id values currently assigned on pool-id (primary through septenary order)."
+        (filter
+            (lambda (sid:string) (!= sid BAR))
+            [
+                (UR_AQP|PoolScorePrimary pool-id)
+                (UR_AQP|PoolScoreSecondary pool-id)
+                (UR_AQP|PoolScoreTertiary pool-id)
+                (UR_AQP|PoolScoreQuaternary pool-id)
+                (UR_AQP|PoolScoreQuinary pool-id)
+                (UR_AQP|PoolScoreSenary pool-id)
+                (UR_AQP|PoolScoreSeptenary pool-id)
+            ]
+        )
+    )
+    (defun URC_PoolScoreSlotValue:string (pool-id:string slot-index:integer)
+        @doc "Score-id at pool score slot 0..6 (primary..septenary); read via UR_AQP|PoolScore* helpers."
+        (if (= slot-index 0)
+            (UR_AQP|PoolScorePrimary pool-id)
+            (if (= slot-index 1)
+                (UR_AQP|PoolScoreSecondary pool-id)
+                (if (= slot-index 2)
+                    (UR_AQP|PoolScoreTertiary pool-id)
+                    (if (= slot-index 3)
+                        (UR_AQP|PoolScoreQuaternary pool-id)
+                        (if (= slot-index 4)
+                            (UR_AQP|PoolScoreQuinary pool-id)
+                            (if (= slot-index 5)
+                                (UR_AQP|PoolScoreSenary pool-id)
+                                (UR_AQP|PoolScoreSeptenary pool-id)
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+    (defun URC_PriorScoreSlotsOccupied:bool (pool-id:string slot-index:integer)
+        @doc "Every slot index below slot-index is non-BAR; vacuously true when slot-index is 0."
+        (if (= slot-index 0)
+            true
+            (fold (and) true
+                (map
+                    (lambda (i:integer) (!= (URC_PoolScoreSlotValue pool-id i) BAR))
+                    (enumerate 0 (- slot-index 1))
+                )
+            )
+        )
+    )
+    (defun URC_FirstFreeScoreSlotIndex:integer (pool-id:string)
+        @doc "First empty score slot index 0..6 (primary..septenary), or -1 when all slots are taken."
+        (if (= (UR_AQP|PoolScorePrimary pool-id) BAR)
+            0
+            (if (= (UR_AQP|PoolScoreSecondary pool-id) BAR)
+                1
+                (if (= (UR_AQP|PoolScoreTertiary pool-id) BAR)
+                    2
+                    (if (= (UR_AQP|PoolScoreQuaternary pool-id) BAR)
+                        3
+                        (if (= (UR_AQP|PoolScoreQuinary pool-id) BAR)
+                            4
+                            (if (= (UR_AQP|PoolScoreSenary pool-id) BAR)
+                                5
+                                (if (= (UR_AQP|PoolScoreSeptenary pool-id) BAR)
+                                    6
+                                    -1
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+    ;;
     ;;{F2}  [UEV]
+    (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string)
+        @doc "aqp-class 0..4 and asset-id existence / shape for that class (native id only at issue)."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (p2:string (take 2 asset-id))
+                (is-class-ok:bool (contains aqp-class (enumerate 0 4)))
+                (is-native:bool
+                    (not
+                        (fold (or) false
+                            [(= p2 "F|") (= p2 "Z|") (= p2 "H|") (= p2 "V|") (= p2 "R|")]
+                        )
+                    )
+                )
+            )
+            (if (or (= aqp-class 0) (= aqp-class 1))
+                (ref-DPTF::UEV_id asset-id)
+                (if (= aqp-class 2)
+                    (ref-DPOF::UEV_id asset-id)
+                    (if (= aqp-class 3)
+                        (ref-DPDC::UEV_id asset-id true)
+                        (ref-DPDC::UEV_id asset-id false)
+                    )
+                )
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        is-class-ok
+                        is-native
+                        (if (<= aqp-class 2)
+                            (enforce-one
+                                "Invalid pool issue asset-id for aqp-class"
+                                [
+                                    (enforce
+                                        (fold (and) true
+                                            [
+                                                (= aqp-class 0)
+                                                (contains p2 ["S|" "W|" "P|"])
+                                                (= asset-id (ref-SWP::UR_TokenLP (ref-SWP::UR_GetLpSwpair asset-id)))
+                                            ]
+                                        )
+                                        "class 0 asset-id must be native LP nomenclature matching its swap pair"
+                                    )
+                                    (enforce
+                                        (fold (and) true
+                                            [
+                                                (= aqp-class 1)
+                                                (not (contains p2 ["S|" "W|" "P|"]))
+                                            ]
+                                        )
+                                        "class 1 asset-id must be a non-LP DPTF"
+                                    )
+                                    (enforce
+                                        (fold (and) true
+                                            [
+                                                (= aqp-class 2)
+                                                (not
+                                                    (fold (or) false
+                                                        [
+                                                            (= (take 2 (ref-DPOF::UR_Ticker asset-id)) "Z|")
+                                                            (= (take 2 (ref-DPOF::UR_Ticker asset-id)) "H|")
+                                                        ]
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                        "class 2 asset-id must not be a sleeping or hibernating DPOF collection"
+                                    )
+                                ]
+                            )
+                            true
+                        )
+                    ]
+                )
+                "Invalid pool issue aqp-class or asset-id"
+            )
+        )
+    )
+    (defun UEV_AddScorePoolAndScore (pool-id:string score-id:string slot-index:integer)
+        @doc "Validates slot-index is the first free slot (caller supplies index from one URC_FirstFreeScoreSlotIndex); \
+            \ score exists with BAR aqpool-link; score-class matches pool; class-0 lp-denominator fits pool LP pair."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-SWP:module{SwapperV3} SWP)
+                (aqp-class:integer (UR_AQP|PoolAqpClass pool-id))
+                (asset-id:string (UR_AQP|PoolAssetId pool-id))
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (contains slot-index (enumerate 0 6))
+                        (= (URC_PoolScoreSlotValue pool-id slot-index) BAR)
+                        (URC_PriorScoreSlotsOccupied pool-id slot-index)
+                    ]
+                )
+                "Invalid or unavailable score slot index for pool"
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (= (ref-SCR::UR_SCR|ScoreScoreId score-id) score-id)
+                        (= (ref-SCR::UR_SCR|ScoreAqpoolLink score-id) BAR)
+                        (= (ref-SCR::UR_SCR|ScoreClass score-id) aqp-class)
+                        (not (contains score-id (URC_PoolActiveScoreIds pool-id)))
+                    ]
+                )
+                "Invalid score-id for pool assignment (missing score, class mismatch, aqpool-link set, or duplicate slot)"
+            )
+            (enforce
+                (if (= aqp-class 0)
+                    (let
+                        (
+                            (lp-denom:string (ref-SCR::UR_SCR|ScoreLpDenominator score-id))
+                            (swpair:string (ref-SWP::UR_GetLpSwpair asset-id))
+                            (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                        )
+                        (contains lp-denom pool-tokens)
+                    )
+                    true
+                )
+                "Class 0 score lp-denominator must appear in the swap pair for the pool native LP asset-id"
+            )
+        )
+    )
+    ;;
     ;;{F4}  [CAP]
+    (defun CAP_AqpAssetOwner (aqp-class:integer asset-id:string)
+        @doc "Issue / pre-pool: tx sender must own the canonical asset for aqp-class and asset-id."
+        (let 
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership (URC_AqpOwnerKontoFromClassAndAsset aqp-class asset-id))
+        )
+    )
+    (defun CAP_PoolOwner (pool-id:string)
+        @doc "Post-issue pool governance: tx sender must own the canonical asset behind pool-id (URC_AqpOwnerKonto)."
+        (let 
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership (URC_AqpOwnerKonto pool-id))
+        )
+    )
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
     ;;Lifecycle (AQP|T|Pool / AQP|Schema)
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
-        ()
-        @doc "Create a new pool with aqp-class and asset-id; single asset type per pool (classes 0–4)."
-        true
+        (patron:string pool-name:string asset-id:string aqp-class:integer)
+        @doc "Create a new pool (canonical native asset-id + aqp-class). Patron pays STOA smart + IGNIS; \
+            \ returns pool-id in output list. Score slots start BAR."
+        (UEV_IMC)
+        (with-capability (AQP|C>ISSUE-POOL pool-name asset-id aqp-class)
+            (let
+                (
+                    (ref-DALOS:module{OuronetDalosV1} DALOS)
+                    (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
+                    (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (ref-IGNIS::KDA|C_Collect patron smart-price)
+                (XI_IssuePool pool-id aqp-class asset-id)
+                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-POOL AQP|SC_NAME trigger [pool-id])
+            )
+        )
     )
     ;;Score slots (score-primary … score-septenary); score-class must match pool aqp-class.
     (defun C_AddScore:object{IgnisCollectorV1.OutputCumulator}
-        ()
-        @doc "Assign a score-id to a free pool score slot; invokes SCORE XE_CreateAqpoolLink when wiring is enforced."
-        true
+        (patron:string pool-id:string score-id:string)
+        @doc "Assign score-id to the first free pool slot; SCR XE_CreateAqpoolLink then XI pool slot write. \
+            \ URC_FirstFreeScoreSlotIndex runs once before the cap; slot-index is passed through. \
+            \ IGNIS only (GAS|ADD-SCORE 500.0 on AQP|SC_NAME); no STOA."
+        (UEV_IMC)
+        (let 
+            (
+                (slot-index:integer (URC_FirstFreeScoreSlotIndex pool-id))
+            )
+            (with-capability (AQP|C>ADD-SCORE pool-id score-id slot-index)
+                (let
+                    (
+                        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                    )
+                    (ref-SCR::XE_CreateAqpoolLink score-id pool-id)
+                    (XI_AddScoreToPool pool-id score-id slot-index)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ADD-SCORE AQP|SC_NAME trigger [pool-id score-id])
+                )
+            )
+        )
     )
     (defun C_RevokeScore:object{IgnisCollectorV1.OutputCumulator}
         ()
@@ -855,6 +1187,38 @@
     ;;  4f] Update <last-rps> to the Pools <current-rps>
     ;;
     ;;{F7}  [X]
+    (defun XI_IssuePool:string
+        (pool-id:string aqp-class:integer asset-id:string)
+        @doc "Insert AQP|T|Pool under SECURE (from AQP|C>ISSUE-POOL). Write only; C_Issue builds IGNIS."
+        (require-capability (SECURE))
+        (insert AQP|T|Pool pool-id (UDC_AQP|Schema aqp-class asset-id pool-id))
+        pool-id
+    )
+    (defun XI_AddScoreToPool:string
+        (pool-id:string score-id:string slot-index:integer)
+        @doc "Write score-id into the first free slot (0=primary .. 6=septenary). Under SECURE from AQP|C>ADD-SCORE."
+        (require-capability (SECURE))
+        (if (= slot-index 0)
+            (update AQP|T|Pool pool-id {"score-primary": score-id})
+            (if (= slot-index 1)
+                (update AQP|T|Pool pool-id {"score-secondary": score-id})
+                (if (= slot-index 2)
+                    (update AQP|T|Pool pool-id {"score-tertiary": score-id})
+                    (if (= slot-index 3)
+                        (update AQP|T|Pool pool-id {"score-quaternary": score-id})
+                        (if (= slot-index 4)
+                            (update AQP|T|Pool pool-id {"score-quinary": score-id})
+                            (if (= slot-index 5)
+                                (update AQP|T|Pool pool-id {"score-senary": score-id})
+                                (update AQP|T|Pool pool-id {"score-septenary": score-id})
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        score-id
+    )
     ;;
 )
 

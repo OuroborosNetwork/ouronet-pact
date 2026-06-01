@@ -2,7 +2,7 @@
 
 Module: `AQP-POOL` | Interface: `AcquisitionPoolsV1` | File: `03_AQP.pact`
 
-**Status: In progress — schemas, tables, UC key helpers, UDC defaults for absent tracker/attribution rows, and UR\_\* readers are implemented; C\_\* writers remain placeholders.**
+**Status: In progress — `C_Issue` and `C_AddScore` implemented; `C_RevokeScore`, `C_Stake`, and `C_Unstake` remain placeholders. Schemas, tables, UC key helpers, UDC defaults, and UR_* readers are in place.**
 
 ## Purpose
 
@@ -100,8 +100,22 @@ User stakes asset X into Pool P
 
 When a pool employs multiple scores, some scores may set `boost-link` to another score so ANK promile runs against that score's user **base** while this score's `SCR|T|UserScore` row stores **only boosted/deb surplus** over that foreign base (user `base-score` on the satellite stays this score's own LP weight). See **`README_SCORE.md` → Foreign boost-link** for the numeric model and implementation (`URC_SingularUserScoreDeltaFromSignedUserBase`, applied via `XI_ApplySingularUserScoreDelta` on LP stake and reusable for other singular-delta writers).
 
+## LP pools and multi-LP farms
+
+Class-0 pools stake **native LP token ids** (one canonical `asset-id` per pool). Each **distinct LP pair** that should earn farm rewards needs:
+
+1. Its **own** class-0 pool (`C_Issue`).
+2. Its **own** class-0 score set (production bootstrap uses an OURO **triplet** — three scores with the same `lp-denominator`; see `AQP-BOOT` Step 6 and [README_SCORE.md](README_SCORE.md#lp-scores-pools-and-fvt-matching)).
+3. **`C_AddScore`** for each score into that pool’s slots (auto first-free slot; max **7** scores per pool).
+
+Scores are **not** reusable across pools: `aqpool-link` is one-time. A second LP always means **new score issuances**, not re-wiring existing score ids.
+
+**FVT** is separate: users stake here; rewards aggregate in a Farm via **`C_AddScoreLink`** (one row per score on the farm). Many pools and many scores can share **one** Farm FVT when their class-0 scores share the same **`lp-denominator`** (full OURO DPTF id). See [README_FVT.md](README_FVT.md#multi-lp-farms-one-fvt-many-pools).
+
+On liquidity events, this pool orchestrates **`FVT::XE_SyncFarmScoreGhostTvlFromSwp`** only for scores **on this pool** (bounded ≤ 7), not for every member of a multi-LP farm.
+
 ## Relationship to Other Modules
 
 - **SCORE**: AQP calls `XE_CreateAqpoolLink` on score assignment; stake/unstake uses dedicated `XE_UpdateScoreDataFor*` forwarders (class-0 LP: `XE_UpdateScoreDataForTrueFungibleLP` / `XE_UpdateScoreDataForOrtoFungibleLP`; further score classes get their own `XE_*` as added) — see `README_SCORE.md`
 - **ANK**: AQP calls `XE_Update*UserAnchorValues` on stake/unstake to refresh anchor promiles
-- **FVT**: No direct interaction; FVT aggregates scores that AQP updates
+- **FVT**: No direct pool table coupling; FVT aggregates scores that AQP updates. Multi-LP farms admit many scores via `C_AddScoreLink` — see [README_FVT.md](README_FVT.md)

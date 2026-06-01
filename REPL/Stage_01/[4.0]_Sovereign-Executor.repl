@@ -146,7 +146,9 @@
         (ref-P|TS01-C1:module{OuronetPolicyV1} TS01-C1)
         (ref-P|TS01-C2:module{OuronetPolicyV1} TS01-C2)
         (ref-P|TS01-C3:module{OuronetPolicyV1} TS01-C3)
+        (ref-P|TS01-C4:module{OuronetPolicyV1} TS01-C4)
         (ref-P|TS01-CP:module{OuronetPolicyV1} TS01-CP)
+        (ref-P|CODEX:module{OuronetPolicyV1} CODEX)
     )
     [
         (ref-P|IGNIS::P|A_Define)
@@ -176,6 +178,8 @@
         (ref-P|TS01-C1::P|A_Define)
         (ref-P|TS01-C2::P|A_Define)
         (ref-P|TS01-C3::P|A_Define)
+        (ref-P|TS01-C4::P|A_Define)
+        (ref-P|CODEX::P|A_Define)
         (ref-P|TS01-CP::P|A_Define)
     ]
 )
@@ -227,6 +231,7 @@
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpsf"           0.4)
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "dpnf"           0.5)
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "blue"         0.025)
+        (ref-TS01-A::DALOS|A_UpdateUsagePrice "codex"        100.0)
 
         ;;Ignis Prices
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "ignis|smallest"            1.0)
@@ -326,7 +331,7 @@
         ;;
         (ref-U|G:module{OuronetGuardsV1} U|G)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-ATS:module{AutostakeV1} ATS)
+        (ref-ATS:module{AutostakeV2} ATS)
         (ref-VST:module{VestingV1} VST)
         (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
         (ref-ORBR:module{OuroborosV1} OUROBOROS)
@@ -1389,7 +1394,7 @@
             (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
             (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
             (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
-            (ref-ATS:module{AutostakeV1} ATS)
+            (ref-ATS:module{AutostakeV2} ATS)
             ;;
             (patron:string KST.ANHD)
             (patron-kda:string (ref-DALOS::UR_AccountKadena patron))

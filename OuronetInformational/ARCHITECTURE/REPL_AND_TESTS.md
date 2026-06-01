@@ -41,6 +41,76 @@ Automated subdivision is a **baseline**; refine slugs or add **`04`**, … by ha
 
 ---
 
+## Stage 2 AQP + AQP-BOOT (resume / handoff)
+
+Use this section when continuing **Stage 02** integration work on another machine or in a new chat. It records **load order**, **transaction ordering constraints**, and **fee-split expectations** that are easy to break when refactoring REPLs.
+
+### Slave module: `2_SLAVE/Stage_02/04_AQP-BOOT.pact`
+
+**`AQP-BOOT`** implements **`AcquisitionPoolBootV1`**: discrete bootstrap steps **`C_Step1`** … **`C_Step6`** (bunny set, SnakePower anchors, booster anchors, core scores, subsidiary scores, OURO LP triplet). Live deploy uses these instead of a monolithic “bootstrap everything” call.
+
+- **Step 1** — `C_Step1_CreateBunnySet` (KBN bunny set).
+
+- **Step 2** — `C_Step2_CreateSnakePowerAnchorClasses` (Bronze/Silver/Golden SnakePower + related NF anchors).
+
+- **Step 3** — `C_Step3_CreateBoosterAnchorClasses` (Unity/Stoa/Vesta booster anchors).
+
+- **Step 4** — `C_Step4_CreateCoreScores` (includes **TheCodingDivision** and other core score rows in **`SCR|T|Score`**).
+
+- **Step 5** — `C_Step5_CreateSubsidiaryScores` (includes **SubsidiaryWonderCoach**, **SubsidiaryBunnies**, etc.).
+
+- **Step 6** — `C_Step6_CreateOuroLpTriplet` — LP triplet **scores only** (no pool or farm wiring); pass **`lp-denominator`** as the **full native DPTF id** of the common pool leg (e.g. **`"OURO-98c486052a51"`**), not the ticker alone — SCORE validates via `DPTF::UEV_id` at class-0 issue.
+
+- **Step 7** *(planned, not in `04_AQP-BOOT.pact` yet)* — `C_Step7_CreatePoolsAndFarmLinks`: six **class-1** DPTF pools + score slots from Steps 4–5, one **class-0** LP pool for the mainnet OURO LP + Step 6 triplet, one **Farm FVT** with `common-denominator` = OURO DPTF id, and **`C_AddScoreLink` once per employed score**. See **`1_SOVEREIGN/STAGE_02/2_Core/03_AQP/README.md`** (Phase E) for the DH → pool → score map.
+
+### Multi-LP OURO farm (architecture)
+
+One Farm FVT aggregates many OURO LPs via **many `FVT|T|ScoreLink` rows** (typically **3 per LP** when using the Step 6 triplet). Each LP still gets its **own** class-0 pool and **new** score issuances (`aqpool-link` is one-time per score). Liquidity sync on the hot path is **per pool** (≤ 7 scores), not O(all farm members). Detail: **`README_FVT.md`** § Multi-LP farms.
+
+### Loading `AQP-BOOT` in the REPL
+
+**`REPL/Stage02_Tester.repl`** loads **`04_AQP-BOOT.pact`** inside a deploy-style block: **`begin-tx`** → **`(namespace "ouronet-ns")`** → **`env-sigs`** → **`load "../2_SLAVE/Stage_02/04_AQP-BOOT.pact"`** → **`commit-tx`**, **before** **`[6.2]_AQP.repl`**. If **`AQP-BOOT`** loads only from a leaf REPL without that namespace/context, lookups like **`OuronetDalosV1`** can fail.
+
+### `[6.2.1]_AQP-ANK.repl` (anchors)
+
+Typical **end-of-file** order: mock / strip tests → read-only echo (**`TX005`**) → **AQP-BOOT anchor steps** last:
+
+| Transaction | Role |
+|-------------|------|
+| **`TX006`** | **`C_Step2_CreateSnakePowerAnchorClasses`** — STOA fee split **`7 × UR_UsagePrice "standard"`** (four **`coin.TRANSFER`** caps). |
+| **`TX007`** | **`C_Step3_CreateBoosterAnchorClasses`** — STOA split **`14 × standard`**. |
+
+Rationale: match **real issuance counts** per step so payer caps stay sufficient (**`URC_SplitKDAPrices`** scales with **`acnoi=true`** anchor issuances).
+
+### `[6.2.2]_AQP-SCORE.repl` (scores)
+
+**Boot-style score steps are placed at the end of the scripted block** (after early **`TX-SCORE-01`** / **`02`** probes and **`TX-SCORE-07`** read-only echo), so STOA/IGNIS behaviour stays aligned with “mocks first, provisioning last.”
+
+| Transaction | Role |
+|-------------|------|
+| **`TX-SCORE-08`** | **`C_Step4_CreateCoreScores`** — **`4 × smart`** fee split for four score issuances. |
+| **`TX-SCORE-09`** | **`C_Step5_CreateSubsidiaryScores`** — **`5 × smart`**. |
+| **`TX-SCORE-10`** | **`C_Step6_CreateOuroLpTriplet`** — **`3 × smart`**; boost-class ids from **`U|DALOS::UDC_Makeid`** for Silver/Bronze/Golden snake powers. |
+| **`TX-SCORE-11`** | **Score definition vectors** (`C_IssueSemiFungibleScoreDefinition`, `C_IssueNonFungibleScoreDefinition` for boot score ids such as **TheCodingDivision**, **SubsidiaryWonderCoach**, **SubsidiaryBunnies**) — **must run only after Steps 4–5 (and Step 6 if LP-related)**. |
+
+#### Critical dependency: score definitions after boot rows exist
+
+**`C_IssueSemiFungibleScoreDefinition`** (via Talos into **`AQP-SCORE`**) calls utilities such as **`UR_SCR|ScoreOwnerKonto`**, which **`read`** **`SCR|T|Score`** for the **score-id**. If a REPL block issues definitions **before** **`C_Step4`** / **`C_Step5`** create those rows, Pact fails with:
+
+**`No value found in table … SCR|T|Score for key: <score-id>`**
+
+So: **never** place “definition vector” transactions **before** **`TX-SCORE-08`** / **`09`** (the historical mistake was a **`TX-SCORE-06`**-style block running before Step 4).
+
+**`TX-SCORE-01`** uses **`BootPhaseProbe`** so reserved names do not collide with boot-issued score names (e.g. **TheCodingDivision**) in the same chain.
+
+### Fee vocabulary (short)
+
+- **STOA / anchor issuance (ANK):** fee tier **`"standard"`**; multiply **`UR_UsagePrice "standard"`** by the number of paid anchor issuances in that step (**`URC_SplitKDAPrices`**) and attach the usual **four** **`coin.TRANSFER`** caps to the gas payer key.
+
+- **Score issuance (SCORE):** **`"smart"`**; multiply by the number of **`C_Issue*Score`** calls in that transaction (**4× / 5× / 3×** for Steps 4–6 in the current REPL).
+
+---
+
 ## Top-level loaders
 
 | File | Role |
@@ -69,6 +139,32 @@ Automated subdivision is a **baseline**; refine slugs or add **`04`**, … by ha
 | `[4.0]_Sovereign-Executor.repl` | Sovereign executor txs |
 | `[5.1]_Aoz+.repl`, `[5.2]_Dispenser+.repl` | Slave modules |
 | `[6.1]_Cumulator.repl` … `[6.8]_Dispenser.repl` | Long scenario suites (SWP, DPTF, ATS, VST, DPOF, dispenser, etc.) |
+| `[6.9]_CODEX.repl` | **CODEX** via **TS01-C4** (A_ / C_); see § *Stage 1 CODEX* below |
+
+---
+
+## Stage 1 CODEX (resume / handoff)
+
+**Modules:** **`22_CODEX.pact`**, Talos **`06_TS01-C4.pact`**. Scenario REPL: **`REPL/Stage_01/[6.9]_CODEX.repl`**.
+
+### Deploy order
+
+1. **`[2.2]_Core.repl`** — **CODEX** (TX-15) only; **do not** deploy **TS01-C4** here (needs **TS01-A**).
+2. **`[3]_Talos.repl`** — **TS01-A** … **TS01-C4** (TX-03b) after **CODEX** exists.
+3. **`[4.0]_Sovereign-Executor.repl`** — **`P|A_Define`**, **`DALOS|A_UpdateUsagePrice "codex"`**.
+
+Detail: **`OuronetInformational/skills/module-load-order-and-pact-refs.md`**, **`codex-stage01-repl.md`**. Cursor: **`.cursor/skills/ouronet-module-load-order/SKILL.md`**.
+
+### Common failures
+
+| Symptom | Fix |
+|---------|-----|
+| **`Cannot find module: TS01-A`** at **TS01-C4** load | Deploy **TS01-C4** in **`[3]_Talos`**, not Core |
+| **`Expected: ['}']`** in **`[6.9]_CODEX`** TX000 | Commas in **`env-data`** object |
+| **`Keyset failure … PK_Flore…`** on rotate | Use **`PK_Florean`** in **`env-sigs`**, not **`PK_Florian`** |
+| **`closure to too many arguments`** on StoicTag / Apollo check | **`fold (and) true`** in **`U|ATS`** / **`U|DALOS`**; reload utilities |
+
+---
 
 ## Stage 2 — representative REPL files
 

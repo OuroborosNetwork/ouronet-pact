@@ -249,6 +249,23 @@
 )
 
 ;;
+;;  [TALOS Stage One Client Four — CODEX]
+;;
+(interface TalosStageOne_ClientFourV1
+    @doc "Exposes Ouronet Stage One fourth client batch — CODEX (Mnemosyne Codex Identity + StoicTags)."
+    ;;
+    (defun CODEX|A_RegisterCodexIdentity:string
+        ( codex-id:string
+          public-standard:string
+          public-smart:string
+          codex-guard:guard
+          registered-by:string ))
+    (defun CODEX|C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard))
+    (defun CODEX|C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun CODEX|C_RegisterStoicTag:string (patron:string tag-name:string account-address:string))
+    (defun CODEX|C_ReleaseStoicTag:string (patron:string tag-name:string))
+)
+;;
 ;;  [TALOS Stage One Client Three]
 ;;
 (interface TalosStageOne_ClientThreeV3

@@ -3,6 +3,7 @@
     ;;
     (implements OuronetPolicyV1)
     (implements IgnisCollectorV1)
+    (implements IgnisCollectorV2)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -659,15 +660,19 @@
         (KDA|C_CollectWT sender amount (URC_IsNativeGasZero))
     )
     (defun KDA|C_CollectWT (sender:string amount:decimal trigger:bool)
+        (KDA|C_CollectWTEx sender sender amount trigger)
+    )
+    (defun KDA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool)
+        @doc "Collect native STOA from payer Kadena account; Elite split from discount-account."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (split-discounted-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices sender amount))
+                (split-discounted-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices discount-account amount))
                 (am0:decimal (at 0 split-discounted-kda))
                 (am1:decimal (at 1 split-discounted-kda))
                 (am2:decimal (at 2 split-discounted-kda))
                 (am3:decimal (at 3 split-discounted-kda))
-                (kda-sender:string (ref-DALOS::UR_AccountKadena sender))
+                (kda-sender:string (ref-DALOS::UR_AccountKadena payer))
                 (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
                 (kda-cto:string (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)))
                 (kda-hov:string (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)))

@@ -53,7 +53,7 @@
         (ref-DSP:module{Dispenser} DSP)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (ref-ATS:module{AutostakeV1} ATS)
+        (ref-ATS:module{AutostakeV2} ATS)
         (ouro:string (ref-DALOS::UR_OuroborosID))
         (os:decimal (ref-DPTF::UR_Supply ouro))
 

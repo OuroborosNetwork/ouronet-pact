@@ -120,7 +120,7 @@ SCR|NF|DefRevision          NF definition revision tracker
 
 Computed by AQP on stake/unstake. Depends on the score class:
 
-- **Class 0 (LP)**: LP token amount, with frozen/sleeping multipliers applied per LP variant
+- **Class 0 (LP)**: `URC_LpAmountToLpDenominatorEquivalent` — pro-rata `SWPL::URC_LpBreakAmounts` on the stake's `swpair`, **lp-denominator leg** (e.g. OURO token units at current reserves); then frozen/sleeping multipliers per LP variant
 - **Class 1 (DPTF)**: Token amount * mx-frozen (for frozen tokens; 1.0 for standard)
 - **Class 2 (DPOF)**: Sleeping/hibernated multipliers for special tokens
 - **Class 3 (DPSF)**: Per-nonce weight from `SCR|SF|Schema` (or 1.0 if sft-equality)
@@ -175,11 +175,23 @@ The value written to `SCR|T|UserScore.deb-score` follows the same **foreign surp
 
 When an admin changes an SF/NF score definition (nonce weights or trait weights), the revision counter in `SCR|T|SF|DefRevision` or `SCR|T|NF|DefRevision` is bumped. Per-user score attribution rows in AQP track an `applied-def-revision-nonce`. On the user's next stake/unstake interaction, the revision is compared and the score is recomputed if stale.
 
-## LP Scores and FVT Matching
+## LP scores, pools, and FVT matching
 
-Class-0 scores store `lp-denominator` -- the DPTF token-id that must be common to all LP tokens scored by this score (e.g., "OURO" for all OURO-paired LPs).
+Class-0 scores store `lp-denominator` — the **full native DPTF token-id** of the common pool leg (e.g. `OURO-98c486052a51`), not a ticker alone. It must appear in every scored LP pair’s `pool-tokens`. Class-0 issue validates the id via `DPTF::UEV_id`.
 
-When a Score is linked to an FVT (Farm), the FVT module reads `UR_SCR|ScoreLpDenominator` and enforces that it matches the FVT's `common-denominator` field. This validation happens externally in the FVT module, not in SCORE.
+### One score, one pool
+
+`aqpool-link` is **one-time**: each score id is employed by **at most one** AQP pool. You cannot assign the same score to a second LP pool; add a **new** class-0 score issuance per LP line.
+
+### OURO LP triplet (bootstrap pattern)
+
+`AQP-BOOT` Step 6 issues **Silver / Bronze / Golden** class-0 scores that share one `lp-denominator` but do **not** embed an LP id in the score row. Bronze and Golden use **foreign `boost-link`** to Silver for composite boosting. The triplet is then attached to **one** class-0 pool via **`C_AddScore` × 3**. A second OURO LP later repeats Step 6–style issuance (new score names/ids) + new pool + new add-score calls.
+
+### Many scores, one farm
+
+`fvt-link` is also **one-time**, but **many** scores may share the **same** Farm FVT id when their `lp-denominator` matches the farm’s `common-denominator`. FVT admits each score with **`C_AddScoreLink`** (one `FVT|T|ScoreLink` row per score). With the triplet pattern, **N LPs ⇒ 3N ScoreLink rows** on one farm — see [README_FVT.md](README_FVT.md#multi-lp-farms-one-fvt-many-pools).
+
+When a Score joins a Farm, FVT reads `UR_SCR|ScoreLpDenominator` and enforces `lp-denominator == common-denominator`. That validation lives in **FVT**, not SCORE.
 
 ## Relationship to Other Modules
 

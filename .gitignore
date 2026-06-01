@@ -1,2 +1,8 @@
 .ssh/ouronet_deploy_key
 .ssh/ouronet_deploy_key.pub
+
+# Local credentials (PAT, etc.) — never commit
+.secrets/
+
+__pycache__/
+*.pyc

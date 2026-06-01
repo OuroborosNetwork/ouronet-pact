@@ -140,7 +140,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
             )
             (compose-capability (GOV|ATSU_ADMIN))
             (compose-capability (ATSU|C>X_REMOVE-SECONDARY ats reward-token))
@@ -150,7 +150,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
             )
             (ref-ATS::CAP_Owner ats)
             (compose-capability (ATSU|C>X_REMOVE-SECONDARY ats reward-token))
@@ -159,7 +159,7 @@
     (defcap ATSU|C>X_REMOVE-SECONDARY (ats:string reward-token:string)
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (rt-position:integer (ref-ATS::URC_RewardTokenPosition ats reward-token))
             )
             (enforce (> rt-position 0) "Primal RT cannot be removed")
@@ -174,7 +174,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (royalties:[decimal] (ref-ATS::UR_RewardTokenRUR ats 3))
                 (sum:decimal (fold (+) 0.0 royalties))
             )
@@ -190,7 +190,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (index:decimal (ref-ATS::URC_Index ats))
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                 (l1:integer (length rt-amounts))
@@ -208,7 +208,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (index:decimal (ref-ATS::URC_Index ats))
             )
             (ref-ATS::UEV_RewardTokenExistance ats reward-token true)
@@ -220,7 +220,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (h:bool (ref-ATS::UR_Hibernate ats))
             )
             (ref-ATS::UEV_RewardTokenExistance ats coil-token true)
@@ -232,7 +232,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (h1:bool (ref-ATS::UR_Hibernate ats1))
                 (h2:bool (ref-ATS::UR_Hibernate ats2))
             )
@@ -246,7 +246,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (cold-recovery-positions:integer (ref-ATS::UR_ColdRecoveryPositions ats))
             )
             (enforce (<= usable-cold-recovery-position cold-recovery-positions) 
@@ -270,7 +270,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (dalos-admin:guard GOV|MD_ATSU)
                 (autos-admin:guard GOV|SC_ATSU)
                 (acc-g:guard (ref-DALOS::UR_AccountGuard acc))
@@ -309,7 +309,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership recoverer)
             (ref-ATS::UEV_HotRecoveryState ats true)
@@ -348,7 +348,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership recoverer)
             (ref-ATS::UEV_DirectRecoveryState ats true)
@@ -360,7 +360,7 @@
         @event
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                 (l0:integer (length syphon-amounts))
@@ -400,17 +400,17 @@
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 ;;
-                (zr:object{UtilityAtsV1.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject ats))
-                (ng:object{UtilityAtsV1.Awo} (ref-ATS::UDC_MakeNegativeUnstakeObject ats))
-                (p0:[object{UtilityAtsV1.Awo}] (ref-ATS::UR_P0 ats acc))
+                (zr:object{UtilityAtsV2.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject ats))
+                (ng:object{UtilityAtsV2.Awo} (ref-ATS::UDC_MakeNegativeUnstakeObject ats))
+                (p0:[object{UtilityAtsV2.Awo}] (ref-ATS::UR_P0 ats acc))
                 (p0l:integer (length p0))
                 (boolean-lst:[bool]
                     (fold
                         (lambda
-                            (acc:[bool] item:object{UtilityAtsV1.Awo})
+                            (acc:[bool] item:object{UtilityAtsV2.Awo})
                             (ref-U|LST::UC_AppL acc (ref-U|ATS::UC_IzCullable item))
                         )
                         []
@@ -426,11 +426,11 @@
                 zr-output
                 (let
                     (
-                        (after-cull:[object{UtilityAtsV1.Awo}]
+                        (after-cull:[object{UtilityAtsV2.Awo}]
                             (if (< how-many-cullables p0l)
                                 (fold
                                     (lambda
-                                        (acc:[object{UtilityAtsV1.Awo}] idx:integer)
+                                        (acc:[object{UtilityAtsV2.Awo}] idx:integer)
                                         (ref-U|LST::UC_AppL acc (at (at idx immutables) p0))
                                     )
                                     []
@@ -439,10 +439,10 @@
                                 [zr]
                             )
                         )
-                        (to-be-culled:[object{UtilityAtsV1.Awo}]
+                        (to-be-culled:[object{UtilityAtsV2.Awo}]
                             (fold
                                 (lambda
-                                    (acc:[object{UtilityAtsV1.Awo}] idx:integer)
+                                    (acc:[object{UtilityAtsV2.Awo}] idx:integer)
                                     (ref-U|LST::UC_AppL acc (at (at idx cullables) p0))
                                 )
                                 []
@@ -473,9 +473,9 @@
         @doc "Outputs <cull-output> as a value of RTs"
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 ;;
-                (unstake-obj:object{UtilityAtsV1.Awo} (ref-ATS::UR_P1-7 ats acc position))
+                (unstake-obj:object{UtilityAtsV2.Awo} (ref-ATS::UR_P1-7 ats acc position))
                 (cull-output:[decimal] (ref-ATS::URC_CullValue ats unstake-obj))
             )
             cull-output
@@ -489,9 +489,9 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 ;;
-                (p0:[object{UtilityAtsV1.Awo}] (ref-ATS::UR_P0 ats account))
+                (p0:[object{UtilityAtsV2.Awo}] (ref-ATS::UR_P0 ats account))
                 (size:decimal (dec (length p0)))
                 (smallest:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
                 (price:decimal (* size smallest))
@@ -520,7 +520,7 @@
         (UEV_IMC)
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (accounts-with-ats-data:[string] (ref-ATS::URD_ExistingAutostakePairs ats))
             )
             (with-capability (ATSU|C>REMOVE-SECONDARY ats reward-token)
@@ -534,7 +534,7 @@
         (with-capability (ATSU|C>WITHDRAW-ROYALTIES ats target)
             (let
                 (
-                    (ref-ATS:module{AutostakeV1} ATS)
+                    (ref-ATS:module{AutostakeV2} ATS)
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
                     (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
                     (royalties:[decimal] (ref-ATS::UR_RewardTokenRUR ats 3))
@@ -560,7 +560,7 @@
                 (
                     (ref-U|LST:module{StringProcessorV1} U|LST)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-ATS:module{AutostakeV1} ATS)
+                    (ref-ATS:module{AutostakeV2} ATS)
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                     ;;
@@ -603,7 +603,7 @@
         (UEV_IMC)
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
             )
             (with-capability (ATSU|C>FUEL ats reward-token)
@@ -622,12 +622,12 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-ATS:module{AutostakeV1} ATS)
+                    (ref-ATS:module{AutostakeV2} ATS)
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                     ;;
                     ;;<ats>
-                    (coil-data:object{AutostakeV1.CoilData} 
+                    (coil-data:object{AutostakeV2.CoilData} 
                         (ref-ATS::URC_RewardBearingTokenAmounts ats rt amount)
                     )
                     (input-amount:decimal (at "first-input-amount" coil-data))
@@ -663,12 +663,12 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-ATS:module{AutostakeV1} ATS)
+                    (ref-ATS:module{AutostakeV2} ATS)
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                     ;;
                     ;;<ats1>
-                    (coil1-data:object{AutostakeV1.CoilData} 
+                    (coil1-data:object{AutostakeV2.CoilData} 
                         (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount)
                     )
                     (input1-amount:decimal (at "first-input-amount" coil1-data))
@@ -677,7 +677,7 @@
                     (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
                     ;;
                     ;;<ats2>
-                    (coil2-data:object{AutostakeV1.CoilData} 
+                    (coil2-data:object{AutostakeV2.CoilData} 
                         (ref-ATS::URC_RewardBearingTokenAmounts ats2 c-rbt1 c-rbt1-amount)
                     )
                     (input2-amount:decimal (at "first-input-amount" coil2-data))
@@ -720,7 +720,7 @@
             (XI_DeployAccount ats recoverer)
             (let
                 (
-                    (ref-ATS:module{AutostakeV1} ATS)
+                    (ref-ATS:module{AutostakeV2} ATS)
                     (usable-cold-recovery-position:integer (ref-ATS::URC_WhichPosition ats ra recoverer))
                 )
                 (enforce (!= usable-cold-recovery-position 0) "Cold Recovery Unavailable! All existing Positions are used!")
@@ -728,7 +728,7 @@
                     (let
                         (
                             (ref-U|LST:module{StringProcessorV1} U|LST)
-                            (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                            (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                             (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                             (ref-DALOS:module{OuronetDalosV1} DALOS)
                             (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -834,7 +834,7 @@
                     (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-ATS:module{AutostakeV1} ATS)
+                    (ref-ATS:module{AutostakeV2} ATS)
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
                     ;;
                     (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
@@ -893,13 +893,13 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 ;;
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
                 (h-rbt:string (ref-ATS::UR_HotRewardBearingToken ats))
                 (present-time:time (at "block-time" (chain-data)))
-                (meta-data-obj:object{AutostakeV1.ATS|Hot} {"mint-time" : present-time})
+                (meta-data-obj:object{AutostakeV2.ATS|Hot} {"mint-time" : present-time})
                 (new-nonce:integer (+ (ref-DPOF::UR_NoncesUsed h-rbt) 1))
                 ;;
             )
@@ -940,7 +940,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 ;;
                 (ats:string (ref-DPOF::UR_RewardBearingToken id))
@@ -977,7 +977,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 ;;
                 (precision:integer (ref-DPOF::UR_Decimals id))
@@ -1063,10 +1063,10 @@
         (with-capability (ATS|C>DIRECT_RECOVERY recoverer ats ra)
             (let
                 (
-                    (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                    (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (ref-ATS:module{AutostakeV1} ATS)
+                    (ref-ATS:module{AutostakeV2} ATS)
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
                     ;;
                     (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
@@ -1112,7 +1112,7 @@
                 (
                     (ref-U|LST:module{StringProcessorV1} U|LST)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-ATS:module{AutostakeV1} ATS)
+                    (ref-ATS:module{AutostakeV2} ATS)
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
                     ;;
                     (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
@@ -1145,7 +1145,7 @@
         (require-capability (ATSU|C>DEPLOY ats acc))
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
             )
             (ref-ATS::XE_SpawnAutostakeAccount ats acc)
             (XI_Normalize ats acc)
@@ -1156,53 +1156,53 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ATS:module{AutostakeV1} ATS)
-                (p0:[object{UtilityAtsV1.Awo}] (ref-ATS::UR_P0 ats acc))
-                (p1:object{UtilityAtsV1.Awo} (ref-ATS::UR_P1-7 ats acc 1))
-                (p2:object{UtilityAtsV1.Awo} (ref-ATS::UR_P1-7 ats acc 2))
-                (p3:object{UtilityAtsV1.Awo} (ref-ATS::UR_P1-7 ats acc 3))
-                (p4:object{UtilityAtsV1.Awo} (ref-ATS::UR_P1-7 ats acc 4))
-                (p5:object{UtilityAtsV1.Awo} (ref-ATS::UR_P1-7 ats acc 5))
-                (p6:object{UtilityAtsV1.Awo} (ref-ATS::UR_P1-7 ats acc 6))
-                (p7:object{UtilityAtsV1.Awo} (ref-ATS::UR_P1-7 ats acc 7))
-                (zr:object{UtilityAtsV1.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject ats))
-                (ng:object{UtilityAtsV1.Awo} (ref-ATS::UDC_MakeNegativeUnstakeObject ats))
+                (ref-ATS:module{AutostakeV2} ATS)
+                (p0:[object{UtilityAtsV2.Awo}] (ref-ATS::UR_P0 ats acc))
+                (p1:object{UtilityAtsV2.Awo} (ref-ATS::UR_P1-7 ats acc 1))
+                (p2:object{UtilityAtsV2.Awo} (ref-ATS::UR_P1-7 ats acc 2))
+                (p3:object{UtilityAtsV2.Awo} (ref-ATS::UR_P1-7 ats acc 3))
+                (p4:object{UtilityAtsV2.Awo} (ref-ATS::UR_P1-7 ats acc 4))
+                (p5:object{UtilityAtsV2.Awo} (ref-ATS::UR_P1-7 ats acc 5))
+                (p6:object{UtilityAtsV2.Awo} (ref-ATS::UR_P1-7 ats acc 6))
+                (p7:object{UtilityAtsV2.Awo} (ref-ATS::UR_P1-7 ats acc 7))
+                (zr:object{UtilityAtsV2.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject ats))
+                (ng:object{UtilityAtsV2.Awo} (ref-ATS::UDC_MakeNegativeUnstakeObject ats))
                 (positions:integer (ref-ATS::UR_ColdRecoveryPositions ats))
                 (elite:bool (ref-ATS::UR_EliteMode ats))
                 (major-tier:integer (ref-DALOS::UR_Elite-Tier-Major acc))
                 ;;
-                (p0-znn:[object{UtilityAtsV1.Awo}] (if (and (!= p0 [zr]) (!= p0 [ng])) p0 [ng]))
-                (p0-znz:[object{UtilityAtsV1.Awo}] (if (and (!= p0 [zr]) (!= p0 [ng])) p0 [zr]))
-                (p1-znn:object{UtilityAtsV1.Awo} (if (and (!= p1 zr) (!= p1 ng)) p1 ng))
-                (p1-znz:object{UtilityAtsV1.Awo} (if (and (!= p1 zr) (!= p1 ng)) p1 zr))
-                (p2-znn:object{UtilityAtsV1.Awo} (if (and (!= p2 zr) (!= p2 ng)) p2 ng))
-                (p2-znz:object{UtilityAtsV1.Awo} (if (and (!= p2 zr) (!= p2 ng)) p2 zr))
-                (p3-znn:object{UtilityAtsV1.Awo} (if (and (!= p3 zr) (!= p3 ng)) p3 ng))
-                (p3-znz:object{UtilityAtsV1.Awo} (if (and (!= p3 zr) (!= p3 ng)) p3 zr))
-                (p4-znn:object{UtilityAtsV1.Awo} (if (and (!= p4 zr) (!= p4 ng)) p4 ng))
-                (p4-znz:object{UtilityAtsV1.Awo} (if (and (!= p4 zr) (!= p4 ng)) p4 zr))
-                (p5-znn:object{UtilityAtsV1.Awo} (if (and (!= p5 zr) (!= p5 ng)) p5 ng))
-                (p5-znz:object{UtilityAtsV1.Awo} (if (and (!= p5 zr) (!= p5 ng)) p5 zr))
-                (p6-znn:object{UtilityAtsV1.Awo} (if (and (!= p6 zr) (!= p6 ng)) p6 ng))
-                (p6-znz:object{UtilityAtsV1.Awo} (if (and (!= p6 zr) (!= p6 ng)) p6 zr))
-                (p7-znn:object{UtilityAtsV1.Awo} (if (and (!= p7 zr) (!= p7 ng)) p7 ng))
-                (p7-znz:object{UtilityAtsV1.Awo} (if (and (!= p7 zr) (!= p7 ng)) p7 zr))
-                (p2-zne:object{UtilityAtsV1.Awo} (if (and (!= p2 zr) (!= p2 ng)) p2 (if (>= major-tier 2) zr ng)))
-                (p3-zne:object{UtilityAtsV1.Awo} (if (and (!= p3 zr) (!= p3 ng)) p3 (if (>= major-tier 3) zr ng)))
-                (p4-zne:object{UtilityAtsV1.Awo} (if (and (!= p4 zr) (!= p4 ng)) p4 (if (>= major-tier 4) zr ng)))
-                (p5-zne:object{UtilityAtsV1.Awo} (if (and (!= p5 zr) (!= p5 ng)) p5 (if (>= major-tier 5) zr ng)))
-                (p6-zne:object{UtilityAtsV1.Awo} (if (and (!= p6 zr) (!= p6 ng)) p6 (if (>= major-tier 6) zr ng)))
-                (p7-zne:object{UtilityAtsV1.Awo} (if (and (!= p7 zr) (!= p7 ng)) p7 (if (>= major-tier 7) zr ng)))
+                (p0-znn:[object{UtilityAtsV2.Awo}] (if (and (!= p0 [zr]) (!= p0 [ng])) p0 [ng]))
+                (p0-znz:[object{UtilityAtsV2.Awo}] (if (and (!= p0 [zr]) (!= p0 [ng])) p0 [zr]))
+                (p1-znn:object{UtilityAtsV2.Awo} (if (and (!= p1 zr) (!= p1 ng)) p1 ng))
+                (p1-znz:object{UtilityAtsV2.Awo} (if (and (!= p1 zr) (!= p1 ng)) p1 zr))
+                (p2-znn:object{UtilityAtsV2.Awo} (if (and (!= p2 zr) (!= p2 ng)) p2 ng))
+                (p2-znz:object{UtilityAtsV2.Awo} (if (and (!= p2 zr) (!= p2 ng)) p2 zr))
+                (p3-znn:object{UtilityAtsV2.Awo} (if (and (!= p3 zr) (!= p3 ng)) p3 ng))
+                (p3-znz:object{UtilityAtsV2.Awo} (if (and (!= p3 zr) (!= p3 ng)) p3 zr))
+                (p4-znn:object{UtilityAtsV2.Awo} (if (and (!= p4 zr) (!= p4 ng)) p4 ng))
+                (p4-znz:object{UtilityAtsV2.Awo} (if (and (!= p4 zr) (!= p4 ng)) p4 zr))
+                (p5-znn:object{UtilityAtsV2.Awo} (if (and (!= p5 zr) (!= p5 ng)) p5 ng))
+                (p5-znz:object{UtilityAtsV2.Awo} (if (and (!= p5 zr) (!= p5 ng)) p5 zr))
+                (p6-znn:object{UtilityAtsV2.Awo} (if (and (!= p6 zr) (!= p6 ng)) p6 ng))
+                (p6-znz:object{UtilityAtsV2.Awo} (if (and (!= p6 zr) (!= p6 ng)) p6 zr))
+                (p7-znn:object{UtilityAtsV2.Awo} (if (and (!= p7 zr) (!= p7 ng)) p7 ng))
+                (p7-znz:object{UtilityAtsV2.Awo} (if (and (!= p7 zr) (!= p7 ng)) p7 zr))
+                (p2-zne:object{UtilityAtsV2.Awo} (if (and (!= p2 zr) (!= p2 ng)) p2 (if (>= major-tier 2) zr ng)))
+                (p3-zne:object{UtilityAtsV2.Awo} (if (and (!= p3 zr) (!= p3 ng)) p3 (if (>= major-tier 3) zr ng)))
+                (p4-zne:object{UtilityAtsV2.Awo} (if (and (!= p4 zr) (!= p4 ng)) p4 (if (>= major-tier 4) zr ng)))
+                (p5-zne:object{UtilityAtsV2.Awo} (if (and (!= p5 zr) (!= p5 ng)) p5 (if (>= major-tier 5) zr ng)))
+                (p6-zne:object{UtilityAtsV2.Awo} (if (and (!= p6 zr) (!= p6 ng)) p6 (if (>= major-tier 6) zr ng)))
+                (p7-zne:object{UtilityAtsV2.Awo} (if (and (!= p7 zr) (!= p7 ng)) p7 (if (>= major-tier 7) zr ng)))
                 ;;
-                (c-pm1:[object{UtilityAtsV1.Awo}] (fold (+) [] [p0-znz [p1-znn] [p2-znn] [p3-znn] [p4-znn] [p5-znn] [p6-znn] [p7-znn]]))
-                (c-p1:[object{UtilityAtsV1.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znn] [p3-znn] [p4-znn] [p5-znn] [p6-znn] [p7-znn]]))
-                (c-p2:[object{UtilityAtsV1.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znn] [p4-znn] [p5-znn] [p6-znn] [p7-znn]]))
-                (c-p3:[object{UtilityAtsV1.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znz] [p4-znn] [p5-znn] [p6-znn] [p7-znn]]))
-                (c-p4:[object{UtilityAtsV1.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znz] [p4-znz] [p5-znn] [p6-znn] [p7-znn]]))
-                (c-p5:[object{UtilityAtsV1.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znz] [p4-znz] [p5-znz] [p6-znn] [p7-znn]]))
-                (c-p6:[object{UtilityAtsV1.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znz] [p4-znz] [p5-znz] [p6-znz] [p7-znn]]))
-                (c-ne:[object{UtilityAtsV1.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znz] [p4-znz] [p5-znz] [p6-znz] [p7-znz]]))
-                (c-el:[object{UtilityAtsV1.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-zne] [p3-zne] [p4-zne] [p5-zne] [p6-zne] [p7-zne]]))
+                (c-pm1:[object{UtilityAtsV2.Awo}] (fold (+) [] [p0-znz [p1-znn] [p2-znn] [p3-znn] [p4-znn] [p5-znn] [p6-znn] [p7-znn]]))
+                (c-p1:[object{UtilityAtsV2.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znn] [p3-znn] [p4-znn] [p5-znn] [p6-znn] [p7-znn]]))
+                (c-p2:[object{UtilityAtsV2.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znn] [p4-znn] [p5-znn] [p6-znn] [p7-znn]]))
+                (c-p3:[object{UtilityAtsV2.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znz] [p4-znn] [p5-znn] [p6-znn] [p7-znn]]))
+                (c-p4:[object{UtilityAtsV2.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znz] [p4-znz] [p5-znn] [p6-znn] [p7-znn]]))
+                (c-p5:[object{UtilityAtsV2.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znz] [p4-znz] [p5-znz] [p6-znn] [p7-znn]]))
+                (c-p6:[object{UtilityAtsV2.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znz] [p4-znz] [p5-znz] [p6-znz] [p7-znn]]))
+                (c-ne:[object{UtilityAtsV2.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-znz] [p3-znz] [p4-znz] [p5-znz] [p6-znz] [p7-znz]]))
+                (c-el:[object{UtilityAtsV2.Awo}] (fold (+) [] [p0-znn [p1-znz] [p2-zne] [p3-zne] [p4-zne] [p5-zne] [p6-zne] [p7-zne]]))
 
             )
             (cond
@@ -1219,10 +1219,10 @@
             )
         )
     )
-    (defun XI_UUP (ats:string acc:string data:[object{UtilityAtsV1.Awo}])
+    (defun XI_UUP (ats:string acc:string data:[object{UtilityAtsV2.Awo}])
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
             )
             (ref-ATS::XE_UpP0 ats acc (drop -7 data))
             (ref-ATS::XE_UpP1 ats acc (at 0 (take 1 (take -7 data))))
@@ -1234,13 +1234,13 @@
             (ref-ATS::XE_UpP7 ats acc (at 0 (take -1 data)))
         )
     )
-    (defun XI_StoreUnstakeObject (ats:string acc:string position:integer obj:object{UtilityAtsV1.Awo})
+    (defun XI_StoreUnstakeObject (ats:string acc:string position:integer obj:object{UtilityAtsV2.Awo})
         (require-capability (SECURE))
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-ATS:module{AutostakeV1} ATS)
-                (p0:[object{UtilityAtsV1.Awo}] (ref-ATS::UR_P0 ats acc))
+                (ref-ATS:module{AutostakeV2} ATS)
+                (p0:[object{UtilityAtsV2.Awo}] (ref-ATS::UR_P0 ats acc))
                 (size:integer (length p0))
             )
             
@@ -1276,9 +1276,9 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (multi-cull-obj:object (URC_MultiCull ats acc))
-                (after-cull:[object{UtilityAtsV1.Awo}] (at "after-cull" multi-cull-obj))
+                (after-cull:[object{UtilityAtsV2.Awo}] (at "after-cull" multi-cull-obj))
                 (culled-values:[[decimal]] (at "culled-values" multi-cull-obj))
                 (summed-culled-values:[decimal] (at "summed-culled-values" multi-cull-obj))
             )
@@ -1289,13 +1289,13 @@
     (defun XI_SingleCull:[decimal] (ats:string acc:string position:integer)
         (let
             (
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 ;;
                 (cull-output:[decimal] (URC_SingleCull ats acc position))
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                 (l:integer (length rt-lst))
                 (empty:[decimal] (make-list l 0.0))
-                (zr:object{UtilityAtsV1.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject ats))
+                (zr:object{UtilityAtsV2.Awo} (ref-ATS::UDC_MakeZeroUnstakeObject ats))
             )
             (if (!= cull-output empty)
                 (XI_StoreUnstakeObject ats acc position zr)
@@ -1313,7 +1313,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
                 ;;

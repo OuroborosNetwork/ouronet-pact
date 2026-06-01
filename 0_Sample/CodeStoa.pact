@@ -1692,7 +1692,7 @@ DEMIPAD
         (ref-coin:module{stoa-ns.stoic-fungible-v1} coin)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (ref-ATS:module{AutostakeV1} ATS)
+        (ref-ATS:module{AutostakeV2} ATS)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
         ;;

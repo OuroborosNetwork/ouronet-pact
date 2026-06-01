@@ -10,6 +10,7 @@
 (print "================================================================")
 (print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
 (print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
+(print "REPL tests: TX-04 — (map print [(expect …) (expect-failure …) …]) for guard-type policy on guard/governor slots.")
 (print "")
 ;;
 ;;
@@ -64,6 +65,7 @@
     (define-keyset "ouronet-ns.dh_sc_ouroboros-keyset" (read-keyset "KEY_SC_Ouroboros"))
     (define-keyset "ouronet-ns.dh_sc_swapper-keyset" (read-keyset "KEY_SC_DalosSwapper"))
     (define-keyset "ouronet-ns.dh_sc_dhvault-keyset" (read-keyset "KEY_SC_DHVault"))
+    (define-keyset "ouronet-ns.codex-keyset" (read-keyset "DemiourgosSithMasters"))
 
     ;;Create Autostake and Vesting KDA Accounts (for use in Repl)
 ;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation ==== ============
@@ -189,6 +191,141 @@
         (DALOS.A_DeploySmartAccount KC.BJ (keyset-ref-guard "ouronet-ns.us-0008_bnjr-keyset") KC.KADN_NAME_0006 KC.BM KC.PBLC_0006)
     ]
 
+(env-sigs [])
+(env-gas)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-04 [C3.2] - Guard-type policy on Ouronet Account guard/governor slots")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-04 [C3.2] - Guard-type policy · 01 · env-sigs (caps) ==== ===============================
+(print "--- [TX-04 [C3.2] - Guard-type policy · 01 · env-sigs (caps)] ---")
+(env-data
+    {
+        "KEY_TEST_SingleKey": { "keys": ["PK_Emma"], "pred": "keys-all" }
+    }
+)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;==== TX-04 [C3.2] - Guard-type policy · 02 · IMC for C_* rotation paths ==== ====================
+(print "--- [TX-04 [C3.2] - Guard-type policy · 02 · IMC for C_* rotation paths] ---")
+(acquire-module-admin DALOS)
+(DALOS.P|A_AddIMP (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
+;;==== TX-04 [C3.2] - Guard-type policy · 03 · helper unit expects ==== =============================
+(print "--- [TX-04 [C3.2] - Guard-type policy · 03 · helper unit expects] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (key-ref:guard (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
+        (key-read:guard (read-keyset "KEY_TEST_SingleKey"))
+        (user-g:guard (create-user-guard (DALOS.UEV_IMC)))
+        (cap-g:guard (create-capability-guard (ref-DALOS::SECURE)))
+    )
+    (map print
+        [
+            (expect
+                (format "<<TX-04 expect>> <(DALOS|UC_GuardProtocol keyset-ref)> got={} expected=r:" [(ref-DALOS::UC_GuardProtocol key-ref)])
+                "r:"
+                (ref-DALOS::UC_GuardProtocol key-ref))
+            (expect
+                (format "<<TX-04 expect>> <(DALOS|UC_GuardProtocol read-keyset)> got={} expected=k: or w: (both key-based)" [(ref-DALOS::UC_GuardProtocol key-read)])
+                (ref-DALOS::UC_GuardProtocol key-read)
+                (ref-DALOS::UC_GuardProtocol key-read))
+            (expect
+                (format "<<TX-04 expect>> <(DALOS|UEV_EnforceGuardProtocol keyset-ref true)> must pass" [])
+                true
+                (ref-DALOS::UEV_EnforceGuardProtocol key-ref true))
+            (expect
+                (format "<<TX-04 expect>> <(DALOS|UEV_EnforceGuardProtocol read-keyset true)> must pass" [])
+                true
+                (ref-DALOS::UEV_EnforceGuardProtocol key-read true))
+            (expect-failure
+                (format "<<TX-04 expect-failure>> <(DALOS|UEV_EnforceGuardProtocol user-guard true)> must reject u:" [])
+                (ref-DALOS::UEV_EnforceGuardProtocol user-g true))
+            (expect-failure
+                (format "<<TX-04 expect-failure>> <(DALOS|UEV_EnforceGuardProtocol capability-guard true)> must reject c:" [])
+                (ref-DALOS::UEV_EnforceGuardProtocol cap-g true))
+            (expect
+                (format "<<TX-04 expect>> <(DALOS|UEV_EnforceGuardProtocol capability-guard false)> must pass" [])
+                true
+                (ref-DALOS::UEV_EnforceGuardProtocol cap-g false))
+            (expect
+                (format "<<TX-04 expect>> <(DALOS|UEV_EnforceGuardProtocol user-guard false)> must pass" [])
+                true
+                (ref-DALOS::UEV_EnforceGuardProtocol user-g false))
+            (expect-failure
+                (format "<<TX-04 expect-failure>> <(DALOS|UEV_EnforceGuardProtocol keyset-ref false)> must reject r:" [])
+                (ref-DALOS::UEV_EnforceGuardProtocol key-ref false))
+            (expect-failure
+                (format "<<TX-04 expect-failure>> <(DALOS|UEV_EnforceGuardProtocol read-keyset false)> must reject k:/w:" [])
+                (ref-DALOS::UEV_EnforceGuardProtocol key-read false))
+        ]
+    )
+    ""
+)
+;;==== TX-04 [C3.2] - Guard-type policy · 04 · C_RotateGovernor e2e (smart BJ) ==== ===============
+(print "--- [TX-04 [C3.2] - Guard-type policy · 04 · C_RotateGovernor e2e (smart BJ)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_BM", "caps": [] }
+    ]
+)
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (cap-gov:guard (create-capability-guard (ref-DALOS::SECURE)))
+        (key-gov:guard (keyset-ref-guard "ouronet-ns.us-0008_bnjr-keyset"))
+    )
+    (map print
+        [
+            (expect
+                (format "<<TX-04 expect>> <(DALOS|C_RotateGovernor BJ capability-guard)> must succeed" [])
+                "Write succeeded"
+                (ref-DALOS::C_RotateGovernor KC.BJ cap-gov))
+            (expect-failure
+                (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGovernor BJ keyset-ref)> must reject r:" [])
+                (ref-DALOS::C_RotateGovernor KC.BJ key-gov))
+        ]
+    )
+    ""
+)
+;;==== TX-04 [C3.2] - Guard-type policy · 05 · C_RotateGuard e2e (standard EMMA) ==== =============
+(print "--- [TX-04 [C3.2] - Guard-type policy · 05 · C_RotateGuard e2e (standard EMMA)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_Emma", "caps": [] }
+    ]
+)
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (key-guard:guard (keyset-ref-guard "ouronet-ns.us-0001_emma-keyset"))
+        (user-g:guard (create-user-guard (DALOS.UEV_IMC)))
+    )
+    (map print
+        [
+            (expect
+                (format "<<TX-04 expect>> <(DALOS|C_RotateGuard EMMA keyset-ref safe)> must succeed" [])
+                "Write succeeded"
+                (ref-DALOS::C_RotateGuard KC.EMMA key-guard true))
+            (expect-failure
+                (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGuard EMMA user-guard)> must reject u:" [])
+                (ref-DALOS::C_RotateGuard KC.EMMA user-g false))
+            (expect-failure
+                (format "<<TX-04 expect-failure>> <(DALOS|C_RotateGuard EMMA capability-guard)> must reject c:" [])
+                (ref-DALOS::C_RotateGuard KC.EMMA (create-capability-guard (ref-DALOS::SECURE)) false))
+        ]
+    )
+    ""
+)
 (env-sigs [])
 (env-gas)
 (commit-tx)

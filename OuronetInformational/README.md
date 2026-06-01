@@ -26,5 +26,6 @@ Whoever learns something new in chat with the AI should ask it to **append or ed
 
 - **Stage 0:** `REPL/Stage00_Sanboxes.repl` (Kadena + Stoa sandboxes), then **`REPL/Stage00a_StoaTests.repl`** (Stoa `coin` tests, same file)
 - **Full chain load:** `REPL/Z.repl`
+- **Stage 2 smoke / AQP:** `REPL/Stage02_Tester.repl` loads **`AQP-BOOT`** then **`[6.2]_AQP.repl`** — resume notes (boot steps, fee splits, **tx order** for score definitions) are in **`ARCHITECTURE/REPL_AND_TESTS.md`** § *Stage 2 AQP + AQP-BOOT*
 - **Ouronet test namespace:** `ouronet-ns` (not `free`)
 - **Integration test `.repl` layout** (mandatory for new suites): **`ARCHITECTURE/REPL_AND_TESTS.md`** and **`skills/repl-integration-test-layout.md`**

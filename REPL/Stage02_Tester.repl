@@ -43,6 +43,25 @@
 ;(load "Stage_02/[5.1]_PopulateNosferatu.repl")
 ;(load "Stage_02/[5.2]_PopulateBloodshed.repl")
 (load "Stage_02/[5.4]_PopulateBunnies.repl")
+(print "")
+(begin-tx "TX-02 [5.5] - AQP-BOOT Module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-02 [5.5] - AQP-BOOT Module · 01 · env-sigs (caps) ==== ==============================
+(print "--- [TX-02 [5.5] - AQP-BOOT Module · 01 · env-sigs (caps)] ---")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [5.5] - AQP-BOOT Module · 02 · load module ==== ==================================
+(print "--- [TX-02 [5.5] - AQP-BOOT Module · 02 · load module] ---")
+(load "../2_SLAVE/Stage_02/04_AQP-BOOT.pact")
+;;==== TX-02 [5.5] - AQP-BOOT Module · 03 · gas echo ==== =====================================
+(print "--- [TX-02 [5.5] - AQP-BOOT Module · 03 · gas echo] ---")
+(format "<<<<<<<AQP-BOOT Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 
 (load "Stage_02/[5.3]_Launchpad.repl")
 ;; [6.1] DPDC: URC_0030_StoicPay is commented out in that REPL (no DPL-UR in this chain). Uncomment there after deploying DPL-UR if you want that read.

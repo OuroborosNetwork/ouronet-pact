@@ -1,0 +1,506 @@
+;;
+;; REPL/Stage_01/[6.9]_CODEX.repl — CODEX A_ / C_ via TS01-C4 (canonical layout)
+;;   Prerequisite: Stage 01 stack through [4.0]_Sovereign-Executor.repl (CODEX, TS01-C4 deployed).
+;;   Load: (load "Stage_01/[6.9]_CODEX.repl") after Stage01_Tester (or comment other [6.x] and add this load).
+;;
+;;   Placeholders — edit env-data in INIT TX000 before running TX001+:
+;;     CODEX|COMPOSITE-ID     325-char Apollo composite (₱.*162 + ':' + Π.*162)
+;;     CODEX|PUBLIC-STANDARD  non-empty pubkey string for standard half
+;;     CODEX|PUBLIC-SMART     non-empty pubkey string for smart half
+;;     CODEX|REGISTERED-BY    Mnemosyne operator id (free-form string stored on row)
+;;     CODEX|ARWEAVE-TX-ID    43-char base64url Arweave tx id (default is valid charset; replace with real id)
+;;     CODEX|STOICTAG-NAME    3–256 glyphs, DALOS|CHARSET only; register = 1 STOA/glyph, release = 1 IGNIS/glyph
+;;     CODEX|STOICTAG-ACCOUNT Ouronet DALOS account (Ѻ.* / Σ.*) — default KST.ANHD
+;;   KEY_CODEX_GUARD / KEY_CODEX_GUARD_NEW — keysets for codex-guard at register and after rotate.
+;;
+;;   Inter-tx:   ;;|| NEXT >
+;;   Intra-tx:   ;;==== TXnnn · mm · <slug> ====  + (print "--- [TXnnn · mm · …] ---")
+;;   format "{}": Talos C_* / CODEX UR_* echoes, expect docs, (env-gas).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[6.9]_CODEX.repl")
+(print "================================================================")
+(print "Legend:")
+(print "  <<…>>     expect / expect-failure doc")
+(print "  <(TS01-C4.CODEX|…)> => \"…\"   Talos client → CODEX write")
+(print "  <(CODEX|UR_…|…)> => \"…\"       ref-CODEX utility read")
+(print "  <(REPL|env-gas)> …             gas after tx")
+(print "")
+(print "Source: ;;|| NEXT > between txs; ;;==== TXnnn · mm · … ==== per group.")
+(print "REPL tests: (map print [(expect …) …]) — one line per assertion.")
+(print "")
+(print ">>> Fill CODEX|COMPOSITE-ID and pubkey placeholders in INIT TX000 env-data before TX001. <<<")
+(print "")
+;;
+(begin-tx "TX000 INIT - chain data + CODEX placeholder env-data")
+(namespace "ouronet-ns")
+;;==== TX000 · 01 · env-chain-data ====
+(print "--- [TX000 · 01 · env-chain-data] ---")
+(env-chain-data
+    {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
+     "block-time": TV.TIME00}
+)
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX000 · 02 · placeholder env-data (edit before TX001) ====
+(print "--- [TX000 · 02 · placeholder env-data (edit before TX001)] ---")
+(env-data
+    {
+        "CODEX|COMPOSITE-ID": "₱.ŹΘHYSç7þУJΛpøЩфμбÄИЫŒП9ó7æйȘΣßлΔσ3äЬyrfжπйôleBĄиĄLtźș∇îИyKβńĎDûuÁCȘñЯÒźâŒíßRζäĞΩěѺtşlęHБMŸíWlãąŹÔИЖÊzHțćœŽζýżχδšωχUΨNńúńñУnИкjубâ£ßMKηжлý9κιЦвSαцууěÖщьΩùцn₳Бεůφ:Π.ЙÛœ5ŒOóцιbÌȘŚÚůVÀΠьδЬÃςиbIñжÄoTЬŮşÄrhûεżęF5h₳ΞžGËWXÇûKÖLÙNÂ₱ůθŚяZ₳tœ¥ÅÂΓŹË4uĂбoÚAвOUζÂwΩэí₳ÜŻŁqΣкΣΨΨþѺBkĞõeѺńξTŠB0èΦeπδóýwÑeщIäΣMNøθΔîý₿ŹďρŁȘρτYEúNвÓûĐØúkŹýşθÞΓ",
+        "CODEX|PUBLIC-STANDARD": "6g.5M1kdotfaBG0lMFFMduJqByz01p885CsxrdqcDL3vkc4xhBLts49KEHpHx6jdEo57Bpno6npMbmvoeF1uAG7JwulEHGHKsk1EHqakGkGIzk6ayw712HLKp9r1Ho1G0xn7rntwFcwkpysoL0JqnrvpDC6FGs4IBlbaiJ46mM4GGfbnsdaGGEmj25iFk6cM1rEIvMEEkkHbajfp1F9J2F0c6teInrrt3pgGzd35sE8y9sJgG0jzK08w3EmwmxoJ3vp0eGoBDp82yq9s17fLJhIlfsjrqyMaudJx8H27jlwpKsHuHIjJ0vv6LFdbL4hz23eqjowHmDG90bJtlK38vr5kKheacsx20ixy81zDgaAxwMBdl8",
+        "CODEX|PUBLIC-SMART": "6g.5H3r3LFv5ipxkHvw3C9dMpjJvji6LL48485dIhCcHm3dADLtcGK2CqhpM33DHgeiM8l7e8HG7LdB3zc5566G6qny6bmqBfha5el25kx5bEkkEbJyHdmJzvlwqxvccCmHqJ7ewC3KMbK9I2ybGam9sjbEMJjmDDMLlp8h9x5ltpAdhujeequoAI4xlJrm8FtBb3AH7cEreHAcfIk80dLp7vgMufg4Mzec00C9z43jpqg4kJs2854L6o320ByJCLp6ar69df44FtpHmqnmEMabkopkcJFvFd3g0dkmCd7Luddvx2wotzcdhkD9jMgzl2xHq1BAvvHyM61yel1ik7gt0u6uaxadbfAhy1pxkIzaK7xB5Fz",
+        "CODEX|REGISTERED-BY": "AncientHodler",
+        "CODEX|ARWEAVE-TX-ID": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "CODEX|STOICTAG-NAME": "codextest01",
+        "CODEX|STOICTAG-ACCOUNT": "",
+        "KEY_CODEX_GUARD": {"keys": [KC.DPTS_PBKY_0000], "pred": "keys-all"},
+        "KEY_CODEX_GUARD_NEW": {"keys": [KC.DPTS_PBKY_000a], "pred": "keys-all"}
+    }
+)
+(print (format "<(REPL|env-gas)> TX000 after env-data => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX001 - CODEX|A_RegisterCodexIdentity + UR_CIX reads")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX001 — A_RegisterCodexIdentity =====================================")
+;;==== TX001 · 01 · env-sigs (codex-keyset / Demiourgos) ====
+(print "--- [TX001 · 01 · env-sigs (codex-keyset / Demiourgos)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(let
+    (
+        (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
+        (public-standard:string (read-string "CODEX|PUBLIC-STANDARD"))
+        (public-smart:string (read-string "CODEX|PUBLIC-SMART"))
+        (registered-by:string (read-string "CODEX|REGISTERED-BY"))
+        (codex-guard:guard (read-keyset "KEY_CODEX_GUARD"))
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV1} TS01-C4)
+        (ref-CODEX:module{CodexV1} CODEX)
+        (reg-msg:string
+            (ref-TS01-C4::CODEX|A_RegisterCodexIdentity
+                composite-id
+                public-standard
+                public-smart
+                codex-guard
+                registered-by
+            )
+        )
+    )
+    ;;==== TX001 · 02 · Talos A_Register ====
+    (print "--- [TX001 · 02 · Talos A_Register] ---")
+    (print (format "<(TS01-C4.CODEX|A_RegisterCodexIdentity)> => \"{}\"" [reg-msg]))
+    ;;==== TX001 · 03 · UR_CIX reads + expects ====
+    (print "--- [TX001 · 03 · UR_CIX reads + expects] ---")
+    (map print
+        [
+            (format "<(CODEX|UR_CIX|CodexId)> => \"{}\"" [(ref-CODEX::UR_CIX|CodexId composite-id)])
+            (format "<(CODEX|UR_CIX|PublicStandard)> => \"{}\"" [(ref-CODEX::UR_CIX|PublicStandard composite-id)])
+            (format "<(CODEX|UR_CIX|PublicSmart)> => \"{}\"" [(ref-CODEX::UR_CIX|PublicSmart composite-id)])
+            (format "<(CODEX|UR_CIX|RegisteredBy)> => \"{}\"" [(ref-CODEX::UR_CIX|RegisteredBy composite-id)])
+            (expect
+                (format "<<TX001>> UR_CIX|CodexId matches composite-id \"{}\"" [composite-id])
+                composite-id
+                (ref-CODEX::UR_CIX|CodexId composite-id)
+            )
+            (expect
+                (format "<<TX001>> UR_CIX|RegisteredBy \"{}\"" [registered-by])
+                registered-by
+                (ref-CODEX::UR_CIX|RegisteredBy composite-id)
+            )
+            (expect
+                "<<TX001>> UR_CIX|DataOrNull is-registered true"
+                true
+                (at "is-registered" (ref-CODEX::UR_CIX|DataOrNull composite-id))
+            )
+        ]
+    )
+    ""
+)
+(print (format "<(REPL|env-gas)> TX001 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX002 - CODEX|C_RotateCodexGuard")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX002 — C_RotateCodexGuard =========================================")
+;;==== TX002 · 01 · env-sigs (current + new codex guard) ====
+(print "--- [TX002 · 01 · env-sigs (current + new codex guard)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_Florean", "caps": [] }
+    ]
+)
+(let
+    (
+        (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
+        (new-codex-guard:guard (read-keyset "KEY_CODEX_GUARD_NEW"))
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV1} TS01-C4)
+        (ref-CODEX:module{CodexV1} CODEX)
+        (rot-msg:string
+            (ref-TS01-C4::CODEX|C_RotateCodexGuard composite-id new-codex-guard)
+        )
+    )
+    ;;==== TX002 · 02 · Talos C_Rotate ====
+    (print "--- [TX002 · 02 · Talos C_Rotate] ---")
+    (print (format "<(TS01-C4.CODEX|C_RotateCodexGuard)> => \"{}\"" [rot-msg]))
+    ;;==== TX002 · 03 · UR guard expect ====
+    (print "--- [TX002 · 03 · UR guard expect] ---")
+    (map print
+        [
+            (format "<(CODEX|UR_CIX|CodexGuard)> => \"{}\"" [(ref-CODEX::UR_CIX|CodexGuard composite-id)])
+            (expect
+                "<<TX002>> codex-guard rotated to KEY_CODEX_GUARD_NEW"
+                new-codex-guard
+                (ref-CODEX::UR_CIX|CodexGuard composite-id)
+            )
+        ]
+    )
+    ""
+)
+(print (format "<(REPL|env-gas)> TX002 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX003 - CODEX|C_RecordArweaveUpload")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX003 — C_RecordArweaveUpload =======================================")
+;;==== TX003 · 01 · env-sigs (rotated codex guard = Florian) ====
+(print "--- [TX003 · 01 · env-sigs (rotated codex guard)] ---")
+(env-sigs
+    [
+        { "key": "PK_Florean", "caps": [] }
+    ]
+)
+(let
+    (
+        (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
+        (arweave-tx-id:string (read-string "CODEX|ARWEAVE-TX-ID"))
+        (uploaded-bytes:integer 1024)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV1} TS01-C4)
+        (ref-CODEX:module{CodexV1} CODEX)
+        (arw-msg:string
+            (ref-TS01-C4::CODEX|C_RecordArweaveUpload composite-id arweave-tx-id uploaded-bytes)
+        )
+    )
+    ;;==== TX003 · 02 · Talos C_RecordArweave ====
+    (print "--- [TX003 · 02 · Talos C_RecordArweave] ---")
+    (print (format "<(TS01-C4.CODEX|C_RecordArweaveUpload)> => \"{}\"" [arw-msg]))
+    ;;==== TX003 · 03 · UR_AWT reads + expects ====
+    (print "--- [TX003 · 03 · UR_AWT reads + expects] ---")
+    (map print
+        [
+            (format "<(CODEX|UR_AWT|ArweaveTxId)> => \"{}\"" [(ref-CODEX::UR_AWT|ArweaveTxId composite-id arweave-tx-id)])
+            (format "<(CODEX|UR_AWT|UploadedBytes)> => \"{}\"" [(ref-CODEX::UR_AWT|UploadedBytes composite-id arweave-tx-id)])
+            (expect
+                (format "<<TX003>> UR_AWT|ArweaveTxId \"{}\"" [arweave-tx-id])
+                arweave-tx-id
+                (ref-CODEX::UR_AWT|ArweaveTxId composite-id arweave-tx-id)
+            )
+            (expect
+                "<<TX003>> UR_AWT|UploadedBytes 1024"
+                1024
+                (ref-CODEX::UR_AWT|UploadedBytes composite-id arweave-tx-id)
+            )
+        ]
+    )
+    ""
+)
+(print (format "<(REPL|env-gas)> TX003 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX004 - CODEX|C_RegisterStoicTag")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX004 — C_RegisterStoicTag ==========================================")
+(let
+    (
+        (patron:string KST.ANHD)
+        (tag-name:string (read-string "CODEX|STOICTAG-NAME"))
+        (account-raw:string (read-string "CODEX|STOICTAG-ACCOUNT"))
+        (account-address:string
+            (if (= account-raw "")
+                KST.ANHD
+                account-raw
+            )
+        )
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV1} TS01-C4)
+        (ref-CODEX:module{CodexV1} CODEX)
+        (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
+        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
+        (kda-hov:string (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)))
+        (kda-cto:string (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)))
+        (kda-ouroboros:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+        (kda-dalos:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices account-address stoa-fee))
+    )
+    ;;==== TX004 · 01 · STOA fee echo ====
+    (print "--- [TX004 · 01 · STOA fee (1 per glyph, 10/20/30/40 split)] ---")
+    (print (format "<(CODEX|UC_StoicTagStoaFee)> tag len {} => \"{}\" STOA" [(length tag-name) stoa-fee]))
+    (print (format "<(DALOS|URC_SplitKDAPrices)> => \"{}\"" [split-kda]))
+    ;;==== TX004 · 02 · env-sigs (DALOS owner + four STOA transfers) ====
+    (print "--- [TX004 · 02 · env-sigs (DALOS owner + STOA 10/20/30/40)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER patron-kda kda-cto (at 2 split-kda))
+                    (coin.TRANSFER patron-kda kda-hov (at 0 split-kda))
+                    (coin.TRANSFER patron-kda kda-ouroboros (at 3 split-kda))
+                    (coin.TRANSFER patron-kda kda-dalos (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (stg-msg:string
+                (ref-TS01-C4::CODEX|C_RegisterStoicTag patron tag-name account-address)
+            )
+        )
+        ;;==== TX004 · 03 · Talos C_RegisterStoicTag ====
+        (print "--- [TX004 · 03 · Talos C_RegisterStoicTag] ---")
+        (print (format "<(TS01-C4.CODEX|C_RegisterStoicTag)> patron={} tag={} account={} => \"{}\""
+            [patron tag-name account-address stg-msg]))
+        ;;==== TX004 · 04 · UR_STG / UR_STBA expects (virgin insert — both tables) ====
+        (print "--- [TX004 · 04 · UR_STG / UR_STBA expects (virgin insert)] ---")
+        (map print
+            [
+                (format "<(CODEX|UR_STG|AccountAddress)> => \"{}\"" [(ref-CODEX::UR_STG|AccountAddress tag-name)])
+                (format "<(CODEX|UR_STG|IzActive)> => \"{}\"" [(ref-CODEX::UR_STG|IzActive tag-name)])
+                (expect
+                    (format "<<TX004>> UR_STG|AccountAddress \"{}\"" [account-address])
+                    account-address
+                    (ref-CODEX::UR_STG|AccountAddress tag-name)
+                )
+                (expect
+                    "<<TX004>> UR_STG|IzActive true"
+                    true
+                    (ref-CODEX::UR_STG|IzActive tag-name)
+                )
+                (expect
+                    "<<TX004>> UR_STBA|TagName matches (bijection tag→account)"
+                    tag-name
+                    (ref-CODEX::UR_STBA|TagName account-address)
+                )
+                (expect
+                    "<<TX004>> UR_STG|DataOrNull is-registered true (virgin)"
+                    true
+                    (at "is-registered" (ref-CODEX::UR_STG|DataOrNull tag-name))
+                )
+                (expect
+                    "<<TX004>> UR_STBA|DataOrNull has-stoictag true (virgin bijection)"
+                    true
+                    (at "has-stoictag" (ref-CODEX::UR_STBA|DataOrNull account-address))
+                )
+            ]
+        )
+        ""
+    )
+)
+(print (format "<(REPL|env-gas)> TX004 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX005 - CODEX|C_ReleaseStoicTag")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX005 — C_ReleaseStoicTag ===========================================")
+;;==== TX005 · 01 · env-sigs (DALOS account owner) ====
+(print "--- [TX005 · 01 · env-sigs (DALOS account owner)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+(let
+    (
+        (patron:string KST.ANHD)
+        (tag-name:string (read-string "CODEX|STOICTAG-NAME"))
+        (account-raw:string (read-string "CODEX|STOICTAG-ACCOUNT"))
+        (account-address:string
+            (if (= account-raw "")
+                KST.ANHD
+                account-raw
+            )
+        )
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV1} TS01-C4)
+        (ref-CODEX:module{CodexV1} CODEX)
+        (tag-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
+        (rel-msg:string (ref-TS01-C4::CODEX|C_ReleaseStoicTag patron tag-name))
+    )
+    ;;==== TX005 · 01b · IGNIS fee echo (same UC_StoicTagStoaFee amount) ====
+    (print "--- [TX005 · 01b · IGNIS fee (UC_StoicTagStoaFee amount, 1 per glyph)] ---")
+    (print (format "<(CODEX|UC_StoicTagStoaFee)> tag len {} => \"{}\" IGNIS" [(length tag-name) tag-fee]))
+    ;;==== TX005 · 02 · Talos C_ReleaseStoicTag ====
+    (print "--- [TX005 · 02 · Talos C_ReleaseStoicTag] ---")
+    (print (format "<(TS01-C4.CODEX|C_ReleaseStoicTag)> => \"{}\"" [rel-msg]))
+    ;;==== TX005 · 03 · UR deactivation + bijection expects ====
+    (print "--- [TX005 · 03 · UR deactivation + bijection expects] ---")
+    (map print
+        [
+            (format "<(CODEX|UR_STG|IzActive)> => \"{}\"" [(ref-CODEX::UR_STG|IzActive tag-name)])
+            (format "<(CODEX|UR_STBA|IzActive)> => \"{}\"" [(ref-CODEX::UR_STBA|IzActive account-address)])
+            (expect
+                "<<TX005>> UR_STG|IzActive false after release"
+                false
+                (ref-CODEX::UR_STG|IzActive tag-name)
+            )
+            (expect
+                "<<TX005>> UR_STBA|IzActive false after release (bijection)"
+                false
+                (ref-CODEX::UR_STBA|IzActive account-address)
+            )
+            (expect
+                "<<TX005>> UR_STG|DataOrNull is-registered false"
+                false
+                (at "is-registered" (ref-CODEX::UR_STG|DataOrNull tag-name))
+            )
+            (expect
+                "<<TX005>> UR_STBA|DataOrNull has-stoictag false (bijection)"
+                false
+                (at "has-stoictag" (ref-CODEX::UR_STBA|DataOrNull account-address))
+            )
+        ]
+    )
+    ""
+)
+(print (format "<(REPL|env-gas)> TX005 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX006 - CODEX|C_RegisterStoicTag (re-activate released tag)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX006 — C_RegisterStoicTag (released → re-active, update both tables) =====")
+(let
+    (
+        (patron:string KST.ANHD)
+        (tag-name:string (read-string "CODEX|STOICTAG-NAME"))
+        (account-raw:string (read-string "CODEX|STOICTAG-ACCOUNT"))
+        (account-address:string
+            (if (= account-raw "")
+                KST.ANHD
+                account-raw
+            )
+        )
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV1} TS01-C4)
+        (ref-CODEX:module{CodexV1} CODEX)
+        (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
+        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
+        (kda-hov:string (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)))
+        (kda-cto:string (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)))
+        (kda-ouroboros:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+        (kda-dalos:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices account-address stoa-fee))
+    )
+    ;;==== TX006 · 01 · STOA fee echo ====
+    (print "--- [TX006 · 01 · STOA fee (re-register released tag, 10/20/30/40 split)] ---")
+    (print (format "<(CODEX|UC_StoicTagStoaFee)> tag len {} => \"{}\" STOA" [(length tag-name) stoa-fee]))
+    (print (format "<(DALOS|URC_SplitKDAPrices)> => \"{}\"" [split-kda]))
+    ;;==== TX006 · 02 · env-sigs ====
+    (print "--- [TX006 · 02 · env-sigs (DALOS owner + STOA 10/20/30/40)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER patron-kda kda-cto (at 2 split-kda))
+                    (coin.TRANSFER patron-kda kda-hov (at 0 split-kda))
+                    (coin.TRANSFER patron-kda kda-ouroboros (at 3 split-kda))
+                    (coin.TRANSFER patron-kda kda-dalos (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (stg-msg:string
+                (ref-TS01-C4::CODEX|C_RegisterStoicTag patron tag-name account-address)
+            )
+        )
+        ;;==== TX006 · 03 · Talos C_RegisterStoicTag (upsert path) ====
+        (print "--- [TX006 · 03 · Talos C_RegisterStoicTag (released re-activate)] ---")
+        (print (format "<(TS01-C4.CODEX|C_RegisterStoicTag)> => \"{}\"" [stg-msg]))
+        ;;==== TX006 · 04 · bijection re-active expects ====
+        (print "--- [TX006 · 04 · bijection re-active expects (both tables)] ---")
+        (map print
+            [
+                (expect
+                    "<<TX006>> UR_STG|IzActive true after re-register"
+                    true
+                    (ref-CODEX::UR_STG|IzActive tag-name)
+                )
+                (expect
+                    "<<TX006>> UR_STBA|IzActive true after re-register (bijection)"
+                    true
+                    (ref-CODEX::UR_STBA|IzActive account-address)
+                )
+                (expect
+                    (format "<<TX006>> UR_STG|AccountAddress \"{}\"" [account-address])
+                    account-address
+                    (ref-CODEX::UR_STG|AccountAddress tag-name)
+                )
+                (expect
+                    (format "<<TX006>> UR_STBA|TagName \"{}\"" [tag-name])
+                    tag-name
+                    (ref-CODEX::UR_STBA|TagName account-address)
+                )
+                (expect
+                    "<<TX006>> UR_STG|DataOrNull is-registered true (released re-activate)"
+                    true
+                    (at "is-registered" (ref-CODEX::UR_STG|DataOrNull tag-name))
+                )
+                (expect
+                    "<<TX006>> UR_STBA|DataOrNull has-stoictag true (released re-activate)"
+                    true
+                    (at "has-stoictag" (ref-CODEX::UR_STBA|DataOrNull account-address))
+                )
+            ]
+        )
+        ""
+    )
+)
+(print (format "<(REPL|env-gas)> TX006 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+(print "=== END [6.9]_CODEX.repl ================================================")

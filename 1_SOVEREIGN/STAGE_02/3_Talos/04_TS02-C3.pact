@@ -458,6 +458,45 @@
             )
         )
     )
+    (defun AQP-POOL|C_Issue:string
+        (patron:string pool-name:string asset-id:string aqp-class:integer)
+        @doc "Issues an acquisition pool (aqp-class + canonical native asset-id) and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-AQP::C_Issue patron pool-name asset-id aqp-class)
+                    )
+                    (out:[string] (at "output" ico))
+                    (pool-id:string (at 0 out))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully issued Acquisition Pool {} (class {} for asset {})." [pool-id aqp-class asset-id])
+            )
+        )
+    )
+    (defun AQP-POOL|C_AddScore:string
+        (patron:string pool-id:string score-id:string)
+        @doc "Assigns score-id to the first free slot on pool-id; collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-AQP::C_AddScore patron pool-id score-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully assigned Score {} to Pool {}." [score-id pool-id])
+            )
+        )
+    )
     ;;{F7}  [X]
     ;;
 )

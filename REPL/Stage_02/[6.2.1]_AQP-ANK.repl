@@ -265,115 +265,7 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX003 - AQP-ANK SF and NF baseline issuance tests")
-(print "")
-(print "=== TX003 — SF and NF baseline issuance ===============================")
-(namespace "ouronet-ns")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;;==== TX003 · 01 · env-sigs (patron only) — REPL banner follows ===================
-(print "--- [TX003 · 01 · env-sigs (patron only)] ---")
-(env-sigs
-    [
-        { "key": "PK_AncientHodler", "caps": [] }
-    ]
-)
-(let
-    (
-        (patron:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
-                patron
-                (* (ref-DALOS::UR_UsagePrice "standard") 24.0)
-            )
-        )
-    )
-    ;;==== TX003 · 02 · DALOS URC_SplitKDAPrices ×24 — REPL banner follows ============
-    (print "--- [TX003 · 02 · DALOS fee split ×24] ---")
-    (print (format "<(DALOS|URC_SplitKDAPrices)> patron standard×24 => \"{}\"" [split-kda]))
-    ;;==== TX003 · 03 · env-sigs (Lumy + ANHD + payer) — REPL banner follows ==========
-    (print "--- [TX003 · 03 · env-sigs (Lumy + ANHD + payer)] ---")
-    (env-sigs
-        [
-            { "key": "PK_Lumy", "caps": [] }
-            { "key": "PK_AncientHodler", "caps": [] }
-            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
-              "caps":
-                [
-                    (coin.TRANSFER
-                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
-                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
-                    )
-                    (coin.TRANSFER
-                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
-                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
-                    )
-                    (coin.TRANSFER
-                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
-                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
-                    )
-                    (coin.TRANSFER
-                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
-                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
-                    )
-                ]
-            }
-        ]
-    )
-    ;;==== TX003 · 04 · Talos C_Issue* with acnoi (SF/NF/NF-set on DHCD/KBN) ===========
-    (print "--- [TX003 · 04 · issue SF + NF + NF set (acnoi=true creates BoostClass inline)] ---")
-    (map print
-        [
-            (format "<(TS02-C3.AQP-ANK|C_IssueSemiFungibleAnchor SFAnchoraa acnoi=true CoreBoostSF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SFAnchoraa" "DHCD-98c486052a51" true "CoreBoostSF" 8 35.0 11)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueSemiFungibleAnchor SFAnchorab acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SFAnchorab" "DHCD-98c486052a51" false "CoreBoostSF-98c486052a51" 8 37.0 9)])
-            ;;
-            ;;SnakeTokenRain NFTs (OURO Vault)
-            ;;BronzeSnakePower
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor OuroborosRain acnoi=true BronzeSnakePower)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "OuroborosRain" "KBN-98c486052a51" true "BronzeSnakePower" 3 50.0 "Background" "Ouroboros Rain")])
-            ;;SilverSnakePower
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor AurynRain acnoi=true SilverSnakePower)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "AurynRain" "KBN-98c486052a51" true "SilverSnakePower" 3 100.0 "Background" "Auryn Rain")])
-            ;;GoldenSnakePower
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor EliteAurynRain acnoi=true GoldenSnakePower)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "EliteAurynRain" "KBN-98c486052a51" true "GoldenSnakePower" 3 200.0 "Background" "Elite-Auryn Rain")])
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor LegendarySnakeTokenRain acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendarySnakeTokenRain" "KBN-98c486052a51" false "GoldenSnakePower-98c486052a51" 3 400.0 "Rarity" "Legendary")])
-            ;;UnityBooster NFTs (Unity Vault)
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor Elk0nite acnoi=true UnityBooster)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Elk0nite" "KBN-98c486052a51" true "UnityBooster" 3 100.0 "Eyes" "Elk0nite Unity Glasses")])
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor Osmiridium acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Osmiridium" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 300.0 "Eyes" "Osmiridium Unity Glasses")])
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor Titanium acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "Titanium" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 900.0 "Eyes" "Titaniumgold Unity Glasses")])
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor LegendaryUnityBooster acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryUnityBooster" "KBN-98c486052a51" false "UnityBooster-98c486052a51" 3 1000.0 "Rarity" "Legendary")])
-            ;;StoaBooster NFTs (Stoa Vault)
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor VegoldEyes acnoi=true StoaBooster)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "VegoldEyes" "KBN-98c486052a51" true "StoaBooster" 3 1000.0 "Eyes" "vEGLD Focus")])
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor LegendaryStoaBooster acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryStoaBooster" "KBN-98c486052a51" false "StoaBooster-98c486052a51" 3 3500.0 "Rarity" "Legendary")])
-            ;;VestaBooster NFTs (Vesta Vault)
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor RedEyes acnoi=true VestaBooster)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "RedEyes" "KBN-98c486052a51" true "VestaBooster" 3 250.0 "Eyes" "Red")])
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor GreenEyes acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "GreenEyes" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 250.0 "Eyes" "Green")])
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor BlueEyes acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "BlueEyes" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 250.0 "Eyes" "Blue")])
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor LegendaryVestaBooster acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleAnchor patron "LegendaryVestaBooster" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 3500.0 "Rarity" "Legendary")])
-            (format "<(TS02-C3.AQP-ANK|C_IssueNonFungibleSetAnchor RGBEyes acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueNonFungibleSetAnchor patron "RGBEyes" "KBN-98c486052a51" false "VestaBooster-98c486052a51" 3 1000.0 1)])
-        ]
-    )
-    ;;==== TX003 · 05 · ref-ANK UR_AA|Data KBN — REPL ================================
-    (print "--- [TX003 · 05 · UR read KBN AssetAnchors] ---")
-    (map print
-        [
-            (format "<(AQP-ANK|UR_AA|Data KBN)> => \"{}\"" [(ref-ANK::UR_AA|Data "KBN-98c486052a51")])
-        ]
-    )
-)
-(print (format "<(REPL|env-gas)> TX003 after commit => \"{}\"" [(env-gas)]))
-(commit-tx)
-(print "")
-(print "=== END TX003 ==========================================================")
-(print "")
-;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-;;|| NEXT                   >
-;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-;; TX004: After OURO/DHCD usage in TX001–TX003, strip every live TF anchor on OURO and SF anchor on DHCD, then
+;; TX004: After OURO/DHCD usage in TX001–TX002, strip every live TF anchor on OURO and SF anchor on DHCD, then
 ;; revoke every associated BoostClass so both assets are bare. KBN NF (Bunnies) anchors stay for [6.2.2]+ repls.
 (print "")
 (begin-tx "TX004 - Strip OURO TF and DHCD SF anchors and BoostClasses (KBN NF retained)")
@@ -523,7 +415,96 @@
 (print (format "<(REPL|env-gas)> TX005 after commit => \"{}\"" [(env-gas)]))
 (commit-tx)
 (print "")
-(print "=== END TX005 · FILE [6.2.1]_AQP-ANK.repl DONE =========================")
+(print "=== END TX005 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;; Step phases are intentionally last in this file (Step1 skipped in REPL).
+(print "")
+(begin-tx "TX006 - AQP-BOOT Step2 SnakePower anchor-class issuance")
+(print "")
+(print "=== TX006 — AQP-BOOT Step2 SnakePower anchor-class issuance ==========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX006 · 01 · env-sigs (admin patron) ===================================
+(print "--- [TX006 · 01 · env-sigs (admin patron)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX006 · 02 · AQP-BOOT Step2 with STOA split (7x standard) + payer caps ==
+(print "--- [TX006 · 02 · AQP-BOOT Step2 with STOA split (7x standard) + payer caps] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (kbn-id:string "KBN-98c486052a51")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 7.0))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (print (format "<(AQP-BOOT|C_Step2_CreateSnakePowerAnchorClasses)> => \"{}\"" [(AQP-BOOT.C_Step2_CreateSnakePowerAnchorClasses patron kbn-id)]))
+)
+(print (format "<(REPL|env-gas)> TX006 after commit => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+(print "=== END TX006 =========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX007 - AQP-BOOT Step3 booster anchor-class issuance")
+(print "")
+(print "=== TX007 — AQP-BOOT Step3 booster anchor-class issuance =============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX007 · 01 · env-sigs (admin patron) ===================================
+(print "--- [TX007 · 01 · env-sigs (admin patron)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX007 · 02 · AQP-BOOT Step3 with STOA split (14x standard) + payer caps =
+(print "--- [TX007 · 02 · AQP-BOOT Step3 with STOA split (14x standard) + payer caps] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (kbn-id:string "KBN-98c486052a51")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 14.0))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (print (format "<(AQP-BOOT|C_Step3_CreateBoosterAnchorClasses)> => \"{}\"" [(AQP-BOOT.C_Step3_CreateBoosterAnchorClasses patron kbn-id)]))
+)
+(print (format "<(REPL|env-gas)> TX007 after commit => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+(print "=== END TX007 · FILE [6.2.1]_AQP-ANK.repl DONE =========================")
 (print "")
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >

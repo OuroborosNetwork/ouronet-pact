@@ -38,7 +38,7 @@ Stage 2 adds **collectables (DPDC)**, **DemiPad** (launchpad ecosystem), **AQP**
 | `01_ANK.pact` | `AQP-ANK` | **Anchors** (`AcquisitionAnchors`) |
 | `02_SCORE.pact` | `AQP-SCORE` | Scoring |
 | `03_AQP.pact` | `AQP` | **Acquisition pool** core |
-| `04_FVT.pact` | `FVT` | **FVT** component |
+| `04_FVT.pact` | `FVT` | **FVT** — farms aggregate many LP scores via `FVT|T|ScoreLink`; see `03_AQP/README_FVT.md` |
 
 ## Other Stage 2 core
 
@@ -61,6 +61,7 @@ Stage 2 adds **collectables (DPDC)**, **DemiPad** (launchpad ecosystem), **AQP**
 2. **DEMIPAD** is a **hub**; satellites (**SPARK**, **SNAKES**, **CUSTODIANS**, **STOICPAY**) reuse `GOV|DEMIPAD|SC_NAME` and policy patterns.
 3. **Talos** registers **summoner** guards on each satellite via `P|A_Define` / `P|A_AddIMP` (same pattern as Stage 1).
 4. **INFO-TWO** composes reads from **DPDC** / **DPDC-S** / **DPDC-T** into `OuronetInfoV1.ClientInfo` for constrained client execution.
+5. **AQP multi-LP farms:** one Farm FVT + shared `common-denominator`; each LP line → own pool + own score set + one `C_AddScoreLink` per score. System guide: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/README.md`.
 
 ## Deep-dive placeholders
 

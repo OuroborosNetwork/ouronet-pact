@@ -44,3 +44,32 @@ At the top of the file (after the `;;` preface), include:
 ## Sovereign module cross-reference (optional)
 
 Where a REPL is the primary scenario for a module, a one-line comment at **`(module …)`** in the sovereign **`.pact`** may point to the REPL and the **`TX… · mm ·`** convention (see **`01_ANK.pact`** / **`02_SCORE.pact`**).
+
+## Semantic ordering (chain dependencies)
+
+Mechanical layout (banners, **`;;|| NEXT >`**) is not enough: transactions must respect **table dependencies**. Example: **`C_IssueSemiFungibleScoreDefinition`** → **`UR_SCR|ScoreOwnerKonto`** → **`read SCR|T|Score`** for the score id — the **score row must already exist** (e.g. from **`AQP-BOOT`** **`C_Step4`** / **`C_Step5`** in **`[6.2.2]_AQP-SCORE.repl`**). Boot provisioning txs belong **before** definition-vector txs; see **`OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md`** § *Stage 2 AQP + AQP-BOOT*.
+
+## `env-data` and `env-sigs` pitfalls
+
+### Commas in `env-data` objects
+
+Pact requires **commas between every key** in an object literal. Missing commas fail parse with **`Expected: ['}']`** at the next key.
+
+```pact
+(env-data
+    {
+        "KEY_A": "value-a",
+        "KEY_B": "value-b"
+    }
+)
+```
+
+Mirror **`REPL/Stage_01/[0.0]_Starter.repl`** / **`[2.1]_Dalos.repl`**.
+
+### Starter pubkey string names
+
+**`KC.DPTS_PBKY_000a`** is the string **`"PK_Florean"`** (not **`PK_Florian`**). Any **`env-sigs`** **`"key"`** must match the literal in the keyset **`keys`** list exactly. See **`codex-stage01-repl.md`** (TX002 rotate guard).
+
+### Reload utilities after pact edits
+
+Scenario REPLs do not redeploy **`U|DALOS`** / **`U|ATS`** automatically. After fixing utility **`.pact`** files, re-run **`[1]_Utilities.repl`** (or full tester) before integration txs that call **`GLYPH|UEV_*`** or **`UC_IzStoicTagIndex`**.

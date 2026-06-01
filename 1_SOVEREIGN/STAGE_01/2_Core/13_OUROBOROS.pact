@@ -200,7 +200,7 @@
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (orb-sc ORBR|SC_NAME)
                 (present-kda-balance:decimal (ref-coin::get-balance (ref-DALOS::UR_AccountKadena orb-sc)))
                 (w-kda:string (ref-DALOS::UR_WrappedStoaID))
@@ -226,7 +226,7 @@
     (defun URC_Compress:[decimal] (ignis-amount:decimal)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
             )
@@ -383,7 +383,7 @@
         (UEV_IMC)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -419,7 +419,7 @@
         (UEV_IMC)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)

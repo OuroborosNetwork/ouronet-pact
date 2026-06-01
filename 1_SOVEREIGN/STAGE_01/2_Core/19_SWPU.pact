@@ -898,7 +898,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 ;;
                 (lkda:string (ref-DALOS::UR_SilverStoaID))
                 (liquidindex:string (at 0 (ref-DPTF::UR_RewardBearingToken lkda)))

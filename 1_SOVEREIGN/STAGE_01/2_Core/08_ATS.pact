@@ -3,7 +3,7 @@
     ;;
     (implements OuronetPolicyV1)
     (implements BrandingUsagePrimaryV1)
-    (implements AutostakeV1)
+    (implements AutostakeV2)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -125,7 +125,7 @@
         parameter-lock:bool
         unlocks:integer
         ;;
-        reward-tokens:[object{AutostakeV1.ATS|RewardTokenSchemaV2}]
+        reward-tokens:[object{AutostakeV2.ATS|RewardTokenSchemaV2}]
         ;;
         ;;Cold Recovery
         c-rbt:string
@@ -153,14 +153,14 @@
     )
     (defschema ATS|BalanceSchemaV2
         @doc "Key = <ATS-Pair> + BAR + <account>"
-        P0:[object{UtilityAtsV1.Awo}]
-        P1:object{UtilityAtsV1.Awo}
-        P2:object{UtilityAtsV1.Awo}
-        P3:object{UtilityAtsV1.Awo}
-        P4:object{UtilityAtsV1.Awo}
-        P5:object{UtilityAtsV1.Awo}
-        P6:object{UtilityAtsV1.Awo}
-        P7:object{UtilityAtsV1.Awo}
+        P0:[object{UtilityAtsV2.Awo}]
+        P1:object{UtilityAtsV2.Awo}
+        P2:object{UtilityAtsV2.Awo}
+        P3:object{UtilityAtsV2.Awo}
+        P4:object{UtilityAtsV2.Awo}
+        P5:object{UtilityAtsV2.Awo}
+        P6:object{UtilityAtsV2.Awo}
+        P7:object{UtilityAtsV2.Awo}
         ;;
         ;;ForSelect, store Key Make-up
         id:string
@@ -229,7 +229,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
             )
             (ref-U|ATS::UEV_HibernationFees peak decay)
             (CAP_Owner atspair)
@@ -383,7 +383,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (c-rbt-prec:integer (ref-DPTF::UR_Decimals (UR_ColdRewardBearingToken atspair)))
             )
@@ -397,7 +397,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
             )
             (ref-U|ATS::UEV_ColdDurationParameters soft-or-hard base growth)
             (compose-capability (ATS|C>CONTROL-COLD-RECOVERY atspair))
@@ -460,7 +460,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
             )
             (ref-U|ATS::UEV_Fee promile)
             (ref-U|ATS::UEV_Decay decay)
@@ -476,7 +476,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
             )
             (ref-U|ATS::UEV_Fee promile)
             (compose-capability (ATS|S>CONTROL-RECOVERY atspair))
@@ -637,7 +637,7 @@
         (at "unlocks" (read ATS|Pairs atspair ["unlocks"]))
     )
     ;;
-    (defun UR_RewardTokens:[object{AutostakeV1.ATS|RewardTokenSchemaV2}] (atspair:string)
+    (defun UR_RewardTokens:[object{AutostakeV2.ATS|RewardTokenSchemaV2}] (atspair:string)
         (let
             (
                 (temp:list (at "reward-tokens" (read ATS|Pairs atspair ["reward-tokens"])))
@@ -650,10 +650,10 @@
                     (
                         (default-royalty:decimal 0.0)
                         (ref-U|LST:module{StringProcessorV1} U|LST)
-                        (new-obj:[object{AutostakeV1.ATS|RewardTokenSchemaV2}]
+                        (new-obj:[object{AutostakeV2.ATS|RewardTokenSchemaV2}]
                             (fold
                                 (lambda
-                                    (acc:[object{AutostakeV1.ATS|RewardTokenSchemaV2}] idx:integer)
+                                    (acc:[object{AutostakeV2.ATS|RewardTokenSchemaV2}] idx:integer)
                                     (ref-U|LST::UC_AppL acc
                                         (+
                                             (at idx temp)
@@ -678,7 +678,7 @@
     (defun UR_RewardTokenList:[string] (atspair:string)
         (fold
             (lambda
-                (acc:[string] item:object{AutostakeV1.ATS|RewardTokenSchemaV2})
+                (acc:[string] item:object{AutostakeV2.ATS|RewardTokenSchemaV2})
                 (+ acc [(at "token" item)])
             )
             []
@@ -688,7 +688,7 @@
     (defun UR_RewardTokenNFR:[bool] (atspair:string)
         (fold
             (lambda
-                (acc:[bool] item:object{AutostakeV1.ATS|RewardTokenSchemaV2})
+                (acc:[bool] item:object{AutostakeV2.ATS|RewardTokenSchemaV2})
                 (+ acc [(at "nfr" item)])
             )
             []
@@ -708,7 +708,7 @@
             (ref-U|INT::UEV_PositionalVariable rur 3 "Invalid RUR Integer")
             (fold
                 (lambda
-                    (acc:[decimal] item:object{AutostakeV1.ATS|RewardTokenSchemaV2})
+                    (acc:[decimal] item:object{AutostakeV2.ATS|RewardTokenSchemaV2})
                     (ref-U|LST::UC_AppL acc
                         (cond
                             ((= rur 1) (at "resident" item))
@@ -829,10 +829,10 @@
             )
         )
     )
-    (defun UR_P0:[object{UtilityAtsV1.Awo}] (atspair:string account:string)
+    (defun UR_P0:[object{UtilityAtsV2.Awo}] (atspair:string account:string)
         (at "P0" (read ATS|Ledger (UC_AtspairAccount atspair account) ["P0"]))
     )
-    (defun UR_P1-7:object{UtilityAtsV1.Awo} (atspair:string account:string position:integer)
+    (defun UR_P1-7:object{UtilityAtsV2.Awo} (atspair:string account:string position:integer)
         (let
             (
                 (ref-U|INT:module{OuronetIntegersV1} U|INT)
@@ -851,7 +851,7 @@
             )
         )
     )
-    (defun UR_P-Seven:[object{UtilityAtsV1.Awo}]
+    (defun UR_P-Seven:[object{UtilityAtsV2.Awo}]
         (atspair:string account:string)
         (let
             (
@@ -931,7 +931,7 @@
         @doc "Computes the amount of RT Tokens an <rbt-amount> of RBT would yield for an <atspair>"
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (rbt-supply:decimal (URC_PairRBTSupply atspair))
                 (index:decimal (URC_Index atspair))
                 (resident-amounts:[decimal] (UR_RewardTokenRUR atspair 1))
@@ -1006,7 +1006,7 @@
         (+
             (fold
                 (lambda
-                    (acc:decimal item:object{UtilityAtsV1.Awo})
+                    (acc:decimal item:object{UtilityAtsV2.Awo})
                     (+ acc (URCX_UnstakeObjectUnbondingValue atspair reward-token item))
                 )
                 0.0
@@ -1022,7 +1022,7 @@
             )
         )
     )
-    (defun URCX_UnstakeObjectUnbondingValue (atspair:string reward-token:string io:object{UtilityAtsV1.Awo})
+    (defun URCX_UnstakeObjectUnbondingValue (atspair:string reward-token:string io:object{UtilityAtsV2.Awo})
         (let
             (
                 (rtp:integer (URC_RewardTokenPosition atspair reward-token))
@@ -1035,13 +1035,13 @@
             )
         )
     )
-    (defun URC_CullValue:[decimal] (atspair:string input:object{UtilityAtsV1.Awo})
+    (defun URC_CullValue:[decimal] (atspair:string input:object{UtilityAtsV2.Awo})
         @doc "Computes the Cull value of an <input> unstake objected, given a specific <atspair> \
         \ Returns a list of decimal, the list having as many decimal as the <atspair> has reward tokens \
         \ Returns a list of 0.0 is nothing can be culled"
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (rt-lst:[string] (UR_RewardTokenList atspair))
                 (rt-amounts:[decimal] (at "reward-tokens" input))
                 (l:integer (length rt-lst))
@@ -1069,7 +1069,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ELITE:module{EliteV1} ELITE)
@@ -1141,16 +1141,16 @@
         (let
             (
                 (ref-U|INT:module{OuronetIntegersV1} U|INT)
-                (zero:object{UtilityAtsV1.Awo} 
+                (zero:object{UtilityAtsV2.Awo} 
                     ;;Opened
                     (UDC_MakeZeroUnstakeObject atspair)
                 )
-                (negative:object{UtilityAtsV1.Awo} 
+                (negative:object{UtilityAtsV2.Awo} 
                     ;;Closed
                     (UDC_MakeNegativeUnstakeObject atspair)
                 )
                 (elite:bool (UR_EliteMode atspair))
-                (hybrid:object{UtilityAtsV1.Awo}
+                (hybrid:object{UtilityAtsV2.Awo}
                     (if elite negative zero)
                 )
             )
@@ -1177,14 +1177,14 @@
             )
         )
     )
-    (defun URCX_PosObjSt:integer (atspair:string input-obj:object{UtilityAtsV1.Awo})
+    (defun URCX_PosObjSt:integer (atspair:string input-obj:object{UtilityAtsV2.Awo})
         @doc "Computes the state of an uncoil positional object, \
         \ to see if it the position it is on can be used for uncoiling \
         \ <-1> = closed; <0> = occupied; <1> = opened"
         (let
             (
-                (zero:object{UtilityAtsV1.Awo} (UDC_MakeZeroUnstakeObject atspair))
-                (negative:object{UtilityAtsV1.Awo} (UDC_MakeNegativeUnstakeObject atspair))
+                (zero:object{UtilityAtsV2.Awo} (UDC_MakeZeroUnstakeObject atspair))
+                (negative:object{UtilityAtsV2.Awo} (UDC_MakeNegativeUnstakeObject atspair))
             )
             (if (= input-obj zero)
                 1
@@ -1272,21 +1272,21 @@
         )
     )
     ;;
-    (defun URC_RewardBearingTokenAmounts:object{AutostakeV1.CoilData}
+    (defun URC_RewardBearingTokenAmounts:object{AutostakeV2.CoilData}
         (ats:string rt:string amount:decimal)
         (URCX_RBT-Amount ats rt amount 1)
     )
-    (defun URC_RewardBearingTokenAmountsWithHibernation:object{AutostakeV1.CoilData}
+    (defun URC_RewardBearingTokenAmountsWithHibernation:object{AutostakeV2.CoilData}
         (ats:string rt:string amount:decimal hibernation-dayz:integer)
         (URCX_RBT-Amount ats rt amount hibernation-dayz)
     )
-    (defun URCX_RBT-Amount:object{AutostakeV1.CoilData} 
+    (defun URCX_RBT-Amount:object{AutostakeV2.CoilData} 
         (ats:string rt:string amount:decimal dayz:integer)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 ;;
                 (h:bool (ref-ATS::UR_Hibernate ats))
@@ -1369,7 +1369,7 @@
     (defun UEV_id (atspair:string)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
             )
             (ref-U|ATS::UEV_UniqueAtspair atspair)
             (with-default-read ATS|Pairs atspair
@@ -1493,20 +1493,20 @@
     )
     ;;
     ;;{F3}  [UDC]
-    (defun UDC_MakeUnstakeObject:object{UtilityAtsV1.Awo} (atspair:string tm:time)
+    (defun UDC_MakeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string tm:time)
         {"reward-tokens"    : (make-list (length (UR_RewardTokenList atspair)) 0.0)
         ,"cull-time"        : tm}
     )
-    (defun UDC_MakeZeroUnstakeObject:object{UtilityAtsV1.Awo} (atspair:string)
+    (defun UDC_MakeZeroUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string)
         (UDC_MakeUnstakeObject atspair NULLTIME)
     )
-    (defun UDC_MakeNegativeUnstakeObject:object{UtilityAtsV1.Awo} (atspair:string)
+    (defun UDC_MakeNegativeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string)
         (UDC_MakeUnstakeObject atspair ANTITIME)
     )
-    (defun UDC_ComposePrimaryRewardToken:object{AutostakeV1.ATS|RewardTokenSchemaV2} (token:string nfr:bool)
+    (defun UDC_ComposePrimaryRewardToken:object{AutostakeV2.ATS|RewardTokenSchemaV2} (token:string nfr:bool)
         (UDC_RT token nfr 0.0 0.0 0.0)
     )
-    (defun UDC_RT:object{AutostakeV1.ATS|RewardTokenSchemaV2} 
+    (defun UDC_RT:object{AutostakeV2.ATS|RewardTokenSchemaV2} 
         (a:string b:bool c:decimal d:decimal e:decimal)
         (enforce 
             (fold (and) true [(>= c 0.0)(>= d 0.0)(>= e 0.0)]) 
@@ -1520,10 +1520,10 @@
     )
     (defun UDCX_Balance:object{ATS|BalanceSchemaV2}
         (
-            a:[object{UtilityAtsV1.Awo}] b:object{UtilityAtsV1.Awo} 
-            c:object{UtilityAtsV1.Awo} d:object{UtilityAtsV1.Awo}
-            e:object{UtilityAtsV1.Awo} f:object{UtilityAtsV1.Awo}
-            g:object{UtilityAtsV1.Awo} h:object{UtilityAtsV1.Awo}
+            a:[object{UtilityAtsV2.Awo}] b:object{UtilityAtsV2.Awo} 
+            c:object{UtilityAtsV2.Awo} d:object{UtilityAtsV2.Awo}
+            e:object{UtilityAtsV2.Awo} f:object{UtilityAtsV2.Awo}
+            g:object{UtilityAtsV2.Awo} h:object{UtilityAtsV2.Awo}
             i:string j:string
         )
         {"P0"       : a
@@ -1537,7 +1537,7 @@
         ,"id"       : i
         ,"account"  : j}
     )
-    (defun UDC_CoilData:object{AutostakeV1.CoilData}
+    (defun UDC_CoilData:object{AutostakeV2.CoilData}
         (a:decimal b:decimal c:decimal d:decimal e:decimal f:decimal g:string)
         {"primal-input-amount"  : a
         ,"first-input-amount"   : b
@@ -2025,7 +2025,7 @@
             (
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ats-sc:string ATS|SC_NAME)
                 (id:string (ref-U|DALOS::UDC_Makeid atspair))
             )
@@ -2126,7 +2126,7 @@
             [0.0 0.0]
             (let
                 (
-                    (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                    (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 )
                 (ref-U|ATS::UC_UnlockPrice (UR_Unlocks atspair))
             )
@@ -2176,7 +2176,7 @@
         (require-capability (ATS|C>SET_COLD-DURATION atspair soft-or-hard base growth))
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
             )
             (if soft-or-hard
                 (update ATS|Pairs atspair
@@ -2279,7 +2279,7 @@
                         0.0
                     )
                 )
-                (new-rt-obj:object{AutostakeV1.ATS|RewardTokenSchemaV2}
+                (new-rt-obj:object{AutostakeV2.ATS|RewardTokenSchemaV2}
                     (cond
                         ((= rur 1) (UDC_RT reward-token nfr rur-amount unbonding royalty))
                         ((= rur 2) (UDC_RT reward-token nfr resident rur-amount royalty))
@@ -2300,8 +2300,8 @@
         (UEV_IMC)
         (let
             (
-                (zero:object{UtilityAtsV1.Awo} (UDC_MakeZeroUnstakeObject atspair))
-                (n:object{UtilityAtsV1.Awo} (UDC_MakeNegativeUnstakeObject atspair))
+                (zero:object{UtilityAtsV2.Awo} (UDC_MakeZeroUnstakeObject atspair))
+                (n:object{UtilityAtsV2.Awo} (UDC_MakeNegativeUnstakeObject atspair))
             )
             (with-default-read ATS|Ledger (UC_AtspairAccount atspair account)
                 (UDCX_Balance [zero] n n n n n n n atspair account)
@@ -2325,7 +2325,7 @@
         (UEV_IMC)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
             )
             (with-read ATS|Ledger (UC_AtspairAccount atspair account)
                 {"P0" := p0, "P1" := p1, "P2" := p2, "P3" := p3, "P4" := p4, "P5" := p5, "P6" := p6, "P7" := p7, "id" := id, "account" := acc}
@@ -2346,49 +2346,49 @@
             )
         )
     )
-    (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV1.Awo}])
+    (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV2.Awo}])
         (UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P0" : obj}
         )
     )
-    (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV1.Awo})
+    (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
         (UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P1"  : obj}
         )
     )
-    (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV1.Awo})
+    (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
         (UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P2"  : obj}
         )
     )
-    (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV1.Awo})
+    (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
         (UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P3"  : obj}
         )
     )
-    (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV1.Awo})
+    (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
         (UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P4"  : obj}
         )
     )
-    (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV1.Awo})
+    (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
         (UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P5"  : obj}
         )
     )
-    (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV1.Awo})
+    (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
         (UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P6"  : obj}
         )
     )
-    (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV1.Awo})
+    (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV2.Awo})
         (UEV_IMC)
         (update ATS|Ledger (UC_AtspairAccount atspair account)
             { "P7"  : obj}

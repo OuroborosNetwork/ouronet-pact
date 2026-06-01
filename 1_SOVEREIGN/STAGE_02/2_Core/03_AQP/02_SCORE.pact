@@ -293,7 +293,7 @@
         ;;                                  Class 4 = DPNF Score (NFTs)
         ;;
         ;;LP, DPTF, DPOF
-        lp-denominator:string       ;;[.]   Class-0 only: DPTF token ID common to all scored LPs (e.g. "OURO"); BAR for classes 1-4.
+        lp-denominator:string       ;;[.]   Class-0 only: native DPTF token-id of the common pool leg (e.g. OURO-98c486052a51); BAR for classes 1-4.
         mx-frozen:decimal           ;;[.]   Multiplier for Frozen Tokens (Default 2.0)
         mx-sleeping:decimal         ;;[.]   Multiplier for Sleeping Tokens (Default 1.0)
         mx-hibernated:decimal       ;;[.]   Multiplier for Hibernated Tokens (Default 1.0)
@@ -440,7 +440,7 @@
         @event
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
@@ -470,13 +470,19 @@
                 )
                 "Invalid precision, score-class, mx-frozen, mx-sleeping, mx-hibernated or nft-score-model"
             )
-            ;;4]Validate <lp-denominator>: class 0 requires non-BAR; classes 1-4 require BAR
+            ;;4]Validate <lp-denominator>: class 0 requires non-BAR native DPTF id; classes 1-4 require BAR
             (enforce
                 (if (= score-class 0)
                     (!= lp-denominator BAR)
                     (= lp-denominator BAR)
                 )
                 "lp-denominator must be non-BAR for class 0 and BAR for classes 1-4"
+            )
+            (if (= score-class 0)
+                (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF))
+                    (ref-DPTF::UEV_id lp-denominator)
+                )
+                true
             )
         )
     )
@@ -1525,8 +1531,23 @@
     ;;{F1}  [URC]
     (defun URC_LpAmountToLpDenominatorEquivalent:decimal
         (lp-id:string lp-amount:decimal lp-denominator:string)
-        @doc "Maps staked LP token amount into lp-denominator units (common score weight). PLACEHOLDER: returns lp-amount unchanged; replace with pair-reserve math."
-        lp-amount
+        @doc "Class-0: maps staked LP amount into lp-denominator token units (e.g. OURO). \
+            \ Pro-rata break via SWPL against current SWP reserves for the pair behind native lp-id; \
+            \ F|/Z| stripped by URC_StakeLpTokenToNativeLpDptf. Pair must list lp-denominator (UEV_LpStakeScoreContext)."
+        (if (= lp-amount 0.0)
+            0.0
+            (let
+                (
+                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                    (native-lp:string (URC_StakeLpTokenToNativeLpDptf lp-id))
+                    (swpair:string (ref-SWP::UR_GetLpSwpair native-lp))
+                    (denom-pos:integer (ref-SWP::UR_PoolTokenPosition swpair lp-denominator))
+                    (break-amounts:[decimal] (ref-SWPL::URC_LpBreakAmounts swpair lp-amount))
+                )
+                (at denom-pos break-amounts)
+            )
+        )
     )
     (defun URC_StakeLpTokenToNativeLpDptf:string (lp-id:string)
         @doc "SWP|LP rows use native LP DPTF ids. Strip leading F| (frozen LP) or Z| (sleeping orto LP); S|, W|, P| native LP prefixes pass through unchanged."

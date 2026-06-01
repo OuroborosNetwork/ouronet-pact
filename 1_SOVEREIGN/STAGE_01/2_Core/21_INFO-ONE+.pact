@@ -74,6 +74,11 @@
     (defun ATS|INFO_Cull:object{OuronetInfoV1.ClientInfo} (patron:string culler:string ats:string))
     (defun ATS|INFO_DirectRecovery:object{OuronetInfoV1.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
     ;;
+    (defun SWP|INFO_ChangeOwnership:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-owner:string))
+    (defun SWP|INFO_ModifyCanChangeOwner:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-boolean:bool))
+    (defun SWP|INFO_ModifyWeights:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-weights:[decimal]))
+    (defun SWP|INFO_ToggleAddLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string toggle:bool))
+    (defun SWP|INFO_ToggleSwapCapability:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string toggle:bool))
     (defun SWP|INFO_AddLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
     (defun SWP|INFO_IcedLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
     (defun SWP|INFO_GlacialLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
@@ -136,6 +141,60 @@
     ;;FUNCTIONS
     (defun UC|GasPrice:decimal (full-price:decimal trigger:bool)
         (if trigger 0.0 full-price)
+    )
+    (defun UCX_ToggleAddOrSwapIfp:decimal (swpair:string toggle:bool)
+        @doc "Ignis preview for <SwapperV3.C_ToggleAddOrSwap> (Talos <SWP|C_ToggleAddLiquidity> / <SWP|C_ToggleSwapCapability>)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-SWP:module{SwapperV3} SWP)
+                (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))
+                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp0:decimal (UC|GasPrice (* 5.0 biggest) trigger))
+            )
+            (if toggle
+                (let
+                    (
+                        (pt-ids:[string] (ref-SWP::UR_PoolTokens swpair))
+                        (amp:decimal (ref-SWP::UR_Amplifier swpair))
+                        (ptts:[string]
+                            (if (= amp -1.0)
+                                (drop 1 pt-ids)
+                                pt-ids
+                            )
+                        )
+                        (lp-id:string (ref-SWP::UR_TokenLP swpair))
+                        (lp-burn-role:bool (ref-DPTF::UR_AccountRoleBurn lp-id swp-sc))
+                        (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id swp-sc))
+                        (ifp-burn:decimal (if lp-burn-role 0.0 (SIP|URC_Big)))
+                        (ifp-mint:decimal (if lp-mint-role 0.0 (SIP|URC_Big)))
+                        (ifp-fee:decimal
+                            (fold
+                                (lambda
+                                    (acc:decimal idx:integer)
+                                    (let
+                                        (
+                                            (pt:string (at idx ptts))
+                                        )
+                                        (if (ref-DPTF::UR_AccountRoleFeeExemption pt swp-sc)
+                                            acc
+                                            (+ acc (SIP|URC_Big))
+                                        )
+                                    )
+                                )
+                                0.0
+                                (enumerate 0 (- (length ptts) 1))
+                            )
+                        )
+                    )
+                    (+ ifp0 ifp-burn ifp-mint ifp-fee)
+                )
+                ifp0
+            )
+        )
     )
     (defun UCX_AddLiquidity:object{OuronetInfoV1.ClientInfo} 
         (
@@ -459,7 +518,10 @@
             \ <DPOF|C_ToggleFreezeAccount> \
             \ <DPTF|C_ToggleTransferRole> \
             \ <DPTF|C_Wipe> \
-            \ <DPTF|C_WipePartial>"
+            \ <DPTF|C_WipePartial> \
+            \ <SwapperV3.C_ChangeOwnership> (Talos <SWP|C_ChangeOwnership>) \
+            \ <SwapperV3.C_ModifyCanChangeOwner> (Talos <SWP|C_ModifyCanChangeOwner>) \
+            \ <SwapperV3.C_ModifyWeights> (Talos <SWP|C_ModifyWeights>)"
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1183,7 +1245,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (a-id:string (ref-DALOS::UR_AurynID))
@@ -1430,7 +1492,7 @@
         (patron:string awaker:string dpof:string nonce:integer)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
@@ -1615,7 +1677,7 @@
         (dpof:string nonce:integer)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 ;;
                 (precision:integer (ref-DPOF::UR_Decimals dpof))
@@ -1654,11 +1716,11 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
                 ;;
-                (coil-data:object{AutostakeV1.CoilData}
+                (coil-data:object{AutostakeV2.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats rt amount)
                 )
                 (input-amount:decimal (at "first-input-amount" coil-data))
@@ -1709,11 +1771,11 @@
             (
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
                 ;;
-                (coil-data:object{AutostakeV1.CoilData} 
+                (coil-data:object{AutostakeV2.CoilData} 
                     (ref-ATS::URC_RewardBearingTokenAmountsWithHibernation ats rt amount dayz)
                 )
                 (input-amount:decimal (at "first-input-amount" coil-data))
@@ -1774,12 +1836,12 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
                 ;;
                 ;;<ats1>
-                (coil1-data:object{AutostakeV1.CoilData} 
+                (coil1-data:object{AutostakeV2.CoilData} 
                     (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount)
                 )
                 (input1-amount:decimal (at "first-input-amount" coil1-data))
@@ -1788,7 +1850,7 @@
                 (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
                 ;;
                 ;;<ats2>
-                (coil2-data:object{AutostakeV1.CoilData} 
+                (coil2-data:object{AutostakeV2.CoilData} 
                     (ref-ATS::URC_RewardBearingTokenAmounts ats2 c-rbt1 c-rbt1-amount)
                 )
                 (input2-amount:decimal (at "first-input-amount" coil2-data))
@@ -1848,12 +1910,12 @@
             (
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
                 ;;
                 ;;<ats1>
-                (coil1-data:object{AutostakeV1.CoilData} 
+                (coil1-data:object{AutostakeV2.CoilData} 
                     (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount)
                 )
                 (input1-amount:decimal (at "first-input-amount" coil1-data))
@@ -1862,7 +1924,7 @@
                 (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
                 ;;
                 ;;<ats2>
-                (coil2-data:object{AutostakeV1.CoilData} 
+                (coil2-data:object{AutostakeV2.CoilData} 
                     (ref-ATS::URC_RewardBearingTokenAmountsWithHibernation ats2 c-rbt1 c-rbt1-amount dayz)
                 )
                 (input2-amount:decimal (at "first-input-amount" coil2-data))
@@ -1931,10 +1993,10 @@
         (patron:string recoverer:string ats:string ra:decimal)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-ATSU:module{AutostakeUsageV1} ATSU)
                 (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
@@ -2036,7 +2098,7 @@
                 (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-ATSU:module{AutostakeUsageV1} ATSU)
                 (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
@@ -2087,10 +2149,10 @@
         (patron:string recoverer:string ats:string ra:decimal)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-ATS:module{AutostakeV1} ATS)
+                (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
                 ;;
@@ -2299,7 +2361,7 @@
         (client:string target:string ouro-amount:decimal)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -2336,6 +2398,104 @@
         )
     )
     ;;  [SWP]
+    (defun SWP|INFO_ChangeOwnership:object{OuronetInfoV1.ClientInfo}
+        (patron:string swpair:string new-owner:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Changes Ownership of SWP-Pair {} to {}" [swpair sa])]
+                [(format "Succesfully changed ownership of SWP-Pair {} to {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []
+            )
+        )
+    )
+    (defun SWP|INFO_ModifyCanChangeOwner:object{OuronetInfoV1.ClientInfo}
+        (patron:string swpair:string new-boolean:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Modifies <can-change-owner> of SWP-Pair {} to {}" [swpair new-boolean])]
+                [(format "Succesfully updated <can-change-owner> of SWP-Pair {} to {}" [swpair new-boolean])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []
+            )
+        )
+    )
+    (defun SWP|INFO_ModifyWeights:object{OuronetInfoV1.ClientInfo}
+        (patron:string swpair:string new-weights:[decimal])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Modifies weights of SWP-Pair {} to {}" [swpair new-weights])]
+                [(format "Succesfully updated SWP-Pair {} weights to {}" [swpair new-weights])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []
+            )
+        )
+    )
+    (defun SWP|INFO_ToggleAddLiquidity:object{OuronetInfoV1.ClientInfo}
+        (patron:string swpair:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ifp:decimal (UCX_ToggleAddOrSwapIfp swpair toggle))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if toggle
+                        (format "Operation: Enables adding liquidity for SWP-Pair {}" [swpair])
+                        (format "Operation: Disables adding liquidity for SWP-Pair {}" [swpair])
+                    )
+                ]
+                [
+                    (if toggle
+                        (format "Succesfully enabled adding liquidity for SWP-Pair {}" [swpair])
+                        (format "Succesfully disabled adding liquidity for SWP-Pair {}" [swpair])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun SWP|INFO_ToggleSwapCapability:object{OuronetInfoV1.ClientInfo}
+        (patron:string swpair:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ifp:decimal (UCX_ToggleAddOrSwapIfp swpair toggle))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [
+                    (if toggle
+                        (format "Operation: Enables swapping for SWP-Pair {}" [swpair])
+                        (format "Operation: Disables swapping for SWP-Pair {}" [swpair])
+                    )
+                ]
+                [
+                    (if toggle
+                        (format "Succesfully enabled swapping for SWP-Pair {}" [swpair])
+                        (format "Succesfully disabled swapping for SWP-Pair {}" [swpair])
+                    )
+                ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [toggle]
+            )
+        )
+    )
     (defun SWP|INFO_EnableFrozenLP:object{OuronetInfoV1.ClientInfo}
         (patron:string swpair:string)
         (let
@@ -2517,7 +2677,7 @@
         (firestarter:string)
         (let
             (
-                (ref-U|ATS:module{UtilityAtsV1} U|ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
