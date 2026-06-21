@@ -1,0 +1,477 @@
+;;
+;; REPL/Stage00b_StoaBulkGasTests.repl - 5000-recipient bulk gas stress (after Stage00_Sanboxes.repl)
+;;   Inter-tx:   ;;|| NEXT >
+;;   Intra-tx:   ;;==== <TX label> - mm - <slug> ====  + (print "--- […] ---")
+;;   <(REPL|env-gas)> gas after each tx; target chain limit 2_000_000
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage00b_StoaBulkGasTests.repl")
+(print "================================================================")
+(print "Legend: <<…>> expect; <(REPL|env-gas)> gas; <(coin.C_Bulk…)> return echoes.")
+(print "Source: ;;|| NEXT > between txs; one TRANSFER_BULK per tx (managed cap).")
+(print "REPL tests: gas probes for MAX_BULK_BATCH (5000) vs 2M gas limit.")
+(print "")
+(print "************************ Stage 00b-GAS - bulk 5000 gas START ***********************************")
+
+(print "")
+(begin-tx "TX-BULK-GAS-01 - SKB5K list builders + keyset")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BULK-GAS-01 - 01 - module + keyset ==== =================================================
+(print "--- [TX-BULK-GAS-01 - 01 - module + keyset] ---")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+
+(module SKB5K GOVERNANCE
+    @doc "REPL-only helpers for 5000-recipient bulk gas probes"
+    (defcap GOVERNANCE () true)
+    (defconst BULK_MAX 5000)
+    (defconst BULK_UNIT 1.0)
+    (defconst SETUP_BATCH 1000)
+    (defun UC_Receiver:string (idx:integer)
+        (format "brcpt-{}" [(int-to-str 10 idx)])
+    )
+    (defun UC_Receivers:[string] (count:integer)
+        (map UC_Receiver (enumerate 0 (- count 1)))
+    )
+    (defun UC_Amounts:[decimal] (count:integer amount:decimal)
+        (map (lambda (x:integer) amount) (enumerate 0 (- count 1)))
+    )
+    (defun UC_Guards:[guard] (count:integer g:guard)
+        (map (lambda (x:integer) g) (enumerate 0 (- count 1)))
+    )
+    (defun UC_Total:decimal (count:integer amount:decimal)
+        (* (dec count) amount)
+    )
+    (defun UC_BatchReceivers:[string] (batch:integer)
+        (let
+            (
+                (start:integer (* batch SETUP_BATCH))
+                (stop:integer (+ start (- SETUP_BATCH 1)))
+            )
+            (map UC_Receiver (enumerate start stop))
+        )
+    )
+    (defun UC_BatchAmounts:[decimal] (amount:decimal)
+        (UC_Amounts SETUP_BATCH amount)
+    )
+)
+
+(env-data
+    {
+        "KEY_BULK_RCPT" : { "keys" : ["1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5"]}
+    }
+)
+
+(print (format "<(REPL|env-gas)> TX-BULK-GAS-01 => \"{}\"" [(env-gas)]))
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+;; Setup: 5 txs x 1000 recipients (managed cap = one bulk per tx)
+(print "")
+(begin-tx "TX-BULK-GAS-02-00 - seed batch 0 (brcpt-0..999)")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-02-00 - seed batch 0] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (guard:guard (read-keyset "KEY_BULK_RCPT"))
+        (unit:decimal SKB5K.BULK_UNIT)
+        (batch-total:decimal (SKB5K.UC_Total SKB5K.SETUP_BATCH unit))
+    )
+    (test-capability (coin.TRANSFER_BULK sender batch-total))
+    (coin.C_BulkTransferAnew sender (SKB5K.UC_BatchReceivers 0) (SKB5K.UC_Guards SKB5K.SETUP_BATCH guard) (SKB5K.UC_BatchAmounts unit))
+    (print (format "<(REPL|env-gas)> setup batch 0 => \"{}\"" [(env-gas)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-02-01 - seed batch 1 (brcpt-1000..1999)")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-02-01 - seed batch 1] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (guard:guard (read-keyset "KEY_BULK_RCPT"))
+        (unit:decimal SKB5K.BULK_UNIT)
+        (batch-total:decimal (SKB5K.UC_Total SKB5K.SETUP_BATCH unit))
+    )
+    (test-capability (coin.TRANSFER_BULK sender batch-total))
+    (coin.C_BulkTransferAnew sender (SKB5K.UC_BatchReceivers 1) (SKB5K.UC_Guards SKB5K.SETUP_BATCH guard) (SKB5K.UC_BatchAmounts unit))
+    (print (format "<(REPL|env-gas)> setup batch 1 => \"{}\"" [(env-gas)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-02-02 - seed batch 2 (brcpt-2000..2999)")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-02-02 - seed batch 2] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (guard:guard (read-keyset "KEY_BULK_RCPT"))
+        (unit:decimal SKB5K.BULK_UNIT)
+        (batch-total:decimal (SKB5K.UC_Total SKB5K.SETUP_BATCH unit))
+    )
+    (test-capability (coin.TRANSFER_BULK sender batch-total))
+    (coin.C_BulkTransferAnew sender (SKB5K.UC_BatchReceivers 2) (SKB5K.UC_Guards SKB5K.SETUP_BATCH guard) (SKB5K.UC_BatchAmounts unit))
+    (print (format "<(REPL|env-gas)> setup batch 2 => \"{}\"" [(env-gas)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-02-03 - seed batch 3 (brcpt-3000..3999)")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-02-03 - seed batch 3] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (guard:guard (read-keyset "KEY_BULK_RCPT"))
+        (unit:decimal SKB5K.BULK_UNIT)
+        (batch-total:decimal (SKB5K.UC_Total SKB5K.SETUP_BATCH unit))
+    )
+    (test-capability (coin.TRANSFER_BULK sender batch-total))
+    (coin.C_BulkTransferAnew sender (SKB5K.UC_BatchReceivers 3) (SKB5K.UC_Guards SKB5K.SETUP_BATCH guard) (SKB5K.UC_BatchAmounts unit))
+    (print (format "<(REPL|env-gas)> setup batch 3 => \"{}\"" [(env-gas)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-02-04 - seed batch 4 (brcpt-4000..4999)")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-02-04 - seed batch 4] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (guard:guard (read-keyset "KEY_BULK_RCPT"))
+        (unit:decimal SKB5K.BULK_UNIT)
+        (batch-total:decimal (SKB5K.UC_Total SKB5K.SETUP_BATCH unit))
+    )
+    (test-capability (coin.TRANSFER_BULK sender batch-total))
+    (coin.C_BulkTransferAnew sender (SKB5K.UC_BatchReceivers 4) (SKB5K.UC_Guards SKB5K.SETUP_BATCH guard) (SKB5K.UC_BatchAmounts unit))
+    (print (format "<(REPL|env-gas)> setup batch 4 => \"{}\"" [(env-gas)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+;; Gas ladder: one managed bulk per tx (existing accounts)
+(print "")
+(begin-tx "TX-BULK-GAS-03-100 - C_BulkTransfer count=100")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-03-100] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (count:integer 100)
+        (unit:decimal SKB5K.BULK_UNIT)
+        (total:decimal (SKB5K.UC_Total count unit))
+    )
+    (test-capability (coin.TRANSFER_BULK sender total))
+    (coin.C_BulkTransfer sender (SKB5K.UC_Receivers count) (SKB5K.UC_Amounts count unit))
+    (print (format "<(REPL|env-gas)> C_BulkTransfer count=100 => \"{}\"" [(env-gas)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-03-500 - C_BulkTransfer count=500")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-03-500] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (count:integer 500)
+        (unit:decimal SKB5K.BULK_UNIT)
+        (total:decimal (SKB5K.UC_Total count unit))
+    )
+    (test-capability (coin.TRANSFER_BULK sender total))
+    (coin.C_BulkTransfer sender (SKB5K.UC_Receivers count) (SKB5K.UC_Amounts count unit))
+    (print (format "<(REPL|env-gas)> C_BulkTransfer count=500 => \"{}\"" [(env-gas)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-03-1000 - C_BulkTransfer count=1000")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-03-1000] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (count:integer 1000)
+        (unit:decimal SKB5K.BULK_UNIT)
+        (total:decimal (SKB5K.UC_Total count unit))
+    )
+    (test-capability (coin.TRANSFER_BULK sender total))
+    (coin.C_BulkTransfer sender (SKB5K.UC_Receivers count) (SKB5K.UC_Amounts count unit))
+    (print (format "<(REPL|env-gas)> C_BulkTransfer count=1000 => \"{}\"" [(env-gas)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-03-2500 - C_BulkTransfer count=2500")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-03-2500] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (count:integer 2500)
+        (unit:decimal SKB5K.BULK_UNIT)
+        (total:decimal (SKB5K.UC_Total count unit))
+    )
+    (test-capability (coin.TRANSFER_BULK sender total))
+    (coin.C_BulkTransfer sender (SKB5K.UC_Receivers count) (SKB5K.UC_Amounts count unit))
+    (print (format "<(REPL|env-gas)> C_BulkTransfer count=2500 => \"{}\"" [(env-gas)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-03-5000 - C_BulkTransfer count=5000 at 10M limit")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-03-5000] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (count:integer SKB5K.BULK_MAX)
+        (unit:decimal SKB5K.BULK_UNIT)
+        (total:decimal (SKB5K.UC_Total count unit))
+        (limit:integer 2000000)
+    )
+    (test-capability (coin.TRANSFER_BULK sender total))
+    (let
+        ((result:string (coin.C_BulkTransfer sender (SKB5K.UC_Receivers count) (SKB5K.UC_Amounts count unit))))
+        (print (format "<(coin.C_BulkTransfer)> => \"{}\"" [result]))
+        (let ((gas:integer (env-gas)))
+            (print (format "<(REPL|env-gas)> C_BulkTransfer count=5000 => \"{}\"" [gas]))
+            (print (format "<<TX-BULK-GAS-03>> 5000 fits 2M? {}" [(<= gas limit)]))
+            (expect
+                (format "<<TX-BULK-GAS-03>> summary for 5000 recipients" [])
+                "BulkTransfer: 5000 recipients, total 5000.0"
+                result)
+        )
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-04 - 5000 C_BulkTransfer at 2M gas limit")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 2000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-04 - 5000 at 2M cap] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (count:integer SKB5K.BULK_MAX)
+        (unit:decimal SKB5K.BULK_UNIT)
+        (total:decimal (SKB5K.UC_Total count unit))
+        (limit:integer 2000000)
+    )
+    (test-capability (coin.TRANSFER_BULK sender total))
+    (let
+        ((result:string (coin.C_BulkTransfer sender (SKB5K.UC_Receivers count) (SKB5K.UC_Amounts count unit))))
+        (print (format "<(coin.C_BulkTransfer)> => \"{}\"" [result]))
+        (let ((gas:integer (env-gas)))
+            (print (format "<(REPL|env-gas)> C_BulkTransfer 5000 at 2M limit => \"{}\"" [gas]))
+            (map print
+                [
+                    (expect
+                        (format "<<TX-BULK-GAS-04>> 5000 bulk succeeds within 2M gas (used {})" [gas])
+                        true
+                        (<= gas limit))
+                    (expect
+                        (format "<<TX-BULK-GAS-04>> summary for 5000 recipients" [])
+                        "BulkTransfer: 5000 recipients, total 5000.0"
+                        result)
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-05 - 5000 C_BulkTransferAnew cold path")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-05 - 5000 anew] ---")
+(env-sigs [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(let
+    (
+        (sender:string "stoa-foundation")
+        (count:integer SKB5K.BULK_MAX)
+        (unit:decimal SKB5K.BULK_UNIT)
+        (offset:integer 10000)
+        (receivers:[string]
+            (map
+                (lambda (idx:integer)
+                    (format "brcpt-new-{}" [(int-to-str 10 (+ idx offset))]))
+                (enumerate 0 (- count 1))
+            )
+        )
+        (total:decimal (SKB5K.UC_Total count unit))
+        (limit:integer 2000000)
+    )
+    (test-capability (coin.TRANSFER_BULK sender total))
+    (let
+        ((result:string
+            (coin.C_BulkTransferAnew
+                sender
+                receivers
+                (SKB5K.UC_Guards count (read-keyset "KEY_BULK_RCPT"))
+                (SKB5K.UC_Amounts count unit))))
+        (print (format "<(coin.C_BulkTransferAnew)> => \"{}\"" [result]))
+        (let ((gas:integer (env-gas)))
+            (print (format "<(REPL|env-gas)> C_BulkTransferAnew 5000 => \"{}\"" [gas]))
+            (print (format "<<TX-BULK-GAS-05>> anew 5000 fits 2M? {}" [(<= gas limit)]))
+            (expect
+                (format "<<TX-BULK-GAS-05>> anew summary" [])
+                "BulkTransferAnew: 5000 recipients, total 5000.0"
+                result)
+        )
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-06 - 5000 C_BulkTransmit existing accounts")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 2000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-06 - 5000 transmit existing] ---")
+(let
+    (
+        (sender:string "stoa-foundation")
+        (count:integer SKB5K.BULK_MAX)
+        (unit:decimal SKB5K.BULK_UNIT)
+        (total:decimal (SKB5K.UC_Total count unit))
+        (limit:integer 2000000)
+    )
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74"
+        ,"caps": [(coin.TRANSMIT_BULK sender total)]}])
+    (let
+        ((result:string (coin.C_BulkTransmit sender (SKB5K.UC_Receivers count) (SKB5K.UC_Amounts count unit))))
+        (print (format "<(coin.C_BulkTransmit)> => \"{}\"" [result]))
+        (let ((gas:integer (env-gas)))
+            (print (format "<(REPL|env-gas)> C_BulkTransmit 5000 at 2M limit => \"{}\"" [gas]))
+            (map print
+                [
+                    (expect
+                        (format "<<TX-BULK-GAS-06>> 5000 transmit fits 2M (used {})" [gas])
+                        true
+                        (<= gas limit))
+                    (expect
+                        (format "<<TX-BULK-GAS-06>> transmit summary" [])
+                        "BulkTransmit: 5000 recipients, total 5000.0"
+                        result)
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(print "")
+(begin-tx "TX-BULK-GAS-07 - 5000 C_BulkTransmitAnew with guards")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 2000000)(env-gas 0)
+(print "--- [TX-BULK-GAS-07 - 5000 transmit anew] ---")
+(let
+    (
+        (sender:string "stoa-foundation")
+        (count:integer SKB5K.BULK_MAX)
+        (unit:decimal SKB5K.BULK_UNIT)
+        (offset:integer 20000)
+        (receivers:[string]
+            (map
+                (lambda (idx:integer)
+                    (format "brcpt-xmit-{}" [(int-to-str 10 (+ idx offset))]))
+                (enumerate 0 (- count 1))
+            )
+        )
+        (total:decimal (SKB5K.UC_Total count unit))
+        (limit:integer 2000000)
+    )
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74"
+        ,"caps": [(coin.TRANSMIT_BULK sender total)]}])
+    (let
+        ((result:string
+            (coin.C_BulkTransmitAnew
+                sender
+                receivers
+                (SKB5K.UC_Guards count (read-keyset "KEY_BULK_RCPT"))
+                (SKB5K.UC_Amounts count unit))))
+        (print (format "<(coin.C_BulkTransmitAnew)> => \"{}\"" [result]))
+        (let ((gas:integer (env-gas)))
+            (print (format "<(REPL|env-gas)> C_BulkTransmitAnew 5000 at 2M limit => \"{}\"" [gas]))
+            (map print
+                [
+                    (expect
+                        (format "<<TX-BULK-GAS-07>> 5000 transmit anew fits 2M (used {})" [gas])
+                        true
+                        (<= gas limit))
+                    (expect
+                        (format "<<TX-BULK-GAS-07>> transmit anew summary" [])
+                        "BulkTransmitAnew: 5000 recipients, total 5000.0"
+                        result)
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "************************ Stage 00b-GAS - bulk 5000 gas COMPLETE *******************************")

@@ -1,5 +1,8 @@
 (interface AcquisitionPoolsV1
     (defun GOV|Demiurgoi ())
+    (defun GOV|AqpKey ())
+    (defun GOV|AQP|SC_NAME ())
+    (defun GOV|AQP|PBL ())
     ;;
     ;;  [UC]
     (defun UC_DPTFTrackerKey:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
@@ -12,6 +15,7 @@
     (defun UC_DPNFScoreAttributionKey:string
         (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
     )
+    (defun UC_BeneficiaryDptfTotalKey:string (beneficiary-id:string dptf-id:string))
     ;;
     ;;  [UR] AQP|Schema (AQP|T|Pool)
     (defun UR_AQP|AllPoolIds:[string] ())
@@ -32,6 +36,11 @@
     (defun UR_AQP|DPTFTrackerDptfId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
     (defun UR_AQP|DPTFTrackerOwnerId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
     (defun UR_AQP|DPTFTrackerBeneficiaryId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
+    ;;
+    ;;  [UR] AQP|BeneficiaryDptfTotal (AQP|T|BeneficiaryDptfTotal) — cross-pool ANK rollup
+    (defun UR_AQP|BeneficiaryDptfTotalBalance:decimal (beneficiary-id:string dptf-id:string))
+    (defun UR_AQP|BeneficiaryDptfLastAnkSyncCount:integer (beneficiary-id:string dptf-id:string))
+    (defun URC_BeneficiaryAnchorsNeedSync:bool (beneficiary-id:string dptf-id:string))
     ;;
     ;;  [UR] AQP|OrtoFungibleTracker (AQP|T|DPOFTracker)
     (defun UR_AQP|DPOFTrackerBalance:decimal (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
@@ -116,6 +125,47 @@
     (defun C_AddScore:object{IgnisCollectorV1.OutputCumulator}
         (patron:string pool-id:string score-id:string)
     )
+    (defun C_RevokeScore:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string pool-id:string score-id:string)
+    )
+    ;;
+    ;;=== PLANNED C_* (comment-only — not on interface; home module TBD at implementation) ===
+    ;; TF stake/unstake recipe: FVT::C_TrueFungibleStakeFlow (Talos AQP-POOL|C_Stake/UnstakeTrueFungible).
+    ;;
+    ;; C_StakeOrtoFungible(patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts use-transmit sleeping-or-hibernating)
+    ;;   Stake DPOF nonces into pool-id (AQP|T|DPOFTracker). use-transmit=false -> DPOF C_Transfer; true -> DPOF C_Transmit.
+    ;;   Covers class-2 native DPOF, class-0 sleeping|Z| LP orto legs, class-1 sleeping/hib DPOF satellites.
+    ;;
+    ;; C_UnstakeOrtoFungible(patron pool-id owner-id dpof-id nonces nonce-amounts use-transmit sleeping-or-hibernating)
+    ;;   Unstake DPOF nonces; beneficiary read from tracker row per nonce at implementation time.
+    ;;
+    ;; C_StakeCollectable(patron pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts)
+    ;;   Stake DPDC collectable nonces. son=true -> DPSF (class-3); son=false -> DPNF (class-4).
+    ;;
+    ;; C_UnstakeCollectable(patron pool-id owner-id collectable-id son nonces nonce-amounts)
+    ;;   Unstake DPDC collectable nonces; beneficiary read from tracker row per nonce.
+    ;;
+    ;; C_SyncTrueFungibleAnchors(patron beneficiary-id dptf-id)
+    ;;   Pool-agnostic ANK repair: same backward legs as FVT::XI_RefreshTrueFungibleStakeAnchors
+    ;;   (read total, ANK::XE_UpdateTrueFungibleUserAnchorValues, AQP::XE_SetBeneficiaryDptfAnkSyncCount). Home module TBD.
+    ;;
+    ;; C_VacatePool(patron pool-id)
+    ;;   Pool owner force-unwind all staked positions. Orchestration TBD (Talos loop vs sovereign recipe module).
+    ;;
+    ;;  [URC]  internal stake helpers (cross-module read from SCR XE_ApplyTrueFungibleStakeDelta; FVT recipe cap)
+    (defun URC_DptfStakeIsNativeLeg:bool (dptf-id:string))
+    (defun URC_PoolActiveScoreIds:[string] (pool-id:string))
+    (defun URC_PoolHasEmployedScores:bool (pool-id:string))
+    (defun URC_StakeTrueFungiblePoolClassOk:bool (pool-id:string))
+    (defun URC_StakeTrueFungibleDptfMatchesPool:bool (pool-id:string dptf-id:string))
+    ;;
+    ;;  [XE]  Backward entry (FVT::C_TrueFungibleStakeFlow)
+    (defun XE_TrueFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+    )
+    (defun XE_SetBeneficiaryDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string dptf-id:string)
+    )
 )
 (module AQP-POOL GOV
     ;;
@@ -130,6 +180,10 @@
     ;;{G2}
     (defcap GOV ()                          (compose-capability (GOV|AQP_ADMIN)))
     (defcap GOV|AQP_ADMIN ()                (enforce-guard GOV|MD_AQP))
+    (defcap AQP|GOV ()
+        @doc "Governor capability for the AQP|SC_NAME smart DALOS account (TFT vault send and receive)."
+        true
+    )
     ;;{G3}
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     (defun GOV|NS_Use ()
@@ -137,14 +191,18 @@
         (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE))
     )
     (defun GOV|AqpKey ()
-        @doc "Governance keyset name for the AQP smart account (shared with AQP-ANK)."
+        @doc "Governance keyset name for the AQP smart account (canonical — other AQP modules ref AQP-POOL)."
         (+ (GOV|NS_Use) ".dh_sc_aqp-keyset")
     )
     (defconst AQP|SC_KEY                    (GOV|AqpKey))
-    (defconst AQP|SC_NAME                   (GOV|AQP|SC_NAME))
     (defun GOV|AQP|SC_NAME ()
-        @doc "Symbolic name of the AQP sovereign smart DALOS account."
+        @doc "Symbolic name of the AQP sovereign smart DALOS account (canonical)."
         (at 0 ["Σ.ЖřÎzэóΣQз3ÌĄăådìÜλÅË9γğ7χûПæ0₳ПûÖŞrĄθXtFìмkщsGвÅgλąÇπЩAĚЭDíéαэБùđáżñИïПÆΣтцξsηåäялÃБц¢r6ÁíäзуμþĄĐЫîÉAćýìЧыQPнŁзßξĂйjay£üѺçRЫfУQșÏΠÜqîÔĄťß6ЗSρŠeΦñëdmûΦøШâΞýκъиřк"])
+    )
+    (defconst AQP|SC_NAME                   (GOV|AQP|SC_NAME))
+    (defun GOV|AQP|PBL ()
+        @doc "Public branding/license payload for AQP|SC_NAME smart account deploy (canonical)."
+        (at 0 ["9G.632vHq208xaznBw9AfwrFGmLBqkr7tqEzf2Msq389xqEknmfAk8qI5MM1MaszdgMtEBpo6rbuC09Do7F6pjc91jzy3JxI6fjCkyuIbDpDD5i8CxeCBL0dKdDu3d2uAAwl6wE6npnm4Mjxx6JhiFq1sKddsGjLH9BjHF0ljtegHrn39qIADru76Ftr9Kgxh6Ds2aj4EufG07uK9sFG38ej5vooDMr0wp8alqGdnIiJxbhmwEKEg44l8pI5LDq2EotoM2jq86x1EJ5hM4wkfhtq4ye610tkAMIdLrDD87Euk14aJgMwnrLmytzcCc3Kakrnhs8Jxy5dFeowGxzlx1bGHqfwEen0pLcd6nl9udGE9hfFucLjM1seKzv542nwzz5jrpKmvzebI4BLK00Br1ocvxs4uor2nEv2Fng1l6qAiLcbv0hMnbLDEEcLpF1bD55gw55of7H2c3ieozahorkuCe5FEkAkEAhcGwJ35HCletrbcn2Ebo0fsD0tf2zxKsbzinpcJCtpv4EF4AyyhwD1LbtEd6qsEbgyJkA2DqdGBE5Fuqudzf8082Ei88d"])
     )
     ;;
     ;;<====>
@@ -155,6 +213,10 @@
     (deftable P|MT:{OuronetPolicyV1.P|MS})
     ;;{P3}
     (defcap P|AQP|CALLER ()
+        true
+    )
+    (defcap P|AQP|REMOTE-GOV ()
+        @doc "Reserved — not wired in P|A_Define or C_RotateGovernor until a forward module needs a remote gov slot on AQP|SC_NAME."
         true
     )
     (defcap P|SECURE-CALLER ()
@@ -182,6 +244,7 @@
             (let
                 (
                     (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -195,12 +258,16 @@
         )
     )
     (defun P|A_Define ()
+        @doc "Post-deploy IMC wiring (AQP-BOOT Step 0). TFT vault transfer only."
         (let
             (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
+                (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                ;;
                 (mg:guard (create-capability-guard (P|AQP|CALLER)))
             )
-            (ref-P|DALOS::P|A_AddIMP mg)
+            ;; AQP-POOL → TFT: XI_1|TransferDptfPoolCustody calls TFT::C_Transfer; TFT UEV_IMC requires this guard.
+            (ref-P|TFT::P|A_AddIMP mg)
+            true
         )
     )
     (defun UEV_IMC ()
@@ -334,10 +401,27 @@
         nonce:integer
         score-id:string
     )
+    ;;Beneficiary × asset rollups (pool-agnostic totals for ANK sync — see README_AQP.md § Anchor sync)
+    (defschema AQP|BeneficiaryDptfTotal
+        @doc "Cross-pool rollup: total DPTF staked by one beneficiary on one exact dptf-id leg \
+            \ (native X and F|X are separate rows). Maintained on every TF stake/unstake POOL leg \
+            \ (FVT::C_TrueFungibleStakeFlow → XE_TrueFungiblePoolCustody → XI bump). Input to \
+            \ ANK::XE_UpdateTrueFungibleUserAnchorValues without scanning AQP|T|DPTFTracker keys. \
+            \ last-ank-sync-count stores AQP-ANK::UR_AA|AnchorsActive(dptf-id) after the last successful \
+            \ anchor refresh; URC_BeneficiaryAnchorsNeedSync compares it to the live count so the UI can \
+            \ prompt C_SyncTrueFungibleAnchors when new anchors are issued after stake. Per-pool detail \
+            \ remains in AQP|T|DPTFTracker; this row is the single O(1) read for anchor promile."
+        total-balance:decimal                                           ;;[M] Sum of tracker balances for (beneficiary, dptf-id) across all pools
+        last-ank-sync-count:integer                                     ;;[M] ANK AssetAnchors.anchors-active at last C_Sync* / stake ANK leg (0 = never synced)
+        ;;
+        ;;Select Keys
+        beneficiary-id:string                                           ;;[.] Beneficiary (SCORE/ANK ouronet-account)
+        dptf-id:string                                                  ;;[.] Exact DPTF id leg (native or F|); must match ANK ank-asset for sync call
+    )
     ;;
     ;;{2}
     (deftable AQP|T|Pool:{AQP|Schema})                                  ;;Key = <Pool-ID>
-    ;;Trackers
+    ;;Trackers (per-pool custody + score attribution keys)
     (deftable AQP|T|DPTFTracker:{AQP|TrueFungibleTracker})              ;;Key = <Pool-ID> | <DPTF-ID> | <Owner-ID> | <Beneficiary-ID>
     (deftable AQP|T|DPOFTracker:{AQP|OrtoFungibleTracker})              ;;Key = <Pool-ID> | <DPOF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
     (deftable AQP|T|DPSFTracker:{AQP|SemiFungibleTracker})              ;;Key = <Pool-ID> | <DPSF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
@@ -346,6 +430,8 @@
     ;;
     (deftable AQP|T|DPSFScoreAttribution:{AQP|DPSFScoreAttribution})    ;;Key = <Pool-ID> | <DPSF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce> | <Score-ID>
     (deftable AQP|T|DPNFScoreAttribution:{AQP|DPNFScoreAttribution})    ;;Key = <Pool-ID> | <DPNF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce> | <Score-ID>
+    ;;Beneficiary rollups (pool-agnostic; ANK sync — not a substitute for per-pool trackers)
+    (deftable AQP|T|BeneficiaryDptfTotal:{AQP|BeneficiaryDptfTotal})    ;;Key = <Beneficiary-ID> | <DPTF-ID>
     ;;{3}
     (defun CT_Bar:string
         ()
@@ -355,6 +441,15 @@
     (defconst BAR                                                       (CT_Bar))
     (defconst GAS|ISSUE-POOL                                            1000.0)
     (defconst GAS|ADD-SCORE                                             500.0)
+    (defconst GAS|REVOKE-SCORE                                          500.0)
+    (defconst GAS|SYNC-TF-ANCHORS                                       500.0)
+    (defconst GAS|STAKE-TRUE-FUNGIBLE                                   500.0)
+    (defconst GAS|UNSTAKE-TRUE-FUNGIBLE                                 500.0)
+    (defun CT_EmptyCumulator ()
+        @doc "Empty IGNIS OutputCumulator for stub transfer legs."
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2))
+    )
+    (defconst EOC                                                       (CT_EmptyCumulator))
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -366,7 +461,7 @@
     (defcap AQP|C>ISSUE-POOL
         (pool-name:string asset-id:string aqp-class:integer)
         @doc "Issue one acquisition pool (single @event). Validates pool-name, class, and asset-id; \
-            \ enforces canonical asset ownership from aqp-class + asset-id; composes SECURE for XI_IssuePool."
+            \ enforces canonical asset ownership from aqp-class + asset-id; composes SECURE for XI_1|IssuePool."
         @event
         (let
             (
@@ -385,10 +480,56 @@
         (pool-id:string score-id:string slot-index:integer)
         @doc "Assign score-id to score slot slot-index (first free; computed once in C_AddScore). Validates \
             \ slot claim, pool/score pairing; CAP_PoolOwner. Score owner in SCR|XE>CREATE-AQPOOL-LINK on XE. \
-            \ Composes SECURE for XI_AddScoreToPool."
+            \ Composes SECURE for XI_1|AddScoreToPool."
         @event
         (UEV_AddScorePoolAndScore pool-id score-id slot-index)
         (CAP_PoolOwner pool-id)
+        (compose-capability (SECURE))
+    )
+    (defcap AQP|C>REVOKE-SCORE
+        (pool-id:string score-id:string slot-index:integer)
+        @doc "Revoke score-id from score slot slot-index (computed once in C_RevokeScore). Validates \
+            \ slot claim, zero totals, fvt-link BAR, boost-link dependents; CAP_PoolOwner. Score owner in \
+            \ SCR|XE>REVOKE-AQPOOL-LINK on XE. Composes SECURE for XI_1|RevokeScoreFromPool."
+        @event
+        (UEV_RevokeScorePoolAndScore pool-id score-id slot-index)
+        (CAP_PoolOwner pool-id)
+        (compose-capability (SECURE))
+    )
+    (defcap AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "Forward-only (FVT::C_TrueFungibleStakeFlow phase 1]): validation for XE_TrueFungiblePoolCustody. \
+            \ Pool/beneficiary/tracker/rollup rules here; dptf-id/amount/debit via TFT::C_Transfer. \
+            \ CAP_StakeOwner (owner wallet); compose P|AQP|CALLER (TFT IMC); compose AQP|GOV (AQP|SC_NAME smart account — \
+            \ send and receive both require governor proof). XI_* writers have no enforce. Not @event — UEV_IMC on XE entry."
+        (let
+            (
+                (staked-bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
+                (rollup-bal:decimal (UR_AQP|BeneficiaryDptfTotalBalance beneficiary-id dptf-id))
+                (class-ok:bool (URC_StakeTrueFungiblePoolClassOk pool-id))
+                (scores-ok:bool (URC_PoolHasEmployedScores pool-id))
+                (dptf-ok:bool (URC_StakeTrueFungibleDptfMatchesPool pool-id dptf-id))
+                (tracker-ok:bool (or direction (>= staked-bal amount)))
+                (rollup-ok:bool (or direction (>= rollup-bal amount)))
+            )
+            (enforce
+                (fold (and) true [class-ok scores-ok dptf-ok tracker-ok rollup-ok])
+                "Invalid TF pool custody: pool class/scores/dptf-id or insufficient staked/rollup balance"
+            )
+            (UEV_StakeBeneficiaryAccount beneficiary-id)
+            (CAP_StakeOwner owner-id)
+            (compose-capability (P|AQP|CALLER))
+            (compose-capability (AQP|GOV))
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC
+        (beneficiary-id:string dptf-id:string)
+        @doc "Backward-only (FVT::C_TrueFungibleStakeFlow phase 2.2]): stamp last-ank-sync-count on BeneficiaryDptfTotal. \
+            \ beneficiary/dptf validation here; full stake rules in FVT|C>TRUE-FUNGIBLE-STAKE-FLOW. \
+            \ Composes SECURE for XI_1|SetBeneficiaryDptfAnkSyncCount. Not @event — UEV_IMC on XE entry."
+        (UEV_StakeBeneficiaryAccount beneficiary-id)
+        (UEV_StakeTrueFungibleDptfLeg dptf-id)
         (compose-capability (SECURE))
     )
     ;;{C3}
@@ -421,6 +562,10 @@
         (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
         @doc "Composite key for AQP|T|DPNFScoreAttribution: pool | dpnf | owner | beneficiary | nonce | score-id."
         (concat [pool-id BAR dpnf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce]) BAR score-id])
+    )
+    (defun UC_BeneficiaryDptfTotalKey:string (beneficiary-id:string dptf-id:string)
+        @doc "Composite key for AQP|T|BeneficiaryDptfTotal: beneficiary-id | dptf-id."
+        (concat [beneficiary-id BAR dptf-id])
     )
     ;;
     ;;{F3}  [UDC]
@@ -488,6 +633,14 @@
         ,"nonce"                        : nonce
         ,"score-id"                     : score-id}
     )
+    (defun UDC_AQP|BeneficiaryDptfTotal:object{AQP|BeneficiaryDptfTotal}
+        (total:decimal sync-count:integer beneficiary-id:string dptf-id:string)
+        @doc "Default beneficiary DPTF rollup row (zero total, never synced)."
+        {"total-balance"        : total
+        ,"last-ank-sync-count"  : sync-count
+        ,"beneficiary-id"       : beneficiary-id
+        ,"dptf-id"              : dptf-id}
+    )
     (defun UDC_AQP|Schema:object{AQP|Schema}
         (aqp-class:integer asset-id:string aqp-id:string)
         @doc "Default new pool row: all seven score slots BAR; aqp-id equals pool-id (table key)."
@@ -504,8 +657,9 @@
     )
     ;;
     ;;{F0}  [UR]
-    ;; Reads follow schema order: (1) AQP|Schema (2) TrueFungibleTracker (3) OrtoFungibleTracker \
-    ;;     (4) SemiFungibleTracker (5) NonFungibleTracker (6) DPSFScoreAttribution (7) DPNFScoreAttribution
+    ;; Reads follow schema order: (1) AQP|Schema (2) TrueFungibleTracker (2b) BeneficiaryDptfTotal \
+    ;;     (3) OrtoFungibleTracker (4) SemiFungibleTracker (5) NonFungibleTracker \
+    ;;     (6) DPSFScoreAttribution (7) DPNFScoreAttribution
     ;;
     ;; [1] AQP|T|Pool  (AQP|Schema)  Key = <Pool-ID>
     (defun UR_AQP|AllPoolIds:[string] ()
@@ -590,6 +744,42 @@
     (defun UR_AQP|DPTFTrackerBeneficiaryId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
         @doc "Reads beneficiary-id from DPTF tracker row."
         (at "beneficiary-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
+    )
+    ;;
+    ;; [2b] AQP|T|BeneficiaryDptfTotal  (AQP|BeneficiaryDptfTotal)
+    (defun UR_AQP|BeneficiaryDptfTotal:object{AQP|BeneficiaryDptfTotal}
+        (beneficiary-id:string dptf-id:string)
+        @doc "Reads cross-pool DPTF stake rollup for beneficiary × dptf-id; absent row reads as zero total."
+        (with-default-read AQP|T|BeneficiaryDptfTotal (UC_BeneficiaryDptfTotalKey beneficiary-id dptf-id)
+            (UDC_AQP|BeneficiaryDptfTotal 0.0 0 beneficiary-id dptf-id)
+            {"total-balance"        := tb
+            ,"last-ank-sync-count"  := sc
+            ,"beneficiary-id"       := bid
+            ,"dptf-id"              := did}
+            (UDC_AQP|BeneficiaryDptfTotal tb sc bid did)
+        )
+    )
+    (defun UR_AQP|BeneficiaryDptfTotalBalance:decimal (beneficiary-id:string dptf-id:string)
+        @doc "Total DPTF staked by beneficiary across all pools for this exact dptf-id leg."
+        (at "total-balance" (UR_AQP|BeneficiaryDptfTotal beneficiary-id dptf-id))
+    )
+    (defun UR_AQP|BeneficiaryDptfLastAnkSyncCount:integer (beneficiary-id:string dptf-id:string)
+        @doc "ANK anchors-active count recorded at last anchor sync for this beneficiary × dptf-id."
+        (at "last-ank-sync-count" (UR_AQP|BeneficiaryDptfTotal beneficiary-id dptf-id))
+    )
+    (defun URC_BeneficiaryAnchorsNeedSync:bool (beneficiary-id:string dptf-id:string)
+        @doc "True when beneficiary has positive cross-pool stake on dptf-id and ANK has more live anchors \
+            \ than were applied at last sync — UI signal for C_SyncTrueFungibleAnchors."
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                ;;
+                (total:decimal (UR_AQP|BeneficiaryDptfTotalBalance beneficiary-id dptf-id))
+                (last-sync:integer (UR_AQP|BeneficiaryDptfLastAnkSyncCount beneficiary-id dptf-id))
+                (live-count:integer (ref-ANK::UR_AA|AnchorsActive dptf-id))
+            )
+            (and (> total 0.0) (> live-count last-sync))
+        )
     )
     ;;
     ;; [3] AQP|T|DPOFTracker  (AQP|OrtoFungibleTracker)
@@ -874,6 +1064,28 @@
             ]
         )
     )
+    (defun URC_StakeTrueFungibleDptfMatchesPool:bool (pool-id:string dptf-id:string)
+        @doc "True when dptf-id (native or F| frozen leg) matches pool canonical asset-id for class 0/1 TF stake."
+        (let
+            (
+                (c:integer (UR_AQP|PoolAqpClass pool-id))
+                (asset-id:string (UR_AQP|PoolAssetId pool-id))
+                (core:string
+                    (if (= (URC_DptfLegPrefix dptf-id) "F|")
+                        (drop 2 dptf-id)
+                        dptf-id
+                    )
+                )
+            )
+            (if (= c 1)
+                (= core asset-id)
+                (if (= c 0)
+                    (and (URC_DptfIsLpNomenclature dptf-id) (= core asset-id))
+                    false
+                )
+            )
+        )
+    )
     (defun URC_PoolScoreSlotValue:string (pool-id:string slot-index:integer)
         @doc "Score-id at pool score slot 0..6 (primary..septenary); read via UR_AQP|PoolScore* helpers."
         (if (= slot-index 0)
@@ -933,6 +1145,92 @@
             )
         )
     )
+    (defun URC_ScoreSlotIndexForScore:integer (pool-id:string score-id:string)
+        @doc "Slot index 0..6 where score-id is assigned on pool-id, or -1 when not employed."
+        (let
+            (
+                (lst:[string]
+                    [
+                        (UR_AQP|PoolScorePrimary pool-id)
+                        (UR_AQP|PoolScoreSecondary pool-id)
+                        (UR_AQP|PoolScoreTertiary pool-id)
+                        (UR_AQP|PoolScoreQuaternary pool-id)
+                        (UR_AQP|PoolScoreQuinary pool-id)
+                        (UR_AQP|PoolScoreSenary pool-id)
+                        (UR_AQP|PoolScoreSeptenary pool-id)
+                    ]
+                )
+            )
+            (cond
+                ((= score-id (at 0 lst)) 0)
+                ((= score-id (at 1 lst)) 1)
+                ((= score-id (at 2 lst)) 2)
+                ((= score-id (at 3 lst)) 3)
+                ((= score-id (at 4 lst)) 4)
+                ((= score-id (at 5 lst)) 5)
+                ((= score-id (at 6 lst)) 6)
+                -1
+            )
+        )
+    )
+    (defun URC_NoEmployedBoostLinkTarget:bool (pool-id:string score-id:string)
+        @doc "True when no other employed pool score has boost-link pointing at score-id (triplet hub protection)."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                ;;
+                (active-ids:[string] (URC_PoolActiveScoreIds pool-id))
+            )
+            (fold (and) true
+                (map
+                    (lambda (peer-id:string)
+                        (if (= peer-id score-id)
+                            true
+                            (!= (ref-SCR::UR_SCR|ScoreBoostLink peer-id) score-id)
+                        )
+                    )
+                    active-ids
+                )
+            )
+        )
+    )
+    (defun URC_DptfLegPrefix:string (dptf-id:string)
+        @doc "First two characters of dptf-id (F|, R|, S|, W|, P|, or empty for short ids)."
+        (take 2 dptf-id)
+    )
+    (defun URC_DptfStakeIsNativeLeg:bool (dptf-id:string)
+        @doc "True when dptf-id is a native TF stake leg (not F| frozen prefix). Used for SCORE native-or-frozen internal flag."
+        (!= (URC_DptfLegPrefix dptf-id) "F|")
+    )
+    (defun URC_DptfStakeIsReservedLeg:bool (dptf-id:string)
+        @doc "True when dptf-id is R| reserved — stake paths reject this leg."
+        (= (URC_DptfLegPrefix dptf-id) "R|")
+    )
+    (defun URC_DptfIsLpNomenclature:bool (dptf-id:string)
+        @doc "True when dptf-id (after optional F| strip) uses LP token nomenclature S|, W|, or P|."
+        (let
+            (
+                (p2:string (URC_DptfLegPrefix dptf-id))
+                (core:string
+                    (if (= p2 "F|")
+                        (drop 2 dptf-id)
+                        dptf-id
+                    )
+                )
+            )
+            (contains (take 2 core) ["S|" "W|" "P|"])
+        )
+    )
+    (defun URC_PoolHasEmployedScores:bool (pool-id:string)
+        @doc "True when pool-id has at least one non-BAR score slot (required before stake)."
+        (> (length (URC_PoolActiveScoreIds pool-id)) 0)
+    )
+    (defun URC_StakeTrueFungiblePoolClassOk:bool (pool-id:string)
+        @doc "True when pool aqp-class is 0 (LP via TF) or 1 (non-LP DPTF)."
+        (let ((c:integer (UR_AQP|PoolAqpClass pool-id)))
+            (or (= c 0) (= c 1))
+        )
+    )
     ;;
     ;;{F2}  [UEV]
     (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string)
@@ -943,6 +1241,7 @@
                 (ref-SWP:module{SwapperV3} SWP)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
                 (p2:string (take 2 asset-id))
                 (is-class-ok:bool (contains aqp-class (enumerate 0 4)))
                 (is-native:bool
@@ -1024,6 +1323,7 @@
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 (ref-SWP:module{SwapperV3} SWP)
+                ;;
                 (aqp-class:integer (UR_AQP|PoolAqpClass pool-id))
                 (asset-id:string (UR_AQP|PoolAssetId pool-id))
             )
@@ -1064,6 +1364,51 @@
             )
         )
     )
+    (defun UEV_RevokeScorePoolAndScore (pool-id:string score-id:string slot-index:integer)
+        @doc "Validates slot-index holds score-id with aqpool-link = pool-id, zero totals, fvt-link BAR, \
+            \ and no employed peer has boost-link = score-id (revoke dependents before hub)."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (contains slot-index (enumerate 0 6))
+                        (= (URC_PoolScoreSlotValue pool-id slot-index) score-id)
+                        (= (ref-SCR::UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                        (= (ref-SCR::UR_SCR|ScoreTotalBaseScore score-id) 0.0)
+                        (= (ref-SCR::UR_SCR|ScoreTotalBoostedScore score-id) 0.0)
+                        (= (ref-SCR::UR_SCR|ScoreTotalDebScore score-id) 0.0)
+                        (= (ref-SCR::UR_SCR|ScoreNzsCount score-id) 0)
+                        (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) BAR)
+                        (URC_NoEmployedBoostLinkTarget pool-id score-id)
+                    ]
+                )
+                "Invalid score revoke for pool (slot, aqpool-link, zero totals, fvt-link, or boost-link dependents)"
+            )
+        )
+    )
+    (defun UEV_StakeBeneficiaryAccount (beneficiary-id:string)
+        @doc "Stake paths: beneficiary must exist and be an activated standard (non-principal) Ouronet account."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::UEV_EnforceAccountExists beneficiary-id)
+            (ref-DALOS::UEV_EnforceAccountType beneficiary-id false)
+        )
+    )
+    (defun UEV_StakeTrueFungibleDptfLeg (dptf-id:string)
+        @doc "Reject R| reserved; validate DPTF id exists via DPTF::UEV_id."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+            )
+            (enforce (not (URC_DptfStakeIsReservedLeg dptf-id)) "Reserved DPTF (R|) cannot be staked")
+            (ref-DPTF::UEV_id dptf-id)
+        )
+    )
     ;;
     ;;{F4}  [CAP]
     (defun CAP_AqpAssetOwner (aqp-class:integer asset-id:string)
@@ -1084,6 +1429,15 @@
             (ref-DALOS::CAP_EnforceAccountOwnership (URC_AqpOwnerKonto pool-id))
         )
     )
+    (defun CAP_StakeOwner (owner-id:string)
+        @doc "Stake / unstake: tx sender must own owner-id (depositor of tokens)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-id)
+        )
+    )
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
@@ -1099,12 +1453,13 @@
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
                     (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::KDA|C_Collect patron smart-price)
-                (XI_IssuePool pool-id aqp-class asset-id)
+                (XI_1|IssuePool pool-id aqp-class asset-id)
                 (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-POOL AQP|SC_NAME trigger [pool-id])
             )
         )
@@ -1125,76 +1480,76 @@
                     (
                         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                         (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        ;;
                         (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     )
                     (ref-SCR::XE_CreateAqpoolLink score-id pool-id)
-                    (XI_AddScoreToPool pool-id score-id slot-index)
+                    (XI_1|AddScoreToPool pool-id score-id slot-index)
                     (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ADD-SCORE AQP|SC_NAME trigger [pool-id score-id])
                 )
             )
         )
     )
     (defun C_RevokeScore:object{IgnisCollectorV1.OutputCumulator}
-        ()
-        @doc "Clear a score slot on the pool and revoke aqpool-link on that score via SCORE XE_RevokeAqpoolLink."
-        true
+        (patron:string pool-id:string score-id:string)
+        @doc "Clear score-id from its pool slot (compact higher slots); SCR XE_RevokeAqpoolLink then XI pool slot write. \
+            \ URC_ScoreSlotIndexForScore runs once before the cap; slot-index is passed through. \
+            \ IGNIS only (GAS|REVOKE-SCORE 500.0 on AQP|SC_NAME); no STOA."
+        (UEV_IMC)
+        (let
+            (
+                (slot-index:integer (URC_ScoreSlotIndexForScore pool-id score-id))
+            )
+            (enforce (!= slot-index -1) "score-id is not assigned to pool")
+            (with-capability (AQP|C>REVOKE-SCORE pool-id score-id slot-index)
+                (let
+                    (
+                        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        ;;
+                        (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                    )
+                    (ref-SCR::XE_RevokeAqpoolLink score-id pool-id)
+                    (XI_1|RevokeScoreFromPool pool-id slot-index)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator GAS|REVOKE-SCORE AQP|SC_NAME trigger [pool-id score-id])
+                )
+            )
+        )
     )
-    ;;Staking (trackers + downstream score / ANK / FVT updates)
-    (defun C_Stake:object{IgnisCollectorV1.OutputCumulator}
-        ()
-        @doc "Stake into the pool; write DPSF/DPNF tracker; for each pool \
-            \ score slot that this stake updates, write DPSF/DPNF \
-            \ ScoreAttribution (cached-position-score, applied revision)."
-        true
-    )
-    (defun C_Unstake:object{IgnisCollectorV1.OutputCumulator}
-        ()
-        @doc "Unstake from the pool; unwind tracker row and reconcile user scores and anchors."
-        true
-    )
     ;;
-    ;;ACTIONS
+    ;;=== PLANNED C_* (comment-only — not on interface; home module TBD at implementation) ===
+    ;; TF stake/unstake recipe lives in FVT::C_TrueFungibleStakeFlow; POOL phase-1 is XE_TrueFungiblePoolCustody.
     ;;
-    ;;1]INJECT Rewards (can inject only when <total-score> != 0.0)
-    ;;  1a] Update <current-rps> = (+ <current-rps> (/ <reward-amount> <total-score>))
-    ;;  1b] Update <available-rewards> = (+ <available-rewards> <reward-amount>)
-    ;;  1c] Update <unclaimed-count> = <nzs-count>
+    ;; C_StakeOrtoFungible(patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts use-transmit sleeping-or-hibernating)
+    ;;   Stake DPOF nonces into pool-id (AQP|T|DPOFTracker). use-transmit=false -> DPOF C_Transfer (whole nonce);
+    ;;   true -> DPOF C_Transmit (partial; collection segmentation must be on). Covers class-2 native DPOF, class-0
+    ;;   sleeping|Z| LP orto legs, class-1 sleeping/hib DPOF satellites. sleeping-or-hibernating selects SCORE path.
     ;;
-    ;;2]STAKE
-    ;;  2a] Check if <deb-score> is different from the stored <deb-score>; if it is different use the newly computed <deb-score> for 2b]
-    ;;  2b] Update <pending-rewards> = <pending-rewards> + (* <deb-score> (- <current-rps> <last-rps>))     
-    ;;      Use the stored <deb-score> is if the same as the newly computed <deb-score>; No score updates yet
-    ;;  2c] Update <total-base-score>/<total-deb-score> and <base-score>/<deb-score> considering the newly staked assets.
-    ;;  2d] If prev <deb-score> was 0, increment <nzs-count>; 
-    ;;      Increment <unclaimed-count> for first-stakers (prev <deb-score> was 0)
-    ;;  2e] Update <last-rps> to the Pools <current-rps>
+    ;; C_UnstakeOrtoFungible(patron pool-id owner-id dpof-id nonces nonce-amounts use-transmit sleeping-or-hibernating)
+    ;;   Unstake DPOF nonces from pool-id; assets return to owner-id. beneficiary-id not on API — read from tracker row.
     ;;
-    ;;3]UNSTAKE
-    ;;  3a] Check if <deb-score> is different from the stored <deb-score>; if it is different use the newly computed <deb-score> for 3b]
-    ;;  3b] Update <pending-rewards> = <pending-rewards> + (* <deb-score> (- <current-rps> <last-rps>))
-    ;;      Use the stored <deb-score> is if the same as the newly computed <deb-score>; No score updates yet.
-    ;;  3c] Update <total-base-score>/<total-deb-score> and <base-score>/<deb-score> considering the newly staked assets.
-    ;;  3d] If <deb-score> becomes 0, decrement <nzs-count>
-    ;;  3e] Update <last-rps> to the Pools <current-rps>
+    ;; C_StakeCollectable(patron pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts)
+    ;;   Stake DPDC collectable nonces via DPDC-T transfer to AQP|SC_NAME. son=true -> DPSF; son=false -> DPNF.
     ;;
-    ;;4]COLLECT
-    ;;  4a] Check if <deb-score> is different from the stored <deb-score>; if it is different use the newly computed <deb-score> for 4c]
-    ;;  4b] Update <available-rewards> = <available-rewards> - <collected-rewards>
-    ;;  4c] Computes Current Reward = <pending-reward> + (* <deb-score> (- <current-rps> <last-rps>))
-    ;;      If <unclaimed-count> = 1 (is last user with non zero rewards) , then Current-Reward is the min between computed and exiting (for dust sweaping)
-    ;;  4d] Updates the <pending-reward> to either 0.0 (in case all is collected) or to the remaining amount. (difference between computed and collected)
-    ;;  4e] If all Computed Reward is collected, and the <pending-reward> becomes 0, decrement <unclaimed-count>
-    ;;  4f] Update <last-rps> to the Pools <current-rps>
+    ;; C_UnstakeCollectable(patron pool-id owner-id collectable-id son nonces nonce-amounts)
+    ;;   Unstake DPDC collectable nonces; beneficiary read from tracker row per nonce.
     ;;
-    ;;{F7}  [X]
-    (defun XI_IssuePool:string
+    ;; C_SyncTrueFungibleAnchors(patron beneficiary-id dptf-id)
+    ;;   Pool-agnostic ANK repair: read AQP|T|BeneficiaryDptfTotal.total-balance (O(1)),
+    ;;   ANK::XE_UpdateTrueFungibleUserAnchorValues, set last-ank-sync-count. Home module TBD.
+    ;;
+    ;; C_VacatePool(patron pool-id)
+    ;;   Pool owner (CAP_PoolOwner): unwind every staked position on pool-id. Orchestration TBD.
+    ;;
+    ;;{F7}  [X]  XI depth: N = hops from phase-entry XI; siblings share N (e.g. XE_TrueFungiblePoolCustody → XI_1|*).
+    (defun XI_1|IssuePool:string
         (pool-id:string aqp-class:integer asset-id:string)
         @doc "Insert AQP|T|Pool under SECURE (from AQP|C>ISSUE-POOL). Write only; C_Issue builds IGNIS."
         (require-capability (SECURE))
         (insert AQP|T|Pool pool-id (UDC_AQP|Schema aqp-class asset-id pool-id))
         pool-id
     )
-    (defun XI_AddScoreToPool:string
+    (defun XI_1|AddScoreToPool:string
         (pool-id:string score-id:string slot-index:integer)
         @doc "Write score-id into the first free slot (0=primary .. 6=septenary). Under SECURE from AQP|C>ADD-SCORE."
         (require-capability (SECURE))
@@ -1219,6 +1574,157 @@
         )
         score-id
     )
+    (defun XI_1|RevokeScoreFromPool:string
+        (pool-id:string slot-index:integer)
+        @doc "Remove score at slot-index and compact higher slots down (0=primary .. 6=septenary). Under SECURE from AQP|C>REVOKE-SCORE."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                ;;
+                (lst:[string]
+                    [
+                        (UR_AQP|PoolScorePrimary pool-id)
+                        (UR_AQP|PoolScoreSecondary pool-id)
+                        (UR_AQP|PoolScoreTertiary pool-id)
+                        (UR_AQP|PoolScoreQuaternary pool-id)
+                        (UR_AQP|PoolScoreQuinary pool-id)
+                        (UR_AQP|PoolScoreSenary pool-id)
+                        (UR_AQP|PoolScoreSeptenary pool-id)
+                    ]
+                )
+                (lst-v1:[string] (ref-U|LST::UC_RemoveItemAt lst slot-index))
+                (lst-v2:[string] (ref-U|LST::UC_AppL lst-v1 BAR))
+            )
+            (update AQP|T|Pool pool-id
+                {"score-primary"    : (at 0 lst-v2)
+                ,"score-secondary"  : (at 1 lst-v2)
+                ,"score-tertiary"   : (at 2 lst-v2)
+                ,"score-quaternary" : (at 3 lst-v2)
+                ,"score-quinary"    : (at 4 lst-v2)
+                ,"score-senary"     : (at 5 lst-v2)
+                ,"score-septenary"  : (at 6 lst-v2)}
+            )
+        )
+    )
+    ;;
+    ;;  [True Fungible stake — POOL phase 1 only; full recipe in FVT::C_TrueFungibleStakeFlow]
+    ;;
+    (defun XE_TrueFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "Forward (FVT::C_TrueFungibleStakeFlow phase 1]): TFT transfer + DPTFTracker + BeneficiaryDptfTotal. \
+            \ UEV_IMC + AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY (validation + SECURE). XI writers require SECURE."
+        (UEV_IMC)
+        (with-capability (AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dptf-id amount direction)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
+                    (ico1:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_1|TransferDptfPoolCustody owner-id dptf-id amount direction)
+                    )
+                    (ico2:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_1|WriteDptfTracker pool-id owner-id beneficiary-id dptf-id amount direction)
+                    )
+                    (ico3:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_1|BumpBeneficiaryDptfTotal beneficiary-id dptf-id amount direction)
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
+            )
+        )
+    )
+    (defun XI_1|TransferDptfPoolCustody:object{IgnisCollectorV1.OutputCumulator}
+        (owner-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "TFT::C_Transfer dptf-id: stake (direction=true) owner→AQP|SC_NAME; unstake (false) AQP|SC_NAME→owner. \
+            \ Returns TFT transfer OutputCumulator."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (vault:string AQP|SC_NAME)
+            )
+            (if direction
+                (ref-TFT::C_Transfer dptf-id owner-id vault amount true)
+                (ref-TFT::C_Transfer dptf-id vault owner-id amount true)
+            )
+        )
+    )
+    (defun XI_1|WriteDptfTracker:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "AQP|T|DPTFTracker: bump balance ±amount for (pool, dptf-id, owner, beneficiary). \
+            \ Read prior balance via UR_AQP|DPTFTrackerBalance; write only (no enforce — cap validates). \
+            \ Returns ignis|medium via IGNIS::UDC_MediumCumulator."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (key:string (UC_DPTFTrackerKey pool-id dptf-id owner-id beneficiary-id))
+                (bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
+                (delta:decimal (if direction amount (- amount)))
+                (new-bal:decimal (+ bal delta))
+            )
+            (write AQP|T|DPTFTracker key
+                (UDC_AQP|TrueFungibleTracker new-bal pool-id dptf-id owner-id beneficiary-id)
+            )
+            (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+        )
+    )
+    (defun XI_1|BumpBeneficiaryDptfTotal:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "AQP|T|BeneficiaryDptfTotal: bump total-balance ±amount for (beneficiary, dptf-id) across all pools. \
+            \ Read via UR_AQP|BeneficiaryDptfTotal*; write only (no enforce — cap validates); preserves last-ank-sync-count. \
+            \ Returns ignis|biggest via IGNIS::UDC_BiggestCumulator."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (key:string (UC_BeneficiaryDptfTotalKey beneficiary-id dptf-id))
+                (tb:decimal (UR_AQP|BeneficiaryDptfTotalBalance beneficiary-id dptf-id))
+                (sc:integer (UR_AQP|BeneficiaryDptfLastAnkSyncCount beneficiary-id dptf-id))
+                (delta:decimal (if direction amount (- amount)))
+                (new-total:decimal (+ tb delta))
+            )
+            (write AQP|T|BeneficiaryDptfTotal key
+                (UDC_AQP|BeneficiaryDptfTotal new-total sc beneficiary-id dptf-id)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
+        )
+    )
+    ;;
+    ;;  [TF stake phase 2.2 — FVT::XI_RefreshTrueFungibleStakeAnchors backward leg]
+    (defun XE_SetBeneficiaryDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string dptf-id:string)
+        @doc "Backward (FVT::C_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BeneficiaryDptfTotal. \
+            \ UEV_IMC + AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC (validation + SECURE). XI writer requires SECURE."
+        (UEV_IMC)
+        (with-capability (AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC beneficiary-id dptf-id)
+            (XI_1|SetBeneficiaryDptfAnkSyncCount beneficiary-id dptf-id)
+        )
+    )
+    (defun XI_1|SetBeneficiaryDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string dptf-id:string)
+        @doc "Internal (XE_SetBeneficiaryDptfAnkSyncCount · depth 1]): write last-ank-sync-count on AQP|T|BeneficiaryDptfTotal \
+            \ (:= AQP-ANK::UR_AA|AnchorsActive dptf-id); preserve total-balance. Returns ignis|biggest via UDC_BiggestCumulator."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                ;;
+                (key:string (UC_BeneficiaryDptfTotalKey beneficiary-id dptf-id))
+                (tb:decimal (UR_AQP|BeneficiaryDptfTotalBalance beneficiary-id dptf-id))
+                (live-count:integer (ref-ANK::UR_AA|AnchorsActive dptf-id))
+            )
+            (write AQP|T|BeneficiaryDptfTotal key
+                (UDC_AQP|BeneficiaryDptfTotal tb live-count beneficiary-id dptf-id)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
+        )
+    )
     ;;
 )
 
@@ -1232,3 +1738,4 @@
 (create-table AQP|T|DPNFTracker)
 (create-table AQP|T|DPSFScoreAttribution)
 (create-table AQP|T|DPNFScoreAttribution)
+(create-table AQP|T|BeneficiaryDptfTotal)

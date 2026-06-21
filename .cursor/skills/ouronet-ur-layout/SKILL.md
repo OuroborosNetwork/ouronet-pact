@@ -24,6 +24,10 @@ description: Order of UR (utility read) functions in Ouronet sovereign Pact modu
 
 6. **`let` only when a binding repeats** — If every **`let`** binding is used **once**, inline it (e.g. **`(with-default-read (UC_AnchorClassTable f) (UC_AssetClassKey a c) …)`** instead of **`let` + `table-ref` + `class-key`**). Use **`let`** when a value is referenced **two or more times**, or when splitting improves readability in a large form.
 
+7. **`with-default-read` lives in `UR_*`** — Full-row (and dispatch) **`UR_*`** use **`with-default-read`** for absent keys. **`XI_*`** reads prior state via **`UR_*`**, then **`write`**. See **`OuronetInformational/skills/ur-with-default-read-and-xi-write.md`**.
+
+8. **`let` layout when mixing refs and vars** — All **`(ref-*:module{…} …)`** bindings, then **`;;`**, then locals. See **`OuronetInformational/skills/let-binding-layout.md`**.
+
 ## Pact metadata (Ouronet modules)
 
 - **`@doc`** — Immediately **after** the **`defun` / `defcap` parameter list** (see `UDC_*` and `C_*` style in **`01_ANK.pact`**), never between the name and `(`.

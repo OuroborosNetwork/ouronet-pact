@@ -4,6 +4,10 @@
 ;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
 ;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
 ;;
+;; AQP-FAST (default): Stage 00 sandboxes + Stage 01 deploy/issuance + Stage 02 AQP deploy/tests.
+;;   Stage02_Tester skips Populate*/Launchpad/[6.1]/[6.3]; Stage01 skips Cumulator/CODEX; StageZZ off.
+;; FULL CHAIN: uncomment blocks marked ;;FULL> (Stage00a, Stage01 [6.1]/[6.9], Stage02 ;;FULL> lines, StageZZ).
+;;
 (print "")
 (print "================================================================")
 (print "FILE  REPL/Z.repl")
@@ -17,10 +21,17 @@
 (print "************************ LOADED - STAGE 00 — Sandboxes (Kadena + Stoa) ******************************")
 (print "")
 
-(print "")
-(load "Stage00a_StoaTests.repl")
-(print "************************ LOADED - STAGE 00a — Stoa coin tests *****************************************")
-(print "")
+;;FULL> Stoa coin smoke tests — not required for AQP module iteration
+;(print "")
+;(load "Stage00a_StoaTests.repl")
+;(print "************************ LOADED - STAGE 00a — Stoa coin tests *****************************************")
+;(print "")
+
+;;FULL> Stoa coin bulk-transfer tests
+;(print "")
+;(load "Stage00b_StoaBulkTests.repl")
+;(print "************************ LOADED - STAGE 00b — Stoa coin bulk tests ***********************************")
+;(print "")
 
 ;;Load Stage 01 - Ouronet Stage 1 Deployment
 (print "")
@@ -28,14 +39,14 @@
 (print "************************LOADED - STAGE 01 - OuronetENV**********************************************")
 (print "")
 
-;;Load Stage 02 — Ouronet Stage 2 deployment (required for Stage_Z DPL-UR DPDC readers)
-;(print "")
-;(load "Stage02_Tester.repl")
-;(print "************************ LOADED - STAGE 02 — Ouronet Stage 2 ***************************************")
-;(print "")
+;;Load Stage 02 — Ouronet Stage 2 deployment (required for AQP + DPL-UR DPDC readers)
+(print "")
+(load "Stage02_Tester.repl")
+(print "************************ LOADED - STAGE 02 — Ouronet Stage 2 ***************************************")
+(print "")
 
-;;Load Stage ZZ — deploy DPL-UR only (no bundled REPL tests)
-(print "")
-(load "StageZZ_Tester.repl")
-(print "************************ LOADED - STAGE ZZ — DPL-UR deploy ********************************************")
-(print "")
+;;FULL> Stage ZZ — DPL-UR + EXPLORER (not needed for AQP [6.2] tests)
+;(print "")
+;(load "StageZZ_Tester.repl")
+;(print "************************ LOADED - STAGE ZZ — DPL-UR + EXPLORER deploy ********************************")
+;(print "")

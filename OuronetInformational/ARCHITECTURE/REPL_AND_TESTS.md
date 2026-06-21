@@ -47,7 +47,9 @@ Use this section when continuing **Stage 02** integration work on another machin
 
 ### Slave module: `2_SLAVE/Stage_02/04_AQP-BOOT.pact`
 
-**`AQP-BOOT`** implements **`AcquisitionPoolBootV1`**: discrete bootstrap steps **`C_Step1`** … **`C_Step6`** (bunny set, SnakePower anchors, booster anchors, core scores, subsidiary scores, OURO LP triplet). Live deploy uses these instead of a monolithic “bootstrap everything” call.
+**Handoff guide (mainnet operator + REPL):** [2_SLAVE/Stage_02/README_AQP_BOOT.md](../../2_SLAVE/Stage_02/README_AQP_BOOT.md) — id chain table, `NEXT=` fields in return strings, collection id inputs vs `UDC_Makeid` outputs.
+
+**`AQP-BOOT`** implements **`AcquisitionPoolBootV1`**: discrete bootstrap steps **`C_Step1`** … **`C_Step7`**. Live deploy uses these instead of a monolithic “bootstrap everything” call. **Each step returns a formatted string** — copy ids from the tx result into the next step's arguments when running separate mainnet transactions.
 
 - **Step 1** — `C_Step1_CreateBunnySet` (KBN bunny set).
 
@@ -61,7 +63,7 @@ Use this section when continuing **Stage 02** integration work on another machin
 
 - **Step 6** — `C_Step6_CreateOuroLpTriplet` — LP triplet **scores only** (no pool or farm wiring); pass **`lp-denominator`** as the **full native DPTF id** of the common pool leg (e.g. **`"OURO-98c486052a51"`**), not the ticker alone — SCORE validates via `DPTF::UEV_id` at class-0 issue.
 
-- **Step 7** *(planned, not in `04_AQP-BOOT.pact` yet)* — `C_Step7_CreatePoolsAndFarmLinks`: six **class-1** DPTF pools + score slots from Steps 4–5, one **class-0** LP pool for the mainnet OURO LP + Step 6 triplet, one **Farm FVT** with `common-denominator` = OURO DPTF id, and **`C_AddScoreLink` once per employed score**. See **`1_SOVEREIGN/STAGE_02/2_Core/03_AQP/README.md`** (Phase E) for the DH → pool → score map.
+- **Step 7** — `C_Step7_CreatePoolsAndScores`: six DH pools (**class 3 DPSF** or **class 4 DPNF** by entity) + score slots from Steps 4–5, one **class-0** LP pool + Step 6 triplet. Pass explicit `dh-asset-ids`, `dh-pool-ids`, and score id lists (see `;;` block in `04_AQP-BOOT.pact`). FVT links pending. See **`README.md`** Phase E for the pool map and REPL example ids (`DHCD-…`, `DHB-…`, etc.).
 
 ### Multi-LP OURO farm (architecture)
 

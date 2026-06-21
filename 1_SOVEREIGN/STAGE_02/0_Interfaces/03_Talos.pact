@@ -369,4 +369,19 @@
     (defun AQP-POOL|C_AddScore:string
         (patron:string pool-id:string score-id:string)
     )
+    (defun AQP-POOL|C_RevokeScore:string
+        (patron:string pool-id:string score-id:string)
+    )
+    ;;
+    ;;=== PLANNED Talos client shells (comment-only — sovereign C_* home TBD) ===
+    ;; AQP-POOL|C_VacatePool(patron pool-id) -> sovereign C_VacatePool TBD
+    ;; AQP-POOL|C_StakeOrtoFungible(...) / C_UnstakeOrtoFungible(...) -> sovereign OF stake recipe TBD
+    ;; AQP-POOL|C_StakeCollectable(...) / C_UnstakeCollectable(...) -> sovereign DPDC stake recipe TBD
+    ;;
+    (defun AQP-POOL|C_StakeTrueFungible:string
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+    )
+    (defun AQP-POOL|C_UnstakeTrueFungible:string
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+    )
 )

@@ -109,3 +109,5 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;; Post-deploy IMC + vault governor: AQP-BOOT Step 0 — Stage02_Tester TX-02 [5.6] (after AQP-BOOT load).
+(print "")

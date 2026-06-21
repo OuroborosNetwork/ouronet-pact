@@ -75,6 +75,7 @@
 (load "../stoa-ns/interfaces/fungible-xchain-v1.pact")
 (load "../stoa-ns/interfaces/gas-payer-v1.pact")
 (load "../stoa-ns/interfaces/stoic-fungible-v1.pact")
+(load "../stoa-ns/interfaces/stoic-bulk-fungible-v1.pact")
 (load "../stoa-ns/interfaces/ur-stoic-fungible-v1.pact")
 
 (load "../stoa-ns/modules/stoic-predicates.pact")

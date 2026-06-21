@@ -107,6 +107,18 @@
         true
     )
     ;;{C2}
+    (defcap AQP|C>STAKE-TRUE-FUNGIBLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "AQP client event: stake TrueFungible. Composes P|TS only; sovereign recipe in FVT::C_TrueFungibleStakeFlow."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>UNSTAKE-TRUE-FUNGIBLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "AQP client event: unstake TrueFungible. Composes P|TS only; sovereign recipe in FVT::C_TrueFungibleStakeFlow."
+        @event
+        (compose-capability (P|TS))
+    )
     ;;{C3}
     ;;{C4}
     ;;
@@ -118,6 +130,30 @@
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
             )
             (ref-I|OURONET::OI|UC_ShortAccount account)
+        )
+    )
+    (defun UC_FormatStakeTrueFungibleResult:string
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Stake success text: self-stake when owner=beneficiary; else names short owner and beneficiary."
+        (if (= owner-id beneficiary-id)
+            (format "Successfully staked TrueFungible {} amount {} into Pool {} (self-stake, {}). "
+                [dptf-id amount pool-id (UC_ShortAccount owner-id)]
+            )
+            (format "Successfully staked TrueFungible {} amount {} into Pool {} for beneficiary {} (owner {}). "
+                [dptf-id amount pool-id (UC_ShortAccount beneficiary-id) (UC_ShortAccount owner-id)]
+            )
+        )
+    )
+    (defun UC_FormatUnstakeTrueFungibleResult:string
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Unstake success text: self-stake when owner=beneficiary; else names short owner and beneficiary."
+        (if (= owner-id beneficiary-id)
+            (format "Successfully unstaked TrueFungible {} amount {} from Pool {} (self-stake, {}). "
+                [dptf-id amount pool-id (UC_ShortAccount owner-id)]
+            )
+            (format "Successfully unstaked TrueFungible {} amount {} from Pool {} for beneficiary {} (owner {}). "
+                [dptf-id amount pool-id (UC_ShortAccount beneficiary-id) (UC_ShortAccount owner-id)]
+            )
         )
     )
     ;;{F0}  [UR]
@@ -494,6 +530,62 @@
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (format "Successfully assigned Score {} to Pool {}." [score-id pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|C_RevokeScore:string
+        (patron:string pool-id:string score-id:string)
+        @doc "Revokes score-id from pool-id (compact slots, clear aqpool-link); collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-AQP::C_RevokeScore patron pool-id score-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully revoked Score {} from Pool {}." [score-id pool-id])
+            )
+        )
+    )
+    ;;
+    ;;=== PLANNED Talos client shells (comment-only — sovereign C_* home TBD) ===
+    ;; AQP-POOL|C_VacatePool(patron pool-id)
+    ;; AQP-POOL|C_StakeOrtoFungible(...) / C_UnstakeOrtoFungible(...)
+    ;; AQP-POOL|C_StakeCollectable(...) / C_UnstakeCollectable(...)
+    ;;
+    (defun AQP-POOL|C_StakeTrueFungible:string
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Stake DPTF (or native|F| LP) into pool-id. Talos client shell: event cap + FVT::C_TrueFungibleStakeFlow direction=true."
+        (with-capability (AQP|C>STAKE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount true)
+                )
+                (UC_FormatStakeTrueFungibleResult pool-id owner-id beneficiary-id dptf-id amount)
+            )
+        )
+    )
+    (defun AQP-POOL|C_UnstakeTrueFungible:string
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Unstake DPTF from pool-id. Talos client shell: event cap + FVT::C_TrueFungibleStakeFlow direction=false."
+        (with-capability (AQP|C>UNSTAKE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false)
+                )
+                (UC_FormatUnstakeTrueFungibleResult pool-id owner-id beneficiary-id dptf-id amount)
             )
         )
     )

@@ -73,8 +73,8 @@
     )
     (defun C_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} (anchor-id:string))
     ;;
-    ;;  [XE]
-    (defun XE_UpdateTrueFungibleUserAnchorValues
+    ;;  [XE]  Backward entry (FVT::XI_RefreshTrueFungibleStakeAnchors, C_SyncTrueFungibleAnchors)
+    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
         (account:string dptf-id:string total-dptf-amount:decimal)
     )
     (defun XE_UpdateSemiFungibleUserAnchorValues
@@ -94,9 +94,6 @@
     ;;GOVERNANCE
     ;;{G1}
     (defconst GOV|MD_AQP-ANK                (keyset-ref-guard (GOV|Demiurgoi)))
-    ;;
-    (defconst AQP|SC_KEY                    (GOV|AqpKey))
-    (defconst AQP|SC_NAME                   (GOV|AQP|SC_NAME))
     ;;{G2}
     (defcap GOV ()                          (compose-capability (GOV|ANK_ADMIN)))
     (defcap GOV|ANK_ADMIN ()                (enforce-guard GOV|MD_AQP-ANK))
@@ -104,28 +101,6 @@
     (defun GOV|Demiurgoi ()
         @doc "Resolves the governance keyset from DALOS."
         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi))
-    )
-    ;;
-    ;; [Keys]
-    (defun GOV|NS_Use ()
-        @doc "Returns namespace prefix constant used by ANK."
-        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE))
-    )
-    (defun GOV|AqpKey ()
-        @doc "Builds the governance keyset name for AQP."
-        (+ (GOV|NS_Use) ".dh_sc_aqp-keyset")
-    )
-    ;;
-    ;; [SC-Names]
-    (defun GOV|AQP|SC_NAME ()
-        @doc "Returns ANK module symbolic name."
-        (at 0 ["Σ.ЖřÎzэóΣQз3ÌĄăådìÜλÅË9γğ7χûПæ0₳ПûÖŞrĄθXtFìмkщsGвÅgλąÇπЩAĚЭDíéαэБùđáżñИïПÆΣтцξsηåäялÃБц¢r6ÁíäзуμþĄĐЫîÉAćýìЧыQPнŁзßξĂйjay£üѺçRЫfУQșÏΠÜqîÔĄťß6ЗSρŠeΦñëdmûΦøШâΞýκъиřк"])
-    )
-    ;;
-    ;; [PBLs]
-    (defun GOV|AQP|PBL ()
-        @doc "Returns immutable public branding/license payload constant."
-        (at 0 ["9G.632vHq208xaznBw9AfwrFGmLBqkr7tqEzf2Msq389xqEknmfAk8qI5MM1MaszdgMtEBpo6rbuC09Do7F6pjc91jzy3JxI6fjCkyuIbDpDD5i8CxeCBL0dKdDu3d2uAAwl6wE6npnm4Mjxx6JhiFq1sKddsGjLH9BjHF0ljtegHrn39qIADru76Ftr9Kgxh6Ds2aj4EufG07uK9sFG38ej5vooDMr0wp8alqGdnIiJxbhmwEKEg44l8pI5LDq2EotoM2jq86x1EJ5hM4wkfhtq4ye610tkAMIdLrDD87Euk14aJgMwnrLmytzcCc3Kakrnhs8Jxy5dFeowGxzlx1bGHqfwEen0pLcd6nl9udGE9hfFucLjM1seKzv542nwzz5jrpKmvzebI4BLK00Br1ocvxs4uor2nEv2Fng1l6qAiLcbv0hMnbLDEEcLpF1bD55gw55of7H2c3ieozahorkuCe5FEkAkEAhcGwJ35HCletrbcn2Ebo0fsD0tf2zxKsbzinpcJCtpv4EF4AyyhwD1LbtEd6qsEbgyJkA2DqdGBE5Fuqudzf8082Ei88d"])
     )
     ;;
     ;;<====>
@@ -170,6 +145,7 @@
             (let
                 (
                     (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -183,14 +159,9 @@
         )
     )
     (defun P|A_Define ()
-        @doc "Registers ANK secure caller guard in DALOS policies."
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (mg:guard (create-capability-guard (P|ANK|CALLER)))
-            )
-            (ref-P|DALOS::P|A_AddIMP mg)
-        )
+        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
+            \ ANK calls DALOS UR_*/CAP_*/UEV_* only (no DALOS UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
+        true
     )
     (defun UEV_IMC ()
         @doc "Enforces that caller matches an imported policy guard."
@@ -352,6 +323,7 @@
             (
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
                 (fourth:string (drop 3 (take 4 dptf-id)))
                 (first-two:string (take 2 dptf-id))
             )
@@ -412,6 +384,7 @@
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
                 (meta-data:object
                     (ref-DPDC::UR_N|RawMetaData
                         (ref-DPDC::UR_NativeNonceData dpnf-id false 1)
@@ -441,6 +414,7 @@
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
                 (classes-used:integer (ref-DPDC::UR_SetClassesUsed dpnf-id false))
             )
             (enforce
@@ -494,6 +468,7 @@
             ;;3]<total-dptf-amount> must conform to DPTF precision
             (ref-DPTF::UEV_Amount dptf-id total-dptf-amount)
         )
+        (compose-capability (SECURE))
     )
     (defcap ANK|C>UPDATE-DPSF (account:string dpsf-id:string nonces:[integer])
         @doc "Authorizes updating user promile for DPSF-backed anchors on one asset (delegates to UPDATE-DPDC, SF)."
@@ -516,6 +491,7 @@
             ;;2]<nonces> must exist for the target DPDC asset + fungibility mode
             (ref-DPDC::UEV_NonceMapper asset-id son nonces)
         )
+        (compose-capability (SECURE))
     )
     ;;
     ;;<=======>
@@ -589,6 +565,10 @@
         @doc "Reads anchor-id field from anchor row."
         (at "anchor-id" (UR_ANK|Data anchor-id))
     )
+    (defun UR_ANK|AllAnchorIds:[string] ()
+        @doc "Returns all row keys from ANK|T|Anchor."
+        (keys ANK|T|Anchor)
+    )
     ;;
     ;; [2] ANK|T|BoostClass  (ANK|BoostClass)  Key = <Boost-Class-ID>
     (defun UR_BC|Data:object{ANK|BoostClass} (boost-class-id:string)
@@ -610,19 +590,6 @@
     (defun UR_BC|AllBoostClassIds:[string] ()
         @doc "Returns all row keys from ANK|T|BoostClass."
         (keys ANK|T|BoostClass)
-    )
-    (defun XH_BC|AnchorIdAtSlot:string (bc:object{ANK|BoostClass} idx:integer)
-        @doc "Reads anchor-id at slot idx (0..6) from a BoostClass object."
-        (cond
-            ((= idx 0) (at "anchor-primary" bc))
-            ((= idx 1) (at "anchor-secondary" bc))
-            ((= idx 2) (at "anchor-tertiary" bc))
-            ((= idx 3) (at "anchor-quaternary" bc))
-            ((= idx 4) (at "anchor-quinary" bc))
-            ((= idx 5) (at "anchor-senary" bc))
-            ((= idx 6) (at "anchor-septenary" bc))
-            BAR
-        )
     )
     ;;
     ;; [3] ANK|T|AssetAnchors  (ANK|AssetAnchors)  Key = <Asset-ID>
@@ -674,36 +641,6 @@
         @doc "Reads anchors-active from asset anchors row."
         (at "anchors-active" (UR_AA|Data asset-id))
     )
-    (defun XH_AA|GroupAtSlot:object{ANK|InternalGroup} (aa:object{ANK|AssetAnchors} idx:integer)
-        @doc "Reads internal group at slot idx (0..6) from an AssetAnchors object."
-        (cond
-            ((= idx 0) (at "group-primary" aa))
-            ((= idx 1) (at "group-secondary" aa))
-            ((= idx 2) (at "group-tertiary" aa))
-            ((= idx 3) (at "group-quaternary" aa))
-            ((= idx 4) (at "group-quinary" aa))
-            ((= idx 5) (at "group-senary" aa))
-            ((= idx 6) (at "group-septenary" aa))
-            (UDC_EmptyInternalGroup)
-        )
-    )
-    (defun XH_IG|AnchorIdAtSlot:string (ig:object{ANK|InternalGroup} idx:integer)
-        @doc "Reads anchor-id at slot idx (0..6) from an InternalGroup object."
-        (cond
-            ((= idx 0) (at "anchor-primary" ig))
-            ((= idx 1) (at "anchor-secondary" ig))
-            ((= idx 2) (at "anchor-tertiary" ig))
-            ((= idx 3) (at "anchor-quaternary" ig))
-            ((= idx 4) (at "anchor-quinary" ig))
-            ((= idx 5) (at "anchor-senary" ig))
-            ((= idx 6) (at "anchor-septenary" ig))
-            BAR
-        )
-    )
-    (defun UR_ANK|AllAnchorIds:[string] ()
-        @doc "Returns all row keys from ANK|T|Anchor."
-        (keys ANK|T|Anchor)
-    )
     (defun UR_ANK|AnchorsForAsset:[string] (asset-id:string)
         @doc "Live anchor-ids for an asset. Reads the single AssetAnchors row, \
             \ iterates all groups and slots, collects non-BAR active anchors."
@@ -718,7 +655,7 @@
                     (lambda (acc:[string] gi:integer)
                         (let
                             (
-                                (grp:object{ANK|InternalGroup} (XH_AA|GroupAtSlot aa gi))
+                                (grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
                                 (q:integer (at "anchors" grp))
                             )
                             (if (<= q 0)
@@ -727,7 +664,7 @@
                                     (lambda (acc2:[string] ai:integer)
                                         (let
                                             (
-                                                (aid:string (XH_IG|AnchorIdAtSlot grp ai))
+                                                (aid:string (URC_IG|AnchorIdAtSlot grp ai))
                                             )
                                             (if (and (!= aid BAR) (UR_ANK|State aid))
                                                 (+ acc2 [aid])
@@ -941,6 +878,105 @@
             )
         )
     )
+    (defun URC_TrueFungibleStakeAnchorRefreshIgnis:decimal (n-live:integer)
+        @doc "Internal: ignis|small per live TF anchor refreshed (n_live = length UR_ANK|AnchorsForAsset). Zero when n_live ≤ 0."
+        (if (<= n-live 0)
+            0.0
+            (let
+                (
+                    (ref-DALOS:module{OuronetDalosV1} DALOS)
+                    ;;
+                    (unit:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
+                )
+                (* (dec n-live) unit)
+            )
+        )
+    )
+    ;; --- AssetAnchors / BoostClass slot helpers (in-memory; UDC_AA|* and XI_1|Recompute*) ---
+    (defun URC_BC|AnchorIdAtSlot:string (bc:object{ANK|BoostClass} idx:integer)
+        @doc "URC: reads anchor-id at slot idx (0..6) from a BoostClass object (in-memory)."
+        (cond
+            ((= idx 0) (at "anchor-primary" bc))
+            ((= idx 1) (at "anchor-secondary" bc))
+            ((= idx 2) (at "anchor-tertiary" bc))
+            ((= idx 3) (at "anchor-quaternary" bc))
+            ((= idx 4) (at "anchor-quinary" bc))
+            ((= idx 5) (at "anchor-senary" bc))
+            ((= idx 6) (at "anchor-septenary" bc))
+            BAR
+        )
+    )
+    (defun URC_AA|GroupAtSlot:object{ANK|InternalGroup} (aa:object{ANK|AssetAnchors} idx:integer)
+        @doc "URC: reads internal group at slot idx (0..6) from an AssetAnchors object (in-memory)."
+        (cond
+            ((= idx 0) (at "group-primary" aa))
+            ((= idx 1) (at "group-secondary" aa))
+            ((= idx 2) (at "group-tertiary" aa))
+            ((= idx 3) (at "group-quaternary" aa))
+            ((= idx 4) (at "group-quinary" aa))
+            ((= idx 5) (at "group-senary" aa))
+            ((= idx 6) (at "group-septenary" aa))
+            (UDC_EmptyInternalGroup)
+        )
+    )
+    (defun URC_IG|AnchorIdAtSlot:string (ig:object{ANK|InternalGroup} idx:integer)
+        @doc "URC: reads anchor-id at slot idx (0..6) from an InternalGroup object (in-memory)."
+        (cond
+            ((= idx 0) (at "anchor-primary" ig))
+            ((= idx 1) (at "anchor-secondary" ig))
+            ((= idx 2) (at "anchor-tertiary" ig))
+            ((= idx 3) (at "anchor-quaternary" ig))
+            ((= idx 4) (at "anchor-quinary" ig))
+            ((= idx 5) (at "anchor-senary" ig))
+            ((= idx 6) (at "anchor-septenary" ig))
+            BAR
+        )
+    )
+    (defun URC_IG|ContainsAnchor:bool (ig:object{ANK|InternalGroup} anchor-id:string)
+        @doc "URC: true when InternalGroup contains anchor-id (in-memory scan of seven slots)."
+        (or (= anchor-id (at "anchor-primary" ig))
+        (or (= anchor-id (at "anchor-secondary" ig))
+        (or (= anchor-id (at "anchor-tertiary" ig))
+        (or (= anchor-id (at "anchor-quaternary" ig))
+        (or (= anchor-id (at "anchor-quinary" ig))
+        (or (= anchor-id (at "anchor-senary" ig))
+            (= anchor-id (at "anchor-septenary" ig))))))))
+    )
+    (defun URC_AA|SetGroupAtSlot:object{ANK|AssetAnchors}
+        (aa:object{ANK|AssetAnchors} grp:object{ANK|InternalGroup} slot:integer ta:integer ga:integer adjust-ga:bool)
+        @doc "URC: returns updated AssetAnchors with group replaced at slot (in-memory; used by UDC_AA|PlaceAnchor / RemoveAnchor)."
+        (let
+            (
+                (g1:object{ANK|InternalGroup} (if (= slot 0) grp (at "group-primary" aa)))
+                (g2:object{ANK|InternalGroup} (if (= slot 1) grp (at "group-secondary" aa)))
+                (g3:object{ANK|InternalGroup} (if (= slot 2) grp (at "group-tertiary" aa)))
+                (g4:object{ANK|InternalGroup} (if (= slot 3) grp (at "group-quaternary" aa)))
+                (g5:object{ANK|InternalGroup} (if (= slot 4) grp (at "group-quinary" aa)))
+                (g6:object{ANK|InternalGroup} (if (= slot 5) grp (at "group-senary" aa)))
+                (g7:object{ANK|InternalGroup} (if (= slot 6) grp (at "group-septenary" aa)))
+                (new-ta:integer ta)
+                (new-ga:integer
+                    (if adjust-ga
+                        (if (= (at "anchors" grp) 0)
+                            (- ga 1)
+                            (+ ga 1)
+                        )
+                        ga
+                    )
+                )
+            )
+            {"group-primary"    : g1
+            ,"group-secondary"  : g2
+            ,"group-tertiary"   : g3
+            ,"group-quaternary" : g4
+            ,"group-quinary"    : g5
+            ,"group-senary"     : g6
+            ,"group-septenary"  : g7
+            ,"groups-active"    : new-ga
+            ,"anchors-active"   : new-ta
+            ,"asset-id"         : (at "asset-id" aa)}
+        )
+    )
     ;;{F2}  [UEV]
     (defun UEV_AnkFungibility (asset-fungibility:[bool])
         @doc "Validates asset-fungibility tuple (TF/SF/NF discriminator) for anchor-class / asset-summary tables."
@@ -1071,6 +1107,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
+                ;;
                 (lst:[string]
                     [(at "anchor-primary" ig)
                      (at "anchor-secondary" ig)
@@ -1140,6 +1177,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
+                ;;
                 (lst:[string]
                     [(at "anchor-primary" bc)
                      (at "anchor-secondary" bc)
@@ -1191,7 +1229,7 @@
                                     acc
                                     (let
                                         (
-                                            (grp:object{ANK|InternalGroup} (XH_AA|GroupAtSlot aa gi))
+                                            (grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
                                             (gn:integer (at "anchors" grp))
                                         )
                                         (if (< gn 7)
@@ -1213,14 +1251,14 @@
                             (updated-grp:object{ANK|InternalGroup} (at 0 result))
                             (slot:integer (at 2 result))
                         )
-                        (XH_AA|SetGroupAtSlot aa updated-grp slot ta ga false)
+                        (URC_AA|SetGroupAtSlot aa updated-grp slot ta ga false)
                     )
                     (let
                         (
                             (new-grp:object{ANK|InternalGroup} (UDC_IG|WithAddedAnchor (UDC_EmptyInternalGroup) new-anchor-id))
                         )
                         (enforce (< ga 7) (format "{} 7-group cap reached for asset {}" [E-ANK aid]))
-                        (XH_AA|SetGroupAtSlot aa new-grp ga ta ga true)
+                        (URC_AA|SetGroupAtSlot aa new-grp ga ta ga true)
                     )
                 )
             )
@@ -1239,9 +1277,9 @@
                 (lambda (acc:object{ANK|AssetAnchors} gi:integer)
                     (let
                         (
-                            (grp:object{ANK|InternalGroup} (XH_AA|GroupAtSlot acc gi))
+                            (grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot acc gi))
                         )
-                        (if (XH_IG|ContainsAnchor grp revoked-anchor-id)
+                        (if (URC_IG|ContainsAnchor grp revoked-anchor-id)
                             (let
                                 (
                                     (updated-grp:object{ANK|InternalGroup} (UDC_IG|WithRemovedAnchor grp revoked-anchor-id))
@@ -1249,7 +1287,7 @@
                                     (was-ta:integer (at "anchors-active" acc))
                                     (grp-now-empty:bool (= (at "anchors" updated-grp) 0))
                                 )
-                                (XH_AA|SetGroupAtSlot acc updated-grp gi (- was-ta 1) was-ga grp-now-empty)
+                                (URC_AA|SetGroupAtSlot acc updated-grp gi (- was-ta 1) was-ga grp-now-empty)
                             )
                             acc
                         )
@@ -1258,52 +1296,6 @@
                 aa
                 (enumerate 0 (- ga 1))
             )
-        )
-    )
-    (defun XH_IG|ContainsAnchor:bool (ig:object{ANK|InternalGroup} anchor-id:string)
-        @doc "Checks if an InternalGroup contains a given anchor-id."
-        (or (= anchor-id (at "anchor-primary" ig))
-        (or (= anchor-id (at "anchor-secondary" ig))
-        (or (= anchor-id (at "anchor-tertiary" ig))
-        (or (= anchor-id (at "anchor-quaternary" ig))
-        (or (= anchor-id (at "anchor-quinary" ig))
-        (or (= anchor-id (at "anchor-senary" ig))
-            (= anchor-id (at "anchor-septenary" ig))))))))
-    )
-    (defun XH_AA|SetGroupAtSlot:object{ANK|AssetAnchors}
-        (aa:object{ANK|AssetAnchors} grp:object{ANK|InternalGroup} slot:integer ta:integer ga:integer adjust-ga:bool)
-        @doc "Returns updated AssetAnchors with group replaced at slot. \
-            \ If adjust-ga is true (new group added or group emptied), ga is adjusted."
-        (let
-            (
-                (g1:object{ANK|InternalGroup} (if (= slot 0) grp (at "group-primary" aa)))
-                (g2:object{ANK|InternalGroup} (if (= slot 1) grp (at "group-secondary" aa)))
-                (g3:object{ANK|InternalGroup} (if (= slot 2) grp (at "group-tertiary" aa)))
-                (g4:object{ANK|InternalGroup} (if (= slot 3) grp (at "group-quaternary" aa)))
-                (g5:object{ANK|InternalGroup} (if (= slot 4) grp (at "group-quinary" aa)))
-                (g6:object{ANK|InternalGroup} (if (= slot 5) grp (at "group-senary" aa)))
-                (g7:object{ANK|InternalGroup} (if (= slot 6) grp (at "group-septenary" aa)))
-                (new-ta:integer ta)
-                (new-ga:integer
-                    (if adjust-ga
-                        (if (= (at "anchors" grp) 0)
-                            (- ga 1)
-                            (+ ga 1)
-                        )
-                        ga
-                    )
-                )
-            )
-            {"group-primary"    : g1
-            ,"group-secondary"  : g2
-            ,"group-tertiary"   : g3
-            ,"group-quaternary" : g4
-            ,"group-quinary"    : g5
-            ,"group-senary"     : g6
-            ,"group-septenary"  : g7
-            ,"groups-active"    : new-ga
-            ,"anchors-active"   : new-ta
-            ,"asset-id"         : (at "asset-id" aa)}
         )
     )
     (defun UDC_AccountAnchor:object{ANK|UserSchema}
@@ -1350,6 +1342,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
                 (first-two:string (take 2 dptf-id))
                 (core-dptf-id:string
                     (cond
@@ -1373,10 +1366,13 @@
         (with-capability (ANK|C>REVOKE-BOOST-CLASS boost-class-id)
             (let
                 (
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
+                    (aqp-sc:string AQP-POOL.AQP|SC_NAME)
                 )
                 (update ANK|T|BoostClass boost-class-id {"class-active" : false})
-                (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
+                (ref-IGNIS::UDC_BiggestCumulator aqp-sc)
             )
         )
     )
@@ -1388,8 +1384,11 @@
         (with-capability (ANK|C>ISSUE-DPTF anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount)
             (let
                 (
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
+                    (aqp-sc:string AQP-POOL.AQP|SC_NAME)
                     (gas-costs:decimal 1000.0)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (standard:decimal (ref-DALOS::UR_UsagePrice "standard"))
@@ -1403,9 +1402,9 @@
                         )
                     )
                 )
-                (XI_PlaceAnchorInBookkeeping anchor-id dptf-id boost-class-id)
+                (XI_1|PlaceAnchorInBookkeeping anchor-id dptf-id boost-class-id)
                 (ref-IGNIS::KDA|C_Collect patron (* standard stoa-multiplier))
-                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
+                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs aqp-sc trigger
                     (if acnoi [anchor-id boost-class-id] [anchor-id])
                 )
             )
@@ -1419,8 +1418,11 @@
         (with-capability (ANK|C>ISSUE-DPSF anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce)
             (let
                 (
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
+                    (aqp-sc:string AQP-POOL.AQP|SC_NAME)
                     (gas-costs:decimal 1000.0)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (standard:decimal (ref-DALOS::UR_UsagePrice "standard"))
@@ -1434,9 +1436,9 @@
                         )
                     )
                 )
-                (XI_PlaceAnchorInBookkeeping anchor-id dpsf-id boost-class-id)
+                (XI_1|PlaceAnchorInBookkeeping anchor-id dpsf-id boost-class-id)
                 (ref-IGNIS::KDA|C_Collect patron (* standard stoa-multiplier))
-                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
+                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs aqp-sc trigger
                     (if acnoi [anchor-id boost-class-id] [anchor-id])
                 )
             )
@@ -1450,8 +1452,11 @@
         (with-capability (ANK|C>ISSUE-DPNF anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value)
             (let
                 (
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
+                    (aqp-sc:string AQP-POOL.AQP|SC_NAME)
                     (gas-costs:decimal 1000.0)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (standard:decimal (ref-DALOS::UR_UsagePrice "standard"))
@@ -1465,9 +1470,9 @@
                         )
                     )
                 )
-                (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
+                (XI_1|PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
                 (ref-IGNIS::KDA|C_Collect patron (* standard stoa-multiplier))
-                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
+                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs aqp-sc trigger
                     (if acnoi [anchor-id boost-class-id] [anchor-id])
                 )
             )
@@ -1481,8 +1486,11 @@
         (with-capability (ANK|C>ISSUE-DPNF-SET anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class)
             (let
                 (
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
+                    (aqp-sc:string AQP-POOL.AQP|SC_NAME)
                     (gas-costs:decimal 1000.0)
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (standard:decimal (ref-DALOS::UR_UsagePrice "standard"))
@@ -1496,9 +1504,9 @@
                         )
                     )
                 )
-                (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
+                (XI_1|PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
                 (ref-IGNIS::KDA|C_Collect patron (* standard stoa-multiplier))
-                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
+                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs aqp-sc trigger
                     (if acnoi [anchor-id boost-class-id] [anchor-id])
                 )
             )
@@ -1511,24 +1519,41 @@
         (with-capability (ANK|C>REVOKE anchor-id)
             (let
                 (
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
+                    (aqp-sc:string AQP-POOL.AQP|SC_NAME)
                 )
                 (update ANK|T|Anchor anchor-id {"ank-active" : false})
                 (XI_RevokeAnchorBookkeeping anchor-id)
-                (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
+                (ref-IGNIS::UDC_BiggestCumulator aqp-sc)
             )
         )
     )
     ;;
-    ;;
     ;;{F7}  [X]
+    ;; XI depth: 0 = XI_<Name> (no suffix); N = XI_N|<Name>. Orchestrator = C_* or XE_*.
+    ;; Issue (C_Issue*Anchor):
+    ;;   XI_IssueBoostClass (depth 0, optional)
+    ;;   XI_IssueAnchor (depth 0)
+    ;;     └ XI_1|PlaceAnchorInBookkeeping
+    ;; Revoke (C_RevokeAnchor):
+    ;;   XI_RevokeAnchorBookkeeping (depth 0)
+    ;; TF user promile (FVT phase 2.2 XI_Refresh* → backward XE_Update*TF):
+    ;;   XE_UpdateTrueFungibleUserAnchorValues (backward · UEV_IMC)
+    ;;     └ XI_UpdateTrueFungibleUserAnchorValues (depth 0)
+    ;;          └ XI_1|RecomputeAffectedBoostAggregates
+    ;; SF/NF user promile: backward XE_Update* then inline writes → XI_1|RecomputeAffectedBoostAggregates
+    ;;
+    ;; --- C_Issue*Anchor / C_RevokeAnchor writers ---
     (defun XI_IssueBoostClass:string
         (boost-class-name:string)
-        @doc "Creates a new BoostClass entity inline during anchor issuance. Returns the boost-class-id."
+        @doc "Internal (C_Issue*Anchor · depth 0]): create BoostClass inline when acnoi; returns boost-class-id."
         (require-capability (SECURE))
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                ;;
                 (boost-class-id:string (ref-U|DALOS::UDC_Makeid boost-class-name))
             )
             (insert ANK|T|BoostClass boost-class-id
@@ -1542,11 +1567,12 @@
             ank-name:string ank-asset:string ank-fungibility:[bool] boost-class-id:string ank-precision:integer ank-promile:decimal
             dptf-amount:decimal dpsf-nonce:integer dpnf-trait-key:string dpnf-trait-value:string dpnf-nonce-class:integer
         )
-        @doc "Core anchor issue: inserts row into ANK|T|Anchor. Outputs anchor-id."
+        @doc "Internal (C_Issue*Anchor · depth 0]): insert ANK|T|Anchor row; returns anchor-id."
         (require-capability (SECURE))
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                ;;
                 (anchor-id:string (ref-U|DALOS::UDC_Makeid ank-name))
             )
             (insert ANK|T|Anchor anchor-id
@@ -1558,8 +1584,8 @@
             anchor-id
         )
     )
-    (defun XI_PlaceAnchorInBookkeeping (anchor-id:string asset-id:string boost-class-id:string)
-        @doc "Places anchor into BoostClass and AssetAnchors bookkeeping."
+    (defun XI_1|PlaceAnchorInBookkeeping (anchor-id:string asset-id:string boost-class-id:string)
+        @doc "Internal (C_Issue*Anchor · depth 1]): place anchor in BoostClass + AssetAnchors bookkeeping."
         (require-capability (SECURE))
         (let
             (
@@ -1571,7 +1597,7 @@
         )
     )
     (defun XI_RevokeAnchorBookkeeping (anchor-id:string)
-        @doc "Removes anchor from BoostClass and AssetAnchors bookkeeping."
+        @doc "Internal (C_RevokeAnchor · depth 0]): remove anchor from BoostClass + AssetAnchors bookkeeping."
         (require-capability (SECURE))
         (let
             (
@@ -1585,42 +1611,113 @@
         )
     )
     ;;
-    (defun XE_UpdateTrueFungibleUserAnchorValues
+    ;; --- TF user promile (backward XE then XI callees) ---
+    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
         (account:string dptf-id:string total-dptf-amount:decimal)
-        @doc "Updates user promile for each live TF anchor on dptf-id, then recomputes affected BoostClass aggregates."
+        @doc "Backward (FVT::XI_RefreshTrueFungibleStakeAnchors / C_Sync*): UEV_IMC + XI_UpdateTrueFungibleUserAnchorValues \
+            \ when n_live > 0; IGNIS = ignis|small × n_live (live anchors on dptf-id)."
         (UEV_IMC)
-        (with-capability (ANK|C>UPDATE-DPTF account dptf-id total-dptf-amount)
-            (let
-                (
-                    (aids:[string] (UR_ANK|AnchorsForAsset dptf-id))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (aids:[string] (UR_ANK|AnchorsForAsset dptf-id))
+                (n-live:integer (length aids))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (if (> n-live 0)
+                (with-capability (ANK|C>UPDATE-DPTF account dptf-id total-dptf-amount)
+                    (XI_UpdateTrueFungibleUserAnchorValues account dptf-id total-dptf-amount)
                 )
-                (if (= (length aids) 0)
-                    true
-                    (let
-                        (
-                            (affected-bcs:[string]
-                                (map
-                                    (lambda (aid:string)
-                                        (let
-                                            (
-                                                (new-promile:decimal (URC_TrueFungibleAnchorPromile aid total-dptf-amount))
-                                            )
-                                            (write ANK|T|Anchors (UC_UserAnchor account aid)
-                                                (UDC_AccountAnchor new-promile account aid)
-                                            )
-                                            (UR_ANK|BoostClassId aid)
+                true
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_TrueFungibleStakeAnchorRefreshIgnis n-live) account trigger [account dptf-id]
+            )
+        )
+    )
+    (defun XI_UpdateTrueFungibleUserAnchorValues
+        (account:string dptf-id:string total-dptf-amount:decimal)
+        @doc "Internal (XE_Update*TF · depth 0]): rewrite user promile for each live TF anchor on dptf-id, then XI_1|RecomputeAffectedBoostAggregates. \
+            \ require-capability (SECURE) — granted by parent XE via ANK|C>UPDATE-DPTF."
+        (require-capability (SECURE))
+        (let
+            (
+                (aids:[string] (UR_ANK|AnchorsForAsset dptf-id))
+            )
+            (if (= (length aids) 0)
+                true
+                (let
+                    (
+                        (affected-bcs:[string]
+                            (map
+                                (lambda (aid:string)
+                                    (let
+                                        (
+                                            (new-promile:decimal (URC_TrueFungibleAnchorPromile aid total-dptf-amount))
                                         )
+                                        (write ANK|T|Anchors (UC_UserAnchor account aid)
+                                            (UDC_AccountAnchor new-promile account aid)
+                                        )
+                                        (UR_ANK|BoostClassId aid)
                                     )
-                                    aids
                                 )
+                                aids
                             )
                         )
-                        (XH_RecomputeAffectedBoostAggregates account (distinct affected-bcs))
                     )
+                    (XI_1|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
                 )
             )
         )
     )
+    (defun XI_1|RecomputeAffectedBoostAggregates (account:string boost-class-ids:[string])
+        @doc "Internal (user promile update · depth 1]): recompute ANK|T|UserBoost aggregate-promile per boost-class-id. \
+            \ require-capability (SECURE) — same grant as XI_Update* parent."
+        (require-capability (SECURE))
+        (map
+            (lambda (bcid:string)
+                (let
+                    (
+                        (bc:object{ANK|BoostClass} (UR_BC|Data bcid))
+                        (n:integer (at "anchors" bc))
+                    )
+                    (if (<= n 0)
+                        true
+                        (let
+                            (
+                                (agg:decimal
+                                    (fold
+                                        (lambda (acc:decimal idx:integer)
+                                            (let
+                                                (
+                                                    (aid:string (URC_BC|AnchorIdAtSlot bc idx))
+                                                )
+                                                (if (= aid BAR)
+                                                    acc
+                                                    (+ acc (UR_ANK-U|Promile account aid))
+                                                )
+                                            )
+                                        )
+                                        0.0
+                                        (enumerate 0 (- n 1))
+                                    )
+                                )
+                            )
+                            (write ANK|T|UserBoost (UC_UserBoostKey account bcid)
+                                {"aggregate-promile" : agg
+                                ,"ouronet-account"   : account
+                                ,"boost-class-id"    : bcid}
+                            )
+                        )
+                    )
+                )
+            )
+            boost-class-ids
+        )
+    )
+    ;;
+    ;; --- SF / NF user promile forwards ---
     (defun XE_UpdateSemiFungibleUserAnchorValues
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
         @doc "Updates user promile for each live SF anchor on dpsf-id, then recomputes affected BoostClass aggregates."
@@ -1651,7 +1748,7 @@
                                 )
                             )
                         )
-                        (XH_RecomputeAffectedBoostAggregates account (distinct affected-bcs))
+                        (XI_1|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
                     )
                 )
             )
@@ -1687,53 +1784,10 @@
                                 )
                             )
                         )
-                        (XH_RecomputeAffectedBoostAggregates account (distinct affected-bcs))
+                        (XI_1|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
                     )
                 )
             )
-        )
-    )
-    (defun XH_RecomputeAffectedBoostAggregates (account:string boost-class-ids:[string])
-        @doc "Recomputes aggregate promile for a user across each affected BoostClass."
-        (map
-            (lambda (bcid:string)
-                (let
-                    (
-                        (bc:object{ANK|BoostClass} (UR_BC|Data bcid))
-                        (n:integer (at "anchors" bc))
-                    )
-                    (if (<= n 0)
-                        true
-                        (let
-                            (
-                                (agg:decimal
-                                    (fold
-                                        (lambda (acc:decimal idx:integer)
-                                            (let
-                                                (
-                                                    (aid:string (XH_BC|AnchorIdAtSlot bc idx))
-                                                )
-                                                (if (= aid BAR)
-                                                    acc
-                                                    (+ acc (UR_ANK-U|Promile account aid))
-                                                )
-                                            )
-                                        )
-                                        0.0
-                                        (enumerate 0 (- n 1))
-                                    )
-                                )
-                            )
-                            (write ANK|T|UserBoost (UC_UserBoostKey account bcid)
-                                {"aggregate-promile" : agg
-                                ,"ouronet-account"   : account
-                                ,"boost-class-id"    : bcid}
-                            )
-                        )
-                    )
-                )
-            )
-            boost-class-ids
         )
     )
     ;;

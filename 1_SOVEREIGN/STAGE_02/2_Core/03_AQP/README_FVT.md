@@ -77,7 +77,9 @@ For class-0 FVTs, `common-denominator` is the **full native DPTF token-id** of t
 
 ## Multi-LP farms (one FVT, many pools)
 
-A **single Farm FVT** can aggregate **many OURO-denominated LPs** that share the same `common-denominator`. Users **stake in AQP pools**, not in the FVT; the farm only registers member scores and splits injected rewards.
+A **single Farm FVT** can aggregate **many OURO-denominated LPs** that share the same `common-denominator`. **Step-by-step onboarding:** [README.md § OURO LP onboarding flow](README.md#ouro-lp-onboarding-flow-per-lp-line).
+
+Users **stake in AQP pools**, not in the FVT; the farm only registers member scores and splits injected rewards.
 
 ### Entity pattern (per distinct LP)
 

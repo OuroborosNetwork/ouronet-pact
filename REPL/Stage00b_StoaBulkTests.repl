@@ -1,0 +1,329 @@
+;;
+;; REPL/Stage00b_StoaBulkTests.repl — Stoa coin bulk-transfer tests (after Stage00_Sanboxes.repl)
+;;   Inter-tx:   ;;|| NEXT >
+;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + (print "--- […] ---")
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage00b_StoaBulkTests.repl")
+(print "================================================================")
+(print "Legend: <<…>> expect / expect-failure; <(coin.C_Bulk…)> return echoes.")
+(print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each group.")
+(print "REPL tests: (map print [(expect …) (expect-failure …) …])")
+(print "")
+(print "************************ Stage 00b — Stoa coin bulk tests START ***********************************")
+
+(print "")
+(begin-tx "TX-BULK-01 - Keysets + recipient setup")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BULK-01 · 01 · env-sigs (caps) ==== ======================================================
+(print "--- [TX-BULK-01 · 01 · env-sigs (caps)] ---")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+
+(module SKB GOVERNANCE
+    @doc "REPL-only keys for bulk-transfer tests"
+    (defcap GOVERNANCE () true)
+    (defconst CS01_NAME "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
+    (defconst CS02_NAME "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e")
+    (defconst CS03_NAME "k:5825727fa44c23e1c7345e98922e811ace780618fd7a603d4bbad68d31cdcdba")
+    (defconst CSNEW1_NAME "k:1111111111111111111111111111111111111111111111111111111111111111")
+    (defconst CSNEW2_NAME "k:2222222222222222222222222222222222222222222222222222222222222222")
+    (defconst CS01_PBKY (drop 2 CS01_NAME))
+    (defconst CS02_PBKY (drop 2 CS02_NAME))
+    (defconst CS03_PBKY (drop 2 CS03_NAME))
+    (defconst CSNEW1_PBKY (drop 2 CSNEW1_NAME))
+    (defconst CSNEW2_PBKY (drop 2 CSNEW2_NAME))
+)
+
+(env-data
+    {
+        "KEY_STOA_01_AncientHodler" : { "keys" : [SKB.CS01_PBKY]},
+        "KEY_STOA_02_Florian"       : { "keys" : [SKB.CS02_PBKY]},
+        "KEY_STOA_03_Coca"          : { "keys" : [SKB.CS03_PBKY]},
+        "KEY_BULK_NEW1"             : { "keys" : [SKB.CSNEW1_PBKY]},
+        "KEY_BULK_NEW2"             : { "keys" : [SKB.CSNEW2_PBKY]}
+    }
+)
+
+;;==== TX-BULK-01 · 02 · seed existing recipients ==== =============================================
+(print "--- [TX-BULK-01 · 02 · seed existing recipients] ---")
+(env-sigs
+  [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(test-capability (coin.TRANSFER "stoa-foundation" SKB.CS01_NAME 10.0))
+(test-capability (coin.TRANSFER "stoa-foundation" SKB.CS02_NAME 10.0))
+(test-capability (coin.TRANSFER "stoa-foundation" SKB.CS03_NAME 10.0))
+(coin.C_TransferAnew "stoa-foundation" SKB.CS01_NAME (read-keyset "KEY_STOA_01_AncientHodler") 10.0)
+(coin.C_TransferAnew "stoa-foundation" SKB.CS02_NAME (read-keyset "KEY_STOA_02_Florian") 10.0)
+(coin.C_TransferAnew "stoa-foundation" SKB.CS03_NAME (read-keyset "KEY_STOA_03_Coca") 10.0)
+
+(env-gas)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-BULK-02 - Happy path C_BulkTransfer")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BULK-02 · 01 · env-sigs + bulk transfer ==== =============================================
+(print "--- [TX-BULK-02 · 01 · env-sigs + bulk transfer] ---")
+(let
+    (
+        (sender:string "stoa-foundation")
+        (receivers:[string] [SKB.CS01_NAME SKB.CS02_NAME SKB.CS03_NAME])
+        (amounts:[decimal] [25.0 30.0 45.0])
+        (total:decimal 100.0)
+        (sender-before:decimal (coin.UR_Balance sender))
+        (r1-before:decimal (coin.UR_Balance SKB.CS01_NAME))
+        (r2-before:decimal (coin.UR_Balance SKB.CS02_NAME))
+        (r3-before:decimal (coin.UR_Balance SKB.CS03_NAME))
+    )
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+    (test-capability (coin.TRANSFER_BULK sender total))
+    (let
+        ((result:string (coin.C_BulkTransfer sender receivers amounts)))
+        (print (format "<(coin.C_BulkTransfer)> => \"{}\"" [result]))
+        (map print
+            [
+                (expect
+                    (format "<<TX-BULK-02>> sender balance decreased by total" [])
+                    (- sender-before total)
+                    (coin.UR_Balance sender))
+                (expect
+                    (format "<<TX-BULK-02>> receiver1 credited" [])
+                    (+ r1-before 25.0)
+                    (coin.UR_Balance SKB.CS01_NAME))
+                (expect
+                    (format "<<TX-BULK-02>> receiver2 credited" [])
+                    (+ r2-before 30.0)
+                    (coin.UR_Balance SKB.CS02_NAME))
+                (expect
+                    (format "<<TX-BULK-02>> receiver3 credited" [])
+                    (+ r3-before 45.0)
+                    (coin.UR_Balance SKB.CS03_NAME))
+                (expect
+                    (format "<<TX-BULK-02>> summary string" [])
+                    "BulkTransfer: 3 recipients, total 100.0"
+                    result)
+            ]
+        )
+    )
+)
+(env-gas)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-BULK-03 - Happy path C_BulkTransferAnew + C_BulkTransmit")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BULK-03 · 01 · anew + transmit ==== =====================================================
+(print "--- [TX-BULK-03 · 01 · anew + transmit] ---")
+(let
+    (
+        (sender:string "stoa-foundation")
+        (new-receivers:[string] [SKB.CSNEW1_NAME SKB.CSNEW2_NAME])
+        (new-guards:[guard] [(read-keyset "KEY_BULK_NEW1") (read-keyset "KEY_BULK_NEW2")])
+        (new-amounts:[decimal] [12.5 17.5])
+        (new-total:decimal 30.0)
+        (xmit-receivers:[string] [SKB.CS01_NAME SKB.CS02_NAME])
+        (xmit-amounts:[decimal] [5.0 7.0])
+        (xmit-total:decimal 12.0)
+        (x1-before:decimal (coin.UR_Balance SKB.CS01_NAME))
+        (x2-before:decimal (coin.UR_Balance SKB.CS02_NAME))
+    )
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+    (test-capability (coin.TRANSFER_BULK sender new-total))
+    (let
+        ((anew-result:string
+            (coin.C_BulkTransferAnew sender new-receivers new-guards new-amounts)))
+        (print (format "<(coin.C_BulkTransferAnew)> => \"{}\"" [anew-result]))
+        (map print
+            [
+                (expect
+                    (format "<<TX-BULK-03>> new account1 created and funded" [])
+                    12.5
+                    (coin.UR_Balance SKB.CSNEW1_NAME))
+                (expect
+                    (format "<<TX-BULK-03>> new account2 created and funded" [])
+                    17.5
+                    (coin.UR_Balance SKB.CSNEW2_NAME))
+                (expect
+                    (format "<<TX-BULK-03>> anew summary" [])
+                    "BulkTransferAnew: 2 recipients, total 30.0"
+                    anew-result)
+            ]
+        )
+    )
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74"
+        ,"caps": [(coin.TRANSMIT_BULK sender xmit-total)]}])
+    (let
+        ((xmit-result:string (coin.C_BulkTransmit sender xmit-receivers xmit-amounts)))
+        (print (format "<(coin.C_BulkTransmit)> => \"{}\"" [xmit-result]))
+        (map print
+            [
+                (expect
+                    (format "<<TX-BULK-03>> transmit receiver1 credited" [])
+                    (+ x1-before 5.0)
+                    (coin.UR_Balance SKB.CS01_NAME))
+                (expect
+                    (format "<<TX-BULK-03>> transmit receiver2 credited" [])
+                    (+ x2-before 7.0)
+                    (coin.UR_Balance SKB.CS02_NAME))
+                (expect
+                    (format "<<TX-BULK-03>> transmit summary" [])
+                    "BulkTransmit: 2 recipients, total 12.0"
+                    xmit-result)
+            ]
+        )
+    )
+)
+(env-gas)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-BULK-04 - Capability failures")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BULK-04 · 01 · cap failures ==== ========================================================
+(print "--- [TX-BULK-04 · 01 · cap failures] ---")
+(let
+    (
+        (sender:string "stoa-foundation")
+        (receivers:[string] [SKB.CS01_NAME SKB.CS02_NAME])
+        (amounts:[decimal] [1.0 2.0])
+        (total:decimal 3.0)
+        (sender-before:decimal (coin.UR_Balance sender))
+        (r1-before:decimal (coin.UR_Balance SKB.CS01_NAME))
+        (r2-before:decimal (coin.UR_Balance SKB.CS02_NAME))
+    )
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+    (test-capability (coin.TRANSFER_BULK sender (- total 0.1)))
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-BULK-04>> under-authorized TRANSFER_BULK must fail" [])
+                (coin.C_BulkTransfer sender receivers amounts))
+            (expect
+                (format "<<TX-BULK-04>> sender unchanged after failed bulk" [])
+                sender-before
+                (coin.UR_Balance sender))
+            (expect
+                (format "<<TX-BULK-04>> receiver1 unchanged after failed bulk" [])
+                r1-before
+                (coin.UR_Balance SKB.CS01_NAME))
+            (expect
+                (format "<<TX-BULK-04>> receiver2 unchanged after failed bulk" [])
+                r2-before
+                (coin.UR_Balance SKB.CS02_NAME))
+        ]
+    )
+)
+(env-gas)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-BULK-05 - Validation failures")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BULK-05 · 01 · validation failures ==== ==================================================
+(print "--- [TX-BULK-05 · 01 · validation failures] ---")
+(env-sigs
+  [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(test-capability (coin.TRANSFER_BULK "stoa-foundation" 10.0))
+(map print
+    [
+        (expect-failure
+            (format "<<TX-BULK-05>> length mismatch" [])
+            (coin.C_BulkTransfer "stoa-foundation" [SKB.CS01_NAME] [1.0 2.0]))
+        (expect-failure
+            (format "<<TX-BULK-05>> empty receiver list" [])
+            (coin.C_BulkTransfer "stoa-foundation" [] []))
+        (expect-failure
+            (format "<<TX-BULK-05>> zero amount" [])
+            (coin.C_BulkTransfer "stoa-foundation" [SKB.CS01_NAME] [0.0]))
+        (expect-failure
+            (format "<<TX-BULK-05>> negative amount" [])
+            (coin.C_BulkTransfer "stoa-foundation" [SKB.CS01_NAME] [-1.0]))
+        (expect-failure
+            (format "<<TX-BULK-05>> precision violation" [])
+            (coin.C_BulkTransfer "stoa-foundation" [SKB.CS01_NAME] [1.0000000000001]))
+        (expect-failure
+            (format "<<TX-BULK-05>> sender in receiver list" [])
+            (coin.C_BulkTransfer "stoa-foundation" ["stoa-foundation" SKB.CS01_NAME] [1.0 2.0]))
+        (expect-failure
+            (format "<<TX-BULK-05>> duplicate receiver" [])
+            (coin.C_BulkTransfer "stoa-foundation" [SKB.CS01_NAME SKB.CS01_NAME] [1.0 2.0]))
+        (expect-failure
+            (format "<<TX-BULK-05>> guard mismatch on anew" [])
+            (coin.C_BulkTransferAnew
+                "stoa-foundation"
+                [SKB.CS01_NAME]
+                [(read-keyset "KEY_STOA_02_Florian")]
+                [1.0]))
+    ]
+)
+(env-gas)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-BULK-07 - Happy path C_BulkTransmitAnew")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BULK-07 · 01 · transmit anew ==== =======================================================
+(print "--- [TX-BULK-07 · 01 · transmit anew] ---")
+(let
+    (
+        (sender:string "stoa-foundation")
+        (receivers:[string] ["xmit-anew-a" "xmit-anew-b"])
+        (guards:[guard] [(read-keyset "KEY_BULK_NEW1") (read-keyset "KEY_BULK_NEW2")])
+        (amounts:[decimal] [4.0 6.0])
+        (total:decimal 10.0)
+    )
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74"
+        ,"caps": [(coin.TRANSMIT_BULK sender total)]}])
+    (let
+        ((result:string (coin.C_BulkTransmitAnew sender receivers guards amounts)))
+        (print (format "<(coin.C_BulkTransmitAnew)> => \"{}\"" [result]))
+        (map print
+            [
+                (expect
+                    (format "<<TX-BULK-07>> xmit-anew-a created and funded" [])
+                    4.0
+                    (coin.UR_Balance "xmit-anew-a"))
+                (expect
+                    (format "<<TX-BULK-07>> xmit-anew-b created and funded" [])
+                    6.0
+                    (coin.UR_Balance "xmit-anew-b"))
+                (expect
+                    (format "<<TX-BULK-07>> transmit anew summary" [])
+                    "BulkTransmitAnew: 2 recipients, total 10.0"
+                    result)
+            ]
+        )
+    )
+)
+(env-gas)
+(commit-tx)
+(print "")
+(print "************************ Stage 00b — Stoa coin bulk tests COMPLETE *******************************")

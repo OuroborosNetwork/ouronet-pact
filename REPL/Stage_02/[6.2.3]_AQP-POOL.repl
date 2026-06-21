@@ -10,7 +10,261 @@
 (print "================================================================")
 (print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
 (print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
-(print "")
+(print "Requires [6.2.2]: BootPhaseProbe + TheCodingDivision scores; DHCD-98c486052a51 issued.")
 (print "")
 (print "===================AQP-POOL Test File============================")
-(print "Pool module tests pending. ANK suite moved to [6.2.1]_AQP-ANK.repl")
+(begin-tx "TX-POOL-01 - Issue pool, add scores, revoke + slot compact")
+(print "")
+(print "=== TX-POOL-01 — Issue pool, add scores, revoke + slot compact ============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (pool-name:string "PoolRevokeProbe")
+        (asset-id:string "DHCD-98c486052a51")
+        (aqp-class:integer 3)
+        (score-a:string "BootPhaseProbe-98c486052a51")
+        (score-b:string "TheCodingDivision-98c486052a51")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (ref-DALOS::UR_UsagePrice "smart"))
+        )
+        (bar:string (ref-SCR::UR_SCR|ScoreBoostClassLink score-a))
+    )
+    ;;==== TX-POOL-01 · 01 · env-sigs + Talos C_Issue (class 3 DPSF pool) — REPL ======
+    (print "--- [TX-POOL-01 · 01 · env-sigs + C_Issue class-3 pool] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=3)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron pool-name asset-id aqp-class)]))
+    ;;==== TX-POOL-01 · 02 · C_AddScore ×2 — REPL =====================================
+    (print "--- [TX-POOL-01 · 02 · C_AddScore ×2] ---")
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore score-a)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-a)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore score-b)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-b)]))
+    ;;==== TX-POOL-01 · 03 · post-add reads + expect — REPL ===========================
+    (print "--- [TX-POOL-01 · 03 · post-add reads + expect] ---")
+    (let
+        (
+            (p1:string (ref-AQP::UR_AQP|PoolScorePrimary pool-id))
+            (p2:string (ref-AQP::UR_AQP|PoolScoreSecondary pool-id))
+            (link-a:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-a))
+            (link-b:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-b))
+        )
+        (map print
+            [
+                (format "<(AQP-POOL|UR_AQP|PoolScorePrimary)> => \"{}\"" [p1])
+                (format "<(AQP-POOL|UR_AQP|PoolScoreSecondary)> => \"{}\"" [p2])
+                (format "<(AQP-SCORE|UR_SCR|ScoreAqpoolLink score-a)> => \"{}\"" [link-a])
+                (format "<(AQP-SCORE|UR_SCR|ScoreAqpoolLink score-b)> => \"{}\"" [link-b])
+            ]
+        )
+        (map print
+            [
+                (expect (format "<<TX-POOL-01 expect>> primary slot got={} expected={}" [p1 score-a]) score-a p1)
+                (expect (format "<<TX-POOL-01 expect>> secondary slot got={} expected={}" [p2 score-b]) score-b p2)
+                (expect (format "<<TX-POOL-01 expect>> score-a aqpool-link got={} expected={}" [link-a pool-id]) pool-id link-a)
+                (expect (format "<<TX-POOL-01 expect>> score-b aqpool-link got={} expected={}" [link-b pool-id]) pool-id link-b)
+            ]
+        )
+    )
+    ;;==== TX-POOL-01 · 04 · C_RevokeScore score-a (compact) — REPL ====================
+    (print "--- [TX-POOL-01 · 04 · C_RevokeScore score-a] ---")
+    (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore score-a)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron pool-id score-a)]))
+    ;;==== TX-POOL-01 · 05 · post-revoke reads + expect — REPL =========================
+    (print "--- [TX-POOL-01 · 05 · post-revoke reads + expect] ---")
+    (let
+        (
+            (p1:string (ref-AQP::UR_AQP|PoolScorePrimary pool-id))
+            (p2:string (ref-AQP::UR_AQP|PoolScoreSecondary pool-id))
+            (link-a:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-a))
+            (link-b:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-b))
+        )
+        (map print
+            [
+                (format "<(AQP-POOL|UR_AQP|PoolScorePrimary)> => \"{}\"" [p1])
+                (format "<(AQP-POOL|UR_AQP|PoolScoreSecondary)> => \"{}\"" [p2])
+                (format "<(AQP-SCORE|UR_SCR|ScoreAqpoolLink score-a)> => \"{}\"" [link-a])
+                (format "<(AQP-SCORE|UR_SCR|ScoreAqpoolLink score-b)> => \"{}\"" [link-b])
+            ]
+        )
+        (map print
+            [
+                (expect (format "<<TX-POOL-01 expect>> after revoke primary compacted got={} expected={}" [p1 score-b]) score-b p1)
+                (expect (format "<<TX-POOL-01 expect>> after revoke secondary BAR got={} expected={}" [p2 bar]) bar p2)
+                (expect (format "<<TX-POOL-01 expect>> score-a aqpool-link cleared got={} expected={}" [link-a bar]) bar link-a)
+                (expect (format "<<TX-POOL-01 expect>> score-b aqpool-link kept got={} expected={}" [link-b pool-id]) pool-id link-b)
+            ]
+        )
+    )
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-POOL-01 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-POOL-01 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-POOL-02 - Triplet boost-link guard + ordered revoke")
+(print "")
+(print "=== TX-POOL-02 — Triplet boost-link guard + ordered revoke ================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (pool-name:string "TripletPool")
+        (asset-id:string "DHCD-98c486052a51")
+        (aqp-class:integer 3)
+        (hub-name:string "TripletHub")
+        (sat-a-name:string "TripletSatA")
+        (sat-b-name:string "TripletSatB")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (hub-id:string (ref-U|DALOS::UDC_Makeid hub-name))
+        (sat-a-id:string (ref-U|DALOS::UDC_Makeid sat-a-name))
+        (sat-b-id:string (ref-U|DALOS::UDC_Makeid sat-b-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+        (bar:string (ref-SCR::UR_SCR|ScoreBoostClassLink "BootPhaseProbe-98c486052a51"))
+    )
+    ;;==== TX-POOL-02 · 01 · env-sigs (3 scores + 1 pool × smart fee) — REPL ==========
+    (print "--- [TX-POOL-02 · 01 · env-sigs + issue triplet scores + boost-links] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore hub)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto hub-name 3 false)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore sat-a)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto sat-a-name 3 false)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore sat-b)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto sat-b-name 3 false)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_CreateScoreBoostLink sat-a->hub)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron sat-a-id hub-id)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_CreateScoreBoostLink sat-b->hub)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron sat-b-id hub-id)]))
+    ;;==== TX-POOL-02 · 02 · issue pool + add triplet — REPL ===========================
+    (print "--- [TX-POOL-02 · 02 · issue pool + C_AddScore ×3] ---")
+    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=3)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron pool-name asset-id aqp-class)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore hub)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id hub-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore sat-a)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id sat-a-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore sat-b)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id sat-b-id)]))
+    ;;==== TX-POOL-02 · 03 · expect-failure hub revoke while dependents employed — REPL
+    (print "--- [TX-POOL-02 · 03 · expect-failure revoke hub with dependents] ---")
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-POOL-02 expect-failure>> revoke hub while sat-a/sat-b employed (must fail)" [])
+                (ref-TS02-C3::AQP-POOL|C_RevokeScore patron pool-id hub-id)
+            )
+        ]
+    )
+    ;;==== TX-POOL-02 · 04 · revoke dependents then hub — REPL =========================
+    (print "--- [TX-POOL-02 · 04 · revoke sat-b, sat-a, hub] ---")
+    (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore sat-b)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron pool-id sat-b-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore sat-a)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron pool-id sat-a-id)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_RevokeScore hub)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_RevokeScore patron pool-id hub-id)]))
+    ;;==== TX-POOL-02 · 05 · post-revoke reads + expect — REPL =========================
+    (print "--- [TX-POOL-02 · 05 · post-revoke reads + expect] ---")
+    (let
+        (
+            (p1:string (ref-AQP::UR_AQP|PoolScorePrimary pool-id))
+            (link-hub:string (ref-SCR::UR_SCR|ScoreAqpoolLink hub-id))
+            (link-sat-a:string (ref-SCR::UR_SCR|ScoreAqpoolLink sat-a-id))
+            (link-sat-b:string (ref-SCR::UR_SCR|ScoreAqpoolLink sat-b-id))
+            (bl-a:string (ref-SCR::UR_SCR|ScoreBoostLink sat-a-id))
+            (bl-b:string (ref-SCR::UR_SCR|ScoreBoostLink sat-b-id))
+        )
+        (map print
+            [
+                (format "<(AQP-POOL|UR_AQP|PoolScorePrimary)> => \"{}\"" [p1])
+                (format "<(AQP-SCORE|UR_SCR|ScoreAqpoolLink hub)> => \"{}\"" [link-hub])
+                (format "<(AQP-SCORE|UR_SCR|ScoreBoostLink sat-a)> => \"{}\"" [bl-a])
+                (format "<(AQP-SCORE|UR_SCR|ScoreBoostLink sat-b)> => \"{}\"" [bl-b])
+            ]
+        )
+        (map print
+            [
+                (expect (format "<<TX-POOL-02 expect>> pool primary BAR got={} expected={}" [p1 bar]) bar p1)
+                (expect (format "<<TX-POOL-02 expect>> hub aqpool-link cleared got={} expected={}" [link-hub bar]) bar link-hub)
+                (expect (format "<<TX-POOL-02 expect>> sat-a aqpool-link cleared got={} expected={}" [link-sat-a bar]) bar link-sat-a)
+                (expect (format "<<TX-POOL-02 expect>> sat-b aqpool-link cleared got={} expected={}" [link-sat-b bar]) bar link-sat-b)
+                (expect (format "<<TX-POOL-02 expect>> sat-a boost-link immutable got={} expected={}" [bl-a hub-id]) hub-id bl-a)
+                (expect (format "<<TX-POOL-02 expect>> sat-b boost-link immutable got={} expected={}" [bl-b hub-id]) hub-id bl-b)
+            ]
+        )
+    )
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-POOL-02 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-POOL-02 ==========================================================")
+(print "")

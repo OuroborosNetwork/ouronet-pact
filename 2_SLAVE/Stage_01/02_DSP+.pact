@@ -168,6 +168,18 @@
         (compose-capability (GOV|DSP_ADMIN))
         (compose-capability (P|DRG))
     )
+    (defcap DSP|STOICISM-MINTER (stoicism-amounts:[decimal] stoicism-targets:[string])
+        @event
+        (let
+            (
+                (l1:integer (length stoicism-amounts))
+                (l2:integer (length stoicism-targets))
+            )
+            (enforce (= l1 l2) "Length of stoicism-amounts and stoicism-targets must be the same")
+        )
+        (compose-capability (GOV|DSP_ADMIN))
+        (compose-capability (P|DRG))
+    )
     ;;
     ;;<=======>
     ;;FUNCTIONS
@@ -244,6 +256,31 @@
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]
+    (defun A_StoicismMinter (stoicism-amounts:[decimal] stoicism-targets:[string])
+        (with-capability (DSP|STOICISM-MINTER stoicism-amounts stoicism-targets)
+            (let
+                (
+                    (stoicism-id:string "STOICISM-hCNmIIxczuBs")
+                    (ref-DALOS:module{OuronetDalosV1} DALOS)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                    (dispenser:string DSP1|SC_NAME)
+                    (total-stoicism-amount:decimal (fold (+) 0.0 stoicism-amounts))
+                    (l1:integer (length stoicism-amounts))
+                    (l2:integer (length stoicism-targets))
+                    (iz-empty:bool (and (= l1 0) (= l2 0)))
+                )
+                (if iz-empty
+                    (format "No stoicism to mint or distribute")
+                    [
+                      ;;Mints Stoicism
+                      (ref-TS01-C1::DPTF|C_Mint GASLESS-PATRON stoicism-id dispenser total-stoicism-amount false)
+                      ;;Moves Stoicism to Targets
+                      (ref-TS01-C1::DPTF|C_BulkTransfer GASLESS-PATRON stoicism-id dispenser stoicism-targets stoicism-amounts)
+                    ]
+                )
+            )
+        )
+    )
     ;;
     (defun A_OuroMinterStageOne:[decimal] ()
         @doc "Mints the Stage One Daily OURO Emission"
@@ -288,7 +325,14 @@
                     )
                     (ref-TS01-C2::ATS|C_Coil GASLESS-PATRON dispenser auryndex ouro s1-40p)
                     (ref-TS01-C2::ATS|C_Fuel GASLESS-PATRON dispenser elite-auryndex auryn c-rbt-amount)
-                    [daily s1-10p s1-20p s1-30p s1-40p]
+                    [
+                        (format "Minted {} OURO into with a 10/20/30/40 split." [daily])
+                        (format "{} (10%) OURO to Treasury" [s1-10p])
+                        (format "{} (20%) OURO to Validators Vault" [s1-20p])
+                        (format "{} (30%) OURO fueling the Auryndex" [s1-30p])
+                        (format "{} (40%) OURO coiled to {} Auryn for fueling the EliteAuryndex" [s1-40p c-rbt-amount])
+                    ]
+                    ;;[daily s1-10p s1-20p s1-30p s1-40p]
                 )
             )
         )

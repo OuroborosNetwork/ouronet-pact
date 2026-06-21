@@ -16,4 +16,19 @@ Place **repeatable procedures** here as small markdown files (e.g. `running-the-
 - **`codex-stage01-repl`** — **`[6.9]_CODEX.repl`** placeholders, signers, deploy order. **`skills/codex-stage01-repl.md`**.
 - **`ouronet-deploy-handoff`** — when build is done: interfaces + modules to upload + post-deploy setup txs + smoke REPL. **`.cursor/skills/ouronet-deploy-handoff/SKILL.md`**, **`skills/deploy-handoff-checklist.md`**.
 - **`module-load-order-and-pact-refs`** — load-time **`module{…}`** refs, **`P|A_Define`** wiring. **`skills/module-load-order-and-pact-refs.md`**.
-- **`info-one-clientinfo-pairing`** — **`INFO-ONE+`** `*INFO*` functions return **`OuronetInfoV1.ClientInfo`** via **`OI|UDC_ClientInfo`**; **Ignis/Kadena previews must use the same pricing logic as the paired `C_*`** (`SIP|URC_*` / `SKP|URC_*` vs cumulator args, or **`UC_IfpFromOutputCumulator`** for multi-step). Detail: `skills/info-one-clientinfo-pairing.md`; Cursor: `.cursor/skills/ouronet-info-one-clientinfo/SKILL.md`.
+- **`ouronet-pact-conventions`** — **index** for day-to-day Pact edits: **`let`** ref→`;;`→vars, **`UR_*`** owns **`with-default-read`** / **`XI_*`** uses **`UR_*`+**`write`**, no **`keys`/`select`** outside **`URD_*`**, **`defcap`** body order, smart-account GOV vs RemoteGov. Detail: **`let-binding-layout.md`**, **`ur-with-default-read-and-xi-write.md`**, **`defcap-body-order.md`**, **`smart-account-governor.md`**; `.cursor/skills/ouronet-pact-conventions/SKILL.md`.
+- **`let-binding-layout.md`** — **`let`**: all **`ref-*:module{…}`** bindings, then **`;;`**, then variables.
+- **`ur-with-default-read-and-xi-write.md`** — absent-row defaults in **`UR_*`** only; **`XI_*`** read via **`UR_*`**, **`write`** only.
+- **`defcap-body-order.md`** — **`let`** → outside **`UEV_*`** → boolean **`enforce`** → **`compose-capability`**.
+- **`smart-account-governor.md`** — **`MODULE|GOV`** vs RemoteGov; AQP simple vault; **`P|A_Define`** IMP when **`UEV_IMC`** applies.
+- **`ouronet-tft-vault-imc`** — TFT vault **`P|A_Define`**, **`MODULE|GOV`** compose (send + receive), Step 0 rotate. `.cursor/skills/ouronet-tft-vault-imc/SKILL.md`.
+- **`info-one-clientinfo-pairing`** — **`INFO-ONE+`** `*INFO*` functions return **`OuronetInfoV1.ClientInfo`** via **`OI|UDC_ClientInfo`**; **Ignis/Kadena previews must use the same pricing logic as the paired `C_*`**. Detail: **`skills/info-one-clientinfo-pairing.md`**; `.cursor/skills/ouronet-info-one-clientinfo/SKILL.md`.
+
+## How agents should use this folder
+
+| Location | Role |
+|----------|------|
+| **`OuronetInformational/`** | Canonical long-form notes, architecture, **`skills/*.md`** procedures |
+| **`.cursor/skills/ouronet-*/SKILL.md`** | Short agent-facing skills (YAML **`description`** → auto-suggested in Cursor) |
+
+**Referencing `OuronetInformational` in chat** does not inject the folder automatically — read **`CONTEXT.md`**, **`MODULE_ARCHITECTURE.md`**, and the relevant **`skills/*.md`**. For Pact edits, start with **`.cursor/skills/ouronet-pact-conventions/SKILL.md`**.

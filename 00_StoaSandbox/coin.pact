@@ -5,6 +5,7 @@
     (implements stoa-ns.fungible-v1)                ;;former <fungible-v2>, starting on StoaChain as v1
     (implements stoa-ns.fungible-xchain-v1)         ;;former <fungible-xchain-v1>
     (implements stoa-ns.stoic-fungible-v1)          ;;Incorporates <fungible-v1> and <fungible-xchain-v1> with extra functionality
+    (implements stoa-ns.stoic-bulk-fungible-v1)     ;;Bulk transfer extension
     (implements stoa-ns.ur-stoic-fungible-v1)       ;;Incorporates UrStoa and UrStoaVault Functionality
     ;;
     ;;<========>
@@ -85,6 +86,9 @@
     (defconst GENESIS-MIN-GAS-PRICE                 10000)          ; 10,000 ANU
     (defconst MAX-GAS-PRICE                         400000)         ; 400,000 ANU
     (defconst GAS-PRICE-INTERVAL                    10800.0)        ; 3 hours in seconds
+    (defconst MAX_BULK_BATCH                        5000
+        "Maximum recipients per bulk transfer call"
+    )
     ;;
     (defun precision:integer ()
         @doc "<ORIGINAL> - Returns the Minimum Precision"
@@ -194,6 +198,52 @@
             (format "STOA TRANSFER_XCHAIN exceeded for balance {}" [managed])
         )
         0.0
+    )
+    (defcap TRANSMIT_BULK:bool (sender:string total:decimal)
+        @doc "Unmanaged bulk transfer capability"
+        @event
+        (UEV_Account sender)
+        (UEV_Amount total "Bulk total must be positive")
+        (compose-capability (DEBIT sender))
+    )
+    (defcap TRANSFER_BULK:bool (sender:string total:decimal)
+        @doc "Managed capability authorizing aggregate bulk spend from <sender>"
+        @managed total TRANSFER_BULK-mgr
+        (UEV_Account sender)
+        (UEV_Amount total "Bulk total must be positive")
+        (compose-capability (DEBIT sender))
+    )
+    (defun TRANSFER_BULK-mgr:decimal (managed:decimal requested:decimal)
+        (enforce
+            (<= requested managed)
+            (format "bulk total {} exceeds authorized {}" [requested managed])
+        )
+        (- managed requested)
+    )
+    (defcap BULK|X>SPEND:bool ()
+        @doc "Write gate for bulk coin-table updates; composed only from BULK_TRANSFER_DETAIL"
+        true
+    )
+    (defcap BULK_TRANSFER_DETAIL:bool
+        (sender:string receivers:[string] amounts:[decimal])
+        @doc "Explorer detail + receiver/amount validations for bulk line items"
+        @event
+        (UEV_Account sender)
+        (UEV_BulkListShape receivers amounts)
+        (UEV_BulkUniqueReceivers receivers)
+        (UEV_BulkReceiversNotSender sender receivers)
+        (UEV_BulkValidateReceivers receivers)
+        (UEV_BulkFoldAmounts amounts)
+        (compose-capability (BULK|X>SPEND))
+    )
+    (defcap BULK_TRANSFER_DETAIL_ANEW:bool
+        (sender:string receivers:[string] receiver-guards:[guard] amounts:[decimal])
+        @doc "Bulk anew detail gate: guard list shape then compose line-item detail"
+        (enforce
+            (= (length receivers) (length receiver-guards))
+            "Receivers and receiver-guards length mismatch"
+        )
+        (compose-capability (BULK_TRANSFER_DETAIL sender receivers amounts))
     )
     ;;
     ;;<=======>
@@ -463,6 +513,71 @@
             "It is unsafe for principal accounts to rotate their guard"
         )
     )
+    (defun UEV_BulkListShape (receivers:[string] amounts:[decimal])
+        @doc "Once: non-empty batch, matching list lengths, within MAX_BULK_BATCH"
+        (let
+            (
+                (n1:integer (length receivers))
+                (n2:integer (length amounts))
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (> n1 0)
+                        (= n1 n2)
+                        (<= n1 MAX_BULK_BATCH)
+                    ]
+                )
+                "Bulk transfer list shape violation"
+            )
+        )
+    )
+    (defun UEV_BulkFoldAmounts:decimal (amounts:[decimal])
+        @doc "Per-item amount validation folded into a single total"
+        (fold
+            (lambda (acc:decimal amt:decimal)
+                (UEV_Amount amt "Bulk transfer requires positive amounts")
+                (UEV_CoinPrecision amt)
+                (+ acc amt)
+            )
+            0.0
+            amounts
+        )
+    )
+    (defun UEV_BulkUniqueReceivers (receivers:[string])
+        @doc "Rejects duplicate receiver names"
+        (enforce
+            (= receivers (distinct receivers))
+            "Duplicate receiver in bulk transfer"
+        )
+    )
+    (defun UEV_BulkReceiversNotSender (sender:string receivers:[string])
+        @doc "Sender must not appear in receiver list"
+        (enforce
+            (not (contains sender receivers))
+            "Sender cannot appear in bulk receiver list"
+        )
+    )
+    (defun UEV_BulkValidateReceivers (receivers:[string])
+        @doc "Per-item account-name validation only"
+        (map (validate-account) receivers)
+        true
+    )
+    (defun UEV_BulkPrepare:decimal (sender:string receivers:[string] amounts:[decimal])
+        @doc "Balance check against aggregate total (line validations in BULK_TRANSFER_DETAIL)"
+        (let
+            (
+                (total:decimal (UEV_BulkFoldAmounts amounts))
+            )
+            (UEV_SufficientBalance sender total)
+            total
+        )
+    )
+    (defun UEV_BulkPrepareAnew:decimal
+        (sender:string receivers:[string] receiver-guards:[guard] amounts:[decimal])
+        @doc "Balance check for bulk anew (shape validations in BULK_TRANSFER_DETAIL_ANEW)"
+        (UEV_BulkPrepare sender receivers amounts)
+    )
     ;;
     (defun validate-account (account:string)
         @doc "<ORIGINAL> \
@@ -603,6 +718,68 @@
             (credit receiver receiver-guard amount)
         )
     )
+    (defun C_BulkTransfer:string (sender:string receivers:[string] amounts:[decimal])
+        @doc "Bulk transfer to existing accounts on this chain"
+        (with-capability (BULK_TRANSFER_DETAIL sender receivers amounts)
+            (let
+                (
+                    (total:decimal (UEV_BulkPrepare sender receivers amounts))
+                    (count:integer (length receivers))
+                )
+                (with-capability (TRANSFER_BULK sender total)
+                    (X_BulkSpend sender total receivers amounts [] false)
+                )
+                (format "BulkTransfer: {} recipients, total {}" [count total])
+            )
+        )
+    )
+    (defun C_BulkTransferAnew:string
+        (sender:string receivers:[string] receiver-guards:[guard] amounts:[decimal])
+        @doc "Bulk transfer with account creation when recipients are absent"
+        (with-capability (BULK_TRANSFER_DETAIL_ANEW sender receivers receiver-guards amounts)
+            (let
+                (
+                    (total:decimal (UEV_BulkPrepareAnew sender receivers receiver-guards amounts))
+                    (count:integer (length receivers))
+                )
+                (with-capability (TRANSFER_BULK sender total)
+                    (X_BulkSpend sender total receivers amounts receiver-guards true)
+                )
+                (format "BulkTransferAnew: {} recipients, total {}" [count total])
+            )
+        )
+    )
+    (defun C_BulkTransmit:string (sender:string receivers:[string] amounts:[decimal])
+        @doc "Unmanaged bulk transfer to existing accounts"
+        (with-capability (BULK_TRANSFER_DETAIL sender receivers amounts)
+            (let
+                (
+                    (total:decimal (UEV_BulkPrepare sender receivers amounts))
+                    (count:integer (length receivers))
+                )
+                (with-capability (TRANSMIT_BULK sender total)
+                    (X_BulkSpend sender total receivers amounts [] false)
+                )
+                (format "BulkTransmit: {} recipients, total {}" [count total])
+            )
+        )
+    )
+    (defun C_BulkTransmitAnew:string
+        (sender:string receivers:[string] receiver-guards:[guard] amounts:[decimal])
+        @doc "Unmanaged bulk transfer with account creation when recipients are absent"
+        (with-capability (BULK_TRANSFER_DETAIL_ANEW sender receivers receiver-guards amounts)
+            (let
+                (
+                    (total:decimal (UEV_BulkPrepareAnew sender receivers receiver-guards amounts))
+                    (count:integer (length receivers))
+                )
+                (with-capability (TRANSMIT_BULK sender total)
+                    (X_BulkSpend sender total receivers amounts receiver-guards true)
+                )
+                (format "BulkTransmitAnew: {} recipients, total {}" [count total])
+            )
+        )
+    )
     ;;
     (defun create-account:string (account:string guard:guard)
         @doc "<ORIGINAL> - <C_CreateAccount>: Creates a new Stoa Account"
@@ -725,7 +902,13 @@
         (UEV_Account account)
         (UEV_Amount amount "Credit Amount must be positive")
         (UEV_CoinPrecision amount)
-        (require-capability (CREDIT account))
+        (enforce-one
+            "Valid credit guard was not found"
+            [
+                (require-capability (CREDIT account))
+                (require-capability (BULK|X>SPEND))
+            ]
+        )
         (with-default-read coin-table account
             (UDC_AccountData -1.0 guard)
             {"balance"  := balance
@@ -745,6 +928,53 @@
                     (UDC_AccountData (if is-new amount (+ balance amount)) retg)
                 )
             )
+        )
+    )
+    (defun X_BulkCreditExisting (receivers:[string] amounts:[decimal])
+        @doc "Bulk credit each existing receiver (BULK|X>SPEND gated)"
+        (require-capability (BULK|X>SPEND))
+        (zip
+            (lambda (receiver:string amount:decimal)
+                (credit receiver (UR_Guard receiver) amount)
+            )
+            receivers
+            amounts
+        )
+    )
+    (defun X_BulkCreditAnew
+        (receivers:[string] receiver-guards:[guard] amounts:[decimal])
+        @doc "Bulk credit each receiver with supplied guard (BULK|X>SPEND gated)"
+        (require-capability (BULK|X>SPEND))
+        (fold
+            (lambda (_:bool idx:integer)
+                (let
+                    (
+                        (receiver:string (at idx receivers))
+                        (receiver-guard:guard (at idx receiver-guards))
+                        (amount:decimal (at idx amounts))
+                    )
+                    (credit receiver receiver-guard amount)
+                )
+                true
+            )
+            true
+            (enumerate 0 (- (length receivers) 1))
+        )
+    )
+    (defun X_BulkSpend
+        ( 
+            sender:string
+            total:decimal
+            receivers:[string]
+            amounts:[decimal]
+            receiver-guards:[guard]
+            iz-anew:bool
+        )
+        @doc "Bulk debit + line credits; writes gated by debit and X_BulkCredit* callees"
+        (debit sender total)
+        (if iz-anew
+            (X_BulkCreditAnew receivers receiver-guards amounts)
+            (X_BulkCreditExisting receivers amounts)
         )
     )
     ;;

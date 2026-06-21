@@ -38,6 +38,8 @@ All links are **one-time** (BAR -> value, never changed after set):
 - `aqpool-link` -> Pool-ID from AQP (which pool employs this score)
 - `fvt-link` -> FVT-ID (which Farm/Vault/Treasury aggregates this score)
 
+**Revoke policy:** only **`aqpool-link`** is planned to clear (`XE_RevokeAqpoolLink` via POOL `C_RevokeScore`). **`boost-class-link`** and **`boost-link`** stay immutable — deactivate BoostClasses / anchors in ANK instead; reissue scores to fix wiring. Full matrix: **`README.md` § Mutability & lifecycle**.
+
 ### Immutability Policy
 
 Fields marked `[.]` are fixed at issuance and must not change after user positions exist. Changing score-class, multipliers, or models after staking would leave existing `SCR|UserSchema` rows incorrect. The correct migration path is: issue a new Score, remove the old one from the pool, and wire the new one.

@@ -4,6 +4,11 @@
 ;;   Intra-tx:   ;;==== <TX label> · mm · <slug> ====  + next-line (print "--- [<label> · mm · …] ---"); mm = 01.. within each (begin-tx …) (see OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
 ;;   format "{}": Talos / module echoes and (env-gas) — document additional prefixes in this file's (print …) lines as needed.
 ;;
+;; AQP-FAST (default below): deploy + init + [6.2] AQP tests only.
+;;   Skips PopulateNosferatu/Bloodshed/Bunnies mint (~minutes), Launchpad scenario, [6.1] DPDC suite, [6.3] STOAICO.
+;;   Sovereign-Executor still issues DH collections (no mass mint) — enough for AQP-ANK/SCORE/POOL/FVT tests.
+;; FULL CHAIN: uncomment blocks marked ;;FULL> in this file (and Stage01 [6.1]/[6.9], Z.repl StageZZ).
+;;
 (print "")
 (print "================================================================")
 (print "FILE  REPL/Stage02_Tester.repl")
@@ -15,10 +20,7 @@
 ;;
 ;;================================================================================
 ;;                                                                              ;;
-;;                                                                              ;;
-;;              STAGE ONE TESTER [57 TXs]                                       ;;
-;;              Loads Individual Repl Files                                     ;;
-;;                                                                              ;;
+;;              STAGE 02 TESTER — AQP-FAST profile (default)                    ;;
 ;;                                                                              ;;
 ;;================================================================================
 ;;
@@ -36,13 +38,27 @@
 (load "Stage_02/[2.3]_EarningPools.repl")
 (load "Stage_02/[3]_Talos.repl")
 
-;;SOVEREIGN EXECUTOR (contains executions to initialise the SOVEREIGN Functionality)
+;;SOVEREIGN EXECUTOR (DPDC IMC policies + DH collection issue — no mass mint)
 (load "Stage_02/[4.0]_Sovereign-Executor.repl")
 
 ;;SLAVE DEPLOYER + EXECUTOR
+;;FULL> Populate scripts — mass DPNF mint; ~minutes each (Nosferatu + Bloodshed worst offenders)
 ;(load "Stage_02/[5.1]_PopulateNosferatu.repl")
 ;(load "Stage_02/[5.2]_PopulateBloodshed.repl")
-(load "Stage_02/[5.4]_PopulateBunnies.repl")
+;(load "Stage_02/[5.4]_PopulateBunnies.repl")
+(print "")
+(begin-tx "TX-02 [5.4a] - KBN slave module (deploy only — AQP-BOOT load prerequisite)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-02 [5.4a] - KBN slave · 01 · env-sigs] ---")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(print "--- [TX-02 [5.4a] - KBN slave · 02 · load module] ---")
+(load "../2_SLAVE/Stage_02/02_KBunnies.pact")
+(print "--- [TX-02 [5.4a] - KBN slave · 03 · gas echo] ---")
+(format "<<<<<<<KBN slave (deploy only) Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
 (print "")
 (begin-tx "TX-02 [5.5] - AQP-BOOT Module")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
@@ -59,12 +75,30 @@
 (format "<<<<<<<AQP-BOOT Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
+(print "")
+(begin-tx "TX-02 [5.6] - AQP-BOOT Step0 IMC + vault governor")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-02 [5.6] - AQP-BOOT Step0 · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-02 [5.6] - AQP-BOOT Step0 · 01 · env-sigs (caps)] ---")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-02 [5.6] - AQP-BOOT Step0 · 02 · C_Step0_WireImcAndGovernor ==== =======================
+(print "--- [TX-02 [5.6] - AQP-BOOT Step0 · 02 · C_Step0_WireImcAndGovernor] ---")
+(print (format "<(AQP-BOOT|C_Step0_WireImcAndGovernor)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
+;;==== TX-02 [5.6] - AQP-BOOT Step0 · 03 · gas echo ==== =========================================
+(print "--- [TX-02 [5.6] - AQP-BOOT Step0 · 03 · gas echo] ---")
+(format "<<<<<<<AQP-BOOT Step0 Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 
-(load "Stage_02/[5.3]_Launchpad.repl")
-;; [6.1] DPDC: URC_0030_StoicPay is commented out in that REPL (no DPL-UR in this chain). Uncomment there after deploying DPL-UR if you want that read.
+;;FULL> Launchpad scenario REPL (not AQP)
+;(load "Stage_02/[5.3]_Launchpad.repl")
+;;FULL> DPDC integration suite (~1400 lines; DPL-UR StoicPay lives here — use with StageZZ)
 ;(load "Stage_02/[6.1]_DPDC.repl")
+;;FULL> STOAICO scenario
 ;(load "Stage_02/[6.3]_STOAICO.repl")
 (load "Stage_02/[6.2]_AQP.repl")

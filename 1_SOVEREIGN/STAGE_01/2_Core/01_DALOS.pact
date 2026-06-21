@@ -564,6 +564,7 @@
         (at 3 (UR_AccountProperties account))
     )
     (defun UR_AccountNonce:integer (account:string)
+        @doc "Patron transaction counter on DALOS|AccountTable (incremented by IGNIS C_Collect when virtual gas is charged)."
         (with-default-read DALOS|AccountTable account
             { "nonce" : 0 }
             { "nonce" := n }

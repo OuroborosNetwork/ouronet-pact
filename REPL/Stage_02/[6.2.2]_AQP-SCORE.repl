@@ -362,55 +362,10 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-(print "")
-
-(begin-tx "TX-SCORE-10 - AQP-BOOT Step6 OURO LP triplet")
-(print "")
-(print "=== TX-SCORE-10 — AQP-BOOT Step6 OURO LP triplet ========================")
-(namespace "ouronet-ns")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(let
-    (
-        (patron:string KST.ANHD)
-        (owner-konto:string KST.ANHD)
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices patron (* 3.0 (ref-DALOS::UR_UsagePrice "smart"))))
-        (silver-boost-class-id:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
-        (bronze-boost-class-id:string (ref-U|DALOS::UDC_Makeid "BronzeSnakePower"))
-        (golden-boost-class-id:string (ref-U|DALOS::UDC_Makeid "GoldenSnakePower"))
-        (ouro-dptf-id:string "OURO-98c486052a51")
-    )
-    (print "--- [TX-SCORE-10 · 01 · env-sigs (3 issuances × smart fee)] ---")
-    (print (format "<(DALOS|URC_SplitKDAPrices 3×smart)> => \"{}\"" [split-kda]))
-    (env-sigs
-        [
-            { "key": "PK_AncientHodler", "caps": [] }
-            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
-              "caps":
-                [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
-                ]
-            }
-        ]
-    )
-    (print "--- [TX-SCORE-10 · 02 · AQP-BOOT C_Step6_CreateOuroLpTriplet] ---")
-    (print (format "<(AQP-BOOT|C_Step6_CreateOuroLpTriplet lp-denom={})> => \"{}\"" [ouro-dptf-id (AQP-BOOT.C_Step6_CreateOuroLpTriplet patron owner-konto ouro-dptf-id [silver-boost-class-id bronze-boost-class-id golden-boost-class-id])]))
-)
-(print "")
-(print (format "<(REPL|env-gas)> TX-SCORE-10 after commit => \"{}\"" [(env-gas)]))
-(print "")
-(env-sigs [])
-(commit-tx)
-(print "")
-(print "=== END TX-SCORE-10 ==========================================================")
-(print "")
-;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-;;|| NEXT                   >
-;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;FULL> Step6 OURO LP triplet — needs AQP-BOOT Steps 2–3 boost classes (uncomment TX006–007 in [6.2.1])
+;(print "")
+;(begin-tx "TX-SCORE-10 - AQP-BOOT Step6 OURO LP triplet")
+; ... entire TX-SCORE-10 block commented — restore from git for FULL chain
 (print "")
 (begin-tx "TX-SCORE-11 - Score definition vectors (after boot scores)")
 (print "")
@@ -437,7 +392,8 @@
             (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonces 1-10 val=5.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" (enumerate 1 10) (make-list 10 5.0))])
             (format "<(TS02-C3|C_IssueSFScoreDef TheCodingDivision nonce 11 val=75.0)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "TheCodingDivision-98c486052a51" "DHCD-98c486052a51" [11] [75.0])])
             (format "<(TS02-C3|C_IssueSFScoreDef WonderCoach nonces 1-34)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScoreDefinition patron "SubsidiaryWonderCoach-98c486052a51" "DHWC-98c486052a51" (enumerate 1 34) wc-values)])
-            (format "<(TS02-C3|C_IssueNFScoreDef Bunnies KBN Rarity)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron "SubsidiaryBunnies-98c486052a51" "KBN-98c486052a51" ["Rarity" "Rarity"] ["Legendary" "Common"] [2.0 160.0])])
+            ;;FULL> KBN Rarity vector — needs PopulateBunnies mint (nonce 1+ on chain)
+            ;(format "<(TS02-C3|C_IssueNFScoreDef Bunnies KBN Rarity)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron "SubsidiaryBunnies-98c486052a51" "KBN-98c486052a51" ["Rarity" "Rarity"] ["Legendary" "Common"] [2.0 160.0])])
         ]
     )
 )
@@ -447,6 +403,7 @@
 (commit-tx)
 (print "")
 (print "=== END TX-SCORE-11 · FILE [6.2.2]_AQP-SCORE.repl DONE =========================")
+(print "=== AQP-FAST: TX-SCORE-01–09,11 run; FULL: restore TX-SCORE-10 + [6.2.1] TX006–007 ===")
 (print "")
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >

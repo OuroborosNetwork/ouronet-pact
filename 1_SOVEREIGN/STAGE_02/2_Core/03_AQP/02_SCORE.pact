@@ -94,8 +94,14 @@
         (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
     )
     ;;
+    ;;  [URC]  internal stake pricing (used inside XE_* cumulators — not Talos)
+    (defun URC_StakeScoreDeltaIgnisUnit:decimal (score-id:string))
+    ;;
     ;;  [XE]
     (defun XE_CreateAqpoolLink:string
+        (score-id:string pool-id:string)
+    )
+    (defun XE_RevokeAqpoolLink:string
         (score-id:string pool-id:string)
     )
     (defun XE_CreateFvtLink:string
@@ -138,6 +144,9 @@
     )
     (defun XE_UpdateScoreDataForNonFungible:string
         (ouronet-account:string pool-id:string score-id:string dpnf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
+    )
+    (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
 )
 (module AQP-SCORE GOV
@@ -195,6 +204,7 @@
             (let
                 (
                     (ref-U|LST:module{StringProcessorV1} U|LST)
+                    ;;
                     (dg:guard (create-capability-guard (SECURE)))
                 )
                 (with-default-read P|MT P|I
@@ -208,13 +218,9 @@
         )
     )
     (defun P|A_Define ()
-        (let
-            (
-                (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
-                (mg:guard (create-capability-guard (P|AQP-SCORE|CALLER)))
-            )
-            (ref-P|DALOS::P|A_AddIMP mg)
-        )
+        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
+            \ SCORE calls DALOS UR_*/CAP_*/UEV_* only (no DALOS UEV_IMC on those paths); client entry is Talos P|TALOS-SUMMONER."
+        true
     )
     (defun UEV_IMC ()
         (let
@@ -413,6 +419,8 @@
     )
     (defconst BAR                                               (CT_Bar))
     (defconst GAS|ISSUE-SCORE                                   1000.0)
+    (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2)))
+    (defconst EOC                                               (CT_EmptyCumulator))
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -443,6 +451,7 @@
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
                 (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
             )
             ;;1]Validate <score-name>
@@ -536,6 +545,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
                 (owner-now:string (UR_SCR|ScoreOwnerKonto score-id))
                 (can-change-owner:bool (UR_SCR|ScoreCanChangeOwner score-id))
             )
@@ -554,6 +564,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (can-upgrade:bool (UR_SCR|ScoreCanUpgrade score-id))
             )
@@ -568,6 +579,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (deb-boost:bool (UR_SCR|ScoreDebBoost score-id))
             )
@@ -587,6 +599,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-U|INT:module{OuronetIntegersV1} U|INT)
                 (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
                 (ref-DPDC-F:module{DpdcFragmentsV1} DPDC-F)
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (score-row-id:string (UR_SCR|ScoreScoreId score-id))
@@ -662,6 +675,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (score-row-id:string (UR_SCR|ScoreScoreId score-id))
                 (score-class:integer (UR_SCR|ScoreClass score-id))
@@ -682,6 +696,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (current-link:string (UR_SCR|ScoreBoostClassLink score-id))
             )
@@ -700,6 +715,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (boost-link:string (UR_SCR|ScoreBoostLink score-id))
                 (boost-row-sid:string (UR_SCR|ScoreScoreId boost-score-id))
@@ -725,6 +741,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (aqpool-link:string (UR_SCR|ScoreAqpoolLink score-id))
             )
@@ -735,12 +752,30 @@
             )
         )
     )
+    (defcap SCR|XE>REVOKE-AQPOOL-LINK (score-id:string pool-id:string)
+        @doc "Clear aqpool-link: slot must equal pool-id, score owner. Pool revoke guards live in forward modules (e.g. AQP)."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
+                (aqpool-link:string (UR_SCR|ScoreAqpoolLink score-id))
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (enforce
+                (and (= aqpool-link pool-id) (!= pool-id BAR))
+                "Aqpool link must match pool-id and pool-id must be non-BAR"
+            )
+        )
+    )
     (defcap SCR|XE>CREATE-FVT-LINK (score-id:string fvt-id:string)
         @doc "One-time fvt-link: slot BAR, score owner, fvt-id non-BAR. FVT membership rules live in forward modules (e.g. FVT)."
         @event
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (fvt-link:string (UR_SCR|ScoreFvtLink score-id))
             )
@@ -786,6 +821,7 @@
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-amounts))
             )
@@ -853,6 +889,7 @@
         (let
             (
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                ;;
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-amounts))
             )
@@ -888,6 +925,7 @@
         (let
             (
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                ;;
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-amounts))
             )
@@ -922,6 +960,7 @@
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-amounts))
             )
@@ -961,6 +1000,7 @@
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-amounts))
             )
@@ -1445,6 +1485,7 @@
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
                 (l1:integer (length nonces))
             )
             (fold
@@ -1477,6 +1518,7 @@
                 (let
                     (
                         (ref-DPDC:module{DpdcV1} DPDC)
+                        ;;
                         (class-rev:integer (UR_N-DEF-REV|NFDefRevisionClassRevisionNonce score-id dpnf-id))
                         (class-rows:[object]
                             (if (= class-rev 0)
@@ -1540,6 +1582,7 @@
                 (
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                    ;;
                     (native-lp:string (URC_StakeLpTokenToNativeLpDptf lp-id))
                     (swpair:string (ref-SWP::UR_GetLpSwpair native-lp))
                     (denom-pos:integer (ref-SWP::UR_PoolTokenPosition swpair lp-denominator))
@@ -1860,6 +1903,43 @@
             )
         )
     )
+    (defun URC_StakeScoreDeltaIgnisUnit:decimal (score-id:string)
+        @doc "IGNIS for one score row update in stake phase 2.3]: flat ignis|biggest per score + surcharges: \
+            \ +ignis|biggest if deb-boost enabled; +ignis|biggest if boost-class-link ≠ BAR; +ignis|biggest if boost-link ≠ BAR; \
+            \ +2×ignis|biggest if score-class 0 (LP)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
+                (highest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (c:integer (UR_SCR|ScoreClass score-id))
+                (bcc:string (UR_SCR|ScoreBoostClassLink score-id))
+                (bl:string (UR_SCR|ScoreBoostLink score-id))
+                (deb:bool (UR_SCR|ScoreDebBoost score-id))
+            )
+            (+
+                highest
+                (if deb highest 0.0)
+                (if (!= bcc BAR) highest 0.0)
+                (if (!= bl BAR) highest 0.0)
+                (if (= c 0) (* 2.0 highest) 0.0)
+            )
+        )
+    )
+    (defun URC_StakeScoreDeltaIgnisCumulator:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string score-id:string)
+        @doc "Internal: TF stake ico4 — one employed score row IGNIS (URC_StakeScoreDeltaIgnisUnit)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_StakeScoreDeltaIgnisUnit score-id) beneficiary-id trigger [score-id]
+            )
+        )
+    )
     ;;{F2}  [UEV]
     (defun UEV_LpStakeScoreContext
         (ouronet-account:string pool-id:string score-id:string lp-id:string)
@@ -1868,6 +1948,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-SWP:module{SwapperV3} SWP)
+                ;;
                 (native-lp:string (URC_StakeLpTokenToNativeLpDptf lp-id))
                 (lp-denom:string (UR_SCR|ScoreLpDenominator score-id))
                 (swpair:string (ref-SWP::UR_GetLpSwpair native-lp))
@@ -2020,6 +2101,7 @@
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
                 (l1:integer (length trait-keys))
                 (l2:integer (length trait-values))
                 (l3:integer (length trait-score-values))
@@ -2076,6 +2158,7 @@
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
                 (l1:integer (length dpnf-nonce-classes))
                 (l2:integer (length class-score-values))
                 (classes-used:integer (ref-DPDC::UR_SetClassesUsed dpnf-id false))
@@ -2198,6 +2281,7 @@
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
                     (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -2218,6 +2302,7 @@
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
                     (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -2239,6 +2324,7 @@
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
                     (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -2259,6 +2345,7 @@
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
                     (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -2279,6 +2366,7 @@
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
                     (smart-price:decimal (ref-DALOS::UR_UsagePrice "smart"))
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -2296,8 +2384,9 @@
         (UEV_IMC)
         (let
             (
-                (owner-pre-rotate:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-pre-rotate:string (UR_SCR|ScoreOwnerKonto score-id))
             )
             (with-capability (SCR|C>ROTATE-OWNERSHIP-SCORE score-id new-owner-konto)
                 (XI_RotateOwnership score-id new-owner-konto)
@@ -2311,8 +2400,9 @@
         (UEV_IMC)
         (let
             (
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
             )
             (with-capability (SCR|C>CONTROL-SCORE score-id new-can-upgrade new-can-change-owner)
                 (XI_Control score-id new-can-upgrade new-can-change-owner)
@@ -2327,8 +2417,9 @@
         (UEV_IMC)
         (let
             (
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
             )
             (with-capability (SCR|C>CREATE-BOOST-CLASS-LINK-SCORE score-id boost-class-id)
                 (XI_CreateBoostClassLink score-id boost-class-id)
@@ -2342,8 +2433,9 @@
         (UEV_IMC)
         (let
             (
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
             )
             (with-capability (SCR|C>CREATE-BOOST-LINK-SCORE score-id boost-score-id)
                 (XI_CreateBoostLink score-id boost-score-id)
@@ -2357,8 +2449,9 @@
         (UEV_IMC)
         (let
             (
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
             )
             (with-capability (SCR|C>ENABLE-DEB-BOOST-SCORE score-id)
                 (XI_EnableDebBoost score-id)
@@ -2374,8 +2467,9 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (big:decimal (ref-DALOS::UR_UsagePrice "ignis|big"))
                 (how-many:decimal (dec (length nonces)))
                 (price:decimal (* how-many big))
@@ -2394,8 +2488,9 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
                 (how-many:decimal (dec (length trait-keys)))
                 (price:decimal (* how-many biggest))
@@ -2416,8 +2511,9 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
                 (how-many:decimal (dec (length dpnf-nonce-classes)))
                 (price:decimal (* how-many biggest))
@@ -2457,6 +2553,7 @@
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                ;;
                 (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
             )
             (insert SCR|T|Score score-id
@@ -2610,6 +2707,15 @@
             (update SCR|T|Score score-id {"aqpool-link": pool-id})
         )
     )
+    (defun XE_RevokeAqpoolLink:string
+        (score-id:string pool-id:string)
+        @doc "Forward entry (e.g. AQP): UEV_IMC; SCR|XE>REVOKE-AQPOOL-LINK validates aqpool-link = pool-id + ownership; clear to BAR only. \
+            \ Write only; caller merges IGNIS OutputCumulator."
+        (UEV_IMC)
+        (with-capability (SCR|XE>REVOKE-AQPOOL-LINK score-id pool-id)
+            (update SCR|T|Score score-id {"aqpool-link": BAR})
+        )
+    )
     (defun XE_CreateFvtLink:string
         (score-id:string fvt-id:string)
         @doc "Forward entry (e.g. FVT): UEV_IMC; SCR|XE>CREATE-FVT-LINK validates BAR + ownership; write fvt-link only. \
@@ -2638,7 +2744,7 @@
             (SCR|XE>UPDATE-LP-STAKE-DPTF-LP
                 ouronet-account pool-id score-id lp-id lp-amount native-or-frozen direction
             )
-            (XI_ApplySingularUserScoreDelta
+            (XI_1|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2662,7 +2768,7 @@
             (SCR|XE>UPDATE-LP-STAKE-ORTO-LP
                 ouronet-account pool-id score-id lp-id nonces nonce-amounts direction
             )
-            (XI_ApplySingularUserScoreDelta
+            (XI_1|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2686,7 +2792,7 @@
             (SCR|XE>UPDATE-STAKE-DPTF
                 ouronet-account pool-id score-id dptf-id dptf-amount native-or-frozen direction
             )
-            (XI_ApplySingularUserScoreDelta
+            (XI_1|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2710,7 +2816,7 @@
             (SCR|XE>UPDATE-STAKE-DPOF
                 ouronet-account pool-id score-id dpof-id nonces nonce-amounts direction
             )
-            (XI_ApplySingularUserScoreDelta
+            (XI_1|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2735,7 +2841,7 @@
             (SCR|XE>UPDATE-STAKE-DPOF-SPECIAL
                 ouronet-account pool-id score-id dpof-id nonces nonce-amounts sleeping-or-hibernating direction
             )
-            (XI_ApplySingularUserScoreDelta
+            (XI_1|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2761,7 +2867,7 @@
             (SCR|XE>UPDATE-STAKE-DPSF
                 ouronet-account pool-id score-id dpsf-id nonces nonce-amounts direction
             )
-            (XI_ApplySingularUserScoreDelta
+            (XI_1|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2783,7 +2889,7 @@
         (UEV_IMC)
         (with-capability
             (SCR|XE>UPDATE-STAKE-DPNF ouronet-account pool-id score-id dpnf-id nonces nonce-amounts direction)
-            (XI_ApplySingularUserScoreDelta
+            (XI_1|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2791,8 +2897,45 @@
             )
         )
     )
+    (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "Forward (FVT::C_TrueFungibleStakeFlow phase 2.3]): TF stake only — each employed score is class 0 (LP) or 1 (DPTF). \
+            \ Per score: XE_UpdateScoreDataForTrueFungibleLP or XE_UpdateScoreDataForTrueFungible + IGNIS. UEV_IMC only."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                ;;
+                (native-leg:bool (ref-AQP::URC_DptfStakeIsNativeLeg dptf-id))
+                (ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
+                (score-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (map
+                        (lambda (score-id:string)
+                            (if (= (UR_SCR|ScoreClass score-id) 0)
+                                (do
+                                    (XE_UpdateScoreDataForTrueFungibleLP
+                                        beneficiary-id pool-id score-id dptf-id amount native-leg direction
+                                    )
+                                    (URC_StakeScoreDeltaIgnisCumulator beneficiary-id score-id)
+                                )
+                                (do
+                                    (XE_UpdateScoreDataForTrueFungible
+                                        beneficiary-id pool-id score-id dptf-id amount native-leg direction
+                                    )
+                                    (URC_StakeScoreDeltaIgnisCumulator beneficiary-id score-id)
+                                )
+                            )
+                        )
+                        ids
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
+        )
+    )
     ;;
-    (defun XI_ApplySingularUserScoreDelta:string
+    (defun XI_1|ApplySingularUserScoreDelta:string
         (ouronet-account:string pool-id:string score-id:string signed-user-base-delta:decimal)
         @doc "Under SECURE: apply one signed user-base delta at score precision to SCR|T|UserScore and SCR|T|Score totals (LP forwarders pass a denom-equivalent signed delta). \
             \ Single call to URC_SingularUserScoreDeltaFromSignedUserBase for the write; nzs-count is derived consistently with that object (underflow would indicate a bug elsewhere, not a guard path)."

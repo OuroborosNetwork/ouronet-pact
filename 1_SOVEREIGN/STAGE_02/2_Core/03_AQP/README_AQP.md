@@ -2,63 +2,155 @@
 
 Module: `AQP-POOL` | Interface: `AcquisitionPoolsV1` | File: `03_AQP.pact`
 
-**Status: In progress — `C_Issue` and `C_AddScore` implemented; `C_RevokeScore`, `C_Stake`, and `C_Unstake` remain placeholders. Schemas, tables, UC key helpers, UDC defaults, and UR_* readers are in place.**
+**Status: In progress — `C_Issue`, `C_AddScore`, `C_RevokeScore` implemented; stake/unstake/sync are designed stubs; `AQP|T|BeneficiaryDptfTotal` schema + table + UR helpers added (rollup writers pending with stake impl).**
 
 ## Purpose
 
 Pools are the **staking venues** where users lock assets to earn scores and, through FVTs, rewards. Each pool accepts one canonical asset-id (determined by `aqp-class`) and employs up to 7 Scores that measure the user's weighted contribution.
 
+---
+
+## Staking entry points (settled API)
+
+Three public paths by **asset mechanics** (not by pool class alone). LP uses TF or OF — no separate LP function.
+
+| Function | Asset | Stake args (high level) | Unstake beneficiary |
+|----------|-------|-------------------------|---------------------|
+| Talos `C_StakeTrueFungible` / `C_UnstakeTrueFungible` → **`FVT::C_TrueFungibleStakeFlow`** | DPTF + native\|F\| LP | `patron pool owner beneficiary dptf-id amount` (+ `direction` in FVT) | **Required** on unstake (balance buckets per owner+beneficiary) |
+| `C_StakeOrtoFungible` / `C_UnstakeOrtoFungible` | DPOF + sleeping\|Z\| LP | `patron pool owner beneficiary dpof-id nonces amounts use-transmit sleeping-or-hibernating` | **Omitted** — read from tracker row per nonce |
+| `C_StakeCollectable` / `C_UnstakeCollectable` | DPSF / DPNF | `patron pool owner beneficiary collectable-id son nonces amounts` | **Omitted** — read from tracker row per nonce |
+
+**Also:** `C_VacatePool` (pool owner force-unwind), `C_SyncTrueFungibleAnchors` (pool-agnostic ANK repair — see below).
+
+### True fungible rules (settled, not all implemented)
+
+- **Beneficiary** must be an existing **activated standard Ouronet account** (`DALOS::UEV_EnforceAccountExists` + `UEV_EnforceAccountType false`).
+- **Owner** signs; **beneficiary** earns score + anchor promile (`ouronet-account` in SCORE/ANK). Same id = self-stake.
+- **Staking allowed only if** pool has ≥ 1 employed score (`URC_PoolActiveScoreIds` non-empty).
+- **DPTF legs:** native and **frozen** (`F|`) allowed; **reserved** (`R|`) **rejected**.
+- **No `native-or-frozen` on the public API** — derive from `dptf-id`: `F|` → frozen multiplier path; else native. Passed internally to SCORE `XE_*`.
+- **Custody:** `TFT::C_Transfer` owner → `AQP|SC_NAME` on stake; reverse on unstake.
+- **Structural blueprint:** UrStoa `C_URV|Stake` / `Unstake` in `00_StoaSandbox/coin.pact` (transfer → tracker/supply → score-side updates). AQP adds multi-score loop + ANK. FVT Inject/Collect (RPS) is **not** part of stake.
+
+### Stake body order (true fungible — settled)
+
+1. Cap + `UEV_*` (pool, scores, owner, beneficiary, amount, dptf-id, not `R|`, asset matches pool class)
+2. Transfer tokens to `AQP|SC_NAME`
+3. Update **per-pool** `AQP|T|DPTFTracker` row
+4. Bump **cross-pool** `AQP|T|BeneficiaryDptfTotal` (+amount / −amount) — O(1)
+5. **ANK first:** `AQP-ANK::XE_UpdateTrueFungibleUserAnchorValues(beneficiary, dptf-id, total-balance)` using rollup (skip if zero anchors; LP has no TF anchors)
+6. **SCORE second:** loop `URC_PoolActiveScoreIds` → `XE_UpdateScoreDataForTrueFungible` (class 1) or `XE_UpdateScoreDataForTrueFungibleLP` (class 0)
+7. IGNIS cumulator
+
+ANK **before** SCORE so `UR_UB|AggregatePromile` is fresh when boosted/deb are computed.
+
+---
+
+## Two table layers: per-pool trackers vs beneficiary rollups
+
+| Layer | Table | Granularity | Purpose |
+|-------|--------|-------------|---------|
+| **Per-pool custody** | `AQP\|T\|DPTFTracker` | `(pool, dptf-id, owner, beneficiary)` | Revoke guards, pool-local balance, vacate |
+| **Cross-pool rollup** | `AQP\|T\|BeneficiaryDptfTotal` | `(beneficiary, dptf-id)` | Single O(1) total for ANK; sync without scanning N pools |
+
+Same DPTF staked in 700 pools → **700 tracker rows**, **one** rollup row per `(beneficiary, dptf-id)`. Native `X` and frozen `F|X` are **separate** rollup rows (match ANK `ank-asset` id used at anchor issue).
+
+**Open sub-decision:** whether native-anchor promile should combine native + frozen leg totals (two-row read, still O(1)).
+
+---
+
+## Anchor sync (`C_SyncTrueFungibleAnchors`)
+
+### Problem
+
+- Anchors can be **issued after** users already staked → promile rows stay 0 until refreshed.
+- `C_IssueTrueFungibleAnchor` does **not** backfill existing stakers.
+- Inline stake/unstake refreshes ANK when anchors exist; **repair path** needed otherwise.
+
+### Solution (settled)
+
+**`C_SyncTrueFungibleAnchors(patron, beneficiary-id, dptf-id)`** — pool-agnostic:
+
+1. Read `UR_AQP|BeneficiaryDptfTotalBalance` (one row)
+2. `ANK::XE_UpdateTrueFungibleUserAnchorValues(beneficiary, dptf-id, total-balance)`
+3. Set `last-ank-sync-count := ANK::UR_AA|AnchorsActive(dptf-id)`
+4. IGNIS (`GAS|SYNC-TF-ANCHORS`)
+
+Cost: **O(live anchors on asset)** — independent of pool count.
+
+### UI “needs sync” signal
+
+```text
+URC_BeneficiaryAnchorsNeedSync(beneficiary, dptf-id) =
+  (total-balance > 0) AND (UR_AA|AnchorsActive(dptf-id) > last-ank-sync-count)
+```
+
+When a new anchor is issued, `anchors-active` increments → UI prompts user to run sync (no on-chain push required).
+
+### SCORE boosted staleness (documented gap)
+
+Sync updates **ANK only**. Existing `SCR|T|UserScore.boosted-score` in each pool is **not** rewritten. Boosted/deb refresh **lazily** on next stake/unstake in that pool unless we add a separate expensive `C_SyncScoreBoostFromAnchors` later.
+
+---
+
+## ANK update graph (reference)
+
+```
+Asset dptf-id
+  └── ANK|T|AssetAnchors (≤49 anchors, 7×7 groups)
+        └── each anchor → ANK|T|Anchor → boost-class-id
+              └── stake/sync writes ANK|T|Anchors (user promile per anchor)
+                    └── XH_RecomputeAffectedBoostAggregates → ANK|T|UserBoost
+
+Score.boost-class-link → BoostClass
+  └── SCORE reads UR_UB|AggregatePromile(beneficiary, boost-class-link) on stake
+```
+
+Up to **49 anchors per asset** × write on sync/stake; up to **7 BoostClass** aggregate recomputes. Gas-heavy at the cap — measure in REPL after impl.
+
+---
+
+## TODO — rollup tables for other asset types
+
+| Asset | Planned schema (in `03_AQP.pact`, table not deployed) | ANK XE | Sync fn |
+|-------|------------------------------------------------------|--------|---------|
+| DPTF | `AQP\|BeneficiaryDptfTotal` **live table** | `XE_UpdateTrueFungibleUserAnchorValues` | `C_SyncTrueFungibleAnchors` |
+| DPOF | *(not designed yet — no schema)* | `XE_UpdateOrtoFungibleUserAnchorValues` | TBD |
+| DPSF | *(not designed yet — no schema)* | `XE_UpdateSemiFungibleUserAnchorValues` | TBD |
+| DPNF | *(not designed yet — no schema)* | `XE_UpdateNonFungibleUserAnchorValues` | TBD |
+
+---
+
 ## Core Concepts
 
 ### Pool Classes (0-4)
 
-Pool class determines which asset types can be staked:
-
-| Class | Asset Type | Staking Variants |
-|-------|-----------|-----------------|
-| 0 | LP tokens | native, sleeping (OF), frozen (TF) -- same LP family |
-| 1 | DPTF (non-LP) | native, frozen, sleeping, hibernating |
-| 2 | DPOF (non-LP) | native only |
-| 3 | DPSF (SFTs) | per-nonce |
-| 4 | DPNF (NFTs) | per-nonce |
+| Class | Asset Type | Staking path |
+|-------|-----------|--------------|
+| 0 | LP tokens | TF (native\|F\|) + OF (sleeping\|Z\|) |
+| 1 | DPTF (non-LP) | TF (native, frozen); OF for sleep/hib satellites |
+| 2 | DPOF (non-LP) | OF (native) |
+| 3 | DPSF (SFTs) | Collectable (`son=true`) |
+| 4 | DPNF (NFTs) | Collectable (`son=false`) |
 
 ### Score Slots
 
-Each pool has 7 score slots (`score-primary` through `score-septenary`). Scores assigned to these slots must have a matching `score-class`. When a user stakes, all active scores are updated.
+Seven slots per pool. Stake updates **every** employed score (skip `BAR`).
 
-### Staking Trackers
+### Staking Trackers (per-pool)
 
-Per-user custody records track staked balances:
-
-- `AQP|TrueFungibleTracker` -- DPTF balance per pool/owner/beneficiary
-- `AQP|OrtoFungibleTracker` -- DPOF per nonce
-- `AQP|SemiFungibleTracker` -- DPSF balance per nonce
-- `AQP|NonFungibleTracker` -- DPNF balance per nonce
+- `AQP|TrueFungibleTracker` — DPTF balance per pool/owner/beneficiary
+- `AQP|OrtoFungibleTracker` — DPOF per nonce
+- `AQP|SemiFungibleTracker` — DPSF per nonce
+- `AQP|NonFungibleTracker` — DPNF per nonce
 
 ### Score Attribution (SF/NF only)
 
-For DPSF and DPNF staking, per-position score attribution rows cache the last-computed base score and the applied definition revision. This enables lazy recomputation when score definitions change.
+- `AQP|DPSFScoreAttribution` / `AQP|DPNFScoreAttribution` — cached score + def revision per (pool, asset, position, score-id)
 
-- `AQP|DPSFScoreAttribution` -- cached score + revision per (pool, dpsf-id, nonce, score-id)
-- `AQP|DPNFScoreAttribution` -- cached score + revision per (pool, dpnf-id, nonce, score-id)
+---
 
 ## Data Model
-
-### Schemas
-
-```
-AQP|Schema                  Pool definition
-  aqp-class:integer           Pool class 0-4
-  asset-id:string             Canonical asset-id for staking
-  score-primary:string        Score slot 1 (BAR if empty)
-  score-secondary:string      Score slot 2
-  score-tertiary:string       Score slot 3
-  score-quaternary:string     Score slot 4
-  score-quinary:string        Score slot 5
-  score-senary:string         Score slot 6
-  score-septenary:string      Score slot 7
-  aqp-id:string               Self-referential ID
-```
 
 ### Tables
 
@@ -66,56 +158,106 @@ AQP|Schema                  Pool definition
 |-------|--------|-----|
 | `AQP\|T\|Pool` | `AQP\|Schema` | `<Pool-ID>` |
 | `AQP\|T\|DPTFTracker` | `AQP\|TrueFungibleTracker` | `<Pool> \| <DPTF> \| <Owner> \| <Beneficiary>` |
-| `AQP\|T\|DPOFTracker` | `AQP\|OrtoFungibleTracker` | `<Pool> \| <DPOF> \| <Owner> \| <Beneficiary> \| <Nonce>` |
+| `AQP\|T\|BeneficiaryDptfTotal` | `AQP\|BeneficiaryDptfTotal` | `<Beneficiary> \| <DPTF-ID>` |
+| `AQP\|T\|DPOFTracker` | `AQP\|OrtoFungibleTracker` | 5-part composite |
 | `AQP\|T\|DPSFTracker` | `AQP\|SemiFungibleTracker` | 5-part composite |
 | `AQP\|T\|DPNFTracker` | `AQP\|NonFungibleTracker` | 5-part composite |
 | `AQP\|T\|DPSFScoreAttribution` | `AQP\|DPSFScoreAttribution` | 6-part composite |
 | `AQP\|T\|DPNFScoreAttribution` | `AQP\|DPNFScoreAttribution` | 6-part composite |
 
-## Planned C_ Functions
+### C_ Functions
 
-| Function | Purpose |
-|----------|---------|
-| `C_Issue` | Create a new pool (aqp-class + asset-id) |
-| `C_AddScore` | Assign a Score to an empty slot; calls `SCORE::XE_CreateAqpoolLink` |
-| `C_RevokeScore` | Clear a score slot; revoke aqpool-link |
-| `C_Stake` | Stake assets into a pool; update trackers, then call the appropriate `SCORE::XE_UpdateScoreDataFor*` forwarders (e.g. LP legs) and `ANK::XE_Update*UserAnchorValues` |
-| `C_Unstake` | Reverse of stake; reconcile scores and anchors |
+| Function | Status |
+|----------|--------|
+| `C_Issue` | Implemented |
+| `C_AddScore` | Implemented |
+| `C_RevokeScore` | Implemented |
+| `C_VacatePool` | Stub (loops FVT::C_TrueFungibleStakeFlow per tracker — TBD) |
+| TF stake/unstake | **FVT::C_TrueFungibleStakeFlow** (direction); Talos client shell only |
+| `C_StakeOrtoFungible` / `C_UnstakeOrtoFungible` | Stub |
+| `C_StakeCollectable` / `C_UnstakeCollectable` | Stub |
+| `C_SyncTrueFungibleAnchors` | Stub (table + UR ready) |
 
-## Staking Flow (Planned)
+---
+
+## C_StakeTrueFungible — FVT recipe + Talos client shell
+
+**Sovereign recipe:** **`FVT::C_TrueFungibleStakeFlow`** (`direction=true` stake, `false` unstake) — orchestrates five **`XE_*`** phases, returns concatenated **`OutputCumulator`**.
+
+**Talos:** **`AQP-POOL|C_StakeTrueFungible`** / **`C_UnstakeTrueFungible`** — **`@event`** cap + **`IGNIS::C_Collect patron`** + result text only.
+
+**Capability model (see `.cursor/skills/ouronet-talos-orchestrator-events/SKILL.md`):**
+
+- **Talos client `@event`:** `AQP|C>STAKE-TRUE-FUNGIBLE` / `C>UNSTAKE-TRUE-FUNGIBLE` (incl. `patron`) — **`compose-capability (P|TS)` only**.
+- **FVT `C_TrueFungibleStakeFlow`:** `UEV_IMC` + `FVT|C>TRUE-FUNGIBLE-STAKE-FLOW` + phase **`XE_*`** calls.
+- **AQP-POOL:** phase 1 only (`XE_TrueFungiblePoolCustody`); no monolithic TF **`C_*`**.
+
+Result text uses **`UC_ShortAccount`** and branches self-stake vs beneficiary stake.
 
 ```
-User stakes asset X into Pool P
-  1. Write/update tracker row for (pool, asset, user, nonce)
-  2. For each active score slot in pool:
-     a. Compute base-score from staked amount + score rules
-     b. Read aggregate boost from ANK (UR_UB|AggregatePromile)
-     c. Compute boosted-score and deb-score
-     d. Call the matching SCORE::XE_UpdateScoreDataFor* forwarder for that score class / asset (e.g. LP: XE_UpdateScoreDataForTrueFungibleLP / XE_UpdateScoreDataForOrtoFungibleLP)
-  3. Call ANK::XE_Update*UserAnchorValues for asset X
-     (updates anchor promiles + aggregate boost for affected BoostClasses)
+UrStoa C_URV|Stake                    →  FVT::C_TrueFungibleStakeFlow (Talos client shell)
+────────────────────────────────────────────────────────────────────────────
+1]   Move URSTOA user↔vault           →  1]   AQP-POOL::XE_TrueFungiblePoolCustody
+2.1] UpdatePendingRewards             →  2.1] FVT::XI_SettleStakePendingRewards (via C_TrueFungibleStakeFlow)
+2.2] (none)                           →  2.2] ANK::XE_RefreshTrueFungibleStakeAnchors
+2.3] UpdateVaultScore + UserScore     →  2.3] SCR::XE_ApplyTrueFungibleStakeDelta
+2.4] UpdateUserRPS                    →  2.4] FVT::XI_CheckpointStakeRps (via C_TrueFungibleStakeFlow)
+3]   Return text + gas                →  3]   Talos: IGNIS::C_Collect (+ format)
 ```
+
+| Phase | Module | `XE_*` | Status |
+|-------|--------|--------|--------|
+| 1] Custody + trackers | POOL | `XE_TrueFungiblePoolCustody` | **Phase 1 wired** — returns OC from XI sub-steps |
+| 2.1] RPS settle (OLD deb) | FVT | `XI_SettleStakePendingRewards` (internal) | STUB |
+| 2.2] ANK refresh | ANK | `XE_RefreshTrueFungibleStakeAnchors` | STUB |
+| 2.3] SCORE weight | SCR | `XE_ApplyTrueFungibleStakeDelta` | STUB |
+| 2.4] RPS checkpoint (NEW L_i) | FVT | `XI_CheckpointStakeRps` (internal) | STUB |
+
+**Standalone `C_*` on AQP-POOL:** lifecycle (`C_Issue`, `C_AddScore`, …), `C_SyncTrueFungibleAnchors`, OF/DPDC stake stubs. TF stake/unstake recipe is **`FVT::C_TrueFungibleStakeFlow`**; POOL exposes **`XE_TrueFungiblePoolCustody`** (phase 1) only.
+
+**POOL `XI_*` (internal):** `XI_TransferDptfPoolCustody`, `XI_WriteDptfTracker`, `XI_BumpBeneficiaryDptfTotal` — called from `XE_TrueFungiblePoolCustody` when implemented.
+
+**SCR `XE_UpdateScoreDataFor*`:** per-score forward writers; batch loop lives in `XE_ApplyTrueFungibleStakeDelta`.
+
+**Implement order:** POOL custody UEV + transfer → trackers → FVT settle → ANK refresh → SCR loop → FVT checkpoint
+
+### IGNIS billing (Talos stake/unstake)
+
+Talos is **orchestrator only**: each phase **`XE_*` returns `OutputCumulator`** with pricing composed inside the sovereign module (sub-`XI_*` steps return cumulators that parent functions concatenate). Talos **`UDC_ConcatenateOutputCumulators [ico1 ico2 … ico5] []`** then **`IGNIS::C_Collect`**. **No Talos URC pricing.** **No `XB_DynamicFuelKDA`.**
+
+| Phase | Module `XE_*` | Cumulator composition (inside module) |
+|-------|---------------|--------------------------------------|
+| 1] POOL custody | `XE_TrueFungiblePoolCustody` | `XI_Transfer` (TFT OC) + `XI_WriteDptfTracker` (ignis\|medium) + `XI_BumpBeneficiaryDptfTotal` (ignis\|biggest) |
+| 2.1] FVT settle | `XI_SettleStakePendingRewards` | single OC: `URC_SettleStakePendingIgnis settle-scores distinct-fvts` (lists resolved once in parent XI) |
+| 2.2] ANK refresh | `XE_RefreshTrueFungibleStakeAnchors` | ignis\|small × live anchor count |
+| 2.3] SCORE delta | `XE_ApplyTrueFungibleStakeDelta` | fold concat of per-class `XI_Apply*ScoreStakeDelta` (internal; each uses `URC_StakeScoreDeltaIgnisUnit`) |
+| 2.4] FVT checkpoint | `XI_CheckpointStakeRps` | flat 2 × ignis\|biggest |
+
+**Implement order:** phase 1] POOL **(wired)** → 2.1 FVT → 2.2 ANK → 2.3 SCORE bodies → 2.4 FVT checkpoint
+
+**SCORE class dispatch:** `XE_ApplyTrueFungibleStakeDelta` (FVT forward) loops pool scores and dispatches to module-internal **`XI_Apply*ScoreStakeDelta`** (0–4). Per-class bodies call **`XE_UpdateScoreDataFor*`** when wired (same-module forward writers on interface for future AQP OF/SF/NF stake paths).
+
+**X* naming (AQP TF stake):**
+
+| Prefix | Scope | Examples |
+|--------|--------|----------|
+| **`C_*`** | Sovereign client/recipe entry | `FVT::C_TrueFungibleStakeFlow` |
+| **`XE_*`** | Cross-module forward (on interface) | `AQP::XE_TrueFungiblePoolCustody`, `ANK::XE_Refresh*`, `SCR::XE_Apply*`, `ANK::XE_UpdateTrueFungibleUserAnchorValues` (C_Sync) |
+| **`XI_*`** | Same-module internal only | `FVT::XI_Settle*`, `FVT::XI_Checkpoint*`, `POOL::XI_Transfer*`, `SCR::XI_Apply*ScoreStakeDelta`, `ANK::XI_UpdateTrueFungibleUserAnchorValues` |
+| **`XH_*`** | ANK helper (no cap) | `XH_RecomputeAffectedBoostAggregates` |
+
+---
 
 ## Score rows and foreign `boost-link`
 
-When a pool employs multiple scores, some scores may set `boost-link` to another score so ANK promile runs against that score's user **base** while this score's `SCR|T|UserScore` row stores **only boosted/deb surplus** over that foreign base (user `base-score` on the satellite stays this score's own LP weight). See **`README_SCORE.md` → Foreign boost-link** for the numeric model and implementation (`URC_SingularUserScoreDeltaFromSignedUserBase`, applied via `XI_ApplySingularUserScoreDelta` on LP stake and reusable for other singular-delta writers).
+See **`README_SCORE.md` → Foreign boost-link** for satellite scores and `URC_SingularUserScoreDeltaFromSignedUserBase`.
 
 ## LP pools and multi-LP farms
 
-Class-0 pools stake **native LP token ids** (one canonical `asset-id` per pool). Each **distinct LP pair** that should earn farm rewards needs:
-
-1. Its **own** class-0 pool (`C_Issue`).
-2. Its **own** class-0 score set (production bootstrap uses an OURO **triplet** — three scores with the same `lp-denominator`; see `AQP-BOOT` Step 6 and [README_SCORE.md](README_SCORE.md#lp-scores-pools-and-fvt-matching)).
-3. **`C_AddScore`** for each score into that pool’s slots (auto first-free slot; max **7** scores per pool).
-
-Scores are **not** reusable across pools: `aqpool-link` is one-time. A second LP always means **new score issuances**, not re-wiring existing score ids.
-
-**FVT** is separate: users stake here; rewards aggregate in a Farm via **`C_AddScoreLink`** (one row per score on the farm). Many pools and many scores can share **one** Farm FVT when their class-0 scores share the same **`lp-denominator`** (full OURO DPTF id). See [README_FVT.md](README_FVT.md#multi-lp-farms-one-fvt-many-pools).
-
-On liquidity events, this pool orchestrates **`FVT::XE_SyncFarmScoreGhostTvlFromSwp`** only for scores **on this pool** (bounded ≤ 7), not for every member of a multi-LP farm.
+Class-0 pools, triplets, FVT — unchanged; see prior sections in this file and **`README_FVT.md`**.
 
 ## Relationship to Other Modules
 
-- **SCORE**: AQP calls `XE_CreateAqpoolLink` on score assignment; stake/unstake uses dedicated `XE_UpdateScoreDataFor*` forwarders (class-0 LP: `XE_UpdateScoreDataForTrueFungibleLP` / `XE_UpdateScoreDataForOrtoFungibleLP`; further score classes get their own `XE_*` as added) — see `README_SCORE.md`
-- **ANK**: AQP calls `XE_Update*UserAnchorValues` on stake/unstake to refresh anchor promiles
-- **FVT**: No direct pool table coupling; FVT aggregates scores that AQP updates. Multi-LP farms admit many scores via `C_AddScoreLink` — see [README_FVT.md](README_FVT.md)
+- **SCORE:** `XE_CreateAqpoolLink`, `XE_UpdateScoreDataFor*` on stake; reads `UR_UB|AggregatePromile` from ANK
+- **ANK:** `XE_UpdateTrueFungibleUserAnchorValues` on stake/unstake/sync; up to 49 anchors per asset
+- **FVT:** Rewards/RPS separate from stake (UrStoa Inject/Collect analogue)

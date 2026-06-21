@@ -42,7 +42,8 @@
 (load "Stage_01/[5.2]_Dispenser+.repl")
 
 ;;SLAVE TESTER
-(load "Stage_01/[6.1]_Cumulator.repl")
+;;FULL> Cumulator scenario suite — skip for AQP-fast (Z.repl default)
+;(load "Stage_01/[6.1]_Cumulator.repl")
     ;;
 ;; DPTF + SWP: pick ONE path (comment the other).
 ;;   Full suites: [6.2] then [6.3] (all DPTF/SWP tests).
@@ -55,4 +56,5 @@
 ;(load "Stage_01/[6.6]_ATS.repl")
 ;(load "Stage_01/[6.7]_VST.repl")
 ;(load "Stage_01/[6.8]_Dispenser.repl")
-(load "Stage_01/[6.9]_CODEX.repl")
+;;FULL> CODEX scenario suite — skip for AQP-fast (Z.repl default)
+;(load "Stage_01/[6.9]_CODEX.repl")

@@ -265,6 +265,82 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "TX003 - TF user promile refresh (UPDATE-DPTF cap chain / SECURE compose)")
+(print "")
+(print "=== TX003 — XE_Update* cap chain (XI_Update + nested XI_1|Recompute) =========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX003 · 01 · env-sigs — REPL banner follows ==================================
+(print "--- [TX003 · 01 · env-sigs] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (beneficiary:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (total-dptf:decimal 500.0)
+        (anchor-id:string "TFclassBa-98c486052a51")
+        (bc-id:string "CoreBoostTFb-98c486052a51")
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset ouro-id)))
+        (expected-promile:decimal 50.0)
+    )
+    ;;==== TX003 · 02 · pre-check live anchor count — REPL =============================
+    (print "--- [TX003 · 02 · pre-check live TF anchors on OURO] ---")
+    (print (format "<(AQP-ANK|UR_ANK|AnchorsForAsset OURO)> n_live => \"{}\"" [n-live]))
+    (expect (format "<<TX003 expect>> n_live > 0 after TX001 (before TX004 strip)" []) true (> n-live 0))
+    ;;==== TX003 · 03 · with-capability UPDATE-DPTF → XI_Update (no inner with-capability SECURE) =
+    (print "--- [TX003 · 03 · UPDATE-DPTF envelope → XI_UpdateTrueFungibleUserAnchorValues] ---")
+    (with-capability (AQP-ANK.ANK|C>UPDATE-DPTF beneficiary ouro-id total-dptf)
+        (AQP-ANK.XI_UpdateTrueFungibleUserAnchorValues beneficiary ouro-id total-dptf)
+    )
+    (let
+        (
+            (promile:decimal (ref-ANK::UR_ANK-U|Promile beneficiary anchor-id))
+            (agg:decimal (ref-ANK::UR_UB|AggregatePromile beneficiary bc-id))
+        )
+        ;;==== TX003 · 04 · expect promile + UserBoost after XI_Update — REPL =============
+        (print "--- [TX003 · 04 · expect promile writes (500/210×21 = 50 on TFclassBa; solo BoostClass)] ---")
+        (map print
+            [
+                (expect (format "<<TX003 expect>> <(AQP-ANK|UR_ANK-U|Promile TFclassBa)> actual={} expected={}" [promile expected-promile]) expected-promile promile)
+                (expect (format "<<TX003 expect>> <(AQP-ANK|UR_UB|AggregatePromile CoreBoostTFb)> actual={} expected={}" [agg expected-promile]) expected-promile agg)
+            ]
+        )
+    )
+    ;;==== TX003 · 05 · nested XI_1|Recompute under same cap pattern (no extra with-capability SECURE) =
+    (print "--- [TX003 · 05 · UPDATE-DPTF envelope → XI_1|RecomputeAffectedBoostAggregates alone] ---")
+    (with-capability (AQP-ANK.ANK|C>UPDATE-DPTF beneficiary ouro-id total-dptf)
+        (AQP-ANK.XI_1|RecomputeAffectedBoostAggregates beneficiary [bc-id])
+    )
+    (expect
+        (format "<<TX003 expect>> nested XI_1|Recompute under UPDATE-DPTF still reads aggregate {}" [expected-promile])
+        expected-promile
+        (ref-ANK::UR_UB|AggregatePromile beneficiary bc-id)
+    )
+    ;;==== TX003 · 06 · expect-failure: direct XI without cap — REPL =====================
+    (print "--- [TX003 · 06 · expect-failure: XI_Update without UPDATE-DPTF/SECURE] ---")
+    (map print
+        [
+            (expect-failure
+                (format "<<TX003 expect-failure>> XI_Update without cap (must fail on require SECURE)" [])
+                (AQP-ANK.XI_UpdateTrueFungibleUserAnchorValues beneficiary ouro-id total-dptf)
+            )
+            (expect-failure
+                (format "<<TX003 expect-failure>> XI_1|Recompute without cap (must fail on require SECURE)" [])
+                (AQP-ANK.XI_1|RecomputeAffectedBoostAggregates beneficiary [bc-id])
+            )
+        ]
+    )
+)
+(print (format "<(REPL|env-gas)> TX003 after commit => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+(print "=== END TX003 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 ;; TX004: After OURO/DHCD usage in TX001–TX002, strip every live TF anchor on OURO and SF anchor on DHCD, then
 ;; revoke every associated BoostClass so both assets are bare. KBN NF (Bunnies) anchors stay for [6.2.2]+ repls.
 (print "")
@@ -364,7 +440,7 @@
                 (expect (format "<<TX004 expect>> <(AQP-ANK|UR_AA|AnchorsActive DHCD)> anchors: actual={} expected=0" [n-dhcd]) 0 n-dhcd)
                 (expect (format "<<TX004 expect>> <(AQP-ANK|UR_AA|GroupsActive OURO)> groups: actual={} expected=0" [g-ouro]) 0 g-ouro)
                 (expect (format "<<TX004 expect>> <(AQP-ANK|UR_AA|GroupsActive DHCD)> groups: actual={} expected=0" [g-dhcd]) 0 g-dhcd)
-                (expect (format "<<TX004 expect>> <(AQP-ANK|UR_ANK|AnchorsForAsset KBN)> nf-live-count: actual={} expected=true-from->0" [n-kbn-nf]) true (> n-kbn-nf 0))
+                (expect (format "<<TX004 expect>> <(AQP-ANK|UR_ANK|AnchorsForAsset KBN)> nf-live-count: actual={} expected=0 (AQP-FAST; FULL chain expects >0 after PopulateBunnies)" [n-kbn-nf]) 0 n-kbn-nf)
             ]
         )
     )
@@ -420,91 +496,86 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-;; Step phases are intentionally last in this file (Step1 skipped in REPL).
-(print "")
-(begin-tx "TX006 - AQP-BOOT Step2 SnakePower anchor-class issuance")
-(print "")
-(print "=== TX006 — AQP-BOOT Step2 SnakePower anchor-class issuance ==========")
-(namespace "ouronet-ns")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;;==== TX006 · 01 · env-sigs (admin patron) ===================================
-(print "--- [TX006 · 01 · env-sigs (admin patron)] ---")
-(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-;;==== TX006 · 02 · AQP-BOOT Step2 with STOA split (7x standard) + payer caps ==
-(print "--- [TX006 · 02 · AQP-BOOT Step2 with STOA split (7x standard) + payer caps] ---")
-(let
-    (
-        (patron:string KST.ANHD)
-        (kbn-id:string "KBN-98c486052a51")
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 7.0))
-        )
-    )
-    (env-sigs
-        [
-            { "key": "PK_AncientHodler", "caps": [] }
-            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
-              "caps":
-                [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
-                ]
-            }
-        ]
-    )
-    (print (format "<(AQP-BOOT|C_Step2_CreateSnakePowerAnchorClasses)> => \"{}\"" [(AQP-BOOT.C_Step2_CreateSnakePowerAnchorClasses patron kbn-id)]))
-)
-(print (format "<(REPL|env-gas)> TX006 after commit => \"{}\"" [(env-gas)]))
-(commit-tx)
-(print "")
-(print "=== END TX006 =========================================================")
-(print "")
-;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-;;|| NEXT                   >
-;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-(print "")
-(begin-tx "TX007 - AQP-BOOT Step3 booster anchor-class issuance")
-(print "")
-(print "=== TX007 — AQP-BOOT Step3 booster anchor-class issuance =============")
-(namespace "ouronet-ns")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;;==== TX007 · 01 · env-sigs (admin patron) ===================================
-(print "--- [TX007 · 01 · env-sigs (admin patron)] ---")
-(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-;;==== TX007 · 02 · AQP-BOOT Step3 with STOA split (14x standard) + payer caps =
-(print "--- [TX007 · 02 · AQP-BOOT Step3 with STOA split (14x standard) + payer caps] ---")
-(let
-    (
-        (patron:string KST.ANHD)
-        (kbn-id:string "KBN-98c486052a51")
-        (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 14.0))
-        )
-    )
-    (env-sigs
-        [
-            { "key": "PK_AncientHodler", "caps": [] }
-            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
-              "caps":
-                [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
-                ]
-            }
-        ]
-    )
-    (print (format "<(AQP-BOOT|C_Step3_CreateBoosterAnchorClasses)> => \"{}\"" [(AQP-BOOT.C_Step3_CreateBoosterAnchorClasses patron kbn-id)]))
-)
-(print (format "<(REPL|env-gas)> TX007 after commit => \"{}\"" [(env-gas)]))
-(commit-tx)
-(print "")
-(print "=== END TX007 · FILE [6.2.1]_AQP-ANK.repl DONE =========================")
+;;FULL> AQP-BOOT Steps 2–3 — require KBN nonce 1+ (run PopulateBunnies or uncomment below)
+;(print "")
+;(begin-tx "TX006 - AQP-BOOT Step2 SnakePower anchor-class issuance")
+;(print "")
+;(print "=== TX006 — AQP-BOOT Step2 SnakePower anchor-class issuance ==========")
+;(namespace "ouronet-ns")
+;(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;(print "--- [TX006 · 01 · env-sigs (admin patron)] ---")
+;(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;(print "--- [TX006 · 02 · AQP-BOOT Step2 with STOA split (7x standard) + payer caps] ---")
+;(let
+;    (
+;        (patron:string KST.ANHD)
+;        (kbn-id:string "KBN-98c486052a51")
+;        (ref-DALOS:module{OuronetDalosV1} DALOS)
+;        (split-kda:[decimal]
+;            (ref-DALOS::URC_SplitKDAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 7.0))
+;        )
+;    )
+;    (env-sigs
+;        [
+;            { "key": "PK_AncientHodler", "caps": [] }
+;            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+;              "caps":
+;                [
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+;                ]
+;            }
+;        ]
+;    )
+;    (print (format "<(AQP-BOOT|C_Step2_CreateSnakePowerAnchorClasses)> => \"{}\"" [(AQP-BOOT.C_Step2_CreateSnakePowerAnchorClasses patron kbn-id)]))
+;)
+;(print (format "<(REPL|env-gas)> TX006 after commit => \"{}\"" [(env-gas)]))
+;(commit-tx)
+;(print "")
+;(print "=== END TX006 =========================================================")
+;(print "")
+;(print "")
+;(begin-tx "TX007 - AQP-BOOT Step3 booster anchor-class issuance")
+;(print "")
+;(print "=== TX007 — AQP-BOOT Step3 booster anchor-class issuance =============")
+;(namespace "ouronet-ns")
+;(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;(print "--- [TX007 · 01 · env-sigs (admin patron)] ---")
+;(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;(print "--- [TX007 · 02 · AQP-BOOT Step3 with STOA split (14x standard) + payer caps] ---")
+;(let
+;    (
+;        (patron:string KST.ANHD)
+;        (kbn-id:string "KBN-98c486052a51")
+;        (ref-DALOS:module{OuronetDalosV1} DALOS)
+;        (split-kda:[decimal]
+;            (ref-DALOS::URC_SplitKDAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 14.0))
+;        )
+;    )
+;    (env-sigs
+;        [
+;            { "key": "PK_AncientHodler", "caps": [] }
+;            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+;              "caps":
+;                [
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+;                ]
+;            }
+;        ]
+;    )
+;    (print (format "<(AQP-BOOT|C_Step3_CreateBoosterAnchorClasses)> => \"{}\"" [(AQP-BOOT.C_Step3_CreateBoosterAnchorClasses patron kbn-id)]))
+;)
+;(print (format "<(REPL|env-gas)> TX007 after commit => \"{}\"" [(env-gas)]))
+;(commit-tx)
+;(print "")
+;(print "=== END TX007 · FILE [6.2.1]_AQP-ANK.repl DONE =========================")
+;(print "")
+(print "=== END [6.2.1]_AQP-ANK.repl (AQP-FAST: TX001–005 + TX003 cap-chain; FULL: uncomment TX006–007) ===")
 (print "")
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
