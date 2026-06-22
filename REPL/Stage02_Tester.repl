@@ -82,7 +82,9 @@
 ;;==== TX-02 [5.6] - AQP-BOOT Step0 · 01 · env-sigs (caps) ==== ==================================
 (print "--- [TX-02 [5.6] - AQP-BOOT Step0 · 01 · env-sigs (caps)] ---")
 (env-sigs
-  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+  [
+    { "key": "PK_AncientHodler", "caps": [] }
+  ])
 ;;==== TX-02 [5.6] - AQP-BOOT Step0 · 02 · C_Step0_WireImcAndGovernor ==== =======================
 (print "--- [TX-02 [5.6] - AQP-BOOT Step0 · 02 · C_Step0_WireImcAndGovernor] ---")
 (print (format "<(AQP-BOOT|C_Step0_WireImcAndGovernor)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))

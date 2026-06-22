@@ -589,6 +589,20 @@
             )
         )
     )
+    ;;
+    ;; --- REPL dry-run (P|TS client shell → AQP-FVT::REPL_BootstrapVault under GOV|FVT_ADMIN) ---
+    (defun AQP-FVT|REPL_BootstrapVault:string
+        (patron:string fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
+        @doc "REPL-only Talos shell: composes P|TS for SCR XE IMC; forwards to AQP-FVT::REPL_BootstrapVault."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-FVT::REPL_BootstrapVault fvt-id owner-konto score-id reward-dptf-id)
+            )
+        )
+    )
     ;;{F7}  [X]
     ;;
 )

@@ -267,7 +267,7 @@
 (print "")
 (begin-tx "TX003 - TF user promile refresh (UPDATE-DPTF cap chain / SECURE compose)")
 (print "")
-(print "=== TX003 — XE_Update* cap chain (XI_Update + nested XI_1|Recompute) =========")
+(print "=== TX003 — XE_Update* cap chain (XI_1|Update + nested XI_2|Recompute) =========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;==== TX003 · 01 · env-sigs — REPL banner follows ==================================
@@ -289,9 +289,9 @@
     (print (format "<(AQP-ANK|UR_ANK|AnchorsForAsset OURO)> n_live => \"{}\"" [n-live]))
     (expect (format "<<TX003 expect>> n_live > 0 after TX001 (before TX004 strip)" []) true (> n-live 0))
     ;;==== TX003 · 03 · with-capability UPDATE-DPTF → XI_Update (no inner with-capability SECURE) =
-    (print "--- [TX003 · 03 · UPDATE-DPTF envelope → XI_UpdateTrueFungibleUserAnchorValues] ---")
+    (print "--- [TX003 · 03 · UPDATE-DPTF envelope → XI_1|UpdateTrueFungibleUserAnchorValues] ---")
     (with-capability (AQP-ANK.ANK|C>UPDATE-DPTF beneficiary ouro-id total-dptf)
-        (AQP-ANK.XI_UpdateTrueFungibleUserAnchorValues beneficiary ouro-id total-dptf)
+        (AQP-ANK.XI_1|UpdateTrueFungibleUserAnchorValues beneficiary ouro-id total-dptf)
     )
     (let
         (
@@ -307,13 +307,13 @@
             ]
         )
     )
-    ;;==== TX003 · 05 · nested XI_1|Recompute under same cap pattern (no extra with-capability SECURE) =
-    (print "--- [TX003 · 05 · UPDATE-DPTF envelope → XI_1|RecomputeAffectedBoostAggregates alone] ---")
+    ;;==== TX003 · 05 · nested XI_2|Recompute under same cap pattern (no extra with-capability SECURE) =
+    (print "--- [TX003 · 05 · UPDATE-DPTF envelope → XI_2|RecomputeAffectedBoostAggregates alone] ---")
     (with-capability (AQP-ANK.ANK|C>UPDATE-DPTF beneficiary ouro-id total-dptf)
-        (AQP-ANK.XI_1|RecomputeAffectedBoostAggregates beneficiary [bc-id])
+        (AQP-ANK.XI_2|RecomputeAffectedBoostAggregates beneficiary [bc-id])
     )
     (expect
-        (format "<<TX003 expect>> nested XI_1|Recompute under UPDATE-DPTF still reads aggregate {}" [expected-promile])
+        (format "<<TX003 expect>> nested XI_2|Recompute under UPDATE-DPTF still reads aggregate {}" [expected-promile])
         expected-promile
         (ref-ANK::UR_UB|AggregatePromile beneficiary bc-id)
     )
@@ -323,11 +323,11 @@
         [
             (expect-failure
                 (format "<<TX003 expect-failure>> XI_Update without cap (must fail on require SECURE)" [])
-                (AQP-ANK.XI_UpdateTrueFungibleUserAnchorValues beneficiary ouro-id total-dptf)
+                (AQP-ANK.XI_1|UpdateTrueFungibleUserAnchorValues beneficiary ouro-id total-dptf)
             )
             (expect-failure
-                (format "<<TX003 expect-failure>> XI_1|Recompute without cap (must fail on require SECURE)" [])
-                (AQP-ANK.XI_1|RecomputeAffectedBoostAggregates beneficiary [bc-id])
+                (format "<<TX003 expect-failure>> XI_2|Recompute without cap (must fail on require SECURE)" [])
+                (AQP-ANK.XI_2|RecomputeAffectedBoostAggregates beneficiary [bc-id])
             )
         ]
     )

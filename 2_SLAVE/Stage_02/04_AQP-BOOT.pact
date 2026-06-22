@@ -93,15 +93,18 @@
             (let
                 (
                     (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
+                    (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (aqp-sc:string AQP-POOL.AQP|SC_NAME)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    ;;
+                    (aqp-sc:string (ref-ANK::GOV|AQP|SC_NAME))
                 )
                 (ref-P|AQP::P|A_Define)
+                (ref-P|FVT::P|A_Define)
                 ;; C_RotateGovernor — AQP|SC_NAME vault governor (Stage 01 LIQUID/ORBR pattern: cap-guard only).
-                ;; AQP|GOV is composed at runtime on stake and unstake (AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY) for AQP|SC_NAME TFT moves.
+                ;; AQP-ANK.AQP|GOV is composed at runtime on stake and unstake (AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY) for AQP|SC_NAME TFT moves.
                 (ref-TS01-C1::DALOS|C_RotateGovernor patron aqp-sc
-                    (create-capability-guard (AQP-POOL.AQP|GOV))
+                    (create-capability-guard (AQP-ANK.AQP|GOV))
                 )
                 (format "AQP-BOOT Step 0 done. aqp-sc={}. TFT IMC + gov wired. NEXT=Step1 or client txs." [aqp-sc])
             )

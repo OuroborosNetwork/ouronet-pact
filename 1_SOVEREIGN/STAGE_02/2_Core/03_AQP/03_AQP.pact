@@ -1,8 +1,5 @@
 (interface AcquisitionPoolsV1
     (defun GOV|Demiurgoi ())
-    (defun GOV|AqpKey ())
-    (defun GOV|AQP|SC_NAME ())
-    (defun GOV|AQP|PBL ())
     ;;
     ;;  [UC]
     (defun UC_DPTFTrackerKey:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
@@ -159,7 +156,7 @@
     (defun URC_StakeTrueFungiblePoolClassOk:bool (pool-id:string))
     (defun URC_StakeTrueFungibleDptfMatchesPool:bool (pool-id:string dptf-id:string))
     ;;
-    ;;  [XE]  Backward entry (FVT::C_TrueFungibleStakeFlow)
+    ;;  [XE]  cross-module forward (FVT::C_TrueFungibleStakeFlow)
     (defun XE_TrueFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
@@ -180,30 +177,8 @@
     ;;{G2}
     (defcap GOV ()                          (compose-capability (GOV|AQP_ADMIN)))
     (defcap GOV|AQP_ADMIN ()                (enforce-guard GOV|MD_AQP))
-    (defcap AQP|GOV ()
-        @doc "Governor capability for the AQP|SC_NAME smart DALOS account (TFT vault send and receive)."
-        true
-    )
     ;;{G3}
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
-    (defun GOV|NS_Use ()
-        @doc "Namespace prefix for AQP governance keyset name."
-        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE))
-    )
-    (defun GOV|AqpKey ()
-        @doc "Governance keyset name for the AQP smart account (canonical — other AQP modules ref AQP-POOL)."
-        (+ (GOV|NS_Use) ".dh_sc_aqp-keyset")
-    )
-    (defconst AQP|SC_KEY                    (GOV|AqpKey))
-    (defun GOV|AQP|SC_NAME ()
-        @doc "Symbolic name of the AQP sovereign smart DALOS account (canonical)."
-        (at 0 ["Σ.ЖřÎzэóΣQз3ÌĄăådìÜλÅË9γğ7χûПæ0₳ПûÖŞrĄθXtFìмkщsGвÅgλąÇπЩAĚЭDíéαэБùđáżñИïПÆΣтцξsηåäялÃБц¢r6ÁíäзуμþĄĐЫîÉAćýìЧыQPнŁзßξĂйjay£üѺçRЫfУQșÏΠÜqîÔĄťß6ЗSρŠeΦñëdmûΦøШâΞýκъиřк"])
-    )
-    (defconst AQP|SC_NAME                   (GOV|AQP|SC_NAME))
-    (defun GOV|AQP|PBL ()
-        @doc "Public branding/license payload for AQP|SC_NAME smart account deploy (canonical)."
-        (at 0 ["9G.632vHq208xaznBw9AfwrFGmLBqkr7tqEzf2Msq389xqEknmfAk8qI5MM1MaszdgMtEBpo6rbuC09Do7F6pjc91jzy3JxI6fjCkyuIbDpDD5i8CxeCBL0dKdDu3d2uAAwl6wE6npnm4Mjxx6JhiFq1sKddsGjLH9BjHF0ljtegHrn39qIADru76Ftr9Kgxh6Ds2aj4EufG07uK9sFG38ej5vooDMr0wp8alqGdnIiJxbhmwEKEg44l8pI5LDq2EotoM2jq86x1EJ5hM4wkfhtq4ye610tkAMIdLrDD87Euk14aJgMwnrLmytzcCc3Kakrnhs8Jxy5dFeowGxzlx1bGHqfwEen0pLcd6nl9udGE9hfFucLjM1seKzv542nwzz5jrpKmvzebI4BLK00Br1ocvxs4uor2nEv2Fng1l6qAiLcbv0hMnbLDEEcLpF1bD55gw55of7H2c3ieozahorkuCe5FEkAkEAhcGwJ35HCletrbcn2Ebo0fsD0tf2zxKsbzinpcJCtpv4EF4AyyhwD1LbtEd6qsEbgyJkA2DqdGBE5Fuqudzf8082Ei88d"])
-    )
     ;;
     ;;<====>
     ;;POLICY
@@ -450,6 +425,12 @@
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2))
     )
     (defconst EOC                                                       (CT_EmptyCumulator))
+    (defun CT_AqpScName:string
+        ()
+        @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
+        (let ((ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
+    )
+    (defconst AQP|SC_NAME                                               (CT_AqpScName))
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -461,7 +442,7 @@
     (defcap AQP|C>ISSUE-POOL
         (pool-name:string asset-id:string aqp-class:integer)
         @doc "Issue one acquisition pool (single @event). Validates pool-name, class, and asset-id; \
-            \ enforces canonical asset ownership from aqp-class + asset-id; composes SECURE for XI_1|IssuePool."
+            \ enforces canonical asset ownership from aqp-class + asset-id; composes SECURE for XI_IssuePool."
         @event
         (let
             (
@@ -480,7 +461,7 @@
         (pool-id:string score-id:string slot-index:integer)
         @doc "Assign score-id to score slot slot-index (first free; computed once in C_AddScore). Validates \
             \ slot claim, pool/score pairing; CAP_PoolOwner. Score owner in SCR|XE>CREATE-AQPOOL-LINK on XE. \
-            \ Composes SECURE for XI_1|AddScoreToPool."
+            \ Composes SECURE for XI_AddScoreToPool."
         @event
         (UEV_AddScorePoolAndScore pool-id score-id slot-index)
         (CAP_PoolOwner pool-id)
@@ -490,7 +471,7 @@
         (pool-id:string score-id:string slot-index:integer)
         @doc "Revoke score-id from score slot slot-index (computed once in C_RevokeScore). Validates \
             \ slot claim, zero totals, fvt-link BAR, boost-link dependents; CAP_PoolOwner. Score owner in \
-            \ SCR|XE>REVOKE-AQPOOL-LINK on XE. Composes SECURE for XI_1|RevokeScoreFromPool."
+            \ SCR|XE>REVOKE-AQPOOL-LINK on XE. Composes SECURE for XI_RevokeScoreFromPool."
         @event
         (UEV_RevokeScorePoolAndScore pool-id score-id slot-index)
         (CAP_PoolOwner pool-id)
@@ -500,7 +481,7 @@
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Forward-only (FVT::C_TrueFungibleStakeFlow phase 1]): validation for XE_TrueFungiblePoolCustody. \
             \ Pool/beneficiary/tracker/rollup rules here; dptf-id/amount/debit via TFT::C_Transfer. \
-            \ CAP_StakeOwner (owner wallet); compose P|AQP|CALLER (TFT IMC); compose AQP|GOV (AQP|SC_NAME smart account — \
+            \ CAP_StakeOwner (owner wallet); compose P|AQP|CALLER (TFT IMC); compose AQP-ANK.AQP|GOV (AQP|SC_NAME smart account — \
             \ send and receive both require governor proof). XI_* writers have no enforce. Not @event — UEV_IMC on XE entry."
         (let
             (
@@ -519,7 +500,7 @@
             (UEV_StakeBeneficiaryAccount beneficiary-id)
             (CAP_StakeOwner owner-id)
             (compose-capability (P|AQP|CALLER))
-            (compose-capability (AQP|GOV))
+            (compose-capability (AQP-ANK.AQP|GOV))
             (compose-capability (SECURE))
         )
     )
@@ -527,7 +508,7 @@
         (beneficiary-id:string dptf-id:string)
         @doc "Backward-only (FVT::C_TrueFungibleStakeFlow phase 2.2]): stamp last-ank-sync-count on BeneficiaryDptfTotal. \
             \ beneficiary/dptf validation here; full stake rules in FVT|C>TRUE-FUNGIBLE-STAKE-FLOW. \
-            \ Composes SECURE for XI_1|SetBeneficiaryDptfAnkSyncCount. Not @event — UEV_IMC on XE entry."
+            \ Composes SECURE for XE write body. Not @event — UEV_IMC on XE entry."
         (UEV_StakeBeneficiaryAccount beneficiary-id)
         (UEV_StakeTrueFungibleDptfLeg dptf-id)
         (compose-capability (SECURE))
@@ -654,6 +635,63 @@
         ,"score-senary"         : BAR
         ,"score-septenary"      : BAR
         ,"aqp-id"               : aqp-id}
+    )
+    (defun UDC_AQP|SchemaWithScoreSlots:object{AQP|Schema}
+        (pool:object{AQP|Schema}
+            score-primary:string
+            score-secondary:string
+            score-tertiary:string
+            score-quaternary:string
+            score-quinary:string
+            score-senary:string
+            score-septenary:string
+        )
+        @doc "Returns pool row with all seven score slots replaced (+ merge on existing row)."
+        (+ pool
+            {"score-primary"    : score-primary
+            ,"score-secondary"  : score-secondary
+            ,"score-tertiary"   : score-tertiary
+            ,"score-quaternary" : score-quaternary
+            ,"score-quinary"    : score-quinary
+            ,"score-senary"     : score-senary
+            ,"score-septenary"  : score-septenary}
+        )
+    )
+    (defun UDC_AQP|SchemaWithScoreAtSlot:object{AQP|Schema}
+        (pool:object{AQP|Schema} slot-index:integer score-id:string)
+        @doc "Returns pool row with score-id written into slot-index (0=primary .. 6=septenary)."
+        (UDC_AQP|SchemaWithScoreSlots pool
+            (if (= slot-index 0) score-id (at "score-primary" pool))
+            (if (= slot-index 1) score-id (at "score-secondary" pool))
+            (if (= slot-index 2) score-id (at "score-tertiary" pool))
+            (if (= slot-index 3) score-id (at "score-quaternary" pool))
+            (if (= slot-index 4) score-id (at "score-quinary" pool))
+            (if (= slot-index 5) score-id (at "score-senary" pool))
+            (if (= slot-index 6) score-id (at "score-septenary" pool))
+        )
+    )
+    (defun UC_PoolScoreSlotPatch:object
+        (slot-index:integer score-id:string)
+        @doc "Partial AQP|T|Pool update map for one score slot (0=primary .. 6=septenary)."
+        (if (= slot-index 0)
+            {"score-primary": score-id}
+            (if (= slot-index 1)
+                {"score-secondary": score-id}
+                (if (= slot-index 2)
+                    {"score-tertiary": score-id}
+                    (if (= slot-index 3)
+                        {"score-quaternary": score-id}
+                        (if (= slot-index 4)
+                            {"score-quinary": score-id}
+                            (if (= slot-index 5)
+                                {"score-senary": score-id}
+                                {"score-septenary": score-id}
+                            )
+                        )
+                    )
+                )
+            )
+        )
     )
     ;;
     ;;{F0}  [UR]
@@ -1459,7 +1497,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (ref-IGNIS::KDA|C_Collect patron smart-price)
-                (XI_1|IssuePool pool-id aqp-class asset-id)
+                (XI_IssuePool pool-id aqp-class asset-id)
                 (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-POOL AQP|SC_NAME trigger [pool-id])
             )
         )
@@ -1484,7 +1522,7 @@
                         (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     )
                     (ref-SCR::XE_CreateAqpoolLink score-id pool-id)
-                    (XI_1|AddScoreToPool pool-id score-id slot-index)
+                    (XI_AddScoreToPool pool-id score-id slot-index)
                     (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ADD-SCORE AQP|SC_NAME trigger [pool-id score-id])
                 )
             )
@@ -1510,7 +1548,7 @@
                         (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     )
                     (ref-SCR::XE_RevokeAqpoolLink score-id pool-id)
-                    (XI_1|RevokeScoreFromPool pool-id slot-index)
+                    (XI_RevokeScoreFromPool pool-id slot-index)
                     (ref-IGNIS::UDC_ConstructOutputCumulator GAS|REVOKE-SCORE AQP|SC_NAME trigger [pool-id score-id])
                 )
             )
@@ -1541,40 +1579,33 @@
     ;; C_VacatePool(patron pool-id)
     ;;   Pool owner (CAP_PoolOwner): unwind every staked position on pool-id. Orchestration TBD.
     ;;
-    ;;{F7}  [X]  XI depth: N = hops from phase-entry XI; siblings share N (e.g. XE_TrueFungiblePoolCustody → XI_1|*).
-    (defun XI_1|IssuePool:string
+    ;;{F7}  [X]
+    ;; Depth: C_* → XI_* (depth 0) ; XE_* / XB_* → XI_1|* (depth 1). Map order = entry first.
+    ;;
+    ;; --- Block A · C_* pool lifecycle ---
+    ;;   C_Issue → XI_IssuePool
+    ;;   C_AddScore → XI_AddScoreToPool
+    ;;   C_RevokeScore → XI_RevokeScoreFromPool
+    ;;
+    (defun XI_IssuePool:string
         (pool-id:string aqp-class:integer asset-id:string)
         @doc "Insert AQP|T|Pool under SECURE (from AQP|C>ISSUE-POOL). Write only; C_Issue builds IGNIS."
         (require-capability (SECURE))
         (insert AQP|T|Pool pool-id (UDC_AQP|Schema aqp-class asset-id pool-id))
         pool-id
     )
-    (defun XI_1|AddScoreToPool:string
+    (defun XI_AddScoreToPool:string
         (pool-id:string score-id:string slot-index:integer)
         @doc "Write score-id into the first free slot (0=primary .. 6=septenary). Under SECURE from AQP|C>ADD-SCORE."
         (require-capability (SECURE))
-        (if (= slot-index 0)
-            (update AQP|T|Pool pool-id {"score-primary": score-id})
-            (if (= slot-index 1)
-                (update AQP|T|Pool pool-id {"score-secondary": score-id})
-                (if (= slot-index 2)
-                    (update AQP|T|Pool pool-id {"score-tertiary": score-id})
-                    (if (= slot-index 3)
-                        (update AQP|T|Pool pool-id {"score-quaternary": score-id})
-                        (if (= slot-index 4)
-                            (update AQP|T|Pool pool-id {"score-quinary": score-id})
-                            (if (= slot-index 5)
-                                (update AQP|T|Pool pool-id {"score-senary": score-id})
-                                (update AQP|T|Pool pool-id {"score-septenary": score-id})
-                            )
-                        )
-                    )
-                )
-            )
+        (update AQP|T|Pool pool-id (UC_PoolScoreSlotPatch slot-index score-id))
+        (enforce
+            (= (URC_PoolScoreSlotValue pool-id slot-index) score-id)
+            "XI_AddScoreToPool: pool score slot write did not persist"
         )
         score-id
     )
-    (defun XI_1|RevokeScoreFromPool:string
+    (defun XI_RevokeScoreFromPool:string
         (pool-id:string slot-index:integer)
         @doc "Remove score at slot-index and compact higher slots down (0=primary .. 6=septenary). Under SECURE from AQP|C>REVOKE-SCORE."
         (require-capability (SECURE))
@@ -1597,18 +1628,24 @@
                 (lst-v2:[string] (ref-U|LST::UC_AppL lst-v1 BAR))
             )
             (update AQP|T|Pool pool-id
-                {"score-primary"    : (at 0 lst-v2)
-                ,"score-secondary"  : (at 1 lst-v2)
-                ,"score-tertiary"   : (at 2 lst-v2)
-                ,"score-quaternary" : (at 3 lst-v2)
-                ,"score-quinary"    : (at 4 lst-v2)
-                ,"score-senary"     : (at 5 lst-v2)
-                ,"score-septenary"  : (at 6 lst-v2)}
+                (UDC_AQP|SchemaWithScoreSlots (UR_AQP|Pool pool-id)
+                    (at 0 lst-v2)
+                    (at 1 lst-v2)
+                    (at 2 lst-v2)
+                    (at 3 lst-v2)
+                    (at 4 lst-v2)
+                    (at 5 lst-v2)
+                    (at 6 lst-v2)
+                )
             )
         )
     )
     ;;
-    ;;  [True Fungible stake — POOL phase 1 only; full recipe in FVT::C_TrueFungibleStakeFlow]
+    ;; --- Block B · TF stake phase 1 (FVT::C_TrueFungibleStakeFlow) ---
+    ;;   XE_TrueFungiblePoolCustody
+    ;;     ├ XI_1|TransferDptfPoolCustody
+    ;;     ├ XI_1|WriteDptfTracker
+    ;;     └ XI_1|BumpBeneficiaryDptfTotal
     ;;
     (defun XE_TrueFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
@@ -1695,34 +1732,30 @@
         )
     )
     ;;
-    ;;  [TF stake phase 2.2 — FVT::XI_RefreshTrueFungibleStakeAnchors backward leg]
+    ;; --- Block C · TF stake phase 2.2 (FVT::XI_RefreshTrueFungibleStakeAnchors backward) ---
+    ;;   XE_SetBeneficiaryDptfAnkSyncCount
+    ;;
     (defun XE_SetBeneficiaryDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
-        @doc "Backward (FVT::C_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BeneficiaryDptfTotal. \
-            \ UEV_IMC + AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC (validation + SECURE). XI writer requires SECURE."
+        @doc "Backward (FVT::C_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BeneficiaryDptfTotal \
+            \ (:= AQP-ANK::UR_AA|AnchorsActive dptf-id); preserve total-balance. UEV_IMC + AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC. \
+            \ Returns ignis|biggest via UDC_BiggestCumulator."
         (UEV_IMC)
         (with-capability (AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC beneficiary-id dptf-id)
-            (XI_1|SetBeneficiaryDptfAnkSyncCount beneficiary-id dptf-id)
-        )
-    )
-    (defun XI_1|SetBeneficiaryDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
-        (beneficiary-id:string dptf-id:string)
-        @doc "Internal (XE_SetBeneficiaryDptfAnkSyncCount · depth 1]): write last-ank-sync-count on AQP|T|BeneficiaryDptfTotal \
-            \ (:= AQP-ANK::UR_AA|AnchorsActive dptf-id); preserve total-balance. Returns ignis|biggest via UDC_BiggestCumulator."
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                ;;
-                (key:string (UC_BeneficiaryDptfTotalKey beneficiary-id dptf-id))
-                (tb:decimal (UR_AQP|BeneficiaryDptfTotalBalance beneficiary-id dptf-id))
-                (live-count:integer (ref-ANK::UR_AA|AnchorsActive dptf-id))
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    ;;
+                    (key:string (UC_BeneficiaryDptfTotalKey beneficiary-id dptf-id))
+                    (row:object{AQP|BeneficiaryDptfTotal} (UR_AQP|BeneficiaryDptfTotal beneficiary-id dptf-id))
+                    (live-count:integer (ref-ANK::UR_AA|AnchorsActive dptf-id))
+                )
+                (write AQP|T|BeneficiaryDptfTotal key
+                    (+ row {"last-ank-sync-count": live-count})
+                )
+                (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
             )
-            (write AQP|T|BeneficiaryDptfTotal key
-                (UDC_AQP|BeneficiaryDptfTotal tb live-count beneficiary-id dptf-id)
-            )
-            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
         )
     )
     ;;

@@ -94,10 +94,7 @@
         (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
     )
     ;;
-    ;;  [URC]  internal stake pricing (used inside XE_* cumulators — not Talos)
-    (defun URC_StakeScoreDeltaIgnisUnit:decimal (score-id:string))
-    ;;
-    ;;  [XE]
+    ;;  [XE]  cross-module forward (FVT::C_TrueFungibleStakeFlow, AQP-POOL C_AddScore/C_RevokeScore)
     (defun XE_CreateAqpoolLink:string
         (score-id:string pool-id:string)
     )
@@ -107,46 +104,8 @@
     (defun XE_CreateFvtLink:string
         (score-id:string fvt-id:string)
     )
-    (defun XE_UpdateScoreDataForTrueFungibleLP:string
-        (ouronet-account:string pool-id:string score-id:string lp-id:string lp-amount:decimal native-or-frozen:bool direction:bool)
-    )
-    (defun XE_UpdateScoreDataForOrtoFungibleLP:string
-        (ouronet-account:string pool-id:string score-id:string lp-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
-    )
-    (defun XE_UpdateScoreDataForTrueFungible:string
-        (
-            ouronet-account:string
-            pool-id:string
-            score-id:string
-            dptf-id:string
-            dptf-amount:decimal
-            native-or-frozen:bool
-            direction:bool
-        )
-    )
-    (defun XE_UpdateScoreDataForOrtoFungible:string
-        (ouronet-account:string pool-id:string score-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
-    )
-    (defun XE_UpdateScoreDataForSpecialOrtoFungible:string
-        (
-            ouronet-account:string
-            pool-id:string
-            score-id:string
-            dpof-id:string
-            nonces:[integer]
-            nonce-amounts:[decimal]
-            sleeping-or-hibernating:bool
-            direction:bool
-        )
-    )
-    (defun XE_UpdateScoreDataForSemiFungible:string
-        (ouronet-account:string pool-id:string score-id:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
-    )
-    (defun XE_UpdateScoreDataForNonFungible:string
-        (ouronet-account:string pool-id:string score-id:string dpnf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
-    )
     (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
     )
 )
 (module AQP-SCORE GOV
@@ -421,6 +380,12 @@
     (defconst GAS|ISSUE-SCORE                                   1000.0)
     (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2)))
     (defconst EOC                                               (CT_EmptyCumulator))
+    (defun CT_AqpScName:string
+        ()
+        @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
+        (let ((ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
+    )
+    (defconst AQP|SC_NAME                                       (CT_AqpScName))
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -1642,7 +1607,7 @@
     (defun URC_SignedBaseDeltaForDptfStake:decimal
         (score-id:string dptf-id:string dptf-amount:decimal native-or-frozen:bool direction:bool)
         @doc "Signed base delta (score precision) for one class-1 DPTF stake leg; same mx rule as URC_SignedBaseDeltaForDptfLpStake (native vs frozen). \
-            \ Shared by SCR|XE>UPDATE-STAKE-DPTF and XE_UpdateScoreDataForTrueFungible."
+            \ Shared by SCR|XE>UPDATE-STAKE-DPTF and XI_1|UpdateScoreDataForTrueFungible."
         (let
             (
                 (mx:decimal (if native-or-frozen 1.0 (UR_SCR|ScoreMxFrozen score-id)))
@@ -1917,18 +1882,21 @@
                 (bl:string (UR_SCR|ScoreBoostLink score-id))
                 (deb:bool (UR_SCR|ScoreDebBoost score-id))
             )
-            (+
-                highest
-                (if deb highest 0.0)
-                (if (!= bcc BAR) highest 0.0)
-                (if (!= bl BAR) highest 0.0)
-                (if (= c 0) (* 2.0 highest) 0.0)
+            (fold (+) 0.0
+                [
+                    highest
+                    (if deb highest 0.0)
+                    (if (!= bcc BAR) highest 0.0)
+                    (if (!= bl BAR) highest 0.0)
+                    (if (= c 0) (* 2.0 highest) 0.0)
+                ]
             )
         )
     )
     (defun URC_StakeScoreDeltaIgnisCumulator:object{IgnisCollectorV1.OutputCumulator}
-        (beneficiary-id:string score-id:string)
-        @doc "Internal: TF stake ico4 — one employed score row IGNIS (URC_StakeScoreDeltaIgnisUnit)."
+        (score-id:string)
+        @doc "Internal: TF stake ico4 — one employed score row IGNIS (URC_StakeScoreDeltaIgnisUnit). \
+            \ IGNIS interactor = AQP|SC_NAME (pool vault receiver)."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1936,7 +1904,10 @@
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (URC_StakeScoreDeltaIgnisUnit score-id) beneficiary-id trigger [score-id]
+                (URC_StakeScoreDeltaIgnisUnit score-id)
+                AQP|SC_NAME
+                trigger
+                [score-id]
             )
         )
     )
@@ -2529,6 +2500,16 @@
     )
     ;;
     ;;{F7}  [X]
+    ;; Depth: C_* → XI_* (depth 0) → XI_1|* … ; XE_* / XB_* → XI_1|* (depth 1) → XI_2|* …
+    ;; Blocks follow map order (entry first, then children, then shared leaves).
+    ;;
+    ;; --- Block A · C_* lifecycle writers ---
+    ;;   C_Issue / C_RotateOwnership / C_Control / C_EnableDebBoost
+    ;;     └ XI_Issue / XI_RotateOwnership / XI_Control / XI_EnableDebBoost
+    ;;   C_IssueSemiFungibleScoreDefinition → XI_IssueSemiFungibleScoreDefinition
+    ;;   C_IssueNonFungible* → XI_IssueNonFungibleScoreDefinitionCore
+    ;;   C_CreateBoost* → XI_CreateBoostClassLink / XI_CreateBoostLink
+    ;;
     (defun XI_Issue:string
         (
             score-name:string
@@ -2574,21 +2555,27 @@
         (score-id:string new-owner-konto:string)
         @doc "Under SECURE (from SCR|C>ROTATE-OWNERSHIP-SCORE): update owner-konto only. Write only; C_RotateOwnership builds IGNIS cumulator."
         (require-capability (SECURE))
-        (update SCR|T|Score score-id {"owner-konto": new-owner-konto})
+        (update SCR|T|Score score-id
+            (+ (UR_SCR|Score score-id) {"owner-konto": new-owner-konto})
+        )
     )
     (defun XI_Control:string
         (score-id:string new-can-upgrade:bool new-can-change-owner:bool)
         @doc "Under SECURE (from SCR|C>CONTROL-SCORE): update can-upgrade and can-change-owner only. Write only; C_Control builds IGNIS cumulator."
         (require-capability (SECURE))
         (update SCR|T|Score score-id
-            {"can-upgrade": new-can-upgrade, "can-change-owner": new-can-change-owner}
+            (+ (UR_SCR|Score score-id)
+                {"can-upgrade": new-can-upgrade, "can-change-owner": new-can-change-owner}
+            )
         )
     )
     (defun XI_EnableDebBoost:string
         (score-id:string)
         @doc "Under SECURE (from SCR|C>ENABLE-DEB-BOOST-SCORE): set deb-boost true only. Write only; C_EnableDebBoost builds IGNIS cumulator."
         (require-capability (SECURE))
-        (update SCR|T|Score score-id {"deb-boost": true})
+        (update SCR|T|Score score-id
+            (+ (UR_SCR|Score score-id) {"deb-boost": true})
+        )
     )
     (defun XI_IssueSemiFungibleScoreDefinition:string
         (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
@@ -2685,50 +2672,68 @@
             )
         )
     )
-    ;; Link fields [..] on SCR|Schema: XI paths under SECURE from SCR|C>*; XE paths for forward modules (UEV_IMC + SCR|XE>* in-body).
+    ;; Link fields [..] on SCR|Schema: XI under SECURE from SCR|C>*; XE from forward modules (UEV_IMC + SCR|XE>*).
     (defun XI_CreateBoostClassLink:string
         (score-id:string boost-class-id:string)
         @doc "Under SECURE: set boost-class-link only. Write only; C_CreateBoostClassLink builds IGNIS cumulator."
         (require-capability (SECURE))
-        (update SCR|T|Score score-id {"boost-class-link": boost-class-id})
+        (update SCR|T|Score score-id
+            (+ (UR_SCR|Score score-id) {"boost-class-link": boost-class-id})
+        )
     )
     (defun XI_CreateBoostLink:string
         (score-id:string boost-score-id:string)
         @doc "Under SECURE: set boost-link only. Write only; C_CreateBoostLink builds IGNIS cumulator."
         (require-capability (SECURE))
-        (update SCR|T|Score score-id {"boost-link": boost-score-id})
-    )
-    (defun XE_CreateAqpoolLink:string
-        (score-id:string pool-id:string)
-        @doc "Forward entry (e.g. AQP): UEV_IMC; SCR|XE>CREATE-AQPOOL-LINK validates BAR + ownership; write aqpool-link only. \
-            \ Write only; caller merges IGNIS OutputCumulator."
-        (UEV_IMC)
-        (with-capability (SCR|XE>CREATE-AQPOOL-LINK score-id pool-id)
-            (update SCR|T|Score score-id {"aqpool-link": pool-id})
-        )
-    )
-    (defun XE_RevokeAqpoolLink:string
-        (score-id:string pool-id:string)
-        @doc "Forward entry (e.g. AQP): UEV_IMC; SCR|XE>REVOKE-AQPOOL-LINK validates aqpool-link = pool-id + ownership; clear to BAR only. \
-            \ Write only; caller merges IGNIS OutputCumulator."
-        (UEV_IMC)
-        (with-capability (SCR|XE>REVOKE-AQPOOL-LINK score-id pool-id)
-            (update SCR|T|Score score-id {"aqpool-link": BAR})
-        )
-    )
-    (defun XE_CreateFvtLink:string
-        (score-id:string fvt-id:string)
-        @doc "Forward entry (e.g. FVT): UEV_IMC; SCR|XE>CREATE-FVT-LINK validates BAR + ownership; write fvt-link only. \
-            \ Write only; caller merges IGNIS OutputCumulator."
-        (UEV_IMC)
-        (with-capability (SCR|XE>CREATE-FVT-LINK score-id fvt-id)
-            (update SCR|T|Score score-id {"fvt-link": fvt-id})
+        (update SCR|T|Score score-id
+            (+ (UR_SCR|Score score-id) {"boost-link": boost-score-id})
         )
     )
     ;;
-    ;;  [User Score Updates]
+    ;; --- Block B · Stake user-score delta ---
+    ;;   XE_ApplyTrueFungibleStakeDelta (TF · FVT phase 2.3)
+    ;;     └ XI_1|UpdateScoreDataForTrueFungibleLP / TrueFungible
+    ;;   (future XE_* for Orto / Semi / NF recipes)
+    ;;     └ XI_1|UpdateScoreDataForOrto* / SemiFungible / NonFungible
+    ;;         └ XI_2|ApplySingularUserScoreDelta (shared leaf)
     ;;
-    (defun XE_UpdateScoreDataForTrueFungibleLP:string
+    (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
+        @doc "Forward (FVT::C_TrueFungibleStakeFlow phase 2.3]): TF stake only — class 0 LP or class 1 DPTF per employed score. \
+            \ employed-ids and native-leg are resolved by FVT from AQP-POOL (avoids SCORE→AQP module ref at load). UEV_IMC only."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (score-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    ;; map: employed pool scores (class 0 LP vs class 1 DPTF write leg per score)
+                    (map
+                        (lambda (score-id:string)
+                            (if (= (UR_SCR|ScoreClass score-id) 0)
+                                (do
+                                    (XI_1|UpdateScoreDataForTrueFungibleLP
+                                        beneficiary-id pool-id score-id dptf-id amount native-leg direction
+                                    )
+                                    (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                )
+                                (do
+                                    (XI_1|UpdateScoreDataForTrueFungible
+                                        beneficiary-id pool-id score-id dptf-id amount native-leg direction
+                                    )
+                                    (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                )
+                            )
+                        )
+                        employed-ids
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
+        )
+    )
+
+    (defun XI_1|UpdateScoreDataForTrueFungibleLP:string
         (
             ouronet-account:string
             pool-id:string
@@ -2738,13 +2743,12 @@
             native-or-frozen:bool
             direction:bool
         )
-        @doc "Forward (AQP-POOL): DPTF LP (native vs frozen multiplier). Computes denominator-equivalent weight, signed delta, then XI core."
-        (UEV_IMC)
+        @doc "Internal (XE_ApplyTrueFungibleStakeDelta · depth 1]): class-0 LP stake/unstake write leg."
         (with-capability
             (SCR|XE>UPDATE-LP-STAKE-DPTF-LP
                 ouronet-account pool-id score-id lp-id lp-amount native-or-frozen direction
             )
-            (XI_1|ApplySingularUserScoreDelta
+            (XI_2|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2752,31 +2756,8 @@
             )
         )
     )
-    (defun XE_UpdateScoreDataForOrtoFungibleLP:string
-        (
-            ouronet-account:string
-            pool-id:string
-            score-id:string
-            lp-id:string
-            nonces:[integer]
-            nonce-amounts:[decimal]
-            direction:bool
-        )
-        @doc "Forward (AQP-POOL): sleeping orto (DPSF) LP — sums nonce amounts, denominator-equivalent, mx-sleeping, then XI core."
-        (UEV_IMC)
-        (with-capability
-            (SCR|XE>UPDATE-LP-STAKE-ORTO-LP
-                ouronet-account pool-id score-id lp-id nonces nonce-amounts direction
-            )
-            (XI_1|ApplySingularUserScoreDelta
-                ouronet-account
-                pool-id
-                score-id
-                (URC_SignedBaseDeltaForOrtoLpStake score-id lp-id nonces nonce-amounts direction)
-            )
-        )
-    )
-    (defun XE_UpdateScoreDataForTrueFungible:string
+
+    (defun XI_1|UpdateScoreDataForTrueFungible:string
         (
             ouronet-account:string
             pool-id:string
@@ -2786,13 +2767,12 @@
             native-or-frozen:bool
             direction:bool
         )
-        @doc "Forward (AQP-POOL): class-1 true fungible (non-LP) stake/unstake. Amount × (native 1.0 | frozen mx-frozen) at score precision, signed by direction, then XI core."
-        (UEV_IMC)
+        @doc "Internal (XE_ApplyTrueFungibleStakeDelta · depth 1]): class-1 DPTF stake/unstake write leg."
         (with-capability
             (SCR|XE>UPDATE-STAKE-DPTF
                 ouronet-account pool-id score-id dptf-id dptf-amount native-or-frozen direction
             )
-            (XI_1|ApplySingularUserScoreDelta
+            (XI_2|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2800,7 +2780,32 @@
             )
         )
     )
-    (defun XE_UpdateScoreDataForOrtoFungible:string
+
+    (defun XI_1|UpdateScoreDataForOrtoFungibleLP:string
+        (
+            ouronet-account:string
+            pool-id:string
+            score-id:string
+            lp-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+        @doc "Internal (future XE_* · depth 1]): sleeping orto LP stake/unstake write leg."
+        (with-capability
+            (SCR|XE>UPDATE-LP-STAKE-ORTO-LP
+                ouronet-account pool-id score-id lp-id nonces nonce-amounts direction
+            )
+            (XI_2|ApplySingularUserScoreDelta
+                ouronet-account
+                pool-id
+                score-id
+                (URC_SignedBaseDeltaForOrtoLpStake score-id lp-id nonces nonce-amounts direction)
+            )
+        )
+    )
+
+    (defun XI_1|UpdateScoreDataForOrtoFungible:string
         (
             ouronet-account:string
             pool-id:string
@@ -2810,13 +2815,12 @@
             nonce-amounts:[decimal]
             direction:bool
         )
-        @doc "Forward (AQP-POOL): class-2 DPOF (native) stake/unstake; signed delta from summed nonce amounts, then XI core."
-        (UEV_IMC)
+        @doc "Internal (future XE_* · depth 1]): class-2 DPOF stake/unstake write leg."
         (with-capability
             (SCR|XE>UPDATE-STAKE-DPOF
                 ouronet-account pool-id score-id dpof-id nonces nonce-amounts direction
             )
-            (XI_1|ApplySingularUserScoreDelta
+            (XI_2|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2824,7 +2828,8 @@
             )
         )
     )
-    (defun XE_UpdateScoreDataForSpecialOrtoFungible:string
+
+    (defun XI_1|UpdateScoreDataForSpecialOrtoFungible:string
         (
             ouronet-account:string
             pool-id:string
@@ -2835,13 +2840,12 @@
             sleeping-or-hibernating:bool
             direction:bool
         )
-        @doc "Forward (AQP-POOL): class-2 special DPOF stake/unstake; mx-sleeping vs mx-hibernated from sleeping-or-hibernating flag."
-        (UEV_IMC)
+        @doc "Internal (future XE_* · depth 1]): class-2 special DPOF stake/unstake write leg."
         (with-capability
             (SCR|XE>UPDATE-STAKE-DPOF-SPECIAL
                 ouronet-account pool-id score-id dpof-id nonces nonce-amounts sleeping-or-hibernating direction
             )
-            (XI_1|ApplySingularUserScoreDelta
+            (XI_2|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2851,7 +2855,8 @@
             )
         )
     )
-    (defun XE_UpdateScoreDataForSemiFungible:string
+
+    (defun XI_1|UpdateScoreDataForSemiFungible:string
         (
             ouronet-account:string
             pool-id:string
@@ -2861,13 +2866,12 @@
             nonce-amounts:[integer]
             direction:bool
         )
-        @doc "Forward (AQP-POOL): class-3 DPSF stake/unstake; signed delta from sft-equality mode (raw amounts vs nonce-score-value weighting), then XI core."
-        (UEV_IMC)
+        @doc "Internal (future XE_* · depth 1]): class-3 DPSF stake/unstake write leg."
         (with-capability
             (SCR|XE>UPDATE-STAKE-DPSF
                 ouronet-account pool-id score-id dpsf-id nonces nonce-amounts direction
             )
-            (XI_1|ApplySingularUserScoreDelta
+            (XI_2|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2875,7 +2879,8 @@
             )
         )
     )
-    (defun XE_UpdateScoreDataForNonFungible:string
+
+    (defun XI_1|UpdateScoreDataForNonFungible:string
         (
             ouronet-account:string
             pool-id:string
@@ -2885,11 +2890,10 @@
             nonce-amounts:[integer]
             direction:bool
         )
-        @doc "Forward (AQP-POOL): class-4 DPNF stake/unstake; signed delta from nft-score-model (-1 equal/fragment, 0 native DPDC score, 1 SCR definition by nonce-class), then XI core."
-        (UEV_IMC)
+        @doc "Internal (future XE_* · depth 1]): class-4 DPNF stake/unstake write leg."
         (with-capability
             (SCR|XE>UPDATE-STAKE-DPNF ouronet-account pool-id score-id dpnf-id nonces nonce-amounts direction)
-            (XI_1|ApplySingularUserScoreDelta
+            (XI_2|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
@@ -2897,48 +2901,10 @@
             )
         )
     )
-    (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Forward (FVT::C_TrueFungibleStakeFlow phase 2.3]): TF stake only — each employed score is class 0 (LP) or 1 (DPTF). \
-            \ Per score: XE_UpdateScoreDataForTrueFungibleLP or XE_UpdateScoreDataForTrueFungible + IGNIS. UEV_IMC only."
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                ;;
-                (native-leg:bool (ref-AQP::URC_DptfStakeIsNativeLeg dptf-id))
-                (ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
-                (score-ocs:[object{IgnisCollectorV1.OutputCumulator}]
-                    (map
-                        (lambda (score-id:string)
-                            (if (= (UR_SCR|ScoreClass score-id) 0)
-                                (do
-                                    (XE_UpdateScoreDataForTrueFungibleLP
-                                        beneficiary-id pool-id score-id dptf-id amount native-leg direction
-                                    )
-                                    (URC_StakeScoreDeltaIgnisCumulator beneficiary-id score-id)
-                                )
-                                (do
-                                    (XE_UpdateScoreDataForTrueFungible
-                                        beneficiary-id pool-id score-id dptf-id amount native-leg direction
-                                    )
-                                    (URC_StakeScoreDeltaIgnisCumulator beneficiary-id score-id)
-                                )
-                            )
-                        )
-                        ids
-                    )
-                )
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
-        )
-    )
-    ;;
-    (defun XI_1|ApplySingularUserScoreDelta:string
+
+    (defun XI_2|ApplySingularUserScoreDelta:string
         (ouronet-account:string pool-id:string score-id:string signed-user-base-delta:decimal)
-        @doc "Under SECURE: apply one signed user-base delta at score precision to SCR|T|UserScore and SCR|T|Score totals (LP forwarders pass a denom-equivalent signed delta). \
-            \ Single call to URC_SingularUserScoreDeltaFromSignedUserBase for the write; nzs-count is derived consistently with that object (underflow would indicate a bug elsewhere, not a guard path)."
+        @doc "Internal (XI_1|UpdateScoreData* · depth 2]): core user-score write at score precision."
         (require-capability (SECURE))
         (let
             (
@@ -2953,7 +2919,6 @@
                 (old-nzs:integer (at "nzs-count" scr))
                 (new-nzs:integer (+ old-nzs (at "nz-delta" d)))
             )
-            ;; --- (1) Per-user row: beneficiary weights for this pool × score ---
             (write SCR|T|UserScore (UC_UserScoreKey ouronet-account pool-id score-id)
                 (UDC_SCR|UserSchema
                     (at "new-user-base-score" d)
@@ -2964,15 +2929,57 @@
                     score-id
                 )
             )
-            ;; --- (2) Aggregate score row: global totals + non-zero user count ---
             (update SCR|T|Score score-id
-                {"total-base-score"     : (floor (+ old-tb (at "delta-global-base-score" d)) p)
-                ,"total-boosted-score"  : (floor (+ old-tbst (at "delta-global-boosted-score" d)) p)
-                ,"total-deb-score"      : (floor (+ old-td (at "delta-global-deb-score" d)) p)
-                ,"nzs-count"            : new-nzs
-                }
+                (+ scr
+                    {"total-base-score"     : (floor (+ old-tb (at "delta-global-base-score" d)) p)
+                    ,"total-boosted-score"  : (floor (+ old-tbst (at "delta-global-boosted-score" d)) p)
+                    ,"total-deb-score"      : (floor (+ old-td (at "delta-global-deb-score" d)) p)
+                    ,"nzs-count"            : new-nzs}
+                )
             )
         )
+    )
+
+    ;;
+    ;; --- Block C · Link-field XE (leaf writes · no XI children) ---
+    ;;   XE_CreateAqpoolLink / XE_RevokeAqpoolLink / XE_CreateFvtLink
+    ;;
+    (defun XE_CreateAqpoolLink:string
+        (score-id:string pool-id:string)
+        @doc "Forward entry (e.g. AQP-POOL): UEV_IMC; SCR|XE>CREATE-AQPOOL-LINK validates BAR + ownership; write aqpool-link only."
+        (enforce (UEV_IMC) "AQP-SCORE UEV_IMC rejected forward XE_CreateAqpoolLink caller")
+        (with-capability (SCR|XE>CREATE-AQPOOL-LINK score-id pool-id)
+            (update SCR|T|Score score-id {"aqpool-link": pool-id})
+            (enforce
+                (= (UR_SCR|ScoreAqpoolLink score-id) pool-id)
+                "XE_CreateAqpoolLink: aqpool-link write did not persist"
+            )
+        )
+        pool-id
+    )
+    (defun XE_RevokeAqpoolLink:string
+        (score-id:string pool-id:string)
+        @doc "Forward entry (e.g. AQP-POOL): UEV_IMC; SCR|XE>REVOKE-AQPOOL-LINK validates aqpool-link = pool-id + ownership; clear to BAR."
+        (UEV_IMC)
+        (with-capability (SCR|XE>REVOKE-AQPOOL-LINK score-id pool-id)
+            (update SCR|T|Score score-id
+                (+ (UR_SCR|Score score-id) {"aqpool-link": BAR})
+            )
+        )
+    )
+    (defun XE_CreateFvtLink:string
+        (score-id:string fvt-id:string)
+        @doc "Forward entry (e.g. AQP-FVT): UEV_IMC; SCR|XE>CREATE-FVT-LINK validates BAR + ownership; write fvt-link only."
+        (enforce (UEV_IMC) "AQP-SCORE UEV_IMC rejected forward XE_CreateFvtLink caller")
+        (with-capability (SCR|XE>CREATE-FVT-LINK score-id fvt-id)
+            (update SCR|T|Score score-id {"fvt-link": fvt-id})
+            (enforce
+                (= (at "fvt-link" (read SCR|T|Score score-id ["fvt-link"])) fvt-id)
+                "XE_CreateFvtLink: inner read after update failed"
+            )
+        )
+        (enforce (= (UR_SCR|ScoreFvtLink score-id) fvt-id) "XE_CreateFvtLink: fvt-link write did not persist")
+        fvt-id
     )
     ;;
 )

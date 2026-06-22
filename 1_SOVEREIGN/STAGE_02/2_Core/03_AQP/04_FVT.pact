@@ -124,9 +124,15 @@
         )
     )
     (defun P|A_Define ()
-        @doc "Post-deploy hook (AQP-BOOT Step 0). No cross-module IMP registration required — \
-            \ FVT reads DALOS UR_UsagePrice only (no UEV_IMC); client entry is Talos P|TALOS-SUMMONER."
-        true
+        @doc "Post-deploy hook (AQP-BOOT Step 0): register FVT SECURE on AQP-SCORE IMP for forward XE_* (e.g. XE_CreateFvtLink)."
+        (let
+            (
+                (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
+                ;;
+                (dg:guard (create-capability-guard (SECURE)))
+            )
+            (ref-P|SCR::P|A_AddIMP dg)
+        )
     )
     (defun UEV_IMC ()
         (let
@@ -255,6 +261,12 @@
         (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR))
     )
     (defconst BAR                                               (CT_Bar))
+    (defun CT_AqpScName:string
+        ()
+        @doc "Resolves AQP|SC_NAME from canonical AQP-ANK via interface ref."
+        (let ((ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)) (ref-ANK::GOV|AQP|SC_NAME))
+    )
+    (defconst AQP|SC_NAME                                       (CT_AqpScName))
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -317,7 +329,7 @@
             ;;
             ;;8] transfer / custody (phase 1 — not re-validated here)
             ;;8a] owner signer proof — AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY (CAP_StakeOwner)
-            ;;8b] TFT IMC + AQP|SC_NAME vault governor — AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY (P|AQP|CALLER, AQP|GOV)
+            ;;8b] TFT IMC + AQP|SC_NAME vault governor — AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY (P|AQP|CALLER, AQP-ANK.AQP|GOV)
             ;;
             ;;9] admission-time only (not re-checked at stake)
             ;;9a] score LP denominator vs pool pair — C_AddScore admission
@@ -329,7 +341,7 @@
             ;; phase 2.1] FVT: XI_SettleStakePendingRewards — READY
             ;; phase 2.2] FVT: XI_RefreshTrueFungibleStakeAnchors → backward AQP-ANK + AQP-POOL XE_* — READY
             ;; phase 2.3] SCORE: XE_ApplyTrueFungibleStakeDelta — READY
-            ;; phase 2.4] FVT: XI_CheckpointStakeRps — STUB
+            ;; phase 2.4] FVT: XI_CheckpointStakeRps
             (compose-capability (SECURE))
         )
     )
@@ -702,6 +714,7 @@
     )
     (defun URD_FVT|SettleFvtRewardBundle:[object{FVT|SettleFvtRewards}] (distinct-fvts:[string])
         @doc "Expensive read: one URD_FVT-RG|EnabledRewardRows per distinct FVT — object{FVT|SettleFvtRewards} rows for reuse across scores."
+        ;; map: distinct FVT entities linked from employed scores
         (map
             (lambda (fvt-id:string)
                 (UDC_FVT|SettleFvtRewards fvt-id (URD_FVT-RG|EnabledRewardRows fvt-id))
@@ -744,7 +757,7 @@
         )
     )
     (defun URC_PoolEmployedScoresFvtStakeReady:bool (pool-id:string)
-        @doc "True when every employed score on pool-id passes URC_ScoreFvtStakeReady. \
+        @doc "True when pool has ≥1 employed score and every employed score passes URC_ScoreFvtStakeReady. \
             \ Used by FVT|C>TRUE-FUNGIBLE-STAKE-FLOW."
         (let
             (
@@ -752,8 +765,11 @@
                 ;;
                 (employed-ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
             )
-            (fold (and) true
-                (map (lambda (score-id:string) (URC_ScoreFvtStakeReady score-id)) employed-ids)
+            (if (= (length employed-ids) 0)
+                false
+                (fold (and) true
+                    (map (lambda (score-id:string) (URC_ScoreFvtStakeReady score-id)) employed-ids)
+                )
             )
         )
     )
@@ -770,10 +786,12 @@
                         (
                             (fvt-link:string (ref-SCR::UR_SCR|ScoreFvtLink score-id))
                         )
-                        (and
-                            (!= score-id BAR)
-                            (!= fvt-link BAR)
-                            (UR_FVT-SL|Enabled fvt-link score-id)
+                        (fold (and) true
+                            [
+                                (!= score-id BAR)
+                                (!= fvt-link BAR)
+                                (UR_FVT-SL|Enabled fvt-link score-id)
+                            ]
                         )
                     )
                 )
@@ -788,6 +806,7 @@
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
             )
             (distinct
+                ;; map: settle-eligible scores → SCR fvt-link (dedupe for URD bundle scope)
                 (map
                     (lambda (score-id:string)
                         (ref-SCR::UR_SCR|ScoreFvtLink score-id)
@@ -856,6 +875,7 @@
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
             )
+            ;; map: settle-eligible employed scores → object{FVT|SettleScorePlan}
             (map
                 (lambda (score-id:string)
                     (let
@@ -884,6 +904,7 @@
                 (medium:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
                 (reward-tokens:integer
                     (fold (+) 0
+                        ;; map: distinct FVT entities (sum enabled-reward-count for IGNIS medium leg)
                         (map
                             (lambda (fvt-id:string)
                                 (try 0 (UR_FVT|EnabledRewardCount fvt-id))
@@ -1026,10 +1047,14 @@
                     )
                     (ico4:object{IgnisCollectorV1.OutputCumulator}
                         ;;2.3] SCORE: vault + user weight — READY
-                        (ref-SCR::XE_ApplyTrueFungibleStakeDelta pool-id beneficiary-id dptf-id amount direction)
+                        (ref-SCR::XE_ApplyTrueFungibleStakeDelta
+                            pool-id beneficiary-id dptf-id amount direction
+                            (ref-AQP::URC_PoolActiveScoreIds pool-id)
+                            (ref-AQP::URC_DptfStakeIsNativeLeg dptf-id)
+                        )
                     )
                     (ico5:object{IgnisCollectorV1.OutputCumulator}
-                        ;;2.4] FVT: checkpoint last-rps at NEW L_i — STUB
+                        ;;2.4] FVT: checkpoint last-rps at NEW L_i
                         (XI_CheckpointStakeRps beneficiary-id pool-id)
                     )
                 )
@@ -1073,32 +1098,25 @@
     ;;  read SWP::UR_StoaValue via ScoreLink.swpair; if W_live ≠ W_cached settle Tier-2 at old W_i; write W_i; fix S.
     ;;
     ;;{F8}  [X]
-    ;; Module map: {F3} URC cap/settle · {F8} XI phase 2.1/2.2/2.4.
-    ;; C_TrueFungibleStakeFlow: 1 POOL XE → 2.1 XI_Settle* → 2.2 XI_Refresh* → 2.3 SCORE XE → 2.4 XI_Checkpoint*.
-    ;; Phase 2.2 call tree (depth 0 = XI_RefreshTrueFungibleStakeAnchors):
-    ;;   XI_RefreshTrueFungibleStakeAnchors
-    ;;     ├ AQP-ANK::XE_UpdateTrueFungibleUserAnchorValues (backward; total from UR_AQP|BeneficiaryDptfTotalBalance)
-    ;;     └ AQP-POOL::XE_SetBeneficiaryDptfAnkSyncCount (backward)
-    ;; Phase 2.1 call tree (depth from XI_SettleStakePendingRewards = 0; siblings share N):
+    ;; Depth: C_* → XI_* (depth 0) → XI_1|* (depth 1) → XI_2|* (depth 2) … Blocks: map first, functions in map order.
+    ;;
+    ;; --- Block A · Phase 2.1 settle (C_TrueFungibleStakeFlow) ---
     ;;   XI_SettleStakePendingRewards
     ;;     ├ XI_1|SyncFarmGhostTvlForEmployedScores
+    ;;     │    └ (map) → XI_2|SettleMemberTier2
     ;;     └ XI_1|SettleOneEmployedScorePendingRewards
-    ;;          └ XI_2|SettleOneRewardLinePending
-    ;;               ├ XI_3|EnsureRpsMemberRow   (2.0 member × dptf)
-    ;;               │    └ XI_4|InsertRpsMember
-    ;;               ├ XI_3|EnsureRpsUserRow      (2.0 user)
-    ;;               │    └ XI_4|InsertRpsUser
-    ;;               ├ XI_3|SettleMemberTier2    (2a)
-    ;;               └ XI_3|BankUserTier1Pending  (2b)
-    ;; Phase 2.4: XI_CheckpointStakeRps (separate depth-0 tree under C_TrueFungibleStakeFlow).
-    ;; XI_1|SyncFarmGhostTvlForEmployedScores: caller passes object{FVT|SettleScorePlan} rows (reward-dptf-ids from one URD bundle).
-    ;; Also C_AddScoreLink / C_Inject / C_Collect when wired — build plans + bundle once at call site, no URD inside sync.
+    ;;          └ (map) → XI_2|EnsureRpsMemberRow, XI_2|EnsureRpsUserRow,
+    ;;                      XI_2|SettleMemberTier2, XI_2|BankUserTier1Pending
     ;;
-    ;; --- Phase 2.1 · XI (depth-first definition order) ---
+    ;; --- Block C · Phase 2.4 checkpoint (C_TrueFungibleStakeFlow) ---
+    ;;   XI_CheckpointStakeRps — nested map (score plan × reward line); no child XI_*.
+    ;;
+    ;; --- Phase 2.1 · XI (map order) ---
     (defun XI_SettleStakePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string)
         @doc "Internal (C_TrueFungibleStakeFlow phase 2.1 · depth 0]): ghost TVL sync then settle at OLD deb/L_i. \
-            \ Same path for stake and unstake (UrStoa UpdatePendingRewards). Returns settle IGNIS OC."
+            \ Same path for stake and unstake (UrStoa UpdatePendingRewards). IGNIS interactor = AQP|SC_NAME (pool vault receiver). \
+            \ Returns settle IGNIS OC."
         (require-capability (SECURE))
         (let
             (
@@ -1113,6 +1131,7 @@
                 (settle-plans:[object{FVT|SettleScorePlan}] (URC_SettleScorePlanRows settle-scores fvt-reward-bundle))
             )
             (XI_1|SyncFarmGhostTvlForEmployedScores settle-plans)
+            ;; map: employed score plans (one row per settle-eligible pool score)
             (map
                 (lambda (plan:object{FVT|SettleScorePlan})
                     (XI_1|SettleOneEmployedScorePendingRewards beneficiary-id pool-id plan)
@@ -1120,7 +1139,10 @@
                 settle-plans
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (URC_SettleStakePendingIgnis settle-scores distinct-fvts) beneficiary-id trigger [pool-id "settle-pending"]
+                (URC_SettleStakePendingIgnis settle-scores distinct-fvts)
+                AQP|SC_NAME
+                trigger
+                [pool-id "settle-pending"]
             )
         )
     )
@@ -1136,6 +1158,7 @@
             (
                 (ref-SWP:module{SwapperV3} SWP)
             )
+            ;; map: employed score plans (farm ghost-TVL reconcile per score × FVT link)
             (map
                 (lambda (plan:object{FVT|SettleScorePlan})
                     (let
@@ -1143,38 +1166,40 @@
                             (score-id:string (at "score-id" plan))
                             (fvt-id:string (at "fvt-id" plan))
                             (reward-dptf-ids:[string] (at "reward-dptf-ids" plan))
-                            (b1:bool (!= score-id BAR))
-                            (b2:bool (!= fvt-id BAR))
-                            (b3:bool (= (UR_FVT|FvtClass fvt-id) 0))
-                            (b4:bool (UR_FVT-SL|Enabled fvt-id score-id))
-                            (b5:bool (fold (and) true [b1 b2 b3 b4]))
-                            ;;
-                            (swpair:string (UR_FVT-SL|Swpair fvt-id score-id))
-                            (W-live:decimal (ref-SWP::UR_StoaValue swpair))
-                            (W-cached:decimal (UR_FVT-SL|GhostTvlWeight fvt-id score-id))
                         )
-                        (if b5
-                            (if (= W-live W-cached)
-                                true
-                                (let
-                                    (
-                                        (sl-key:string (UC_ScoreLinkKey fvt-id score-id))
-                                        (delta-W:decimal (- W-live W-cached))
-                                        (S:decimal (UR_FVT|TotalGhostTvlWeight fvt-id))
-                                    )
-                                    (map
-                                        (lambda (reward-dptf-id:string)
-                                            (XI_3|SettleMemberTier2 fvt-id score-id reward-dptf-id)
-                                        )
-                                        reward-dptf-ids
-                                    )
-                                    (update FVT|T|ScoreLink sl-key
-                                        {"ghost-tvl-weight": W-live}
-                                    )
-                                    (update FVT|T fvt-id
-                                        {"total-ghost-tvl-weight": (+ S delta-W)}
-                                    )
+                        (if
+                            (fold (and) true
+                                [
+                                    (!= score-id BAR)
+                                    (!= fvt-id BAR)
+                                    (= (UR_FVT|FvtClass fvt-id) 0)
+                                    (UR_FVT-SL|Enabled fvt-id score-id)
+                                ]
+                            )
+                            (let
+                                (
+                                    (swpair:string (UR_FVT-SL|Swpair fvt-id score-id))
+                                    (W-live:decimal (ref-SWP::UR_StoaValue swpair))
+                                    (W-cached:decimal (UR_FVT-SL|GhostTvlWeight fvt-id score-id))
+                                )
+                                (if (= W-live W-cached)
                                     true
+                                    (let
+                                        (
+                                            (sl-key:string (UC_ScoreLinkKey fvt-id score-id))
+                                            (delta-W:decimal (- W-live W-cached))
+                                            (S:decimal (UR_FVT|TotalGhostTvlWeight fvt-id))
+                                        )
+                                        (map
+                                            (lambda (reward-dptf-id:string)
+                                                (XI_2|SettleMemberTier2 fvt-id score-id reward-dptf-id)
+                                            )
+                                            reward-dptf-ids
+                                        )
+                                        (update FVT|T|ScoreLink sl-key {"ghost-tvl-weight": W-live})
+                                        (update FVT|T fvt-id {"total-ghost-tvl-weight": (+ S delta-W)})
+                                        true
+                                    )
                                 )
                             )
                             true
@@ -1188,7 +1213,8 @@
     )
     (defun XI_1|SettleOneEmployedScorePendingRewards
         (beneficiary-id:string pool-id:string plan:object{FVT|SettleScorePlan})
-        @doc "Internal (phase 2.1 · depth 1]): settle all reward lines for one object{FVT|SettleScorePlan}. Write-only; no IGNIS."
+        @doc "Internal (phase 2.1 · depth 1]): settle all reward lines for one object{FVT|SettleScorePlan}. \
+            \ Nested map: 2.0 ensure rows, 2a Tier-2, 2b Tier-1 per enabled reward DPTF. Write-only; no IGNIS."
         (require-capability (SECURE))
         (let
             (
@@ -1196,73 +1222,59 @@
                 (fvt-id:string (at "fvt-id" plan))
                 (reward-dptf-ids:[string] (at "reward-dptf-ids" plan))
             )
+            ;; map: enabled reward DPTF lines on this score (ensure rows → Tier-2 → Tier-1 bank)
             (map
                 (lambda (reward-dptf-id:string)
-                    (XI_2|SettleOneRewardLinePending beneficiary-id pool-id fvt-id score-id reward-dptf-id)
+                    (if (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id)
+                        (do
+                            (XI_2|EnsureRpsMemberRow fvt-id score-id reward-dptf-id)
+                            (XI_2|EnsureRpsUserRow beneficiary-id fvt-id score-id reward-dptf-id)
+                            (XI_2|SettleMemberTier2 fvt-id score-id reward-dptf-id)
+                            (XI_2|BankUserTier1Pending beneficiary-id pool-id fvt-id score-id reward-dptf-id)
+                        )
+                        true
+                    )
                 )
                 reward-dptf-ids
             )
             true
         )
     )
-    (defun XI_2|SettleOneRewardLinePending
-        (beneficiary-id:string pool-id:string fvt-id:string score-id:string reward-dptf-id:string)
-        @doc "Internal (phase 2.1 · depth 2]): one (score × reward DPTF) — 2.0 ensure, 2a Tier-2, 2b Tier-1. Skips when reward disabled."
-        (require-capability (SECURE))
-        (if (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id)
-            (do
-                (XI_3|EnsureRpsMemberRow fvt-id score-id reward-dptf-id)
-                (XI_3|EnsureRpsUserRow beneficiary-id fvt-id score-id reward-dptf-id)
-                (XI_3|SettleMemberTier2 fvt-id score-id reward-dptf-id)
-                (XI_3|BankUserTier1Pending beneficiary-id pool-id fvt-id score-id reward-dptf-id)
-            )
-            true
-        )
-    )
-    (defun XI_3|EnsureRpsMemberRow
+    (defun XI_2|EnsureRpsMemberRow
         (fvt-id:string score-id:string reward-dptf-id:string)
-        @doc "Internal (phase 2.1 · depth 3 · 2.0]): ensure FVT|T|RPS|Member row for (fvt, score, reward DPTF)."
+        @doc "Internal (phase 2.1 · depth 2 · 2.0]): ensure FVT|T|RPS|Member row for (fvt, score, reward DPTF); insert when absent."
         (require-capability (SECURE))
         (if (not (URC_FvtRpsMemberRowExists fvt-id score-id reward-dptf-id))
-            (XI_4|InsertRpsMember fvt-id score-id reward-dptf-id 0.0 0.0 0.0)
-            true
-        )
-    )
-    (defun XI_4|InsertRpsMember
-        (fvt-id:string score-id:string dptf-id:string last-farm-rps-g:decimal member-deb-rps:decimal pending-member-rewards:decimal)
-        @doc "Internal (phase 2.1 · depth 4 · 2.0 write]): insert FVT|T|RPS|Member row under SECURE."
-        (require-capability (SECURE))
-        (insert FVT|T|RPS|Member (UC_RpsMemberKey fvt-id score-id dptf-id)
-            (UDC_FVT|RPS|Member last-farm-rps-g member-deb-rps pending-member-rewards fvt-id score-id dptf-id)
-        )
-    )
-    (defun XI_3|EnsureRpsUserRow
-        (beneficiary-id:string fvt-id:string score-id:string reward-dptf-id:string)
-        @doc "Internal (phase 2.1 · depth 3 · 2.0]): ensure FVT|T|RPS|User row; UrStoa (if (not IzAccount) insert true)."
-        (require-capability (SECURE))
-        (if (not (URC_FvtRpsUserRowExists beneficiary-id fvt-id score-id reward-dptf-id))
-            (XI_4|InsertRpsUser beneficiary-id fvt-id score-id reward-dptf-id
-                (UR_FVT-RM|MemberDebRps fvt-id score-id reward-dptf-id)
-                0.0
+            (insert FVT|T|RPS|Member (UC_RpsMemberKey fvt-id score-id reward-dptf-id)
+                (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-id reward-dptf-id)
             )
             true
         )
     )
-    (defun XI_4|InsertRpsUser
-        (user-id:string fvt-id:string score-id:string dptf-id:string last-rps:decimal pending-rewards:decimal)
-        @doc "Internal (phase 2.1 · depth 4 · 2.0 write]): insert FVT|T|RPS|User row under SECURE."
+    (defun XI_2|EnsureRpsUserRow
+        (beneficiary-id:string fvt-id:string score-id:string reward-dptf-id:string)
+        @doc "Internal (phase 2.1 · depth 2 · 2.0]): ensure FVT|T|RPS|User row; insert with last-rps=L_i when absent (UrStoa IzAccount)."
         (require-capability (SECURE))
-        (insert FVT|T|RPS|User (UC_RpsUserKey user-id fvt-id score-id dptf-id)
-            (UDC_FVT|RPS|User last-rps pending-rewards user-id fvt-id score-id dptf-id)
+        (if (not (URC_FvtRpsUserRowExists beneficiary-id fvt-id score-id reward-dptf-id))
+            (insert FVT|T|RPS|User (UC_RpsUserKey beneficiary-id fvt-id score-id reward-dptf-id)
+                (UDC_FVT|RPS|User
+                    (UR_FVT-RM|MemberDebRps fvt-id score-id reward-dptf-id)
+                    0.0
+                    beneficiary-id
+                    fvt-id
+                    score-id
+                    reward-dptf-id
+                )
+            )
+            true
         )
     )
-    
-    (defun XI_3|SettleMemberTier2
+    (defun XI_2|SettleMemberTier2
         (fvt-id:string score-id:string reward-dptf-id:string)
-        @doc "Internal (phase 2.1 · depth 3 · 2a]): Tier-2 settle per reward DPTF on FVT|T|RPS|Member. \
+        @doc "Internal (phase 2.1 · depth 2 · 2a]): Tier-2 settle per reward DPTF on FVT|T|RPS|Member. \
             \ Farm: floor(W_i×(G−g_i), 48). Vault/Treasury: floor(D_i×(G−g_i), 48). Flush pending-member-rewards when deb > 0."
         (require-capability (SECURE))
-        (XI_3|EnsureRpsMemberRow fvt-id score-id reward-dptf-id)
+        (XI_2|EnsureRpsMemberRow fvt-id score-id reward-dptf-id)
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
@@ -1285,12 +1297,12 @@
                 (ptr-work:decimal
                     (if (and (> total-deb 0.0) (> ptr 0.0)) 0.0 ptr)
                 )
+                (rm:object{FVT|RPS|Member} (UR_FVT-RM|RpsMember fvt-id score-id reward-dptf-id))
             )
             (if (= G g-i)
                 (if (and (> total-deb 0.0) (> ptr 0.0))
                     (update FVT|T|RPS|Member rm-key
-                        {"member-deb-rps"         : L-i-work
-                        ,"pending-member-rewards"  : ptr-work}
+                        (+ rm {"member-deb-rps": L-i-work, "pending-member-rewards": ptr-work})
                     )
                     true
                 )
@@ -1306,17 +1318,21 @@
                     )
                     (if (> total-deb 0.0)
                         (update FVT|T|RPS|Member rm-key
-                            {"member-deb-rps"         : (+ L-i-work (floor (/ earned total-deb) CT_FVT_RPS_PREC))
-                            ,"last-farm-rps-g"          : G
-                            ,"pending-member-rewards"  : ptr-work}
+                            (+ rm
+                                {"member-deb-rps"         : (+ L-i-work (floor (/ earned total-deb) CT_FVT_RPS_PREC))
+                                ,"last-farm-rps-g"        : G
+                                ,"pending-member-rewards" : ptr-work}
+                            )
                         )
                         (if (> earned 0.0)
                             (update FVT|T|RPS|Member rm-key
-                                {"pending-member-rewards" : (floor (+ ptr-work earned) reward-prec)
-                                ,"last-farm-rps-g"          : G}
+                                (+ rm
+                                    {"pending-member-rewards" : (floor (+ ptr-work earned) reward-prec)
+                                    ,"last-farm-rps-g"        : G}
+                                )
                             )
                             (update FVT|T|RPS|Member rm-key
-                                {"last-farm-rps-g"          : G}
+                                (+ rm {"last-farm-rps-g": G})
                             )
                         )
                     )
@@ -1324,9 +1340,9 @@
             )
         )
     )
-    (defun XI_3|BankUserTier1Pending
+    (defun XI_2|BankUserTier1Pending
         (beneficiary-id:string pool-id:string fvt-id:string score-id:string reward-dptf-id:string)
-        @doc "Internal (phase 2.1 · depth 3 · 2b]): bank user pending at OLD deb — UrStoa XI_URV|UpdatePendingRewards. \
+        @doc "Internal (phase 2.1 · depth 2 · 2b]): bank user pending at OLD deb — UrStoa XI_URV|UpdatePendingRewards. \
             \ Does not advance last-rps (phase 2.4 XI_CheckpointStakeRps)."
         (require-capability (SECURE))
         (let
@@ -1335,15 +1351,20 @@
                 ;;
                 (deb-old:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
                 (new-pending:decimal (URC_UserTier1AvailableRewards beneficiary-id fvt-id score-id reward-dptf-id deb-old))
+                (ru:object{FVT|RPS|User} (UR_FVT-RU|RpsUser beneficiary-id fvt-id score-id reward-dptf-id))
             )
             (update FVT|T|RPS|User (UC_RpsUserKey beneficiary-id fvt-id score-id reward-dptf-id)
-                {"pending-rewards": new-pending}
+                (+ ru {"pending-rewards": new-pending})
             )
             true
         )
     )
     ;;
-    ;; --- Phase 2.2 · XI (depth 0 — backward AQP-ANK + AQP-POOL) ---
+    ;; --- Block B · Phase 2.2 anchor refresh (C_TrueFungibleStakeFlow) ---
+    ;;   XI_RefreshTrueFungibleStakeAnchors
+    ;;     ├ AQP-ANK::XE_UpdateTrueFungibleUserAnchorValues
+    ;;     └ AQP-POOL::XE_SetBeneficiaryDptfAnkSyncCount
+    ;;
     (defun XI_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
         @doc "Internal (C_TrueFungibleStakeFlow phase 2.2 · depth 0]): read post-ico1 BeneficiaryDptfTotal balance, \
@@ -1368,23 +1389,100 @@
         )
     )
     ;;
-    ;; --- Phase 2.4 · XI (separate depth-0 tree) ---
+    ;; --- Block C · Phase 2.4 checkpoint (C_TrueFungibleStakeFlow) ---
+    ;;   XI_CheckpointStakeRps — nested map (score plan × reward line); no child XI_*.
+    ;;
     (defun XI_CheckpointStakeRps:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string)
-        @doc "Internal (C_TrueFungibleStakeFlow phase 2.4]): advance last-rps after SCORE deb mutation. \
-            \ Returns OutputCumulator (writes STUB; pricing via URC_CheckpointStakeRpsIgnis). require-capability (SECURE) only."
+        @doc "Internal (C_TrueFungibleStakeFlow phase 2.4 · depth 0]): advance last-rps to NEW L_i after SCORE deb mutation (UrStoa XI_URV|UpdateUserRPS). \
+            \ Same employed-score scope as ico2; only existing FVT|T|RPS|User rows are updated. \
+            \ IGNIS interactor = AQP|SC_NAME (pool vault receiver). Returns checkpoint IGNIS OC."
         (require-capability (SECURE))
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (employed-ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
+                (settle-scores:[string] (URC_SettleEligibleEmployedScores employed-ids))
+                (distinct-fvts:[string] (URC_SettleDistinctFvtLinks settle-scores))
+                (fvt-reward-bundle:[object{FVT|SettleFvtRewards}] (URD_FVT|SettleFvtRewardBundle distinct-fvts))
+                (checkpoint-plans:[object{FVT|SettleScorePlan}] (URC_SettleScorePlanRows settle-scores fvt-reward-bundle))
             )
-            ;; STUB — last-rps checkpoint writes
+            ;; map: employed score plans (same scope as phase 2.1 settle)
+            (map
+                (lambda (plan:object{FVT|SettleScorePlan})
+                    (let
+                        (
+                            (fvt-id:string (at "fvt-id" plan))
+                            (score-id:string (at "score-id" plan))
+                            (reward-dptf-ids:[string] (at "reward-dptf-ids" plan))
+                        )
+                        ;; map: reward DPTF lines — advance last-rps to NEW L_i on existing user rows only
+                        (map
+                            (lambda (reward-dptf-id:string)
+                                (if (URC_FvtRpsUserRowExists beneficiary-id fvt-id score-id reward-dptf-id)
+                                    (let
+                                        (
+                                            (ru:object{FVT|RPS|User}
+                                                (UR_FVT-RU|RpsUser beneficiary-id fvt-id score-id reward-dptf-id)
+                                            )
+                                            (new-lr:decimal
+                                                (UR_FVT-RM|MemberDebRps fvt-id score-id reward-dptf-id)
+                                            )
+                                        )
+                                        (update FVT|T|RPS|User (UC_RpsUserKey beneficiary-id fvt-id score-id reward-dptf-id)
+                                            (+ ru {"last-rps": new-lr})
+                                        )
+                                    )
+                                    true
+                                )
+                            )
+                            reward-dptf-ids
+                        )
+                    )
+                )
+                checkpoint-plans
+            )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (URC_CheckpointStakeRpsIgnis) beneficiary-id trigger [pool-id beneficiary-id]
+                (URC_CheckpointStakeRpsIgnis)
+                AQP|SC_NAME
+                trigger
+                [pool-id beneficiary-id]
             )
         )
+    )
+    ;;
+    ;; --- REPL dry-run (GOV|FVT_ADMIN; not on AcquisitionFarmsVaultsTreasuriesV1) ---
+    ;; Until C_Issue / C_AddScoreLink / C_AddRewardLink are implemented.
+    (defun REPL_BootstrapVault:string
+        (fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
+        @doc "REPL-only: insert class-1 vault + enabled ScoreLink + reward-enabled RPS|Global; SCR XE_CreateFvtLink."
+        (with-capability (GOV|FVT_ADMIN)
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (insert FVT|T fvt-id
+                    (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 fvt-id)
+                )
+                (insert FVT|T|ScoreLink (UC_ScoreLinkKey fvt-id score-id)
+                    (UDC_FVT|ScoreLink true "|" 0.0 fvt-id score-id)
+                )
+                (insert FVT|T|RPS|Global (UC_RpsGlobalKey fvt-id reward-dptf-id)
+                    (UDC_FVT|RPS|Global true 0.0 0.0 0 false fvt-id reward-dptf-id)
+                )
+                (with-capability (SECURE)
+                    (ref-SCR::XE_CreateFvtLink score-id fvt-id)
+                )
+                (enforce
+                    (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) fvt-id)
+                    "REPL_BootstrapVault: SCR fvt-link not set after XE_CreateFvtLink"
+                )
+            )
+        )
+        fvt-id
     )
     ;;
 )
