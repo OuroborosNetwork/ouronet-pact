@@ -95,13 +95,14 @@ Example (**`FVT|C>TRUE-FUNGIBLE-STAKE-FLOW`**): composes **`SECURE`** for FVT **
 
 **No component validation caps** — validation already ran in **`FVT|C>TRUE-FUNGIBLE-STAKE-FLOW`**.
 
-| Phase | Module | Entry | Protection |
-|-------|--------|--------|------------|
-| 1] Custody | AQP-POOL | `XE_TrueFungiblePoolCustody` | **`UEV_IMC`** + **`AQP\|XE>TRUE-FUNGIBLE-POOL-CUSTODY`** (validation + **`SECURE`**) |
-| 2.1] Settle | AQP-FVT | `XI_SettleStakePendingRewards` | **`require-capability (SECURE)`** |
-| 2.2] ANK | AQP-ANK | `XE_RefreshTrueFungibleStakeAnchors` | **`UEV_IMC`** only |
-| 2.3] SCORE | AQP-SCORE | `XE_ApplyTrueFungibleStakeDelta` | **`UEV_IMC`** → **`XI_Apply*`** under **`SECURE`** |
-| 2.4] Checkpoint | AQP-FVT | `XI_CheckpointStakeRps` | **`require-capability (SECURE)`** |
+| Step | Module | Entry | UrStoa ≡ | Protection |
+|------|--------|--------|----------|------------|
+| 1] | AQP-POOL | `XE_TrueFungiblePoolCustody` | `X_UR\|Transfer` | **`UEV_IMC`** + **`AQP\|XE>TRUE-FUNGIBLE-POOL-CUSTODY`** |
+| 2.1] | AQP-FVT | `XI_Phase_2_1\|SettleStakePendingRewards` | 2.1.1 + 2.1.2 | **`SECURE`** |
+| 1.AQP] | AQP-FVT/ANK | `XI_Phase_1_AQP\|RefreshTrueFungibleStakeAnchors` | N/A | **`SECURE`** |
+| 2.2–2.3.1] | AQP-SCORE | `XE_ApplyTrueFungibleStakeDelta` | 2.2.1 + 2.2.2 + 2.3.1 | **`UEV_IMC`** → **`SECURE`** |
+| 2.3.2] | AQP-FVT | `XI_Phase_2_3_2\|BookUnclaimedCounts` | `UpdateUnclaimedCount` | **`SECURE`** |
+| 2.4] | AQP-FVT | `XI_Phase_2_4\|CheckpointStakeRps` | `UpdateUserRPS` | **`SECURE`** |
 
 **ANK:** `XE_UpdateTrueFungibleUserAnchorValues` = cross-module (C_Sync); body delegates to **`XI_UpdateTrueFungibleUserAnchorValues`**. **`XE_Refresh*`** calls **`XI_Update*`** when wired (no double IMC).
 
