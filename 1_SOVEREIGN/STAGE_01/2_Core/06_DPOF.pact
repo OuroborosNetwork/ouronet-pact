@@ -4,6 +4,7 @@
     (implements OuronetPolicyV1)
     (implements BrandingUsagePrimaryV1)
     (implements DemiourgosPactOrtoFungibleV1)
+    (implements DemiourgosPactOrtoFungibleV2)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -1232,6 +1233,11 @@
             )
             (enforce (= x state) (format "Segmentation state for {} {} must be set to {} for exec" [OF id state]))
         )
+    )
+    (defun UEV_EnforceSegmentationForTransmit (id:string)
+        @doc "C_Transmit and AQP OrtoFungible Transmit stake/unstake: issued DPOF id with segmentation enabled."
+        (UEV_id id)
+        (UEV_SegmentationState id true)
     )
     (defun UEV_AccountFreezeState (id:string account:string state:bool)
         (let

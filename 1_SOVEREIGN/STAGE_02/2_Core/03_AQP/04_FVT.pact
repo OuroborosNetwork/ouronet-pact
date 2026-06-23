@@ -56,6 +56,9 @@
     (defun C_TrueFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
+    (defun C_OrtoFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+    )
 )
 (module AQP-FVT GOV
     ;;
@@ -237,7 +240,7 @@
     )
     ;;Phase 2.1 settle — ephemeral rows (not deftable); built once per TF stake/unstake pass.
     (defschema FVT|SettleFvtRewards
-        @doc "One distinct FVT row in URD_FVT|SettleFvtRewardBundle — enabled reward dptf-ids resolved once per fvt-id."
+        @doc "One distinct FVT row in URD_FVT|SettleFvtRewardBundle — enabled reward dptf-ids from one batched RPS|Global select."
         fvt-id:string
         reward-dptf-ids:[string]
     )
@@ -246,6 +249,19 @@
         score-id:string
         fvt-id:string
         reward-dptf-ids:[string]
+    )
+    (defschema FVT|ScorePreNzFlag
+        @doc "Pre-SCORE snapshot for one employed score — was user triple non-zero before phase 2.3 (UrStoa user-score before UpdateUserScore)."
+        score-id:string
+        was-nz:bool
+    )
+    (defschema FVT|StakeSettleBundle
+        @doc "Precomputed stake/unstake settle scope for phases 2.1, 2.35, and 2.4 — built once per C_*StakeFlow pass; \
+            \ URD_FVT|SettleFvtRewardBundle runs at most once (not per XI phase). pre-nz-flags captured before SCORE mutation."
+        settle-scores:[string]
+        distinct-fvts:[string]
+        settle-plans:[object{FVT|SettleScorePlan}]
+        pre-nz-flags:[object{FVT|ScorePreNzFlag}]
     )
     ;;
     ;;{2}
@@ -341,6 +357,50 @@
             ;; phase 2.1] FVT: XI_SettleStakePendingRewards — READY
             ;; phase 2.2] FVT: XI_RefreshTrueFungibleStakeAnchors → backward AQP-ANK + AQP-POOL XE_* — READY
             ;; phase 2.3] SCORE: XE_ApplyTrueFungibleStakeDelta — READY
+            ;; phase 2.35] FVT: XI_BookStakeUnclaimedCounts (UrStoa UpdateUnclaimedCount)
+            ;; phase 2.4] FVT: XI_CheckpointStakeRps
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap FVT|C>ORTO-FUNGIBLE-STAKE-FLOW
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+        @doc "OrtoFungible stake/unstake recipe (direction=true stake, false unstake). \
+            \ Whole-nonce DPOF::C_Transfer only — no Transmit / partial segmentation on stake. \
+            \ Four phases — no ANK leg (anchors are TF/SF/NF only; DPOF stake does not move anchor balances). \
+            \ Phase 1 custody: AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY."
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                ;;
+                (scores-ok:bool (ref-AQP::URC_PoolHasEmployedScores pool-id))
+                (fvt-ready:bool (URC_PoolEmployedScoresFvtStakeReady pool-id))
+                (whole-nonce-ok:bool (ref-AQP::URC_OrtoStakeWholeNonceAmounts dpof-id nonces nonce-amounts))
+                (l-n:integer (length nonces))
+                (l-a:integer (length nonce-amounts))
+            )
+            ;;1] pool-id — issued pool + ≥1 employed score (implicit via URC_*)
+            (enforce scores-ok "Invalid pool-id: pool has no employed scores")
+            ;;2] owner-id — activated account; signer proof in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
+            (UEV_TrueFungibleStakeOwnerAccount owner-id)
+            ;;3] beneficiary-id — stake only: exists + standard account; unstake: BAR (read per nonce in phase 1)
+            (if direction
+                (UEV_TrueFungibleStakeBeneficiaryAccount beneficiary-id)
+                (enforce (= beneficiary-id BAR) "Unstake: beneficiary-id must be BAR; tracker row is authoritative")
+            )
+            ;;4] dpof-id — issued DPOF; pool leg match in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
+            ;;5] nonces / nonce-amounts — equal positive length; each amount must equal full nonce supply
+            (enforce
+                (fold (and) true [(> l-n 0) (= l-n l-a) whole-nonce-ok])
+                "Invalid nonces / nonce-amounts: equal positive length and whole-nonce supplies required"
+            )
+            ;;6] direction — stake/unstake; unstake sufficiency in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
+            ;;7] FVT reward pipeline — same as TF when fvt-link set on employed scores
+            (enforce fvt-ready "Invalid FVT reward pipeline: employed score missing enabled FVT ScoreLink or reward DPTF")
+            ;;--- phase routing (no 2.2 ANK — DPOF has no anchors) ---
+            ;; phase 1] POOL: XE_OrtoFungiblePoolCustody
+            ;; phase 2.1] FVT: XI_SettleStakePendingRewards
+            ;; phase 2.3] SCORE: XE_ApplyOrtoFungibleStakeDelta
+            ;; phase 2.35] FVT: XI_BookStakeUnclaimedCounts (UrStoa UpdateUnclaimedCount)
             ;; phase 2.4] FVT: XI_CheckpointStakeRps
             (compose-capability (SECURE))
         )
@@ -478,6 +538,25 @@
         {"score-id"         : score-id
         ,"fvt-id"           : fvt-id
         ,"reward-dptf-ids"  : reward-dptf-ids}
+    )
+    (defun UDC_FVT|ScorePreNzFlag:object{FVT|ScorePreNzFlag}
+        (score-id:string was-nz:bool)
+        @doc "Constructor for object{FVT|ScorePreNzFlag} — pre-SCORE nz snapshot for one employed score."
+        {"score-id" : score-id
+        ,"was-nz"   : was-nz}
+    )
+    (defun UDC_FVT|StakeSettleBundle:object{FVT|StakeSettleBundle}
+        (
+            settle-scores:[string]
+            distinct-fvts:[string]
+            settle-plans:[object{FVT|SettleScorePlan}]
+            pre-nz-flags:[object{FVT|ScorePreNzFlag}]
+        )
+        @doc "Constructor for object{FVT|StakeSettleBundle} — shared phase 2.1 / 2.35 / 2.4 settle scope."
+        {"settle-scores"    : settle-scores
+        ,"distinct-fvts"    : distinct-fvts
+        ,"settle-plans"     : settle-plans
+        ,"pre-nz-flags"     : pre-nz-flags}
     )
     ;;
     ;;{F1}  [UR]
@@ -696,10 +775,10 @@
     )
     ;;
     ;;{F2}  [URD]
-    ;; --- FVT|T|RPS|Global selects ---
+    ;; --- FVT|T|RPS|Global selects (stake hot path: one batched select via URD_FVT|SettleFvtRewardBundle) ---
     (defun URD_FVT-RG|EnabledRewardRows:[string] (fvt-id:string)
-        @doc "Expensive read: enabled reward dptf-ids on fvt-id (FVT|T|RPS|Global.reward-enabled true). \
-            \ Call once per distinct FVT via URD_FVT|SettleFvtRewardBundle — not per employed score."
+        @doc "Expensive read: enabled reward dptf-ids for one fvt-id (FVT|T|RPS|Global.reward-enabled true). \
+            \ Prefer URD_FVT|SettleFvtRewardBundle when resolving multiple distinct FVTs in one tx."
         (map
             (lambda (row:object)
                 (at "dptf-id" row)
@@ -713,13 +792,41 @@
         )
     )
     (defun URD_FVT|SettleFvtRewardBundle:[object{FVT|SettleFvtRewards}] (distinct-fvts:[string])
-        @doc "Expensive read: one URD_FVT-RG|EnabledRewardRows per distinct FVT — object{FVT|SettleFvtRewards} rows for reuse across scores."
-        ;; map: distinct FVT entities linked from employed scores
-        (map
-            (lambda (fvt-id:string)
-                (UDC_FVT|SettleFvtRewards fvt-id (URD_FVT-RG|EnabledRewardRows fvt-id))
+        @doc "Expensive read: ONE select on FVT|T|RPS|Global for all distinct-fvts, then group to SettleFvtRewards rows. \
+            \ Not N× URD_FVT-RG|EnabledRewardRows — single table pass per C_*StakeFlow."
+        (let
+            (
+                (flat-rows:[object]
+                    (if (= (length distinct-fvts) 0)
+                        []
+                        (select FVT|T|RPS|Global ["fvt-id" "dptf-id"]
+                            (and?
+                                (where "reward-enabled" (= true))
+                                (where "fvt-id" (lambda (fid:string) (contains fid distinct-fvts)))
+                            )
+                        )
+                    )
+                )
             )
-            distinct-fvts
+            ;; map: distinct FVT entities → object{FVT|SettleFvtRewards} (filter flat-rows; no second select)
+            (map
+                (lambda (fvt-id:string)
+                    (UDC_FVT|SettleFvtRewards fvt-id
+                        (map
+                            (lambda (row:object)
+                                (at "dptf-id" row)
+                            )
+                            (filter
+                                (lambda (row:object)
+                                    (= (at "fvt-id" row) fvt-id)
+                                )
+                                flat-rows
+                            )
+                        )
+                    )
+                )
+                distinct-fvts
+            )
         )
     )
     ;;
@@ -893,8 +1000,88 @@
             )
         )
     )
+    (defun URC_UserScoreTripleIsNonZero:bool (beneficiary-id:string pool-id:string score-id:string)
+        @doc "Internal: true when SCR|T|UserScore base, boosted, or deb is > 0 for (beneficiary, pool, score)."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+            )
+            (fold (or) false
+                [
+                    (> (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id) 0.0)
+                    (> (ref-SCR::UR_U-SCR|UserScoreBoostedScore beneficiary-id pool-id score-id) 0.0)
+                    (> (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id) 0.0)
+                ]
+            )
+        )
+    )
+    (defun URC_PreScoreWasNonZeroForScore:bool
+        (pre-nz-flags:[object{FVT|ScorePreNzFlag}] score-id:string)
+        @doc "Internal: lookup was-nz from pre-SCORE snapshot for one score-id."
+        (fold (or) false
+            (map
+                (lambda (flag:object{FVT|ScorePreNzFlag})
+                    (if (= (at "score-id" flag) score-id)
+                        (at "was-nz" flag)
+                        false
+                    )
+                )
+                pre-nz-flags
+            )
+        )
+    )
+    (defun URC_BuildPreScoreNzFlags:[object{FVT|ScorePreNzFlag}]
+        (beneficiary-id:string pool-id:string settle-plans:[object{FVT|SettleScorePlan}])
+        @doc "Internal: snapshot was-nz per employed score before phase 2.3 SCORE mutation."
+        (map
+            (lambda (plan:object{FVT|SettleScorePlan})
+                (UDC_FVT|ScorePreNzFlag
+                    (at "score-id" plan)
+                    (URC_UserScoreTripleIsNonZero beneficiary-id pool-id (at "score-id" plan))
+                )
+            )
+            settle-plans
+        )
+    )
+    (defun URC_StakeAnyPendingOnFvtRewardLine:bool
+        (
+            beneficiary-id:string
+            fvt-id:string
+            reward-dptf-id:string
+            plans:[object{FVT|SettleScorePlan}]
+        )
+        @doc "Internal: true when user has pending-rewards > 0 on any employed score for (fvt, reward-dptf)."
+        (fold (or) false
+            (map
+                (lambda (plan:object{FVT|SettleScorePlan})
+                    (> (UR_FVT-RU|PendingRewards beneficiary-id fvt-id (at "score-id" plan) reward-dptf-id) 0.0)
+                )
+                plans
+            )
+        )
+    )
+    (defun URC_BuildStakeSettleBundle:object{FVT|StakeSettleBundle}
+        (pool-id:string beneficiary-id:string)
+        @doc "Internal: one URD_FVT|SettleFvtRewardBundle per C_*StakeFlow pass — reuse in phases 2.1, 2.35, and 2.4. \
+            \ pre-nz-flags snapshot beneficiary nz state before SCORE."
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                ;;
+                (employed-ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
+                (settle-scores:[string] (URC_SettleEligibleEmployedScores employed-ids))
+                (distinct-fvts:[string] (URC_SettleDistinctFvtLinks settle-scores))
+                (fvt-reward-bundle:[object{FVT|SettleFvtRewards}] (URD_FVT|SettleFvtRewardBundle distinct-fvts))
+                (settle-plans:[object{FVT|SettleScorePlan}] (URC_SettleScorePlanRows settle-scores fvt-reward-bundle))
+                (pre-nz-flags:[object{FVT|ScorePreNzFlag}]
+                    (URC_BuildPreScoreNzFlags beneficiary-id pool-id settle-plans)
+                )
+            )
+            (UDC_FVT|StakeSettleBundle settle-scores distinct-fvts settle-plans pre-nz-flags)
+        )
+    )
     (defun URC_SettleStakePendingIgnis:decimal (settle-scores:[string] distinct-fvts:[string])
-        @doc "Internal: phase 2.1 settle IGNIS from precomputed lists (XI_SettleStakePendingRewards). \
+        @doc "Internal: phase 2.1 settle IGNIS from precomputed lists (C_*StakeFlow / URC_BuildStakeSettleBundle). \
             \ ignis|biggest × |settle-scores| + ignis|medium × Σ enabled-reward-count over distinct-fvts."
         (let
             (
@@ -918,6 +1105,16 @@
                 (* (dec (length settle-scores)) biggest)
                 (* medium (dec reward-tokens))
             )
+        )
+    )
+    ;; --- Phase 2.35 unclaimed · IGNIS ---
+    (defun URC_BookStakeUnclaimedIgnis:decimal (distinct-fvts:[string])
+        @doc "Internal: IGNIS for XI_BookStakeUnclaimedCounts — ignis|medium × |distinct-fvts|."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (* (ref-DALOS::UR_UsagePrice "ignis|medium") (dec (length distinct-fvts)))
         )
     )
     ;; --- Phase 2.4 checkpoint · IGNIS ---
@@ -1022,8 +1219,9 @@
     (defun C_TrueFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Core TF stake/unstake recipe (direction=true stake, false unstake). UrStoa C_URV|Stake order: \
-            \ POOL custody (READY) → FVT settle phase 2.1 (READY) → ANK refresh + AQP sync phase 2.2 (READY) → SCORE delta → FVT checkpoint (NEW L_i). \
-            \ Talos calls with direction; collects IGNIS on patron. Phase 1 validation in AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY."
+            \ POOL custody (READY) → FVT settle phase 2.1 (READY) → ANK refresh + AQP sync phase 2.2 (READY) → SCORE delta → FVT unclaimed 2.35 → FVT checkpoint (NEW L_i). \
+            \ Talos calls with direction; collects IGNIS on patron. Phase 1 validation in AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY. \
+            \ URC_BuildStakeSettleBundle runs once via URD_FVT|SettleFvtRewardBundle (shared by ico2 + ico5 + ico6)."
         (UEV_IMC)
         (with-capability (FVT|C>TRUE-FUNGIBLE-STAKE-FLOW pool-id owner-id beneficiary-id dptf-id amount direction)
             (let
@@ -1033,13 +1231,16 @@
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
+                    (settle-bundle:object{FVT|StakeSettleBundle}
+                        (URC_BuildStakeSettleBundle pool-id beneficiary-id)
+                    )
                     (ico1:object{IgnisCollectorV1.OutputCumulator}
                         ;;1] POOL: DPTF custody + trackers — READY (AQP-POOL::XE_TrueFungiblePoolCustody)
                         (ref-AQP::XE_TrueFungiblePoolCustody pool-id owner-id beneficiary-id dptf-id amount direction)
                     )
                     (ico2:object{IgnisCollectorV1.OutputCumulator}
                         ;;2.1] FVT: ghost-TV sync + settle pending at OLD deb/L_i — READY
-                        (XI_SettleStakePendingRewards beneficiary-id pool-id)
+                        (XI_SettleStakePendingRewards beneficiary-id pool-id settle-bundle)
                     )
                     (ico3:object{IgnisCollectorV1.OutputCumulator}
                         ;;2.2] FVT: rollup read + backward ANK promile refresh + AQP sync-count — READY
@@ -1054,8 +1255,65 @@
                         )
                     )
                     (ico5:object{IgnisCollectorV1.OutputCumulator}
+                        ;;2.35] FVT: RPS|Global unclaimed-count (UrStoa XI_URV|UpdateUnclaimedCount)
+                        (XI_BookStakeUnclaimedCounts beneficiary-id pool-id settle-bundle)
+                    )
+                    (ico6:object{IgnisCollectorV1.OutputCumulator}
                         ;;2.4] FVT: checkpoint last-rps at NEW L_i
-                        (XI_CheckpointStakeRps beneficiary-id pool-id)
+                        (XI_CheckpointStakeRps beneficiary-id pool-id settle-bundle)
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5 ico6] [])
+            )
+        )
+    )
+    ;;
+    ;; --- OF stake/unstake recipe (Talos ×4 → C_OrtoFungibleStakeFlow) ---
+    ;;   No phase 2.2 — ANK anchors are DPTF / DPSF / DPNF only; OF custody does not refresh promile.
+    (defun C_OrtoFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+        @doc "Core OrtoFungible stake/unstake recipe. \
+            \ POOL custody (whole-nonce Transfer) → FVT settle 2.1 → SCORE delta 2.3 → FVT unclaimed 2.35 → FVT checkpoint 2.4 (no ANK leg). \
+            \ Talos sets direction; unstake passes beneficiary-id=BAR. Z|/H| multiplier selected from dpof-id in SCR."
+        (UEV_IMC)
+        (with-capability (FVT|C>ORTO-FUNGIBLE-STAKE-FLOW pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    ;;
+                    (settle-beneficiary:string
+                        (if direction
+                            beneficiary-id
+                            (ref-AQP::URC_OrtoUnstakeBeneficiaryId pool-id dpof-id owner-id (at 0 nonces))
+                        )
+                    )
+                    (settle-bundle:object{FVT|StakeSettleBundle}
+                        (URC_BuildStakeSettleBundle pool-id settle-beneficiary)
+                    )
+                    (ico1:object{IgnisCollectorV1.OutputCumulator}
+                        ;;1] POOL: DPOF Transfer + DPOFTracker
+                        (ref-AQP::XE_OrtoFungiblePoolCustody pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+                    )
+                    (ico2:object{IgnisCollectorV1.OutputCumulator}
+                        ;;2.1] FVT: ghost-TV sync + settle pending at OLD deb/L_i
+                        (XI_SettleStakePendingRewards settle-beneficiary pool-id settle-bundle)
+                    )
+                    (ico3:object{IgnisCollectorV1.OutputCumulator}
+                        ;;2.3] SCORE: vault + user weight
+                        (ref-SCR::XE_ApplyOrtoFungibleStakeDelta
+                            pool-id settle-beneficiary dpof-id nonces nonce-amounts direction
+                            (ref-AQP::URC_PoolActiveScoreIds pool-id)
+                        )
+                    )
+                    (ico4:object{IgnisCollectorV1.OutputCumulator}
+                        ;;2.35] FVT: RPS|Global unclaimed-count (UrStoa XI_URV|UpdateUnclaimedCount)
+                        (XI_BookStakeUnclaimedCounts settle-beneficiary pool-id settle-bundle)
+                    )
+                    (ico5:object{IgnisCollectorV1.OutputCumulator}
+                        ;;2.4] FVT: checkpoint last-rps at NEW L_i
+                        (XI_CheckpointStakeRps settle-beneficiary pool-id settle-bundle)
                     )
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [])
@@ -1082,7 +1340,7 @@
     ;;  2b] Tier-1: pending-rewards += deb_user×(L_i−last_rps_user) — read deb_user from SCORE (OLD, pre-2.3)
     ;;       do NOT advance last-rps here (UrStoa UpdateUserRPS ≡ phase 2.4 XI_CheckpointStakeRps)
     ;;  2c] SCORE stake path updates user deb / score totals — phase 2.3 XE_ApplyTrueFungibleStakeDelta
-    ;;  2d] nz / unclaimed bookkeeping — NOT in 2.1; follows SCORE mutation (UrStoa post-score block)
+    ;;  2d] nz / unclaimed bookkeeping — phase 2.35 XI_BookStakeUnclaimedCounts (after SCORE; UrStoa UpdateNZS is in SCORE nzs-count)
     ;;  2e] last-rps_user := L_i — phase 2.4 only (after NEW deb is known if needed)
     ;;
     ;;3]UNSTAKE — same settle order as STAKE (2a then 2b before mutating deb)
@@ -1113,22 +1371,20 @@
     ;;
     ;; --- Phase 2.1 · XI (map order) ---
     (defun XI_SettleStakePendingRewards:object{IgnisCollectorV1.OutputCumulator}
-        (beneficiary-id:string pool-id:string)
-        @doc "Internal (C_TrueFungibleStakeFlow phase 2.1 · depth 0]): ghost TVL sync then settle at OLD deb/L_i. \
+        (beneficiary-id:string pool-id:string settle-bundle:object{FVT|StakeSettleBundle})
+        @doc "Internal (C_*StakeFlow phase 2.1 · depth 0]): ghost TVL sync then settle at OLD deb/L_i. \
+            \ settle-bundle from URC_BuildStakeSettleBundle (single URD pass at C_* call site). \
             \ Same path for stake and unstake (UrStoa UpdatePendingRewards). IGNIS interactor = AQP|SC_NAME (pool vault receiver). \
             \ Returns settle IGNIS OC."
         (require-capability (SECURE))
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (employed-ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
-                (settle-scores:[string] (URC_SettleEligibleEmployedScores employed-ids))
-                (distinct-fvts:[string] (URC_SettleDistinctFvtLinks settle-scores))
-                (fvt-reward-bundle:[object{FVT|SettleFvtRewards}] (URD_FVT|SettleFvtRewardBundle distinct-fvts))
-                (settle-plans:[object{FVT|SettleScorePlan}] (URC_SettleScorePlanRows settle-scores fvt-reward-bundle))
+                (settle-scores:[string] (at "settle-scores" settle-bundle))
+                (distinct-fvts:[string] (at "distinct-fvts" settle-bundle))
+                (settle-plans:[object{FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
             )
             (XI_1|SyncFarmGhostTvlForEmployedScores settle-plans)
             ;; map: employed score plans (one row per settle-eligible pool score)
@@ -1149,7 +1405,7 @@
     (defun XI_1|SyncFarmGhostTvlForEmployedScores
         (score-plans:[object{FVT|SettleScorePlan}])
         @doc "Internal (phase 2.1 · depth 1]): SWP→FVT ghost-tvl reconcile per object{FVT|SettleScorePlan} (≤7). \
-            \ Caller builds plans once with reward-dptf-ids from a single URD_FVT|SettleFvtRewardBundle — no URD here. \
+            \ Caller builds plans once with reward-dptf-ids from a single URD_FVT|SettleFvtRewardBundle — no URD in child XI. \
             \ Per row: read SWP::UR_StoaValue via swpair; if W_live ≠ W_cached settle Tier-2 at old W_i, \
             \ write ghost-tvl-weight, adjust FVT|T.total-ghost-tvl-weight. \
             \ C_AddScoreLink / C_Inject / C_Collect: same pattern at call site."
@@ -1360,7 +1616,7 @@
         )
     )
     ;;
-    ;; --- Block B · Phase 2.2 anchor refresh (C_TrueFungibleStakeFlow) ---
+    ;; --- Block B · Phase 2.2 anchor refresh (C_TrueFungibleStakeFlow only) ---
     ;;   XI_RefreshTrueFungibleStakeAnchors
     ;;     ├ AQP-ANK::XE_UpdateTrueFungibleUserAnchorValues
     ;;     └ AQP-POOL::XE_SetBeneficiaryDptfAnkSyncCount
@@ -1389,26 +1645,143 @@
         )
     )
     ;;
+    ;; --- Block B · Phase 2.35 unclaimed (C_*StakeFlow) ---
+    ;;   XI_BookStakeUnclaimedCounts — map distinct-fvts × reward lines; child XI_2|BumpRpsGlobalUnclaimed.
+    ;;
+    (defun XI_2|BumpRpsGlobalUnclaimed
+        (fvt-id:string reward-dptf-id:string direction:bool)
+        @doc "Internal (phase 2.35 · depth 2]): increment/decrement FVT|T|RPS|Global.unclaimed-count (UrStoa XI_URV|UpdateUnclaimedCount)."
+        (let
+            (
+                (old-uc:integer (UR_FVT-RG|UnclaimedCount fvt-id reward-dptf-id))
+                (new-uc:integer
+                    (if direction
+                        (+ old-uc 1)
+                        (if (> old-uc 0) (- old-uc 1) 0)
+                    )
+                )
+            )
+            (update FVT|T|RPS|Global (UC_RpsGlobalKey fvt-id reward-dptf-id)
+                {"unclaimed-count": new-uc}
+            )
+        )
+    )
+    (defun XI_1|BookUnclaimedForFvtRewardLine
+        (
+            beneficiary-id:string
+            pool-id:string
+            fvt-id:string
+            reward-dptf-id:string
+            plans:[object{FVT|SettleScorePlan}]
+            pre-nz-flags:[object{FVT|ScorePreNzFlag}]
+        )
+        @doc "Internal (phase 2.35 · depth 1]): one (fvt, reward-dptf) unclaimed transition — OR was/is across pool employed scores on that fvt."
+        (let
+            (
+                (was-claimant:bool
+                    (fold (or) false
+                        (map
+                            (lambda (plan:object{FVT|SettleScorePlan})
+                                (URC_PreScoreWasNonZeroForScore pre-nz-flags (at "score-id" plan))
+                            )
+                            plans
+                        )
+                    )
+                )
+                (is-claimant:bool
+                    (fold (or) false
+                        (map
+                            (lambda (plan:object{FVT|SettleScorePlan})
+                                (URC_UserScoreTripleIsNonZero beneficiary-id pool-id (at "score-id" plan))
+                            )
+                            plans
+                        )
+                    )
+                )
+                (any-pending:bool
+                    (URC_StakeAnyPendingOnFvtRewardLine beneficiary-id fvt-id reward-dptf-id plans)
+                )
+            )
+            (if (and (not was-claimant) is-claimant)
+                (XI_2|BumpRpsGlobalUnclaimed fvt-id reward-dptf-id true)
+                (if (and was-claimant (not is-claimant))
+                    (if (not any-pending)
+                        (XI_2|BumpRpsGlobalUnclaimed fvt-id reward-dptf-id false)
+                        true
+                    )
+                    true
+                )
+            )
+        )
+    )
+    (defun XI_BookStakeUnclaimedCounts:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string pool-id:string settle-bundle:object{FVT|StakeSettleBundle})
+        @doc "Internal (C_*StakeFlow phase 2.35 · depth 0]): RPS|Global unclaimed-count after SCORE (UrStoa XI_URV|UpdateUnclaimedCount). \
+            \ Once per (fvt-id, reward-dptf-id) per tx — OR was/is claimant across employed scores on that fvt in this pool. \
+            \ Decrement only when user leaves claimant set and has no pending on that reward line. \
+            \ IGNIS interactor = AQP|SC_NAME."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (distinct-fvts:[string] (at "distinct-fvts" settle-bundle))
+                (settle-plans:[object{FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
+                (pre-nz-flags:[object{FVT|ScorePreNzFlag}] (at "pre-nz-flags" settle-bundle))
+            )
+            ;; map: distinct FVT entities — one unclaimed pass per fvt × enabled reward lines
+            (map
+                (lambda (fvt-id:string)
+                    (let
+                        (
+                            (plans:[object{FVT|SettleScorePlan}]
+                                (filter
+                                    (lambda (plan:object{FVT|SettleScorePlan})
+                                        (= (at "fvt-id" plan) fvt-id)
+                                    )
+                                    settle-plans
+                                )
+                            )
+                            (reward-dptf-ids:[string] (at "reward-dptf-ids" (at 0 plans)))
+                        )
+                        (map
+                            (lambda (reward-dptf-id:string)
+                                (XI_1|BookUnclaimedForFvtRewardLine
+                                    beneficiary-id pool-id fvt-id reward-dptf-id plans pre-nz-flags
+                                )
+                            )
+                            reward-dptf-ids
+                        )
+                    )
+                )
+                distinct-fvts
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_BookStakeUnclaimedIgnis distinct-fvts)
+                AQP|SC_NAME
+                trigger
+                [pool-id beneficiary-id "book-unclaimed"]
+            )
+        )
+    )
+    ;;
     ;; --- Block C · Phase 2.4 checkpoint (C_TrueFungibleStakeFlow) ---
     ;;   XI_CheckpointStakeRps — nested map (score plan × reward line); no child XI_*.
     ;;
     (defun XI_CheckpointStakeRps:object{IgnisCollectorV1.OutputCumulator}
-        (beneficiary-id:string pool-id:string)
-        @doc "Internal (C_TrueFungibleStakeFlow phase 2.4 · depth 0]): advance last-rps to NEW L_i after SCORE deb mutation (UrStoa XI_URV|UpdateUserRPS). \
-            \ Same employed-score scope as ico2; only existing FVT|T|RPS|User rows are updated. \
+        (beneficiary-id:string pool-id:string settle-bundle:object{FVT|StakeSettleBundle})
+        @doc "Internal (C_*StakeFlow phase 2.4 · depth 0]): advance last-rps to NEW L_i after SCORE deb mutation (UrStoa XI_URV|UpdateUserRPS). \
+            \ settle-bundle from URC_BuildStakeSettleBundle (same scope as phase 2.1; no second URD). \
+            \ Only existing FVT|T|RPS|User rows are updated. \
             \ IGNIS interactor = AQP|SC_NAME (pool vault receiver). Returns checkpoint IGNIS OC."
         (require-capability (SECURE))
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (employed-ids:[string] (ref-AQP::URC_PoolActiveScoreIds pool-id))
-                (settle-scores:[string] (URC_SettleEligibleEmployedScores employed-ids))
-                (distinct-fvts:[string] (URC_SettleDistinctFvtLinks settle-scores))
-                (fvt-reward-bundle:[object{FVT|SettleFvtRewards}] (URD_FVT|SettleFvtRewardBundle distinct-fvts))
-                (checkpoint-plans:[object{FVT|SettleScorePlan}] (URC_SettleScorePlanRows settle-scores fvt-reward-bundle))
+                (checkpoint-plans:[object{FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
             )
             ;; map: employed score plans (same scope as phase 2.1 settle)
             (map

@@ -129,12 +129,12 @@
     ;;=== PLANNED C_* (comment-only — not on interface; home module TBD at implementation) ===
     ;; TF stake/unstake recipe: FVT::C_TrueFungibleStakeFlow (Talos AQP-POOL|C_Stake/UnstakeTrueFungible).
     ;;
-    ;; C_StakeOrtoFungible(patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts use-transmit sleeping-or-hibernating)
-    ;;   Stake DPOF nonces into pool-id (AQP|T|DPOFTracker). use-transmit=false -> DPOF C_Transfer; true -> DPOF C_Transmit.
+    ;; C_StakeOrtoFungible(patron pool-id owner-id beneficiary-id dpof-id nonces)
+    ;;   Stake whole DPOF nonces into pool-id (AQP|T|DPOFTracker) via DPOF::C_Transfer only.
     ;;   Covers class-2 native DPOF, class-0 sleeping|Z| LP orto legs, class-1 sleeping/hib DPOF satellites.
     ;;
-    ;; C_UnstakeOrtoFungible(patron pool-id owner-id dpof-id nonces nonce-amounts use-transmit sleeping-or-hibernating)
-    ;;   Unstake DPOF nonces; beneficiary read from tracker row per nonce at implementation time.
+    ;; C_UnstakeOrtoFungible(patron pool-id owner-id dpof-id nonces)
+    ;;   Unstake whole DPOF nonces; beneficiary read from tracker row per nonce at implementation time.
     ;;
     ;; C_StakeCollectable(patron pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts)
     ;;   Stake DPDC collectable nonces. son=true -> DPSF (class-3); son=false -> DPNF (class-4).
@@ -151,14 +151,24 @@
     ;;
     ;;  [URC]  internal stake helpers (cross-module read from SCR XE_ApplyTrueFungibleStakeDelta; FVT recipe cap)
     (defun URC_DptfStakeIsNativeLeg:bool (dptf-id:string))
+    (defun URC_OrtoUnstakeBeneficiaryId:string (pool-id:string dpof-id:string owner-id:string nonce:integer))
+    (defun URC_OrtoStakeWholeNonceAmounts:bool (dpof-id:string nonces:[integer] nonce-amounts:[decimal]))
     (defun URC_PoolActiveScoreIds:[string] (pool-id:string))
     (defun URC_PoolHasEmployedScores:bool (pool-id:string))
     (defun URC_StakeTrueFungiblePoolClassOk:bool (pool-id:string))
     (defun URC_StakeTrueFungibleDptfMatchesPool:bool (pool-id:string dptf-id:string))
+    (defun URC_StakeOrtoFungiblePoolClassOk:bool (pool-id:string))
+    (defun URC_StakeOrtoFungibleDpofMatchesPool:bool (pool-id:string dpof-id:string))
+    (defun URC_OrtoUnstakeNoncesSufficient:bool
+        (pool-id:string dpof-id:string owner-id:string nonces:[integer] nonce-amounts:[decimal])
+    )
     ;;
-    ;;  [XE]  cross-module forward (FVT::C_TrueFungibleStakeFlow)
+    ;;  [XE]  cross-module forward (FVT::C_TrueFungibleStakeFlow · FVT::C_OrtoFungibleStakeFlow)
     (defun XE_TrueFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+    )
+    (defun XE_OrtoFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
     )
     (defun XE_SetBeneficiaryDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
@@ -233,15 +243,18 @@
         )
     )
     (defun P|A_Define ()
-        @doc "Post-deploy IMC wiring (AQP-BOOT Step 0). TFT vault transfer only."
+        @doc "Post-deploy IMC wiring (AQP-BOOT Step 0). TFT + DPOF vault transfer/receive on AQP|SC_NAME."
         (let
             (
                 (ref-P|TFT:module{OuronetPolicyV1} TFT)
+                (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
                 ;;
                 (mg:guard (create-capability-guard (P|AQP|CALLER)))
             )
             ;; AQP-POOL → TFT: XI_1|TransferDptfPoolCustody calls TFT::C_Transfer; TFT UEV_IMC requires this guard.
             (ref-P|TFT::P|A_AddIMP mg)
+            ;; AQP-POOL → DPOF: XI_1|TransferDpofPoolCustody calls DPOF::C_Transfer (whole nonce only).
+            (ref-P|DPOF::P|A_AddIMP mg)
             true
         )
     )
@@ -498,6 +511,64 @@
                 "Invalid TF pool custody: pool class/scores/dptf-id or insufficient staked/rollup balance"
             )
             (UEV_StakeBeneficiaryAccount beneficiary-id)
+            (CAP_StakeOwner owner-id)
+            (compose-capability (P|AQP|CALLER))
+            (compose-capability (AQP-ANK.AQP|GOV))
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+        @doc "Forward-only (FVT::C_OrtoFungibleStakeFlow phase 1]): validation for XE_OrtoFungiblePoolCustody. \
+            \ Whole-nonce DPOF::C_Transfer only. CAP_StakeOwner; compose P|AQP|CALLER + AQP-ANK.AQP|GOV for vault custody."
+        (let
+            (
+                (scores-ok:bool (URC_PoolHasEmployedScores pool-id))
+                (class-ok:bool (URC_StakeOrtoFungiblePoolClassOk pool-id))
+                (dpof-ok:bool (URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id))
+                (whole-nonce-ok:bool (URC_OrtoStakeWholeNonceAmounts dpof-id nonces nonce-amounts))
+                (tracker-ok:bool
+                    (if direction
+                        true
+                        (URC_OrtoUnstakeNoncesSufficient pool-id dpof-id owner-id nonces nonce-amounts)
+                    )
+                )
+                (l-n:integer (length nonces))
+                (l-a:integer (length nonce-amounts))
+            )
+            (enforce
+                (fold (and) true [(> l-n 0) (= l-n l-a) scores-ok class-ok dpof-ok whole-nonce-ok tracker-ok])
+                "Invalid OF pool custody: pool class/dpof-id, whole nonces/amounts, or insufficient tracker balance"
+            )
+            (UEV_StakeOrtoFungibleDpofLeg dpof-id)
+            (if direction
+                (let
+                    (
+                        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                    )
+                    (ref-DPOF::UEV_NoncesToAccount dpof-id owner-id nonces)
+                    (ref-DPOF::UEV_NoncesCirculating dpof-id nonces)
+                    (map
+                        (lambda (idx:integer)
+                            (ref-DPOF::UEV_Amount dpof-id (at idx nonce-amounts))
+                        )
+                        (enumerate 0 (- l-n 1))
+                    )
+                )
+                true
+            )
+            (if direction
+                (UEV_StakeBeneficiaryAccount beneficiary-id)
+                true
+            )
             (CAP_StakeOwner owner-id)
             (compose-capability (P|AQP|CALLER))
             (compose-capability (AQP-ANK.AQP|GOV))
@@ -1269,6 +1340,109 @@
             (or (= c 0) (= c 1))
         )
     )
+    (defun URC_StakeOrtoFungiblePoolClassOk:bool (pool-id:string)
+        @doc "True when pool aqp-class is 0 (LP + Z| orto), 1 (DPTF + sleep/hib DPOF satellites), or 2 (native DPOF)."
+        (let ((c:integer (UR_AQP|PoolAqpClass pool-id)))
+            (or (= c 0) (or (= c 1) (= c 2)))
+        )
+    )
+    (defun URC_DpofLegPrefix:string (dpof-id:string)
+        @doc "First two characters of dpof-id (Z|, H|, or native collection prefix)."
+        (take 2 dpof-id)
+    )
+    (defun URC_StakeOrtoFungibleDpofMatchesPool:bool (pool-id:string dpof-id:string)
+        @doc "True when dpof-id is an allowed OF leg for pool aqp-class and canonical asset-id: \
+            \ class 2 native circulating; class 1 Z|/H| satellite linked to pool DPTF; class 0 Z| orto LP linked to pool native LP."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                ;;
+                (c:integer (UR_AQP|PoolAqpClass pool-id))
+                (asset-id:string (UR_AQP|PoolAssetId pool-id))
+                (p2:string (URC_DpofLegPrefix dpof-id))
+            )
+            (if (= c 2)
+                (and
+                    (= dpof-id asset-id)
+                    (not (contains p2 ["Z|" "H|"]))
+                )
+                (if (= c 1)
+                    (or
+                        (and (= p2 "Z|") (= (ref-DPOF::UR_Sleeping dpof-id) asset-id))
+                        (and (= p2 "H|") (= (ref-DPOF::UR_Hibernation dpof-id) asset-id))
+                    )
+                    (if (= c 0)
+                        (and
+                            (= p2 "Z|")
+                            (URC_DptfIsLpNomenclature asset-id)
+                            (= (ref-DPOF::UR_Sleeping dpof-id) asset-id)
+                        )
+                        false
+                    )
+                )
+            )
+        )
+    )
+    (defun URC_OrtoUnstakeNoncesSufficient:bool
+        (pool-id:string dpof-id:string owner-id:string nonces:[integer] nonce-amounts:[decimal])
+        @doc "Unstake: each nonce has tracker balance ≥ unstake amount. v1 reads beneficiary from self-stake key (owner, owner)."
+        (let
+            (
+                (l:integer (length nonces))
+            )
+            (fold
+                (and)
+                true
+                (map
+                    (lambda (idx:integer)
+                        (let
+                            (
+                                (n:integer (at idx nonces))
+                                (q:decimal (at idx nonce-amounts))
+                                (bid:string (UR_AQP|DPOFTrackerBeneficiaryId pool-id dpof-id owner-id owner-id n))
+                                (bal:decimal (UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id bid n))
+                            )
+                            (>= bal q)
+                        )
+                    )
+                    (enumerate 0 (- l 1))
+                )
+            )
+        )
+    )
+    (defun URC_OrtoUnstakeBeneficiaryId:string
+        (pool-id:string dpof-id:string owner-id:string nonce:integer)
+        @doc "Unstake: read beneficiary-id from DPOF tracker row. v1 uses self-stake key (beneficiary=owner); explicit beneficiary unstake TBD."
+        (UR_AQP|DPOFTrackerBeneficiaryId pool-id dpof-id owner-id owner-id nonce)
+    )
+    (defun URC_OrtoStakeWholeNonceAmounts:bool
+        (dpof-id:string nonces:[integer] nonce-amounts:[decimal])
+        @doc "True when each nonce-amount equals the full DPOF nonce supply (whole-nonce stake/unstake only)."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                ;;
+                (l:integer (length nonces))
+            )
+            (enforce (= l (length nonce-amounts)) "whole-nonce check: nonces and amounts length mismatch")
+            (fold
+                (and)
+                true
+                (map
+                    (lambda (idx:integer)
+                        (let
+                            (
+                                (n:integer (at idx nonces))
+                                (q:decimal (at idx nonce-amounts))
+                            )
+                            (= q (ref-DPOF::UR_NonceSupply dpof-id n))
+                        )
+                    )
+                    (enumerate 0 (- l 1))
+                )
+            )
+        )
+    )
     ;;
     ;;{F2}  [UEV]
     (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string)
@@ -1447,6 +1621,15 @@
             (ref-DPTF::UEV_id dptf-id)
         )
     )
+    (defun UEV_StakeOrtoFungibleDpofLeg (dpof-id:string)
+        @doc "Validate issued DPOF id via DPOF::UEV_id."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+            )
+            (ref-DPOF::UEV_id dpof-id)
+        )
+    )
     ;;
     ;;{F4}  [CAP]
     (defun CAP_AqpAssetOwner (aqp-class:integer asset-id:string)
@@ -1558,12 +1741,11 @@
     ;;=== PLANNED C_* (comment-only — not on interface; home module TBD at implementation) ===
     ;; TF stake/unstake recipe lives in FVT::C_TrueFungibleStakeFlow; POOL phase-1 is XE_TrueFungiblePoolCustody.
     ;;
-    ;; C_StakeOrtoFungible(patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts use-transmit sleeping-or-hibernating)
-    ;;   Stake DPOF nonces into pool-id (AQP|T|DPOFTracker). use-transmit=false -> DPOF C_Transfer (whole nonce);
-    ;;   true -> DPOF C_Transmit (partial; collection segmentation must be on). Covers class-2 native DPOF, class-0
-    ;;   sleeping|Z| LP orto legs, class-1 sleeping/hib DPOF satellites. sleeping-or-hibernating selects SCORE path.
+    ;; C_StakeOrtoFungible(patron pool-id owner-id beneficiary-id dpof-id nonces)
+    ;;   Stake whole DPOF nonces into pool-id (AQP|T|DPOFTracker) via DPOF::C_Transfer only.
+    ;;   Covers class-2 native DPOF, class-0 sleeping|Z| LP orto legs, class-1 sleeping/hib DPOF satellites.
     ;;
-    ;; C_UnstakeOrtoFungible(patron pool-id owner-id dpof-id nonces nonce-amounts use-transmit sleeping-or-hibernating)
+    ;; C_UnstakeOrtoFungible(patron pool-id owner-id dpof-id nonces)
     ;;   Unstake DPOF nonces from pool-id; assets return to owner-id. beneficiary-id not on API — read from tracker row.
     ;;
     ;; C_StakeCollectable(patron pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts)
@@ -1669,6 +1851,131 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
             )
+        )
+    )
+    ;;
+    ;; --- Block C · OF stake phase 1 (FVT::C_OrtoFungibleStakeFlow) ---
+    ;;   XE_OrtoFungiblePoolCustody
+    ;;     ├ XI_1|TransferDpofPoolCustody
+    ;;     └ XI_1|WriteDpofTracker
+    ;;
+    (defun XE_OrtoFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+        @doc "Forward (FVT::C_OrtoFungibleStakeFlow phase 1]): whole-nonce DPOF::C_Transfer + DPOFTracker. \
+            \ No BeneficiaryDpofTotal — ANK has no DPOF anchors (TF/SF/NF only). UEV_IMC + AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY."
+        (UEV_IMC)
+        (with-capability (AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
+                    (ico1:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_1|TransferDpofPoolCustody owner-id dpof-id nonces direction)
+                    )
+                    (ico2:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_1|WriteDpofTracker pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [])
+            )
+        )
+    )
+    (defun XI_1|TransferDpofPoolCustody:object{IgnisCollectorV1.OutputCumulator}
+        (
+            owner-id:string
+            dpof-id:string
+            nonces:[integer]
+            direction:bool
+        )
+        @doc "DPOF::C_Transfer whole nonces: stake owner→AQP|SC_NAME; unstake vault→owner. \
+            \ method=true (smart-account receive/send). Parent cap composes AQP-ANK.AQP|GOV for vault legs."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                ;;
+                (vault:string AQP|SC_NAME)
+                (sender:string (if direction owner-id vault))
+                (receiver:string (if direction vault owner-id))
+            )
+            (ref-DPOF::C_Transfer dpof-id nonces sender receiver true)
+        )
+    )
+    (defun XI_1|WriteDpofTracker:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+        @doc "Map XI_1|WriteDpofTrackerSlot — bump AQP|T|DPOFTracker ±nonce-amount per index."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (l:integer (length nonces))
+                (slot-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (map
+                        (lambda (idx:integer)
+                            (let
+                                (
+                                    (n:integer (at idx nonces))
+                                    (bid:string
+                                        (if direction
+                                            beneficiary-id
+                                            (URC_OrtoUnstakeBeneficiaryId pool-id dpof-id owner-id n)
+                                        )
+                                    )
+                                )
+                                (XI_1|WriteDpofTrackerSlot
+                                    pool-id owner-id bid dpof-id n (at idx nonce-amounts) direction
+                                )
+                            )
+                        )
+                        (enumerate 0 (- l 1))
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators slot-ocs [])
+        )
+    )
+    (defun XI_1|WriteDpofTrackerSlot:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonce:integer
+            amount:decimal
+            direction:bool
+        )
+        @doc "One AQP|T|DPOFTracker row — read UR_AQP|DPOFTrackerBalance, write ±amount (cap validates unstake sufficiency)."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (key:string (UC_DPOFTrackerKey pool-id dpof-id owner-id beneficiary-id nonce))
+                (bal:decimal (UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id nonce))
+                (delta:decimal (if direction amount (- amount)))
+                (new-bal:decimal (+ bal delta))
+            )
+            (write AQP|T|DPOFTracker key
+                (UDC_AQP|OrtoFungibleTracker new-bal pool-id dpof-id owner-id beneficiary-id nonce)
+            )
+            (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
         )
     )
     (defun XI_1|TransferDptfPoolCustody:object{IgnisCollectorV1.OutputCumulator}

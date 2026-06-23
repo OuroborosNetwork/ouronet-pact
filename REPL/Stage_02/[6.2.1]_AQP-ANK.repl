@@ -290,6 +290,7 @@
     (expect (format "<<TX003 expect>> n_live > 0 after TX001 (before TX004 strip)" []) true (> n-live 0))
     ;;==== TX003 · 03 · with-capability UPDATE-DPTF → XI_Update (no inner with-capability SECURE) =
     (print "--- [TX003 · 03 · UPDATE-DPTF envelope → XI_1|UpdateTrueFungibleUserAnchorValues] ---")
+    (acquire-module-admin AQP-ANK)
     (with-capability (AQP-ANK.ANK|C>UPDATE-DPTF beneficiary ouro-id total-dptf)
         (AQP-ANK.XI_1|UpdateTrueFungibleUserAnchorValues beneficiary ouro-id total-dptf)
     )

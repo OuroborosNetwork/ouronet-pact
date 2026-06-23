@@ -107,6 +107,12 @@ Example (**`FVT|C>TRUE-FUNGIBLE-STAKE-FLOW`**): composes **`SECURE`** for FVT **
 
 **AQP-POOL** keeps lifecycle **`C_Issue` / `C_AddScore` / `C_RevokeScore`** and phase-1 **`XE_TrueFungiblePoolCustody`**. OF/DPDC stake, **`C_SyncTrueFungibleAnchors`**, **`C_VacatePool`** — comment-only placeholders until home module is chosen (see **`03_AQP.pact`**).
 
+### OrtoFungible (DPOF) — Transfer vs Transmit
+
+Talos exposes two shells: **`C_StakeOrtoFungible`**, **`C_UnstakeOrtoFungible`**. Sovereign recipe **`FVT::C_OrtoFungibleStakeFlow`** — whole-nonce **`DPOF::C_Transfer` only** (no Transmit on stake). Resolve supplies via **`DPOF::UR_NoncesSupplies`** before the Talos `@event` cap. Z|/H| SCORE multiplier is derived from `dpof-id` prefix in SCR (not a client flag).
+
+**No ANK phase** — anchors are DPTF / DPSF / DPNF only; OF stake does not call `XE_Update*UserAnchorValues`.
+
 ---
 
 ## Layer 4 — Internal writers (`XI_*`)

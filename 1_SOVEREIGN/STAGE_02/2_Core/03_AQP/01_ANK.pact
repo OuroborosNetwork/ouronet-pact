@@ -718,6 +718,7 @@
     (defun UR_ANK-U|Data:object{ANK|UserSchema} (account:string anchor-id:string)
         @doc "Core read: user cumulative promile row for account x anchor."
         (with-default-read ANK|T|Anchors (UC_UserAnchor account anchor-id)
+            (UDC_AccountAnchor 0.0 account anchor-id)
             {"promile"                  := p
             ,"ouronet-account"          := oa
             ,"anchor-id"                := aid}

@@ -1,0 +1,262 @@
+;;
+;; REPL/Stage_02/[6.2.4]_AQP-FVT-OF.repl — OrtoFungible stake (append after [6.2.4]_AQP-FVT.repl or load standalone)
+;; Requires Stage 01 [6.5]_DPOF.repl (MVST-98c486052a51 on chain) + Stage 02 AQP deploy + AQP-BOOT Step 0 (TFT+DPOF IMC).
+;;
+(load "../Stage_01/[6.5]_DPOF.repl")
+;;
+(print "")
+(print "===================AQP-FVT OF Stake Test File==========================")
+;;
+(begin-tx "TX-FVT-04 - OF score + class-2 pool bootstrap")
+(print "")
+(print "=== TX-FVT-04 — OrtoFungible score + class-2 pool bootstrap ================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (dpof-id:string "MVST-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "OfStakeScore")
+        (fvt-name:string "OfStakeVault")
+        (pool-name:string "OfStakePool")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (aqp-class:integer 2)
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    (print "--- [TX-FVT-04 · 01 · env-sigs + issue class-2 score/pool] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-smart)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-smart)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-smart)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-smart)
+                    )
+                ]
+            }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueOrtoFungibleScore)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron owner-konto score-name 12 1.0 1.0)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=2 MVST)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id aqp-class)]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)]))
+    (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault reward=OURO)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)]))
+    (print "--- [TX-FVT-04 · 02 · readiness expects] ---")
+    (let
+        (
+            (pool-class:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
+            (score-class:integer (ref-SCR::UR_SCR|ScoreClass score-id))
+            (fvt-ready:bool (ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-id))
+        )
+        (map print
+            [
+                (expect (format "<<TX-FVT-04 expect>> pool class=2 got={}" [pool-class]) 2 pool-class)
+                (expect (format "<<TX-FVT-04 expect>> score class=2 got={}" [score-class]) 2 score-class)
+                (expect (format "<<TX-FVT-04 expect>> fvt-ready got={}" [fvt-ready]) true fvt-ready)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-04 bootstrap ==============================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-FVT-05 - C_StakeOrtoFungible end-to-end")
+(print "")
+(print "=== TX-FVT-05 — C_StakeOrtoFungible (ico1..ico5 recipe) =====================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpof-id:string "MVST-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "OfStakeScore")
+        (fvt-name:string "OfStakeVault")
+        (pool-name:string "OfStakePool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (owned-nonces:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+    )
+    (print "--- [TX-FVT-05 · 01 · ensure owner holds ≥1 MVST nonce] ---")
+    (if (= (length owned-nonces) 0)
+        (ref-TS01-C1::DPOF|C_Mint patron dpof-id owner-id 1000.0 [{"test": "of-stake"}])
+        true
+    )
+    (let
+        (
+            (nonces:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+            (stake-nonce:integer (at 0 nonces))
+            (stake-amount:decimal (ref-DPOF::UR_NonceSupply dpof-id stake-nonce))
+            (pre-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
+        )
+        (enforce (> (length nonces) 0) "owner needs at least one MVST nonce")
+        (print (format "<(stake-nonce stake-amount)> => {} / {}" [stake-nonce stake-amount]))
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print "--- [TX-FVT-05 · 01b · unfreeze owner if [6.5] left MVST frozen] ---")
+        (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
+            (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
+            true
+        )
+        (print "--- [TX-FVT-05 · 02 · C_StakeOrtoFungible] ---")
+        (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible
+                patron pool-id owner-id beneficiary-id dpof-id [stake-nonce]
+            )
+        ]))
+        (print "--- [TX-FVT-05 · 03 · post-stake reads + expect] ---")
+        (let
+            (
+                (tracker-bal:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
+                (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                (base-user:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))
+                (last-rps:decimal (ref-FVT::UR_FVT-RU|LastRps beneficiary-id fvt-id score-id ouro-id))
+                (member-li:decimal (ref-FVT::UR_FVT-RM|MemberDebRps fvt-id score-id ouro-id))
+                (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
+                (post-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
+            )
+            (map print
+                [
+                    (format "<(AQP-POOL|DPOFTrackerBalance)> => \"{}\"" [tracker-bal])
+                    (format "<(AQP-SCORE|deb-score)> => \"{}\"" [deb-user])
+                    (format "<(AQP-SCORE|base-score)> => \"{}\"" [base-user])
+                    (format "<(DPOF|UR_AccountSupply owner)> post => \"{}\"" [post-supply])
+                ]
+            )
+            (map print
+                [
+                    (expect (format "<<TX-FVT-05 expect>> tracker balance got={} expected={}" [tracker-bal stake-amount]) stake-amount tracker-bal)
+                    (expect (format "<<TX-FVT-05 expect>> deb-score got={} expected={}" [deb-user stake-amount]) stake-amount deb-user)
+                    (expect (format "<<TX-FVT-05 expect>> base-score got={} expected={}" [base-user stake-amount]) stake-amount base-user)
+                    (expect (format "<<TX-FVT-05 expect>> owner supply debited got={} expected={}" [post-supply (- pre-supply stake-amount)]) (- pre-supply stake-amount) post-supply)
+                    (expect (format "<<TX-FVT-05 expect>> last-rps == member L_i got={} expected={}" [last-rps member-li]) member-li last-rps)
+                    (expect (format "<<TX-FVT-05 expect>> unclaimed-count after first stake got={} expected=1" [unclaimed]) 1 unclaimed)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-05 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-FVT-06 - C_UnstakeOrtoFungible round-trip")
+(print "")
+(print "=== TX-FVT-06 — C_UnstakeOrtoFungible (ico1..ico5 recipe) ====================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpof-id:string "MVST-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "OfStakeScore")
+        (fvt-name:string "OfStakeVault")
+        (pool-name:string "OfStakePool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (vault-konto:string (ref-ANK::GOV|AQP|SC_NAME))
+        (staked-nonces:[integer] (ref-DPOF::URD_AccountNonces vault-konto dpof-id))
+        (stake-nonce:integer (at 0 staked-nonces))
+        (stake-amount:decimal (ref-DPOF::UR_NonceSupply dpof-id stake-nonce))
+        (pre-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
+    )
+    (enforce (> (length staked-nonces) 0) "AQP vault must hold staked MVST nonce from TX-FVT-05")
+    (print (format "<(unstake-nonce stake-amount vault-konto)> => {} / {} / {}" [stake-nonce stake-amount vault-konto]))
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print "--- [TX-FVT-06 · 01 · C_UnstakeOrtoFungible] ---")
+    (print (format "<(TS02-C3.AQP-POOL|C_UnstakeOrtoFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_UnstakeOrtoFungible patron pool-id owner-id dpof-id [stake-nonce])
+    ]))
+    (print "--- [TX-FVT-06 · 02 · post-unstake reads + expect] ---")
+    (let
+        (
+            (tracker-bal:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
+            (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+            (base-user:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))
+            (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
+            (post-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
+        )
+        (map print
+            [
+                (format "<(AQP-POOL|DPOFTrackerBalance)> => \"{}\"" [tracker-bal])
+                (format "<(AQP-SCORE|deb-score)> => \"{}\"" [deb-user])
+                (format "<(AQP-SCORE|base-score)> => \"{}\"" [base-user])
+                (format "<(FVT|unclaimed-count)> => \"{}\"" [unclaimed])
+                (format "<(DPOF|UR_AccountSupply owner)> post => \"{}\"" [post-supply])
+            ]
+        )
+        (map print
+            [
+                (expect (format "<<TX-FVT-06 expect>> tracker cleared got={} expected=0" [tracker-bal]) 0.0 tracker-bal)
+                (expect (format "<<TX-FVT-06 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
+                (expect (format "<<TX-FVT-06 expect>> base-score cleared got={} expected=0" [base-user]) 0.0 base-user)
+                (expect (format "<<TX-FVT-06 expect>> unclaimed-count after full unstake got={} expected=0" [unclaimed]) 0 unclaimed)
+                (expect (format "<<TX-FVT-06 expect>> owner supply restored got={} expected={}" [post-supply (+ pre-supply stake-amount)]) (+ pre-supply stake-amount) post-supply)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-06 ==========================================================")
+(print "")

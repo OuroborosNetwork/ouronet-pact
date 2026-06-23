@@ -38,6 +38,8 @@
     ;;{P4}
     (defconst P|I                   (P|Info))
     (defun P|Info ()                (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::P|Info)))
+    (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
+    (defconst BAR                   (CT_Bar))
     (defun P|UR:guard (policy-name:string)
         (at "policy" (read P|T policy-name ["policy"]))
     )
@@ -119,6 +121,20 @@
         @event
         (compose-capability (P|TS))
     )
+    (defcap AQP|C>STAKE-ORTO-FUNGIBLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal])
+        @doc "AQP client event: stake OrtoFungible. nonces and nonce-amounts are resolved before this cap \
+            \ (DPOF::UR_NoncesSupplies — whole nonce only) so the explorer records the exact legs moved."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>UNSTAKE-ORTO-FUNGIBLE
+        (patron:string pool-id:string owner-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal])
+        @doc "AQP client event: unstake OrtoFungible. nonces and nonce-amounts resolved before this cap \
+            \ (DPOF::UR_NoncesSupplies — whole nonce only) for explorer visibility."
+        @event
+        (compose-capability (P|TS))
+    )
     ;;{C3}
     ;;{C4}
     ;;
@@ -154,6 +170,41 @@
             (format "Successfully unstaked TrueFungible {} amount {} from Pool {} for beneficiary {} (owner {}). "
                 [dptf-id amount pool-id (UC_ShortAccount beneficiary-id) (UC_ShortAccount owner-id)]
             )
+        )
+    )
+    (defun UC_FormatStakeOrtoFungibleResult:string
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonce-count:integer)
+        @doc "Stake OF success text (whole-nonce Transfer)."
+        (if (= owner-id beneficiary-id)
+            (format "Successfully staked OrtoFungible {} ({} whole nonces) into Pool {} (self-stake, {}). "
+                [
+                    dpof-id
+                    nonce-count
+                    pool-id
+                    (UC_ShortAccount owner-id)
+                ]
+            )
+            (format "Successfully staked OrtoFungible {} ({} whole nonces) into Pool {} for beneficiary {} (owner {}). "
+                [
+                    dpof-id
+                    nonce-count
+                    pool-id
+                    (UC_ShortAccount beneficiary-id)
+                    (UC_ShortAccount owner-id)
+                ]
+            )
+        )
+    )
+    (defun UC_FormatUnstakeOrtoFungibleResult:string
+        (pool-id:string owner-id:string dpof-id:string nonce-count:integer)
+        @doc "Unstake OF success text; beneficiary resolved from tracker in sovereign phase 1."
+        (format "Successfully unstaked OrtoFungible {} ({} whole nonces) from Pool {} (owner {}). "
+            [
+                dpof-id
+                nonce-count
+                pool-id
+                (UC_ShortAccount owner-id)
+            ]
         )
     )
     ;;{F0}  [UR]
@@ -586,6 +637,71 @@
                     (ref-FVT::C_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false)
                 )
                 (UC_FormatUnstakeTrueFungibleResult pool-id owner-id beneficiary-id dptf-id amount)
+            )
+        )
+    )
+    (defun AQP-POOL|C_StakeOrtoFungible:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+        )
+        @doc "Stake whole DPOF nonces via C_Transfer. Poll DPOF::UR_NoncesSupplies, then @event cap with resolved legs."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                ;;
+                (nonce-count:integer (length nonces))
+                (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
+            )
+            (with-capability (AQP|C>STAKE-ORTO-FUNGIBLE patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts)
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::C_Collect patron
+                        (ref-FVT::C_OrtoFungibleStakeFlow
+                            pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts true
+                        )
+                    )
+                    (UC_FormatStakeOrtoFungibleResult pool-id owner-id beneficiary-id dpof-id nonce-count)
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_UnstakeOrtoFungible:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            dpof-id:string
+            nonces:[integer]
+        )
+        @doc "Unstake whole DPOF nonces via C_Transfer. Poll UR_NoncesSupplies, then @event cap with resolved legs."
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                ;;
+                (nonce-count:integer (length nonces))
+                (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
+            )
+            (with-capability (AQP|C>UNSTAKE-ORTO-FUNGIBLE patron pool-id owner-id dpof-id nonces nonce-amounts)
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::C_Collect patron
+                        (ref-FVT::C_OrtoFungibleStakeFlow
+                            pool-id owner-id BAR dpof-id nonces nonce-amounts false
+                        )
+                    )
+                    (UC_FormatUnstakeOrtoFungibleResult pool-id owner-id dpof-id nonce-count)
+                )
             )
         )
     )

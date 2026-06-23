@@ -17,7 +17,7 @@ Three public paths by **asset mechanics** (not by pool class alone). LP uses TF 
 | Function | Asset | Stake args (high level) | Unstake beneficiary |
 |----------|-------|-------------------------|---------------------|
 | Talos `C_StakeTrueFungible` / `C_UnstakeTrueFungible` → **`FVT::C_TrueFungibleStakeFlow`** | DPTF + native\|F\| LP | `patron pool owner beneficiary dptf-id amount` (+ `direction` in FVT) | **Required** on unstake (balance buckets per owner+beneficiary) |
-| `C_StakeOrtoFungible` / `C_UnstakeOrtoFungible` | DPOF + sleeping\|Z\| LP | `patron pool owner beneficiary dpof-id nonces amounts use-transmit sleeping-or-hibernating` | **Omitted** — read from tracker row per nonce |
+| `C_StakeOrtoFungible` / `C_UnstakeOrtoFungible` | DPOF (native, Z\|, H\|, Z\| LP) | `patron pool owner beneficiary dpof-id nonces` | **Unstake:** beneficiary read from tracker row per nonce |
 | `C_StakeCollectable` / `C_UnstakeCollectable` | DPSF / DPNF | `patron pool owner beneficiary collectable-id son nonces amounts` | **Omitted** — read from tracker row per nonce |
 
 **Also:** `C_VacatePool` (pool owner force-unwind), `C_SyncTrueFungibleAnchors` (pool-agnostic ANK repair — see below).
@@ -31,6 +31,13 @@ Three public paths by **asset mechanics** (not by pool class alone). LP uses TF 
 - **No `native-or-frozen` on the public API** — derive from `dptf-id`: `F|` → frozen multiplier path; else native. Passed internally to SCORE `XE_*`.
 - **Custody:** `TFT::C_Transfer` owner → `AQP|SC_NAME` on stake; reverse on unstake.
 - **Structural blueprint:** UrStoa `C_URV|Stake` / `Unstake` in `00_StoaSandbox/coin.pact` (transfer → tracker/supply → score-side updates). AQP adds multi-score loop + ANK. FVT Inject/Collect (RPS) is **not** part of stake.
+
+### Orto fungible rules (settled, partial impl)
+
+- **Whole-nonce only:** stake/unstake always uses `DPOF::C_Transfer` with full nonce supply (`UR_NoncesSupplies`). No `C_Transmit` / partial segmentation on the stake path (collection may still segment elsewhere).
+- Talos **`C_StakeOrtoFungible`** / **`C_UnstakeOrtoFungible`** omit `nonce-amounts` — amounts resolved from `DPOF::UR_NoncesSupplies` before the `@event` cap.
+- **No ANK phase** on OF stake — anchors are **DPTF / DPSF / DPNF only**; staking DPOF does not change anchor promile balances.
+- **No `BeneficiaryDpofTotal` rollup** — per-pool `AQP|T|DPOFTracker` (per nonce) is sufficient; unlike DPTF there is no cross-pool O(1) read for anchor sync.
 
 ### Stake body order (true fungible — settled)
 
@@ -112,12 +119,14 @@ Up to **49 anchors per asset** × write on sync/stake; up to **7 BoostClass** ag
 
 ## TODO — rollup tables for other asset types
 
-| Asset | Planned schema (in `03_AQP.pact`, table not deployed) | ANK XE | Sync fn |
-|-------|------------------------------------------------------|--------|---------|
-| DPTF | `AQP\|BeneficiaryDptfTotal` **live table** | `XE_UpdateTrueFungibleUserAnchorValues` | `C_SyncTrueFungibleAnchors` |
-| DPOF | *(not designed yet — no schema)* | `XE_UpdateOrtoFungibleUserAnchorValues` | TBD |
-| DPSF | *(not designed yet — no schema)* | `XE_UpdateSemiFungibleUserAnchorValues` | TBD |
-| DPNF | *(not designed yet — no schema)* | `XE_UpdateNonFungibleUserAnchorValues` | TBD |
+| Asset | Cross-pool rollup | ANK on stake | Sync repair |
+|-------|-------------------|--------------|-------------|
+| DPTF | `AQP\|T\|BeneficiaryDptfTotal` **live** | `XE_UpdateTrueFungibleUserAnchorValues` | `C_SyncTrueFungibleAnchors` |
+| DPOF | **None** (per-nonce `DPOFTracker` only) | **None** — no DPOF anchors | N/A |
+| DPSF | TBD | `XE_UpdateSemiFungibleUserAnchorValues` (incremental nonces) | TBD |
+| DPNF | TBD | `XE_UpdateNonFungibleUserAnchorValues` (incremental nonces) | TBD |
+
+ANK issue paths: `C_IssueTrueFungibleAnchor`, `C_IssueSemiFungibleAnchor`, `C_IssueNonFungibleAnchor` / `Set` only.
 
 ---
 
@@ -174,7 +183,7 @@ Seven slots per pool. Stake updates **every** employed score (skip `BAR`).
 | `C_RevokeScore` | Implemented |
 | `C_VacatePool` | Stub (loops FVT::C_TrueFungibleStakeFlow per tracker — TBD) |
 | TF stake/unstake | **FVT::C_TrueFungibleStakeFlow** (direction); Talos client shell only |
-| `C_StakeOrtoFungible` / `C_UnstakeOrtoFungible` | Stub |
+| OF stake/unstake | **FVT::C_OrtoFungibleStakeFlow** (direction); Talos ×4 Transfer/Transmit shells |
 | `C_StakeCollectable` / `C_UnstakeCollectable` | Stub |
 | `C_SyncTrueFungibleAnchors` | Stub (table + UR ready) |
 
@@ -234,6 +243,41 @@ Talos is **orchestrator only**: each phase **`XE_*` returns `OutputCumulator`** 
 | 2.4] FVT checkpoint | `XI_CheckpointStakeRps` | flat 2 × ignis\|biggest |
 
 **Implement order:** phase 1] POOL **(wired)** → 2.1 FVT → 2.2 ANK → 2.3 SCORE bodies → 2.4 FVT checkpoint
+
+---
+
+## C_OrtoFungibleStakeFlow — FVT recipe + Talos client shell
+
+**Sovereign recipe:** **`FVT::C_OrtoFungibleStakeFlow`** (`direction=true` stake, `false` unstake) — **four** phases (no ANK leg).
+
+**Talos:** **`AQP-POOL|C_StakeOrtoFungible`** / **`C_UnstakeOrtoFungible`** — resolve whole-nonce legs via `UR_NoncesSupplies` before `@event` cap → **`IGNIS::C_Collect`** → recipe.
+
+```
+UrStoa (conceptual)                   →  FVT::C_OrtoFungibleStakeFlow
+──────────────────────────────────────────────────────────────────────
+1]   Move nonces user↔vault          →  1]   AQP-POOL::XE_OrtoFungiblePoolCustody
+2.1] UpdatePendingRewards              →  2.1] FVT::XI_SettleStakePendingRewards
+     (no ANK — DPOF has no anchors)    →      (skipped)
+2.3] Update user score                 →  2.3] SCR::XE_ApplyOrtoFungibleStakeDelta
+2.4] UpdateUserRPS                     →  2.4] FVT::XI_CheckpointStakeRps
+```
+
+| Phase | Module | Entry | Status |
+|-------|--------|--------|--------|
+| 1] Custody + tracker | POOL | `XE_OrtoFungiblePoolCustody` → `XI_1\|TransferDpofPoolCustody` + `XI_1\|WriteDpofTracker` | **Wired** (whole-nonce; native / Z\| / H\| / Z\| LP) |
+| 2.1] RPS settle | FVT | `XI_SettleStakePendingRewards` | **READY** |
+| 2.3] SCORE delta | SCR | `XE_ApplyOrtoFungibleStakeDelta` → class 0 LP / class 2 native or Z\|/H\| special | **Wired** |
+| 2.4] RPS checkpoint | FVT | `XI_CheckpointStakeRps` | **READY** |
+
+**POOL `XI_*` (internal):** `XI_1|TransferDpofPoolCustody`, `XI_1|WriteDpofTracker`, `XI_1|WriteDpofTrackerSlot` — no `BumpBeneficiaryDpofTotal`.
+
+**URC (POOL):** `URC_StakeOrtoFungiblePoolClassOk`, `URC_StakeOrtoFungibleDpofMatchesPool`, `URC_OrtoUnstakeNoncesSufficient`.
+
+**First impl target:** class-2 pool, native circulating `dpof-id`, class-2 scores, whole-nonce Transfer, self-stake.
+
+**SCORE class dispatch:** `XE_ApplyOrtoFungibleStakeDelta` loops employed scores: class **0** → `XI_1|UpdateScoreDataForOrtoFungibleLP` (Z| LP); class **2** → native or `Z|/H|` special via `URC_OrtoDpofIsSpecialLeg` (multiplier from dpof-id prefix); classes **1/3/4** skipped on OF leg.
+
+---
 
 **SCORE class dispatch:** `XE_ApplyTrueFungibleStakeDelta` (FVT forward) loops pool scores and dispatches to module-internal **`XI_Apply*ScoreStakeDelta`** (0–4). Per-class bodies call **`XE_UpdateScoreDataFor*`** when wired (same-module forward writers on interface for future AQP OF/SF/NF stake paths).
 

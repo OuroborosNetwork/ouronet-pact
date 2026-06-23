@@ -17,6 +17,7 @@ Read **`OuronetInformational/`** for full architecture; this skill is the agent 
 | **Scans** | **`keys`**, **`select`** only in **`URD_*`** (or explicit scan helpers), nowhere else. |
 | **`defcap` body** | **`let`** → outside **`UEV_*`** / **`CAP_*`** → one boolean **`enforce`** → **`compose-capability`**. Detail: **`OuronetInformational/skills/defcap-body-order.md`** |
 | **Booleans** | 1 plain; 2 **`and`**; 3+ **`fold (and)`**. **`.cursor/skills/ouronet-pact-enforce/SKILL.md`** |
+| **Bool param names** | Do **not** use the **`use-`** prefix on identifiers (`use` is a Pact keyword). Prefer **`iz-*`** for other mode flags when needed. **DPOF stake:** whole-nonce **`C_Transfer` only** — no `iz-transmit` on the stake path. |
 | **Smart vault** | **`MODULE|GOV`** on TFT send **and** receive; rotate with **`create-capability-guard (MODULE|GOV)`** when module owns **`MODULE|SC_NAME`**. RemoteGov only for hub/forward patterns. **`OuronetInformational/skills/smart-account-governor.md`**, **`ouronet-tft-vault-imc`** |
 | **`P|A_Define` IMP** | Only when target module **`UEV_IMC`** applies (e.g. TFT). Not for unprotected DALOS **`UR_*` / `CAP_*`**. |
 

@@ -1112,6 +1112,10 @@
     (defun XB_W|AccountRoles (id:string account:string account-data:object{DpofUdcV1.DPOF|AccountRoles}))
 
 )
+(interface DemiourgosPactOrtoFungibleV2
+    @doc "Additive DPOF surface — opt-in per consumer; does not replace DemiourgosPactOrtoFungibleV1."
+    (defun UEV_EnforceSegmentationForTransmit (id:string))
+)
 ;;
 ;;  [ELITE]
 ;;

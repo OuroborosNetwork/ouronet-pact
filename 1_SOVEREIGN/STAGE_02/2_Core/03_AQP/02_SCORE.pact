@@ -107,6 +107,9 @@
     (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
     )
+    (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool employed-ids:[string])
+    )
 )
 (module AQP-SCORE GOV
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
@@ -777,20 +780,22 @@
             ouronet-account:string
             pool-id:string
             score-id:string
-            lp-id:string
+            dpof-id:string
             nonces:[integer]
-            nonce-amounts:[integer]
+            nonce-amounts:[decimal]
             direction:bool
         )
-        @doc "Forward (AQP-POOL): class-0 LP stake/unstake via sleeping orto (DPSF) LP. Validates account, pool–score link, pair vs denominator, nonce lists and DPDC nonces."
+        @doc "Forward (AQP-POOL): class-0 LP stake/unstake via sleeping orto (Z|) DPOF LP. \
+            \ Validates account, pool–score link, SWP pair vs lp-denominator, whole-nonce amounts. \
+            \ dpof-id is the Z| sleeping orto collection; native LP resolved via URC_StakeLpTokenToNativeLpDptf in UEV_LpStakeScoreContext."
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 ;;
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-amounts))
             )
-            (UEV_LpStakeScoreContext ouronet-account pool-id score-id lp-id)
+            (UEV_LpStakeScoreContext ouronet-account pool-id score-id dpof-id)
             (enforce
                 (fold (and) true
                     [
@@ -800,7 +805,7 @@
                 )
                 "orto LP stake score update: nonces and nonce-amounts must have equal positive length"
             )
-            (ref-DPDC::UEV_id lp-id true)
+            (ref-DPOF::UEV_id dpof-id)
             (map
                 (lambda (idx:integer)
                     (let
@@ -808,8 +813,8 @@
                             (n:integer (at idx nonces))
                             (q:decimal (at idx nonce-amounts))
                         )
-                        (ref-DPDC::UEV_Nonce lp-id true n)
-                        (enforce (> q 0.0) "orto LP nonce amount must be positive")
+                        (ref-DPOF::UEV_Amount dpof-id q)
+                        (enforce (= q (ref-DPOF::UR_NonceSupply dpof-id n)) "orto LP stake requires whole nonce supply")
                     )
                 )
                 (enumerate 0 (- l1 1))
@@ -850,7 +855,8 @@
             nonce-amounts:[decimal]
             direction:bool
         )
-        @doc "Forward (AQP-POOL): class-2 DPOF stake/unstake (native circulating nonces). Sum of nonce amounts × 1.0 at score precision; pool asset vs dpof-id enforced upstream."
+        @doc "Forward (AQP-POOL): class-2 DPOF stake/unstake (native circulating nonces). Sum of nonce amounts × 1.0 at score precision; pool asset vs dpof-id enforced upstream. \
+            \ Nonce custody validated in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY before this cap (post-custody nonces sit on AQP|SC_NAME)."
         (let
             (
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
@@ -864,8 +870,6 @@
                 "DPOF stake score update: nonces and nonce-amounts must have equal positive length"
             )
             (ref-DPOF::UEV_id dpof-id)
-            (ref-DPOF::UEV_NoncesCirculating dpof-id nonces)
-            (ref-DPOF::UEV_NoncesToAccount dpof-id ouronet-account nonces)
             (map
                 (lambda (idx:integer)
                     (ref-DPOF::UEV_Amount dpof-id (at idx nonce-amounts))
@@ -886,7 +890,8 @@
             sleeping-or-hibernating:bool
             direction:bool
         )
-        @doc "Forward (AQP-POOL): class-2 special DPOF (sleeping vs hibernating multiplier on summed nonce amounts). sleeping-or-hibernating true → mx-sleeping; false → mx-hibernated."
+        @doc "Forward (AQP-POOL): class-2 special DPOF (sleeping vs hibernating multiplier on summed nonce amounts). sleeping-or-hibernating true → mx-sleeping; false → mx-hibernated. \
+            \ Nonce custody validated upstream in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY."
         (let
             (
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
@@ -900,8 +905,6 @@
                 "special DPOF stake score update: nonces and nonce-amounts must have equal positive length"
             )
             (ref-DPOF::UEV_id dpof-id)
-            (ref-DPOF::UEV_NoncesCirculating dpof-id nonces)
-            (ref-DPOF::UEV_NoncesToAccount dpof-id ouronet-account nonces)
             (map
                 (lambda (idx:integer)
                     (ref-DPOF::UEV_Amount dpof-id (at idx nonce-amounts))
@@ -1911,6 +1914,14 @@
             )
         )
     )
+    (defun URC_OrtoDpofIsSpecialLeg:bool (dpof-id:string)
+        @doc "True when dpof-id is sleeping (Z|) or hibernating (H|) orto leg — selects SCR|XE>UPDATE-STAKE-DPOF-SPECIAL vs native DPOF."
+        (contains (take 2 dpof-id) ["Z|" "H|"])
+    )
+    (defun URC_OrtoDpofUsesSleepingMultiplier:bool (dpof-id:string)
+        @doc "True for Z| legs (mx-sleeping); false for H| legs (mx-hibernated). Native dpof-id is unused on non-special path."
+        (not (= (take 2 dpof-id) "H|"))
+    )
     ;;{F2}  [UEV]
     (defun UEV_LpStakeScoreContext
         (ouronet-account:string pool-id:string score-id:string lp-id:string)
@@ -2693,8 +2704,8 @@
     ;; --- Block B · Stake user-score delta ---
     ;;   XE_ApplyTrueFungibleStakeDelta (TF · FVT phase 2.3)
     ;;     └ XI_1|UpdateScoreDataForTrueFungibleLP / TrueFungible
-    ;;   (future XE_* for Orto / Semi / NF recipes)
-    ;;     └ XI_1|UpdateScoreDataForOrto* / SemiFungible / NonFungible
+    ;;   XE_ApplyOrtoFungibleStakeDelta (OF · FVT phase 2.3)
+    ;;     └ XI_1|UpdateScoreDataForOrtoFungibleLP / OrtoFungible / SpecialOrtoFungible
     ;;         └ XI_2|ApplySingularUserScoreDelta (shared leaf)
     ;;
     (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
@@ -2722,6 +2733,70 @@
                                         beneficiary-id pool-id score-id dptf-id amount native-leg direction
                                     )
                                     (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                )
+                            )
+                        )
+                        employed-ids
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
+        )
+    )
+    (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+            employed-ids:[string]
+        )
+        @doc "Forward (FVT::C_OrtoFungibleStakeFlow phase 2.3]): OF stake — dispatch by score-class: \
+            \ 0 → XI_1|UpdateScoreDataForOrtoFungibleLP; 2 → native or Z|/H| special XI_*; \
+            \ classes 1/3/4 skipped (TF/SF/NF scores — no DPOF delta on OF leg). UEV_IMC only."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (sleeping-or-hibernating:bool (URC_OrtoDpofUsesSleepingMultiplier dpof-id))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (score-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (map
+                        (lambda (score-id:string)
+                            (let
+                                (
+                                    (sc:integer (UR_SCR|ScoreClass score-id))
+                                )
+                                (if (= sc 0)
+                                    (do
+                                        (XI_1|UpdateScoreDataForOrtoFungibleLP
+                                            beneficiary-id pool-id score-id dpof-id nonces nonce-amounts direction
+                                        )
+                                        (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                    )
+                                    (if (= sc 2)
+                                        (if (URC_OrtoDpofIsSpecialLeg dpof-id)
+                                            (do
+                                                (XI_1|UpdateScoreDataForSpecialOrtoFungible
+                                                    beneficiary-id pool-id score-id dpof-id nonces nonce-amounts
+                                                    sleeping-or-hibernating direction
+                                                )
+                                                (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                            )
+                                            (do
+                                                (XI_1|UpdateScoreDataForOrtoFungible
+                                                    beneficiary-id pool-id score-id dpof-id nonces nonce-amounts direction
+                                                )
+                                                (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                            )
+                                        )
+                                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                                            0.0 AQP|SC_NAME trigger [score-id "of-skip"]
+                                        )
+                                    )
                                 )
                             )
                         )
@@ -2786,21 +2861,21 @@
             ouronet-account:string
             pool-id:string
             score-id:string
-            lp-id:string
+            dpof-id:string
             nonces:[integer]
             nonce-amounts:[decimal]
             direction:bool
         )
-        @doc "Internal (future XE_* · depth 1]): sleeping orto LP stake/unstake write leg."
+        @doc "Internal (future XE_* · depth 1]): sleeping orto LP (Z|) stake/unstake write leg."
         (with-capability
             (SCR|XE>UPDATE-LP-STAKE-ORTO-LP
-                ouronet-account pool-id score-id lp-id nonces nonce-amounts direction
+                ouronet-account pool-id score-id dpof-id nonces nonce-amounts direction
             )
             (XI_2|ApplySingularUserScoreDelta
                 ouronet-account
                 pool-id
                 score-id
-                (URC_SignedBaseDeltaForOrtoLpStake score-id lp-id nonces nonce-amounts direction)
+                (URC_SignedBaseDeltaForOrtoLpStake score-id dpof-id nonces nonce-amounts direction)
             )
         )
     )

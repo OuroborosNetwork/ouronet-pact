@@ -279,6 +279,7 @@
             (member-li:decimal (ref-FVT::UR_FVT-RM|MemberDebRps fvt-id score-id ouro-id))
             (post-ouro:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
             (sync-count:integer (ref-AQP::UR_AQP|BeneficiaryDptfLastAnkSyncCount beneficiary-id ouro-id))
+            (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
         )
         (map print
             [
@@ -290,6 +291,7 @@
                 (format "<(AQP-FVT|UR_FVT-RM|MemberDebRps L_i)> => \"{}\"" [member-li])
                 (format "<(AQP-POOL|UR_AQP|BeneficiaryDptfLastAnkSyncCount)> => \"{}\"" [sync-count])
                 (format "<(DPTF|UR_AccountSupply OURO owner)> post-stake => \"{}\"" [post-ouro])
+                (format "<(AQP-FVT|UR_FVT-RG|UnclaimedCount)> => \"{}\"" [unclaimed])
             ]
         )
         (map print
@@ -301,6 +303,7 @@
                 (expect (format "<<TX-FVT-03 expect>> last-rps == member L_i got={} expected={}" [last-rps member-li]) member-li last-rps)
                 (expect (format "<<TX-FVT-03 expect>> OURO debited got={} expected={}" [post-ouro (- pre-ouro stake-amount)]) (- pre-ouro stake-amount) post-ouro)
                 (expect (format "<<TX-FVT-03 expect>> ank sync count stamped got={} expected>=0" [sync-count]) true (>= sync-count 0))
+                (expect (format "<<TX-FVT-03 expect>> unclaimed-count after first stake got={} expected=1" [unclaimed]) 1 unclaimed)
             ]
         )
     )

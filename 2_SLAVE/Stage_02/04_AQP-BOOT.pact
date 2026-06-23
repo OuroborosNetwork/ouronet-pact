@@ -81,7 +81,7 @@
     ;;Step 7 - Create six DH pools (class 3/4 by entity) + class-0 OURO LP pool; assign Step4/5/6 scores
     (defun C_Step0_WireImcAndGovernor:string
         (patron:string)
-        @doc "Step 0 — AQP-POOL TFT IMC + AQP|SC_NAME governor rotate. \
+        @doc "Step 0 — AQP-POOL TFT + DPOF IMC + AQP|SC_NAME governor rotate. \
             \ Run once after all four sovereign AQP modules are on chain (before stake/unstake or Step 1+). \
             \ Prerequisite: AQP|SC_NAME smart account deployed (DALOS|A_DeploySmartAccount). \
             \ Talos TS02-C3 P|A_Define (P|TALOS-SUMMONER) is separate — sovereign executor / [4.0]. \
@@ -106,7 +106,7 @@
                 (ref-TS01-C1::DALOS|C_RotateGovernor patron aqp-sc
                     (create-capability-guard (AQP-ANK.AQP|GOV))
                 )
-                (format "AQP-BOOT Step 0 done. aqp-sc={}. TFT IMC + gov wired. NEXT=Step1 or client txs." [aqp-sc])
+                (format "AQP-BOOT Step 0 done. aqp-sc={}. TFT+DPOF IMC + gov wired. NEXT=Step1 or client txs." [aqp-sc])
             )
         )
     )
