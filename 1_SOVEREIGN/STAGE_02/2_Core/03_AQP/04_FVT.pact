@@ -352,13 +352,12 @@
             ;;9b] FVT common-denominator vs member scores — C_AddScoreLink admission
             ;;9c] aqpool-link slot assignment — C_AddScore / C_RevokeScore
             ;;
-            ;;--- UrStoa canonical phase routing (see map above C_TrueFungibleStakeFlow) ---
-            ;; 1]      AQP-POOL::XE_TrueFungiblePoolCustody
-            ;; 2.1]    FVT::XI_Phase_2_1|SettleStakePendingRewards
-            ;; 1.AQP]  FVT::XI_Phase_1_AQP|RefreshTrueFungibleStakeAnchors (TF only)
-            ;; 2.2–2.3.1] SCR::XE_ApplyTrueFungibleStakeDelta
-            ;; 2.3.2]  FVT::XI_Phase_2_3_2|BookUnclaimedCounts
-            ;; 2.4]    FVT::XI_Phase_2_4|CheckpointStakeRps
+            ;;--- UrStoa canonical phases (see map above C_TrueFungibleStakeFlow) ---
+            ;; PHASE 1   1.1–1.3 AQP-POOL custody
+            ;; PHASE 2   FVT::XI_Phase_2|RpsPreScore
+            ;; PHASE 3   3.1 TF anchors; 3.2/3.3 reserved
+            ;; PHASE 4   SCR::XE_ApplyTrueFungibleStakeDelta
+            ;; PHASE 5   5.1 unclaimed; 5.2 checkpoint
             (compose-capability (SECURE))
         )
     )
@@ -396,12 +395,12 @@
             ;;6] direction — stake/unstake; unstake sufficiency in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
             ;;7] FVT reward pipeline — same as TF when fvt-link set on employed scores
             (enforce fvt-ready "Invalid FVT reward pipeline: employed score missing enabled FVT ScoreLink or reward DPTF")
-            ;;--- UrStoa canonical phase routing (no 1.AQP ANK leg) ---
-            ;; 1]      AQP-POOL::XE_OrtoFungiblePoolCustody
-            ;; 2.1]    FVT::XI_Phase_2_1|SettleStakePendingRewards
-            ;; 2.2–2.3.1] SCR::XE_ApplyOrtoFungibleStakeDelta
-            ;; 2.3.2]  FVT::XI_Phase_2_3_2|BookUnclaimedCounts
-            ;; 2.4]    FVT::XI_Phase_2_4|CheckpointStakeRps
+            ;;--- UrStoa canonical phases (no 1.3 / 3.x on OF — reserved no-op) ---
+            ;; PHASE 1   1.1–1.2 AQP-POOL; 1.3 no-op
+            ;; PHASE 2   FVT::XI_Phase_2|RpsPreScore
+            ;; PHASE 3   3.1–3.3 no-op
+            ;; PHASE 4   SCR::XE_ApplyOrtoFungibleStakeDelta
+            ;; PHASE 5   5.1 unclaimed; 5.2 checkpoint
             (compose-capability (SECURE))
         )
     )
@@ -1216,78 +1215,95 @@
     )
     ;;
     ;; ═══════════════════════════════════════════════════════════════════════════
-    ;; UrStoa canonical stake/unstake map (00_StoaSandbox/coin.pact C_URV|Stake / Unstake)
+    ;; UrStoa canonical stake/unstake — phased model (00_StoaSandbox/coin.pact)
     ;; ═══════════════════════════════════════════════════════════════════════════
-    ;; Each row: AQP step → UrStoa equivalent (N/A = AQP extension, not in single-score vault).
     ;;
-    ;; | Step    | AQP (module · function)                              | UrStoa ≡ |
-    ;; |---------|------------------------------------------------------|----------|
-    ;; | 1]      | AQP-POOL · XE_*PoolCustody                           | X_UR|Transfer |
-    ;; | 1.AQP]  | FVT · XI_Phase_1_AQP|RefreshTrueFungibleStakeAnchors | N/A (DPTF anchor promile; TF only) |
-    ;; | 2.1.1]  | FVT · XI_Phase_2_1_1|EnsureScoreRewardRows          | insert UrStoaVaultUser if !IzAccount |
-    ;; | 2.1.0]  | FVT · XI_Phase_2_1_0|SyncFarmGhostTvl               | N/A (multi-score farm Tier-2) |
-    ;; | 2.1.2]  | FVT · XI_Phase_2_1_2|BankScorePendingRewards        | XI_URV|UpdatePendingRewards |
-    ;; | 2.2.1]  | SCR · XI_Phase_2_2_1|ApplyVaultScoreTotals          | XI_URV|UpdateVaultScore |
-    ;; | 2.2.2]  | SCR · XI_Phase_2_2_2|WriteUserScoreTriple          | XI_URV|UpdateUserScore |
-    ;; | 2.3.1]  | SCR · XI_Phase_2_3_1|ApplyScoreNzsDelta             | XI_URV|UpdateNZS |
-    ;; | 2.3.2]  | FVT · XI_Phase_2_3_2|BookUnclaimedCounts            | XI_URV|UpdateUnclaimedCount |
-    ;; | 2.4]    | FVT · XI_Phase_2_4|CheckpointStakeRps               | XI_URV|UpdateUserRPS |
+    ;; PHASE 1 — Custody (AQP-POOL): move assets + record trackers before RPS/SCORE.
+    ;;   1.1 Transfer asset user↔vault           UrStoa ≡ X_UR|Transfer
+    ;;   1.2 Per-pool tracker row                 UrStoa ≡ N/A (implicit single vault)
+    ;;   1.3 Cross-pool beneficiary rollup        UrStoa ≡ N/A (TF / DPTF ANK only)
     ;;
-    ;; Orchestrators: XI_Phase_2_1|SettleStakePendingRewards (2.1.0 → 2.1.1 → 2.1.2);
-    ;;   SCR XE_Apply*StakeDelta (2.2.1 + 2.2.2 + 2.3.1 per employed score);
-    ;;   C_TrueFungibleStakeFlow / C_OrtoFungibleStakeFlow compose steps 1 → 2.1 → … → 2.4.
-    ;; Stake 2.3: NZS + unclaimed both fire on first nz; unstake 2.3: NZS then unclaimed if pending=0.
+    ;; PHASE 2 — FVT RPS prelude (at OLD deb/L_i, before SCORE mutation):
+    ;;   2.1 Ghost TVL sync (farm Tier-2)         UrStoa ≡ N/A
+    ;;   2.2 Ensure RPS Member + User rows        UrStoa ≡ insert UrStoaVaultUser if !IzAccount
+    ;;   2.3 Bank pending at OLD deb × ΔL_i       UrStoa ≡ XI_URV|UpdatePendingRewards
+    ;;
+    ;; PHASE 3 — Anchors (AQP-ANK promile refresh after custody, before SCORE):
+    ;;   3.1 DPTF anchor refresh                  UrStoa ≡ N/A (TF flow only)
+    ;;   3.2 DPSF anchor refresh                  UrStoa ≡ N/A (DPDC son=true only)
+    ;;   3.3 DPNF anchor refresh                  UrStoa ≡ N/A (DPDC son=false only)
+    ;;
+    ;; PHASE 4 — SCORE weight mutation:
+    ;;   4.1 Vault aggregate totals               UrStoa ≡ XI_URV|UpdateVaultScore
+    ;;   4.2 User base/boosted/deb triple         UrStoa ≡ XI_URV|UpdateUserScore
+    ;;   4.3 NZS count delta                      UrStoa ≡ XI_URV|UpdateNZS
+    ;;
+    ;; PHASE 5 — FVT RPS post-SCORE (after nz state known):
+    ;;   5.1 Global unclaimed-count               UrStoa ≡ XI_URV|UpdateUnclaimedCount
+    ;;   5.2 Advance user last-rps to NEW L_i     UrStoa ≡ XI_URV|UpdateUserRPS
+    ;;
+    ;; Flow slots: TF=1.1–1.3,3.1 | OF=1.1–1.2 + 1.3/3.x no-op | DPDC=1.1–1.2 + 3.2 or 3.3
     ;; ═══════════════════════════════════════════════════════════════════════════
     ;;
     ;; --- TF stake/unstake recipe (Talos client → C_TrueFungibleStakeFlow) ---
     (defun C_TrueFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Core TF stake/unstake recipe (direction=true stake, false unstake). \
-            \ UrStoa step map — see canonical block above C_TrueFungibleStakeFlow. \
-            \ TF order: 1 → 2.1 → 1.AQP → 2.2+2.3 (SCR) → 2.3.2 → 2.4. \
-            \ URC_BuildStakeSettleBundle once per pass (phases 2.1, 2.3.2, 2.4)."
+        @doc "Core TF stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above."
         (UEV_IMC)
         (with-capability (FVT|C>TRUE-FUNGIBLE-STAKE-FLOW pool-id owner-id beneficiary-id dptf-id amount direction)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
                     (settle-bundle:object{FVT|StakeSettleBundle}
                         (URC_BuildStakeSettleBundle pool-id beneficiary-id)
                     )
-                    (step-1:object{IgnisCollectorV1.OutputCumulator}
-                        ;;1] UrStoa ≡ X_UR|Transfer
-                        (ref-AQP::XE_TrueFungiblePoolCustody pool-id owner-id beneficiary-id dptf-id amount direction)
+                    ;; PHASE 1 — Custody
+                    (step-1-1:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-AQP::XE_Phase_1_1|TrueFungibleTransfer pool-id owner-id beneficiary-id dptf-id amount direction)
                     )
-                    (step-2-1:object{IgnisCollectorV1.OutputCumulator}
-                        ;;2.1] UrStoa ≡ 2.1.1 insert + 2.1.2 UpdatePendingRewards (+ 2.1.0 farm ghost TVL)
-                        (XI_Phase_2_1|SettleStakePendingRewards beneficiary-id pool-id settle-bundle)
+                    (step-1-2:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-AQP::XE_Phase_1_2|TrueFungiblePoolTracker pool-id owner-id beneficiary-id dptf-id amount direction)
                     )
-                    (step-1-aqp:object{IgnisCollectorV1.OutputCumulator}
-                        ;;1.AQP] UrStoa ≡ N/A — DPTF anchor promile refresh (TF only)
-                        (XI_Phase_1_AQP|RefreshTrueFungibleStakeAnchors beneficiary-id dptf-id)
+                    (step-1-3:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-AQP::XE_Phase_1_3|TrueFungibleBeneficiaryRollup pool-id owner-id beneficiary-id dptf-id amount direction)
                     )
-                    (step-2-2-2-3:object{IgnisCollectorV1.OutputCumulator}
-                        ;;2.2.1 + 2.2.2 + 2.3.1] UrStoa ≡ UpdateVaultScore + UpdateUserScore + UpdateNZS
+                    ;; PHASE 2 — FVT RPS prelude (OLD deb)
+                    (step-2:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_2|RpsPreScore beneficiary-id pool-id settle-bundle)
+                    )
+                    ;; PHASE 3 — Anchors (TF: 3.1 only; 3.2/3.3 reserved no-op)
+                    (step-3-1:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_3_1|RefreshTrueFungibleStakeAnchors beneficiary-id dptf-id)
+                    )
+                    (step-3-2:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_3_2|NoOpSemiFungibleAnchors)
+                    )
+                    (step-3-3:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_3_3|NoOpNonFungibleAnchors)
+                    )
+                    ;; PHASE 4 — SCORE
+                    (step-4:object{IgnisCollectorV1.OutputCumulator}
                         (ref-SCR::XE_ApplyTrueFungibleStakeDelta
                             pool-id beneficiary-id dptf-id amount direction
                             (ref-AQP::URC_PoolActiveScoreIds pool-id)
                             (ref-AQP::URC_DptfStakeIsNativeLeg dptf-id)
                         )
                     )
-                    (step-2-3-2:object{IgnisCollectorV1.OutputCumulator}
-                        ;;2.3.2] UrStoa ≡ XI_URV|UpdateUnclaimedCount
-                        (XI_Phase_2_3_2|BookUnclaimedCounts beneficiary-id pool-id settle-bundle)
+                    ;; PHASE 5 — FVT RPS post-SCORE
+                    (step-5-1:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_5_1|BookUnclaimedCounts beneficiary-id pool-id settle-bundle)
                     )
-                    (step-2-4:object{IgnisCollectorV1.OutputCumulator}
-                        ;;2.4] UrStoa ≡ XI_URV|UpdateUserRPS
-                        (XI_Phase_2_4|CheckpointStakeRps beneficiary-id pool-id settle-bundle)
+                    (step-5-2:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_5_2|CheckpointStakeRps beneficiary-id pool-id settle-bundle)
                     )
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [step-1 step-2-1 step-1-aqp step-2-2-2-3 step-2-3-2 step-2-4] [])
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [step-1-1 step-1-2 step-1-3 step-2 step-3-1 step-3-2 step-3-3 step-4 step-5-1 step-5-2]
+                    []
+                )
             )
         )
     )
@@ -1296,8 +1312,8 @@
     ;;   No phase 2.2 — ANK anchors are DPTF / DPSF / DPNF only; OF custody does not refresh promile.
     (defun C_OrtoFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
-        @doc "Core OrtoFungible stake/unstake recipe. UrStoa step map — see canonical block above. \
-            \ OF order: 1 → 2.1 → 2.2+2.3 (SCR) → 2.3.2 → 2.4 (no 1.AQP ANK leg)."
+        @doc "Core OrtoFungible stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above. \
+            \ OF: phase 1.3 and 3.1–3.3 are reserved no-op slots."
         (UEV_IMC)
         (with-capability (FVT|C>ORTO-FUNGIBLE-STAKE-FLOW pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
             (let
@@ -1315,31 +1331,51 @@
                     (settle-bundle:object{FVT|StakeSettleBundle}
                         (URC_BuildStakeSettleBundle pool-id settle-beneficiary)
                     )
-                    (step-1:object{IgnisCollectorV1.OutputCumulator}
-                        ;;1] UrStoa ≡ X_UR|Transfer
-                        (ref-AQP::XE_OrtoFungiblePoolCustody pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+                    ;; PHASE 1 — Custody
+                    (step-1-1:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-AQP::XE_Phase_1_1|OrtoFungibleTransfer
+                            pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
                     )
-                    (step-2-1:object{IgnisCollectorV1.OutputCumulator}
-                        ;;2.1] UrStoa ≡ 2.1.1 insert + 2.1.2 UpdatePendingRewards
-                        (XI_Phase_2_1|SettleStakePendingRewards settle-beneficiary pool-id settle-bundle)
+                    (step-1-2:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-AQP::XE_Phase_1_2|OrtoFungiblePoolTracker
+                            pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
                     )
-                    (step-2-2-2-3:object{IgnisCollectorV1.OutputCumulator}
-                        ;;2.2.1 + 2.2.2 + 2.3.1] UrStoa ≡ UpdateVaultScore + UpdateUserScore + UpdateNZS
+                    (step-1-3:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_1_3|NoOpBeneficiaryRollup)
+                    )
+                    ;; PHASE 2 — FVT RPS prelude
+                    (step-2:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_2|RpsPreScore settle-beneficiary pool-id settle-bundle)
+                    )
+                    ;; PHASE 3 — Anchors (all no-op for OF)
+                    (step-3-1:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_3_1|NoOpTrueFungibleAnchors)
+                    )
+                    (step-3-2:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_3_2|NoOpSemiFungibleAnchors)
+                    )
+                    (step-3-3:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_3_3|NoOpNonFungibleAnchors)
+                    )
+                    ;; PHASE 4 — SCORE
+                    (step-4:object{IgnisCollectorV1.OutputCumulator}
                         (ref-SCR::XE_ApplyOrtoFungibleStakeDelta
                             pool-id settle-beneficiary dpof-id nonces nonce-amounts direction
                             (ref-AQP::URC_PoolActiveScoreIds pool-id)
                         )
                     )
-                    (step-2-3-2:object{IgnisCollectorV1.OutputCumulator}
-                        ;;2.3.2] UrStoa ≡ XI_URV|UpdateUnclaimedCount
-                        (XI_Phase_2_3_2|BookUnclaimedCounts settle-beneficiary pool-id settle-bundle)
+                    ;; PHASE 5 — FVT RPS post-SCORE
+                    (step-5-1:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_5_1|BookUnclaimedCounts settle-beneficiary pool-id settle-bundle)
                     )
-                    (step-2-4:object{IgnisCollectorV1.OutputCumulator}
-                        ;;2.4] UrStoa ≡ XI_URV|UpdateUserRPS
-                        (XI_Phase_2_4|CheckpointStakeRps settle-beneficiary pool-id settle-bundle)
+                    (step-5-2:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_Phase_5_2|CheckpointStakeRps settle-beneficiary pool-id settle-bundle)
                     )
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [step-1 step-2-1 step-2-2-2-3 step-2-3-2 step-2-4] [])
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [step-1-1 step-1-2 step-1-3 step-2 step-3-1 step-3-2 step-3-3 step-4 step-5-1 step-5-2]
+                    []
+                )
             )
         )
     )
@@ -1392,16 +1428,47 @@
     ;; --- Block C · Phase 2.4 checkpoint (C_TrueFungibleStakeFlow) ---
     ;;   XI_CheckpointStakeRps — nested map (score plan × reward line); no child XI_*.
     ;;
-    ;; --- Block A · Phase 2.1 settle (UrStoa 2.1.1 + 2.1.2; AQP 2.1.0 farm ghost TVL) ---
-    ;;   XI_Phase_2_1|SettleStakePendingRewards
-    ;;     ├ XI_Phase_2_1_0|SyncFarmGhostTvl
-    ;;     ├ XI_Phase_2_1_1|EnsureScoreRewardRows (per plan × reward line)
-    ;;     └ XI_Phase_2_1_2|BankScorePendingRewards (per plan × reward line)
+    ;; --- PHASE 2 · FVT RPS prelude (UrStoa 2.1 at OLD deb) ---
+    ;;   XI_Phase_2|RpsPreScore — orchestrator: 2.1 → 2.2 → 2.3
     ;;
-    (defun XI_Phase_2_1|SettleStakePendingRewards:object{IgnisCollectorV1.OutputCumulator}
+    (defun URC_StakeFlowPhaseNoOpIgnis:object{IgnisCollectorV1.OutputCumulator} (phase-tag:string)
+        @doc "Internal: zero IGNIS for reserved phase slots (N/A on this flow)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 AQP|SC_NAME trigger [phase-tag])
+        )
+    )
+    (defun XI_Phase_1_3|NoOpBeneficiaryRollup:object{IgnisCollectorV1.OutputCumulator}
+        ()
+        @doc "Phase 1.3 reserved — N/A for OF (no AQP|T|BeneficiaryDptfTotal on DPOF leg)."
+        (require-capability (SECURE))
+        (URC_StakeFlowPhaseNoOpIgnis "phase-1.3-na")
+    )
+    (defun XI_Phase_3_1|NoOpTrueFungibleAnchors:object{IgnisCollectorV1.OutputCumulator}
+        ()
+        @doc "Phase 3.1 reserved — N/A for OF (DPOF has no DPTF anchors)."
+        (require-capability (SECURE))
+        (URC_StakeFlowPhaseNoOpIgnis "phase-3.1-na")
+    )
+    (defun XI_Phase_3_2|NoOpSemiFungibleAnchors:object{IgnisCollectorV1.OutputCumulator}
+        ()
+        @doc "Phase 3.2 reserved — N/A for TF/OF; DPDC son=true will wire DPSF anchor refresh."
+        (require-capability (SECURE))
+        (URC_StakeFlowPhaseNoOpIgnis "phase-3.2-na")
+    )
+    (defun XI_Phase_3_3|NoOpNonFungibleAnchors:object{IgnisCollectorV1.OutputCumulator}
+        ()
+        @doc "Phase 3.3 reserved — N/A for TF/OF; DPDC son=false will wire DPNF anchor refresh."
+        (require-capability (SECURE))
+        (URC_StakeFlowPhaseNoOpIgnis "phase-3.3-na")
+    )
+    (defun XI_Phase_2|RpsPreScore:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object{FVT|StakeSettleBundle})
-        @doc "Phase 2.1 orchestrator. UrStoa ≡ insert-if-absent (2.1.1) then UpdatePendingRewards (2.1.2). \
-            \ AQP 2.1.0 farm ghost-TVL sync runs first. Same path for stake and unstake."
+        @doc "PHASE 2 orchestrator — FVT RPS at OLD score: 2.1 ghost TVL → 2.2 ensure rows → 2.3 bank pending."
         (require-capability (SECURE))
         (let
             (
@@ -1412,18 +1479,16 @@
                 (distinct-fvts:[string] (at "distinct-fvts" settle-bundle))
                 (settle-plans:[object{FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
             )
-            (XI_Phase_2_1_0|SyncFarmGhostTvl settle-plans)
-            ;; map: 2.1.1 — ensure FVT|T|RPS|Member + |User rows (UrStoa insert UrStoaVaultUser)
+            (XI_Phase_2_1|SyncFarmGhostTvl settle-plans)
             (map
                 (lambda (plan:object{FVT|SettleScorePlan})
-                    (XI_Phase_2_1_1|EnsureScoreRewardRows beneficiary-id plan)
+                    (XI_Phase_2_2|EnsureScoreRewardRows beneficiary-id plan)
                 )
                 settle-plans
             )
-            ;; map: 2.1.2 — bank pending at OLD deb/L_i (UrStoa XI_URV|UpdatePendingRewards)
             (map
                 (lambda (plan:object{FVT|SettleScorePlan})
-                    (XI_Phase_2_1_2|BankScorePendingRewards beneficiary-id pool-id plan)
+                    (XI_Phase_2_3|BankScorePendingRewards beneficiary-id pool-id plan)
                 )
                 settle-plans
             )
@@ -1431,18 +1496,18 @@
                 (URC_SettleStakePendingIgnis settle-scores distinct-fvts)
                 AQP|SC_NAME
                 trigger
-                [pool-id "settle-pending"]
+                [pool-id "phase-2-rps-prelude"]
             )
         )
     )
-    (defun XI_Phase_2_1_0|SyncFarmGhostTvl
+    (defun XI_Phase_2_1|SyncFarmGhostTvl
         (score-plans:[object{FVT|SettleScorePlan}])
-        @doc "Phase 2.1.0 — AQP extension (UrStoa ≡ N/A). SWP→FVT ghost-tvl reconcile before pending bank."
+        @doc "Phase 2.1 — UrStoa ≡ N/A. Farm Tier-2 ghost-TVL reconcile before pending bank."
         (XI_1|SyncFarmGhostTvlForEmployedScores score-plans)
     )
-    (defun XI_Phase_2_1_1|EnsureScoreRewardRows
+    (defun XI_Phase_2_2|EnsureScoreRewardRows
         (beneficiary-id:string plan:object{FVT|SettleScorePlan})
-        @doc "Phase 2.1.1 — UrStoa ≡ insert UrStoaVaultUser when account absent (IzAccount false)."
+        @doc "Phase 2.2 — UrStoa ≡ insert UrStoaVaultUser when account absent (IzAccount false)."
         (require-capability (SECURE))
         (let
             (
@@ -1464,9 +1529,9 @@
             )
         )
     )
-    (defun XI_Phase_2_1_2|BankScorePendingRewards
+    (defun XI_Phase_2_3|BankScorePendingRewards
         (beneficiary-id:string pool-id:string plan:object{FVT|SettleScorePlan})
-        @doc "Phase 2.1.2 — UrStoa ≡ XI_URV|UpdatePendingRewards (Tier-2 settle + Tier-1 bank at OLD deb)."
+        @doc "Phase 2.3 — UrStoa ≡ XI_URV|UpdatePendingRewards (bank at OLD deb × ΔL_i)."
         (require-capability (SECURE))
         (let
             (
@@ -1555,10 +1620,10 @@
     )
     (defun XI_1|SettleOneEmployedScorePendingRewards
         (beneficiary-id:string pool-id:string plan:object{FVT|SettleScorePlan})
-        @doc "Legacy 2.1 single-pass (2.1.1 + 2.1.2 combined). Prefer XI_Phase_2_1|SettleStakePendingRewards."
+        @doc "Legacy 2.x single-pass. Prefer XI_Phase_2|RpsPreScore."
         (require-capability (SECURE))
-        (XI_Phase_2_1_1|EnsureScoreRewardRows beneficiary-id plan)
-        (XI_Phase_2_1_2|BankScorePendingRewards beneficiary-id pool-id plan)
+        (XI_Phase_2_2|EnsureScoreRewardRows beneficiary-id plan)
+        (XI_Phase_2_3|BankScorePendingRewards beneficiary-id pool-id plan)
     )
     (defun XI_2|EnsureRpsMemberRow
         (fvt-id:string score-id:string reward-dptf-id:string)
@@ -1685,9 +1750,10 @@
     ;;     ├ AQP-ANK::XE_UpdateTrueFungibleUserAnchorValues
     ;;     └ AQP-POOL::XE_SetBeneficiaryDptfAnkSyncCount
     ;;
-    (defun XI_Phase_1_AQP|RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
+    ;; --- PHASE 3 · Anchors (AQP-ANK) ---
+    (defun XI_Phase_3_1|RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
-        @doc "Step 1.AQP — UrStoa ≡ N/A. TF-only: backward ANK promile refresh after DPTF custody change."
+        @doc "Phase 3.1 — UrStoa ≡ N/A. TF: backward DPTF anchor promile refresh from rollup."
         (XI_RefreshTrueFungibleStakeAnchors beneficiary-id dptf-id)
     )
     (defun XI_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
@@ -1783,9 +1849,10 @@
             )
         )
     )
-    (defun XI_Phase_2_3_2|BookUnclaimedCounts:object{IgnisCollectorV1.OutputCumulator}
+    ;; --- PHASE 5 · FVT RPS post-SCORE (UrStoa 2.3 unclaimed + 2.4 checkpoint) ---
+    (defun XI_Phase_5_1|BookUnclaimedCounts:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object{FVT|StakeSettleBundle})
-        @doc "Phase 2.3.2 — UrStoa ≡ XI_URV|UpdateUnclaimedCount. After SCORE 2.3.1 (nzs-count)."
+        @doc "Phase 5.1 — UrStoa ≡ XI_URV|UpdateUnclaimedCount (after SCORE phase 4.3 NZS)."
         (XI_BookStakeUnclaimedCounts beneficiary-id pool-id settle-bundle)
     )
     (defun XI_BookStakeUnclaimedCounts:object{IgnisCollectorV1.OutputCumulator}
@@ -1843,9 +1910,9 @@
     ;; --- Block C · Phase 2.4 checkpoint (C_TrueFungibleStakeFlow) ---
     ;;   XI_CheckpointStakeRps — nested map (score plan × reward line); no child XI_*.
     ;;
-    (defun XI_Phase_2_4|CheckpointStakeRps:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_Phase_5_2|CheckpointStakeRps:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object{FVT|StakeSettleBundle})
-        @doc "Phase 2.4 — UrStoa ≡ XI_URV|UpdateUserRPS (advance last-rps to NEW L_i after SCORE deb change)."
+        @doc "Phase 5.2 — UrStoa ≡ XI_URV|UpdateUserRPS (advance last-rps to NEW L_i)."
         (XI_CheckpointStakeRps beneficiary-id pool-id settle-bundle)
     )
     (defun XI_CheckpointStakeRps:object{IgnisCollectorV1.OutputCumulator}

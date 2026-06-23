@@ -2701,12 +2701,12 @@
         )
     )
     ;;
-    ;; --- Block B · Stake user-score delta (UrStoa 2.2.1 + 2.2.2 + 2.3.1) ---
+    ;; --- Block B · Stake user-score delta (UrStoa phases 4.1 + 4.2 + 4.3) ---
     ;;   XE_ApplyTrueFungibleStakeDelta / XE_ApplyOrtoFungibleStakeDelta
     ;;     └ XI_1|UpdateScoreDataFor* → XI_2|ApplySingularUserScoreDelta
-    ;;          ├ XI_Phase_2_2_2|WriteUserScoreTriple      UrStoa ≡ UpdateUserScore
-    ;;          ├ XI_Phase_2_2_1|ApplyVaultScoreTotals     UrStoa ≡ UpdateVaultScore
-    ;;          └ XI_Phase_2_3_1|ApplyScoreNzsDelta        UrStoa ≡ UpdateNZS
+    ;;          ├ XI_Phase_4_2|WriteUserScoreTriple      UrStoa ≡ UpdateUserScore
+    ;;          ├ XI_Phase_4_1|ApplyVaultScoreTotals     UrStoa ≡ UpdateVaultScore
+    ;;          └ XI_Phase_4_3|ApplyScoreNzsDelta        UrStoa ≡ UpdateNZS
     ;;
     (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
@@ -2974,14 +2974,14 @@
         )
     )
 
-    (defun XI_Phase_2_2_2|WriteUserScoreTriple:string
+    (defun XI_Phase_4_2|WriteUserScoreTriple:string
         (
             ouronet-account:string
             pool-id:string
             score-id:string
             d:object{SCR|SingularUserScoreDelta}
         )
-        @doc "Phase 2.2.2 — UrStoa ≡ XI_URV|UpdateUserScore (SCR|T|UserScore triple write)."
+        @doc "Phase 4.2 — UrStoa ≡ XI_URV|UpdateUserScore (SCR|T|UserScore triple write)."
         (require-capability (SECURE))
         (write SCR|T|UserScore (UC_UserScoreKey ouronet-account pool-id score-id)
             (UDC_SCR|UserSchema
@@ -2994,9 +2994,9 @@
             )
         )
     )
-    (defun XI_Phase_2_2_1|ApplyVaultScoreTotals:string
+    (defun XI_Phase_4_1|ApplyVaultScoreTotals:string
         (score-id:string scr:object{SCR|Schema} d:object{SCR|SingularUserScoreDelta})
-        @doc "Phase 2.2.1 — UrStoa ≡ XI_URV|UpdateVaultScore (SCR|T|Score aggregate totals)."
+        @doc "Phase 4.1 — UrStoa ≡ XI_URV|UpdateVaultScore (SCR|T|Score aggregate totals)."
         (require-capability (SECURE))
         (let
             (
@@ -3014,9 +3014,9 @@
             )
         )
     )
-    (defun XI_Phase_2_3_1|ApplyScoreNzsDelta:string
+    (defun XI_Phase_4_3|ApplyScoreNzsDelta:string
         (score-id:string scr:object{SCR|Schema} d:object{SCR|SingularUserScoreDelta})
-        @doc "Phase 2.3.1 — UrStoa ≡ XI_URV|UpdateNZS (SCR|T|Score.nzs-count ±1)."
+        @doc "Phase 4.3 — UrStoa ≡ XI_URV|UpdateNZS (SCR|T|Score.nzs-count ±1)."
         (require-capability (SECURE))
         (let
             (
@@ -3028,7 +3028,7 @@
     )
     (defun XI_2|ApplySingularUserScoreDelta:string
         (ouronet-account:string pool-id:string score-id:string signed-user-base-delta:decimal)
-        @doc "UrStoa 2.2 + 2.3.1 leaf: compute delta then 2.2.2 → 2.2.1 → 2.3.1 in canonical order."
+        @doc "PHASE 4 orchestrator — UrStoa 2.2 + 2.3 NZS: 4.2 user → 4.1 vault → 4.3 nzs per score row."
         (require-capability (SECURE))
         (let
             (
@@ -3037,9 +3037,9 @@
                     (URC_SingularUserScoreDeltaFromSignedUserBase ouronet-account pool-id score-id signed-user-base-delta)
                 )
             )
-            (XI_Phase_2_2_2|WriteUserScoreTriple ouronet-account pool-id score-id d)
-            (XI_Phase_2_2_1|ApplyVaultScoreTotals score-id scr d)
-            (XI_Phase_2_3_1|ApplyScoreNzsDelta score-id scr d)
+            (XI_Phase_4_2|WriteUserScoreTriple ouronet-account pool-id score-id d)
+            (XI_Phase_4_1|ApplyVaultScoreTotals score-id scr d)
+            (XI_Phase_4_3|ApplyScoreNzsDelta score-id scr d)
         )
     )
 

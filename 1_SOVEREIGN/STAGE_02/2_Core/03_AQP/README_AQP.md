@@ -203,40 +203,25 @@ Seven slots per pool. Stake updates **every** employed score (skip `BAR`).
 
 Result text uses **`UC_ShortAccount`** and branches self-stake vs beneficiary stake.
 
+**Canonical phase model:** [`README_STAKE_PHASES.md`](README_STAKE_PHASES.md) — phases **1** (1.1–1.3) → **2** → **3** → **4** → **5**.
+
 ```
-UrStoa C_URV|Stake / Unstake          →  FVT::C_TrueFungibleStakeFlow (Talos shell)
-──────────────────────────────────────────────────────────────────────────────────────
-1]       X_UR|Transfer                 →  1]       AQP-POOL::XE_TrueFungiblePoolCustody
-N/A      —                             →  1.AQP]   FVT::XI_Phase_1_AQP|RefreshTrueFungibleStakeAnchors (TF only)
-2.1.1]   insert UrStoaVaultUser        →  2.1.1]   FVT::XI_Phase_2_1_1|EnsureScoreRewardRows
-N/A      —                             →  2.1.0]   FVT::XI_Phase_2_1_0|SyncFarmGhostTvl (farm extension)
-2.1.2]   UpdatePendingRewards          →  2.1.2]   FVT::XI_Phase_2_1_2|BankScorePendingRewards
-         (orchestrator)                 →  2.1]     FVT::XI_Phase_2_1|SettleStakePendingRewards
-2.2.1]   UpdateVaultScore              →  2.2.1]   SCR::XI_Phase_2_2_1|ApplyVaultScoreTotals
-2.2.2]   UpdateUserScore               →  2.2.2]   SCR::XI_Phase_2_2_2|WriteUserScoreTriple
-2.3.1]   UpdateNZS                     →  2.3.1]   SCR::XI_Phase_2_3_1|ApplyScoreNzsDelta
-         (per-score XE)                 →  2.2–2.3.1] SCR::XE_ApplyTrueFungibleStakeDelta
-2.3.2]   UpdateUnclaimedCount          →  2.3.2]   FVT::XI_Phase_2_3_2|BookUnclaimedCounts
-2.4]     UpdateUserRPS                 →  2.4]     FVT::XI_Phase_2_4|CheckpointStakeRps
-3]       return text                   →  3]       Talos IGNIS::C_Collect + format
+PHASE 1  1.1–1.3  AQP-POOL::XE_Phase_1_*|TrueFungible*
+PHASE 2           FVT::XI_Phase_2|RpsPreScore
+PHASE 3  3.1      FVT::XI_Phase_3_1|RefreshTrueFungibleStakeAnchors (+ 3.2/3.3 no-op)
+PHASE 4           SCR::XE_ApplyTrueFungibleStakeDelta
+PHASE 5  5.1–5.2  FVT::XI_Phase_5_1|* / XI_Phase_5_2|*
 ```
 
 | Step | Module | Function | UrStoa ≡ | Status |
 |------|--------|----------|----------|--------|
-| 1] | POOL | `XE_TrueFungiblePoolCustody` | `X_UR\|Transfer` | **READY** |
-| 1.AQP] | FVT/ANK | `XI_Phase_1_AQP\|RefreshTrueFungibleStakeAnchors` | N/A | **READY** |
-| 2.1] | FVT | `XI_Phase_2_1\|SettleStakePendingRewards` | 2.1.1 + 2.1.2 | **READY** |
-| 2.2–2.3.1] | SCR | `XE_ApplyTrueFungibleStakeDelta` | 2.2.1 + 2.2.2 + 2.3.1 | **READY** |
-| 2.3.2] | FVT | `XI_Phase_2_3_2\|BookUnclaimedCounts` | `UpdateUnclaimedCount` | **READY** |
-| 2.4] | FVT | `XI_Phase_2_4\|CheckpointStakeRps` | `UpdateUserRPS` | **READY** |
+| 1.1–1.3 | POOL | `XE_Phase_1_*` | `X_UR\|Transfer` (+ N/A trackers) | **READY** |
+| 2 | FVT | `XI_Phase_2\|RpsPreScore` | 2.2 insert + 2.3 `UpdatePendingRewards` | **READY** |
+| 3.1 | FVT/ANK | `XI_Phase_3_1\|RefreshTrueFungibleStakeAnchors` | N/A | **READY** |
+| 4 | SCR | `XE_ApplyTrueFungibleStakeDelta` | 4.1–4.3 vault/user/nzs | **READY** |
+| 5.1–5.2 | FVT | `XI_Phase_5_1\|*` / `XI_Phase_5_2\|*` | unclaimed + `UpdateUserRPS` | **READY** |
 
-**Standalone `C_*` on AQP-POOL:** lifecycle (`C_Issue`, `C_AddScore`, …), `C_SyncTrueFungibleAnchors`, OF/DPDC stake stubs. TF stake/unstake recipe is **`FVT::C_TrueFungibleStakeFlow`**; POOL exposes **`XE_TrueFungiblePoolCustody`** (phase 1) only.
-
-**POOL `XI_*` (internal):** `XI_TransferDptfPoolCustody`, `XI_WriteDptfTracker`, `XI_BumpBeneficiaryDptfTotal` — called from `XE_TrueFungiblePoolCustody` when implemented.
-
-**SCR `XE_UpdateScoreDataFor*`:** per-score forward writers; batch loop lives in `XE_ApplyTrueFungibleStakeDelta`.
-
-**Implement order:** POOL custody UEV + transfer → trackers → FVT settle → ANK refresh → SCR loop → FVT checkpoint
+**POOL phase 1:** `XE_Phase_1_1|TrueFungibleTransfer`, `XE_Phase_1_2|TrueFungiblePoolTracker`, `XE_Phase_1_3|TrueFungibleBeneficiaryRollup` (legacy concat: `XE_TrueFungiblePoolCustody`).
 
 ### IGNIS billing (Talos stake/unstake)
 
@@ -244,41 +229,28 @@ Talos is **orchestrator only**: each phase **`XE_*` returns `OutputCumulator`** 
 
 | Step | Module `XE_*` | Cumulator composition |
 |------|---------------|----------------------|
-| 1] POOL custody | `XE_TrueFungiblePoolCustody` | `XI_Transfer` + `XI_WriteDptfTracker` + `XI_BumpBeneficiaryDptfTotal` |
-| 2.1] FVT settle | `XI_Phase_2_1\|SettleStakePendingRewards` | `URC_SettleStakePendingIgnis` |
-| 1.AQP] ANK refresh | `XI_Phase_1_AQP\|RefreshTrueFungibleStakeAnchors` | ANK + AQP sync IGNIS concat |
-| 2.2–2.3.1] SCORE | `XE_ApplyTrueFungibleStakeDelta` | per-score `URC_StakeScoreDeltaIgnisCumulator` fold |
-| 2.3.2] FVT unclaimed | `XI_Phase_2_3_2\|BookUnclaimedCounts` | `URC_BookStakeUnclaimedIgnis` |
-| 2.4] FVT checkpoint | `XI_Phase_2_4\|CheckpointStakeRps` | flat 2 × ignis\|biggest |
-
-**Implement order:** phase 1] POOL **(wired)** → 2.1 FVT → 2.2 ANK → 2.3 SCORE bodies → 2.4 FVT checkpoint
+| 1.1–1.3 | `XE_Phase_1_*` | transfer + tracker + rollup |
+| 2 | `XI_Phase_2\|RpsPreScore` | `URC_SettleStakePendingIgnis` |
+| 3.1 | `XI_Phase_3_1\|RefreshTrueFungibleStakeAnchors` | ANK + AQP sync concat |
+| 3.2–3.3 | no-op | 0 IGNIS |
+| 4 | `XE_ApplyTrueFungibleStakeDelta` | per-score fold |
+| 5.1 | `XI_Phase_5_1\|BookUnclaimedCounts` | `URC_BookStakeUnclaimedIgnis` |
+| 5.2 | `XI_Phase_5_2\|CheckpointStakeRps` | 2 × ignis\|biggest |
 
 ---
 
 ## C_OrtoFungibleStakeFlow — FVT recipe + Talos client shell
 
-**Sovereign recipe:** **`FVT::C_OrtoFungibleStakeFlow`** (`direction=true` stake, `false` unstake) — UrStoa steps 1 → 2.1 → 2.2–2.3.1 → 2.3.2 → 2.4 (no **1.AQP** ANK leg).
-
-**Talos:** **`AQP-POOL|C_StakeOrtoFungible`** / **`C_UnstakeOrtoFungible`** — resolve whole-nonce legs via `UR_NoncesSupplies` before `@event` cap → **`IGNIS::C_Collect`** → recipe.
-
-```
-UrStoa C_URV|Stake / Unstake          →  FVT::C_OrtoFungibleStakeFlow
-──────────────────────────────────────────────────────────────────────
-1]       X_UR|Transfer                 →  1]       AQP-POOL::XE_OrtoFungiblePoolCustody
-2.1]     2.1.1 insert + 2.1.2 pending  →  2.1]     FVT::XI_Phase_2_1|SettleStakePendingRewards
-2.2–2.3.1] Vault + User + NZS          →  2.2–2.3.1] SCR::XE_ApplyOrtoFungibleStakeDelta
-2.3.2]   UpdateUnclaimedCount          →  2.3.2]   FVT::XI_Phase_2_3_2|BookUnclaimedCounts
-2.4]     UpdateUserRPS                 →  2.4]     FVT::XI_Phase_2_4|CheckpointStakeRps
-1.AQP]   —                             →  N/A (DPOF has no TF/SF/NF anchors)
-```
+**Sovereign recipe:** **`FVT::C_OrtoFungibleStakeFlow`** — same phase skeleton as TF; **1.3** and **3.1–3.3** are reserved no-op slots. See [`README_STAKE_PHASES.md`](README_STAKE_PHASES.md).
 
 | Step | Module | Function | UrStoa ≡ | Status |
 |------|--------|----------|----------|--------|
-| 1] | POOL | `XE_OrtoFungiblePoolCustody` | `X_UR\|Transfer` | **READY** |
-| 2.1] | FVT | `XI_Phase_2_1\|SettleStakePendingRewards` | 2.1.1 + 2.1.2 | **READY** |
-| 2.2–2.3.1] | SCR | `XE_ApplyOrtoFungibleStakeDelta` | 2.2.1 + 2.2.2 + 2.3.1 | **READY** |
-| 2.3.2] | FVT | `XI_Phase_2_3_2\|BookUnclaimedCounts` | `UpdateUnclaimedCount` | **READY** |
-| 2.4] | FVT | `XI_Phase_2_4\|CheckpointStakeRps` | `UpdateUserRPS` | **READY** |
+| 1.1–1.2 | POOL | `XE_Phase_1_1\|OrtoFungibleTransfer` / `1_2\|*` | `X_UR\|Transfer` | **READY** |
+| 1.3 | FVT | `XI_Phase_1_3\|NoOpBeneficiaryRollup` | N/A | **READY** |
+| 2 | FVT | `XI_Phase_2\|RpsPreScore` | insert + `UpdatePendingRewards` | **READY** |
+| 3.1–3.3 | FVT | no-op anchors | N/A | **READY** |
+| 4 | SCR | `XE_ApplyOrtoFungibleStakeDelta` | 4.1–4.3 | **READY** |
+| 5.1–5.2 | FVT | `XI_Phase_5_1\|*` / `XI_Phase_5_2\|*` | unclaimed + checkpoint | **READY** |
 
 **POOL `XI_*` (internal):** `XI_1|TransferDpofPoolCustody`, `XI_1|WriteDpofTracker`, `XI_1|WriteDpofTrackerSlot` — no `BumpBeneficiaryDpofTotal`.
 

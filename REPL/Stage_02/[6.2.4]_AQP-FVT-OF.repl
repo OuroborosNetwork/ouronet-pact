@@ -97,7 +97,7 @@
 ;;
 (begin-tx "TX-FVT-05 - C_StakeOrtoFungible end-to-end")
 (print "")
-(print "=== TX-FVT-05 — C_StakeOrtoFungible (ico1..ico5 recipe) =====================")
+(print "=== TX-FVT-05 — C_StakeOrtoFungible (phases 1–5 recipe) =====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let

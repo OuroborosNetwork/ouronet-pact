@@ -163,7 +163,22 @@
         (pool-id:string dpof-id:string owner-id:string nonces:[integer] nonce-amounts:[decimal])
     )
     ;;
-    ;;  [XE]  cross-module forward (FVT::C_TrueFungibleStakeFlow · FVT::C_OrtoFungibleStakeFlow)
+    ;;  [XE]  cross-module forward (FVT::C_*StakeFlow · canonical phase 1 custody)
+    (defun XE_Phase_1_1|TrueFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+    )
+    (defun XE_Phase_1_2|TrueFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+    )
+    (defun XE_Phase_1_3|TrueFungibleBeneficiaryRollup:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+    )
+    (defun XE_Phase_1_1|OrtoFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+    )
+    (defun XE_Phase_1_2|OrtoFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+    )
     (defun XE_TrueFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
@@ -1823,42 +1838,88 @@
         )
     )
     ;;
-    ;; --- Block B · TF stake phase 1 (FVT::C_TrueFungibleStakeFlow) ---
-    ;;   XE_TrueFungiblePoolCustody
-    ;;     ├ XI_1|TransferDptfPoolCustody
-    ;;     ├ XI_1|WriteDptfTracker
-    ;;     └ XI_1|BumpBeneficiaryDptfTotal
+    ;; --- Block B · Phase 1 custody (FVT::C_*StakeFlow) ---
+    ;;   Phase 1 — move assets user↔vault and record pool-local + cross-pool custody.
+    ;;   1.1 Transfer          UrStoa ≡ X_UR|Transfer
+    ;;   1.2 Pool tracker      UrStoa ≡ (implicit in vault accounting)
+    ;;   1.3 Beneficiary rollup UrStoa ≡ N/A (TF cross-pool O(1) for ANK)
     ;;
-    (defun XE_TrueFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_Phase_1_1|TrueFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Forward (FVT::C_TrueFungibleStakeFlow phase 1]): TFT transfer + DPTFTracker + BeneficiaryDptfTotal. \
-            \ UEV_IMC + AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY (validation + SECURE). XI writers require SECURE."
+        @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. TFT::C_Transfer owner↔AQP|SC_NAME. Composes custody cap (validation once per tx)."
         (UEV_IMC)
         (with-capability (AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dptf-id amount direction)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    ;;
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
-                        (XI_1|TransferDptfPoolCustody owner-id dptf-id amount direction)
-                    )
-                    (ico2:object{IgnisCollectorV1.OutputCumulator}
-                        (XI_1|WriteDptfTracker pool-id owner-id beneficiary-id dptf-id amount direction)
-                    )
-                    (ico3:object{IgnisCollectorV1.OutputCumulator}
-                        (XI_1|BumpBeneficiaryDptfTotal beneficiary-id dptf-id amount direction)
-                    )
-                )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
-            )
+            (XI_1|TransferDptfPoolCustody owner-id dptf-id amount direction)
         )
     )
-    ;;
-    ;; --- Block C · OF stake phase 1 (FVT::C_OrtoFungibleStakeFlow) ---
-    ;;   XE_OrtoFungiblePoolCustody
-    ;;     ├ XI_1|TransferDpofPoolCustody
-    ;;     └ XI_1|WriteDpofTracker
-    ;;
+    (defun XE_Phase_1_2|TrueFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "Phase 1.2 — per-pool AQP|T|DPTFTracker row. UrStoa: N/A. P|SECURE-CALLER (no custody re-validation)."
+        (UEV_IMC)
+        (with-capability (P|SECURE-CALLER)
+            (XI_1|WriteDptfTracker pool-id owner-id beneficiary-id dptf-id amount direction)
+        )
+    )
+    (defun XE_Phase_1_3|TrueFungibleBeneficiaryRollup:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "Phase 1.3 — cross-pool AQP|T|BeneficiaryDptfTotal. UrStoa ≡ N/A. P|SECURE-CALLER."
+        (UEV_IMC)
+        (with-capability (P|SECURE-CALLER)
+            (XI_1|BumpBeneficiaryDptfTotal beneficiary-id dptf-id amount direction)
+        )
+    )
+    (defun XE_TrueFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "Legacy phase-1 concat (1.1 + 1.2 + 1.3). Prefer explicit XE_Phase_1_* in FVT recipe."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (XE_Phase_1_1|TrueFungibleTransfer pool-id owner-id beneficiary-id dptf-id amount direction)
+                )
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (XE_Phase_1_2|TrueFungiblePoolTracker pool-id owner-id beneficiary-id dptf-id amount direction)
+                )
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (XE_Phase_1_3|TrueFungibleBeneficiaryRollup pool-id owner-id beneficiary-id dptf-id amount direction)
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
+        )
+    )
+    (defun XE_Phase_1_1|OrtoFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+        @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. DPOF::C_Transfer whole nonces. Composes custody cap (validation once per tx)."
+        (UEV_IMC)
+        (with-capability (AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+            (XI_1|TransferDpofPoolCustody owner-id dpof-id nonces direction)
+        )
+    )
+    (defun XE_Phase_1_2|OrtoFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+            direction:bool
+        )
+        @doc "Phase 1.2 — per-pool AQP|T|DPOFTracker rows. UrStoa: N/A. P|SECURE-CALLER (no custody re-validation)."
+        (UEV_IMC)
+        (with-capability (P|SECURE-CALLER)
+            (XI_1|WriteDpofTracker pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+        )
+    )
     (defun XE_OrtoFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
@@ -1869,23 +1930,19 @@
             nonce-amounts:[decimal]
             direction:bool
         )
-        @doc "Forward (FVT::C_OrtoFungibleStakeFlow phase 1]): whole-nonce DPOF::C_Transfer + DPOFTracker. \
-            \ No BeneficiaryDpofTotal — ANK has no DPOF anchors (TF/SF/NF only). UEV_IMC + AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY."
-        (UEV_IMC)
-        (with-capability (AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    ;;
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
-                        (XI_1|TransferDpofPoolCustody owner-id dpof-id nonces direction)
-                    )
-                    (ico2:object{IgnisCollectorV1.OutputCumulator}
-                        (XI_1|WriteDpofTracker pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
-                    )
+        @doc "Legacy phase-1 concat (1.1 + 1.2). Phase 1.3 N/A for OF. Prefer explicit XE_Phase_1_* in FVT recipe."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (XE_Phase_1_1|OrtoFungibleTransfer pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [])
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (XE_Phase_1_2|OrtoFungiblePoolTracker pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+                )
             )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [])
         )
     )
     (defun XI_1|TransferDpofPoolCustody:object{IgnisCollectorV1.OutputCumulator}
