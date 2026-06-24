@@ -47,6 +47,12 @@
     (defun URC_NonFungibleAnchorPromile:decimal
         (account:string anchor-id:string nonces:[integer] direction:bool)
     )
+    (defun URC_SemiFungibleAnchorPromileAbsolute:decimal
+        (anchor-id:string nonces:[integer] nonce-amounts:[integer])
+    )
+    (defun URC_NonFungibleAnchorPromileAbsolute:decimal
+        (anchor-id:string nonces:[integer])
+    )
     (defun URC_TraitOrClass:bool (anchor-id:string))
     (defun URC_ConformNonces:integer (dpnf-id:string nonces:[integer] trait-key:string trait-value:string))
     (defun URC_ConformNoncesByClass:integer (dpnf-id:string nonces:[integer] nonce-class:integer))
@@ -88,6 +94,12 @@
     )
     (defun XE_UpdateNonFungibleUserAnchorValues
         (account:string dpnf-id:string nonces:[integer] direction:bool)
+    )
+    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
+        (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
+    )
+    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
+        (account:string dpnf-id:string nonces:[integer])
     )
 )
 (module AQP-ANK GOV
@@ -822,6 +834,49 @@
                 (+ current-promile computed-promile-to-consider)
                 (- current-promile computed-promile-to-consider)
             )
+        )
+    )
+    (defun URC_SemiFungibleAnchorPromileAbsolute:decimal
+        (anchor-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Absolute SF promile from full cross-pool nonce inventory (C_SyncCollectableAnchors resync)."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                ;;
+                (ank-promile:decimal (UR_ANK|Promile anchor-id))
+                (ank-precision:integer (UR_ANK|Precision anchor-id))
+                (dpfs-nonce:integer (UR_ANK|SFNonce anchor-id))
+                (anchor-nonce-position:[integer] (ref-U|LST::UC_Search nonces dpfs-nonce))
+                (l:integer (length anchor-nonce-position))
+                (conform-amount:integer
+                    (if (= l 0)
+                        0
+                        (at (at 0 anchor-nonce-position) nonce-amounts)
+                    )
+                )
+            )
+            (floor (* (dec conform-amount) ank-promile) ank-precision)
+        )
+    )
+    (defun URC_NonFungibleAnchorPromileAbsolute:decimal
+        (anchor-id:string nonces:[integer])
+        @doc "Absolute NF promile from full cross-pool nonce inventory (C_SyncCollectableAnchors resync)."
+        (let
+            (
+                (ank-asset:string (UR_ANK|AnchoredAsset anchor-id))
+                (ank-promile:decimal (UR_ANK|Promile anchor-id))
+                (ank-precision:integer (UR_ANK|Precision anchor-id))
+                (dpnf-trait-key:string (UR_ANK|NFTraitKey anchor-id))
+                (dpnf-trait-value:string (UR_ANK|NFTraitValue anchor-id))
+                (trait-mode:bool (URC_TraitOrClass anchor-id))
+                (conform-nonces:integer
+                    (if trait-mode
+                        (URC_ConformNonces ank-asset nonces dpnf-trait-key dpnf-trait-value)
+                        (URC_ConformNoncesByClass ank-asset nonces (UR_ANK|NFNonceClass anchor-id))
+                    )
+                )
+            )
+            (floor (* (dec conform-nonces) ank-promile) ank-precision)
         )
     )
     (defun URC_TraitOrClass:bool (anchor-id:string)
@@ -1780,6 +1835,134 @@
                         )
                         (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
                     )
+                )
+            )
+        )
+    )
+    ;;
+    ;; --- Block D′ · SF resync (C_SyncCollectableAnchors · son=true) ---
+    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
+        (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite SF promile from full rollup inventory; IGNIS per live anchor."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (aids:[string] (UR_ANK|AnchorsForAsset dpsf-id))
+                (n-live:integer (length aids))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (if (> n-live 0)
+                (with-capability (ANK|C>UPDATE-DPSF account dpsf-id nonces)
+                    (XI_1|ResyncSemiFungibleUserAnchorValues account dpsf-id nonces nonce-amounts)
+                )
+                true
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
+                AQP|SC_NAME
+                trigger
+                [account dpsf-id]
+            )
+        )
+    )
+    (defun XI_1|ResyncSemiFungibleUserAnchorValues
+        (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Internal (XE_ResyncSemiFungible*): absolute promile per live SF anchor from rollup nonce inventory."
+        (require-capability (SECURE))
+        (let
+            (
+                (aids:[string] (UR_ANK|AnchorsForAsset dpsf-id))
+            )
+            (if (= (length aids) 0)
+                true
+                (let
+                    (
+                        (affected-bcs:[string]
+                            (map
+                                (lambda (aid:string)
+                                    (let
+                                        (
+                                            (new-promile:decimal
+                                                (URC_SemiFungibleAnchorPromileAbsolute aid nonces nonce-amounts)
+                                            )
+                                        )
+                                        (write ANK|T|Anchors (UC_UserAnchor account aid)
+                                            (UDC_AccountAnchor new-promile account aid)
+                                        )
+                                        (UR_ANK|BoostClassId aid)
+                                    )
+                                )
+                                aids
+                            )
+                        )
+                    )
+                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
+                )
+            )
+        )
+    )
+    ;;
+    ;; --- Block E′ · NF resync (C_SyncCollectableAnchors · son=false) ---
+    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
+        (account:string dpnf-id:string nonces:[integer])
+        @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite NF promile from full rollup inventory; IGNIS per live anchor."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (aids:[string] (UR_ANK|AnchorsForAsset dpnf-id))
+                (n-live:integer (length aids))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (if (> n-live 0)
+                (with-capability (ANK|C>UPDATE-DPNF account dpnf-id nonces)
+                    (XI_1|ResyncNonFungibleUserAnchorValues account dpnf-id nonces)
+                )
+                true
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
+                AQP|SC_NAME
+                trigger
+                [account dpnf-id]
+            )
+        )
+    )
+    (defun XI_1|ResyncNonFungibleUserAnchorValues
+        (account:string dpnf-id:string nonces:[integer])
+        @doc "Internal (XE_ResyncNonFungible*): absolute promile per live NF anchor from rollup nonce inventory."
+        (require-capability (SECURE))
+        (let
+            (
+                (aids:[string] (UR_ANK|AnchorsForAsset dpnf-id))
+            )
+            (if (= (length aids) 0)
+                true
+                (let
+                    (
+                        (affected-bcs:[string]
+                            (map
+                                (lambda (aid:string)
+                                    (let
+                                        (
+                                            (new-promile:decimal
+                                                (URC_NonFungibleAnchorPromileAbsolute aid nonces)
+                                            )
+                                        )
+                                        (write ANK|T|Anchors (UC_UserAnchor account aid)
+                                            (UDC_AccountAnchor new-promile account aid)
+                                        )
+                                        (UR_ANK|BoostClassId aid)
+                                    )
+                                )
+                                aids
+                            )
+                        )
+                    )
+                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
                 )
             )
         )

@@ -146,6 +146,7 @@
         ;(ref-DPTF:module{DemiourgosPactTrueFungible} DPTF)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
         (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-DPOF-V2:module{DemiourgosPactOrtoFungibleV2} DPOF)
         (patron:string KST.ANHD)
         (emma:string KST.EMMA)
         (dpmf:string "MVST-98c486052a51")
@@ -205,7 +206,8 @@
     (ref-TS01-C1::DPOF|C_TogglePause patron dpmf true)
     (ref-TS01-C1::DPOF|C_TogglePause patron dpmf false)
 
-    (ref-TS01-C1::DPOF|C_Transfer patron dpmf [1 2] emma patron false)
+    (ref-DPOF-V2::C_BulkTransfer dpmf [[1 2]] emma [patron] false)
+    ;(ref-TS01-C1::DPOF|C_Transfer patron dpmf [1 2] emma patron false)
     (ref-TS01-C1::DPOF|C_Transfer patron dpmf [2] patron emma false)
     ;(ref-TS01-C1::DPOF|C_Transfer patron dpmf [2] emma patron 777.0 false)
     (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpmf patron true)

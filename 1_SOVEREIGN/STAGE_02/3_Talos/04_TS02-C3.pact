@@ -135,6 +135,96 @@
         @event
         (compose-capability (P|TS))
     )
+    (defcap AQP|C>STAKE-SEMI-FUNGIBLE-COLLECTABLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "AQP client event: stake DPSF collectable (son=true). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE
+        (patron:string pool-id:string owner-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "AQP client event: unstake DPSF collectable (son=true). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>STAKE-NON-FUNGIBLE-COLLECTABLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "AQP client event: stake DPNF collectable (son=false). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
+        (patron:string pool-id:string owner-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "AQP client event: unstake DPNF collectable (son=false). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>SYNC-TF-ANCHORS
+        (patron:string beneficiary-id:string dptf-id:string)
+        @doc "AQP client event: pool-agnostic TF anchor repair. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS
+        (patron:string beneficiary-id:string dpsf-id:string)
+        @doc "AQP client event: pool-agnostic DPSF anchor repair. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>SYNC-NON-FUNGIBLE-ANCHORS
+        (patron:string beneficiary-id:string dpnf-id:string)
+        @doc "AQP client event: pool-agnostic DPNF anchor repair. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>VACATE-TRUE-FUNGIBLE
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "AQP client event: pool-owner TF vacate. Composes P|TS only; sovereign recipe in FVT::C_VacateTrueFungible."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>VACATE-ORTO-FUNGIBLE-BATCH
+        (
+            patron:string
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            nonce-amounts-array:[[decimal]]
+        )
+        @doc "AQP client event: pool-owner OF vacate batch. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>VACATE-SEMI-FUNGIBLE-COLLECTABLE
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+        @doc "AQP client event: pool-owner DPSF vacate (single leg). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>VACATE-NON-FUNGIBLE-COLLECTABLE
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+        @doc "AQP client event: pool-owner DPNF vacate (single leg). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
     ;;{C3}
     ;;{C4}
     ;;
@@ -204,6 +294,72 @@
                 nonce-count
                 pool-id
                 (UC_ShortAccount owner-id)
+            ]
+        )
+    )
+    (defun UC_FormatStakeCollectableResult:string
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonce-count:integer
+        )
+        @doc "Stake collectable success text."
+        (if (= owner-id beneficiary-id)
+            (format "Successfully staked {} {} ({} nonces) into Pool {} (self-stake, {}). "
+                [
+                    (if son "DPSF" "DPNF")
+                    collectable-id
+                    nonce-count
+                    pool-id
+                    (UC_ShortAccount owner-id)
+                ]
+            )
+            (format "Successfully staked {} {} ({} nonces) into Pool {} for beneficiary {} (owner {}). "
+                [
+                    (if son "DPSF" "DPNF")
+                    collectable-id
+                    nonce-count
+                    pool-id
+                    (UC_ShortAccount beneficiary-id)
+                    (UC_ShortAccount owner-id)
+                ]
+            )
+        )
+    )
+    (defun UC_FormatUnstakeCollectableResult:string
+        (pool-id:string owner-id:string collectable-id:string son:bool nonce-count:integer)
+        @doc "Unstake collectable success text."
+        (format "Successfully unstaked {} {} ({} nonces) from Pool {} (owner {}). "
+            [
+                (if son "DPSF" "DPNF")
+                collectable-id
+                nonce-count
+                pool-id
+                (UC_ShortAccount owner-id)
+            ]
+        )
+    )
+    (defun UC_FormatVacateCollectableResult:string
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonce-count:integer
+        )
+        @doc "Vacate collectable success text (pool-owner forced unstake)."
+        (format "Successfully vacated {} {} ({} nonces) from Pool {} (owner {} → beneficiary {}). "
+            [
+                (if son "DPSF" "DPNF")
+                collectable-id
+                nonce-count
+                pool-id
+                (UC_ShortAccount owner-id)
+                (UC_ShortAccount beneficiary-id)
             ]
         )
     )
@@ -603,11 +759,6 @@
         )
     )
     ;;
-    ;;=== PLANNED Talos client shells (comment-only — sovereign C_* home TBD) ===
-    ;; AQP-POOL|C_VacatePool(patron pool-id)
-    ;; AQP-POOL|C_StakeOrtoFungible(...) / C_UnstakeOrtoFungible(...)
-    ;; AQP-POOL|C_StakeCollectable(...) / C_UnstakeCollectable(...)
-    ;;
     (defun AQP-POOL|C_StakeTrueFungible:string
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
         @doc "Stake DPTF (or native|F| LP) into pool-id. Talos client shell: event cap + FVT::C_TrueFungibleStakeFlow direction=true."
@@ -701,6 +852,329 @@
                         )
                     )
                     (UC_FormatUnstakeOrtoFungibleResult pool-id owner-id dpof-id nonce-count)
+                )
+            )
+        )
+    )
+    ;;
+    (defun AQP-POOL|C_StakeSemiFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+        )
+        @doc "Stake DPSF collectable (son=true). Poll DPDC::UR_AccountNoncesSupplies, then FVT::C_CollectableStakeFlow."
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
+                (nonce-count:integer (length nonces))
+                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies owner-id collectable-id true nonces))
+            )
+            (with-capability
+                (AQP|C>STAKE-SEMI-FUNGIBLE-COLLECTABLE
+                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
+                )
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::C_Collect patron
+                        (ref-FVT::C_CollectableStakeFlow
+                            pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts true
+                        )
+                    )
+                    (UC_FormatStakeCollectableResult
+                        pool-id owner-id beneficiary-id collectable-id true nonce-count
+                    )
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_UnstakeSemiFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+        @doc "Unstake DPSF collectable (son=true)."
+        (let
+            (
+                (nonce-count:integer (length nonces))
+            )
+            (with-capability
+                (AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE
+                    patron pool-id owner-id collectable-id nonces nonce-amounts
+                )
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::C_Collect patron
+                        (ref-FVT::C_CollectableStakeFlow
+                            pool-id owner-id BAR collectable-id true nonces nonce-amounts false
+                        )
+                    )
+                    (UC_FormatUnstakeCollectableResult pool-id owner-id collectable-id true nonce-count)
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_StakeNonFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+        )
+        @doc "Stake DPNF collectable (son=false). Poll DPDC::UR_AccountNoncesSupplies, then FVT::C_CollectableStakeFlow."
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
+                (nonce-count:integer (length nonces))
+                (nonce-amounts:[integer] (ref-DPDC::UR_AccountNoncesSupplies owner-id collectable-id false nonces))
+            )
+            (with-capability
+                (AQP|C>STAKE-NON-FUNGIBLE-COLLECTABLE
+                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
+                )
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::C_Collect patron
+                        (ref-FVT::C_CollectableStakeFlow
+                            pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts true
+                        )
+                    )
+                    (UC_FormatStakeCollectableResult
+                        pool-id owner-id beneficiary-id collectable-id false nonce-count
+                    )
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_UnstakeNonFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+        @doc "Unstake DPNF collectable (son=false)."
+        (let
+            (
+                (nonce-count:integer (length nonces))
+            )
+            (with-capability
+                (AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
+                    patron pool-id owner-id collectable-id nonces nonce-amounts
+                )
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::C_Collect patron
+                        (ref-FVT::C_CollectableStakeFlow
+                            pool-id owner-id BAR collectable-id false nonces nonce-amounts false
+                        )
+                    )
+                    (UC_FormatUnstakeCollectableResult pool-id owner-id collectable-id false nonce-count)
+                )
+            )
+        )
+    )
+    ;;
+    (defun AQP-POOL|C_VacateTrueFungible:string
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Pool-owner forced TF unstake. Talos shell → FVT::C_VacateTrueFungible."
+        (with-capability (AQP|C>VACATE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_VacateTrueFungible pool-id owner-id beneficiary-id dptf-id amount)
+                )
+                (format "Successfully vacated {} from Pool {} (owner {} → beneficiary {}). "
+                    [dptf-id pool-id (UC_ShortAccount owner-id) (UC_ShortAccount beneficiary-id)]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_VacateOrtoFungibleBatch:string
+        (
+            patron:string
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            nonce-amounts-array:[[decimal]]
+        )
+        @doc "Pool-owner forced OF unstake batch. Talos shell → FVT::C_VacateOrtoFungibleBatch."
+        (with-capability
+            (AQP|C>VACATE-ORTO-FUNGIBLE-BATCH
+                patron pool-id dpof-id owner-ids beneficiary-ids nonces-array nonce-amounts-array
+            )
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_VacateOrtoFungibleBatch
+                        pool-id dpof-id owner-ids beneficiary-ids nonces-array nonce-amounts-array
+                    )
+                )
+                (format "Successfully vacated {} from Pool {} ({} owner leg(s))."
+                    [dpof-id pool-id (length owner-ids)]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_VacateSemiFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+        @doc "Pool-owner forced DPSF vacate. Talos shell → FVT::C_VacateCollectableBatch son=true. \
+            \ UI uses this for every DPSF vacate tx (one owner group; chunk nonces across txs if needed)."
+        (let
+            (
+                (nonce-count:integer (length nonces))
+            )
+            (with-capability
+                (AQP|C>VACATE-SEMI-FUNGIBLE-COLLECTABLE
+                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
+                )
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::C_Collect patron
+                        (ref-FVT::C_VacateCollectableBatch
+                            pool-id collectable-id true
+                            [owner-id] [beneficiary-id] [nonces] [nonce-amounts]
+                        )
+                    )
+                    (UC_FormatVacateCollectableResult
+                        pool-id owner-id beneficiary-id collectable-id true nonce-count
+                    )
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_VacateNonFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+        @doc "Pool-owner forced DPNF vacate. Talos shell → FVT::C_VacateCollectableBatch son=false. \
+            \ UI uses this for every DPNF vacate tx (one owner group; chunk nonces across txs if needed)."
+        (let
+            (
+                (nonce-count:integer (length nonces))
+            )
+            (with-capability
+                (AQP|C>VACATE-NON-FUNGIBLE-COLLECTABLE
+                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
+                )
+                (let
+                    (
+                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    )
+                    (ref-IGNIS::C_Collect patron
+                        (ref-FVT::C_VacateCollectableBatch
+                            pool-id collectable-id false
+                            [owner-id] [beneficiary-id] [nonces] [nonce-amounts]
+                        )
+                    )
+                    (UC_FormatVacateCollectableResult
+                        pool-id owner-id beneficiary-id collectable-id false nonce-count
+                    )
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
+        (patron:string beneficiary-id:string dptf-id:string)
+        @doc "Pool-agnostic TF anchor repair for beneficiary × dptf-id. Talos shell → AQP-POOL::C_SyncTrueFungibleAnchors."
+        (with-capability (AQP|C>SYNC-TF-ANCHORS patron beneficiary-id dptf-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-AQP::C_SyncTrueFungibleAnchors patron beneficiary-id dptf-id)
+                )
+                (format "Successfully synced TrueFungible anchors for beneficiary {} on {}."
+                    [(UC_ShortAccount beneficiary-id) dptf-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
+        (patron:string beneficiary-id:string dpsf-id:string)
+        @doc "Pool-agnostic DPSF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=true."
+        (with-capability (AQP|C>SYNC-SEMI-FUNGIBLE-ANCHORS patron beneficiary-id dpsf-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-AQP::C_SyncCollectableAnchors patron beneficiary-id dpsf-id true)
+                )
+                (format "Successfully synced SemiFungible anchors for beneficiary {} on {}."
+                    [(UC_ShortAccount beneficiary-id) dpsf-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_SyncNonFungibleAnchors:string
+        (patron:string beneficiary-id:string dpnf-id:string)
+        @doc "Pool-agnostic DPNF anchor repair. Talos shell → AQP-POOL::C_SyncCollectableAnchors son=false."
+        (with-capability (AQP|C>SYNC-NON-FUNGIBLE-ANCHORS patron beneficiary-id dpnf-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-AQP::C_SyncCollectableAnchors patron beneficiary-id dpnf-id false)
+                )
+                (format "Successfully synced NonFungible anchors for beneficiary {} on {}."
+                    [(UC_ShortAccount beneficiary-id) dpnf-id]
                 )
             )
         )

@@ -272,24 +272,24 @@
     (let
         (
             (tracker-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
-            (rollup-bal:decimal (ref-AQP::UR_AQP|BeneficiaryDptfTotalBalance beneficiary-id ouro-id))
+            (rollup-bal:decimal (ref-AQP::UR_AQP|BenDptfTotalBalance beneficiary-id ouro-id))
             (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
             (base-user:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))
             (last-rps:decimal (ref-FVT::UR_FVT-RU|LastRps beneficiary-id fvt-id score-id ouro-id))
             (member-li:decimal (ref-FVT::UR_FVT-RM|MemberDebRps fvt-id score-id ouro-id))
             (post-ouro:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
-            (sync-count:integer (ref-AQP::UR_AQP|BeneficiaryDptfLastAnkSyncCount beneficiary-id ouro-id))
+            (sync-count:integer (ref-AQP::UR_AQP|BenDptfLastAnkSyncCount beneficiary-id ouro-id))
             (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
         )
         (map print
             [
                 (format "<(AQP-POOL|UR_AQP|DPTFTrackerBalance)> => \"{}\"" [tracker-bal])
-                (format "<(AQP-POOL|UR_AQP|BeneficiaryDptfTotalBalance)> => \"{}\"" [rollup-bal])
+                (format "<(AQP-POOL|UR_AQP|BenDptfTotalBalance)> => \"{}\"" [rollup-bal])
                 (format "<(AQP-SCORE|UR_U-SCR|UserScoreDebScore)> => \"{}\"" [deb-user])
                 (format "<(AQP-SCORE|UR_U-SCR|UserScoreBaseScore)> => \"{}\"" [base-user])
                 (format "<(AQP-FVT|UR_FVT-RU|LastRps)> => \"{}\"" [last-rps])
                 (format "<(AQP-FVT|UR_FVT-RM|MemberDebRps L_i)> => \"{}\"" [member-li])
-                (format "<(AQP-POOL|UR_AQP|BeneficiaryDptfLastAnkSyncCount)> => \"{}\"" [sync-count])
+                (format "<(AQP-POOL|UR_AQP|BenDptfLastAnkSyncCount)> => \"{}\"" [sync-count])
                 (format "<(DPTF|UR_AccountSupply OURO owner)> post-stake => \"{}\"" [post-ouro])
                 (format "<(AQP-FVT|UR_FVT-RG|UnclaimedCount)> => \"{}\"" [unclaimed])
             ]

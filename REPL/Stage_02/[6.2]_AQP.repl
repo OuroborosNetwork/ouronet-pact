@@ -16,3 +16,4 @@
 (load "[6.2.3]_AQP-POOL.repl")
 (load "[6.2.4]_AQP-FVT.repl")
 (load "[6.2.4]_AQP-FVT-OF.repl")
+(load "[6.2.4]_AQP-FVT-DC.repl")

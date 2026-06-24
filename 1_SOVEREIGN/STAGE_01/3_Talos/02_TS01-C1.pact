@@ -3,6 +3,7 @@
     ;;
     (implements OuronetPolicyV1)
     (implements TalosStageOne_ClientOneV1)
+    (implements TalosStageOne_ClientOneV2)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -1248,6 +1249,35 @@
                 (ref-ELITE::XE_UpdateElite id sender receiver)
                 (format "Succesfuly Transmited DPOF {} Nonces {} from Sender {} to Receiver {}"
                     [id nonces ss sr]
+                )
+            )
+        )
+    )
+    (defun DPOF|C_BulkTransfer
+        (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk whole-nonce DPOF transfer — one sender, many standard-account receivers (TalosStageOne_ClientOneV2)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                    (ref-ELITE:module{EliteV1} ELITE)
+                    ;;
+                    (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                    (l:integer (length receiver-lst))
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-DPOF::C_BulkTransfer id nonces-array sender receiver-lst method)
+                )
+                (map
+                    (lambda (idx:integer)
+                        (ref-ELITE::XE_UpdateElite id sender (at idx receiver-lst))
+                    )
+                    (enumerate 0 (- l 1))
+                )
+                (format "Succesfully bulk-transferred DPOF {} from {} to {} receivers"
+                    [id sa-s l]
                 )
             )
         )

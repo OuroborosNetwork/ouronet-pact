@@ -12,7 +12,11 @@
     (defun UC_DPNFScoreAttributionKey:string
         (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
     )
-    (defun UC_BeneficiaryDptfTotalKey:string (beneficiary-id:string dptf-id:string))
+    (defun UC_BenDptfTotalKey:string (beneficiary-id:string dptf-id:string))
+    (defun UC_BenDpsfNonceTotalKey:string (beneficiary-id:string dpsf-id:string nonce:integer))
+    (defun UC_BenDpnfNonceTotalKey:string (beneficiary-id:string dpnf-id:string nonce:integer))
+    (defun UC_BenDpsfAnkMetaKey:string (beneficiary-id:string dpsf-id:string))
+    (defun UC_BenDpnfAnkMetaKey:string (beneficiary-id:string dpnf-id:string))
     ;;
     ;;  [UR] AQP|Schema (AQP|T|Pool)
     (defun UR_AQP|AllPoolIds:[string] ())
@@ -34,10 +38,24 @@
     (defun UR_AQP|DPTFTrackerOwnerId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
     (defun UR_AQP|DPTFTrackerBeneficiaryId:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
     ;;
-    ;;  [UR] AQP|BeneficiaryDptfTotal (AQP|T|BeneficiaryDptfTotal) — cross-pool ANK rollup
-    (defun UR_AQP|BeneficiaryDptfTotalBalance:decimal (beneficiary-id:string dptf-id:string))
-    (defun UR_AQP|BeneficiaryDptfLastAnkSyncCount:integer (beneficiary-id:string dptf-id:string))
-    (defun URC_BeneficiaryAnchorsNeedSync:bool (beneficiary-id:string dptf-id:string))
+    ;;  [UR] AQP|BenDptfTotal (AQP|T|BenDptfTotal) — cross-pool ANK rollup
+    (defun UR_AQP|BenDptfTotalBalance:decimal (beneficiary-id:string dptf-id:string))
+    (defun UR_AQP|BenDptfLastAnkSyncCount:integer (beneficiary-id:string dptf-id:string))
+    (defun URC_BenDptfAnchorsNeedSync:bool (beneficiary-id:string dptf-id:string))
+    ;;
+    ;;  [UR] AQP|BenDpsfNonceTotal + AQP|BenDpsfAnkMeta — cross-pool DPSF ANK rollup
+    (defun UR_AQP|BenDpsfNonceAmount:integer (beneficiary-id:string dpsf-id:string nonce:integer))
+    (defun UR_AQP|BenDpsfLastAnkSyncCount:integer (beneficiary-id:string dpsf-id:string))
+    (defun URD_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string))
+    (defun URC_BenDpsfHasStake:bool (beneficiary-id:string dpsf-id:string))
+    (defun URC_BenDpsfAnchorsNeedSync:bool (beneficiary-id:string dpsf-id:string))
+    ;;
+    ;;  [UR] AQP|BenDpnfNonceTotal + AQP|BenDpnfAnkMeta — cross-pool DPNF ANK rollup
+    (defun UR_AQP|BenDpnfNonceAmount:integer (beneficiary-id:string dpnf-id:string nonce:integer))
+    (defun UR_AQP|BenDpnfLastAnkSyncCount:integer (beneficiary-id:string dpnf-id:string))
+    (defun URD_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string))
+    (defun URC_BenDpnfHasStake:bool (beneficiary-id:string dpnf-id:string))
+    (defun URC_BenDpnfAnchorsNeedSync:bool (beneficiary-id:string dpnf-id:string))
     ;;
     ;;  [UR] AQP|OrtoFungibleTracker (AQP|T|DPOFTracker)
     (defun UR_AQP|DPOFTrackerBalance:decimal (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
@@ -126,30 +144,16 @@
         (patron:string pool-id:string score-id:string)
     )
     ;;
-    ;;=== PLANNED C_* (comment-only — not on interface; home module TBD at implementation) ===
-    ;; TF stake/unstake recipe: FVT::C_TrueFungibleStakeFlow (Talos AQP-POOL|C_Stake/UnstakeTrueFungible).
+    ;;  [C] — stake/unstake recipes live in FVT::C_*StakeFlow (Talos AQP-POOL|C_Stake* shells).
+    (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string beneficiary-id:string dptf-id:string)
+    )
+    (defun C_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string beneficiary-id:string collectable-id:string son:bool)
+    )
+    ;;  Remaining C_* here: C_VacatePool (see README_AQP.md).
     ;;
-    ;; C_StakeOrtoFungible(patron pool-id owner-id beneficiary-id dpof-id nonces)
-    ;;   Stake whole DPOF nonces into pool-id (AQP|T|DPOFTracker) via DPOF::C_Transfer only.
-    ;;   Covers class-2 native DPOF, class-0 sleeping|Z| LP orto legs, class-1 sleeping/hib DPOF satellites.
-    ;;
-    ;; C_UnstakeOrtoFungible(patron pool-id owner-id dpof-id nonces)
-    ;;   Unstake whole DPOF nonces; beneficiary read from tracker row per nonce at implementation time.
-    ;;
-    ;; C_StakeCollectable(patron pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts)
-    ;;   Stake DPDC collectable nonces. son=true -> DPSF (class-3); son=false -> DPNF (class-4).
-    ;;
-    ;; C_UnstakeCollectable(patron pool-id owner-id collectable-id son nonces nonce-amounts)
-    ;;   Unstake DPDC collectable nonces; beneficiary read from tracker row per nonce.
-    ;;
-    ;; C_SyncTrueFungibleAnchors(patron beneficiary-id dptf-id)
-    ;;   Pool-agnostic ANK repair: same backward legs as FVT::XI_RefreshTrueFungibleStakeAnchors
-    ;;   (read total, ANK::XE_UpdateTrueFungibleUserAnchorValues, AQP::XE_SetBeneficiaryDptfAnkSyncCount). Home module TBD.
-    ;;
-    ;; C_VacatePool(patron pool-id)
-    ;;   Pool owner force-unwind all staked positions. Orchestration TBD (Talos loop vs sovereign recipe module).
-    ;;
-    ;;  [URC]  internal stake helpers (cross-module read from SCR XE_ApplyTrueFungibleStakeDelta; FVT recipe cap)
+    ;;  [URC]  internal stake helpers (cross-module read from SCR XE_Apply*StakeDelta; FVT recipe cap)
     (defun URC_DptfStakeIsNativeLeg:bool (dptf-id:string))
     (defun URC_OrtoUnstakeBeneficiaryId:string (pool-id:string dpof-id:string owner-id:string nonce:integer))
     (defun URC_OrtoStakeWholeNonceAmounts:bool (dpof-id:string nonces:[integer] nonce-amounts:[decimal]))
@@ -162,31 +166,125 @@
     (defun URC_OrtoUnstakeNoncesSufficient:bool
         (pool-id:string dpof-id:string owner-id:string nonces:[integer] nonce-amounts:[decimal])
     )
+    (defun URC_CollectableUnstakeBeneficiaryId:string
+        (pool-id:string collectable-id:string son:bool owner-id:string nonce:integer)
+    )
+    (defun URC_StakeCollectablePoolClassOk:bool (pool-id:string son:bool))
+    (defun URC_StakeCollectableMatchesPool:bool (pool-id:string collectable-id:string))
+    (defun URC_CollectableUnstakeNoncesSufficient:bool
+        (pool-id:string collectable-id:string son:bool owner-id:string nonces:[integer] nonce-amounts:[integer])
+    )
+    (defun URC_VacateBatchLegParityOk:bool
+        (owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+    )
+    (defun URC_VacateBatchNonceTotalOk:bool (nonces-array:[[integer]]))
+    (defun URC_VacateCollectableLegBeneficiaryOk:bool
+        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer])
+    )
+    (defun URC_VacateCollectableNoncesSufficient:bool
+        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[integer])
+    )
+    (defun URC_VacateCollectableRollupSufficient:bool
+        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[integer])
+    )
     ;;
     ;;  [XE]  cross-module forward (FVT::C_*StakeFlow · canonical phase 1 custody)
-    (defun XE_Phase_1_1|TrueFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_TrueFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
-    (defun XE_Phase_1_2|TrueFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
-    (defun XE_Phase_1_3|TrueFungibleBeneficiaryRollup:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_TrueFungibleBeneficiaryRollup:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
-    (defun XE_Phase_1_1|OrtoFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
     )
-    (defun XE_Phase_1_2|OrtoFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
+    )
+    (defun XE_CollectableTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+    )
+    (defun XE_CollectablePoolTracker:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+    )
+    (defun XE_CollectableBeneficiaryRollup:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+    )
+    (defun XE_TrueFungibleVacateTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+    )
+    (defun XE_OrtoFungibleVacateTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+        )
+    )
+    (defun XE_OrtoFungibleVacateBulkTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            nonce-amounts-array:[[decimal]]
+        )
+    )
+    (defun XE_CollectableVacateTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+    )
+    (defun XE_SetBenDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string dptf-id:string)
+    )
+    (defun XE_SetBenCollectableAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string collectable-id:string son:bool)
     )
     (defun XE_TrueFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
     (defun XE_OrtoFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
-    )
-    (defun XE_SetBeneficiaryDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
-        (beneficiary-id:string dptf-id:string)
     )
 )
 (module AQP-POOL GOV
@@ -263,13 +361,16 @@
             (
                 (ref-P|TFT:module{OuronetPolicyV1} TFT)
                 (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
+                (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
                 ;;
                 (mg:guard (create-capability-guard (P|AQP|CALLER)))
             )
             ;; AQP-POOL → TFT: XI_1|TransferDptfPoolCustody calls TFT::C_Transfer; TFT UEV_IMC requires this guard.
             (ref-P|TFT::P|A_AddIMP mg)
-            ;; AQP-POOL → DPOF: XI_1|TransferDpofPoolCustody calls DPOF::C_Transfer (whole nonce only).
+            ;; AQP-POOL → DPOF: XI_1|TransferDpofPoolCustody calls DPOF::C_Transfer; vacate batch uses XI_1|BulkTransferDpofPoolCustody → DPOF::C_BulkTransfer.
             (ref-P|DPOF::P|A_AddIMP mg)
+            ;; AQP-POOL → DPDC-T: XI_1|TransferCollectablePoolCustody calls DPDC-T::C_Transfer.
+            (ref-P|DPDC-T::P|A_AddIMP mg)
             true
         )
     )
@@ -404,14 +505,14 @@
         nonce:integer
         score-id:string
     )
-    ;;Beneficiary × asset rollups (pool-agnostic totals for ANK sync — see README_AQP.md § Anchor sync)
-    (defschema AQP|BeneficiaryDptfTotal
+    ;;Ben × asset rollups (pool-agnostic totals for ANK sync — see README_AQP.md § Anchor sync)
+    (defschema AQP|BenDptfTotal
         @doc "Cross-pool rollup: total DPTF staked by one beneficiary on one exact dptf-id leg \
             \ (native X and F|X are separate rows). Maintained on every TF stake/unstake POOL leg \
             \ (FVT::C_TrueFungibleStakeFlow → XE_TrueFungiblePoolCustody → XI bump). Input to \
             \ ANK::XE_UpdateTrueFungibleUserAnchorValues without scanning AQP|T|DPTFTracker keys. \
             \ last-ank-sync-count stores AQP-ANK::UR_AA|AnchorsActive(dptf-id) after the last successful \
-            \ anchor refresh; URC_BeneficiaryAnchorsNeedSync compares it to the live count so the UI can \
+            \ anchor refresh; URC_BenDptfAnchorsNeedSync compares it to the live count so the UI can \
             \ prompt C_SyncTrueFungibleAnchors when new anchors are issued after stake. Per-pool detail \
             \ remains in AQP|T|DPTFTracker; this row is the single O(1) read for anchor promile."
         total-balance:decimal                                           ;;[M] Sum of tracker balances for (beneficiary, dptf-id) across all pools
@@ -420,6 +521,45 @@
         ;;Select Keys
         beneficiary-id:string                                           ;;[.] Beneficiary (SCORE/ANK ouronet-account)
         dptf-id:string                                                  ;;[.] Exact DPTF id leg (native or F|); must match ANK ank-asset for sync call
+    )
+    (defschema AQP|BenDpsfNonceTotal
+        @doc "Cross-pool per-nonce DPSF rollup for one beneficiary. Separate table from DPNF so SELECT inventory \
+            \ does not scan NFT rows. Maintained on DPSF stake/unstake POOL legs (phase 1.3, planned). amount is \
+            \ integer supply staked on that nonce across all pools; 0 means fully unstaked (row may remain)."
+        amount:integer                                                  ;;[M] Staked supply on this nonce (0 = no active stake)
+        ;;
+        ;;Select Keys
+        beneficiary-id:string                                           ;;[.] Beneficiary (SCORE/ANK ouronet-account)
+        dpsf-id:string                                                  ;;[.] DPSF collection id (ANK ank-asset for SF sync)
+        nonce:integer                                                   ;;[.] DPSF nonce
+    )
+    (defschema AQP|BenDpnfNonceTotal
+        @doc "Cross-pool per-nonce DPNF rollup for one beneficiary. Separate table from DPSF — same id string may \
+            \ exist on both collections when minted in one tx, but rows live in disjoint tables. Maintained on DPNF \
+            \ stake/unstake POOL legs (phase 1.3, planned)."
+        amount:integer                                                  ;;[M] Staked supply on this nonce (0 = no active stake)
+        ;;
+        ;;Select Keys
+        beneficiary-id:string                                           ;;[.]
+        dpnf-id:string                                                  ;;[.] DPNF collection id
+        nonce:integer                                                   ;;[.] DPNF nonce
+    )
+    (defschema AQP|BenDpsfAnkMeta
+        @doc "Per (beneficiary, dpsf-id) ANK sync metadata. last-ank-sync-count is leg-wide, not per nonce — \
+            \ mirrors AQP|BenDptfTotal for TF. Maintained on stake phase 2.2 / C_SyncDpsfAnchors (planned)."
+        last-ank-sync-count:integer                                     ;;[M] ANK AssetAnchors.anchors-active at last sync (0 = never)
+        ;;
+        ;;Select Keys
+        beneficiary-id:string                                           ;;[.]
+        dpsf-id:string                                                  ;;[.]
+    )
+    (defschema AQP|BenDpnfAnkMeta
+        @doc "Per (beneficiary, dpnf-id) ANK sync metadata — DPNF counterpart of AQP|BenDpsfAnkMeta."
+        last-ank-sync-count:integer                                     ;;[M] ANK AssetAnchors.anchors-active at last sync (0 = never)
+        ;;
+        ;;Select Keys
+        beneficiary-id:string                                           ;;[.]
+        dpnf-id:string                                                  ;;[.]
     )
     ;;
     ;;{2}
@@ -433,8 +573,12 @@
     ;;
     (deftable AQP|T|DPSFScoreAttribution:{AQP|DPSFScoreAttribution})    ;;Key = <Pool-ID> | <DPSF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce> | <Score-ID>
     (deftable AQP|T|DPNFScoreAttribution:{AQP|DPNFScoreAttribution})    ;;Key = <Pool-ID> | <DPNF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce> | <Score-ID>
-    ;;Beneficiary rollups (pool-agnostic; ANK sync — not a substitute for per-pool trackers)
-    (deftable AQP|T|BeneficiaryDptfTotal:{AQP|BeneficiaryDptfTotal})    ;;Key = <Beneficiary-ID> | <DPTF-ID>
+    ;;Ben rollups (pool-agnostic; ANK sync — not a substitute for per-pool trackers)
+    (deftable AQP|T|BenDptfTotal:{AQP|BenDptfTotal})                    ;;Key = <Beneficiary-ID> | <DPTF-ID>
+    (deftable AQP|T|BenDpsfNonceTotal:{AQP|BenDpsfNonceTotal})          ;;Key = <Beneficiary-ID> | <DPSF-ID> | <Nonce>
+    (deftable AQP|T|BenDpnfNonceTotal:{AQP|BenDpnfNonceTotal})          ;;Key = <Beneficiary-ID> | <DPNF-ID> | <Nonce>
+    (deftable AQP|T|BenDpsfAnkMeta:{AQP|BenDpsfAnkMeta})                ;;Key = <Beneficiary-ID> | <DPSF-ID>
+    (deftable AQP|T|BenDpnfAnkMeta:{AQP|BenDpnfAnkMeta})                ;;Key = <Beneficiary-ID> | <DPNF-ID>
     ;;{3}
     (defun CT_Bar:string
         ()
@@ -445,9 +589,10 @@
     (defconst GAS|ISSUE-POOL                                            1000.0)
     (defconst GAS|ADD-SCORE                                             500.0)
     (defconst GAS|REVOKE-SCORE                                          500.0)
-    (defconst GAS|SYNC-TF-ANCHORS                                       500.0)
-    (defconst GAS|STAKE-TRUE-FUNGIBLE                                   500.0)
-    (defconst GAS|UNSTAKE-TRUE-FUNGIBLE                                 500.0)
+    (defconst GAS|SYNC-TF-ANCHORS                                       50.0)
+    (defconst GAS|SYNC-COLLECTABLE-ANCHORS                              50.0)
+    (defconst VACATE-MAX-LEGS                                           16)
+    (defconst VACATE-MAX-NONCES                                         64)
     (defun CT_EmptyCumulator ()
         @doc "Empty IGNIS OutputCumulator for stub transfer legs."
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2))
@@ -514,7 +659,7 @@
         (let
             (
                 (staked-bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
-                (rollup-bal:decimal (UR_AQP|BeneficiaryDptfTotalBalance beneficiary-id dptf-id))
+                (rollup-bal:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
                 (class-ok:bool (URC_StakeTrueFungiblePoolClassOk pool-id))
                 (scores-ok:bool (URC_PoolHasEmployedScores pool-id))
                 (dptf-ok:bool (URC_StakeTrueFungibleDptfMatchesPool pool-id dptf-id))
@@ -590,13 +735,307 @@
             (compose-capability (SECURE))
         )
     )
+    (defcap AQP|XE>COLLECTABLE-POOL-CUSTODY
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+        @doc "Forward-only (FVT::C_CollectableStakeFlow phase 1]): DPDC::C_Transfer + tracker validation. \
+            \ son=true DPSF (class-3 pool); son=false DPNF (class-4 pool)."
+        (let
+            (
+                (scores-ok:bool (URC_PoolHasEmployedScores pool-id))
+                (class-ok:bool (URC_StakeCollectablePoolClassOk pool-id son))
+                (collectable-ok:bool (URC_StakeCollectableMatchesPool pool-id collectable-id))
+                (tracker-ok:bool
+                    (if direction
+                        true
+                        (URC_CollectableUnstakeNoncesSufficient
+                            pool-id collectable-id son owner-id nonces nonce-amounts
+                        )
+                    )
+                )
+                (rollup-ok:bool
+                    (if direction
+                        true
+                        (URC_CollectableUnstakeRollupSufficient
+                            pool-id collectable-id son owner-id nonces nonce-amounts
+                        )
+                    )
+                )
+                (l-n:integer (length nonces))
+                (l-a:integer (length nonce-amounts))
+            )
+            (enforce
+                (fold (and) true [(> l-n 0) (= l-n l-a) scores-ok class-ok collectable-ok tracker-ok rollup-ok])
+                "Invalid collectable pool custody: pool class/collectable-id or insufficient tracker balance"
+            )
+            (UEV_StakeCollectableLeg collectable-id son)
+            (if direction
+                (let
+                    (
+                        (ref-DPDC:module{DpdcV1} DPDC)
+                    )
+                    (ref-DPDC::UEV_NonceQuantityInclusionMapper owner-id collectable-id son nonces nonce-amounts)
+                )
+                true
+            )
+            (if direction
+                (UEV_StakeBeneficiaryAccount beneficiary-id)
+                true
+            )
+            (CAP_StakeOwner owner-id)
+            (compose-capability (P|AQP|CALLER))
+            (compose-capability (AQP-ANK.AQP|GOV))
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap AQP|XE>TRUE-FUNGIBLE-POOL-VACATE-CUSTODY
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Forward-only (FVT::C_VacateTrueFungible phase 1.1]): forced unstake — CAP_PoolOwner; \
+            \ transfer vault→owner; beneficiary-id keys tracker/rollup row for SCORE/ANK unwind only."
+        (let
+            (
+                (staked-bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
+                (rollup-bal:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
+                (class-ok:bool (URC_StakeTrueFungiblePoolClassOk pool-id))
+                (scores-ok:bool (URC_PoolHasEmployedScores pool-id))
+                (dptf-ok:bool (URC_StakeTrueFungibleDptfMatchesPool pool-id dptf-id))
+                (tracker-ok:bool (>= staked-bal amount))
+                (rollup-ok:bool (>= rollup-bal amount))
+            )
+            (enforce
+                (fold (and) true [class-ok scores-ok dptf-ok tracker-ok rollup-ok (> amount 0.0)])
+                "Invalid TF pool vacate: pool class/scores/dptf-id or insufficient staked/rollup balance"
+            )
+            (CAP_PoolOwner pool-id)
+            (compose-capability (P|AQP|CALLER))
+            (compose-capability (AQP-ANK.AQP|GOV))
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap AQP|XE>ORTO-FUNGIBLE-POOL-VACATE-CUSTODY
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+        )
+        @doc "Forward-only (FVT::C_VacateOrtoFungibleBatch phase 1.1]): forced unstake — CAP_PoolOwner; \
+            \ transfer vault→owner; beneficiary-id keys tracker row for SCORE unwind only."
+        (let
+            (
+                (scores-ok:bool (URC_PoolHasEmployedScores pool-id))
+                (class-ok:bool (URC_StakeOrtoFungiblePoolClassOk pool-id))
+                (dpof-ok:bool (URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id))
+                (whole-nonce-ok:bool (URC_OrtoStakeWholeNonceAmounts dpof-id nonces nonce-amounts))
+                (beneficiary-ok:bool
+                    (URC_VacateOrtoLegBeneficiaryOk pool-id dpof-id owner-id beneficiary-id nonces)
+                )
+                (tracker-ok:bool
+                    (URC_VacateOrtoNoncesSufficient
+                        pool-id dpof-id owner-id beneficiary-id nonces nonce-amounts
+                    )
+                )
+                (l-n:integer (length nonces))
+                (l-a:integer (length nonce-amounts))
+            )
+            (enforce
+                (fold (and) true [(> l-n 0) (= l-n l-a) scores-ok class-ok dpof-ok whole-nonce-ok beneficiary-ok tracker-ok])
+                "Invalid OF pool vacate: pool class/dpof-id, whole nonces/amounts, beneficiary mismatch, or insufficient tracker balance"
+            )
+            (UEV_StakeOrtoFungibleDpofLeg dpof-id)
+            (CAP_PoolOwner pool-id)
+            (compose-capability (P|AQP|CALLER))
+            (compose-capability (AQP-ANK.AQP|GOV))
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap AQP|XE>ORTO-FUNGIBLE-POOL-VACATE-BULK-CUSTODY
+        (
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            nonce-amounts-array:[[decimal]]
+        )
+        @doc "Forward-only (FVT::C_VacateOrtoFungibleBatch phase 1.1]): one DPOF::C_BulkTransfer vault→owners; \
+            \ CAP_PoolOwner; beneficiary-id per leg keys tracker/SCORE unwind only."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                ;;
+                (vault:string AQP|SC_NAME)
+                (l:integer (length owner-ids))
+                (scores-ok:bool (URC_PoolHasEmployedScores pool-id))
+                (class-ok:bool (URC_StakeOrtoFungiblePoolClassOk pool-id))
+                (dpof-ok:bool (URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id))
+                (all-nonces:[integer]
+                    (fold
+                        (lambda (acc:[integer] ns:[integer])
+                            (+ acc ns)
+                        )
+                        []
+                        nonces-array
+                    )
+                )
+                (legs-ok:bool
+                    (fold
+                        (and)
+                        true
+                        (map
+                            (lambda (idx:integer)
+                                (let
+                                    (
+                                        (owner-id:string (at idx owner-ids))
+                                        (beneficiary-id:string (at idx beneficiary-ids))
+                                        (nonces:[integer] (at idx nonces-array))
+                                        (nonce-amounts:[decimal] (at idx nonce-amounts-array))
+                                        (l-n:integer (length nonces))
+                                        (l-a:integer (length nonce-amounts))
+                                        (whole-nonce-ok:bool
+                                            (URC_OrtoStakeWholeNonceAmounts dpof-id nonces nonce-amounts)
+                                        )
+                                        (beneficiary-ok:bool
+                                            (URC_VacateOrtoLegBeneficiaryOk
+                                                pool-id dpof-id owner-id beneficiary-id nonces
+                                            )
+                                        )
+                                        (tracker-ok:bool
+                                            (URC_VacateOrtoNoncesSufficient
+                                                pool-id dpof-id owner-id beneficiary-id nonces nonce-amounts
+                                            )
+                                        )
+                                    )
+                                    (fold (and) true
+                                        [(> l-n 0) (= l-n l-a) whole-nonce-ok beneficiary-ok tracker-ok]
+                                    )
+                                )
+                            )
+                            (enumerate 0 (- l 1))
+                        )
+                    )
+                )
+            )
+            (ref-U|LST::UC_IzUnique owner-ids)
+            (enforce
+                (fold (and) true
+                    [
+                        (> l 0)
+                        scores-ok
+                        class-ok
+                        dpof-ok
+                        legs-ok
+                        (> (length all-nonces) 0)
+                    ]
+                )
+                "Invalid OF pool vacate bulk custody: pool class/dpof-id, owner legs, or vault nonces"
+            )
+            (UEV_StakeOrtoFungibleDpofLeg dpof-id)
+            (ref-DPOF::UEV_NoncesToAccount dpof-id vault all-nonces)
+            (ref-DPOF::UEV_NoncesCirculating dpof-id all-nonces)
+            (CAP_PoolOwner pool-id)
+            (compose-capability (P|AQP|CALLER))
+            (compose-capability (AQP-ANK.AQP|GOV))
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap AQP|XE>COLLECTABLE-POOL-VACATE-CUSTODY
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+        @doc "Forward-only (FVT::C_VacateCollectableBatch phase 1.1]): forced unstake — CAP_PoolOwner; \
+            \ transfer vault→owner; beneficiary-id keys tracker/rollup rows for SCORE/ANK unwind only."
+        (let
+            (
+                (scores-ok:bool (URC_PoolHasEmployedScores pool-id))
+                (class-ok:bool (URC_StakeCollectablePoolClassOk pool-id son))
+                (collectable-ok:bool (URC_StakeCollectableMatchesPool pool-id collectable-id))
+                (beneficiary-ok:bool
+                    (URC_VacateCollectableLegBeneficiaryOk
+                        pool-id collectable-id son owner-id beneficiary-id nonces
+                    )
+                )
+                (tracker-ok:bool
+                    (URC_VacateCollectableNoncesSufficient
+                        pool-id collectable-id son owner-id beneficiary-id nonces nonce-amounts
+                    )
+                )
+                (rollup-ok:bool
+                    (URC_VacateCollectableRollupSufficient
+                        pool-id collectable-id son owner-id beneficiary-id nonces nonce-amounts
+                    )
+                )
+                (l-n:integer (length nonces))
+                (l-a:integer (length nonce-amounts))
+            )
+            (enforce
+                (fold (and) true
+                    [(> l-n 0) (= l-n l-a) scores-ok class-ok collectable-ok beneficiary-ok tracker-ok rollup-ok]
+                )
+                "Invalid collectable pool vacate: pool class/collectable-id, beneficiary mismatch, or insufficient balance"
+            )
+            (UEV_StakeCollectableLeg collectable-id son)
+            (CAP_PoolOwner pool-id)
+            (compose-capability (P|AQP|CALLER))
+            (compose-capability (AQP-ANK.AQP|GOV))
+            (compose-capability (SECURE))
+        )
+    )
     (defcap AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC
         (beneficiary-id:string dptf-id:string)
-        @doc "Backward-only (FVT::C_TrueFungibleStakeFlow phase 2.2]): stamp last-ank-sync-count on BeneficiaryDptfTotal. \
+        @doc "Backward-only (FVT::C_TrueFungibleStakeFlow phase 2.2]): stamp last-ank-sync-count on BenDptfTotal. \
             \ beneficiary/dptf validation here; full stake rules in FVT|C>TRUE-FUNGIBLE-STAKE-FLOW. \
             \ Composes SECURE for XE write body. Not @event — UEV_IMC on XE entry."
         (UEV_StakeBeneficiaryAccount beneficiary-id)
         (UEV_StakeTrueFungibleDptfLeg dptf-id)
+        (compose-capability (SECURE))
+    )
+    (defcap AQP|C>SYNC-TF-ANCHORS
+        (patron:string beneficiary-id:string dptf-id:string)
+        @doc "Pool-agnostic ANK repair for one beneficiary × dptf-id leg. Patron pays IGNIS; composes SECURE."
+        @event
+        (enforce
+            (> (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id) 0.0)
+            "No cross-pool TF stake to sync"
+        )
+        (UEV_StakeBeneficiaryAccount beneficiary-id)
+        (UEV_StakeTrueFungibleDptfLeg dptf-id)
+        (compose-capability (SECURE))
+    )
+    (defcap AQP|C>SYNC-COLLECTABLE-ANCHORS
+        (patron:string beneficiary-id:string collectable-id:string son:bool)
+        @doc "Pool-agnostic ANK repair for DPSF (son=true) or DPNF (son=false). Patron pays IGNIS; composes SECURE."
+        @event
+        (enforce
+            (URC_BenCollectableHasStake beneficiary-id collectable-id son)
+            "No cross-pool collectable stake to sync"
+        )
+        (UEV_StakeBeneficiaryAccount beneficiary-id)
+        (UEV_StakeCollectableLeg collectable-id son)
+        (compose-capability (SECURE))
+    )
+    (defcap AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC
+        (beneficiary-id:string collectable-id:string son:bool)
+        @doc "Backward (FVT stake phase 3 / C_SyncCollectableAnchors): stamp BenDpsfAnkMeta or BenDpnfAnkMeta."
+        (UEV_StakeBeneficiaryAccount beneficiary-id)
+        (UEV_StakeCollectableLeg collectable-id son)
         (compose-capability (SECURE))
     )
     ;;{C3}
@@ -630,9 +1069,25 @@
         @doc "Composite key for AQP|T|DPNFScoreAttribution: pool | dpnf | owner | beneficiary | nonce | score-id."
         (concat [pool-id BAR dpnf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce]) BAR score-id])
     )
-    (defun UC_BeneficiaryDptfTotalKey:string (beneficiary-id:string dptf-id:string)
-        @doc "Composite key for AQP|T|BeneficiaryDptfTotal: beneficiary-id | dptf-id."
+    (defun UC_BenDptfTotalKey:string (beneficiary-id:string dptf-id:string)
+        @doc "Composite key for AQP|T|BenDptfTotal: beneficiary-id | dptf-id."
         (concat [beneficiary-id BAR dptf-id])
+    )
+    (defun UC_BenDpsfNonceTotalKey:string (beneficiary-id:string dpsf-id:string nonce:integer)
+        @doc "Composite key for AQP|T|BenDpsfNonceTotal: beneficiary-id | dpsf-id | nonce."
+        (concat [beneficiary-id BAR dpsf-id BAR (format "{}" [nonce])])
+    )
+    (defun UC_BenDpnfNonceTotalKey:string (beneficiary-id:string dpnf-id:string nonce:integer)
+        @doc "Composite key for AQP|T|BenDpnfNonceTotal: beneficiary-id | dpnf-id | nonce."
+        (concat [beneficiary-id BAR dpnf-id BAR (format "{}" [nonce])])
+    )
+    (defun UC_BenDpsfAnkMetaKey:string (beneficiary-id:string dpsf-id:string)
+        @doc "Composite key for AQP|T|BenDpsfAnkMeta: beneficiary-id | dpsf-id."
+        (concat [beneficiary-id BAR dpsf-id])
+    )
+    (defun UC_BenDpnfAnkMetaKey:string (beneficiary-id:string dpnf-id:string)
+        @doc "Composite key for AQP|T|BenDpnfAnkMeta: beneficiary-id | dpnf-id."
+        (concat [beneficiary-id BAR dpnf-id])
     )
     ;;
     ;;{F3}  [UDC]
@@ -700,13 +1155,43 @@
         ,"nonce"                        : nonce
         ,"score-id"                     : score-id}
     )
-    (defun UDC_AQP|BeneficiaryDptfTotal:object{AQP|BeneficiaryDptfTotal}
+    (defun UDC_AQP|BenDptfTotal:object{AQP|BenDptfTotal}
         (total:decimal sync-count:integer beneficiary-id:string dptf-id:string)
         @doc "Default beneficiary DPTF rollup row (zero total, never synced)."
         {"total-balance"        : total
         ,"last-ank-sync-count"  : sync-count
         ,"beneficiary-id"       : beneficiary-id
         ,"dptf-id"              : dptf-id}
+    )
+    (defun UDC_AQP|BenDpsfNonceTotal:object{AQP|BenDpsfNonceTotal}
+        (amount:integer beneficiary-id:string dpsf-id:string nonce:integer)
+        @doc "Default DPSF per-nonce rollup row (zero amount)."
+        {"amount"           : amount
+        ,"beneficiary-id"   : beneficiary-id
+        ,"dpsf-id"          : dpsf-id
+        ,"nonce"            : nonce}
+    )
+    (defun UDC_AQP|BenDpnfNonceTotal:object{AQP|BenDpnfNonceTotal}
+        (amount:integer beneficiary-id:string dpnf-id:string nonce:integer)
+        @doc "Default DPNF per-nonce rollup row (zero amount)."
+        {"amount"           : amount
+        ,"beneficiary-id"   : beneficiary-id
+        ,"dpnf-id"          : dpnf-id
+        ,"nonce"            : nonce}
+    )
+    (defun UDC_AQP|BenDpsfAnkMeta:object{AQP|BenDpsfAnkMeta}
+        (sync-count:integer beneficiary-id:string dpsf-id:string)
+        @doc "Default DPSF ANK meta row (never synced)."
+        {"last-ank-sync-count"  : sync-count
+        ,"beneficiary-id"       : beneficiary-id
+        ,"dpsf-id"              : dpsf-id}
+    )
+    (defun UDC_AQP|BenDpnfAnkMeta:object{AQP|BenDpnfAnkMeta}
+        (sync-count:integer beneficiary-id:string dpnf-id:string)
+        @doc "Default DPNF ANK meta row (never synced)."
+        {"last-ank-sync-count"  : sync-count
+        ,"beneficiary-id"       : beneficiary-id
+        ,"dpnf-id"              : dpnf-id}
     )
     (defun UDC_AQP|Schema:object{AQP|Schema}
         (aqp-class:integer asset-id:string aqp-id:string)
@@ -781,7 +1266,8 @@
     )
     ;;
     ;;{F0}  [UR]
-    ;; Reads follow schema order: (1) AQP|Schema (2) TrueFungibleTracker (2b) BeneficiaryDptfTotal \
+    ;; Reads follow schema order: (1) AQP|Schema (2) TrueFungibleTracker (2b) BenDptfTotal \
+    ;;     (2c) BenDpsf* + BenDpnf* rollups \
     ;;     (3) OrtoFungibleTracker (4) SemiFungibleTracker (5) NonFungibleTracker \
     ;;     (6) DPSFScoreAttribution (7) DPNFScoreAttribution
     ;;
@@ -870,39 +1356,179 @@
         (at "beneficiary-id" (UR_AQP|DPTFTracker pool-id dptf-id owner-id beneficiary-id))
     )
     ;;
-    ;; [2b] AQP|T|BeneficiaryDptfTotal  (AQP|BeneficiaryDptfTotal)
-    (defun UR_AQP|BeneficiaryDptfTotal:object{AQP|BeneficiaryDptfTotal}
+    ;; [2b] AQP|T|BenDptfTotal  (AQP|BenDptfTotal)
+    (defun UR_AQP|BenDptfTotal:object{AQP|BenDptfTotal}
         (beneficiary-id:string dptf-id:string)
         @doc "Reads cross-pool DPTF stake rollup for beneficiary × dptf-id; absent row reads as zero total."
-        (with-default-read AQP|T|BeneficiaryDptfTotal (UC_BeneficiaryDptfTotalKey beneficiary-id dptf-id)
-            (UDC_AQP|BeneficiaryDptfTotal 0.0 0 beneficiary-id dptf-id)
+        (with-default-read AQP|T|BenDptfTotal (UC_BenDptfTotalKey beneficiary-id dptf-id)
+            (UDC_AQP|BenDptfTotal 0.0 0 beneficiary-id dptf-id)
             {"total-balance"        := tb
             ,"last-ank-sync-count"  := sc
             ,"beneficiary-id"       := bid
             ,"dptf-id"              := did}
-            (UDC_AQP|BeneficiaryDptfTotal tb sc bid did)
+            (UDC_AQP|BenDptfTotal tb sc bid did)
         )
     )
-    (defun UR_AQP|BeneficiaryDptfTotalBalance:decimal (beneficiary-id:string dptf-id:string)
+    (defun UR_AQP|BenDptfTotalBalance:decimal (beneficiary-id:string dptf-id:string)
         @doc "Total DPTF staked by beneficiary across all pools for this exact dptf-id leg."
-        (at "total-balance" (UR_AQP|BeneficiaryDptfTotal beneficiary-id dptf-id))
+        (at "total-balance" (UR_AQP|BenDptfTotal beneficiary-id dptf-id))
     )
-    (defun UR_AQP|BeneficiaryDptfLastAnkSyncCount:integer (beneficiary-id:string dptf-id:string)
+    (defun UR_AQP|BenDptfLastAnkSyncCount:integer (beneficiary-id:string dptf-id:string)
         @doc "ANK anchors-active count recorded at last anchor sync for this beneficiary × dptf-id."
-        (at "last-ank-sync-count" (UR_AQP|BeneficiaryDptfTotal beneficiary-id dptf-id))
+        (at "last-ank-sync-count" (UR_AQP|BenDptfTotal beneficiary-id dptf-id))
     )
-    (defun URC_BeneficiaryAnchorsNeedSync:bool (beneficiary-id:string dptf-id:string)
+    (defun URC_BenDptfAnchorsNeedSync:bool (beneficiary-id:string dptf-id:string)
         @doc "True when beneficiary has positive cross-pool stake on dptf-id and ANK has more live anchors \
             \ than were applied at last sync — UI signal for C_SyncTrueFungibleAnchors."
         (let
             (
                 (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 ;;
-                (total:decimal (UR_AQP|BeneficiaryDptfTotalBalance beneficiary-id dptf-id))
-                (last-sync:integer (UR_AQP|BeneficiaryDptfLastAnkSyncCount beneficiary-id dptf-id))
+                (total:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
+                (last-sync:integer (UR_AQP|BenDptfLastAnkSyncCount beneficiary-id dptf-id))
                 (live-count:integer (ref-ANK::UR_AA|AnchorsActive dptf-id))
             )
             (and (> total 0.0) (> live-count last-sync))
+        )
+    )
+    ;;
+    ;; [2c] AQP|T|BenDpsfNonceTotal + AQP|T|BenDpsfAnkMeta
+    (defun UR_AQP|BenDpsfNonceTotal:object{AQP|BenDpsfNonceTotal}
+        (beneficiary-id:string dpsf-id:string nonce:integer)
+        @doc "Reads cross-pool per-nonce DPSF rollup; absent row reads as zero amount."
+        (with-default-read AQP|T|BenDpsfNonceTotal
+            (UC_BenDpsfNonceTotalKey beneficiary-id dpsf-id nonce)
+            (UDC_AQP|BenDpsfNonceTotal 0 beneficiary-id dpsf-id nonce)
+            {"amount"           := amt
+            ,"beneficiary-id"   := bid
+            ,"dpsf-id"          := did
+            ,"nonce"            := n}
+            (UDC_AQP|BenDpsfNonceTotal amt bid did n)
+        )
+    )
+    (defun UR_AQP|BenDpsfNonceAmount:integer (beneficiary-id:string dpsf-id:string nonce:integer)
+        @doc "Staked integer supply on one DPSF nonce across all pools for (beneficiary, dpsf-id)."
+        (at "amount" (UR_AQP|BenDpsfNonceTotal beneficiary-id dpsf-id nonce))
+    )
+    (defun UR_AQP|BenDpsfAnkMeta:object{AQP|BenDpsfAnkMeta}
+        (beneficiary-id:string dpsf-id:string)
+        @doc "Reads ANK sync metadata for one DPSF leg; absent row reads as never synced."
+        (with-default-read AQP|T|BenDpsfAnkMeta
+            (UC_BenDpsfAnkMetaKey beneficiary-id dpsf-id)
+            (UDC_AQP|BenDpsfAnkMeta 0 beneficiary-id dpsf-id)
+            {"last-ank-sync-count"  := sc
+            ,"beneficiary-id"       := bid
+            ,"dpsf-id"              := did}
+            (UDC_AQP|BenDpsfAnkMeta sc bid did)
+        )
+    )
+    (defun UR_AQP|BenDpsfLastAnkSyncCount:integer (beneficiary-id:string dpsf-id:string)
+        @doc "ANK anchors-active count recorded at last DPSF anchor sync for (beneficiary, dpsf-id)."
+        (at "last-ank-sync-count" (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
+    )
+    (defun URD_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string)
+        @doc "Nonce × amount objects for (beneficiary, dpsf-id) where rollup amount > 0 — DPSF resync inventory."
+        (let
+            (
+                (results
+                    (filter
+                        (lambda (x) (> (at "amount" x) 0))
+                        (select AQP|T|BenDpsfNonceTotal ["nonce" "amount"]
+                            (and?
+                                (where "beneficiary-id" (= beneficiary-id))
+                                (where "dpsf-id" (= dpsf-id))
+                            )
+                        )
+                    )
+                )
+            )
+            (if (= (length results) 0) [] results)
+        )
+    )
+    (defun URC_BenDpsfHasStake:bool (beneficiary-id:string dpsf-id:string)
+        @doc "True when beneficiary has any positive DPSF per-nonce rollup under dpsf-id."
+        (> (length (URD_AQP|BenDpsfActiveNonceSupplies beneficiary-id dpsf-id)) 0)
+    )
+    (defun URC_BenDpsfAnchorsNeedSync:bool (beneficiary-id:string dpsf-id:string)
+        @doc "True when beneficiary has active DPSF stake and ANK has more live anchors on dpsf-id than at last sync."
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                ;;
+                (last-sync:integer (UR_AQP|BenDpsfLastAnkSyncCount beneficiary-id dpsf-id))
+                (live-count:integer (ref-ANK::UR_AA|AnchorsActive dpsf-id))
+            )
+            (and (URC_BenDpsfHasStake beneficiary-id dpsf-id) (> live-count last-sync))
+        )
+    )
+    ;;
+    ;; [2d] AQP|T|BenDpnfNonceTotal + AQP|T|BenDpnfAnkMeta
+    (defun UR_AQP|BenDpnfNonceTotal:object{AQP|BenDpnfNonceTotal}
+        (beneficiary-id:string dpnf-id:string nonce:integer)
+        @doc "Reads cross-pool per-nonce DPNF rollup; absent row reads as zero amount."
+        (with-default-read AQP|T|BenDpnfNonceTotal
+            (UC_BenDpnfNonceTotalKey beneficiary-id dpnf-id nonce)
+            (UDC_AQP|BenDpnfNonceTotal 0 beneficiary-id dpnf-id nonce)
+            {"amount"           := amt
+            ,"beneficiary-id"   := bid
+            ,"dpnf-id"          := nid
+            ,"nonce"            := n}
+            (UDC_AQP|BenDpnfNonceTotal amt bid nid n)
+        )
+    )
+    (defun UR_AQP|BenDpnfNonceAmount:integer (beneficiary-id:string dpnf-id:string nonce:integer)
+        @doc "Staked integer supply on one DPNF nonce across all pools for (beneficiary, dpnf-id)."
+        (at "amount" (UR_AQP|BenDpnfNonceTotal beneficiary-id dpnf-id nonce))
+    )
+    (defun UR_AQP|BenDpnfAnkMeta:object{AQP|BenDpnfAnkMeta}
+        (beneficiary-id:string dpnf-id:string)
+        @doc "Reads ANK sync metadata for one DPNF leg; absent row reads as never synced."
+        (with-default-read AQP|T|BenDpnfAnkMeta
+            (UC_BenDpnfAnkMetaKey beneficiary-id dpnf-id)
+            (UDC_AQP|BenDpnfAnkMeta 0 beneficiary-id dpnf-id)
+            {"last-ank-sync-count"  := sc
+            ,"beneficiary-id"       := bid
+            ,"dpnf-id"              := nid}
+            (UDC_AQP|BenDpnfAnkMeta sc bid nid)
+        )
+    )
+    (defun UR_AQP|BenDpnfLastAnkSyncCount:integer (beneficiary-id:string dpnf-id:string)
+        @doc "ANK anchors-active count recorded at last DPNF anchor sync for (beneficiary, dpnf-id)."
+        (at "last-ank-sync-count" (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
+    )
+    (defun URD_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string)
+        @doc "Nonce × amount objects for (beneficiary, dpnf-id) where rollup amount > 0 — DPNF resync inventory."
+        (let
+            (
+                (results
+                    (filter
+                        (lambda (x) (> (at "amount" x) 0))
+                        (select AQP|T|BenDpnfNonceTotal ["nonce" "amount"]
+                            (and?
+                                (where "beneficiary-id" (= beneficiary-id))
+                                (where "dpnf-id" (= dpnf-id))
+                            )
+                        )
+                    )
+                )
+            )
+            (if (= (length results) 0) [] results)
+        )
+    )
+    (defun URC_BenDpnfHasStake:bool (beneficiary-id:string dpnf-id:string)
+        @doc "True when beneficiary has any positive DPNF per-nonce rollup under dpnf-id."
+        (> (length (URD_AQP|BenDpnfActiveNonceSupplies beneficiary-id dpnf-id)) 0)
+    )
+    (defun URC_BenDpnfAnchorsNeedSync:bool (beneficiary-id:string dpnf-id:string)
+        @doc "True when beneficiary has active DPNF stake and ANK has more live anchors on dpnf-id than at last sync."
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                ;;
+                (last-sync:integer (UR_AQP|BenDpnfLastAnkSyncCount beneficiary-id dpnf-id))
+                (live-count:integer (ref-ANK::UR_AA|AnchorsActive dpnf-id))
+            )
+            (and (URC_BenDpnfHasStake beneficiary-id dpnf-id) (> live-count last-sync))
         )
     )
     ;;
@@ -1458,6 +2084,278 @@
             )
         )
     )
+    (defun URC_StakeCollectablePoolClassOk:bool (pool-id:string son:bool)
+        @doc "True when pool aqp-class matches son: true→3 (DPSF), false→4 (DPNF)."
+        (= (UR_AQP|PoolAqpClass pool-id) (if son 3 4))
+    )
+    (defun URC_StakeCollectableMatchesPool:bool (pool-id:string collectable-id:string)
+        @doc "True when collectable-id equals pool canonical asset-id."
+        (= collectable-id (UR_AQP|PoolAssetId pool-id))
+    )
+    (defun URC_CollectableUnstakeBeneficiaryId:string
+        (pool-id:string collectable-id:string son:bool owner-id:string nonce:integer)
+        @doc "Unstake: read beneficiary-id from DPSF/DPNF tracker row. v1 uses self-stake key (beneficiary=owner)."
+        (if son
+            (UR_AQP|DPSFTrackerBeneficiaryId pool-id collectable-id owner-id owner-id nonce)
+            (UR_AQP|DPNFTrackerBeneficiaryId pool-id collectable-id owner-id owner-id nonce)
+        )
+    )
+    (defun URC_CollectableUnstakeNoncesSufficient:bool
+        (pool-id:string collectable-id:string son:bool owner-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Unstake: each nonce has tracker balance ≥ unstake amount."
+        (let
+            (
+                (l:integer (length nonces))
+            )
+            (fold
+                (and)
+                true
+                (map
+                    (lambda (idx:integer)
+                        (let
+                            (
+                                (n:integer (at idx nonces))
+                                (q:integer (at idx nonce-amounts))
+                                (bid:string (URC_CollectableUnstakeBeneficiaryId pool-id collectable-id son owner-id n))
+                                (bal:decimal
+                                    (if son
+                                        (UR_AQP|DPSFTrackerBalance pool-id collectable-id owner-id bid n)
+                                        (UR_AQP|DPNFTrackerBalance pool-id collectable-id owner-id bid n)
+                                    )
+                                )
+                            )
+                            (>= bal (dec q))
+                        )
+                    )
+                    (enumerate 0 (- l 1))
+                )
+            )
+        )
+    )
+    (defun URC_BenCollectableHasStake:bool (beneficiary-id:string collectable-id:string son:bool)
+        @doc "True when beneficiary has active cross-pool collectable rollup (son dispatches DPSF vs DPNF table)."
+        (if son
+            (URC_BenDpsfHasStake beneficiary-id collectable-id)
+            (URC_BenDpnfHasStake beneficiary-id collectable-id)
+        )
+    )
+    (defun URC_CollectableUnstakeRollupSufficient:bool
+        (pool-id:string collectable-id:string son:bool owner-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Unstake: each nonce has cross-pool Ben* nonce rollup amount ≥ unstake amount."
+        (let
+            (
+                (l:integer (length nonces))
+            )
+            (fold
+                (and)
+                true
+                (map
+                    (lambda (idx:integer)
+                        (let
+                            (
+                                (n:integer (at idx nonces))
+                                (q:integer (at idx nonce-amounts))
+                                (bid:string (URC_CollectableUnstakeBeneficiaryId pool-id collectable-id son owner-id n))
+                                (rollup-amt:integer
+                                    (if son
+                                        (UR_AQP|BenDpsfNonceAmount bid collectable-id n)
+                                        (UR_AQP|BenDpnfNonceAmount bid collectable-id n)
+                                    )
+                                )
+                            )
+                            (>= rollup-amt q)
+                        )
+                    )
+                    (enumerate 0 (- l 1))
+                )
+            )
+        )
+    )
+    (defun URC_VacateOrtoLegBeneficiaryOk:bool
+        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonces:[integer])
+        @doc "Vacate: each DPOF nonce tracker row beneficiary-id must equal the supplied beneficiary-id."
+        (let
+            (
+                (l:integer (length nonces))
+            )
+            (fold
+                (and)
+                true
+                (map
+                    (lambda (idx:integer)
+                        (let
+                            (
+                                (n:integer (at idx nonces))
+                                (row-ben:string
+                                    (UR_AQP|DPOFTrackerBeneficiaryId pool-id dpof-id owner-id beneficiary-id n)
+                                )
+                            )
+                            (= row-ben beneficiary-id)
+                        )
+                    )
+                    (enumerate 0 (- l 1))
+                )
+            )
+        )
+    )
+    (defun URC_VacateOrtoNoncesSufficient:bool
+        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[decimal])
+        @doc "Vacate: each DPOF nonce has tracker balance ≥ vacate amount for explicit beneficiary."
+        (let
+            (
+                (l:integer (length nonces))
+            )
+            (fold
+                (and)
+                true
+                (map
+                    (lambda (idx:integer)
+                        (let
+                            (
+                                (n:integer (at idx nonces))
+                                (q:decimal (at idx nonce-amounts))
+                                (bal:decimal
+                                    (UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id n)
+                                )
+                            )
+                            (>= bal q)
+                        )
+                    )
+                    (enumerate 0 (- l 1))
+                )
+            )
+        )
+    )
+    (defun URC_VacateBatchLegParityOk:bool
+        (owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "Vacate batch: parallel arrays same positive length ≤ VACATE-MAX-LEGS."
+        (let
+            (
+                (l:integer (length owner-ids))
+            )
+            (fold
+                (and)
+                true
+                [
+                    (> l 0)
+                    (<= l VACATE-MAX-LEGS)
+                    (= l (length beneficiary-ids))
+                    (= l (length nonces-array))
+                    (= l (length amounts-array))
+                ]
+            )
+        )
+    )
+    (defun URC_VacateBatchNonceTotalOk:bool (nonces-array:[[integer]])
+        @doc "Vacate batch: total nonce count across legs is positive and ≤ VACATE-MAX-NONCES."
+        (let
+            (
+                (tot:integer
+                    (fold
+                        (+)
+                        0
+                        (map
+                            (lambda (ns:[integer]) (length ns))
+                            nonces-array
+                        )
+                    )
+                )
+            )
+            (fold (and) true [(> tot 0) (<= tot VACATE-MAX-NONCES)])
+        )
+    )
+    (defun URC_VacateCollectableLegBeneficiaryOk:bool
+        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer])
+        @doc "Vacate: each nonce tracker row beneficiary-id must equal the supplied beneficiary-id."
+        (let
+            (
+                (l:integer (length nonces))
+            )
+            (fold
+                (and)
+                true
+                (map
+                    (lambda (idx:integer)
+                        (let
+                            (
+                                (n:integer (at idx nonces))
+                                (row-ben:string
+                                    (if son
+                                        (UR_AQP|DPSFTrackerBeneficiaryId pool-id collectable-id owner-id beneficiary-id n)
+                                        (UR_AQP|DPNFTrackerBeneficiaryId pool-id collectable-id owner-id beneficiary-id n)
+                                    )
+                                )
+                            )
+                            (= row-ben beneficiary-id)
+                        )
+                    )
+                    (enumerate 0 (- l 1))
+                )
+            )
+        )
+    )
+    (defun URC_VacateCollectableNoncesSufficient:bool
+        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Vacate: each nonce has tracker balance ≥ vacate amount for explicit beneficiary."
+        (let
+            (
+                (l:integer (length nonces))
+            )
+            (fold
+                (and)
+                true
+                (map
+                    (lambda (idx:integer)
+                        (let
+                            (
+                                (n:integer (at idx nonces))
+                                (q:integer (at idx nonce-amounts))
+                                (bal:decimal
+                                    (if son
+                                        (UR_AQP|DPSFTrackerBalance pool-id collectable-id owner-id beneficiary-id n)
+                                        (UR_AQP|DPNFTrackerBalance pool-id collectable-id owner-id beneficiary-id n)
+                                    )
+                                )
+                            )
+                            (>= bal (dec q))
+                        )
+                    )
+                    (enumerate 0 (- l 1))
+                )
+            )
+        )
+    )
+    (defun URC_VacateCollectableRollupSufficient:bool
+        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Vacate: each nonce has cross-pool Ben* nonce rollup amount ≥ vacate amount."
+        (let
+            (
+                (l:integer (length nonces))
+            )
+            (fold
+                (and)
+                true
+                (map
+                    (lambda (idx:integer)
+                        (let
+                            (
+                                (n:integer (at idx nonces))
+                                (q:integer (at idx nonce-amounts))
+                                (rollup-amt:integer
+                                    (if son
+                                        (UR_AQP|BenDpsfNonceAmount beneficiary-id collectable-id n)
+                                        (UR_AQP|BenDpnfNonceAmount beneficiary-id collectable-id n)
+                                    )
+                                )
+                            )
+                            (>= rollup-amt q)
+                        )
+                    )
+                    (enumerate 0 (- l 1))
+                )
+            )
+        )
+    )
     ;;
     ;;{F2}  [UEV]
     (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string)
@@ -1645,6 +2543,15 @@
             (ref-DPOF::UEV_id dpof-id)
         )
     )
+    (defun UEV_StakeCollectableLeg (collectable-id:string son:bool)
+        @doc "Validate issued DPDC collectable id via DPDC::UEV_id."
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::UEV_id collectable-id son)
+        )
+    )
     ;;
     ;;{F4}  [CAP]
     (defun CAP_AqpAssetOwner (aqp-class:integer asset-id:string)
@@ -1752,29 +2659,79 @@
             )
         )
     )
-    ;;
-    ;;=== PLANNED C_* (comment-only — not on interface; home module TBD at implementation) ===
-    ;; TF stake/unstake recipe lives in FVT::C_TrueFungibleStakeFlow; POOL phase-1 is XE_TrueFungiblePoolCustody.
-    ;;
-    ;; C_StakeOrtoFungible(patron pool-id owner-id beneficiary-id dpof-id nonces)
-    ;;   Stake whole DPOF nonces into pool-id (AQP|T|DPOFTracker) via DPOF::C_Transfer only.
-    ;;   Covers class-2 native DPOF, class-0 sleeping|Z| LP orto legs, class-1 sleeping/hib DPOF satellites.
-    ;;
-    ;; C_UnstakeOrtoFungible(patron pool-id owner-id dpof-id nonces)
-    ;;   Unstake DPOF nonces from pool-id; assets return to owner-id. beneficiary-id not on API — read from tracker row.
-    ;;
-    ;; C_StakeCollectable(patron pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts)
-    ;;   Stake DPDC collectable nonces via DPDC-T transfer to AQP|SC_NAME. son=true -> DPSF; son=false -> DPNF.
-    ;;
-    ;; C_UnstakeCollectable(patron pool-id owner-id collectable-id son nonces nonce-amounts)
-    ;;   Unstake DPDC collectable nonces; beneficiary read from tracker row per nonce.
-    ;;
-    ;; C_SyncTrueFungibleAnchors(patron beneficiary-id dptf-id)
-    ;;   Pool-agnostic ANK repair: read AQP|T|BeneficiaryDptfTotal.total-balance (O(1)),
-    ;;   ANK::XE_UpdateTrueFungibleUserAnchorValues, set last-ank-sync-count. Home module TBD.
-    ;;
-    ;; C_VacatePool(patron pool-id)
-    ;;   Pool owner (CAP_PoolOwner): unwind every staked position on pool-id. Orchestration TBD.
+    (defun C_SyncTrueFungibleAnchors:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string beneficiary-id:string dptf-id:string)
+        @doc "Pool-agnostic ANK repair when new TF anchors issued after stake. Reads BenDptfTotal, \
+            \ refreshes promile, stamps last-ank-sync-count. SCORE boosted unchanged (lazy on next stake)."
+        (UEV_IMC)
+        (with-capability (AQP|C>SYNC-TF-ANCHORS patron beneficiary-id dptf-id)
+            (let
+                (
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
+                    (total:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                    (ico-ank:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-ANK::XE_UpdateTrueFungibleUserAnchorValues beneficiary-id dptf-id total)
+                    )
+                    (ico-meta:object{IgnisCollectorV1.OutputCumulator}
+                        (XE_SetBenDptfAnkSyncCount beneficiary-id dptf-id)
+                    )
+                    (ico-gas:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            GAS|SYNC-TF-ANCHORS AQP|SC_NAME trigger [beneficiary-id dptf-id]
+                        )
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas] [])
+            )
+        )
+    )
+    (defun C_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string beneficiary-id:string collectable-id:string son:bool)
+        @doc "Pool-agnostic ANK repair for DPSF (son=true) or DPNF (son=false). Reads Ben* nonce rollup, \
+            \ absolute resync via AQP-ANK::XE_Resync*, stamps Ben*AnkMeta. Talos splits SF/NF shells."
+        (UEV_IMC)
+        (with-capability (AQP|C>SYNC-COLLECTABLE-ANCHORS patron beneficiary-id collectable-id son)
+            (let
+                (
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    ;;
+                    (supplies:[object]
+                        (if son
+                            (URD_AQP|BenDpsfActiveNonceSupplies beneficiary-id collectable-id)
+                            (URD_AQP|BenDpnfActiveNonceSupplies beneficiary-id collectable-id)
+                        )
+                    )
+                    (nonces:[integer] (map (at "nonce") supplies))
+                    (nonce-amounts:[integer] (map (at "amount") supplies))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                    (ico-ank:object{IgnisCollectorV1.OutputCumulator}
+                        (if son
+                            (ref-ANK::XE_ResyncSemiFungibleUserAnchorValues
+                                beneficiary-id collectable-id nonces nonce-amounts
+                            )
+                            (ref-ANK::XE_ResyncNonFungibleUserAnchorValues
+                                beneficiary-id collectable-id nonces
+                            )
+                        )
+                    )
+                    (ico-meta:object{IgnisCollectorV1.OutputCumulator}
+                        (XE_SetBenCollectableAnkSyncCount beneficiary-id collectable-id son)
+                    )
+                    (ico-gas:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            GAS|SYNC-COLLECTABLE-ANCHORS AQP|SC_NAME trigger
+                            [beneficiary-id collectable-id]
+                        )
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas] [])
+            )
+        )
+    )
     ;;
     ;;{F7}  [X]
     ;; Depth: C_* → XI_* (depth 0) ; XE_* / XB_* → XI_1|* (depth 1). Map order = entry first.
@@ -1844,7 +2801,7 @@
     ;;   1.2 Pool tracker      UrStoa ≡ (implicit in vault accounting)
     ;;   1.3 Beneficiary rollup UrStoa ≡ N/A (TF cross-pool O(1) for ANK)
     ;;
-    (defun XE_Phase_1_1|TrueFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_TrueFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. TFT::C_Transfer owner↔AQP|SC_NAME. Composes custody cap (validation once per tx)."
         (UEV_IMC)
@@ -1852,7 +2809,7 @@
             (XI_1|TransferDptfPoolCustody owner-id dptf-id amount direction)
         )
     )
-    (defun XE_Phase_1_2|TrueFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_TrueFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Phase 1.2 — per-pool AQP|T|DPTFTracker row. UrStoa: N/A. P|SECURE-CALLER (no custody re-validation)."
         (UEV_IMC)
@@ -1860,35 +2817,35 @@
             (XI_1|WriteDptfTracker pool-id owner-id beneficiary-id dptf-id amount direction)
         )
     )
-    (defun XE_Phase_1_3|TrueFungibleBeneficiaryRollup:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_TrueFungibleBeneficiaryRollup:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Phase 1.3 — cross-pool AQP|T|BeneficiaryDptfTotal. UrStoa ≡ N/A. P|SECURE-CALLER."
+        @doc "Phase 1.3 — cross-pool AQP|T|BenDptfTotal. UrStoa ≡ N/A. P|SECURE-CALLER."
         (UEV_IMC)
         (with-capability (P|SECURE-CALLER)
-            (XI_1|BumpBeneficiaryDptfTotal beneficiary-id dptf-id amount direction)
+            (XI_1|BumpBenDptfTotal beneficiary-id dptf-id amount direction)
         )
     )
     (defun XE_TrueFungiblePoolCustody:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Legacy phase-1 concat (1.1 + 1.2 + 1.3). Prefer explicit XE_Phase_1_* in FVT recipe."
+        @doc "Legacy phase-1 concat (1.1 + 1.2 + 1.3). Prefer explicit XE_TrueFungible* legs in FVT recipe."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 ;;
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (XE_Phase_1_1|TrueFungibleTransfer pool-id owner-id beneficiary-id dptf-id amount direction)
+                    (XE_TrueFungibleTransfer pool-id owner-id beneficiary-id dptf-id amount direction)
                 )
                 (ico2:object{IgnisCollectorV1.OutputCumulator}
-                    (XE_Phase_1_2|TrueFungiblePoolTracker pool-id owner-id beneficiary-id dptf-id amount direction)
+                    (XE_TrueFungiblePoolTracker pool-id owner-id beneficiary-id dptf-id amount direction)
                 )
                 (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (XE_Phase_1_3|TrueFungibleBeneficiaryRollup pool-id owner-id beneficiary-id dptf-id amount direction)
+                    (XE_TrueFungibleBeneficiaryRollup pool-id owner-id beneficiary-id dptf-id amount direction)
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
         )
     )
-    (defun XE_Phase_1_1|OrtoFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_OrtoFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -1904,7 +2861,7 @@
             (XI_1|TransferDpofPoolCustody owner-id dpof-id nonces direction)
         )
     )
-    (defun XE_Phase_1_2|OrtoFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_OrtoFungiblePoolTracker:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -1930,19 +2887,343 @@
             nonce-amounts:[decimal]
             direction:bool
         )
-        @doc "Legacy phase-1 concat (1.1 + 1.2). Phase 1.3 N/A for OF. Prefer explicit XE_Phase_1_* in FVT recipe."
+        @doc "Legacy phase-1 concat (1.1 + 1.2). Phase 1.3 N/A for OF. Prefer explicit XE_OrtoFungible* legs in FVT recipe."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 ;;
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (XE_Phase_1_1|OrtoFungibleTransfer pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+                    (XE_OrtoFungibleTransfer pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
                 )
                 (ico2:object{IgnisCollectorV1.OutputCumulator}
-                    (XE_Phase_1_2|OrtoFungiblePoolTracker pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
+                    (XE_OrtoFungiblePoolTracker pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts direction)
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [])
+        )
+    )
+    (defun XE_CollectableTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+        @doc "Phase 1.1 — UrStoa ≡ X_UR|Transfer. DPDC-T::C_Transfer. Composes custody cap (validation once per tx)."
+        (UEV_IMC)
+        (with-capability
+            (AQP|XE>COLLECTABLE-POOL-CUSTODY
+                pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts direction
+            )
+            (XI_1|TransferCollectablePoolCustody owner-id collectable-id son nonces nonce-amounts direction)
+        )
+    )
+    (defun XE_TrueFungibleVacateTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Phase 1.1 vacate — TFT::C_Transfer vault→owner. CAP_PoolOwner via vacate custody cap."
+        (UEV_IMC)
+        (with-capability (AQP|XE>TRUE-FUNGIBLE-POOL-VACATE-CUSTODY pool-id owner-id beneficiary-id dptf-id amount)
+            (XI_1|TransferDptfPoolCustody owner-id dptf-id amount false)
+        )
+    )
+    (defun XE_OrtoFungibleVacateTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+            nonce-amounts:[decimal]
+        )
+        @doc "Phase 1.1 vacate — DPOF::C_Transfer vault→owner. CAP_PoolOwner via vacate custody cap."
+        (UEV_IMC)
+        (with-capability
+            (AQP|XE>ORTO-FUNGIBLE-POOL-VACATE-CUSTODY
+                pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts
+            )
+            (XI_1|TransferDpofPoolCustody owner-id dpof-id nonces false)
+        )
+    )
+    (defun XE_OrtoFungibleVacateBulkTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            nonce-amounts-array:[[decimal]]
+        )
+        @doc "Phase 1.1 vacate batch — DPOF::C_BulkTransfer vault→owner-ids. CAP_PoolOwner via vacate bulk custody cap."
+        (UEV_IMC)
+        (with-capability
+            (AQP|XE>ORTO-FUNGIBLE-POOL-VACATE-BULK-CUSTODY
+                pool-id dpof-id owner-ids beneficiary-ids nonces-array nonce-amounts-array
+            )
+            (XI_1|BulkTransferDpofPoolCustody dpof-id nonces-array AQP|SC_NAME owner-ids true)
+        )
+    )
+    (defun XE_CollectableVacateTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+        @doc "Phase 1.1 vacate — DPDC-T::C_Transfer vault→owner. CAP_PoolOwner via vacate custody cap."
+        (UEV_IMC)
+        (with-capability
+            (AQP|XE>COLLECTABLE-POOL-VACATE-CUSTODY
+                pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts
+            )
+            (XI_1|TransferCollectablePoolCustody owner-id collectable-id son nonces nonce-amounts false)
+        )
+    )
+    (defun XE_CollectablePoolTracker:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+        @doc "Phase 1.2 — per-pool DPSF/DPNF tracker rows. UrStoa: N/A. P|SECURE-CALLER."
+        (UEV_IMC)
+        (with-capability (P|SECURE-CALLER)
+            (XI_1|WriteCollectableTracker
+                pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts direction
+            )
+        )
+    )
+    (defun XE_CollectableBeneficiaryRollup:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+        @doc "Phase 1.3 — cross-pool BenDpsfNonceTotal / BenDpnfNonceTotal. UrStoa ≡ N/A. P|SECURE-CALLER."
+        (UEV_IMC)
+        (with-capability (P|SECURE-CALLER)
+            (XI_1|BumpBenCollectableNonceTotals
+                pool-id owner-id beneficiary-id collectable-id son nonces nonce-amounts direction
+            )
+        )
+    )
+    (defun XI_1|TransferCollectablePoolCustody:object{IgnisCollectorV1.OutputCumulator}
+        (
+            owner-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+        @doc "DPDC-T::C_Transfer: stake owner→AQP|SC_NAME; unstake vault→owner. method=true smart-account legs."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                ;;
+                (vault:string AQP|SC_NAME)
+                (sender:string (if direction owner-id vault))
+                (receiver:string (if direction vault owner-id))
+            )
+            (ref-DPDC-T::C_Transfer [collectable-id] [son] sender receiver [nonces] [nonce-amounts] true)
+        )
+    )
+    (defun XI_1|WriteCollectableTracker:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+        @doc "Map XI_1|WriteCollectableTrackerSlot — bump DPSF/DPNF tracker ±amount per index."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (l:integer (length nonces))
+                (slot-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (map
+                        (lambda (idx:integer)
+                            (let
+                                (
+                                    (n:integer (at idx nonces))
+                                    (bid:string
+                                        (if direction
+                                            beneficiary-id
+                                            (URC_CollectableUnstakeBeneficiaryId
+                                                pool-id collectable-id son owner-id n
+                                            )
+                                        )
+                                    )
+                                )
+                                (XI_1|WriteCollectableTrackerSlot
+                                    pool-id owner-id bid collectable-id son n (at idx nonce-amounts) direction
+                                )
+                            )
+                        )
+                        (enumerate 0 (- l 1))
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators slot-ocs [])
+        )
+    )
+    (defun XI_1|WriteCollectableTrackerSlot:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonce:integer
+            amount:integer
+            direction:bool
+        )
+        @doc "One DPSF/DPNF tracker row — read balance, write ±amount (cap validates unstake sufficiency)."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (delta:decimal (if direction (dec amount) (- (dec amount))))
+            )
+            (if son
+                (let
+                    (
+                        (key:string (UC_DPSFTrackerKey pool-id collectable-id owner-id beneficiary-id nonce))
+                        (bal:decimal (UR_AQP|DPSFTrackerBalance pool-id collectable-id owner-id beneficiary-id nonce))
+                        (new-bal:decimal (+ bal delta))
+                    )
+                    (write AQP|T|DPSFTracker key
+                        (UDC_AQP|SemiFungibleTracker new-bal pool-id collectable-id owner-id beneficiary-id nonce)
+                    )
+                )
+                (let
+                    (
+                        (key:string (UC_DPNFTrackerKey pool-id collectable-id owner-id beneficiary-id nonce))
+                        (bal:decimal (UR_AQP|DPNFTrackerBalance pool-id collectable-id owner-id beneficiary-id nonce))
+                        (new-bal:decimal (+ bal delta))
+                    )
+                    (write AQP|T|DPNFTracker key
+                        (UDC_AQP|NonFungibleTracker new-bal pool-id collectable-id owner-id beneficiary-id nonce)
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+        )
+    )
+    (defun XI_1|BumpBenCollectableNonceTotals:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+        )
+        @doc "Map XI_2|BumpBenCollectableNonceTotalSlot — bump BenDpsf* / BenDpnf* rollup ±amount per index."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (l:integer (length nonces))
+                (slot-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (map
+                        (lambda (idx:integer)
+                            (let
+                                (
+                                    (n:integer (at idx nonces))
+                                    (bid:string
+                                        (if direction
+                                            beneficiary-id
+                                            (URC_CollectableUnstakeBeneficiaryId
+                                                pool-id collectable-id son owner-id n
+                                            )
+                                        )
+                                    )
+                                )
+                                (XI_2|BumpBenCollectableNonceTotalSlot
+                                    bid collectable-id son n (at idx nonce-amounts) direction
+                                )
+                            )
+                        )
+                        (enumerate 0 (- l 1))
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators slot-ocs [])
+        )
+    )
+    (defun XI_2|BumpBenCollectableNonceTotalSlot:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string collectable-id:string son:bool nonce:integer amount:integer direction:bool)
+        @doc "One BenDpsfNonceTotal or BenDpnfNonceTotal row — son dispatch to XI_3 leaf."
+        (require-capability (SECURE))
+        (if son
+            (XI_3|BumpBenDpsfNonceTotal beneficiary-id collectable-id nonce amount direction)
+            (XI_3|BumpBenDpnfNonceTotal beneficiary-id collectable-id nonce amount direction)
+        )
+    )
+    (defun XI_3|BumpBenDpsfNonceTotal:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string dpsf-id:string nonce:integer amount:integer direction:bool)
+        @doc "AQP|T|BenDpsfNonceTotal: bump amount ±supply for (beneficiary, dpsf-id, nonce) across pools."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (key:string (UC_BenDpsfNonceTotalKey beneficiary-id dpsf-id nonce))
+                (amt:integer (UR_AQP|BenDpsfNonceAmount beneficiary-id dpsf-id nonce))
+                (delta:integer (if direction amount (- amount)))
+                (new-amt:integer (+ amt delta))
+            )
+            (write AQP|T|BenDpsfNonceTotal key
+                (UDC_AQP|BenDpsfNonceTotal new-amt beneficiary-id dpsf-id nonce)
+            )
+            (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+        )
+    )
+    (defun XI_3|BumpBenDpnfNonceTotal:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string dpnf-id:string nonce:integer amount:integer direction:bool)
+        @doc "AQP|T|BenDpnfNonceTotal: bump amount ±supply for (beneficiary, dpnf-id, nonce) across pools."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (key:string (UC_BenDpnfNonceTotalKey beneficiary-id dpnf-id nonce))
+                (amt:integer (UR_AQP|BenDpnfNonceAmount beneficiary-id dpnf-id nonce))
+                (delta:integer (if direction amount (- amount)))
+                (new-amt:integer (+ amt delta))
+            )
+            (write AQP|T|BenDpnfNonceTotal key
+                (UDC_AQP|BenDpnfNonceTotal new-amt beneficiary-id dpnf-id nonce)
+            )
+            (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
         )
     )
     (defun XI_1|TransferDpofPoolCustody:object{IgnisCollectorV1.OutputCumulator}
@@ -1964,6 +3245,18 @@
                 (receiver:string (if direction vault owner-id))
             )
             (ref-DPOF::C_Transfer dpof-id nonces sender receiver true)
+        )
+    )
+    (defun XI_1|BulkTransferDpofPoolCustody:object{IgnisCollectorV1.OutputCumulator}
+        (dpof-id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "DPOF::C_BulkTransfer whole nonces — same arg order as C_Transfer (nonces-array, sender, receiver-lst, method). \
+            \ Parent cap composes AQP-ANK.AQP|GOV for vault legs."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+            )
+            (ref-DPOF::C_BulkTransfer dpof-id nonces-array sender receiver-lst method)
         )
     )
     (defun XI_1|WriteDpofTracker:object{IgnisCollectorV1.OutputCumulator}
@@ -2073,35 +3366,35 @@
             (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
         )
     )
-    (defun XI_1|BumpBeneficiaryDptfTotal:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_1|BumpBenDptfTotal:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "AQP|T|BeneficiaryDptfTotal: bump total-balance ±amount for (beneficiary, dptf-id) across all pools. \
-            \ Read via UR_AQP|BeneficiaryDptfTotal*; write only (no enforce — cap validates); preserves last-ank-sync-count. \
+        @doc "AQP|T|BenDptfTotal: bump total-balance ±amount for (beneficiary, dptf-id) across all pools. \
+            \ Read via UR_AQP|BenDptfTotal*; write only (no enforce — cap validates); preserves last-ank-sync-count. \
             \ Returns ignis|biggest via IGNIS::UDC_BiggestCumulator."
         (require-capability (SECURE))
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 ;;
-                (key:string (UC_BeneficiaryDptfTotalKey beneficiary-id dptf-id))
-                (tb:decimal (UR_AQP|BeneficiaryDptfTotalBalance beneficiary-id dptf-id))
-                (sc:integer (UR_AQP|BeneficiaryDptfLastAnkSyncCount beneficiary-id dptf-id))
+                (key:string (UC_BenDptfTotalKey beneficiary-id dptf-id))
+                (tb:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
+                (sc:integer (UR_AQP|BenDptfLastAnkSyncCount beneficiary-id dptf-id))
                 (delta:decimal (if direction amount (- amount)))
                 (new-total:decimal (+ tb delta))
             )
-            (write AQP|T|BeneficiaryDptfTotal key
-                (UDC_AQP|BeneficiaryDptfTotal new-total sc beneficiary-id dptf-id)
+            (write AQP|T|BenDptfTotal key
+                (UDC_AQP|BenDptfTotal new-total sc beneficiary-id dptf-id)
             )
             (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
         )
     )
     ;;
     ;; --- Block C · TF stake phase 2.2 (FVT::XI_RefreshTrueFungibleStakeAnchors backward) ---
-    ;;   XE_SetBeneficiaryDptfAnkSyncCount
+    ;;   XE_SetBenDptfAnkSyncCount
     ;;
-    (defun XE_SetBeneficiaryDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
+    (defun XE_SetBenDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
-        @doc "Backward (FVT::C_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BeneficiaryDptfTotal \
+        @doc "Backward (FVT::C_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BenDptfTotal \
             \ (:= AQP-ANK::UR_AA|AnchorsActive dptf-id); preserve total-balance. UEV_IMC + AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC. \
             \ Returns ignis|biggest via UDC_BiggestCumulator."
         (UEV_IMC)
@@ -2111,12 +3404,49 @@
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                     ;;
-                    (key:string (UC_BeneficiaryDptfTotalKey beneficiary-id dptf-id))
-                    (row:object{AQP|BeneficiaryDptfTotal} (UR_AQP|BeneficiaryDptfTotal beneficiary-id dptf-id))
+                    (key:string (UC_BenDptfTotalKey beneficiary-id dptf-id))
+                    (row:object{AQP|BenDptfTotal} (UR_AQP|BenDptfTotal beneficiary-id dptf-id))
                     (live-count:integer (ref-ANK::UR_AA|AnchorsActive dptf-id))
                 )
-                (write AQP|T|BeneficiaryDptfTotal key
+                (write AQP|T|BenDptfTotal key
                     (+ row {"last-ank-sync-count": live-count})
+                )
+                (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
+            )
+        )
+    )
+    (defun XE_SetBenCollectableAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string collectable-id:string son:bool)
+        @doc "Backward (FVT collectable stake phase 3 / C_SyncCollectableAnchors): stamp last-ank-sync-count \
+            \ on BenDpsfAnkMeta or BenDpnfAnkMeta. UEV_IMC + AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC."
+        (UEV_IMC)
+        (with-capability (AQP|XE>SET-BEN-COLLECTABLE-ANK-SYNC beneficiary-id collectable-id son)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    ;;
+                    (live-count:integer (ref-ANK::UR_AA|AnchorsActive collectable-id))
+                )
+                (if son
+                    (let
+                        (
+                            (key:string (UC_BenDpsfAnkMetaKey beneficiary-id collectable-id))
+                            (row:object{AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id collectable-id))
+                        )
+                        (write AQP|T|BenDpsfAnkMeta key
+                            (+ row {"last-ank-sync-count": live-count})
+                        )
+                    )
+                    (let
+                        (
+                            (key:string (UC_BenDpnfAnkMetaKey beneficiary-id collectable-id))
+                            (row:object{AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id collectable-id))
+                        )
+                        (write AQP|T|BenDpnfAnkMeta key
+                            (+ row {"last-ank-sync-count": live-count})
+                        )
+                    )
                 )
                 (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
             )
@@ -2135,4 +3465,8 @@
 (create-table AQP|T|DPNFTracker)
 (create-table AQP|T|DPSFScoreAttribution)
 (create-table AQP|T|DPNFScoreAttribution)
-(create-table AQP|T|BeneficiaryDptfTotal)
+(create-table AQP|T|BenDptfTotal)
+(create-table AQP|T|BenDpsfNonceTotal)
+(create-table AQP|T|BenDpnfNonceTotal)
+(create-table AQP|T|BenDpsfAnkMeta)
+(create-table AQP|T|BenDpnfAnkMeta)

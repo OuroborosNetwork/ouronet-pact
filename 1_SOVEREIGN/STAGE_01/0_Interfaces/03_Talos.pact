@@ -135,6 +135,12 @@
     (defun DPOF|C_Transfer (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))    
     ;;
 )
+(interface TalosStageOne_ClientOneV2
+    @doc "Additive Talos Stage One Client One surface — opt-in per consumer; does not replace TalosStageOne_ClientOneV1."
+    (defun DPOF|C_BulkTransfer
+        (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    )
+)
 ;;
 ;;  [TALOS Stage One Client Two]
 ;;

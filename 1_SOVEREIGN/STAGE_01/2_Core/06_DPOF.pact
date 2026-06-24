@@ -272,6 +272,36 @@
             (UEV_MoveRoleCheck id sender receiver)
         )
     )
+    (defcap DPOF|S>BULK-MOVE
+        (id:string sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk move guards — same family as DPOF|S>MOVE over receiver-lst. \
+            \ Standard Ouronet accounts only (no smart accounts in receiver-lst)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                ;;
+                (l:integer (length receiver-lst))
+            )
+            (ref-U|LST::UC_IzUnique receiver-lst)
+            (UEV_PauseState id false)
+            (UEV_AccountFreezeState id sender false)
+            (map
+                (lambda (idx:integer)
+                    (let
+                        (
+                            (receiver:string (at idx receiver-lst))
+                        )
+                        (ref-DALOS::UEV_EnforceAccountType receiver false)
+                        (ref-DALOS::UEV_EnforceTransferability sender receiver method)
+                        (UEV_AccountFreezeState id receiver false)
+                        (UEV_MoveRoleCheck id sender receiver)
+                    )
+                )
+                (enumerate 0 (- l 1))
+            )
+        )
+    )
     ;;{C3}
     ;;{C4}
     (defcap DPOF|C>UPDATE-BRD (dpof:string)
@@ -518,6 +548,34 @@
             (compose-capability (SECURE))
         )
     )
+    (defcap DPOF|C>BULK-TRANSFER
+        (id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Whole-nonce bulk transfer (multiple receivers). Composes DPOF|S>BULK-MOVE like C>TRANSFER composes S>MOVE."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
+                (l:integer (length receiver-lst))
+                (all-nonces:[integer] (UC_FlattenNoncesArray nonces-array))
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership sender)
+            (enforce
+                (fold (and) true
+                    [
+                        (> l 0)
+                        (= l (length nonces-array))
+                        (> (length all-nonces) 0)
+                    ]
+                )
+                "Invalid DPOF bulk transfer: receiver/nonces legs or nonce list"
+            )
+            (UEV_NoncesToAccount id sender all-nonces)
+            (UEV_NoncesCirculating id all-nonces)
+            (compose-capability (DPOF|S>BULK-MOVE id sender receiver-lst method))
+            (compose-capability (SECURE))
+        )
+    )
     (defcap DPOF|C>UPDATE-SPECIAL (main-dptf:string secondary-dpof:string vzh-tag:integer)
         (enforce (contains vzh-tag [1 2 3]) "Invalid Vesting|Sleeping|Hibernation Tag")
         (let
@@ -672,6 +730,16 @@
             )
         )
     )
+    (defun UC_FlattenNoncesArray:[integer] (nonces-array:[[integer]])
+        @doc "Concatenate per-receiver nonce slices into one list for bulk custody + IGNIS cumulator."
+        (fold
+            (lambda (acc:[integer] ns:[integer])
+                (+ acc ns)
+            )
+            []
+            nonces-array
+        )
+    )
     (defun UCX_NoncesCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string number-of-nonces:integer price-per-nonce:decimal output-obj:object)
         (let
@@ -679,7 +747,7 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator
-                (*  
+                (*
                     (dec number-of-nonces)
                     price-per-nonce
                 )
@@ -1810,32 +1878,63 @@
         @doc "Transfer DPOF <id> <nonces> from <sender> to <receiver> by changing their Ownership"
         (UEV_IMC)
         (with-capability (DPOF|C>TRANSFER id nonces sender receiver method)
-            (let
-                (
-                    (sender-supply:decimal (UR_AccountSupply id sender))
-                    (receiver-supply:decimal (UR_AccountSupply id receiver))
-                    (nonces-supplies:[decimal] (UR_NoncesSupplies id nonces))
-                    (sum:decimal (fold (+) 0.0 nonces-supplies))
-                )
-                ;;1]Deploy Receiver account if it doesnt exist
-                (XB_DeployAccountWNE receiver id)
-                ;;2]Decrease Supply for Sender and increase for Receiver
-                (XI_UpdateAccountSupply id sender (- sender-supply sum))
-                (XI_UpdateAccountSupply id receiver (+ receiver-supply sum))
-                ;;2]Transfer <nonces> to <receiver>
-                (map
-                    (lambda
-                        (element:integer)
-                        (XI_UpdateNonceHolder id element receiver)
-                    )
-                    nonces
-                )
-                ;;3]Output Costs 1 IGNIS per Nonce Transfered
+            (do
+                (XI_TransferWholeNonces id sender receiver nonces)
                 (UC_MoveCumulator id nonces false)
             )
         )
     )
+    (defun C_BulkTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk whole-nonce transfer: one sender, many receivers (DemiourgosPactOrtoFungibleV2). \
+            \ One IGNIS cumulator for total nonce count — not N× C_Transfer collection overhead."
+        (UEV_IMC)
+        (with-capability (DPOF|C>BULK-TRANSFER id nonces-array sender receiver-lst method)
+            (let
+                (
+                    (all-nonces:[integer] (UC_FlattenNoncesArray nonces-array))
+                )
+                (do
+                    (map
+                        (lambda (idx:integer)
+                            (XI_TransferWholeNonces
+                                id
+                                sender
+                                (at idx receiver-lst)
+                                (at idx nonces-array)
+                            )
+                        )
+                        (enumerate 0 (- (length receiver-lst) 1))
+                    )
+                    (UC_MoveCumulator id all-nonces false)
+                )
+            )
+        )
+    )
     ;;{F7}  [X]
+    (defun XI_TransferWholeNonces
+        (id:string sender:string receiver:string nonces:[integer])
+        @doc "Move whole <nonces> from <sender> to <receiver> — shared by C_Transfer and C_BulkTransfer."
+        (require-capability (SECURE))
+        (let
+            (
+                (sender-supply:decimal (UR_AccountSupply id sender))
+                (receiver-supply:decimal (UR_AccountSupply id receiver))
+                (nonces-supplies:[decimal] (UR_NoncesSupplies id nonces))
+                (sum:decimal (fold (+) 0.0 nonces-supplies))
+            )
+            (XB_DeployAccountWNE receiver id)
+            (XI_UpdateAccountSupply id sender (- sender-supply sum))
+            (XI_UpdateAccountSupply id receiver (+ receiver-supply sum))
+            (map
+                (lambda
+                    (element:integer)
+                    (XI_UpdateNonceHolder id element receiver)
+                )
+                nonces
+            )
+        )
+    )
     (defun XB_IssueFree:object{IgnisCollectorV1.OutputCumulator}
         (
             account:string

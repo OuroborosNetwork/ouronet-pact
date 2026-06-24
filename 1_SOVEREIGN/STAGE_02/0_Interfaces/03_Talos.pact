@@ -375,7 +375,47 @@
     ;;
     ;;=== PLANNED Talos client shells (comment-only — sovereign C_* home TBD) ===
     ;; AQP-POOL|C_VacatePool(patron pool-id) -> sovereign C_VacatePool TBD
-    ;; AQP-POOL|C_StakeCollectable(...) / C_UnstakeCollectable(...) -> sovereign DPDC stake recipe TBD
+    ;;
+    (defun AQP-POOL|C_StakeSemiFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+        )
+    )
+    (defun AQP-POOL|C_UnstakeSemiFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+    )
+    (defun AQP-POOL|C_StakeNonFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+        )
+    )
+    (defun AQP-POOL|C_UnstakeNonFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+    )
     ;;
     (defun AQP-POOL|C_StakeTrueFungible:string
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
@@ -400,6 +440,51 @@
             owner-id:string
             dpof-id:string
             nonces:[integer]
+        )
+    )
+    (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
+        (patron:string beneficiary-id:string dptf-id:string)
+    )
+    (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
+        (patron:string beneficiary-id:string dpsf-id:string)
+    )
+    (defun AQP-POOL|C_SyncNonFungibleAnchors:string
+        (patron:string beneficiary-id:string dpnf-id:string)
+    )
+    (defun AQP-POOL|C_VacateTrueFungible:string
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+    )
+    (defun AQP-POOL|C_VacateOrtoFungibleBatch:string
+        (
+            patron:string
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            nonce-amounts-array:[[decimal]]
+        )
+    )
+    (defun AQP-POOL|C_VacateSemiFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+    )
+    (defun AQP-POOL|C_VacateNonFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
         )
     )
 )

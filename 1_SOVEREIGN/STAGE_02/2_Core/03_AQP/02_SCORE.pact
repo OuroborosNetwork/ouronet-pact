@@ -110,6 +110,18 @@
     (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool employed-ids:[string])
     )
+    (defun XE_ApplyCollectableStakeDelta:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+            employed-ids:[string]
+        )
+    )
 )
 (module AQP-SCORE GOV
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
@@ -921,7 +933,7 @@
             score-id:string
             dpsf-id:string
             nonces:[integer]
-            nonce-amounts:[decimal]
+            nonce-amounts:[integer]
             direction:bool
         )
         @doc "Forward (AQP-POOL): class-3 DPSF stake/unstake. Validates account, pool–score link, score-class 3, DPDC id + nonces (sleeping collection leg: second arg true to UEV_id / UEV_Nonce)."
@@ -2704,9 +2716,9 @@
     ;; --- Block B · Stake user-score delta (UrStoa phases 4.1 + 4.2 + 4.3) ---
     ;;   XE_ApplyTrueFungibleStakeDelta / XE_ApplyOrtoFungibleStakeDelta
     ;;     └ XI_1|UpdateScoreDataFor* → XI_2|ApplySingularUserScoreDelta
-    ;;          ├ XI_Phase_4_2|WriteUserScoreTriple      UrStoa ≡ UpdateUserScore
-    ;;          ├ XI_Phase_4_1|ApplyVaultScoreTotals     UrStoa ≡ UpdateVaultScore
-    ;;          └ XI_Phase_4_3|ApplyScoreNzsDelta        UrStoa ≡ UpdateNZS
+    ;;          ├ XI_WriteUserScoreTriple      UrStoa ≡ UpdateUserScore
+    ;;          ├ XI_ApplyVaultScoreTotals     UrStoa ≡ UpdateVaultScore
+    ;;          └ XI_ApplyScoreNzsDelta        UrStoa ≡ UpdateNZS
     ;;
     (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
@@ -2794,6 +2806,55 @@
                                             0.0 AQP|SC_NAME trigger [score-id "of-skip"]
                                         )
                                     )
+                                )
+                            )
+                        )
+                        employed-ids
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
+        )
+    )
+    (defun XE_ApplyCollectableStakeDelta:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            beneficiary-id:string
+            collectable-id:string
+            son:bool
+            nonces:[integer]
+            nonce-amounts:[integer]
+            direction:bool
+            employed-ids:[string]
+        )
+        @doc "UrStoa SCORE triple per employed score (DPSF class-3 or DPNF class-4 per son). UEV_IMC only."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (target-class:integer (if son 3 4))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (score-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (map
+                        (lambda (score-id:string)
+                            (if (= (UR_SCR|ScoreClass score-id) target-class)
+                                (if son
+                                    (do
+                                        (XI_1|UpdateScoreDataForSemiFungible
+                                            beneficiary-id pool-id score-id collectable-id nonces nonce-amounts direction
+                                        )
+                                        (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                    )
+                                    (do
+                                        (XI_1|UpdateScoreDataForNonFungible
+                                            beneficiary-id pool-id score-id collectable-id nonces nonce-amounts direction
+                                        )
+                                        (URC_StakeScoreDeltaIgnisCumulator score-id)
+                                    )
+                                )
+                                (ref-IGNIS::UDC_ConstructOutputCumulator
+                                    0.0 AQP|SC_NAME trigger [score-id "collectable-skip"]
                                 )
                             )
                         )
@@ -2974,7 +3035,7 @@
         )
     )
 
-    (defun XI_Phase_4_2|WriteUserScoreTriple:string
+    (defun XI_WriteUserScoreTriple:string
         (
             ouronet-account:string
             pool-id:string
@@ -2994,7 +3055,7 @@
             )
         )
     )
-    (defun XI_Phase_4_1|ApplyVaultScoreTotals:string
+    (defun XI_ApplyVaultScoreTotals:string
         (score-id:string scr:object{SCR|Schema} d:object{SCR|SingularUserScoreDelta})
         @doc "Phase 4.1 — UrStoa ≡ XI_URV|UpdateVaultScore (SCR|T|Score aggregate totals)."
         (require-capability (SECURE))
@@ -3014,7 +3075,7 @@
             )
         )
     )
-    (defun XI_Phase_4_3|ApplyScoreNzsDelta:string
+    (defun XI_ApplyScoreNzsDelta:string
         (score-id:string scr:object{SCR|Schema} d:object{SCR|SingularUserScoreDelta})
         @doc "Phase 4.3 — UrStoa ≡ XI_URV|UpdateNZS (SCR|T|Score.nzs-count ±1)."
         (require-capability (SECURE))
@@ -3037,9 +3098,9 @@
                     (URC_SingularUserScoreDeltaFromSignedUserBase ouronet-account pool-id score-id signed-user-base-delta)
                 )
             )
-            (XI_Phase_4_2|WriteUserScoreTriple ouronet-account pool-id score-id d)
-            (XI_Phase_4_1|ApplyVaultScoreTotals score-id scr d)
-            (XI_Phase_4_3|ApplyScoreNzsDelta score-id scr d)
+            (XI_WriteUserScoreTriple ouronet-account pool-id score-id d)
+            (XI_ApplyVaultScoreTotals score-id scr d)
+            (XI_ApplyScoreNzsDelta score-id scr d)
         )
     )
 

@@ -23,7 +23,9 @@
 | **SCORE** | Done | Done (pool/FVT links + stake deltas) | `REPL/Stage_02/[6.2.2]_AQP-SCORE.repl` |
 | **POOL** | `C_Issue`, `C_AddScore`, `C_RevokeScore` done; stake/unstake/sync **designed stubs**; `AQP\|T\|BeneficiaryDptfTotal` table live | N/A (caller) | `REPL/Stage_02/[6.2.3]_AQP-POOL.repl` (early) |
 
-**Stake / anchor design (written spec):** [README_AQP.md](README_AQP.md) — three stake paths, beneficiary rules, rollup table, `C_SyncTrueFungibleAnchors`, ANK-before-SCORE order, TODO for OF/SF/NF rollups.
+**Stake / anchor design (written spec):** [README_AQP.md](README_AQP.md) — three stake paths, beneficiary rules, rollup table, `C_SyncTrueFungibleAnchors`, ANK-before-SCORE order.
+
+**Deferred tests (not in smoke yet):** [TEST_DEFERRED.md](TEST_DEFERRED.md)
 | **FVT** | Placeholders | `XE_SyncFarmScoreGhostTvlFromSwp` shell | `REPL/Stage_02/[6.2.4]_AQP-FVT.repl` (early) |
 
 **SCORE (class-0 LP):** `URC_LpAmountToLpDenominatorEquivalent` uses **`SWPL::URC_LpBreakAmounts`** → **lp-denominator** leg (OURO token units at current reserves). **FVT Tier-2** uses **`SWP::UR_StoaValue`** (DWK pool worth) for injection splits — different layer. See [README_SCORE.md](README_SCORE.md).

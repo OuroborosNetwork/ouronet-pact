@@ -1115,6 +1115,9 @@
 (interface DemiourgosPactOrtoFungibleV2
     @doc "Additive DPOF surface — opt-in per consumer; does not replace DemiourgosPactOrtoFungibleV1."
     (defun UEV_EnforceSegmentationForTransmit (id:string))
+    (defun C_BulkTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    )
 )
 ;;
 ;;  [ELITE]
