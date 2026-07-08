@@ -78,6 +78,7 @@
                 (ref-P|SCR:module{OuronetPolicyV1} AQP-SCORE)
                 (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
                 (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
+                (ref-P|VCT:module{OuronetPolicyV1} AQP-VCT)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -85,6 +86,7 @@
             (ref-P|SCR::P|A_AddIMP mg)
             (ref-P|AQP::P|A_AddIMP mg)
             (ref-P|FVT::P|A_AddIMP mg)
+            (ref-P|VCT::P|A_AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -177,51 +179,99 @@
         @event
         (compose-capability (P|TS))
     )
-    (defcap AQP|C>VACATE-TRUE-FUNGIBLE
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "AQP client event: pool-owner TF vacate. Composes P|TS only; sovereign recipe in FVT::C_VacateTrueFungible."
+    (defcap AQP|C>BEGIN-VACATE
+        (patron:string pool-id:string asset-id:string vacate-kind:integer slice-count:integer)
+        @doc "AQP client event: open sliced vacate session. Composes P|TS only."
         @event
         (compose-capability (P|TS))
     )
-    (defcap AQP|C>VACATE-ORTO-FUNGIBLE-BATCH
+    (defcap AQP|C>RESLICE-VACATE
+        (patron:string vacate-job-id:string slice-count:integer)
+        @doc "AQP client event: rebuild vacate slices (new VacateJobID). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>VACATE-CHUNK-TRUE-FUNGIBLE
         (
             patron:string
-            pool-id:string
-            dpof-id:string
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+        )
+        @doc "AQP client event: execute one TF vacate slice. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>VACATE-CHUNK-NONCE
+        (
+            patron:string
+            vacate-job-id:string
+            slice-idx:integer
             owner-ids:[string]
             beneficiary-ids:[string]
             nonces-array:[[integer]]
-            nonce-amounts-array:[[decimal]]
+            amounts-array:[[integer]]
         )
-        @doc "AQP client event: pool-owner OF vacate batch. Composes P|TS only."
+        @doc "AQP client event: execute one OF/DPSF/DPNF vacate slice. Composes P|TS only."
         @event
         (compose-capability (P|TS))
     )
-    (defcap AQP|C>VACATE-SEMI-FUNGIBLE-COLLECTABLE
+    (defcap AQP|C>VACATE-CHUNK-ORTO-FUNGIBLE
         (
             patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
         )
-        @doc "AQP client event: pool-owner DPSF vacate (single leg). Composes P|TS only."
+        @doc "AQP client event: OF vacate slice (zero-sentinel amounts). Composes P|TS only."
         @event
         (compose-capability (P|TS))
     )
-    (defcap AQP|C>VACATE-NON-FUNGIBLE-COLLECTABLE
+    (defcap AQP|C>VACATE-CHUNK-COLLECTABLE
         (
             patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
         )
-        @doc "AQP client event: pool-owner DPNF vacate (single leg). Composes P|TS only."
+        @doc "AQP client event: DPSF/DPNF vacate slice. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>ABORT-VACATE
+        (patron:string vacate-job-id:string)
+        @doc "AQP client event: abort vacate session. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>FULL-VACATE-TRUE-FUNGIBLE
+        (patron:string pool-id:string dptf-id:string)
+        @doc "AQP client event: full TF vacate (pool-id + dptf-id). Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>FULL-VACATE-ORTO-FUNGIBLE
+        (patron:string pool-id:string dpof-id:string)
+        @doc "AQP client event: full OF vacate. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>FULL-VACATE-SEMI-FUNGIBLE
+        (patron:string pool-id:string dpsf-id:string)
+        @doc "AQP client event: full DPSF vacate. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>FULL-VACATE-NON-FUNGIBLE
+        (patron:string pool-id:string dpnf-id:string)
+        @doc "AQP client event: full DPNF vacate. Composes P|TS only."
         @event
         (compose-capability (P|TS))
     )
@@ -758,6 +808,42 @@
             )
         )
     )
+    (defun AQP-POOL|C_DisablePoolStake:string
+        (patron:string pool-id:string)
+        @doc "Pool owner pauses new stakes (stake-enabled → false); collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-AQP::C_DisablePoolStake patron pool-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully disabled staking on Pool {}." [pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|C_EnablePoolStake:string
+        (patron:string pool-id:string)
+        @doc "Pool owner re-enables new stakes (stake-enabled → true); collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-AQP::C_EnablePoolStake patron pool-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully enabled staking on Pool {}." [pool-id])
+            )
+        )
+    )
     ;;
     (defun AQP-POOL|C_StakeTrueFungible:string
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
@@ -1000,127 +1086,254 @@
         )
     )
     ;;
-    (defun AQP-POOL|C_VacateTrueFungible:string
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "Pool-owner forced TF unstake. Talos shell → FVT::C_VacateTrueFungible."
-        (with-capability (AQP|C>VACATE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
+    (defun AQP-POOL|C_BeginVacate:string
+        (patron:string pool-id:string asset-id:string vacate-kind:integer slice-count:integer)
+        @doc "Open sliced vacate session. Talos shell → AQP-VCT::C_BeginVacate."
+        (with-capability
+            (AQP|C>BEGIN-VACATE patron pool-id asset-id vacate-kind slice-count)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_VacateTrueFungible pool-id owner-id beneficiary-id dptf-id amount)
+                    (ref-VCT::C_BeginVacate pool-id asset-id vacate-kind slice-count)
                 )
-                (format "Successfully vacated {} from Pool {} (owner {} → beneficiary {}). "
-                    [dptf-id pool-id (UC_ShortAccount owner-id) (UC_ShortAccount beneficiary-id)]
+                (format "Successfully began vacate session for {} on Pool {} ({} slices)."
+                    [asset-id pool-id slice-count]
                 )
             )
         )
     )
-    (defun AQP-POOL|C_VacateOrtoFungibleBatch:string
+    (defun AQP-POOL|C_ResliceVacate:string
+        (patron:string vacate-job-id:string slice-count:integer)
+        @doc "Rebuild vacate slices for remaining inventory. Talos shell → AQP-VCT::C_ResliceVacate."
+        (with-capability (AQP|C>RESLICE-VACATE patron vacate-job-id slice-count)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::C_ResliceVacate vacate-job-id slice-count)
+                )
+                (format "Successfully resliced vacate job {} ({} slices)."
+                    [vacate-job-id slice-count]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_VacateChunkTrueFungible:string
         (
             patron:string
-            pool-id:string
-            dpof-id:string
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+        )
+        @doc "Execute one TF vacate slice. Talos shell → AQP-VCT::C_VacateChunkTrueFungible."
+        (with-capability
+            (AQP|C>VACATE-CHUNK-TRUE-FUNGIBLE
+                patron vacate-job-id slice-idx owner-ids beneficiary-ids amounts
+            )
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::C_VacateChunkTrueFungible
+                        vacate-job-id slice-idx owner-ids beneficiary-ids amounts
+                    )
+                )
+                (format "Successfully vacated TF slice {} on job {} ({} owner leg(s))."
+                    [slice-idx vacate-job-id (length owner-ids)]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_VacateChunkNonce:string
+        (
+            patron:string
+            vacate-job-id:string
+            slice-idx:integer
             owner-ids:[string]
             beneficiary-ids:[string]
             nonces-array:[[integer]]
-            nonce-amounts-array:[[decimal]]
+            amounts-array:[[integer]]
         )
-        @doc "Pool-owner forced OF unstake batch. Talos shell → FVT::C_VacateOrtoFungibleBatch."
+        @doc "Execute one OF/DPSF/DPNF vacate slice. Talos shell → AQP-VCT::C_VacateChunkNonce."
         (with-capability
-            (AQP|C>VACATE-ORTO-FUNGIBLE-BATCH
-                patron pool-id dpof-id owner-ids beneficiary-ids nonces-array nonce-amounts-array
+            (AQP|C>VACATE-CHUNK-NONCE
+                patron vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
             )
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_VacateOrtoFungibleBatch
-                        pool-id dpof-id owner-ids beneficiary-ids nonces-array nonce-amounts-array
+                    (ref-VCT::C_VacateChunkNonce
+                        vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
                     )
                 )
-                (format "Successfully vacated {} from Pool {} ({} owner leg(s))."
-                    [dpof-id pool-id (length owner-ids)]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|C_VacateSemiFungibleCollectable:string
-        (
-            patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
-        )
-        @doc "Pool-owner forced DPSF vacate. Talos shell → FVT::C_VacateCollectableBatch son=true. \
-            \ UI uses this for every DPSF vacate tx (one owner group; chunk nonces across txs if needed)."
-        (let
-            (
-                (nonce-count:integer (length nonces))
-            )
-            (with-capability
-                (AQP|C>VACATE-SEMI-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
-                )
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                    )
-                    (ref-IGNIS::C_Collect patron
-                        (ref-FVT::C_VacateCollectableBatch
-                            pool-id collectable-id true
-                            [owner-id] [beneficiary-id] [nonces] [nonce-amounts]
-                        )
-                    )
-                    (UC_FormatVacateCollectableResult
-                        pool-id owner-id beneficiary-id collectable-id true nonce-count
-                    )
+                (format "Successfully vacated nonce slice {} on job {} ({} owner leg(s))."
+                    [slice-idx vacate-job-id (length owner-ids)]
                 )
             )
         )
     )
-    (defun AQP-POOL|C_VacateNonFungibleCollectable:string
+    (defun AQP-POOL|C_VacateChunkOrtoFungible:string
         (
             patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
         )
-        @doc "Pool-owner forced DPNF vacate. Talos shell → FVT::C_VacateCollectableBatch son=false. \
-            \ UI uses this for every DPNF vacate tx (one owner group; chunk nonces across txs if needed)."
-        (let
-            (
-                (nonce-count:integer (length nonces))
+        @doc "OF vacate slice — zero-sentinel amounts; Talos shell → C_VacateChunkNonce."
+        (with-capability
+            (AQP|C>VACATE-CHUNK-ORTO-FUNGIBLE
+                patron vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array
             )
-            (with-capability
-                (AQP|C>VACATE-NON-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                    (amounts-array:[[integer]]
+                        (ref-VCT::UC_ZeroIntAmountsMatrix nonces-array)
+                    )
                 )
-                (let
-                    (
-                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::C_VacateChunkNonce
+                        vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
                     )
-                    (ref-IGNIS::C_Collect patron
-                        (ref-FVT::C_VacateCollectableBatch
-                            pool-id collectable-id false
-                            [owner-id] [beneficiary-id] [nonces] [nonce-amounts]
-                        )
+                )
+                (format "Successfully vacated OF slice {} on job {} ({} owner leg(s))."
+                    [slice-idx vacate-job-id (length owner-ids)]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_VacateChunkCollectable:string
+        (
+            patron:string
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+        @doc "DPSF/DPNF vacate slice. Talos shell → AQP-VCT::C_VacateChunkNonce."
+        (with-capability
+            (AQP|C>VACATE-CHUNK-COLLECTABLE
+                patron vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
+            )
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::C_VacateChunkNonce
+                        vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
                     )
-                    (UC_FormatVacateCollectableResult
-                        pool-id owner-id beneficiary-id collectable-id false nonce-count
-                    )
+                )
+                (format "Successfully vacated collectable slice {} on job {} ({} owner leg(s))."
+                    [slice-idx vacate-job-id (length owner-ids)]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_AbortVacate:string
+        (patron:string vacate-job-id:string)
+        @doc "Abort active vacate session. Talos shell → AQP-VCT::C_AbortVacate."
+        (with-capability (AQP|C>ABORT-VACATE patron vacate-job-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::C_AbortVacate vacate-job-id)
+                )
+                (format "Successfully aborted vacate job {}."
+                    [vacate-job-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_FullVacateTrueFungible:string
+        (patron:string pool-id:string dptf-id:string)
+        @doc "Pool-owner full TF vacate (one tx). Talos shell → AQP-VCT::C_FullVacateTrueFungible."
+        (with-capability (AQP|C>FULL-VACATE-TRUE-FUNGIBLE patron pool-id dptf-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::C_FullVacateTrueFungible pool-id dptf-id)
+                )
+                (format "Successfully full-vacated TrueFungible {} from Pool {}."
+                    [dptf-id pool-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_FullVacateOrtoFungible:string
+        (patron:string pool-id:string dpof-id:string)
+        @doc "Pool-owner full OF vacate (one tx). Talos shell → AQP-VCT::C_FullVacateOrtoFungible."
+        (with-capability (AQP|C>FULL-VACATE-ORTO-FUNGIBLE patron pool-id dpof-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::C_FullVacateOrtoFungible pool-id dpof-id)
+                )
+                (format "Successfully full-vacated OrtoFungible {} from Pool {}."
+                    [dpof-id pool-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_FullVacateSemiFungible:string
+        (patron:string pool-id:string dpsf-id:string)
+        @doc "Pool-owner full DPSF vacate (one tx). Talos shell → AQP-VCT::C_FullVacateSemiFungible."
+        (with-capability (AQP|C>FULL-VACATE-SEMI-FUNGIBLE patron pool-id dpsf-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::C_FullVacateSemiFungible pool-id dpsf-id)
+                )
+                (format "Successfully full-vacated SemiFungible {} from Pool {}."
+                    [dpsf-id pool-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_FullVacateNonFungible:string
+        (patron:string pool-id:string dpnf-id:string)
+        @doc "Pool-owner full DPNF vacate (one tx). Talos shell → AQP-VCT::C_FullVacateNonFungible."
+        (with-capability (AQP|C>FULL-VACATE-NON-FUNGIBLE patron pool-id dpnf-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::C_FullVacateNonFungible pool-id dpnf-id)
+                )
+                (format "Successfully full-vacated NonFungible {} from Pool {}."
+                    [dpnf-id pool-id]
                 )
             )
         )
@@ -1180,6 +1393,193 @@
         )
     )
     ;;
+    ;; --- AQP-FVT lifecycle (Talos client shell → AQP-FVT::C_*) ---
+    (defun AQP-FVT|C_Issue:string
+        (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
+        @doc "Issues an FVT (farm/vault/treasury) and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-FVT::C_Issue patron fvt-name owner-konto fvt-class common-denominator)
+                    )
+                    (out:[string] (at "output" ico))
+                    (fvt-id:string (at 0 out))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully issued FVT {} (class {})." [fvt-id fvt-class])
+            )
+        )
+    )
+    (defun AQP-FVT|C_AddRewardLink:string
+        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool)
+        @doc "Registers a reward DPTF on fvt-id and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_AddRewardLink patron fvt-id reward-dptf-id segmentation)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully added reward link {} on FVT {}." [reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|C_AddScoreLink:string
+        (patron:string fvt-id:string score-id:string)
+        @doc "Admits score-id to fvt-id (ScoreLink + SCR fvt-link) and collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_AddScoreLink patron fvt-id score-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully linked score {} to FVT {}." [score-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|C_ToggleScoreLink:string
+        (patron:string fvt-id:string score-id:string enabled:bool)
+        @doc "Toggles ScoreLink.enabled and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_ToggleScoreLink patron fvt-id score-id enabled)
+                )
+                (format "Successfully toggled ScoreLink {} on FVT {} to enabled={}." [score-id fvt-id enabled])
+            )
+        )
+    )
+    (defun AQP-FVT|C_ToggleRewardLink:string
+        (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
+        @doc "Toggles reward-enabled and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_ToggleRewardLink patron fvt-id reward-dptf-id enabled)
+                )
+                (format "Successfully toggled reward link {} on FVT {} to enabled={}." [reward-dptf-id fvt-id enabled])
+            )
+        )
+    )
+    (defun AQP-FVT|C_Control:string
+        (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        @doc "Updates FVT control flags and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_Control patron fvt-id new-can-upgrade new-can-change-owner)
+                )
+                (format "Successfully updated control flags for FVT {}." [fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|C_RotateOwnership:string
+        (patron:string fvt-id:string new-owner-konto:string)
+        @doc "Rotates FVT ownership and collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_RotateOwnership patron fvt-id new-owner-konto)
+                )
+                (format "Successfully rotated ownership for FVT {} to {}." [fvt-id new-owner-konto])
+            )
+        )
+    )
+    (defun AQP-FVT|C_SetCommonDenominator:string
+        (patron:string fvt-id:string common-denominator:string)
+        @doc "Sets farm common-denominator (before ScoreLinks) and collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_SetCommonDenominator patron fvt-id common-denominator)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully set common-denominator on FVT {} to {}." [fvt-id common-denominator])
+            )
+        )
+    )
+    (defun AQP-FVT|C_Inject:string
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Injects reward DPTF into fvt-id (RPS G + available-rewards) and collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_Inject patron fvt-id reward-dptf-id amount)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|C_Collect:string
+        (patron:string fvt-id:string score-id:string reward-dptf-id:string)
+        @doc "Collects pending reward DPTF for beneficiary on score-id from fvt-id; collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (bal-before:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_Collect patron fvt-id score-id reward-dptf-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (let
+                    (
+                        (bal-after:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
+                        (payout:decimal (- bal-after bal-before))
+                    )
+                    (format "Successfully collected {} {} rewards from FVT {} for score {}."
+                        [payout reward-dptf-id fvt-id score-id]
+                    )
+                )
+            )
+        )
+    )
+    ;;
     ;; --- REPL dry-run (P|TS client shell → AQP-FVT::REPL_BootstrapVault under GOV|FVT_ADMIN) ---
     (defun AQP-FVT|REPL_BootstrapVault:string
         (patron:string fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
@@ -1190,6 +1590,18 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-FVT::REPL_BootstrapVault fvt-id owner-konto score-id reward-dptf-id)
+            )
+        )
+    )
+    (defun AQP-FVT|REPL_BootstrapTreasury:string
+        (patron:string fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
+        @doc "REPL-only Talos shell: class-2 treasury bootstrap for OF score pools."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-FVT::REPL_BootstrapTreasury fvt-id owner-konto score-id reward-dptf-id)
             )
         )
     )

@@ -3,6 +3,7 @@
     ;;
     (implements OuronetPolicyV1)
     (implements TalosStageTwo_ClientOneV1)
+    (implements TalosStageTwo_ClientOneV2)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -707,6 +708,54 @@
                 ]
             )
         )
+    )
+    (defun DPDC|C_BulkTransfer
+        (patron:string id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk whole collectable transfer — one sender, many standard-account receivers (TalosStageTwo_ClientOneV2)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                    ;;
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                    (l:integer (length receiver-lst))
+                    (ids:[string]
+                        (map
+                            (lambda (idx:integer) id)
+                            (enumerate 0 (- l 1))
+                        )
+                    )
+                    (sons:[bool]
+                        (map
+                            (lambda (idx:integer) son)
+                            (enumerate 0 (- l 1))
+                        )
+                    )
+                    (irs:object{DpdcTransferV1.AggregatedRoyalties}
+                        (ref-DPDC-T::C_IgnisRoyaltyCollector patron sender ids sons nonces-array amounts-array)
+                    )
+                    (r:[decimal] (at "ignis-royalties" irs))
+                    (s:decimal (fold (+) 0.0 r))
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-DPDC-T::C_BulkTransfer id son nonces-array amounts-array sender receiver-lst method)
+                )
+                [
+                    (format "Successfully bulk-transferred collectable {} from {} to {} receivers" [id sa l])
+                    (if (= s 0.0)
+                        (format "Bulk transfer executed without collecting any IGNIS Royalties for the Collectable {}" [id])
+                        (format "Bulk transfer executed while collecting {} IGNIS Royalty to the Collectable {} Creator" [s id])
+                    )
+                ]
+            )
+        )
+    )
+    (defun DPSF|C_BulkTransfer
+        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk SFT transfer — son=true wrapper over DPDC|C_BulkTransfer."
+        (DPDC|C_BulkTransfer patron id true nonces-array amounts-array sender receiver-lst method)
     )
     ;;
     ;;  [8] DPDC-S

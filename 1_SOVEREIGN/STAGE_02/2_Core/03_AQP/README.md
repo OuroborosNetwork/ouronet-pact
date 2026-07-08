@@ -1,6 +1,6 @@
 # AQP — Acquisition Pools (system guide)
 
-**AQP** (Acquisition) is the Stage 02 earning stack: users **stake** assets in **pools**, earn **scores** (base / boosted / deb), optional **anchor promile** boost, and **rewards** via Farms, Vaults, and Treasuries (**FVT**). Four sovereign modules live in this folder; provisioning for production is in **`2_SLAVE/Stage_02/04_AQP-BOOT.pact`**.
+**AQP** (Acquisition) is the Stage 02 earning stack: users **stake** assets in **pools**, earn **scores** (base / boosted / deb), optional **anchor promile** boost, and **rewards** via Farms, Vaults, and Treasuries (**FVT**). Five sovereign modules live in this folder; provisioning for production is in **`2_SLAVE/Stage_02/04_AQP-BOOT.pact`**. for production is in **`2_SLAVE/Stage_02/04_AQP-BOOT.pact`**.
 
 ## Module map
 
@@ -10,6 +10,7 @@
 | 2 | `AQP-SCORE` | `02_SCORE.pact` | `AcquisitionScoresV1` | [README_SCORE.md](README_SCORE.md) |
 | 3 | `AQP-POOL` | `03_AQP.pact` | `AcquisitionPoolsV1` | [README_AQP.md](README_AQP.md) |
 | 4 | `AQP-FVT` | `04_FVT.pact` | `AcquisitionFarmsVaultsTreasuriesV1` | [README_FVT.md](README_FVT.md) |
+| 5 | `AQP-VCT` | `05_VCT.pact` | `AcquisitionVacateV1` | [README_VACATE_UI.md](README_VACATE_UI.md) |
 
 **Talos client:** `1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact` — `AQP-ANK|C_*`, `AQP-SCR|C_*` (patron + IGNIS).
 

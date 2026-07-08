@@ -1,0 +1,1129 @@
+;;
+;; REPL/Stage_02/[6.2.6]_AQP-VCTGAS.repl — vacate slice gas ladder (2M target) per asset kind
+;; Loaded by REPL/VCT-gas-sweep.repl. Synth accounts: KST.ANHD with last 3 chars → 001..N.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.6]_AQP-VCTGAS.repl")
+(print "================================================================")
+(print "Legend: <<VCT-GAS-*>> legs/gas/fits-2M; <<VCT-GAS-DPTF-BULK>> bulk receivers; <<VCT-GAS-OF-7x>> multi-nonce.")
+(print "Source: ;;|| NEXT > between txs; VCT-GAS module holds probe helpers + max table.")
+(print "REPL tests: vacate chunk + DPTF|C_BulkTransfer + 7-owner multi-nonce OF vs env-gaslimit 2000000.")
+(print "")
+;;
+(begin-tx "VCT-GAS-00 - VCT-GAS probe module + synth account deploy")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-00 · 01 · module ==== =============================================================
+(print "--- [VCT-GAS-00 · 01 · VCT-GAS module] ---")
+(env-enable-repl-natives true)
+(env-sigs
+    [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}]
+)
+(module VCTGAS GOVERNANCE
+    @doc "REPL-only vacate slice gas probes — synth Ouronet accounts + per-kind leg ladders"
+    (defcap GOVERNANCE () true)
+    (defconst GAS-LIMIT 2000000)
+    (defconst SYNTH-TEMPLATE KST.ANHD)
+    (defconst SYNTH-GUARD (keyset-ref-guard "ouronet-ns.dh_master-keyset"))
+    (defconst MAX-SYNTH 999)
+    (defun UC_SmartSplit:[decimal] (patron:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    (defschema vacate-chunk-payload
+        pool-id:string
+        asset-id:string
+        vacate-kind:integer
+        vacate-job-id:string
+        owner-ids:[string]
+        beneficiary-ids:[string]
+        nonces-array:[[integer]]
+        amounts-array:[[integer]]
+        tf-amounts:[decimal]
+    )
+    (defun UC_ChunkNonceTotal:integer (nonces-array:[[integer]])
+        (fold
+            (+)
+            0
+            (map (lambda (ns:[integer]) (length ns)) nonces-array)
+        )
+    )
+    (defun UC_ProbeSliceCount:integer (unit-count:integer vacate-kind:integer)
+        (let ((ref-VCT:module{AcquisitionVacateV1} AQP-VCT))
+            (ref-VCT::UC_ComputeMinSliceCount unit-count vacate-kind)
+        )
+    )
+    (defun UC_Pad3:string (idx:integer)
+        (if (< idx 10)
+            (format "00{}" [idx])
+            (if (< idx 100)
+                (format "0{}" [idx])
+                (format "{}" [idx])
+            )
+        )
+    )
+    (defun UC_SynthAccount:string (idx:integer)
+        (let
+            (
+                (base:string SYNTH-TEMPLATE)
+                (n:integer (length base))
+            )
+            (concat [(take (- n 3) base) (UC_Pad3 idx)])
+        )
+    )
+    (defun UC_SynthAccounts:[string] (count:integer)
+        (map UC_SynthAccount (enumerate 1 count))
+    )
+    (defun UC_KadenaForIdx:string (idx:integer)
+        (format "k:vacgas-{}" [(int-to-str 10 idx)])
+    )
+    (defun XI_DeploySynthAccount:string (idx:integer)
+        (let
+            (
+                (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                (acct:string (UC_SynthAccount idx))
+            )
+            (ref-TS01-A::DALOS|A_DeployStandardAccount acct SYNTH-GUARD (UC_KadenaForIdx idx) acct)
+        )
+    )
+    (defun XI_DeploySynthRange:string (start:integer count:integer)
+        (fold
+            (lambda (acc:integer idx:integer)
+                (XI_DeploySynthAccount idx)
+                idx
+            )
+            start
+            (enumerate start (+ start (- count 1)))
+        )
+        (format "deployed {}..{}" [start (+ start (- count 1))])
+    )
+    (defun XI_RunVacateFromPayload:string
+        (patron:string payload:object{vacate-chunk-payload})
+        (let
+            (
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (kind:integer (at "vacate-kind" payload))
+            )
+            (if (= kind AQP-VCT.VACATE-KIND-TF)
+                (ref-TS02-C3::AQP-POOL|C_VacateChunkTrueFungible
+                    patron
+                    (at "vacate-job-id" payload)
+                    0
+                    (at "owner-ids" payload)
+                    (at "beneficiary-ids" payload)
+                    (at "tf-amounts" payload)
+                )
+                (if (= kind AQP-VCT.VACATE-KIND-OF)
+                    (ref-TS02-C3::AQP-POOL|C_VacateChunkOrtoFungible
+                        patron
+                        (at "vacate-job-id" payload)
+                        0
+                        (at "owner-ids" payload)
+                        (at "beneficiary-ids" payload)
+                        (at "nonces-array" payload)
+                    )
+                    (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
+                        patron
+                        (at "vacate-job-id" payload)
+                        0
+                        (at "owner-ids" payload)
+                        (at "beneficiary-ids" payload)
+                        (at "nonces-array" payload)
+                        (at "amounts-array" payload)
+                    )
+                )
+            )
+        )
+    )
+    (defun UC_MinDpnfNonceRow:object{DpdcUdcV1.DPDC|NonceData} (idx:integer)
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (i-asset-type:object{DpdcUdcV1.URI|Type}
+                    (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                )
+                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+            )
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0
+                (format "GasProbe{}" [idx])
+                "vct-gas-probe-dpnf"
+                md i-asset-type zd zd zd
+            )
+        )
+    )
+    (defun UC_DpnfNonceRows:[object{DpdcUdcV1.DPDC|NonceData}] (count:integer)
+        (map UC_MinDpnfNonceRow (enumerate 1 count))
+    )
+    (defun XI_DpsfProbeSetup:object{vacate-chunk-payload}
+        (
+            patron:string
+            pool-id:string
+            dpsf-id:string
+            n:integer
+        )
+        (let
+            (
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (nonce:integer 1)
+            )
+            (fold
+                (lambda (acc:bool idx:integer)
+                    (let ((owner:string (UC_SynthAccount idx)))
+                        (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id patron owner [nonce] [1] false)
+                        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id owner owner dpsf-id [nonce])
+                    )
+                    true
+                )
+                true
+                (enumerate 1 n)
+            )
+            (let
+                (
+                    (slice-count:integer (UC_ProbeSliceCount n AQP-VCT.VACATE-KIND-DPSF))
+                )
+                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpsf-id AQP-VCT.VACATE-KIND-DPSF slice-count)
+                (let
+                    (
+                        (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                        (vacate-job-id:string (at "vacate-job-id" active-job))
+                        (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id AQP-VCT.VACATE-KIND-DPSF slice-count))
+                        (slice0:object (at 0 (at "slices" plan)))
+                    )
+                    {
+                        "pool-id": pool-id,
+                        "asset-id": dpsf-id,
+                        "vacate-kind": AQP-VCT.VACATE-KIND-DPSF,
+                        "vacate-job-id": vacate-job-id,
+                        "owner-ids": (at "owner-ids" slice0),
+                        "beneficiary-ids": (at "beneficiary-ids" slice0),
+                        "nonces-array": (at "nonces-array" slice0),
+                        "amounts-array": (at "amounts-array" slice0),
+                        "tf-amounts": []
+                    }
+                )
+            )
+        )
+    )
+    (defun XI_DpsfProbeVacateChunk:string
+        (
+            patron:string
+            pool-id:string
+            dpsf-id:string
+            n:integer
+        )
+        (XI_RunVacateFromPayload patron (XI_DpsfProbeSetup patron pool-id dpsf-id n))
+    )
+    (defun XI_TfProbeSetup:object{vacate-chunk-payload}
+        (
+            patron:string
+            pool-id:string
+            ouro-id:string
+            n:integer
+            stake-amt:decimal
+        )
+        (let
+            (
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+            )
+            (fold
+                (lambda (acc:bool idx:integer)
+                    (let ((owner:string (UC_SynthAccount idx)))
+                        (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner stake-amt true)
+                        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner owner ouro-id stake-amt)
+                    )
+                    true
+                )
+                true
+                (enumerate 1 n)
+            )
+            (let
+                (
+                    (slice-count:integer (UC_ProbeSliceCount n AQP-VCT.VACATE-KIND-TF))
+                )
+                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id ouro-id AQP-VCT.VACATE-KIND-TF slice-count)
+                (let
+                    (
+                        (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                        (vacate-job-id:string (at "vacate-job-id" active-job))
+                        (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id AQP-VCT.VACATE-KIND-TF slice-count))
+                        (slice0:object (at 0 (at "slices" plan)))
+                    )
+                    {
+                        "pool-id": pool-id,
+                        "asset-id": ouro-id,
+                        "vacate-kind": AQP-VCT.VACATE-KIND-TF,
+                        "vacate-job-id": vacate-job-id,
+                        "owner-ids": (at "owner-ids" slice0),
+                        "beneficiary-ids": (at "beneficiary-ids" slice0),
+                        "nonces-array": [],
+                        "amounts-array": [],
+                        "tf-amounts": (at "amounts" slice0)
+                    }
+                )
+            )
+        )
+    )
+    (defun XI_TfProbeVacateChunk:string
+        (
+            patron:string
+            pool-id:string
+            ouro-id:string
+            n:integer
+            stake-amt:decimal
+        )
+        (XI_RunVacateFromPayload patron (XI_TfProbeSetup patron pool-id ouro-id n stake-amt))
+    )
+    (defun XI_OfProbeSetup:object{vacate-chunk-payload}
+        (
+            patron:string
+            pool-id:string
+            dpof-id:string
+            n:integer
+        )
+        (let
+            (
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+            )
+            (if (not (ref-DPOF::UR_R-AddQuantity dpof-id patron))
+                (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron dpof-id patron true)
+                true
+            )
+            (if (ref-DPOF::UR_R-Frozen dpof-id patron)
+                (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id patron false)
+                true
+            )
+            (fold
+                (lambda (acc:bool idx:integer)
+                    (let ((owner:string (UC_SynthAccount idx)))
+                        (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"vct-gas": true}])
+                        (let
+                            (
+                                (patron-nonces:[integer] (ref-DPOF::URD_AccountNonces patron dpof-id))
+                                (mint-nonce:integer (at (- (length patron-nonces) 1) patron-nonces))
+                            )
+                            (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
+                            (if (ref-DPOF::UR_R-Frozen dpof-id owner)
+                                (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false)
+                                true
+                            )
+                            (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner owner dpof-id [mint-nonce])
+                        )
+                    )
+                    true
+                )
+                true
+                (enumerate 1 n)
+            )
+            (let
+                (
+                    (slice-count:integer (UC_ProbeSliceCount n AQP-VCT.VACATE-KIND-OF))
+                )
+                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count)
+                (let
+                    (
+                        (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                        (vacate-job-id:string (at "vacate-job-id" active-job))
+                        (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count))
+                        (slice0:object (at 0 (at "slices" plan)))
+                    )
+                    {
+                        "pool-id": pool-id,
+                        "asset-id": dpof-id,
+                        "vacate-kind": AQP-VCT.VACATE-KIND-OF,
+                        "vacate-job-id": vacate-job-id,
+                        "owner-ids": (at "owner-ids" slice0),
+                        "beneficiary-ids": (at "beneficiary-ids" slice0),
+                        "nonces-array": (at "nonces-array" slice0),
+                        "amounts-array": [],
+                        "tf-amounts": []
+                    }
+                )
+            )
+        )
+    )
+    (defun XI_OfProbeVacateChunk:string
+        (
+            patron:string
+            pool-id:string
+            dpof-id:string
+            n:integer
+        )
+        (XI_RunVacateFromPayload patron (XI_OfProbeSetup patron pool-id dpof-id n))
+    )
+    (defun XI_DpnfProbeSetup:object{vacate-chunk-payload}
+        (
+            patron:string
+            pool-id:string
+            dpnf-id:string
+            n:integer
+        )
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (source:string KST.EMMA)
+                (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+            )
+            (ref-TS02-C2::DPNF|C_Create patron dpnf-id (UC_DpnfNonceRows n))
+            (let
+                (
+                    (picked:[integer]
+                        (take n (drop pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+                    )
+                )
+                (enforce (= (length picked) n)
+                    (format "DPNF probe: created {} new {} nonces on EMMA" [n dpnf-id])
+                )
+                (fold
+                    (lambda (acc:bool idx:integer)
+                        (let
+                            (
+                                (owner:string (UC_SynthAccount idx))
+                                (nonce:integer (at (- idx 1) picked))
+                            )
+                            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner [nonce] [1] false)
+                            (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner owner dpnf-id [nonce])
+                        )
+                        true
+                    )
+                    true
+                    (enumerate 1 n)
+                )
+            )
+            (let
+                (
+                    (slice-count:integer (UC_ProbeSliceCount n AQP-VCT.VACATE-KIND-DPNF))
+                )
+                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpnf-id AQP-VCT.VACATE-KIND-DPNF slice-count)
+                (let
+                    (
+                        (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                        (vacate-job-id:string (at "vacate-job-id" active-job))
+                        (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id AQP-VCT.VACATE-KIND-DPNF slice-count))
+                        (slice0:object (at 0 (at "slices" plan)))
+                    )
+                    {
+                        "pool-id": pool-id,
+                        "asset-id": dpnf-id,
+                        "vacate-kind": AQP-VCT.VACATE-KIND-DPNF,
+                        "vacate-job-id": vacate-job-id,
+                        "owner-ids": (at "owner-ids" slice0),
+                        "beneficiary-ids": (at "beneficiary-ids" slice0),
+                        "nonces-array": (at "nonces-array" slice0),
+                        "amounts-array": (at "amounts-array" slice0),
+                        "tf-amounts": []
+                    }
+                )
+            )
+        )
+    )
+    (defun XI_DpnfProbeVacateChunk:string
+        (
+            patron:string
+            pool-id:string
+            dpnf-id:string
+            n:integer
+        )
+        (XI_RunVacateFromPayload patron (XI_DpnfProbeSetup patron pool-id dpnf-id n))
+    )
+    (defun XI_ChunkPayloadFromPool:object{vacate-chunk-payload}
+        (pool-id:string asset-id:string vacate-kind:integer)
+        (let
+            (
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                (vacate-job-id:string (at "vacate-job-id" active-job))
+                (slice-count:integer (at "slice-count" active-job))
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id asset-id vacate-kind slice-count))
+                (slice0:object (at 0 (at "slices" plan)))
+            )
+            (if (= vacate-kind AQP-VCT.VACATE-KIND-TF)
+                {
+                    "pool-id": pool-id,
+                    "asset-id": asset-id,
+                    "vacate-kind": vacate-kind,
+                    "vacate-job-id": vacate-job-id,
+                    "owner-ids": (at "owner-ids" slice0),
+                    "beneficiary-ids": (at "beneficiary-ids" slice0),
+                    "nonces-array": [],
+                    "amounts-array": [],
+                    "tf-amounts": (at "amounts" slice0)
+                }
+                {
+                    "pool-id": pool-id,
+                    "asset-id": asset-id,
+                    "vacate-kind": vacate-kind,
+                    "vacate-job-id": vacate-job-id,
+                    "owner-ids": (at "owner-ids" slice0),
+                    "beneficiary-ids": (at "beneficiary-ids" slice0),
+                    "nonces-array": (at "nonces-array" slice0),
+                    "amounts-array": (at "amounts-array" slice0),
+                    "tf-amounts": []
+                }
+            )
+        )
+    )
+    (defun XI_MeasureVacateChunk:integer
+        (patron:string payload:object{vacate-chunk-payload})
+        (let ((g-before:integer (env-gas)))
+            (XI_RunVacateFromPayload patron payload)
+            (- (env-gas) g-before)
+        )
+    )
+    (defun XI_ProbeDpsf:integer
+        (patron:string dpsf-id:string ouro-id:string n:integer)
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (pool-name:string (format "VctGasDpsf{}" [n]))
+                (score-name:string (format "VctGasSfScore{}" [n]))
+                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "VctGasDpsfFvt{}" [n])))
+            )
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
+            (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron score-name 3 true)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
+            (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron (ref-U|DALOS::UDC_Makeid score-name) ouro-id)
+            (let
+                (
+                    (payload:object{vacate-chunk-payload} (XI_DpsfProbeSetup patron pool-id dpsf-id n))
+                    (chunk-gas:integer (XI_MeasureVacateChunk patron payload))
+                    (chunk-nonces:integer (UC_ChunkNonceTotal (at "nonces-array" payload)))
+                )
+                (print (format "<<VCT-GAS-DPSF>> staked={} chunk-nonces={} chunk-gas={} gas-per-nonce={} fits-2M={}"
+                    [n chunk-nonces chunk-gas (/ chunk-gas chunk-nonces) (<= chunk-gas GAS-LIMIT)]))
+                chunk-gas
+            )
+        )
+    )
+    (defun XI_ProbeTf:integer
+        (patron:string ouro-id:string n:integer stake-amt:decimal)
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (pool-name:string (format "VctGasTf{}" [n]))
+                (score-name:string (format "VctGasTfScore{}" [n]))
+                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "VctGasTfFvt{}" [n])))
+                (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+            )
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
+            (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+            (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+            (let
+                (
+                    (payload:object{vacate-chunk-payload} (XI_TfProbeSetup patron pool-id ouro-id n stake-amt))
+                    (chunk-gas:integer (XI_MeasureVacateChunk patron payload))
+                    (chunk-legs:integer (length (at "owner-ids" payload)))
+                )
+                (print (format "<<VCT-GAS-TF>> staked={} chunk-legs={} chunk-gas={} gas-per-leg={} fits-2M={}"
+                    [n chunk-legs chunk-gas (/ chunk-gas chunk-legs) (<= chunk-gas GAS-LIMIT)]))
+                chunk-gas
+            )
+        )
+    )
+    (defun XI_ProbeOf:integer
+        (patron:string dpof-id:string ouro-id:string n:integer)
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (pool-name:string (format "VctGasOf{}" [n]))
+                (score-name:string (format "VctGasOfScore{}" [n]))
+                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "VctGasOfFvt{}" [n])))
+            )
+            (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
+            (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron (ref-U|DALOS::UDC_Makeid score-name) ouro-id)
+            (let
+                (
+                    (payload:object{vacate-chunk-payload} (XI_OfProbeSetup patron pool-id dpof-id n))
+                    (chunk-gas:integer (XI_MeasureVacateChunk patron payload))
+                    (chunk-nonces:integer (UC_ChunkNonceTotal (at "nonces-array" payload)))
+                )
+                (print (format "<<VCT-GAS-OF>> staked={} chunk-nonces={} chunk-gas={} gas-per-nonce={} fits-2M={}"
+                    [n chunk-nonces chunk-gas (/ chunk-gas chunk-nonces) (<= chunk-gas GAS-LIMIT)]))
+                chunk-gas
+            )
+        )
+    )
+    (defun XI_ProbeDpnf:integer
+        (patron:string dpnf-id:string ouro-id:string n:integer)
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (pool-name:string (format "VctGasDpnf{}" [n]))
+                (score-name:string (format "VctGasNfScore{}" [n]))
+                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "VctGasDpnfFvt{}" [n])))
+            )
+            (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron score-name 6 0)
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
+            (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron (ref-U|DALOS::UDC_Makeid score-name) ouro-id)
+            (let
+                (
+                    (payload:object{vacate-chunk-payload}
+                        (XI_DpnfProbeSetup patron pool-id dpnf-id n)
+                    )
+                    (chunk-gas:integer (XI_MeasureVacateChunk patron payload))
+                    (chunk-nonces:integer (UC_ChunkNonceTotal (at "nonces-array" payload)))
+                )
+                (print (format "<<VCT-GAS-DPNF>> staked={} chunk-nonces={} chunk-gas={} gas-per-nonce={} fits-2M={}"
+                    [n chunk-nonces chunk-gas (/ chunk-gas chunk-nonces) (<= chunk-gas GAS-LIMIT)]))
+                chunk-gas
+            )
+        )
+    )
+    (defun UC_MakeDecimals:[decimal] (n:integer amt:decimal)
+        (map (lambda (_:integer) amt) (enumerate 1 n))
+    )
+    (defun XI_OfEnsurePatronReady:bool (patron:string dpof-id:string)
+        (let
+            (
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+            )
+            (if (not (ref-DPOF::UR_R-AddQuantity dpof-id patron))
+                (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron dpof-id patron true)
+                true
+            )
+            (if (ref-DPOF::UR_R-Frozen dpof-id patron)
+                (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id patron false)
+                true
+            )
+            true
+        )
+    )
+    (defun XI_OfMintTransferOne:integer
+        (patron:string dpof-id:string owner:string)
+        (let
+            (
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+            )
+            (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"vct-gas": true}])
+            (let
+                (
+                    (patron-nonces:[integer] (ref-DPOF::URD_AccountNonces patron dpof-id))
+                    (mint-nonce:integer (at (- (length patron-nonces) 1) patron-nonces))
+                )
+                (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
+                (if (ref-DPOF::UR_R-Frozen dpof-id owner)
+                    (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false)
+                    true
+                )
+                mint-nonce
+            )
+        )
+    )
+    (defun XI_OfMultiOwnerProbeSetup:object{vacate-chunk-payload}
+        (
+            patron:string
+            pool-id:string
+            dpof-id:string
+            owner-count:integer
+            nonces-per-owner:integer
+        )
+        (let
+            (
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (unit-total:integer (* owner-count nonces-per-owner))
+            )
+            (XI_OfEnsurePatronReady patron dpof-id)
+            (fold
+                (lambda (acc:bool owner-idx:integer)
+                    (let
+                        (
+                            (owner:string (UC_SynthAccount owner-idx))
+                            (picked:[integer]
+                                (fold
+                                    (lambda (ns-acc:[integer] _:integer)
+                                        (+ ns-acc [(XI_OfMintTransferOne patron dpof-id owner)])
+                                    )
+                                    []
+                                    (enumerate 1 nonces-per-owner)
+                                )
+                            )
+                        )
+                        (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner owner dpof-id picked)
+                    )
+                    true
+                )
+                true
+                (enumerate 1 owner-count)
+            )
+            (let
+                (
+                    (slice-count:integer (UC_ProbeSliceCount unit-total AQP-VCT.VACATE-KIND-OF))
+                )
+                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count)
+                (let
+                    (
+                        (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                        (vacate-job-id:string (at "vacate-job-id" active-job))
+                        (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count))
+                        (slice0:object (at 0 (at "slices" plan)))
+                    )
+                    {
+                        "pool-id": pool-id,
+                        "asset-id": dpof-id,
+                        "vacate-kind": AQP-VCT.VACATE-KIND-OF,
+                        "vacate-job-id": vacate-job-id,
+                        "owner-ids": (at "owner-ids" slice0),
+                        "beneficiary-ids": (at "beneficiary-ids" slice0),
+                        "nonces-array": (at "nonces-array" slice0),
+                        "amounts-array": [],
+                        "tf-amounts": []
+                    }
+                )
+            )
+        )
+    )
+    (defun XI_ProbeOfMultiOwner:integer
+        (
+            patron:string
+            dpof-id:string
+            ouro-id:string
+            owner-count:integer
+            nonces-per-owner:integer
+        )
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (pool-name:string (format "VctGasOf7x{}{}" [owner-count nonces-per-owner]))
+                (score-name:string (format "VctGasOf7xScore{}{}" [owner-count nonces-per-owner]))
+                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "VctGasOf7xFvt{}{}" [owner-count nonces-per-owner])))
+                (staked-total:integer (* owner-count nonces-per-owner))
+            )
+            (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
+            (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron (ref-U|DALOS::UDC_Makeid score-name) ouro-id)
+            (let
+                (
+                    (payload:object{vacate-chunk-payload}
+                        (XI_OfMultiOwnerProbeSetup patron pool-id dpof-id owner-count nonces-per-owner)
+                    )
+                    (chunk-gas:integer (XI_MeasureVacateChunk patron payload))
+                    (chunk-nonces:integer (UC_ChunkNonceTotal (at "nonces-array" payload)))
+                    (chunk-owners:integer (length (at "owner-ids" payload)))
+                )
+                (print (format "<<VCT-GAS-OF-7x>> owners={} nonces-per-owner={} staked-total={} chunk-owners={} chunk-nonces={} chunk-gas={} gas-per-nonce={} fits-2M={}"
+                    [owner-count nonces-per-owner staked-total chunk-owners chunk-nonces chunk-gas (/ chunk-gas chunk-nonces) (<= chunk-gas GAS-LIMIT)]))
+                chunk-gas
+            )
+        )
+    )
+    (defun XI_MeasureDptfBulk:integer
+        (
+            patron:string
+            ouro-id:string
+            receiver-count:integer
+            amt:decimal
+        )
+        (let
+            (
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                (receivers:[string] (UC_SynthAccounts receiver-count))
+                (amounts:[decimal] (UC_MakeDecimals receiver-count amt))
+                (g-before:integer (env-gas))
+            )
+            (ref-TS01-C1::DPTF|C_BulkTransfer patron ouro-id patron receivers amounts)
+            (- (env-gas) g-before)
+        )
+    )
+    (defun XI_ProbeDptfBulk:integer
+        (patron:string ouro-id:string receiver-count:integer amt:decimal)
+        (let ((bulk-gas:integer (XI_MeasureDptfBulk patron ouro-id receiver-count amt)))
+            (print (format "<<VCT-GAS-DPTF-BULK>> receivers={} bulk-gas={} gas-per-receiver={} fits-2M={}"
+                [receiver-count bulk-gas (/ bulk-gas receiver-count) (<= bulk-gas GAS-LIMIT)]))
+            bulk-gas
+        )
+    )
+    (defun XI_TfStakeOnly:bool
+        (patron:string pool-id:string ouro-id:string n:integer stake-amt:decimal)
+        (let
+            (
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+            )
+            (fold
+                (lambda (acc:bool idx:integer)
+                    (let ((owner:string (UC_SynthAccount idx)))
+                        (ref-TS01-C1::DPTF|C_Transfer patron ouro-id patron owner stake-amt true)
+                        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner owner ouro-id stake-amt)
+                    )
+                    true
+                )
+                true
+                (enumerate 1 n)
+            )
+        )
+    )
+    (defun XI_OfStakeOnly:bool
+        (patron:string pool-id:string dpof-id:string n:integer)
+        (let
+            (
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+            )
+            (XI_OfEnsurePatronReady patron dpof-id)
+            (fold
+                (lambda (acc:bool idx:integer)
+                    (let ((owner:string (UC_SynthAccount idx)))
+                        (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"vct-gas-fv": true}])
+                        (let
+                            (
+                                (patron-nonces:[integer] (ref-DPOF::URD_AccountNonces patron dpof-id))
+                                (mint-nonce:integer (at (- (length patron-nonces) 1) patron-nonces))
+                            )
+                            (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [mint-nonce] patron owner true)
+                            (if (ref-DPOF::UR_R-Frozen dpof-id owner)
+                                (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner false)
+                                true
+                            )
+                            (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner owner dpof-id [mint-nonce])
+                        )
+                    )
+                    true
+                )
+                true
+                (enumerate 1 n)
+            )
+        )
+    )
+    (defun XI_DpsfStakeOnly:bool
+        (patron:string pool-id:string dpsf-id:string n:integer)
+        (let
+            (
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (nonce:integer 1)
+            )
+            (fold
+                (lambda (acc:bool idx:integer)
+                    (let ((owner:string (UC_SynthAccount idx)))
+                        (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id patron owner [nonce] [1] false)
+                        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id owner owner dpsf-id [nonce])
+                    )
+                    true
+                )
+                true
+                (enumerate 1 n)
+            )
+        )
+    )
+    (defun XI_DpnfStakeOnly:bool
+        (patron:string pool-id:string dpnf-id:string n:integer)
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (source:string KST.EMMA)
+                (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+            )
+            (ref-TS02-C2::DPNF|C_Create patron dpnf-id (UC_DpnfNonceRows n))
+            (let
+                (
+                    (picked:[integer]
+                        (take n (drop pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+                    )
+                )
+                (enforce (= (length picked) n)
+                    (format "DPNF full-vacate stake: created {} nonces on EMMA" [n])
+                )
+                (fold
+                    (lambda (acc:bool idx:integer)
+                        (let
+                            (
+                                (owner:string (UC_SynthAccount idx))
+                                (nonce:integer (at (- idx 1) picked))
+                            )
+                            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner [nonce] [1] false)
+                            (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner owner dpnf-id [nonce])
+                        )
+                        true
+                    )
+                    true
+                    (enumerate 1 n)
+                )
+            )
+        )
+    )
+    (defun XI_MeasureFullVacateTf:integer
+        (patron:string pool-id:string ouro-id:string)
+        (let
+            (
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (g-before:integer (env-gas))
+            )
+            (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible patron pool-id ouro-id)
+            (- (env-gas) g-before)
+        )
+    )
+    (defun XI_MeasureFullVacateOf:integer
+        (patron:string pool-id:string dpof-id:string)
+        (let
+            (
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (g-before:integer (env-gas))
+            )
+            (ref-TS02-C3::AQP-POOL|C_FullVacateOrtoFungible patron pool-id dpof-id)
+            (- (env-gas) g-before)
+        )
+    )
+    (defun XI_MeasureFullVacateDpsf:integer
+        (patron:string pool-id:string dpsf-id:string)
+        (let
+            (
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (g-before:integer (env-gas))
+            )
+            (ref-TS02-C3::AQP-POOL|C_FullVacateSemiFungible patron pool-id dpsf-id)
+            (- (env-gas) g-before)
+        )
+    )
+    (defun XI_MeasureFullVacateDpnf:integer
+        (patron:string pool-id:string dpnf-id:string)
+        (let
+            (
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (g-before:integer (env-gas))
+            )
+            (ref-TS02-C3::AQP-POOL|C_FullVacateNonFungible patron pool-id dpnf-id)
+            (- (env-gas) g-before)
+        )
+    )
+    (defun XI_FullVacateInventoryNonces:integer
+        (pool-id:string asset-id:string vacate-kind:integer)
+        (let ((ref-VCT:module{AcquisitionVacateV1} AQP-VCT))
+            (ref-VCT::URDC_VacateNonceTotalForKind pool-id asset-id vacate-kind)
+        )
+    )
+    (defun XI_ProbeFullVacateTf:integer
+        (patron:string ouro-id:string n:integer stake-amt:decimal)
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (pool-name:string (format "FvTf{}" [n]))
+                (score-name:string (format "FvTfScore{}" [n]))
+                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "FvTfFvt{}" [n])))
+                (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+            )
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
+            (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+            (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+            (XI_TfStakeOnly patron pool-id ouro-id n stake-amt)
+            (let
+                (
+                    (full-gas:integer (XI_MeasureFullVacateTf patron pool-id ouro-id))
+                )
+                (print (format "<<VCT-GAS-FULL-TF>> legs={} full-vacate-gas={} gas-per-leg={} fits-2M={}"
+                    [n full-gas (/ full-gas n) (<= full-gas GAS-LIMIT)]))
+                full-gas
+            )
+        )
+    )
+    (defun XI_ProbeFullVacateOf:integer
+        (patron:string dpof-id:string ouro-id:string n:integer)
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (pool-name:string (format "FvOf{}" [n]))
+                (score-name:string (format "FvOfScore{}" [n]))
+                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "FvOfFvt{}" [n])))
+            )
+            (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
+            (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron (ref-U|DALOS::UDC_Makeid score-name) ouro-id)
+            (XI_OfStakeOnly patron pool-id dpof-id n)
+            (let
+                (
+                    (full-gas:integer (XI_MeasureFullVacateOf patron pool-id dpof-id))
+                )
+                (print (format "<<VCT-GAS-FULL-OF>> nonces={} full-vacate-gas={} gas-per-nonce={} fits-2M={}"
+                    [n full-gas (/ full-gas n) (<= full-gas GAS-LIMIT)]))
+                full-gas
+            )
+        )
+    )
+    (defun XI_ProbeFullVacateDpsf:integer
+        (patron:string dpsf-id:string ouro-id:string n:integer)
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (pool-name:string (format "FvDpsf{}" [n]))
+                (score-name:string (format "FvDpsfScore{}" [n]))
+                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "FvDpsfFvt{}" [n])))
+            )
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
+            (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron score-name 3 true)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
+            (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron (ref-U|DALOS::UDC_Makeid score-name) ouro-id)
+            (XI_DpsfStakeOnly patron pool-id dpsf-id n)
+            (let
+                (
+                    (full-gas:integer (XI_MeasureFullVacateDpsf patron pool-id dpsf-id))
+                )
+                (print (format "<<VCT-GAS-FULL-DPSF>> nonces={} full-vacate-gas={} gas-per-nonce={} fits-2M={}"
+                    [n full-gas (/ full-gas n) (<= full-gas GAS-LIMIT)]))
+                full-gas
+            )
+        )
+    )
+    (defun XI_ProbeFullVacateDpnf:integer
+        (patron:string dpnf-id:string ouro-id:string n:integer)
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (pool-name:string (format "FvDpnf{}" [n]))
+                (score-name:string (format "FvDpnfScore{}" [n]))
+                (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid (format "FvDpnfFvt{}" [n])))
+            )
+            (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron score-name 6 0)
+            (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
+            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid score-name))
+            (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron (ref-U|DALOS::UDC_Makeid score-name) ouro-id)
+            (XI_DpnfStakeOnly patron pool-id dpnf-id n)
+            (let
+                (
+                    (full-gas:integer (XI_MeasureFullVacateDpnf patron pool-id dpnf-id))
+                )
+                (print (format "<<VCT-GAS-FULL-DPNF>> nonces={} full-vacate-gas={} gas-per-nonce={} fits-2M={}"
+                    [n full-gas (/ full-gas n) (<= full-gas GAS-LIMIT)]))
+                full-gas
+            )
+        )
+    )
+)
+;;==== VCT-GAS-00 · 02 · module loaded (synth deploy deferred to VCT-GAS-00b) ==== ================
+(print "--- [VCT-GAS-00 · 02 · module ready — synth deploy in VCT-GAS-00b after scores] ---")
+(env-sigs [])
+(print (format "<(REPL|env-gas)> VCT-GAS-00 module => \"{}\"" [(env-gas)]))
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "VCT-GAS-01 - TF anchor + shared gas-probe score bootstrap")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== VCT-GAS-01 · 01 · TF anchor for OURO stake probes ==== =====================================
+(print "--- [VCT-GAS-01 · 01 · TF anchor + VctGas scores] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (split-std:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "standard")))
+        )
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (ref-DALOS::UR_UsagePrice "smart")))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (* 6.0 (+ (at 2 split-std) (at 2 split-smart)))
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (* 6.0 (+ (at 0 split-std) (at 0 split-smart)))
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (* 6.0 (+ (at 3 split-std) (at 3 split-smart)))
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (* 6.0 (+ (at 1 split-std) (at 1 split-smart)))
+                    )
+                ]
+            }
+        ]
+    )
+    (print (format "<(AQP-ANK|C_IssueTrueFungibleAnchor VctGasTfAnchor)> => \"{}\"" [
+        (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "VctGasTfAnchor" ouro-id true "VctGasBoost" 8 50.0 500.0)
+    ]))
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "VCT-GAS-00b - deploy synth accounts 001..999")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [VCT-GAS-00b · 01 · deploy synth accounts 001..999] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (batch:integer 100)
+    )
+    (map
+        (lambda (b:integer)
+            (let
+                (
+                    (start:integer (+ 1 (* b batch)))
+                    (count:integer (if (= b 9) 99 batch))
+                )
+                (print (format "<(VCTGAS.XI_DeploySynthRange)> batch {} => \"{}\"" [b (VCTGAS.XI_DeploySynthRange start count)]))
+            )
+        )
+        (enumerate 0 9)
+    )
+)
+(env-sigs [])
+(print (format "<(REPL|env-gas)> VCT-GAS-00b deploy => \"{}\"" [(env-gas)]))
+(commit-tx)

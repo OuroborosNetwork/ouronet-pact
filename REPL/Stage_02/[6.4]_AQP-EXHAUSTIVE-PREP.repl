@@ -1,0 +1,97 @@
+;;
+;; REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-PREP.repl — equity + DPSF weight splits for multi-user RPS / company pool
+;; Requires: sovereign executor (E|DH, DHCD), AQP-BOOT Step7 pools.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-PREP.repl")
+(print "================================================================")
+(print "")
+;;
+(begin-tx "TX-AQP-P01 - E|DH equity morph + LUMY transfer for DHCompany stakes")
+(print "")
+(print "=== TX-AQP-P01 — E|DH fragments for ANHD + LUMY (company pool) ==============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (edh-id:string "E|DH-98c486052a51")
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV1} DPDC)
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+        ]
+    )
+    (ref-TS02-C1::DPSF|C_MorphEquity patron patron edh-id 1 20000 6)
+    (let
+        (
+            (anhd-pre:integer (ref-DPDC::UR_AccountNonceSupply patron edh-id true 6))
+            (xfer:integer (/ anhd-pre 2))
+        )
+        (enforce (> anhd-pre 1) "TX-AQP-P01: need >1 tier-6 package units to split 50/50")
+        (ref-TS02-C1::DPSF|C_TransferNonce patron edh-id patron lumy 6 xfer false)
+        (let
+            (
+                (anhd-supply:integer (ref-DPDC::UR_AccountNonceSupply patron edh-id true 6))
+                (lumy-supply:integer (ref-DPDC::UR_AccountNonceSupply lumy edh-id true 6))
+            )
+            (map print
+                [
+                    (format "<(E|DH tier-6 ANHD supply)> => \"{}\"" [anhd-supply])
+                    (format "<(E|DH tier-6 LUMY supply)> => \"{}\"" [lumy-supply])
+                    (expect (format "<<TX-AQP-P01>> 50/50 split got ANHD={} LUMY={}" [anhd-supply lumy-supply]) anhd-supply lumy-supply)
+                    (expect (format "<<TX-AQP-P01>> total tier-6>0 got={}" [(+ anhd-supply lumy-supply)]) true (> (+ anhd-supply lumy-supply) 0))
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-P02 - DHCD 20/80 nonce-5 split for proportional RPS")
+(print "")
+(print "=== TX-AQP-P02 — DHCD nonce 5: 100 ANHD / 400 LUMY (20/80) =================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (dhcd-id:string "DHCD-98c486052a51")
+        (stake-nonce:integer 5)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC:module{DpdcV1} DPDC)
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+        ]
+    )
+    (ref-TS02-C1::DPSF|C_TransferNonce patron dhcd-id patron lumy stake-nonce 400 false)
+    (let
+        (
+            (anhd-supply:integer (ref-DPDC::UR_AccountNonceSupply patron dhcd-id true stake-nonce))
+            (lumy-supply:integer (ref-DPDC::UR_AccountNonceSupply lumy dhcd-id true stake-nonce))
+        )
+        (map print
+            [
+                (format "<(DHCD nonce-5 ANHD supply)> => \"{}\"" [anhd-supply])
+                (format "<(DHCD nonce-5 LUMY supply)> => \"{}\"" [lumy-supply])
+                (expect (format "<<TX-AQP-P02>> ANHD nonce-5 got={} expected=100" [anhd-supply]) 100 anhd-supply)
+                (expect (format "<<TX-AQP-P02>> LUMY nonce-5 got={} expected=400" [lumy-supply]) 400 lumy-supply)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END [6.4]_AQP-EXHAUSTIVE-PREP.repl =====================================")

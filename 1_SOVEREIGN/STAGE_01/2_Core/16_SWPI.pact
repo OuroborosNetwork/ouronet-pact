@@ -1324,7 +1324,7 @@
                             (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
                         )
                     )
-                    (ref-SWP::XE_AddLPTracker swpair token-lp)
+                    (ref-SWP::XE_AddLPTracker token-lp swpair)
                     (ref-SWPT::XE_MultiPathTracer swpair (ref-SWP::UR_Principals))
                     (ref-IGNIS::KDA|C_Collect patron kda-costs)
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])

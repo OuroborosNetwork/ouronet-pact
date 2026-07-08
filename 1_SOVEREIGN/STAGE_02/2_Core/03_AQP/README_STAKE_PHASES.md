@@ -45,11 +45,11 @@ TF: **3.1** only; **3.2/3.3 comment-only**. OF: **3.x comment-only**.
 
 | Step | Function | UrStoa ≡ | TF | OF | DPDC |
 |------|----------|----------|----|----|------|
-| **4.1** | `XI_ApplyVaultScoreTotals` | `XI_URV\|UpdateVaultScore` | ✓ | ✓ | ✓ |
-| **4.2** | `XI_WriteUserScoreTriple` | `XI_URV\|UpdateUserScore` | ✓ | ✓ | ✓ |
-| **4.3** | `XI_ApplyScoreNzsDelta` | `XI_URV\|UpdateNZS` | ✓ | ✓ | ✓ |
+| **4.1** | `WU3_Score\|VaultTotals` | `XI_URV\|UpdateVaultScore` | ✓ | ✓ | ✓ |
+| **4.2** | `WW_UserScore` | `XI_URV\|UpdateUserScore` | ✓ | ✓ | ✓ |
+| **4.3** | `WU_Score\|NzsCount` | `XI_URV\|UpdateNZS` | ✓ | ✓ | ✓ |
 
-Orchestrator per score: `XE_Apply*StakeDelta` → `XI_2\|ApplySingularUserScoreDelta` (**4.2 → 4.1 → 4.3**).
+Orchestrator per score: `XE_Apply*StakeDelta` → `XI_2\|ApplySingularUserScoreDelta` (**4.2 → 4.1 → 4.3**; W_ writes inlined).
 
 ## PHASE 5 — FVT RPS post-SCORE
 

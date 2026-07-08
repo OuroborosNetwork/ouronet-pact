@@ -1,0 +1,89 @@
+;; Minimal test: insert / update / write — partial vs full row objects
+
+(module test-write-partial G
+  (defschema TestRow
+    a:integer
+    b:integer
+    c:integer
+  )
+
+  (deftable test-table:{TestRow})
+
+  (defcap G () true)
+
+  (defun mk-full ()
+    {"a": 1, "b": 2, "c": 3}
+  )
+
+  (defun mk-partial-ab ()
+    {"a": 10, "b": 20}
+  )
+
+  (defun mk-partial-a ()
+    {"a": 99}
+  )
+
+  (defun run-insert-full ()
+    (insert test-table "k1" (mk-full))
+    (read test-table "k1")
+  )
+
+  (defun run-insert-partial ()
+    (insert test-table "k2" (mk-partial-ab))
+  )
+
+  (defun run-update-existing-partial ()
+    (update test-table "k1" (mk-partial-a))
+    (read test-table "k1")
+  )
+
+  (defun run-update-missing ()
+    (update test-table "missing" {"a": 1})
+  )
+
+  (defun run-write-new-partial ()
+    (write test-table "k3" {"a": 7})
+    (read test-table "k3")
+  )
+
+  (defun run-write-existing-partial ()
+    (write test-table "k1" {"b": 55})
+    (read test-table "k1")
+  )
+)
+
+(create-table test-write-partial.test-table)
+
+(begin-tx "insert-full")
+  (expect "insert full row" {"a": 1, "b": 2, "c": 3} (test-write-partial.run-insert-full))
+(commit-tx)
+
+(begin-tx "insert-partial-fails")
+  (expect-failure "insert partial row fails schema" "schema mismatch"
+    (test-write-partial.run-insert-partial)
+  )
+(commit-tx)
+
+(begin-tx "update-existing-partial")
+  (expect "update partial merges fields" {"a": 99, "b": 2, "c": 3}
+    (test-write-partial.run-update-existing-partial)
+  )
+(commit-tx)
+
+(begin-tx "update-missing-fails")
+  (expect-failure "update missing key fails" "No value found"
+    (test-write-partial.run-update-missing)
+  )
+(commit-tx)
+
+(begin-tx "write-new-partial")
+  (expect "write new partial row" {"a": 7, "b": 0, "c": 0}
+    (test-write-partial.run-write-new-partial)
+  )
+(commit-tx)
+
+(begin-tx "write-existing-partial")
+  (expect "write existing partial merges" {"a": 99, "b": 55, "c": 3}
+    (test-write-partial.run-write-existing-partial)
+  )
+(commit-tx)

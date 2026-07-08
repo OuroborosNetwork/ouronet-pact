@@ -1,0 +1,54 @@
+# OuronetInformational — canonical knowledge base
+
+**All** architecture, conventions, and agent learning for this repo live here — not only in `.cursor/skills/`. Cursor skills are thin pointers into this tree so nothing is lost when changing machines.
+
+## Start here
+
+1. **`CONTEXT.md`** — vocabulary, stages, stable facts
+2. **`ouronet/MODULE_ARCHITECTURE.md`** — prefixes, caps, Talos, UR/W layers
+3. **`ouronet/architecture/README.md`** — module inventory, REPL map, deploy docs
+
+## Layout
+
+| Path | Contents |
+|------|----------|
+| **`pact/`** | Pact language mechanics (enforce grouping, defcap order, `let` layout, interfaces) |
+| **`ouronet/`** | Platform architecture + cross-module conventions |
+| **`ouronet/conventions/`** | Day-to-day rules: UR layout, W writes, X guards, IMC, REPL layout, … |
+| **`ouronet/architecture/`** | Inventories, REPL spec, deploy patterns, stage module lists |
+| **`modules/`** | Domain-specific: **`aqp/`**, **`stage01/`**, **`deploy/`** |
+| **`kursan/`** | Agent persona + scratch REPL policy |
+| **`memories/`** | Dated conversation captures |
+
+## Convention index (read before editing Pact)
+
+| Topic | File |
+|-------|------|
+| **Index / checklist** | `ouronet/conventions/index.md` |
+| **UR layout** | `ouronet/conventions/ur-layout.md` |
+| **UR + W + XI** | `ouronet/conventions/ur-and-w-writes.md` |
+| **W writes (WI/WU/WW)** | `ouronet/conventions/w-writes.md` |
+| **X guards + caps** | `ouronet/conventions/x-function-guards.md` |
+| **XB + IMC** | `ouronet/conventions/xb-imc-cross-module.md` |
+| **Boolean enforce** | `pact/enforce-boolean-grouping.md`, `pact/enforce.md` |
+| **defcap body order** | `pact/defcap-body-order.md` |
+| **UC / URC / URDC** | `ouronet/conventions/uc-urc-urdc-prefixes.md` |
+| **Module load order** | `ouronet/conventions/module-load-order-and-pact-refs.md` |
+| **Integration REPLs** | `ouronet/conventions/repl-integration-test-layout.md` |
+
+## AQP modules
+
+| Topic | File |
+|-------|------|
+| Score links XI/XE | `modules/aqp/score-links.md` |
+| Recipe cap validation | `modules/aqp/recipe-cap-validation.md` |
+| TFT vault IMC | `modules/aqp/tft-vault-imc.md` |
+| Talos stake phases | `modules/aqp/talos-orchestrator-events.md` |
+
+## Kursan (agent scratch REPLs)
+
+Experimental probes and one-off tests: **`REPL/Kursan/`**. See **`kursan/README.md`**. Do **not** put canonical integration suites there.
+
+## Maintenance rule
+
+When you learn something durable about Pact or Ouronet, **write it here first**. Update `.cursor/skills/ouronet-*/SKILL.md` only if the YAML `description` needs to change for Cursor discovery — body should point to this tree.

@@ -1,8 +1,8 @@
 (module TS01-C4 GOV
-    @doc "TALOS Client Module for Stage 1 — CODEX (Mnemosyne Codex Identity, Arweave tracker, StoicTags)."
+    @doc "TALOS Client Module for Stage 1 — CODEX + PYTHIA (Codex Identity, StoicTags, Apollo API keys)."
     ;;
     (implements OuronetPolicyV1)
-    (implements TalosStageOne_ClientFourV1)
+    (implements TalosStageOne_ClientFourV3)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -72,12 +72,14 @@
         (let
             (
                 (ref-P|CODEX:module{OuronetPolicyV1} CODEX)
+                (ref-P|PYTHIA:module{OuronetPolicyV1} PYTHIA)
                 (ref-P|IGNIS:module{OuronetPolicyV1} IGNIS)
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
                 (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|CODEX::P|A_AddIMP mg)
+            (ref-P|PYTHIA::P|A_AddIMP mg)
             (ref-P|IGNIS::P|A_AddIMP mg)
             (ref-P|DALOS::P|A_AddIMP mg)
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -191,6 +193,140 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         tag-fee
+                        patron
+                        (ref-IGNIS::URC_IsVirtualGasZero)
+                        []
+                    )
+                )
+                msg
+            )
+        )
+    )
+    (defun PYTHIA|C_DeployApiKey:string
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string )
+        @doc "Deploy inert Standard (₱.) Pythia API key; collects UC_DeployPrice native STOA (no Elite discount)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-PYTHIA:module{PythiaV2} PYTHIA)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
+                    (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
+                    (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
+                    (msg:string
+                        (ref-PYTHIA::C_DeployApolloPythiaApiKey
+                            owner-account apollo-account public consumer-lane
+                        )
+                    )
+                )
+                (ref-IGNIS|V2::KDA|C_CollectWTEx patron fee-anchor deploy-fee false)
+                msg
+            )
+        )
+    )
+    (defun PYTHIA|A_DeploySmartApiKey:string
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string )
+        @doc "Demiurgoi deploys inert Smart (Π.) Pythia API key; collects UC_DeployPrice native STOA (no Elite discount)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-PYTHIA:module{PythiaV2} PYTHIA)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
+                    (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
+                    (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
+                    (msg:string
+                        (ref-PYTHIA::A_DeployApolloPythiaApiKey
+                            owner-account apollo-account public consumer-lane
+                        )
+                    )
+                )
+                (ref-IGNIS|V2::KDA|C_CollectWTEx patron fee-anchor deploy-fee false)
+                msg
+            )
+        )
+    )
+    (defun PYTHIA|C_UpdateApiConsumerName:string
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          new-name:string )
+        @doc "Rename Pythia consumer-lane; collects UC_RenamePrice native STOA (no Elite discount)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-PYTHIA:module{PythiaV2} PYTHIA)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
+                    (rename-fee:decimal (ref-PYTHIA::UC_RenamePrice))
+                    (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
+                    (msg:string
+                        (ref-PYTHIA::C_UpdateApiConsumerName
+                            owner-account apollo-account new-name
+                        )
+                    )
+                )
+                (ref-IGNIS|V2::KDA|C_CollectWTEx patron fee-anchor rename-fee false)
+                msg
+            )
+        )
+    )
+    (defun PYTHIA|A_ActivateApiKey:string (apollo-account:string)
+        @doc "Cronoton activates Pythia API key (PYTHIA|CRONOTON on core module)."
+        (with-capability (P|TS)
+            (let ((ref-PYTHIA:module{PythiaV2} PYTHIA))
+                (ref-PYTHIA::A_ActivateApiKey apollo-account)
+            )
+        )
+    )
+    (defun PYTHIA|C_DeactivateApiKey:string
+        ( patron:string
+          owner-account:string
+          apollo-account:string )
+        @doc "Owner deactivates their Pythia API key; collects UC_DeactivateIgnisFee IGNIS from patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-PYTHIA:module{PythiaV2} PYTHIA)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (deact-fee:decimal (ref-PYTHIA::UC_DeactivateIgnisFee))
+                    (msg:string
+                        (ref-PYTHIA::C_DeactivateApiKey owner-account apollo-account)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        deact-fee
+                        patron
+                        (ref-IGNIS::URC_IsVirtualGasZero)
+                        []
+                    )
+                )
+                msg
+            )
+        )
+    )
+    (defun PYTHIA|A_DeactivateApiKey:string (patron:string apollo-account:string)
+        @doc "Cronoton deactivates (revokes) Pythia API key; collects UC_DeactivateIgnisFee IGNIS from patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-PYTHIA:module{PythiaV2} PYTHIA)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (deact-fee:decimal (ref-PYTHIA::UC_DeactivateIgnisFee))
+                    (msg:string (ref-PYTHIA::A_DeactivateApiKey apollo-account))
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        deact-fee
                         patron
                         (ref-IGNIS::URC_IsVirtualGasZero)
                         []

@@ -173,11 +173,26 @@ Reward registration uses **one row per `(fvt-id, dptf-id)`** in **`FVT|T|RPS|Glo
 | `SWP::XE_RefreshGhostTvlForSwpair` | *(SWP module)* refresh ghost TVL row for one pair |
 | `FVT::XE_SyncFarmScoreGhostTvlFromSwp` | *(this module)* AQP calls after SWP refresh; Tier‑2 settle + `W_i` / `S` update |
 
+## Pool vacate (forced unstake)
+
+Pool-owner **vacate** lives in **`AQP-VCT`** (`05_VCT.pact`, `AcquisitionVacateV1`), not in FVT. FVT keeps stake/unstake recipes and exposes **`XE_Run*VacateBatch`** for phases 2–5 unwind; VCT composes those after bulk custody transfer. (Per-leg helpers `XI_Run*VacateLeg` are internal legacy, off interface.)
+
+| Concern | Module |
+|---------|--------|
+| Batch / full vacate recipes | `AQP-VCT` (`C_Vacate*`, `C_FullVacate*`) |
+| Session vacate (manifest + slices) | `AQP-VCT` (`C_BeginVacate`, `C_ResliceVacate`, `C_VacateChunk*`, `C_FinalizeVacate`, `C_AbortVacate`) |
+| Tracker unwind phases 2–5 | `AQP-FVT` (`XE_RunTrueFungibleVacateBatch`, `XE_RunTrueFungibleVacateBatchV2`, `XE_RunOrtoFungibleVacateBatch`, `XE_RunCollectableVacateBatch`) |
+| UI inventory planning | `AQP-POOL` `URD_AQP\|Vacate*Legs` |
+| Job recovery after crash | `AQP-VCT` `URD_VCT\|VacateJob`, `URD_VCT\|ManifestLegs`, `URD_VCT\|ActiveSlices` |
+
+Full UI handoff: [`README_VACATE_UI.md`](README_VACATE_UI.md).
+
 ## Relationship to other modules
 
 - **SCORE**: Per-user deb / score totals for Tier‑1; `fvt-link` on scores.
 - **SWP**: Source of truth for reserves and **ghost TVL** per `swpair`; `XE_RefreshGhostTvlForSwpair` runs after liquidity events.
 - **AQP-POOL**: Orchestrates `SWP::XE_*` then `FVT::XE_SyncFarmScoreGhostTvlFromSwp` for affected pool scores (bounded fan-out).
+- **AQP-VCT**: Pool-owner vacate recipes; calls FVT vacate-leg primitives via IMC.
 - **ANK**: Boosting remains inside SCORE rows read at stake/collect.
 
 ## FVT-Link validation (score admission)

@@ -1,116 +1,185 @@
-# Vacate pool — UI multi-tx constructor handoff
+# Vacate pool — UI constructor handoff
 
-Pool **vacate** is a **forced unstake**: same FVT recipe phases as `C_*StakeFlow` with `direction=false`, but **pool owner** signs (`CAP_PoolOwner`) instead of the depositor (`CAP_StakeOwner`).
+Module: **`AQP-VCT`** (`05_VCT.pact`) | Interface: **`AcquisitionVacateV1`**
+
+Pool **vacate** is a **forced unstake**: same FVT recipe phases as `C_*StakeFlow` with `direction=false`, but **pool owner** signs instead of the depositor.
 
 **Transfer:** always **vault → owner** (depositor gets tokens back). Vacate has nothing to do with sending assets to the beneficiary.
 
-**Beneficiary-id in args:** not a transfer destination. It is the **tracker row key** used in phases 1.2–5 to unwind **SCORE** (deb/base/nzs), **ANK** promile rollups, and **FVT RPS** — same as unstake, except the pool owner signs instead of the owner.
+**Beneficiary-id in args:** not a transfer destination. It is the **tracker row key** used in phases 1.2–5 to unwind **SCORE**, **ANK**, and **FVT RPS** — same as unstake.
 
-## Collectable vacate (Talos surface)
+---
 
-**FVT** implements one sovereign recipe: `C_VacateCollectableBatch` (`son` dispatches DPSF vs DPNF). Talos does **not** expose a multi-leg batch shell.
+## Architecture — two variants
 
-| Talos entry | Use for |
-|-------------|---------|
-| `C_VacateSemiFungibleCollectable` | **All** class-3 DPSF vacate txs |
-| `C_VacateNonFungibleCollectable` | **All** class-4 DPNF vacate txs (incl. Bloodshed) |
+Pick **one variant per pool × asset stream** (e.g. LP class-0 may need two streams: TF + OF).
 
-Each Talos call → FVT batch with one owner group. For many owners, the UI submits **many txs** (order irrelevant). For one owner with many nonces, chunk `nonces` / `nonce-amounts` to `≤ VACATE-MAX-NONCES` per tx.
+| Variant | When to use | On-chain state | Talos client |
+|---------|-------------|----------------|--------------|
+| **Full** | Inventory fits one-tx gas | None (URD read inside `C_FullVacate*`) | **Yes** — `C_FullVacate*` |
+| **Sliced session** | Multi-tx; UI needs crash recovery or gas tuning via `slice-count` / `C_ResliceVacate` | `VCT|T|Job` + hash-only `VCT|T|Slice` rows | **Yes** — `C_BeginVacate` + `C_VacateChunk*` |
 
-## LP pools (aqp-class 0) — two independent vacate streams
+```
+Talos AQP-POOL|C_FullVacate* / C_BeginVacate / C_VacateChunk*
+        → AQP-VCT::C_FullVacate* / C_BeginVacate / C_VacateChunk*
+        → XI_Vacate* atomics (require P|VCT|RECIPE)
+        → TFT / DPOF / DPDC-T bulk transfer
+        → FVT::XE_Run*VacateLeg (phases 2–5)
+```
 
-Class **0** LP pools accept **both** DPTF legs (native / frozen LP) **and** DPOF legs (sleeping `Z|` orto). Trackers are separate tables:
+Atomic execution is **`XI_Vacate*`** (not public). Full and chunk entry points compose **`VCT|C>*VACATE*`** caps for per-owner validation, then call `XI_*`.
 
-| Asset | Tracker table | Talos entry (single leg) | Talos entry (batch) |
-|-------|---------------|--------------------------|---------------------|
-| DPTF | `AQP\|T\|DPTFTracker` | `AQP-POOL\|C_VacateTrueFungible` | one tx per `(owner, beneficiary, dptf-id, amount)` |
-| DPOF | `AQP\|T\|DPOFTracker` | — | `AQP-POOL\|C_VacateOrtoFungibleBatch` |
+**Session handle:** all chunk / reslice / abort txs use **`vacate-job-id`** (minted at Begin). One active job per pool at a time.
 
-**The UI constructor must plan vacate txs for both streams** when an LP pool has staked TF **and** OF inventory. Order of txs does not matter. Do **not** use a single “vacate whole pool” call — there is no on-chain enumerator.
+---
 
-Class **1** (DPTF-only): TF vacate only.  
-Class **2** (DPOF-only): OF batch vacate only.  
-Class **3** (DPSF): collectable vacate (`son=true`).  
-Class **4** (DPNF): collectable vacate (`son=false`) — Bloodshed-scale batching.
+## Whole-row rules (vacate vs unstake)
 
-## Capability layering (matches stake)
+| Asset | Stake / unstake | Vacate |
+|-------|-----------------|--------|
+| DPTF (TF) | partial amount OK | **full DPTFTracker row** per owner row (`amount = balance`) |
+| DPOF (OF) | whole nonce only | **whole nonce only** |
+| DPSF / DPNF | partial quantity per nonce OK | **full tracker row per nonce** |
 
-| Layer | Module | Cap | `@event`? |
-|-------|--------|-----|-----------|
-| Client shell | Talos `TS02-C3` | `AQP\|C>VACATE-*` | **Yes** — composes `P\|TS` only |
-| Recipe | `AQP-FVT` | `FVT\|C>*VACATE*` | No — `UEV_IMC` + validation + `SECURE` |
-| Phase 1 custody | `AQP-POOL` | `AQP\|XE>*POOL-VACATE-CUSTODY` | No — `CAP_PoolOwner` + vault IMC |
-| Phases 1.2–5 | `AQP-POOL` / `AQP-SCORE` / `AQP-FVT` | existing `XE_*` / `XI_*` | No — `P\|SECURE-CALLER` or `SECURE` |
+---
 
-The **sovereign recipe cap** lives in **FVT** (not Talos). Talos only bills IGNIS via `C_Collect patron`.
+## Variant 1 — Full vacate (one tx)
 
-## On-chain batch limits (`AQP-POOL`)
+Recipe reads `AQP-POOL.URD_AQP|Vacate*Inventory` on-chain, bulk-transfers, unwinds all owners in one tx.
+
+| Asset | Talos |
+|-------|-------|
+| DPTF | `AQP-POOL\|C_FullVacateTrueFungible patron pool-id dptf-id` |
+| DPOF | `AQP-POOL\|C_FullVacateOrtoFungible patron pool-id dpof-id` |
+| DPSF | `AQP-POOL\|C_FullVacateSemiFungible patron pool-id dpsf-id` |
+| DPNF | `AQP-POOL\|C_FullVacateNonFungible patron pool-id dpnf-id` |
+
+**UI:** if `(at "leg-count" (AQP-POOL.URD_AQP|Vacate*Inventory ...))` exceeds full gas envelope → use sliced session.
+
+---
+
+## Variant 2 — Sliced session (multi-tx)
+
+On-chain: **`VCT|T|Job`** keyed by `vacate-job-id`; **`VCT|T|Slice`** keyed by `vacate-job-id|slice-idx` stores **`slice-hash`** + **`processed`** only — **no payload on-chain**.
+
+Slice payloads live in **Begin/Reslice OC output** + off-chain storage. Chunk txs hash-verify submitted arrays against stored hashes.
+
+UI chooses target **`slice-count`** (number of txs); chain computes **`owners-per-slice = ceil(owner_count / slice-count)`** (inventory field **`leg-count`** until AQP rename).
+
+### Planning reads (AQP-POOL inventory — one URD per stream)
+
+| Asset class | Pre-flight URD | Returns |
+|-------------|----------------|---------|
+| DPTF | `AQP-POOL.URD_AQP\|VacateTfInventory pool-id dptf-id` | `object{AQP\|VacateTfInventory}` — `legs` + `leg-count` |
+| DPOF | `AQP-POOL.URD_AQP\|VacateOfInventory pool-id dpof-id` | `object{AQP\|VacateNonceLegInventory}` — `legs` + `leg-count` |
+| DPSF | `AQP-POOL.URD_AQP\|VacateCollectableInventory pool-id dpsf-id true` | `object{AQP\|VacateNonceLegInventory}` |
+| DPNF | `AQP-POOL.URD_AQP\|VacateCollectableInventory pool-id dpnf-id false` | `object{AQP\|VacateNonceLegInventory}` |
+
+**Minimum slices:** `AQP-VCT.UC_ComputeMinSliceCount unit-count vacate-kind` — `ceil(units / VACATE-GAS-MAX-*)`, min 1. Use `AQP-VCT.URDC_VacateUnitCountForKind` for `unit-count` (TF = owner count; OF/DPSF/DPNF = total nonces).
+
+**Gas ceilings per chunk tx (2M gas — profiled REPL `[6.2.6]_AQP-VCT-GAS.repl`):**
+
+| Kind | `VACATE-GAS-MAX-*` measures | Profiled ~gas/unit |
+|------|----------------------------|-------------------|
+| **DPTF (TF)** | Unique **owners** (custody recipients; parallel beneficiary per row) | ~72k / owner |
+| **DPOF (OF)** | **Total nonces** across all owner rows | ~53k / nonce |
+| **DPSF** | **Total nonces** across all owner rows | ~57k / nonce |
+| **DPNF** | **Total nonces** across all owner rows | ~58k / nonce |
+
+Seven owners with 800 nonces can exceed the limit in one chunk even though owner count is low — gas scales with **nonce count**, not owner count. Inventory rows group nonces by `(owner-id, beneficiary-id)`; `URDC_BuildVacateSlicePlan` splits any row exceeding the per-chunk nonce cap before slicing.
 
 ```pact
-VACATE-MAX-NONCES = 64    ;; max nonces per owner group per tx (FVT enforces on batch arrays)
+VACATE-GAS-MAX-TF   = 24    ; max owners per chunk
+VACATE-GAS-MAX-OF   = 33    ; max total nonces per chunk
+VACATE-GAS-MAX-DPSF = 29
+VACATE-GAS-MAX-DPNF = 30
 ```
 
-`VACATE-MAX-LEGS` remains in AQP for the FVT batch shape but Talos always passes one leg. Tune `VACATE-MAX-NONCES` on mainnet using Bloodshed gas profiling (~700–800 nonces per ~2M gas was the working estimate).
+Separate from gas: `AQP-POOL.VACATE-MAX-NONCES` (64) is a structural batch cap on `URC_VacateBatchNonceTotalOk`.
 
-## UI constructor algorithm
+Run `cd REPL && pact VCT-gas-sweep.repl` and grep `<<VCT-GAS-*>>` for fresh numbers (probes use 1 nonce/owner; values are max **nonces** for collectables).
 
-### 1. Inventory (off-chain reads)
+**Preflight plan (off-chain mirror):** `AQP-VCT.URDC_BuildVacateSlicePlan pool-id asset-id vacate-kind slice-count` → `object{VCT|VacateSlicePlan}` with `slices:[object]`.
 
-Per pool, scan tracker rows (on-chain `URD_*` helpers for pool-scoped keys are **deferred** — until then, index events or maintain a mirror):
+### Session flow
 
-| Class | Source rows | Group key |
-|-------|-------------|-----------|
-| TF | `DPTFTracker` | `(owner-id, beneficiary-id, dptf-id)` → `amount` |
-| OF | `DPOFTracker` | `(owner-id, beneficiary-id, dpof-id, nonce)` → whole nonce |
-| DPSF/DPNF | `DPSFTracker` / `DPNFTracker` | `(owner-id, beneficiary-id, nonce)` → `amount` |
+| Step | Function | Role |
+|------|----------|------|
+| 1 | `AQP-VCT.C_BeginVacate` | Mint `vacate-job-id`; write hash-only slice rows; disable stake; return slice-plan OC |
+| 2+ | `AQP-VCT.C_VacateChunk*` | Payload must match `slice-hash`; runs `AQP-VCT.XI_Vacate*`; marks slice processed |
+| optional | `AQP-VCT.C_ResliceVacate` | Old job `resliced=true`; mint **new** `vacate-job-id`; rebuild from live inventory |
+| auto | `AQP-VCT.XI_FinalizeVacateIfComplete` | Last chunk: finalize job, clear pool vacate state, **re-enable stake** |
+| escape | `AQP-VCT.C_AbortVacate` | Job `aborted=true`; clear vacate state; **stake stays disabled** |
 
-### 2. Group legs
+**Job terminal states (mutually exclusive):** `finalized`, `aborted`, `resliced` — active = none set.
 
-- **Collectables / DPOF:** group nonces by `(owner-id, beneficiary-id)` — one transfer leg per group (DPDC/DPOF: one `receiver` per `C_Transfer`).
-- **DPTF:** one leg per `(owner, beneficiary, dptf-id)` with total amount (TFT bulk multi-receiver exists but vacate uses per-leg unstake recipe).
+**`vacate-kind`:** `1=TF`, `2=OF`, `3=DPSF`, `4=DPNF` — collectable `son` is implied by kind (DPSF→true, DPNF→false).
 
-### 3. Chunk into txs
+### Building chunk payloads
 
-For each asset stream, **one Talos tx per owner group** (and chunk nonces if a single owner exceeds `VACATE-MAX-NONCES`):
+```text
+;; After Begin — read handle from OC or chain:
+active  = AQP-VCT.URDC_ActiveJobForPool pool-id
+job-id  = (at "vacate-job-id" active)
 
+;; Slice payload (same shape Begin hashed):
+plan    = AQP-VCT.URDC_BuildVacateSlicePlan pool-id asset-id vacate-kind slice-count
+slice0  = (at 0 (at "slices" plan))
+
+;; TF chunk:
+submit Talos AQP-POOL|C_VacateChunkTrueFungible patron job-id slice-idx owner-ids beneficiary-ids amounts
+
+;; OF / DPSF / DPNF chunk (unified sovereign C_VacateChunkNonce):
+submit Talos AQP-POOL|C_VacateChunkNonce patron job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
+;; OF: amounts-array = zero sentinel parallel to nonces (Talos C_VacateChunkOrtoFungible builds this)
 ```
-for each (owner, beneficiary) group with staked nonces:
-  while nonces remain for this group:
-    take next slice with length ≤ VACATE-MAX-NONCES
-    submit C_VacateSemiFungibleCollectable or C_VacateNonFungibleCollectable
-```
 
-**Explicit nonce lists** in each tx — no pool-id-only vacate.
+**Slice verification:** `VCT|T|Slice.slice-hash` is **Blake2b** via Pact `(hash object{…})` — canonical `VCT|TfSlicePayload` or `VCT|NonceSlicePayload`. Chunk tx recomputes hash from submitted arrays and enforces equality.
 
-### 4. Talos function pick
+### Recovery reads
 
-| Situation | Call |
-|-----------|------|
-| One DPTF leg | `AQP-POOL\|C_VacateTrueFungible patron pool-id owner beneficiary dptf-id amount` |
-| Multiple OF legs (same dpof-id) | `AQP-POOL\|C_VacateOrtoFungibleBatch` — or one tx per owner via repeated batch with N=1 |
-| DPSF owner group (any size) | `AQP-POOL\|C_VacateSemiFungibleCollectable` — repeat per owner / nonce chunk |
-| DPNF owner group (any size) | `AQP-POOL\|C_VacateNonFungibleCollectable` — repeat per owner / nonce chunk |
+- `AQP-VCT.UR_Job vacate-job-id`
+- `AQP-VCT.URD_SlicesForJob vacate-job-id` — hash + processed per slice
+- `AQP-VCT.URDC_ActiveJobForPool pool-id` — active job while session open
 
-Signer: **pool owner** konto (`URC_AqpOwnerKonto pool-id`), not each depositor.
+**Pool observability:** `AQP-POOL.UR_AQP|VacateInProgress`, `AQP-POOL.UR_AQP|InitialVacateHash`, `AQP-POOL.UR_AQP|PhaseVacateHash`, `AQP-POOL.UR_AQP|LastVacateHash`.
 
-### 5. Patron / IGNIS
+### Talos session surface
 
-Each vacate tx passes `patron` (pays `IGNIS::C_Collect` on the recipe `OutputCumulator`) — same as stake/unstake shells.
+| Talos entry | Sovereign target |
+|-------------|------------------|
+| `C_BeginVacate` | `AQP-VCT::C_BeginVacate` |
+| `C_ResliceVacate patron vacate-job-id slice-count` | `AQP-VCT::C_ResliceVacate` |
+| `C_VacateChunkTrueFungible patron vacate-job-id …` | `AQP-VCT::C_VacateChunkTrueFungible` |
+| `C_VacateChunkNonce patron vacate-job-id …` | `AQP-VCT::C_VacateChunkNonce` |
+| `C_VacateChunkOrtoFungible patron vacate-job-id …` | → `C_VacateChunkNonce` (zero-sentinel amounts) |
+| `C_VacateChunkCollectable patron vacate-job-id …` | → `C_VacateChunkNonce` |
+| `C_AbortVacate patron vacate-job-id` | `AQP-VCT::C_AbortVacate` |
 
-## Multi-receiver note
+---
 
-- **DPTF:** TFT supports multi-receiver bulk; vacate recipe still uses one owner receiver per leg (unstake semantics).
-- **DPOF / DPDC:** one receiver per `C_Transfer` — batch by owner group, not by “all receivers in one transfer”.
+## LP pools (aqp-class 0)
 
-## Deferred / full tests
+Two **independent** streams when both TF and OF inventory exist — plan and complete both separately.
 
-See `TEST_DEFERRED.md`:
+---
 
-- Pool-scoped `URD_*` tracker scans for UI inventory
-- Bloodshed full-collection vacate gas limit assessment
-- LP dual-stream vacate (TF + OF same pool)
-- Third-party beneficiary rows (v1 unstake uses self-stake keys; vacate passes explicit `beneficiary-id` validated against tracker)
+## Capability layering
+
+| Layer | Module | Cap |
+|-------|--------|-----|
+| Client shell | Talos `TS02-C3` | `AQP\|C>FULL-VACATE-*` / `AQP\|C>BEGIN-VACATE` / `AQP\|C>VACATE-CHUNK-*` (`@event`, `P\|TS` only) |
+| Master recipe | `AQP-VCT` | `VCT\|C>*` — one `@event` cap per `C_*`; all validation + `SECURE` (+ nested atomic caps for custody) |
+| Atomic vacate | `AQP-VCT` | `VCT\|C>TRUE-FUNGIBLE-VACATE` / `…-BATCH` → composes **`P\|VCT\|RECIPE`** |
+| Table writers | `AQP-VCT` | `XI_*` → `XI_1|*` → `XI_2|*` — each tier **`require-capability (SECURE)`** from master `VCT\|C>*` |
+| Leg unwind | `AQP-FVT` | `XE_Run*VacateLeg` (IMC from VCT) |
+
+---
 
 ## Smoke coverage
 
-`REPL/Stage_02/[6.2.4]_AQP-FVT-DC.repl` **TX-FVT-DC-04** — stake then `C_VacateSemiFungibleCollectable` (pool owner, single leg).
+| Test | Variant | Asset |
+|------|---------|-------|
+| `REPL/Stage_02/OF-stake-smoke.repl` TX-FVT-07 | Session (slice-count 1) | OF |
+| `REPL/Stage_02/OF-stake-smoke.repl` TX-FVT-08 | Full | OF |
+| `REPL/Stage_02/[6.2.4]_AQP-FVT-DC.repl` TX-FVT-DC-05 | Session (slice-count 1) | DPSF |

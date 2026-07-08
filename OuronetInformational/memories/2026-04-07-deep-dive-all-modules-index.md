@@ -2,7 +2,7 @@
 
 Added:
 
-- `OuronetInformational/ARCHITECTURE/DEEP_DIVE_ALL_MODULES.md`
+- `OuronetInformational/ouronet/architecture/DEEP_DIVE_ALL_MODULES.md`
 
 Content includes:
 

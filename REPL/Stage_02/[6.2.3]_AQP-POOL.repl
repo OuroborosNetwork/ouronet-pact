@@ -21,19 +21,21 @@
 (let
     (
         (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
         (pool-name:string "PoolRevokeProbe")
+        (probe-b-name:string "PoolRevokeProbeB")
         (asset-id:string "DHCD-98c486052a51")
         (aqp-class:integer 3)
         (score-a:string "BootPhaseProbe-98c486052a51")
-        (score-b:string "TheCodingDivision-98c486052a51")
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (score-b:string (ref-U|DALOS::UDC_Makeid probe-b-name))
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (ref-DALOS::UR_UsagePrice "smart"))
+            (ref-DALOS::URC_SplitKDAPrices patron (* 3.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
         (bar:string (ref-SCR::UR_SCR|ScoreBoostClassLink score-a))
     )
@@ -69,6 +71,9 @@
             }
         ]
     )
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore PoolRevokeProbeB)> => \"{}\"" [
+        (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto probe-b-name 3 false)
+    ]))
     (print (format "<(TS02-C3.AQP-POOL|C_Issue class=3)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron pool-name asset-id aqp-class)]))
     ;;==== TX-POOL-01 · 02 · C_AddScore ×2 — REPL =====================================
     (print "--- [TX-POOL-01 · 02 · C_AddScore ×2] ---")

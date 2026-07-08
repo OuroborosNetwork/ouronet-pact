@@ -5,7 +5,7 @@
     (implements stoa-ns.fungible-v1)                ;;former <fungible-v2>, starting on StoaChain as v1
     (implements stoa-ns.fungible-xchain-v1)         ;;former <fungible-xchain-v1>
     (implements stoa-ns.stoic-fungible-v1)          ;;Incorporates <fungible-v1> and <fungible-xchain-v1> with extra functionality
-    (implements stoa-ns.stoic-bulk-fungible-v1)     ;;Bulk transfer extension
+    (implements stoa-ns.stoic-bulk-fungible-v2)     ;;Bulk transfer extension (v2: hybrid bulk transmit)
     (implements stoa-ns.ur-stoic-fungible-v1)       ;;Incorporates UrStoa and UrStoaVault Functionality
     ;;
     ;;<========>
@@ -233,7 +233,7 @@
         (UEV_BulkUniqueReceivers receivers)
         (UEV_BulkReceiversNotSender sender receivers)
         (UEV_BulkValidateReceivers receivers)
-        (UEV_BulkFoldAmounts amounts)
+        (UEV_SufficientBalance sender (UEV_BulkFoldAmounts amounts))
         (compose-capability (BULK|X>SPEND))
     )
     (defcap BULK_TRANSFER_DETAIL_ANEW:bool
@@ -244,6 +244,64 @@
             "Receivers and receiver-guards length mismatch"
         )
         (compose-capability (BULK_TRANSFER_DETAIL sender receivers amounts))
+    )
+    (defcap BULK_TRANSFER_DETAIL_HYBRID:bool
+        (sender:string receivers:[[string]] receiver-guards:[guard] amounts:[[decimal]])
+        @doc "Hybrid bulk detail: [[existing][anew]] receivers and amounts; guards for anew partition only"
+        @event
+        (let
+            (
+                (l1:integer (length receivers))
+                (l2:integer (length amounts))
+            )
+            (enforce (= l1 2) "Hybrid bulk receivers must be [[existing][anew]]")
+            (enforce (= l2 2) "Hybrid bulk amounts must be [[existing][anew]]")
+            (let
+                (
+                    (existing-rcv:[string] (at 0 receivers))
+                    (anew-rcv:[string] (at 1 receivers))
+                    (existing-amt:[decimal] (at 0 amounts))
+                    (anew-amt:[decimal] (at 1 amounts))
+                    (l3:integer (length existing-rcv))
+                    (l4:integer (length existing-amt))
+                    (l5:integer (length anew-rcv))
+                    (l6:integer (length anew-amt))
+                    (l7:integer (length receiver-guards))
+                    ;;
+                    (all-rcv:[string] (+ existing-rcv anew-rcv))
+                    (all-amt:[decimal] (+ existing-amt anew-amt))
+                    (total-rcv:integer (+ l3 l5))
+                    ;;
+                    (are-equal-l3l4:bool (= l3 l4))
+                    (are-equal-l5l6:bool (= l5 l6))
+                    (iz-l3:bool (>= l3 1))
+                    (iz-l5:bool (>= l5 1))
+                    (iz-l5l7:bool (= l5 l7))
+                    (iz-batch:bool (<= total-rcv MAX_BULK_BATCH))
+                    (iz-hybrid:bool
+                        (fold (and) true
+                            [
+                                are-equal-l3l4
+                                are-equal-l5l6
+                                iz-l5l7
+                                iz-l3
+                                iz-l5
+                                iz-batch
+                            ]
+                        )
+                    )
+                )
+                (enforce iz-hybrid "Hybrid bulk receivers and amounts shape violation")
+                (UEV_Account sender)
+                ;;
+                (UEV_BulkListShape all-rcv all-amt)
+                (UEV_BulkUniqueReceivers all-rcv)
+                (UEV_BulkReceiversNotSender sender all-rcv)
+                (UEV_BulkValidateReceivers all-rcv)
+                (UEV_SufficientBalance sender (UEV_BulkFoldAmounts all-amt))
+                (compose-capability (BULK|X>SPEND))
+            )
+        )
     )
     ;;
     ;;<=======>
@@ -563,20 +621,16 @@
         (map (validate-account) receivers)
         true
     )
-    (defun UEV_BulkPrepare:decimal (sender:string receivers:[string] amounts:[decimal])
-        @doc "Balance check against aggregate total (line validations in BULK_TRANSFER_DETAIL)"
-        (let
-            (
-                (total:decimal (UEV_BulkFoldAmounts amounts))
-            )
-            (UEV_SufficientBalance sender total)
-            total
-        )
+    (defun UR_BulkTotal:decimal (amounts:[decimal])
+        @doc "Sum bulk line amounts; no validation — use only after BULK_TRANSFER_DETAIL"
+        (fold (+) 0.0 amounts)
     )
-    (defun UEV_BulkPrepareAnew:decimal
-        (sender:string receivers:[string] receiver-guards:[guard] amounts:[decimal])
-        @doc "Balance check for bulk anew (shape validations in BULK_TRANSFER_DETAIL_ANEW)"
-        (UEV_BulkPrepare sender receivers amounts)
+    (defun UR_BulkHybridTotal:decimal (amounts:[[decimal]])
+        @doc "Sum hybrid bulk partitions; no validation — use only after BULK_TRANSFER_DETAIL_HYBRID"
+        (+
+            (UR_BulkTotal (at 0 amounts))
+            (UR_BulkTotal (at 1 amounts))
+        )
     )
     ;;
     (defun validate-account (account:string)
@@ -723,7 +777,7 @@
         (with-capability (BULK_TRANSFER_DETAIL sender receivers amounts)
             (let
                 (
-                    (total:decimal (UEV_BulkPrepare sender receivers amounts))
+                    (total:decimal (UR_BulkTotal amounts))
                     (count:integer (length receivers))
                 )
                 (with-capability (TRANSFER_BULK sender total)
@@ -739,7 +793,7 @@
         (with-capability (BULK_TRANSFER_DETAIL_ANEW sender receivers receiver-guards amounts)
             (let
                 (
-                    (total:decimal (UEV_BulkPrepareAnew sender receivers receiver-guards amounts))
+                    (total:decimal (UR_BulkTotal amounts))
                     (count:integer (length receivers))
                 )
                 (with-capability (TRANSFER_BULK sender total)
@@ -754,7 +808,7 @@
         (with-capability (BULK_TRANSFER_DETAIL sender receivers amounts)
             (let
                 (
-                    (total:decimal (UEV_BulkPrepare sender receivers amounts))
+                    (total:decimal (UR_BulkTotal amounts))
                     (count:integer (length receivers))
                 )
                 (with-capability (TRANSMIT_BULK sender total)
@@ -770,13 +824,31 @@
         (with-capability (BULK_TRANSFER_DETAIL_ANEW sender receivers receiver-guards amounts)
             (let
                 (
-                    (total:decimal (UEV_BulkPrepareAnew sender receivers receiver-guards amounts))
+                    (total:decimal (UR_BulkTotal amounts))
                     (count:integer (length receivers))
                 )
                 (with-capability (TRANSMIT_BULK sender total)
                     (X_BulkSpend sender total receivers amounts receiver-guards true)
                 )
                 (format "BulkTransmitAnew: {} recipients, total {}" [count total])
+            )
+        )
+    )
+    (defun C_HybridBulkTransmit:string
+        (sender:string receivers:[[string]] receiver-guards:[guard] amounts:[[decimal]])
+        @doc "Unmanaged bulk transmit: [[existing]][[anew]] receivers, guards for anew partition only"
+        (with-capability (BULK_TRANSFER_DETAIL_HYBRID sender receivers receiver-guards amounts)
+            (let
+                (
+                    (existing-rcv:[string] (at 0 receivers))
+                    (anew-rcv:[string] (at 1 receivers))
+                    (total:decimal (UR_BulkHybridTotal amounts))
+                    (count:integer (+ (length existing-rcv) (length anew-rcv)))
+                )
+                (with-capability (TRANSMIT_BULK sender total)
+                    (X_BulkSpendHybrid sender total receivers amounts receiver-guards)
+                )
+                (format "HybridBulkTransmit: {} recipients, total {}" [count total])
             )
         )
     )
@@ -960,6 +1032,19 @@
             true
             (enumerate 0 (- (length receivers) 1))
         )
+    )
+    (defun X_BulkSpendHybrid
+        (
+            sender:string
+            total:decimal
+            receivers:[[string]]
+            amounts:[[decimal]]
+            receiver-guards:[guard]
+        )
+        @doc "Bulk debit + partitioned hybrid line credits"
+        (debit sender total)
+        (X_BulkCreditExisting (at 0 receivers) (at 0 amounts))
+        (X_BulkCreditAnew (at 1 receivers) receiver-guards (at 1 amounts))
     )
     (defun X_BulkSpend
         ( 

@@ -66,6 +66,7 @@
     (define-keyset "ouronet-ns.dh_sc_swapper-keyset" (read-keyset "KEY_SC_DalosSwapper"))
     (define-keyset "ouronet-ns.dh_sc_dhvault-keyset" (read-keyset "KEY_SC_DHVault"))
     (define-keyset "ouronet-ns.codex-keyset" (read-keyset "DemiourgosSithMasters"))
+    (define-keyset "ouronet-ns.pythia-cronoton-keyset" (read-keyset "DemiourgosSithMasters"))
 
     ;;Create Autostake and Vesting KDA Accounts (for use in Repl)
 ;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation ==== ============

@@ -1,5 +1,6 @@
 ;;
-;; REPL/Stage_02/[6.2.4]_AQP-FVT-DC.repl — DPSF collectable stake (append after deploy chain or load via DPDC-stake-smoke.repl)
+;; REPL/Stage_02/[6.2.4]_AQP-FVT-DC.repl — DPSF collectable stake + vacate bulk smoke (TX-FVT-DC-01..05)
+;; Loaded by REPL/DPDC-stake-smoke.repl. TX-FVT-DC-04/05 exercise DPDC-T::C_BulkTransfer via vacate batch.
 ;; Requires Stage 02 sovereign executor (DHCD-98c486052a51 nonces 1–10) + AQP-BOOT Step0 (DPDC-T IMC).
 ;;
 (print "")
@@ -269,9 +270,9 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-FVT-DC-04 - C_VacateSemiFungibleCollectable (pool-owner forced unstake)")
+(begin-tx "TX-FVT-DC-04 - C_FullVacateSemiFungible (pool-owner forced unstake)")
 (print "")
-(print "=== TX-FVT-DC-04 — C_VacateSemiFungibleCollectable ==========================")
+(print "=== TX-FVT-DC-04 — C_FullVacateSemiFungible ================================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -310,11 +311,9 @@
         )
         (enforce (> vacate-amount 0) "tracker must hold stake before vacate")
         (print (format "<(vacate-nonce vacate-amount)> => {} / {}" [stake-nonce vacate-amount]))
-        (print "--- [TX-FVT-DC-04 · 02 · C_VacateSemiFungibleCollectable (pool owner)] ---")
-        (print (format "<(TS02-C3.AQP-POOL|C_VacateSemiFungibleCollectable)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_VacateSemiFungibleCollectable
-                patron pool-id owner-id beneficiary-id dpsf-id [stake-nonce] [vacate-amount]
-            )
+        (print "--- [TX-FVT-DC-04 · 02 · C_FullVacateSemiFungible (URD-driven one tx)] ---")
+        (print (format "<(TS02-C3.AQP-POOL|C_FullVacateSemiFungible)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_FullVacateSemiFungible patron pool-id dpsf-id)
         ]))
         (print "--- [TX-FVT-DC-04 · 03 · post-vacate expects] ---")
         (let
@@ -346,6 +345,170 @@
 (env-sigs [])
 (commit-tx)
 (print "=== END TX-FVT-DC-04 =======================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-FVT-DC-05 - C_VacateChunkCollectable multi-owner (sliced session)")
+(print "")
+(print "=== TX-FVT-DC-05 — BeginVacate + VacateChunkCollectable 2 owner legs =========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-a:string KST.ANHD)
+        (owner-b:string KST.EMMA)
+        (beneficiary-a:string KST.ANHD)
+        (beneficiary-b:string KST.EMMA)
+        (dpsf-id:string "DHCD-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "SfStakeScore")
+        (fvt-name:string "SfStakeVault")
+        (pool-name:string "SfStakePool")
+        (vacate-kind-dpsf:integer 3)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (nonce-a:integer 1)
+        (nonce-b:integer 2)
+    )
+    (print "--- [TX-FVT-DC-05 · 00 · re-enable stake after TX-FVT-DC-04 vacate (XB disable)] ---")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    (print "--- [TX-FVT-DC-05 · 01 · transfer DHCD nonce 2 to EMMA + dual stake] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+        ]
+    )
+    (let
+        (
+            (amt-b:integer (ref-DPDC::UR_AccountNonceSupply owner-a dpsf-id true nonce-b))
+        )
+        (enforce (> amt-b 0) "owner-a must hold DHCD nonce 2 for multi-owner vacate setup")
+        (print (format "<(TS02-C1.DPSF|C_TransferNonces owner-a→owner-b)> => {}" [
+            (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id owner-a owner-b [nonce-b] [amt-b] false)
+        ]))
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeSemiFungibleCollectable owner-a)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable
+            patron pool-id owner-a beneficiary-a dpsf-id [nonce-a]
+        )
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeSemiFungibleCollectable owner-b)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable
+            patron pool-id owner-b beneficiary-b dpsf-id [nonce-b]
+        )
+    ]))
+    (let
+        (
+            (inventory:[object] (at "legs" (ref-VCT::URD_VacateCollectableInventory pool-id dpsf-id true)))
+            (vacate-owners:[string] (map (lambda (leg:object) (at "owner-id" leg)) inventory))
+            (vacate-bens:[string] (map (lambda (leg:object) (at "beneficiary-id" leg)) inventory))
+            (vacate-nonces:[[integer]] (map (lambda (leg:object) (at "nonces" leg)) inventory))
+            (vacate-amts:[[integer]]
+                (map
+                    (lambda (leg:object)
+                        (map
+                            (lambda (idx:integer)
+                                (floor (at idx (at "amounts" leg)))
+                            )
+                            (enumerate 0 (- (length (at "nonces" leg)) 1))
+                        )
+                    )
+                    inventory
+                )
+            )
+            (pre-supply-a:integer (ref-DPDC::UR_AccountNonceSupply owner-a dpsf-id true nonce-a))
+            (pre-supply-b:integer (ref-DPDC::UR_AccountNonceSupply owner-b dpsf-id true nonce-b))
+            (vacate-a:integer (floor (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-a beneficiary-a nonce-a)))
+            (vacate-b:integer (floor (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-b beneficiary-b nonce-b)))
+        )
+        (enforce (= (length inventory) 2) "TX-FVT-DC-05: expect 2 vacate legs from URD")
+        (enforce (> vacate-a 0) "owner-a tracker must hold stake")
+        (enforce (> vacate-b 0) "owner-b tracker must hold stake")
+        (print (format "<(URD vacate legs)> => {}" [inventory]))
+        (print "--- [TX-FVT-DC-05 · 02 · C_BeginVacate slice-count 1] ---")
+        (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_BeginVacate
+                patron pool-id dpsf-id vacate-kind-dpsf 1
+            )
+        ]))
+        (let
+            (
+                (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                (vacate-job-id:string (at "vacate-job-id" active-job))
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 1))
+                (slice0:object (at 0 (at "slices" plan)))
+            )
+            (print (format "<(VCT|vacate-job-id)> => \"{}\"" [vacate-job-id]))
+            (print "--- [TX-FVT-DC-05 · 03 · C_VacateChunkCollectable slice 0] ---")
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
+                    patron
+                    vacate-job-id
+                    0
+                    (at "owner-ids" slice0)
+                    (at "beneficiary-ids" slice0)
+                    (at "nonces-array" slice0)
+                    (at "amounts-array" slice0)
+                )
+            ]))
+            (print "--- [TX-FVT-DC-05 · 04 · post-vacate expects] ---")
+            (let
+                (
+                    (tracker-a-post:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-a beneficiary-a nonce-a))
+                    (tracker-b-post:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-b beneficiary-b nonce-b))
+                    (deb-a:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-a pool-id score-id))
+                    (deb-b:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-b pool-id score-id))
+                    (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
+                    (post-supply-a:integer (ref-DPDC::UR_AccountNonceSupply owner-a dpsf-id true nonce-a))
+                    (post-supply-b:integer (ref-DPDC::UR_AccountNonceSupply owner-b dpsf-id true nonce-b))
+                )
+            (map print
+                [
+                    (format "<(AQP-POOL|DPSFTrackerBalance owner-a)> => \"{}\"" [tracker-a-post])
+                    (format "<(AQP-POOL|DPSFTrackerBalance owner-b)> => \"{}\"" [tracker-b-post])
+                    (format "<(AQP-SCORE|deb-score owner-a)> => \"{}\"" [deb-a])
+                    (format "<(AQP-SCORE|deb-score owner-b)> => \"{}\"" [deb-b])
+                    (format "<(FVT|unclaimed-count)> => \"{}\"" [unclaimed])
+                    (format "<(DPDC|UR_AccountNonceSupply owner-a)> post => \"{}\"" [post-supply-a])
+                    (format "<(DPDC|UR_AccountNonceSupply owner-b)> post => \"{}\"" [post-supply-b])
+                ]
+            )
+            (map print
+                [
+                    (expect (format "<<TX-FVT-DC-05 expect>> owner-a tracker cleared got={} expected=0" [tracker-a-post]) 0.0 tracker-a-post)
+                    (expect (format "<<TX-FVT-DC-05 expect>> owner-b tracker cleared got={} expected=0" [tracker-b-post]) 0.0 tracker-b-post)
+                    (expect (format "<<TX-FVT-DC-05 expect>> owner-a deb-score cleared got={} expected=0" [deb-a]) 0.0 deb-a)
+                    (expect (format "<<TX-FVT-DC-05 expect>> owner-b deb-score cleared got={} expected=0" [deb-b]) 0.0 deb-b)
+                    (expect (format "<<TX-FVT-DC-05 expect>> unclaimed-count after vacate got={} expected=0" [unclaimed]) 0 unclaimed)
+                    (expect (format "<<TX-FVT-DC-05 expect>> owner-a supply restored got={} expected={}" [post-supply-a (+ pre-supply-a vacate-a)]) (+ pre-supply-a vacate-a) post-supply-a)
+                    (expect (format "<<TX-FVT-DC-05 expect>> owner-b supply restored got={} expected={}" [post-supply-b (+ pre-supply-b vacate-b)]) (+ pre-supply-b vacate-b) post-supply-b)
+                ]
+            )
+        )
+    )
+)
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-DC-05 =======================================================")
 (print "")
 ;; DEFERRED (see TEST_DEFERRED.md + README_VACATE_UI.md):
 ;; - DPNF Bloodshed-scale vacate (repeat C_VacateNonFungibleCollectable per owner / nonce chunk)

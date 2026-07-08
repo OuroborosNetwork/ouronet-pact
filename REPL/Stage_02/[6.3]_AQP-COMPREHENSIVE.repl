@@ -1,0 +1,378 @@
+;;
+;; REPL/Stage_02/[6.3]_AQP-COMPREHENSIVE.repl — boot FVT wiring + RPS golden paths (Steps 8–10 entities)
+;; Requires: AQP-BOOT Steps 0–10 ([6.2.9]), sovereign executor DHCD nonces, Stage 01 DPTF balances.
+;; Exercises Talos AQP-FVT|C_Inject / C_Collect (new shells) on production boot FVT ids.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.3]_AQP-COMPREHENSIVE.repl")
+(print "================================================================")
+(print "")
+;;
+(begin-tx "TX-AQP-C01 - Steps 8–10 FVT wiring readiness")
+(print "")
+(print "=== TX-AQP-C01 — FVT issue + score + reward wiring readiness =================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (sub-treasury-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (coding-treasury-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+        (snakes-treasury-id:string (ref-U|DALOS::UDC_Makeid "SnakesTreasury"))
+        (shares-treasury-id:string (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))
+        (coding-score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+        (snakes-score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosSnakes"))
+        (shares-score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
+        (sub-coding-score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryCodingDivision"))
+        (pool-coding-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+        (pool-company-id:string (ref-U|DALOS::UDC_Makeid "DHCompany"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+        (ouroboros-id:string (ref-DALOS::UR_OuroborosID))
+    )
+    (map print
+        [
+            (expect (format "<<TX-AQP-C01>> coding vault class=1 got={}" [(ref-FVT::UR_FVT|FvtClass coding-treasury-id)]) 1 (ref-FVT::UR_FVT|FvtClass coding-treasury-id))
+            (expect (format "<<TX-AQP-C01>> coding score fvt-link got={} expected={}" [(ref-SCR::UR_SCR|ScoreFvtLink coding-score-id) coding-treasury-id]) coding-treasury-id (ref-SCR::UR_SCR|ScoreFvtLink coding-score-id))
+            (expect (format "<<TX-AQP-C01>> snakes score fvt-link got={} expected={}" [(ref-SCR::UR_SCR|ScoreFvtLink snakes-score-id) snakes-treasury-id]) snakes-treasury-id (ref-SCR::UR_SCR|ScoreFvtLink snakes-score-id))
+            (expect (format "<<TX-AQP-C01>> shares score fvt-link got={} expected={}" [(ref-SCR::UR_SCR|ScoreFvtLink shares-score-id) shares-treasury-id]) shares-treasury-id (ref-SCR::UR_SCR|ScoreFvtLink shares-score-id))
+            (expect (format "<<TX-AQP-C01>> sub-coding score fvt-link got={} expected={}" [(ref-SCR::UR_SCR|ScoreFvtLink sub-coding-score-id) sub-treasury-id]) sub-treasury-id (ref-SCR::UR_SCR|ScoreFvtLink sub-coding-score-id))
+            (expect (format "<<TX-AQP-C01>> coding pool fvt-ready got={} expected=true" [(ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-coding-id)]) true (ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-coding-id))
+            (expect (format "<<TX-AQP-C01>> company pool fvt-ready got={} expected=true" [(ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-company-id)]) true (ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-company-id))
+            (expect (format "<<TX-AQP-C01>> coding reward-enabled Wstoa got={} expected=true" [(ref-FVT::UR_FVT-RG|RewardEnabled coding-treasury-id wstoa-id)]) true (ref-FVT::UR_FVT-RG|RewardEnabled coding-treasury-id wstoa-id))
+            (expect (format "<<TX-AQP-C01>> shares reward-enabled Ouroboros got={} expected=true" [(ref-FVT::UR_FVT-RG|RewardEnabled shares-treasury-id ouroboros-id)]) true (ref-FVT::UR_FVT-RG|RewardEnabled shares-treasury-id ouroboros-id))
+            (expect (format "<<TX-AQP-C01>> sub-treasury enabled-reward-count got={} expected=1" [(ref-FVT::UR_FVT|EnabledRewardCount sub-treasury-id)]) 1 (ref-FVT::UR_FVT|EnabledRewardCount sub-treasury-id))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-C02 - Coding Division stake + Wstoa inject/collect RPS")
+(print "")
+(print "=== TX-AQP-C02 — Coding Division treasury RPS (Wstoa) ======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpsf-id:string "DHCD-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+        (inject-amount:decimal 1000.0)
+        (nonces:[integer] (ref-DPDC::URD_AccountNonces owner-id dpsf-id true))
+        (stake-nonce:integer (at 0 nonces))
+        (pre-wstoa:decimal (ref-DPTF::UR_AccountSupply wstoa-id beneficiary-id))
+        (ar-pre-inject:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id wstoa-id))
+    )
+    (enforce (> (length nonces) 0) "patron needs DHCD nonces — run sovereign executor TX 4.4")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeSemiFungibleCollectable nonce={})> => \"{}\"" [stake-nonce
+        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable
+            patron pool-id owner-id beneficiary-id dpsf-id [stake-nonce]
+        )
+    ]))
+    (let
+        (
+            (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+            (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
+            (last-rps-pre:decimal (ref-FVT::UR_FVT-RU|LastRps beneficiary-id fvt-id score-id wstoa-id))
+        )
+        (map print
+            [
+                (expect (format "<<TX-AQP-C02 expect>> deb-score after stake got={} expected>0" [deb-user]) true (> deb-user 0.0))
+                (expect (format "<<TX-AQP-C02 expect>> last-rps == G (vault single-tier) got={} expected={}" [last-rps-pre g-pre]) g-pre last-rps-pre)
+            ]
+        )
+    )
+    (print (format "<(TS02-C3.AQP-FVT|C_Inject Wstoa amount={})> => \"{}\"" [inject-amount
+        (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id wstoa-id inject-amount)
+    ]))
+    (let
+        (
+            (wstoa-after-inject:decimal (ref-DPTF::UR_AccountSupply wstoa-id beneficiary-id))
+            (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
+            (ar-post:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id wstoa-id))
+        )
+        (map print
+            [
+                (format "<(AQP-FVT|CurrentRps G)> post-inject => \"{}\"" [g-post])
+                (format "<(AQP-FVT|AvailableRewards)> post-inject => \"{}\"" [ar-post])
+                (format "<(Wstoa balance)> post-inject => \"{}\"" [wstoa-after-inject])
+            ]
+        )
+        (map print
+            [
+                (expect (format "<<TX-AQP-C02 expect>> G > 0 got={}" [g-post]) true (> g-post 0.0))
+                (expect (format "<<TX-AQP-C02 expect>> available-rewards got={} expected={}" [ar-post (+ ar-pre-inject inject-amount)]) (+ ar-pre-inject inject-amount) ar-post)
+                (expect (format "<<TX-AQP-C02 expect>> inject debited patron wstoa got={} expected={}" [wstoa-after-inject (- pre-wstoa inject-amount)]) (- pre-wstoa inject-amount) wstoa-after-inject)
+            ]
+        )
+    )
+    (let
+        (
+            (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
+            (wstoa-after-inject:decimal (ref-DPTF::UR_AccountSupply wstoa-id beneficiary-id))
+        )
+        (print (format "<(TS02-C3.AQP-FVT|C_Collect Wstoa)> => \"{}\"" [
+            (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id score-id wstoa-id)
+        ]))
+        (let
+            (
+                (post-wstoa:decimal (ref-DPTF::UR_AccountSupply wstoa-id beneficiary-id))
+                (payout:decimal (- post-wstoa wstoa-after-inject))
+                (pending-after:decimal (ref-FVT::UR_FVT-RU|PendingRewards beneficiary-id fvt-id score-id wstoa-id))
+                (last-rps-post:decimal (ref-FVT::UR_FVT-RU|LastRps beneficiary-id fvt-id score-id wstoa-id))
+                (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                (deb-total:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore score-id))
+                (expected-payout:decimal (floor (* deb-user (/ inject-amount deb-total)) 6))
+            )
+            (print (format "<(Wstoa balance)> post-collect => \"{}\"" [post-wstoa]))
+            (print (format "<(Wstoa payout)> => \"{}\" expected~{}" [payout expected-payout]))
+            (print (format "<(last-rps post-collect G)> => \"{}\" expected={}" [last-rps-post g-post]))
+            (map print
+                [
+                    (expect (format "<<TX-AQP-C02 expect>> last-rps == G post-collect got={} expected={}" [last-rps-post g-post]) g-post last-rps-post)
+                    (expect (format "<<TX-AQP-C02 expect>> collect payout > 0 got={}" [payout]) true (> payout 0.0))
+                    (expect (format "<<TX-AQP-C02 expect>> pending zeroed got={} expected=0.0" [pending-after]) 0.0 pending-after)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-C02b - Company + WonderCoach stakes (inject denominators)")
+(print "")
+(print "=== TX-AQP-C02b — Stakes for Snakes / Subsidiary / Shares inject tests =========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-company:string (ref-U|DALOS::UDC_Makeid "DHCompany"))
+        (pool-wondercoach:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (score-wc:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
+        (score-sh:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
+        (dhwc-id:string "DHWC-98c486052a51")
+        (edh-id:string "E|DH-98c486052a51")
+        (edh-tier6-nonce:integer 6)
+        (dhwc-nonces:[integer] (ref-DPDC::URD_AccountNonces owner-id dhwc-id true))
+        (edh-tier6-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id edh-id true edh-tier6-nonce))
+        (wc-deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner-id pool-wondercoach score-wc))
+        (sh-deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner-id pool-company score-sh))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (if (> wc-deb 0.0)
+        (print (format "SKIP C02b DHWC stake: SubsidiaryWonderCoach deb already={}" [wc-deb]))
+        (let
+            (
+                (enforce-dhwc:bool (> (length dhwc-nonces) 0))
+            )
+            (enforce enforce-dhwc "patron needs DHWC nonces — sovereign executor WonderCoach mint")
+            (print (format "<(TS02-C3.AQP-POOL|C_StakeSemiFungibleCollectable DHWC)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable
+                    patron pool-wondercoach owner-id beneficiary-id dhwc-id [(at 0 dhwc-nonces)]
+                )
+            ]))
+        )
+    )
+    (if (> sh-deb 0.0)
+        (print (format "SKIP C02b E|DH stake: DemiourgosShareholder deb already={}" [sh-deb]))
+        (do
+            (enforce (> edh-tier6-supply 0) "patron needs E|DH tier-6 — run [6.4]_AQP-EXHAUSTIVE-PREP TX-AQP-P01 first")
+            (print (format "<(TS02-C3.AQP-POOL|C_StakeSemiFungibleCollectable E|DH tier-6)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable
+                    patron pool-company owner-id beneficiary-id edh-id [edh-tier6-nonce]
+                )
+            ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(begin-tx "TX-AQP-C03 - Snakes treasury Auryn inject RPS bump")
+(print "")
+(print "=== TX-AQP-C03 — Snakes treasury Auryn inject (when snakes deb>0) =============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SnakesTreasury"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosSnakes"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (inject-amount:decimal 50.0)
+        (total-deb:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore score-id))
+        (sl-enabled:bool (ref-FVT::UR_FVT-SL|Enabled fvt-id score-id))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (map print
+        [
+            (format "<<TX-AQP-C03>> DemiourgosSnakes total-deb={}" [total-deb])
+            (expect (format "<<TX-AQP-C03 expect>> ScoreLink enabled got={} expected=true" [sl-enabled]) true sl-enabled)
+        ]
+    )
+    (if (> total-deb 0.0)
+        (let
+            (
+                (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
+            )
+            (print (format "<(TS02-C3.AQP-FVT|C_Inject Auryn {})> => \"{}\"" [inject-amount
+                (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id auryn-id inject-amount)
+            ]))
+            (let
+                (
+                    (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
+                )
+                (expect (format "<<TX-AQP-C03 expect>> G increased got={} pre={}" [g-post g-pre]) true (> g-post g-pre))
+            )
+        )
+        (print "NOTE: DemiourgosSnakes total-deb=0 (sft-equality false, needs score-def) — inject skipped")
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-C04 - Subsidiary treasury Auryn inject (multi-score denominator)")
+(print "")
+(print "=== TX-AQP-C04 — Subsidiary treasury Auryn inject =============================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (sub-coding-score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryCodingDivision"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (inject-amount:decimal 250.0)
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-FVT|C_Inject Auryn amount={})> => \"{}\"" [inject-amount
+        (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id auryn-id inject-amount)
+    ]))
+    (let
+        (
+            (reward-count:integer (ref-FVT::UR_FVT|EnabledRewardCount fvt-id))
+            (ar:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id auryn-id))
+            (sl-enabled:bool (ref-FVT::UR_FVT-SL|Enabled fvt-id sub-coding-score-id))
+        )
+        (map print
+            [
+                (expect (format "<<TX-AQP-C04 expect>> enabled-reward-count got={} expected=1" [reward-count]) 1 reward-count)
+                (expect (format "<<TX-AQP-C04 expect>> available-rewards got={} expected={}" [ar inject-amount]) inject-amount ar)
+                (expect (format "<<TX-AQP-C04 expect>> sub-coding ScoreLink enabled got={} expected=true" [sl-enabled]) true sl-enabled)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-C05 - Company shares treasury Ouroboros inject")
+(print "")
+(print "=== TX-AQP-C05 — Company shares Ouroboros inject/collect =====================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCompany"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CompanySharesTreasury"))
+        (shares-score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
+        (ouroboros-id:string (ref-DALOS::UR_OuroborosID))
+        (inject-amount:decimal 100.0)
+        (total-deb:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore shares-score-id))
+        (sl-enabled:bool (ref-FVT::UR_FVT-SL|Enabled fvt-id shares-score-id))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (map print
+        [
+            (format "<<TX-AQP-C05>> DemiourgosShareholder total-deb={}" [total-deb])
+            (expect (format "<<TX-AQP-C05 expect>> shares ScoreLink enabled got={} expected=true" [sl-enabled]) true sl-enabled)
+        ]
+    )
+    (if (> total-deb 0.0)
+        (let
+            (
+                (pre-bal:decimal (ref-DPTF::UR_AccountSupply ouroboros-id patron))
+            )
+            (print (format "<(TS02-C3.AQP-FVT|C_Inject Ouroboros {})> => \"{}\"" [inject-amount
+                (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id ouroboros-id inject-amount)
+            ]))
+            (let
+                (
+                    (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouroboros-id))
+                    (claimable:decimal (ref-FVT::URC_UserTier1AvailableRewards patron fvt-id shares-score-id ouroboros-id
+                        (ref-SCR::UR_U-SCR|UserScoreDebScore patron pool-id shares-score-id)
+                    ))
+                )
+                (print (format "<(TS02-C3.AQP-FVT|C_Collect Ouroboros)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id shares-score-id ouroboros-id)
+                ]))
+                (let
+                    (
+                        (post-bal:decimal (ref-DPTF::UR_AccountSupply ouroboros-id patron))
+                        (payout:decimal (- post-bal pre-bal))
+                        (last-rps:decimal (ref-FVT::UR_FVT-RU|LastRps patron fvt-id shares-score-id ouroboros-id))
+                    )
+                    (map print
+                        [
+                            (format "<(Ouroboros payout)> => \"{}\"" [payout])
+                            (format "<(last-rps post-collect G)> => \"{} {}\"" [last-rps g-post])
+                            (expect (format "<<TX-AQP-C05 expect>> collect payout > 0 got={}" [payout]) true (> payout 0.0))
+                            (expect (format "<<TX-AQP-C05 expect>> last-rps==G got={} expected={}" [last-rps g-post]) g-post last-rps)
+                            (expect (format "<<TX-AQP-C05 expect>> payout==claimable got={} expected={}" [payout claimable]) claimable payout)
+                        ]
+                    )
+                )
+            )
+        )
+        (print "NOTE: DemiourgosShareholder total-deb=0 — inject skipped (needs E|DH stake in C02b)")
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END [6.3]_AQP-COMPREHENSIVE.repl ========================================")

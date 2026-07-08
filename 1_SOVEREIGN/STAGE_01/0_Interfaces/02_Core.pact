@@ -2363,3 +2363,140 @@
     (defun C_AddSleepingLiquidity (patron:string account:string swpair:string sleeping-dpof:string nonce:integer kda-pid:decimal))
     ;;
 )
+;;
+;;  [PYTHIA — Apollo Pythia API-key registry]
+;;
+(interface PythiaV1
+    @doc "Frozen — initial PYTHIA surface (deploy/rename INFO only; no deactivate IGNIS toll INFO)."
+    (defun GOV|CronotonKey ())
+    ;;
+    ;;
+    (defun UC_DeployPrice:decimal ())
+    (defun UC_RenamePrice:decimal ())
+    (defun UC_IsStandardApollo:bool (apollo-account:string))
+    (defun UC_FeeDiscountAnchor:string ())
+    ;;
+    (defun A_DeployApolloPythiaApiKey:string
+        ( owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string ))
+    (defun A_ActivateApiKey:string (apollo-account:string))
+    (defun A_DeactivateApiKey:string (apollo-account:string))
+    (defun A_UpdateDeployPrice:string (new-price:decimal))
+    (defun A_UpdateRenamePrice:string (new-price:decimal))
+    ;;
+    (defun C_DeployApolloPythiaApiKey:string
+        ( owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string ))
+    (defun C_DeactivateApiKey:string (owner-account:string apollo-account:string))
+    (defun C_UpdateApiConsumerName:string
+        ( owner-account:string
+          apollo-account:string
+          new-name:string ))
+    ;;
+    ;; [UR] PYTHIA|S|ApiKey — field accessors + DataOrNull (UR_AKY|Data is module-only)
+    (defun UR_IsActivated:bool (apollo-account:string))
+    (defun UR_Public:string (apollo-account:string))
+    (defun UR_ConsumerLane:string (apollo-account:string))
+    (defun UR_OwnerAccount:string (apollo-account:string))
+    (defun UR_RegisteredAt:time (apollo-account:string))
+    (defun UR_UpdatedAt:time (apollo-account:string))
+    (defun UR_ApiKeyRowOrNull:object (apollo-account:string))
+    ;;
+    ;; [URC]
+    (defun URC_IsStandardApollo:bool (apollo-account:string))
+    (defun URC_IsActivatedOrFalse:bool (apollo-account:string))
+    (defun URC_ActivatedSet:[string] ())
+    ;;
+    ;; [URD] — directory scans for Pythia website
+    (defun URD_ApiKeyCount:integer ())
+    (defun URD_ApiKeyCountStr:string ())
+    (defun URD_ListAllApiKeys:[object] ())
+    (defun URD_ListActivatedApiKeys:[object] ())
+    (defun URD_ListInactiveApiKeys:[object] ())
+    ;;
+    ;; [INFO] UI previews — deploy/rename: STOA via KDA|C_CollectWTEx in TS01-C4
+    (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string ))
+    (defun PYTHIA|INFO_UpdateApiConsumerName:object{OuronetInfoV1.ClientInfo}
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          new-name:string ))
+)
+(interface PythiaV2
+    @doc "PYTHIA V2 — adds UC_DeactivateIgnisFee + PYTHIA|INFO_DeactivateApiKey (1 IGNIS deactivate toll)."
+    (defun GOV|CronotonKey ())
+    ;;
+    ;;
+    (defun UC_DeployPrice:decimal ())
+    (defun UC_RenamePrice:decimal ())
+    (defun UC_DeactivateIgnisFee:decimal ())
+    (defun UC_IsStandardApollo:bool (apollo-account:string))
+    (defun UC_FeeDiscountAnchor:string ())
+    ;;
+    (defun A_DeployApolloPythiaApiKey:string
+        ( owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string ))
+    (defun A_ActivateApiKey:string (apollo-account:string))
+    (defun A_DeactivateApiKey:string (apollo-account:string))
+    (defun A_UpdateDeployPrice:string (new-price:decimal))
+    (defun A_UpdateRenamePrice:string (new-price:decimal))
+    ;;
+    (defun C_DeployApolloPythiaApiKey:string
+        ( owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string ))
+    (defun C_DeactivateApiKey:string (owner-account:string apollo-account:string))
+    (defun C_UpdateApiConsumerName:string
+        ( owner-account:string
+          apollo-account:string
+          new-name:string ))
+    ;;
+    ;; [UR] PYTHIA|S|ApiKey — field accessors + DataOrNull (UR_AKY|Data is module-only)
+    (defun UR_IsActivated:bool (apollo-account:string))
+    (defun UR_Public:string (apollo-account:string))
+    (defun UR_ConsumerLane:string (apollo-account:string))
+    (defun UR_OwnerAccount:string (apollo-account:string))
+    (defun UR_RegisteredAt:time (apollo-account:string))
+    (defun UR_UpdatedAt:time (apollo-account:string))
+    (defun UR_ApiKeyRowOrNull:object (apollo-account:string))
+    ;;
+    ;; [URC]
+    (defun URC_IsStandardApollo:bool (apollo-account:string))
+    (defun URC_IsActivatedOrFalse:bool (apollo-account:string))
+    (defun URC_ActivatedSet:[string] ())
+    ;;
+    ;; [URD] — directory scans for Pythia website
+    (defun URD_ApiKeyCount:integer ())
+    (defun URD_ApiKeyCountStr:string ())
+    (defun URD_ListAllApiKeys:[object] ())
+    (defun URD_ListActivatedApiKeys:[object] ())
+    (defun URD_ListInactiveApiKeys:[object] ())
+    ;;
+    ;; [INFO] UI previews — deploy/rename: STOA via KDA|C_CollectWTEx; deactivate: IGNIS via C_Collect
+    (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string ))
+    (defun PYTHIA|INFO_UpdateApiConsumerName:object{OuronetInfoV1.ClientInfo}
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          new-name:string ))
+    (defun PYTHIA|INFO_DeactivateApiKey:object{OuronetInfoV1.ClientInfo}
+        ( patron:string
+          apollo-account:string ))
+)

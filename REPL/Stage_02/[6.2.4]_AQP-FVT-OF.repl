@@ -1,5 +1,6 @@
 ;;
-;; REPL/Stage_02/[6.2.4]_AQP-FVT-OF.repl — OrtoFungible stake (append after [6.2.4]_AQP-FVT.repl or load standalone)
+;; REPL/Stage_02/[6.2.4]_AQP-FVT-OF.repl — OrtoFungible stake + vacate bulk smoke (TX-FVT-04..07)
+;; Loaded by REPL/Stage_02/OF-stake-smoke.repl. TX-FVT-07 exercises DPOF::C_BulkTransfer via vacate batch.
 ;; Requires Stage 01 [6.5]_DPOF.repl (MVST-98c486052a51 on chain) + Stage 02 AQP deploy + AQP-BOOT Step 0 (TFT+DPOF IMC).
 ;;
 (load "../Stage_01/[6.5]_DPOF.repl")
@@ -259,4 +260,207 @@
 (env-sigs [])
 (commit-tx)
 (print "=== END TX-FVT-06 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-FVT-07 - C_VacateChunkOrtoFungible (sliced session vacate)")
+(print "")
+(print "=== TX-FVT-07 — BeginVacate slice-count 1 + VacateChunkOrtoFungible ==============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpof-id:string "MVST-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "OfStakeScore")
+        (fvt-name:string "OfStakeVault")
+        (pool-name:string "OfStakePool")
+        (vacate-kind-of:integer 2)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (stake-nonce:integer 1)
+    )
+    (print "--- [TX-FVT-07 · 01 · re-stake after TX-FVT-06 round-trip] ---")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
+        true
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible
+            patron pool-id owner-id beneficiary-id dpof-id [stake-nonce]
+        )
+    ]))
+    (let
+        (
+            (tracker-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
+            (vacate-amount:decimal tracker-pre)
+            (pre-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
+        )
+        (enforce (> vacate-amount 0.0) "tracker must hold stake before vacate")
+        (print (format "<(vacate-nonce vacate-amount)> => {} / {}" [stake-nonce vacate-amount]))
+        (print "--- [TX-FVT-07 · 02 · C_BeginVacate slice-count 1] ---")
+        (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_BeginVacate
+                patron pool-id dpof-id vacate-kind-of 1
+            )
+        ]))
+        (let
+            (
+                (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                (vacate-job-id:string (at "vacate-job-id" active-job))
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 1))
+                (slice0:object (at 0 (at "slices" plan)))
+            )
+            (print (format "<(VCT|vacate-job-id)> => \"{}\"" [vacate-job-id]))
+            (print "--- [TX-FVT-07 · 03 · C_VacateChunkOrtoFungible slice 0] ---")
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkOrtoFungible)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateChunkOrtoFungible
+                    patron
+                    vacate-job-id
+                    0
+                    (at "owner-ids" slice0)
+                    (at "beneficiary-ids" slice0)
+                    (at "nonces-array" slice0)
+                )
+            ]))
+            (print "--- [TX-FVT-07 · 04 · post-vacate expects] ---")
+            (let
+                (
+                    (tracker-post:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
+                    (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                    (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
+                    (post-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
+                    (job:object (ref-VCT::UR_Job vacate-job-id))
+                )
+            (map print
+                [
+                    (format "<(AQP-POOL|DPOFTrackerBalance)> => \"{}\"" [tracker-post])
+                    (format "<(AQP-SCORE|deb-score)> => \"{}\"" [deb-user])
+                    (format "<(FVT|unclaimed-count)> => \"{}\"" [unclaimed])
+                    (format "<(DPOF|UR_AccountSupply owner)> post => \"{}\"" [post-supply])
+                    (format "<(VCT|job-finalized)> => \"{}\"" [(at "finalized" job)])
+                ]
+            )
+            (map print
+                [
+                    (expect (format "<<TX-FVT-07 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                    (expect (format "<<TX-FVT-07 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
+                    (expect (format "<<TX-FVT-07 expect>> unclaimed-count after vacate got={} expected=0" [unclaimed]) 0 unclaimed)
+                    (expect (format "<<TX-FVT-07 expect>> owner supply restored got={} expected={}" [post-supply (+ pre-supply vacate-amount)]) (+ pre-supply vacate-amount) post-supply)
+                    (expect (format "<<TX-FVT-07 expect>> job finalized got={} expected=true" [(at "finalized" job)]) true (at "finalized" job))
+                ]
+            )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-07 ==========================================================")
+(print "")
+;;
+(begin-tx "TX-FVT-08 - C_FullVacateOrtoFungible (URD-driven one-tx vacate)")
+(print "")
+(print "=== TX-FVT-08 — C_FullVacateOrtoFungible (pool-id + dpof-id only) ===========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpof-id:string "MVST-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "OfStakeScore")
+        (fvt-name:string "OfStakeVault")
+        (pool-name:string "OfStakePool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (stake-nonce:integer 1)
+    )
+    (print "--- [TX-FVT-08 · 00 · re-enable stake + restake for full vacate] ---")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
+        true
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible
+            patron pool-id owner-id beneficiary-id dpof-id [stake-nonce]
+        )
+    ]))
+    (let
+        (
+            (inv-count:integer (at "leg-count" (ref-VCT::URD_VacateOfInventory pool-id dpof-id)))
+            (tracker-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
+            (pre-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
+        )
+        (enforce (> inv-count 0) "URD must show OF vacate inventory before full vacate")
+        (enforce (> tracker-pre 0.0) "tracker must hold stake before full vacate")
+        (print (format "<(URD_AQP|VacateOfInventory leg-count)> => {}" [inv-count]))
+        (print "--- [TX-FVT-08 · 01 · C_FullVacateOrtoFungible] ---")
+        (print (format "<(TS02-C3.AQP-POOL|C_FullVacateOrtoFungible)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_FullVacateOrtoFungible patron pool-id dpof-id)
+        ]))
+        (print "--- [TX-FVT-08 · 02 · post full-vacate expects] ---")
+        (let
+            (
+                (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateOfInventory pool-id dpof-id)))
+                (tracker-post:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
+                (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
+                (post-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
+            )
+            (map print
+                [
+                    (format "<(URD_AQP|VacateOfInventory leg-count)> post => \"{}\"" [inv-post])
+                    (format "<(AQP-POOL|DPOFTrackerBalance)> => \"{}\"" [tracker-post])
+                    (format "<(AQP-SCORE|deb-score)> => \"{}\"" [deb-user])
+                    (format "<(FVT|unclaimed-count)> => \"{}\"" [unclaimed])
+                    (format "<(DPOF|UR_AccountSupply owner)> post => \"{}\"" [post-supply])
+                ]
+            )
+            (map print
+                [
+                    (expect (format "<<TX-FVT-08 expect>> URD leg count cleared got={} expected=0" [inv-post]) 0 inv-post)
+                    (expect (format "<<TX-FVT-08 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                    (expect (format "<<TX-FVT-08 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
+                    (expect (format "<<TX-FVT-08 expect>> unclaimed-count after vacate got={} expected=0" [unclaimed]) 0 unclaimed)
+                    (expect (format "<<TX-FVT-08 expect>> owner supply restored got={} expected={}" [post-supply (+ pre-supply tracker-pre)]) (+ pre-supply tracker-pre) post-supply)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-08 ==========================================================")
 (print "")

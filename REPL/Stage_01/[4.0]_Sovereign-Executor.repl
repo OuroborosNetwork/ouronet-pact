@@ -149,6 +149,7 @@
         (ref-P|TS01-C4:module{OuronetPolicyV1} TS01-C4)
         (ref-P|TS01-CP:module{OuronetPolicyV1} TS01-CP)
         (ref-P|CODEX:module{OuronetPolicyV1} CODEX)
+        (ref-P|PYTHIA:module{OuronetPolicyV1} PYTHIA)
     )
     [
         (ref-P|IGNIS::P|A_Define)
@@ -180,6 +181,7 @@
         (ref-P|TS01-C3::P|A_Define)
         (ref-P|TS01-C4::P|A_Define)
         (ref-P|CODEX::P|A_Define)
+        (ref-P|PYTHIA::P|A_Define)
         (ref-P|TS01-CP::P|A_Define)
     ]
 )

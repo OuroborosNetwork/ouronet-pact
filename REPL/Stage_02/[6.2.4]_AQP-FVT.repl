@@ -13,7 +13,7 @@
 (print "")
 (print "Requires full chain: REPL/Z.repl (Stage 01 DPTF issuance + Stage 02 AQP deploy + [6.2.1]–[6.2.3]).")
 (print "TX004 in [6.2.1] strips OURO TF anchors — TX-FVT-01 re-issues one anchor for stake ANK leg.")
-(print "FVT|T bootstrap uses REPL_BootstrapVault (GOV-gated) until C_Issue / C_AddScoreLink / C_AddRewardLink are implemented.")
+(print "FVT lifecycle: C_Issue / C_AddRewardLink / C_AddScoreLink via Talos AQP-FVT|C_* shells.")
 (print "REPL tests: (map print [(expect (format \"<<TX-FVT-nn>> …\" […]) expected actual) …])")
 (print "")
 (print "===================AQP-FVT TF Stake Test File==========================")
@@ -126,10 +126,12 @@
 (let
     (
         (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "TfStakeScore")
         (fvt-name:string "TfStakeVault")
         (pool-name:string "TfStakePool")
+        (fvt-class:integer 1)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
@@ -141,7 +143,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (aqp-class:integer 1)
         (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (ref-DALOS::UR_UsagePrice "smart"))
+            (ref-DALOS::URC_SplitKDAPrices patron (* 3.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     ;;==== TX-FVT-02 · 01 · env-sigs (smart pool issue) — REPL =====================
@@ -180,9 +182,11 @@
     (print "--- [TX-FVT-02 · 02 · C_Issue class-1 pool + C_AddScore] ---")
     (print (format "<(TS02-C3.AQP-POOL|C_Issue class=1 OURO)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id aqp-class)]))
     (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)]))
-    ;;==== TX-FVT-02 · 03 · REPL_BootstrapVault (FVT|T seed + SCR fvt-link) — REPL =====
-    (print "--- [TX-FVT-02 · 03 · REPL_BootstrapVault (until C_Issue / C_AddScoreLink implemented)] ---")
-    (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)]))
+    ;;==== TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreLink — REPL =====
+    (print "--- [TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreLink] ---")
+    (print (format "<(TS02-C3.AQP-FVT|C_Issue class=1 vault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name patron fvt-class "|")]))
+    (print (format "<(TS02-C3.AQP-FVT|C_AddRewardLink OURO)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false)]))
+    (print (format "<(TS02-C3.AQP-FVT|C_AddScoreLink)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_AddScoreLink patron fvt-id score-id)]))
     ;;==== TX-FVT-02 · 04 · pre-stake readiness reads + expect — REPL ===============
     (print "--- [TX-FVT-02 · 04 · FVT stake-ready reads + expect] ---")
     (let
@@ -315,4 +319,55 @@
 (commit-tx)
 (print "")
 (print "=== END TX-FVT-03 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+;; TX-FVT-04 — FVT lifecycle smoke (Control + ToggleScoreLink idempotent flip)
+(begin-tx "TX-FVT-04 - FVT Control + ToggleScoreLink smoke")
+(print "")
+(print "=== TX-FVT-04 — FVT ToggleScoreLink smoke ==================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (score-name:string "TfStakeScore")
+        (fvt-name:string "TfStakeVault")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+    )
+    (print "--- [TX-FVT-04 · 01 · ToggleScoreLink off/on] ---")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-FVT|C_ToggleScoreLink off)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreLink patron fvt-id score-id false)]))
+    (print (format "<(TS02-C3.AQP-FVT|C_ToggleScoreLink on)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreLink patron fvt-id score-id true)]))
+    (print "--- [TX-FVT-04 · 02 · post-toggle reads + expect] ---")
+    (let
+        (
+            (sl-off:bool (ref-FVT::UR_FVT-SL|Enabled fvt-id score-id))
+        )
+        (map print
+            [
+                (format "<(AQP-FVT|UR_FVT-SL|Enabled after re-toggle)> => \"{}\"" [sl-off])
+            ]
+        )
+        (map print
+            [
+                (expect (format "<<TX-FVT-04 expect>> ScoreLink enabled after re-toggle got={} expected=true" [sl-off]) true sl-off)
+            ]
+        )
+    )
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-FVT-04 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-FVT-04 ==========================================================")
 (print "")

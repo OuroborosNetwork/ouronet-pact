@@ -1,6 +1,6 @@
 # Architecture documentation inventory (2026-04-07)
 
-Created `OuronetInformational/ARCHITECTURE/` as the canonical map of the codebase for whitepapers and AI context:
+Created `OuronetInformational/ouronet/architecture/` as the canonical map of the codebase for whitepapers and AI context:
 
 - `README.md` — navigation
 - `00_MASTER_INVENTORY.md` — counts and tree

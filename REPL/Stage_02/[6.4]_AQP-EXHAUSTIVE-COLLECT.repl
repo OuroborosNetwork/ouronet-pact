@@ -1,0 +1,323 @@
+;;
+;; REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-COLLECT.repl — vault/treasury (G) vs farm (L_i) collect golden paths
+;; Requires: AQP-BOOT Steps 7–10, [6.4]_AQP-EXHAUSTIVE-PREP (E|DH tier-6), [6.4]_AQP-EXHAUSTIVE-BOOT-POOLS BP02 (shares stake).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-COLLECT.repl")
+(print "================================================================")
+(print "")
+;;
+(begin-tx "TX-AQP-CL01 - Vault class-1 Wstoa collect (single-tier vs G)")
+(print "")
+(print "=== TX-AQP-CL01 — CodingDivisionTreasury: UrStoa-style last_rps checkpoints G ===")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+        (inject-amt:decimal 25.0)
+        (fvt-class:integer (ref-FVT::UR_FVT|FvtClass fvt-id))
+        (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore patron pool-id score-id))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (enforce (= fvt-class 1) "CodingDivisionTreasury must be vault class 1")
+    (enforce (> deb-user 0.0) "CL01 needs Coding Division deb — run RPS TX-AQP-R01 or stake DHCD")
+    (print (format "<(C_Inject Wstoa {})> => \"{}\"" [inject-amt
+        (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id wstoa-id inject-amt)
+    ]))
+    (let
+        (
+            (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
+            (claimable:decimal (ref-FVT::URC_UserTier1AvailableRewards patron fvt-id score-id wstoa-id deb-user))
+            (wstoa-pre:decimal (ref-DPTF::UR_AccountSupply wstoa-id patron))
+        )
+        (print (format "<(claimable-pre vault G)> => \"{}\"" [claimable]))
+        (expect (format "<<TX-AQP-CL01>> claimable>0 got={}" [claimable]) true (> claimable 0.0))
+        (print (format "<(C_Collect vault Wstoa)> => \"{}\"" [
+            (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id score-id wstoa-id)
+        ]))
+        (let
+            (
+                (wstoa-post:decimal (ref-DPTF::UR_AccountSupply wstoa-id patron))
+                (payout:decimal (- wstoa-post wstoa-pre))
+                (last-rps:decimal (ref-FVT::UR_FVT-RU|LastRps patron fvt-id score-id wstoa-id))
+                (li:decimal (ref-FVT::UR_FVT-RM|MemberDebRps fvt-id score-id wstoa-id))
+            )
+            (map print
+                [
+                    (format "<(vault payout)> => \"{}\"" [payout])
+                    (format "<(post-collect last-rps G L_i)> => \"{} {} {}\"" [last-rps g-post li])
+                    (expect (format "<<TX-AQP-CL01>> vault payout>0 got={}" [payout]) true (> payout 0.0))
+                    (expect (format "<<TX-AQP-CL01>> last-rps==G got={} expected={}" [last-rps g-post]) g-post last-rps)
+                    (expect (format "<<TX-AQP-CL01>> payout==claimable got={} expected={}" [payout claimable]) claimable payout)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-CL02 - Treasury (class-1) Auryn collect on SubsidiaryTreasury")
+(print "")
+(print "=== TX-AQP-CL02 — SubsidiaryTreasury: same G single-tier as vault =============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (dhwc-id:string "DHWC-98c486052a51")
+        (inject-amt:decimal 75.0)
+        (fvt-class:integer (ref-FVT::UR_FVT|FvtClass fvt-id))
+        (dhwc-nonces:[integer] (ref-DPDC::URD_AccountNonces owner-id dhwc-id true))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (enforce (= fvt-class 1) "SubsidiaryTreasury must be vault/treasury class 1")
+    (enforce (> (length dhwc-nonces) 0) "CL02 needs DHWC nonces for WonderCoach stake")
+    (print (format "<(C_StakeSemiFungible DHWC)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable
+            patron pool-id owner-id beneficiary-id dhwc-id [(at 0 dhwc-nonces)]
+        )
+    ]))
+    (let
+        (
+            (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore patron pool-id score-id))
+        )
+        (enforce (> deb-user 0.0) "CL02 needs SubsidiaryWonderCoach deb after DHWC stake")
+        (let
+            (
+                (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
+            )
+            (print (format "<(C_Inject Auryn {})> => \"{}\"" [inject-amt
+                (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id auryn-id inject-amt)
+            ]))
+            (let
+                (
+                    (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
+                    (claimable:decimal (ref-FVT::URC_UserTier1AvailableRewards patron fvt-id score-id auryn-id deb-user))
+                    (auryn-pre-collect:decimal (ref-DPTF::UR_AccountSupply auryn-id patron))
+                )
+                (expect (format "<<TX-AQP-CL02>> G increased got={} pre={}" [g-post g-pre]) true (> g-post g-pre))
+                (print (format "<(claimable-pre treasury G)> => \"{}\"" [claimable]))
+                (print (format "<(C_Collect treasury Auryn)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id score-id auryn-id)
+                ]))
+                (let
+                    (
+                        (post-bal:decimal (ref-DPTF::UR_AccountSupply auryn-id patron))
+                        (payout:decimal (- post-bal auryn-pre-collect))
+                        (last-rps:decimal (ref-FVT::UR_FVT-RU|LastRps patron fvt-id score-id auryn-id))
+                    )
+                    (map print
+                        [
+                            (format "<(treasury payout)> => \"{}\" deb={}" [payout deb-user])
+                            (format "<(post-collect last-rps G)> => \"{} {}\"" [last-rps g-post])
+                            (expect (format "<<TX-AQP-CL02>> treasury payout>0 got={}" [payout]) true (> payout 0.0))
+                            (expect (format "<<TX-AQP-CL02>> last-rps==G got={} expected={}" [last-rps g-post]) g-post last-rps)
+                            (expect (format "<<TX-AQP-CL02>> payout~claimable got={} expected={} (<=5%)" [payout claimable])
+                        true
+                        (<= (abs (- payout claimable)) (* claimable 0.05))
+                    )
+                        ]
+                    )
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-CL03 - Farm class-0 Auryn collect (two-tier L_i)")
+(print "")
+(print "=== TX-AQP-CL03 — OuroLpFarm: Tier-2 G→L_i then Tier-1 deb×ΔL_i =============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (auryn-id:string "AURYN-98c486052a51")
+        (kbn-id:string "KBN-98c486052a51")
+        (auryn-rain-nonce:integer 75)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
+        (bunnies-pool:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
+        (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+        (swpair:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (lp-id:string (ref-SWP::UR_TokenLP swpair))
+        (inject-amt:decimal 100.0)
+        (farm-class:integer (try -1 (ref-FVT::UR_FVT|FvtClass farm-id)))
+        (pool-class:integer (try -1 (ref-AQP::UR_AQP|PoolAqpClass pool-id)))
+        (lp-bal:decimal (ref-DPTF::UR_AccountSupply lp-id owner))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+        ]
+    )
+    (if (and (= farm-class 0) (>= pool-class 0))
+        (let
+            (
+                (lp-bal-work:decimal lp-bal)
+            )
+            (if (< lp-bal-work 100.0)
+                (let
+                    (
+                        (stoa-pre:decimal (ref-SWP::UR_StoaValue swpair))
+                    )
+                    (print (format "<(seed LP: StoaValue pre)> => \"{}\" lp-bal={}" [stoa-pre lp-bal-work]))
+                    (print (format "<(SWP|C_AddLiquidity seed)> => \"{}\"" [
+                        (ref-TS01-C3::SWP|C_AddLiquidity patron patron swpair [50.0 50.0 50.0])
+                    ]))
+                    (print (format "<(post-seed lp-bal)> => \"{}\"" [(ref-DPTF::UR_AccountSupply lp-id owner)]))
+                )
+                true
+            )
+            (let
+                (
+                    (lp-bal-final:decimal (ref-DPTF::UR_AccountSupply lp-id owner))
+                    (stake-amt:decimal
+                        (if (> lp-bal-final 100.0) 100.0 lp-bal-final)
+                    )
+                )
+                (enforce (>= lp-bal-final stake-amt) "CL03: patron needs LP balance after seed")
+                (let
+                    (
+                        (anhd-kbn:[integer] (ref-DPDC::URD_AccountNonces owner kbn-id false))
+                        (prom-pre:decimal (ref-ANK::UR_UB|AggregatePromile owner silver-score))
+                    )
+                    (if (= prom-pre 0.0)
+                        (let
+                            (
+                                (emma-kbn:[integer] (ref-DPDC::URD_AccountNonces emma kbn-id false))
+                            )
+                            (if (not (contains auryn-rain-nonce anhd-kbn))
+                                (enforce (contains auryn-rain-nonce emma-kbn) "CL03: EMMA must hold Auryn Rain KBN nonce 75")
+                                true
+                            )
+                            (if (not (contains auryn-rain-nonce anhd-kbn))
+                                (print (format "<(DPNF transfer AurynRain nonce {} EMMA→ANHD)> => \"{}\"" [auryn-rain-nonce
+                                    (ref-TS02-C2::DPNF|C_TransferNonce patron kbn-id emma owner auryn-rain-nonce 1 false)
+                                ]))
+                                true
+                            )
+                            (print (format "<(C_StakeNonFungible DHBunnies KBN nonce {})> => \"{}\"" [auryn-rain-nonce
+                                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable
+                                    patron bunnies-pool owner owner kbn-id [auryn-rain-nonce]
+                                )
+                            ]))
+                        )
+                        true
+                    )
+                    (let
+                        (
+                            (prom-post:decimal (ref-ANK::UR_UB|AggregatePromile owner silver-score))
+                        )
+                        (print (format "<(SilverSnakePower promile ANHD)> => \"{}\"" [prom-post]))
+                        (enforce (> prom-post 0.0) "CL03 needs SilverSnakePower promile — Auryn Rain KBN stake on DHBunnies")
+                    )
+                )
+                (print (format "<(C_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
+                    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+                ]))
+                (let
+                    (
+                        (deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner pool-id silver-score))
+                        (denom:decimal (ref-FVT::URC_InjectDenominator farm-id))
+                        (ghost-s:decimal (ref-FVT::UR_FVT|TotalGhostTvlWeight farm-id))
+                        (w-i:decimal (ref-FVT::UR_FVT-SL|GhostTvlWeight farm-id silver-score))
+                    )
+                    (map print
+                        [
+                            (format "<(SilverSnakePower deb)> => \"{}\"" [deb])
+                            (format "<(farm S W_i denom)> => \"{} {} {}\"" [ghost-s w-i denom])
+                        ]
+                    )
+                    (expect (format "<<TX-AQP-CL03>> LP deb>0 got={}" [deb]) true (> deb 0.0))
+                    (expect (format "<<TX-AQP-CL03>> farm ghost S>0 got={}" [ghost-s]) true (> ghost-s 0.0))
+                    (expect (format "<<TX-AQP-CL03>> inject denom>0 got={}" [denom]) true (> denom 0.0))
+                    (print (format "<(C_Inject Auryn farm {})> => \"{}\"" [inject-amt
+                        (ref-TS02-C3::AQP-FVT|C_Inject patron farm-id auryn-id inject-amt)
+                    ]))
+                    (let
+                        (
+                            (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps farm-id auryn-id))
+                            (li-pre:decimal (ref-FVT::UR_FVT-RM|MemberDebRps farm-id silver-score auryn-id))
+                            (claimable:decimal (ref-FVT::URC_UserTier1AvailableRewards owner farm-id silver-score auryn-id deb))
+                            (auryn-pre:decimal (ref-DPTF::UR_AccountSupply auryn-id owner))
+                        )
+                        (print (format "<(pre-collect G L_i claimable)> => \"{} {} {}\"" [g-post li-pre claimable]))
+                        (expect (format "<<TX-AQP-CL03>> G>0 got={}" [g-post]) true (> g-post 0.0))
+                        (print (format "<(C_Collect farm Auryn)> => \"{}\"" [
+                            (ref-TS02-C3::AQP-FVT|C_Collect owner farm-id silver-score auryn-id)
+                        ]))
+                        (let
+                            (
+                                (auryn-post:decimal (ref-DPTF::UR_AccountSupply auryn-id owner))
+                                (payout:decimal (- auryn-post auryn-pre))
+                                (li-post:decimal (ref-FVT::UR_FVT-RM|MemberDebRps farm-id silver-score auryn-id))
+                                (last-rps:decimal (ref-FVT::UR_FVT-RU|LastRps owner farm-id silver-score auryn-id))
+                                (g-i:decimal (ref-FVT::UR_FVT-RM|LastFarmRpsG farm-id silver-score auryn-id))
+                            )
+                            (map print
+                                [
+                                    (format "<(farm payout)> => \"{}\"" [payout])
+                                    (format "<(post-collect G g_i L_i last-rps)> => \"{} {} {} {}\"" [g-post g-i li-post last-rps])
+                                    (expect (format "<<TX-AQP-CL03>> farm payout>0 got={}" [payout]) true (> payout 0.0))
+                                    (expect (format "<<TX-AQP-CL03>> L_i>0 got={}" [li-post]) true (> li-post 0.0))
+                                    (expect (format "<<TX-AQP-CL03>> last-rps==L_i got={} expected={}" [last-rps li-post]) li-post last-rps)
+                                    (expect (format "<<TX-AQP-CL03>> g_i==G got={} expected={}" [g-i g-post]) g-post g-i)
+                                ]
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        (print (format "SKIP TX-AQP-CL03: OuroLpFarm/DHOuroLp not provisioned (farm-class={} pool-class={})" [farm-class pool-class]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END [6.4]_AQP-EXHAUSTIVE-COLLECT.repl ====================================")

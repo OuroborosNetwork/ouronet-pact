@@ -1,0 +1,520 @@
+;;
+;; REPL/Stage_01/[6.10]_PYTHIA.repl — PYTHIA deploy / activate / deactivate / rename via TS01-C4
+;;   Prerequisite: Stage 01 stack through [4.0]_Sovereign-Executor.repl (PYTHIA, TS01-C4 deployed).
+;;   Load: (load "Stage_01/[6.10]_PYTHIA.repl") after Stage01_Tester.
+;;
+;;   Placeholders — env-data in INIT TX000 (Apollo strings reused from [6.9]_CODEX.repl):
+;;     PYTHIA|APOLLO-STANDARD   162-char ₱. Apollo account (= table key / API key)
+;;     PYTHIA|APOLLO-SMART      162-char Π. Apollo account (admin deploy only)
+;;     PYTHIA|PUBLIC-STANDARD   canonical public-key material (stored in row)
+;;     PYTHIA|PUBLIC-SMART      canonical public-key material (stored in row)
+;;     PYTHIA|LANE-STANDARD     consumer-lane for Standard key
+;;     PYTHIA|LANE-SMART        consumer-lane for Smart key
+;;     PYTHIA|OWNER-ACCOUNT     Ouronet DALOS account (default KST.ANHD)
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[6.10]_PYTHIA.repl")
+(print "================================================================")
+(print "Legend:")
+(print "  <<…>>     expect / expect-failure doc")
+(print "  <(TS01-C4.PYTHIA|…)> => \"…\"   Talos client → PYTHIA write")
+(print "  <(PYTHIA|UR_…|…)> => \"…\"       ref-PYTHIA utility read")
+(print "  <(REPL|env-gas)> …             gas after tx")
+(print "")
+(print "Source: ;;|| NEXT > between txs; ;;==== TXnnn · mm · … ==== per group.")
+(print "REPL tests: (map print [(expect …) …]) — one line per assertion.")
+(print "")
+;;
+(begin-tx "TX000 INIT - chain data + PYTHIA placeholder env-data")
+(namespace "ouronet-ns")
+;;==== TX000 · 01 · env-chain-data ====
+(print "--- [TX000 · 01 · env-chain-data] ---")
+(env-chain-data
+    {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
+     "block-time": TV.TIME00}
+)
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX000 · 02 · placeholder env-data ====
+(print "--- [TX000 · 02 · placeholder env-data] ---")
+(env-data
+    {
+        "PYTHIA|APOLLO-STANDARD": "₱.ŹΘHYSç7þУJΛpøЩфμбÄИЫŒП9ó7æйȘΣßлΔσ3äЬyrfжπйôleBĄиĄLtźș∇îИyKβńĎDûuÁCȘñЯÒźâŒíßRζäĞΩěѺtşlęHБMŸíWlãąŹÔИЖÊzHțćœŽζýżχδšωχUΨNńúńñУnИкjубâ£ßMKηжлý9κιЦвSαцууěÖщьΩùцn₳Бεůφ",
+        "PYTHIA|APOLLO-SMART": "Π.ЙÛœ5ŒOóцιbÌȘŚÚůVÀΠьδЬÃςиbIñжÄoTЬŮşÄrhûεżęF5h₳ΞžGËWXÇûKÖLÙNÂ₱ůθŚяZ₳tœ¥ÅÂΓŹË4uĂбoÚAвOUζÂwΩэí₳ÜŻŁqΣкΣΨΨþѺBkĞõeѺńξTŠB0èΦeπδóýwÑeщIäΣMNøθΔîý₿ŹďρŁȘρτYEúNвÓûĐØúkŹýşθÞΓ",
+        "PYTHIA|PUBLIC-STANDARD": "6g.5M1kdotfaBG0lMFFMduJqByz01p885CsxrdqcDL3vkc4xhBLts49KEHpHx6jdEo57Bpno6npMbmvoeF1uAG7JwulEHGHKsk1EHqakGkGIzk6ayw712HLKp9r1Ho1G0xn7rntwFcwkpysoL0JqnrvpDC6FGs4IBlbaiJ46mM4GGfbnsdaGGEmj25iFk6cM1rEIvMEEkkHbajfp1F9J2F0c6teInrrt3pgGzd35sE8y9sJgG0jzK08w3EmwmxoJ3vp0eGoBDp82yq9s17fLJhIlfsjrqyMaudJx8H27jlwpKsHuHIjJ0vv6LFdbL4hz23eqjowHmDG90bJtlK38vr5kKheacsx20ixy81zDgaAxwMBdl8",
+        "PYTHIA|PUBLIC-SMART": "6g.5H3r3LFv5ipxkHvw3C9dMpjJvji6LL48485dIhCcHm3dADLtcGK2CqhpM33DHgeiM8l7e8HG7LdB3zc5566G6qny6bmqBfha5el25kx5bEkkEbJyHdmJzvlwqxvccCmHqJ7ewC3KMbK9I2ybGam9sjbEMJjmDDMLlp8h9x5ltpAdhujeequoAI4xlJrm8FtBb3AH7cEreHAcfIk80dLp7vgMufg4Mzec00C9z43jpqg4kJs2854L6o320ByJCLp6ar69df44FtpHmqnmEMabkopkcJFvFd3g0dkmCd7Luddvx2wotzcdhkD9jMgzl2xHq1BAvvHyM61yel1ik7gt0u6uaxadbfAhy1pxkIzaK7xB5Fz",
+        "PYTHIA|LANE-STANDARD": "pythiastd01",
+        "PYTHIA|LANE-SMART": "pythiasmrt01",
+        "PYTHIA|LANE-RENAMED": "pythiaren01",
+        "PYTHIA|OWNER-ACCOUNT": ""
+    }
+)
+(print (format "<(REPL|env-gas)> TX000 after env-data => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX001 - PYTHIA|C_DeployApiKey Standard + reads")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX001 — C_DeployApiKey (Standard ₱.) =================================")
+(let
+    (
+        (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
+        (public-std:string (read-string "PYTHIA|PUBLIC-STANDARD"))
+        (lane-std:string (read-string "PYTHIA|LANE-STANDARD"))
+        (owner-acct:string
+            (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "")
+                KST.ANHD
+                (read-string "PYTHIA|OWNER-ACCOUNT")
+            )
+        )
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV3} TS01-C4)
+        (ref-PYTHIA:module{PythiaV2} PYTHIA)
+        (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
+        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
+        (kda-hov:string (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)))
+        (kda-cto:string (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)))
+        (kda-ouroboros:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+        (kda-dalos:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) deploy-fee))
+    )
+    ;;==== TX001 · 01 · deploy fee echo ====
+    (print "--- [TX001 · 01 · deploy fee echo] ---")
+    (print (format "<(PYTHIA|UC_DeployPrice)> => \"{}\" STOA" [deploy-fee]))
+    (print (format "<(DALOS|URC_SplitKDAPrices)> => \"{}\"" [split-kda]))
+    ;;==== TX001 · 02 · env-sigs (owner + STOA split) ====
+    (print "--- [TX001 · 02 · env-sigs (owner + STOA split)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER patron-kda kda-cto (at 2 split-kda))
+                    (coin.TRANSFER patron-kda kda-hov (at 0 split-kda))
+                    (coin.TRANSFER patron-kda kda-ouroboros (at 3 split-kda))
+                    (coin.TRANSFER patron-kda kda-dalos (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (dep-msg:string
+                (ref-TS01-C4::PYTHIA|C_DeployApiKey
+                    patron owner-acct apollo-std public-std lane-std
+                )
+            )
+        )
+        ;;==== TX001 · 03 · Talos C_DeployApiKey ====
+        (print "--- [TX001 · 03 · Talos C_DeployApiKey] ---")
+        (print (format "<(TS01-C4.PYTHIA|C_DeployApiKey)> => \"{}\"" [dep-msg]))
+        ;;==== TX001 · 04 · UR / URD expects ====
+        (print "--- [TX001 · 04 · UR / URD expects] ---")
+        (map print
+            [
+                (expect
+                    "<<TX001>> UR_IsActivated false (inactive after deploy)"
+                    false
+                    (ref-PYTHIA::UR_IsActivated apollo-std)
+                )
+                (expect
+                    "<<TX001>> UR_Public matches PUBLIC-STANDARD"
+                    public-std
+                    (ref-PYTHIA::UR_Public apollo-std)
+                )
+                (expect
+                    "<<TX001>> UR_OwnerAccount matches owner"
+                    owner-acct
+                    (ref-PYTHIA::UR_OwnerAccount apollo-std)
+                )
+                (expect
+                    "<<TX001>> URC_IsStandardApollo true for ₱."
+                    true
+                    (ref-PYTHIA::URC_IsStandardApollo apollo-std)
+                )
+                (expect
+                    "<<TX001>> UR_ApiKeyRowOrNull is-registered true"
+                    true
+                    (at "is-registered" (ref-PYTHIA::UR_ApiKeyRowOrNull apollo-std))
+                )
+                (expect
+                    "<<TX001>> URD_ApiKeyCount >= 1"
+                    true
+                    (>= (ref-PYTHIA::URD_ApiKeyCount) 1)
+                )
+                (expect
+                    "<<TX001>> URD_ListInactiveApiKeys includes deployed row"
+                    true
+                    (> (length (ref-PYTHIA::URD_ListInactiveApiKeys)) 0)
+                )
+            ]
+        )
+        ""
+    )
+)
+(print (format "<(REPL|env-gas)> TX001 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX002 - PYTHIA|A_ActivateApiKey (Cronoton)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX002 — A_ActivateApiKey (Cronoton) ================================")
+(let
+    (
+        (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV3} TS01-C4)
+        (ref-PYTHIA:module{PythiaV2} PYTHIA)
+    )
+    ;;==== TX002 · 01 · env-sigs (pythia-cronoton-keyset) ====
+    (print "--- [TX002 · 01 · env-sigs (pythia-cronoton-keyset)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+        ]
+    )
+    (let
+        (
+            (act-msg:string (ref-TS01-C4::PYTHIA|A_ActivateApiKey apollo-std))
+        )
+        ;;==== TX002 · 02 · Talos A_ActivateApiKey ====
+        (print "--- [TX002 · 02 · Talos A_ActivateApiKey] ---")
+        (print (format "<(TS01-C4.PYTHIA|A_ActivateApiKey)> => \"{}\"" [act-msg]))
+        ;;==== TX002 · 03 · expects ====
+        (print "--- [TX002 · 03 · expects] ---")
+        (map print
+            [
+                (expect
+                    "<<TX002>> UR_IsActivated true after Cronoton activate"
+                    true
+                    (ref-PYTHIA::UR_IsActivated apollo-std)
+                )
+                (expect
+                    "<<TX002>> URC_ActivatedSet contains apollo-account"
+                    true
+                    (contains apollo-std (ref-PYTHIA::URC_ActivatedSet))
+                )
+                (expect
+                    "<<TX002>> URD_ListActivatedApiKeys non-empty"
+                    true
+                    (> (length (ref-PYTHIA::URD_ListActivatedApiKeys)) 0)
+                )
+            ]
+        )
+        ""
+    )
+)
+(print (format "<(REPL|env-gas)> TX002 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX003 - PYTHIA|C_DeactivateApiKey (owner)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX003 — C_DeactivateApiKey (owner) =================================")
+(let
+    (
+        (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
+        (owner-acct:string
+            (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "")
+                KST.ANHD
+                (read-string "PYTHIA|OWNER-ACCOUNT")
+            )
+        )
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV3} TS01-C4)
+        (ref-PYTHIA:module{PythiaV2} PYTHIA)
+    )
+    ;;==== TX003 · 01 · env-sigs (owner) ====
+    (print "--- [TX003 · 01 · env-sigs (owner)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+        ]
+    )
+    (let
+        (
+            (patron:string KST.ANHD)
+            (deact-fee:decimal (ref-PYTHIA::UC_DeactivateIgnisFee))
+            (off-msg:string
+                (ref-TS01-C4::PYTHIA|C_DeactivateApiKey patron owner-acct apollo-std)
+            )
+        )
+        ;;==== TX003 · 01b · IGNIS fee echo ====
+        (print "--- [TX003 · 01b · IGNIS fee (UC_DeactivateIgnisFee)] ---")
+        (print (format "<(PYTHIA|UC_DeactivateIgnisFee)> => \"{}\" IGNIS" [deact-fee]))
+        ;;==== TX003 · 02 · Talos C_DeactivateApiKey ====
+        (print "--- [TX003 · 02 · Talos C_DeactivateApiKey] ---")
+        (print (format "<(TS01-C4.PYTHIA|C_DeactivateApiKey)> => \"{}\"" [off-msg]))
+        ;;==== TX003 · 03 · expects ====
+        (print "--- [TX003 · 03 · expects] ---")
+        (map print
+            [
+                (expect
+                    "<<TX003>> UR_IsActivated false after owner deactivate"
+                    false
+                    (ref-PYTHIA::UR_IsActivated apollo-std)
+                )
+                (expect
+                    "<<TX003>> URC_IsActivatedOrFalse false"
+                    false
+                    (ref-PYTHIA::URC_IsActivatedOrFalse apollo-std)
+                )
+            ]
+        )
+        ""
+    )
+)
+(print (format "<(REPL|env-gas)> TX003 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX004 - PYTHIA|A_ActivateApiKey re-activate + rename")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX004 — re-activate + C_UpdateApiConsumerName ======================")
+(let
+    (
+        (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
+        (lane-renamed:string (read-string "PYTHIA|LANE-RENAMED"))
+        (owner-acct:string
+            (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "")
+                KST.ANHD
+                (read-string "PYTHIA|OWNER-ACCOUNT")
+            )
+        )
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV3} TS01-C4)
+        (ref-PYTHIA:module{PythiaV2} PYTHIA)
+        (rename-fee:decimal (ref-PYTHIA::UC_RenamePrice))
+        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
+        (kda-hov:string (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)))
+        (kda-cto:string (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)))
+        (kda-ouroboros:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+        (kda-dalos:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) rename-fee))
+    )
+    ;;==== TX004 · 01 · env-sigs (Cronoton re-activate) ====
+    (print "--- [TX004 · 01 · env-sigs (Cronoton re-activate)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+        ]
+    )
+    (let
+        (
+            (react-msg:string (ref-TS01-C4::PYTHIA|A_ActivateApiKey apollo-std))
+        )
+        ;;==== TX004 · 02 · re-activate ====
+        (print "--- [TX004 · 02 · re-activate] ---")
+        (print (format "<(TS01-C4.PYTHIA|A_ActivateApiKey)> => \"{}\"" [react-msg]))
+        ""
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER patron-kda kda-cto (at 2 split-kda))
+                    (coin.TRANSFER patron-kda kda-hov (at 0 split-kda))
+                    (coin.TRANSFER patron-kda kda-ouroboros (at 3 split-kda))
+                    (coin.TRANSFER patron-kda kda-dalos (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ren-msg:string
+                (ref-TS01-C4::PYTHIA|C_UpdateApiConsumerName
+                    patron owner-acct apollo-std lane-renamed
+                )
+            )
+        )
+        ;;==== TX004 · 03 · rename ====
+        (print "--- [TX004 · 03 · rename] ---")
+        (print (format "<(TS01-C4.PYTHIA|C_UpdateApiConsumerName)> => \"{}\"" [ren-msg]))
+        ;;==== TX004 · 04 · URD directory expects ====
+        (print "--- [TX004 · 04 · URD directory expects] ---")
+        (map print
+            [
+                (expect
+                    "<<TX004>> UR_ConsumerLane renamed"
+                    lane-renamed
+                    (ref-PYTHIA::UR_ConsumerLane apollo-std)
+                )
+                (expect
+                    "<<TX004>> URD_ListAllApiKeys length matches count"
+                    (ref-PYTHIA::URD_ApiKeyCount)
+                    (length (ref-PYTHIA::URD_ListAllApiKeys))
+                )
+                (expect
+                    "<<TX004>> URD_ListActivatedApiKeys all have activated=true"
+                    true
+                    (fold
+                        (lambda (ok:bool row:object)
+                            (and ok (= true (at "activated" row)))
+                        )
+                        true
+                        (ref-PYTHIA::URD_ListActivatedApiKeys)
+                    )
+                )
+            ]
+        )
+        ""
+    )
+)
+(print (format "<(REPL|env-gas)> TX004 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX005 - PYTHIA|A_DeploySmartApiKey (admin Smart Π.)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX005 — A_DeploySmartApiKey (Demiurgoi) ============================")
+(let
+    (
+        (apollo-smt:string (read-string "PYTHIA|APOLLO-SMART"))
+        (public-smt:string (read-string "PYTHIA|PUBLIC-SMART"))
+        (lane-smt:string (read-string "PYTHIA|LANE-SMART"))
+        (patron:string KST.ANHD)
+        (owner-acct:string
+            (if (= (read-string "PYTHIA|OWNER-ACCOUNT") "")
+                KST.ANHD
+                (read-string "PYTHIA|OWNER-ACCOUNT")
+            )
+        )
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV3} TS01-C4)
+        (ref-PYTHIA:module{PythiaV2} PYTHIA)
+        (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
+        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
+        (kda-hov:string (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)))
+        (kda-cto:string (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)))
+        (kda-ouroboros:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+        (kda-dalos:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) deploy-fee))
+    )
+    ;;==== TX005 · 01 · env-sigs (Demiurgoi + STOA split) ====
+    (print "--- [TX005 · 01 · env-sigs (Demiurgoi + STOA split)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER patron-kda kda-cto (at 2 split-kda))
+                    (coin.TRANSFER patron-kda kda-hov (at 0 split-kda))
+                    (coin.TRANSFER patron-kda kda-ouroboros (at 3 split-kda))
+                    (coin.TRANSFER patron-kda kda-dalos (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (smt-msg:string
+                (ref-TS01-C4::PYTHIA|A_DeploySmartApiKey
+                    patron owner-acct apollo-smt public-smt lane-smt
+                )
+            )
+        )
+        ;;==== TX005 · 02 · admin deploy ====
+        (print "--- [TX005 · 02 · admin deploy] ---")
+        (print (format "<(TS01-C4.PYTHIA|A_DeploySmartApiKey)> => \"{}\"" [smt-msg]))
+        ;;==== TX005 · 03 · expects ====
+        (print "--- [TX005 · 03 · expects] ---")
+        (map print
+            [
+                (expect
+                    "<<TX005>> URC_IsStandardApollo false for Π."
+                    false
+                    (ref-PYTHIA::URC_IsStandardApollo apollo-smt)
+                )
+                (expect
+                    "<<TX005>> Smart key inactive after admin deploy"
+                    false
+                    (ref-PYTHIA::UR_IsActivated apollo-smt)
+                )
+                (expect
+                    "<<TX005>> URD_ListAllApiKeys count >= 2"
+                    true
+                    (>= (ref-PYTHIA::URD_ApiKeyCount) 2)
+                )
+            ]
+        )
+        ""
+    )
+)
+(print (format "<(REPL|env-gas)> TX005 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX006 - keyless /local reads (empty signers)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "")
+(print "=== TX006 — keyless UR/URD reads =======================================")
+(env-sigs [])
+(let
+    (
+        (apollo-std:string (read-string "PYTHIA|APOLLO-STANDARD"))
+        (ref-PYTHIA:module{PythiaV2} PYTHIA)
+    )
+    ;;==== TX006 · 01 · keyless expects ====
+    (print "--- [TX006 · 01 · keyless expects] ---")
+    (map print
+        [
+            (expect
+                "<<TX006>> keyless URC_IsActivatedOrFalse works"
+                true
+                (ref-PYTHIA::URC_IsActivatedOrFalse apollo-std)
+            )
+            (expect
+                "<<TX006>> keyless URD_ListAllApiKeys non-empty"
+                true
+                (> (length (ref-PYTHIA::URD_ListAllApiKeys)) 0)
+            )
+            (expect
+                "<<TX006>> keyless URC_IsActivatedOrFalse unknown key => false"
+                false
+                (ref-PYTHIA::URC_IsActivatedOrFalse "₱.unknown-apollo-key-not-registered-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+            )
+        ]
+    )
+    ""
+)
+(print (format "<(REPL|env-gas)> TX006 => \"{}\"" [(env-gas)]))
+(commit-tx)
+(print "")
+(print "=== [6.10]_PYTHIA.repl complete ========================================")

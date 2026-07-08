@@ -1,0 +1,878 @@
+;;
+;; REPL/Stage_02/[6.2.5]_AQP-VCT.repl — comprehensive VCT vacate tests (all asset kinds + lifecycle)
+;; Loaded by REPL/VCT-comprehensive.repl after [6.2]_AQP.repl (ANK/SCORE/POOL/FVT/OF/DC smokes).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.5]_AQP-VCT.repl")
+(print "================================================================")
+(print "Legend: <<TX-VCT-*>> expect lines; <(Talos…)> echoes; vacate-job-id from URDC_ActiveJobForPool")
+(print "")
+;;
+(begin-tx "TX-VCT-TF01 - C_FullVacateTrueFungible")
+(print "")
+(print "=== TX-VCT-TF01 — Full TF vacate (TfStakePool stake from TX-FVT-03) =========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "TfStakeScore")
+        (fvt-name:string "TfStakeVault")
+        (pool-name:string "TfStakePool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (tracker-pre:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+        (pre-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+    )
+    (enforce (> tracker-pre 0.0) "TX-VCT-TF01: need TF stake from TX-FVT-03")
+    (print (format "<(pre tracker/supply)> => {} / {}" [tracker-pre pre-supply]))
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-POOL|C_FullVacateTrueFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible patron pool-id ouro-id)
+    ]))
+    (let
+        (
+            (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+            (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+            (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
+            (post-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+            (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+        )
+        (map print
+            [
+                (expect (format "<<TX-VCT-TF01 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                (expect (format "<<TX-VCT-TF01 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
+                (expect (format "<<TX-VCT-TF01 expect>> unclaimed-count got={} expected=0" [unclaimed]) 0 unclaimed)
+                (expect (format "<<TX-VCT-TF01 expect>> supply restored got={} expected={}" [post-supply (+ pre-supply tracker-pre)]) (+ pre-supply tracker-pre) post-supply)
+                (expect (format "<<TX-VCT-TF01 expect>> vacate inventory empty got={} expected=0" [inv-post]) 0 inv-post)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-TF01 ========================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-TF02 - C_BeginVacate + C_VacateChunkTrueFungible sliced session")
+(print "")
+(print "=== TX-VCT-TF02 — TF sliced vacate (slice-count 1) =========================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "TfStakeScore")
+        (fvt-name:string "TfStakeVault")
+        (pool-name:string "TfStakePool")
+        (vacate-kind-tf:integer 1)
+        (stake-amount:decimal 50.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+    ]))
+    (let
+        (
+            (pre-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+        )
+        (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate TF slice-count 1)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id ouro-id vacate-kind-tf 1)
+        ]))
+        (let
+            (
+                (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                (vacate-job-id:string (at "vacate-job-id" active-job))
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 1))
+                (slice0:object (at 0 (at "slices" plan)))
+            )
+            (print (format "<(VCT|vacate-job-id)> => \"{}\"" [vacate-job-id]))
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkTrueFungible)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateChunkTrueFungible
+                    patron vacate-job-id 0
+                    (at "owner-ids" slice0)
+                    (at "beneficiary-ids" slice0)
+                    (at "amounts" slice0)
+                )
+            ]))
+            (let
+                (
+                    (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+                    (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                    (post-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+                    (job:object (ref-VCT::UR_Job vacate-job-id))
+                )
+                (map print
+                    [
+                        (expect (format "<<TX-VCT-TF02 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                        (expect (format "<<TX-VCT-TF02 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
+                        (expect (format "<<TX-VCT-TF02 expect>> supply restored got={} expected={}" [post-supply (+ pre-supply stake-amount)]) (+ pre-supply stake-amount) post-supply)
+                        (expect (format "<<TX-VCT-TF02 expect>> job finalized got={} expected=true" [(at "finalized" job)]) true (at "finalized" job))
+                    ]
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-TF02 ========================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-L01 - C_ResliceVacate before any chunk (new VacateJobID)")
+(print "")
+(print "=== TX-VCT-L01 — Reslice before chunks =====================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpof-id:string "MVST-98c486052a51")
+        (pool-name:string "OfStakePool")
+        (vacate-kind-of:integer 2)
+        (stake-nonce:integer 1)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
+        true
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [stake-nonce])
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 3)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpof-id vacate-kind-of 3)
+    ]))
+    (let
+        (
+            (old-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+            (old-job-id:string (at "vacate-job-id" old-job))
+        )
+        (print (format "<(TS02-C3.AQP-POOL|C_ResliceVacate slice-count 1)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_ResliceVacate patron old-job-id 1)
+        ]))
+        (let
+            (
+                (old-job-row:object (ref-VCT::UR_Job old-job-id))
+                (new-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                (new-job-id:string (at "vacate-job-id" new-job))
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 1))
+                (slice0:object (at 0 (at "slices" plan)))
+            )
+            (print (format "<(VCT|old-job-id new-job-id)> => {} / {}" [old-job-id new-job-id]))
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkOrtoFungible)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateChunkOrtoFungible
+                    patron new-job-id 0
+                    (at "owner-ids" slice0)
+                    (at "beneficiary-ids" slice0)
+                    (at "nonces-array" slice0)
+                )
+            ]))
+            (let
+                (
+                    (tracker-post:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
+                    (new-job-row:object (ref-VCT::UR_Job new-job-id))
+                )
+                (map print
+                    [
+                        (expect (format "<<TX-VCT-L01 expect>> old job resliced got={} expected=true" [(at "resliced" old-job-row)]) true (at "resliced" old-job-row))
+                        (expect (format "<<TX-VCT-L01 expect>> new job finalized got={} expected=true" [(at "finalized" new-job-row)]) true (at "finalized" new-job-row))
+                        (expect (format "<<TX-VCT-L01 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                    ]
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-L01 =========================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-L02 - C_ResliceVacate after partial chunk")
+(print "")
+(print "=== TX-VCT-L02 — Reslice after slice 0 processed =========================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-a:string KST.ANHD)
+        (owner-b:string KST.EMMA)
+        (beneficiary-a:string KST.ANHD)
+        (beneficiary-b:string KST.EMMA)
+        (dpsf-id:string "DHCD-98c486052a51")
+        (pool-name:string "SfStakePool")
+        (vacate-kind-dpsf:integer 3)
+        (nonce-a:integer 1)
+        (nonce-b:integer 2)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+        ]
+    )
+    (let
+        (
+            (amt-b:integer (ref-DPDC::UR_AccountNonceSupply owner-a dpsf-id true nonce-b))
+        )
+        (if (> amt-b 0)
+            (ref-TS02-C1::DPSF|C_TransferNonces patron dpsf-id owner-a owner-b [nonce-b] [amt-b] false)
+            true
+        )
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeSemiFungibleCollectable owner-a)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeSemiFungibleCollectable owner-b)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 2)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpsf-id vacate-kind-dpsf 2)
+    ]))
+    (let
+        (
+            (old-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+            (old-job-id:string (at "vacate-job-id" old-job))
+            (plan2:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 2))
+            (slice0:object (at 0 (at "slices" plan2)))
+        )
+        (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable slice 0)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
+                patron old-job-id 0
+                (at "owner-ids" slice0)
+                (at "beneficiary-ids" slice0)
+                (at "nonces-array" slice0)
+                (at "amounts-array" slice0)
+            )
+        ]))
+        (print (format "<(TS02-C3.AQP-POOL|C_ResliceVacate slice-count 1)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_ResliceVacate patron old-job-id 1)
+        ]))
+        (let
+            (
+                (old-job-row:object (ref-VCT::UR_Job old-job-id))
+                (new-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                (new-job-id:string (at "vacate-job-id" new-job))
+                (plan1:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 1))
+                (slice0n:object (at 0 (at "slices" plan1)))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable new job slice 0)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
+                    patron new-job-id 0
+                    (at "owner-ids" slice0n)
+                    (at "beneficiary-ids" slice0n)
+                    (at "nonces-array" slice0n)
+                    (at "amounts-array" slice0n)
+                )
+            ]))
+            (let
+                (
+                    (tracker-b-post:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-b beneficiary-b nonce-b))
+                    (new-job-row:object (ref-VCT::UR_Job new-job-id))
+                )
+                (map print
+                    [
+                        (expect (format "<<TX-VCT-L02 expect>> old job resliced got={} expected=true" [(at "resliced" old-job-row)]) true (at "resliced" old-job-row))
+                        (expect (format "<<TX-VCT-L02 expect>> new job finalized got={} expected=true" [(at "finalized" new-job-row)]) true (at "finalized" new-job-row))
+                        (expect (format "<<TX-VCT-L02 expect>> owner-b tracker cleared got={} expected=0" [tracker-b-post]) 0.0 tracker-b-post)
+                    ]
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-L02 =========================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-L03 - C_AbortVacate mid-session")
+(print "")
+(print "=== TX-VCT-L03 — Abort vacate session ======================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpof-id:string "MVST-98c486052a51")
+        (pool-name:string "OfStakePool")
+        (vacate-kind-of:integer 2)
+        (stake-nonce:integer 1)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
+        true
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [stake-nonce])
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 1)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpof-id vacate-kind-of 1)
+    ]))
+    (let
+        (
+            (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+            (vacate-job-id:string (at "vacate-job-id" active-job))
+        )
+        (print (format "<(TS02-C3.AQP-POOL|C_AbortVacate)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_AbortVacate patron vacate-job-id)
+        ]))
+        (let
+            (
+                (job:object (ref-VCT::UR_Job vacate-job-id))
+                (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
+                (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-L03 expect>> job aborted got={} expected=true" [(at "aborted" job)]) true (at "aborted" job))
+                    (expect (format "<<TX-VCT-L03 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
+                    (expect (format "<<TX-VCT-L03 expect>> stake stays disabled got={} expected=false" [stake-enabled]) false stake-enabled)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-L03 =========================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-L04 - C_EnablePoolStake after abort")
+(print "")
+(print "=== TX-VCT-L04 — Re-enable stake after abort ================================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (pool-name:string "OfStakePool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    (let
+        (
+            (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+        )
+        (map print
+            [
+                (expect (format "<<TX-VCT-L04 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-L04 =========================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-DPNF01 - DHB Bloodshed full vacate")
+(print "")
+(print "=== TX-VCT-DPNF01 — DPNF full vacate (Bloodshed DHB) ========================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.EMMA)
+        (beneficiary-id:string KST.EMMA)
+        (dpnf-id:string "DHB-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "DhbVacateScore")
+        (fvt-name:string "DhbVacateVault")
+        (pool-name:string "DhbVacatePool")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (aqp-class:integer 4)
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                ]
+            }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleScore)> => \"{}\"" [
+        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=4 DHB)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id aqp-class)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    ]))
+    (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
+        (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    ]))
+    (let
+        (
+            (owned-nonces:[integer] (ref-DPDC::URD_AccountNonces owner-id dpnf-id false))
+        )
+        (enforce (> (length owned-nonces) 0) "TX-VCT-DPNF01: need DHB on EMMA from PopulateBloodshed")
+        (let
+            (
+                (stake-nonce:integer (at 0 owned-nonces))
+                (pre-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false (at 0 owned-nonces)))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_StakeNonFungibleCollectable nonce {})> => \"{}\"" [
+                stake-nonce
+                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+            ]))
+            (let
+                (
+                    (tracker-pre:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                )
+                (enforce (> tracker-pre 0.0) "TX-VCT-DPNF01: tracker must hold stake")
+                (print (format "<(TS02-C3.AQP-POOL|C_FullVacateNonFungible)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-POOL|C_FullVacateNonFungible patron pool-id dpnf-id)
+                ]))
+                (let
+                    (
+                        (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                        (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                        (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+                        (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpnf-id false)))
+                    )
+                    (map print
+                        [
+                            (expect (format "<<TX-VCT-DPNF01 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                            (expect (format "<<TX-VCT-DPNF01 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
+                            (expect (format "<<TX-VCT-DPNF01 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
+                            (expect (format "<<TX-VCT-DPNF01 expect>> inventory empty got={} expected=0" [inv-post]) 0 inv-post)
+                        ]
+                    )
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-DPNF01 ======================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-DPNF02 - DHN Nosferatu sliced vacate")
+(print "")
+(print "=== TX-VCT-DPNF02 — DPNF sliced vacate (Nosferatu DHN) =====================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.EMMA)
+        (beneficiary-id:string KST.EMMA)
+        (dpnf-id:string "DHN-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "DhnVacateScore")
+        (fvt-name:string "DhnVacateVault")
+        (pool-name:string "DhnVacatePool")
+        (vacate-kind-dpnf:integer 4)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (aqp-class:integer 4)
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                ]
+            }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleScore)> => \"{}\"" [
+        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=4 DHN)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id aqp-class)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    ]))
+    (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
+        (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    ]))
+    (let
+        (
+            (owned-nonces:[integer] (ref-DPDC::URD_AccountNonces owner-id dpnf-id false))
+        )
+        (enforce (> (length owned-nonces) 0) "TX-VCT-DPNF02: need DHN on EMMA from PopulateNosferatu")
+        (let
+            (
+                (stake-nonce:integer (at 0 owned-nonces))
+                (pre-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false (at 0 owned-nonces)))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_StakeNonFungibleCollectable)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+            ]))
+            (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 1)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpnf-id vacate-kind-dpnf 1)
+            ]))
+            (let
+                (
+                    (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                    (vacate-job-id:string (at "vacate-job-id" active-job))
+                    (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
+                    (slice0:object (at 0 (at "slices" plan)))
+                )
+                (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable DHN slice 0)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
+                        patron vacate-job-id 0
+                        (at "owner-ids" slice0)
+                        (at "beneficiary-ids" slice0)
+                        (at "nonces-array" slice0)
+                        (at "amounts-array" slice0)
+                    )
+                ]))
+                (let
+                    (
+                        (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                        (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+                        (job:object (ref-VCT::UR_Job vacate-job-id))
+                    )
+                    (map print
+                        [
+                            (expect (format "<<TX-VCT-DPNF02 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                            (expect (format "<<TX-VCT-DPNF02 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
+                            (expect (format "<<TX-VCT-DPNF02 expect>> job finalized got={} expected=true" [(at "finalized" job)]) true (at "finalized" job))
+                        ]
+                    )
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-DPNF02 ======================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-DPNF03 - KBN Bunnies sliced vacate")
+(print "")
+(print "=== TX-VCT-DPNF03 — DPNF sliced vacate (Bunnies KBN) ========================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.EMMA)
+        (beneficiary-id:string KST.EMMA)
+        (dpnf-id:string "KBN-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "KbnVacateScore")
+        (fvt-name:string "KbnVacateVault")
+        (pool-name:string "KbnVacatePool")
+        (vacate-kind-dpnf:integer 4)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (aqp-class:integer 4)
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                ]
+            }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueNonFungibleScore)> => \"{}\"" [
+        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_Issue class=4 KBN)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id aqp-class)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    ]))
+    (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
+        (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    ]))
+    (let
+        (
+            (owned-nonces:[integer] (ref-DPDC::URD_AccountNonces owner-id dpnf-id false))
+        )
+        (enforce (> (length owned-nonces) 0) "TX-VCT-DPNF03: need KBN on EMMA from PopulateBunnies")
+        (let
+            (
+                (stake-nonce:integer (at 0 owned-nonces))
+                (pre-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false (at 0 owned-nonces)))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_StakeNonFungibleCollectable)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+            ]))
+            (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 1)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpnf-id vacate-kind-dpnf 1)
+            ]))
+            (let
+                (
+                    (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                    (vacate-job-id:string (at "vacate-job-id" active-job))
+                    (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
+                    (slice0:object (at 0 (at "slices" plan)))
+                )
+                (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable KBN slice 0)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
+                        patron vacate-job-id 0
+                        (at "owner-ids" slice0)
+                        (at "beneficiary-ids" slice0)
+                        (at "nonces-array" slice0)
+                        (at "amounts-array" slice0)
+                    )
+                ]))
+                (let
+                    (
+                        (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                        (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+                        (job:object (ref-VCT::UR_Job vacate-job-id))
+                    )
+                    (map print
+                        [
+                            (expect (format "<<TX-VCT-DPNF03 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                            (expect (format "<<TX-VCT-DPNF03 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
+                            (expect (format "<<TX-VCT-DPNF03 expect>> job finalized got={} expected=true" [(at "finalized" job)]) true (at "finalized" job))
+                        ]
+                    )
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-DPNF03 ======================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-N01 - expect-failure hash mismatch on chunk")
+(print "")
+(print "=== TX-VCT-N01 — Chunk hash mismatch must fail =============================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (pool-name:string "TfStakePool")
+        (vacate-kind-tf:integer 1)
+        (stake-amount:decimal 25.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id ouro-id vacate-kind-tf 1)
+    ]))
+    (let
+        (
+            (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+            (vacate-job-id:string (at "vacate-job-id" active-job))
+        )
+        (map print
+            [
+                (expect-failure
+                    (format "<<TX-VCT-N01 expect-failure>> wrong TF amounts must fail hash check" [])
+                    (ref-TS02-C3::AQP-POOL|C_VacateChunkTrueFungible
+                        patron vacate-job-id 0 [owner-id] [beneficiary-id] [999.0]
+                    )
+                )
+            ]
+        )
+        (print (format "<(TS02-C3.AQP-POOL|C_AbortVacate cleanup)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_AbortVacate patron vacate-job-id)
+        ]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-N01 ===========================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-N02 - expect-failure double BeginVacate on same pool")
+(print "")
+(print "=== TX-VCT-N02 — Second BeginVacate while session open must fail =============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (pool-name:string "TfStakePool")
+        (vacate-kind-tf:integer 1)
+        (stake-amount:decimal 10.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate first)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id ouro-id vacate-kind-tf 1)
+    ]))
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-VCT-N02 expect-failure>> second BeginVacate while session open" [])
+                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id ouro-id vacate-kind-tf 1)
+            )
+        ]
+    )
+    (let
+        (
+            (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+            (vacate-job-id:string (at "vacate-job-id" active-job))
+        )
+        (print (format "<(TS02-C3.AQP-POOL|C_AbortVacate cleanup)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_AbortVacate patron vacate-job-id)
+        ]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-N02 ===========================================================")
+(print "")
+(print "=== END FILE [6.2.5]_AQP-VCT.repl ============================================")

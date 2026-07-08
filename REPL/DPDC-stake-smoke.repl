@@ -1,5 +1,5 @@
 ;;
-;; REPL/DPDC-stake-smoke.repl — deploy chain + C_StakeSemiFungibleCollectable smoke (TX-FVT-DC-01/02/03)
+;; REPL/DPDC-stake-smoke.repl — deploy chain + DPSF stake/unstake/vacate bulk smoke (TX-FVT-DC-01..05)
 ;; Skips full [6.2.1]–[6.2.3] AQP integration suites; requires sovereign executor DHCD issue.
 ;;
 (print "")

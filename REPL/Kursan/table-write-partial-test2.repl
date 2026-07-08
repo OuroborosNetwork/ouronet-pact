@@ -1,0 +1,47 @@
+;; Follow-up: write with (+ read partial) pattern
+
+(module test-write-partial2 G
+  (defschema TestRow
+    a:integer
+    b:integer
+    c:integer
+  )
+
+  (deftable test-table:{TestRow})
+
+  (defcap G () true)
+
+  (defun seed ()
+    (insert test-table "k1" {"a": 1, "b": 2, "c": 3})
+  )
+
+  (defun write-merge-existing ()
+    (write test-table "k1"
+      (+ (read test-table "k1") {"b": 55})
+    )
+    (read test-table "k1")
+  )
+
+  (defun write-full-new ()
+    (write test-table "k2" {"a": 7, "b": 8, "c": 9})
+    (read test-table "k2")
+  )
+)
+
+(create-table test-write-partial2.test-table)
+
+(begin-tx "seed")
+  (test-write-partial2.seed)
+(commit-tx)
+
+(begin-tx "write-merge-existing")
+  (expect "write with merged full object" {"a": 1, "b": 55, "c": 3}
+    (test-write-partial2.write-merge-existing)
+  )
+(commit-tx)
+
+(begin-tx "write-full-new")
+  (expect "write full new row" {"a": 7, "b": 8, "c": 9}
+    (test-write-partial2.write-full-new)
+  )
+(commit-tx)

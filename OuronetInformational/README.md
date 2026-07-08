@@ -1,31 +1,36 @@
 # OuronetInformational
 
-Persistent notes about **Ouronet** for humans and for AI assistants in **new chat sessions** (after this conversation ends).
+Persistent notes about **Ouronet** for humans and for AI assistants. **Everything durable lives in this folder** — Cursor `.cursor/skills/ouronet-*` files are thin pointers here so knowledge survives machine changes.
 
-## How to use (next session)
+## How to use
 
-1. Read **`CONTEXT.md`** first — consolidated facts, terminology, and project shape.
-2. Read **`MODULE_ARCHITECTURE.md`** when touching sovereign modules — prefixes (UC/UR/URC/UEV/UDC/CAP, A_/C_/X*), capabilities C1–C4, Talos vs core, policies.
-3. For **what exists in the repo** (modules, interfaces, REPL, whitepaper outline), skim **`ARCHITECTURE/README.md`**.
-4. Skim **`memories/`** — chronological or topical snippets from past conversations.
-5. Check **`skills/`** — reusable “how we work on Ouronet” procedures (optional).
-6. Check **`agents/`** — high-level agent / workflow hints for this repo (optional).
+1. **`INDEX.md`** — full map (pact / ouronet / modules / kursan)
+2. **`CONTEXT.md`** — terminology and project shape
+3. **`ouronet/MODULE_ARCHITECTURE.md`** — sovereign module prefixes, caps, Talos, UR/W layers
+4. **`ouronet/architecture/README.md`** — repo inventories, REPL, deploy docs
+5. **`memories/`** — dated decision notes
+
+## Layout
+
+| Path | Role |
+|------|------|
+| **`pact/`** | Pact language (enforce, defcap order, interfaces) |
+| **`ouronet/conventions/`** | Cross-cutting Ouronet coding rules |
+| **`ouronet/architecture/`** | Stage inventories, REPL spec, deploy |
+| **`modules/aqp/`** | AQP-specific (score links, stake, vacate, TFT) |
+| **`modules/stage01/`** | Stage 01 (CODEX REPL, etc.) |
+| **`modules/deploy/`** | Deploy handoff, INFO-ONE pairing |
+| **`kursan/`** | Agent persona; scratch REPL policy → **`REPL/Kursan/`** |
 
 ## Conventions
 
-- Prefer updating **`CONTEXT.md`** when something is stable and should stay true long term.
-- If you say “add this to your skills,” persist it inside **`OuronetInformational/`** (usually `CONTEXT.md`, `MODULE_ARCHITECTURE.md`, or a dated note in `memories/`).
-- Use **`memories/`** for dated conversation captures, decisions with context, or “we said X on date Y.”
-- When a procedure becomes repeatable, consider a short file under **`skills/`** (or a Cursor skill under `.cursor/skills` that points here).
-
-## Maintenance
-
-Whoever learns something new in chat with the AI should ask it to **append or edit these files** so the next session does not start from zero.
+- Update **`OuronetInformational/`** first when learning something stable.
+- Integration REPLs: **`REPL/Stage_*`**. Scratch probes: **`REPL/Kursan/`** only.
+- Legacy **`skills/`** folder — see redirect **`skills/README.md`**.
 
 ## Quick REPL pointers
 
-- **Stage 0:** `REPL/Stage00_Sanboxes.repl` (Kadena + Stoa sandboxes), then **`REPL/Stage00a_StoaTests.repl`** (Stoa `coin` tests, same file)
-- **Full chain load:** `REPL/Z.repl`
-- **Stage 2 smoke / AQP:** `REPL/Stage02_Tester.repl` loads **`AQP-BOOT`** then **`[6.2]_AQP.repl`** — resume notes (boot steps, fee splits, **tx order** for score definitions) are in **`ARCHITECTURE/REPL_AND_TESTS.md`** § *Stage 2 AQP + AQP-BOOT*
-- **Ouronet test namespace:** `ouronet-ns` (not `free`)
-- **Integration test `.repl` layout** (mandatory for new suites): **`ARCHITECTURE/REPL_AND_TESTS.md`** and **`skills/repl-integration-test-layout.md`**
+- **Stage 0:** `REPL/Stage00_Sanboxes.repl`, `REPL/Stage00a_StoaTests.repl`
+- **Full chain:** `REPL/Z.repl`
+- **Stage 2 AQP:** `REPL/Stage02_Tester.repl` — see **`ouronet/architecture/REPL_AND_TESTS.md`**
+- **Namespace:** `ouronet-ns`

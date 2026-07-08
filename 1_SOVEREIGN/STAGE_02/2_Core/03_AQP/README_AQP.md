@@ -20,13 +20,27 @@ Three public paths by **asset mechanics** (not by pool class alone). LP uses TF 
 | `C_StakeOrtoFungible` / `C_UnstakeOrtoFungible` | DPOF (native, Z\|, H\|, Z\| LP) | `patron pool owner beneficiary dpof-id nonces` | **Unstake:** beneficiary read from tracker row per nonce |
 | `C_StakeCollectable` / `C_UnstakeCollectable` | DPSF / DPNF | `patron pool owner beneficiary collectable-id son nonces amounts` | **Omitted** — read from tracker row per nonce |
 
-**Also:** `C_Vacate*` batch vacate (pool-owner forced unstake — UI multi-tx; see [`README_VACATE_UI.md`](README_VACATE_UI.md)), `C_SyncTrueFungibleAnchors` (pool-agnostic ANK repair — see below).
+**Also:** `C_Vacate*` batch vacate (pool-owner forced unstake — UI multi-tx; see [`README_VACATE_UI.md`](README_VACATE_UI.md)), `C_SyncTrueFungibleAnchors` (pool-agnostic ANK repair — see below), **`C_DisablePoolStake` / `C_EnablePoolStake`** (owner stake pause/resume).
+
+### Pool stake toggle and score revoke lifecycle
+
+| Field / tx | Behavior |
+|------------|----------|
+| `AQP\|Schema.stake-enabled` | Default **`true`** at `C_Issue` |
+| `C_DisablePoolStake` | Owner sets `stake-enabled` → **false** (pause new stakes). Idempotent. |
+| `C_EnablePoolStake` | Owner sets `stake-enabled` → **true**. Stake still requires employed scores + FVT ready. |
+| First `C_Vacate*` on a pool | Idempotently **`AQP-POOL::XB_SetPoolStakeEnabled false`** (VCT → AQP via IMC; no extra cap) |
+
+**Wind-down order:** optional `C_DisablePoolStake` → unstake/vacate (vacate also disables via **`XB_`**) → FVT off → `C_RevokeScore`. Re-open stakes with **`C_EnablePoolStake`**.
+
+**Score revoke:** user weights live at **`SCR\|T\|UserScore`** key `(account \| pool-id \| score-id)`. Before `C_RevokeScore`: disable stake (optional) → all unstake/vacate → FVT off (`fvt-link` BAR) → revoke. Historical user rows at the old pool **stay on chain** (do not migrate). Re-employ same score-id on another pool starts fresh `(user, new-pool, score-id)` weights; new LP lines should use **new score issuances**.
 
 ### True fungible rules (settled, not all implemented)
 
 - **Beneficiary** must be an existing **activated standard Ouronet account** (`DALOS::UEV_EnforceAccountExists` + `UEV_EnforceAccountType false`).
 - **Owner** signs; **beneficiary** earns score + anchor promile (`ouronet-account` in SCORE/ANK). Same id = self-stake.
-- **Staking allowed only if** pool has ≥ 1 employed score (`URC_PoolActiveScoreIds` non-empty).
+- **`stake-enabled`** (default **true** at `C_Issue`): pool owner may **`C_DisablePoolStake`** to pause new stakes; **`C_EnablePoolStake`** turns admission back on. **Unstake and vacate ignore this flag.**
+- **Stake admission** (`direction=true` only): `stake-enabled` **and** ≥ 1 employed score **and** (when rewards apply) FVT pipeline ready (`URC_PoolEmployedScoresFvtStakeReady`). Unstake/vacate skip score and FVT pipeline gates.
 - **DPTF legs:** native and **frozen** (`F|`) allowed; **reserved** (`R|`) **rejected**.
 - **No `native-or-frozen` on the public API** — derive from `dptf-id`: `F|` → frozen multiplier path; else native. Passed internally to SCORE `XE_*`.
 - **Custody:** `TFT::C_Transfer` owner → `AQP|SC_NAME` on stake; reverse on unstake.
@@ -181,7 +195,7 @@ Seven slots per pool. Stake updates **every** employed score (skip `BAR`).
 | `C_Issue` | Implemented |
 | `C_AddScore` | Implemented |
 | `C_RevokeScore` | Implemented |
-| `C_VacateTrueFungible` / `C_VacateOrtoFungibleBatch` / collectable via Semi+NonFungible Talos shells | **FVT** recipes; see [`README_VACATE_UI.md`](README_VACATE_UI.md) |
+| `C_VacateTrueFungible` / `C_VacateOrtoFungibleBatch` / collectable via Semi+NonFungible Talos shells | **AQP-VCT** recipes; see [`README_VACATE_UI.md`](README_VACATE_UI.md) |
 | TF stake/unstake | **FVT::C_TrueFungibleStakeFlow** (direction); Talos client shell only |
 | OF stake/unstake | **FVT::C_OrtoFungibleStakeFlow** (direction); Talos ×4 Transfer/Transmit shells |
 | `C_StakeCollectable` / `C_UnstakeCollectable` | Stub |
@@ -199,7 +213,7 @@ Seven slots per pool. Stake updates **every** employed score (skip `BAR`).
 
 - **Talos client `@event`:** `AQP|C>STAKE-TRUE-FUNGIBLE` / `C>UNSTAKE-TRUE-FUNGIBLE` (incl. `patron`) — **`compose-capability (P|TS)` only**.
 - **FVT `C_TrueFungibleStakeFlow`:** `UEV_IMC` + `FVT|C>TRUE-FUNGIBLE-STAKE-FLOW` + phase **`XE_*`** calls.
-- **AQP-POOL:** phase 1 only (`XE_TrueFungiblePoolCustody`); no monolithic TF **`C_*`**.
+- **AQP-POOL:** phase 1 only (`XE_TrueFungible*` legs; TFT/DPOF inlined in `XE_*`); no monolithic TF **`C_*`**.
 
 Result text uses **`UC_ShortAccount`** and branches self-stake vs beneficiary stake.
 
@@ -221,7 +235,7 @@ PHASE 5  5.1–5.2  FVT::XI_BookStakeUnclaimedCounts / XI_CheckpointStakeRps
 | 4 | SCR | `XE_ApplyTrueFungibleStakeDelta` | vault/user/nzs | **READY** |
 | 5.1–5.2 | FVT | `XI_BookStakeUnclaimedCounts` / `XI_CheckpointStakeRps` | unclaimed + `UpdateUserRPS` | **READY** |
 
-**POOL phase 1:** `XE_TrueFungibleTransfer`, `XE_TrueFungiblePoolTracker`, `XE_TrueFungibleBeneficiaryRollup` (legacy concat: `XE_TrueFungiblePoolCustody`).
+**POOL phase 1:** `XE_TrueFungibleTransfer`, `XE_TrueFungiblePoolTracker`, `XE_TrueFungibleBeneficiaryRollup` (TFT transfer inlined in `XE_TrueFungibleTransfer`).
 
 ### IGNIS billing (Talos stake/unstake)
 
@@ -269,9 +283,9 @@ Talos is **orchestrator only**: each phase **`XE_*` returns `OutputCumulator`** 
 | Prefix | Scope | Examples |
 |--------|--------|----------|
 | **`C_*`** | Sovereign client/recipe entry | `FVT::C_TrueFungibleStakeFlow` |
-| **`XE_*`** | Cross-module forward (on interface) | `AQP::XE_TrueFungiblePoolCustody`, `ANK::XE_Refresh*`, `SCR::XE_Apply*`, `ANK::XE_UpdateTrueFungibleUserAnchorValues` (C_Sync) |
-| **`XI_*`** | Same-module internal only | `FVT::XI_Settle*`, `FVT::XI_Checkpoint*`, `POOL::XI_Transfer*`, `SCR::XI_Apply*ScoreStakeDelta`, `ANK::XI_UpdateTrueFungibleUserAnchorValues` |
-| **`XH_*`** | ANK helper (no cap) | `XH_RecomputeAffectedBoostAggregates` |
+| **`XE_*`** | Cross-module forward (on interface) | `AQP::XE_TrueFungible*` legs, `AQP::XE_SetVacateJobState` / `AQP::XE_ZeroDptfTrackerSlot` (VCT-only), `SCR::XE_Apply*`, `ANK::XE_UpdateTrueFungibleUserAnchorValues` (C_Sync) |
+| **`XB_*`** | Home `C_*` + cross-module shared write | `AQP::XB_SetPoolStakeEnabled`, `AQP::XB_SetBenDptfAnkSyncCount`, `AQP::XB_SetBenCollectableAnkSyncCount` |
+| **`XI_*`** | Same-module internal only (tiered `XI_*` → `XI_1\|*` → `XI_2\|*`) | `FVT::XI_RpsPreScore`, `POOL::XI_1\|WriteDptfTrackerSlot`, `SCR::XI_2\|ApplySingularUserScoreDelta`, `ANK::XI_1\|UpdateTrueFungibleUserAnchorValues` |
 
 ---
 

@@ -5,4 +5,4 @@
 
 Example fix: `UC_TrueFungibleAnchorPromile` in `01_ANK.pact` renamed to **`URC_TrueFungibleAnchorPromile`**; invalid `dptf-amount` handled with **`if`** → `0.0`, not `enforce`.
 
-Referenced in `OuronetInformational/MODULE_ARCHITECTURE.md`.
+Referenced in `OuronetInformational/ouronet/MODULE_ARCHITECTURE.md`.

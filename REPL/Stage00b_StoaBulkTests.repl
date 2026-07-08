@@ -325,5 +325,162 @@
 )
 (env-gas)
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-BULK-08 - Happy path C_HybridBulkTransmit")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BULK-08 · 01 · hybrid transmit ==== =====================================================
+(print "--- [TX-BULK-08 · 01 · hybrid transmit] ---")
+(let
+    (
+        (sender:string "stoa-foundation")
+        (receivers:[[string]] [[SKB.CS01_NAME SKB.CS02_NAME] ["hybrid-xmit-new"]])
+        (guards:[guard] [(read-keyset "KEY_BULK_NEW1")])
+        (amounts:[[decimal]] [[3.0 4.0] [5.0]])
+        (total:decimal 12.0)
+        (r1-before:decimal (coin.UR_Balance SKB.CS01_NAME))
+        (r2-before:decimal (coin.UR_Balance SKB.CS02_NAME))
+    )
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74"
+        ,"caps": [(coin.TRANSMIT_BULK sender total)]}])
+    (let
+        ((result:string (coin.C_HybridBulkTransmit sender receivers guards amounts)))
+        (print (format "<(coin.C_HybridBulkTransmit)> => \"{}\"" [result]))
+        (map print
+            [
+                (expect
+                    (format "<<TX-BULK-08>> existing receiver1 credited" [])
+                    (+ r1-before 3.0)
+                    (coin.UR_Balance SKB.CS01_NAME))
+                (expect
+                    (format "<<TX-BULK-08>> existing receiver2 credited" [])
+                    (+ r2-before 4.0)
+                    (coin.UR_Balance SKB.CS02_NAME))
+                (expect
+                    (format "<<TX-BULK-08>> anew receiver created and funded" [])
+                    5.0
+                    (coin.UR_Balance "hybrid-xmit-new"))
+                (expect
+                    (format "<<TX-BULK-08>> hybrid transmit summary" [])
+                    "HybridBulkTransmit: 3 recipients, total 12.0"
+                    result)
+            ]
+        )
+    )
+)
+(env-gas)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-BULK-09 - C_HybridBulkTransmit validation failures")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BULK-09 · 01 · hybrid validation failures ==== ===========================================
+(print "--- [TX-BULK-09 · 01 · hybrid validation failures] ---")
+(env-sigs
+  [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74", "caps": []}])
+(print (expect-failure
+    (format "<<TX-BULK-09>> outer receivers not length 2" [])
+    (coin.C_HybridBulkTransmit
+        "stoa-foundation"
+        [[SKB.CS01_NAME]]
+        [(read-keyset "KEY_BULK_NEW1")]
+        [[1.0] [2.0]])))
+(print (expect-failure
+    (format "<<TX-BULK-09>> existing partition receiver/amount mismatch" [])
+    (coin.C_HybridBulkTransmit
+        "stoa-foundation"
+        [[SKB.CS01_NAME SKB.CS02_NAME] ["hybrid-fail-b"]]
+        [(read-keyset "KEY_BULK_NEW1")]
+        [[1.0] [2.0]])))
+(print (expect-failure
+    (format "<<TX-BULK-09>> anew guards length mismatch" [])
+    (coin.C_HybridBulkTransmit
+        "stoa-foundation"
+        [[SKB.CS01_NAME] ["hybrid-fail-c" "hybrid-fail-d"]]
+        [(read-keyset "KEY_BULK_NEW1")]
+        [[1.0] [2.0 3.0]])))
+(print (expect-failure
+    (format "<<TX-BULK-09>> empty existing partition" [])
+    (coin.C_HybridBulkTransmit
+        "stoa-foundation"
+        [[] ["hybrid-fail-e"]]
+        [(read-keyset "KEY_BULK_NEW1")]
+        [[] [1.0]])))
+(print (expect-failure
+    (format "<<TX-BULK-09>> empty anew partition" [])
+    (coin.C_HybridBulkTransmit
+        "stoa-foundation"
+        [[SKB.CS01_NAME] []]
+        []
+        [[1.0] []])))
+(print (expect-failure
+    (format "<<TX-BULK-09>> duplicate receiver across partitions" [])
+    (coin.C_HybridBulkTransmit
+        "stoa-foundation"
+        [[SKB.CS01_NAME] [SKB.CS01_NAME]]
+        [(read-keyset "KEY_BULK_NEW1")]
+        [[1.0] [2.0]])))
+(print (expect-failure
+    (format "<<TX-BULK-09>> sender in receiver list" [])
+    (coin.C_HybridBulkTransmit
+        "stoa-foundation"
+        [["stoa-foundation"] ["hybrid-fail-f"]]
+        [(read-keyset "KEY_BULK_NEW1")]
+        [[1.0] [2.0]])))
+(print (expect-failure
+    (format "<<TX-BULK-09>> zero amount" [])
+    (coin.C_HybridBulkTransmit
+        "stoa-foundation"
+        [[SKB.CS01_NAME] ["hybrid-fail-g"]]
+        [(read-keyset "KEY_BULK_NEW1")]
+        [[0.0] [1.0]])))
+(env-gas)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-BULK-10 - C_HybridBulkTransmit insufficient balance")
+(namespace "ouronet-ns")
+(env-chain-data {"chain-id": "0"})
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== TX-BULK-10 · 01 · insufficient balance ==== =================================================
+(print "--- [TX-BULK-10 · 01 · insufficient balance] ---")
+(let
+    (
+        (sender:string "stoa-foundation")
+        (sender-before:decimal (coin.UR_Balance sender))
+        (total:decimal (+ sender-before 1.0))
+        (receivers:[[string]] [[SKB.CS02_NAME] ["hybrid-bal-fail"]])
+        (guards:[guard] [(read-keyset "KEY_BULK_NEW2")])
+        (amounts:[[decimal]] [[sender-before] [1.0]])
+        (r2-before:decimal (coin.UR_Balance SKB.CS02_NAME))
+    )
+    (env-sigs
+      [{"key": "625ad78ab8c1df826d69e1f0e6457334b8e085b7d256d10be41726ced17fdf74"
+        ,"caps": [(coin.TRANSMIT_BULK sender total)]}])
+    (print (expect-failure
+        (format "<<TX-BULK-10>> insufficient balance must fail" [])
+        (coin.C_HybridBulkTransmit sender receivers guards amounts)))
+    (print (expect
+        (format "<<TX-BULK-10>> sender unchanged after failed hybrid" [])
+        sender-before
+        (coin.UR_Balance sender)))
+    (print (expect
+        (format "<<TX-BULK-10>> existing receiver unchanged after failed hybrid" [])
+        r2-before
+        (coin.UR_Balance SKB.CS02_NAME)))
+)
+(env-gas)
+(commit-tx)
 (print "")
 (print "************************ Stage 00b — Stoa coin bulk tests COMPLETE *******************************")

@@ -2,6 +2,7 @@
     ;;
     (implements OuronetPolicyV1)
     (implements DpdcTransferV1)
+    (implements DpdcTransferV2)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -151,6 +152,73 @@
                 (enumerate 0 (- l1 1))
             )
             ;;Capabilities
+            (compose-capability (P|SECURE-CALLER))
+        )
+    )
+    (defcap DPDC-T|S>BULK-TRANSFER
+        (id:string son:bool sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk transfer guards — same family as DPDC-T|C>TRANSFER over receiver-lst. \
+            \ Standard Ouronet accounts only (no smart accounts in receiver-lst)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                ;;
+                (l:integer (length receiver-lst))
+            )
+            (ref-U|LST::UC_IzUnique receiver-lst)
+            (ref-DPDC::UEV_PauseState id son false)
+            (ref-DPDC::UEV_AccountFreezeState id son sender false)
+            (map
+                (lambda (idx:integer)
+                    (let
+                        (
+                            (receiver:string (at idx receiver-lst))
+                        )
+                        (ref-DALOS::UEV_EnforceAccountType receiver false)
+                        (ref-DALOS::UEV_EnforceTransferability sender receiver method)
+                        (ref-DPDC::UEV_AccountFreezeState id son receiver false)
+                        (UEV_TransferRoles id son sender receiver)
+                    )
+                )
+                (enumerate 0 (- l 1))
+            )
+        )
+    )
+    (defcap DPDC-T|C>BULK-TRANSFER
+        (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk collectable transfer (one id/son, many receivers). Composes DPDC-T|S>BULK-TRANSFER like C>TRANSFER."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
+                (l:integer (length receiver-lst))
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership sender)
+            (enforce
+                (fold (and) true
+                    [
+                        (> l 0)
+                        (= l (length nonces-array))
+                        (= l (length amounts-array))
+                    ]
+                )
+                "Invalid DPDC bulk transfer: receiver/nonces/amounts legs"
+            )
+            (map
+                (lambda (idx:integer)
+                    (UEV_AmountsForTransfer
+                        id
+                        son
+                        (at idx nonces-array)
+                        (at idx amounts-array)
+                    )
+                )
+                (enumerate 0 (- l 1))
+            )
+            (compose-capability (DPDC-T|S>BULK-TRANSFER id son sender receiver-lst method))
             (compose-capability (P|SECURE-CALLER))
         )
     )
@@ -428,6 +496,46 @@
             )
         )
     )
+    (defun UDC_BulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "Single IGNIS output for bulk transfer — sum URC_TotalTransferPrice per receiver leg once."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (l:integer (length receiver-lst))
+                (total:decimal
+                    (fold
+                        (lambda (acc:decimal idx:integer)
+                            (+ acc
+                                (URC_TotalTransferPrice
+                                    id
+                                    son
+                                    (at idx nonces-array)
+                                    (at idx amounts-array)
+                                )
+                            )
+                        )
+                        0.0
+                        (enumerate 0 (- l 1))
+                    )
+                )
+                (zero-elite:bool
+                    (fold
+                        (or)
+                        false
+                        (map
+                            (lambda (idx:integer)
+                                (ref-IGNIS::URC_ZeroEliteGAZ sender (at idx receiver-lst))
+                            )
+                            (enumerate 0 (- l 1))
+                        )
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator total sender zero-elite [])
+        )
+    )
     (defun UDCX_AggregatedRoyalties:object{DpdcTransferV1.AggregatedRoyalties}
         (a:[string] b:[decimal])
         {"creators"         : a
@@ -506,6 +614,31 @@
                 (enumerate 0 (- (length ids) 1))
             )
             (UDC_MultiTransferCumulator ids sons sender receiver nonces-array amounts-array)
+        )
+    )
+    (defun C_BulkTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk collectable transfer: one id/son, one sender, many standard-account receivers (DpdcTransferV2). \
+            \ Arg order mirrors C_Transfer: id/son, slice arrays, sender, receiver-lst, method."
+        (UEV_IMC)
+        (with-capability
+            (DPDC-T|C>BULK-TRANSFER id son nonces-array amounts-array sender receiver-lst method)
+            (do
+                (map
+                    (lambda (idx:integer)
+                        (XI_TransferNonces
+                            id
+                            son
+                            sender
+                            (at idx receiver-lst)
+                            (at idx nonces-array)
+                            (at idx amounts-array)
+                        )
+                    )
+                    (enumerate 0 (- (length receiver-lst) 1))
+                )
+                (UDC_BulkTransferCumulator id son sender receiver-lst nonces-array amounts-array)
+            )
         )
     )
     (defun C_IgnisRoyaltyCollector:object{DpdcTransferV1.AggregatedRoyalties}

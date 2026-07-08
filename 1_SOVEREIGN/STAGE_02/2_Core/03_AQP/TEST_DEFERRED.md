@@ -6,7 +6,7 @@ Tests **not yet run** (or only partially covered). Run when Stage 02 AQP modules
 
 | Suite | Covers |
 |-------|--------|
-| `REPL/DPDC-stake-smoke.repl` | DPSF collectable stake/unstake (TX-FVT-DC-01/02/03); phase 1.3 `BenDpsf*` rollup bump; phase 3 incremental ANK + `XE_SetBenCollectableAnkSyncCount` on stake |
+| `REPL/DPDC-stake-smoke.repl` | DPSF collectable stake/unstake (TX-FVT-DC-01/02/03); phase 1.3 `BenDpsf*` rollup bump; phase 3 incremental ANK + `XB_SetBenCollectableAnkSyncCount` on stake |
 | `REPL/Stage_02/OF-stake-smoke.repl` | DPOF stake/unstake (no ANK leg) |
 | `REPL/Stage_02/[6.2.4]_AQP-FVT.repl` (partial) | TF anchor issue, pool, **stake** (TX-FVT-01–03); reads `BenDptfLastAnkSyncCount` after stake — **not** unstake, **not** sync repair |
 
@@ -35,7 +35,7 @@ Implemented in code; **no REPL asserts yet.**
 - [ ] Stake → issue **new** SF/NF anchor → `URC_BenDpsfAnchorsNeedSync` / `URC_BenDpnfAnchorsNeedSync` → `true`
 - [ ] Sync reads `URD_BenDpsfActiveNonceSupplies` / `URD_BenDpnfActiveNonceSupplies` (not tracker scan)
 - [ ] `ANK::XE_ResyncSemiFungible*` / `XE_ResyncNonFungible*` rewrite **absolute** promile (not incremental stake delta)
-- [ ] `XE_SetBenCollectableAnkSyncCount` updates `BenDpsfAnkMeta` / `BenDpnfAnkMeta`
+- [ ] `XB_SetBenCollectableAnkSyncCount` updates `BenDpsfAnkMeta` / `BenDpnfAnkMeta`
 - [ ] Flat IGNIS `GAS|SYNC-COLLECTABLE-ANCHORS` (50) + per-anchor ANK IGNIS
 
 ### 1.3 Edge cases (sync)

@@ -26,15 +26,39 @@ Module: `04_AQP-BOOT.pact` | Interface: `AcquisitionPoolBootV1`
 
 | Step | Function | Inputs (you pass) | Creates / writes | Output string includes | Next step needs |
 |------|----------|-------------------|------------------|------------------------|-----------------|
-| **0** | `C_Step0_WireImcAndGovernor` | `patron` | AQP-POOL TFT IMC; `C_RotateGovernor` on `AQP\|SC_NAME` (cap-guard only) | `aqp-sc` | Stake/unstake client txs, or **1** |
+| **0** | `C_Step0_WireImcAndGovernor` | `patron` | FVT + VCT `P\|A_Define`; AQP-POOL TFT IMC; `C_RotateGovernor` on `AQP\|SC_NAME` (`AQP-ANK.AQP\|GOV` + `VCT\|RemoteAqpGov`) | `aqp-sc` | Stake/unstake / vacate client txs, or **1** |
 | **1** | `C_Step1_CreateBunnySet` | `patron`, `kbn-id` | KBN bunny set | `kbn-id` | **2**, **3** — same `kbn-id` |
 | **2** | `C_Step2_CreateSnakePowerAnchorClasses` | `patron`, `kbn-id` | 4 anchors + 3 BoostClasses | `anchor-ids`, `boost-class-ids` (Bronze, Silver, Golden) | **6** — `boost-class-ids` = `[Silver Bronze Golden]` order |
 | **3** | `C_Step3_CreateBoosterAnchorClasses` | `patron`, `kbn-id` | 11 anchors + 3 BoostClasses | `anchor-ids`, `boost-class-ids` (Unity, Stoa, Vesta) | ANK / user boosting (not required for Step 6–7) |
 | **4** | `C_Step4_CreateCoreScores` | `patron`, `owner-konto` | 4 scores | `score-ids` ×4 | **7** — `dh-score-ids` slots 0,2,4,5 |
 | **5** | `C_Step5_CreateSubsidiaryScores` | `patron`, `owner-konto` | 5 scores | `score-ids` ×5 | **7** — `dh-score-ids` slots 1,3,6,7,8 |
-| **6** | `C_Step6_CreateOuroLpTriplet` | `patron`, `owner-konto`, `lp-denominator`, `boost-class-ids`[3] | 3 class-0 LP scores + links | `score-ids` ×3, `boost-class-ids` echo | **7** — `ouro-triplet-score-ids`; **8** — farm `C_AddScoreLink` |
-| **7** | `C_Step7_CreatePoolsAndScores` | `patron`, `dh-asset-ids`[6], `ouro-lp-asset-id`, `dh-pool-ids`[6], `ouro-lp-pool-id`, `dh-score-ids`[9], `ouro-triplet-score-ids`[3] | 7 pools + 12 score slots | `pool-ids` ×7, asset echo | **8** *(planned)* — Farm + `C_AddScoreLink` per score |
-| **8** | *(planned)* | farm id, all employed score ids, reward dptf ids | FVT + ScoreLinks | TBD | Inject / stake / collect tests |
+| **6** | `C_Step6_CreateOuroLpTriplet` | `patron`, `owner-konto`, `lp-denominator`, `boost-class-ids`[3] | 3 class-0 LP scores + links | `score-ids` ×3, `boost-class-ids` echo | **7** — `ouro-triplet-score-ids`; **9** — farm `C_AddScoreLink` |
+| **7** | `C_Step7_CreatePoolsAndScores` | `patron`, `dh-asset-ids`[6], `ouro-lp-asset-id`, `dh-pool-ids`[6], `ouro-lp-pool-id`, `dh-score-ids`[9], `ouro-triplet-score-ids`[3] | 7 pools + 12 score slots | `pool-ids` ×7, asset echo | **8** |
+| **8** | `C_Step8_IssueFvtEntities` | `patron`, `owner-konto`, `lp-denominator` (empty skips farm) | 5 FVT `C_Issue` (farm optional) | `fvt-ids` ×5 | **9**, **10** — pass `fvt-ids` |
+| **9** | `C_Step9_AddFvtScoreLinks` | `patron`, `fvt-ids` ×5, triplet/subsidiary/core score ids | 11 `C_AddScoreLink` | score-link counts echo | **10** |
+| **10** | `C_Step10_AddFvtRewardLinks` | `patron`, `fvt-ids` ×5, reward DPTF ids ×3 | 5 `C_AddRewardLink` | reward echo | Inject / stake / collect |
+
+### Steps 8–10 FVT map
+
+| FVT name | Class | Score links | Reward token |
+|----------|-------|-------------|--------------|
+| `OuroLpFarm` | 0 farm | SilverSnakePower, BronzeSnakePower, GoldenSnakePower | Auryn |
+| `SubsidiaryTreasury` | 1 vault | SubsidiaryCodingDivision, SubsidiaryBloodshed, SubsidiaryNosferatu, SubsidiaryBunnies, SubsidiaryWonderCoach | Auryn |
+| `CodingDivisionTreasury` | 1 vault | TheCodingDivision | Wstoa (`DALOS::UR_WrappedStoaID`) |
+| `SnakesTreasury` | 1 vault | DemiourgosSnakes | Auryn |
+| `CompanySharesTreasury` | 1 vault | DemiourgosShareholder | Ouroboros (`DALOS::UR_OuroborosID`) |
+
+Farm `common-denominator` at issue = `lp-denominator` (full OURO DPTF id, same as Step 6). Vault entities use `"|"` at issue. Product UX names these vaults “Treasury”; FVT class 2 remains OF-only per `URC_ScoreClassMatchesFvtClass`.
+
+### Step 9 `subsidiary-score-ids` (recommended order)
+
+| Index | Score name |
+|-------|------------|
+| 0 | SubsidiaryCodingDivision |
+| 1 | SubsidiaryBloodshed |
+| 2 | SubsidiaryNosferatu |
+| 3 | SubsidiaryBunnies |
+| 4 | SubsidiaryWonderCoach |
 
 ### Step 7 `dh-score-ids` index map (from Steps 4–5)
 
@@ -72,6 +96,9 @@ Plus `ouro-lp-asset-id` — native LP id for `DHOuroLp` (class 0).
 | `[6.2.1]_AQP-ANK.repl` | TX006 = Step 2, TX007 = Step 3 |
 | `[6.2.2]_AQP-SCORE.repl` | TX-SCORE-08 = Step 4, 09 = Step 5, 10 = Step 6, 11 = score defs (after 4–5) |
 | `[6.2.3]_AQP-POOL.repl` | *(planned)* Step 7 |
+| `[6.2.9]_AQP-BOOT-FULL.repl` | Steps 2–3, 6–10 (FULL chain; needs KBN + Steps 4–5) |
+| `[6.3]_AQP-COMPREHENSIVE.repl` | Boot FVT wiring + RPS inject/stake/collect on Steps 8–10 entities |
+| `REPL/AQP-comprehensive.repl` | Master loader: population + boot 0–10 + `[6.2]_AQP` + `[6.3]` + `[6.4]` exhaustive |
 
 Load order: `Stage02_Tester.repl` deploys `04_AQP-BOOT.pact` before `[6.2]_AQP.repl`. See [REPL_AND_TESTS.md](../../OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md).
 
@@ -79,14 +106,16 @@ Load order: `Stage02_Tester.repl` deploys `04_AQP-BOOT.pact` before `[6.2]_AQP.r
 
 ## Mainnet operator checklist
 
-1. Deploy AQP sovereign modules (ANK → SCR → AQP-POOL → FVT) + Talos + AQP-BOOT.
+1. Deploy AQP sovereign modules (ANK → SCR → AQP-POOL → FVT → **VCT**) + Talos + AQP-BOOT.
 2. **Step 0** — `C_Step0_WireImcAndGovernor`: IMC + `AQP|SC_NAME` governor (REPL: `Stage02_Tester` TX-02 [5.6]).
 3. Run Steps **1 → 3** (anchors; save `boost-class-ids` from Step 2 for Step 6).
 4. Run Steps **4 → 6** (scores; save all `score-ids`).
 5. Gather **collection asset ids** from live chain (DPDC / SWP deploy — not from boot output).
 6. Precompute **pool ids** via `U|DALOS::UDC_Makeid` pool names (or read from Step 7 output after run).
 7. Run **Step 7** with explicit lists (see `;;` block in pact file).
-8. *(When FVT live)* Run **Step 8** — farm + `C_AddScoreLink` for every employed score.
+8. Run **Step 8** — issue five FVT entities (`C_Issue` only).
+9. Run **Step 9** — `C_AddScoreLink` per § Steps 8–10 FVT map (pass `fvt-ids` from Step 8).
+10. Run **Step 10** — `C_AddRewardLink` per entity (pass same `fvt-ids` + live reward DPTF ids).
 
 **After each tx:** copy the function's return string to your runbook / env file before continuing.
 

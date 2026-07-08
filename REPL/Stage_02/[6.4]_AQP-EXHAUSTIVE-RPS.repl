@@ -1,0 +1,286 @@
+;;
+;; REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-RPS.repl — proportional inject/collect with expected payout amounts
+;; Requires: [6.4]_AQP-EXHAUSTIVE-PREP (20/80 DHCD), boot FVT CodingDivisionTreasury + Wstoa reward.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-RPS.repl")
+(print "================================================================")
+(print "")
+;;
+(begin-tx "TX-AQP-R01 - Two-user 20/80 stake on Coding Division pool")
+(print "")
+(print "=== TX-AQP-R01 — ANHD 20% + LUMY 80% deb on TheCodingDivision ===============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (anhd:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (dhcd-id:string "DHCD-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+        ]
+    )
+    (print (format "<(C_StakeSemiFungible ANHD nonce-5)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id anhd anhd dhcd-id [5])
+    ]))
+    (print (format "<(C_StakeSemiFungible LUMY nonce-5)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id lumy lumy dhcd-id [5])
+    ]))
+    (let
+        (
+            (deb-anhd:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+            (deb-lumy:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore lumy pool-id score-id))
+            (total-deb:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore score-id))
+        )
+        (map print
+            [
+                (format "<(deb ANHD)> => \"{}\" <(deb LUMY)> => \"{}\" <(total)> => \"{}\"" [deb-anhd deb-lumy total-deb])
+                (expect (format "<<TX-AQP-R01>> total-deb got={} expected=2500" [total-deb]) 2500.0 total-deb)
+                (expect (format "<<TX-AQP-R01>> ANHD deb got={} expected=500" [deb-anhd]) 500.0 deb-anhd)
+                (expect (format "<<TX-AQP-R01>> LUMY deb got={} expected=2000" [deb-lumy]) 2000.0 deb-lumy)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-R02 - Inject 100 Wstoa + ANHD collect ~20")
+(print "")
+(print "=== TX-AQP-R02 — inject 100 Wstoa; ANHD collects ~20 (20% share) ============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+        (inject-1:decimal 100.0)
+        (claimable-pre:decimal (ref-FVT::URC_UserTier1AvailableRewards anhd fvt-id score-id wstoa-id
+            (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id)
+        ))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(claimable-pre ANHD)> => \"{}\"" [claimable-pre]))
+    (print (format "<(C_Inject Wstoa {})> => \"{}\"" [inject-1
+        (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id wstoa-id inject-1)
+    ]))
+    (let
+        (
+            (claimable-post:decimal (ref-FVT::URC_UserTier1AvailableRewards anhd fvt-id score-id wstoa-id
+                (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id)
+            ))
+            (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
+            (g-i:decimal (ref-FVT::UR_FVT-RM|LastFarmRpsG fvt-id score-id wstoa-id))
+            (li:decimal (ref-FVT::UR_FVT-RM|MemberDebRps fvt-id score-id wstoa-id))
+            (fvt-class:integer (ref-FVT::UR_FVT|FvtClass fvt-id))
+            (score-total-deb:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore score-id))
+        )
+        (map print
+            [
+                (format "<(claimable-post ANHD pre-collect)> => \"{}\"" [claimable-post])
+                (format "<(G post-inject)> => \"{}\"" [g-post])
+                (format "<(g_i L_i fvt-class score-total-deb)> => \"{} {} {} {}\"" [g-i li fvt-class score-total-deb])
+                (expect (format "<<TX-AQP-R02>> G>0 got={}" [g-post]) true (> g-post 0.0))
+            ]
+        )
+    )
+    (let
+        (
+            (wstoa-pre-collect:decimal (ref-DPTF::UR_AccountSupply wstoa-id anhd))
+            (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
+        )
+        (print (format "<(C_Collect ANHD Wstoa)> => \"{}\"" [
+            (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id score-id wstoa-id)
+        ]))
+        (let
+            (
+                (post-wstoa:decimal (ref-DPTF::UR_AccountSupply wstoa-id anhd))
+                (payout:decimal (- post-wstoa wstoa-pre-collect))
+                (pending:decimal (ref-FVT::UR_FVT-RU|PendingRewards anhd fvt-id score-id wstoa-id))
+                (last-rps-post:decimal (ref-FVT::UR_FVT-RU|LastRps anhd fvt-id score-id wstoa-id))
+                (deb-anhd:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+                (deb-total:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore score-id))
+                (expected-g:decimal (/ inject-1 deb-total))
+                (expected-payout:decimal (floor (* deb-anhd expected-g) 6))
+            )
+            (map print
+                [
+                    (format "<(Wstoa payout ANHD)> => \"{}\" (expected~{} deb×ΔG)" [payout expected-payout])
+                    (format "<(post-collect last-rps G)> => \"{} {}\"" [last-rps-post g-post])
+                    (format "<(pending after collect)> => \"{}\"" [pending])
+                    (format "<(expected G inject/total-deb)> => \"{}\"" [expected-g])
+                    (expect (format "<<TX-AQP-R02>> G matches inject/total-deb got={} expected={}" [g-post expected-g]) expected-g g-post)
+                    (expect (format "<<TX-AQP-R02>> ANHD deb share 20% got={}" [deb-anhd]) 500.0 deb-anhd)
+                    (expect (format "<<TX-AQP-R02>> ANHD collect payout ~20 got={} expected={}" [payout expected-payout]) expected-payout payout)
+                    (expect (format "<<TX-AQP-R02>> last-rps == G post-collect got={} expected={}" [last-rps-post g-post]) g-post last-rps-post)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-R03 - Inject 200 more + LUMY collect ~160 of remaining")
+(print "")
+(print "=== TX-AQP-R03 — second inject 200; LUMY collects ~80% of 280 pool ==========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+        (inject-2:decimal 200.0)
+        (ar-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id wstoa-id))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+        ]
+    )
+    (print (format "<(available-rewards pre-inject-2)> => \"{}\"" [ar-pre]))
+    (print (format "<(C_Inject Wstoa {})> => \"{}\"" [inject-2
+        (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id wstoa-id inject-2)
+    ]))
+    (let
+        (
+            (wstoa-pre-collect:decimal (ref-DPTF::UR_AccountSupply wstoa-id lumy))
+            (deb-lumy:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore lumy pool-id score-id))
+            (claimable-pre:decimal (ref-FVT::URC_UserTier1AvailableRewards lumy fvt-id score-id wstoa-id deb-lumy))
+        )
+        (print (format "<(claimable-pre LUMY)> => \"{}\"" [claimable-pre]))
+        (print (format "<(C_Collect LUMY Wstoa)> => \"{}\"" [
+            (ref-TS02-C3::AQP-FVT|C_Collect lumy fvt-id score-id wstoa-id)
+        ]))
+        (let
+            (
+                (post-wstoa:decimal (ref-DPTF::UR_AccountSupply wstoa-id lumy))
+                (payout:decimal (- post-wstoa wstoa-pre-collect))
+                (ar-post:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id wstoa-id))
+            )
+            (map print
+                [
+                    (format "<(Wstoa payout LUMY)> => \"{}\" expected~{}" [payout claimable-pre])
+                    (format "<(available-rewards post-LUMY-collect)> => \"{}\"" [ar-post])
+                    (expect (format "<<TX-AQP-R03>> LUMY collect payout got={} expected={}" [payout claimable-pre]) claimable-pre payout)
+                    (expect (format "<<TX-AQP-R03>> available-rewards after inject-2 got={}" [ar-post]) true (> ar-post 0.0))
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-R04 - Auryn inject on Snakes treasury after E|DH company stakes")
+(print "")
+(print "=== TX-AQP-R04 — DHCompany E|DH stakes + Snakes Auryn inject/collect =========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (anhd:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (edh-id:string "E|DH-98c486052a51")
+        (auryn-id:string "AURYN-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCompany"))
+        (snakes-score:string (ref-U|DALOS::UDC_Makeid "DemiourgosSnakes"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SnakesTreasury"))
+        (inject-amt:decimal 500.0)
+        (pre-auryn:decimal (ref-DPTF::UR_AccountSupply auryn-id anhd))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+        ]
+    )
+    (print (format "<(C_StakeSemiFungible LUMY E|DH tier-6)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id lumy lumy edh-id [6])
+    ]))
+    (let
+        (
+            (total-deb:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore snakes-score))
+            (deb-anhd:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id snakes-score))
+            (deb-lumy:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore lumy pool-id snakes-score))
+        )
+        (map print
+            [
+                (format "<(snakes deb ANHD)> => \"{}\" <(LUMY)> => \"{}\" <(total)> => \"{}\"" [deb-anhd deb-lumy total-deb])
+            ]
+        )
+        (if (> total-deb 0.0)
+            (let
+                (
+                    (pre-auryn:decimal (ref-DPTF::UR_AccountSupply auryn-id anhd))
+                )
+                (print (format "<(C_Inject Auryn {})> => \"{}\"" [inject-amt
+                    (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id auryn-id inject-amt)
+                ]))
+                (print (format "<(C_Collect ANHD Auryn snakes)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id snakes-score auryn-id)
+                ]))
+                (let
+                    (
+                        (post-auryn:decimal (ref-DPTF::UR_AccountSupply auryn-id anhd))
+                        (payout:decimal (- post-auryn pre-auryn))
+                        (g-snakes:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
+                    )
+                    (map print
+                        [
+                            (format "<(Auryn payout ANHD)> => \"{}\" (collect pending FVT L_i fix)" [payout])
+                            (format "<(G snakes Auryn)> => \"{}\"" [g-snakes])
+                            (expect (format "<<TX-AQP-R04>> G>0 after inject got={}" [g-snakes]) true (> g-snakes 0.0))
+                        ]
+                    )
+                )
+            )
+            (print "NOTE: TX-AQP-R04 inject skipped — tier-6 E|DH stake did not credit DemiourgosSnakes (try tier-7 package)")
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END [6.4]_AQP-EXHAUSTIVE-RPS.repl =======================================")

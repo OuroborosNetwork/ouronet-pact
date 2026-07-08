@@ -80,7 +80,7 @@
             }
         ]
     )
-    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore class=3)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto score-name 3 false)]))
+    (print (format "<(TS02-C3.AQP-SCR|C_IssueSemiFungibleScore class=3)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto score-name 3 true)]))
     ;;==== TX-SCORE-01 · 03 · ref-SCR UR_SCR reads + expect — REPL ====================
     (print "--- [TX-SCORE-01 · 03 · UR_SCR reads + expect] ---")
     (let

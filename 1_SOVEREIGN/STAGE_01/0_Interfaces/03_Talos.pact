@@ -271,6 +271,79 @@
     (defun CODEX|C_RegisterStoicTag:string (patron:string tag-name:string account-address:string))
     (defun CODEX|C_ReleaseStoicTag:string (patron:string tag-name:string))
 )
+(interface TalosStageOne_ClientFourV2
+    @doc "Frozen — PYTHIA Apollo API-key registry initial surface (deactivate had no patron fee arg)."
+    ;;
+    (defun CODEX|A_RegisterCodexIdentity:string
+        ( codex-id:string
+          public-standard:string
+          public-smart:string
+          codex-guard:guard
+          registered-by:string ))
+    (defun CODEX|C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard))
+    (defun CODEX|C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun CODEX|C_RegisterStoicTag:string (patron:string tag-name:string account-address:string))
+    (defun CODEX|C_ReleaseStoicTag:string (patron:string tag-name:string))
+    ;;
+    (defun PYTHIA|C_DeployApiKey:string
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string ))
+    (defun PYTHIA|A_DeploySmartApiKey:string
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string ))
+    (defun PYTHIA|C_UpdateApiConsumerName:string
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          new-name:string ))
+    (defun PYTHIA|A_ActivateApiKey:string (apollo-account:string))
+    (defun PYTHIA|C_DeactivateApiKey:string (owner-account:string apollo-account:string))
+    (defun PYTHIA|A_DeactivateApiKey:string (apollo-account:string))
+)
+(interface TalosStageOne_ClientFourV3
+    @doc "Talos Stage One Client Four V3 — PYTHIA deactivate collects 1 IGNIS via patron."
+    ;;
+    (defun CODEX|A_RegisterCodexIdentity:string
+        ( codex-id:string
+          public-standard:string
+          public-smart:string
+          codex-guard:guard
+          registered-by:string ))
+    (defun CODEX|C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard))
+    (defun CODEX|C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun CODEX|C_RegisterStoicTag:string (patron:string tag-name:string account-address:string))
+    (defun CODEX|C_ReleaseStoicTag:string (patron:string tag-name:string))
+    ;;
+    (defun PYTHIA|C_DeployApiKey:string
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string ))
+    (defun PYTHIA|A_DeploySmartApiKey:string
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          public:string
+          consumer-lane:string ))
+    (defun PYTHIA|C_UpdateApiConsumerName:string
+        ( patron:string
+          owner-account:string
+          apollo-account:string
+          new-name:string ))
+    (defun PYTHIA|A_ActivateApiKey:string (apollo-account:string))
+    (defun PYTHIA|C_DeactivateApiKey:string
+        ( patron:string
+          owner-account:string
+          apollo-account:string ))
+    (defun PYTHIA|A_DeactivateApiKey:string (patron:string apollo-account:string))
+)
 ;;
 ;;  [TALOS Stage One Client Three]
 ;;

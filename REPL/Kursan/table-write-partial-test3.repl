@@ -1,0 +1,53 @@
+(module test-write-partial3 G
+  (defschema TestRow
+    a:integer
+    b:integer
+    c:integer
+  )
+  (deftable test-table:{TestRow})
+  (defcap G () true)
+
+  (defun setup ()
+    (insert test-table "k1" {"a": 1, "b": 2, "c": 3})
+  )
+
+  (defun update-one-field ()
+    (update test-table "k1" {"b": 55})
+    (read test-table "k1")
+  )
+
+  (defun write-partial-on-new-then-existing ()
+    (write test-table "k2" {"a": 1, "b": 2, "c": 3})
+    (write test-table "k2" {"b": 99})
+    (read test-table "k2")
+  )
+
+  (defun write-full-existing ()
+    (write test-table "k1" {"a": 1, "b": 77, "c": 3})
+    (read test-table "k1")
+  )
+)
+
+(create-table test-write-partial3.test-table)
+
+(begin-tx "setup")
+  (test-write-partial3.setup)
+(commit-tx)
+
+(begin-tx "update-one-field")
+  (expect "update one field" {"a": 1, "b": 55, "c": 3}
+    (test-write-partial3.update-one-field)
+  )
+(commit-tx)
+
+(begin-tx "write-partial-on-existing-fails")
+  (expect-failure "write partial fails" "schema mismatch"
+    (test-write-partial3.write-partial-on-new-then-existing)
+  )
+(commit-tx)
+
+(begin-tx "write-full-existing")
+  (expect "write full replace existing" {"a": 1, "b": 77, "c": 3}
+    (test-write-partial3.write-full-existing)
+  )
+(commit-tx)

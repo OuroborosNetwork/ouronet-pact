@@ -1,5 +1,5 @@
 ;;
-;; REPL/Stage_02/OF-stake-smoke.repl — deploy chain + C_StakeOrtoFungible smoke (TX-FVT-04/05/06)
+;; REPL/Stage_02/OF-stake-smoke.repl — deploy chain + C_StakeOrtoFungible + vacate bulk smoke (TX-FVT-04..07)
 ;; Skips AQP-ANK / AQP-SCORE integration suites (not on OF stake path).
 ;;
 (print "")

@@ -474,3 +474,23 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-16 [2.19] - PYTHIA Module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-16 [2.19] - PYTHIA Module · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-16 [2.19] - PYTHIA Module · 01 · env-sigs (caps)] ---")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-16 [2.19] - PYTHIA Module · 02 · load module ==== =======================================
+(print "--- [TX-16 [2.19] - PYTHIA Module · 02 · load module] ---")
+(load "../../1_SOVEREIGN/STAGE_01/2_Core/23_PYTHIA.pact")
+;;==== TX-16 [2.19] - PYTHIA Module · 03 · gas echo ==== ============================================
+(print "--- [TX-16 [2.19] - PYTHIA Module · 03 · gas echo] ---")
+(format "<<<<<<<PYTHIA Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>

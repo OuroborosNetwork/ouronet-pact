@@ -1,19 +1,26 @@
 # Agents — Ouronet repo
 
-High-level guidance for automated or semi-automated helpers working in this repository.
+High-level guidance for automated helpers (including **Kursan**, the Pact agent persona).
 
 ## Before changing code
 
-- Read `OuronetInformational/CONTEXT.md`.
-- For a map of existing modules/interfaces/REPL, see `OuronetInformational/ARCHITECTURE/README.md`.
-- When editing sovereign **core** or **Talos** modules, read `OuronetInformational/MODULE_ARCHITECTURE.md` (prefixes UC/UR/…, C1–C4 caps, policies, Talos wiring).
-- Follow existing Pact indentation/style exactly; optimize for human readability and avoid unrelated formatting churn.
-- REPL Stage 0: **`Stage00_Sanboxes.repl`** (Kadena `kadena-coin`, then Stoa `coin` + namespaces), then **`Stage00a_StoaTests.repl`** (Stoa `coin` tests in one file). Ouronet module tests use **`ouronet-ns`**, not `free`.
-- **REPL integration tests:** Any **new** or **restructured** integration **`.repl`** (scripted **`begin-tx`** / **`commit-tx`** suites) **must** follow **`OuronetInformational/ARCHITECTURE/REPL_AND_TESTS.md`** § *Canonical layout* and the checklist **`OuronetInformational/skills/repl-integration-test-layout.md`**. Mirror **`REPL/Stage_02/[6.2.1]_AQP-ANK.repl`** / **`[6.2.2]_AQP-SCORE.repl`** (`;;|| NEXT >`, **`;;==== TX… · mm ·`**, matching **`(print "--- [TX… · mm · …] ---")`**, **`map print`** over **`expect`** / **`expect-failure`**, file header legend). For **Stage 2 AQP-BOOT**, **load order**, and **why score-definition txs must follow boot score txs**, read the same doc § *Stage 2 AQP + AQP-BOOT*.
-- Respect existing patterns in the codebase; prefer minimal, focused diffs.
+1. Read **`OuronetInformational/INDEX.md`** then **`OuronetInformational/CONTEXT.md`**.
+2. For sovereign modules: **`OuronetInformational/ouronet/MODULE_ARCHITECTURE.md`**.
+3. For the task at hand: matching file under **`OuronetInformational/pact/`**, **`ouronet/conventions/`**, or **`modules/`**.
+4. Day-to-day checklist: **`OuronetInformational/ouronet/conventions/index.md`**.
+
+## REPL rules
+
+- **Integration tests** (canonical): **`REPL/Stage_*`** — layout in **`OuronetInformational/ouronet/conventions/repl-integration-test-layout.md`** and **`ouronet/architecture/REPL_AND_TESTS.md`**.
+- **Scratch / experiments**: **`REPL/Kursan/`** only — see **`OuronetInformational/kursan/README.md`**.
 
 ## After learning something important
 
-- Update `OuronetInformational/CONTEXT.md` and/or add a note under `OuronetInformational/memories/`.
+1. Write it under **`OuronetInformational/`** (correct subfolder: pact / ouronet / modules).
+2. Optional dated note in **`OuronetInformational/memories/`**.
+3. Do **not** store canonical rules only in `.cursor/skills/` — stubs may point here, but **this repo folder is source of truth**.
 
-*(Customize this file as Ouronet workflows become clear.)*
+## Style
+
+- Match existing Pact indentation; minimal focused diffs.
+- Ouronet tests use **`ouronet-ns`**, not `free`.

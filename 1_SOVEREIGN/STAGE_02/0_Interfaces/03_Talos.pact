@@ -175,6 +175,15 @@
     (defun DPSF|C_MorphEquity (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
     ;;
 )
+(interface TalosStageTwo_ClientOneV2
+    @doc "Additive Talos Stage Two Client One surface — opt-in per consumer; does not replace TalosStageTwo_ClientOneV1."
+    (defun DPDC|C_BulkTransfer
+        (patron:string id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    )
+    (defun DPSF|C_BulkTransfer
+        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    )
+)
 ;;
 (interface TalosStageTwo_ClientTwoV1
     @doc "Exposes Stage Two Second Batch of Client Functions: \
@@ -308,6 +317,12 @@
     (defun DPNF|C_UpdateNonceURI            (patron:string id:string account:string nonce:integer nos:bool ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}))
     ;;
 )
+(interface TalosStageTwo_ClientTwoV2
+    @doc "Additive Talos Stage Two Client Two surface — opt-in per consumer; does not replace TalosStageTwo_ClientTwoV1."
+    (defun DPNF|C_BulkTransfer
+        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    )
+)
 (interface TalosStageTwo_ClientThreeV1
     @doc "Exposes Stage Two Third Batch of Client Functions: \
         \ the AcquisitionPools Client Functions"
@@ -371,6 +386,12 @@
     )
     (defun AQP-POOL|C_RevokeScore:string
         (patron:string pool-id:string score-id:string)
+    )
+    (defun AQP-POOL|C_DisablePoolStake:string
+        (patron:string pool-id:string)
+    )
+    (defun AQP-POOL|C_EnablePoolStake:string
+        (patron:string pool-id:string)
     )
     ;;
     ;;=== PLANNED Talos client shells (comment-only — sovereign C_* home TBD) ===
@@ -451,40 +472,100 @@
     (defun AQP-POOL|C_SyncNonFungibleAnchors:string
         (patron:string beneficiary-id:string dpnf-id:string)
     )
-    (defun AQP-POOL|C_VacateTrueFungible:string
-        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+    (defun AQP-POOL|C_BeginVacate:string
+        (patron:string pool-id:string asset-id:string vacate-kind:integer slice-count:integer)
     )
-    (defun AQP-POOL|C_VacateOrtoFungibleBatch:string
+    (defun AQP-POOL|C_ResliceVacate:string
+        (patron:string vacate-job-id:string slice-count:integer)
+    )
+    (defun AQP-POOL|C_VacateChunkTrueFungible:string
         (
             patron:string
-            pool-id:string
-            dpof-id:string
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+        )
+    )
+    (defun AQP-POOL|C_VacateChunkNonce:string
+        (
+            patron:string
+            vacate-job-id:string
+            slice-idx:integer
             owner-ids:[string]
             beneficiary-ids:[string]
             nonces-array:[[integer]]
-            nonce-amounts-array:[[decimal]]
+            amounts-array:[[integer]]
         )
     )
-    (defun AQP-POOL|C_VacateSemiFungibleCollectable:string
+    (defun AQP-POOL|C_VacateChunkOrtoFungible:string
         (
             patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
         )
     )
-    (defun AQP-POOL|C_VacateNonFungibleCollectable:string
+    (defun AQP-POOL|C_VacateChunkCollectable:string
         (
             patron:string
-            pool-id:string
-            owner-id:string
-            beneficiary-id:string
-            collectable-id:string
-            nonces:[integer]
-            nonce-amounts:[integer]
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
         )
+    )
+    (defun AQP-POOL|C_AbortVacate:string
+        (patron:string vacate-job-id:string)
+    )
+    (defun AQP-POOL|C_FullVacateTrueFungible:string
+        (patron:string pool-id:string dptf-id:string)
+    )
+    (defun AQP-POOL|C_FullVacateOrtoFungible:string
+        (patron:string pool-id:string dpof-id:string)
+    )
+    (defun AQP-POOL|C_FullVacateSemiFungible:string
+        (patron:string pool-id:string dpsf-id:string)
+    )
+    (defun AQP-POOL|C_FullVacateNonFungible:string
+        (patron:string pool-id:string dpnf-id:string)
+    )
+    ;;
+    ;;  [AQP-FVT]
+    ;;
+    (defun AQP-FVT|C_Issue:string
+        (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
+    )
+    (defun AQP-FVT|C_AddRewardLink:string
+        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool)
+    )
+    (defun AQP-FVT|C_AddScoreLink:string
+        (patron:string fvt-id:string score-id:string)
+    )
+    (defun AQP-FVT|C_ToggleScoreLink:string
+        (patron:string fvt-id:string score-id:string enabled:bool)
+    )
+    (defun AQP-FVT|C_ToggleRewardLink:string
+        (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
+    )
+    (defun AQP-FVT|C_Control:string
+        (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+    )
+    (defun AQP-FVT|C_RotateOwnership:string
+        (patron:string fvt-id:string new-owner-konto:string)
+    )
+    (defun AQP-FVT|C_SetCommonDenominator:string
+        (patron:string fvt-id:string common-denominator:string)
+    )
+    (defun AQP-FVT|C_Inject:string
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    )
+    (defun AQP-FVT|C_Collect:string
+        (patron:string fvt-id:string score-id:string reward-dptf-id:string)
     )
 )

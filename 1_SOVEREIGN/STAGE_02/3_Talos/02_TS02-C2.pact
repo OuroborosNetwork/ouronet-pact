@@ -3,6 +3,7 @@
     ;;
     (implements OuronetPolicyV1)
     (implements TalosStageTwo_ClientTwoV1)
+    (implements TalosStageTwo_ClientTwoV2)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -641,6 +642,16 @@
                     )
                 ]
             )
+        )
+    )
+    (defun DPNF|C_BulkTransfer
+        (patron:string id:string nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        @doc "Bulk NFT transfer — son=false wrapper over TS02-C1.DPDC|C_BulkTransfer."
+        (let
+            (
+                (ref-TS02-C1:module{TalosStageTwo_ClientOneV2} TS02-C1)
+            )
+            (ref-TS02-C1::DPDC|C_BulkTransfer patron id false nonces-array amounts-array sender receiver-lst method)
         )
     )
     ;;

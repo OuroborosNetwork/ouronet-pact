@@ -1,0 +1,194 @@
+;;
+;; REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-DPNF.repl — Bloodshed / Nosferatu / Bunnies pool NF stakes
+;; Requires full population ([5.1]/[5.2]/[5.4]) + AQP-BOOT Step7b DPNF pools.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.4]_AQP-EXHAUSTIVE-DPNF.repl")
+(print "================================================================")
+(print "")
+;;
+(begin-tx "TX-AQP-NF01 - DHBloodshed NF stake + subsidiary score deb")
+(print "")
+(print "=== TX-AQP-NF01 — EMMA stakes DHB nonce on DHBloodshed pool ================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner:string KST.EMMA)
+        (beneficiary:string KST.EMMA)
+        (dhb-id:string "DHB-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHBloodshed"))
+        (score-main:string (ref-U|DALOS::UDC_Makeid "Bloodshed"))
+        (score-sub:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBloodshed"))
+        (nonces:[integer] (ref-DPDC::URD_AccountNonces owner dhb-id false))
+        (stake-nonce:integer (at 0 nonces))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+        ]
+    )
+    (enforce (> (length nonces) 0) "EMMA needs DHB nonces from PopulateBloodshed")
+    (print (format "<(C_StakeNonFungible DHB nonce={})> => \"{}\"" [stake-nonce
+        (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner beneficiary dhb-id [stake-nonce])
+    ]))
+    (let
+        (
+            (deb-main:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary pool-id score-main))
+            (deb-sub:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary pool-id score-sub))
+        )
+        (print (format "<(SubsidiaryBloodshed deb)> => \"{}\"" [deb-sub]))
+        (print "<<TX-AQP-NF01>> stake ok; deb scoring may need ANK sync on DPNF class")
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-NF02 - DHNosferatu NF stake")
+(print "")
+(print "=== TX-AQP-NF02 — EMMA stakes DHN on DHNosferatu pool ========================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner:string KST.EMMA)
+        (beneficiary:string KST.EMMA)
+        (dhn-id:string "DHN-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHNosferatu"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryNosferatu"))
+        (nonces:[integer] (ref-DPDC::URD_AccountNonces owner dhn-id false))
+        (stake-nonce:integer (at 0 nonces))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+        ]
+    )
+    (enforce (> (length nonces) 0) "EMMA needs DHN nonces from PopulateNosferatu")
+    (print (format "<(C_StakeNonFungible DHN nonce={})> => \"{}\"" [stake-nonce
+        (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner beneficiary dhn-id [stake-nonce])
+    ]))
+    (let
+        (
+            (deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary pool-id score-id))
+        )
+        (print (format "<(SubsidiaryNosferatu deb)> => \"{}\"" [deb]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-NF03 - DHBunnies KBN NF stake + SubsidiaryBunnies deb")
+(print "")
+(print "=== TX-AQP-NF03 — EMMA stakes KBN bunny on DHBunnies pool (creator/creator) =====")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner:string KST.EMMA)
+        (beneficiary:string KST.EMMA)
+        (kbn-id:string "KBN-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+        (nonces:[integer] (ref-DPDC::URD_AccountNonces owner kbn-id false))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+        ]
+    )
+    (if (> (length nonces) 0)
+        (let
+            (
+                (stake-nonce:integer (at 0 nonces))
+            )
+            (print (format "<(C_StakeNonFungible KBN bunny nonce={})> => \"{}\"" [stake-nonce
+                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [stake-nonce])
+            ]))
+            (let
+                (
+                    (deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary pool-id score-id))
+                    (total:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore score-id))
+                )
+                (map print
+                    [
+                        (format "<(SubsidiaryBunnies deb)> => \"{}\" <(total)> => \"{}\"" [deb total])
+                    ]
+                )
+            )
+        )
+        (print "SKIP TX-AQP-NF03: EMMA has no KBN nonces (PopulateBunnies mints to collection creator)")
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-NF04 - Subsidiary treasury Auryn inject after DPNF denominators")
+(print "")
+(print "=== TX-AQP-NF04 — SubsidiaryTreasury inject after NF + SF denominators ======")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (auryn-id:string "AURYN-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (sub-bunnies:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+        (inject-amt:decimal 100.0)
+        (total-bunnies:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore sub-bunnies))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (if (> total-bunnies 0.0)
+        (do
+            (print (format "<(C_Inject Auryn subsidiary {})> => \"{}\"" [inject-amt
+                (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id auryn-id inject-amt)
+            ]))
+            (let
+                (
+                    (ar:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id auryn-id))
+                    (denom:decimal (ref-FVT::URC_InjectDenominator fvt-id))
+                )
+                (map print
+                    [
+                        (format "<(subsidiary inject denominator)> => \"{}\"" [denom])
+                        (expect (format "<<TX-AQP-NF04>> available-rewards got={} expected={}" [ar inject-amt]) inject-amt ar)
+                    ]
+                )
+            )
+        )
+        (print "NOTE: TX-AQP-NF04 inject skipped — SubsidiaryBunnies total-deb=0")
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END [6.4]_AQP-EXHAUSTIVE-DPNF.repl ======================================")
