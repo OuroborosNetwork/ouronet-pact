@@ -7,6 +7,42 @@
 (print "FILE  REPL/Stage_02/[6.2.5]_AQP-VCT.repl")
 (print "================================================================")
 (print "Legend: <<TX-VCT-*>> expect lines; <(Talos…)> echoes; vacate-job-id from URDC_ActiveJobForPool")
+(print "DPNF tests mint probe NFTs via VacateDpnfProbe (AQP-FAST — no Populate* required).")
+(print "")
+;;
+(begin-tx "TX-VCT-00 - deploy VacateDpnfProbe helpers")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-enable-repl-natives true)
+(env-sigs
+    [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}]
+)
+(module VacateDpnfProbe GOV
+    (defcap GOV () true)
+    (defun UC_MinDpnfNonceRow:object{DpdcUdcV1.DPDC|NonceData} (idx:integer)
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (i-asset-type:object{DpdcUdcV1.URI|Type}
+                    (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                )
+                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+            )
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0
+                (format "VacateDpnfProbe{}" [idx])
+                "vct-vacate-probe-dpnf"
+                md i-asset-type zd zd zd
+            )
+        )
+    )
+    (defun UC_DpnfNonceRows:[object{DpdcUdcV1.DPDC|NonceData}] (count:integer)
+        (map UC_MinDpnfNonceRow (enumerate 1 count))
+    )
+)
+(env-sigs [])
+(commit-tx)
 (print "")
 ;;
 (begin-tx "TX-VCT-TF01 - C_FullVacateTrueFungible")
@@ -36,28 +72,49 @@
         (tracker-pre:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
         (pre-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
     )
-    (enforce (> tracker-pre 0.0) "TX-VCT-TF01: need TF stake from TX-FVT-03")
-    (print (format "<(pre tracker/supply)> => {} / {}" [tracker-pre pre-supply]))
-    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-POOL|C_FullVacateTrueFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible patron pool-id ouro-id)
-    ]))
+    ;; TX-FVT-07 may have fully unstaked — restake so vacate has inventory.
+    (if (<= tracker-pre 0.0)
+        (let
+            (
+                (restake-amt:decimal 100.0)
+            )
+            (enforce (>= pre-supply restake-amt) "TX-VCT-TF01: need OURO to restake after TX-FVT-07")
+            (print "--- [TX-VCT-TF01 · 00 · restake after FVT-07 full exit] ---")
+            (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+            (print (format "<(C_StakeTrueFungible restake {})> => \"{}\"" [restake-amt
+                (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id restake-amt)
+            ]))
+        )
+        true
+    )
     (let
         (
-            (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
-            (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
-            (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
-            (post-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
-            (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+            (tracker-work:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+            (pre-supply-work:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
         )
-        (map print
-            [
-                (expect (format "<<TX-VCT-TF01 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
-                (expect (format "<<TX-VCT-TF01 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
-                (expect (format "<<TX-VCT-TF01 expect>> unclaimed-count got={} expected=0" [unclaimed]) 0 unclaimed)
-                (expect (format "<<TX-VCT-TF01 expect>> supply restored got={} expected={}" [post-supply (+ pre-supply tracker-pre)]) (+ pre-supply tracker-pre) post-supply)
-                (expect (format "<<TX-VCT-TF01 expect>> vacate inventory empty got={} expected=0" [inv-post]) 0 inv-post)
-            ]
+        (enforce (> tracker-work 0.0) "TX-VCT-TF01: need TF stake inventory")
+        (print (format "<(pre tracker/supply)> => {} / {}" [tracker-work pre-supply-work]))
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print (format "<(TS02-C3.AQP-POOL|C_FullVacateTrueFungible)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible patron pool-id ouro-id)
+        ]))
+        (let
+            (
+                (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+                (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
+                (post-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+                (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-TF01 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                    (expect (format "<<TX-VCT-TF01 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
+                    (expect (format "<<TX-VCT-TF01 expect>> unclaimed-count got={} expected=0" [unclaimed]) 0 unclaimed)
+                    (expect (format "<<TX-VCT-TF01 expect>> supply restored got={} expected={}" [post-supply (+ pre-supply-work tracker-work)]) (+ pre-supply-work tracker-work) post-supply)
+                    (expect (format "<<TX-VCT-TF01 expect>> vacate inventory empty got={} expected=0" [inv-post]) 0 inv-post)
+                ]
+            )
         )
     )
 )
@@ -437,16 +494,17 @@
 (print "=== END TX-VCT-L04 =========================================================")
 (print "")
 ;;
-(begin-tx "TX-VCT-DPNF01 - DHB Bloodshed full vacate")
+(begin-tx "TX-VCT-DPNF01 - DHB full vacate (mint probe)")
 (print "")
-(print "=== TX-VCT-DPNF01 — DPNF full vacate (Bloodshed DHB) ========================")
+(print "=== TX-VCT-DPNF01 — DPNF full vacate (DHB mint probe) ======================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
     (
         (patron:string KST.ANHD)
-        (owner-id:string KST.EMMA)
-        (beneficiary-id:string KST.EMMA)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (source:string KST.EMMA)
         (dpnf-id:string "DHB-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "DhbVacateScore")
@@ -455,15 +513,16 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (aqp-class:integer 4)
+        (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -480,6 +539,11 @@
                     (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
                     (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
                     (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî" 50.0)
                 ]
             }
         ]
@@ -496,43 +560,44 @@
     (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     ]))
+    (print "--- [TX-VCT-DPNF01 · mint DHB + transfer EMMA→ANHD] ---")
+    (print (format "<(DPNF|C_Create 1)> => \"{}\"" [
+        (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VacateDpnfProbe.UC_DpnfNonceRows 1))
+    ]))
     (let
         (
-            (owned-nonces:[integer] (ref-DPDC::URD_AccountNonces owner-id dpnf-id false))
+            (stake-nonce:integer (at pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+            (pre-supply:integer 1)
         )
-        (enforce (> (length owned-nonces) 0) "TX-VCT-DPNF01: need DHB on EMMA from PopulateBloodshed")
+        (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
+            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+        ]))
+        (print (format "<(TS02-C3.AQP-POOL|C_StakeNonFungibleCollectable nonce {})> => \"{}\"" [
+            stake-nonce
+            (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+        ]))
         (let
             (
-                (stake-nonce:integer (at 0 owned-nonces))
-                (pre-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false (at 0 owned-nonces)))
+                (tracker-pre:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
             )
-            (print (format "<(TS02-C3.AQP-POOL|C_StakeNonFungibleCollectable nonce {})> => \"{}\"" [
-                stake-nonce
-                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+            (enforce (> tracker-pre 0.0) "TX-VCT-DPNF01: tracker must hold stake")
+            (print (format "<(TS02-C3.AQP-POOL|C_FullVacateNonFungible)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_FullVacateNonFungible patron pool-id dpnf-id)
             ]))
             (let
                 (
-                    (tracker-pre:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                    (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                    (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                    (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+                    (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpnf-id false)))
                 )
-                (enforce (> tracker-pre 0.0) "TX-VCT-DPNF01: tracker must hold stake")
-                (print (format "<(TS02-C3.AQP-POOL|C_FullVacateNonFungible)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-POOL|C_FullVacateNonFungible patron pool-id dpnf-id)
-                ]))
-                (let
-                    (
-                        (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
-                        (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
-                        (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
-                        (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpnf-id false)))
-                    )
-                    (map print
-                        [
-                            (expect (format "<<TX-VCT-DPNF01 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
-                            (expect (format "<<TX-VCT-DPNF01 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
-                            (expect (format "<<TX-VCT-DPNF01 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
-                            (expect (format "<<TX-VCT-DPNF01 expect>> inventory empty got={} expected=0" [inv-post]) 0 inv-post)
-                        ]
-                    )
+                (map print
+                    [
+                        (expect (format "<<TX-VCT-DPNF01 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                        (expect (format "<<TX-VCT-DPNF01 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
+                        (expect (format "<<TX-VCT-DPNF01 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
+                        (expect (format "<<TX-VCT-DPNF01 expect>> inventory empty got={} expected=0" [inv-post]) 0 inv-post)
+                    ]
                 )
             )
         )
@@ -543,16 +608,17 @@
 (print "=== END TX-VCT-DPNF01 ======================================================")
 (print "")
 ;;
-(begin-tx "TX-VCT-DPNF02 - DHN Nosferatu sliced vacate")
+(begin-tx "TX-VCT-DPNF02 - DHN sliced vacate (mint probe)")
 (print "")
-(print "=== TX-VCT-DPNF02 — DPNF sliced vacate (Nosferatu DHN) =====================")
+(print "=== TX-VCT-DPNF02 — DPNF sliced vacate (DHN mint probe) =====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
     (
         (patron:string KST.ANHD)
-        (owner-id:string KST.EMMA)
-        (beneficiary-id:string KST.EMMA)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (source:string KST.EMMA)
         (dpnf-id:string "DHN-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "DhnVacateScore")
@@ -562,14 +628,15 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (aqp-class:integer 4)
+        (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -586,6 +653,11 @@
                     (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
                     (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
                     (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî" 50.0)
                 ]
             }
         ]
@@ -602,51 +674,52 @@
     (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     ]))
+    (print "--- [TX-VCT-DPNF02 · mint DHN + transfer EMMA→ANHD] ---")
+    (print (format "<(DPNF|C_Create 1)> => \"{}\"" [
+        (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VacateDpnfProbe.UC_DpnfNonceRows 1))
+    ]))
     (let
         (
-            (owned-nonces:[integer] (ref-DPDC::URD_AccountNonces owner-id dpnf-id false))
+            (stake-nonce:integer (at pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+            (pre-supply:integer 1)
         )
-        (enforce (> (length owned-nonces) 0) "TX-VCT-DPNF02: need DHN on EMMA from PopulateNosferatu")
+        (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
+            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+        ]))
+        (print (format "<(TS02-C3.AQP-POOL|C_StakeNonFungibleCollectable)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+        ]))
+        (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 1)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpnf-id vacate-kind-dpnf 1)
+        ]))
         (let
             (
-                (stake-nonce:integer (at 0 owned-nonces))
-                (pre-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false (at 0 owned-nonces)))
+                (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                (vacate-job-id:string (at "vacate-job-id" active-job))
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
+                (slice0:object (at 0 (at "slices" plan)))
             )
-            (print (format "<(TS02-C3.AQP-POOL|C_StakeNonFungibleCollectable)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
-            ]))
-            (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 1)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpnf-id vacate-kind-dpnf 1)
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable DHN slice 0)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
+                    patron vacate-job-id 0
+                    (at "owner-ids" slice0)
+                    (at "beneficiary-ids" slice0)
+                    (at "nonces-array" slice0)
+                    (at "amounts-array" slice0)
+                )
             ]))
             (let
                 (
-                    (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                    (vacate-job-id:string (at "vacate-job-id" active-job))
-                    (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
-                    (slice0:object (at 0 (at "slices" plan)))
+                    (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                    (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+                    (job:object (ref-VCT::UR_Job vacate-job-id))
                 )
-                (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable DHN slice 0)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
-                        patron vacate-job-id 0
-                        (at "owner-ids" slice0)
-                        (at "beneficiary-ids" slice0)
-                        (at "nonces-array" slice0)
-                        (at "amounts-array" slice0)
-                    )
-                ]))
-                (let
-                    (
-                        (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
-                        (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
-                        (job:object (ref-VCT::UR_Job vacate-job-id))
-                    )
-                    (map print
-                        [
-                            (expect (format "<<TX-VCT-DPNF02 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
-                            (expect (format "<<TX-VCT-DPNF02 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
-                            (expect (format "<<TX-VCT-DPNF02 expect>> job finalized got={} expected=true" [(at "finalized" job)]) true (at "finalized" job))
-                        ]
-                    )
+                (map print
+                    [
+                        (expect (format "<<TX-VCT-DPNF02 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                        (expect (format "<<TX-VCT-DPNF02 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
+                        (expect (format "<<TX-VCT-DPNF02 expect>> job finalized got={} expected=true" [(at "finalized" job)]) true (at "finalized" job))
+                    ]
                 )
             )
         )
@@ -657,16 +730,17 @@
 (print "=== END TX-VCT-DPNF02 ======================================================")
 (print "")
 ;;
-(begin-tx "TX-VCT-DPNF03 - KBN Bunnies sliced vacate")
+(begin-tx "TX-VCT-DPNF03 - KBN sliced vacate (mint probe)")
 (print "")
-(print "=== TX-VCT-DPNF03 — DPNF sliced vacate (Bunnies KBN) ========================")
+(print "=== TX-VCT-DPNF03 — DPNF sliced vacate (KBN mint probe) =====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
     (
         (patron:string KST.ANHD)
-        (owner-id:string KST.EMMA)
-        (beneficiary-id:string KST.EMMA)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (source:string KST.EMMA)
         (dpnf-id:string "KBN-98c486052a51")
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "KbnVacateScore")
@@ -676,6 +750,7 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
@@ -683,6 +758,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (aqp-class:integer 4)
+        (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
             (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
@@ -699,6 +775,11 @@
                     (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
                     (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
                     (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî" 50.0)
                 ]
             }
         ]
@@ -715,51 +796,52 @@
     (print (format "<(TS02-C3.AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
         (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
     ]))
+    (print "--- [TX-VCT-DPNF03 · mint KBN + transfer EMMA→ANHD] ---")
+    (print (format "<(DPNF|C_Create 1)> => \"{}\"" [
+        (ref-TS02-C2::DPNF|C_Create patron dpnf-id (VacateDpnfProbe.UC_DpnfNonceRows 1))
+    ]))
     (let
         (
-            (owned-nonces:[integer] (ref-DPDC::URD_AccountNonces owner-id dpnf-id false))
+            (stake-nonce:integer (at pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+            (pre-supply:integer 1)
         )
-        (enforce (> (length owned-nonces) 0) "TX-VCT-DPNF03: need KBN on EMMA from PopulateBunnies")
+        (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
+            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+        ]))
+        (print (format "<(TS02-C3.AQP-POOL|C_StakeNonFungibleCollectable)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+        ]))
+        (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 1)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpnf-id vacate-kind-dpnf 1)
+        ]))
         (let
             (
-                (stake-nonce:integer (at 0 owned-nonces))
-                (pre-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false (at 0 owned-nonces)))
+                (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
+                (vacate-job-id:string (at "vacate-job-id" active-job))
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
+                (slice0:object (at 0 (at "slices" plan)))
             )
-            (print (format "<(TS02-C3.AQP-POOL|C_StakeNonFungibleCollectable)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
-            ]))
-            (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 1)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpnf-id vacate-kind-dpnf 1)
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable KBN slice 0)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
+                    patron vacate-job-id 0
+                    (at "owner-ids" slice0)
+                    (at "beneficiary-ids" slice0)
+                    (at "nonces-array" slice0)
+                    (at "amounts-array" slice0)
+                )
             ]))
             (let
                 (
-                    (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                    (vacate-job-id:string (at "vacate-job-id" active-job))
-                    (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
-                    (slice0:object (at 0 (at "slices" plan)))
+                    (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                    (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+                    (job:object (ref-VCT::UR_Job vacate-job-id))
                 )
-                (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable KBN slice 0)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
-                        patron vacate-job-id 0
-                        (at "owner-ids" slice0)
-                        (at "beneficiary-ids" slice0)
-                        (at "nonces-array" slice0)
-                        (at "amounts-array" slice0)
-                    )
-                ]))
-                (let
-                    (
-                        (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
-                        (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
-                        (job:object (ref-VCT::UR_Job vacate-job-id))
-                    )
-                    (map print
-                        [
-                            (expect (format "<<TX-VCT-DPNF03 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
-                            (expect (format "<<TX-VCT-DPNF03 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
-                            (expect (format "<<TX-VCT-DPNF03 expect>> job finalized got={} expected=true" [(at "finalized" job)]) true (at "finalized" job))
-                        ]
-                    )
+                (map print
+                    [
+                        (expect (format "<<TX-VCT-DPNF03 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                        (expect (format "<<TX-VCT-DPNF03 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
+                        (expect (format "<<TX-VCT-DPNF03 expect>> job finalized got={} expected=true" [(at "finalized" job)]) true (at "finalized" job))
+                    ]
                 )
             )
         )

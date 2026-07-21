@@ -37,7 +37,7 @@ Prefer the **Apollo / Dalos check** style: compute bindings in **`let`**, then o
 
 ## Non-boolean checks
 
-Keep **`CAP_EnforceAccountOwnership`**, **`UEV_EnforceAccountType`**, **`UEV_Fee`**, and similar **outside** the grouped boolean `enforce` — run them before the combined boolean block (see **`SCR|XI>ISSUE-SCORE`** in **`02_SCORE.pact`**).
+Keep **`CAP_EnforceAccountOwnership`**, **`UEV_*`**, **`UEV_Fee`**, and similar **outside** grouped boolean **`enforce`** when they are bare **`ref-*`** calls (step 2). **`(enforce …)`** lines are always step 1 — including **`(enforce (ref-DPTF::URC_IzRBTg …))`**. See **`function-body-order.md`**.
 
 ## References
 

@@ -15,11 +15,13 @@
 ;;
 ;;================================================================================
 ;;                                                                              ;;
-;;                      [3 TXs]                                                 ;;
-;;              LOAD    [0.01]_Utilities.pact (NO PreL; No PostL)               ;;
-;;              LOAD    [0.02]_Core.pact (NO PreL; No PostL)                    ;;
-;;              LOAD    [0.03]_Talos.pact (NO PreL; No PostL)                   ;;
+;;                      [2 TXs]                                                 ;;
+;;              LOAD    02_Core.pact       — SHARED DpdcUdcV1 schemas only      ;;
+;;              LOAD    03_Talos.pact      — HISTORICAL (empty until frozen)    ;;
 ;;                                                                              ;;
+;;   Module-owned latest interfaces ship inside 2_Core/**/*.pact and            ;;
+;;   3_Talos/*.pact (one load per module tx in Stage 02 core/talos REPLs).     ;;
+;;   Requires Stage 01 chain (utilities + shared Stage 01 interfaces).          ;;
 ;;                                                                              ;;
 ;;================================================================================
 ;;

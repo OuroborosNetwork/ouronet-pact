@@ -1,0 +1,6 @@
+;; Smoke: Stage 01 + Stage 02 slim [0.1] shared interface registries
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_02/[0.1]_Interfaces.repl")
+(print "=== interface-embed [0.1] S01+S02 smoke OK ===")

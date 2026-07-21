@@ -58,3 +58,5 @@
 ;(load "Stage_01/[6.8]_Dispenser.repl")
 ;;FULL> CODEX scenario suite — skip for AQP-fast (Z.repl default)
 ;(load "Stage_01/[6.9]_CODEX.repl")
+;;FULL> PYTHIA dual-Apollo + Pyth ledger flush — or: pact REPL/_smoke_pythia_ledger.repl
+;(load "Stage_01/[6.10]_PYTHIA.repl")

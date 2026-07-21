@@ -1,0 +1,180 @@
+;; REPL/Stage_01/[6.10b]_PYTHIA-ledger-v2.repl — PythiaLedgerV2 batch A_Flush (load after [6.10] TX007)
+;;
+(begin-tx "TX009 - A_Flush batch day 82 incomplete")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX009 — batch flush day 82 iz-complete false =========================")
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
+        (cal-day:integer 82)
+        (flushed-at:time TV.TIME00)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            [
+                { "day": 82
+                , "iz-complete": false
+                , "petitions": 100
+                , "pondus": 12.345
+                , "transactions": 5
+                , "gas-reserved": 50000
+                , "failed-transactions": 1
+                , "wasted-gas-reserved": 1000 }
+            ]
+        )
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (let
+        (
+            (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+            (day-row:object{PythiaLedgerV2.PYTHIA|S|PythDaily} (ref-LEDGER::UR_PythDay cal-day))
+            (tm:object{PythiaLedgerV2.PYTHIA|S|PythMetrics} (ref-LEDGER::UR_PythTotal|TotalMetrics))
+        )
+        (print (format "<(TS01-C4.PYTHIA|A_Flush batch day82)> => \"{}\"" [msg]))
+        (map print
+            [
+                (expect "<<TX009>> LastDay 82" cal-day (ref-LEDGER::UR_PythTotal|LastDay))
+                (expect "<<TX009>> day flushed-at" flushed-at (at "flushed-at" day-row))
+                (expect "<<TX009>> day iz-sealed false" false (at "iz-sealed" day-row))
+                (expect "<<TX009>> total petitions 100" 100 (at "petitions" tm))
+            ]
+        )
+        ""
+    )
+)
+(commit-tx)
+(print "")
+(begin-tx "TX010 - A_Flush same day 82 update incomplete")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX010 — same day 82 replace (iz-complete false) ======================")
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            [
+                { "day": 82, "iz-complete": false, "petitions": 150, "pondus": 13.345
+                , "transactions": 7, "gas-reserved": 60000, "failed-transactions": 1, "wasted-gas-reserved": 1000 }
+            ]
+        )
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (ref-TS01-C4::PYTHIA|A_Flush entries)
+    (map print
+        [
+            (expect "<<TX010>> total petitions 150 not 250" 150 (at "petitions" (ref-LEDGER::UR_PythTotal|TotalMetrics)))
+            (expect "<<TX010>> day iz-sealed false" false (at "iz-sealed" (ref-LEDGER::UR_PythDay 82)))
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(begin-tx "TX011 - A_Flush seal 82 + open day 83 batch")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX011 — batch seal day 82 + insert day 83 =============================")
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            [
+                { "day": 82, "iz-complete": true, "petitions": 150, "pondus": 13.345
+                , "transactions": 7, "gas-reserved": 60000, "failed-transactions": 1, "wasted-gas-reserved": 1000 }
+                { "day": 83, "iz-complete": false, "petitions": 10, "pondus": 1.0
+                , "transactions": 1, "gas-reserved": 1000, "failed-transactions": 0, "wasted-gas-reserved": 0 }
+            ]
+        )
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (ref-TS01-C4::PYTHIA|A_Flush entries)
+    (map print
+        [
+            (expect "<<TX011>> LastDay 83" 83 (ref-LEDGER::UR_PythTotal|LastDay))
+            (expect "<<TX011>> day 82 iz-sealed true" true (at "iz-sealed" (ref-LEDGER::UR_PythDay 82)))
+            (expect "<<TX011>> total petitions 160" 160 (at "petitions" (ref-LEDGER::UR_PythTotal|TotalMetrics)))
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(begin-tx "TX012 - A_Flush reject sealed day 82")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX012 — reject update on sealed day 82 ==============================")
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (bad:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            [{ "day": 82, "iz-complete": false, "petitions": 1, "pondus": 1.0
+             , "transactions": 1, "gas-reserved": 1, "failed-transactions": 0, "wasted-gas-reserved": 0 }])
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (map print
+        [
+            (expect-failure
+                "<<TX012>> reject flush sealed day 82"
+                (ref-TS01-C4::PYTHIA|A_Flush bad)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(begin-tx "TX013 - A_Flush out-of-order day 50 then day 10")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX013 — order-independent txs (day 50 then day 10) =====================")
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
+        (e50:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            [{ "day": 50, "iz-complete": true, "petitions": 5, "pondus": 1.0
+             , "transactions": 1, "gas-reserved": 100, "failed-transactions": 0, "wasted-gas-reserved": 0 }])
+        (e10:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            [{ "day": 10, "iz-complete": true, "petitions": 3, "pondus": 0.5
+             , "transactions": 1, "gas-reserved": 50, "failed-transactions": 0, "wasted-gas-reserved": 0 }])
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (ref-TS01-C4::PYTHIA|A_Flush e50)
+    (ref-TS01-C4::PYTHIA|A_Flush e10)
+    (map print
+        [
+            (expect "<<TX013>> day 50 exists" true (ref-LEDGER::UR_PythDailyExists 50))
+            (expect "<<TX013>> day 10 exists" true (ref-LEDGER::UR_PythDailyExists 10))
+            (expect "<<TX013>> total petitions 168" 168 (at "petitions" (ref-LEDGER::UR_PythTotal|TotalMetrics)))
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(begin-tx "TX014 - A_Flush reject bad pondus")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX014 — reject pondus >3 dp ==========================================")
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (bad:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            [{ "day": 84, "iz-complete": false, "petitions": 1, "pondus": 1.2345
+             , "transactions": 1, "gas-reserved": 1, "failed-transactions": 0, "wasted-gas-reserved": 0 }])
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (map print
+        [
+            (expect-failure
+                "<<TX014>> reject pondus >3 dp"
+                (ref-TS01-C4::PYTHIA|A_Flush bad)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")

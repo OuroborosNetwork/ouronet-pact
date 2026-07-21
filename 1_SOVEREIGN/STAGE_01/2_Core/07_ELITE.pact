@@ -1,3 +1,21 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface EliteV1
+    @doc "Exposes Elite Account Related Functions"
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_EliteAurynzSupply (account:string))
+    (defun URC_IzIdEA:bool (id:string))
+    ;;
+    ;;  [X]
+    ;;
+    (defun XE_UpdateEliteSingle (id:string account:string))
+    (defun XE_UpdateElite (id:string sender:string receiver:string))
+
+)
+;;
 (module ELITE GOV
     ;;
     (implements OuronetPolicyV1)

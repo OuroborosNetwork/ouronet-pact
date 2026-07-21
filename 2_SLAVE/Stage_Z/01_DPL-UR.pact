@@ -1,6 +1,6 @@
 ;; DPL-UR — single deployer read module (canonical; keep aligned with live net).
 ;; Load only after Stage 1 and Stage 2 (REPL/StageZZ_Tester.repl after Stage02_Tester.repl).
-;; Implements DeployerReadsV7 + additive DeployerReadsV8 (StoicTag inverse reads 27b/27c; CODEX required).
+;; Implements DeployerReadsV7 + V8 (StoicTag) + V9 (PYTHIA dual-Apollo reads; PYTHIA required).
 ;;
 (interface DeployerReadsV7
     ;;
@@ -77,10 +77,15 @@
     (defun URC_0027b_StoicTagSelectorMapper (tag-names:[string]))
     (defun URC_0027c_StoicTagSelectorSingle (tag-name:string))
 )
+(interface DeployerReadsV9
+    @doc "PYTHIA dual-Apollo DPL reads (V9 additive — requires PYTHIA on chain)."
+    (defun URC_0031:[object] (apollo-accounts:[string]))
+)
 (module DPL-UR GOV
     ;;
     (implements DeployerReadsV7)
     (implements DeployerReadsV8)
+    (implements DeployerReadsV9)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -2527,6 +2532,17 @@
             ,"ignis-collection"     : (ref-DALOS::UR_VirtualToggle)
             ,"open-for-business"    : (ref-DPAD::UR_OpenForBusiness KpayID)
             }
+        )
+    )
+    (defun URC_0031:[object] (apollo-accounts:[string])
+        @doc "Map PYTHIA.UR_ApiKeyRowOrNull over each Apollo account string (₱./Π.)."
+        (let ((ref-PYTHIA:module{PythiaV3} PYTHIA))
+            (map
+                (lambda (apollo-account:string)
+                    (ref-PYTHIA::UR_ApiKeyRowOrNull apollo-account)
+                )
+                apollo-accounts
+            )
         )
     )
     ;;{F2}  [UEV]

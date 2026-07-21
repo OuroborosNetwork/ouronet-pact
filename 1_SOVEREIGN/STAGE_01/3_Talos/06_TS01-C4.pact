@@ -1,8 +1,60 @@
+;; TS01-C4 — Talos Stage One Client Four (CODEX + PYTHIA dual-Apollo + Pyth ledger flush).
+;; Deploy: load THIS file — TalosStageOne_ClientFourV6 + TS01-C4 module ship together.
+;; Historical registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact (ClientFour V1–V5 + V6BlockTime).
+;; Prerequisite: PYTHIA module deployed (23_PYTHIA.pact ships PythiaV3 + PythiaLedgerV2).
+;; REPL: REPL/Stage_01/[6.10]_PYTHIA.repl
+;;
+(interface TalosStageOne_ClientFourV6
+    @doc "Talos Stage One Client Four V6 — batch Pyth flush entries (explicit day + iz-complete)."
+    ;;
+    (defun CODEX|A_RegisterCodexIdentity:string
+        (
+            codex-id:string
+            public-standard:string
+            public-smart:string
+            codex-guard:guard
+            registered-by:string
+        ))
+    (defun CODEX|C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard))
+    (defun CODEX|C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun CODEX|C_RegisterStoicTag:string (patron:string tag-name:string account-address:string))
+    (defun CODEX|C_ReleaseStoicTag:string (patron:string tag-name:string))
+    ;;
+    (defun PYTHIA|C_DeployApiKey:string
+        (
+            patron:string
+            owner-account:string
+            apollo-account:string
+            public:string
+        ))
+    (defun PYTHIA|C_UpdateDualConsumerLane:string
+        (
+            patron:string
+            dual-link-key:string
+            new-name:string
+        ))
+    (defun PYTHIA|C_Link:string
+        (
+            standard-apollo:string
+            smart-apollo:string
+            consumer-lane:string
+        ))
+    (defun PYTHIA|A_Link:string (standard-apollo:string smart-apollo:string))
+    (defun PYTHIA|C_RevokeLink:string
+        (
+            patron:string
+            dual-link-key:string
+        ))
+    (defun PYTHIA|A_RevokeLink:string (patron:string dual-link-key:string))
+    (defun PYTHIA|A_Flush:string
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]))
+)
+;;
 (module TS01-C4 GOV
-    @doc "TALOS Client Module for Stage 1 — CODEX + PYTHIA (Codex Identity, StoicTags, Apollo API keys)."
+    @doc "TALOS Client Module for Stage 1 — CODEX + PYTHIA (Apollo keys + Pyth ledger flush)."
     ;;
     (implements OuronetPolicyV1)
-    (implements TalosStageOne_ClientFourV3)
+    (implements TalosStageOne_ClientFourV6)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -206,20 +258,19 @@
         ( patron:string
           owner-account:string
           apollo-account:string
-          public:string
-          consumer-lane:string )
-        @doc "Deploy inert Standard (₱.) Pythia API key; collects UC_DeployPrice native STOA (no Elite discount)."
+          public:string )
+        @doc "Deploy inert Apollo half (₱. or Π.); collects UC_DeployPrice native STOA (500 default)."
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV2} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV3} PYTHIA)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
                     (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
                         (ref-PYTHIA::C_DeployApolloPythiaApiKey
-                            owner-account apollo-account public consumer-lane
+                            owner-account apollo-account public
                         )
                     )
                 )
@@ -228,49 +279,22 @@
             )
         )
     )
-    (defun PYTHIA|A_DeploySmartApiKey:string
+    (defun PYTHIA|C_UpdateDualConsumerLane:string
         ( patron:string
-          owner-account:string
-          apollo-account:string
-          public:string
-          consumer-lane:string )
-        @doc "Demiurgoi deploys inert Smart (Π.) Pythia API key; collects UC_DeployPrice native STOA (no Elite discount)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-PYTHIA:module{PythiaV2} PYTHIA)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
-                    (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
-                    (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
-                    (msg:string
-                        (ref-PYTHIA::A_DeployApolloPythiaApiKey
-                            owner-account apollo-account public consumer-lane
-                        )
-                    )
-                )
-                (ref-IGNIS|V2::KDA|C_CollectWTEx patron fee-anchor deploy-fee false)
-                msg
-            )
-        )
-    )
-    (defun PYTHIA|C_UpdateApiConsumerName:string
-        ( patron:string
-          owner-account:string
-          apollo-account:string
+          dual-link-key:string
           new-name:string )
-        @doc "Rename Pythia consumer-lane; collects UC_RenamePrice native STOA (no Elite discount)."
+        @doc "Rename Pythia dual-link consumer-lane; collects UC_RenamePrice native STOA."
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV2} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV3} PYTHIA)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
                     (rename-fee:decimal (ref-PYTHIA::UC_RenamePrice))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
-                        (ref-PYTHIA::C_UpdateApiConsumerName
-                            owner-account apollo-account new-name
+                        (ref-PYTHIA::C_UpdateDualConsumerLane
+                            dual-link-key new-name
                         )
                     )
                 )
@@ -279,32 +303,42 @@
             )
         )
     )
-    (defun PYTHIA|A_ActivateApiKey:string (apollo-account:string)
-        @doc "Cronoton activates Pythia API key (PYTHIA|CRONOTON on core module)."
+    (defun PYTHIA|C_Link:string
+        ( standard-apollo:string
+          smart-apollo:string
+          consumer-lane:string )
+        @doc "Both half-owners link deployed Standard+Smart halves into inactive dual row (no fee)."
         (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV2} PYTHIA))
-                (ref-PYTHIA::A_ActivateApiKey apollo-account)
+            (let ((ref-PYTHIA:module{PythiaV3} PYTHIA))
+                (ref-PYTHIA::C_LinkDualApiKey standard-apollo smart-apollo consumer-lane)
             )
         )
     )
-    (defun PYTHIA|C_DeactivateApiKey:string
+    (defun PYTHIA|A_Link:string (standard-apollo:string smart-apollo:string)
+        @doc "Cronoton activates dual link after off-chain Apollo proof (no fee)."
+        (with-capability (P|TS)
+            (let ((ref-PYTHIA:module{PythiaV3} PYTHIA))
+                (ref-PYTHIA::A_LinkDualApiKey standard-apollo smart-apollo)
+            )
+        )
+    )
+    (defun PYTHIA|C_RevokeLink:string
         ( patron:string
-          owner-account:string
-          apollo-account:string )
-        @doc "Owner deactivates their Pythia API key; collects UC_DeactivateIgnisFee IGNIS from patron."
+          dual-link-key:string )
+        @doc "Both half-owners revoke active dual link; collects UC_RevokeIgnisFee IGNIS from patron."
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV2} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV3} PYTHIA)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (deact-fee:decimal (ref-PYTHIA::UC_DeactivateIgnisFee))
+                    (revoke-fee:decimal (ref-PYTHIA::UC_RevokeIgnisFee))
                     (msg:string
-                        (ref-PYTHIA::C_DeactivateApiKey owner-account apollo-account)
+                        (ref-PYTHIA::C_RevokeDualLink dual-link-key)
                     )
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        deact-fee
+                        revoke-fee
                         patron
                         (ref-IGNIS::URC_IsVirtualGasZero)
                         []
@@ -314,25 +348,37 @@
             )
         )
     )
-    (defun PYTHIA|A_DeactivateApiKey:string (patron:string apollo-account:string)
-        @doc "Cronoton deactivates (revokes) Pythia API key; collects UC_DeactivateIgnisFee IGNIS from patron."
+    (defun PYTHIA|A_RevokeLink:string (patron:string dual-link-key:string)
+        @doc "Cronoton revokes active dual link; collects UC_RevokeIgnisFee IGNIS from patron."
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV2} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV3} PYTHIA)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (deact-fee:decimal (ref-PYTHIA::UC_DeactivateIgnisFee))
-                    (msg:string (ref-PYTHIA::A_DeactivateApiKey apollo-account))
+                    (revoke-fee:decimal (ref-PYTHIA::UC_RevokeIgnisFee))
+                    (msg:string (ref-PYTHIA::A_RevokeDualLink dual-link-key))
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-IGNIS::UDC_ConstructOutputCumulator
-                        deact-fee
+                        revoke-fee
                         patron
                         (ref-IGNIS::URC_IsVirtualGasZero)
                         []
                     )
                 )
                 msg
+            )
+        )
+    )
+    (defun PYTHIA|A_Flush:string
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}])
+        @doc "Khronoton batch Pyth ledger flush (order-independent day entries; no fee)."
+        (with-capability (P|TS)
+            (let 
+                (
+                    (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
+                )
+                (ref-LEDGER::A_Flush entries)
             )
         )
     )

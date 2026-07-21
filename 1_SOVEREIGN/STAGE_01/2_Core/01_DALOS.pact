@@ -1,3 +1,197 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface OuronetDalosV1
+    ;;
+    ;;  SCHEMAS
+    ;;
+    (defschema DPTF|BalanceSchema
+        @doc "Schema that Stores Account Balances for DPTF Tokens (True Fungibles)\
+            \ Key for the Table is a string composed of: <DPTF id> + BAR + <account> \
+            \ This ensure a single entry per DPTF id per account. \
+            \ As an Exception OUROBOROS and IGNIS Account Data is Stored at the DALOS Account Level"
+        balance:decimal
+        frozen:bool
+        role-burn:bool
+        role-mint:bool
+        role-fee-exemption:bool
+        role-transfer:bool
+        ;;
+        ;;ForSelect, store Key Make-up
+        id:string
+        account:string
+    )
+    ;;
+    ;;  [GOV]
+    ;;
+    (defun GOV|DALOS|SC_KDA-NAME ())
+    (defun GOV|DALOS|GUARD ())
+    ;;
+    (defun GOV|Demiurgoi ())
+    (defun GOV|DalosKey ())
+    (defun GOV|AutostakeKey ())
+    (defun GOV|VestingKey ())
+    (defun GOV|LiquidKey ())
+    (defun GOV|OuroborosKey ())
+    (defun GOV|SwapKey ())
+    (defun GOV|DHVKey ())
+    ;;
+    (defun GOV|DALOS|SC_NAME ())
+    (defun GOV|ATS|SC_NAME ())
+    (defun GOV|VST|SC_NAME ())
+    (defun GOV|LIQUID|SC_NAME ())
+    (defun GOV|OUROBOROS|SC_NAME ())
+    (defun GOV|SWP|SC_NAME ())
+    (defun GOV|DHV1|SC_NAME ())
+    (defun GOV|DHV2|SC_NAME ())
+    ;;
+    (defun GOV|DALOS|PBL ())
+    (defun GOV|ATS|PBL ())
+    (defun GOV|VST|PBL ())
+    (defun GOV|LIQUID|PBL ())
+    (defun GOV|OUROBOROS|PBL ())
+    (defun GOV|SWP|PBL ())
+    (defun GOV|DHV|PBL ())
+    ;;
+    (defun DALOS|Info ())
+    (defun DALOS|VirtualGasData ())
+    ;;
+    ;;
+    ;;  [UR]
+    ;;
+    ;;  [0]     DALOS|KadenaLedger:{DALOS|KadenaSchema}
+    (defun UR_KadenaLedger:[string] (kadena:string))
+    ;;  [1]     DALOS|PropertiesTable:{DALOS|PropertiesSchema}
+    (defun UR_GAP:bool ())
+    (defun UR_DemiurgoiID:[string] ())
+    (defun UR_UnityID:string ())
+    (defun UR_OuroborosID:string ())
+    (defun UR_OuroborosPrice:decimal ())
+    (defun UR_IgnisID:string ())
+    (defun UR_AurynID:string ())
+    (defun UR_EliteAurynID:string ())
+    (defun UR_WrappedStoaID:string ())
+    (defun UR_SilverStoaID:string ())
+    (defun UR_GoldenStoaID:string ())
+    (defun UR_UrStoaID:string ())
+    (defun UR_DispoType:integer ())
+    (defun UR_DispoTDP:decimal ())
+    (defun UR_DispoTDS:decimal ())
+    (defun UR_OuroAutoPriceUpdate:bool ())
+    ;;  [2]     DALOS|GasManagementTable:{DALOS|GasManagementSchema}
+    (defun UR_Tanker:string ())
+    (defun UR_VirtualToggle:bool ())
+    (defun UR_VirtualSpent:decimal ())
+    (defun UR_NativeToggle:bool ())
+    (defun UR_NativeSpent:decimal ())
+    (defun UR_AutoFuel:bool ())
+    ;; [3]      DALOS|PricesTable:{DALOS|PricesSchema}
+    (defun UR_UsagePrice:decimal (action:string))
+    ;; [4]      DALOS|AccountTable:{DALOS|AccountSchema}
+    (defun UR_AccountPublicKey:string (account:string))
+    (defun UR_AccountGuard:guard (account:string))
+    (defun UR_AccountKadena:string (account:string))
+    (defun UR_AccountSovereign:string (account:string))
+    (defun UR_AccountGovernor:guard (account:string))
+    (defun UR_AccountProperties:[bool] (account:string))
+    (defun UR_AccountType:bool (account:string))
+    (defun UR_AccountPayableAs:bool (account:string))
+    (defun UR_AccountPayableBy:bool (account:string))
+    (defun UR_AccountPayableByMethod:bool (account:string))
+    (defun UR_AccountNonce:integer (account:string))
+    (defun UR_Elite (account:string))
+    ;;  [4.1]   ELITE Info
+    (defun UR_Elite-Class (account:string))
+    (defun UR_Elite-Name (account:string))
+    (defun UR_Elite-Tier (account:string))
+    (defun UR_Elite-Tier-Major:integer (account:string))
+    (defun UR_Elite-Tier-Minor:integer (account:string))
+    (defun UR_Elite-DEB (account:string))
+    ;;  [4.2]   TrueFungible INFO
+    (defun UR_TrueFungible:object{DPTF|BalanceSchema} (account:string snake-or-gas:bool))
+    (defun UR_TF_AccountSupply:decimal (account:string snake-or-gas:bool))
+    (defun UR_TF_AccountRoleBurn:bool (account:string snake-or-gas:bool))
+    (defun UR_TF_AccountRoleMint:bool (account:string snake-or-gas:bool))
+    (defun UR_TF_AccountRoleTransfer:bool (account:string snake-or-gas:bool))
+    (defun UR_TF_AccountRoleFeeExemption:bool (account:string snake-or-gas:bool))
+    (defun UR_TF_AccountFreezeState:bool (account:string snake-or-gas:bool))
+    (defun UR_AutonomicRoles:bool (account:string))
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_IgnisGasDiscount:decimal (account:string))
+    (defun URC_KadenaGasDiscount:decimal (account:string))
+    (defun URC_GasDiscount:decimal (account:string native:bool))
+    (defun URC_SplitKDAPrices:[decimal] (account:string kda-price:decimal))
+    (defun URC_Transferability:bool (sender:string receiver:string method:bool))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_NotSmartOuronetAccount (account:string))
+    (defun UEV_StandardAccOwn (account:string))
+    (defun UEV_SmartAccOwn (account:string))
+    (defun UEV_EnforceAccountExists (dalos-account:string))
+    (defun UEV_EnforceAccountType (account:string smart:bool))
+    (defun UEV_EnforceTransferability (sender:string receiver:string method:bool))
+    (defun UEV_SenderWithReceiver (sender:string receiver:string))
+        ;;
+    (defun UEV_KadenaCollectionState (state:bool))
+    (defun UEV_IgnisCollectionState (state:bool))
+    (defun UEV_IgnisCollectionRequirements ())
+        ;;
+    (defun UEV_Glyph (account:string))
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_TrueFungibleAccount:object{DPTF|BalanceSchema}
+        (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
+    )
+    (defun UDC_BlankTrueFungible:object{DPTF|BalanceSchema} (account:string))
+    ;;
+    ;;  [CAP]
+    ;;
+    (defun CAP_EnforceAccountOwnership (account:string))
+    ;;
+    ;;  [A]
+    ;;
+    (defun A_MigrateLiquidFunds:decimal (migration-target-kda-account:string))
+    (defun A_ToggleOAPU (oapu:bool))
+    (defun A_ToggleGAP (gap:bool))
+    (defun A_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string))
+    (defun A_DeployStandardAccount (account:string guard:guard kadena:string public:string))
+    (defun A_ToggleGasCollection (native:bool toggle:bool))
+    (defun A_SetIgnisSourcePrice (price:decimal))
+    (defun A_SetAutoFueling (toggle:bool))
+    (defun A_UpdatePublicKey (account:string new-public:string))
+    (defun A_UpdateUsagePrice (action:string new-price:decimal))
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_ControlSmartAccount
+        (account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
+    )
+    (defun C_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string))
+    (defun C_DeployStandardAccount (account:string guard:guard kadena:string public:string))
+    (defun C_RotateGovernor (account:string governor:guard))
+    (defun C_RotateGuard (account:string new-guard:guard safe:bool))
+    (defun C_RotateKadena (account:string kadena:string))
+    (defun C_RotateSovereign (account:string new-sovereign:string))
+    ;;
+    ;;  [X]
+    ;;
+    (defun XB_UpdateOuroPrice (price:decimal))
+    (defun XE_UpdateTreasury (type:integer tdp:decimal tds:decimal))
+    (defun XE_IgnisIncrement (native:bool increment:decimal))
+    (defun XE_IncrementOuronetAccountNonce (account:string))
+    (defun XE_UpdateElite (account:string amount:decimal))
+    (defun XB_UpdateBalance (account:string snake-or-gas:bool new-balance:decimal))
+    (defun XE_UpdateFreeze (account:string snake-or-gas:bool new-freeze:bool))
+    (defun XE_UpdateBurnRole (account:string snake-or-gas:bool new-burn:bool))
+    (defun XE_UpdateMintRole (account:string snake-or-gas:bool new-mint:bool))
+    (defun XE_UpdateFeeExemptionRole (account:string snake-or-gas:bool new-fee-exemption:bool))
+    (defun XE_UpdateTransferRole (account:string snake-or-gas:bool new-transfer:bool))
+)
+;;
 (module DALOS GOV
     ;;
     ;;Ouronet DALOS Gas-Station

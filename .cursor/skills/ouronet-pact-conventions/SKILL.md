@@ -7,7 +7,9 @@ description: Ouronet Pact conventions index. Canonical doc in repo — read Ouro
 
 **Read and follow completely:**
 
-[`OuronetInformational/ouronet/conventions/index.md`](../../../OuronetInformational/ouronet/conventions/index.md)
+- [`OuronetInformational/ouronet/conventions/index.md`](../../../OuronetInformational/ouronet/conventions/index.md) — hub checklist
+- [`OuronetInformational/pact/function-body-order.md`](../../../OuronetInformational/pact/function-body-order.md) — statement order inside caps/functions
+- [`OuronetInformational/ouronet/MODULE_ARCHITECTURE.md`](../../../OuronetInformational/ouronet/MODULE_ARCHITECTURE.md) — prefixes, FUNCTIONS block order
 
 Hub: [`OuronetInformational/INDEX.md`](../../../OuronetInformational/INDEX.md)
 

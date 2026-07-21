@@ -1,3 +1,64 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+(interface DpdcCreateV1
+    @doc "Exposes Collectables Create Functions, containining the Credit and Debit Variants"
+    ;;
+    ;;  [UC]
+    ;;
+    (defun UC_AndTruths:bool (truths:[bool]))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_NonceDataForCreation (ind:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UEV_NonceType (nonce:integer fragments-or-native:bool))
+    (defun UEV_NonceTypeMapper (nonces:[integer] fragments-or-native:bool))
+    (defun UEV_HybridNonces:object{OuronetIntegersV1.SplitIntegers} (nonces:[integer]))
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_CreateNewNonce:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool nonce-class:integer amount:integer
+            input-nonce-data:object{DpdcUdcV1.DPDC|NonceData} sft-set-mode:bool
+        )
+    )
+    (defun C_CreateNewNonces:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool amounts:[integer]
+            input-nonce-datas:[object{DpdcUdcV1.DPDC|NonceData}]
+        )
+    )
+    ;;
+    ;;  [X]
+    ;;
+    (defun XE_CreditSFT-FragmentNonce (account:string id:string nonce:integer amount:integer))
+    (defun XE_CreditNFT-FragmentNonce (account:string id:string nonce:integer amount:integer))
+    (defun XE_DebitSFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
+    (defun XE_DebitNFT-FragmentNonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
+    ;;
+    (defun XB_CreditSFT-Nonce (account:string id:string nonce:integer amount:integer))
+    (defun XB_CreditNFT-Nonce (account:string id:string nonce:integer amount:integer))
+    (defun XE_DebitSFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
+    (defun XE_DebitNFT-Nonce (account:string id:string nonce:integer amount:integer wipe-mode:bool))
+    ;;
+    (defun XE_CreditSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer]))
+    (defun XE_CreditNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer]))
+    (defun XE_DebitSFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
+    (defun XE_DebitNFT-FragmentNonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
+    ;;
+    (defun XB_CreditSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer]))
+    (defun XB_CreditNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer]))
+    (defun XE_DebitSFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
+    (defun XE_DebitNFT-Nonces (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool))
+    ;;
+    (defun XE_CreditSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
+    (defun XE_CreditNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
+    (defun XE_DebitSFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
+    (defun XE_DebitNFT-HybridNonces (account:string id:string nonces:[integer] amounts:[integer]))
+    ;;
+)
+;;
 (module DPDC-C GOV
     ;;
     (implements OuronetPolicyV1)

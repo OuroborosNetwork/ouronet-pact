@@ -1,4 +1,81 @@
 ;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface VestingV1
+    @doc "Exposes Vesting Functions"
+    ;;
+    ;;  SCHEMAS
+    ;;
+    (defschema VST|MetaDataSchema
+        release-amount:decimal
+        release-date:time
+    )
+    (defschema VST|HibernatingSchema
+        mint-time:time
+        release-date:time
+    )
+    ;;
+    ;;  [UC]
+    ;;
+    (defun UC_MergeAll:[decimal] (balances:[decimal] seconds-to-unsleep:[decimal]))
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_CullMetaDataAmountWithObject:list (id:string nonce:integer))
+    (defun URC_SecondsToUnlock:[decimal] (id:string nonces:[integer]))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_NoncesForMerging (nonces:[integer]))
+    (defun UEV_StillHasSleeping (sleeping-dpof:string nonce:integer))
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_ComposeVestingMetaData:[object{VST|MetaDataSchema}]
+        (dptf:string amount:decimal offset:integer duration:integer milestones:integer)
+    )
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_CreateFrozenLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+    (defun C_CreateReservationLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+    (defun C_CreateVestingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+    (defun C_CreateSleepingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+    (defun C_CreateHibernatingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+        ;;
+    (defun C_Freeze:object{IgnisCollectorV1.OutputCumulator} (freezer:string freeze-output:string dptf:string amount:decimal))
+    (defun C_RepurposeFrozen:object{IgnisCollectorV1.OutputCumulator} (dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV1.OutputCumulator} (s-dptf:string target:string toggle:bool))
+        ;;
+    (defun C_Reserve:object{IgnisCollectorV1.OutputCumulator} (reserver:string dptf:string amount:decimal))
+    (defun C_Unreserve:object{IgnisCollectorV1.OutputCumulator} (unreserver:string r-dptf:string amount:decimal))
+    (defun C_RepurposeReserved:object{IgnisCollectorV1.OutputCumulator} (dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun C_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV1.OutputCumulator} (s-dptf:string target:string toggle:bool))
+        ;;
+    (defun C_Vest:object{IgnisCollectorV1.OutputCumulator} (vester:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer))
+    (defun C_Unvest:object{IgnisCollectorV1.OutputCumulator} (unvester:string dpof:string nonce:integer))
+    (defun C_RepurposeVested:object{IgnisCollectorV1.OutputCumulator} (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+        ;;
+    (defun C_Sleep:object{IgnisCollectorV1.OutputCumulator} (sleeper:string target-account:string dptf:string amount:decimal duration:integer))
+    (defun C_Unsleep:object{IgnisCollectorV1.OutputCumulator} (unsleeper:string dpof:string nonce:integer))
+    (defun C_Merge:object{IgnisCollectorV1.OutputCumulator} (merger:string dpof:string nonces:[integer]))
+    (defun C_RepurposeMerge:object{IgnisCollectorV1.OutputCumulator} (dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
+    (defun C_RepurposeSleeping:object{IgnisCollectorV1.OutputCumulator} (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun C_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV1.OutputCumulator} (s-dpof:string target:string toggle:bool))
+    ;;
+    (defun C_Hibernate:object{IgnisCollectorV1.OutputCumulator} (hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
+    (defun C_Awake:object{IgnisCollectorV1.OutputCumulator} (awaker:string dpof:string nonce:integer))
+    (defun C_Slumber:object{IgnisCollectorV1.OutputCumulator} (merger:string dpof:string nonces:[integer]))
+    (defun C_RepurposeSlumber:object{IgnisCollectorV1.OutputCumulator} (dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
+    (defun C_RepurposeHibernating:object{IgnisCollectorV1.OutputCumulator} (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun C_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV1.OutputCumulator} (s-dpof:string target:string toggle:bool))
+    ;;
+    (defun C_Constrict:object{IgnisCollectorV1.OutputCumulator} (constricter:string ats:string rt:string amount:decimal dayz:integer))
+    (defun C_Brumate:object{IgnisCollectorV1.OutputCumulator} (brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
+    ;;
+)
+;;
 (module VST GOV
     ;;
     (implements OuronetPolicyV1)
@@ -422,11 +499,19 @@
     )
 
     (defcap VST|X>TOGGLE-SPECIAL-OF-TR (s-dpof:string target:string)
+        @doc "Parent ownership for transfer-role toggle. Sleeping LP (Z|W|/Z|S|/Z|P|) cannot use \
+            \ DPOF::UEV_ParentOwnership; gate on native LP DPTF owner instead."
         (let
             (
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
+                (fourth:string (drop 3 (take 4 s-dpof)))
             )
-            (ref-DPOF::UEV_ParentOwnership s-dpof)
+            (if (= fourth BAR)
+                (ref-DPTF::CAP_Owner (ref-DPOF::UR_Sleeping s-dpof))
+                (ref-DPOF::UEV_ParentOwnership s-dpof)
+            )
             (compose-capability (P|TT))
         )
     )

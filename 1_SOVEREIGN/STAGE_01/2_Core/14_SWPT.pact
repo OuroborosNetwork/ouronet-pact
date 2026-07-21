@@ -1,4 +1,35 @@
 ;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface SwapTracerV1
+    @doc "Exposes Tracer Functions, needed to compute Paths between Tokens existing on Liquidity Pools"
+    ;;
+    (defschema Edges
+        principal:string
+        swpairs:[string]
+    )
+    ;;
+    (defun UC_PSwpairsFTO:[string] (traces:[object{Edges}] id:string principal:string principals-lst:[string]))
+    (defun UC_PrincipalsFromTraces:[string] (traces:[object{Edges}]))
+    ;;
+    (defun UR_PathTrace:[object{Edges}] (id:string))
+    ;;
+    (defun URC_PathTracer:[object{Edges}] (old-path-tracer:[object{Edges}] id:string swpair:string principals-lst:[string]))
+    (defun URC_ContainsPrincipals:bool (swpair:string principals-lst:[string]))
+    (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string] principal-lst:[string]))
+    (defun URC_AllGraphPaths:[[string]] (input:string output:string swpairs:[string] principal-lst:[string]))
+    (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string] principal-lst:[string]))
+    (defun URC_TokenNeighbours:[string] (token-id:string principal-lst:[string]))
+    (defun URC_TokenSwpairs:[string] (token-id:string principal-lst:[string]))
+    (defun URC_PrincipalSwpairs:[string] (id:string principal:string principal-lst:[string]))
+    (defun URC_Edges:[string] (t1:string t2:string principal-lst:[string])) ;;1
+    ;;
+    (defun UEV_IdAsPrincipal (id:string for-trace:bool principals-lst:[string]))
+    ;;
+    (defun XE_MultiPathTracer (swpair:string principals-lst:[string]))
+)
+;;
 (module SWPT GOV
     ;;
     (implements OuronetPolicyV1)

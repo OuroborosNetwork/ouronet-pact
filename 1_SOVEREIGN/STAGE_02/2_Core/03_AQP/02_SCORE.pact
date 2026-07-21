@@ -5,6 +5,7 @@
     (defun UCK_NFScore:string (score-id:string dpnf-id:string trait-key:string trait-value:string dpnf-nonce-class:integer))
     (defun UCK_SFDefRevision:string (score-id:string dpsf-id:string))
     (defun UCK_NFDefRevision:string (score-id:string dpnf-id:string))
+    (defun UCK_Triplet:string (bronze-score-id:string silver-score-id:string golden-score-id:string))
     ;;
     ;;  [UR]
     (defun UR_SCR|AllScoreIds:[string] ())
@@ -56,6 +57,18 @@
     (defun UR_N-DEF-REV|NFDefRevisionClassRevisionNonce:integer (score-id:string dpnf-id:string))
     (defun UR_N-DEF-REV|NFDefRevisionScoreId:string (score-id:string dpnf-id:string))
     (defun UR_N-DEF-REV|NFDefRevisionDpnfId:string (score-id:string dpnf-id:string))
+    (defun UR_SCR|TripletBronzeScoreId:string (triplet-id:string))
+    (defun UR_SCR|TripletSilverScoreId:string (triplet-id:string))
+    (defun UR_SCR|TripletGoldenScoreId:string (triplet-id:string))
+    (defun UR_SCR|TripletCategory:string (triplet-id:string))
+    (defun UR_SCR|TripletId:string (triplet-id:string))
+    (defun UR_SCR|TripletTrueTriplet:bool (triplet-id:string))
+    (defun UR_SCR|ScoreTriplet:bool (score-id:string))
+    (defun UR_SCR|ScoreTripletId:string (score-id:string))
+    (defun URC_TripletExists:bool (triplet-id:string))
+    (defun URC_TripletCategoryMatchesFvtClass:bool (triplet-category:string fvt-class:integer))
+    (defun URC_IsTrueTriplet:bool (id0:string id1:string id2:string))
+    (defun URD_UserScoreStakerAccounts:[string] (pool-id:string score-id:string))
     ;;
     ;;  [UEV]
     (defun UEV_IMC ())
@@ -84,6 +97,9 @@
     (defun C_CreateBoostClassLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string boost-class-id:string))
     (defun C_CreateBoostLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string boost-score-id:string))
     (defun C_EnableDebBoost:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
+    (defun C_IssueTriplet:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+    )
     (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
     )
@@ -257,6 +273,8 @@
         boost-link:string           ;;[..]  BAR = own base for promile; else other score-id (≠ this score-id per SCR|C>CREATE-BOOST-LINK-SCORE).
         aqpool-link:string          ;;[..]  Specifies the Pool that employs the Score. BAR if not in use.
         fvt-link:string             ;;[..]  Specifies the FVT the Score is part of. BAR if not in use.
+        triplet:bool                ;;[..]  false at issue; true once bundled in SCR|T|Triplet (immutable).
+        triplet-id:string           ;;[..]  BAR until triplet issue; then T|bronze|silver|golden (immutable).
         ;;Score Information
         deb-boost:bool              ;;[.t]  Specifies if DEB boosting occurs.
         precision:integer           ;;[.]   Decimal places for per-user weights and aggregate total-* fields on this score; range enforced at issuance; forward writers must respect it.
@@ -378,6 +396,18 @@
         score-id:string
         dpnf-id:string
     )
+    ;;8] SCR|T|Triplet
+    (defschema SCR|Triplet
+        @doc "Key = T|<bronze-score-id>|<silver-score-id>|<golden-score-id>. Bundles three SCORE rows for FVT TripletLink membership. \
+            \ Positions bronze/silver/golden are id slots only (not boost roles). true-triplet when one score has BAR boost-link and the other two boost-link to it. \
+            \ Tags: [.] fixed at issue."
+        bronze-score-id:string                               ;;[.]   First score id slot
+        silver-score-id:string                               ;;[.]   Second score id slot
+        golden-score-id:string                               ;;[.]   Third score id slot
+        triplet-category:string                              ;;[.]   LP | VAULT_TF | TREASURY_SF_NF (from shared score-class)
+        triplet-id:string                                    ;;[.]   Select key T|bronze|silver|golden
+        true-triplet:bool                                    ;;[.]   Boost-anchored bundle (one BAR hub, two satellites)
+    )
     ;;
     ;;{2}
     (deftable SCR|T|Score:{SCR|Schema})                         ;;1] Key = <Score-ID>
@@ -387,6 +417,7 @@
     (deftable SCR|T|NF|ClassScore:{SCR|NF|ClassSchema})         ;;5] Key = <Score-ID> | <DPNF-ID> | <DPNF-Nonce-Class>
     (deftable SCR|T|SF|DefRevision:{SCR|SF|DefRevision})        ;;6] Key = <Score-ID> | <DPSF-ID>
     (deftable SCR|T|NF|DefRevision:{SCR|NF|DefRevision})        ;;7] Key = <Score-ID> | <DPNF-ID>
+    (deftable SCR|T|Triplet:{SCR|Triplet})                      ;;8] Key = <Triplet-ID>
     ;;{3}
     (defun CT_Bar ()
         @doc "Returns CT_BAR constant."
@@ -394,6 +425,7 @@
     )
     (defconst BAR                                               (CT_Bar))
     (defconst GAS|ISSUE-SCORE                                   1000.0)
+    (defconst GAS|ISSUE-TRIPLET                                 500.0)
     (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2)))
     (defconst EOC                                               (CT_EmptyCumulator))
     (defun CT_AqpScName:string
@@ -435,16 +467,7 @@
                 ;;
                 (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
             )
-            ;;1]Validate <score-name>
-            (ref-U|ATS::UEV_AutostakeIndex score-name)
-            ;;2]Validate <owner-konto> Ownership and that is Standard Ouronet Account
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
-            (ref-DALOS::UEV_EnforceAccountType owner-konto false)
-            ;;2b]Validate <mx-frozen>, <mx-sleeping>, <mx-hibernated> as fee decimals (DALOS UEV_Fee)
-            (ref-U|DALOS::UEV_Fee mx-frozen)
-            (ref-U|DALOS::UEV_Fee mx-sleeping)
-            (ref-U|DALOS::UEV_Fee mx-hibernated)
-            ;;3]Validate <score-class>, <mx-frozen>, <mx-sleeping>, <mx-hibernated> and <nft-score-model>
+            ;;1]Validate <score-class>, <mx-frozen>, <mx-sleeping>, <mx-hibernated> and <nft-score-model>
             (enforce
                 (fold (and) true
                     [
@@ -460,7 +483,7 @@
                 )
                 "Invalid precision, score-class, mx-frozen, mx-sleeping, mx-hibernated or nft-score-model"
             )
-            ;;4]Validate <lp-denominator>: class 0 requires non-BAR native DPTF id; classes 1-4 require BAR
+            ;;2]Validate <lp-denominator>: class 0 requires non-BAR native DPTF id; classes 1-4 require BAR
             (enforce
                 (if (= score-class 0)
                     (!= lp-denominator BAR)
@@ -468,6 +491,15 @@
                 )
                 "lp-denominator must be non-BAR for class 0 and BAR for classes 1-4"
             )
+            ;;3]Validate <score-name>
+            (ref-U|ATS::UEV_AutostakeIndex score-name)
+            ;;4]Validate <owner-konto> Ownership and that is Standard Ouronet Account
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (ref-DALOS::UEV_EnforceAccountType owner-konto false)
+            ;;5]Validate <mx-frozen>, <mx-sleeping>, <mx-hibernated> as fee decimals (DALOS UEV_Fee)
+            (ref-U|DALOS::UEV_Fee mx-frozen)
+            (ref-U|DALOS::UEV_Fee mx-sleeping)
+            (ref-U|DALOS::UEV_Fee mx-hibernated)
             (if (= score-class 0)
                 (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF))
                     (ref-DPTF::UEV_id lp-denominator)
@@ -531,12 +563,12 @@
                 (owner-now:string (UR_SCR|ScoreOwnerKonto score-id))
                 (can-change-owner:bool (UR_SCR|ScoreCanChangeOwner score-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-now)
-            (ref-DALOS::UEV_EnforceAccountType new-owner-konto false)
             (enforce
                 (and can-change-owner (!= new-owner-konto owner-now))
                 "Score owner rotation requires can-change-owner true and a distinct new owner-konto"
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-now)
+            (ref-DALOS::UEV_EnforceAccountType new-owner-konto false)
             (compose-capability (SECURE))
         )
     )
@@ -550,8 +582,8 @@
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (can-upgrade:bool (UR_SCR|ScoreCanUpgrade score-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce can-upgrade "Score control requires can-upgrade true")
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
@@ -565,8 +597,8 @@
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (deb-boost:bool (UR_SCR|ScoreDebBoost score-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce (not deb-boost) "DEB boost is already enabled and cannot be disabled")
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
@@ -592,7 +624,6 @@
                 (max-input-nonce:integer (if (> l1 0) (ref-U|INT::UC_MaxInteger nonces) 0))
                 (nonces-used:integer (ref-DPDC::UR_NoncesUsed dpsf-id true))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce
                 (fold (and) true
                     [
@@ -605,6 +636,7 @@
                 )
                 "Invalid score/dpsf inputs: score must exist, sft-equality false, nonce/value lists aligned, and max nonce <= DPDC nonces-used"
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (map
                 (lambda
                     (idx:integer)
@@ -662,12 +694,12 @@
                 (score-row-id:string (UR_SCR|ScoreScoreId score-id))
                 (score-class:integer (UR_SCR|ScoreClass score-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
-            (ref-DPDC::UEV_id dpnf-id false)
             (enforce
                 (and (= score-row-id score-id) (= score-class 4))
                 "Invalid score/dpnf: score must exist as DPNF (class 4) with matching score-id"
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (ref-DPDC::UEV_id dpnf-id false)
             (compose-capability (SECURE))
         )
     )
@@ -682,12 +714,12 @@
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (current-link:string (UR_SCR|ScoreBoostClassLink score-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce
                 (and (= current-link BAR) (!= boost-class-id BAR))
                 "Boost-class-link slot must be unset and boost-class-id must be non-BAR"
             )
             (enforce (ref-ANK::UR_BC|Active boost-class-id) "BoostClass must be active")
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
@@ -702,7 +734,6 @@
                 (boost-link:string (UR_SCR|ScoreBoostLink score-id))
                 (boost-row-sid:string (UR_SCR|ScoreScoreId boost-score-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce
                 (fold (and) true
                     [
@@ -714,6 +745,67 @@
                 )
                 "SCR|C>CREATE-BOOST-LINK-SCORE: boost-link slot must be BAR; boost-score-id must exist, be non-BAR, and must not equal this score-id (no self-link)"
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
+    )
+    (defcap SCR|C>ISSUE-TRIPLET
+        (bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Issue one immutable SCR|T|Triplet row T|bronze|silver|golden and mark all three scores triplet=true. \
+            \ Any three distinct scores of the same score-class and owner may bundle; boost topology is not required (true-triplet flag records boost-anchored shape). \
+            \ Duplicate combo fails at WI_Triplet insert; each score may belong to at most one triplet. Composes SECURE."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto bronze-score-id))
+                (bronze-row-sid:string (UR_SCR|ScoreScoreId bronze-score-id))
+                (silver-row-sid:string (UR_SCR|ScoreScoreId silver-score-id))
+                (golden-row-sid:string (UR_SCR|ScoreScoreId golden-score-id))
+                (bronze-owner:string (UR_SCR|ScoreOwnerKonto bronze-score-id))
+                (silver-owner:string (UR_SCR|ScoreOwnerKonto silver-score-id))
+                (golden-owner:string (UR_SCR|ScoreOwnerKonto golden-score-id))
+                (class-b:integer (UR_SCR|ScoreClass bronze-score-id))
+                (class-s:integer (UR_SCR|ScoreClass silver-score-id))
+                (class-g:integer (UR_SCR|ScoreClass golden-score-id))
+                (cat:string (URC_TripletCategoryForClass class-b))
+            )
+            (enforce
+                (fold (and) true
+                    [
+                        (= bronze-row-sid bronze-score-id)
+                        (= silver-row-sid silver-score-id)
+                        (= golden-row-sid golden-score-id)
+                        (!= bronze-score-id silver-score-id)
+                        (!= bronze-score-id golden-score-id)
+                        (!= silver-score-id golden-score-id)
+                        (= bronze-owner owner-konto)
+                        (= silver-owner owner-konto)
+                        (= golden-owner owner-konto)
+                        (= class-b class-s)
+                        (= class-s class-g)
+                        (!= cat "INVALID")
+                        (not (UR_SCR|ScoreTriplet bronze-score-id))
+                        (not (UR_SCR|ScoreTriplet silver-score-id))
+                        (not (UR_SCR|ScoreTriplet golden-score-id))
+                    ]
+                )
+                "SCR|C>ISSUE-TRIPLET: scores must exist, be distinct, same owner and score-class, valid category, not already in a triplet"
+            )
+            (if (= class-b 0)
+                (enforce
+                    (and
+                        (= (UR_SCR|ScoreLpDenominator bronze-score-id)
+                           (UR_SCR|ScoreLpDenominator silver-score-id))
+                        (= (UR_SCR|ScoreLpDenominator silver-score-id)
+                           (UR_SCR|ScoreLpDenominator golden-score-id))
+                    )
+                    "LP triplet requires identical lp-denominator on all three scores"
+                )
+                true
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
@@ -727,11 +819,11 @@
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (aqpool-link:string (UR_SCR|ScoreAqpoolLink score-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce
                 (and (= aqpool-link BAR) (!= pool-id BAR))
                 "Aqpool link slot must be unset and pool-id must be non-BAR"
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
@@ -745,11 +837,11 @@
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (aqpool-link:string (UR_SCR|ScoreAqpoolLink score-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce
                 (and (= aqpool-link pool-id) (!= pool-id BAR))
                 "Aqpool link must match pool-id and pool-id must be non-BAR"
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
@@ -763,11 +855,11 @@
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (fvt-link:string (UR_SCR|ScoreFvtLink score-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce
                 (and (= fvt-link BAR) (!= fvt-id BAR))
                 "FVT link slot must be unset and fvt-id must be non-BAR"
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
@@ -786,9 +878,9 @@
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
             )
-            (UEV_LpStakeScoreContext ouronet-account pool-id score-id lp-id)
             (ref-DPTF::UEV_id lp-id)
             (ref-DPTF::UEV_Amount lp-id lp-amount)
+            (UEV_LpStakeScoreContext ouronet-account pool-id score-id lp-id)
         )
         (compose-capability (SECURE))
     )
@@ -812,7 +904,6 @@
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-amounts))
             )
-            (UEV_LpStakeScoreContext ouronet-account pool-id score-id dpof-id)
             (enforce
                 (fold (and) true
                     [
@@ -836,6 +927,7 @@
                 )
                 (enumerate 0 (- l1 1))
             )
+            (UEV_LpStakeScoreContext ouronet-account pool-id score-id dpof-id)
         )
         (compose-capability (SECURE))
     )
@@ -856,9 +948,9 @@
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
             )
-            (UEV_DptfStakeScoreContext ouronet-account pool-id score-id)
             (ref-DPTF::UEV_id dptf-id)
             (ref-DPTF::UEV_Amount dptf-id dptf-amount)
+            (UEV_DptfStakeScoreContext ouronet-account pool-id score-id)
         )
         (compose-capability (SECURE))
     )
@@ -881,7 +973,6 @@
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-amounts))
             )
-            (UEV_DpofStakeScoreContext ouronet-account pool-id score-id)
             (enforce
                 (fold (and) true [(= l1 l2) (> l1 0)])
                 "DPOF stake score update: nonces and nonce-amounts must have equal positive length"
@@ -893,6 +984,7 @@
                 )
                 (enumerate 0 (- l1 1))
             )
+            (UEV_DpofStakeScoreContext ouronet-account pool-id score-id)
         )
         (compose-capability (SECURE))
     )
@@ -916,7 +1008,6 @@
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-amounts))
             )
-            (UEV_DpofStakeScoreContext ouronet-account pool-id score-id)
             (enforce
                 (fold (and) true [(= l1 l2) (> l1 0)])
                 "special DPOF stake score update: nonces and nonce-amounts must have equal positive length"
@@ -928,6 +1019,7 @@
                 )
                 (enumerate 0 (- l1 1))
             )
+            (UEV_DpofStakeScoreContext ouronet-account pool-id score-id)
         )
         (compose-capability (SECURE))
     )
@@ -949,7 +1041,6 @@
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-amounts))
             )
-            (UEV_DpsfStakeScoreContext ouronet-account pool-id score-id)
             (enforce
                 (fold (and) true [(= l1 l2) (> l1 0)])
                 "DPSF stake score update: nonces and nonce-amounts must have equal positive length"
@@ -968,6 +1059,7 @@
                 )
                 (enumerate 0 (- l1 1))
             )
+            (UEV_DpsfStakeScoreContext ouronet-account pool-id score-id)
         )
         (compose-capability (SECURE))
     )
@@ -989,7 +1081,6 @@
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-amounts))
             )
-            (UEV_DpnfStakeScoreContext ouronet-account pool-id score-id)
             (enforce
                 (fold (and) true [(= l1 l2) (> l1 0)])
                 "DPNF stake score update: nonces and nonce-amounts must have equal positive length"
@@ -1008,6 +1099,7 @@
                 )
                 (enumerate 0 (- l1 1))
             )
+            (UEV_DpnfStakeScoreContext ouronet-account pool-id score-id)
         )
         (compose-capability (SECURE))
     )
@@ -1043,6 +1135,14 @@
         @doc "Composite key for SCR|T|NF|DefRevision: score-id | dpnf-id."
         (concat [score-id BAR dpnf-id])
     )
+    (defun UCK_Triplet:string (bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Composite key for SCR|T|Triplet: T | bronze | silver | golden."
+        (UC_ComputeTripletId bronze-score-id silver-score-id golden-score-id)
+    )
+    (defun UC_ComputeTripletId:string (bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Pure: canonical triplet id T|bronze|silver|golden."
+        (concat ["T" BAR bronze-score-id BAR silver-score-id BAR golden-score-id])
+    )
     ;;
     ;; Early UDC: SCR|UserSchema constructor is required before UR_U-SCR|UserScore (with-default-read default object).
     (defun UDC_SCR|UserSchema:object{SCR|UserSchema}
@@ -1077,7 +1177,7 @@
     ;;
     ;;{F3}  [UDC] — schema / NF / SF constructors (after early UserSchema UDC)
     (defun UDC_SCR|Schema:object{SCR|Schema}
-        (a:string b:bool c:bool d:string e:string f:string g:string h:bool i:integer j:decimal k:decimal l:decimal m:integer n:integer o:string p:decimal q:decimal r:decimal s:bool t:integer u:string)
+        (a:string b:bool c:bool d:string e:string f:string g:string v:bool w:string h:bool i:integer j:decimal k:decimal l:decimal m:integer n:integer o:string p:decimal q:decimal r:decimal s:bool t:integer u:string)
         @doc "Core constructor for object{SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers)."
         {"owner-konto"          : a
         ,"can-upgrade"          : b
@@ -1086,6 +1186,8 @@
         ,"boost-link"           : e
         ,"aqpool-link"          : f
         ,"fvt-link"             : g
+        ,"triplet"              : v
+        ,"triplet-id"           : w
         ,"deb-boost"            : h
         ,"precision"            : i
         ,"total-base-score"     : j
@@ -1142,8 +1244,18 @@
         ,"score-id"              : score-id
         ,"dpnf-id"               : dpnf-id}
     )
+    (defun UDC_SCR|Triplet:object{SCR|Triplet}
+        (bronze-score-id:string silver-score-id:string golden-score-id:string triplet-category:string triplet-id:string true-triplet:bool)
+        @doc "Core constructor for object{SCR|Triplet}."
+        {"bronze-score-id"  : bronze-score-id
+        ,"silver-score-id"  : silver-score-id
+        ,"golden-score-id"  : golden-score-id
+        ,"triplet-category" : triplet-category
+        ,"triplet-id"       : triplet-id
+        ,"true-triplet"     : true-triplet}
+    )
     ;;{FW}  [W]
-    ;; Seven blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
+    ;; Nine blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
     ;;
     ;; [1] SCR|T|Score  (SCR|Schema)  Key = <Score-ID>
@@ -1198,6 +1310,12 @@
         (require-capability (SECURE))
         (update SCR|T|Score score-id {"fvt-link": fvt-id})
     )
+    (defun WU2_Score|TripletMembership:string
+        (score-id:string triplet-id:string)
+        @doc "Set triplet true and triplet-id on score (C_IssueTriplet only; immutable thereafter)."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id {"triplet": true, "triplet-id": triplet-id})
+    )
     (defun WU3_Score|VaultTotals:string
         (score-id:string scr:object{SCR|Schema} d:object{SCR|SingularUserScoreDelta})
         @doc "Apply aggregate total-base/total-boosted/total-deb deltas on SCR|T|Score at score precision."
@@ -1229,6 +1347,8 @@
             (update SCR|T|Score score-id {"nzs-count": new-nzs})
         )
     )
+    ;; WU_Score|Triplet — not used at issue; set via WU2_Score|TripletMembership at C_IssueTriplet only.
+    ;; WU_Score|TripletId — mutates via WU2_Score|TripletMembership.
     ;; WU_Score|Precision — not mutable [.]
     ;; WU_Score|ScoreClass — not mutable [.]
     ;; WU_Score|LpDenominator — not mutable [.]
@@ -1320,6 +1440,14 @@
     ;; WU_NFDefRevision|ScoreId — select key; WU not needed.
     ;; WU_NFDefRevision|DpnfId — select key; WU not needed.
     ;;
+    ;; [8] SCR|T|Triplet  (SCR|Triplet)  Key = <Triplet-ID>
+    (defun WI_Triplet:string
+        (triplet-id:string row:object{SCR|Triplet})
+        @doc "Insert SCR|T|Triplet full row (C_IssueTriplet only)."
+        (require-capability (SECURE))
+        (insert SCR|T|Triplet triplet-id row)
+    )
+    ;;
     ;;
     ;;{F0}  [UR]
     ;; Reads follow schema order: (1) SCR|Schema (2) SCR|UserSchema (3) SCR|SF|Schema (4) SCR|NF|TraitSchema (5) SCR|NF|ClassSchema (6) SF DefRevision (7) NF DefRevision
@@ -1360,6 +1488,14 @@
     (defun UR_SCR|ScoreFvtLink:string (score-id:string)
         @doc "Reads fvt-link from score row."
         (at "fvt-link" (read SCR|T|Score score-id ["fvt-link"]))
+    )
+    (defun UR_SCR|ScoreTriplet:bool (score-id:string)
+        @doc "Reads triplet flag from score row."
+        (at "triplet" (read SCR|T|Score score-id ["triplet"]))
+    )
+    (defun UR_SCR|ScoreTripletId:string (score-id:string)
+        @doc "Reads triplet-id from score row; BAR when score is not in any triplet."
+        (at "triplet-id" (read SCR|T|Score score-id ["triplet-id"]))
     )
     (defun UR_SCR|ScoreDebBoost:bool (score-id:string)
         @doc "Reads deb-boost from score row."
@@ -1591,6 +1727,80 @@
         (at "dpnf-id" (read SCR|T|NF|DefRevision (UCK_NFDefRevision score-id dpnf-id) ["dpnf-id"]))
     )
     ;;
+    ;; [8] SCR|T|Triplet  (SCR|Triplet)  Key = <Triplet-ID>
+    (defun UR_SCR|Triplet:object{SCR|Triplet} (triplet-id:string)
+        @doc "Reads full triplet bundle row."
+        (read SCR|T|Triplet triplet-id)
+    )
+    (defun UR_SCR|TripletBronzeScoreId:string (triplet-id:string)
+        @doc "Reads bronze-score-id from triplet row."
+        (at "bronze-score-id" (read SCR|T|Triplet triplet-id ["bronze-score-id"]))
+    )
+    (defun UR_SCR|TripletSilverScoreId:string (triplet-id:string)
+        @doc "Reads silver-score-id from triplet row."
+        (at "silver-score-id" (read SCR|T|Triplet triplet-id ["silver-score-id"]))
+    )
+    (defun UR_SCR|TripletGoldenScoreId:string (triplet-id:string)
+        @doc "Reads golden-score-id from triplet row."
+        (at "golden-score-id" (read SCR|T|Triplet triplet-id ["golden-score-id"]))
+    )
+    (defun UR_SCR|TripletCategory:string (triplet-id:string)
+        @doc "Reads triplet-category from triplet row."
+        (at "triplet-category" (read SCR|T|Triplet triplet-id ["triplet-category"]))
+    )
+    (defun UR_SCR|TripletId:string (triplet-id:string)
+        @doc "Reads triplet-id from triplet row (identity check)."
+        (at "triplet-id" (read SCR|T|Triplet triplet-id ["triplet-id"]))
+    )
+    (defun UR_SCR|TripletTrueTriplet:bool (triplet-id:string)
+        @doc "Reads true-triplet flag (boost-anchored bundle) from triplet row."
+        (at "true-triplet" (read SCR|T|Triplet triplet-id ["true-triplet"]))
+    )
+    (defun URC_TripletExists:bool (triplet-id:string)
+        @doc "True when SCR|T|Triplet row exists (with-default-read; no keys scan)."
+        (with-default-read SCR|T|Triplet triplet-id
+            (UDC_SCR|Triplet BAR BAR BAR BAR BAR false)
+            { "bronze-score-id" := bronze-score-id }
+            (!= bronze-score-id BAR)
+        )
+    )
+    (defun URC_TripletCategoryForClass:string (score-class:integer)
+        @doc "Maps score-class to triplet-category band: LP | VAULT_TF | TREASURY_SF_NF | INVALID."
+        (cond
+            ((= score-class 0) "LP")
+            ((or (= score-class 1) (= score-class 2)) "VAULT_TF")
+            ((or (= score-class 3) (= score-class 4)) "TREASURY_SF_NF")
+            "INVALID"
+        )
+    )
+    (defun URC_TripletCategoryMatchesFvtClass:bool (triplet-category:string fvt-class:integer)
+        @doc "FVT admission: LP↔0, VAULT_TF↔1, TREASURY_SF_NF↔2."
+        (or
+            (and (= triplet-category "LP") (= fvt-class 0))
+            (or
+                (and (= triplet-category "VAULT_TF") (= fvt-class 1))
+                (and (= triplet-category "TREASURY_SF_NF") (= fvt-class 2))
+            )
+        )
+    )
+    (defun URC_IsTrueTriplet:bool (id0:string id1:string id2:string)
+        @doc "True when exactly one score has BAR boost-link and the other two boost-link to that score id (boost-anchored / lane-ready bundle)."
+        (let
+            (
+                (boost0:string (UR_SCR|ScoreBoostLink id0))
+                (boost1:string (UR_SCR|ScoreBoostLink id1))
+                (boost2:string (UR_SCR|ScoreBoostLink id2))
+            )
+            (or
+                (and (= boost0 BAR) (and (= boost1 id0) (= boost2 id0)))
+                (or
+                    (and (= boost1 BAR) (and (= boost0 id1) (= boost2 id1)))
+                    (and (= boost2 BAR) (and (= boost0 id2) (= boost1 id2)))
+                )
+            )
+        )
+    )
+    ;;
     ;;{F1}  [URD]
     (defun URD_NF|TraitRows:[object] (score-id:string dpnf-id:string)
         @doc "Expensive read: selects all trait definition rows for (score-id, dpnf-id)."
@@ -1616,6 +1826,27 @@
             (and?
                 (where "score-id" (= score-id))
                 (where "dpsf-id" (= dpsf-id))
+            )
+        )
+    )
+    (defun URD_UserScoreStakerAccounts:[string] (pool-id:string score-id:string)
+        @doc "Distinct ouronet-accounts with deb-score > 0 on pool × score (farm triplet Tier-2 denominator scan)."
+        (distinct
+            (map
+                (lambda (row:object)
+                    (at "ouronet-account" row)
+                )
+                (filter
+                    (lambda (row:object)
+                        (> (at "deb-score" row) 0.0)
+                    )
+                    (select SCR|T|UserScore ["ouronet-account" "deb-score"]
+                        (and?
+                            (where "pool-id" (= pool-id))
+                            (where "score-id" (= score-id))
+                        )
+                    )
+                )
             )
         )
     )
@@ -2199,8 +2430,6 @@
                 (swpair:string (ref-SWP::UR_GetLpSwpair native-lp))
                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
             )
-            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
-            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
             (enforce
                 (fold (and) true
                     [
@@ -2211,6 +2440,8 @@
                 )
                 "LP stake score context: pool-id, score-class, or LP pair vs lp-denominator mismatch"
             )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
         )
     )
     (defun UEV_DptfStakeScoreContext
@@ -2221,8 +2452,6 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
-            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
             (enforce
                 (fold (and) true
                     [
@@ -2232,6 +2461,8 @@
                 )
                 "DPTF stake score context: pool-id must match aqpool-link and score-class must be 1 (true fungible score)"
             )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
         )
     )
     (defun UEV_DpofStakeScoreContext
@@ -2242,8 +2473,6 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
-            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
             (enforce
                 (fold (and) true
                     [
@@ -2253,6 +2482,8 @@
                 )
                 "DPOF stake score context: pool-id must match aqpool-link and score-class must be 2 (orto fungible score)"
             )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
         )
     )
     (defun UEV_DpsfStakeScoreContext
@@ -2263,8 +2494,6 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
-            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
             (enforce
                 (fold (and) true
                     [
@@ -2274,6 +2503,8 @@
                 )
                 "DPSF stake score context: pool-id must match aqpool-link and score-class must be 3 (semi-fungible score)"
             )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
         )
     )
     (defun UEV_DpnfStakeScoreContext
@@ -2284,8 +2515,6 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
-            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
             (enforce
                 (fold (and) true
                     [
@@ -2295,6 +2524,8 @@
                 )
                 "DPNF stake score context: pool-id must match aqpool-link and score-class must be 4 (non-fungible score)"
             )
+            (ref-DALOS::UEV_EnforceAccountExists ouronet-account)
+            (ref-DALOS::UEV_EnforceAccountType ouronet-account false)
         )
     )
     (defun UEV_NonFungibleScoreDefinition
@@ -2637,6 +2868,25 @@
             (ref-IGNIS::UDC_MediumCumulator owner-konto)
         )
     )
+    (defun C_IssueTriplet:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Bundle three issued scores into one triplet T|bronze|silver|golden. Silver score owner; costs GAS|ISSUE-TRIPLET IGNIS."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-konto:string (UR_SCR|ScoreOwnerKonto silver-score-id))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (SCR|C>ISSUE-TRIPLET bronze-score-id silver-score-id golden-score-id)
+                (XI_IssueTriplet bronze-score-id silver-score-id golden-score-id)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-TRIPLET owner-konto trigger
+                [(UC_ComputeTripletId bronze-score-id silver-score-id golden-score-id)]
+            )
+        )
+    )
     ;;DPDC granular definitions
     (defun C_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
@@ -2731,7 +2981,7 @@
             nft-score-model:integer
         )
         @doc "Inserts SCR|T|Score under SCR|XI>ISSUE-SCORE (cap omits sft-equality). score-id from UDC_Makeid(score-name); \
-            \ can-upgrade and can-change-owner true; links BAR; deb-boost false; totals zero. Write only — no OutputCumulator; C_Issue* builds IGNIS."
+            \ can-upgrade and can-change-owner true; links BAR; triplet false / triplet-id BAR; deb-boost false; totals zero. Write only — no OutputCumulator; C_Issue* builds IGNIS."
         (require-capability
             (SCR|XI>ISSUE-SCORE
                 score-name owner-konto precision score-class
@@ -2749,6 +2999,7 @@
                 (UDC_SCR|Schema
                     owner-konto true true
                     BAR BAR BAR BAR
+                    false BAR
                     false
                     precision
                     0.0 0.0 0.0 0
@@ -2776,6 +3027,26 @@
         @doc "Under SECURE (from SCR|C>ENABLE-DEB-BOOST-SCORE): set deb-boost true only. Write only; C_EnableDebBoost builds IGNIS cumulator."
         ;; SECURE: granted by WU_Score|DebBoost (underlying W_).
         (WU_Score|DebBoost score-id)
+    )
+    (defun XI_IssueTriplet:string
+        (bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Under SCR|C>ISSUE-TRIPLET: insert triplet row (true-triplet from boost topology) and mark all three scores triplet=true. Write only."
+        (require-capability (SCR|C>ISSUE-TRIPLET bronze-score-id silver-score-id golden-score-id))
+        (let
+            (
+                (class:integer (UR_SCR|ScoreClass bronze-score-id))
+                (cat:string (URC_TripletCategoryForClass class))
+                (triplet-id:string (UC_ComputeTripletId bronze-score-id silver-score-id golden-score-id))
+                (is-true:bool (URC_IsTrueTriplet bronze-score-id silver-score-id golden-score-id))
+            )
+            (WI_Triplet triplet-id
+                (UDC_SCR|Triplet bronze-score-id silver-score-id golden-score-id cat triplet-id is-true)
+            )
+            (WU2_Score|TripletMembership bronze-score-id triplet-id)
+            (WU2_Score|TripletMembership silver-score-id triplet-id)
+            (WU2_Score|TripletMembership golden-score-id triplet-id)
+            triplet-id
+        )
     )
     (defun XI_IssueSemiFungibleScoreDefinition:string
         (score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
@@ -3274,3 +3545,4 @@
 (create-table SCR|T|NF|ClassScore)
 (create-table SCR|T|SF|DefRevision)
 (create-table SCR|T|NF|DefRevision)
+(create-table SCR|T|Triplet)

@@ -22,5 +22,61 @@
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 (print (format "<(AQP-BOOT|C_Step0_WireImcAndGovernor)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
 (commit-tx)
+(begin-tx "TX-BOOT-04 - AQP-BOOT Step4 core scores")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart"))))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (print (format "<(AQP-BOOT|C_Step4_CreateCoreScores)> => \"{}\"" [(AQP-BOOT.C_Step4_CreateCoreScores patron owner-konto)]))
+)
+(env-sigs [])
+(commit-tx)
+(begin-tx "TX-BOOT-05 - AQP-BOOT Step5 subsidiary scores")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices patron (* 5.0 (ref-DALOS::UR_UsagePrice "smart"))))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (print (format "<(AQP-BOOT|C_Step5_CreateSubsidiaryScores)> => \"{}\"" [(AQP-BOOT.C_Step5_CreateSubsidiaryScores patron owner-konto)]))
+)
+(env-sigs [])
+(commit-tx)
 (load "Stage_02/[6.2.9]_AQP-BOOT-FULL.repl")
 (load "Stage_02/[6.4]_AQP-TRIPLET-DIAG.repl")

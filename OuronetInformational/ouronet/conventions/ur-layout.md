@@ -23,6 +23,7 @@
 7. **`with-default-read` lives in `UR_*`** — Full-row (and dispatch) **`UR_*`** use **`with-default-read`** for absent keys. **`XI_*`** reads prior state via **`UR_*`**, then **`write`**. See **`OuronetInformational/ouronet/conventions/ur-and-w-writes.md`**.
 
 8. **`let` layout when mixing refs and vars** — All **`(ref-*:module{…} …)`** bindings, then **`;;`**, then locals. See **`OuronetInformational/pact/let-binding-layout.md`**.
+9. **`defun` / `defcap` parameter lists** — One line when the signature fits; otherwise name on line 1 and one parameter per line in a `(...)` block. See **`OuronetInformational/pact/defun-parameter-layout.md`**.
 
 ## Pact metadata (Ouronet modules)
 

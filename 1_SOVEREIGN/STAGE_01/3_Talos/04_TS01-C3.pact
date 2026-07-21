@@ -1,3 +1,52 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
+;;
+(interface TalosStageOne_ClientThreeV3
+    @doc "Exposes Ouronet Stage One Third Batch of Client Functions \
+        \ Modules: SWP are included in the Second Batch\
+        \ V2: Added Smart Swap entry points - SWP|C_SmartSwapWithSlippage and SWP|C_SmartSwapNoSlippage \
+        \ for multi-hop token swaps across the entire pool base using BFS path tracing. \
+        \ V3: Issue and fee-target surfaces use SwapperV3.PoolTokens / SwapperV3.FeeSplit (interface bump per versioning rule)."
+    ;;
+    ;;SWP (Swap-Pair) Functions
+    (defun SWP|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun SWP|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun SWP|C_UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun SWP|C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
+    ;;
+    (defun SWP|C_ChangeOwnership (patron:string swpair:string new-owner:string))
+    (defun SWP|C_EnableFrozenLP:string (patron:string swpair:string))
+    (defun SWP|C_EnableSleepingLP:string (patron:string swpair:string))
+    ;;Issue
+    (defun SWP|C_IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun SWP|C_IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
+    (defun SWP|C_IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    ;;Management
+    (defun SWP|C_ModifyCanChangeOwner (patron:string swpair:string new-boolean:bool))
+    (defun SWP|C_ModifyWeights (patron:string swpair:string new-weights:[decimal]))
+    (defun SWP|C_ToggleAddLiquidity (patron:string swpair:string toggle:bool))
+    (defun SWP|C_ToggleSwapCapability (patron:string swpair:string toggle:bool))
+    (defun SWP|C_ToggleFeeLock (patron:string swpair:string toggle:bool))
+    (defun SWP|C_UpdateAmplifier (patron:string swpair:string amp:decimal))
+    (defun SWP|C_UpdateFee (patron:string swpair:string new-fee:decimal lp-or-special:bool))
+    (defun SWP|C_UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV3.FeeSplit}]))
+    ;;Liquidity
+    (defun SWP|C_AddLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddGlacialLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddFrozenLiquidity:string (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal))
+    (defun SWP|C_AddSleepingLiquidity:string (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
+    (defun SWP|C_RemoveLiquidity (patron:string account:string swpair:string lp-amount:decimal))
+    ;;Smart Swap
+    (defun SWP|C_SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun SWP|C_SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))
+    ;;Swap
+    (defun SWP|C_SingleSwapWithSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun SWP|C_SingleSwapNoSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
+    (defun SWP|C_MultiSwapWithSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun SWP|C_MultiSwapNoSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
+)
+;;
 (module TS01-C3 GOV
     @doc "TALOS Administrator and Client Module for Stage 1"
     ;;

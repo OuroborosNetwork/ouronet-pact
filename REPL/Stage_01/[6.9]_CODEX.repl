@@ -83,7 +83,7 @@
         (public-smart:string (read-string "CODEX|PUBLIC-SMART"))
         (registered-by:string (read-string "CODEX|REGISTERED-BY"))
         (codex-guard:guard (read-keyset "KEY_CODEX_GUARD"))
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV3} TS01-C4)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
         (ref-CODEX:module{CodexV1} CODEX)
         (reg-msg:string
             (ref-TS01-C4::CODEX|A_RegisterCodexIdentity
@@ -149,7 +149,7 @@
     (
         (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
         (new-codex-guard:guard (read-keyset "KEY_CODEX_GUARD_NEW"))
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV3} TS01-C4)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
         (ref-CODEX:module{CodexV1} CODEX)
         (rot-msg:string
             (ref-TS01-C4::CODEX|C_RotateCodexGuard composite-id new-codex-guard)
@@ -196,7 +196,7 @@
         (composite-id:string (read-string "CODEX|COMPOSITE-ID"))
         (arweave-tx-id:string (read-string "CODEX|ARWEAVE-TX-ID"))
         (uploaded-bytes:integer 1024)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV3} TS01-C4)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
         (ref-CODEX:module{CodexV1} CODEX)
         (arw-msg:string
             (ref-TS01-C4::CODEX|C_RecordArweaveUpload composite-id arweave-tx-id uploaded-bytes)
@@ -249,7 +249,7 @@
             )
         )
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV3} TS01-C4)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
         (ref-CODEX:module{CodexV1} CODEX)
         (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
@@ -356,7 +356,7 @@
                 account-raw
             )
         )
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV3} TS01-C4)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
         (ref-CODEX:module{CodexV1} CODEX)
         (tag-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         (rel-msg:string (ref-TS01-C4::CODEX|C_ReleaseStoicTag patron tag-name))
@@ -421,7 +421,7 @@
             )
         )
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (ref-TS01-C4:module{TalosStageOne_ClientFourV3} TS01-C4)
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
         (ref-CODEX:module{CodexV1} CODEX)
         (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
         (patron-kda:string (ref-DALOS::UR_AccountKadena patron))

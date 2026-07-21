@@ -2,10 +2,11 @@
     (defun GOV|Demiurgoi ())
     ;;
     ;;  [UCK]
-    (defun UCK_ScoreLink:string (fvt-id:string score-id:string))
+    (defun UCK_ScoreEntityLink:string (fvt-id:string score-entity-id:string))
     (defun UCK_RpsGlobal:string (fvt-id:string dptf-id:string))
-    (defun UCK_RpsMember:string (fvt-id:string score-id:string dptf-id:string))
-    (defun UCK_RpsUser:string (user-id:string fvt-id:string score-id:string dptf-id:string))
+    (defun UCK_RpsMember:string (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UCK_RpsUser:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UCK_MultipletFamily:string (token-0-id:string token-1-id:string token-2-id:string))
     ;;
     ;;  [UR] FVT|Schema (FVT|T)  Key = <FVT-ID>
     (defun UR_FVT|FvtClass:integer (fvt-id:string))
@@ -19,22 +20,26 @@
     (defun UR_FVT|TotalDebScore:decimal (fvt-id:string))
     (defun UR_FVT|TotalNzsCount:integer (fvt-id:string))
     (defun UR_FVT|EnabledRewardCount:integer (fvt-id:string))
+    (defun UR_FVT|MemberLinkCount:integer (fvt-id:string))
+    (defun UR_FVT|Mosaic:bool (fvt-id:string))
+    (defun UR_FVT|MembershipMode:string (fvt-id:string))
     (defun UR_FVT|FvtId:string (fvt-id:string))
     ;;
-    ;;  [UR] FVT|ScoreLink (FVT|T|ScoreLink)  Key = <FVT-ID> | <Score-ID>
-    (defun UR_FVT-SL|Enabled:bool (fvt-id:string score-id:string))
-    (defun UR_FVT-SL|Swpair:string (fvt-id:string score-id:string))
-    (defun UR_FVT-SL|GhostTvlWeight:decimal (fvt-id:string score-id:string))
-    (defun UR_FVT-SL|FvtId:string (fvt-id:string score-id:string))
-    (defun UR_FVT-SL|ScoreId:string (fvt-id:string score-id:string))
+    ;;  [UR] FVT|ScoreEntityLink (FVT|T|ScoreEntityLink)  Key = <FVT-ID> | <Score-Entity-ID>
+    (defun UR_FVT-SEL|Enabled:bool (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|ScoreEntityType:integer (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|Swpair:string (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|GhostTvlWeight:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|FvtId:string (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|ScoreEntityId:string (fvt-id:string score-entity-id:string))
     ;;
-    ;;  [UR] FVT|RPS|Member (FVT|T|RPS|Member)  Key = <FVT-ID> | <Score-ID> | <DPTF-ID>
-    (defun UR_FVT-RM|LastFarmRpsG:decimal (fvt-id:string score-id:string dptf-id:string))
-    (defun UR_FVT-RM|MemberDebRps:decimal (fvt-id:string score-id:string dptf-id:string))
-    (defun UR_FVT-RM|PendingMemberRewards:decimal (fvt-id:string score-id:string dptf-id:string))
-    (defun UR_FVT-RM|FvtId:string (fvt-id:string score-id:string dptf-id:string))
-    (defun UR_FVT-RM|ScoreId:string (fvt-id:string score-id:string dptf-id:string))
-    (defun UR_FVT-RM|DptfId:string (fvt-id:string score-id:string dptf-id:string))
+    ;;  [UR] FVT|RPS|Member (FVT|T|RPS|Member)  Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
+    (defun UR_FVT-RM|LastFarmRpsG:decimal (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RM|MemberDebRps:decimal (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RM|PendingMemberRewards:decimal (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RM|FvtId:string (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RM|ScoreEntityId:string (fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RM|DptfId:string (fvt-id:string score-entity-id:string dptf-id:string))
     ;;
     ;;  [UR] FVT|RPS|Global (FVT|T|RPS|Global)  Key = <FVT-ID> | <DPTF-ID>
     (defun UR_FVT-RG|RewardEnabled:bool (fvt-id:string dptf-id:string))
@@ -44,14 +49,26 @@
     (defun UR_FVT-RG|Segmentation:bool (fvt-id:string dptf-id:string))
     (defun UR_FVT-RG|FvtId:string (fvt-id:string dptf-id:string))
     (defun UR_FVT-RG|DptfId:string (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|RewardKind:string (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|MultipletFamilyId:string (fvt-id:string dptf-id:string))
     ;;
-    ;;  [UR] FVT|RPS|User (FVT|T|RPS|User)  Key = <User-ID> | <FVT-ID> | <Score-ID> | <DPTF-ID>
-    (defun UR_FVT-RU|LastRps:decimal (user-id:string fvt-id:string score-id:string dptf-id:string))
-    (defun UR_FVT-RU|PendingRewards:decimal (user-id:string fvt-id:string score-id:string dptf-id:string))
-    (defun UR_FVT-RU|UserId:string (user-id:string fvt-id:string score-id:string dptf-id:string))
-    (defun UR_FVT-RU|FvtId:string (user-id:string fvt-id:string score-id:string dptf-id:string))
-    (defun UR_FVT-RU|ScoreId:string (user-id:string fvt-id:string score-id:string dptf-id:string))
-    (defun UR_FVT-RU|DptfId:string (user-id:string fvt-id:string score-id:string dptf-id:string))
+    ;;  [UR] FVT|MultipletFamily (FVT|T|MultipletFamily)  Key = <Multiplet-Family-ID>
+    (defun UR_FVT-MF|Token0Id:string (multiplet-family-id:string))
+    (defun UR_FVT-MF|Token1Id:string (multiplet-family-id:string))
+    (defun UR_FVT-MF|Token2Id:string (multiplet-family-id:string))
+    (defun UR_FVT-MF|Ats01Id:string (multiplet-family-id:string))
+    (defun UR_FVT-MF|Ats12Id:string (multiplet-family-id:string))
+    (defun UR_FVT-MF|Rank:integer (multiplet-family-id:string))
+    (defun UR_FVT-MF|Active:bool (multiplet-family-id:string))
+    (defun UR_FVT-MF|MultipletFamilyId:string (multiplet-family-id:string))
+    ;;
+    ;;  [UR] FVT|RPS|User (FVT|T|RPS|User)  Key = <User-ID> | <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
+    (defun UR_FVT-RU|LastRps:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|PendingRewards:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|UserId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|FvtId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|ScoreEntityId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
+    (defun UR_FVT-RU|DptfId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string))
     ;;
     (defun C_TrueFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
@@ -84,14 +101,27 @@
     (defun C_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string common-denominator:string)
     )
-    (defun C_AddScoreLink:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string score-id:string)
+    (defun C_SetMosaic:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string mosaic:bool)
     )
-    (defun C_ToggleScoreLink:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string score-id:string enabled:bool)
+    (defun C_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
+    )
+    (defun C_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+    )
+    (defun C_IssueMultipletFamily:object{IgnisCollectorV1.OutputCumulator}
+        (
+            patron:string
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+        )
     )
     (defun C_AddRewardLink:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool)
+        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
     )
     (defun C_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
@@ -100,7 +130,7 @@
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun C_Collect:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string score-id:string reward-dptf-id:string)
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
     (defun URDC_BuildStakeSettleBundle:object
         (pool-id:string beneficiary-id:string)
@@ -209,6 +239,7 @@
                 (ref-P|TFT:module{OuronetPolicyV1} TFT)
                 (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
                 (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
                 ;;
                 (dg:guard (create-capability-guard (SECURE)))
                 (mg:guard (create-capability-guard (P|FVT|CALLER)))
@@ -220,6 +251,7 @@
             (ref-P|TFT::P|A_AddIMP mg)
             (ref-P|DPOF::P|A_AddIMP mg)
             (ref-P|DPDC-T::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -240,109 +272,91 @@
             \ Vault/Treasury: total-deb-score mirror for inject; common-denominator sentinel \"|\"; total-ghost-tvl-weight 0.0. \
             \ UrStoa analogue: vault header (urstoa-supply on SCORE side; S or total-deb here is FVT-side denominator). \
             \ Field tags: [.] fixed at issue; [..] fixed once set; [M] mutable; [Mu] mutable only under owner + can-upgrade."
-        ;;--- All classes ---
-        fvt-class:integer                                       ;;[.]   0 = Farm, 1 = Vault, 2 = Treasury
-        ;;
-        ;;Management
-        owner-konto:string                                      ;;[Mu]  FVT owner
-        can-upgrade:bool                                        ;;[Mu]  Settings upgradeable when true
-        can-change-owner:bool                                   ;;[Mu]  Owner rotation when true
-        ;;
-        ;;--- Farm-only (class 0): common LP leg + Tier-2 weight sum S (Vault/Treasury: sentinel + 0.0) ---
-        common-denominator:string                               ;;[Mu]  Farm: DPTF id shared by member LP scores (e.g. OURO); unsafe to change after ScoreLinks; Vault/Treasury: \"|\"
-        total-ghost-tvl-weight:decimal                          ;;[M]   Farm: S = sum of enabled ScoreLinks' ghost-tvl-weight; Vault/Treasury: 0.0
-        ;;
-        ;;--- Aggregated SCORE mirrors (all classes) ---
-        total-base-score:decimal                                ;;[M]
-        total-boosted-score:decimal                             ;;[M]
-        total-deb-score:decimal                                 ;;[M]
-        total-nzs-count:integer                                 ;;[M]
-        enabled-reward-count:integer                           ;;[M]   Count of FVT|T|RPS|Global rows with reward-enabled true; 0 at issue; maintained by C_AddRewardLink / C_ToggleRewardLink
-        ;;
-        ;;Select Keys
-        fvt-id:string                                           ;;[.]   FVT identity
+        fvt-class:integer
+        owner-konto:string
+        can-upgrade:bool
+        can-change-owner:bool
+        common-denominator:string                               ;;[Mu]  unsafe to change after ScoreEntityLinks
+        total-ghost-tvl-weight:decimal                          ;;[M]   Farm S = sum enabled ScoreEntityLink W_i
+        total-base-score:decimal
+        total-boosted-score:decimal
+        total-deb-score:decimal
+        total-nzs-count:integer
+        enabled-reward-count:integer
+        member-link-count:integer                               ;;[M]   ScoreEntityLink rows (gates C_SetMosaic; no keys in defcap)
+        mosaic:bool                                             ;;[Mu]  mix score + triplet entities when true
+        membership-mode:string                                  ;;[Mu]  BAR | SCORE | TRUE-TRIPLET | STANDARD-TRIPLET
+        fvt-id:string
     )
-    (defschema FVT|ScoreLink
-        @doc "Key = <FVT-ID> | <Score-ID>. Permanent membership — which scores belong to this FVT (C_AddScoreLink). \
-            \ One row per member score, NOT per reward DPTF. \
-            \ Farm: swpair + ghost-tvl-weight W_i (Tier-2 weight from SWP; same for every reward token on that score). Sync updates W_i here. \
-            \ Vault/NFT: enabled + sentinels (swpair \"|\", W_i 0). Does not hold G, L_i, g_i, or user pending — those live on RPS|Member / RPS|User. \
-            \ Tags: [.] fixed; [..] fixed after admission write; [M] mutable."
-        ;;--- All classes ---
-        enabled:bool                                            ;;[M]   Excludes member score from S and from user accrual when false
-        ;;
-        ;;--- Farm only (fvt-class 0 member); Vault/Treasury: sentinel / zero ---
-        swpair:string                                           ;;[..]  Farm: SWP pair id from UR_GetLpSwpair at admission; else \"|\"
-        ghost-tvl-weight:decimal                                ;;[M]   Farm: W_i from SWP ghost TVL; else 0.0
-        ;;
-        ;;Select Keys
-        fvt-id:string                                           ;;[.]   Parent FVT
-        score-id:string                                         ;;[.]   Member score id
+    (defschema FVT|ScoreEntityLink
+        @doc "Key = <FVT-ID> | <Score-Entity-ID>. Unified membership — score (type 1) or triplet (type 3)."
+        score-entity-type:integer                               ;;[.]   CT_SCORE_ENTITY_SCORE=1, CT_SCORE_ENTITY_TRIPLET=3
+        enabled:bool                                            ;;[M]
+        swpair:string                                           ;;[..]
+        ghost-tvl-weight:decimal                                ;;[M]
+        fvt-id:string                                           ;;[.]
+        score-entity-id:string                                  ;;[.]   score-id or triplet-id T|…
+    )
+    (defschema FVT|MultipletFamily
+        @doc "Key = F|<token-0-id>|<token-1-id>|<token-2-id>. Reward ladder for MULTIPLET_BASE collect."
+        token-0-id:string
+        token-1-id:string
+        token-2-id:string
+        ats-0-1-id:string
+        ats-1-2-id:string
+        rank:integer                                            ;;[.]   Lane count at issue (v1 = 3)
+        active:bool
+        multiplet-family-id:string
     )
     (defschema FVT|RPS|Global
-        @doc "Key = <FVT-ID> | <DPTF-ID>. One registered reward DPTF on this FVT — farm-wide / vault-wide for that token. \
-            \ current-rps G (Tier-2 index on farms), available-rewards, reward-enabled, unclaimed-count. \
-            \ Inject writes ONE G per (fvt, dptf) shared by all member scores. reward-enabled gates C_Inject / C_Collect. \
-            \ UrStoa analogue: vault RPS row. Vault/Treasury Tier-2 semantics TBD (single-tier placeholder)."
-        reward-enabled:bool                                     ;;[M]   Gates C_Inject / C_Collect for this reward token (was FVT|RewardLink.enabled)
-        current-rps:decimal                                     ;;[M]   Farm: Tier-2 G (48 dp). Else: legacy index
-        available-rewards:decimal                               ;;[M]   24 dp vault for undistributed balance
-        unclaimed-count:integer                                 ;;[M]   Claimants / dust policy
-        segmentation:bool                                       ;;[.]   Reserved product flag at reward registration
-        ;;
-        ;;Select Keys
-        fvt-id:string                                           ;;[.]   Parent FVT
-        dptf-id:string                                          ;;[.]   Reward token id
+        @doc "Key = <FVT-ID> | <DPTF-ID>. One registered reward DPTF on this FVT."
+        reward-enabled:bool
+        current-rps:decimal
+        available-rewards:decimal
+        unclaimed-count:integer
+        segmentation:bool
+        reward-kind:string                                      ;;[.]   PLAIN | MULTIPLET_BASE
+        multiplet-family-id:string                              ;;[.]   BAR or F|t0|t1|t2
+        fvt-id:string
+        dptf-id:string
     )
     (defschema FVT|RPS|Member
-        @doc "Key = <FVT-ID> | <Score-ID> | <DPTF-ID>. Member-score reward line — this score's RPS slice for one reward DPTF \
-            \ (LP farm score or NFT vault score; one or many DPTFs per FVT). \
-            \ last-farm-rps-g g_i checkpoints vs RPS|Global.G; member-deb-rps L_i is Tier-1 index; pending-member-rewards when score has no deb stakers. \
-            \ Separate from ScoreLink because W_i is per score (not per DPTF). Separate from Global because G is per FVT×DPTF (not per score). \
-            \ Farm: earned Tier-2 = floor(W_i×(G−g_i), 48 dp). Vault/Treasury: floor(D_i×(G−g_i), 48 dp) using SCR total-deb as weight."
-        last-farm-rps-g:decimal                                 ;;[M]   Tier-2 checkpoint g_i vs FVT|RPS|Global.current-rps (G)
-        member-deb-rps:decimal                                 ;;[M]   Tier-1 L_i (reward per SCR deb unit for this member score)
-        pending-member-rewards:decimal                         ;;[M]   Reward buffer when member score total-deb = 0
-        ;;
-        ;;Select Keys
-        fvt-id:string                                           ;;[.]   Parent FVT
-        score-id:string                                         ;;[.]   Member score id
-        dptf-id:string                                          ;;[.]   Reward token id
+        @doc "Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>. Member reward line per score-entity × reward DPTF."
+        last-farm-rps-g:decimal
+        member-deb-rps:decimal
+        pending-member-rewards:decimal
+        fvt-id:string
+        score-entity-id:string
+        dptf-id:string
     )
     (defschema FVT|RPS|User
-        @doc "Key = <Ouronet-Account> | <FVT-ID> | <Score-ID> | <DPTF-ID>. Per-staker row on a member score × reward DPTF. \
-            \ last-rps checkpoints vs RPS|Member L_i; pending-rewards accrued not yet collected. \
-            \ Phase 2.1 banks pending at OLD deb; phase 2.4 advances last-rps after deb change. \
-            \ UrStoa analogue: UrStoaVaultUser (extended with fvt + score keys for multi-score FVTs)."
-        last-rps:decimal                                        ;;[M]   Last seen L_i (same precision as member-deb-rps)
-        pending-rewards:decimal                                 ;;[M]   Accrued not yet collected
-        ;;
-        ;;Select Keys
-        user-id:string                                          ;;[.]   Ouronet account
-        fvt-id:string                                           ;;[.]   FVT id
-        score-id:string                                         ;;[.]   Member score id
-        dptf-id:string                                          ;;[.]   Reward token id
+        @doc "Key = <User-ID> | <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>. Per-staker row."
+        last-rps:decimal
+        pending-rewards:decimal
+        user-id:string
+        fvt-id:string
+        score-entity-id:string
+        dptf-id:string
     )
-    ;;Phase 2.1 settle — ephemeral rows (not deftable); built once per TF stake/unstake pass.
     (defschema FVT|SettleFvtRewards
-        @doc "One distinct FVT row in URD_FVT|SettleFvtRewardBundle — enabled reward dptf-ids from one batched RPS|Global select."
+        @doc "One distinct FVT row in URD_FVT|SettleFvtRewardBundle."
         fvt-id:string
         reward-dptf-ids:[string]
     )
     (defschema FVT|SettleScorePlan
-        @doc "One employed score row in URC_SettleScorePlanRows — score + fvt + reward list for phase 2.1 inner loop."
-        score-id:string
+        @doc "One score-entity row in URC_SettleScorePlanRows — entity + fvt + reward list."
+        score-entity-type:integer
+        score-entity-id:string
         fvt-id:string
         reward-dptf-ids:[string]
     )
     (defschema FVT|ScorePreNzFlag
-        @doc "Pre-SCORE snapshot for one employed score — was user triple non-zero before phase 2.3 (UrStoa user-score before UpdateUserScore)."
+        @doc "Pre-SCORE snapshot for one employed score."
         score-id:string
         was-nz:bool
     )
     (defschema FVT|StakeSettleBundle
-        @doc "Precomputed stake/unstake settle scope for phases 2.1, 2.35, and 2.4 — built once per C_*StakeFlow pass; \
-            \ URD_FVT|SettleFvtRewardBundle runs at most once (not per XI phase). pre-nz-flags captured before SCORE mutation."
+        @doc "Precomputed stake/unstake settle scope."
         settle-scores:[string]
         distinct-fvts:[string]
         settle-plans:[object{FVT|SettleScorePlan}]
@@ -351,10 +365,11 @@
     ;;
     ;;{2}
     (deftable FVT|T:{FVT|Schema})                               ;; Key = <FVT-ID>
-    (deftable FVT|T|ScoreLink:{FVT|ScoreLink})                  ;; Key = <FVT-ID> | <Score-ID>
+    (deftable FVT|T|ScoreEntityLink:{FVT|ScoreEntityLink})      ;; Key = <FVT-ID> | <Score-Entity-ID>
+    (deftable FVT|T|MultipletFamily:{FVT|MultipletFamily})  ;; Key = <Multiplet-Family-ID>
     (deftable FVT|T|RPS|Global:{FVT|RPS|Global})                ;; Key = <FVT-ID> | <DPTF-ID>
-    (deftable FVT|T|RPS|Member:{FVT|RPS|Member})                ;; Key = <FVT-ID> | <Score-ID> | <DPTF-ID>
-    (deftable FVT|T|RPS|User:{FVT|RPS|User})                    ;; Key = <Ouronet-Account> | <FVT-ID> | <Score-ID> | <DPTF-ID>
+    (deftable FVT|T|RPS|Member:{FVT|RPS|Member})            ;; Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
+    (deftable FVT|T|RPS|User:{FVT|RPS|User})                ;; Key = <User-ID> | <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
     ;;{3}
     (defconst CT_FVT_RPS_PREC 48)
     (defun CT_Bar ()
@@ -369,13 +384,23 @@
     )
     (defconst AQP|SC_NAME                                       (CT_AqpScName))
     (defconst GAS|ISSUE-FVT                                     1000.0)
-    (defconst GAS|ADD-SCORE-LINK                                500.0)
-    (defconst GAS|TOGGLE-SCORE-LINK                             500.0)
+    (defconst GAS|ADD-SCORE-ENTITY                              500.0)
+    (defconst GAS|ISSUE-MULTIPLET-FAMILY                        500.0)
+    (defconst GAS|TOGGLE-SCORE-ENTITY-LINK                      500.0)
+    (defconst GAS|SET-MOSAIC                                    500.0)
     (defconst GAS|ADD-REWARD-LINK                               500.0)
     (defconst GAS|TOGGLE-REWARD-LINK                            500.0)
     (defconst GAS|SET-COMMON-DENOMINATOR                        500.0)
     (defconst GAS|INJECT                                        500.0)
     (defconst GAS|COLLECT                                       500.0)
+    (defconst CT_REWARD_KIND_PLAIN                              "PLAIN")
+    (defconst CT_REWARD_KIND_MULTIPLET_BASE                     "MULTIPLET_BASE")
+    (defconst CT_SCORE_ENTITY_SCORE                             1)
+    (defconst CT_SCORE_ENTITY_TRIPLET                           3)
+    (defconst CT_MEMBERSHIP_MODE_BAR                            "BAR")
+    (defconst CT_MEMBERSHIP_MODE_SCORE                          "SCORE")
+    (defconst CT_MEMBERSHIP_MODE_TRUE_TRIPLET                   "TRUE-TRIPLET")
+    (defconst CT_MEMBERSHIP_MODE_STANDARD_TRIPLET               "STANDARD-TRIPLET")
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -397,9 +422,6 @@
                 ;;
                 (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
             )
-            (ref-U|ATS::UEV_AutostakeIndex fvt-name)
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
-            (ref-DALOS::UEV_EnforceAccountType owner-konto false)
             (enforce
                 (fold (and) true
                     [
@@ -426,6 +448,9 @@
                 (ref-DPTF::UEV_id common-denominator)
                 true
             )
+            (ref-U|ATS::UEV_AutostakeIndex fvt-name)
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (ref-DALOS::UEV_EnforceAccountType owner-konto false)
             (compose-capability (SECURE))
         )
     )
@@ -439,12 +464,12 @@
                 (owner-now:string (UR_FVT|OwnerKonto fvt-id))
                 (can-change-owner:bool (UR_FVT|CanChangeOwner fvt-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-now)
-            (ref-DALOS::UEV_EnforceAccountType new-owner-konto false)
             (enforce
                 (and can-change-owner (!= new-owner-konto owner-now))
                 "FVT owner rotation requires can-change-owner true and a distinct new owner-konto"
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-now)
+            (ref-DALOS::UEV_EnforceAccountType new-owner-konto false)
             (compose-capability (SECURE))
         )
     )
@@ -458,42 +483,63 @@
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                 (can-upgrade:bool (UR_FVT|CanUpgrade fvt-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce can-upgrade "FVT control update requires can-upgrade true")
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
     (defcap FVT|C>SET-COMMON-DENOMINATOR (fvt-id:string common-denominator:string)
-        @doc "Farm-only: set common-denominator before any ScoreLink rows. Owner + can-upgrade. Composes SECURE."
+        @doc "Farm-only: set common-denominator before any ScoreEntityLink rows. Owner + can-upgrade. Composes SECURE."
         @event
         (UEV_SetCommonDenominatorContext fvt-id common-denominator)
         (compose-capability (SECURE))
     )
-    (defcap FVT|C>ADD-SCORE-LINK
-        (fvt-id:string score-id:string swpair:string ghost-weight:decimal)
-        @doc "Admit score to FVT: permanent ScoreLink row, SCR XE_CreateFvtLink. Owner + admission rules. Composes SECURE."
+    (defcap FVT|C>SET-MOSAIC (fvt-id:string mosaic:bool)
+        @doc "Toggle mosaic membership policy when FVT has zero ScoreEntityLink rows. Owner + can-upgrade. Composes SECURE."
         @event
-        (UEV_AddScoreLinkContext fvt-id score-id swpair ghost-weight)
+        (UEV_SetMosaicContext fvt-id mosaic)
         (compose-capability (SECURE))
     )
-    (defcap FVT|C>TOGGLE-SCORE-LINK (fvt-id:string score-id:string enabled:bool)
-        @doc "Toggle ScoreLink.enabled; farm adjusts total-ghost-tvl-weight S. FVT owner. Composes SECURE."
+    (defcap FVT|C>ADD-SCORE-ENTITY
+        (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
+        @doc "Admit score (type 1) or triplet (type 3) via ScoreEntityLink. Composes SECURE."
+        @event
+        (UEV_AddScoreEntityContext fvt-id score-entity-type score-entity-id swpair ghost-weight)
+        (compose-capability (SECURE))
+    )
+    (defcap FVT|C>ISSUE-MULTIPLET-FAMILY
+        (
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+        )
+        @doc "Issue one FVT|T|MultipletFamily reward ladder. Distinct tokens and ATS pairs; family id unused. Composes SECURE."
+        @event
+        (UEV_IssueMultipletFamilyContext token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id)
+        (compose-capability (SECURE))
+    )
+    (defcap FVT|C>TOGGLE-SCORE-ENTITY-LINK
+        (fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+        @doc "Toggle ScoreEntityLink.enabled; farm adjusts S. FVT owner. Composes SECURE."
         @event
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
             )
+            (enforce (URC_FvtScoreEntityLinkRowExists fvt-id score-entity-id) "ScoreEntityLink row must exist")
+            (enforce (= score-entity-type (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id)) "score-entity-type mismatch")
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
-            (enforce (URC_FvtScoreLinkRowExists fvt-id score-id) "ScoreLink row must exist")
             (compose-capability (SECURE))
         )
     )
-    (defcap FVT|C>ADD-REWARD-LINK (fvt-id:string reward-dptf-id:string segmentation:bool)
+    (defcap FVT|C>ADD-REWARD-LINK
+        (fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string)
         @doc "Insert FVT|T|RPS|Global with reward-enabled true. FVT owner; issued reward DPTF. Composes SECURE."
         @event
-        (UEV_AddRewardLinkContext fvt-id reward-dptf-id)
+        (UEV_AddRewardLinkContext fvt-id reward-dptf-id reward-kind multiplet-family-id)
         (compose-capability (SECURE))
     )
     (defcap FVT|C>TOGGLE-REWARD-LINK (fvt-id:string reward-dptf-id:string enabled:bool)
@@ -505,8 +551,8 @@
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) "Reward link row must exist")
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
     )
@@ -520,11 +566,10 @@
         (compose-capability (P|FVT|REMOTE-GOV))
     )
     (defcap FVT|C>COLLECT
-        (patron:string fvt-id:string score-id:string reward-dptf-id:string)
-        @doc "Collect accrued rewards for patron on one member score × reward DPTF (UrStoa URV|COLLECT). \
-            \ Composes P|SECURE-CALLER + P|FVT|REMOTE-GOV for TFT payout from AQP|SC_NAME."
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "Collect accrued rewards for patron on one score-entity × reward DPTF. Composes P|SECURE-CALLER + P|FVT|REMOTE-GOV."
         @event
-        (UEV_CollectContext patron fvt-id score-id reward-dptf-id)
+        (UEV_CollectContext patron fvt-id score-entity-type score-entity-id reward-dptf-id)
         (compose-capability (P|SECURE-CALLER))
         (compose-capability (P|FVT|REMOTE-GOV))
     )
@@ -551,19 +596,8 @@
             ;;1c] stake direction: stake-enabled + ≥1 employed score — HERE
             (enforce stake-admission-ok "Invalid pool-id: pool stake disabled or has no employed scores")
             ;;
-            ;;2] owner-id
-            ;;2a] owner-id must be an activated Ouronet account — HERE
-            (UEV_TrueFungibleStakeOwnerAccount owner-id)
-            ;;2b] tx sender must own owner-id — AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY (CAP_StakeOwner)
-            ;;
-            ;;3] beneficiary-id
-            ;;3a] beneficiary must exist — HERE (DALOS::UEV_EnforceAccountExists)
-            ;;3b] beneficiary must be activated standard (non-principal) account — HERE (DALOS::UEV_EnforceAccountType false)
-            (UEV_TrueFungibleStakeBeneficiaryAccount beneficiary-id)
-            ;;
             ;;4] dptf-id
             ;;4a] dptf-id must not be R| reserved leg — HERE
-            (UEV_TrueFungibleStakeNotReserved dptf-id)
             ;;4b] dptf-id must be issued DPTF — AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY (TFT::C_Transfer → DPTF::UEV_id)
             ;;4c] dptf-id must match pool canonical asset (native or F| frozen) — HERE
             (enforce dptf-pool-ok "Invalid dptf-id: leg does not match pool canonical asset")
@@ -577,11 +611,22 @@
             ;;6b] unstake (direction=false): tracker + rollup balance sufficiency — AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY
             ;;
             ;;7] FVT reward pipeline (phase 2.1 / 2.4 — stake direction only)
-            ;;7a] every employed score: fvt-link ≠ BAR, FVT issued, ScoreLink enabled, ≥1 enabled reward DPTF — HERE
+            ;;7a] every employed score: fvt-link ≠ BAR, FVT issued, ScoreEntityLink enabled, ≥1 enabled reward DPTF — HERE
             (if direction
-                (enforce fvt-ready "Invalid FVT reward pipeline: employed score missing enabled FVT ScoreLink or reward DPTF")
+                (enforce fvt-ready "Invalid FVT reward pipeline: employed score missing enabled FVT ScoreEntityLink or reward DPTF")
                 true
             )
+            ;;2] owner-id
+            ;;2a] owner-id must be an activated Ouronet account — HERE
+            (UEV_TrueFungibleStakeOwnerAccount owner-id)
+            ;;2b] tx sender must own owner-id — AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY (CAP_StakeOwner)
+            ;;
+            ;;3] beneficiary-id
+            ;;3a] beneficiary must exist — HERE (DALOS::UEV_EnforceAccountExists)
+            ;;3b] beneficiary must be activated standard (non-principal) account — HERE (DALOS::UEV_EnforceAccountType false)
+            (UEV_TrueFungibleStakeBeneficiaryAccount beneficiary-id)
+            ;;
+            (UEV_TrueFungibleStakeNotReserved dptf-id)
             ;;
             ;;8] transfer / custody (phase 1 — not re-validated here)
             ;;8a] owner signer proof — AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY (CAP_StakeOwner)
@@ -589,7 +634,7 @@
             ;;
             ;;9] admission-time only (not re-checked at stake)
             ;;9a] score LP denominator vs pool pair — C_AddScore admission
-            ;;9b] FVT common-denominator vs member scores — C_AddScoreLink admission
+            ;;9b] FVT common-denominator vs member scores — C_AddScoreEntity admission
             ;;9c] aqpool-link slot assignment — C_AddScore / C_RevokeScore
             ;;
             ;;--- UrStoa canonical phases (see map above C_TrueFungibleStakeFlow) ---
@@ -619,11 +664,9 @@
             )
             ;;1] pool-id — stake direction: stake-enabled + ≥1 employed score
             (enforce stake-admission-ok "Invalid pool-id: pool stake disabled or has no employed scores")
-            ;;2] owner-id — activated account; signer proof in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
-            (UEV_TrueFungibleStakeOwnerAccount owner-id)
             ;;3] beneficiary-id — stake only: exists + standard account; unstake: BAR (read per nonce in phase 1)
             (if direction
-                (UEV_TrueFungibleStakeBeneficiaryAccount beneficiary-id)
+                true
                 (enforce (= beneficiary-id BAR) "Unstake: beneficiary-id must be BAR; tracker row is authoritative")
             )
             ;;4] dpof-id — issued DPOF; pool leg match in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
@@ -635,7 +678,13 @@
             ;;6] direction — stake/unstake; unstake sufficiency in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
             ;;7] FVT reward pipeline — stake direction only
             (if direction
-                (enforce fvt-ready "Invalid FVT reward pipeline: employed score missing enabled FVT ScoreLink or reward DPTF")
+                (enforce fvt-ready "Invalid FVT reward pipeline: employed score missing enabled FVT ScoreEntityLink or reward DPTF")
+                true
+            )
+            ;;2] owner-id — activated account; signer proof in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
+            (UEV_TrueFungibleStakeOwnerAccount owner-id)
+            (if direction
+                (UEV_TrueFungibleStakeBeneficiaryAccount beneficiary-id)
                 true
             )
             ;;--- UrStoa canonical phases (no 1.3 / 3.x on OF — reserved no-op) ---
@@ -674,9 +723,8 @@
             (enforce stake-admission-ok "Invalid pool-id: pool stake disabled or has no employed scores")
             (enforce class-ok "Invalid pool-id: collectable son does not match pool aqp-class")
             (enforce collectable-ok "Invalid collectable-id: leg does not match pool canonical asset")
-            (UEV_TrueFungibleStakeOwnerAccount owner-id)
             (if direction
-                (UEV_TrueFungibleStakeBeneficiaryAccount beneficiary-id)
+                true
                 (enforce (= beneficiary-id BAR) "Unstake: beneficiary-id must be BAR; tracker row is authoritative")
             )
             (enforce
@@ -684,7 +732,12 @@
                 "Invalid nonces / nonce-amounts: equal positive length required"
             )
             (if direction
-                (enforce fvt-ready "Invalid FVT reward pipeline: employed score missing enabled FVT ScoreLink or reward DPTF")
+                (enforce fvt-ready "Invalid FVT reward pipeline: employed score missing enabled FVT ScoreEntityLink or reward DPTF")
+                true
+            )
+            (UEV_TrueFungibleStakeOwnerAccount owner-id)
+            (if direction
+                (UEV_TrueFungibleStakeBeneficiaryAccount beneficiary-id)
                 true
             )
             (compose-capability (SECURE))
@@ -695,21 +748,25 @@
     ;;<=======>
     ;;FUNCTIONS
     ;;{F0}  [UCK] + [UC] + early [UDC]  (constructors before UR with-default-read defaults)
-    (defun UCK_ScoreLink:string (fvt-id:string score-id:string)
-        @doc "Composite key for FVT|T|ScoreLink: fvt-id | score-id."
-        (concat [fvt-id BAR score-id])
+    (defun UCK_ScoreEntityLink:string (fvt-id:string score-entity-id:string)
+        @doc "Composite key for FVT|T|ScoreEntityLink: fvt-id | score-entity-id."
+        (concat [fvt-id BAR score-entity-id])
     )
     (defun UCK_RpsGlobal:string (fvt-id:string dptf-id:string)
         @doc "Composite key for FVT|T|RPS|Global: fvt-id | dptf-id."
         (concat [fvt-id BAR dptf-id])
     )
-    (defun UCK_RpsMember:string (fvt-id:string score-id:string dptf-id:string)
-        @doc "Composite key for FVT|T|RPS|Member: fvt-id | score-id | dptf-id."
-        (concat [fvt-id BAR score-id BAR dptf-id])
+    (defun UCK_RpsMember:string (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Composite key for FVT|T|RPS|Member: fvt-id | score-entity-id | dptf-id."
+        (concat [fvt-id BAR score-entity-id BAR dptf-id])
     )
-    (defun UCK_RpsUser:string (user-id:string fvt-id:string score-id:string dptf-id:string)
-        @doc "Composite key for FVT|T|RPS|User: user-id | fvt-id | score-id | dptf-id."
-        (concat [user-id BAR fvt-id BAR score-id BAR dptf-id])
+    (defun UCK_RpsUser:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Composite key for FVT|T|RPS|User: user-id | fvt-id | score-entity-id | dptf-id."
+        (concat [user-id BAR fvt-id BAR score-entity-id BAR dptf-id])
+    )
+    (defun UCK_MultipletFamily:string (token-0-id:string token-1-id:string token-2-id:string)
+        @doc "Composite key for FVT|T|MultipletFamily: F | token-0 | token-1 | token-2."
+        (concat ["F" BAR token-0-id BAR token-1-id BAR token-2-id])
     )
     (defun UC_ComputeInjectGainedRps:decimal (reward-amount:decimal denominator:decimal)
         @doc "Pure: Tier-2 G increment for one inject — floor(R / S, CT_FVT_RPS_PREC). UrStoa ≡ floor(stoa/S, STOA_PREC)."
@@ -743,6 +800,9 @@
             total-deb-score:decimal
             total-nzs-count:integer
             enabled-reward-count:integer
+            member-link-count:integer
+            mosaic:bool
+            membership-mode:string
             fvt-id:string
         )
         @doc "Core constructor for object{FVT|Schema}."
@@ -757,22 +817,27 @@
         ,"total-deb-score"          : total-deb-score
         ,"total-nzs-count"          : total-nzs-count
         ,"enabled-reward-count"     : enabled-reward-count
+        ,"member-link-count"        : member-link-count
+        ,"mosaic"                   : mosaic
+        ,"membership-mode"          : membership-mode
         ,"fvt-id"                   : fvt-id}
     )
-    (defun UDC_FVT|ScoreLink:object{FVT|ScoreLink}
+    (defun UDC_FVT|ScoreEntityLink:object{FVT|ScoreEntityLink}
         (
+            score-entity-type:integer
             enabled:bool
             swpair:string
             ghost-tvl-weight:decimal
             fvt-id:string
-            score-id:string
+            score-entity-id:string
         )
-        @doc "Core constructor for object{FVT|ScoreLink}."
-        {"enabled"                  : enabled
+        @doc "Core constructor for object{FVT|ScoreEntityLink}."
+        {"score-entity-type"        : score-entity-type
+        ,"enabled"                  : enabled
         ,"swpair"                   : swpair
         ,"ghost-tvl-weight"         : ghost-tvl-weight
         ,"fvt-id"                   : fvt-id
-        ,"score-id"                 : score-id}
+        ,"score-entity-id"          : score-entity-id}
     )
     (defun UDC_FVT|RPS|Global:object{FVT|RPS|Global}
         (
@@ -781,6 +846,8 @@
             available-rewards:decimal
             unclaimed-count:integer
             segmentation:bool
+            reward-kind:string
+            multiplet-family-id:string
             fvt-id:string
             dptf-id:string
         )
@@ -790,8 +857,31 @@
         ,"available-rewards"    : available-rewards
         ,"unclaimed-count"      : unclaimed-count
         ,"segmentation"         : segmentation
+        ,"reward-kind"          : reward-kind
+        ,"multiplet-family-id"    : multiplet-family-id
         ,"fvt-id"               : fvt-id
         ,"dptf-id"              : dptf-id}
+    )
+    (defun UDC_FVT|MultipletFamily:object{FVT|MultipletFamily}
+        (
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+            rank:integer
+            active:bool
+            multiplet-family-id:string
+        )
+        @doc "Core constructor for object{FVT|MultipletFamily}."
+        {"token-0-id"           : token-0-id
+        ,"token-1-id"           : token-1-id
+        ,"token-2-id"           : token-2-id
+        ,"ats-0-1-id"           : ats-0-1-id
+        ,"ats-1-2-id"           : ats-1-2-id
+        ,"rank"                 : rank
+        ,"active"               : active
+        ,"multiplet-family-id"  : multiplet-family-id}
     )
     (defun UDC_FVT|RPS|Member:object{FVT|RPS|Member}
         (
@@ -799,15 +889,15 @@
             member-deb-rps:decimal
             pending-member-rewards:decimal
             fvt-id:string
-            score-id:string
+            score-entity-id:string
             dptf-id:string
         )
         @doc "Core constructor for object{FVT|RPS|Member}."
         {"last-farm-rps-g"          : last-farm-rps-g
-        ,"member-deb-rps"          : member-deb-rps
-        ,"pending-member-rewards"  : pending-member-rewards
+        ,"member-deb-rps"           : member-deb-rps
+        ,"pending-member-rewards"   : pending-member-rewards
         ,"fvt-id"                   : fvt-id
-        ,"score-id"                 : score-id
+        ,"score-entity-id"          : score-entity-id
         ,"dptf-id"                  : dptf-id}
     )
     (defun UDC_FVT|RPS|User:object{FVT|RPS|User}
@@ -816,7 +906,7 @@
             pending-rewards:decimal
             user-id:string
             fvt-id:string
-            score-id:string
+            score-entity-id:string
             dptf-id:string
         )
         @doc "Core constructor for object{FVT|RPS|User}."
@@ -824,7 +914,7 @@
         ,"pending-rewards"  : pending-rewards
         ,"user-id"          : user-id
         ,"fvt-id"           : fvt-id
-        ,"score-id"         : score-id
+        ,"score-entity-id"  : score-entity-id
         ,"dptf-id"          : dptf-id}
     )
     ;; --- Phase 2.1 settle · ephemeral (no deftable / no UR) ---
@@ -835,11 +925,12 @@
         ,"reward-dptf-ids"  : reward-dptf-ids}
     )
     (defun UDC_FVT|SettleScorePlan:object{FVT|SettleScorePlan}
-        (score-id:string fvt-id:string reward-dptf-ids:[string])
+        (score-entity-type:integer score-entity-id:string fvt-id:string reward-dptf-ids:[string])
         @doc "Constructor for object{FVT|SettleScorePlan} — one URC_SettleScorePlanRows entry."
-        {"score-id"         : score-id
-        ,"fvt-id"           : fvt-id
-        ,"reward-dptf-ids"  : reward-dptf-ids}
+        {"score-entity-type" : score-entity-type
+        ,"score-entity-id"   : score-entity-id
+        ,"fvt-id"            : fvt-id
+        ,"reward-dptf-ids"   : reward-dptf-ids}
     )
     (defun UDC_FVT|ScorePreNzFlag:object{FVT|ScorePreNzFlag}
         (score-id:string was-nz:bool)
@@ -916,40 +1007,67 @@
         (require-capability (SECURE))
         (update FVT|T fvt-id {"enabled-reward-count": enabled-reward-count})
     )
+    (defun WU_Fvt|MemberLinkCount:string
+        (fvt-id:string member-link-count:integer)
+        @doc "Update member-link-count on FVT|T (C_AddScoreEntity / SetMosaic gate)."
+        (require-capability (SECURE))
+        (update FVT|T fvt-id {"member-link-count": member-link-count})
+    )
+    (defun WU_Fvt|Mosaic:string
+        (fvt-id:string mosaic:bool)
+        @doc "Update mosaic on FVT|T (C_SetMosaic only when no member links)."
+        (require-capability (SECURE))
+        (update FVT|T fvt-id {"mosaic": mosaic})
+    )
+    (defun WU2_Fvt|MosaicPolicy:string
+        (fvt-id:string mosaic:bool membership-mode:string)
+        @doc "Update mosaic and membership-mode together (C_SetMosaic)."
+        (require-capability (SECURE))
+        (update FVT|T fvt-id {"mosaic": mosaic, "membership-mode": membership-mode})
+    )
+    (defun WU_Fvt|MembershipMode:string
+        (fvt-id:string membership-mode:string)
+        @doc "Lock membership-mode on first non-mosaic admission."
+        (require-capability (SECURE))
+        (update FVT|T fvt-id {"membership-mode": membership-mode})
+    )
     ;; WU_Fvt|FvtId — select key; WU not needed.
     ;;
-    ;; [2] FVT|T|ScoreLink  (FVT|ScoreLink)  Key = <FVT-ID> | <Score-ID>
-    (defun WI_ScoreLink:string
-        (fvt-id:string score-id:string row:object{FVT|ScoreLink})
-        @doc "Insert FVT|T|ScoreLink full row (C_AddScoreLink admission)."
+    ;; [2] FVT|T|ScoreEntityLink  Key = <FVT-ID> | <Score-Entity-ID>
+    (defun WI_ScoreEntityLink:string
+        (fvt-id:string score-entity-id:string row:object{FVT|ScoreEntityLink})
+        @doc "Insert FVT|T|ScoreEntityLink full row (C_AddScoreEntity admission)."
         (require-capability (SECURE))
-        (insert FVT|T|ScoreLink (UCK_ScoreLink fvt-id score-id) row)
+        (insert FVT|T|ScoreEntityLink (UCK_ScoreEntityLink fvt-id score-entity-id) row)
     )
-    ;; WW_ScoreLink — not used: insert path is WI_ScoreLink; toggle/sync use WU_*.
-    (defun WU_ScoreLink|Enabled:string
-        (fvt-id:string score-id:string enabled:bool)
-        @doc "Update enabled on FVT|T|ScoreLink."
+    (defun WU_ScoreEntityLink|Enabled:string
+        (fvt-id:string score-entity-id:string enabled:bool)
+        @doc "Update enabled on FVT|T|ScoreEntityLink."
         (require-capability (SECURE))
-        (update FVT|T|ScoreLink (UCK_ScoreLink fvt-id score-id) {"enabled": enabled})
+        (update FVT|T|ScoreEntityLink (UCK_ScoreEntityLink fvt-id score-entity-id) {"enabled": enabled})
     )
-    ;; WU_ScoreLink|Swpair — not mutable [..] after admission write.
-    (defun WU_ScoreLink|GhostTvlWeight:string
-        (fvt-id:string score-id:string ghost-tvl-weight:decimal)
-        @doc "Update ghost-tvl-weight (W_i) on FVT|T|ScoreLink."
+    (defun WU_ScoreEntityLink|GhostTvlWeight:string
+        (fvt-id:string score-entity-id:string ghost-tvl-weight:decimal)
+        @doc "Update ghost-tvl-weight (W_i) on FVT|T|ScoreEntityLink."
         (require-capability (SECURE))
-        (update FVT|T|ScoreLink (UCK_ScoreLink fvt-id score-id) {"ghost-tvl-weight": ghost-tvl-weight})
+        (update FVT|T|ScoreEntityLink (UCK_ScoreEntityLink fvt-id score-entity-id) {"ghost-tvl-weight": ghost-tvl-weight})
     )
-    ;; WU_ScoreLink|FvtId — select key; WU not needed.
-    ;; WU_ScoreLink|ScoreId — select key; WU not needed.
     ;;
-    ;; [3] FVT|T|RPS|Global  (FVT|RPS|Global)  Key = <FVT-ID> | <DPTF-ID>
+    ;; [3] FVT|T|MultipletFamily  Key = <Multiplet-Family-ID>
+    (defun WI_MultipletFamily:string
+        (multiplet-family-id:string row:object{FVT|MultipletFamily})
+        @doc "Insert FVT|T|MultipletFamily full row (C_IssueMultipletFamily only)."
+        (require-capability (SECURE))
+        (insert FVT|T|MultipletFamily multiplet-family-id row)
+    )
+    ;;
+    ;; [4] FVT|T|RPS|Global  Key = <FVT-ID> | <DPTF-ID>
     (defun WI_RpsGlobal:string
         (fvt-id:string dptf-id:string row:object{FVT|RPS|Global})
         @doc "Insert FVT|T|RPS|Global full row (C_AddRewardLink admission)."
         (require-capability (SECURE))
         (insert FVT|T|RPS|Global (UCK_RpsGlobal fvt-id dptf-id) row)
     )
-    ;; WW_RpsGlobal — not used: insert path is WI_RpsGlobal; inject/collect use WU_*.
     (defun WU_RpsGlobal|RewardEnabled:string
         (fvt-id:string dptf-id:string reward-enabled:bool)
         @doc "Update reward-enabled on FVT|T|RPS|Global."
@@ -974,58 +1092,43 @@
         (require-capability (SECURE))
         (update FVT|T|RPS|Global (UCK_RpsGlobal fvt-id dptf-id) {"unclaimed-count": unclaimed-count})
     )
-    ;; WU_RpsGlobal|Segmentation — not mutable [.]
-    ;; WU_RpsGlobal|FvtId — select key; WU not needed.
-    ;; WU_RpsGlobal|DptfId — select key; WU not needed.
     ;;
-    ;; [4] FVT|T|RPS|Member  (FVT|RPS|Member)  Key = <FVT-ID> | <Score-ID> | <DPTF-ID>
+    ;; [5] FVT|T|RPS|Member  Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
     (defun WI_RpsMember:string
-        (fvt-id:string score-id:string dptf-id:string row:object{FVT|RPS|Member})
+        (fvt-id:string score-entity-id:string dptf-id:string row:object{FVT|RPS|Member})
         @doc "Insert FVT|T|RPS|Member full row (phase 2.1 ensure path)."
         (require-capability (SECURE))
-        (insert FVT|T|RPS|Member (UCK_RpsMember fvt-id score-id dptf-id) row)
+        (insert FVT|T|RPS|Member (UCK_RpsMember fvt-id score-entity-id dptf-id) row)
     )
     (defun WW_RpsMember:string
-        (fvt-id:string score-id:string dptf-id:string row:object{FVT|RPS|Member})
+        (fvt-id:string score-entity-id:string dptf-id:string row:object{FVT|RPS|Member})
         @doc "Upsert full FVT|T|RPS|Member row (Tier-2 settle paths)."
         (require-capability (SECURE))
-        (write FVT|T|RPS|Member (UCK_RpsMember fvt-id score-id dptf-id) row)
+        (write FVT|T|RPS|Member (UCK_RpsMember fvt-id score-entity-id dptf-id) row)
     )
-    ;; WU_RpsMember|LastFarmRpsG — not used: mutates via WW_RpsMember (full row).
-    ;; WU_RpsMember|MemberDebRps — not used: mutates via WW_RpsMember (full row).
-    ;; WU_RpsMember|PendingMemberRewards — not used: mutates via WW_RpsMember (full row).
-    ;; WU_RpsMember|FvtId — select key; WU not needed.
-    ;; WU_RpsMember|ScoreId — select key; WU not needed.
-    ;; WU_RpsMember|DptfId — select key; WU not needed.
     ;;
-    ;; [5] FVT|T|RPS|User  (FVT|RPS|User)  Key = <User-ID> | <FVT-ID> | <Score-ID> | <DPTF-ID>
+    ;; [6] FVT|T|RPS|User  Key = <User-ID> | <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
     (defun WI_RpsUser:string
-        (user-id:string fvt-id:string score-id:string dptf-id:string row:object{FVT|RPS|User})
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string row:object{FVT|RPS|User})
         @doc "Insert FVT|T|RPS|User full row (phase 2.1 ensure path)."
         (require-capability (SECURE))
-        (insert FVT|T|RPS|User (UCK_RpsUser user-id fvt-id score-id dptf-id) row)
+        (insert FVT|T|RPS|User (UCK_RpsUser user-id fvt-id score-entity-id dptf-id) row)
     )
-    ;; WW_RpsUser — not used: ensure path is WI_RpsUser; bank/collect/checkpoint use WU_*.
     (defun WU_RpsUser|LastRps:string
-        (user-id:string fvt-id:string score-id:string dptf-id:string last-rps:decimal)
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string last-rps:decimal)
         @doc "Update last-rps on FVT|T|RPS|User."
         (require-capability (SECURE))
-        (update FVT|T|RPS|User (UCK_RpsUser user-id fvt-id score-id dptf-id) {"last-rps": last-rps})
+        (update FVT|T|RPS|User (UCK_RpsUser user-id fvt-id score-entity-id dptf-id) {"last-rps": last-rps})
     )
     (defun WU_RpsUser|PendingRewards:string
-        (user-id:string fvt-id:string score-id:string dptf-id:string pending-rewards:decimal)
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string pending-rewards:decimal)
         @doc "Update pending-rewards on FVT|T|RPS|User."
         (require-capability (SECURE))
-        (update FVT|T|RPS|User (UCK_RpsUser user-id fvt-id score-id dptf-id) {"pending-rewards": pending-rewards})
+        (update FVT|T|RPS|User (UCK_RpsUser user-id fvt-id score-entity-id dptf-id) {"pending-rewards": pending-rewards})
     )
-    ;; WU_RpsUser|UserId — select key; WU not needed.
-    ;; WU_RpsUser|FvtId — select key; WU not needed.
-    ;; WU_RpsUser|ScoreId — select key; WU not needed.
-    ;; WU_RpsUser|DptfId — select key; WU not needed.
     ;;
     ;;{F1}  [UR]
-    ;; Reads follow schema order: (1) FVT|Schema (2) FVT|ScoreLink (3) FVT|RPS|Global (4) FVT|RPS|Member (5) FVT|RPS|User
-    ;; Ephemeral settle schemas (FVT|SettleFvtRewards, FVT|SettleScorePlan): UDC only — no UR rows.
+    ;; Reads follow schema order: (1) FVT|Schema (2) ScoreEntityLink (3) MultipletFamily (4) RPS|Global (5) RPS|Member (6) RPS|User
     ;;
     ;; [1] FVT|T  (FVT|Schema)  Key = <FVT-ID>
     (defun UR_FVT|Fvt:object{FVT|Schema} (fvt-id:string)
@@ -1073,61 +1176,80 @@
         (at "total-nzs-count" (read FVT|T fvt-id ["total-nzs-count"]))
     )
     (defun UR_FVT|EnabledRewardCount:integer (fvt-id:string)
-        @doc "Reads enabled-reward-count from FVT row — cheap cap path for ≥1 active reward DPTF."
+        @doc "Reads enabled-reward-count from FVT row."
         (at "enabled-reward-count" (read FVT|T fvt-id ["enabled-reward-count"]))
     )
+    (defun UR_FVT|MemberLinkCount:integer (fvt-id:string)
+        @doc "Reads member-link-count from FVT row (ScoreEntityLink admissions)."
+        (at "member-link-count" (read FVT|T fvt-id ["member-link-count"]))
+    )
+    (defun UR_FVT|Mosaic:bool (fvt-id:string)
+        @doc "Reads mosaic from FVT row."
+        (at "mosaic" (read FVT|T fvt-id ["mosaic"]))
+    )
+    (defun UR_FVT|MembershipMode:string (fvt-id:string)
+        @doc "Reads membership-mode from FVT row."
+        (at "membership-mode" (read FVT|T fvt-id ["membership-mode"]))
+    )
     (defun UR_FVT|FvtId:string (fvt-id:string)
-        @doc "Reads fvt-id field from FVT row (row key should match)."
+        @doc "Reads fvt-id field from FVT row."
         (at "fvt-id" (read FVT|T fvt-id ["fvt-id"]))
     )
     ;;
-    ;; [2] FVT|T|ScoreLink  (FVT|ScoreLink)  Key = <FVT-ID> | <Score-ID>
-    (defun UR_FVT-SL|ScoreLink:object{FVT|ScoreLink} (fvt-id:string score-id:string)
-        @doc "Reads ScoreLink row; absent rows read as disabled with farm sentinels via default object."
-        (with-default-read FVT|T|ScoreLink (UCK_ScoreLink fvt-id score-id)
-            (UDC_FVT|ScoreLink false BAR 0.0 fvt-id score-id)
-            {"enabled"                  := en
+    ;; [2] FVT|T|ScoreEntityLink  Key = <FVT-ID> | <Score-Entity-ID>
+    (defun UR_FVT-SEL|ScoreEntityLink:object{FVT|ScoreEntityLink} (fvt-id:string score-entity-id:string)
+        @doc "Reads ScoreEntityLink row; absent rows read as disabled with farm sentinels via default object."
+        (with-default-read FVT|T|ScoreEntityLink (UCK_ScoreEntityLink fvt-id score-entity-id)
+            (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE false BAR 0.0 fvt-id score-entity-id)
+            {"score-entity-type"        := et
+            ,"enabled"                  := en
             ,"swpair"                   := sp
             ,"ghost-tvl-weight"         := w
             ,"fvt-id"                   := fid
-            ,"score-id"                 := sid}
-            (UDC_FVT|ScoreLink en sp w fid sid)
+            ,"score-entity-id"          := seid}
+            (UDC_FVT|ScoreEntityLink et en sp w fid seid)
         )
     )
-    (defun UR_FVT-SL|Enabled:bool (fvt-id:string score-id:string)
-        @doc "Reads enabled from ScoreLink row."
-        (at "enabled" (UR_FVT-SL|ScoreLink fvt-id score-id))
+    (defun UR_FVT-SEL|Enabled:bool (fvt-id:string score-entity-id:string)
+        @doc "Reads enabled from ScoreEntityLink row."
+        (at "enabled" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
     )
-    (defun UR_FVT-SL|Swpair:string (fvt-id:string score-id:string)
-        @doc "Reads swpair from ScoreLink row."
-        (at "swpair" (UR_FVT-SL|ScoreLink fvt-id score-id))
+    (defun UR_FVT-SEL|ScoreEntityType:integer (fvt-id:string score-entity-id:string)
+        @doc "Reads score-entity-type from ScoreEntityLink row."
+        (at "score-entity-type" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
     )
-    (defun UR_FVT-SL|GhostTvlWeight:decimal (fvt-id:string score-id:string)
-        @doc "Reads ghost-tvl-weight (W_i) from ScoreLink row."
-        (at "ghost-tvl-weight" (UR_FVT-SL|ScoreLink fvt-id score-id))
+    (defun UR_FVT-SEL|Swpair:string (fvt-id:string score-entity-id:string)
+        @doc "Reads swpair from ScoreEntityLink row."
+        (at "swpair" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
     )
-    (defun UR_FVT-SL|FvtId:string (fvt-id:string score-id:string)
-        @doc "Reads fvt-id from ScoreLink row."
-        (at "fvt-id" (UR_FVT-SL|ScoreLink fvt-id score-id))
+    (defun UR_FVT-SEL|GhostTvlWeight:decimal (fvt-id:string score-entity-id:string)
+        @doc "Reads ghost-tvl-weight (W_i) from ScoreEntityLink row."
+        (at "ghost-tvl-weight" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
     )
-    (defun UR_FVT-SL|ScoreId:string (fvt-id:string score-id:string)
-        @doc "Reads score-id from ScoreLink row."
-        (at "score-id" (UR_FVT-SL|ScoreLink fvt-id score-id))
+    (defun UR_FVT-SEL|FvtId:string (fvt-id:string score-entity-id:string)
+        @doc "Reads fvt-id from ScoreEntityLink row."
+        (at "fvt-id" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+    (defun UR_FVT-SEL|ScoreEntityId:string (fvt-id:string score-entity-id:string)
+        @doc "Reads score-entity-id from ScoreEntityLink row."
+        (at "score-entity-id" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
     )
     ;;
     ;; [3] FVT|T|RPS|Global  (FVT|RPS|Global)  Key = <FVT-ID> | <DPTF-ID>
     (defun UR_FVT-RG|RpsGlobal:object{FVT|RPS|Global} (fvt-id:string dptf-id:string)
         @doc "Reads global RPS row for one reward token; absent rows read as disabled with zeroed rps fields."
         (with-default-read FVT|T|RPS|Global (UCK_RpsGlobal fvt-id dptf-id)
-            (UDC_FVT|RPS|Global false 0.0 0.0 0  false fvt-id dptf-id)
+            (UDC_FVT|RPS|Global false 0.0 0.0 0 false CT_REWARD_KIND_PLAIN BAR fvt-id dptf-id)
             {"reward-enabled"       := re
             ,"current-rps"          := cr
             ,"available-rewards"    := ar
             ,"unclaimed-count"      := uc
             ,"segmentation"         := seg
+            ,"reward-kind"          := rk
+            ,"multiplet-family-id"    := tfid
             ,"fvt-id"               := fid
             ,"dptf-id"              := did}
-            (UDC_FVT|RPS|Global re cr ar uc seg fid did)
+            (UDC_FVT|RPS|Global re cr ar uc seg rk tfid fid did)
         )
     )
     (defun UR_FVT-RG|RewardEnabled:bool (fvt-id:string dptf-id:string)
@@ -1158,84 +1280,131 @@
         @doc "Reads dptf-id from global RPS row."
         (at "dptf-id" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
     )
+    (defun UR_FVT-RG|RewardKind:string (fvt-id:string dptf-id:string)
+        @doc "Reads reward-kind from global RPS row."
+        (at "reward-kind" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+    (defun UR_FVT-RG|MultipletFamilyId:string (fvt-id:string dptf-id:string)
+        @doc "Reads multiplet-family-id from global RPS row."
+        (at "multiplet-family-id" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
     ;;
-    ;; [4] FVT|T|RPS|Member  (FVT|RPS|Member)  Key = <FVT-ID> | <Score-ID> | <DPTF-ID>
-    (defun UR_FVT-RM|RpsMember:object{FVT|RPS|Member} (fvt-id:string score-id:string dptf-id:string)
+    ;; [4] FVT|T|MultipletFamily
+    (defun UR_FVT-MF|MultipletFamily:object{FVT|MultipletFamily} (multiplet-family-id:string)
+        @doc "Reads full MultipletFamily row."
+        (read FVT|T|MultipletFamily multiplet-family-id)
+    )
+    (defun UR_FVT-MF|Token0Id:string (multiplet-family-id:string)
+        @doc "Reads token-0-id from MultipletFamily row."
+        (at "token-0-id" (read FVT|T|MultipletFamily multiplet-family-id ["token-0-id"]))
+    )
+    (defun UR_FVT-MF|Token1Id:string (multiplet-family-id:string)
+        @doc "Reads token-1-id from MultipletFamily row."
+        (at "token-1-id" (read FVT|T|MultipletFamily multiplet-family-id ["token-1-id"]))
+    )
+    (defun UR_FVT-MF|Token2Id:string (multiplet-family-id:string)
+        @doc "Reads token-2-id from MultipletFamily row."
+        (at "token-2-id" (read FVT|T|MultipletFamily multiplet-family-id ["token-2-id"]))
+    )
+    (defun UR_FVT-MF|Ats01Id:string (multiplet-family-id:string)
+        @doc "Reads ats-0-1-id from MultipletFamily row."
+        (at "ats-0-1-id" (read FVT|T|MultipletFamily multiplet-family-id ["ats-0-1-id"]))
+    )
+    (defun UR_FVT-MF|Ats12Id:string (multiplet-family-id:string)
+        @doc "Reads ats-1-2-id from MultipletFamily row."
+        (at "ats-1-2-id" (read FVT|T|MultipletFamily multiplet-family-id ["ats-1-2-id"]))
+    )
+    (defun UR_FVT-MF|Rank:integer (multiplet-family-id:string)
+        @doc "Reads rank (lane count) from MultipletFamily row."
+        (at "rank" (read FVT|T|MultipletFamily multiplet-family-id ["rank"]))
+    )
+    (defun UR_FVT-MF|Active:bool (multiplet-family-id:string)
+        @doc "Reads active from MultipletFamily row."
+        (at "active" (read FVT|T|MultipletFamily multiplet-family-id ["active"]))
+    )
+    (defun UR_FVT-MF|MultipletFamilyId:string (multiplet-family-id:string)
+        @doc "Reads multiplet-family-id from MultipletFamily row."
+        (at "multiplet-family-id" (read FVT|T|MultipletFamily multiplet-family-id ["multiplet-family-id"]))
+    )
+    ;;
+
+    ;; [5] FVT|T|RPS|Member
+    (defun UR_FVT-RM|RpsMember:object{FVT|RPS|Member} (fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads member-score RPS row; absent rows read as zero g_i / L_i / pending-member-rewards."
-        (with-default-read FVT|T|RPS|Member (UCK_RpsMember fvt-id score-id dptf-id)
-            (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-id dptf-id)
+        (with-default-read FVT|T|RPS|Member (UCK_RpsMember fvt-id score-entity-id dptf-id)
+            (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-entity-id dptf-id)
             {"last-farm-rps-g"          := g
             ,"member-deb-rps"          := l
             ,"pending-member-rewards"  := ptr
             ,"fvt-id"                   := fid
-            ,"score-id"                 := sid
+            ,"score-entity-id"                 := sid
             ,"dptf-id"                  := did}
             (UDC_FVT|RPS|Member g l ptr fid sid did)
         )
     )
-    (defun UR_FVT-RM|LastFarmRpsG:decimal (fvt-id:string score-id:string dptf-id:string)
+    (defun UR_FVT-RM|LastFarmRpsG:decimal (fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads last-farm-rps-g (g_i) from member RPS row."
-        (at "last-farm-rps-g" (UR_FVT-RM|RpsMember fvt-id score-id dptf-id))
+        (at "last-farm-rps-g" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
     )
-    (defun UR_FVT-RM|MemberDebRps:decimal (fvt-id:string score-id:string dptf-id:string)
+    (defun UR_FVT-RM|MemberDebRps:decimal (fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads member-deb-rps (L_i) from member RPS row."
-        (at "member-deb-rps" (UR_FVT-RM|RpsMember fvt-id score-id dptf-id))
+        (at "member-deb-rps" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
     )
-    (defun UR_FVT-RM|PendingMemberRewards:decimal (fvt-id:string score-id:string dptf-id:string)
+    (defun UR_FVT-RM|PendingMemberRewards:decimal (fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads pending-member-rewards from member RPS row."
-        (at "pending-member-rewards" (UR_FVT-RM|RpsMember fvt-id score-id dptf-id))
+        (at "pending-member-rewards" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
     )
-    (defun UR_FVT-RM|FvtId:string (fvt-id:string score-id:string dptf-id:string)
+    (defun UR_FVT-RM|FvtId:string (fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads fvt-id from member RPS row."
-        (at "fvt-id" (UR_FVT-RM|RpsMember fvt-id score-id dptf-id))
+        (at "fvt-id" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
     )
-    (defun UR_FVT-RM|ScoreId:string (fvt-id:string score-id:string dptf-id:string)
-        @doc "Reads score-id from member RPS row."
-        (at "score-id" (UR_FVT-RM|RpsMember fvt-id score-id dptf-id))
+    (defun UR_FVT-RM|ScoreEntityId:string (fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads score-entity-id from member RPS row."
+        (at "score-entity-id" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
     )
-    (defun UR_FVT-RM|DptfId:string (fvt-id:string score-id:string dptf-id:string)
+    (defun UR_FVT-RM|DptfId:string (fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads dptf-id from member RPS row."
-        (at "dptf-id" (UR_FVT-RM|RpsMember fvt-id score-id dptf-id))
+        (at "dptf-id" (UR_FVT-RM|RpsMember fvt-id score-entity-id dptf-id))
     )
     ;;
-    ;; [5] FVT|T|RPS|User  (FVT|RPS|User)  Key = <User-ID> | <FVT-ID> | <Score-ID> | <DPTF-ID>
+    ;; [5] FVT|T|RPS|User  (FVT|RPS|User)  Key = <User-ID> | <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
     (defun UR_FVT-RU|RpsUser:object{FVT|RPS|User}
-        (user-id:string fvt-id:string score-id:string dptf-id:string)
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads user RPS row; absent rows read as zero pending and zero last-rps checkpoint."
-        (with-default-read FVT|T|RPS|User (UCK_RpsUser user-id fvt-id score-id dptf-id)
-            (UDC_FVT|RPS|User 0.0 0.0 user-id fvt-id score-id dptf-id)
+        (with-default-read FVT|T|RPS|User (UCK_RpsUser user-id fvt-id score-entity-id dptf-id)
+            (UDC_FVT|RPS|User 0.0 0.0 user-id fvt-id score-entity-id dptf-id)
             {"last-rps"         := lr
             ,"pending-rewards"  := pr
             ,"user-id"          := uid
             ,"fvt-id"           := fid
-            ,"score-id"         := sid
+            ,"score-entity-id"         := sid
             ,"dptf-id"          := did}
             (UDC_FVT|RPS|User lr pr uid fid sid did)
         )
     )
-    (defun UR_FVT-RU|LastRps:decimal (user-id:string fvt-id:string score-id:string dptf-id:string)
+    (defun UR_FVT-RU|LastRps:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads last-rps (user checkpoint vs L_i) from user RPS row."
-        (at "last-rps" (UR_FVT-RU|RpsUser user-id fvt-id score-id dptf-id))
+        (at "last-rps" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
     )
-    (defun UR_FVT-RU|PendingRewards:decimal (user-id:string fvt-id:string score-id:string dptf-id:string)
+    (defun UR_FVT-RU|PendingRewards:decimal (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads pending-rewards from user RPS row."
-        (at "pending-rewards" (UR_FVT-RU|RpsUser user-id fvt-id score-id dptf-id))
+        (at "pending-rewards" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
     )
-    (defun UR_FVT-RU|UserId:string (user-id:string fvt-id:string score-id:string dptf-id:string)
+    (defun UR_FVT-RU|UserId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads user-id from user RPS row."
-        (at "user-id" (UR_FVT-RU|RpsUser user-id fvt-id score-id dptf-id))
+        (at "user-id" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
     )
-    (defun UR_FVT-RU|FvtId:string (user-id:string fvt-id:string score-id:string dptf-id:string)
+    (defun UR_FVT-RU|FvtId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads fvt-id from user RPS row."
-        (at "fvt-id" (UR_FVT-RU|RpsUser user-id fvt-id score-id dptf-id))
+        (at "fvt-id" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
     )
-    (defun UR_FVT-RU|ScoreId:string (user-id:string fvt-id:string score-id:string dptf-id:string)
-        @doc "Reads score-id from user RPS row."
-        (at "score-id" (UR_FVT-RU|RpsUser user-id fvt-id score-id dptf-id))
+    (defun UR_FVT-RU|ScoreEntityId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
+        @doc "Reads score-entity-id from user RPS row."
+        (at "score-entity-id" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
     )
-    (defun UR_FVT-RU|DptfId:string (user-id:string fvt-id:string score-id:string dptf-id:string)
+    (defun UR_FVT-RU|DptfId:string (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Reads dptf-id from user RPS row."
-        (at "dptf-id" (UR_FVT-RU|RpsUser user-id fvt-id score-id dptf-id))
+        (at "dptf-id" (UR_FVT-RU|RpsUser user-id fvt-id score-entity-id dptf-id))
     )
     ;;
     ;;{F2}  [URD]
@@ -1293,13 +1462,13 @@
             )
         )
     )
-    (defun URD_FvtEnabledScoreIdsForFvt:[string] (fvt-id:string)
-        @doc "Expensive read: enabled member score-ids for one FVT — inject/collect ghost-TV lazy sync scope."
+    (defun URD_FvtEnabledScoreEntityIdsForFvt:[string] (fvt-id:string)
+        @doc "Expensive read: enabled score-entity-ids for one FVT — inject/collect ghost-TV lazy sync scope."
         (map
             (lambda (row:object)
-                (at "score-id" row)
+                (at "score-entity-id" row)
             )
-            (select FVT|T|ScoreLink ["score-id"]
+            (select FVT|T|ScoreEntityLink ["score-entity-id"]
                 (and?
                     (where "fvt-id" (= fvt-id))
                     (where "enabled" (= true))
@@ -1310,8 +1479,8 @@
     ;;
     ;;{F3}  [URC]
     ;; --- Cap / stake-flow validation (cheap bools; no keys/select) ---
-    (defun URD_FvtScoreLinkKeysForFvt:[string] (fvt-id:string)
-        @doc "Internal: ScoreLink row keys whose fvt-id prefix matches (keys/select only in URD)."
+    (defun URD_FvtScoreEntityLinkKeysForFvt:[string] (fvt-id:string)
+        @doc "Internal: ScoreEntityLink row keys whose fvt-id prefix matches (keys/select only in URD)."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -1320,19 +1489,19 @@
                 (lambda (k:string)
                     (= fvt-id (at 0 (ref-U|LST::UC_SplitString BAR k)))
                 )
-                (keys FVT|T|ScoreLink)
+                (keys FVT|T|ScoreEntityLink)
             )
         )
     )
-    (defun URDC_FvtHasScoreLinks:bool (fvt-id:string)
-        @doc "True when at least one FVT|T|ScoreLink row exists for fvt-id."
-        (> (length (URD_FvtScoreLinkKeysForFvt fvt-id)) 0)
+    (defun URDC_FvtHasScoreEntityLinks:bool (fvt-id:string)
+        @doc "True when member-link-count > 0 (cheap row read; preferred over keys/select)."
+        (> (UR_FVT|MemberLinkCount fvt-id) 0)
     )
-    (defun URC_FvtScoreLinkRowExists:bool (fvt-id:string score-id:string)
-        @doc "True when FVT|T|ScoreLink row exists (not default-read absent sentinel)."
+    (defun URC_FvtScoreEntityLinkRowExists:bool (fvt-id:string score-entity-id:string)
+        @doc "True when FVT|T|ScoreEntityLink row exists (not default-read absent sentinel)."
         (let
             (
-                (trial (try false (read FVT|T|ScoreLink (UCK_ScoreLink fvt-id score-id))))
+                (trial (try false (read FVT|T|ScoreEntityLink (UCK_ScoreEntityLink fvt-id score-entity-id))))
             )
             (if (= (typeof trial) "bool") false true)
         )
@@ -1347,26 +1516,26 @@
         )
     )
     (defun URC_FvtVaultDebDenominator:decimal (fvt-id:string)
-        @doc "Vault/treasury inject divisor: sum enabled ScoreLink members' SCR total-deb-score."
+        @doc "Vault/treasury inject divisor: sum enabled ScoreEntityLink member deb weights."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
             )
             (fold (+) 0.0
                 (map
                     (lambda (k:string)
                         (let
                             (
-                                (score-id:string (at 1 (ref-U|LST::UC_SplitString BAR k)))
+                                (score-entity-id:string (at 1 (ref-U|LST::UC_SplitString BAR k)))
+                                (entity-type:integer (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id))
                             )
-                            (if (UR_FVT-SL|Enabled fvt-id score-id)
-                                (ref-SCR::UR_SCR|ScoreTotalDebScore score-id)
+                            (if (UR_FVT-SEL|Enabled fvt-id score-entity-id)
+                                (URC_ScoreEntityMemberDebWeight entity-type score-entity-id)
                                 0.0
                             )
                         )
                     )
-                    (URD_FvtScoreLinkKeysForFvt fvt-id)
+                    (URD_FvtScoreEntityLinkKeysForFvt fvt-id)
                 )
             )
         )
@@ -1393,18 +1562,25 @@
             )
         )
     )
-    (defun URC_ResolveScoreLinkSwpair:string (score-id:string fvt-class:integer)
-        @doc "Farm class-0 pool: SWP pair from native LP asset-id; vault/treasury use | sentinel."
+
+    (defun URC_ResolveScoreEntitySwpair:string
+        (score-entity-type:integer score-entity-id:string fvt-class:integer)
+        @doc "Farm class-0: SWP pair from native LP (score) or silver-score pool (triplet); vault/treasury |."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 (ref-SWP:module{SwapperV3} SWP)
-                ;;
-                (pool-id:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-id))
+                (sentinel:string "|")
+                (pool-score-id:string
+                    (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                        (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id)
+                        score-entity-id
+                    )
+                )
+                (pool-id:string (ref-SCR::UR_SCR|ScoreAqpoolLink pool-score-id))
                 (asset-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
                 (aqp-class:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
-                (sentinel:string "|")
             )
             (if (= fvt-class 0)
                 (if (= aqp-class 0)
@@ -1415,8 +1591,9 @@
             )
         )
     )
-    (defun URC_ResolveScoreLinkGhostWeight:decimal (score-id:string fvt-class:integer swpair:string)
-        @doc "Farm admission: initial W_i from SWP::UR_StoaValue(swpair); vault/treasury 0.0."
+    (defun URC_ResolveScoreEntityGhostWeight:decimal
+        (score-entity-type:integer score-entity-id:string fvt-class:integer swpair:string)
+        @doc "Farm admission: W_i from SWP::UR_StoaValue(swpair); vault/treasury 0.0."
         (let
             (
                 (ref-SWP:module{SwapperV3} SWP)
@@ -1426,6 +1603,150 @@
                 0.0
             )
         )
+    )
+    (defun URC_ScoreEntityMemberDebWeight:decimal
+        (score-entity-type:integer score-entity-id:string)
+        @doc "Vault/treasury Tier-2 member weight: score total-deb or sum of triplet score totals."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+            )
+            (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                (let
+                    (
+                        (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
+                        (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
+                        (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id))
+                    )
+                    (+
+                        (ref-SCR::UR_SCR|ScoreTotalDebScore bronze-id)
+                        (+
+                            (ref-SCR::UR_SCR|ScoreTotalDebScore silver-id)
+                            (ref-SCR::UR_SCR|ScoreTotalDebScore golden-id)
+                        )
+                    )
+                )
+                (ref-SCR::UR_SCR|ScoreTotalDebScore score-entity-id)
+            )
+        )
+    )
+    (defun URC_ScoreEntityMemberWeight:decimal
+        (fvt-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Tier-2 member tranche weight: farm ghost W_i; vault/treasury aggregate deb."
+        (if (= (UR_FVT|FvtClass fvt-id) 0)
+            (UR_FVT-SEL|GhostTvlWeight fvt-id score-entity-id)
+            (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)
+        )
+    )
+    (defun URC_FarmTripletTier1Denominator:decimal
+        (triplet-id:string)
+        @doc "Farm triplet Tier-2 L_i divisor: sum of lane W_user over silver-pool stakers."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
+                (pool-id:string (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id))
+                (accounts:[string] (ref-SCR::URD_UserScoreStakerAccounts pool-id silver-id))
+            )
+            (fold (+) 0.0
+                (map
+                    (lambda (uid:string)
+                        (at "w-user" (URC_ComputeTripletLanes uid pool-id triplet-id))
+                    )
+                    accounts
+                )
+            )
+        )
+    )
+    (defun URC_ScoreEntityMemberTier2Divisor:decimal
+        (fvt-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Tier-2 L_i advance divisor: farm score SCR total-deb; farm triplet sum W_user; vault/treasury member deb."
+        (if (= (UR_FVT|FvtClass fvt-id) 0)
+            (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                (URC_FarmTripletTier1Denominator score-entity-id)
+                (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)
+            )
+            (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)
+        )
+    )
+    (defun URC_ComputeTripletLanes:object
+        (user-id:string pool-id:string triplet-id:string)
+        @doc "Lane weights from silver base-score × ANK promiles on bronze/silver/golden boost-class-links."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
+                (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
+                (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
+                (base:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore user-id pool-id silver-id))
+                (pool-dptf:string (ref-SCR::UR_SCR|ScoreLpDenominator silver-id))
+                (p:integer (ref-DPTF::UR_Decimals pool-dptf))
+                (prom-b:decimal (ref-ANK::UR_UB|AggregatePromile user-id (ref-SCR::UR_SCR|ScoreBoostClassLink bronze-id)))
+                (prom-s:decimal (ref-ANK::UR_UB|AggregatePromile user-id (ref-SCR::UR_SCR|ScoreBoostClassLink silver-id)))
+                (prom-g:decimal (ref-ANK::UR_UB|AggregatePromile user-id (ref-SCR::UR_SCR|ScoreBoostClassLink golden-id)))
+                (lane-b:decimal (floor (* base (/ prom-b 1000.0)) p))
+                (lane-s:decimal (floor (* base (/ prom-s 1000.0)) p))
+                (lane-g:decimal (floor (* base (/ prom-g 1000.0)) p))
+            )
+            {"lane-b" : lane-b, "lane-s" : lane-s, "lane-g" : lane-g
+            ,"w-user" : (+ lane-b (+ lane-s lane-g))}
+        )
+    )
+    (defun URC_ScoreEntityUserWeight:decimal
+        (user-id:string pool-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Tier-1 user weight: score deb-user; triplet lane_b+lane_s+lane_g."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+            )
+            (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                (at "w-user" (URC_ComputeTripletLanes user-id pool-id score-entity-id))
+                (ref-SCR::UR_U-SCR|UserScoreDebScore user-id pool-id score-entity-id)
+            )
+        )
+    )
+    (defun URC_ResolveEmployedScoreEntity:object
+        (score-id:string)
+        @doc "Map employed SCR score-id to score-entity-type + score-entity-id for RPS banking."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+            )
+            (if (ref-SCR::UR_SCR|ScoreTriplet score-id)
+                {"score-entity-type" : CT_SCORE_ENTITY_TRIPLET
+                ,"score-entity-id"   : (ref-SCR::UR_SCR|ScoreTripletId score-id)}
+                {"score-entity-type" : CT_SCORE_ENTITY_SCORE
+                ,"score-entity-id"   : score-id}
+            )
+        )
+    )
+
+    (defun URC_ResolvePoolScoreId:string (score-entity-type:integer score-entity-id:string)
+        @doc "Pool id for collect/settle SCR reads: score pool or triplet silver pool."
+        (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
+            (if (= score-entity-type CT_SCORE_ENTITY_SCORE)
+                (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id)
+                (ref-SCR::UR_SCR|ScoreAqpoolLink
+                    (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id)
+                )
+            )
+        )
+    )
+    (defun URC_MultipletFamilyExists:bool (multiplet-family-id:string)
+        @doc "True when FVT|T|MultipletFamily row exists."
+        (let
+            (
+                (trial (try false (read FVT|T|MultipletFamily multiplet-family-id)))
+            )
+            (if (= (typeof trial) "bool") false true)
+        )
+    )
+    (defun URC_FvtHasAnyMemberLink:bool (fvt-id:string)
+        @doc "True when FVT has at least one ScoreEntityLink row (blocks C_SetMosaic). \
+            \ Uses URD keys filter — not select (select/keys disallowed inside defcaps)."
+        (URDC_FvtHasScoreEntityLinks fvt-id)
     )
     (defun URC_FvtResolveClass:integer (fvt-id:string)
         @doc "Probe FVT|T row: returns fvt-class, or -1 when the row is absent (read failure)."
@@ -1441,18 +1762,19 @@
         (> (try 0 (UR_FVT|EnabledRewardCount fvt-id)) 0)
     )
     (defun URC_ScoreFvtStakeReady:bool (score-id:string)
-        @doc "True when score-id has fvt-link≠BAR, issued FVT, enabled ScoreLink, and enabled-reward-count > 0."
+        @doc "True when employed score maps to enabled ScoreEntityLink on issued FVT with ≥1 reward DPTF."
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                ;;
+                (entity:object (URC_ResolveEmployedScoreEntity score-id))
                 (fvt-id:string (ref-SCR::UR_SCR|ScoreFvtLink score-id))
+                (score-entity-id:string (at "score-entity-id" entity))
             )
             (fold (and) true
                 [
                     (!= fvt-id BAR)
                     (URC_FvtExists fvt-id)
-                    (UR_FVT-SL|Enabled fvt-id score-id)
+                    (UR_FVT-SEL|Enabled fvt-id score-entity-id)
                     (URC_FvtHasEnabledRewardToken fvt-id)
                 ]
             )
@@ -1477,7 +1799,7 @@
     )
     ;; --- Phase 2.1 settle · lists, plans, IGNIS ---
     (defun URC_SettleEligibleEmployedScores:[string] (employed-ids:[string])
-        @doc "Internal: employed pool scores that run phase 2.1 settle — score-id≠BAR, SCR|ScoreFvtLink≠BAR, ScoreLink enabled."
+        @doc "Employed scores that run phase 2.1 settle — fvt-link≠BAR and parent ScoreEntityLink enabled."
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
@@ -1487,12 +1809,14 @@
                     (let
                         (
                             (fvt-link:string (ref-SCR::UR_SCR|ScoreFvtLink score-id))
+                            (entity:object (URC_ResolveEmployedScoreEntity score-id))
+                            (score-entity-id:string (at "score-entity-id" entity))
                         )
                         (fold (and) true
                             [
-                                (!= score-id BAR)
+                                (!= score-entity-id BAR)
                                 (!= fvt-link BAR)
-                                (UR_FVT-SL|Enabled fvt-link score-id)
+                                (UR_FVT-SEL|Enabled fvt-link score-entity-id)
                             ]
                         )
                     )
@@ -1533,45 +1857,45 @@
         )
     )
     (defun URC_FvtRpsUserRowExists:bool
-        (user-id:string fvt-id:string score-id:string dptf-id:string)
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Internal: true when FVT|T|RPS|User row exists (UrStoa UR_URV|IzAccount try-read pattern)."
         (let
             (
-                (trial (try false (read FVT|T|RPS|User (UCK_RpsUser user-id fvt-id score-id dptf-id))))
+                (trial (try false (read FVT|T|RPS|User (UCK_RpsUser user-id fvt-id score-entity-id dptf-id))))
             )
             (if (= (typeof trial) "bool") false true)
         )
     )
     (defun URC_FvtRpsMemberRowExists:bool
-        (fvt-id:string score-id:string dptf-id:string)
+        (fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Internal: true when FVT|T|RPS|Member row exists."
         (let
             (
-                (trial (try false (read FVT|T|RPS|Member (UCK_RpsMember fvt-id score-id dptf-id))))
+                (trial (try false (read FVT|T|RPS|Member (UCK_RpsMember fvt-id score-entity-id dptf-id))))
             )
             (if (= (typeof trial) "bool") false true)
         )
     )
     (defun URC_FvtTier1IndexRps:decimal
-        (fvt-id:string score-id:string dptf-id:string)
+        (fvt-id:string score-entity-id:string dptf-id:string)
         @doc "Internal: Tier-1 accrual index vs user last-rps. Farm (class 0): L_i on RPS|Member. \
             \ Vault/treasury (class 1/2): UrStoa single-tier — global G on RPS|Global (README vault simplification)."
         (if (= (UR_FVT|FvtClass fvt-id) 0)
-            (UR_FVT-RM|MemberDebRps fvt-id score-id dptf-id)
+            (UR_FVT-RM|MemberDebRps fvt-id score-entity-id dptf-id)
             (UR_FVT-RG|CurrentRps fvt-id dptf-id)
         )
     )
     (defun URC_UserTier1AvailableRewards:decimal
-        (user-id:string fvt-id:string score-id:string dptf-id:string deb-user:decimal)
+        (user-id:string fvt-id:string score-entity-id:string dptf-id:string deb-user:decimal)
         @doc "Internal: UrStoa URC_AvailableRewards — pending + floor(deb×(index−last_rps), reward DPTF decimals). \
             \ index = L_i (farm) or G (vault/treasury). deb-user is pre-2.3 OLD SCR deb-score."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 ;;
-                (current-pending:decimal (UR_FVT-RU|PendingRewards user-id fvt-id score-id dptf-id))
-                (last-rps:decimal (UR_FVT-RU|LastRps user-id fvt-id score-id dptf-id))
-                (index-rps:decimal (URC_FvtTier1IndexRps fvt-id score-id dptf-id))
+                (current-pending:decimal (UR_FVT-RU|PendingRewards user-id fvt-id score-entity-id dptf-id))
+                (last-rps:decimal (UR_FVT-RU|LastRps user-id fvt-id score-entity-id dptf-id))
+                (index-rps:decimal (URC_FvtTier1IndexRps fvt-id score-entity-id dptf-id))
                 (reward-prec:integer (ref-DPTF::UR_Decimals dptf-id))
                 (diff-rps:decimal (- index-rps last-rps))
                 (gained:decimal (floor (* deb-user diff-rps) reward-prec))
@@ -1580,40 +1904,53 @@
         )
     )
     (defun URC_CollectClaimableRewards:decimal
-        (patron:string pool-id:string fvt-id:string score-id:string reward-dptf-id:string)
-        @doc "UrStoa ≡ URC_URV|ClaimableRewards — pending + deb×(L_i−last_rps) after phase 0 accrual; \
-            \ dust rule when unclaimed-count=1 (stub: 0.0 until implemented)."
+        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "UrStoa claimable — pending + entity-weight×(L_i−last_rps) after phase 0 accrual."
         (let
             (
-                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                ;;
-                (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore patron pool-id score-id))
+                (deb-user:decimal (URC_ScoreEntityUserWeight patron pool-id score-entity-type score-entity-id))
             )
-            (URC_UserTier1AvailableRewards patron fvt-id score-id reward-dptf-id deb-user)
+            (URC_UserTier1AvailableRewards patron fvt-id score-entity-id reward-dptf-id deb-user)
         )
     )
     (defun URC_SettleScorePlanRows:[object{FVT|SettleScorePlan}]
         (settle-scores:[string] fvt-reward-bundle:[object{FVT|SettleFvtRewards}])
-        @doc "Internal: per settle-score object{FVT|SettleScorePlan} — reward list from URD bundle, not URD."
+        @doc "Distinct score-entity settle plans — triplet members collapse to one triplet-id plan."
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (entity-ids:[string]
+                    (distinct
+                        (map
+                            (lambda (score-id:string)
+                                (at "score-entity-id" (URC_ResolveEmployedScoreEntity score-id))
+                            )
+                            settle-scores
+                        )
+                    )
+                )
             )
-            ;; map: settle-eligible employed scores → object{FVT|SettleScorePlan}
             (map
-                (lambda (score-id:string)
+                (lambda (score-entity-id:string)
                     (let
                         (
-                            (fvt-id:string (ref-SCR::UR_SCR|ScoreFvtLink score-id))
+                            (probe-score:string
+                                (if (= (take 2 score-entity-id) "T|")
+                                    (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id)
+                                    score-entity-id
+                                )
+                            )
+                            (fvt-id:string (ref-SCR::UR_SCR|ScoreFvtLink probe-score))
                         )
                         (UDC_FVT|SettleScorePlan
-                            score-id
+                            (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id)
+                            score-entity-id
                             fvt-id
                             (URC_FvtRewardDptfIdsFromBundle fvt-id fvt-reward-bundle)
                         )
                     )
                 )
-                settle-scores
+                entity-ids
             )
         )
     )
@@ -1647,17 +1984,32 @@
             )
         )
     )
-    (defun URC_BuildPreScoreNzFlags:[object{FVT|ScorePreNzFlag}]
-        (beneficiary-id:string pool-id:string settle-plans:[object{FVT|SettleScorePlan}])
-        @doc "Internal: snapshot was-nz per employed score before phase 2.3 SCORE mutation."
-        (map
-            (lambda (plan:object{FVT|SettleScorePlan})
-                (UDC_FVT|ScorePreNzFlag
-                    (at "score-id" plan)
-                    (URC_UserScoreTripleIsNonZero beneficiary-id pool-id (at "score-id" plan))
-                )
+    (defun URC_SettlePlanEmployedScoreIds:[string] (plan:object{FVT|SettleScorePlan})
+        @doc "Employed SCR score-ids for nz/unclaimed probes — triplet plans expand to bronze/silver/golden."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (entity-type:integer (at "score-entity-type" plan))
+                (entity-id:string (at "score-entity-id" plan))
             )
-            settle-plans
+            (if (= entity-type CT_SCORE_ENTITY_TRIPLET)
+                [
+                    (ref-SCR::UR_SCR|TripletBronzeScoreId entity-id)
+                    (ref-SCR::UR_SCR|TripletSilverScoreId entity-id)
+                    (ref-SCR::UR_SCR|TripletGoldenScoreId entity-id)
+                ]
+                [entity-id]
+            )
+        )
+    )
+    (defun URC_BuildPreScoreNzFlags:[object{FVT|ScorePreNzFlag}]
+        (beneficiary-id:string pool-id:string settle-scores:[string])
+        @doc "Pre-SCORE nz snapshot per employed score-id."
+        (map
+            (lambda (score-id:string)
+                (UDC_FVT|ScorePreNzFlag score-id (URC_UserScoreTripleIsNonZero beneficiary-id pool-id score-id))
+            )
+            settle-scores
         )
     )
     (defun URC_StakeAnyPendingOnFvtRewardLine:bool
@@ -1671,31 +2023,36 @@
         (fold (or) false
             (map
                 (lambda (plan:object{FVT|SettleScorePlan})
-                    (> (UR_FVT-RU|PendingRewards beneficiary-id fvt-id (at "score-id" plan) reward-dptf-id) 0.0)
+                    (> (UR_FVT-RU|PendingRewards beneficiary-id fvt-id (at "score-entity-id" plan) reward-dptf-id) 0.0)
                 )
                 plans
             )
         )
     )
     (defun URDC_BuildInjectScorePlans:[object{FVT|SettleScorePlan}] (fvt-id:string)
-        @doc "Enabled ScoreLinks on FVT × enabled reward dptf-ids — ghost TVL lazy-sync scope for C_Inject / C_Collect."
+        @doc "Enabled ScoreEntityLinks on FVT × enabled reward dptf-ids — ghost TVL lazy-sync scope."
         (let
             (
                 (reward-dptf-ids:[string] (URD_FVT-RG|EnabledRewardRows fvt-id))
-                (score-ids:[string] (URD_FvtEnabledScoreIdsForFvt fvt-id))
+                (score-entity-ids:[string] (URD_FvtEnabledScoreEntityIdsForFvt fvt-id))
             )
             (map
-                (lambda (score-id:string)
-                    (UDC_FVT|SettleScorePlan score-id fvt-id reward-dptf-ids)
+                (lambda (score-entity-id:string)
+                    (UDC_FVT|SettleScorePlan
+                        (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id)
+                        score-entity-id
+                        fvt-id
+                        reward-dptf-ids
+                    )
                 )
-                score-ids
+                score-entity-ids
             )
         )
     )
     (defun URDC_BuildCollectScorePlan:object{FVT|SettleScorePlan}
-        (fvt-id:string score-id:string)
-        @doc "One enabled score line on FVT × enabled reward dptf-ids — ghost TVL sync scope for C_Collect."
-        (UDC_FVT|SettleScorePlan score-id fvt-id (URD_FVT-RG|EnabledRewardRows fvt-id))
+        (fvt-id:string score-entity-type:integer score-entity-id:string)
+        @doc "One enabled score-entity line × enabled reward dptf-ids — ghost TVL sync scope for C_Collect."
+        (UDC_FVT|SettleScorePlan score-entity-type score-entity-id fvt-id (URD_FVT-RG|EnabledRewardRows fvt-id))
     )
     (defun URDC_BuildStakeSettleBundle:object
         (pool-id:string beneficiary-id:string)
@@ -1711,7 +2068,7 @@
                 (fvt-reward-bundle:[object{FVT|SettleFvtRewards}] (URD_FVT|SettleFvtRewardBundle distinct-fvts))
                 (settle-plans:[object{FVT|SettleScorePlan}] (URC_SettleScorePlanRows settle-scores fvt-reward-bundle))
                 (pre-nz-flags:[object{FVT|ScorePreNzFlag}]
-                    (URC_BuildPreScoreNzFlags beneficiary-id pool-id settle-plans)
+                    (URC_BuildPreScoreNzFlags beneficiary-id pool-id settle-scores)
                 )
             )
             (UDC_FVT|StakeSettleBundle settle-scores distinct-fvts settle-plans pre-nz-flags)
@@ -1788,14 +2145,40 @@
         @doc "Recipe cap §4a: reject R| reserved leg — not covered by TFT::C_Transfer in phase 1."
         (enforce (not (= (take 2 dptf-id) "R|")) "Reserved DPTF (R|) cannot be staked")
     )
-    (defun UEV_AddScoreLinkContext
+    (defun UEV_SetMosaicContext (fvt-id:string mosaic:bool)
+        @doc "C_SetMosaic: owner, can-upgrade, zero member-link-count."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (can-upgrade:bool (UR_FVT|CanUpgrade fvt-id))
+            )
+            (enforce can-upgrade "FVT mosaic update requires can-upgrade true")
+            (enforce
+                (= (UR_FVT|MemberLinkCount fvt-id) 0)
+                "Cannot change mosaic while ScoreEntityLink rows exist"
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+        )
+    )
+    (defun UEV_AddScoreEntityContext
+        (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
+        @doc "C_AddScoreEntity unified admission: type 1 = score rules; type 3 = triplet rules + SCR fvt-links."
+        (if (= score-entity-type CT_SCORE_ENTITY_SCORE)
+            (UEV_AddScoreEntityScoreContext fvt-id score-entity-id swpair ghost-weight)
+            (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                (UEV_AddScoreEntityTripletContext fvt-id score-entity-id swpair ghost-weight)
+                (enforce false "score-entity-type must be 1 (score) or 3 (triplet)")
+            )
+        )
+    )
+    (defun UEV_AddScoreEntityScoreContext
         (fvt-id:string score-id:string swpair:string ghost-weight:decimal)
-        @doc "C_AddScoreLink admission: FVT owner, score owner match, class/denom/swpair rules."
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                ;;
                 (fvt-owner:string (UR_FVT|OwnerKonto fvt-id))
                 (fvt-class:integer (UR_FVT|FvtClass fvt-id))
                 (score-owner:string (ref-SCR::UR_SCR|ScoreOwnerKonto score-id))
@@ -1804,45 +2187,116 @@
                 (aqpool-link:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-id))
                 (lp-denom:string (ref-SCR::UR_SCR|ScoreLpDenominator score-id))
                 (common-denom:string (UR_FVT|CommonDenominator fvt-id))
-                (expected-swpair:string (URC_ResolveScoreLinkSwpair score-id fvt-class))
+                (expected-swpair:string (URC_ResolveScoreEntitySwpair CT_SCORE_ENTITY_SCORE score-id fvt-class))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
+            (enforce (= score-owner fvt-owner) "Score owner must match FVT owner")
             (enforce
-                (= score-owner fvt-owner)
-                "Score owner must match FVT owner for C_AddScoreLink"
+                (or (UR_FVT|Mosaic fvt-id)
+                    (let ((mode:string (UR_FVT|MembershipMode fvt-id)))
+                        (or (= mode CT_MEMBERSHIP_MODE_BAR) (= mode CT_MEMBERSHIP_MODE_SCORE))))
+                "Non-mosaic FVT locked to score membership only")
+            (enforce
+                (fold (and) true
+                    [(not (URC_FvtScoreEntityLinkRowExists fvt-id score-id))
+                     (= fvt-link BAR) (!= aqpool-link BAR)
+                     (URC_ScoreClassMatchesFvtClass fvt-class score-class)
+                     (= swpair expected-swpair)])
+                "Invalid AddScoreEntity score: row exists, links, class, or swpair mismatch")
+            (if (= fvt-class 0)
+                (enforce (fold (and) true [(= lp-denom common-denom) (> ghost-weight 0.0)])
+                    "Farm score: lp-denominator and ghost weight required")
+                (enforce (fold (and) true [(= swpair "|") (= ghost-weight 0.0)])
+                    "Vault/Treasury score: swpair | and zero ghost weight"))
+            (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
+        )
+    )
+    (defun UEV_AddScoreEntityTripletContext
+        (fvt-id:string triplet-id:string swpair:string ghost-weight:decimal)
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (fvt-owner:string (UR_FVT|OwnerKonto fvt-id))
+                (fvt-class:integer (UR_FVT|FvtClass fvt-id))
+                (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
+                (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
+                (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
+                (triplet-cat:string (ref-SCR::UR_SCR|TripletCategory triplet-id))
+                (is-true-triplet:bool (ref-SCR::UR_SCR|TripletTrueTriplet triplet-id))
+                (silver-owner:string (ref-SCR::UR_SCR|ScoreOwnerKonto silver-id))
+                (silver-aqpool:string (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id))
+                (common-denom:string (UR_FVT|CommonDenominator fvt-id))
+                (silver-lp-denom:string (ref-SCR::UR_SCR|ScoreLpDenominator silver-id))
+                (expected-swpair:string (URC_ResolveScoreEntitySwpair CT_SCORE_ENTITY_TRIPLET triplet-id fvt-class))
+            )
+            (enforce (ref-SCR::URC_TripletExists triplet-id) "Triplet must be issued in AQP-SCORE")
+            (enforce (ref-SCR::URC_TripletCategoryMatchesFvtClass triplet-cat fvt-class) "Triplet category must match FVT class")
+            (enforce
+                (or (UR_FVT|Mosaic fvt-id)
+                    (let ((mode:string (UR_FVT|MembershipMode fvt-id)))
+                        (or (= mode CT_MEMBERSHIP_MODE_BAR)
+                            (and (= mode CT_MEMBERSHIP_MODE_TRUE_TRIPLET) is-true-triplet)
+                            (and (= mode CT_MEMBERSHIP_MODE_STANDARD_TRIPLET) (not is-true-triplet)))))
+                "Non-mosaic FVT membership mode mismatch for triplet admission")
+            (enforce
+                (fold (and) true
+                    [(= silver-owner fvt-owner)
+                     (not (URC_FvtScoreEntityLinkRowExists fvt-id triplet-id))
+                     (!= silver-aqpool BAR) (= swpair expected-swpair)
+                     (= (ref-SCR::UR_SCR|ScoreFvtLink bronze-id) BAR)
+                     (= (ref-SCR::UR_SCR|ScoreFvtLink silver-id) BAR)
+                     (= (ref-SCR::UR_SCR|ScoreFvtLink golden-id) BAR)])
+                "Invalid AddScoreEntity triplet: row exists, links, or swpair mismatch")
+            (if (= fvt-class 0)
+                (enforce (fold (and) true [(= silver-lp-denom common-denom) (> ghost-weight 0.0)])
+                    "Farm triplet: lp-denominator and ghost weight required")
+                (enforce (fold (and) true [(= swpair "|") (= ghost-weight 0.0)])
+                    "Vault/Treasury triplet: swpair | and zero ghost weight"))
+            (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
+        )
+    )
+    (defun UEV_IssueMultipletFamilyContext
+        (
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+        )
+        @doc "C_IssueMultipletFamily: distinct issued DPTF ids, distinct ATS pairs; ATS ladder must match Coil/Curl chain."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-ATS:module{AutostakeV2} ATS)
+            )
+            (enforce
+                (ref-DPTF::URC_IzRBTg ats-0-1-id token-1-id)
+                "MultipletFamily token-1 must be reward-bearing on first ATS pair (Coil output)"
+            )
+            (enforce
+                (ref-DPTF::URC_IzRBTg ats-1-2-id token-2-id)
+                "MultipletFamily token-2 must be reward-bearing on second ATS pair (Curl output)"
             )
             (enforce
                 (fold (and) true
                     [
-                        (not (URC_FvtScoreLinkRowExists fvt-id score-id))
-                        (= fvt-link BAR)
-                        (!= aqpool-link BAR)
-                        (URC_ScoreClassMatchesFvtClass fvt-class score-class)
-                        (= swpair expected-swpair)
+                        (!= token-0-id token-1-id)
+                        (!= token-1-id token-2-id)
+                        (!= token-0-id token-2-id)
+                        (!= ats-0-1-id BAR)
+                        (!= ats-1-2-id BAR)
+                        (!= ats-0-1-id ats-1-2-id)
                     ]
                 )
-                "Invalid AddScoreLink: row exists, links, class, or swpair mismatch"
+                "Invalid MultipletFamily issue: tokens and ATS pairs must be distinct"
             )
-            (if (= fvt-class 0)
-                (enforce
-                    (fold (and) true
-                        [
-                            (= lp-denom common-denom)
-                            (> ghost-weight 0.0)
-                        ]
-                    )
-                    "Farm AddScoreLink: lp-denominator must match common-denominator and ghost weight > 0"
-                )
-                (enforce
-                    (fold (and) true
-                        [
-                            (= swpair "|")
-                            (= ghost-weight 0.0)
-                        ]
-                    )
-                    "Vault/Treasury AddScoreLink: swpair | and zero ghost weight"
-                )
-            )
+            (ref-DPTF::UEV_id token-0-id)
+            (ref-DPTF::UEV_id token-1-id)
+            (ref-DPTF::UEV_id token-2-id)
+            (ref-ATS::UEV_id ats-0-1-id)
+            (ref-ATS::UEV_id ats-1-2-id)
+            (ref-ATS::UEV_RewardTokenExistance ats-0-1-id token-0-id true)
+            (ref-ATS::UEV_RewardTokenExistance ats-1-2-id token-1-id true)
         )
     )
     (defun UEV_InjectContext
@@ -1855,9 +2309,6 @@
                 ;;
                 (denominator:decimal (URC_InjectDenominator fvt-id))
             )
-            (ref-DALOS::UEV_EnforceAccountExists patron)
-            (ref-DPTF::UEV_id reward-dptf-id)
-            (ref-DPTF::UEV_Amount reward-dptf-id amount)
             (enforce (> amount 0.0) "Inject amount must be positive")
             (enforce (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) "Reward link row must exist")
             (enforce (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id) "Reward token is disabled for inject")
@@ -1865,26 +2316,46 @@
                 (> denominator 0.0)
                 "Inject denominator must be positive (farm ghost TVL sum S or vault total-deb-score)"
             )
+            (ref-DALOS::UEV_EnforceAccountExists patron)
+            (ref-DPTF::UEV_id reward-dptf-id)
+            (ref-DPTF::UEV_Amount reward-dptf-id amount)
         )
     )
     (defun UEV_CollectContext
-        (patron:string fvt-id:string score-id:string reward-dptf-id:string)
-        @doc "C_Collect: patron account, score on FVT, reward-enabled row; payout via URC_CollectClaimableRewards."
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "C_Collect: dispatch by score-entity-type; MULTIPLET_BASE triplet collect requires matching global."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
+            )
+            (enforce (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) "Reward link row must exist")
+            (enforce (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id) "Reward token is disabled for collect")
+            (enforce (URC_FvtScoreEntityLinkRowExists fvt-id score-entity-id) "ScoreEntityLink row must exist")
+            (enforce (UR_FVT-SEL|Enabled fvt-id score-entity-id) "ScoreEntityLink must be enabled for collect")
+            (enforce (= score-entity-type (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id)) "score-entity-type mismatch")
+            (if (and (= reward-kind CT_REWARD_KIND_MULTIPLET_BASE) (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
+                (enforce
+                    (fold (and) true
+                        [
+                            (!= (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id) BAR)
+                            (URC_MultipletFamilyExists (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
+                            (UR_FVT-MF|Active (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
+                        ]
+                    )
+                    "MULTIPLET_BASE collect requires active MultipletFamily on global row"
+                )
+                true
             )
             (ref-DALOS::CAP_EnforceAccountOwnership patron)
             (ref-DPTF::UEV_id reward-dptf-id)
-            (enforce (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) "Reward link row must exist")
-            (enforce (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id) "Reward token is disabled for collect")
-            (enforce (URC_FvtScoreLinkRowExists fvt-id score-id) "ScoreLink row must exist")
-            (enforce (UR_FVT-SL|Enabled fvt-id score-id) "ScoreLink must be enabled for collect")
         )
     )
-    (defun UEV_AddRewardLinkContext (fvt-id:string reward-dptf-id:string)
-        @doc "C_AddRewardLink: FVT owner, issued reward DPTF, row must not exist."
+    (defun UEV_AddRewardLinkContext
+        (fvt-id:string reward-dptf-id:string reward-kind:string multiplet-family-id:string)
+        @doc "C_AddRewardLink admission: one RPS|Global row per (fvt, dptf). multiplet-family-id BAR = plain-only metadata; \
+            \ F|… registers ladder for triplet-anchor collect (score anchors still plain). Kind derived in C_AddRewardLink."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1892,16 +2363,33 @@
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
-            (ref-DPTF::UEV_id reward-dptf-id)
             (enforce
                 (not (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id))
                 "Reward link row already exists for this FVT and DPTF"
             )
+            (if (= reward-kind CT_REWARD_KIND_MULTIPLET_BASE)
+                (enforce
+                    (fold (and) true
+                        [
+                            (!= multiplet-family-id BAR)
+                            (URC_MultipletFamilyExists multiplet-family-id)
+                            (UR_FVT-MF|Active multiplet-family-id)
+                            (= reward-dptf-id (UR_FVT-MF|Token0Id multiplet-family-id))
+                        ]
+                    )
+                    "MULTIPLET_BASE reward requires active MultipletFamily with reward-dptf-id = token-0-id"
+                )
+                (enforce
+                    (and (= reward-kind CT_REWARD_KIND_PLAIN) (= multiplet-family-id BAR))
+                    "PLAIN reward requires reward-kind PLAIN and multiplet-family-id BAR"
+                )
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (ref-DPTF::UEV_id reward-dptf-id)
         )
     )
     (defun UEV_SetCommonDenominatorContext (fvt-id:string common-denominator:string)
-        @doc "C_SetCommonDenominator: farm only, can-upgrade, no ScoreLinks yet, valid DPTF id."
+        @doc "C_SetCommonDenominator: farm only, can-upgrade, no ScoreEntityLinks yet, valid DPTF id."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1911,14 +2399,12 @@
                 (can-upgrade:bool (UR_FVT|CanUpgrade fvt-id))
                 (fvt-class:integer (UR_FVT|FvtClass fvt-id))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (enforce can-upgrade "SetCommonDenominator requires can-upgrade true")
             (enforce (= fvt-class 0) "SetCommonDenominator applies to farm (class 0) FVT only")
             (enforce
-                (not (URDC_FvtHasScoreLinks fvt-id))
-                "Cannot change common-denominator after ScoreLink rows exist"
+                (not (URDC_FvtHasScoreEntityLinks fvt-id))
+                "Cannot change common-denominator after ScoreEntityLink rows exist"
             )
-            (ref-DPTF::UEV_id common-denominator)
             (enforce
                 (fold (and) true
                     [
@@ -1928,6 +2414,8 @@
                 )
                 "common-denominator must be a full native DPTF id"
             )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (ref-DPTF::UEV_id common-denominator)
         )
     )
     ;;{F5}  [CAP]  (capabilities above FUNCTIONS — {C1}–{C4})
@@ -1990,7 +2478,7 @@
     )
     (defun C_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string common-denominator:string)
-        @doc "Farm-only: set common-denominator before any ScoreLinks. GAS|SET-COMMON-DENOMINATOR on owner."
+        @doc "Farm-only: set common-denominator before any ScoreEntityLinks. GAS|SET-COMMON-DENOMINATOR on owner."
         (UEV_IMC)
         (let
             (
@@ -2005,67 +2493,121 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-COMMON-DENOMINATOR owner-konto trigger [fvt-id])
         )
     )
-    ;;Score membership (FVT|T|ScoreLink) — key is permanent; no delete. Add = enabled true; Toggle = on/off.
-    (defun C_AddScoreLink:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string score-id:string)
-        @doc "Register score-id on FVT; insert enabled ScoreLink; SCR::XE_CreateFvtLink. GAS|ADD-SCORE-LINK on owner."
+    (defun C_SetMosaic:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string mosaic:bool)
+        @doc "Toggle mosaic membership policy when FVT has no ScoreEntityLink rows. GAS|SET-MOSAIC on owner."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (FVT|C>SET-MOSAIC fvt-id mosaic)
+                (XI_SetMosaic fvt-id mosaic)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-MOSAIC owner-konto trigger [fvt-id])
+        )
+    )
+    ;; --- Score membership (FVT|T|ScoreEntityLink) ---
+    (defun C_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Register score (type 1) or triplet (type 3) on FVT; insert ScoreEntityLink; SCR fvt-links. GAS|ADD-SCORE-ENTITY."
         (UEV_IMC)
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                ;;
                 (fvt-class:integer (UR_FVT|FvtClass fvt-id))
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
-                (swpair:string (URC_ResolveScoreLinkSwpair score-id fvt-class))
-                (ghost-weight:decimal (URC_ResolveScoreLinkGhostWeight score-id fvt-class swpair))
+                (swpair:string (URC_ResolveScoreEntitySwpair score-entity-type score-entity-id fvt-class))
+                (ghost-weight:decimal (URC_ResolveScoreEntityGhostWeight score-entity-type score-entity-id fvt-class swpair))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>ADD-SCORE-LINK fvt-id score-id swpair ghost-weight)
-                (let
-                    (
-                        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                        (link:string (ref-SCR::XE_CreateFvtLink score-id fvt-id))
+            (with-capability (FVT|C>ADD-SCORE-ENTITY fvt-id score-entity-type score-entity-id swpair ghost-weight)
+                (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                    (let
+                        (
+                            (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
+                            (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
+                            (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id))
+                        )
+                        (ref-SCR::XE_CreateFvtLink bronze-id fvt-id)
+                        (ref-SCR::XE_CreateFvtLink silver-id fvt-id)
+                        (ref-SCR::XE_CreateFvtLink golden-id fvt-id)
                     )
-                    (XI_AddScoreLink fvt-id score-id swpair ghost-weight)
+                    (ref-SCR::XE_CreateFvtLink score-entity-id fvt-id)
                 )
+                (XI_AddScoreEntity fvt-id score-entity-type score-entity-id swpair ghost-weight)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ADD-SCORE-LINK owner-konto trigger [fvt-id score-id])
+            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ADD-SCORE-ENTITY owner-konto trigger [fvt-id score-entity-id])
         )
     )
-    (defun C_ToggleScoreLink:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string score-id:string enabled:bool)
-        @doc "Turn ScoreLink.enabled on/off; farm adjusts S when toggling. GAS|TOGGLE-SCORE-LINK on owner."
+    (defun C_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+        @doc "Turn ScoreEntityLink.enabled on/off; farm adjusts S when toggling. GAS|TOGGLE-SCORE-ENTITY-LINK."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (FVT|C>TOGGLE-SCORE-ENTITY-LINK fvt-id score-entity-type score-entity-id enabled)
+                (XI_ToggleScoreEntityLink fvt-id score-entity-id enabled)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|TOGGLE-SCORE-ENTITY-LINK owner-konto trigger [fvt-id score-entity-id])
+        )
+    )
+    (defun C_IssueMultipletFamily:object{IgnisCollectorV1.OutputCumulator}
+        (
+            patron:string
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+        )
+        @doc "Issue one chain-wide MultipletFamily reward ladder F|t0|t1|t2."
         (UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 ;;
-                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (family-id:string (UCK_MultipletFamily token-0-id token-1-id token-2-id))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>TOGGLE-SCORE-LINK fvt-id score-id enabled)
-                (XI_ToggleScoreLink fvt-id score-id enabled)
+            (with-capability (FVT|C>ISSUE-MULTIPLET-FAMILY token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id)
+                (XI_IssueMultipletFamily token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|TOGGLE-SCORE-LINK owner-konto trigger [fvt-id score-id])
+            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-MULTIPLET-FAMILY patron trigger [family-id])
         )
     )
-    ;;Reward token registration — single row FVT|T|RPS|Global per (fvt-id, dptf-id); reward-enabled gates inject/collect
+    ;; --- Reward token registration (FVT|T|RPS|Global) — atomic one row per reward DPTF ---
     (defun C_AddRewardLink:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool)
-        @doc "Register reward dptf-id: insert RPS|Global reward-enabled true; increment enabled-reward-count."
+        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
+        @doc "Register one reward DPTF on FVT (single RPS|Global row). multiplet-family-id BAR for plain tokens (VESTA, etc.); \
+            \ F|t0|t1|t2 when reward-dptf-id is family token-0 — enables triplet lane collect on triplet anchors; score anchors stay plain. \
+            \ One inject feeds all membership tranches; collect branches on anchor-id (score vs triplet)."
         (UEV_IMC)
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 ;;
                 (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (reward-kind:string
+                    (if (= multiplet-family-id BAR)
+                        CT_REWARD_KIND_PLAIN
+                        CT_REWARD_KIND_MULTIPLET_BASE
+                    )
+                )
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
             )
-            (with-capability (FVT|C>ADD-REWARD-LINK fvt-id reward-dptf-id segmentation)
-                (XI_AddRewardLink fvt-id reward-dptf-id segmentation)
+            (with-capability (FVT|C>ADD-REWARD-LINK fvt-id reward-dptf-id segmentation reward-kind multiplet-family-id)
+                (XI_AddRewardLink fvt-id reward-dptf-id segmentation reward-kind multiplet-family-id)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ADD-REWARD-LINK owner-konto trigger [fvt-id reward-dptf-id])
+            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ADD-REWARD-LINK owner-konto trigger [fvt-id reward-dptf-id multiplet-family-id])
         )
     )
     (defun C_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator}
@@ -2093,7 +2635,7 @@
     ;;
     ;; INJECT — C_URV|Inject / XI_URV|Inject
     ;; PHASE 0 — FVT farm pre-inject (architecture adaptation; UrStoa ≡ N/A):
-    ;;   0.1 Ghost TVL lazy sync (all enabled ScoreLinks)   XI_1|SyncFarmGhostTvlForEmployedScores
+    ;;   0.1 Ghost TVL lazy sync (all enabled ScoreEntityLinks)   XI_1|SyncFarmGhostTvlForEmployedScores
     ;; PHASE 1 — Custody (coin step 0):
     ;;   1.1 Transfer reward DPTF patron → AQP|SC_NAME      TFT::C_Transfer
     ;; PHASE 2 — RPS global index (coin step 1 · XI_URV|UpdateVaultRPS):
@@ -2179,21 +2721,25 @@
         )
     )
     (defun C_Collect:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string score-id:string reward-dptf-id:string)
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collect reward DPTF — phases 0 → 5 — see canonical collect map above. UrStoa ≡ C_URV|Collect."
         (UEV_IMC)
-        (with-capability (FVT|C>COLLECT patron fvt-id score-id reward-dptf-id)
+        (with-capability (FVT|C>COLLECT patron fvt-id score-entity-type score-entity-id reward-dptf-id)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
-                    (pool-id:string (ref-SCR::UR_SCR|ScoreAqpoolLink score-id))
+                    (pool-id:string
+                        (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                        (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
+                        (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id)
+                    ))
                     (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (if (= (UR_FVT|FvtClass fvt-id) 0)
-                    (XI_2|SettleMemberTier2 fvt-id score-id reward-dptf-id)
+                    (XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
                     true
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -2201,21 +2747,21 @@
                         ;;===>PHASE 0=== farm ghost TVL lazy sync (vault/treasury: UrStoa single-tier vs G, no Tier-2 settle)
                         (if (= (UR_FVT|FvtClass fvt-id) 0)
                             (XI_1|SyncFarmGhostTvlForEmployedScores
-                                [(URDC_BuildCollectScorePlan fvt-id score-id)]
+                                [(URDC_BuildCollectScorePlan fvt-id score-entity-type score-entity-id)]
                             )
                             (UC_EmptyOc)
                         )
                         ;;
                         ;;===>PHASE 1=== coin step 1 · C_Transmit URV|KONTO→account
                         ;; PRE payout via URC_CollectClaimableRewards inside XI (post phase 0, pre reset)
-                        (XI_TransferRewardDptfFromVault patron pool-id fvt-id score-id reward-dptf-id)
+                        (XI_TransferRewardDptfFromVault patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                         ;;
                         ;;===>PHASE 5=== coin step 5 · XI_URV|UpdateVaultSupply false
                         ;; ICO slot before phase 2 so URC reads same pre-reset state as UrStoa available-rewards let
                         (let
                             (
                                 (payout:decimal
-                                    (URC_CollectClaimableRewards patron pool-id fvt-id score-id reward-dptf-id)
+                                    (URC_CollectClaimableRewards patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                                 )
                                 (ar:decimal (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id))
                                 (new-ar:decimal (- ar payout))
@@ -2228,23 +2774,23 @@
                         ;;===>PHASE 2=== coin step 2 · XI_URV|ResetPendingRewards
                         (do
                             ;; SECURE: granted by WU_RpsUser|PendingRewards (underlying W_).
-                            (WU_RpsUser|PendingRewards patron fvt-id score-id reward-dptf-id 0.0)
+                            (WU_RpsUser|PendingRewards patron fvt-id score-entity-id reward-dptf-id 0.0)
                             (UC_EmptyOc)
                         )
                         ;;
                         ;;===>PHASE 3=== coin step 3 · XI_URV|UpdateUnclaimedCount false
-                        (XI_BookCollectUnclaimed patron pool-id fvt-id score-id reward-dptf-id)
+                        (XI_BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                         ;;
                         ;;===>PHASE 4=== coin step 4 · XI_URV|UpdateUserRPS (farm: L_i; vault/treasury: G)
                         (do
                             ;; SECURE: granted by WU_RpsUser|LastRps (underlying W_).
-                            (WU_RpsUser|LastRps patron fvt-id score-id reward-dptf-id
-                                (URC_FvtTier1IndexRps fvt-id score-id reward-dptf-id)
+                            (WU_RpsUser|LastRps patron fvt-id score-entity-id reward-dptf-id
+                                (URC_FvtTier1IndexRps fvt-id score-entity-id reward-dptf-id)
                             )
                             (UC_EmptyOc)
                         )
                         (ref-IGNIS::UDC_ConstructOutputCumulator
-                            GAS|COLLECT owner-konto trigger [fvt-id score-id reward-dptf-id]
+                            GAS|COLLECT owner-konto trigger [fvt-id score-entity-id reward-dptf-id]
                         )
                     ]
                     []
@@ -2523,14 +3069,14 @@
     ;;  4d-4f] pending and unclaimed-count updates; last-rps_user := L_i
     ;;
     ;;5]SWP / AQP — SWP|Pairs.stoa-value updated by TS01 swap/liquidity txs (no FVT call from SWP).
-    ;;  FVT lazy-sync on reward entry (C_AddScoreLink, C_Inject, XI_SettleStakePendingRewards phase-2 entry, C_Collect):
-    ;;  read SWP::UR_StoaValue via ScoreLink.swpair; if W_live ≠ W_cached settle Tier-2 at old W_i; write W_i; fix S.
+    ;;  FVT lazy-sync on reward entry (C_AddScoreEntity, C_Inject, XI_SettleStakePendingRewards phase-2 entry, C_Collect):
+    ;;  read SWP::UR_StoaValue via ScoreEntityLink.swpair; if W_live ≠ W_cached settle Tier-2 at old W_i; write W_i; fix S.
     ;;
-    ;; --- Block L · Lifecycle XI (C_Issue / C_AddScoreLink / …) ---
+    ;; --- Block L · Lifecycle XI (C_Issue / C_AddScoreEntity / …) ---
     ;;   C_Issue / C_RotateOwnership / C_Control / C_SetCommonDenominator
     ;;     └ XI_IssueFvt / XI_RotateOwnership / XI_Control / XI_SetCommonDenominator
-    ;;   C_AddScoreLink / C_ToggleScoreLink
-    ;;     └ XI_AddScoreLink / XI_ToggleScoreLink
+    ;;   C_AddScoreEntity / C_ToggleScoreEntityLink
+    ;;     └ XI_AddScoreEntity / XI_ToggleScoreEntityLink
     ;;   C_AddRewardLink / C_ToggleRewardLink
     ;;     └ XI_AddRewardLink / XI_ToggleRewardLink
     ;;   C_Inject — phased recipe (see canonical inject map above C_Inject)
@@ -2543,9 +3089,14 @@
         (WI_Fvt fvt-id
             (UDC_FVT|Schema
                 fvt-class owner-konto true true common-denominator
-                0.0 0.0 0.0 0.0 0 0 fvt-id
+                0.0 0.0 0.0 0.0 0 0 0 true CT_MEMBERSHIP_MODE_BAR fvt-id
             )
         )
+    )
+    (defun XI_SetMosaic:string
+        (fvt-id:string mosaic:bool)
+        @doc "Under SECURE (FVT|C>SET-MOSAIC): update mosaic; reset membership-mode to BAR."
+        (WU2_Fvt|MosaicPolicy fvt-id mosaic CT_MEMBERSHIP_MODE_BAR)
     )
     (defun XI_RotateOwnership:string
         (fvt-id:string new-owner-konto:string)
@@ -2566,26 +3117,35 @@
         ;; SECURE: granted by WU_Fvt|CommonDenominator (underlying W_).
         (WU_Fvt|CommonDenominator fvt-id common-denominator)
     )
-    (defun XI_AddScoreLink:string
-        (fvt-id:string score-id:string swpair:string ghost-weight:decimal)
-        @doc "Under SECURE (FVT|C>ADD-SCORE-LINK): insert enabled ScoreLink; farm adds ghost weight to S."
-        ;; SECURE: granted by WI_ScoreLink and WU_Fvt|TotalGhostTvlWeight (underlying W_).
-        (WI_ScoreLink fvt-id score-id
-            (UDC_FVT|ScoreLink true swpair ghost-weight fvt-id score-id)
-        )
-        (if (= (UR_FVT|FvtClass fvt-id) 0)
-            (WU_Fvt|TotalGhostTvlWeight fvt-id (+ (UR_FVT|TotalGhostTvlWeight fvt-id) ghost-weight))
-            fvt-id
+    (defun XI_AddScoreEntity:string
+        (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string ghost-weight:decimal)
+        @doc "Under SECURE: insert enabled ScoreEntityLink; farm adds W_i to S; lock membership-mode when non-mosaic."
+        (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
+            (WI_ScoreEntityLink fvt-id score-entity-id
+                (UDC_FVT|ScoreEntityLink score-entity-type true swpair ghost-weight fvt-id score-entity-id)
+            )
+            (WU_Fvt|MemberLinkCount fvt-id (+ (UR_FVT|MemberLinkCount fvt-id) 1))
+            (if (and (not (UR_FVT|Mosaic fvt-id)) (= (UR_FVT|MembershipMode fvt-id) CT_MEMBERSHIP_MODE_BAR))
+                (WU_Fvt|MembershipMode fvt-id
+                    (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                        (if (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)
+                            CT_MEMBERSHIP_MODE_TRUE_TRIPLET
+                            CT_MEMBERSHIP_MODE_STANDARD_TRIPLET)
+                        CT_MEMBERSHIP_MODE_SCORE))
+                fvt-id)
+            (if (= (UR_FVT|FvtClass fvt-id) 0)
+                (WU_Fvt|TotalGhostTvlWeight fvt-id (+ (UR_FVT|TotalGhostTvlWeight fvt-id) ghost-weight))
+                fvt-id)
         )
     )
-    (defun XI_ToggleScoreLink:string
-        (fvt-id:string score-id:string enabled:bool)
-        @doc "Under SECURE (FVT|C>TOGGLE-SCORE-LINK): flip enabled; farm adjusts S by ±W_i on change."
-        ;; SECURE: granted by WU_ScoreLink|Enabled and WU_Fvt|TotalGhostTvlWeight (underlying W_).
+    (defun XI_ToggleScoreEntityLink:string
+        (fvt-id:string score-entity-id:string enabled:bool)
+        @doc "Under SECURE (FVT|C>TOGGLE-SCORE-ENTITY-LINK): flip enabled; farm adjusts S by ±W_i on change."
+        ;; SECURE: granted by WU_ScoreEntityLink|Enabled and WU_Fvt|TotalGhostTvlWeight (underlying W_).
         (let
             (
-                (prev-enabled:bool (UR_FVT-SL|Enabled fvt-id score-id))
-                (w:decimal (UR_FVT-SL|GhostTvlWeight fvt-id score-id))
+                (prev-enabled:bool (UR_FVT-SEL|Enabled fvt-id score-entity-id))
+                (w:decimal (UR_FVT-SEL|GhostTvlWeight fvt-id score-entity-id))
                 (fvt-class:integer (UR_FVT|FvtClass fvt-id))
                 (delta:decimal
                     (if (and (= fvt-class 0) (!= enabled prev-enabled))
@@ -2594,19 +3154,38 @@
                     )
                 )
             )
-            (WU_ScoreLink|Enabled fvt-id score-id enabled)
+            (WU_ScoreEntityLink|Enabled fvt-id score-entity-id enabled)
             (if (!= delta 0.0)
                 (WU_Fvt|TotalGhostTvlWeight fvt-id (+ (UR_FVT|TotalGhostTvlWeight fvt-id) delta))
                 fvt-id
             )
         )
     )
+    (defun XI_IssueMultipletFamily:string
+        (
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+        )
+        @doc "Under SECURE (FVT|C>ISSUE-MULTIPLET-FAMILY): insert active MultipletFamily row."
+        (let
+            (
+                (family-id:string (UCK_MultipletFamily token-0-id token-1-id token-2-id))
+            )
+            (WI_MultipletFamily family-id
+                (UDC_FVT|MultipletFamily token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id 3 true family-id)
+            )
+            family-id
+        )
+    )
     (defun XI_AddRewardLink:string
-        (fvt-id:string reward-dptf-id:string segmentation:bool)
+        (fvt-id:string reward-dptf-id:string segmentation:bool reward-kind:string multiplet-family-id:string)
         @doc "Under SECURE (FVT|C>ADD-REWARD-LINK): insert reward-enabled RPS|Global; +1 enabled-reward-count."
         ;; SECURE: granted by WI_RpsGlobal and WU_Fvt|EnabledRewardCount (underlying W_).
         (WI_RpsGlobal fvt-id reward-dptf-id
-            (UDC_FVT|RPS|Global true 0.0 0.0 0 segmentation fvt-id reward-dptf-id)
+            (UDC_FVT|RPS|Global true 0.0 0.0 0 segmentation reward-kind multiplet-family-id fvt-id reward-dptf-id)
         )
         (WU_Fvt|EnabledRewardCount fvt-id (+ (UR_FVT|EnabledRewardCount fvt-id) 1))
         fvt-id
@@ -2654,47 +3233,76 @@
         )
     )
     (defun XI_CollectRpsPreScore:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string pool-id:string fvt-id:string score-id:string reward-dptf-id:string)
+        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Tier 0 collect prelude: farm ghost-TVL sync, member settle, then user pending bank."
         ;; SECURE: granted by XI_1|SyncFarmGhostTvlForEmployedScores / XI_1|CollectSettleAndBank (underlying W_).
         (do
             (if (= (UR_FVT|FvtClass fvt-id) 0)
                 (XI_1|SyncFarmGhostTvlForEmployedScores
-                    [(URDC_BuildCollectScorePlan fvt-id score-id)]
+                    [(URDC_BuildCollectScorePlan fvt-id score-entity-type score-entity-id)]
                 )
                 true
             )
-            (XI_1|CollectSettleAndBank patron pool-id fvt-id score-id reward-dptf-id)
+            (XI_1|CollectSettleAndBank patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
             (UC_EmptyOc)
         )
     )
     (defun XI_TransferRewardDptfFromVault:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string pool-id:string fvt-id:string score-id:string reward-dptf-id:string)
-        @doc "PHASE 1.1 collect — coin step 1 · C_Transmit URV|KONTO→account. TFT AQP|SC_NAME→patron. \
-            \ Payout = URC_CollectClaimableRewards (UrStoa ≡ URC_URV|ClaimableRewards let-binding)."
+        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "PHASE 1.1 collect — plain TFT or MULTIPLET_BASE lane split (Coil/Curl via ATSU)."
         (require-capability (SECURE))
         (let
             (
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                ;;
-                (payout:decimal
-                    (URC_CollectClaimableRewards patron pool-id fvt-id score-id reward-dptf-id)
-                )
+                (ref-ATSU:module{AutostakeUsageV1} ATSU)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
+                (payout:decimal (URC_CollectClaimableRewards patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id))
             )
-            (if (> payout 0.0)
-                (ref-TFT::C_Transfer reward-dptf-id AQP|SC_NAME patron payout true)
+            (if (<= payout 0.0)
                 (UC_EmptyOc)
+                (if (and (= reward-kind CT_REWARD_KIND_MULTIPLET_BASE) (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
+                    (let
+                        (
+                            (mf-id:string (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
+                            (lanes:object (URC_ComputeTripletLanes patron pool-id score-entity-id))
+                            (lane-b:decimal (at "lane-b" lanes))
+                            (lane-s:decimal (at "lane-s" lanes))
+                            (lane-g:decimal (at "lane-g" lanes))
+                            (w-total:decimal (at "w-user" lanes))
+                            (token-0:string (UR_FVT-MF|Token0Id mf-id))
+                            (ats-01:string (UR_FVT-MF|Ats01Id mf-id))
+                            (ats-12:string (UR_FVT-MF|Ats12Id mf-id))
+                            (prec:integer (ref-DPTF::UR_Decimals token-0))
+                            (amt-b:decimal (if (> w-total 0.0) (floor (* payout (/ lane-b w-total)) prec) 0.0))
+                            (amt-s:decimal (if (> w-total 0.0) (floor (* payout (/ lane-s w-total)) prec) 0.0))
+                            (amt-g:decimal (- payout (+ amt-b amt-s)))
+                            (fund-sg:decimal (+ amt-s amt-g))
+                        )
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                            [
+                                (if (> amt-b 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron amt-b true) (UC_EmptyOc))
+                                (if (> fund-sg 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron fund-sg true) (UC_EmptyOc))
+                                (if (> amt-s 0.0) (ref-ATSU::C_Coil patron ats-01 token-0 amt-s) (UC_EmptyOc))
+                                (if (> amt-g 0.0) (ref-ATSU::C_Curl patron ats-01 ats-12 token-0 amt-g) (UC_EmptyOc))
+                            ]
+                            []
+                        )
+                    )
+                    (ref-TFT::C_Transfer reward-dptf-id AQP|SC_NAME patron payout true)
+                )
             )
         )
     )
     (defun XI_BookCollectUnclaimed:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string pool-id:string fvt-id:string score-id:string reward-dptf-id:string)
+        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Tier 0 collect unclaimed wrapper."
         ;; SECURE: granted by XI_1|BookCollectUnclaimed (underlying W_).
-        (XI_1|BookCollectUnclaimed patron pool-id fvt-id score-id reward-dptf-id)
+        (XI_1|BookCollectUnclaimed patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
     )
     (defun XI_1|BookCollectUnclaimed:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string pool-id:string fvt-id:string score-id:string reward-dptf-id:string)
+        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "PHASE 3.1 collect — coin step 3 · XI_URV|UpdateUnclaimedCount false when user-supply=0; \
             \ FVT adapt: deb-score=0 on this score."
         ;; SECURE: granted by XI_2|BumpRpsGlobalUnclaimed (underlying W_).
@@ -2702,7 +3310,7 @@
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 ;;
-                (deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore patron pool-id score-id))
+                (deb:decimal (URC_ScoreEntityUserWeight patron pool-id score-entity-type score-entity-id))
             )
             (if (= deb 0.0)
                 (XI_2|BumpRpsGlobalUnclaimed fvt-id reward-dptf-id false)
@@ -2712,12 +3320,12 @@
         (UC_EmptyOc)
     )
     (defun XI_1|CollectSettleAndBank:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string pool-id:string fvt-id:string score-id:string reward-dptf-id:string)
+        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Tier 1 collect prelude: settle member, then bank pending at current deb."
         ;; SECURE: granted by XI_2|SettleMemberTier2 / XI_2|BankUserTier1Pending (underlying W_).
         (do
-            (XI_2|SettleMemberTier2 fvt-id score-id reward-dptf-id)
-            (XI_2|BankUserTier1Pending patron pool-id fvt-id score-id reward-dptf-id)
+            (XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
+            (XI_2|BankUserTier1Pending patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
             (UC_EmptyOc)
         )
     )
@@ -2781,15 +3389,16 @@
         (let
             (
                 (fvt-id:string (at "fvt-id" plan))
-                (score-id:string (at "score-id" plan))
+                (score-entity-type:integer (at "score-entity-type" plan))
+                (score-entity-id:string (at "score-entity-id" plan))
                 (reward-dptf-ids:[string] (at "reward-dptf-ids" plan))
             )
             (map
                 (lambda (reward-dptf-id:string)
                     (if (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id)
                         (do
-                            (XI_2|EnsureRpsMemberRow fvt-id score-id reward-dptf-id)
-                            (XI_2|EnsureRpsUserRow beneficiary-id fvt-id score-id reward-dptf-id)
+                            (XI_2|EnsureRpsMemberRow fvt-id score-entity-id reward-dptf-id)
+                            (XI_2|EnsureRpsUserRow beneficiary-id fvt-id score-entity-id reward-dptf-id)
                         )
                         true
                     )
@@ -2804,7 +3413,8 @@
         ;; SECURE: granted by XI_2|SettleMemberTier2 / XI_2|BankUserTier1Pending (underlying W_).
         (let
             (
-                (score-id:string (at "score-id" plan))
+                (score-entity-type:integer (at "score-entity-type" plan))
+                (score-entity-id:string (at "score-entity-id" plan))
                 (fvt-id:string (at "fvt-id" plan))
                 (reward-dptf-ids:[string] (at "reward-dptf-ids" plan))
             )
@@ -2812,8 +3422,8 @@
                 (lambda (reward-dptf-id:string)
                     (if (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id)
                         (do
-                            (XI_2|SettleMemberTier2 fvt-id score-id reward-dptf-id)
-                            (XI_2|BankUserTier1Pending beneficiary-id pool-id fvt-id score-id reward-dptf-id)
+                            (XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
+                            (XI_2|BankUserTier1Pending beneficiary-id pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
                         )
                         true
                     )
@@ -2829,7 +3439,7 @@
             \ Per row: read SWP::UR_StoaValue via swpair; if W_live ≠ W_cached settle Tier-2 at old W_i, \
             \ write ghost-tvl-weight, adjust FVT|T.total-ghost-tvl-weight. \
             \ Stake/unstake (XI_RpsPreScore) and tier-0 inject/collect wrappers call this."
-        ;; SECURE: granted by XI_2|SettleMemberTier2, WU_ScoreLink|GhostTvlWeight, WU_Fvt|TotalGhostTvlWeight (underlying W_).
+        ;; SECURE: granted by XI_2|SettleMemberTier2, WU_ScoreEntityLink|GhostTvlWeight, WU_Fvt|TotalGhostTvlWeight (underlying W_).
         (let
             (
                 (ref-SWP:module{SwapperV3} SWP)
@@ -2839,24 +3449,25 @@
                 (lambda (plan:object{FVT|SettleScorePlan})
                     (let
                         (
-                            (score-id:string (at "score-id" plan))
+                            (score-entity-type:integer (at "score-entity-type" plan))
+                (score-entity-id:string (at "score-entity-id" plan))
                             (fvt-id:string (at "fvt-id" plan))
                             (reward-dptf-ids:[string] (at "reward-dptf-ids" plan))
                         )
                         (if
                             (fold (and) true
                                 [
-                                    (!= score-id BAR)
+                                    (!= score-entity-id BAR)
                                     (!= fvt-id BAR)
                                     (= (UR_FVT|FvtClass fvt-id) 0)
-                                    (UR_FVT-SL|Enabled fvt-id score-id)
+                                    (UR_FVT-SEL|Enabled fvt-id score-entity-id)
                                 ]
                             )
                             (let
                                 (
-                                    (swpair:string (UR_FVT-SL|Swpair fvt-id score-id))
+                                    (swpair:string (UR_FVT-SEL|Swpair fvt-id score-entity-id))
                                     (W-live:decimal (ref-SWP::UR_StoaValue swpair))
-                                    (W-cached:decimal (UR_FVT-SL|GhostTvlWeight fvt-id score-id))
+                                    (W-cached:decimal (UR_FVT-SEL|GhostTvlWeight fvt-id score-entity-id))
                                 )
                                 (if (= W-live W-cached)
                                     true
@@ -2867,11 +3478,11 @@
                                         )
                                         (map
                                             (lambda (reward-dptf-id:string)
-                                                (XI_2|SettleMemberTier2 fvt-id score-id reward-dptf-id)
+                                                (XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
                                             )
                                             reward-dptf-ids
                                         )
-                                        (WU_ScoreLink|GhostTvlWeight fvt-id score-id W-live)
+                                        (WU_ScoreEntityLink|GhostTvlWeight fvt-id score-entity-id W-live)
                                         (WU_Fvt|TotalGhostTvlWeight fvt-id (+ S delta-W))
                                         true
                                     )
@@ -2887,28 +3498,28 @@
         (UC_EmptyOc)
     )
     (defun XI_2|EnsureRpsMemberRow
-        (fvt-id:string score-id:string reward-dptf-id:string)
+        (fvt-id:string score-entity-id:string reward-dptf-id:string)
         @doc "Internal (phase 2.1 · depth 2 · 2.0]): ensure FVT|T|RPS|Member row for (fvt, score, reward DPTF); insert when absent."
         ;; SECURE: granted by WI_RpsMember (underlying W_).
-        (if (not (URC_FvtRpsMemberRowExists fvt-id score-id reward-dptf-id))
-            (WI_RpsMember fvt-id score-id reward-dptf-id
-                (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-id reward-dptf-id)
+        (if (not (URC_FvtRpsMemberRowExists fvt-id score-entity-id reward-dptf-id))
+            (WI_RpsMember fvt-id score-entity-id reward-dptf-id
+                (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-entity-id reward-dptf-id)
             )
             true
         )
     )
     (defun XI_2|EnsureRpsUserRow
-        (beneficiary-id:string fvt-id:string score-id:string reward-dptf-id:string)
+        (beneficiary-id:string fvt-id:string score-entity-id:string reward-dptf-id:string)
         @doc "Internal (phase 2.1 · depth 2 · 2.0]): ensure FVT|T|RPS|User row; insert with last-rps=L_i when absent (UrStoa IzAccount)."
         ;; SECURE: granted by WI_RpsUser (underlying W_).
-        (if (not (URC_FvtRpsUserRowExists beneficiary-id fvt-id score-id reward-dptf-id))
-            (WI_RpsUser beneficiary-id fvt-id score-id reward-dptf-id
+        (if (not (URC_FvtRpsUserRowExists beneficiary-id fvt-id score-entity-id reward-dptf-id))
+            (WI_RpsUser beneficiary-id fvt-id score-entity-id reward-dptf-id
                 (UDC_FVT|RPS|User
-                    (URC_FvtTier1IndexRps fvt-id score-id reward-dptf-id)
+                    (URC_FvtTier1IndexRps fvt-id score-entity-id reward-dptf-id)
                     0.0
                     beneficiary-id
                     fvt-id
-                    score-id
+                    score-entity-id
                     reward-dptf-id
                 )
             )
@@ -2916,14 +3527,14 @@
         )
     )
     (defun XI_2|SettleMemberTier2:object{IgnisCollectorV1.OutputCumulator}
-        (fvt-id:string score-id:string reward-dptf-id:string)
+        (fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Internal (phase 2.1 · depth 2 · 2a]): Tier-2 settle per reward DPTF on FVT|T|RPS|Member. \
             \ Farm: floor(W_i×(G−g_i), 48). Vault/Treasury: floor(D_i×(G−g_i), 48). Flush pending-member-rewards when deb > 0."
         ;; SECURE: granted by WI_RpsMember / WW_RpsMember (underlying W_).
         (do
-            (if (not (URC_FvtRpsMemberRowExists fvt-id score-id reward-dptf-id))
-                (WI_RpsMember fvt-id score-id reward-dptf-id
-                    (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-id reward-dptf-id)
+            (if (not (URC_FvtRpsMemberRowExists fvt-id score-entity-id reward-dptf-id))
+                (WI_RpsMember fvt-id score-entity-id reward-dptf-id
+                    (UDC_FVT|RPS|Member 0.0 0.0 0.0 fvt-id score-entity-id reward-dptf-id)
                 )
                 true
             )
@@ -2934,10 +3545,10 @@
                     ;;
                     (fvt-class:integer (UR_FVT|FvtClass fvt-id))
                     (G:decimal (UR_FVT-RG|CurrentRps fvt-id reward-dptf-id))
-                    (g-i:decimal (UR_FVT-RM|LastFarmRpsG fvt-id score-id reward-dptf-id))
-                    (total-deb:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore score-id))
-                    (L-i:decimal (UR_FVT-RM|MemberDebRps fvt-id score-id reward-dptf-id))
-                    (ptr:decimal (UR_FVT-RM|PendingMemberRewards fvt-id score-id reward-dptf-id))
+                    (g-i:decimal (UR_FVT-RM|LastFarmRpsG fvt-id score-entity-id reward-dptf-id))
+                    (total-deb:decimal (URC_ScoreEntityMemberTier2Divisor fvt-id score-entity-type score-entity-id))
+                    (L-i:decimal (UR_FVT-RM|MemberDebRps fvt-id score-entity-id reward-dptf-id))
+                    (ptr:decimal (UR_FVT-RM|PendingMemberRewards fvt-id score-entity-id reward-dptf-id))
                     (reward-prec:integer (ref-DPTF::UR_Decimals reward-dptf-id))
                     (L-i-work:decimal
                         (if (and (> total-deb 0.0) (> ptr 0.0))
@@ -2951,19 +3562,14 @@
                 )
                 (if (= G g-i)
                     (if (and (> total-deb 0.0) (> ptr 0.0))
-                        (WW_RpsMember fvt-id score-id reward-dptf-id
-                            (UDC_FVT|RPS|Member g-i L-i-work ptr-work fvt-id score-id reward-dptf-id)
+                        (WW_RpsMember fvt-id score-entity-id reward-dptf-id
+                            (UDC_FVT|RPS|Member g-i L-i-work ptr-work fvt-id score-entity-id reward-dptf-id)
                         )
                         true
                     )
                     (let
                         (
-                            (weight:decimal
-                                (if (= fvt-class 0)
-                                    (UR_FVT-SL|GhostTvlWeight fvt-id score-id)
-                                    total-deb
-                                )
-                            )
+                            (weight:decimal (URC_ScoreEntityMemberWeight fvt-id score-entity-type score-entity-id))
                             (earned:decimal (floor (* weight (- G g-i)) CT_FVT_RPS_PREC))
                             (new-li:decimal
                                 (if (> total-deb 0.0)
@@ -2978,8 +3584,8 @@
                                 )
                             )
                         )
-                        (WW_RpsMember fvt-id score-id reward-dptf-id
-                            (UDC_FVT|RPS|Member G new-li new-ptr fvt-id score-id reward-dptf-id)
+                        (WW_RpsMember fvt-id score-entity-id reward-dptf-id
+                            (UDC_FVT|RPS|Member G new-li new-ptr fvt-id score-entity-id reward-dptf-id)
                         )
                     )
                 )
@@ -2988,7 +3594,7 @@
         )
     )
     (defun XI_2|BankUserTier1Pending:object{IgnisCollectorV1.OutputCumulator}
-        (beneficiary-id:string pool-id:string fvt-id:string score-id:string reward-dptf-id:string)
+        (beneficiary-id:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Internal (phase 2.1 · depth 2 · 2b]): bank user pending at OLD deb — UrStoa XI_URV|UpdatePendingRewards. \
             \ Does not advance last-rps (phase 2.4 XI_CheckpointStakeRps)."
         ;; SECURE: granted by WU_RpsUser|PendingRewards (underlying W_).
@@ -2997,10 +3603,10 @@
                 (
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
-                    (deb-old:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
-                    (new-pending:decimal (URC_UserTier1AvailableRewards beneficiary-id fvt-id score-id reward-dptf-id deb-old))
+                    (deb-old:decimal (URC_ScoreEntityUserWeight beneficiary-id pool-id score-entity-type score-entity-id))
+                    (new-pending:decimal (URC_UserTier1AvailableRewards beneficiary-id fvt-id score-entity-id reward-dptf-id deb-old))
                 )
-                (WU_RpsUser|PendingRewards beneficiary-id fvt-id score-id reward-dptf-id new-pending)
+                (WU_RpsUser|PendingRewards beneficiary-id fvt-id score-entity-id reward-dptf-id new-pending)
             )
             (UC_EmptyOc)
         )
@@ -3113,7 +3719,14 @@
                     (fold (or) false
                         (map
                             (lambda (plan:object{FVT|SettleScorePlan})
-                                (URC_PreScoreWasNonZeroForScore pre-nz-flags (at "score-id" plan))
+                                (fold (or) false
+                                    (map
+                                        (lambda (score-id:string)
+                                            (URC_PreScoreWasNonZeroForScore pre-nz-flags score-id)
+                                        )
+                                        (URC_SettlePlanEmployedScoreIds plan)
+                                    )
+                                )
                             )
                             plans
                         )
@@ -3123,7 +3736,14 @@
                     (fold (or) false
                         (map
                             (lambda (plan:object{FVT|SettleScorePlan})
-                                (URC_UserScoreTripleIsNonZero beneficiary-id pool-id (at "score-id" plan))
+                                (fold (or) false
+                                    (map
+                                        (lambda (score-id:string)
+                                            (URC_UserScoreTripleIsNonZero beneficiary-id pool-id score-id)
+                                        )
+                                        (URC_SettlePlanEmployedScoreIds plan)
+                                    )
+                                )
                             )
                             plans
                         )
@@ -3221,15 +3841,16 @@
                     (let
                         (
                             (fvt-id:string (at "fvt-id" plan))
-                            (score-id:string (at "score-id" plan))
+                            (score-entity-type:integer (at "score-entity-type" plan))
+                (score-entity-id:string (at "score-entity-id" plan))
                             (reward-dptf-ids:[string] (at "reward-dptf-ids" plan))
                         )
                         ;; map: reward DPTF lines — advance last-rps to NEW L_i on existing user rows only
                         (map
                             (lambda (reward-dptf-id:string)
-                                (if (URC_FvtRpsUserRowExists beneficiary-id fvt-id score-id reward-dptf-id)
-                                    (WU_RpsUser|LastRps beneficiary-id fvt-id score-id reward-dptf-id
-                                        (URC_FvtTier1IndexRps fvt-id score-id reward-dptf-id)
+                                (if (URC_FvtRpsUserRowExists beneficiary-id fvt-id score-entity-id reward-dptf-id)
+                                    (WU_RpsUser|LastRps beneficiary-id fvt-id score-entity-id reward-dptf-id
+                                        (URC_FvtTier1IndexRps fvt-id score-entity-id reward-dptf-id)
                                     )
                                     true
                                 )
@@ -3299,59 +3920,49 @@
     )
     ;;
     ;; --- REPL dry-run (GOV|FVT_ADMIN; not on AcquisitionFarmsVaultsTreasuriesV1) ---
-    ;; Until C_Issue / C_AddScoreLink / C_AddRewardLink are implemented.
+    ;; Until C_Issue / C_AddScoreEntity / C_AddRewardLink are implemented.
     (defun REPL_BootstrapVault:string
         (fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
-        @doc "REPL-only: insert class-1 vault + enabled ScoreLink + reward-enabled RPS|Global; SCR XE_CreateFvtLink."
+        @doc "REPL-only: insert class-1 vault + enabled ScoreEntityLink (type 1) + reward-enabled RPS|Global."
         (with-capability (GOV|FVT_ADMIN)
-            (let
-                (
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
+            (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 fvt-id)
+                        (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR fvt-id)
                     )
-                    (WI_ScoreLink fvt-id score-id
-                        (UDC_FVT|ScoreLink true "|" 0.0 fvt-id score-id)
+                    (WI_ScoreEntityLink fvt-id score-id
+                        (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 fvt-id score-id)
                     )
                     (WI_RpsGlobal fvt-id reward-dptf-id
-                        (UDC_FVT|RPS|Global true 0.0 0.0 0 false fvt-id reward-dptf-id)
+                        (UDC_FVT|RPS|Global true 0.0 0.0 0 false CT_REWARD_KIND_PLAIN BAR fvt-id reward-dptf-id)
                     )
                     (ref-SCR::XE_CreateFvtLink score-id fvt-id)
                 )
-                (enforce
-                    (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) fvt-id)
-                    "REPL_BootstrapVault: SCR fvt-link not set after XE_CreateFvtLink"
-                )
+                (enforce (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) fvt-id)
+                    "REPL_BootstrapVault: SCR fvt-link not set after XE_CreateFvtLink")
             )
         )
         fvt-id
     )
     (defun REPL_BootstrapTreasury:string
         (fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
-        @doc "REPL-only: insert class-2 treasury + enabled ScoreLink + reward-enabled RPS|Global; SCR XE_CreateFvtLink."
+        @doc "REPL-only: insert class-2 treasury + enabled ScoreEntityLink (type 1) + reward-enabled RPS|Global."
         (with-capability (GOV|FVT_ADMIN)
-            (let
-                (
-                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                )
+            (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 2 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 fvt-id)
+                        (UDC_FVT|Schema 2 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR fvt-id)
                     )
-                    (WI_ScoreLink fvt-id score-id
-                        (UDC_FVT|ScoreLink true "|" 0.0 fvt-id score-id)
+                    (WI_ScoreEntityLink fvt-id score-id
+                        (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 fvt-id score-id)
                     )
                     (WI_RpsGlobal fvt-id reward-dptf-id
-                        (UDC_FVT|RPS|Global true 0.0 0.0 0 false fvt-id reward-dptf-id)
+                        (UDC_FVT|RPS|Global true 0.0 0.0 0 false CT_REWARD_KIND_PLAIN BAR fvt-id reward-dptf-id)
                     )
                     (ref-SCR::XE_CreateFvtLink score-id fvt-id)
                 )
-                (enforce
-                    (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) fvt-id)
-                    "REPL_BootstrapTreasury: SCR fvt-link not set after XE_CreateFvtLink"
-                )
+                (enforce (= (ref-SCR::UR_SCR|ScoreFvtLink score-id) fvt-id)
+                    "REPL_BootstrapTreasury: SCR fvt-link not set after XE_CreateFvtLink")
             )
         )
         fvt-id
@@ -3363,7 +3974,8 @@
 (create-table P|MT)
 ;;
 (create-table FVT|T)                                            ;; Key = <FVT-ID>
-(create-table FVT|T|ScoreLink)                                  ;; Key = <FVT-ID> | <Score-ID>
+(create-table FVT|T|ScoreEntityLink)                            ;; Key = <FVT-ID> | <Score-Entity-ID>
+(create-table FVT|T|MultipletFamily)                            ;; Key = <Multiplet-Family-ID>
 (create-table FVT|T|RPS|Global)                                ;; Key = <FVT-ID> | <DPTF-ID>
-(create-table FVT|T|RPS|Member)                                ;; Key = <FVT-ID> | <Score-ID> | <DPTF-ID>
-(create-table FVT|T|RPS|User)                                   ;; Key = <Ouronet-Account> | <FVT-ID> | <Score-ID> | <DPTF-ID>
+(create-table FVT|T|RPS|Member)                                ;; Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
+(create-table FVT|T|RPS|User)                                   ;; Key = <User-ID> | <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>

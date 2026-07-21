@@ -1,3 +1,29 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+(interface DpdcFragmentsV1
+    @doc "Exposes Collectables Fragmentation related Functions"
+    ;;
+    ;; [UEV]
+    ;;
+    (defun UEV_IzNonceFragmented:bool (id:string son:bool nonce:integer))
+    (defun UEV_Fragmentation (id:string son:bool nonce:integer))
+    ;;
+    ;; [C]
+    ;;
+    (defun C_RepurposeCollectableFragments:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool repurpose-from:string repurpose-to:string fragment-nonces:[integer] fragment-amounts:[integer])
+    )
+    (defun C_MakeFragments:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool nonce:integer amount:integer))
+    (defun C_MergeFragments:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool nonce:integer amount:integer))
+    (defun C_EnableNonceFragmentation:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool nonce:integer
+            fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}
+        )
+    )
+)
+;;
 (module DPDC-F GOV
     ;;
     (implements OuronetPolicyV1)

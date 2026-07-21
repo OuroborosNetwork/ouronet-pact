@@ -208,8 +208,8 @@
                                 ]
                             )
                         )
-                        (print (format "<(C_Inject Auryn farm 50)> => \"{}\"" [
-                            (ref-TS02-C3::AQP-FVT|C_Inject patron farm-id auryn-id 50.0)
+                        (print (format "<(C_Inject OURO farm 50)> => \"{}\"" [
+                            (ref-TS02-C3::AQP-FVT|C_Inject patron farm-id ouro-id 50.0)
                         ]))
                     )
                     (print (format "SKIP TX-AQP-BP03: no LP balance after seed (lp-bal={})" [lp-bal-final]))

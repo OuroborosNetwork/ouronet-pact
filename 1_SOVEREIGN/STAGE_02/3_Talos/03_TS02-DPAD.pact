@@ -1,3 +1,38 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
+;;
+(interface TalosStageTwo_DemiPadV1
+    @doc "Exposes Ouronet Stage Two Demipad Client Functions"
+    ;;
+    ;;  [A]
+    ;;
+    (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool]))
+    (defun A_ToggleOpenForBusiness (asset-id:string toggle:bool))
+    (defun A_DefinePrice (asset-id:string price:object))
+    (defun A_ToggleRetrieval (asset-id:string toggle:bool))
+    ;;
+    ;;  [C]
+    ;;
+    (defun DEMIPAD|C_Withdraw (patron:string asset-id:string type:integer destination:string))
+    ;;
+    (defun DEMIPAD|C_FuelTrueFungible (patron:string client:string asset-id:string amount:decimal))
+    (defun DEMIPAD|C_FuelOrtoFungible (patron:string client:string asset-id:string nonces:[integer]))
+    (defun DEMIPAD|C_FuelSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun DEMIPAD|C_FuelNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+
+    (defun DEMIPAD|C_RetrieveTrueFungible (patron:string client:string asset-id:string amount:decimal))
+    (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string client:string asset-id:string nonces:[integer]))
+    (defun DEMIPAD|C_RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun DEMIPAD|C_RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    ;;
+    (defun SPARK|C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool))
+    (defun SPARK|C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string))
+    (defun SPARK|C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
+    (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
+    (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
+    ;;
+)
+;;
 (module TS02-DPAD GOV
     @doc "TALOS Stage 2 Demiourgos Launchpad Functions"
     ;;

@@ -1,3 +1,82 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+(interface DpdcSetsV1
+    @doc "Exposes Collectables Set related Functions"
+    ;;
+    ;;  [UR]
+    ;;
+    (defun UR_Set:object{DpdcUdcV1.DPDC|Set} (id:string son:bool set-class:integer))
+    (defun UR_SetClass:integer (id:string son:bool set-class:integer))
+    (defun UR_SetName:string (id:string son:bool set-class:integer))
+    (defun UR_SetMultiplier:decimal (id:string son:bool set-class:integer))
+    (defun UR_NonceOfSet:integer (id:string set-class:integer))
+    (defun UR_IzSetActive:bool (id:string son:bool set-class:integer))
+    (defun UR_IzSetPrimordial:bool (id:string son:bool set-class:integer))
+    (defun UR_IzSetComposite:bool (id:string son:bool set-class:integer))
+    (defun UR_PSD:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}] (id:string son:bool set-class:integer))
+    (defun UR_CSD:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}] (id:string son:bool set-class:integer))
+    (defun UR_SetNonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool set-class:integer))
+    (defun UR_SetSplitData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool set-class:integer))
+    (defun UR_N|Score:decimal (id:string son:bool nonce:integer))
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_PrimordialOrComposite:[bool] (id:string son:bool set-class:integer))
+    (defun URC_NoncesSummedScore:decimal (id:string son:bool nonces:[integer]))
+    (defun URC_SemiFungibleConstituents:[integer] (id:string set-class:integer))
+    (defun URC_NonFungibleConstituents:[integer] (id:string nonce:integer))
+    ;;
+    ;;  [UEV]
+    ;;
+    
+        ;;
+    (defun UEV_PrimordialSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]))
+    (defun UEV_PrimordialSetElement (son:bool element:object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}))
+    (defun UEV_CompositeSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]))
+    (defun UEV_SetClass (id:string son:bool set-class:integer))
+    (defun UEV_IzSetClassFragmented:bool (id:string son:bool set-class:integer))
+    (defun UEV_Fragmentation (id:string son:bool set-class:integer))
+    (defun UEV_SetActiveState (id:string son:bool set-class:integer state:bool))
+        ;;
+    (defun UEV_NoncesForSetClass (id:string son:bool nonces:[integer] set-class:integer))
+    (defun UEV_Primordial (nonces:[integer] psd:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]))
+    (defun UEV_Composite (id:string son:bool nonces:[integer] csd:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]))
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_MakeSemiFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
+    (defun C_BreakSemiFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer how-many-sets:integer))
+    (defun C_MakeNonFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonces:[integer] set-class:integer))
+    (defun C_BreakNonFungibleSet:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer))
+        ;;
+    (defun C_DefinePrimordialSet:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
+            ind:object{DpdcUdcV1.DPDC|NonceData}
+        )
+    )
+    (defun C_DefineCompositeSet:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool set-name:string score-multiplier:decimal
+            set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV1.DPDC|NonceData}
+        )
+    )
+    (defun C_EnableSetClassFragmentation:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool set-class:integer
+            fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}
+        )
+    )
+    (defun C_ToggleSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer toggle:bool))
+    (defun C_RenameSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer new-name:string))
+    (defun C_UpdateSetMultiplier:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer new-multiplier:decimal))
+    ;;
+    (defun XB_U|NonceOrSplitData (id:string son:bool set-class:integer nos:bool nd:object{DpdcUdcV1.DPDC|NonceData}))
+)
+;;
 (module DPDC-S GOV
     ;;
     (implements OuronetPolicyV1)

@@ -1,3 +1,190 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+(interface DpdcV1
+    @doc "Exposes Collectables Functions"
+    (defun GOV|DPDC|SC_NAME ())
+    ;;
+    ;;  [UR]
+    ;;
+    ;;  [1]
+    (defun UR_Properties:object{DpdcUdcV1.DPDC|Properties} (id:string son:bool))
+    (defun UR_OwnerKonto:string (id:string son:bool))
+    (defun UR_CreatorKonto:string (id:string son:bool))
+    (defun UR_Name:string (id:string son:bool))
+    (defun UR_Ticker:string (id:string son:bool))
+    (defun UR_CanUpgrade:bool (id:string son:bool))
+    (defun UR_CanChangeOwner:bool (id:string son:bool))
+    (defun UR_CanChangeCreator:bool (id:string son:bool))
+    (defun UR_CanAddSpecialRole:bool (id:string son:bool))
+    (defun UR_CanTransferNftCreateRole:bool (id:string son:bool))
+    (defun UR_CanFreeze:bool (id:string son:bool))
+    (defun UR_CanWipe:bool (id:string son:bool))
+    (defun UR_CanPause:bool (id:string son:bool))
+    (defun UR_IsPaused:bool (id:string son:bool))
+    (defun UR_NoncesUsed:integer (id:string son:bool))
+    (defun UR_SetClassesUsed:integer (id:string son:bool))
+    ;;  [2]
+    (defun UR_NonceElement:object{DpdcUdcV1.DPDC|NonceElement} (id:string son:bool nonce:integer))
+    (defun UR_NonceClass:integer (id:string son:bool nonce:integer))
+    (defun UR_NonceValue:integer (id:string son:bool nonce:integer))
+    (defun UR_NonceSupply:integer (id:string son:bool nonce:integer))
+    (defun UR_NonceHolder:string (id:string son:bool nonce:integer))
+    (defun UR_NativeNonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool nonce:integer))
+    (defun UR_SplitNonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool nonce:integer))
+    (defun UR_NonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool nonce:integer))
+    ;;  [2.1]
+    (defun UR_N|Royalty:decimal (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|IgnisRoyalty:decimal (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|Name:string (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|Description:string (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|MetaData:object{DpdcUdcV1.NonceMetaData} (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|AssetType:object{DpdcUdcV1.URI|Type} (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|Primary:object{DpdcUdcV1.URI|Data} (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|Secondary:object{DpdcUdcV1.URI|Data} (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|Tertiary:object{DpdcUdcV1.URI|Data} (n:object{DpdcUdcV1.DPDC|NonceData}))
+    ;;  [2.1.1]
+    (defun UR_N|RawScore:decimal (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|Composition:[integer] (n:object{DpdcUdcV1.DPDC|NonceData}))
+    (defun UR_N|RawMetaData:object (n:object{DpdcUdcV1.DPDC|NonceData}))
+    ;;  [3]
+    (defun UR_VerumRoles:object{DpdcUdcV1.DPDC|VerumRoles} (id:string son:bool))
+    (defun UR_Verum1:[string] (id:string son:bool))
+    (defun UR_Verum2:[string] (id:string son:bool))
+    (defun UR_Verum3:[string] (id:string son:bool))
+    (defun UR_Verum4:[string] (id:string son:bool))
+    (defun UR_Verum5:string (id:string son:bool))
+    (defun UR_Verum6:string (id:string son:bool))
+    (defun UR_Verum7:[string] (id:string son:bool))
+    (defun UR_Verum8:[string] (id:string son:bool))
+    (defun UR_Verum9:[string] (id:string son:bool))
+    (defun UR_Verum10:string (id:string son:bool))
+    (defun UR_Verum11:[string] (id:string son:bool))
+    (defun UR_GetSingleVerum:string (id:string son:bool rp:integer))
+    (defun UR_GetVerumChain:[string] (id:string son:bool rp:integer))
+    ;;  [4]
+    (defun UR_IzAccount:bool (account:string id:string son:bool))
+    (defun UR_CA|R:object{DpdcUdcV1.AccountRoles} (id:string son:bool account:string))
+    (defun UR_CA|R-AddQuantity:bool (id:string account:string))
+    (defun UR_CA|R-Frozen:bool (id:string son:bool account:string))
+    (defun UR_CA|R-Exemption:bool (id:string son:bool account:string))
+    (defun UR_CA|R-Burn:bool (id:string son:bool account:string))
+    (defun UR_CA|R-Create:bool (id:string son:bool account:string))
+    (defun UR_CA|R-Recreate:bool (id:string son:bool account:string))
+    (defun UR_CA|R-Update:bool (id:string son:bool account:string))
+    (defun UR_CA|R-ModifyCreator:bool (id:string son:bool account:string))
+    (defun UR_CA|R-ModifyRoyalties:bool (id:string son:bool account:string))
+    (defun UR_CA|R-SetUri:bool (id:string son:bool account:string))
+    (defun UR_CA|R-Transfer:bool (id:string son:bool account:string))
+    ;;  [5]
+    (defun UR_AccountSupply:object{DpdcUdcV1.DPDC|AccountSupply} (account:string id:string son:bool nonce:integer))
+    (defun UR_AccountNonceSupply:integer (account:string id:string son:bool nonce:integer))
+    (defun UR_AccountNoncesSupplies:[integer] (account:string id:string son:bool nonces:[integer]))
+    ;;
+    (defun URD_HeldCollectables:[string] (account:string son:bool))
+    (defun URD_ExistingCollectables:[string] (dpdc:string son:bool))
+    (defun URD_OwnedCollectables:[string] (account:string son:bool))
+    (defun URD_AccountNonces:[integer] (account:string id:string son:bool))
+    (defun URD_AccountNoncesWithSupplies:[object] (account:string id:string son:bool))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_id (id:string son:bool))
+    (defun UEV_NonceMapper (id:string son:bool nonces:[integer]))
+    (defun UEV_Nonce (id:string son:bool nonce:integer))
+        ;;
+    (defun UEV_CanUpgradeON (id:string son:bool))
+    (defun UEV_CanPauseON (id:string son:bool))
+    (defun UEV_CanAddSpecialRoleON (id:string son:bool))
+    (defun UEV_ToggleSpecialRole (id:string son:bool toggle:bool))
+    (defun UEV_CanFreezeON (id:string son:bool))
+    (defun UEV_PauseState (id:string son:bool state:bool))
+    (defun UEV_AccountAddQuantityState (id:string account:string state:bool))
+    (defun UEV_AccountFreezeState (id:string son:bool account:string state:bool))
+    (defun UEV_AccountExemptionState (id:string son:bool account:string state:bool))
+    (defun UEV_AccountBurnState (id:string son:bool account:string state:bool))
+    (defun UEV_AccountUpdateState (id:string son:bool account:string state:bool))
+    (defun UEV_AccountModifyCreatorState (id:string son:bool account:string state:bool))
+    (defun UEV_AccountModifyRoyaltiesState (id:string son:bool account:string state:bool))
+    (defun UEV_AccountTransferState (id:string son:bool account:string state:bool))
+    (defun UEV_AccountCreateState (id:string son:bool account:string state:bool))
+    (defun UEV_AccountRecreateState (id:string son:bool account:string state:bool))
+    (defun UEV_AccountSetUriState (id:string son:bool account:string state:bool))
+    (defun UEV_Royalty (royalty:decimal))
+    (defun UEV_IgnisRoyalty (royalty:decimal))
+    (defun UEV_NftNonceExistance (id:string nonce:integer existance:bool))
+    (defun UEV_NonceQuantityInclusion (account:string id:string son:bool nonce:integer amount:integer))
+    (defun UEV_NonceQuantityInclusionMapper (account:string id:string son:bool nonces:[integer] amounts:[integer]))
+    ;;
+    ;; [UDC]
+    ;;
+    (defun UDC_Control:object{DpdcUdcV1.DPDC|Properties} (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
+    ;;
+    ;;  [CAP]
+    ;;
+    (defun CAP_Owner (id:string son:bool))
+    (defun CAP_Creator (id:string son:bool))
+    ;;
+    ;;  [X]
+    ;;
+    ;; [<AccountsTable> Writings] [0]
+    ;;
+    (defun XB_DeployAccountSFT
+        (
+            account:string id:string
+            input-rnaq:bool f:bool re:bool rnb:bool rnc:bool rnr:bool
+            rnu:bool rmc:bool rmr:bool rsnu:bool rt:bool
+        )
+    )
+    (defun XB_DeployAccountNFT 
+        (
+            account:string id:string
+            f:bool re:bool rnb:bool rnc:bool rnr:bool
+            rnu:bool rmc:bool rmr:bool rsnu:bool rt:bool
+        )
+    )
+    (defun XE_DeployAccountWNE (account:string id:string son:bool))
+    (defun XE_U|Rnaq (id:string account:string toggle))
+    (defun XI_U|AccountRoles (id:string son:bool account:string new-roles:object{DpdcUdcV1.AccountRoles}))
+    ;;
+    ;; [<PropertiesTable> Writings] [1]
+    ;;
+    (defun XE_I|Collection (id:string son:bool idp:object{DpdcUdcV1.DPDC|Properties}))
+    (defun XE_U|Specs (id:string son:bool specs:object{DpdcUdcV1.DPDC|Properties}))
+    (defun XE_U|IsPaused (id:string son:bool toggle:bool))
+    (defun XE_U|NoncesUsed (id:string son:bool new-nv:integer))
+    (defun XE_U|SetClassesUsed (id:string son:bool new-nsc:integer))
+    ;;
+    ;; [<NoncesTable> Writings] [2]
+    ;;
+    (defun XE_I|CollectionElement (id:string son:bool nonce-value:integer ned:object{DpdcUdcV1.DPDC|NonceElement}))
+    (defun XE_U|NonceSupply (id:string nonce-value:integer new-supply:integer))
+    (defun XE_U|NonceHolder (id:string nonce-value:integer new-holder-account:string))
+    (defun XE_U|NonceOrSplitData (id:string son:bool nonce-value:integer nos:bool nd:object{DpdcUdcV1.DPDC|NonceData}))
+    ;;
+    ;; [<VerumRolesTable> Writings] [3]
+    ;;
+    (defun XE_I|VerumRoles (id:string son:bool verum-chain:object{DpdcUdcV1.DPDC|VerumRoles}))
+    ;;
+    ;;  [Indirect Writings]
+    ;;
+    (defun XE_U|Frozen (id:string son:bool account:string toggle:bool))
+    (defun XE_U|Exemption (id:string son:bool account:string toggle:bool))
+    (defun XE_U|Burn (id:string son:bool account:string toggle:bool))
+    (defun XE_U|Create (id:string son:bool account:string toggle:bool))
+    (defun XE_U|Recreate (id:string son:bool account:string toggle:bool))
+    (defun XE_U|Update (id:string son:bool account:string toggle:bool))
+    (defun XE_U|ModifyCreator (id:string son:bool account:string toggle:bool))
+    (defun XE_U|ModifyRoyalties (id:string son:bool account:string toggle:bool))
+    (defun XE_U|SetNewUri (id:string son:bool account:string toggle:bool))
+    (defun XE_U|Transfer (id:string son:bool account:string toggle:bool))
+    (defun XE_U|VerumRoles (id:string son:bool rp:integer aor:bool account:string))
+    ;;
+    ;; [<AccountSuppliesTable> Writings] [4]
+    ;;
+    (defun XE_W|Supply (account:string id:string son:bool nonce-value:integer amount:integer))
+)
+;;
 (module DPDC GOV
     ;;
     (implements OuronetPolicyV1)

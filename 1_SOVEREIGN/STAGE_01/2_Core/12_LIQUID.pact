@@ -1,4 +1,36 @@
 ;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface StoaLiquidStakingV1
+    @doc "Exposes the functions needed for Stoa Liquid Staking, Wrap and Unwrap STOA \
+        \ as well as their URSTOA Counterparts"
+    ;;
+    (defun GOV|LIQUID|SC_KDA-NAME ())
+    (defun GOV|LIQUID|GUARD ())
+    ;;
+    ;;  [UR]
+    ;;
+    (defun UR_IzOuronetAccountRegisteredForUrstoaHoldings:bool (ouronet-account:string))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_IzLiquidStakingLive ())
+    ;;
+    ;;  [A]
+    ;;
+    (defun A_MigrateLiquidFunds:decimal (migration-target-kda-account:string))
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_UnwrapStoa:object{IgnisCollectorV1.OutputCumulator} (unwrapper:string amount:decimal))
+    (defun C_WrapStoa:object{IgnisCollectorV1.OutputCumulator} (wrapper:string amount:decimal))
+    ;;
+    (defun C_RegisterOuronetAccountForUrstoaHoldings (ouronet-account:string guard:guard))
+    (defun C_UnwrapUrStoa:object{IgnisCollectorV1.OutputCumulator} (unwrapper:string amount:decimal))
+    (defun C_WrapUrStoa:object{IgnisCollectorV1.OutputCumulator} (wrapper:string amount:decimal))
+)
+;;
 (module LIQUID GOV
     ;;
     (implements OuronetPolicyV1)

@@ -1,3 +1,269 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
+;;
+(interface TalosStageTwo_ClientThreeV1
+    @doc "Exposes Stage Two Third Batch of Client Functions: \
+        \ the AcquisitionPools Client Functions"
+    ;;
+    ;;  [ANK]
+    ;;
+    (defun AQP-ANK|C_RevokeBoostClass:string (patron:string boost-class-id:string))
+    (defun AQP-ANK|C_IssueTrueFungibleAnchor:string
+        (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
+    )
+    (defun AQP-ANK|C_IssueSemiFungibleAnchor:string
+        (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
+    )
+    (defun AQP-ANK|C_IssueNonFungibleAnchor:string
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
+    )
+    (defun AQP-ANK|C_IssueNonFungibleSetAnchor:string
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+    )
+    (defun AQP-ANK|C_RevokeAnchor:string (patron:string anchor-id:string))
+    ;;
+    ;;  [AQP-SCORE]
+    ;;
+    (defun AQP-SCR|C_IssueLiquidityScore:string
+        (patron:string owner-konto:string score-name:string precision:integer lp-denominator:string mx-frozen:decimal mx-sleeping:decimal)
+    )
+    (defun AQP-SCR|C_IssueTrueFungibleScore:string
+        (patron:string owner-konto:string score-name:string precision:integer mx-frozen:decimal)
+    )
+    (defun AQP-SCR|C_IssueOrtoFungibleScore:string
+        (patron:string owner-konto:string score-name:string precision:integer mx-sleeping:decimal mx-hibernated:decimal)
+    )
+    (defun AQP-SCR|C_IssueSemiFungibleScore:string
+        (patron:string owner-konto:string score-name:string precision:integer sft-equality:bool)
+    )
+    (defun AQP-SCR|C_IssueNonFungibleScore:string
+        (patron:string owner-konto:string score-name:string precision:integer nft-score-model:integer)
+    )
+    (defun AQP-SCR|C_RotateScoreOwnership:string (patron:string score-id:string new-owner-konto:string))
+    (defun AQP-SCR|C_ControlScore:string (patron:string score-id:string new-can-upgrade:bool new-can-change-owner:bool))
+    (defun AQP-SCR|C_CreateScoreBoostClassLink:string (patron:string score-id:string boost-class-id:string))
+    (defun AQP-SCR|C_CreateScoreBoostLink:string (patron:string score-id:string boost-score-id:string))
+    (defun AQP-SCR|C_EnableDebBoost:string (patron:string score-id:string))
+    (defun AQP-SCR|C_IssueTriplet:string
+        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+    )
+    (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
+        (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
+    )
+    (defun AQP-SCR|C_IssueNonFungibleScoreDefinition:string
+        (patron:string score-id:string dpnf-id:string trait-keys:[string] trait-values:[string] trait-score-values:[decimal])
+    )
+    (defun AQP-SCR|C_IssueNonFungibleSetScoreDefinition:string
+        (patron:string score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
+    )
+    ;;
+    ;;  [AQP-POOL]
+    ;;
+    (defun AQP-POOL|C_Issue:string
+        (patron:string pool-name:string asset-id:string aqp-class:integer)
+    )
+    (defun AQP-POOL|C_AddScore:string
+        (patron:string pool-id:string score-id:string)
+    )
+    (defun AQP-POOL|C_RevokeScore:string
+        (patron:string pool-id:string score-id:string)
+    )
+    (defun AQP-POOL|C_DisablePoolStake:string
+        (patron:string pool-id:string)
+    )
+    (defun AQP-POOL|C_EnablePoolStake:string
+        (patron:string pool-id:string)
+    )
+    ;;
+    ;;=== PLANNED Talos client shells (comment-only — sovereign C_* home TBD) ===
+    ;; AQP-POOL|C_VacatePool(patron pool-id) -> sovereign C_VacatePool TBD
+    ;;
+    (defun AQP-POOL|C_StakeSemiFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+        )
+    )
+    (defun AQP-POOL|C_UnstakeSemiFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+    )
+    (defun AQP-POOL|C_StakeNonFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            collectable-id:string
+            nonces:[integer]
+        )
+    )
+    (defun AQP-POOL|C_UnstakeNonFungibleCollectable:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            collectable-id:string
+            nonces:[integer]
+            nonce-amounts:[integer]
+        )
+    )
+    ;;
+    (defun AQP-POOL|C_StakeTrueFungible:string
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+    )
+    (defun AQP-POOL|C_UnstakeTrueFungible:string
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+    )
+    (defun AQP-POOL|C_StakeOrtoFungible:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            beneficiary-id:string
+            dpof-id:string
+            nonces:[integer]
+        )
+    )
+    (defun AQP-POOL|C_UnstakeOrtoFungible:string
+        (
+            patron:string
+            pool-id:string
+            owner-id:string
+            dpof-id:string
+            nonces:[integer]
+        )
+    )
+    (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
+        (patron:string beneficiary-id:string dptf-id:string)
+    )
+    (defun AQP-POOL|C_SyncSemiFungibleAnchors:string
+        (patron:string beneficiary-id:string dpsf-id:string)
+    )
+    (defun AQP-POOL|C_SyncNonFungibleAnchors:string
+        (patron:string beneficiary-id:string dpnf-id:string)
+    )
+    (defun AQP-POOL|C_BeginVacate:string
+        (patron:string pool-id:string asset-id:string vacate-kind:integer slice-count:integer)
+    )
+    (defun AQP-POOL|C_ResliceVacate:string
+        (patron:string vacate-job-id:string slice-count:integer)
+    )
+    (defun AQP-POOL|C_VacateChunkTrueFungible:string
+        (
+            patron:string
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+        )
+    )
+    (defun AQP-POOL|C_VacateChunkNonce:string
+        (
+            patron:string
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+    )
+    (defun AQP-POOL|C_VacateChunkOrtoFungible:string
+        (
+            patron:string
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+        )
+    )
+    (defun AQP-POOL|C_VacateChunkCollectable:string
+        (
+            patron:string
+            vacate-job-id:string
+            slice-idx:integer
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+    )
+    (defun AQP-POOL|C_AbortVacate:string
+        (patron:string vacate-job-id:string)
+    )
+    (defun AQP-POOL|C_FullVacateTrueFungible:string
+        (patron:string pool-id:string dptf-id:string)
+    )
+    (defun AQP-POOL|C_FullVacateOrtoFungible:string
+        (patron:string pool-id:string dpof-id:string)
+    )
+    (defun AQP-POOL|C_FullVacateSemiFungible:string
+        (patron:string pool-id:string dpsf-id:string)
+    )
+    (defun AQP-POOL|C_FullVacateNonFungible:string
+        (patron:string pool-id:string dpnf-id:string)
+    )
+    ;;
+    ;;  [AQP-FVT]
+    ;;
+    (defun AQP-FVT|C_Issue:string
+        (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
+    )
+    (defun AQP-FVT|C_IssueMultipletFamily:string
+        (
+            patron:string
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+        )
+    )
+    (defun AQP-FVT|C_AddScoreEntity:string
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
+    )
+    (defun AQP-FVT|C_AddRewardLink:string
+        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
+    )
+    (defun AQP-FVT|C_ToggleScoreEntityLink:string
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+    )
+    (defun AQP-FVT|C_ToggleRewardLink:string
+        (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
+    )
+    (defun AQP-FVT|C_Control:string
+        (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+    )
+    (defun AQP-FVT|C_RotateOwnership:string
+        (patron:string fvt-id:string new-owner-konto:string)
+    )
+    (defun AQP-FVT|C_SetCommonDenominator:string
+        (patron:string fvt-id:string common-denominator:string)
+    )
+    (defun AQP-FVT|C_SetMosaic:string
+        (patron:string fvt-id:string mosaic:bool)
+    )
+    (defun AQP-FVT|C_Inject:string
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    )
+    (defun AQP-FVT|C_Collect:string
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+    )
+)
+;;
 (module TS02-C3 GOV
     @doc "TALOS Stage 2 Client Functiones Part 3 - Acquisition Pools Functions"
     ;;
@@ -79,6 +345,7 @@
                 (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
                 (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
                 (ref-P|VCT:module{OuronetPolicyV1} AQP-VCT)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -87,6 +354,7 @@
             (ref-P|AQP::P|A_AddIMP mg)
             (ref-P|FVT::P|A_AddIMP mg)
             (ref-P|VCT::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -700,6 +968,25 @@
                 )
                 (ref-IGNIS::C_Collect patron (ref-SCR::C_EnableDebBoost score-id))
                 (format "Successfully enabled DEB boost for score {}." [score-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueTriplet:string
+        (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
+        @doc "Issues SCR triplet bundle T|bronze|silver|golden and collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-SCR::C_IssueTriplet patron bronze-score-id silver-score-id golden-score-id)
+                    )
+                    (out:[string] (at "output" ico))
+                    (triplet-id:string (at 0 out))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Successfully issued triplet {}." [triplet-id])
             )
         )
     )
@@ -1415,9 +1702,59 @@
             )
         )
     )
+    (defun AQP-FVT|C_IssueMultipletFamily:string
+        (
+            patron:string
+            token-0-id:string
+            token-1-id:string
+            token-2-id:string
+            ats-0-1-id:string
+            ats-1-2-id:string
+        )
+        @doc "Issues chain-wide MultipletFamily F|t0|t1|t2 (rank 3) with ATS ladder validation."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-FVT::C_IssueMultipletFamily
+                            patron token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id
+                        )
+                    )
+                    (out:[string] (at "output" ico))
+                    (family-id:string (at 0 out))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully issued MultipletFamily {}." [family-id])
+            )
+        )
+    )
+    (defun AQP-FVT|C_AddScoreEntity:string
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Admits score (type 1) or triplet (type 3) to fvt-id via ScoreEntityLink."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_AddScoreEntity patron fvt-id score-entity-type score-entity-id)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully added score-entity type {} id {} to FVT {}."
+                    [score-entity-type score-entity-id fvt-id]
+                )
+            )
+        )
+    )
     (defun AQP-FVT|C_AddRewardLink:string
-        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool)
-        @doc "Registers a reward DPTF on fvt-id and collects IGNIS output on patron."
+        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
+        @doc "Registers one reward DPTF on fvt-id (multiplet-family-id BAR for plain tokens). Collects IGNIS on patron."
         (with-capability (P|TS)
             (let
                 (
@@ -1426,34 +1763,18 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_AddRewardLink patron fvt-id reward-dptf-id segmentation)
+                    (ref-FVT::C_AddRewardLink patron fvt-id reward-dptf-id segmentation multiplet-family-id)
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
-                (format "Successfully added reward link {} on FVT {}." [reward-dptf-id fvt-id])
+                (format "Successfully added reward link {} on FVT {} (family={})."
+                    [reward-dptf-id fvt-id multiplet-family-id]
+                )
             )
         )
     )
-    (defun AQP-FVT|C_AddScoreLink:string
-        (patron:string fvt-id:string score-id:string)
-        @doc "Admits score-id to fvt-id (ScoreLink + SCR fvt-link) and collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_AddScoreLink patron fvt-id score-id)
-                )
-                (ref-TS01-A::XB_DynamicFuelKDA)
-                (format "Successfully linked score {} to FVT {}." [score-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-FVT|C_ToggleScoreLink:string
-        (patron:string fvt-id:string score-id:string enabled:bool)
-        @doc "Toggles ScoreLink.enabled and collects IGNIS output on patron."
+    (defun AQP-FVT|C_ToggleScoreEntityLink:string
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+        @doc "Toggles ScoreEntityLink.enabled and collects IGNIS output on patron."
         (with-capability (P|TS)
             (let
                 (
@@ -1461,9 +1782,11 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_ToggleScoreLink patron fvt-id score-id enabled)
+                    (ref-FVT::C_ToggleScoreEntityLink patron fvt-id score-entity-type score-entity-id enabled)
                 )
-                (format "Successfully toggled ScoreLink {} on FVT {} to enabled={}." [score-id fvt-id enabled])
+                (format "Successfully toggled score-entity type {} id {} on FVT {} to enabled={}."
+                    [score-entity-type score-entity-id fvt-id enabled]
+                )
             )
         )
     )
@@ -1517,7 +1840,7 @@
     )
     (defun AQP-FVT|C_SetCommonDenominator:string
         (patron:string fvt-id:string common-denominator:string)
-        @doc "Sets farm common-denominator (before ScoreLinks) and collects IGNIS on patron."
+        @doc "Sets farm common-denominator (before ScoreEntityLinks) and collects IGNIS on patron."
         (with-capability (P|TS)
             (let
                 (
@@ -1530,6 +1853,22 @@
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (format "Successfully set common-denominator on FVT {} to {}." [fvt-id common-denominator])
+            )
+        )
+    )
+    (defun AQP-FVT|C_SetMosaic:string
+        (patron:string fvt-id:string mosaic:bool)
+        @doc "Sets mosaic membership policy when FVT has no member links; collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_SetMosaic patron fvt-id mosaic)
+                )
+                (format "Successfully set mosaic on FVT {} to {}." [fvt-id mosaic])
             )
         )
     )
@@ -1552,8 +1891,8 @@
         )
     )
     (defun AQP-FVT|C_Collect:string
-        (patron:string fvt-id:string score-id:string reward-dptf-id:string)
-        @doc "Collects pending reward DPTF for beneficiary on score-id from fvt-id; collects IGNIS on patron."
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "Collects pending reward DPTF for patron on one score-entity from fvt-id; collects IGNIS on patron."
         (with-capability (P|TS)
             (let
                 (
@@ -1564,7 +1903,7 @@
                     (bal-before:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_Collect patron fvt-id score-id reward-dptf-id)
+                    (ref-FVT::C_Collect patron fvt-id score-entity-type score-entity-id reward-dptf-id)
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (let
@@ -1572,8 +1911,8 @@
                         (bal-after:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
                         (payout:decimal (- bal-after bal-before))
                     )
-                    (format "Successfully collected {} {} rewards from FVT {} for score {}."
-                        [payout reward-dptf-id fvt-id score-id]
+                    (format "Successfully collected {} {} rewards from FVT {} for score-entity type {} id {}."
+                        [payout reward-dptf-id fvt-id score-entity-type score-entity-id]
                     )
                 )
             )

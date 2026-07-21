@@ -89,7 +89,18 @@ Use explicit **`(require-capability (SECURE))`** on **`XI_*`** only when the bod
 | **`WI_*` / `WU_*` / `WW_*`** | **No `enforce`** — **SECURE** + one persistence op as **final** expression (**AQP**, never cross-module) |
 | **`XI_*` / `XE_*` / `XB_*` / `C_*` / `A_*`** | **No `enforce`** — documented guard (`SECURE` / `IMC` / cap) + **`W_*`** / orchestration |
 
-`defcap` body order: **`let`** → **`UEV_*` / `CAP_*`** → one boolean **`enforce`** → **`compose-capability`**. See **`defcap-body-order.md`**.
+`defcap` body order: **`let`** → **all `enforce`** → **bare `ref-*`** → **home** → **`compose-capability`**. See **`function-body-order.md`** and **`defcap-body-order.md`**.
+
+### Batch array validation (cap fold)
+
+When a cap receives an array of objects (e.g. `PYTHIA|A>FLUSH entries`):
+
+1. Define one **`UEV_Entries:bool`** — fold over the array; inline per-item checks in the lambda (pure bool, no `enforce`).
+2. In **`defcap`:** one `(enforce (UEV_Entries entries) "…")` — not `map` with per-item `enforce`, not validation in **`XI_*`**.
+
+Example: `PYTHIA.UEV_FlushEntries` in `23_PYTHIA.pact`. See **`modules/stage01/pythia-ledger-flush.md`**.
+
+**Never** use `(keys …)` inside cap-time existence checks — use `try` + `UR_*` read. `(keys …)` belongs in **`URD_*`** only.
 
 ## Dynamic validation (inventory arrays, slot index)
 

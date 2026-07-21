@@ -9,6 +9,7 @@ Skills and conventions now live under the organized tree. Start at:
 | `pact-enforce-boolean-grouping.md` | `../pact/enforce-boolean-grouping.md` |
 | `defcap-body-order.md` | `../pact/defcap-body-order.md` |
 | `let-binding-layout.md` | `../pact/let-binding-layout.md` |
+| `defun-parameter-layout.md` | `../pact/defun-parameter-layout.md` |
 | `ur-with-default-read-and-xi-write.md` | `../ouronet/conventions/ur-and-w-writes.md` |
 | `w-writes-layer.md` | `../ouronet/conventions/w-writes.md` |
 | `module-load-order-and-pact-refs.md` | `../ouronet/conventions/module-load-order-and-pact-refs.md` |

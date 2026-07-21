@@ -1,4 +1,224 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface DemiourgosPactOrtoFungibleV1
+    @doc "Exposes Functions related to Orto-Fungibles \
+        \ Orto-Fungibles are the next Evoloution of the Meta-Fungibles \
+        \ using a newer and more efficient Architecture, and fixing discovered bugs \
+        \ \
+        \ The most important functionality is the ability for an Ouronet Account to own \
+        \ as many Nonces (Elements) as needed without any limitations \
+        \ which was the main reason Orto-Fungible was created \
+        \ \
+        \ Existing Meta-Fungible <id> and <accounts> will have to be migrated to Orto-Fungibles \
+        \ Luckily Meta-Fungible usage hasnt properly started at the time of Orto-Fungible Deployment"
+    ;;
+    ;;  [UC]
+    ;;
+    (defun UC_IdNonce:string (id:string nonce:integer))
+    (defun UC_IdAccount:string (id:string account:string))
+    (defun UC_IzSingular:bool (id:string nonces:[integer]))
+    (defun UC_IzConsecutive:bool (id:string nonces:[integer]))
+    (defun UC_TakePureWipe:object{DpofUdcV1.RemovableNonces} (input:object{DpofUdcV1.RemovableNonces} size:integer))
+    (defun UC_MoveCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string nonces:[integer] transmit-or-transfer:bool))
+    (defun UC_WipeCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string removable-nonces-obj:object{DpofUdcV1.RemovableNonces}))
+    ;;
+    ;;  [UR]
+    ;;
+    (defun UR_P-KEYS:[string] ())
+    (defun UR_N-KEYS:[string] ())
+    (defun UR_V-KEYS:[string] ())
+    (defun UR_KEYS:[string] ())
+    ;;
+    ;;  [0] DPOF|T|Properties:{DpofUdcV1.DPOF|Properties}
+    (defun UR_Konto:string (id:string))
+    (defun UR_Name:string (id:string))
+    (defun UR_Ticker:string (id:string))
+    (defun UR_Decimals:integer (id:string))
+    (defun UR_CanUpgrade:bool (id:string))
+    (defun UR_CanChangeOwner:bool (id:string))
+    (defun UR_CanAddSpecialRole:bool (id:string))
+    (defun UR_CanTransferOftCreateRole:bool (id:string))
+    (defun UR_CanFreeze:bool (id:string))
+    (defun UR_CanWipe:bool (id:string))
+    (defun UR_CanPause:bool (id:string))
+    (defun UR_IsPaused:bool (id:string))
+    (defun UR_Segmentation:bool (id:string))
+    (defun UR_NoncesUsed:integer (id:string))
+    (defun UR_NoncesExcluded:integer (id:string))
+    (defun UR_Supply:decimal (id:string))
+    (defun UR_RewardBearingToken:string (id:string))
+    (defun UR_Vesting:string (id:string))
+    (defun UR_Sleeping:string (id:string))
+    (defun UR_Hibernation:string (id:string))
+    (defun UR_IzId:bool (id:string))
+    ;;
+    ;;  [1] DPOF|T|Nonces:{DpofUdcV1.DPOF|NonceElement}
+    (defun UR_NonceHolder:string (id:string nonce:integer))
+    (defun UR_NonceID:string (id:string nonce:integer))
+    (defun UR_NonceValue:integer (id:string nonce:integer))
+    (defun UR_NonceSupply:decimal (id:string nonce:integer))
+    (defun UR_NonceMetaData:[object] (id:string nonce:integer))
+    (defun UR_NoncesSupplies:[decimal] (id:string nonces:[integer]))
+    (defun UR_NoncesMetaDatas:[[object]] (id:string nonces:[integer]))
+    (defun UR_IzNonce:bool (id:string nonce:integer))
+    ;;
+    ;;  [2] DPOF|T|VerumRoles:{DpofUdcV1.DPOF|VerumRoles}
+    (defun UR_Verum1:[string] (id:string))
+    (defun UR_Verum2:[string] (id:string))
+    (defun UR_Verum3:[string] (id:string))
+    (defun UR_Verum4:string (id:string))
+    (defun UR_Verum5:[string] (id:string))
+    ;;
+    ;;  [3] DPOF|T|AccountRoles:{DpofUdcV1.DPOF|AccountRoles}
+    (defun UR_R-Frozen:bool (id:string account:string))
+    (defun UR_R-AddQuantity:bool (id:string account:string))
+    (defun UR_R-Burn:bool (id:string account:string))
+    (defun UR_R-Create:bool (id:string account:string))
+    (defun UR_R-Transfer:bool (id:string account:string))
+    (defun UR_AccountSupply:decimal (id:string account:string))
+    (defun UR_IzAccount:bool (id:string account:string))
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URDC_WipePure:object{DpofUdcV1.RemovableNonces} (account:string id:string))
+    (defun URC_IzRBT:bool (reward-bearing-token:string))
+    (defun URC_IzRBTg:bool (atspair:string reward-bearing-token:string))
+        ;;
+    (defun URC_HasVesting:bool (id:string))
+    (defun URC_HasSleeping:bool (id:string))
+    (defun URC_HasHibernation:bool (id:string))
+    (defun URC_Parent:string (dpof:string))
+    ;;
+    ;;  [URD]
+    ;;
+    (defun URD_HeldOrtoFungibles:[string] (account:string))
+    (defun URD_ExistingOrtoFungibles:[string] (dotf:string))
+    (defun URD_OwnedOrtoFungibles:[string] (account:string))
+    (defun URD_AccountNonces:[integer] (account:string dpof-id:string))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_id (id:string))
+    (defun UEV_NoncesCirculating (id:string nonces:[integer]))
+    (defun UEV_ParentOwnership (id:string))
+    (defun UEV_NoncesToAccount (id:string account:string nonces:[integer]))
+    (defun UEV_Amount (id:string amount:decimal))
+        ;;
+    (defun UEV_UpdateRewardBearingToken (id:string))
+    (defun UEV_CanUpgradeON (id:string))
+    (defun UEV_CanChangeOwnerON (id:string))
+    (defun UEV_CanAddSpecialRoleON (id:string))
+    (defun UEV_CanTransferOftCreateRoleON (id:string))
+    (defun UEV_CanFreezeON (id:string))
+    (defun UEV_CanWipeON (id:string))
+    (defun UEV_CanPauseON (id:string))
+    (defun UEV_PauseState (id:string state:bool))
+        ;;
+    (defun UEV_SegmentationState (id:string state:bool))
+    (defun UEV_AccountFreezeState (id:string account:string state:bool))
+    (defun UEV_AccountAddQuantityState (id:string account:string state:bool))
+    (defun UEV_AccountBurnState (id:string account:string state:bool))
+    (defun UEV_AccountCreateState (id:string account:string state:bool))
+    (defun UEV_AccountTransferState (id:string account:string state:bool))
+        ;;
+    (defun UEV_Vesting (id:string existance:bool))
+    (defun UEV_Sleeping (id:string existance:bool))
+    (defun UEV_Hibernation (id:string existance:bool))
+    (defun UEV_MoveRoleCheck (id:string sender:string receiver:string))
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_NonceElement:object{DpofUdcV1.DPOF|NonceElement}
+        (a:string b:string c:integer d:decimal e:[object])
+    )
+    (defun UDC_VerumRoles:object{DpofUdcV1.DPOF|VerumRoles}
+        (a:[string] b:[string] c:[string] d:string e:[string])
+    )
+    (defun UDC_AccountRoles:object{DpofUdcV1.DPOF|AccountRoles}
+        (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string)
+    )
+    (defun UDC_RemovableNonces:object{DpofUdcV1.RemovableNonces}
+        (a:[integer] b:[decimal])
+    )
+    ;;
+    ;;  [CAP]
+    ;;
+    (defun CAP_Owner (id:string))
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
+        (
+            patron:string account:string 
+            name:[string] ticker:[string] decimals:[integer]
+            can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool]
+            can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
+        )
+    )
+    (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (id:string new-owner:string))
+    (defun C_Control:object{IgnisCollectorV1.OutputCumulator} (id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool))
+    (defun C_TogglePause:object{IgnisCollectorV1.OutputCumulator} (id:string toggle:bool))
+        ;;
+    (defun C_DeployAccount (id:string account:string))
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string receiver:string))
+    (defun C_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
+        ;;
+    (defun C_AddQuantity:object{IgnisCollectorV1.OutputCumulator} (id:string account:string nonce:integer amount:decimal))
+    (defun C_Burn:object{IgnisCollectorV1.OutputCumulator} (id:string account:string nonce:integer amount:decimal))
+    (defun C_Mint:object{IgnisCollectorV1.OutputCumulator} (id:string account:string amount:decimal meta-data-chain:[object]))
+        ;;
+    (defun C_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (id:string account:string nonce:integer amount:decimal))
+    (defun C_WipeHeavy:object{IgnisCollectorV1.OutputCumulator} (id:string account:string))
+    (defun C_WipePure:object{IgnisCollectorV1.OutputCumulator} (id:string account:string removable-nonces-obj:object{DpofUdcV1.RemovableNonces}))
+    (defun C_WipeClean:object{IgnisCollectorV1.OutputCumulator} (id:string account:string nonces:[integer]))
+        ;;
+    (defun C_Transmit:object{IgnisCollectorV1.OutputCumulator} (id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
+    (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator} (id:string nonces:[integer] sender:string receiver:string method:bool))
+    ;;
+    ;;  [X]
+    ;;
+    (defun XB_IssueFree:object{IgnisCollectorV1.OutputCumulator}
+        (
+            account:string
+            ;;
+            name:[string]
+            ticker:[string]
+            decimals:[integer]
+            ;;
+            can-upgrade:[bool]
+            can-change-owner:[bool]
+            can-add-special-role:[bool]
+            can-transfer-oft-create-role:[bool]
+            ;;
+            can-freeze:[bool]
+            can-wipe:[bool]
+            can-pause:[bool]
+            ;;
+            iz-special:[bool]
+        )
+    )
+    (defun XB_DeployAccountWNE (account:string id:string))
+    (defun XB_InsertNewNonce (nonce-owner:string id:string nonce:integer amount:decimal meta-data-chain:[object]))
+    (defun XE_UpdateRewardBearingToken (atspair:string hot-rbt:string))
+    (defun XE_UpdateSpecialOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+        (main-dptf:string secondary-dpof:string vzh-tag:integer)
+    )
+    (defun XB_W|AccountRoles (id:string account:string account-data:object{DpofUdcV1.DPOF|AccountRoles}))
 
+)
+;;
+(interface DemiourgosPactOrtoFungibleV2
+    @doc "Additive DPOF surface — opt-in per consumer; does not replace DemiourgosPactOrtoFungibleV1."
+    (defun UEV_EnforceSegmentationForTransmit (id:string))
+    (defun C_BulkTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    )
+)
+;;
 (module DPOF GOV
     ;;
     (implements OuronetPolicyV1)

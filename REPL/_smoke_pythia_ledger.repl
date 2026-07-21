@@ -1,0 +1,5 @@
+;; Smoke: Stage00 sandboxes + Stage01 stack + PYTHIA/Khronoton ledger tests
+(load "Stage00_Sanboxes.repl")
+(load "Stage01_Tester.repl")
+(load "Stage_01/[6.10]_PYTHIA.repl")
+(print "=== _smoke_pythia_ledger.repl complete ===")

@@ -1,4 +1,77 @@
 ;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface TrueFungibleTransferV1
+    @doc "Exposes True Fungible Transfer Functions"
+    ;;
+    ;;  SCHEMAS
+    ;;
+    (defschema TransferClass
+        type:integer
+        iz-it-simple:bool
+    )
+    ;;
+    ;;  [UC]
+    ;;
+    (defun UC_ContainsEliteAurynz:bool (id-lst:[string]))
+    (defun UC_BulkRemainders:[decimal] (id:string transfer-amount-lst:[decimal]))
+    (defun UC_BulkFees:[decimal] (id:string transfer-amount-lst:[decimal]))
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_MinimumOuro:decimal (account:string))
+    (defun URC_VirtualOuro:decimal (account:string))
+    (defun URC_ReceiverAmount:decimal (id:string sender:string receiver:string amount:decimal))
+    (defun URC_UnityTransferIgnisPrice (transfer-amount:decimal))
+        ;;
+    (defun URC_TransferClasses:object{TransferClass} (id:string sender:string receiver:string amount:decimal))
+    (defun URC_IzSimpleTransfer:bool (id:string sender:string receiver:string amount:decimal))
+    (defun URC_TransferClassesForBulk:object{TransferClass} (id:string sender:string transfer-amount-lst:[decimal]))
+    (defun URC_IzSimpleTransferForBulk:bool (id:string sender:string transfer-amount-lst:[decimal]))
+        ;;
+    (defun URC_IzTrueFungibleEliteAuryn:bool (id:string))
+    (defun URC_IzTrueFungibleUnity:bool (id:string))
+    (defun URC_AreTrueFungiblesEliteAurynz:bool (id:string))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_MinimumMapperForBulk (id:string transfer-amount-lst:[decimal]))
+    (defun UEV_Minimum (id:string amount:decimal))
+    (defun UEV_DispoLocker (id:string account:string))
+    (defun UEV_MoveRoleCheck (id:string sender:string receiver:string))
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_GetDispoData:object{UtilityDptfV1.DispoData} (account:string))
+    (defun UDC_SmallTransmuteCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string transmuter:string))
+    (defun UDC_LargeTransmuteCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string transmuter:string))
+    (defun UDC_UnityTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (sender:string receiver:string amount:decimal))
+        ;;
+    (defun UDC_TransferCumulator:object{IgnisCollectorV1.OutputCumulator} (type:integer id:string sender:string receiver:string))
+    (defun UDC_SmallTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string receiver:string))
+    (defun UDC_MediumTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string receiver:string))
+    (defun UDC_LargeTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (sender:string receiver:string))
+        ;;
+    (defun UDC_MultiTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal]))
+        ;;
+    (defun UDC_MultiBulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
+    (defun UDC_BulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
+    (defun UDC_UnityBulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
+    (defun UDC_SimpleBulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string size:integer))
+    (defun UDC_ComplexBulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string size:integer))
+    (defun UDC_EliteBulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string size:integer))
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_ClearDispo:object{IgnisCollectorV1.OutputCumulator} (account:string))
+    (defun C_Transmute:object{IgnisCollectorV1.OutputCumulator} (id:string transmuter:string transmute-amount:decimal))
+    (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string receiver:string transfer-amount:decimal method:bool))
+    (defun C_MultiTransfer:object{IgnisCollectorV1.OutputCumulator} (id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool))
+    (defun C_MultiBulkTransfer:object{IgnisCollectorV1.OutputCumulator} (id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
+    ;;
+)
+;;
 (module TFT GOV
     ;;
     (implements OuronetPolicyV1)

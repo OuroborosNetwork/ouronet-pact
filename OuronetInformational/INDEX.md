@@ -12,7 +12,7 @@
 
 | Path | Contents |
 |------|----------|
-| **`pact/`** | Pact language mechanics (enforce grouping, defcap order, `let` layout, interfaces) |
+| **`pact/`** | Pact language mechanics (enforce grouping, defcap order, `let` layout, `defun` params, interfaces) |
 | **`ouronet/`** | Platform architecture + cross-module conventions |
 | **`ouronet/conventions/`** | Day-to-day rules: UR layout, W writes, X guards, IMC, REPL layout, … |
 | **`ouronet/architecture/`** | Inventories, REPL spec, deploy patterns, stage module lists |
@@ -32,6 +32,8 @@
 | **XB + IMC** | `ouronet/conventions/xb-imc-cross-module.md` |
 | **Boolean enforce** | `pact/enforce-boolean-grouping.md`, `pact/enforce.md` |
 | **defcap body order** | `pact/defcap-body-order.md` |
+| **Function / cap body order** | `pact/function-body-order.md` |
+| **`defun` / `defcap` parameters** | `pact/defun-parameter-layout.md` |
 | **UC / URC / URDC** | `ouronet/conventions/uc-urc-urdc-prefixes.md` |
 | **Module load order** | `ouronet/conventions/module-load-order-and-pact-refs.md` |
 | **Integration REPLs** | `ouronet/conventions/repl-integration-test-layout.md` |
@@ -48,6 +50,15 @@
 ## Kursan (agent scratch REPLs)
 
 Experimental probes and one-off tests: **`REPL/Kursan/`**. See **`kursan/README.md`**. Do **not** put canonical integration suites there.
+
+## Handoffs (feature specs)
+
+| Topic | File |
+|-------|------|
+| Pyth ledger (Pact tables + reads) | `HANDOFF-pact-pyth-ledger.md` |
+| Khronoton flush service (calendar day + :58 schedule) | `HANDOFF-pythia-khronoton-flush.md` |
+| PYTHIA dual-Apollo keys | `HANDOFF-pythia-dual-apollo.md` |
+| PYTHIA ledger flush implementation | `modules/stage01/pythia-ledger-flush.md` |
 
 ## Maintenance rule
 

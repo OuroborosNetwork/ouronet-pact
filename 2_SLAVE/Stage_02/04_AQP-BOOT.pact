@@ -13,7 +13,7 @@
 ;;   • Full step chain table: 2_SLAVE/Stage_02/README_AQP_BOOT.md
 ;;   • OURO LP user flow: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/README.md § OURO LP onboarding
 ;;
-;; STEP ORDER: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
+;; STEP ORDER: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12
 ;;   Step 0 — after sovereign AQP modules (ANK, SCR, AQP-POOL, FVT) are deployed: IMC + vault governor.
 ;;
 (interface AcquisitionPoolBootV1
@@ -46,11 +46,17 @@
     (defun C_Step8_IssueFvtEntities:string
         (patron:string owner-konto:string lp-denominator:string)
     )
-    (defun C_Step9_AddFvtScoreLinks:string
-        (patron:string farm-id:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string ouro-triplet-score-ids:[string] subsidiary-score-ids:[string] coding-score-id:string snakes-score-id:string shares-score-id:string)
+    (defun C_Step9_AddFvtScoreEntities:string
+        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string subsidiary-score-ids:[string] coding-score-id:string snakes-score-id:string shares-score-id:string)
     )
-    (defun C_Step10_AddFvtRewardLinks:string
-        (patron:string farm-id:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
+    (defun C_Step10_IssueMultipletFamily:string
+        (patron:string ouro-id:string auryn-id:string elite-auryn-id:string ats-0-1-id:string ats-1-2-id:string)
+    )
+    (defun C_Step11_WireFarmTriplet:string
+        (patron:string farm-id:string bronze-score-id:string silver-score-id:string golden-score-id:string ouro-id:string multiplet-family-id:string)
+    )
+    (defun C_Step12_AddFvtRewardLinks:string
+        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
     )
 )
 
@@ -82,6 +88,8 @@
     (defconst BOOT|FVT_SNAKES_TREASURY:string "SnakesTreasury")
     (defconst BOOT|FVT_SHARES_TREASURY:string "CompanySharesTreasury")
     (defconst BOOT|TREASURY_COMMON:string   "|")
+    (defconst BOOT|SCORE_ENTITY_SCORE:integer 1)
+    (defconst BOOT|SCORE_ENTITY_TRIPLET:integer 3)
     ;;
     ;;<=======>
     ;;FUNCTIONS
@@ -95,8 +103,10 @@
     ;;Step 6 - Create the Ouro LP Triplet Score Definition
     ;;Step 7 - Create six DH pools (class 3/4 by entity) + class-0 OURO LP pool; assign Step4/5/6 scores
     ;;Step 8 - Issue five FVT entities (farm + vault treasuries) — C_Issue only
-    ;;Step 9 - C_AddScoreLink per production FVT map
-    ;;Step 10 - C_AddRewardLink per production FVT map
+    ;;Step 9 - C_AddScoreEntity (type 1) on vault/treasury FVT entities (not farm LP triplet)
+    ;;Step 10 - C_IssueMultipletFamily (OURO / Auryn / Elite-Auryn ATS ladder)
+    ;;Step 11 - C_IssueTriplet + C_AddScoreEntity (type 3) + C_AddRewardLink (OURO + multiplet-family) on OuroLpFarm
+    ;;Step 12 - C_AddRewardLink on vault/treasury FVT entities (plain rewards)
     (defun C_Step0_WireImcAndGovernor:string
         (patron:string)
         @doc "Step 0 — AQP-POOL TFT + DPOF IMC + AQP|SC_NAME governor rotate. \
@@ -356,10 +366,11 @@
         ;;   1. C_Issue class-0 pool (DHOuroLp) with native LP asset-id  ← Step 7
         ;;   2. C_AddScore × 3 — employ triplet on that pool              ← Step 7
         ;;   3. Users stake LP into pool → SCORE user rows update
-        ;;   4. C_AddScoreLink × 3 on shared Farm FVT                     ← Step 9
+        ;;   4. C_AddScoreEntity (type 3) on shared Farm FVT                     ← Step 11
+        ;;   5. C_AddRewardLink (OURO, multiplet-family-id) on farm    ← Step 11
         ;;
         ;; SECOND OURO LP: repeat score issuance with **new score names** (cannot reuse ids),
-        ;; then new pool + C_AddScore × 3 + C_AddScoreLink × 3 on the same farm.
+        ;; then new pool + C_AddScore × 3 + C_IssueTriplet + C_AddScoreEntity (type 3) on the same farm.
         ;;
         ;; REPL call (after Steps 2–3 anchor classes exist):
         ;; (AQP-BOOT.C_Step6_CreateOuroLpTriplet
@@ -401,7 +412,7 @@
                 (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron golden-id golden-boost-class-id)
                 (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink patron golden-id silver-id)
                 ;;
-                (format "AQP-BOOT Step 6 done. lp-denominator={}. score-ids=[silver={} bronze={} golden={}]. boost-class-ids=[{} {} {}]. boost-links=[{}->{} {}->{}]. NEXT=Step7:ouro-triplet-score-ids=[{} {} {}]. NEXT=Step9:farm-score-links=same-three-ids."
+                (format "AQP-BOOT Step 6 done. lp-denominator={}. score-ids=[silver={} bronze={} golden={}]. boost-class-ids=[{} {} {}]. boost-links=[{}->{} {}->{}]. NEXT=Step7:ouro-triplet-score-ids=[{} {} {}]. NEXT=Step11:C_IssueTriplet+AddTriplet."
                     [
                         lp-denominator
                         silver-id bronze-id golden-id
@@ -543,13 +554,13 @@
             \ OuroLpFarm class 0 when lp-denominator non-empty (same OURO DPTF id as Step 6). \
             \ Four class-1 vault treasuries with common-denominator '|'. \
             \ Product names say Treasury; class 1 vault admits TF/SF/NF. Class 2 is OF-only. \
-            \ NEXT=Step9 score links, Step10 reward links — pass fvt-ids from this output."
+            \ NEXT=Step9 vault score links, Steps 10–11 farm triplet — pass fvt-ids from this output."
         ;;
         ;; INPUT
         ;;   patron, owner-konto — FVT owner (REPL: KST.ANHD)
         ;;   lp-denominator — full OURO DPTF id for OuroLpFarm; pass \"\" to skip farm (vault-only bootstrap)
-        ;; OUTPUT — fvt-ids ×5 (farm skipped → farm-id=skipped)
-        ;; REPL: see 2_SLAVE/Stage_02/README_AQP_BOOT.md § Steps 8–10
+        ;; OUTPUT — fvt-ids ×5 (farm skipped → echo farm=skipped)
+        ;; REPL: see 2_SLAVE/Stage_02/README_AQP_BOOT.md § Steps 8–12
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
@@ -560,40 +571,86 @@
                     (coding-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_CODING_TREASURY))
                     (snakes-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_SNAKES_TREASURY))
                     (shares-treasury-id:string (ref-U|DALOS::UDC_Makeid BOOT|FVT_SHARES_TREASURY))
-                    (farm-issued:string
-                        (if (!= lp-denominator "")
-                            (do
-                                (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_OURO_LP_FARM owner-konto 0 lp-denominator)
-                                farm-id
-                            )
-                            "skipped"
-                        )
-                    )
+                )
+                (if (!= lp-denominator "")
+                    (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_OURO_LP_FARM owner-konto 0 lp-denominator)
+                    true
                 )
                 (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SUBSIDIARY_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
                 (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_CODING_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
                 (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SNAKES_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
                 (ref-TS02-C3::AQP-FVT|C_Issue patron BOOT|FVT_SHARES_TREASURY owner-konto 1 BOOT|TREASURY_COMMON)
-                (format "AQP-BOOT Step 8 done. fvt-ids=[farm={} sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={}]. farm-issued={}. NEXT=Step9:C_AddScoreLink."
+                (format "AQP-BOOT Step 8 done. fvt-ids=[farm={} sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={}]. NEXT=Step9:C_AddScoreEntity."
                     [
-                        farm-issued sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id
-                        farm-issued
+                        (if (!= lp-denominator "") farm-id "skipped")
+                        sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id
                     ]
                 )
             )
         )
     )
-    (defun C_Step9_AddFvtScoreLinks:string
-        (patron:string farm-id:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string ouro-triplet-score-ids:[string] subsidiary-score-ids:[string] coding-score-id:string snakes-score-id:string shares-score-id:string)
-        @doc "Step 9 — Admit score links on Step 8 FVT entities (C_AddScoreLink only). \
-            \ Farm: SilverSnakePower, BronzeSnakePower, GoldenSnakePower (skip when farm-id empty or 'skipped'). \
+    (defun C_Step9_AddFvtScoreEntities:string
+        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string subsidiary-score-ids:[string] coding-score-id:string snakes-score-id:string shares-score-id:string)
+        @doc "Step 9 — Admit score entities (type 1) on vault/treasury FVT entities only. \
             \ SubsidiaryTreasury: five subsidiary scores. \
             \ CodingDivisionTreasury: TheCodingDivision. SnakesTreasury: DemiourgosSnakes. \
-            \ CompanySharesTreasury: DemiourgosShareholder."
+            \ CompanySharesTreasury: DemiourgosShareholder. \
+            \ Farm OURO LP triplet is wired in Step 11."
         ;;
-        ;; INPUT — fvt-ids from Step 8 output; score ids from Steps 4–6
-        ;;   ouro-triplet-score-ids[3], subsidiary-score-ids[5], coding/snakes/shares from Step 4
-        ;; REPL: see README_AQP_BOOT.md § Steps 8–10
+        ;; INPUT — fvt-ids from Step 8 output; score ids from Steps 4–5
+        ;; REPL: see 2_SLAVE/Stage_02/README_AQP_BOOT.md § Steps 8–12
+        (with-capability (GOV|AQP_BOOT_ADMIN)
+            (let
+                (
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                )
+                (enforce (= (length subsidiary-score-ids) 5) "Step 9 expects subsidiary-score-ids×5.")
+                (map
+                    (lambda (score-id:string)
+                        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron sub-treasury-id BOOT|SCORE_ENTITY_SCORE score-id)
+                    )
+                    subsidiary-score-ids
+                )
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron coding-treasury-id BOOT|SCORE_ENTITY_SCORE coding-score-id)
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron snakes-treasury-id BOOT|SCORE_ENTITY_SCORE snakes-score-id)
+                (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron shares-treasury-id BOOT|SCORE_ENTITY_SCORE shares-score-id)
+                (format "AQP-BOOT Step 9 done. score-entities=[sub=5 coding=1 snakes=1 shares=1]. fvt-ids=[sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={}]. NEXT=Step10:C_IssueMultipletFamily."
+                    [
+                        sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id
+                    ]
+                )
+            )
+        )
+    )
+    (defun C_Step10_IssueMultipletFamily:string
+        (patron:string ouro-id:string auryn-id:string elite-auryn-id:string ats-0-1-id:string ats-1-2-id:string)
+        @doc "Step 10 — Issue chain-wide MultipletFamily (rank 3) for OURO→Auryn→Elite-Auryn Coil/Curl ladder. \
+            \ INPUT: live DPTF ids + ATS pair ids (token-0 RT on ats-0-1; token-1 RBT/RT; token-2 RBT)."
+        ;;
+        ;; family-id = F|ouro-id|auryn-id|elite-auryn-id (deterministic — pass to Step 11)
+        ;; REPL: ouro-id, auryn-id, elite-auryn-id from DALOS; ats ids from deployed ATS pairs
+        (with-capability (GOV|AQP_BOOT_ADMIN)
+            (let
+                (
+                    (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                    (family-id:string (concat ["F" "|" ouro-id "|" auryn-id "|" elite-auryn-id]))
+                )
+                (ref-TS02-C3::AQP-FVT|C_IssueMultipletFamily
+                    patron ouro-id auryn-id elite-auryn-id ats-0-1-id ats-1-2-id
+                )
+                (format "AQP-BOOT Step 10 done. multiplet-family-id={}. tokens=[ouro={} auryn={} elite={}] ats=[{} {}]. NEXT=Step11:C_IssueTriplet+AddScoreEntity."
+                    [family-id ouro-id auryn-id elite-auryn-id ats-0-1-id ats-1-2-id]
+                )
+            )
+        )
+    )
+    (defun C_Step11_WireFarmTriplet:string
+        (patron:string farm-id:string bronze-score-id:string silver-score-id:string golden-score-id:string ouro-id:string multiplet-family-id:string)
+        @doc "Step 11 — Issue triplet bundle, admit to OuroLpFarm (type 3), register OURO MULTIPLET_BASE reward. \
+            \ Skip when farm-id empty or 'skipped'. INPUT: score ids from Step 6; family id from Step 10 echo."
+        ;;
+        ;; triplet-id = T|bronze|silver|golden (deterministic from score ids)
+        ;; REPL: farm-id from Step 8; ouro-id = lp-denominator; multiplet-family-id from Step 10
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
@@ -604,44 +661,32 @@
                             (!= farm-id "skipped")
                         )
                     )
+                    (triplet-id:string (concat ["T" "|" bronze-score-id "|" silver-score-id "|" golden-score-id]))
                 )
                 (if wire-farm
                     (do
-                        (enforce (= (length ouro-triplet-score-ids) 3) "Step 9 farm expects ouro-triplet-score-ids=[silver bronze golden].")
-                        (map
-                            (lambda (score-id:string)
-                                (ref-TS02-C3::AQP-FVT|C_AddScoreLink patron farm-id score-id)
-                            )
-                            ouro-triplet-score-ids
-                        )
+                        (ref-TS02-C3::AQP-SCR|C_IssueTriplet patron bronze-score-id silver-score-id golden-score-id)
+                        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron farm-id BOOT|SCORE_ENTITY_TRIPLET triplet-id)
+                        (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron farm-id ouro-id false multiplet-family-id)
                     )
                     true
                 )
-                (enforce (= (length subsidiary-score-ids) 5) "Step 9 expects subsidiary-score-ids×5.")
-                (map
-                    (lambda (score-id:string)
-                        (ref-TS02-C3::AQP-FVT|C_AddScoreLink patron sub-treasury-id score-id)
-                    )
-                    subsidiary-score-ids
-                )
-                (ref-TS02-C3::AQP-FVT|C_AddScoreLink patron coding-treasury-id coding-score-id)
-                (ref-TS02-C3::AQP-FVT|C_AddScoreLink patron snakes-treasury-id snakes-score-id)
-                (ref-TS02-C3::AQP-FVT|C_AddScoreLink patron shares-treasury-id shares-score-id)
-                (format "AQP-BOOT Step 9 done. score-links=[farm={} sub=5 coding=1 snakes=1 shares=1]. fvt-ids=[farm={} sub-treasury={} coding-treasury={} snakes-treasury={} shares-treasury={}]. NEXT=Step10:C_AddRewardLink."
+                (format "AQP-BOOT Step 11 done. farm={} triplet-id={} multiplet-family-id={} ouro-reward={}. NEXT=Step12:C_AddRewardLink."
                     [
-                        (if wire-farm 3 0)
-                        farm-id sub-treasury-id coding-treasury-id snakes-treasury-id shares-treasury-id
+                        (if wire-farm farm-id "skipped")
+                        (if wire-farm triplet-id "skipped")
+                        (if wire-farm multiplet-family-id "skipped")
+                        (if wire-farm ouro-id "skipped")
                     ]
                 )
             )
         )
     )
-    (defun C_Step10_AddFvtRewardLinks:string
-        (patron:string farm-id:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
-        @doc "Step 10 — Register reward tokens on Step 8 FVT entities (C_AddRewardLink only). \
-            \ Farm, SubsidiaryTreasury, SnakesTreasury → Auryn. \
-            \ CodingDivisionTreasury → Wstoa. CompanySharesTreasury → Ouroboros. \
-            \ Skip farm reward when farm-id empty or 'skipped'."
+    (defun C_Step12_AddFvtRewardLinks:string
+        (patron:string sub-treasury-id:string coding-treasury-id:string snakes-treasury-id:string shares-treasury-id:string reward-auryn-id:string reward-ouroboros-id:string reward-wstoa-id:string)
+        @doc "Step 12 — Register reward tokens on treasury FVT entities via C_AddRewardLink (multiplet-family-id BAR). \
+            \ SubsidiaryTreasury, SnakesTreasury → Auryn. CodingDivisionTreasury → Wstoa. \
+            \ CompanySharesTreasury → Ouroboros. Farm OURO + family is Step 11."
         ;;
         ;; INPUT — fvt-ids from Step 8; reward DPTF ids from live chain
         ;; REPL: AURYN-98c486052a51, DALOS::UR_OuroborosID, DALOS::UR_WrappedStoaID
@@ -649,24 +694,15 @@
             (let
                 (
                     (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
-                    (wire-farm:bool
-                        (and
-                            (!= farm-id "")
-                            (!= farm-id "skipped")
-                        )
-                    )
+                    (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                    (bar:string (ref-U|CT::CT_BAR))
                 )
-                (if wire-farm
-                    (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron farm-id reward-auryn-id false)
-                    true
-                )
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron sub-treasury-id reward-auryn-id false)
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron coding-treasury-id reward-wstoa-id false)
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron snakes-treasury-id reward-auryn-id false)
-                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron shares-treasury-id reward-ouroboros-id false)
-                (format "AQP-BOOT Step 10 done. reward-links=[farm={} sub={} coding={} snakes={} shares={}]. rewards=[auryn={} wstoa={} ouroboros={}]. NEXT=inject/stake/collect client txs."
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron sub-treasury-id reward-auryn-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron coding-treasury-id reward-wstoa-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron snakes-treasury-id reward-auryn-id false bar)
+                (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron shares-treasury-id reward-ouroboros-id false bar)
+                (format "AQP-BOOT Step 12 done. reward-links=[sub={} coding={} snakes={} shares={}]. rewards=[auryn={} wstoa={} ouroboros={}]. Bootstrap complete — ready for inject/stake/collect."
                     [
-                        (if wire-farm reward-auryn-id "skipped")
                         reward-auryn-id reward-wstoa-id reward-auryn-id reward-ouroboros-id
                         reward-auryn-id reward-wstoa-id reward-ouroboros-id
                     ]

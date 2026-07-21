@@ -1,3 +1,23 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface DalosInfoV1
+    @doc "Exposes Information Function for the Dalos Client Functions"
+    ;;
+    ;;
+    ;;  [URC] Functions
+    ;;
+    (defun DALOS-INFO|URC_ControlSmartAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_DeploySmartAccount:object{OuronetInfoV1.ClientInfo} (account:string))
+    (defun DALOS-INFO|URC_DeployStandardAccount:object{OuronetInfoV1.ClientInfo} (account:string))
+    (defun DALOS-INFO|URC_RotateGovernor:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_RotateGuard:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_RotateKadena:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_RotateSovereign:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_UpdateEliteAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_UpdateEliteAccountSquared:object{OuronetInfoV1.ClientInfo} (patron:string sender:string receiver:string))
+)
+;;
 (module INFO-ZERO GOV
     ;;
     (implements OuronetPolicyV1)

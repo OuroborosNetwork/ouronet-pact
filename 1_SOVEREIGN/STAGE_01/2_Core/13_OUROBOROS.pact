@@ -1,4 +1,27 @@
 ;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface OuroborosV1
+    @doc "Exposes Functions related to the OUROBOROS Module"
+    ;;
+    (defun GOV|ORBR|SC_KDA-NAME ())
+    (defun GOV|ORBR|GUARD ())
+    ;;
+    ;;
+    (defun URC_ProjectedKdaLiquindex:[decimal] ())
+    (defun URC_Compress:[decimal] (ignis-amount:decimal))
+    (defun URC_Sublimate:decimal (ouro-amount:decimal))
+    ;;
+    (defun UEV_Exchange ())
+    ;;
+    ;;
+    (defun C_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
+    (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} ())
+    (defun C_Sublimate:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
+    (defun C_WithdrawFees:object{IgnisCollectorV1.OutputCumulator} (id:string target:string))
+)
+;;
 (module OUROBOROS GOV
     ;;
     (implements OuronetPolicyV1)

@@ -1,3 +1,96 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
+;;
+(interface TalosStageOne_ClientOneV1
+    @doc "Exposes Ouronets Stage One First Batch of Client Functions \
+        \ Modules: DALOS, DPTF and DPOF are included in the First Batch"
+    ;;
+    ;;DALOS Functions
+    (defun DALOS|C_ControlSmartAccount (patron:string account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool))
+    (defun DALOS|C_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string))
+    (defun DALOS|C_DeployStandardAccount (account:string guard:guard kadena:string public:string))
+    (defun DALOS|C_RotateGovernor (patron:string account:string governor:guard))
+    (defun DALOS|C_RotateGuard (patron:string account:string new-guard:guard safe:bool))
+    (defun DALOS|C_RotateKadena (patron:string account:string kadena:string))
+    (defun DALOS|C_RotateSovereign (patron:string account:string new-sovereign:string))
+    (defun DALOS|C_UpdateEliteAccount (patron:string account:string))
+    (defun DALOS|C_UpdateEliteAccountSquared (patron:string sender:string receiver:string))
+    ;;
+    ;;
+    ;;DPTF (Demiourgos Pact True Fungible) Functions
+    (defun DPTF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun DPTF|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    ;;
+    (defun DPTF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-change-owner:[bool] can-upgrade:[bool] can-add-special-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
+    (defun DPTF|C_RotateOwnership (patron:string id:string new-owner:string))
+    (defun DPTF|C_Control (patron:string id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool))
+    (defun DPTF|C_TogglePause (patron:string id:string toggle:bool))
+    (defun DPTF|C_ToggleReservation (patron:string id:string toggle:bool))
+        ;;
+    (defun DPTF|C_ToggleFee (patron:string id:string toggle:bool))
+    (defun DPTF|C_SetMinMove (patron:string id:string min-move-value:decimal))
+    (defun DPTF|C_SetFee (patron:string id:string fee:decimal))
+    (defun DPTF|C_SetFeeTarget (patron:string id:string target:string))
+    (defun DPTF|C_DonateFees (patron:string id:string))
+    (defun DPTF|C_ResetFeeTarget (patron:string id:string))
+    (defun DPTF|C_ToggleFeeLock (patron:string id:string toggle:bool))
+        ;;
+    (defun DPTF|C_DeployAccount (patron:string id:string account:string))
+    (defun DPTF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
+    (defun DPTF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool))
+    (defun DPTF|C_ToggleMintRole (patron:string id:string account:string toggle:bool))
+    (defun DPTF|C_ToggleFeeExemptionRole (patron:string id:string account:string toggle:bool))
+    (defun DPTF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool))
+        ;;
+    (defun DPTF|C_ClearDispo (patron:string account:string))
+    (defun DPTF|C_Burn (patron:string id:string account:string amount:decimal))
+    (defun DPTF|C_Mint (patron:string id:string account:string amount:decimal origin:bool))
+    (defun DPTF|C_WipeSlim (patron:string id:string atbw:string amtbw:decimal))
+    (defun DPTF|C_Wipe (patron:string id:string atbw:string))
+        ;;
+    (defun DPTF|C_Transmute (patron:string id:string transmuter:string transmute-amount:decimal))
+    (defun DPTF|C_Transfer (patron:string id:string sender:string receiver:string transfer-amount:decimal method:bool))
+    (defun DPTF|C_MultiTransfer (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal] method:bool))
+    (defun DPTF|C_BulkTransfer (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
+    (defun DPTF|C_MultiBulkTransfer (patron:string id:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
+    ;;
+    ;;
+    ;;DPOF (Demiourgos Pact Orto Fungible) Functions
+    (defun DPOF|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun DPOF|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    ;;
+    (defun DPOF|C_Issue:list (patron:string account:string name:[string] ticker:[string] decimals:[integer] can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] can-transfer-oft-create-role:[bool] can-freeze:[bool] can-wipe:[bool] can-pause:[bool]))
+    (defun DPOF|C_RotateOwnership (patron:string id:string new-owner:string))
+    (defun DPOF|C_Control (patron:string id:string cu:bool cco:bool casr:bool ctocr:bool cf:bool cw:bool cp:bool sg:bool))
+    (defun DPOF|C_TogglePause (patron:string id:string toggle:bool))
+        ;;
+    (defun DPOF|C_DeployAccount (patron:string id:string account:string))
+    (defun DPOF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool))
+    (defun DPOF|C_ToggleAddQuantityRole (patron:string id:string account:string toggle:bool))
+    (defun DPOF|C_ToggleBurnRole (patron:string id:string account:string toggle:bool))
+    (defun DPOF|C_MoveCreateRole (patron:string id:string receiver:string))
+    (defun DPOF|C_ToggleTransferRole (patron:string id:string account:string toggle:bool))
+        ;;
+    (defun DPOF|C_AddQuantity (patron:string id:string account:string nonce:integer amount:decimal))
+    (defun DPOF|C_Burn (patron:string id:string account:string nonce:integer amount:decimal))
+    (defun DPOF|C_Mint (patron:string id:string account:string amount:decimal meta-data-chain:[object]))
+    (defun DPOF|C_WipeSlim (patron:string id:string account:string nonce:integer amount:decimal))
+    (defun DPOF|C_WipeHeavy (patron:string id:string account:string))
+    (defun DPOF|C_WipePure (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV1.RemovableNonces}))
+    (defun DPOF|C_WipeClean (patron:string id:string account:string nonces:[integer]))
+        ;;
+    (defun DPOF|C_Transmit (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
+    (defun DPOF|C_Transfer (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))    
+    ;;
+)
+;;
+(interface TalosStageOne_ClientOneV2
+    @doc "Additive Talos Stage One Client One surface — opt-in per consumer; does not replace TalosStageOne_ClientOneV1."
+    (defun DPOF|C_BulkTransfer
+        (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    )
+)
+;;
 (module TS01-C1 GOV
     @doc "TALOS Stage 1 Client Functiones Part 1"
     ;;

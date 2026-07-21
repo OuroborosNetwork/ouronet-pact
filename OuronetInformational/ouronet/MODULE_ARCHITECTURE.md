@@ -213,7 +213,8 @@ When we add modules or functions together, we will:
 1. Respect **deploy order** and **interface versioning**.
 2. Place new code in the right **section** (schemas → caps by C1–C4 → FUNCTIONS in **§ FUNCTIONS block order (canonical)** order).
 3. Name with the correct **prefix** (**UC / UCK / UR / W / URC / URDC / UEV / UDC / CAP / A_ / C_ / X***).
-4. Register **Talos** sequences and **policy** guards where inter-module or client access requires it.
+4. Order **statements inside** each **`defcap`** / **`C_*`** / **`UEV_*`** per **`OuronetInformational/pact/function-body-order.md`** (`let` refs → natives → **`ref-*`** → home → caps).
+5. Register **Talos** sequences and **policy** guards where inter-module or client access requires it.
 
 ## Schema layout (deftable order)
 

@@ -133,7 +133,7 @@
             (wstoa-after-inject:decimal (ref-DPTF::UR_AccountSupply wstoa-id beneficiary-id))
         )
         (print (format "<(TS02-C3.AQP-FVT|C_Collect Wstoa)> => \"{}\"" [
-            (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id score-id wstoa-id)
+            (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id wstoa-id)
         ]))
         (let
             (
@@ -234,7 +234,7 @@
         (auryn-id:string "AURYN-98c486052a51")
         (inject-amount:decimal 50.0)
         (total-deb:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore score-id))
-        (sl-enabled:bool (ref-FVT::UR_FVT-SL|Enabled fvt-id score-id))
+        (sl-enabled:bool (ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (map print
@@ -289,7 +289,7 @@
         (
             (reward-count:integer (ref-FVT::UR_FVT|EnabledRewardCount fvt-id))
             (ar:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id auryn-id))
-            (sl-enabled:bool (ref-FVT::UR_FVT-SL|Enabled fvt-id sub-coding-score-id))
+            (sl-enabled:bool (ref-FVT::UR_FVT-SEL|Enabled fvt-id sub-coding-score-id))
         )
         (map print
             [
@@ -324,7 +324,7 @@
         (ouroboros-id:string (ref-DALOS::UR_OuroborosID))
         (inject-amount:decimal 100.0)
         (total-deb:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore shares-score-id))
-        (sl-enabled:bool (ref-FVT::UR_FVT-SL|Enabled fvt-id shares-score-id))
+        (sl-enabled:bool (ref-FVT::UR_FVT-SEL|Enabled fvt-id shares-score-id))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (map print
@@ -349,7 +349,7 @@
                     ))
                 )
                 (print (format "<(TS02-C3.AQP-FVT|C_Collect Ouroboros)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id shares-score-id ouroboros-id)
+                    (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 shares-score-id ouroboros-id)
                 ]))
                 (let
                     (

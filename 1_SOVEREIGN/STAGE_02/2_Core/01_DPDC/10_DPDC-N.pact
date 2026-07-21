@@ -1,3 +1,34 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+(interface DpdcNonceV1
+    @doc "Exposes Collectables Nonce Management related Functions"
+    ;;
+    ;; [UR]
+    ;;
+    (defun UR_Nonce:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool nosc:integer nos:bool nost:bool))
+    ;;
+    ;; [UEV]
+    ;;
+    (defun UEV_NonceDataUpdater (id:string son:bool account:string nosc:integer nos:bool nost:bool))
+    (defun UEV_RoleNftRecreateON (id:string son:bool account:string))
+    (defun UEV_RoleNftUpdateON (id:string son:bool account:string))
+    (defun UEV_RoleModifyRoyaltiesON (id:string son:bool account:string))
+    (defun UEV_RoleSetNewUriON (id:string son:bool account:string))
+    (defun UEV_Score (score:decimal))
+    ;;
+    ;; [C]
+    ;;
+    (defun C_UpdateNonces               (id:string son:bool account:string nosc:[integer] nos:bool nost:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}]))
+    (defun C_UpdateNonceRoyalty         (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal))
+    (defun C_UpdateNonceIgnisRoyalty    (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal))
+    (defun C_UpdateNonceName            (id:string son:bool account:string nosc:integer nos:bool nost:bool name:string))
+    (defun C_UpdateNonceDescription     (id:string son:bool account:string nosc:integer nos:bool nost:bool description:string))
+    (defun C_UpdateNonceScore           (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal))
+    (defun C_UpdateNonceMetaData        (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object))
+    (defun C_UpdateNonceURI             (id:string son:bool account:string nosc:integer nos:bool nost:bool ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}))
+)
+;;
 (module DPDC-N GOV
     ;;
     (implements OuronetPolicyV1)

@@ -1,3 +1,56 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
+;;
+(interface TalosStageOne_AdminV1
+    @doc "Exposes Ouronet Administrative Functions"
+    ;;
+    ;;DALOS Functions
+    (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-kda-account:string))
+    (defun DALOS|A_ToggleOAPU (oapu:bool))
+    (defun DALOS|A_ToggleGAP (gap:bool))
+    (defun DALOS|A_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string))
+    (defun DALOS|A_DeployStandardAccount (account:string guard:guard kadena:string public:string))
+    (defun DALOS|A_IgnisToggle (native:bool toggle:bool))
+    (defun DALOS|A_SetIgnisSourcePrice (price:decimal))
+    (defun DALOS|A_SetAutoFueling (toggle:bool))
+    (defun DALOS|A_UpdatePublicKey (account:string new-public:string))
+    (defun DALOS|A_UpdateUsagePrice (action:string new-price:decimal))
+    ;;
+    ;;
+    ;;BRD Functions
+    (defun BRD|A_Live (entity-id:string))
+    (defun BRD|A_SetFlag (entity-id:string flag:integer))
+    ;;
+    ;;
+    ;;DPTF Functions
+    (defun DPTF|A_UpdateTreasuryDispoParameters (type:integer tdp:decimal tds:decimal))
+    (defun DPTF|A_WipeTreasuryDebt ())
+    (defun DPTF|A_WipeTreasuryDebtPartial (debt-to-be-wiped:decimal))
+    ;;
+    ;;ATS Functions
+    (defun ATS|A_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
+    ;;
+    ;;LIQUID Functions
+    (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-kda-account:string))
+    ;;
+    ;;
+    ;;ORBR Functions
+    (defun ORBR|A_Fuel ())
+    ;;
+    ;;
+    ;;SWP Functions
+    (defun SWP|A_UpdatePrincipal (principal:string add-or-remove:bool))
+    (defun SWP|A_UpdateLimit (limit:decimal spawn:bool))
+    (defun SWP|A_UpdateLiquidBoost (new-boost-variable:bool))
+    (defun SWP|A_DefinePrimordialPool (primordial-pool:string))
+    (defun SWP|A_ToggleAsymetricLiquidityAddition (toggle:bool))
+    ;;
+    ;;
+    ;;Fueling Functions
+    (defun XB_DynamicFuelKDA ())
+    (defun XE_ConditionalFuelKDA (condition:bool))
+)
+;;
 (module TS01-A GOV
     @doc "TALOS Stage 1 Administrator Functions \
         \ Contains All Administrator functions [DALOS BRD ORBR SWP]\

@@ -1,4 +1,206 @@
 ;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface DemiourgosPactTrueFungibleV1
+    @doc "Exposes most of the Functions related to True-Fungibles"
+    ;;
+    ;;  [UC]
+    ;;
+    (defun URU_UpgradeTruefungibleToV2 (ids:[string]))
+    (defun UC_IdAccount:string (id:string account:string))
+    (defun UC_VolumetricTax (id:string amount:decimal))
+    (defun UC_TreasuryLowestDispo (ouro-supply:decimal ouro-precision:integer dispo-type:integer tdp:decimal tds:decimal))
+    ;;
+    ;;  [UR]
+    ;;
+    (defun UR_P-KEYS:[string] ())
+    (defun UR_KEYS:[string] ())
+    ;;
+    ;;  [0] DPTF|PropertiesTable:{DPTF|PropertiesSchema}
+    (defun UR_Konto:string (id:string))
+    (defun UR_Name:string (id:string))
+    (defun UR_Ticker:string (id:string))
+    (defun UR_Decimals:integer (id:string))
+    (defun UR_CanUpgrade:bool (id:string))
+    (defun UR_CanChangeOwner:bool (id:string))
+    (defun UR_CanAddSpecialRole:bool (id:string))
+    (defun UR_CanFreeze:bool (id:string))
+    (defun UR_CanWipe:bool (id:string))
+    (defun UR_CanPause:bool (id:string))
+    (defun UR_Paused:bool (id:string))
+    (defun UR_Supply:decimal (id:string))
+    (defun UR_OriginMint:bool (id:string))
+    (defun UR_OriginAmount:decimal (id:string))
+    (defun UR_FeeToggle:bool (id:string))
+    (defun UR_MinMove:decimal (id:string))
+    (defun UR_FeePromile:decimal (id:string))
+    (defun UR_FeeTarget:string (id:string))
+    (defun UR_FeeLock:bool (id:string))
+    (defun UR_FeeUnlocks:integer (id:string))
+    (defun UR_PrimaryFeeVolume:decimal (id:string))
+    (defun UR_SecondaryFeeVolume:decimal (id:string))
+    (defun UR_RewardToken:[string] (id:string))
+    (defun UR_RewardBearingToken:[string] (id:string))
+    (defun UR_Vesting:string (id:string))
+    (defun UR_Sleeping:string (id:string))
+    (defun UR_Hibernation:string (id:string))
+    (defun UR_Frozen:string (id:string))
+    (defun UR_Reservation:string (id:string))
+    (defun UR_IzReservationOpen:bool (id:string))
+    (defun UR_IzId:bool (id:string))
+    ;;  [1]     DPTF|RoleTable:{DPTF|RoleSchema}
+    (defun UR_Verum1:[string] (id:string))
+    (defun UR_Verum2:[string] (id:string))
+    (defun UR_Verum3:[string] (id:string))
+    (defun UR_Verum4:[string] (id:string))
+    (defun UR_Verum5:[string] (id:string))
+    ;;  [2]     DPTF|BalanceTable:{OuronetDalosV1.DPTF|BalanceSchema}
+    (defun UR_IzAccount:bool (id:string account:string))
+    (defun UR_AccountSupply:decimal (id:string account:string))
+    (defun UR_AccountFrozenState:bool (id:string account:string))
+    (defun UR_AccountRoleBurn:bool (id:string account:string))
+    (defun UR_AccountRoleMint:bool (id:string account:string))
+    (defun UR_AccountRoleTransfer:bool (id:string account:string))
+    (defun UR_AccountRoleFeeExemption:bool (id:string account:string))
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_IzRT:bool (reward-token:string))
+    (defun URC_IzRTg:bool (atspair:string reward-token:string))
+    (defun URC_IzRBT:bool (reward-bearing-token:string))
+    (defun URC_IzRBTg:bool (atspair:string reward-bearing-token:string))
+    (defun URC_IzCoreDPTF:bool (id:string))
+    (defun URC_Fee:[decimal] (id:string amount:decimal))
+        ;;
+    (defun URC_HasVesting:bool (id:string))
+    (defun URC_HasSleeping:bool (id:string))
+    (defun URC_HasHibernation:bool (id:string))
+    (defun URC_HasFrozen:bool (id:string))
+    (defun URC_HasReserved:bool (id:string))
+    (defun URC_Parent:string (dptf:string))
+    (defun URC_TreasuryLowestDispo:decimal ())
+    ;;
+    ;;  [URD]
+    ;;
+    (defun URD_HeldTrueFungibles:[string] (account:string))
+    (defun URD_ExistingTrueFungibles:[string] (dptf:string))
+    (defun URD_OwnedTrueFungibles:[string] (account:string))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_ParentOwnership (dptf:string))
+    (defun UEV_id (id:string))
+    (defun UEV_CheckID:bool (id:string))
+    (defun UEV_Amount (id:string amount:decimal))
+    (defun UEV_CheckAmount:bool (id:string amount:decimal))
+        ;;
+    (defun UEV_CanChangeOwnerON (id:string))
+    (defun UEV_CanUpgradeON (id:string))
+    (defun UEV_CanAddSpecialRoleON (id:string))
+    (defun UEV_CanFreezeON (id:string))
+    (defun UEV_CanWipeON (id:string))
+    (defun UEV_CanPauseON (id:string))
+        ;;
+    (defun UEV_PauseState (id:string state:bool))
+    (defun UEV_ReservationState (id:string state:bool))
+    (defun UEV_AccountBurnState (id:string account:string state:bool))
+    (defun UEV_AccountTransferState (id:string account:string state:bool))
+    (defun UEV_AccountFreezeState (id:string account:string state:bool))
+    (defun UEV_Virgin (id:string))
+    (defun UEV_FeeLockState (id:string state:bool))
+    (defun UEV_FeeToggleState (id:string state:bool))
+    (defun UEV_AccountMintState (id:string account:string state:bool))
+    (defun UEV_AccountFeeExemptionState (id:string account:string state:bool))
+    (defun UEV_Vesting (id:string existance:bool))
+    (defun UEV_Sleeping (id:string existance:bool))
+    (defun UEV_Hibernation (id:string existance:bool))
+    (defun UEV_Frozen (id:string existance:bool))
+    (defun UEV_Reserved (id:string existance:bool))
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_TrueFungibleAccount:object{OuronetDalosV1.DPTF|BalanceSchema} (a:decimal b:bool c:bool d:bool e:bool f:bool g:string h:string))
+    ;;
+    ;;  [CAP]
+    ;;
+    (defun CAP_Owner (id:string))
+    ;;
+    ;;  [A]
+    ;;
+    (defun A_UpdateTreasury (type:integer tdp:decimal tds:decimal))
+    (defun A_WipeTreasuryDebt ())
+    (defun A_WipeTreasuryDebtPartial (debt-to-be-wiped:decimal))
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
+        (
+            patron:string account:string 
+            name:[string] ticker:[string] decimals:[integer] 
+            can-upgrade:[bool] can-change-owner:[bool] can-add-special-role:[bool] 
+            can-freeze:[bool] can-wipe:[bool] can-pause:[bool]
+        )
+    )
+    (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (id:string new-owner:string))
+    (defun C_Control:object{IgnisCollectorV1.OutputCumulator} (id:string cu:bool cco:bool casr:bool cf:bool cw:bool cp:bool))
+    (defun C_TogglePause:object{IgnisCollectorV1.OutputCumulator} (id:string toggle:bool))
+    (defun C_ToggleReservation:object{IgnisCollectorV1.OutputCumulator} (id:string toggle:bool))
+        ;;
+    (defun C_ToggleFee:object{IgnisCollectorV1.OutputCumulator} (id:string toggle:bool))
+    (defun C_SetMinMove:object{IgnisCollectorV1.OutputCumulator} (id:string min-move-value:decimal))
+    (defun C_SetFee:object{IgnisCollectorV1.OutputCumulator} (id:string fee:decimal))
+    (defun C_SetFeeTarget:object{IgnisCollectorV1.OutputCumulator} (id:string target:string))
+    (defun C_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (patron:string id:string toggle:bool))
+        ;;
+    (defun C_DeployAccount (id:string account:string))
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_ToggleMintRole:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_ToggleFeeExemptionRole:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
+        ;;
+    (defun C_Burn:object{IgnisCollectorV1.OutputCumulator} (id:string account:string amount:decimal))
+    (defun C_Mint:object{IgnisCollectorV1.OutputCumulator} (id:string account:string amount:decimal origin:bool))
+    (defun C_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (id:string account-to-be-wiped:string amount-to-be-wiped:decimal))
+    (defun C_Wipe:object{IgnisCollectorV1.OutputCumulator} (id:string account-to-be-wiped:string))
+    ;;
+    ;;  [X]
+    ;;
+    (defun XE_IssueLP:object{IgnisCollectorV1.OutputCumulator} (name:string ticker:string))
+    (defun XB_IssueFree:object{IgnisCollectorV1.OutputCumulator}
+        (
+            account:string
+            name:[string]
+            ticker:[string]
+            decimals:[integer]
+            ;;
+            can-upgrade:[bool]
+            can-change-owner:[bool]
+            can-add-special-role:[bool]
+            ;;
+            can-freeze:[bool]
+            can-wipe:[bool]
+            can-pause:[bool]
+            ;;
+            iz-special:[bool]
+        )
+    )
+    (defun XB_DeployAccountWNE (account:string id:string))
+    (defun XB_UpdateSupply (id:string amount:decimal direction:bool))
+    (defun XE_UpdateFeeVolume (id:string amount:decimal primary:bool))
+    (defun XE_UpdateRewardToken (atspair:string id:string direction:bool))
+    (defun XE_UpdateRewardBearingToken (atspair:string id:string))
+    (defun XE_UpdateVesting (dptf:string dpof:string))
+    (defun XE_UpdateSleeping (dptf:string dpof:string))
+    (defun XE_UpdateHibernation (dptf:string dpof:string))
+    (defun XE_UpdateSpecialTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+        (main-dptf:string secondary-dptf:string fr-tag:integer)
+    )
+    (defun XB_DebitTrueFungible (id:string account:string amount:decimal dispo-data:object{UtilityDptfV1.DispoData} wipe-mode:bool))
+    (defun XB_CreditTrueFungible (id:string account:string amount:decimal))
+)
+;;
 (module DPTF GOV
     ;;
     (implements OuronetPolicyV1)

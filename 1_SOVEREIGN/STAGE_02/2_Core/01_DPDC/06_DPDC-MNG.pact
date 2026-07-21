@@ -1,3 +1,44 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+(interface DpdcManagementV1
+    @doc "Exposes Collectables Management Functions"
+    ;;
+    (defschema RemovableNonces
+        @doc "Removable Nonces are Class 0 Nonces held by a given Account with greater than 0 supply \
+        \ Given an <account>, a dpdc <id>, and a list of <nonces>, they can be filtered to Removable Nonces"
+        r-nonces:[integer]
+        r-amounts:[integer]
+    )
+    ;;
+    ;; [C]
+    ;;
+    (defun C_Control:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool))
+    (defun C_TogglePause:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool toggle:bool))
+    ;;
+    ;;  [CREDIT-SINGLE]
+    ;;  [SFT]
+    (defun C_AddQuantity:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer amount:integer))
+    ;;  [NFT]
+    (defun C_RespawnNFT:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer))
+    ;;
+    ;;  [DEBIT-SINGLE]
+    ;;  [SFT]
+    (defun C_BurnSFT:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer amount:integer))
+    (defun C_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer amount:integer))
+    ;;  [NFT]
+    (defun C_BurnNFT:object{IgnisCollectorV1.OutputCumulator} (account:string id:string nonce:integer))
+    ;;  [SFT+NFT]
+    (defun C_WipeNonce:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool nonce:integer))
+    ;;
+    ;;  [DEBIT-MULTIPLE]
+    ;;  [SFT+NFT]
+    (defun C_WipeHeavy:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool))
+    (defun C_WipePure:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
+    (defun C_WipeClean:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
+    (defun C_WipeDirty:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
+)
+;;
 (module DPDC-MNG GOV
     ;;
     (implements OuronetPolicyV1)

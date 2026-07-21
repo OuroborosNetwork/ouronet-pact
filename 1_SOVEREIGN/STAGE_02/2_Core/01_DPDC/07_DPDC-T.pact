@@ -1,3 +1,53 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+(interface DpdcTransferV1
+    @doc "Exposes Collectables Transfer Functions"
+    ;;
+    ;;  [Schemas]
+    ;;
+    (defschema AggregatedRoyalties
+        creators:[string]
+        ignis-royalties:[decimal]
+    )
+    ;;
+    (defun UC_AndTruths:bool (truths:[bool]))
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_TransferRoleChecker:bool (id:string son:bool sender:string))
+    (defun URC_SummedIgnisRoyalty:decimal (sender:string id:string son:bool nonces:[integer] amounts:[integer]))
+    (defun URC_TotalTransferPrice:decimal (id:string son:bool nonces:[integer] amounts:[integer]))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_TransferRoles (id:string son:bool sender:string receiver:string))
+    (defun UEV_TransferRoleChecker (trc:bool s:bool r:bool))
+    (defun UEV_AmountsForTransfer (id:string son:bool nonces:[integer] amounts:[integer]))
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_MultiTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]]))
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_RepurposeCollectable:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
+    )
+    (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
+    (defun C_IgnisRoyaltyCollector:object{AggregatedRoyalties} (patron:string sender:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]]))
+)
+;;
+(interface DpdcTransferV2
+    @doc "Additive DPDC-T surface — opt-in per consumer; does not replace DpdcTransferV1."
+    (defun UDC_BulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+    )
+    (defun C_BulkTransfer:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool nonces-array:[[integer]] amounts-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+    )
+)
+;;
 (module DPDC-T GOV
     ;;
     (implements OuronetPolicyV1)

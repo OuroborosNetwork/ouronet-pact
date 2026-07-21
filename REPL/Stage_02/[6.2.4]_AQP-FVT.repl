@@ -13,7 +13,7 @@
 (print "")
 (print "Requires full chain: REPL/Z.repl (Stage 01 DPTF issuance + Stage 02 AQP deploy + [6.2.1]–[6.2.3]).")
 (print "TX004 in [6.2.1] strips OURO TF anchors — TX-FVT-01 re-issues one anchor for stake ANK leg.")
-(print "FVT lifecycle: C_Issue / C_AddRewardLink / C_AddScoreLink via Talos AQP-FVT|C_* shells.")
+(print "FVT lifecycle: C_Issue / C_AddRewardLink / C_AddScoreEntity via Talos AQP-FVT|C_* shells.")
 (print "REPL tests: (map print [(expect (format \"<<TX-FVT-nn>> …\" […]) expected actual) …])")
 (print "")
 (print "===================AQP-FVT TF Stake Test File==========================")
@@ -182,11 +182,11 @@
     (print "--- [TX-FVT-02 · 02 · C_Issue class-1 pool + C_AddScore] ---")
     (print (format "<(TS02-C3.AQP-POOL|C_Issue class=1 OURO)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id aqp-class)]))
     (print (format "<(TS02-C3.AQP-POOL|C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)]))
-    ;;==== TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreLink — REPL =====
-    (print "--- [TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreLink] ---")
+    ;;==== TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreEntity — REPL =====
+    (print "--- [TX-FVT-02 · 03 · C_Issue vault + C_AddRewardLink + C_AddScoreEntity] ---")
     (print (format "<(TS02-C3.AQP-FVT|C_Issue class=1 vault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name patron fvt-class "|")]))
-    (print (format "<(TS02-C3.AQP-FVT|C_AddRewardLink OURO)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false)]))
-    (print (format "<(TS02-C3.AQP-FVT|C_AddScoreLink)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_AddScoreLink patron fvt-id score-id)]))
+    (print (format "<(TS02-C3.AQP-FVT|C_AddRewardLink OURO)> => \"{}\"" [(let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false (ref-U|CT::CT_BAR)))]))
+    (print (format "<(TS02-C3.AQP-FVT|C_AddScoreEntity)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)]))
     ;;==== TX-FVT-02 · 04 · pre-stake readiness reads + expect — REPL ===============
     (print "--- [TX-FVT-02 · 04 · FVT stake-ready reads + expect] ---")
     (let
@@ -195,7 +195,7 @@
             (fvt-link:string (ref-SCR::UR_SCR|ScoreFvtLink score-id))
             (pool-class:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
             (pool-score:string (ref-AQP::UR_AQP|PoolScorePrimary pool-id))
-            (sl-enabled:bool (ref-FVT::UR_FVT-SL|Enabled fvt-id score-id))
+            (sl-enabled:bool (ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id))
             (reward-count:integer (ref-FVT::UR_FVT|EnabledRewardCount fvt-id))
             (fvt-ready:bool (ref-FVT::URC_PoolEmployedScoresFvtStakeReady pool-id))
         )
@@ -205,7 +205,7 @@
                 (format "<(AQP-SCORE|UR_SCR|ScoreFvtLink)> => \"{}\"" [fvt-link])
                 (format "<(AQP-POOL|UR_AQP|PoolAqpClass)> => \"{}\"" [pool-class])
                 (format "<(AQP-POOL|UR_AQP|PoolScorePrimary)> => \"{}\"" [pool-score])
-                (format "<(AQP-FVT|UR_FVT-SL|Enabled)> => \"{}\"" [sl-enabled])
+                (format "<(AQP-FVT|UR_FVT-SEL|Enabled)> => \"{}\"" [sl-enabled])
                 (format "<(AQP-FVT|UR_FVT|EnabledRewardCount)> => \"{}\"" [reward-count])
                 (format "<(AQP-FVT|URC_PoolEmployedScoresFvtStakeReady)> => \"{}\"" [fvt-ready])
             ]
@@ -258,6 +258,7 @@
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
@@ -308,6 +309,8 @@
                 (expect (format "<<TX-FVT-03 expect>> OURO debited got={} expected={}" [post-ouro (- pre-ouro stake-amount)]) (- pre-ouro stake-amount) post-ouro)
                 (expect (format "<<TX-FVT-03 expect>> ank sync count stamped got={} expected>=0" [sync-count]) true (>= sync-count 0))
                 (expect (format "<<TX-FVT-03 expect>> unclaimed-count after first stake got={} expected=1" [unclaimed]) 1 unclaimed)
+                (expect (format "<<TX-FVT-03 expect>> need-sync false after stake got={}" [(ref-AQP::URC_BenDptfAnchorsNeedSync beneficiary-id ouro-id)]) false (ref-AQP::URC_BenDptfAnchorsNeedSync beneficiary-id ouro-id))
+                (expect (format "<<TX-FVT-03 expect>> sync-count==anchors-active got={} expected={}" [sync-count (ref-ANK::UR_AA|AnchorsActive ouro-id)]) (ref-ANK::UR_AA|AnchorsActive ouro-id) sync-count)
             ]
         )
     )
@@ -344,16 +347,16 @@
     )
     (print "--- [TX-FVT-04 · 01 · ToggleScoreLink off/on] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-FVT|C_ToggleScoreLink off)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreLink patron fvt-id score-id false)]))
-    (print (format "<(TS02-C3.AQP-FVT|C_ToggleScoreLink on)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreLink patron fvt-id score-id true)]))
+    (print (format "<(TS02-C3.AQP-FVT|C_ToggleScoreEntityLink off)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink patron fvt-id 1 score-id false)]))
+    (print (format "<(TS02-C3.AQP-FVT|C_ToggleScoreEntityLink on)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_ToggleScoreEntityLink patron fvt-id 1 score-id true)]))
     (print "--- [TX-FVT-04 · 02 · post-toggle reads + expect] ---")
     (let
         (
-            (sl-off:bool (ref-FVT::UR_FVT-SL|Enabled fvt-id score-id))
+            (sl-off:bool (ref-FVT::UR_FVT-SEL|Enabled fvt-id score-id))
         )
         (map print
             [
-                (format "<(AQP-FVT|UR_FVT-SL|Enabled after re-toggle)> => \"{}\"" [sl-off])
+                (format "<(AQP-FVT|UR_FVT-SEL|Enabled after re-toggle)> => \"{}\"" [sl-off])
             ]
         )
         (map print
@@ -370,4 +373,548 @@
 (commit-tx)
 (print "")
 (print "=== END TX-FVT-04 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+;; TX-FVT-05 — Vault inject / collect / second-collect idempotence (score-entity type 1, PLAIN)
+(begin-tx "TX-FVT-05 - Vault inject + collect + second collect=0")
+(print "")
+(print "=== TX-FVT-05 — Vault inject/collect/second-collect (TfStakeVault) ===========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "TfStakeScore")
+        (fvt-name:string "TfStakeVault")
+        (pool-name:string "TfStakePool")
+        (inject-amt:decimal 50.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+        (ar-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+        (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouro-id))
+    )
+    (print "--- [TX-FVT-05 · 01 · inject OURO into vault] ---")
+    (enforce (>= ouro-pre inject-amt) "TX-FVT-05: patron needs OURO for inject")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-FVT|C_Inject amount={})> => \"{}\"" [inject-amt
+        (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id ouro-id inject-amt)
+    ]))
+    (let
+        (
+            (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouro-id))
+            (ar-post:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+            (ouro-after-inject:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+        )
+        (map print
+            [
+                (format "<(pre G/AR)> => \"{} {}\"" [g-pre ar-pre])
+                (format "<(post-inject G/AR)> => \"{} {}\"" [g-post ar-post])
+                (expect (format "<<TX-FVT-05>> G increased got={} pre={}" [g-post g-pre]) true (> g-post g-pre))
+                (expect (format "<<TX-FVT-05>> available-rewards got={} expected={}" [ar-post (+ ar-pre inject-amt)]) (+ ar-pre inject-amt) ar-post)
+                (expect (format "<<TX-FVT-05>> inject debited OURO got={} expected={}" [ouro-after-inject (- ouro-pre inject-amt)]) (- ouro-pre inject-amt) ouro-after-inject)
+            ]
+        )
+        (print "--- [TX-FVT-05 · 02 · collect once] ---")
+        (print (format "<(TS02-C3.AQP-FVT|C_Collect type=1)> => \"{}\"" [
+            (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id ouro-id)
+        ]))
+        (let
+            (
+                (ouro-after-collect:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+                (payout:decimal (- ouro-after-collect ouro-after-inject))
+                (pending:decimal (ref-FVT::UR_FVT-RU|PendingRewards beneficiary-id fvt-id score-id ouro-id))
+                (last-rps:decimal (ref-FVT::UR_FVT-RU|LastRps beneficiary-id fvt-id score-id ouro-id))
+                (g-now:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouro-id))
+                (ar-after:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+                (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                (deb-total:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore score-id))
+            )
+            (map print
+                [
+                    (format "<(collect payout)> => \"{}\" deb={}/{} AR={}" [payout deb-user deb-total ar-after])
+                    (expect (format "<<TX-FVT-05>> collect payout>0 got={}" [payout]) true (> payout 0.0))
+                    (expect (format "<<TX-FVT-05>> pending zeroed got={}" [pending]) 0.0 pending)
+                    (expect (format "<<TX-FVT-05>> last-rps==G got={} expected={}" [last-rps g-now]) g-now last-rps)
+                    (expect (format "<<TX-FVT-05>> available-rewards decreased got={} pre-inject-ar={}" [ar-after (+ ar-pre inject-amt)]) true (< ar-after (+ ar-pre inject-amt)))
+                    (expect (format "<<TX-FVT-05>> payout <= inject got={} inject={}" [payout inject-amt]) true (<= payout inject-amt))
+                ]
+            )
+            (print "--- [TX-FVT-05 · 03 · second collect idempotent] ---")
+            (let
+                (
+                    (ouro-before-2:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
+                )
+                (print (format "<(TS02-C3.AQP-FVT|C_Collect second)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id ouro-id)
+                ]))
+                (let
+                    (
+                        (payout-2:decimal (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-before-2))
+                    )
+                    (map print
+                        [
+                            (expect (format "<<TX-FVT-05>> second collect payout=0 got={}" [payout-2]) 0.0 payout-2)
+                        ]
+                    )
+                )
+            )
+        )
+    )
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-FVT-05 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-FVT-05 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+;; TX-FVT-06 — Sync repair while staked (issue 2nd OURO TF anchor → C_SyncTrueFungibleAnchors)
+(begin-tx "TX-FVT-06 - TF anchor sync repair while staked")
+(print "")
+(print "=== TX-FVT-06 — C_SyncTrueFungibleAnchors after late TF anchor ==============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (boost-class-name:string "TfStakeBoost2")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (anchor2-id:string (ref-U|DALOS::UDC_Makeid "TfStakeAnchor2"))
+        (sync-needed-pre:bool (ref-AQP::URC_BenDptfAnchorsNeedSync beneficiary-id ouro-id))
+        (aa-pre:integer (ref-ANK::UR_AA|AnchorsActive ouro-id))
+        (split-std:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "standard")))
+        )
+    )
+    (print "--- [TX-FVT-06 · 01 · issue 2nd OURO TF anchor while staked] ---")
+    (print (format "<(need-sync pre-issue)> => \"{}\" aa={}" [sync-needed-pre aa-pre]))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-std))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-std))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-std))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-std))
+                ]
+            }
+        ]
+    )
+    (print (format "<(AQP-ANK|C_IssueTrueFungibleAnchor TfStakeAnchor2)> => \"{}\"" [
+        (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TfStakeAnchor2" ouro-id true boost-class-name 8 25.0 500.0)
+    ]))
+    (let
+        (
+            (need-after-issue:bool (ref-AQP::URC_BenDptfAnchorsNeedSync beneficiary-id ouro-id))
+            (aa-post:integer (ref-ANK::UR_AA|AnchorsActive ouro-id))
+            (anchor2-live:bool (ref-ANK::UR_ANK|State anchor2-id))
+        )
+        (map print
+            [
+                (format "<(need-sync after-issue)> => \"{}\" aa={}" [need-after-issue aa-post])
+                (expect (format "<<TX-FVT-06>> 2nd anchor live got={}" [anchor2-live]) true anchor2-live)
+                (expect (format "<<TX-FVT-06>> anchors-active increased got={} pre={}" [aa-post aa-pre]) true (> aa-post aa-pre))
+                (expect (format "<<TX-FVT-06>> need-sync true after late anchor got={}" [need-after-issue]) true need-after-issue)
+            ]
+        )
+        (print "--- [TX-FVT-06 · 02 · C_SyncTrueFungibleAnchors] ---")
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print (format "<(AQP-POOL|C_SyncTrueFungibleAnchors)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_SyncTrueFungibleAnchors patron beneficiary-id ouro-id)
+        ]))
+        (let
+            (
+                (need-after-sync:bool (ref-AQP::URC_BenDptfAnchorsNeedSync beneficiary-id ouro-id))
+                (sync-count:integer (ref-AQP::UR_AQP|BenDptfLastAnkSyncCount beneficiary-id ouro-id))
+                (aa-now:integer (ref-ANK::UR_AA|AnchorsActive ouro-id))
+            )
+            (map print
+                [
+                    (format "<(need-sync after-sync)> => \"{}\" sync-count={} aa={}" [need-after-sync sync-count aa-now])
+                    (expect (format "<<TX-FVT-06>> need-sync false after sync got={}" [need-after-sync]) false need-after-sync)
+                    (expect (format "<<TX-FVT-06>> sync-count==anchors-active got={} expected={}" [sync-count aa-now]) aa-now sync-count)
+                ]
+            )
+        )
+    )
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-FVT-06 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-FVT-06 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+;; TX-FVT-07 — Partial then full TF unstake: tracker/rollup/SCORE/RPS cleanup
+(begin-tx "TX-FVT-07 - Partial + full C_UnstakeTrueFungible")
+(print "")
+(print "=== TX-FVT-07 — TF unstake (partial 40 then full remainder) =================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "TfStakeScore")
+        (fvt-name:string "TfStakeVault")
+        (pool-name:string "TfStakePool")
+        (partial-amt:decimal 40.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (tracker-pre:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+        (ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+        (unclaimed-pre:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
+    )
+    (print "--- [TX-FVT-07 · 01 · partial unstake 40] ---")
+    (enforce (>= tracker-pre 100.0) "TX-FVT-07 expects ≥100 staked from TX-FVT-03")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(AQP-POOL|C_UnstakeTrueFungible {})> => \"{}\"" [partial-amt
+        (ref-TS02-C3::AQP-POOL|C_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id partial-amt)
+    ]))
+    (let
+        (
+            (tracker-mid:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+            (rollup-mid:decimal (ref-AQP::UR_AQP|BenDptfTotalBalance beneficiary-id ouro-id))
+            (deb-mid:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+            (base-mid:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))
+            (last-rps-mid:decimal (ref-FVT::UR_FVT-RU|LastRps beneficiary-id fvt-id score-id ouro-id))
+            (g-mid:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouro-id))
+            (ouro-mid:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+            (remain:decimal (- tracker-pre partial-amt))
+        )
+        (map print
+            [
+                (format "<(partial tracker/deb/ouro)> => \"{} {} {}\"" [tracker-mid deb-mid ouro-mid])
+                (expect (format "<<TX-FVT-07>> tracker after partial got={} expected={}" [tracker-mid remain]) remain tracker-mid)
+                (expect (format "<<TX-FVT-07>> rollup after partial got={} expected={}" [rollup-mid remain]) remain rollup-mid)
+                (expect (format "<<TX-FVT-07>> deb after partial got={} expected={}" [deb-mid remain]) remain deb-mid)
+                (expect (format "<<TX-FVT-07>> base after partial got={} expected={}" [base-mid remain]) remain base-mid)
+                (expect (format "<<TX-FVT-07>> last-rps still == G got={} expected={}" [last-rps-mid g-mid]) g-mid last-rps-mid)
+                (expect (format "<<TX-FVT-07>> OURO restored +40 got={} expected={}" [ouro-mid (+ ouro-pre partial-amt)]) (+ ouro-pre partial-amt) ouro-mid)
+            ]
+        )
+        (print "--- [TX-FVT-07 · 02 · full remainder unstake] ---")
+        (print (format "<(AQP-POOL|C_UnstakeTrueFungible remainder {})> => \"{}\"" [remain
+            (ref-TS02-C3::AQP-POOL|C_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id remain)
+        ]))
+        (let
+            (
+                (tracker-z:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+                (rollup-z:decimal (ref-AQP::UR_AQP|BenDptfTotalBalance beneficiary-id ouro-id))
+                (deb-z:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                (base-z:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))
+                (total-deb-z:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore score-id))
+                (unclaimed-z:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
+                (ouro-z:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+                (last-rps-z:decimal (ref-FVT::UR_FVT-RU|LastRps beneficiary-id fvt-id score-id ouro-id))
+                (g-z:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouro-id))
+            )
+            (map print
+                [
+                    (format "<(full-exit tracker/deb/unclaimed)> => \"{} {} {}\"" [tracker-z deb-z unclaimed-z])
+                    (expect (format "<<TX-FVT-07>> tracker cleared got={}" [tracker-z]) 0.0 tracker-z)
+                    (expect (format "<<TX-FVT-07>> rollup cleared got={}" [rollup-z]) 0.0 rollup-z)
+                    (expect (format "<<TX-FVT-07>> user deb cleared got={}" [deb-z]) 0.0 deb-z)
+                    (expect (format "<<TX-FVT-07>> user base cleared got={}" [base-z]) 0.0 base-z)
+                    (expect (format "<<TX-FVT-07>> score total-deb cleared got={}" [total-deb-z]) 0.0 total-deb-z)
+                    (expect (format "<<TX-FVT-07>> last-rps==G after exit got={} expected={}" [last-rps-z g-z]) g-z last-rps-z)
+                    (expect (format "<<TX-FVT-07>> unclaimed decremented got={} pre={}" [unclaimed-z unclaimed-pre]) true (< unclaimed-z unclaimed-pre))
+                    (expect (format "<<TX-FVT-07>> full OURO restored got={} expected={}" [ouro-z (+ ouro-pre tracker-pre)]) (+ ouro-pre tracker-pre) ouro-z)
+                ]
+            )
+        )
+    )
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-FVT-07 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-FVT-07 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+;; TX-FVT-08 — Mosaic toggle + non-mosaic SCORE membership lock on first AddScoreEntity
+(begin-tx "TX-FVT-08 - Mosaic / non-mosaic SCORE membership")
+(print "")
+(print "=== TX-FVT-08 — Mosaic policy + SCORE membership-mode lock ==================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "TfMosaicScore")
+        (fvt-name:string "TfMosaicVault")
+        (pool-name:string "TfMosaicPool")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-U|CT:module{OuronetConstantsV1} U|CT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (mode-bar:string "BAR")
+        (bar:string (ref-U|CT::CT_BAR))
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 3.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    (print "--- [TX-FVT-08 · 01 · issue score + pool + vault] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                ]
+            }
+        ]
+    )
+    (print (format "<(C_IssueTrueFungibleScore TfMosaicScore)> => \"{}\"" [
+        (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-konto score-name 12 1.0)
+    ]))
+    (print (format "<(C_Issue pool + AddScore)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
+    ]))
+    (print (format "<(C_AddScore)> => \"{}\"" [(ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)]))
+    (print (format "<(C_Issue vault)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue patron fvt-name patron 1 "|")]))
+    (let
+        (
+            (mosaic-default:bool (ref-FVT::UR_FVT|Mosaic fvt-id))
+            (mode-default:string (ref-FVT::UR_FVT|MembershipMode fvt-id))
+        )
+        (map print
+            [
+                (expect (format "<<TX-FVT-08>> default mosaic=true got={}" [mosaic-default]) true mosaic-default)
+                (expect (format "<<TX-FVT-08>> default mode=BAR got={}" [mode-default]) mode-bar mode-default)
+            ]
+        )
+    )
+    (print "--- [TX-FVT-08 · 02 · SetMosaic false then true (no links)] ---")
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(C_SetMosaic false)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_SetMosaic patron fvt-id false)]))
+    (let
+        (
+            (m1:bool (ref-FVT::UR_FVT|Mosaic fvt-id))
+            (mode1:string (ref-FVT::UR_FVT|MembershipMode fvt-id))
+        )
+        (map print
+            [
+                (expect (format "<<TX-FVT-08>> mosaic false got={}" [m1]) false m1)
+                (expect (format "<<TX-FVT-08>> mode reset BAR got={}" [mode1]) mode-bar mode1)
+            ]
+        )
+    )
+    (print (format "<(C_SetMosaic true)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_SetMosaic patron fvt-id true)]))
+    (print (format "<(C_SetMosaic false again)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_SetMosaic patron fvt-id false)]))
+    (print "--- [TX-FVT-08 · 03 · reward + AddScoreEntity locks SCORE mode] ---")
+    (print (format "<(C_AddRewardLink)> => \"{}\"" [
+        (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false bar)
+    ]))
+    (print (format "<(C_AddScoreEntity type=1)> => \"{}\"" [
+        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)
+    ]))
+    (let
+        (
+            (mosaic-locked:bool (ref-FVT::UR_FVT|Mosaic fvt-id))
+            (mode-locked:string (ref-FVT::UR_FVT|MembershipMode fvt-id))
+        )
+        (map print
+            [
+                (expect (format "<<TX-FVT-08>> mosaic still false got={}" [mosaic-locked]) false mosaic-locked)
+                (expect (format "<<TX-FVT-08>> membership-mode SCORE got={}" [mode-locked]) "SCORE" mode-locked)
+            ]
+        )
+    )
+    (print "--- [TX-FVT-08 · 04 · SetMosaic with links must fail] ---")
+    (map print
+        [
+            (expect-failure "<<TX-FVT-08>> SetMosaic blocked while ScoreEntityLink rows exist"
+                (ref-TS02-C3::AQP-FVT|C_SetMosaic patron fvt-id true))
+        ]
+    )
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-FVT-08 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-FVT-08 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+;; TX-FVT-09 — Multi-staker vault inject/collect fairness (ANHD 60 + EMMA 40)
+(begin-tx "TX-FVT-09 - Multi-staker vault inject/collect fairness")
+(print "")
+(print "=== TX-FVT-09 — Two stakers share vault inject by deb weight ===============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "TfStakeScore")
+        (fvt-name:string "TfStakeVault")
+        (pool-name:string "TfStakePool")
+        (stake-a:decimal 60.0)
+        (stake-e:decimal 40.0)
+        (inject-amt:decimal 100.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (emma-ouro:decimal (ref-DPTF::UR_AccountSupply ouro-id emma))
+        (anhd-ouro:decimal (ref-DPTF::UR_AccountSupply ouro-id anhd))
+    )
+    (print "--- [TX-FVT-09 · 01 · dual stake ANHD 60 + EMMA 40] ---")
+    (enforce (>= anhd-ouro (+ stake-a (+ stake-e inject-amt))) "TX-FVT-09: ANHD needs OURO for fund+stake+inject")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+        ]
+    )
+    (if (< emma-ouro stake-e)
+        (print (format "<(DPTF C_Transfer OURO ANHD→EMMA {})> => \"{}\"" [stake-e
+            (ref-TS01-C1::DPTF|C_Transfer patron ouro-id anhd emma stake-e true)
+        ]))
+        true
+    )
+    (print (format "<(C_StakeTrueFungible ANHD {})> => \"{}\"" [stake-a
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id anhd anhd ouro-id stake-a)
+    ]))
+    (print (format "<(C_StakeTrueFungible EMMA {})> => \"{}\"" [stake-e
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id emma emma ouro-id stake-e)
+    ]))
+    (let
+        (
+            (deb-a:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+            (deb-e:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore emma pool-id score-id))
+            (deb-tot:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore score-id))
+        )
+        (map print
+            [
+                (format "<(deb ANHD/EMMA/total)> => \"{} {} {}\"" [deb-a deb-e deb-tot])
+                (expect (format "<<TX-FVT-09>> ANHD deb got={} expected={}" [deb-a stake-a]) stake-a deb-a)
+                (expect (format "<<TX-FVT-09>> EMMA deb got={} expected={}" [deb-e stake-e]) stake-e deb-e)
+                (expect (format "<<TX-FVT-09>> total deb got={} expected={}" [deb-tot (+ stake-a stake-e)]) (+ stake-a stake-e) deb-tot)
+            ]
+        )
+        (print "--- [TX-FVT-09 · 02 · inject + both collect] ---")
+        (let
+            (
+                (ouro-a-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id anhd))
+                (ouro-e-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id emma))
+            )
+            (print (format "<(C_Inject {})> => \"{}\"" [inject-amt
+                (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id ouro-id inject-amt)
+            ]))
+            (print (format "<(C_Collect ANHD)> => \"{}\"" [
+                (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+            ]))
+            (print (format "<(C_Collect EMMA)> => \"{}\"" [
+                (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 1 score-id ouro-id)
+            ]))
+            (let
+                (
+                    (pay-a:decimal (- (ref-DPTF::UR_AccountSupply ouro-id anhd) (- ouro-a-pre inject-amt)))
+                    (pay-e:decimal (- (ref-DPTF::UR_AccountSupply ouro-id emma) ouro-e-pre))
+                    (pay-sum:decimal
+                        (+
+                            (- (ref-DPTF::UR_AccountSupply ouro-id anhd) (- ouro-a-pre inject-amt))
+                            (- (ref-DPTF::UR_AccountSupply ouro-id emma) ouro-e-pre)
+                        )
+                    )
+                    (exp-a:decimal (floor (* inject-amt (/ stake-a (+ stake-a stake-e))) 24))
+                    (exp-e:decimal (floor (* inject-amt (/ stake-e (+ stake-a stake-e))) 24))
+                    (ar-left:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro-id))
+                )
+                (map print
+                    [
+                        (format "<(payouts ANHD/EMMA/sum AR)> => \"{} {} {} {}\"" [pay-a pay-e pay-sum ar-left])
+                        (format "<(expected ~ANHD/~EMMA)> => \"{} {}\"" [exp-a exp-e])
+                        (expect (format "<<TX-FVT-09>> ANHD payout>0 got={}" [pay-a]) true (> pay-a 0.0))
+                        (expect (format "<<TX-FVT-09>> EMMA payout>0 got={}" [pay-e]) true (> pay-e 0.0))
+                        (expect (format "<<TX-FVT-09>> ANHD payout≈60% got={} ~{}" [pay-a exp-a]) true (and (>= pay-a (- exp-a 0.000001)) (<= pay-a (+ exp-a 0.000001))))
+                        (expect (format "<<TX-FVT-09>> EMMA payout≈40% got={} ~{}" [pay-e exp-e]) true (and (>= pay-e (- exp-e 0.000001)) (<= pay-e (+ exp-e 0.000001))))
+                        (expect (format "<<TX-FVT-09>> sum payouts <= inject got={} inject={}" [pay-sum inject-amt]) true (<= pay-sum inject-amt))
+                        (expect (format "<<TX-FVT-09>> available-rewards residual small got={}" [ar-left]) true (< ar-left 0.01))
+                    ]
+                )
+            )
+        )
+    )
+)
+(print "")
+(print (format "<(REPL|env-gas)> TX-FVT-09 after commit => \"{}\"" [(env-gas)]))
+(print "")
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END TX-FVT-09 ==========================================================")
 (print "")

@@ -1,0 +1,22 @@
+;;
+;; REPL/aqp-deploy-gate.repl — DeployXY P0 gate: Z smoke + VCT vacate suite
+;; Run: pact REPL/aqp-deploy-gate.repl
+;; Also run separately: pact REPL/triplet-collect-golden.repl (farm MULTIPLET)
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/aqp-deploy-gate.repl")
+(print "================================================================")
+(print "Gate: Z.repl (ANK/SCORE/POOL/FVT TF+OF+DC + sync + mosaic + multi-staker)")
+(print "    + [6.2.5]_AQP-VCT.repl (TF/OF/SF/NF vacate; DPNF via mint probe, no Populate*)")
+(print "")
+(load "Z.repl")
+(print "")
+(print "=== GATE — VCT suite after Z mechanics ==================================")
+(load "Stage_02/[6.2.5]_AQP-VCT.repl")
+(print "")
+(print "================================================================")
+(print "AQP-DEPLOY-GATE — Z + VCT COMPLETE")
+(print "================================================================")
+(print "Reminder: also run pact REPL/triplet-collect-golden.repl for farm MULTIPLET.")
+(print "")

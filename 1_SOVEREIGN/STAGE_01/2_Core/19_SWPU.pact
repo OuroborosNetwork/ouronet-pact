@@ -1,4 +1,44 @@
 ;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface SwapperUsageV2
+    @doc "Exposes Adding|Removing Liquidty and Swapping Functions of the SWP Module \
+    \    V2: Added the already existing <UDC_SpawnSlippageBounds> to the interface \
+    \    V2: Smart Swap slippage quote using fee-less multi-hop path tracing via <UDC_SpawnSmartSwapSlippageBounds> \
+    \    V2: Smart Swap Multi-hop swap across the entire pool base using BFS path tracing with per-hop liquid pump via <C_SmartSwap>"
+    ;;
+    ;;
+    ;;  SCHEMAS
+    ;;
+    (defschema Slippage
+        expected-output-amount:decimal
+        output-precision:integer
+        slippage-percent:decimal
+    )
+    ;;
+    ;;
+    ;;  [UC] Functions
+    ;;
+    (defun UC_SlippageMinMax:[decimal] (input:object{Slippage}))
+    ;;
+    ;;
+    ;;  [UDC] Functions
+    ;;
+    (defun UDC_SpawnSmartSwapSlippageBounds:object{Slippage} (input-id:string input-amount:decimal output-id:string slippage:decimal))
+    (defun UDC_SpawnSlippageBounds:object{Slippage} (swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal))
+    (defun UDC_Slippage:object{Slippage} (a:decimal b:integer c:decimal))
+    (defun UDC_SlippageObject:object{Slippage} (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData} slippage-value:decimal))
+    ;;
+    ;;
+    ;;  []C] Functions
+    ;;
+    ;;
+    (defun C_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
+    (defun C_SmartSwap:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal kda-pid:decimal slippage-bounds:object{Slippage}))
+    (defun C_Swap:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal kda-pid:decimal slippage-bounds:object{Slippage}))
+)
+;;
 (module SWPU GOV
     ;;
     (implements OuronetPolicyV1)

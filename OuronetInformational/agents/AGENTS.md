@@ -8,6 +8,7 @@ High-level guidance for automated helpers (including **Kursan**, the Pact agent 
 2. For sovereign modules: **`OuronetInformational/ouronet/MODULE_ARCHITECTURE.md`**.
 3. For the task at hand: matching file under **`OuronetInformational/pact/`**, **`ouronet/conventions/`**, or **`modules/`**.
 4. Day-to-day checklist: **`OuronetInformational/ouronet/conventions/index.md`**.
+5. **Statement order** inside caps/functions: **`OuronetInformational/pact/function-body-order.md`** (natives → **`ref-*`** → home → caps; **`let`** refs before locals).
 
 ## REPL rules
 

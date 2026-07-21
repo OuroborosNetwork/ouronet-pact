@@ -192,6 +192,93 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
+;; TX-FVT-DC-02b — SF sync repair while staked (late SF anchor → C_SyncSemiFungibleAnchors)
+(begin-tx "TX-FVT-DC-02b - SF anchor sync repair while staked")
+(print "")
+(print "=== TX-FVT-DC-02b — C_SyncSemiFungibleAnchors after late SF anchor =========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpsf-id:string "DHCD-98c486052a51")
+        (boost-class-name:string "SfStakeBoost")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "SfStakeAnchor"))
+        (aa-pre:integer (ref-ANK::UR_AA|AnchorsActive dpsf-id))
+        (need-pre:bool (ref-AQP::URC_BenDpsfAnchorsNeedSync beneficiary-id dpsf-id))
+        (split-std:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "standard")))
+        )
+    )
+    (print "--- [TX-FVT-DC-02b · 01 · issue SF anchor on DHCD nonce 1] ---")
+    (print (format "<(need-sync/aa pre)> => \"{}\" / {}" [need-pre aa-pre]))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-std))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-std))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-std))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-std))
+                ]
+            }
+        ]
+    )
+    (print (format "<(AQP-ANK|C_IssueSemiFungibleAnchor SfStakeAnchor)> => \"{}\"" [
+        (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SfStakeAnchor" dpsf-id true boost-class-name 8 50.0 1)
+    ]))
+    (let
+        (
+            (need-mid:bool (ref-AQP::URC_BenDpsfAnchorsNeedSync beneficiary-id dpsf-id))
+            (aa-mid:integer (ref-ANK::UR_AA|AnchorsActive dpsf-id))
+            (anchor-live:bool (ref-ANK::UR_ANK|State anchor-id))
+        )
+        (map print
+            [
+                (format "<(need-sync/aa after-issue)> => \"{}\" / {}" [need-mid aa-mid])
+                (expect (format "<<TX-FVT-DC-02b>> SF anchor live got={}" [anchor-live]) true anchor-live)
+                (expect (format "<<TX-FVT-DC-02b>> anchors-active increased got={} pre={}" [aa-mid aa-pre]) true (> aa-mid aa-pre))
+                (expect (format "<<TX-FVT-DC-02b>> need-sync true got={}" [need-mid]) true need-mid)
+            ]
+        )
+        (print "--- [TX-FVT-DC-02b · 02 · C_SyncSemiFungibleAnchors] ---")
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print (format "<(AQP-POOL|C_SyncSemiFungibleAnchors)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_SyncSemiFungibleAnchors patron beneficiary-id dpsf-id)
+        ]))
+        (let
+            (
+                (need-post:bool (ref-AQP::URC_BenDpsfAnchorsNeedSync beneficiary-id dpsf-id))
+                (sync-count:integer (ref-AQP::UR_AQP|BenDpsfLastAnkSyncCount beneficiary-id dpsf-id))
+                (aa-now:integer (ref-ANK::UR_AA|AnchorsActive dpsf-id))
+            )
+            (map print
+                [
+                    (format "<(need-sync/sync-count/aa after-sync)> => \"{}\" / {} / {}" [need-post sync-count aa-now])
+                    (expect (format "<<TX-FVT-DC-02b>> need-sync false got={}" [need-post]) false need-post)
+                    (expect (format "<<TX-FVT-DC-02b>> sync-count==aa got={} expected={}" [sync-count aa-now]) aa-now sync-count)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-DC-02b ======================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
 (begin-tx "TX-FVT-DC-03 - C_UnstakeSemiFungibleCollectable round-trip")
 (print "")
 (print "=== TX-FVT-DC-03 — C_UnstakeSemiFungibleCollectable ==========================")

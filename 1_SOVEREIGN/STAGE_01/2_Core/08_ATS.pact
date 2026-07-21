@@ -1,4 +1,228 @@
 ;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface AutostakeV2
+    @doc "AutostakeV2 — same surface as AutostakeV1 with UtilityAtsV2.Awo typing for unstake objects."
+    ;;
+    ;;  SCHEMAS
+    ;;
+    (defschema ATS|RewardTokenSchemaV2
+        token:string
+        nfr:bool
+        resident:decimal
+        unbonding:decimal
+        royalty:decimal
+    )
+    (defschema ATS|Hot
+        mint-time:time
+    )
+    (defschema CoilData
+        primal-input-amount:decimal
+        first-input-amount:decimal
+        royalty-fee:decimal
+        last-input-amount:decimal
+        hibernation-fee:decimal
+        rbt-amount:decimal
+        rbt-id:string
+    )
+    ;;
+    ;;  [UC]
+    ;;
+    (defun URU_UpgradeAtspairToV2 (atspairs:[string]))
+    (defun UC_AtspairAccount:string (atspair:string account:string))
+    ;;
+    ;;  [UR]
+    ;;
+    (defun UR_P-KEYS:[string] ())
+    (defun UR_KEYS:[string] ())
+    ;;
+    ;;  [UR]
+    ;;
+    ;;  [0    ATS|Pairs:{ATS|PropertiesSchema}
+    (defun UR_OwnerKonto:string (atspair:string))
+    (defun UR_CanUpgrade:bool (atspair:string))
+    (defun UR_CanChangeOwner:bool (atspair:string))
+    (defun UR_Syphoning:bool (atspair:string))
+    (defun UR_Hibernate:bool (atspair:string))
+    (defun UR_IndexName:string (atspair:string))
+    (defun UR_IndexDecimals:integer (atspair:string))
+    (defun UR_Royalty:decimal (atspair:string))
+    (defun UR_Syphon:decimal (atspair:string))
+        ;;
+    (defun UR_PeakHibernatePromile:decimal (atspair:string))
+    (defun UR_HibernateDecay:decimal (atspair:string))
+        ;;
+    (defun UR_Lock:bool (atspair:string))
+    (defun UR_Unlocks:integer (atspair:string))
+        ;;
+    (defun UR_RewardTokens:[object{ATS|RewardTokenSchemaV2}] (atspair:string))
+    (defun UR_RewardTokenList:[string] (atspair:string))
+    (defun UR_RewardTokenNFR:[bool] (atspair:string))
+    (defun UR_RewardTokenRUR:[decimal] (atspair:string rur:integer))
+    (defun UR_SingleRewardTokenNFR:bool (atspair:string rt:string))
+    (defun UR_SingleRewardTokenRUR:decimal (atspair:string rt:string rur:integer))
+        ;;
+    (defun UR_ColdRewardBearingToken:string (atspair:string))
+    (defun UR_ColdNativeFeeRedirection:bool (atspair:string))
+    (defun UR_ColdRecoveryPositions:integer (atspair:string))
+    (defun UR_ColdRecoveryFeeThresholds:[decimal] (atspair:string))
+    (defun UR_ColdRecoveryFeeTable:[[decimal]] (atspair:string))
+    (defun UR_ColdRecoveryFeeRedirection:bool (atspair:string))
+    (defun UR_ColdRecoveryDuration:[integer] (atspair:string))
+    (defun UR_EliteMode:bool (atspair:string))
+        ;;
+    (defun UR_HotRewardBearingToken:string (atspair:string))
+    (defun UR_HotRecoveryStartingFeePromile:decimal (atspair:string))
+    (defun UR_HotRecoveryDecayPeriod:integer (atspair:string))
+    (defun UR_HotRecoveryFeeRedirection:bool (atspair:string))
+        ;;
+    (defun UR_DirectRecoveryFee:decimal (atspair:string))
+        ;;
+    (defun UR_ToggleColdRecovery:bool (atspair:string))
+    (defun UR_ToggleHotRecovery:bool (atspair:string))
+    (defun UR_ToggleDirectRecovery:bool (atspair:string))
+    ;;
+    (defun UR_RtPrecisions:[integer] (atspair:string))
+    (defun UR_P0:[object{UtilityAtsV2.Awo}] (atspair:string account:string))
+    (defun UR_P1-7:object{UtilityAtsV2.Awo} (atspair:string account:string position:integer))
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_Index (atspair:string))
+    (defun URC_ResidentSum:decimal (atspair:string))
+    (defun URC_PairRBTSupply:decimal (atspair:string))
+    (defun URC_RBT:decimal (atspair:string rt:string rt-amount:decimal))
+    (defun URC_RTSplitAmounts:[decimal] (atspair:string rbt-amount:decimal))
+    (defun URC_MaxSyphon:[decimal] (atspair:string))
+        ;;
+    (defun URC_RewardTokenPosition:integer (atspair:string reward-token:string))
+        ;;
+    (defun URC_AccountUnbondingBalance:decimal (atspair:string account:string reward-token:string))
+    (defun URC_CullValue:[decimal] (atspair:string input:object{UtilityAtsV2.Awo}))
+    (defun URC_WhichPosition:integer (atspair:string c-rbt-amount:decimal account:string))
+    (defun URC_ColdRecoveryFee (atspair:string c-rbt-amount:decimal input-position:integer))
+    (defun URC_CullColdRecoveryTime:time (atspair:string account:string))
+    (defun URC_IzPresentHotRBT:bool (atspair:string))
+        ;;
+    (defun URC_RewardBearingTokenAmounts:object{CoilData} (ats:string rt:string amount:decimal))
+    (defun URC_RewardBearingTokenAmountsWithHibernation:object{CoilData} (ats:string rt:string amount:decimal hibernation-dayz:integer))
+    ;;
+    ;;  [URD]
+    ;;
+    (defun URD_HeldAutostakePairs:[string] (account:string))
+    (defun URD_ExistingAutostakePairs:[string] (ats:string))
+    (defun URD_OwnedAutostakePairs:[string] (account:string))
+    ;;
+    ;;  [UEV]
+    ;;
+    (defun UEV_id (atspair:string))
+    (defun UEV_CanUpgradeON (atspair:string))
+    (defun UEV_CanChangeOwnerON (atspair:string))
+    (defun UEV_RewardTokenExistance (atspair:string reward-token:string existance:bool))
+    (defun UEV_RewardBearingTokenExistance (atspair:string reward-bearing-token:string existance:bool cold-or-hot:bool))
+    (defun UEV_ParameterLockState (atspair:string state:bool))
+    (defun UEV_EliteState (atspair:string state:bool))
+    (defun UEV_ColdRecoveryState (atspair:string state:bool))
+    (defun UEV_HotRecoveryState (atspair:string state:bool))
+    (defun UEV_DirectRecoveryState (atspair:string state:bool))
+    (defun UEV_IssueData (atspair:string index-decimals:integer reward-token:string reward-bearing-token:string))
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_MakeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string tm:time))
+    (defun UDC_MakeZeroUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string))
+    (defun UDC_MakeNegativeUnstakeObject:object{UtilityAtsV2.Awo} (atspair:string))
+    (defun UDC_ComposePrimaryRewardToken:object{ATS|RewardTokenSchemaV2} (token:string nfr:bool))
+    (defun UDC_RT:object{ATS|RewardTokenSchemaV2} (a:string b:bool c:decimal d:decimal e:decimal))
+    (defun UDC_CoilData:object{CoilData} (a:decimal b:decimal c:decimal d:decimal e:decimal f:decimal g:string))
+    ;;
+    ;;  [CAP]
+    ;;
+    (defun CAP_Owner (id:string))
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_HOT-RBT|UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun C_HOT-RBT|UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun C_HOT-RBT|Repurpose:object{IgnisCollectorV1.OutputCumulator} (hot-rbt:string nonce:integer repurpose-to:string))
+        ;;
+    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
+        (
+            patron:string
+            account:string
+            atspair:[string]
+            index-decimals:[integer]
+            reward-token:[string]
+            rt-nfr:[bool]
+            reward-bearing-token:[string]
+            rbt-nfr:[bool]
+        )
+    )
+    (defun C_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (atspair:string new-owner:string))
+    (defun C_Control:object{IgnisCollectorV1.OutputCumulator} (atspair:string can-change-owner:bool syphoning:bool hibernate:bool))
+    (defun C_UpdateRoyalty:object{IgnisCollectorV1.OutputCumulator} (atspair:string royalty:decimal))
+    (defun C_UpdateSyphon:object{IgnisCollectorV1.OutputCumulator} (atspair:string syphon:decimal))
+    (defun C_SetHibernationFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string peak:decimal decay:decimal))
+        ;;
+    (defun C_ToggleParameterLock:object{IgnisCollectorV1.OutputCumulator} (patron:string atspair:string toggle:bool))
+    (defun C_AddSecondary:object{IgnisCollectorV1.OutputCumulator} (atspair:string reward-token:string rt-nfr:bool))
+        ;;
+    (defun C_ControlColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string c-nfr:bool c-fr:bool))
+    (defun C_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
+    (defun C_SetColdRecoveryDuration:object{IgnisCollectorV1.OutputCumulator} (atspair:string soft-or-hard:bool base:integer growth:integer))
+    (defun C_ToggleElite:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_SwitchColdRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
+        ;;
+    (defun C_AddHotRBT:object{IgnisCollectorV1.OutputCumulator} (atspair:string hot-rbt:string))
+    (defun C_ControlHotRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string h-fr:bool))
+    (defun C_SetHotRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string promile:decimal decay:integer))
+    (defun C_SwitchHotRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
+        ;;
+    (defun C_SetDirectRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string promile:decimal))
+    (defun C_SwitchDirectRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
+    ;;
+    ;;  [X]
+    ;;
+    (defun XE_RemoveSecondary (atspair:string reward-token:string))
+    (defun XE_UpdateRUR (atspair:string reward-token:string rur:integer direction:bool amount:decimal))
+    (defun XE_SpawnAutostakeAccount (atspair:string account:string))
+    (defun XE_ReshapeUnstakeAccount (atspair:string account:string rp:integer))
+    (defun XE_UpP0 (atspair:string account:string obj:[object{UtilityAtsV2.Awo}]))
+    (defun XE_UpP1 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP2 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP3 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP4 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP5 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP6 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    (defun XE_UpP7 (atspair:string account:string obj:object{UtilityAtsV2.Awo}))
+    ;;
+)
+;;
+(interface AutostakeComputerV1
+    (defschema CanCoil
+        can-coil:bool
+        where-coil:[string]
+    )
+    (defschema CanConstrict
+        can-constrict:bool
+        where-constrict:[string]
+    )
+    (defschema CanCurl
+        can-curl:bool
+        where-curl:[[string]]
+    )
+    (defschema CanBrumate
+        can-brumate:bool
+        where-brumate:[[string]]
+    )
+    ;;
+    (defun UC_CanCoil:object{CanCoil} (dptf:string))
+    (defun UC_CanConstrict:object{CanConstrict} (dptf:string))
+    (defun UC_CanCurl:object{CanCurl} (dptf:string))
+    (defun UC_CanBrumate:object{CanBrumate} (dptf:string))
+)
+;;
 (module ATS GOV
     ;;
     (implements OuronetPolicyV1)

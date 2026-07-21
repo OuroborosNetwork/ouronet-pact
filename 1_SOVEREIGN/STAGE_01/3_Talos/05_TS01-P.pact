@@ -1,3 +1,27 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
+;;
+(interface TalosStageOne_ClientPactsV3
+    @doc "Exposes Ouronet Stage One Client Multistep Functions \
+        \ Currently including functions from SWP Module. \
+        \ V3: pooled issue caps use SwapperV3.PoolTokens (interface bump per versioning rule)."
+
+    ;;
+    ;;
+    ;;SWP (Swap-Pair) Pact Initiating Functions
+    ;;Issue
+    (defun SWP|C_IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun SWP|C_IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun SWP|C_IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
+    ;;
+    (defun SWP|C_AddStandardLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddIcedLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddGlacialLiquidity (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddFrozenLiquidity (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal))
+    (defun SWP|C_AddSleepingLiquidity (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
+    ;;
+)
+;;
 (module TS01-CP GOV
     @doc "TALOS Administrator and Client Module for Stage 1"
     ;;

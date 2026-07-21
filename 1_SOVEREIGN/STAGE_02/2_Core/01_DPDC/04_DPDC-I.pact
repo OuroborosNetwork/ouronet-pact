@@ -1,3 +1,25 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+(interface DpdcIssueV1
+    @doc "Exposes Collectables Issue Functions"
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_DeployAccountSFT (account:string id:string))
+    (defun C_DeployAccountNFT (account:string id:string))
+    (defun C_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator}
+        (
+            patron:string son:bool
+            owner-account:string creator-account:string collection-name:string collection-ticker:string
+            can-upgrade:bool can-change-owner:bool can-change-creator:bool can-add-special-role:bool
+            can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
+            iz-special:bool
+        )
+    )
+    ;;
+)
+;;
 (module DPDC-I GOV
     ;;
     (implements OuronetPolicyV1)

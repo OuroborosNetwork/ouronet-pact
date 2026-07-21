@@ -1,0 +1,1091 @@
+;; REPL/Stage_01/[6.10]_PYTHIA-flush-gas-probe.repl — measure max batch size under ~2M gas
+;;
+;; Strategy:
+;; 1) Load the canonical Stage01 environment + PYTHIA ledger V2.
+;; 2) Insert N distinct open calendar-day rows in one A_Flush call.
+;; 3) Record (env-gas) used by each probe tx.
+;; 4) Pick the largest N where gas-used <= 2_000_000.
+;;
+
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[6.10]_PYTHIA-flush-gas-probe.repl")
+(print "================================================================")
+
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "[6.10]_PYTHIA.repl")
+
+(print "")
+(print "=== Gas probe: A_Flush insert-path, N=open days, env-gaslimit=10M ===")
+
+(defun mk-probe-entries
+    (start:integer
+        n:integer
+        petitions:integer
+        pondus:decimal
+        transactions:integer
+        gas-reserved:integer
+        failed-transactions:integer
+        wasted-gas-reserved:integer
+    )
+    (map
+        (lambda (d:integer)
+            {
+                "day": d
+                , "iz-complete": false
+                , "petitions": petitions
+                , "pondus": pondus
+                , "transactions": transactions
+                , "gas-reserved": gas-reserved
+                , "failed-transactions": failed-transactions
+                , "wasted-gas-reserved": wasted-gas-reserved
+            }
+        )
+        (enumerate start (+ start (- n 1)))
+    )
+)
+
+(defun mk-probe-entries-ic
+    (start:integer
+        n:integer
+        iz-complete:bool
+        petitions:integer
+        pondus:decimal
+        transactions:integer
+        gas-reserved:integer
+        failed-transactions:integer
+        wasted-gas-reserved:integer
+    )
+    (map
+        (lambda (d:integer)
+            {
+                "day": d
+                , "iz-complete": iz-complete
+                , "petitions": petitions
+                , "pondus": pondus
+                , "transactions": transactions
+                , "gas-reserved": gas-reserved
+                , "failed-transactions": failed-transactions
+                , "wasted-gas-reserved": wasted-gas-reserved
+            }
+        )
+        (enumerate start (+ start (- n 1)))
+    )
+)
+
+;; Sweep N around the current tuned cap.
+;; Values are explicit so we can eyeball the crossing point in output.
+
+(defconst PROBE-GAS-LIMIT:integer 2000000)
+
+;; TX-PG-00
+(begin-tx "TX-PG-00 A_Flush inserts N=20 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 20)
+        (start:integer 100000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-00> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-01
+(begin-tx "TX-PG-01 A_Flush inserts N=21 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 21)
+        (start:integer 101000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-01> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-02
+(begin-tx "TX-PG-02 A_Flush inserts N=22 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 22)
+        (start:integer 102000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-02> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-03
+(begin-tx "TX-PG-03 A_Flush inserts N=23 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 23)
+        (start:integer 103000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-03> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-04
+(begin-tx "TX-PG-04 A_Flush inserts N=24 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 24)
+        (start:integer 104000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-04> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-05
+(begin-tx "TX-PG-05 A_Flush inserts N=25 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 25)
+        (start:integer 105000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-05> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-06
+(begin-tx "TX-PG-06 A_Flush inserts N=26 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 26)
+        (start:integer 106000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-06> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-07
+(begin-tx "TX-PG-07 A_Flush inserts N=27 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 27)
+        (start:integer 107000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-07> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-08
+(begin-tx "TX-PG-08 A_Flush inserts N=28 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 28)
+        (start:integer 108000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-08> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-09
+(begin-tx "TX-PG-09 A_Flush inserts N=29 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 29)
+        (start:integer 109000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-09> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-10
+(begin-tx "TX-PG-10 A_Flush inserts N=30 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 30)
+        (start:integer 110000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-10> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-11
+(begin-tx "TX-PG-11 A_Flush inserts N=31 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 31)
+        (start:integer 111000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-11> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-12
+(begin-tx "TX-PG-12 A_Flush inserts N=32 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 32)
+        (start:integer 112000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-12> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-13
+(begin-tx "TX-PG-13 A_Flush inserts N=33 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 33)
+        (start:integer 113000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-13> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-14
+(begin-tx "TX-PG-14 A_Flush inserts N=34 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 34)
+        (start:integer 114000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-14> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-15
+(begin-tx "TX-PG-15 A_Flush inserts N=35 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 35)
+        (start:integer 115000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-15> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-16
+(begin-tx "TX-PG-16 A_Flush inserts N=36 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 36)
+        (start:integer 116000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-16> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-17
+(begin-tx "TX-PG-17 A_Flush inserts N=38 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 38)
+        (start:integer 118000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-17> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-18
+(begin-tx "TX-PG-18 A_Flush inserts N=40 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 40)
+        (start:integer 120000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-18> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-19
+(begin-tx "TX-PG-19 A_Flush inserts N=42 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 42)
+        (start:integer 122000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-19> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-20
+(begin-tx "TX-PG-20 A_Flush inserts N=44 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 44)
+        (start:integer 124000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-20> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-21
+(begin-tx "TX-PG-21 A_Flush inserts N=46 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 46)
+        (start:integer 126000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-21> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-22
+(begin-tx "TX-PG-22 A_Flush inserts N=48 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 48)
+        (start:integer 128000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-22> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-23
+(begin-tx "TX-PG-23 A_Flush inserts N=50 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 50)
+        (start:integer 130000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-23> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-24
+(begin-tx "TX-PG-24 A_Flush inserts N=52 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 52)
+        (start:integer 132000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-24> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-25
+(begin-tx "TX-PG-25 A_Flush inserts N=54 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 54)
+        (start:integer 134000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-25> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-26
+(begin-tx "TX-PG-26 A_Flush inserts N=56 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 56)
+        (start:integer 136000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-26> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-27
+(begin-tx "TX-PG-27 A_Flush inserts N=58 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 58)
+        (start:integer 138000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-27> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-28
+(begin-tx "TX-PG-28 A_Flush inserts N=60 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 60)
+        (start:integer 140000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-28> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-29
+(begin-tx "TX-PG-29 A_Flush inserts N=1000 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 1000)
+        (start:integer 1000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-29> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-30
+(begin-tx "TX-PG-30 A_Flush inserts N=5000 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 5000)
+        (start:integer 2000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-30> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-31
+(begin-tx "TX-PG-31 A_Flush inserts N=10000 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 10000)
+        (start:integer 3000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-31> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-32
+(begin-tx "TX-PG-32 A_Flush inserts N=15000 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 15000)
+        (start:integer 4000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-32> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-33
+(begin-tx "TX-PG-33 A_Flush inserts N=17000 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 17000)
+        (start:integer 5000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-33> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-34
+(begin-tx "TX-PG-34 A_Flush inserts N=18000 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 18000)
+        (start:integer 6000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-34> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-35
+(begin-tx "TX-PG-35 A_Flush inserts N=19000 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 19000)
+        (start:integer 7000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-35> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-36
+(begin-tx "TX-PG-36 A_Flush inserts N=20000 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 20000)
+        (start:integer 8000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-36> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-37
+(begin-tx "TX-PG-37 A_Flush inserts N=19400 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 19400)
+        (start:integer 9000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-37> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-38
+(begin-tx "TX-PG-38 A_Flush inserts N=19441 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 19441)
+        (start:integer 9100000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-38> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-39
+(begin-tx "TX-PG-39 A_Flush inserts N=19450 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 19450)
+        (start:integer 9200000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-39> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-40
+(begin-tx "TX-PG-40 A_Flush inserts N=19500 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 19500)
+        (start:integer 9300000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-40> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-PG-41
+(begin-tx "TX-PG-41 A_Flush inserts N=19442 open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 19442)
+        (start:integer 9400000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-PG-41> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-UPD-01 update existing open days (N=10000)
+(begin-tx "TX-UPD-01 A_Flush update N=10000 open days (existing)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 10000)
+        (start:integer 3000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-UPD-01> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-UPD-02 update existing open days (N=15000)
+(begin-tx "TX-UPD-02 A_Flush update N=15000 open days (existing)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 15000)
+        (start:integer 4000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-UPD-02> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-UPD-04 update existing open days (N=10834)
+(begin-tx "TX-UPD-04 A_Flush update N=10834 open days (existing)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 10834)
+        (start:integer 4000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-UPD-04> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-UPD-05 update existing open days (N=10835)
+(begin-tx "TX-UPD-05 A_Flush update N=10835 open days (existing)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 10835)
+        (start:integer 4000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-UPD-05> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-UPD-03 update existing open days (N=19441)
+(begin-tx "TX-UPD-03 A_Flush update N=19441 open days (existing)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 19441)
+        (start:integer 9100000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries start n 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-UPD-03> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+;; TX-UPD-SEAL-01 seal existing open days (N=9234, iz-complete=true)
+(begin-tx "TX-UPD-SEAL-01 A_Flush seal N=9234 existing open days")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV6} TS01-C4)
+        (n:integer 9234)
+        (start:integer 4000000)
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]
+            (mk-probe-entries-ic start n true 1 1.234 1 1 0 0)
+        )
+        (msg:string (ref-TS01-C4::PYTHIA|A_Flush entries))
+        (gas-used:integer (env-gas))
+    )
+    (print (format "<TX-UPD-SEAL-01> n={} gas-used={} <=2M? {} => {}"
+        [n gas-used (<= gas-used PROBE-GAS-LIMIT) msg]))
+)
+(commit-tx)
+
+(print "=== [6.10]_PYTHIA-flush-gas-probe complete ==============================")
+

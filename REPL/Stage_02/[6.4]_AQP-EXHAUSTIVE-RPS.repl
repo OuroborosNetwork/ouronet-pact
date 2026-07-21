@@ -112,7 +112,7 @@
             (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
         )
         (print (format "<(C_Collect ANHD Wstoa)> => \"{}\"" [
-            (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id score-id wstoa-id)
+            (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id wstoa-id)
         ]))
         (let
             (
@@ -184,7 +184,7 @@
         )
         (print (format "<(claimable-pre LUMY)> => \"{}\"" [claimable-pre]))
         (print (format "<(C_Collect LUMY Wstoa)> => \"{}\"" [
-            (ref-TS02-C3::AQP-FVT|C_Collect lumy fvt-id score-id wstoa-id)
+            (ref-TS02-C3::AQP-FVT|C_Collect lumy fvt-id 1 score-id wstoa-id)
         ]))
         (let
             (
@@ -259,7 +259,7 @@
                     (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id auryn-id inject-amt)
                 ]))
                 (print (format "<(C_Collect ANHD Auryn snakes)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id snakes-score auryn-id)
+                    (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 snakes-score auryn-id)
                 ]))
                 (let
                     (

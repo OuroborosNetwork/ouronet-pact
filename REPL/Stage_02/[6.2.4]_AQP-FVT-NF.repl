@@ -1,0 +1,239 @@
+;;
+;; REPL/Stage_02/[6.2.4]_AQP-FVT-NF.repl — DPNF stake + C_SyncNonFungibleAnchors (AQP-FAST, no Populate*)
+;; Mirrors TX-FVT-DC-02b / TX-FVT-06: mint 1 DHB via DPNF|C_Create, stake, late NF anchor → sync.
+;; Loaded by REPL/Stage_02/[6.2]_AQP.repl after FVT-DC.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.4]_AQP-FVT-NF.repl")
+(print "================================================================")
+(print "")
+;;
+;; Inline min nonce-data helper (avoids loading full VCTGAS module)
+(begin-tx "TX-FVT-NF-00 - deploy NfSyncProbe helpers")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-enable-repl-natives true)
+(env-sigs
+    [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}]
+)
+(module NfSyncProbe GOV
+    (defcap GOV () true)
+    (defun UC_MinDpnfNonceRow:object{DpdcUdcV1.DPDC|NonceData} (idx:integer)
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (i-asset-type:object{DpdcUdcV1.URI|Type}
+                    (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                )
+                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+            )
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0
+                (format "NfSyncProbe{}" [idx])
+                "nf-sync-probe-dpnf"
+                md i-asset-type zd zd zd
+            )
+        )
+    )
+    (defun UC_DpnfNonceRows:[object{DpdcUdcV1.DPDC|NonceData}] (count:integer)
+        (map UC_MinDpnfNonceRow (enumerate 1 count))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-FVT-NF-01 - mint DHB + NF score/pool/vault + stake")
+(print "")
+(print "=== TX-FVT-NF-01 — Mint DHB probe + class-4 pool stake =====================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (source:string KST.EMMA)
+        (dpnf-id:string "DHB-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "NfSyncScore")
+        (fvt-name:string "NfSyncVault")
+        (pool-name:string "NfSyncPool")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (aqp-class:integer 4)
+        (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    (print "--- [TX-FVT-NF-01 · 01 · issue NF score + class-4 pool + vault] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 50.0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî" 50.0)
+                ]
+            }
+        ]
+    )
+    (print (format "<(AQP-SCR|C_IssueNonFungibleScore)> => \"{}\"" [
+        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
+    ]))
+    (print (format "<(AQP-POOL|C_Issue class=4 DHB)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id aqp-class)
+    ]))
+    (print (format "<(AQP-POOL|C_AddScore)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    ]))
+    (print (format "<(AQP-FVT|REPL_BootstrapVault)> => \"{}\"" [
+        (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    ]))
+    (print "--- [TX-FVT-NF-01 · 02 · DPNF|C_Create + transfer EMMA→ANHD] ---")
+    (print (format "<(DPNF|C_Create 1)> => \"{}\"" [
+        (ref-TS02-C2::DPNF|C_Create patron dpnf-id (NfSyncProbe.UC_DpnfNonceRows 1))
+    ]))
+    (let
+        (
+            (stake-nonce:integer (at pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+        )
+        (print (format "<(DPNF|C_TransferNonces nonce {})> => \"{}\"" [stake-nonce
+            (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+        ]))
+        (print "--- [TX-FVT-NF-01 · 03 · C_StakeNonFungibleCollectable] ---")
+        (print (format "<(AQP-POOL|C_StakeNonFungibleCollectable nonce {})> => \"{}\"" [stake-nonce
+            (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
+        ]))
+        (let
+            (
+                (tracker:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                (deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                (has-stake:bool (ref-AQP::URDC_BenDpnfHasStake beneficiary-id dpnf-id))
+                (anc:integer (ref-AQP::UR_AQP|BenDpnfActiveNonceCount beneficiary-id dpnf-id))
+            )
+            (map print
+                [
+                    (format "<(tracker/deb/has-stake/anc)> => \"{} {} {} {}\"" [tracker deb has-stake anc])
+                    (expect (format "<<TX-FVT-NF-01>> tracker>0 got={}" [tracker]) true (> tracker 0.0))
+                    (expect (format "<<TX-FVT-NF-01>> has-stake got={}" [has-stake]) true has-stake)
+                    (expect (format "<<TX-FVT-NF-01>> active-nonce-count got={} expected=1" [anc]) 1 anc)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-NF-01 =======================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-FVT-NF-02 - late NF anchor + C_SyncNonFungibleAnchors")
+(print "")
+(print "=== TX-FVT-NF-02 — C_SyncNonFungibleAnchors after late NF anchor ============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpnf-id:string "DHB-98c486052a51")
+        (boost-class-name:string "NfSyncBoost")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "NfSyncAnchor"))
+        (aa-pre:integer (ref-ANK::UR_AA|AnchorsActive dpnf-id))
+        (need-pre:bool (ref-AQP::URC_BenDpnfAnchorsNeedSync beneficiary-id dpnf-id))
+        (split-std:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "standard")))
+        )
+    )
+    (print "--- [TX-FVT-NF-02 · 01 · issue NF set-class anchor on DHB class 0] ---")
+    (print (format "<(need-sync/aa pre)> => \"{}\" / {}" [need-pre aa-pre]))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-std))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-std))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-std))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-std))
+                ]
+            }
+        ]
+    )
+    (print (format "<(AQP-ANK|C_IssueNonFungibleSetAnchor NfSyncAnchor)> => \"{}\"" [
+        (ref-TS02-C3::AQP-ANK|C_IssueNonFungibleSetAnchor
+            patron "NfSyncAnchor" dpnf-id true boost-class-name 8 50.0 0)
+    ]))
+    (let
+        (
+            (need-mid:bool (ref-AQP::URC_BenDpnfAnchorsNeedSync beneficiary-id dpnf-id))
+            (aa-mid:integer (ref-ANK::UR_AA|AnchorsActive dpnf-id))
+            (anchor-live:bool (ref-ANK::UR_ANK|State anchor-id))
+        )
+        (map print
+            [
+                (format "<(need-sync/aa after-issue)> => \"{}\" / {}" [need-mid aa-mid])
+                (expect (format "<<TX-FVT-NF-02>> NF anchor live got={}" [anchor-live]) true anchor-live)
+                (expect (format "<<TX-FVT-NF-02>> anchors-active increased got={} pre={}" [aa-mid aa-pre]) true (> aa-mid aa-pre))
+                (expect (format "<<TX-FVT-NF-02>> need-sync true got={}" [need-mid]) true need-mid)
+            ]
+        )
+        (print "--- [TX-FVT-NF-02 · 02 · C_SyncNonFungibleAnchors] ---")
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+        (print (format "<(AQP-POOL|C_SyncNonFungibleAnchors)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_SyncNonFungibleAnchors patron beneficiary-id dpnf-id)
+        ]))
+        (let
+            (
+                (need-post:bool (ref-AQP::URC_BenDpnfAnchorsNeedSync beneficiary-id dpnf-id))
+                (sync-count:integer (ref-AQP::UR_AQP|BenDpnfLastAnkSyncCount beneficiary-id dpnf-id))
+                (aa-now:integer (ref-ANK::UR_AA|AnchorsActive dpnf-id))
+            )
+            (map print
+                [
+                    (format "<(need-sync/sync-count/aa after-sync)> => \"{}\" / {} / {}" [need-post sync-count aa-now])
+                    (expect (format "<<TX-FVT-NF-02>> need-sync false got={}" [need-post]) false need-post)
+                    (expect (format "<<TX-FVT-NF-02>> sync-count==aa got={} expected={}" [sync-count aa-now]) aa-now sync-count)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-NF-02 =======================================================")
+(print "")
+(print "=== END FILE [6.2.4]_AQP-FVT-NF.repl ========================================")
+(print "")

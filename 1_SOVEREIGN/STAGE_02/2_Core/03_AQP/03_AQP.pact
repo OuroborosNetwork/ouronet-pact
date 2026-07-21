@@ -52,6 +52,7 @@
     ;;  [UR] AQP|BenDpsfNonceTotal + AQP|BenDpsfAnkMeta — cross-pool DPSF ANK rollup
     (defun UR_AQP|BenDpsfNonceAmount:integer (beneficiary-id:string dpsf-id:string nonce:integer))
     (defun UR_AQP|BenDpsfLastAnkSyncCount:integer (beneficiary-id:string dpsf-id:string))
+    (defun UR_AQP|BenDpsfActiveNonceCount:integer (beneficiary-id:string dpsf-id:string))
     (defun URD_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string))
     (defun URDC_BenDpsfHasStake:bool (beneficiary-id:string dpsf-id:string))
     (defun URC_BenDpsfAnchorsNeedSync:bool (beneficiary-id:string dpsf-id:string))
@@ -59,6 +60,7 @@
     ;;  [UR] AQP|BenDpnfNonceTotal + AQP|BenDpnfAnkMeta — cross-pool DPNF ANK rollup
     (defun UR_AQP|BenDpnfNonceAmount:integer (beneficiary-id:string dpnf-id:string nonce:integer))
     (defun UR_AQP|BenDpnfLastAnkSyncCount:integer (beneficiary-id:string dpnf-id:string))
+    (defun UR_AQP|BenDpnfActiveNonceCount:integer (beneficiary-id:string dpnf-id:string))
     (defun URD_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string))
     (defun URDC_BenDpnfHasStake:bool (beneficiary-id:string dpnf-id:string))
     (defun URC_BenDpnfAnchorsNeedSync:bool (beneficiary-id:string dpnf-id:string))
@@ -544,8 +546,10 @@
     ;; [11] AQP|T|BenDpsfAnkMeta
     (defschema AQP|BenDpsfAnkMeta
         @doc "Per (beneficiary, dpsf-id) ANK sync metadata. last-ank-sync-count is leg-wide, not per nonce — \
-            \ mirrors AQP|BenDptfTotal for TF. Maintained on stake phase 2.2 / C_SyncDpsfAnchors (planned)."
+            \ mirrors AQP|BenDptfTotal for TF. active-nonce-count is O(1) has-stake for defcaps (no select). \
+            \ Bumped when BenDpsfNonceTotal crosses 0↔positive; preserved on sync stamp."
         last-ank-sync-count:integer                                     ;;[M] ANK AssetAnchors.anchors-active at last sync (0 = never)
+        active-nonce-count:integer                                      ;;[M] Count of BenDpsfNonceTotal rows with amount > 0
         ;;
         ;;Select Keys
         beneficiary-id:string                                           ;;[.]
@@ -556,6 +560,7 @@
     (defschema AQP|BenDpnfAnkMeta
         @doc "Per (beneficiary, dpnf-id) ANK sync metadata — DPNF counterpart of AQP|BenDpsfAnkMeta."
         last-ank-sync-count:integer                                     ;;[M] ANK AssetAnchors.anchors-active at last sync (0 = never)
+        active-nonce-count:integer                                      ;;[M] Count of BenDpnfNonceTotal rows with amount > 0
         ;;
         ;;Select Keys
         beneficiary-id:string                                           ;;[.]
@@ -719,7 +724,6 @@
                 (fold (and) true [(> l-n 0) (= l-n l-a) stake-admission-ok class-ok dpof-ok whole-nonce-ok tracker-ok])
                 "Invalid OF pool custody: pool class/dpof-id, whole nonces/amounts, stake admission, or insufficient tracker balance"
             )
-            (UEV_StakeOrtoFungibleDpofLeg dpof-id)
             (if direction
                 (let
                     (
@@ -736,6 +740,7 @@
                 )
                 true
             )
+            (UEV_StakeOrtoFungibleDpofLeg dpof-id)
             (if direction
                 (UEV_StakeBeneficiaryAccount beneficiary-id)
                 true
@@ -787,7 +792,6 @@
                 (fold (and) true [(> l-n 0) (= l-n l-a) stake-admission-ok class-ok collectable-ok tracker-ok rollup-ok])
                 "Invalid collectable pool custody: pool class/collectable-id, stake admission, or insufficient tracker balance"
             )
-            (UEV_StakeCollectableLeg collectable-id son)
             (if direction
                 (let
                     (
@@ -797,6 +801,7 @@
                 )
                 true
             )
+            (UEV_StakeCollectableLeg collectable-id son)
             (if direction
                 (UEV_StakeBeneficiaryAccount beneficiary-id)
                 true
@@ -989,16 +994,18 @@
         ,"nonce"            : nonce}
     )
     (defun UDC_AQP|BenDpsfAnkMeta:object{AQP|BenDpsfAnkMeta}
-        (sync-count:integer beneficiary-id:string dpsf-id:string)
-        @doc "Default DPSF ANK meta row (never synced)."
+        (sync-count:integer active-nonce-count:integer beneficiary-id:string dpsf-id:string)
+        @doc "Default DPSF ANK meta row (never synced, no active nonces)."
         {"last-ank-sync-count"  : sync-count
+        ,"active-nonce-count"   : active-nonce-count
         ,"beneficiary-id"       : beneficiary-id
         ,"dpsf-id"              : dpsf-id}
     )
     (defun UDC_AQP|BenDpnfAnkMeta:object{AQP|BenDpnfAnkMeta}
-        (sync-count:integer beneficiary-id:string dpnf-id:string)
-        @doc "Default DPNF ANK meta row (never synced)."
+        (sync-count:integer active-nonce-count:integer beneficiary-id:string dpnf-id:string)
+        @doc "Default DPNF ANK meta row (never synced, no active nonces)."
         {"last-ank-sync-count"  : sync-count
+        ,"active-nonce-count"   : active-nonce-count
         ,"beneficiary-id"       : beneficiary-id
         ,"dpnf-id"              : dpnf-id}
     )
@@ -1244,10 +1251,11 @@
     )
     (defun WU_BenDptfTotal|LastAnkSyncCount:string
         (beneficiary-id:string dptf-id:string row:object{AQP|BenDptfTotal} sync-count:integer)
-        @doc "Update last-ank-sync-count on AQP|T|BenDptfTotal; preserve other fields."
+        @doc "Update last-ank-sync-count on AQP|T|BenDptfTotal; preserve other fields. \
+            \ <row> kept for call-site symmetry with collectable meta WU_*; write uses update (not object-+ merge)."
         (require-capability (SECURE))
-        (write AQP|T|BenDptfTotal (UCK_BenDptfTotal beneficiary-id dptf-id)
-            (+ row {"last-ank-sync-count": sync-count})
+        (update AQP|T|BenDptfTotal (UCK_BenDptfTotal beneficiary-id dptf-id)
+            {"last-ank-sync-count": sync-count}
         )
     )
     ;; WU_BenDptfTotal|TotalBalance — not used: mutates via WW_BenDptfTotal (full row).
@@ -1281,28 +1289,38 @@
     ;; WU_BenDpnfNonceTotal|Nonce — select key; WU not needed.
     ;;
     ;; [11] AQP|T|BenDpsfAnkMeta  (AQP|BenDpsfAnkMeta)
-    ;; WI_BenDpsfAnkMeta — not used: first row touch is WU_BenDpsfAnkMeta|LastAnkSyncCount (upsert path).
-    ;; WW_BenDpsfAnkMeta — not used: sync stamp mutates only last-ank-sync-count.
+    ;; WI_BenDpsfAnkMeta — not used: first row touch is WW_BenDpsfAnkMeta (upsert path).
+    (defun WW_BenDpsfAnkMeta:string
+        (beneficiary-id:string dpsf-id:string row:object{AQP|BenDpsfAnkMeta})
+        @doc "Upsert full AQP|T|BenDpsfAnkMeta row for (beneficiary, dpsf-id)."
+        (require-capability (SECURE))
+        (write AQP|T|BenDpsfAnkMeta (UCK_BenDpsfAnkMeta beneficiary-id dpsf-id) row)
+    )
     (defun WU_BenDpsfAnkMeta|LastAnkSyncCount:string
         (beneficiary-id:string dpsf-id:string row:object{AQP|BenDpsfAnkMeta} sync-count:integer)
-        @doc "Update last-ank-sync-count on AQP|T|BenDpsfAnkMeta; preserve other fields."
+        @doc "Update last-ank-sync-count; preserve active-nonce-count from <row>."
         (require-capability (SECURE))
         (write AQP|T|BenDpsfAnkMeta (UCK_BenDpsfAnkMeta beneficiary-id dpsf-id)
-            (+ row {"last-ank-sync-count": sync-count})
+            (UDC_AQP|BenDpsfAnkMeta sync-count (at "active-nonce-count" row) beneficiary-id dpsf-id)
         )
     )
     ;; WU_BenDpsfAnkMeta|BeneficiaryId — select key; WU not needed.
     ;; WU_BenDpsfAnkMeta|DpsfId — select key; WU not needed.
     ;;
     ;; [12] AQP|T|BenDpnfAnkMeta  (AQP|BenDpnfAnkMeta)
-    ;; WI_BenDpnfAnkMeta — not used: first row touch is WU_BenDpnfAnkMeta|LastAnkSyncCount (upsert path).
-    ;; WW_BenDpnfAnkMeta — not used: sync stamp mutates only last-ank-sync-count.
+    ;; WI_BenDpnfAnkMeta — not used: first row touch is WW_BenDpnfAnkMeta (upsert path).
+    (defun WW_BenDpnfAnkMeta:string
+        (beneficiary-id:string dpnf-id:string row:object{AQP|BenDpnfAnkMeta})
+        @doc "Upsert full AQP|T|BenDpnfAnkMeta row for (beneficiary, dpnf-id)."
+        (require-capability (SECURE))
+        (write AQP|T|BenDpnfAnkMeta (UCK_BenDpnfAnkMeta beneficiary-id dpnf-id) row)
+    )
     (defun WU_BenDpnfAnkMeta|LastAnkSyncCount:string
         (beneficiary-id:string dpnf-id:string row:object{AQP|BenDpnfAnkMeta} sync-count:integer)
-        @doc "Update last-ank-sync-count on AQP|T|BenDpnfAnkMeta; preserve other fields."
+        @doc "Update last-ank-sync-count; preserve active-nonce-count from <row>."
         (require-capability (SECURE))
         (write AQP|T|BenDpnfAnkMeta (UCK_BenDpnfAnkMeta beneficiary-id dpnf-id)
-            (+ row {"last-ank-sync-count": sync-count})
+            (UDC_AQP|BenDpnfAnkMeta sync-count (at "active-nonce-count" row) beneficiary-id dpnf-id)
         )
     )
     ;; WU_BenDpnfAnkMeta|BeneficiaryId — select key; WU not needed.
@@ -1459,19 +1477,24 @@
     )
     (defun UR_AQP|BenDpsfAnkMeta:object{AQP|BenDpsfAnkMeta}
         (beneficiary-id:string dpsf-id:string)
-        @doc "Reads ANK sync metadata for one DPSF leg; absent row reads as never synced."
+        @doc "Reads ANK sync metadata for one DPSF leg; absent row reads as never synced / no active nonces."
         (with-default-read AQP|T|BenDpsfAnkMeta
             (UCK_BenDpsfAnkMeta beneficiary-id dpsf-id)
-            (UDC_AQP|BenDpsfAnkMeta 0 beneficiary-id dpsf-id)
+            (UDC_AQP|BenDpsfAnkMeta 0 0 beneficiary-id dpsf-id)
             {"last-ank-sync-count"  := sc
+            ,"active-nonce-count"   := anc
             ,"beneficiary-id"       := bid
             ,"dpsf-id"              := did}
-            (UDC_AQP|BenDpsfAnkMeta sc bid did)
+            (UDC_AQP|BenDpsfAnkMeta sc anc bid did)
         )
     )
     (defun UR_AQP|BenDpsfLastAnkSyncCount:integer (beneficiary-id:string dpsf-id:string)
         @doc "ANK anchors-active count recorded at last DPSF anchor sync for (beneficiary, dpsf-id)."
         (at "last-ank-sync-count" (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
+    )
+    (defun UR_AQP|BenDpsfActiveNonceCount:integer (beneficiary-id:string dpsf-id:string)
+        @doc "O(1) count of positive BenDpsfNonceTotal rows — defcap-safe has-stake signal."
+        (at "active-nonce-count" (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
     )
     (defun URD_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string)
         @doc "Nonce × amount objects for (beneficiary, dpsf-id) where rollup amount > 0 — DPSF resync inventory."
@@ -1493,8 +1516,8 @@
         )
     )
     (defun URDC_BenDpsfHasStake:bool (beneficiary-id:string dpsf-id:string)
-        @doc "True when beneficiary has any positive DPSF per-nonce rollup under dpsf-id."
-        (> (length (URD_AQP|BenDpsfActiveNonceSupplies beneficiary-id dpsf-id)) 0)
+        @doc "True when beneficiary has any positive DPSF per-nonce rollup under dpsf-id (O(1) meta counter)."
+        (> (UR_AQP|BenDpsfActiveNonceCount beneficiary-id dpsf-id) 0)
     )
     (defun URC_BenDpsfAnchorsNeedSync:bool (beneficiary-id:string dpsf-id:string)
         @doc "True when beneficiary has active DPSF stake and ANK has more live anchors on dpsf-id than at last sync."
@@ -1529,19 +1552,24 @@
     )
     (defun UR_AQP|BenDpnfAnkMeta:object{AQP|BenDpnfAnkMeta}
         (beneficiary-id:string dpnf-id:string)
-        @doc "Reads ANK sync metadata for one DPNF leg; absent row reads as never synced."
+        @doc "Reads ANK sync metadata for one DPNF leg; absent row reads as never synced / no active nonces."
         (with-default-read AQP|T|BenDpnfAnkMeta
             (UCK_BenDpnfAnkMeta beneficiary-id dpnf-id)
-            (UDC_AQP|BenDpnfAnkMeta 0 beneficiary-id dpnf-id)
+            (UDC_AQP|BenDpnfAnkMeta 0 0 beneficiary-id dpnf-id)
             {"last-ank-sync-count"  := sc
+            ,"active-nonce-count"   := anc
             ,"beneficiary-id"       := bid
             ,"dpnf-id"              := nid}
-            (UDC_AQP|BenDpnfAnkMeta sc bid nid)
+            (UDC_AQP|BenDpnfAnkMeta sc anc bid nid)
         )
     )
     (defun UR_AQP|BenDpnfLastAnkSyncCount:integer (beneficiary-id:string dpnf-id:string)
         @doc "ANK anchors-active count recorded at last DPNF anchor sync for (beneficiary, dpnf-id)."
         (at "last-ank-sync-count" (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
+    )
+    (defun UR_AQP|BenDpnfActiveNonceCount:integer (beneficiary-id:string dpnf-id:string)
+        @doc "O(1) count of positive BenDpnfNonceTotal rows — defcap-safe has-stake signal."
+        (at "active-nonce-count" (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
     )
     (defun URD_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string)
         @doc "Nonce × amount objects for (beneficiary, dpnf-id) where rollup amount > 0 — DPNF resync inventory."
@@ -1563,8 +1591,8 @@
         )
     )
     (defun URDC_BenDpnfHasStake:bool (beneficiary-id:string dpnf-id:string)
-        @doc "True when beneficiary has any positive DPNF per-nonce rollup under dpnf-id."
-        (> (length (URD_AQP|BenDpnfActiveNonceSupplies beneficiary-id dpnf-id)) 0)
+        @doc "True when beneficiary has any positive DPNF per-nonce rollup under dpnf-id (O(1) meta counter)."
+        (> (UR_AQP|BenDpnfActiveNonceCount beneficiary-id dpnf-id) 0)
     )
     (defun URC_BenDpnfAnchorsNeedSync:bool (beneficiary-id:string dpnf-id:string)
         @doc "True when beneficiary has active DPNF stake and ANK has more live anchors on dpnf-id than at last sync."
@@ -2066,8 +2094,10 @@
                     (if (= c 0)
                         (and
                             (= p2 "Z|")
-                            (URC_DptfIsLpNomenclature asset-id)
-                            (= (ref-DPOF::UR_Sleeping dpof-id) asset-id)
+                            (and
+                                (URC_DptfIsLpNomenclature asset-id)
+                                (= (ref-DPOF::UR_Sleeping dpof-id) asset-id)
+                            )
                         )
                         false
                     )
@@ -2315,16 +2345,6 @@
                     )
                 )
             )
-            (if (or (= aqp-class 0) (= aqp-class 1))
-                (ref-DPTF::UEV_id asset-id)
-                (if (= aqp-class 2)
-                    (ref-DPOF::UEV_id asset-id)
-                    (if (= aqp-class 3)
-                        (ref-DPDC::UEV_id asset-id true)
-                        (ref-DPDC::UEV_id asset-id false)
-                    )
-                )
-            )
             (enforce
                 (fold (and) true
                     [
@@ -2376,6 +2396,16 @@
                     ]
                 )
                 "Invalid pool issue aqp-class or asset-id"
+            )
+            (if (or (= aqp-class 0) (= aqp-class 1))
+                (ref-DPTF::UEV_id asset-id)
+                (if (= aqp-class 2)
+                    (ref-DPOF::UEV_id asset-id)
+                    (if (= aqp-class 3)
+                        (ref-DPDC::UEV_id asset-id true)
+                        (ref-DPDC::UEV_id asset-id false)
+                    )
+                )
             )
         )
     )
@@ -2661,44 +2691,49 @@
     (defun C_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator}
         (patron:string beneficiary-id:string collectable-id:string son:bool)
         @doc "Pool-agnostic ANK repair for DPSF (son=true) or DPNF (son=false). Reads Ben* nonce rollup, \
-            \ absolute resync via AQP-ANK::XE_Resync*, stamps Ben*AnkMeta. Talos splits SF/NF shells."
+            \ absolute resync via AQP-ANK::XE_Resync*, stamps Ben*AnkMeta. Talos splits SF/NF shells. \
+            \ URD inventory is read before with-capability (select illegal in defcap)."
         (UEV_IMC)
-        (with-capability (AQP|C>SYNC-COLLECTABLE-ANCHORS patron beneficiary-id collectable-id son)
-            (let
-                (
-                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    ;;
-                    (supplies:[object]
-                        (if son
-                            (URD_AQP|BenDpsfActiveNonceSupplies beneficiary-id collectable-id)
-                            (URD_AQP|BenDpnfActiveNonceSupplies beneficiary-id collectable-id)
-                        )
-                    )
-                    (nonces:[integer] (map (at "nonce") supplies))
-                    (nonce-amounts:[integer] (map (at "amount") supplies))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (ico-ank:object{IgnisCollectorV1.OutputCumulator}
-                        (if son
-                            (ref-ANK::XE_ResyncSemiFungibleUserAnchorValues
-                                beneficiary-id collectable-id nonces nonce-amounts
-                            )
-                            (ref-ANK::XE_ResyncNonFungibleUserAnchorValues
-                                beneficiary-id collectable-id nonces
-                            )
-                        )
-                    )
-                    (ico-meta:object{IgnisCollectorV1.OutputCumulator}
-                        (XB_SetBenCollectableAnkSyncCount beneficiary-id collectable-id son)
-                    )
-                    (ico-gas:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-IGNIS::UDC_ConstructOutputCumulator
-                            GAS|SYNC-COLLECTABLE-ANCHORS AQP|SC_NAME trigger
-                            [beneficiary-id collectable-id]
-                        )
+        (let
+            (
+                (supplies:[object]
+                    (if son
+                        (URD_AQP|BenDpsfActiveNonceSupplies beneficiary-id collectable-id)
+                        (URD_AQP|BenDpnfActiveNonceSupplies beneficiary-id collectable-id)
                     )
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas] [])
+            )
+            (with-capability (AQP|C>SYNC-COLLECTABLE-ANCHORS patron beneficiary-id collectable-id son)
+                (let
+                    (
+                        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                        ;;
+                        (nonces:[integer] (map (at "nonce") supplies))
+                        (nonce-amounts:[integer] (map (at "amount") supplies))
+                        (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                        (ico-ank:object{IgnisCollectorV1.OutputCumulator}
+                            (if son
+                                (ref-ANK::XE_ResyncSemiFungibleUserAnchorValues
+                                    beneficiary-id collectable-id nonces nonce-amounts
+                                )
+                                (ref-ANK::XE_ResyncNonFungibleUserAnchorValues
+                                    beneficiary-id collectable-id nonces
+                                )
+                            )
+                        )
+                        (ico-meta:object{IgnisCollectorV1.OutputCumulator}
+                            (XB_SetBenCollectableAnkSyncCount beneficiary-id collectable-id son)
+                        )
+                        (ico-gas:object{IgnisCollectorV1.OutputCumulator}
+                            (ref-IGNIS::UDC_ConstructOutputCumulator
+                                GAS|SYNC-COLLECTABLE-ANCHORS AQP|SC_NAME trigger
+                                [beneficiary-id collectable-id]
+                            )
+                        )
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas] [])
+                )
             )
         )
     )
@@ -3074,8 +3109,9 @@
     )
     (defun XI_2|BumpBenDpsfNonceTotal:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dpsf-id:string nonce:integer amount:integer direction:bool)
-        @doc "AQP|T|BenDpsfNonceTotal: bump amount ±supply for (beneficiary, dpsf-id, nonce) across pools."
-        ;; SECURE: granted by WW_BenDpsfNonceTotal (underlying W_).
+        @doc "AQP|T|BenDpsfNonceTotal: bump amount ±supply for (beneficiary, dpsf-id, nonce) across pools. \
+            \ Also bumps BenDpsfAnkMeta.active-nonce-count when amount crosses 0↔positive."
+        ;; SECURE: granted by WW_BenDpsfNonceTotal / WW_BenDpsfAnkMeta (underlying W_).
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3083,17 +3119,36 @@
                 (amt:integer (UR_AQP|BenDpsfNonceAmount beneficiary-id dpsf-id nonce))
                 (delta:integer (if direction amount (- amount)))
                 (new-amt:integer (+ amt delta))
+                (meta:object{AQP|BenDpsfAnkMeta} (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
+                (sc:integer (at "last-ank-sync-count" meta))
+                (anc:integer (at "active-nonce-count" meta))
+                (new-anc:integer
+                    (if (and (= amt 0) (> new-amt 0))
+                        (+ anc 1)
+                        (if (and (> amt 0) (= new-amt 0))
+                            (- anc 1)
+                            anc
+                        )
+                    )
+                )
             )
             (WW_BenDpsfNonceTotal beneficiary-id dpsf-id nonce
                 (UDC_AQP|BenDpsfNonceTotal new-amt beneficiary-id dpsf-id nonce)
+            )
+            (if (!= new-anc anc)
+                (WW_BenDpsfAnkMeta beneficiary-id dpsf-id
+                    (UDC_AQP|BenDpsfAnkMeta sc new-anc beneficiary-id dpsf-id)
+                )
+                true
             )
             (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
         )
     )
     (defun XI_2|BumpBenDpnfNonceTotal:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dpnf-id:string nonce:integer amount:integer direction:bool)
-        @doc "AQP|T|BenDpnfNonceTotal: bump amount ±supply for (beneficiary, dpnf-id, nonce) across pools."
-        ;; SECURE: granted by WW_BenDpnfNonceTotal (underlying W_).
+        @doc "AQP|T|BenDpnfNonceTotal: bump amount ±supply for (beneficiary, dpnf-id, nonce) across pools. \
+            \ Also bumps BenDpnfAnkMeta.active-nonce-count when amount crosses 0↔positive."
+        ;; SECURE: granted by WW_BenDpnfNonceTotal / WW_BenDpnfAnkMeta (underlying W_).
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -3101,9 +3156,27 @@
                 (amt:integer (UR_AQP|BenDpnfNonceAmount beneficiary-id dpnf-id nonce))
                 (delta:integer (if direction amount (- amount)))
                 (new-amt:integer (+ amt delta))
+                (meta:object{AQP|BenDpnfAnkMeta} (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
+                (sc:integer (at "last-ank-sync-count" meta))
+                (anc:integer (at "active-nonce-count" meta))
+                (new-anc:integer
+                    (if (and (= amt 0) (> new-amt 0))
+                        (+ anc 1)
+                        (if (and (> amt 0) (= new-amt 0))
+                            (- anc 1)
+                            anc
+                        )
+                    )
+                )
             )
             (WW_BenDpnfNonceTotal beneficiary-id dpnf-id nonce
                 (UDC_AQP|BenDpnfNonceTotal new-amt beneficiary-id dpnf-id nonce)
+            )
+            (if (!= new-anc anc)
+                (WW_BenDpnfAnkMeta beneficiary-id dpnf-id
+                    (UDC_AQP|BenDpnfAnkMeta sc new-anc beneficiary-id dpnf-id)
+                )
+                true
             )
             (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
         )

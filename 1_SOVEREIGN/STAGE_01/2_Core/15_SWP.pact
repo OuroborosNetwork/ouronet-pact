@@ -1,4 +1,117 @@
 ;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface SwapperV3
+    @doc "Swapper forward surface for module SWP (successor to SwapperV2). \
+        \ Row shapes use this interface's PoolTokens and FeeSplit schemas (field-compatible with SwapperV2). \
+        \ V3: UR_StoaValue and XE_UpdateStoaValue for STOA pool ledger on SWP|Pairs."
+    ;;
+    (defschema PoolTokens
+        token-id:string
+        token-supply:decimal
+    )
+    (defschema FeeSplit
+        target:string
+        value:integer
+    )
+    ;;
+    (defun SWP|Info ())
+    ;;
+    ;;
+    (defun UC_ExtractTokens:[string] (input:[object{PoolTokens}]))
+    (defun UC_ExtractTokenSupplies:[decimal] (input:[object{PoolTokens}]))
+    (defun UC_CustomSpecialFeeTargets:[string] (io:[object{FeeSplit}]))
+    (defun UC_CustomSpecialFeeTargetsProportions:[decimal] (io:[object{FeeSplit}]))
+    ;;
+    (defun UR_Asymetric:bool ())
+    (defun UR_Principals:[string] ())
+    (defun UR_PrimordialPool:string ())
+    (defun UR_LiquidBoost:bool ())
+    (defun UR_SpawnLimit:decimal ())
+    (defun UR_InactiveLimit:decimal ())
+        ;;
+    (defun UR_OwnerKonto:string (swpair:string))
+    (defun UR_CanChangeOwner:bool (swpair:string))
+    (defun UR_CanAdd:bool (swpair:string))
+    (defun UR_CanSwap:bool (swpair:string))
+    (defun UR_GenesisWeigths:[decimal] (swpair:string))
+    (defun UR_Weigths:[decimal] (swpair:string))
+    (defun UR_GenesisRatio:[object{PoolTokens}] (swpair:string))
+    (defun UR_PoolTokenObject:[object{PoolTokens}] (swpair:string))
+    (defun UR_TokenLP:string (swpair:string))
+    (defun UR_FeeLP:decimal (swpair:string))
+    (defun UR_FeeSP:decimal (swpair:string))
+    (defun UR_FeeSPT:[object{FeeSplit}] (swpair:string))
+    (defun UR_FeeLock:bool (swpair:string))
+    (defun UR_FeeUnlocks:integer (swpair:string))
+    (defun UR_Amplifier:decimal (swpair:string))
+    (defun UR_Primality:bool (swpair:string))
+    (defun UR_IzFrozenLP:bool (swpair:string))
+    (defun UR_IzSleepingLP:bool (swpair:string))
+    (defun UR_StoaValue:decimal (swpair:string))
+    (defun UR_Pools:[string] (pool-category:string))
+        ;;
+    (defun UR_PoolTokens:[string] (swpair:string))
+    (defun UR_GetLpSwpair:string (lp-id:string))
+    (defun UR_PoolTokenSupplies:[decimal] (swpair:string))
+    (defun UR_PoolGenesisSupplies:[decimal] (swpair:string))
+    (defun UR_PoolTokenPosition:integer (swpair:string id:string))
+    (defun UR_PoolTokenSupply:decimal (swpair:string id:string))
+    (defun UR_PoolTokenPrecisions:[integer] (swpair:string))
+    (defun UR_SpecialFeeTargets:[string] (swpair:string))
+    (defun UR_SpecialFeeTargetsProportions:[decimal] (swpair:string))
+    ;;
+    (defun URC_LpCapacity:decimal (swpair:string))
+    (defun URC_CheckID:bool (swpair:string))
+    (defun URC_PoolTotalFee:decimal (swpair:string))
+    (defun URC_LiquidityFee:decimal (swpair:string))
+    (defun URC_AllPoolTokens:[string] ())
+    (defun URC_Swpairs:[string] ())
+    (defun URC_LpComposer:[string] (pool-tokens:[object{PoolTokens}] weights:[decimal] amp:decimal))
+    ;;
+    (defun URD_OwnedSwapPairs:[string] (account:string))
+    ;;
+    (defun UEV_FeeSplit (input:object{FeeSplit}))
+    (defun UEV_id (swpair:string))
+    (defun UEV_CanChangeOwnerON (swpair:string))
+    (defun UEV_FeeLockState (swpair:string state:bool))
+    (defun UEV_PoolFee (fee:decimal))
+    (defun UEV_New (t-ids:[string] w:[decimal] amp:decimal))
+    (defun UEV_CheckTwo (token-ids:[string] w:[decimal] amp:decimal))
+    (defun UEV_CheckAgainstMass:bool (token-ids:[string] present-pools:[string]))
+    (defun UEV_CheckAgainst:bool (token-ids:[string] pool-tokens:[string]))
+    (defun UEV_FrozenLP (swpair:string state:bool))
+    (defun UEV_SleepingLP (swpair:string state:bool))
+    ;;
+    ;;
+    (defun A_UpdatePrincipal (principal:string add-or-remove:bool))
+    (defun A_UpdateLimit (limit:decimal spawn:bool))
+    (defun A_UpdateLiquidBoost (new-boost-variable:bool))
+    (defun A_DefinePrimordialPool (primordial-pool:string))
+    (defun A_ToggleAsymetricLiquidityAddition (toggle:bool))
+    ;;
+    (defun C_ChangeOwnership:object{IgnisCollectorV1.OutputCumulator} (swpair:string new-owner:string))
+    (defun C_EnableFrozenLP:object{IgnisCollectorV1.OutputCumulator} (patron:string swpair:string))
+    (defun C_EnableSleepingLP:object{IgnisCollectorV1.OutputCumulator} (patron:string swpair:string))
+    (defun C_ModifyCanChangeOwner:object{IgnisCollectorV1.OutputCumulator} (swpair:string new-boolean:bool))
+    (defun C_ModifyWeights:object{IgnisCollectorV1.OutputCumulator} (swpair:string new-weights:[decimal]))
+    (defun C_ToggleAddOrSwap:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool add-or-swap:bool))
+    (defun C_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (patron:string swpair:string toggle:bool))
+    (defun C_UpdateAmplifier:object{IgnisCollectorV1.OutputCumulator} (swpair:string amp:decimal))
+    (defun C_UpdateFee:object{IgnisCollectorV1.OutputCumulator} (swpair:string new-fee:decimal lp-or-special:bool))
+    (defun C_UpdateSpecialFeeTargets:object{IgnisCollectorV1.OutputCumulator} (swpair:string targets:[object{FeeSplit}]))
+    ;;
+    (defun XB_ModifyWeights (swpair:string new-weights:[decimal]))
+    ;;
+    (defun XE_UpdateSupplies (swpair:string new-supplies:[decimal]))
+    (defun XE_UpdateSupply (swpair:string id:string new-supply:decimal))
+    (defun XE_UpdateStoaValue (swpair:string new-stoa-value:decimal))
+    (defun XE_Issue:string (account:string pool-tokens:[object{PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    (defun XE_CanAddOrSwapToggle (swpair:string toggle:bool add-or-swap:bool))
+    ;;
+)
+;;
 (module SWP GOV
     ;;
     (implements OuronetPolicyV1)

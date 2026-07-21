@@ -1,4 +1,50 @@
 ;(namespace "n_9d612bcfe2320d6ecbbaa99b47aab60138a2adea")
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface AutostakeUsageV1
+    @doc "Exposes Autostake Usage Functions, which involve Token Transfers"
+    ;;
+    ;;  [URC]
+    ;;
+    (defun URC_MultiCull:object (ats:string acc:string))
+    (defun URC_SingleCull:[decimal] (ats:string acc:string position:integer))
+    ;;
+    ;;  [UDC]
+    ;;
+    (defun UDC_UnlimitedUncoilCumulator:object{IgnisCollectorV1.OutputCumulator} (ats:string account:string))
+    ;;
+    ;;  [A]
+    ;;
+    (defun A_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator}
+        (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
+    )
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator}
+        (remover:string ats:string reward-token:string)
+    )
+    (defun C_WithdrawRoyalties:object{IgnisCollectorV1.OutputCumulator}(ats:string target:string))
+        ;;
+    (defun C_KickStart:object{IgnisCollectorV1.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
+    (defun C_Coil:object{IgnisCollectorV1.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
+    (defun C_Curl:object{IgnisCollectorV1.OutputCumulator} (curler:string ats1:string ats2:string rt:string amount:decimal))
+        ;;
+    (defun C_ColdRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun C_Cull:object{IgnisCollectorV1.OutputCumulator}(culler:string ats:string))
+        ;;
+    (defun C_HotRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun C_Recover:object{IgnisCollectorV1.OutputCumulator} (recoverer:string id:string nonce:integer))
+    (defun C_Redeem:object{IgnisCollectorV1.OutputCumulator} (redeemer:string id:string nonce:integer))
+        ;;
+    (defun C_DirectRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
+        ;;
+    (defun C_Syphon:object{IgnisCollectorV1.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
+    ;;
+)
+;;
 (module ATSU GOV
     ;;
     (implements OuronetPolicyV1)

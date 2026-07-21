@@ -16,10 +16,12 @@
 ;;================================================================================
 ;;                                                                              ;;
 ;;                      [3 TXs]                                                 ;;
-;;              LOAD    [0.01]_Utilities.pact (NO PreL; No PostL)               ;;
-;;              LOAD    [0.02]_Core.pact (NO PreL; No PostL)                    ;;
-;;              LOAD    [0.03]_Talos.pact (NO PreL; No PostL)                   ;;
+;;              LOAD    01_Utilities.pact  — utility interfaces (always here)   ;;
+;;              LOAD    02_Core.pact       — SHARED + HISTORICAL core only      ;;
+;;              LOAD    03_Talos.pact      — HISTORICAL Talos (ClientFour V1–5) ;;
 ;;                                                                              ;;
+;;   Module-owned latest interfaces ship inside 2_Core/*.pact and 3_Talos/*.pact;;
+;;   (one load per module tx in [2.2]_Core.repl / [3]_Talos.repl).             ;;
 ;;                                                                              ;;
 ;;================================================================================
 ;;

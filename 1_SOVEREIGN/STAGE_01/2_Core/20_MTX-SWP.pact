@@ -1,3 +1,26 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface SwapperMtxV3
+    @doc "Exposes SWP MultiStep (via defpact) Functions. \
+        \ V3: issue pool caps use SwapperV3.PoolTokens (bumped with SwapperV3 row types)."
+    ;;
+    ;;
+    ;;  []C] Functions
+    ;;
+    ;;
+    (defun C_IssueStablePool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun C_IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun C_IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
+    ;;
+    (defun C_AddStandardLiquidity (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
+    (defun C_AddIcedLiquidity (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
+    (defun C_AddGlacialLiquidity (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
+    (defun C_AddFrozenLiquidity (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal kda-pid:decimal))
+    (defun C_AddSleepingLiquidity (patron:string account:string swpair:string sleeping-dpof:string nonce:integer kda-pid:decimal))
+    ;;
+)
+;;
 (module MTX-SWP GOV
     ;;
     (implements OuronetPolicyV1)

@@ -330,9 +330,9 @@
                     (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts))
                 (owners-ok:bool (URC_VacateTfLegsOk pool-id dptf-id legs))
             )
+            (enforce (fold (and) true [class-ok asset-ok gas-ok owners-ok]) "Invalid TF vacate cap input")
             (CAP_VctVacatePoolOwner pool-id)
             (UEV_TrueFungibleStakeNotReserved dptf-id)
-            (enforce (fold (and) true [class-ok asset-ok gas-ok owners-ok]) "Invalid TF vacate cap input")
             (compose-capability (P|VCT|RECIPE))
         )
     )
@@ -353,8 +353,8 @@
                 (gas-ok:bool (URC_BatchOwnerArraysGasOk owner-ids beneficiary-ids nonces-array VACATE-GAS-MAX-OF))
                 (nonce-ok:bool (URC_VacateBatchNonceTotalOk nonces-array))
             )
-            (CAP_VctVacatePoolOwner pool-id)
             (enforce (fold (and) true [asset-ok gas-ok nonce-ok]) "Invalid OF vacate batch")
+            (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (P|VCT|RECIPE))
         )
     )
@@ -380,8 +380,8 @@
                 (gas-ok:bool (URC_BatchOwnerArraysGasOk owner-ids beneficiary-ids nonces-array gas-max))
                 (nonce-ok:bool (URC_VacateBatchNonceTotalOk nonces-array))
             )
-            (CAP_VctVacatePoolOwner pool-id)
             (enforce (fold (and) true [class-ok asset-ok gas-ok nonce-ok]) "Invalid collectable vacate batch")
+            (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (P|VCT|RECIPE))
         )
     )
@@ -393,8 +393,6 @@
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
-            (CAP_VctVacatePoolOwner pool-id)
-            (UEV_TrueFungibleStakeNotReserved dptf-id)
             (enforce
                 (fold (and) true
                     [
@@ -405,6 +403,8 @@
                 )
                 "Invalid full TF vacate"
             )
+            (CAP_VctVacatePoolOwner pool-id)
+            (UEV_TrueFungibleStakeNotReserved dptf-id)
             (compose-capability (SECURE))
             (compose-capability (P|VCT|RECIPE))
         )
@@ -417,7 +417,6 @@
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
-            (CAP_VctVacatePoolOwner pool-id)
             (enforce
                 (fold (and) true
                     [
@@ -428,6 +427,7 @@
                 )
                 "Invalid full OF vacate"
             )
+            (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (SECURE))
             (compose-capability (P|VCT|RECIPE))
         )
@@ -440,7 +440,6 @@
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
-            (CAP_VctVacatePoolOwner pool-id)
             (enforce
                 (fold (and) true
                     [
@@ -452,6 +451,7 @@
                 )
                 "Invalid full collectable vacate"
             )
+            (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (SECURE))
             (compose-capability (P|VCT|RECIPE))
         )
@@ -470,7 +470,6 @@
                     (URDC_VacateUnitCountForKind pool-id asset-id vacate-kind)
                 )
             )
-            (CAP_VctVacatePoolOwner pool-id)
             (enforce (not (UR_VacateInProgress pool-id)) "Vacate session already in progress on this pool")
             (enforce (URC_VacateKindAssetOk pool-id asset-id vacate-kind) "Invalid vacate kind/asset")
             (enforce (> slice-count 0) "slice-count must be positive")
@@ -480,6 +479,7 @@
                 (>= slice-count (UC_ComputeMinSliceCount unit-count vacate-kind))
                 "slice-count below minimum for vacate unit count"
             )
+            (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (SECURE))
         )
     )
@@ -499,7 +499,6 @@
                     (URDC_VacateUnitCountForKind pool-id asset-id kind)
                 )
             )
-            (CAP_VctVacatePoolOwner pool-id)
             (enforce (URC_JobIsActive vacate-job-id) "Vacate job is not active")
             (enforce (> owner-count 0) "No remaining vacate owners for reslice")
             (enforce (> unit-count 0) "No remaining vacate units for reslice")
@@ -508,6 +507,7 @@
                 (>= slice-count (UC_ComputeMinSliceCount unit-count kind))
                 "slice-count below minimum for remaining vacate unit count"
             )
+            (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (SECURE))
         )
     )
@@ -538,8 +538,8 @@
                 )
                 (hash-ok:bool (= expected-hash (UR_S|SliceHash vacate-job-id slice-idx)))
             )
-            (CAP_VctVacatePoolOwner pool-id)
             (enforce (fold (and) true [kind-ok open-ok hash-ok]) "Invalid TF vacate chunk")
+            (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (VCT|C>TRUE-FUNGIBLE-VACATE pool-id dptf-id owner-ids beneficiary-ids amounts))
             (compose-capability (SECURE))
         )
@@ -582,8 +582,8 @@
                 )
                 (son:bool (UC_VacateKindSon kind))
             )
-            (CAP_VctVacatePoolOwner pool-id)
             (enforce (fold (and) true [kind-ok open-ok hash-ok of-sentinel-ok]) "Invalid nonce vacate chunk")
+            (CAP_VctVacatePoolOwner pool-id)
             (if (= kind VACATE-KIND-OF)
                 (compose-capability
                     (VCT|C>ORTO-FUNGIBLE-VACATE-BATCH
@@ -610,8 +610,8 @@
             (
                 (pool-id:string (UR_J|PoolId vacate-job-id))
             )
-            (CAP_VctVacatePoolOwner pool-id)
             (enforce (URC_JobIsActive vacate-job-id) "Vacate job is not active")
+            (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (SECURE))
         )
     )

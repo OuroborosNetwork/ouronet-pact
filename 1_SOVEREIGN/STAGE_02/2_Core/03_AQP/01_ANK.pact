@@ -367,10 +367,6 @@
                 (fourth:string (drop 3 (take 4 dptf-id)))
                 (first-two:string (take 2 dptf-id))
             )
-            (ref-U|ATS::UEV_AutostakeIndex anchor-name)
-            (ref-DPTF::UEV_id dptf-id)
-            (UEV_Promile anchor-precision anchor-promile)
-            (ref-DPTF::UEV_Amount dptf-id dptf-amount)
             (enforce
                 (fold (and) true 
                     [
@@ -382,12 +378,17 @@
                 )
                 (format "Anchor cannot be issued for the DPTF {}." [dptf-id])
             )
+            (ref-U|ATS::UEV_AutostakeIndex anchor-name)
+            (ref-DPTF::UEV_id dptf-id)
+            (ref-DPTF::UEV_Amount dptf-id dptf-amount)
+            (if acnoi
+                (ref-U|ATS::UEV_AutostakeIndex boost-class-name-or-id)
+                true
+            )
+            (UEV_Promile anchor-precision anchor-promile)
             (CAP_TF|Owner dptf-id)
             (if acnoi
-                (do 
-                    (ref-U|ATS::UEV_AutostakeIndex boost-class-name-or-id) 
-                    (UEV_AssetAnchorCap dptf-id)
-                )
+                (UEV_AssetAnchorCap dptf-id)
                 (UEV_IssueAnchor dptf-id boost-class-name-or-id)
             )
             (compose-capability (SECURE))
@@ -404,14 +405,15 @@
             )
             (ref-U|ATS::UEV_AutostakeIndex anchor-name)
             (ref-DPDC::UEV_id dpsf-id true)
-            (UEV_Promile anchor-precision anchor-promile)
             (ref-DPDC::UEV_Nonce dpsf-id true dpsf-nonce)
             (ref-DPDC::CAP_OwnerOrCreator dpsf-id true)
             (if acnoi
-                (do 
-                    (ref-U|ATS::UEV_AutostakeIndex boost-class-name-or-id) 
-                    (UEV_AssetAnchorCap dpsf-id)
-                )
+                (ref-U|ATS::UEV_AutostakeIndex boost-class-name-or-id)
+                true
+            )
+            (UEV_Promile anchor-precision anchor-promile)
+            (if acnoi
+                (UEV_AssetAnchorCap dpsf-id)
                 (UEV_IssueAnchor dpsf-id boost-class-name-or-id)
             )
             (compose-capability (SECURE))
@@ -474,9 +476,13 @@
             )
             (ref-U|ATS::UEV_AutostakeIndex anchor-name)
             (ref-DPDC::UEV_id dpnf-id false)
+            (if acnoi
+                (ref-U|ATS::UEV_AutostakeIndex boost-class-name-or-id)
+                true
+            )
             (UEV_Promile anchor-precision anchor-promile)
             (if acnoi
-                (do (ref-U|ATS::UEV_AutostakeIndex boost-class-name-or-id) (UEV_AssetAnchorCap dpnf-id))
+                (UEV_AssetAnchorCap dpnf-id)
                 (UEV_IssueAnchor dpnf-id boost-class-name-or-id)
             )
             (compose-capability (SECURE))
@@ -501,14 +507,16 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
             )
-            ;;1]<account> must exist
+            ;;1]<total-dptf-amount> must be non-negative (0.0 allowed — vacate/unstake refresh)
+            (enforce (>= total-dptf-amount 0.0) "total-dptf-amount must be non-negative")
+            ;;2]<account> must exist
             (ref-DALOS::UEV_EnforceAccountExists account)
-            ;;2]<dptf-id> must exist
+            ;;3]<dptf-id> must exist
             (ref-DPTF::UEV_id dptf-id)
-            ;;3]<total-dptf-amount> must conform to DPTF precision (0.0 allowed — vacate/unstake refresh)
+            ;;4] when positive, <total-dptf-amount> must conform to DPTF precision
             (if (> total-dptf-amount 0.0)
                 (ref-DPTF::UEV_Amount dptf-id total-dptf-amount)
-                (enforce (= total-dptf-amount 0.0) "total-dptf-amount must be non-negative")
+                true
             )
         )
         (compose-capability (SECURE))

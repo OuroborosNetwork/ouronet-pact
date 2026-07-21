@@ -24,7 +24,7 @@
                             )
                             (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron score-name 12 1.0)
                             (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
-                            (ref-TS02-C3::AQP-FVT|C_AddScoreLink patron fvt-id score-id)
+                            (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)
                         )
                         true
                     )
@@ -52,7 +52,7 @@
                             )
                             (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron patron score-name 12 1.0 1.0)
                             (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
-                            (ref-TS02-C3::AQP-FVT|C_AddScoreLink patron fvt-id score-id)
+                            (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)
                         )
                         true
                     )
@@ -80,7 +80,7 @@
                             )
                             (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron patron score-name 3 true)
                             (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
-                            (ref-TS02-C3::AQP-FVT|C_AddScoreLink patron fvt-id score-id)
+                            (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)
                         )
                         true
                     )
@@ -108,7 +108,7 @@
                             )
                             (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron patron score-name 6 0)
                             (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
-                            (ref-TS02-C3::AQP-FVT|C_AddScoreLink patron fvt-id score-id)
+                            (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)
                         )
                         true
                     )

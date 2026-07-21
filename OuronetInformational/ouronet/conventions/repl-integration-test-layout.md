@@ -45,6 +45,20 @@ At the top of the file (after the `;;` preface), include:
 
 Where a REPL is the primary scenario for a module, a one-line comment at **`(module …)`** in the sovereign **`.pact`** may point to the REPL and the **`TX… · mm ·`** convention (see **`01_ANK.pact`** / **`02_SCORE.pact`**).
 
+## `[0.1]_Interfaces.repl` — shared registry only
+
+Stage 01 **`[0.1]_Interfaces.repl`** loads:
+
+1. **`0_Interfaces/01_Utilities.pact`** — all utility interfaces (unchanged).
+2. **`0_Interfaces/02_Core.pact`** — **shared + historical** core interfaces only (~12 blocks). Module-owned latest versions (e.g. **`OuronetDalosV1`**, **`SwapperV3`**, **`PythiaV3`**) deploy with their module file in **`[2.2]_Core.repl`**.
+3. **`0_Interfaces/03_Talos.pact`** — **historical** Talos clients only (`ClientFourV1`–`V3`). Latest clients embed their interface in **`3_Talos/*.pact`**.
+
+Do **not** re-add latest interfaces to **`0_Interfaces`** after embedding — that breaks REPL and mainnet deploy with duplicate interface txs.
+
+**Stage 02** **`REPL/Stage_02/[0.1]_Interfaces.repl`** loads only **`STAGE_02/0_Interfaces/02_Core.pact`** (`DpdcUdcV1` shared schemas) and **`03_Talos.pact`** (historical; empty until a client version is frozen). All DPDC slice, AQP, DemiPad, and Talos **latest** interfaces deploy with their module file. Run **after** Stage 01 **`[0.1]`** (needs `BrandingV1`, `IgnisCollectorV1`, utilities, etc.).
+
+See **`OuronetInformational/ouronet/conventions/module-load-order-and-pact-refs.md`** § *Module-owned interfaces*.
+
 ## Semantic ordering (chain dependencies)
 
 Mechanical layout (banners, **`;;|| NEXT >`**) is not enough: transactions must respect **table dependencies**. Example: **`C_IssueSemiFungibleScoreDefinition`** → **`UR_SCR|ScoreOwnerKonto`** → **`read SCR|T|Score`** for the score id — the **score row must already exist** (e.g. from **`AQP-BOOT`** **`C_Step4`** / **`C_Step5`** in **`[6.2.2]_AQP-SCORE.repl`**). Boot provisioning txs belong **before** definition-vector txs; see **`OuronetInformational/ouronet/architecture/REPL_AND_TESTS.md`** § *Stage 2 AQP + AQP-BOOT*.

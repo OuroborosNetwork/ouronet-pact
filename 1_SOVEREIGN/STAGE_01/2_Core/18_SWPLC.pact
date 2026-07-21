@@ -1,3 +1,49 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface BrandingUsageSecondaryV1
+    @doc "Exposes Branding Functions for True-Fungible LP Tokens \
+        \ <entity-pos>: 1 (Native LP), 2 (Freezing LP), 3 (Sleeping LP)"
+    ;;
+    (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV1.OutputCumulator} (swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
+)
+;;
+(interface SwapperLiquidityClientV1
+    @doc "Exposes the Client Functions of Swapper Liquidity"
+    ;;
+    ;;
+    ;;  [URC] Functions
+    ;;
+    (defun URC_EntityPosToID:string (swpair:string entity-pos:integer))
+    ;;
+    ;;
+    ;;  [UEV] Functions
+    ;;
+    (defun UEV_InputsForLP (swpair:string input-amounts:[decimal]))
+    (defun UEV_AddFrozenLiquidity (swpair:string frozen-dptf:string))
+    (defun UEV_AddSleepingLiquidity (account:string swpair:string sleeping-dpof:string nonce:integer))
+    (defun UEV_AddDormantLiquidity (swpair:string))
+    (defun UEV_AddChilledLiquidity (swpair:string ld:object{SwapperLiquidityV1.LiquidityData}))
+    (defun UEV_AddLiquidity (swpair:string ld:object{SwapperLiquidityV1.LiquidityData}))
+    (defun UEV_RemoveLiquidity (swpair:string lp-amount:decimal))
+    ;;
+    ;;
+    ;;  []C] Functions
+    ;;
+    ;;
+    (defun C_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
+    (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool))
+        ;;
+    (defun C|KDA-PID_AddStandardLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
+    (defun C|KDA-PID_AddIcedLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
+    (defun C|KDA-PID_AddGlacialLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
+    (defun C|KDA-PID_AddFrozenLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal kda-pid:decimal))
+    (defun C|KDA-PID_AddSleepingLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer kda-pid:decimal))
+        ;;
+    (defun C_RemoveLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string lp-amount:decimal))
+)
+;;
 (module SWPLC GOV
     ;;
     (implements OuronetPolicyV1)

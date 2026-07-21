@@ -1,3 +1,24 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/02_Core.pact
+;;
+(interface DpdcRolesV1
+    @doc "Exposes Collectables Role Functions"
+    ;;
+    ;;  [C]
+    ;;
+    (defun C_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator} (id:string account:string toggle:bool))
+    (defun C_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleExemptionRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleUpdateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleModifyCreatorRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleModifyRoyaltiesRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool account:string toggle:bool))
+    (defun C_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
+    (defun C_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
+    (defun C_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
+)
+;;
 (module DPDC-R GOV
     ;;
     (implements OuronetPolicyV1)

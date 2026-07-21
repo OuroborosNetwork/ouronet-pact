@@ -1,3 +1,104 @@
+;; Deploy: load THIS file — interface(s) + module ship together.
+;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
+;;
+(interface SwapperIssueV3
+    @doc "Exposes SWP Issuing Functions. \
+        \ Also contains Swap Computation Functions, and the Hopper Function. \
+        \ V3: UEV_Issue and C_Issue use SwapperV3.PoolTokens (bumped when Swapper row types moved to SwapperV3)."
+    ;;
+    ;;
+    ;;  SCHEMAS
+    ;;
+    (defschema Hopper
+        nodes:[string]
+        edges:[string]
+        output-values:[decimal]    
+    )
+    ;;
+    ;;
+    ;;  [UC] Functions
+    ;;
+    (defun UC_DeviationInValueShares:decimal (pool-reserves:[decimal] asymmetric-liq:[decimal] w:[decimal]))
+    (defun UC_DeviatedShares:[decimal] (pool-reserves:[decimal] pool-shares:[decimal] new-total-shares:decimal))
+    (defun UC_PoolShares:[decimal] (pool-reserves:[decimal] w:[decimal]))
+    (defun UC_VirtualSwap:object{UtilitySwpV1.VirtualSwapEngine} 
+        (vse:object{UtilitySwpV1.VirtualSwapEngine} dsid:object{UtilitySwpV1.DirectSwapInputData})
+    )
+    (defun UC_BareboneSwapWithFeez:object{UtilitySwpV1.DirectTaxedSwapOutput}
+        (
+            account:string pool-type:string 
+            dsid:object{UtilitySwpV1.DirectSwapInputData} fees:object{UtilitySwpV1.SwapFeez}
+            A:decimal X:[decimal] X-prec:[integer] input-positions:[integer] output-position:integer weights:[decimal]
+        )
+    )
+    (defun UC_InverseBareboneSwapWithFeez:object{UtilitySwpV1.InverseTaxedSwapOutput}
+        (
+            account:string pool-type:string 
+            rsid:object{UtilitySwpV1.ReverseSwapInputData} fees:object{UtilitySwpV1.SwapFeez}
+            A:decimal X:[decimal] X-prec:[integer] output-position:integer input-position:integer weights:[decimal]
+        )
+    )
+    (defun UC_BareboneSwap:decimal (pool-type:string drsi:object{UtilitySwpV1.DirectRawSwapInput}))
+    (defun UC_BareboneInverseSwap:decimal (pool-type:string irsi:object{UtilitySwpV1.InverseRawSwapInput}))
+    (defun UC_PoolTokenPositions:[integer] (swpair:string input-ids:[string]))
+    ;;
+    ;;
+    ;;  [URC] Functions
+    ;;
+    (defun URC_EliteFeeReduction:object{UtilitySwpV1.SwapFeez} (account:string fees:object{UtilitySwpV1.SwapFeez}))
+    (defun URC_PoolTokenPositions:[integer] (swpair:string input-ids:[string]))
+    (defun URC_DirectRawSwapInput:object{UtilitySwpV1.DirectRawSwapInput} (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData}))
+    (defun URC_InverseRawSwapInput:object{UtilitySwpV1.InverseRawSwapInput} (swpair:string rsid:object{UtilitySwpV1.ReverseSwapInputData}))
+        ;;
+    (defun URC_Swap:decimal (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData} validation:bool))
+    (defun URC_S-Swap:decimal (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData}))
+    (defun URC_W-Swap:decimal (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData}))
+    (defun URC_P-Swap:decimal (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData}))
+        ;;
+    (defun URC_InverseSwap:decimal (swpair:string rsid:object{UtilitySwpV1.ReverseSwapInputData} validation:bool))
+    (defun URC_S-InverseSwap:decimal (swpair:string rsid:object{UtilitySwpV1.ReverseSwapInputData}))
+    (defun URC_W-InverseSwap:decimal (swpair:string rsid:object{UtilitySwpV1.ReverseSwapInputData}))
+    (defun URC_P-InverseSwap (swpair:string rsid:object{UtilitySwpV1.ReverseSwapInputData}))
+        ;;
+    (defun URC_Hopper:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
+    (defun URC_BestEdge:string (ia:decimal i:string o:string))
+        ;;
+    (defun URC_OuroPrimordialPrice:decimal ())
+    (defun URC_TokenDollarPrice (id:string kda-pid:decimal))
+    (defun URC_SingleWorthDWK (id:string))
+    (defun URC_WorthDWK (id:string amount:decimal))
+    (defun URC_PoolValue:[decimal] (swpair:string))
+        ;;
+    (defun URC_DirectRefillAmounts:[decimal] (swpair:string ids:[string] amounts:[decimal]))
+    (defun URC_IndirectRefillAmounts:[decimal] (X:[decimal] positions:[integer] amounts:[decimal]))
+    (defun URC_TrimIdsWithZeroAmounts:[string] (swpair:string input-amounts:[decimal]))
+    ;;
+    ;;
+    ;;  [UEV] Functions
+    ;;
+    (defun UEV_SwapData (swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData}))
+    (defun UEV_InverseSwapData (swpair:string rsid:object{UtilitySwpV1.ReverseSwapInputData}))
+        ;;
+    (defun UEV_Issue (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    ;;
+    ;;
+    ;;  [UDC] Functions
+    ;;
+    (defun UDC_DirectRawSwapInput:object{UtilitySwpV1.DirectRawSwapInput} 
+        (dsid:object{UtilitySwpV1.DirectSwapInputData} A:decimal X:[decimal] input-positions:[integer] output-position:integer weights:[decimal])
+    )
+    (defun UDC_InverseRawSwapInput:object{UtilitySwpV1.InverseRawSwapInput} 
+        (rsid:object{UtilitySwpV1.ReverseSwapInputData} A:decimal X:[decimal] output-position:integer input-position:integer weights:[decimal])
+    )
+    (defun UDC_Hopper:object{Hopper} (a:[string] b:[string] c:[decimal]))
+    ;;
+    ;;
+    ;;  []C] Functions
+    ;;
+    ;;
+    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))    
+)
+;;
 (module SWPI GOV
     ;;
     (implements OuronetPolicyV1)
