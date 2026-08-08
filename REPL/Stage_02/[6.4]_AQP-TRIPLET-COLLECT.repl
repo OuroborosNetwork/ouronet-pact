@@ -413,6 +413,7 @@
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
         (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
         (lp-id:string (ref-SWP::UR_TokenLP swpair))
@@ -507,12 +508,36 @@
                                     (expect (format "<<TX-AQP-CL05>> dual OF tracker>0 got={}" [of-pre]) true (> of-pre 0.0))
                                 ]
                             )
-                            (print (format "<(C_FullVacateTrueFungible LP)> => \"{}\"" [
-                                (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible patron pool-id lp-id)
-                            ]))
-                            (print (format "<(C_FullVacateOrtoFungible Z|LP)> => \"{}\"" [
-                                (ref-TS02-C3::AQP-POOL|C_FullVacateOrtoFungible patron pool-id z-lp-id)
-                            ]))
+                            (let
+                                (
+                                    (tf-plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id lp-id 1 1))
+                                    (tf-s0:object (at 0 (at "slices" tf-plan)))
+                                )
+                                (print (format "<(C_FullVacateTrueFungible LP)> => \"{}\"" [
+                                    (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible
+                                        patron pool-id lp-id
+                                        (at "owner-ids" tf-s0)
+                                        (at "beneficiary-ids" tf-s0)
+                                        (at "amounts" tf-s0)
+                                    )
+                                ]))
+                            )
+                            (let
+                                (
+                                    (of-plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id z-lp-id 2 1))
+                                    (of-s0:object (at 0 (at "slices" of-plan)))
+                                    (z:[[integer]] (ref-VCT::UC_ZeroIntAmountsMatrix (at "nonces-array" of-s0)))
+                                )
+                                (print (format "<(C_FullVacateOrtoFungible Z|LP)> => \"{}\"" [
+                                    (ref-TS02-C3::AQP-POOL|C_FullVacateOrtoFungible
+                                        patron pool-id z-lp-id
+                                        (at "owner-ids" of-s0)
+                                        (at "beneficiary-ids" of-s0)
+                                        (at "nonces-array" of-s0)
+                                        z
+                                    )
+                                ]))
+                            )
                             (let
                                 (
                                     (tf-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id lp-id owner owner))

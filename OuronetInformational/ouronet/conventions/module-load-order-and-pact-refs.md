@@ -50,7 +50,7 @@ Loading **`22_CODEX.pact`** installs **CodexV1** then **CODEX**. Talos only need
 |----------|------------------|
 | **`2_Core/<module>.pact`** | Latest interface for that module + `(module …)` + `(create-table …)` |
 | **`0_Interfaces/02_Core.pact`** | **Shared** interfaces (`OuronetPolicyV1`, `OuronetInfoV1`, `BrandingUsagePrimaryV1`, `DpofUdcV1`, `IgnisCollectorV1/V2`, …) + **historical** frozen versions (`PythiaV1`, `SwapperV2`, …) |
-| **`0_Interfaces/03_Talos.pact`** | **Historical** Talos clients only (e.g. `ClientFourV1`–`V5`); latest `ClientFourV6` ships in **`06_TS01-C4.pact`** |
+| **`0_Interfaces/03_Talos.pact`** | **Historical** Talos clients only (e.g. `ClientFourV1`–`V5` + `V6BlockTime`); latest `ClientFourV7` ships in **`06_TS01-C4.pact`** |
 
 **`[0.1]_Interfaces.repl`** loads the slim shared/historical bundles only. **`[2.2]_Core.repl`** / **`[3]_Talos.repl`** load each module file once (interface + module in the same tx).
 

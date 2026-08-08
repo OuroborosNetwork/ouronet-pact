@@ -2,7 +2,7 @@
 
 Module: `AQP-FVT` | Interface: `AcquisitionFarmsVaultsTreasuriesV1` | File: `04_FVT.pact`
 
-**Status: Stub module — schemas and forward cap / `XE_*` sketched; `C_*` bodies still placeholders.**
+**Status: Live** — issue, ScoreEntity/Reward links, inject/collect, stake/unstake recipes, vacate unwind hooks. Client surface: Talos `TS02-C3` ([README_TALOS_CATALOGUE.md](README_TALOS_CATALOGUE.md)). Product how-to: [README_HOWTO_FVT.md](README_HOWTO_FVT.md). Global map: [README_GLOBAL.md](README_GLOBAL.md).
 
 ## Purpose
 
@@ -180,7 +180,7 @@ Pool-owner **vacate** lives in **`AQP-VCT`** (`05_VCT.pact`, `AcquisitionVacateV
 | Concern | Module |
 |---------|--------|
 | Batch / full vacate recipes | `AQP-VCT` (`C_Vacate*`, `C_FullVacate*`) |
-| Session vacate (manifest + slices) | `AQP-VCT` (`C_BeginVacate`, `C_ResliceVacate`, `C_VacateChunk*`, `C_FinalizeVacate`, `C_AbortVacate`) |
+| Session vacate (stateless Legs) | `AQP-VCT` (`C_FullVacate*`, `C_Vacate*Legs`, `C_AbortVacate(pool-id)`) |
 | Tracker unwind phases 2–5 | `AQP-FVT` (`XE_RunTrueFungibleVacateBatch`, `XE_RunTrueFungibleVacateBatchV2`, `XE_RunOrtoFungibleVacateBatch`, `XE_RunCollectableVacateBatch`) |
 | UI inventory planning | `AQP-POOL` `URD_AQP\|Vacate*Legs` |
 | Job recovery after crash | `AQP-VCT` `URD_VCT\|VacateJob`, `URD_VCT\|ManifestLegs`, `URD_VCT\|ActiveSlices` |

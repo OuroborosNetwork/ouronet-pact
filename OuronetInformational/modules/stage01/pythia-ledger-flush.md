@@ -2,7 +2,7 @@
 
 **Module:** `ouronet-ns.PYTHIA` (`23_PYTHIA.pact`)  
 **Interface:** `PythiaLedgerV2` (ships in deploy file; not yet on chain)  
-**Talos:** `TS01-C4.PYTHIA|A_Flush` via `TalosStageOne_ClientFourV6` (`06_TS01-C4.pact`)
+**Talos:** `TS01-C4.PYTHIA|A_Flush` via `TalosStageOne_ClientFourV7` (`06_TS01-C4.pact`)
 
 Khronoton handoff: [`HANDOFF-pythia-khronoton-flush.md`](../../HANDOFF-pythia-khronoton-flush.md)  
 Table/read spec: [`HANDOFF-pact-pyth-ledger.md`](../../HANDOFF-pact-pyth-ledger.md)
@@ -93,4 +93,5 @@ Memory: [`memories/2026-07-21-pythia-flush-batch-gas.md`](../../memories/2026-07
 | `PythiaLedgerV2BlockTime` | `02_Core.pact` | Frozen — never deployed; single six-metric block-time flush |
 | **`PythiaLedgerV2`** | **`23_PYTHIA.pact`** | **Deploy target — batch entries** |
 | `TalosStageOne_ClientFourV6BlockTime` | `03_Talos.pact` | Frozen — never deployed; single-metric A_Flush |
-| **`TalosStageOne_ClientFourV6`** | **`06_TS01-C4.pact`** | **Deploy target — batch A_Flush** |
+| `TalosStageOne_ClientFourV6` | `06_TS01-C4.pact` (prior) | Superseded — patron A_RevokeLink (IGNIS) |
+| **`TalosStageOne_ClientFourV7`** | **`06_TS01-C4.pact`** | **Deploy target — patronless A_RevokeLink** |

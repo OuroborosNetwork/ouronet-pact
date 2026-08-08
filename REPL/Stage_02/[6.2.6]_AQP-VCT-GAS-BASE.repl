@@ -8,7 +8,7 @@
 (print "================================================================")
 (print "Legend: <<VCT-GAS-*>> legs/gas/fits-2M; <<VCT-GAS-DPTF-BULK>> bulk receivers; <<VCT-GAS-OF-7x>> multi-nonce.")
 (print "Source: ;;|| NEXT > between txs; VCT-GAS module holds probe helpers + max table.")
-(print "REPL tests: vacate chunk + DPTF|C_BulkTransfer + 7-owner multi-nonce OF vs env-gaslimit 2000000.")
+(print "REPL tests: C_Vacate*Legs + DPTF|C_BulkTransfer + 7-owner multi-nonce OF vs env-gaslimit 2000000.")
 (print "")
 ;;
 (begin-tx "VCT-GAS-00 - VCT-GAS probe module + synth account deploy")
@@ -104,38 +104,49 @@
     )
     (defun XI_RunVacateFromPayload:string
         (patron:string payload:object{vacate-chunk-payload})
+        @doc "Measure one Legs batch (finalize=false — probes use fresh pools)."
         (let
             (
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
                 (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 (kind:integer (at "vacate-kind" payload))
+                (pool-id:string (at "pool-id" payload))
+                (asset-id:string (at "asset-id" payload))
             )
             (if (= kind AQP-VCT.VACATE-KIND-TF)
-                (ref-TS02-C3::AQP-POOL|C_VacateChunkTrueFungible
-                    patron
-                    (at "vacate-job-id" payload)
-                    0
+                (ref-TS02-C3::AQP-POOL|C_VacateTrueFungibleLegs
+                    patron pool-id asset-id
                     (at "owner-ids" payload)
                     (at "beneficiary-ids" payload)
                     (at "tf-amounts" payload)
+                    false
                 )
                 (if (= kind AQP-VCT.VACATE-KIND-OF)
-                    (ref-TS02-C3::AQP-POOL|C_VacateChunkOrtoFungible
-                        patron
-                        (at "vacate-job-id" payload)
-                        0
+                    (ref-TS02-C3::AQP-POOL|C_VacateOrtoFungibleLegs
+                        patron pool-id asset-id
                         (at "owner-ids" payload)
                         (at "beneficiary-ids" payload)
                         (at "nonces-array" payload)
+                        (ref-VCT::UC_ZeroIntAmountsMatrix (at "nonces-array" payload))
+                        false
                     )
-                    (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
-                        patron
-                        (at "vacate-job-id" payload)
-                        0
-                        (at "owner-ids" payload)
-                        (at "beneficiary-ids" payload)
-                        (at "nonces-array" payload)
-                        (at "amounts-array" payload)
+                    (if (= kind AQP-VCT.VACATE-KIND-DPSF)
+                        (ref-TS02-C3::AQP-POOL|C_VacateSemiFungibleLegs
+                            patron pool-id asset-id
+                            (at "owner-ids" payload)
+                            (at "beneficiary-ids" payload)
+                            (at "nonces-array" payload)
+                            (at "amounts-array" payload)
+                            false
+                        )
+                        (ref-TS02-C3::AQP-POOL|C_VacateNonFungibleLegs
+                            patron pool-id asset-id
+                            (at "owner-ids" payload)
+                            (at "beneficiary-ids" payload)
+                            (at "nonces-array" payload)
+                            (at "amounts-array" payload)
+                            false
+                        )
                     )
                 )
             )
@@ -191,11 +202,8 @@
                 (
                     (slice-count:integer (UC_ProbeSliceCount n AQP-VCT.VACATE-KIND-DPSF))
                 )
-                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpsf-id AQP-VCT.VACATE-KIND-DPSF slice-count)
                 (let
                     (
-                        (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                        (vacate-job-id:string (at "vacate-job-id" active-job))
                         (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id AQP-VCT.VACATE-KIND-DPSF slice-count))
                         (slice0:object (at 0 (at "slices" plan)))
                     )
@@ -203,7 +211,7 @@
                         "pool-id": pool-id,
                         "asset-id": dpsf-id,
                         "vacate-kind": AQP-VCT.VACATE-KIND-DPSF,
-                        "vacate-job-id": vacate-job-id,
+                        "vacate-job-id": "",
                         "owner-ids": (at "owner-ids" slice0),
                         "beneficiary-ids": (at "beneficiary-ids" slice0),
                         "nonces-array": (at "nonces-array" slice0),
@@ -252,11 +260,8 @@
                 (
                     (slice-count:integer (UC_ProbeSliceCount n AQP-VCT.VACATE-KIND-TF))
                 )
-                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id ouro-id AQP-VCT.VACATE-KIND-TF slice-count)
                 (let
                     (
-                        (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                        (vacate-job-id:string (at "vacate-job-id" active-job))
                         (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id AQP-VCT.VACATE-KIND-TF slice-count))
                         (slice0:object (at 0 (at "slices" plan)))
                     )
@@ -264,7 +269,7 @@
                         "pool-id": pool-id,
                         "asset-id": ouro-id,
                         "vacate-kind": AQP-VCT.VACATE-KIND-TF,
-                        "vacate-job-id": vacate-job-id,
+                        "vacate-job-id": "",
                         "owner-ids": (at "owner-ids" slice0),
                         "beneficiary-ids": (at "beneficiary-ids" slice0),
                         "nonces-array": [],
@@ -333,11 +338,8 @@
                 (
                     (slice-count:integer (UC_ProbeSliceCount n AQP-VCT.VACATE-KIND-OF))
                 )
-                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count)
                 (let
                     (
-                        (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                        (vacate-job-id:string (at "vacate-job-id" active-job))
                         (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count))
                         (slice0:object (at 0 (at "slices" plan)))
                     )
@@ -345,7 +347,7 @@
                         "pool-id": pool-id,
                         "asset-id": dpof-id,
                         "vacate-kind": AQP-VCT.VACATE-KIND-OF,
-                        "vacate-job-id": vacate-job-id,
+                        "vacate-job-id": "",
                         "owner-ids": (at "owner-ids" slice0),
                         "beneficiary-ids": (at "beneficiary-ids" slice0),
                         "nonces-array": (at "nonces-array" slice0),
@@ -411,11 +413,8 @@
                 (
                     (slice-count:integer (UC_ProbeSliceCount n AQP-VCT.VACATE-KIND-DPNF))
                 )
-                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpnf-id AQP-VCT.VACATE-KIND-DPNF slice-count)
                 (let
                     (
-                        (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                        (vacate-job-id:string (at "vacate-job-id" active-job))
                         (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id AQP-VCT.VACATE-KIND-DPNF slice-count))
                         (slice0:object (at 0 (at "slices" plan)))
                     )
@@ -423,7 +422,7 @@
                         "pool-id": pool-id,
                         "asset-id": dpnf-id,
                         "vacate-kind": AQP-VCT.VACATE-KIND-DPNF,
-                        "vacate-job-id": vacate-job-id,
+                        "vacate-job-id": "",
                         "owner-ids": (at "owner-ids" slice0),
                         "beneficiary-ids": (at "beneficiary-ids" slice0),
                         "nonces-array": (at "nonces-array" slice0),
@@ -443,14 +442,14 @@
         )
         (XI_RunVacateFromPayload patron (XI_DpnfProbeSetup patron pool-id dpnf-id n))
     )
-    (defun XI_ChunkPayloadFromPool:object{vacate-chunk-payload}
+        (defun XI_ChunkPayloadFromPool:object{vacate-chunk-payload}
         (pool-id:string asset-id:string vacate-kind:integer)
+        @doc "Offline plan slice-0 payload from live inventory (stateless Legs)."
         (let
             (
                 (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                (vacate-job-id:string (at "vacate-job-id" active-job))
-                (slice-count:integer (at "slice-count" active-job))
+                (unit-count:integer (ref-VCT::URDC_VacateUnitCountForKind pool-id asset-id vacate-kind))
+                (slice-count:integer (UC_ProbeSliceCount unit-count vacate-kind))
                 (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id asset-id vacate-kind slice-count))
                 (slice0:object (at 0 (at "slices" plan)))
             )
@@ -459,7 +458,7 @@
                     "pool-id": pool-id,
                     "asset-id": asset-id,
                     "vacate-kind": vacate-kind,
-                    "vacate-job-id": vacate-job-id,
+                    "vacate-job-id": "",
                     "owner-ids": (at "owner-ids" slice0),
                     "beneficiary-ids": (at "beneficiary-ids" slice0),
                     "nonces-array": [],
@@ -470,11 +469,14 @@
                     "pool-id": pool-id,
                     "asset-id": asset-id,
                     "vacate-kind": vacate-kind,
-                    "vacate-job-id": vacate-job-id,
+                    "vacate-job-id": "",
                     "owner-ids": (at "owner-ids" slice0),
                     "beneficiary-ids": (at "beneficiary-ids" slice0),
                     "nonces-array": (at "nonces-array" slice0),
-                    "amounts-array": (at "amounts-array" slice0),
+                    "amounts-array": (if (= vacate-kind AQP-VCT.VACATE-KIND-OF)
+                        (ref-VCT::UC_ZeroIntAmountsMatrix (at "nonces-array" slice0))
+                        (at "amounts-array" slice0)
+                    ),
                     "tf-amounts": []
                 }
             )
@@ -681,11 +683,8 @@
                 (
                     (slice-count:integer (UC_ProbeSliceCount unit-total AQP-VCT.VACATE-KIND-OF))
                 )
-                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count)
                 (let
                     (
-                        (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                        (vacate-job-id:string (at "vacate-job-id" active-job))
                         (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count))
                         (slice0:object (at 0 (at "slices" plan)))
                     )
@@ -693,7 +692,7 @@
                         "pool-id": pool-id,
                         "asset-id": dpof-id,
                         "vacate-kind": AQP-VCT.VACATE-KIND-OF,
-                        "vacate-job-id": vacate-job-id,
+                        "vacate-job-id": "",
                         "owner-ids": (at "owner-ids" slice0),
                         "beneficiary-ids": (at "beneficiary-ids" slice0),
                         "nonces-array": (at "nonces-array" slice0),
@@ -884,9 +883,17 @@
         (let
             (
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id 1 1))
+                (s0:object (at 0 (at "slices" plan)))
                 (g-before:integer (env-gas))
             )
-            (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible patron pool-id ouro-id)
+            (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible
+                patron pool-id ouro-id
+                (at "owner-ids" s0)
+                (at "beneficiary-ids" s0)
+                (at "amounts" s0)
+            )
             (- (env-gas) g-before)
         )
     )
@@ -895,9 +902,19 @@
         (let
             (
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id 2 1))
+                (s0:object (at 0 (at "slices" plan)))
+                (z:[[integer]] (ref-VCT::UC_ZeroIntAmountsMatrix (at "nonces-array" s0)))
                 (g-before:integer (env-gas))
             )
-            (ref-TS02-C3::AQP-POOL|C_FullVacateOrtoFungible patron pool-id dpof-id)
+            (ref-TS02-C3::AQP-POOL|C_FullVacateOrtoFungible
+                patron pool-id dpof-id
+                (at "owner-ids" s0)
+                (at "beneficiary-ids" s0)
+                (at "nonces-array" s0)
+                z
+            )
             (- (env-gas) g-before)
         )
     )
@@ -906,9 +923,18 @@
         (let
             (
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id 3 1))
+                (s0:object (at 0 (at "slices" plan)))
                 (g-before:integer (env-gas))
             )
-            (ref-TS02-C3::AQP-POOL|C_FullVacateSemiFungible patron pool-id dpsf-id)
+            (ref-TS02-C3::AQP-POOL|C_FullVacateSemiFungible
+                patron pool-id dpsf-id
+                (at "owner-ids" s0)
+                (at "beneficiary-ids" s0)
+                (at "nonces-array" s0)
+                (at "amounts-array" s0)
+            )
             (- (env-gas) g-before)
         )
     )
@@ -917,9 +943,18 @@
         (let
             (
                 (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id 4 1))
+                (s0:object (at 0 (at "slices" plan)))
                 (g-before:integer (env-gas))
             )
-            (ref-TS02-C3::AQP-POOL|C_FullVacateNonFungible patron pool-id dpnf-id)
+            (ref-TS02-C3::AQP-POOL|C_FullVacateNonFungible
+                patron pool-id dpnf-id
+                (at "owner-ids" s0)
+                (at "beneficiary-ids" s0)
+                (at "nonces-array" s0)
+                (at "amounts-array" s0)
+            )
             (- (env-gas) g-before)
         )
     )

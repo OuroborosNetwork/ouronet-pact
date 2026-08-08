@@ -5,10 +5,11 @@ Persistent notes about **Ouronet** for humans and for AI assistants. **Everythin
 ## How to use
 
 1. **`INDEX.md`** — full map (pact / ouronet / modules / kursan)
-2. **`CONTEXT.md`** — terminology and project shape
-3. **`ouronet/MODULE_ARCHITECTURE.md`** — sovereign module prefixes, caps, Talos, UR/W layers
-4. **`ouronet/architecture/README.md`** — repo inventories, REPL, deploy docs
-5. **`memories/`** — dated decision notes
+2. **`StoicSyntax.md`** — Ouronet’s Pact discipline for human-auditable code and Talos-style multi-module composition; any Pact builder can adopt it
+3. **`CONTEXT.md`** — terminology and project shape
+4. **`ouronet/MODULE_ARCHITECTURE.md`** — sovereign module prefixes, caps, Talos, UR/W layers
+5. **`ouronet/architecture/README.md`** — repo inventories, REPL, deploy docs
+6. **`memories/`** — dated decision notes
 
 ## Layout
 

@@ -1,6 +1,7 @@
 ;; Stage 01 Talos Interface Registry — HISTORICAL ClientFour versions only.
 ;; Latest Talos client interfaces live in each 3_Talos/*.pact file (deploy with module).
-;; ClientFourV1–V5 + V6BlockTime historical below; latest ClientFourV6 ships in 06_TS01-C4.pact.
+;; ClientFourV1–V5 + V6BlockTime historical below; ClientFourV6 shipped only in 06_TS01-C4
+;; (not frozen here — A_Flush typed to module-owned PythiaLedgerV2). Latest: ClientFourV7 in 06_TS01-C4.
 ;;
 (interface TalosStageOne_ClientFourV1
     @doc "Exposes Ouronet Stage One fourth client batch — CODEX (Mnemosyne Codex Identity + StoicTags)."

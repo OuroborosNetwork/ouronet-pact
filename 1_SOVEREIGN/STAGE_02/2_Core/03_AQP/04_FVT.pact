@@ -286,6 +286,8 @@
         member-link-count:integer                               ;;[M]   ScoreEntityLink rows (gates C_SetMosaic; no keys in defcap)
         mosaic:bool                                             ;;[Mu]  mix score + triplet entities when true
         membership-mode:string                                  ;;[Mu]  BAR | SCORE | TRUE-TRIPLET | STANDARD-TRIPLET
+        ;;
+        ;;Select Keys
         fvt-id:string
     )
     (defschema FVT|ScoreEntityLink
@@ -294,6 +296,8 @@
         enabled:bool                                            ;;[M]
         swpair:string                                           ;;[..]
         ghost-tvl-weight:decimal                                ;;[M]
+        ;;
+        ;;Select Keys
         fvt-id:string                                           ;;[.]
         score-entity-id:string                                  ;;[.]   score-id or triplet-id T|…
     )
@@ -306,6 +310,8 @@
         ats-1-2-id:string
         rank:integer                                            ;;[.]   Lane count at issue (v1 = 3)
         active:bool
+        ;;
+        ;;Select Keys
         multiplet-family-id:string
     )
     (defschema FVT|RPS|Global
@@ -317,6 +323,8 @@
         segmentation:bool
         reward-kind:string                                      ;;[.]   PLAIN | MULTIPLET_BASE
         multiplet-family-id:string                              ;;[.]   BAR or F|t0|t1|t2
+        ;;
+        ;;Select Keys
         fvt-id:string
         dptf-id:string
     )
@@ -325,6 +333,8 @@
         last-farm-rps-g:decimal
         member-deb-rps:decimal
         pending-member-rewards:decimal
+        ;;
+        ;;Select Keys
         fvt-id:string
         score-entity-id:string
         dptf-id:string
@@ -1493,7 +1503,7 @@
             )
         )
     )
-    (defun URDC_FvtHasScoreEntityLinks:bool (fvt-id:string)
+    (defun URC_FvtHasScoreEntityLinks:bool (fvt-id:string)
         @doc "True when member-link-count > 0 (cheap row read; preferred over keys/select)."
         (> (UR_FVT|MemberLinkCount fvt-id) 0)
     )
@@ -1746,7 +1756,7 @@
     (defun URC_FvtHasAnyMemberLink:bool (fvt-id:string)
         @doc "True when FVT has at least one ScoreEntityLink row (blocks C_SetMosaic). \
             \ Uses URD keys filter — not select (select/keys disallowed inside defcaps)."
-        (URDC_FvtHasScoreEntityLinks fvt-id)
+        (URC_FvtHasScoreEntityLinks fvt-id)
     )
     (defun URC_FvtResolveClass:integer (fvt-id:string)
         @doc "Probe FVT|T row: returns fvt-class, or -1 when the row is absent (read failure)."
@@ -2402,7 +2412,7 @@
             (enforce can-upgrade "SetCommonDenominator requires can-upgrade true")
             (enforce (= fvt-class 0) "SetCommonDenominator applies to farm (class 0) FVT only")
             (enforce
-                (not (URDC_FvtHasScoreEntityLinks fvt-id))
+                (not (URC_FvtHasScoreEntityLinks fvt-id))
                 "Cannot change common-denominator after ScoreEntityLink rows exist"
             )
             (enforce
@@ -2877,7 +2887,7 @@
                             (ref-AQP::URC_DptfStakeIsNativeLeg dptf-id)
                         )
                         ;; PHASE 4.5 — Sync FVT|T total-deb-score mirror for vault inject denominator
-                        (XI_4|SyncFvtTotalDebMirrors (at "distinct-fvts" settle-bundle))
+                        (XI_SyncFvtTotalDebMirrors (at "distinct-fvts" settle-bundle))
                         ;;
                         ;;===>PHASE 5===
                         ;; PHASE 5.1 — RPS unclaimed-count · UrStoa ≡ UpdateUnclaimedCount
@@ -2942,7 +2952,7 @@
                             (ref-AQP::URC_PoolActiveScoreIds pool-id)
                         )
                         ;; PHASE 4.5 — Sync FVT|T total-deb-score mirror for vault inject denominator
-                        (XI_4|SyncFvtTotalDebMirrors (at "distinct-fvts" settle-bundle))
+                        (XI_SyncFvtTotalDebMirrors (at "distinct-fvts" settle-bundle))
                         ;;
                         ;;===>PHASE 5===
                         ;; PHASE 5.1 — RPS unclaimed-count · UrStoa ≡ UpdateUnclaimedCount
@@ -3024,7 +3034,7 @@
                             (ref-AQP::URC_PoolActiveScoreIds pool-id)
                         )
                         ;; PHASE 4.5 — Sync FVT|T total-deb-score mirror for vault inject denominator
-                        (XI_4|SyncFvtTotalDebMirrors (at "distinct-fvts" settle-bundle))
+                        (XI_SyncFvtTotalDebMirrors (at "distinct-fvts" settle-bundle))
                         ;;
                         ;;===>PHASE 5===
                         ;; PHASE 5.1 — RPS unclaimed-count · UrStoa ≡ UpdateUnclaimedCount
@@ -3331,7 +3341,7 @@
     )
     ;;
     ;; --- Block A · Phase 4.5 FVT total-deb mirror (post-SCORE) ---
-    (defun XI_4|SyncFvtTotalDebMirrors:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_SyncFvtTotalDebMirrors:object{IgnisCollectorV1.OutputCumulator}
         (distinct-fvts:[string])
         @doc "After SCORE phase 4: refresh FVT|T total-deb-score mirror from linked SCR totals (vault/treasury inject)."
         ;; SECURE: granted by WU_Fvt|TotalDebScore (underlying W_).

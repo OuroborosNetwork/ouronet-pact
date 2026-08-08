@@ -8,7 +8,7 @@
     (defun UCK_Triplet:string (bronze-score-id:string silver-score-id:string golden-score-id:string))
     ;;
     ;;  [UR]
-    (defun UR_SCR|AllScoreIds:[string] ())
+    (defun URD_SCR|AllScoreIds:[string] ())
     (defun UR_SCR|ScoreOwnerKonto:string (score-id:string))
     (defun UR_SCR|ScoreCanUpgrade:bool (score-id:string))
     (defun UR_SCR|ScoreCanChangeOwner:bool (score-id:string))
@@ -1453,7 +1453,7 @@
     ;; Reads follow schema order: (1) SCR|Schema (2) SCR|UserSchema (3) SCR|SF|Schema (4) SCR|NF|TraitSchema (5) SCR|NF|ClassSchema (6) SF DefRevision (7) NF DefRevision
     ;;
     ;; [1] SCR|T|Score  (SCR|Schema)  Key = <Score-ID>
-    (defun UR_SCR|AllScoreIds:[string] ()
+    (defun URD_SCR|AllScoreIds:[string] ()
         @doc "Returns all row keys from SCR|T|Score."
         (keys SCR|T|Score)
     )

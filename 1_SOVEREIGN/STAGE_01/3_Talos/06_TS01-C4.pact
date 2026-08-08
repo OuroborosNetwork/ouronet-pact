@@ -1,11 +1,12 @@
 ;; TS01-C4 — Talos Stage One Client Four (CODEX + PYTHIA dual-Apollo + Pyth ledger flush).
-;; Deploy: load THIS file — TalosStageOne_ClientFourV6 + TS01-C4 module ship together.
+;; Deploy: load THIS file — TalosStageOne_ClientFourV7 + TS01-C4 module ship together.
 ;; Historical registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact (ClientFour V1–V5 + V6BlockTime).
-;; Prerequisite: PYTHIA module deployed (23_PYTHIA.pact ships PythiaV3 + PythiaLedgerV2).
+;; Prior live ClientFourV6 lived only in this file (superseded by V7 — patronless A_RevokeLink).
+;; Prerequisite: PYTHIA module deployed (23_PYTHIA.pact ships PythiaV4 + PythiaLedgerV2).
 ;; REPL: REPL/Stage_01/[6.10]_PYTHIA.repl
 ;;
-(interface TalosStageOne_ClientFourV6
-    @doc "Talos Stage One Client Four V6 — batch Pyth flush entries (explicit day + iz-complete)."
+(interface TalosStageOne_ClientFourV7
+    @doc "Talos Stage One Client Four V7 — patronless Cronoton A_RevokeLink (no IGNIS); C_RevokeLink still 1 IGNIS."
     ;;
     (defun CODEX|A_RegisterCodexIdentity:string
         (
@@ -45,7 +46,7 @@
             patron:string
             dual-link-key:string
         ))
-    (defun PYTHIA|A_RevokeLink:string (patron:string dual-link-key:string))
+    (defun PYTHIA|A_RevokeLink:string (dual-link-key:string))
     (defun PYTHIA|A_Flush:string
         (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]))
 )
@@ -54,7 +55,7 @@
     @doc "TALOS Client Module for Stage 1 — CODEX + PYTHIA (Apollo keys + Pyth ledger flush)."
     ;;
     (implements OuronetPolicyV1)
-    (implements TalosStageOne_ClientFourV6)
+    (implements TalosStageOne_ClientFourV7)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -263,7 +264,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV3} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV4} PYTHIA)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
                     (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
@@ -287,7 +288,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV3} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV4} PYTHIA)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
                     (rename-fee:decimal (ref-PYTHIA::UC_RenamePrice))
@@ -309,7 +310,7 @@
           consumer-lane:string )
         @doc "Both half-owners link deployed Standard+Smart halves into inactive dual row (no fee)."
         (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV3} PYTHIA))
+            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
                 (ref-PYTHIA::C_LinkDualApiKey standard-apollo smart-apollo consumer-lane)
             )
         )
@@ -317,7 +318,7 @@
     (defun PYTHIA|A_Link:string (standard-apollo:string smart-apollo:string)
         @doc "Cronoton activates dual link after off-chain Apollo proof (no fee)."
         (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV3} PYTHIA))
+            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
                 (ref-PYTHIA::A_LinkDualApiKey standard-apollo smart-apollo)
             )
         )
@@ -329,7 +330,7 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV3} PYTHIA)
+                    (ref-PYTHIA:module{PythiaV4} PYTHIA)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (revoke-fee:decimal (ref-PYTHIA::UC_RevokeIgnisFee))
                     (msg:string
@@ -348,25 +349,14 @@
             )
         )
     )
-    (defun PYTHIA|A_RevokeLink:string (patron:string dual-link-key:string)
-        @doc "Cronoton revokes active dual link; collects UC_RevokeIgnisFee IGNIS from patron."
+    (defun PYTHIA|A_RevokeLink:string (dual-link-key:string)
+        @doc "Cronoton revokes active dual link (no fee; patronless)."
         (with-capability (P|TS)
             (let
                 (
-                    (ref-PYTHIA:module{PythiaV3} PYTHIA)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (revoke-fee:decimal (ref-PYTHIA::UC_RevokeIgnisFee))
-                    (msg:string (ref-PYTHIA::A_RevokeDualLink dual-link-key))
+                    (ref-PYTHIA:module{PythiaV4} PYTHIA)
                 )
-                (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        revoke-fee
-                        patron
-                        (ref-IGNIS::URC_IsVirtualGasZero)
-                        []
-                    )
-                )
-                msg
+                (ref-PYTHIA::A_RevokeDualLink dual-link-key)
             )
         )
     )

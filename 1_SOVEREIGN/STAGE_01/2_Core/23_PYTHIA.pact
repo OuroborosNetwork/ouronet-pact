@@ -1,8 +1,8 @@
 ;; PYTHIA — Apollo Pythia dual-Apollo API-key registry (Stage 01 core #23).
 ;; Spec: OuronetInformational/HANDOFF-pact-apollo-pythia-key-module.md
-;; Deploy: load THIS file — PythiaV3 + PythiaLedgerV2 interfaces + PYTHIA module ship together.
-;; Shared/historical registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact (PythiaLedger V1/V2BlockTime).
-;; Talos client: 1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact (TalosStageOne_ClientFourV6 embedded).
+;; Deploy: load THIS file — PythiaV4 + PythiaLedgerV2 interfaces + PYTHIA module ship together.
+;; Shared/historical registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact (PythiaV1–V3, PythiaLedger V1/V2BlockTime).
+;; Talos client: 1_SOVEREIGN/STAGE_01/3_Talos/06_TS01-C4.pact (TalosStageOne_ClientFourV7 embedded).
 ;; REPL: REPL/Stage_01/[6.10]_PYTHIA.repl
 ;; Cronoton: ouronet-ns.pythia-cronoton-keyset (A_Link / A_RevokeLink / A_Flush).
 ;;
@@ -20,8 +20,8 @@
 ;; You do not submit separate create-table txs. All eight fire in the PYTHIA deploy tx.
 ;; If PYTHIA were already on-chain at V3, only PythDaily + PythTotal are additive create-tables.
 ;;
-(interface PythiaV3
-    @doc "PYTHIA V3 — dual-Apollo pairs: deploy halves (500 STOA), link (free), Cronoton activate, revoke (1 IGNIS)."
+(interface PythiaV4
+    @doc "PYTHIA V4 — V3 dual-Apollo + Config UR prices; select-based inventory is URD_."
     (defun GOV|CronotonKey ())
     ;;
     (defun UC_DeployPrice:decimal ())
@@ -36,6 +36,7 @@
     (defun UC_CurrentChainEpoch:integer ())
     ;;
     (defun A_LinkDualApiKey:string (standard-apollo:string smart-apollo:string))
+        ;; Cronoton: create+activate (auto PYTHIA-<hash12> lane) or flip inactive→true
     (defun A_RevokeDualLink:string (dual-link-key:string))
     (defun A_UpdateDeployPrice:string (new-price:decimal))
     (defun A_UpdateRenamePrice:string (new-price:decimal))
@@ -59,7 +60,7 @@
             new-name:string
         ))
     ;;
-    ;; [UR] PYTHIA|S|ApiKey + PYTHIA|S|DualLink
+    ;; [UR] PYTHIA|S|ApiKey + DualLink + Config + Revocation
     (defun UR_Public:string (apollo-account:string))
     (defun UR_Counterpart:string (apollo-account:string))
     (defun UR_DualLinkConsumerLane:string (dual-link-key:string))
@@ -70,13 +71,14 @@
     (defun UR_DualLinkIzActive:bool (dual-link-key:string))
     (defun UR_DualLinkRowOrNull:object (dual-link-key:string))
     (defun UR_DualLinkIzActiveOrFalse:bool (dual-link-key:string))
+    (defun UR_Config ())
+    (defun UR_DeployPrice:decimal ())
+    (defun UR_RenamePrice:decimal ())
     (defun UR_RevocationAtHeight:integer ())
     (defun UR_RevocationEpoch:integer ())
-    (defun UR_ActiveDualLinkSet:[string] ())
     (defun UR_ApiKeyBySlot:object (standard-apollo:string))
-    (defun UR_ApiKeyByConsumer:object (smart-apollo:string))
     ;;
-    ;; [URD]
+    ;; [URD] — select / keys inventory
     (defun URD_ApiKeyCount:integer ())
     (defun URD_ApiKeyCountStr:string ())
     (defun URD_DualLinkCount:integer ())
@@ -84,6 +86,8 @@
     (defun URD_ListAllDualLinks:[object] ())
     (defun URD_ListActiveDualLinks:[object] ())
     (defun URD_ListInactiveDualLinks:[object] ())
+    (defun URD_ActiveDualLinkSet:[string] ())
+    (defun URD_ApiKeyByConsumer:object (smart-apollo:string))
     ;;
     ;; [INFO]
     (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
@@ -166,7 +170,7 @@
 (module PYTHIA GOV
     @doc "Dual-Apollo Pythia registry + on-chain Pyth work ledger (daily flush / running total)."
     ;;
-    (implements PythiaV3)
+    (implements PythiaV4)
     (implements PythiaLedgerV2)
     (implements OuronetPolicyV1)
     ;;
@@ -260,7 +264,7 @@
         @doc "Dual-Apollo pair. Table key = standard + BAR + smart composite (325 chars)."
         standard-apollo:string                          ;;[.]   Standard ₱. slot half
         smart-apollo:string                             ;;[.]   Smart Π. consumer half
-        consumer-lane:string                            ;;[M]   Stoic lane for the paired dual entity (set at C_Link)
+        consumer-lane:string                            ;;[M]   Stoic lane (C_Link) or auto PYTHIA-<hash12> (A_Link create); rename via C_UpdateDualConsumerLane
         iz-active:bool                                  ;;[M]   Live auth only when true (Cronoton or pre-linked false row)
         linked-at:time                                  ;;[.]   Block time at first link insert
         updated-at:time                                 ;;[M]   Block time at last iz-active mutation
@@ -277,12 +281,12 @@
         revoked-at-height:integer
     )
     ;;{2}
-    (deftable PYTHIA|T|ApiKeys:{PYTHIA|S|ApiKey})       ;;Key = <apollo-account>
-    (deftable PYTHIA|T|DualLinks:{PYTHIA|S|DualLink})   ;;Key = <dual-link-key>
-    (deftable PYTHIA|T|Config:{PYTHIA|S|Config})        ;;Key = PYTHIA|INFO
-    (deftable PYTHIA|T|Revocation:{PYTHIA|S|Revocation});;Key = PYTHIA|REVOCATION
-    (deftable PYTHIA|T|PythDaily:{PythiaLedgerV2.PYTHIA|S|PythDaily})  ;;Key = <day ordinal string>
-    (deftable PYTHIA|T|PythTotal:{PythiaLedgerV2.PYTHIA|S|PythTotal})  ;;Key = PYTHIA|STOACHAIN
+    (deftable PYTHIA|T|ApiKeys:{PYTHIA|S|ApiKey})                       ;;Key = <apollo-account>
+    (deftable PYTHIA|T|DualLinks:{PYTHIA|S|DualLink})                   ;;Key = <dual-link-key>
+    (deftable PYTHIA|T|Config:{PYTHIA|S|Config})                        ;;Key = PYTHIA|INFO
+    (deftable PYTHIA|T|Revocation:{PYTHIA|S|Revocation})                ;;Key = PYTHIA|REVOCATION
+    (deftable PYTHIA|T|PythDaily:{PythiaLedgerV2.PYTHIA|S|PythDaily})   ;;Key = <day ordinal string>
+    (deftable PYTHIA|T|PythTotal:{PythiaLedgerV2.PYTHIA|S|PythTotal})   ;;Key = PYTHIA|STOACHAIN
     ;;{3}
     (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR:string                                (CT_Bar))
@@ -360,19 +364,26 @@
         )
     )
     (defcap PYTHIA|A>LINK-DUAL (standard-apollo:string smart-apollo:string)
-        @doc "Cronoton flips inactive dual row to active after off-chain Apollo proof (C_Link required first)."
+        @doc "Cronoton create-or-activate: insert active dual row (auto lane) or flip inactive→true."
         @event
         (let
             (
                 (dlk:string (UC_DualLinkKey standard-apollo smart-apollo))
+                (row-missing:bool (= (try false (UR_DLK|Data dlk)) false))
             )
-            (UEV_ValidateCompositeDualLinkKey dlk)
-            (enforce
-                (!= (try false (UR_DLK|Data dlk)) false)
-                "Dual link row required; C_Link first"
+            (if row-missing
+                (UEV_DualPairForLink standard-apollo smart-apollo)
+                (enforce
+                    (fold (and) true
+                        [
+                            (not (UR_DualLinkIzActive dlk))
+                            (= (UR_Counterpart standard-apollo) smart-apollo)
+                            (= (UR_Counterpart smart-apollo) standard-apollo)
+                        ]
+                    )
+                    "Dual link not ready for Cronoton activate (must exist inactive with counterparts)"
+                )
             )
-            (enforce (not (UR_DualLinkIzActive dlk)) "Dual link is already active")
-            (UEV_DualPairReadyForActivate standard-apollo smart-apollo)
             (compose-capability (PYTHIA|CRONOTON))
             (compose-capability (SECURE))
         )
@@ -449,20 +460,12 @@
     ;;FUNCTIONS
     ;;{F0}  [UC]
     (defun UC_DeployPrice:decimal ()
-        @doc "Governance-tunable deploy toll (default 500 STOA per Apollo half; collected in TS01-C4)."
-        (with-default-read PYTHIA|T|Config PYTHIA|INFO
-            {"deploy-price" : PYTHIA|DEFAULT-DEPLOY-PRICE, "rename-price" : PYTHIA|DEFAULT-RENAME-PRICE}
-            {"deploy-price" := p}
-            p
-        )
+        @doc "Alias → UR_DeployPrice (kept for Talos/INFO call sites)."
+        (UR_DeployPrice)
     )
     (defun UC_RenamePrice:decimal ()
-        @doc "Governance-tunable consumer-lane rename toll (default 100 STOA; collected in TS01-C4)."
-        (with-default-read PYTHIA|T|Config PYTHIA|INFO
-            {"deploy-price" : PYTHIA|DEFAULT-DEPLOY-PRICE, "rename-price" : PYTHIA|DEFAULT-RENAME-PRICE}
-            {"rename-price" := p}
-            p
-        )
+        @doc "Alias → UR_RenamePrice (kept for Talos/INFO call sites)."
+        (UR_RenamePrice)
     )
     (defun UC_IsStandardApollo:bool (apollo-account:string)
         @doc "True when apollo-account begins with Standard ₱. (false = Smart Π.)."
@@ -495,6 +498,15 @@
     (defun UC_CurrentChainEpoch:integer ()
         @doc "Chain epoch for the executing block."
         (UC_ChainEpoch (at "block-height" (chain-data)))
+    )
+    (defun UC_AutonomousConsumerLane:string ()
+        @doc "Token-style auto lane PYTHIA-<first 12 of prev-block-hash> via U|DALOS.UDC_Makeid; rename later via C_UpdateDualConsumerLane."
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+            )
+            (ref-U|DALOS::UDC_Makeid "PYTHIA")
+        )
     )
     ;;
     ;;{F0b} [UCK]
@@ -618,7 +630,25 @@
         )
     )
     ;;
-    ;; [3] PYTHIA|T|Revocation  (PYTHIA|S|Revocation)  Key = PYTHIA|REVOCATION
+    ;; [3] PYTHIA|T|Config  (PYTHIA|S|Config)  Key = PYTHIA|INFO
+    (defun UR_Config ()
+        @doc "Full Config row (deploy-price + rename-price); defaults when unset."
+        (with-default-read PYTHIA|T|Config PYTHIA|INFO
+            {"deploy-price" : PYTHIA|DEFAULT-DEPLOY-PRICE, "rename-price" : PYTHIA|DEFAULT-RENAME-PRICE}
+            {"deploy-price" := d, "rename-price" := r}
+            {"deploy-price" : d, "rename-price" : r}
+        )
+    )
+    (defun UR_DeployPrice:decimal ()
+        @doc "Governance-tunable deploy toll (default 500 STOA per Apollo half; collected in TS01-C4)."
+        (at "deploy-price" (UR_Config))
+    )
+    (defun UR_RenamePrice:decimal ()
+        @doc "Governance-tunable consumer-lane rename toll (default 100 STOA; collected in TS01-C4)."
+        (at "rename-price" (UR_Config))
+    )
+    ;;
+    ;; [4] PYTHIA|T|Revocation  (PYTHIA|S|Revocation)  Key = PYTHIA|REVOCATION
     (defun UR_RevocationAtHeight:integer ()
         @doc "Block height recorded at last dual-link revoke; 0 when never revoked."
         (with-default-read PYTHIA|T|Revocation PYTHIA|REVOCATION
@@ -702,14 +732,7 @@
         )
     )
     ;;
-    ;; [7] Composite reads (dual-link views + active-key listing)
-    (defun UR_ActiveDualLinkSet:[string] ()
-        @doc "Active dual-link-key strings for Pythia cache mirror."
-        (map
-            (lambda (row:object) (at "dual-link-key" row))
-            (select PYTHIA|T|DualLinks ["dual-link-key"] (where "iz-active" (= true)))
-        )
-    )
+    ;; [7] Composite reads (dual-link views)
     (defun UR_ApiKeyBySlot:object (standard-apollo:string)
         @doc "Dual-link view keyed by Standard ₱. slot (owner/status reads)."
         (let
@@ -738,37 +761,6 @@
                         (at "iz-active" row)
                         (UR_OwnerAccount standard)
                         (UR_OwnerAccount smart)
-                        lane
-                    )
-                )
-            )
-        )
-    )
-    (defun UR_ApiKeyByConsumer:object (smart-apollo:string)
-        @doc "Auth-path lookup by Smart Π. consumer half."
-        (let
-            (
-                (rows:[object] (select PYTHIA|T|DualLinks
-                    [ "dual-link-key" "standard-apollo" "smart-apollo" "iz-active" "consumer-lane" ]
-                    (where "smart-apollo" (= smart-apollo))
-                ))
-            )
-            (if (= (length rows) 0)
-                (UDC_DualLinkView BAR BAR smart-apollo false BAR BAR BAR)
-                (let
-                    (
-                        (row:object (at 0 rows))
-                        (dlk:string (at "dual-link-key" row))
-                        (standard:string (at "standard-apollo" row))
-                        (lane:string (at "consumer-lane" row))
-                    )
-                    (UDC_DualLinkView
-                        dlk
-                        standard
-                        smart-apollo
-                        (at "iz-active" row)
-                        (UR_OwnerAccount standard)
-                        (UR_OwnerAccount smart-apollo)
                         lane
                     )
                 )
@@ -977,7 +969,7 @@
             dual-link-key:string
             row:object{PYTHIA|S|DualLink}
         )
-        @doc "Insert PYTHIA|T|DualLinks full row (C_Link only); stamps linked-at/updated-at from block time."
+        @doc "Insert PYTHIA|T|DualLinks full row (C_Link inactive or A_Link create+active); stamps linked-at/updated-at."
         (require-capability (SECURE))
         (let
             (
@@ -1115,6 +1107,44 @@
             (where "iz-active" (= false))
         )
     )
+    (defun URD_ActiveDualLinkSet:[string] ()
+        @doc "Active dual-link-key strings for Pythia cache mirror."
+        (map
+            (lambda (row:object) (at "dual-link-key" row))
+            (select PYTHIA|T|DualLinks ["dual-link-key"] (where "iz-active" (= true)))
+        )
+    )
+    (defun URD_ApiKeyByConsumer:object (smart-apollo:string)
+        @doc "Auth-path lookup by Smart Π. consumer half (select on DualLinks)."
+        (let
+            (
+                (rows:[object] (select PYTHIA|T|DualLinks
+                    [ "dual-link-key" "standard-apollo" "smart-apollo" "iz-active" "consumer-lane" ]
+                    (where "smart-apollo" (= smart-apollo))
+                ))
+            )
+            (if (= (length rows) 0)
+                (UDC_DualLinkView BAR BAR smart-apollo false BAR BAR BAR)
+                (let
+                    (
+                        (row:object (at 0 rows))
+                        (dlk:string (at "dual-link-key" row))
+                        (standard:string (at "standard-apollo" row))
+                        (lane:string (at "consumer-lane" row))
+                    )
+                    (UDC_DualLinkView
+                        dlk
+                        standard
+                        smart-apollo
+                        (at "iz-active" row)
+                        (UR_OwnerAccount standard)
+                        (UR_OwnerAccount smart-apollo)
+                        lane
+                    )
+                )
+            )
+        )
+    )
     (defun URD_ListPythDaily:[object{PythiaLedgerV2.PYTHIA|S|PythDaily}] (from:integer to:integer)
         @doc "Bounded daily delta rows for charting (inclusive range; empty when invalid)."
         (if
@@ -1226,16 +1256,38 @@
     ;;
     ;;{F5}  [A]
     (defun A_LinkDualApiKey:string (standard-apollo:string smart-apollo:string)
-        @doc "Cronoton flips inactive dual row to active (C_Link required first; no fee)."
+        @doc "Cronoton create-or-activate (no fee): create active dual with auto PYTHIA-<hash12> lane, or flip inactive C_Link row to true."
         (UEV_IMC)
         (let
             (
                 (dlk:string (UC_DualLinkKey standard-apollo smart-apollo))
+                (row-missing:bool (= (try false (UR_DLK|Data dlk)) false))
             )
             (with-capability (PYTHIA|A>LINK-DUAL standard-apollo smart-apollo)
-                (WU_DualLink|IzActive dlk true)
+                (if row-missing
+                    (let
+                        (
+                            (lane:string (UC_AutonomousConsumerLane))
+                        )
+                        (XI_ApplyDualCounterparts standard-apollo smart-apollo)
+                        (WI_DualLink dlk
+                            (UDC_DLK|DualLink
+                                standard-apollo smart-apollo lane true dlk
+                            )
+                        )
+                        (format "Pythia dual link {} created+activated with lane {}" [dlk lane])
+                    )
+                    (let
+                        (
+                            (msg:string
+                                (format "Pythia dual link {} activated" [dlk])
+                            )
+                        )
+                        (WU_DualLink|IzActive dlk true)
+                        msg
+                    )
+                )
             )
-            (format "Pythia dual link {} activated" [dlk])
         )
     )
     (defun A_RevokeDualLink:string (dual-link-key:string)
@@ -1251,7 +1303,7 @@
         (UEV_IMC)
         (with-capability (GOV|PYTHIA_ADMIN)
             (with-capability (SECURE)
-                (WW_Config new-price (UC_RenamePrice))
+                (WW_Config new-price (UR_RenamePrice))
             )
         )
         (format "Pythia deploy price set to {}" [new-price])
@@ -1260,7 +1312,7 @@
         (UEV_IMC)
         (with-capability (GOV|PYTHIA_ADMIN)
             (with-capability (SECURE)
-                (WW_Config (UC_DeployPrice) new-price)
+                (WW_Config (UR_DeployPrice) new-price)
             )
         )
         (format "Pythia rename price set to {}" [new-price])
@@ -1353,7 +1405,7 @@
             (
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 ;;
-                (deploy-fee:decimal (UC_DeployPrice))
+                (deploy-fee:decimal (UR_DeployPrice))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount owner-account))
                 (kind:string
                     (if (UC_IsStandardApollo apollo-account) "Standard (₱.)" "Smart (Π.)")
@@ -1453,7 +1505,7 @@
             (
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                 ;;
-                (rename-fee:decimal (UC_RenamePrice))
+                (rename-fee:decimal (UR_RenamePrice))
                 (row:object{PYTHIA|S|DualLink} (UR_DLK|Data dual-link-key))
                 (standard:string (at "standard-apollo" row))
                 (smart:string (at "smart-apollo" row))

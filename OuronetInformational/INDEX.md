@@ -4,9 +4,10 @@
 
 ## Start here
 
-1. **`CONTEXT.md`** — vocabulary, stages, stable facts
-2. **`ouronet/MODULE_ARCHITECTURE.md`** — prefixes, caps, Talos, UR/W layers
-3. **`ouronet/architecture/README.md`** — module inventory, REPL map, deploy docs
+1. **`StoicSyntax.md`** — Ouronet’s Pact **discipline** (human-auditable large code + multi-module composition); offered for any Pact builder
+2. **`CONTEXT.md`** — vocabulary, stages, stable facts
+3. **`ouronet/MODULE_ARCHITECTURE.md`** — prefixes, caps, Talos, UR/W layers (Ouronet detail behind StoicSyntax)
+4. **`ouronet/architecture/README.md`** — module inventory, REPL map, deploy docs
 
 ## Layout
 
@@ -42,6 +43,10 @@
 
 | Topic | File |
 |-------|------|
+| **Global architecture + Vacate chapter** | `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/README_GLOBAL.md` |
+| **Talos C_* catalogue** | `…/03_AQP/README_TALOS_CATALOGUE.md` |
+| **How-to Farm/Vault/Treasury** | `…/03_AQP/README_HOWTO_FVT.md` |
+| Hub + module READMEs | `…/03_AQP/README.md` |
 | Score links XI/XE | `modules/aqp/score-links.md` |
 | Recipe cap validation | `modules/aqp/recipe-cap-validation.md` |
 | TFT vault IMC | `modules/aqp/tft-vault-imc.md` |

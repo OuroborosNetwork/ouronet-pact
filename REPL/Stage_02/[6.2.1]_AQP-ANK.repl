@@ -467,21 +467,21 @@
 (let
     (
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-        (anchor-ids:[string] (ref-ANK::UR_ANK|AllAnchorIds))
-        (bc-ids:[string] (ref-ANK::UR_BC|AllBoostClassIds))
+        (anchor-ids:[string] (ref-ANK::URD_ANK|AllAnchorIds))
+        (bc-ids:[string] (ref-ANK::URD_BC|AllBoostClassIds))
     )
-    ;;==== TX005 · 02 · list all issued anchors (UR_ANK|AllAnchorIds) ====================
-    (print "--- [TX005 · 02 · UR_ANK|AllAnchorIds] ---")
-    (print (format "<(AQP-ANK|UR_ANK|AllAnchorIds)> count => \"{}\"" [(length anchor-ids)]))
+    ;;==== TX005 · 02 · list all issued anchors (URD_ANK|AllAnchorIds) ====================
+    (print "--- [TX005 · 02 · URD_ANK|AllAnchorIds] ---")
+    (print (format "<(AQP-ANK|URD_ANK|AllAnchorIds)> count => \"{}\"" [(length anchor-ids)]))
     (map
         (lambda (aid:string)
             (print (format "  anchor-id: {} | asset: {} | state: {} | boost-class: {}" [aid (ref-ANK::UR_ANK|AnchoredAsset aid) (ref-ANK::UR_ANK|State aid) (ref-ANK::UR_ANK|BoostClassId aid)]))
         )
         anchor-ids
     )
-    ;;==== TX005 · 03 · list all BoostClasses (UR_BC|AllBoostClassIds) ===================
-    (print "--- [TX005 · 03 · UR_BC|AllBoostClassIds] ---")
-    (print (format "<(AQP-ANK|UR_BC|AllBoostClassIds)> count => \"{}\"" [(length bc-ids)]))
+    ;;==== TX005 · 03 · list all BoostClasses (URD_BC|AllBoostClassIds) ===================
+    (print "--- [TX005 · 03 · URD_BC|AllBoostClassIds] ---")
+    (print (format "<(AQP-ANK|URD_BC|AllBoostClassIds)> count => \"{}\"" [(length bc-ids)]))
     (map
         (lambda (bcid:string)
             (print (format "  boost-class-id: {} | anchors: {} | active: {}" [bcid (ref-ANK::UR_BC|Anchors bcid) (ref-ANK::UR_BC|Active bcid)]))

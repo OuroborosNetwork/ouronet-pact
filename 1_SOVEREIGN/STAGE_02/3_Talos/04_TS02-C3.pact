@@ -75,9 +75,6 @@
         (patron:string pool-id:string)
     )
     ;;
-    ;;=== PLANNED Talos client shells (comment-only — sovereign C_* home TBD) ===
-    ;; AQP-POOL|C_VacatePool(patron pool-id) -> sovereign C_VacatePool TBD
-    ;;
     (defun AQP-POOL|C_StakeSemiFungibleCollectable:string
         (
             patron:string
@@ -153,68 +150,98 @@
     (defun AQP-POOL|C_SyncNonFungibleAnchors:string
         (patron:string beneficiary-id:string dpnf-id:string)
     )
-    (defun AQP-POOL|C_BeginVacate:string
-        (patron:string pool-id:string asset-id:string vacate-kind:integer slice-count:integer)
-    )
-    (defun AQP-POOL|C_ResliceVacate:string
-        (patron:string vacate-job-id:string slice-count:integer)
-    )
-    (defun AQP-POOL|C_VacateChunkTrueFungible:string
+    (defun AQP-POOL|C_VacateTrueFungibleLegs:string
         (
             patron:string
-            vacate-job-id:string
-            slice-idx:integer
+            pool-id:string
+            dptf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+            finalize:bool
+        )
+    )
+    (defun AQP-POOL|C_VacateOrtoFungibleLegs:string
+        (
+            patron:string
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+            finalize:bool
+        )
+    )
+    (defun AQP-POOL|C_VacateSemiFungibleLegs:string
+        (
+            patron:string
+            pool-id:string
+            dpsf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+            finalize:bool
+        )
+    )
+    (defun AQP-POOL|C_VacateNonFungibleLegs:string
+        (
+            patron:string
+            pool-id:string
+            dpnf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+            finalize:bool
+        )
+    )
+    (defun AQP-POOL|C_AbortVacate:string
+        (patron:string pool-id:string)
+    )
+    (defun AQP-POOL|C_FullVacateTrueFungible:string
+        (
+            patron:string
+            pool-id:string
+            dptf-id:string
             owner-ids:[string]
             beneficiary-ids:[string]
             amounts:[decimal]
         )
     )
-    (defun AQP-POOL|C_VacateChunkNonce:string
-        (
-            patron:string
-            vacate-job-id:string
-            slice-idx:integer
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-            amounts-array:[[integer]]
-        )
-    )
-    (defun AQP-POOL|C_VacateChunkOrtoFungible:string
-        (
-            patron:string
-            vacate-job-id:string
-            slice-idx:integer
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-        )
-    )
-    (defun AQP-POOL|C_VacateChunkCollectable:string
-        (
-            patron:string
-            vacate-job-id:string
-            slice-idx:integer
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-            amounts-array:[[integer]]
-        )
-    )
-    (defun AQP-POOL|C_AbortVacate:string
-        (patron:string vacate-job-id:string)
-    )
-    (defun AQP-POOL|C_FullVacateTrueFungible:string
-        (patron:string pool-id:string dptf-id:string)
-    )
     (defun AQP-POOL|C_FullVacateOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string)
+        (
+            patron:string
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
     )
     (defun AQP-POOL|C_FullVacateSemiFungible:string
-        (patron:string pool-id:string dpsf-id:string)
+        (
+            patron:string
+            pool-id:string
+            dpsf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
     )
     (defun AQP-POOL|C_FullVacateNonFungible:string
-        (patron:string pool-id:string dpnf-id:string)
+        (
+            patron:string
+            pool-id:string
+            dpnf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
     )
     ;;
     ;;  [AQP-FVT]
@@ -447,98 +474,122 @@
         @event
         (compose-capability (P|TS))
     )
-    (defcap AQP|C>BEGIN-VACATE
-        (patron:string pool-id:string asset-id:string vacate-kind:integer slice-count:integer)
-        @doc "AQP client event: open sliced vacate session. Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>RESLICE-VACATE
-        (patron:string vacate-job-id:string slice-count:integer)
-        @doc "AQP client event: rebuild vacate slices (new VacateJobID). Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>VACATE-CHUNK-TRUE-FUNGIBLE
+    (defcap AQP|C>VACATE-TRUE-FUNGIBLE-LEGS
         (
             patron:string
-            vacate-job-id:string
-            slice-idx:integer
+            pool-id:string
+            dptf-id:string
             owner-ids:[string]
             beneficiary-ids:[string]
             amounts:[decimal]
+            finalize:bool
         )
-        @doc "AQP client event: execute one TF vacate slice. Composes P|TS only."
+        @doc "AQP client event: stateless TF vacate legs batch. Composes P|TS only."
         @event
         (compose-capability (P|TS))
     )
-    (defcap AQP|C>VACATE-CHUNK-NONCE
+    (defcap AQP|C>VACATE-ORTO-FUNGIBLE-LEGS
         (
             patron:string
-            vacate-job-id:string
-            slice-idx:integer
+            pool-id:string
+            dpof-id:string
             owner-ids:[string]
             beneficiary-ids:[string]
             nonces-array:[[integer]]
             amounts-array:[[integer]]
+            finalize:bool
         )
-        @doc "AQP client event: execute one OF/DPSF/DPNF vacate slice. Composes P|TS only."
+        @doc "AQP client event: stateless OF vacate legs batch. Composes P|TS only."
         @event
         (compose-capability (P|TS))
     )
-    (defcap AQP|C>VACATE-CHUNK-ORTO-FUNGIBLE
+    (defcap AQP|C>VACATE-SEMI-FUNGIBLE-LEGS
         (
             patron:string
-            vacate-job-id:string
-            slice-idx:integer
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-        )
-        @doc "AQP client event: OF vacate slice (zero-sentinel amounts). Composes P|TS only."
-        @event
-        (compose-capability (P|TS))
-    )
-    (defcap AQP|C>VACATE-CHUNK-COLLECTABLE
-        (
-            patron:string
-            vacate-job-id:string
-            slice-idx:integer
+            pool-id:string
+            dpsf-id:string
             owner-ids:[string]
             beneficiary-ids:[string]
             nonces-array:[[integer]]
             amounts-array:[[integer]]
+            finalize:bool
         )
-        @doc "AQP client event: DPSF/DPNF vacate slice. Composes P|TS only."
+        @doc "AQP client event: stateless DPSF vacate legs batch. Composes P|TS only."
+        @event
+        (compose-capability (P|TS))
+    )
+    (defcap AQP|C>VACATE-NON-FUNGIBLE-LEGS
+        (
+            patron:string
+            pool-id:string
+            dpnf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+            finalize:bool
+        )
+        @doc "AQP client event: stateless DPNF vacate legs batch. Composes P|TS only."
         @event
         (compose-capability (P|TS))
     )
     (defcap AQP|C>ABORT-VACATE
-        (patron:string vacate-job-id:string)
-        @doc "AQP client event: abort vacate session. Composes P|TS only."
+        (patron:string pool-id:string)
+        @doc "AQP client event: clear vacate-in-progress (stake stays disabled). Composes P|TS only."
         @event
         (compose-capability (P|TS))
     )
     (defcap AQP|C>FULL-VACATE-TRUE-FUNGIBLE
-        (patron:string pool-id:string dptf-id:string)
-        @doc "AQP client event: full TF vacate (pool-id + dptf-id). Composes P|TS only."
+        (
+            patron:string
+            pool-id:string
+            dptf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+        )
+        @doc "AQP client event: full TF vacate (UI-supplied Legs payload). Composes P|TS only."
         @event
         (compose-capability (P|TS))
     )
     (defcap AQP|C>FULL-VACATE-ORTO-FUNGIBLE
-        (patron:string pool-id:string dpof-id:string)
+        (
+            patron:string
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
         @doc "AQP client event: full OF vacate. Composes P|TS only."
         @event
         (compose-capability (P|TS))
     )
     (defcap AQP|C>FULL-VACATE-SEMI-FUNGIBLE
-        (patron:string pool-id:string dpsf-id:string)
+        (
+            patron:string
+            pool-id:string
+            dpsf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
         @doc "AQP client event: full DPSF vacate. Composes P|TS only."
         @event
         (compose-capability (P|TS))
     )
     (defcap AQP|C>FULL-VACATE-NON-FUNGIBLE
-        (patron:string pool-id:string dpnf-id:string)
+        (
+            patron:string
+            pool-id:string
+            dpnf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
         @doc "AQP client event: full DPNF vacate. Composes P|TS only."
         @event
         (compose-capability (P|TS))
@@ -1373,56 +1424,22 @@
         )
     )
     ;;
-    (defun AQP-POOL|C_BeginVacate:string
-        (patron:string pool-id:string asset-id:string vacate-kind:integer slice-count:integer)
-        @doc "Open sliced vacate session. Talos shell → AQP-VCT::C_BeginVacate."
-        (with-capability
-            (AQP|C>BEGIN-VACATE patron pool-id asset-id vacate-kind slice-count)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::C_Collect patron
-                    (ref-VCT::C_BeginVacate pool-id asset-id vacate-kind slice-count)
-                )
-                (format "Successfully began vacate session for {} on Pool {} ({} slices)."
-                    [asset-id pool-id slice-count]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|C_ResliceVacate:string
-        (patron:string vacate-job-id:string slice-count:integer)
-        @doc "Rebuild vacate slices for remaining inventory. Talos shell → AQP-VCT::C_ResliceVacate."
-        (with-capability (AQP|C>RESLICE-VACATE patron vacate-job-id slice-count)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::C_Collect patron
-                    (ref-VCT::C_ResliceVacate vacate-job-id slice-count)
-                )
-                (format "Successfully resliced vacate job {} ({} slices)."
-                    [vacate-job-id slice-count]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|C_VacateChunkTrueFungible:string
+    ;; Vacate — Full (1 tx) or Stateless Legs (N txs; auto-begin; finalize on last)
+    ;;
+    (defun AQP-POOL|C_VacateTrueFungibleLegs:string
         (
             patron:string
-            vacate-job-id:string
-            slice-idx:integer
+            pool-id:string
+            dptf-id:string
             owner-ids:[string]
             beneficiary-ids:[string]
             amounts:[decimal]
+            finalize:bool
         )
-        @doc "Execute one TF vacate slice. Talos shell → AQP-VCT::C_VacateChunkTrueFungible."
+        @doc "Stateless TF vacate legs batch. Auto-begins; finalize=true when asset empty."
         (with-capability
-            (AQP|C>VACATE-CHUNK-TRUE-FUNGIBLE
-                patron vacate-job-id slice-idx owner-ids beneficiary-ids amounts
+            (AQP|C>VACATE-TRUE-FUNGIBLE-LEGS
+                patron pool-id dptf-id owner-ids beneficiary-ids amounts finalize
             )
             (let
                 (
@@ -1430,30 +1447,31 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::C_VacateChunkTrueFungible
-                        vacate-job-id slice-idx owner-ids beneficiary-ids amounts
+                    (ref-VCT::C_VacateTrueFungibleLegs
+                        pool-id dptf-id owner-ids beneficiary-ids amounts finalize
                     )
                 )
-                (format "Successfully vacated TF slice {} on job {} ({} owner leg(s))."
-                    [slice-idx vacate-job-id (length owner-ids)]
+                (format "Successfully vacated TF legs on Pool {} ({} owner leg(s){}; asset {})."
+                    [pool-id (length owner-ids) (if finalize " finalize" "") dptf-id]
                 )
             )
         )
     )
-    (defun AQP-POOL|C_VacateChunkNonce:string
+    (defun AQP-POOL|C_VacateOrtoFungibleLegs:string
         (
             patron:string
-            vacate-job-id:string
-            slice-idx:integer
+            pool-id:string
+            dpof-id:string
             owner-ids:[string]
             beneficiary-ids:[string]
             nonces-array:[[integer]]
             amounts-array:[[integer]]
+            finalize:bool
         )
-        @doc "Execute one OF/DPSF/DPNF vacate slice. Talos shell → AQP-VCT::C_VacateChunkNonce."
+        @doc "Stateless OF vacate legs batch. Amounts may be zero-sentinels."
         (with-capability
-            (AQP|C>VACATE-CHUNK-NONCE
-                patron vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
+            (AQP|C>VACATE-ORTO-FUNGIBLE-LEGS
+                patron pool-id dpof-id owner-ids beneficiary-ids nonces-array amounts-array finalize
             )
             (let
                 (
@@ -1461,63 +1479,31 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::C_VacateChunkNonce
-                        vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
+                    (ref-VCT::C_VacateOrtoFungibleLegs
+                        pool-id dpof-id owner-ids beneficiary-ids nonces-array amounts-array finalize
                     )
                 )
-                (format "Successfully vacated nonce slice {} on job {} ({} owner leg(s))."
-                    [slice-idx vacate-job-id (length owner-ids)]
+                (format "Successfully vacated OF legs on Pool {} ({} owner leg(s){}; asset {})."
+                    [pool-id (length owner-ids) (if finalize " finalize" "") dpof-id]
                 )
             )
         )
     )
-    (defun AQP-POOL|C_VacateChunkOrtoFungible:string
+    (defun AQP-POOL|C_VacateSemiFungibleLegs:string
         (
             patron:string
-            vacate-job-id:string
-            slice-idx:integer
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-        )
-        @doc "OF vacate slice — zero-sentinel amounts; Talos shell → C_VacateChunkNonce."
-        (with-capability
-            (AQP|C>VACATE-CHUNK-ORTO-FUNGIBLE
-                patron vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array
-            )
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                    (amounts-array:[[integer]]
-                        (ref-VCT::UC_ZeroIntAmountsMatrix nonces-array)
-                    )
-                )
-                (ref-IGNIS::C_Collect patron
-                    (ref-VCT::C_VacateChunkNonce
-                        vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
-                    )
-                )
-                (format "Successfully vacated OF slice {} on job {} ({} owner leg(s))."
-                    [slice-idx vacate-job-id (length owner-ids)]
-                )
-            )
-        )
-    )
-    (defun AQP-POOL|C_VacateChunkCollectable:string
-        (
-            patron:string
-            vacate-job-id:string
-            slice-idx:integer
+            pool-id:string
+            dpsf-id:string
             owner-ids:[string]
             beneficiary-ids:[string]
             nonces-array:[[integer]]
             amounts-array:[[integer]]
+            finalize:bool
         )
-        @doc "DPSF/DPNF vacate slice. Talos shell → AQP-VCT::C_VacateChunkNonce."
+        @doc "Stateless DPSF vacate legs batch."
         (with-capability
-            (AQP|C>VACATE-CHUNK-COLLECTABLE
-                patron vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
+            (AQP|C>VACATE-SEMI-FUNGIBLE-LEGS
+                patron pool-id dpsf-id owner-ids beneficiary-ids nonces-array amounts-array finalize
             )
             (let
                 (
@@ -1525,45 +1511,89 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::C_VacateChunkNonce
-                        vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
+                    (ref-VCT::C_VacateSemiFungibleLegs
+                        pool-id dpsf-id owner-ids beneficiary-ids nonces-array amounts-array finalize
                     )
                 )
-                (format "Successfully vacated collectable slice {} on job {} ({} owner leg(s))."
-                    [slice-idx vacate-job-id (length owner-ids)]
+                (format "Successfully vacated DPSF legs on Pool {} ({} owner leg(s){}; asset {})."
+                    [pool-id (length owner-ids) (if finalize " finalize" "") dpsf-id]
+                )
+            )
+        )
+    )
+    (defun AQP-POOL|C_VacateNonFungibleLegs:string
+        (
+            patron:string
+            pool-id:string
+            dpnf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+            finalize:bool
+        )
+        @doc "Stateless DPNF vacate legs batch."
+        (with-capability
+            (AQP|C>VACATE-NON-FUNGIBLE-LEGS
+                patron pool-id dpnf-id owner-ids beneficiary-ids nonces-array amounts-array finalize
+            )
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::C_VacateNonFungibleLegs
+                        pool-id dpnf-id owner-ids beneficiary-ids nonces-array amounts-array finalize
+                    )
+                )
+                (format "Successfully vacated DPNF legs on Pool {} ({} owner leg(s){}; asset {})."
+                    [pool-id (length owner-ids) (if finalize " finalize" "") dpnf-id]
                 )
             )
         )
     )
     (defun AQP-POOL|C_AbortVacate:string
-        (patron:string vacate-job-id:string)
-        @doc "Abort active vacate session. Talos shell → AQP-VCT::C_AbortVacate."
-        (with-capability (AQP|C>ABORT-VACATE patron vacate-job-id)
+        (patron:string pool-id:string)
+        @doc "Clear vacate-in-progress; stake stays disabled. Talos → AQP-VCT::C_AbortVacate."
+        (with-capability (AQP|C>ABORT-VACATE patron pool-id)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::C_AbortVacate vacate-job-id)
+                    (ref-VCT::C_AbortVacate pool-id)
                 )
-                (format "Successfully aborted vacate job {}."
-                    [vacate-job-id]
+                (format "Successfully aborted vacate-in-progress on Pool {} (stake remains disabled)."
+                    [pool-id]
                 )
             )
         )
     )
     (defun AQP-POOL|C_FullVacateTrueFungible:string
-        (patron:string pool-id:string dptf-id:string)
-        @doc "Pool-owner full TF vacate (one tx). Talos shell → AQP-VCT::C_FullVacateTrueFungible."
-        (with-capability (AQP|C>FULL-VACATE-TRUE-FUNGIBLE patron pool-id dptf-id)
+        (
+            patron:string
+            pool-id:string
+            dptf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+        )
+        @doc "Pool-owner full TF vacate (one tx). UI dirty-reads inventory → Legs arrays → VCT."
+        (with-capability
+            (AQP|C>FULL-VACATE-TRUE-FUNGIBLE
+                patron pool-id dptf-id owner-ids beneficiary-ids amounts
+            )
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::C_FullVacateTrueFungible pool-id dptf-id)
+                    (ref-VCT::C_FullVacateTrueFungible
+                        pool-id dptf-id owner-ids beneficiary-ids amounts
+                    )
                 )
                 (format "Successfully full-vacated TrueFungible {} from Pool {}."
                     [dptf-id pool-id]
@@ -1572,16 +1602,29 @@
         )
     )
     (defun AQP-POOL|C_FullVacateOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string)
-        @doc "Pool-owner full OF vacate (one tx). Talos shell → AQP-VCT::C_FullVacateOrtoFungible."
-        (with-capability (AQP|C>FULL-VACATE-ORTO-FUNGIBLE patron pool-id dpof-id)
+        (
+            patron:string
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+        @doc "Pool-owner full OF vacate (one tx). UI dirty-reads inventory → Legs arrays → VCT."
+        (with-capability
+            (AQP|C>FULL-VACATE-ORTO-FUNGIBLE
+                patron pool-id dpof-id owner-ids beneficiary-ids nonces-array amounts-array
+            )
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::C_FullVacateOrtoFungible pool-id dpof-id)
+                    (ref-VCT::C_FullVacateOrtoFungible
+                        pool-id dpof-id owner-ids beneficiary-ids nonces-array amounts-array
+                    )
                 )
                 (format "Successfully full-vacated OrtoFungible {} from Pool {}."
                     [dpof-id pool-id]
@@ -1590,16 +1633,29 @@
         )
     )
     (defun AQP-POOL|C_FullVacateSemiFungible:string
-        (patron:string pool-id:string dpsf-id:string)
-        @doc "Pool-owner full DPSF vacate (one tx). Talos shell → AQP-VCT::C_FullVacateSemiFungible."
-        (with-capability (AQP|C>FULL-VACATE-SEMI-FUNGIBLE patron pool-id dpsf-id)
+        (
+            patron:string
+            pool-id:string
+            dpsf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+        @doc "Pool-owner full DPSF vacate (one tx). UI dirty-reads inventory → Legs arrays → VCT."
+        (with-capability
+            (AQP|C>FULL-VACATE-SEMI-FUNGIBLE
+                patron pool-id dpsf-id owner-ids beneficiary-ids nonces-array amounts-array
+            )
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::C_FullVacateSemiFungible pool-id dpsf-id)
+                    (ref-VCT::C_FullVacateSemiFungible
+                        pool-id dpsf-id owner-ids beneficiary-ids nonces-array amounts-array
+                    )
                 )
                 (format "Successfully full-vacated SemiFungible {} from Pool {}."
                     [dpsf-id pool-id]
@@ -1608,16 +1664,29 @@
         )
     )
     (defun AQP-POOL|C_FullVacateNonFungible:string
-        (patron:string pool-id:string dpnf-id:string)
-        @doc "Pool-owner full DPNF vacate (one tx). Talos shell → AQP-VCT::C_FullVacateNonFungible."
-        (with-capability (AQP|C>FULL-VACATE-NON-FUNGIBLE patron pool-id dpnf-id)
+        (
+            patron:string
+            pool-id:string
+            dpnf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+        @doc "Pool-owner full DPNF vacate (one tx). UI dirty-reads inventory → Legs arrays → VCT."
+        (with-capability
+            (AQP|C>FULL-VACATE-NON-FUNGIBLE
+                patron pool-id dpnf-id owner-ids beneficiary-ids nonces-array amounts-array
+            )
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::C_FullVacateNonFungible pool-id dpnf-id)
+                    (ref-VCT::C_FullVacateNonFungible
+                        pool-id dpnf-id owner-ids beneficiary-ids nonces-array amounts-array
+                    )
                 )
                 (format "Successfully full-vacated NonFungible {} from Pool {}."
                     [dpnf-id pool-id]

@@ -3,7 +3,7 @@
 **To:** Pythia agent (Khronoton automatic triggering service).  
 **From:** Ouronet Pact implementer.  
 **Module:** `ouronet-ns.PYTHIA` (`PythiaLedgerV2` + `23_PYTHIA.pact`).  
-**Talos entrypoint:** `ouronet-ns.TS01-C4.PYTHIA|A_Flush` (`TalosStageOne_ClientFourV6`).
+**Talos entrypoint:** `ouronet-ns.TS01-C4.PYTHIA|A_Flush` (`TalosStageOne_ClientFourV7`).
 
 Canonical Pact spec (tables, metrics, reads): [`HANDOFF-pact-pyth-ledger.md`](HANDOFF-pact-pyth-ledger.md).
 
@@ -236,7 +236,7 @@ Implementation notes: [`modules/stage01/pythia-ledger-flush.md`](modules/stage01
 
 ## Deploy note
 
-First deploy of `23_PYTHIA.pact` + `06_TS01-C4.pact` (interfaces `PythiaLedgerV2` + `TalosStageOne_ClientFourV6`).
+First deploy of `23_PYTHIA.pact` + `06_TS01-C4.pact` (interfaces `PythiaLedgerV2` + `TalosStageOne_ClientFourV7`).
 
 Greenfield: all eight `create-table` calls fire in the PYTHIA deploy tx.
 

@@ -130,7 +130,7 @@
             (
                 (tracker:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
                 (deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
-                (has-stake:bool (ref-AQP::URDC_BenDpnfHasStake beneficiary-id dpnf-id))
+                (has-stake:bool (ref-AQP::URC_BenDpnfHasStake beneficiary-id dpnf-id))
                 (anc:integer (ref-AQP::UR_AQP|BenDpnfActiveNonceCount beneficiary-id dpnf-id))
             )
             (map print

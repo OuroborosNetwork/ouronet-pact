@@ -4,11 +4,9 @@
     (defun UC_ZeroIntAmountsMatrix:[[integer]] (nonces-array:[[integer]]))
     (defun URDC_BuildVacateSlicePlan:object
         (pool-id:string asset-id:string vacate-kind:integer slice-count:integer))
-    (defun UR_Job:object (vacate-job-id:string))
-    (defun UR_Slice:object (vacate-job-id:string slice-idx:integer))
-    (defun URD_SlicesForJob:[object] (vacate-job-id:string))
-    (defun URDC_ActiveJobForPool:object (pool-id:string))
-    ;;  [UR/URD] vacate inventory + session observability (UI preflight)
+    (defun URDC_VacateUnitCountForKind:integer
+        (pool-id:string asset-id:string vacate-kind:integer))
+    ;;  [UR/URD] vacate inventory + vacate-in-progress observability (UI preflight)
     (defun UR_VacateInProgress:bool (pool-id:string))
     (defun UR_InitialVacateHash:string (pool-id:string))
     (defun UR_PhaseVacateHash:string (pool-id:string))
@@ -16,21 +14,25 @@
     (defun URD_VacateTfInventory:object (pool-id:string dptf-id:string))
     (defun URD_VacateOfInventory:object (pool-id:string dpof-id:string))
     (defun URD_VacateCollectableInventory:object (pool-id:string collectable-id:string son:bool))
-    ;;  [C] Full vacate — one tx (Talos wired)
-    (defun C_FullVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dptf-id:string))
-    (defun C_FullVacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpof-id:string))
-    (defun C_FullVacateSemiFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpsf-id:string))
-    (defun C_FullVacateNonFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpnf-id:string))
-    ;;  [C] Session vacate — multi-tx sliced (Talos wired)
-    (defun C_BeginVacate:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string asset-id:string vacate-kind:integer slice-count:integer))
-    (defun C_ResliceVacate:object{IgnisCollectorV1.OutputCumulator}
-        (vacate-job-id:string slice-count:integer))
-    (defun C_VacateChunkTrueFungible:object{IgnisCollectorV1.OutputCumulator}
-        (vacate-job-id:string slice-idx:integer owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun C_VacateChunkNonce:object{IgnisCollectorV1.OutputCumulator}
-        (vacate-job-id:string slice-idx:integer owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun C_AbortVacate:object{IgnisCollectorV1.OutputCumulator} (vacate-job-id:string))
+    ;;  [C] Full vacate — one tx: UI dirty-reads inventory, passes full Legs payload, always finalize
+    (defun C_FullVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
+    (defun C_FullVacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
+    (defun C_FullVacateSemiFungible:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dpsf-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
+    (defun C_FullVacateNonFungible:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dpnf-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
+    ;;  [C] Stateless batched legs — UI splits inventory; auto-begin; finalize=UI claim when asset empty
+    (defun C_VacateTrueFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal] finalize:bool))
+    (defun C_VacateOrtoFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]] finalize:bool))
+    (defun C_VacateSemiFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dpsf-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]] finalize:bool))
+    (defun C_VacateNonFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dpnf-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]] finalize:bool))
+    (defun C_AbortVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
 )
 
 ;; =============================================================================
@@ -39,15 +41,17 @@
 ;; Two UI variants — pick one per pool × asset stream:
 ;;
 ;;   FULL (one tx, Talos wired)
-;;     C_FullVacate* — URDC_VacateTfOwnerRows / URDC_VacateNonceOwnerRows + AQP array helpers; delegates to AQP-VCT.XI_Vacate*
-;;     atomics inside VCT|C>FULL-* caps. Use when inventory fits one-tx gas envelope.
+;;     C_FullVacate*(… Legs payload …) — UI dirty-reads URD/URDC (no scan in C_*), passes the
+;;     full inventory arrays, auto-begin → vacate all → finalize (re-enable stake). Same payload
+;;     shape as Legs; always finalizes (UI-trust, like Legs finalize=true).
 ;;
-;;   SLICED SESSION (multi-tx, Talos wired)
-;;     C_BeginVacate → C_VacateChunk* (×N) → auto finalize on last chunk;
-;;     optional C_ResliceVacate (new VacateJobID; old job resliced=true);
-;;     C_AbortVacate escape hatch (does not re-enable stake).
-;;     On-chain: VCT|T|Job (key=VacateJobID) + VCT|T|Slice (hash-only commitments).
-;;     Slice payloads: Begin/Reslice OC output + URDC_BuildVacateSlicePlan preflight.
+;;   STATELESS BATCHED LEGS (multi-tx, Talos wired)
+;;     C_Vacate*Legs(..., finalize) — UI dirty-reads URD inventory, splits into gas-safe batches,
+;;     dumps N txs. First successful tx auto-begins (disable stake + vacate-in-progress).
+;;     Last tx sets finalize=true (UI claim that asset emptied — write-only finalize, no on-chain scan).
+;;     If some txs fail, remaining inventory stays; UI re-reads, re-splits, continues.
+;;     C_AbortVacate(pool-id) clears vacate-in-progress; stake stays disabled (ops re-enable).
+;;     Preflight: URDC_BuildVacateSlicePlan (offline plan only — no on-chain job/slice writes).
 ;;
 ;; Vacate entity = OWNER (custody recipient). One owner may have multiple beneficiaries.
 ;; Bulk transfer list: parallel owner-ids, beneficiary-ids, amounts (or nonces per owner row).
@@ -177,9 +181,7 @@
 
     ;;<======================>
     ;;SCHEMAS-TABLES-CONSTANTS
-    ;; Session vacate: two job tables (+ P|T / P|MT):
-    ;;   Job   — one row per VacateJobID (pool-id immutable on row)
-    ;;   Slice — hash-only commitment per slice (payload lives in Begin/Reslice OC)
+    ;; Offline plan schemas (SlicePayload / VacateSlicePlan). No Job/Slice session tables.
     (defschema VCT|SlicePayload
         @doc "Vacate slice payload for plan OC and hash commitment. \
             \ TF (vacate-asset-kind=1): amounts populated; nonces-array and amounts-array empty. \
@@ -195,7 +197,8 @@
         amounts-array:[[integer]]
     )
     (defschema VCT|VacateSlicePlan
-        @doc "Begin/Reslice execution output — full slice payloads for off-chain storage."
+        @doc "Offline Legs split plan — full slice payloads for UI (no on-chain job writes). \
+            \ vacate-job-id is unused under Legs (always \"\")."
         vacate-job-id:string
         pool-id:string
         asset-id:string
@@ -203,32 +206,6 @@
         slice-count:integer
         slices:[object{VCT|SlicePayload}]
     )
-    (defschema VCT|Job
-        @doc "Key = VacateJobID. One vacate session. pool-id immutable. \
-            \ Terminal via exactly one of finalized / aborted / resliced."
-        pool-id:string
-        asset-id:string
-        vacate-asset-kind:integer
-        slice-count:integer
-        initial-manifest-hash:string
-        finalized:bool
-        aborted:bool
-        resliced:bool
-        ;;
-        vacate-job-id:string
-    )
-    (defschema VCT|Slice
-        @doc "Key = <VacateJobID> | <slice-idx>. Blake2b commitment only — payload in OC."
-        slice-hash:string
-        processed:bool
-        ;;
-        vacate-job-id:string
-        slice-idx:integer
-    )
-    (defschema VCT|SeqCounter
-        next-id:integer
-    )
-
     (defschema VCT|VacateTfLeg
         owner-id:string
         beneficiary-id:string
@@ -256,10 +233,6 @@
         legs:[object{VCT|VacateNonceLeg}]
         leg-count:integer
     )
-
-    (deftable VCT|T|Job:{VCT|Job})
-    (deftable VCT|T|Slice:{VCT|Slice})
-    (deftable VCT|T|Seq:{VCT|SeqCounter})
 
     (defun CT_Bar ()
         (let
@@ -296,12 +269,11 @@
     (defconst VACATE-GAS-MAX-OF 33)
     (defconst VACATE-GAS-MAX-DPSF 29)
     (defconst VACATE-GAS-MAX-DPNF 30)
-    (defconst VCT|SEQ-JOB-KEY "JOB")
 
     ;;<==========>
     ;;CAPABILITIES
     (defcap CAP_VctVacatePoolOwner (pool-id:string)
-        @doc "Vacate and session operations require tx sender ownership of pool canonical owner konto."
+        @doc "Vacate operations require tx sender ownership of pool canonical owner konto."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
@@ -385,6 +357,68 @@
             (compose-capability (P|VCT|RECIPE))
         )
     )
+    (defcap VCT|C>LEGS-TRUE-FUNGIBLE-VACATE
+        (
+            pool-id:string
+            dptf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+            finalize:bool
+        )
+        @doc "Master: stateless TF legs batch (+ optional finalize). Composes batch validation + SECURE."
+        @event
+        (compose-capability
+            (VCT|C>TRUE-FUNGIBLE-VACATE pool-id dptf-id owner-ids beneficiary-ids amounts)
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap VCT|C>LEGS-ORTO-FUNGIBLE-VACATE
+        (
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            nonce-amounts-array:[[decimal]]
+            finalize:bool
+        )
+        @doc "Master: stateless OF legs batch (+ optional finalize)."
+        @event
+        (compose-capability
+            (VCT|C>ORTO-FUNGIBLE-VACATE-BATCH
+                pool-id dpof-id owner-ids beneficiary-ids nonces-array nonce-amounts-array
+            )
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap VCT|C>LEGS-COLLECTABLE-VACATE
+        (
+            pool-id:string
+            collectable-id:string
+            son:bool
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+            finalize:bool
+        )
+        @doc "Master: stateless DPSF/DPNF legs batch (+ optional finalize)."
+        @event
+        (compose-capability
+            (VCT|C>COLLECTABLE-VACATE-BATCH
+                pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array
+            )
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap VCT|C>ABORT-VACATE-POOL
+        (pool-id:string)
+        @doc "Clear vacate-in-progress on pool; stake stays disabled."
+        @event
+        (CAP_VctVacatePoolOwner pool-id)
+        (compose-capability (SECURE))
+    )
     (defcap VCT|C>FULL-TRUE-FUNGIBLE-VACATE
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "Master recipe cap: one-tx full TF vacate (pool owner). Validates leg inventory; composes SECURE + P|VCT|RECIPE."
@@ -456,166 +490,6 @@
             (compose-capability (P|VCT|RECIPE))
         )
     )
-    (defcap VCT|C>BEGIN-VACATE
-        (pool-id:string asset-id:string vacate-kind:integer slice-count:integer)
-        @doc "Master recipe cap: open sliced vacate session (pool owner). All BeginVacate validation lives here."
-        @event
-        (let
-            (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (owner-count:integer
-                    (URDC_VacateOwnerCountForKind pool-id asset-id vacate-kind)
-                )
-                (unit-count:integer
-                    (URDC_VacateUnitCountForKind pool-id asset-id vacate-kind)
-                )
-            )
-            (enforce (not (UR_VacateInProgress pool-id)) "Vacate session already in progress on this pool")
-            (enforce (URC_VacateKindAssetOk pool-id asset-id vacate-kind) "Invalid vacate kind/asset")
-            (enforce (> slice-count 0) "slice-count must be positive")
-            (enforce (> owner-count 0) "No active vacate owners for this pool/asset")
-            (enforce (> unit-count 0) "No active vacate units for this pool/asset")
-            (enforce
-                (>= slice-count (UC_ComputeMinSliceCount unit-count vacate-kind))
-                "slice-count below minimum for vacate unit count"
-            )
-            (CAP_VctVacatePoolOwner pool-id)
-            (compose-capability (SECURE))
-        )
-    )
-    (defcap VCT|C>RESLICE-VACATE
-        (vacate-job-id:string slice-count:integer)
-        @doc "Master recipe cap: supersede active job (resliced=true) and open new VacateJobID from live URD."
-        @event
-        (let
-            (
-                (pool-id:string (UR_J|PoolId vacate-job-id))
-                (asset-id:string (UR_J|AssetId vacate-job-id))
-                (kind:integer (UR_J|VacateAssetKind vacate-job-id))
-                (owner-count:integer
-                    (URDC_VacateOwnerCountForKind pool-id asset-id kind)
-                )
-                (unit-count:integer
-                    (URDC_VacateUnitCountForKind pool-id asset-id kind)
-                )
-            )
-            (enforce (URC_JobIsActive vacate-job-id) "Vacate job is not active")
-            (enforce (> owner-count 0) "No remaining vacate owners for reslice")
-            (enforce (> unit-count 0) "No remaining vacate units for reslice")
-            (enforce (> slice-count 0) "slice-count must be positive")
-            (enforce
-                (>= slice-count (UC_ComputeMinSliceCount unit-count kind))
-                "slice-count below minimum for remaining vacate unit count"
-            )
-            (CAP_VctVacatePoolOwner pool-id)
-            (compose-capability (SECURE))
-        )
-    )
-    (defcap VCT|C>VACATE-CHUNK-TRUE-FUNGIBLE
-        (
-            vacate-job-id:string
-            slice-idx:integer
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            amounts:[decimal]
-        )
-        @doc "Master recipe cap: one TF vacate slice — payload hash vs VCT|T|Slice."
-        @event
-        (let
-            (
-                (pool-id:string (UR_J|PoolId vacate-job-id))
-                (dptf-id:string (UR_J|AssetId vacate-job-id))
-                (payload:object{VCT|SlicePayload}
-                    (UDC_TfSlicePayload pool-id dptf-id VACATE-KIND-TF owner-ids beneficiary-ids amounts)
-                )
-                (expected-hash:string (UC_HashTfSlicePayload payload))
-                (kind-ok:bool (= (UR_J|VacateAssetKind vacate-job-id) VACATE-KIND-TF))
-                (open-ok:bool
-                    (and
-                        (URC_JobIsActive vacate-job-id)
-                        (not (UR_S|Processed vacate-job-id slice-idx))
-                    )
-                )
-                (hash-ok:bool (= expected-hash (UR_S|SliceHash vacate-job-id slice-idx)))
-            )
-            (enforce (fold (and) true [kind-ok open-ok hash-ok]) "Invalid TF vacate chunk")
-            (CAP_VctVacatePoolOwner pool-id)
-            (compose-capability (VCT|C>TRUE-FUNGIBLE-VACATE pool-id dptf-id owner-ids beneficiary-ids amounts))
-            (compose-capability (SECURE))
-        )
-    )
-    (defcap VCT|C>VACATE-CHUNK-NONCE
-        (
-            vacate-job-id:string
-            slice-idx:integer
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-            amounts-array:[[integer]]
-        )
-        @doc "Master recipe cap: one OF / DPSF / DPNF vacate slice — unified SlicePayload hash."
-        @event
-        (let
-            (
-                (pool-id:string (UR_J|PoolId vacate-job-id))
-                (asset-id:string (UR_J|AssetId vacate-job-id))
-                (kind:integer (UR_J|VacateAssetKind vacate-job-id))
-                (payload:object{VCT|SlicePayload}
-                    (UDC_NonceSlicePayload
-                        pool-id asset-id kind owner-ids beneficiary-ids nonces-array amounts-array
-                    )
-                )
-                (expected-hash:string (UC_HashNonceSlicePayload payload))
-                (kind-ok:bool (contains kind [VACATE-KIND-OF VACATE-KIND-DPSF VACATE-KIND-DPNF]))
-                (open-ok:bool
-                    (and
-                        (URC_JobIsActive vacate-job-id)
-                        (not (UR_S|Processed vacate-job-id slice-idx))
-                    )
-                )
-                (hash-ok:bool (= expected-hash (UR_S|SliceHash vacate-job-id slice-idx)))
-                (of-sentinel-ok:bool
-                    (if (= kind VACATE-KIND-OF)
-                        (URC_NonceAmountsAreZeroSentinel amounts-array)
-                        true
-                    )
-                )
-                (son:bool (UC_VacateKindSon kind))
-            )
-            (enforce (fold (and) true [kind-ok open-ok hash-ok of-sentinel-ok]) "Invalid nonce vacate chunk")
-            (CAP_VctVacatePoolOwner pool-id)
-            (if (= kind VACATE-KIND-OF)
-                (compose-capability
-                    (VCT|C>ORTO-FUNGIBLE-VACATE-BATCH
-                        pool-id asset-id owner-ids beneficiary-ids nonces-array
-                        (URDC_ResolveOfDecimalAmountsFromTracker
-                            pool-id asset-id owner-ids beneficiary-ids nonces-array
-                        )
-                    )
-                )
-                (compose-capability
-                    (VCT|C>COLLECTABLE-VACATE-BATCH
-                        pool-id asset-id son owner-ids beneficiary-ids nonces-array amounts-array
-                    )
-                )
-            )
-            (compose-capability (SECURE))
-        )
-    )
-    (defcap VCT|C>ABORT-VACATE
-        (vacate-job-id:string)
-        @doc "Master recipe cap: abort active vacate session (pool owner); stake stays disabled."
-        @event
-        (let
-            (
-                (pool-id:string (UR_J|PoolId vacate-job-id))
-            )
-            (enforce (URC_JobIsActive vacate-job-id) "Vacate job is not active")
-            (CAP_VctVacatePoolOwner pool-id)
-            (compose-capability (SECURE))
-        )
-    )
-
     ;;<=======>
     ;;FUNCTIONS — UC → UCK → UR → UDC → W → URD → URC → URDC → UEV → C → X
     ;; [UC]
@@ -734,37 +608,6 @@
     )
     (defun UC_DecimalAmountsMatrixToInt:[[integer]] (rows:[[decimal]])
         (map UC_DecimalAmountsRowToInt rows)
-    )
-    (defun UC_HashTfSlicePayload:string (payload:object{VCT|SlicePayload})
-        (hash
-            {"pool-id"              : (at "pool-id" payload)
-            ,"asset-id"             : (at "asset-id" payload)
-            ,"vacate-asset-kind"    : (at "vacate-asset-kind" payload)
-            ,"owner-ids"            : (at "owner-ids" payload)
-            ,"beneficiary-ids"      : (at "beneficiary-ids" payload)
-            ,"amounts"              : (at "amounts" payload)}
-        )
-    )
-    (defun UC_HashNonceSlicePayload:string (payload:object{VCT|SlicePayload})
-        (hash
-            {"pool-id"              : (at "pool-id" payload)
-            ,"asset-id"             : (at "asset-id" payload)
-            ,"vacate-asset-kind"    : (at "vacate-asset-kind" payload)
-            ,"owner-ids"            : (at "owner-ids" payload)
-            ,"beneficiary-ids"      : (at "beneficiary-ids" payload)
-            ,"nonces-array"         : (at "nonces-array" payload)
-            ,"amounts-array"        : (at "amounts-array" payload)}
-        )
-    )
-    (defun UC_HashSlicePayload:string (slice:object{VCT|SlicePayload})
-        (if (= (at "vacate-asset-kind" slice) VACATE-KIND-TF)
-            (UC_HashTfSlicePayload slice)
-            (UC_HashNonceSlicePayload slice)
-        )
-    )
-    (defun UC_HashSlicePlanManifest:string
-        (vacate-job-id:string slice-hashes:[string])
-        (hash {"vacate-job-id" : vacate-job-id, "slice-hashes" : slice-hashes})
     )
     (defun UC_TfSlicePayloadFromOwnerRows:object{VCT|SlicePayload}
         (pool-id:string asset-id:string owner-rows:[object{VCT|VacateTfLeg}])
@@ -885,105 +728,7 @@
             )
         )
     )
-    (defun UC_SlicePlanOc:object{IgnisCollectorV1.OutputCumulator}
-        (plan:object{VCT|VacateSlicePlan})
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                ;;
-                (vacate-job-id:string (at "vacate-job-id" plan))
-                (slice-strs:[string]
-                    (map (lambda (s:object{VCT|SlicePayload}) (format "{}" [s])) (at "slices" plan))
-                )
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (ref-DALOS::UR_UsagePrice "ignis|smallest")
-                AQP|SC_NAME
-                true
-                (+ [vacate-job-id (format "{}" [plan])] slice-strs)
-            )
-        )
-    )
-
-    ;;{F0}  [UCK]
-    (defun UCK_Slice:string (vacate-job-id:string slice-idx:integer)
-        @doc "Composite key for VCT|T|Slice (vacate-job-id BAR slice-idx)."
-        (concat [vacate-job-id BAR (format "{}" [slice-idx])])
-    )
-
-    ;;{F0}  [UR]
-    ;;{F1} [1] VCT|Job — key = vacate-job-id
-    (defun UR_Job:object (vacate-job-id:string)
-        (with-default-read VCT|T|Job vacate-job-id
-            (UDC_Job "" "" 0 0 "" false false false vacate-job-id)
-            {"pool-id"                  := pid
-            ,"asset-id"                 := aid
-            ,"vacate-asset-kind"        := vk
-            ,"slice-count"              := sc
-            ,"initial-manifest-hash"    := imh
-            ,"finalized"                := fi
-            ,"aborted"                  := ab
-            ,"resliced"                 := rs
-            ,"vacate-job-id"            := vjid}
-            (UDC_Job pid aid vk sc imh fi ab rs vjid)
-        )
-    )
-    (defun UR_J|PoolId:string (vacate-job-id:string)
-        (at "pool-id" (read VCT|T|Job vacate-job-id ["pool-id"]))
-    )
-    (defun UR_J|AssetId:string (vacate-job-id:string)
-        (at "asset-id" (read VCT|T|Job vacate-job-id ["asset-id"]))
-    )
-    (defun UR_J|VacateAssetKind:integer (vacate-job-id:string)
-        (at "vacate-asset-kind" (read VCT|T|Job vacate-job-id ["vacate-asset-kind"]))
-    )
-    (defun UR_J|SliceCount:integer (vacate-job-id:string)
-        (at "slice-count" (read VCT|T|Job vacate-job-id ["slice-count"]))
-    )
-    (defun UR_J|InitialManifestHash:string (vacate-job-id:string)
-        (at "initial-manifest-hash" (read VCT|T|Job vacate-job-id ["initial-manifest-hash"]))
-    )
-    (defun UR_J|Finalized:bool (vacate-job-id:string)
-        (at "finalized" (read VCT|T|Job vacate-job-id ["finalized"]))
-    )
-    (defun UR_J|Aborted:bool (vacate-job-id:string)
-        (at "aborted" (read VCT|T|Job vacate-job-id ["aborted"]))
-    )
-    (defun UR_J|Resliced:bool (vacate-job-id:string)
-        (at "resliced" (read VCT|T|Job vacate-job-id ["resliced"]))
-    )
-    (defun UR_J|VacateJobId:string (vacate-job-id:string)
-        (at "vacate-job-id" (read VCT|T|Job vacate-job-id ["vacate-job-id"]))
-    )
-
-    ;;{F1} [2] VCT|Slice — key = UCK_Slice(vacate-job-id, slice-idx)
-    (defun UR_Slice:object (vacate-job-id:string slice-idx:integer)
-        (read VCT|T|Slice (UCK_Slice vacate-job-id slice-idx))
-    )
-    (defun UR_S|SliceHash:string (vacate-job-id:string slice-idx:integer)
-        (at "slice-hash" (read VCT|T|Slice (UCK_Slice vacate-job-id slice-idx) ["slice-hash"]))
-    )
-    (defun UR_S|Processed:bool (vacate-job-id:string slice-idx:integer)
-        (at "processed" (read VCT|T|Slice (UCK_Slice vacate-job-id slice-idx) ["processed"]))
-    )
-    (defun UR_S|VacateJobId:string (vacate-job-id:string slice-idx:integer)
-        (at "vacate-job-id" (read VCT|T|Slice (UCK_Slice vacate-job-id slice-idx) ["vacate-job-id"]))
-    )
-    (defun UR_S|SliceIdx:integer (vacate-job-id:string slice-idx:integer)
-        (at "slice-idx" (read VCT|T|Slice (UCK_Slice vacate-job-id slice-idx) ["slice-idx"]))
-    )
-
-    ;;{F1} [3] VCT|Seq — singleton row VCT|SEQ-JOB-KEY
-    (defun UR_Seq|NextId:integer ()
-        (with-default-read VCT|T|Seq VCT|SEQ-JOB-KEY
-            {"next-id" : 0}
-            {"next-id" := n}
-            n
-        )
-    )
-
-    ;; [UDC]
+    ;; [UDC] — offline plan constructors (no Job/Slice table writers)
     (defun UDC_TfSlicePayload:object{VCT|SlicePayload}
         (
             pool-id:string
@@ -1037,115 +782,7 @@
         ,"slice-count"          : slice-count
         ,"slices"               : slices}
     )
-    (defun UDC_Job:object{VCT|Job}
-        (
-            pool-id:string
-            asset-id:string
-            vacate-asset-kind:integer
-            slice-count:integer
-            initial-manifest-hash:string
-            finalized:bool
-            aborted:bool
-            resliced:bool
-            vacate-job-id:string
-        )
-        {"pool-id"                  : pool-id
-        ,"asset-id"                 : asset-id
-        ,"vacate-asset-kind"        : vacate-asset-kind
-        ,"slice-count"              : slice-count
-        ,"initial-manifest-hash"    : initial-manifest-hash
-        ,"finalized"                : finalized
-        ,"aborted"                  : aborted
-        ,"resliced"                 : resliced
-        ,"vacate-job-id"            : vacate-job-id}
-    )
-    (defun UDC_Slice:object{VCT|Slice}
-        (slice-hash:string processed:bool vacate-job-id:string slice-idx:integer)
-        {"slice-hash"       : slice-hash
-        ,"processed"        : processed
-        ,"vacate-job-id"    : vacate-job-id
-        ,"slice-idx"        : slice-idx}
-    )
-
-    ;;{FW}  [W]
-    ;; Three blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
-    ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
-    ;;
-    ;; [1] VCT|T|Job  (VCT|Job)  Key = <Vacate-Job-ID>
-    (defun WI_Job:string
-        (vacate-job-id:string job:object{VCT|Job})
-        @doc "Insert VCT|T|Job full row (open begin / reslice new session)."
-        (require-capability (SECURE))
-        (insert VCT|T|Job vacate-job-id job)
-    )
-    ;; WW_Job — not used: issue path is WI_Job; terminal flags use WU_*.
-    ;; WU_Job|PoolId — not mutable [.]
-    ;; WU_Job|AssetId — not mutable [.]
-    ;; WU_Job|VacateAssetKind — not mutable [.]
-    ;; WU_Job|SliceCount — not mutable [.]
-    ;; WU_Job|InitialManifestHash — not mutable [.]
-    (defun WU_Job|Finalized:string
-        (vacate-job-id:string)
-        @doc "Set finalized=true on VCT|T|Job."
-        (require-capability (SECURE))
-        (update VCT|T|Job vacate-job-id {"finalized": true})
-    )
-    (defun WU_Job|Aborted:string
-        (vacate-job-id:string)
-        @doc "Set aborted=true on VCT|T|Job."
-        (require-capability (SECURE))
-        (update VCT|T|Job vacate-job-id {"aborted": true})
-    )
-    (defun WU_Job|Resliced:string
-        (vacate-job-id:string)
-        @doc "Set resliced=true on VCT|T|Job."
-        (require-capability (SECURE))
-        (update VCT|T|Job vacate-job-id {"resliced": true})
-    )
-    ;; WU_Job|VacateJobId — select key; WU not needed.
-    ;;
-    ;; [2] VCT|T|Slice  (VCT|Slice)  Key = UCK_Slice(vacate-job-id, slice-idx)
-    (defun WI_Slice:string
-        (vacate-job-id:string slice-idx:integer row:object{VCT|Slice})
-        @doc "Insert VCT|T|Slice hash commitment row (begin / reslice)."
-        (require-capability (SECURE))
-        (insert VCT|T|Slice (UCK_Slice vacate-job-id slice-idx) row)
-    )
-    ;; WW_Slice — not used: issue path is WI_Slice; processed uses WU_Slice|Processed.
-    ;; WU_Slice|SliceHash — not mutable [.]
-    (defun WU_Slice|Processed:string
-        (vacate-job-id:string slice-idx:integer)
-        @doc "Set processed=true on VCT|T|Slice."
-        (require-capability (SECURE))
-        (update VCT|T|Slice (UCK_Slice vacate-job-id slice-idx) {"processed": true})
-    )
-    ;; WU_Slice|VacateJobId — select key; WU not needed.
-    ;; WU_Slice|SliceIdx — select key; WU not needed.
-    ;;
-    ;; [3] VCT|T|Seq  (VCT|SeqCounter)  Key = constant VCT|SEQ-JOB-KEY ("JOB")
-    ;; WI_Seq — not used: first row touch is WW_Seq (upsert path).
-    (defun WW_Seq:string
-        (next-id:integer)
-        @doc "Upsert singleton VCT|T|Seq next-id counter (VacateJobID mint)."
-        (require-capability (SECURE))
-        (write VCT|T|Seq VCT|SEQ-JOB-KEY {"next-id": next-id})
-    )
-    ;; WU_Seq|NextId — not used: mutates via WW_Seq (full row).
-
-    ;; [URD]
-    (defun URD_SlicesForJob:[object] (vacate-job-id:string)
-        (select VCT|T|Slice
-            ["slice-hash" "processed" "vacate-job-id" "slice-idx"]
-            (where "vacate-job-id" (= vacate-job-id))
-        )
-    )
-    (defun URD_JobRowsForPool:[object{VCT|Job}] (pool-id:string)
-        (select VCT|T|Job
-            ["vacate-job-id" "pool-id" "asset-id" "vacate-asset-kind" "slice-count" "initial-manifest-hash" "finalized" "aborted" "resliced"]
-            (where "pool-id" (= pool-id))
-        )
-    )
-
+    ;; [URC]
     ;; [URC]
     (defun URC_TfOwnerArraysGasOk:bool
         (owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
@@ -1229,17 +866,6 @@
         )
     )
 
-    (defun URC_JobIsActive:bool (vacate-job-id:string)
-        (fold
-            (and)
-            true
-            [
-                (not (UR_J|Finalized vacate-job-id))
-                (not (UR_J|Aborted vacate-job-id))
-                (not (UR_J|Resliced vacate-job-id))
-            ]
-        )
-    )
     (defun URC_NonceAmountsAreZeroSentinel:bool (amounts-array:[[integer]])
         (fold
             (and)
@@ -1251,15 +877,6 @@
                 amounts-array
             )
         )
-    )
-
-    (defun URC_PoolHasActiveJob:bool (pool-id:string)
-        (> (length
-            (filter
-                (lambda (row:object{VCT|Job}) (URC_JobIsActive (at "vacate-job-id" row)))
-                (URD_JobRowsForPool pool-id)
-            )
-        ) 0)
     )
 
     ;; [URDC]
@@ -1305,47 +922,7 @@
             )
         )
     )
-    (defun URDC_AllSlicesProcessed:bool (vacate-job-id:string)
-        (let
-            (
-                (slice-count:integer (UR_J|SliceCount vacate-job-id))
-                (rows:[object{VCT|Slice}] (URD_SlicesForJob vacate-job-id))
-            )
-            (if (= (length rows) slice-count)
-                (fold
-                    (and)
-                    true
-                    (map
-                        (lambda (row:object{VCT|Slice})
-                            (UR_S|Processed vacate-job-id (at "slice-idx" row))
-                        )
-                        rows
-                    )
-                )
-                false
-            )
-        )
-    )
-    (defun URDC_ActiveJobForPool:object
-        (pool-id:string)
-        @doc "Active vacate job for pool (exactly one expected while session open)."
-        (let
-            (
-                (rows:[object{VCT|Job}] (URD_JobRowsForPool pool-id))
-                (active:[object{VCT|Job}]
-                    (filter
-                        (lambda (row:object{VCT|Job})
-                            (URC_JobIsActive (at "vacate-job-id" row))
-                        )
-                        rows
-                    )
-                )
-            )
-            (enforce (= (length active) 1) "Expected exactly one active vacate job for pool")
-            (at 0 active)
-        )
-    )
-    (defun URDC_ResolveOfDecimalAmountsFromTracker
+    (defun URC_ResolveOfDecimalAmountsFromTracker
         (
             pool-id:string
             dpof-id:string
@@ -1375,7 +952,7 @@
     )
     (defun URDC_VacateOwnerCountForKind:integer
         (pool-id:string asset-id:string vacate-kind:integer)
-        @doc "Owner-row count from live vacate inventory — UI preflight before C_BeginVacate."
+        @doc "Owner-row count from live vacate inventory — UI preflight before Full/Legs."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
@@ -1937,7 +1514,7 @@
     )
     (defun UC_TfLegsFromParallelArrays:[object{VCT|VacateTfLeg}]
         (owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
-        @doc "Build leg objects from parallel slice/chunk arrays (session vacate chunks)."
+        @doc "Build leg objects from parallel Legs batch arrays."
         (map
             (lambda (idx:integer)
                 (UDC_VacateTfLeg
@@ -1977,397 +1554,347 @@
     ;;{F6}  [C] — client vacate recipes (FULL + SLICED SESSION; see module header)
     ;;
     ;; =============================================================================
-    ;; FULL VACATE — one tx per pool × asset (Talos wired)
+    ;; FULL VACATE — one tx: UI-supplied full Legs payload + auto-begin + finalize
     ;; =============================================================================
     (defun C_FullVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dptf-id:string)
-        @doc "Full TF vacate (one tx): load legs from pool inventory → unwind → bulk transfer last."
+        (
+            pool-id:string
+            dptf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+        )
+        @doc "Full TF vacate (one tx): begin → unwind UI-supplied inventory → finalize. \
+            \ No URD/URDC in C_* — UI dirty-reads then passes Legs arrays (StoicSyntax §10.2)."
         (UEV_IMC)
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                ;;
                 (legs:[object{VCT|VacateTfLeg}]
-                    (URDC_VacateTfOwnerRows pool-id dptf-id))
+                    (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts)
+                )
             )
             (with-capability (VCT|C>FULL-TRUE-FUNGIBLE-VACATE pool-id dptf-id legs)
-                (if (ref-AQP::UR_AQP|PoolStakeEnabled pool-id)
-                    (ref-AQP::XB_SetPoolStakeEnabled pool-id false)
-                    true
+                (XI_EnsureVacateBegun pool-id)
+                (let
+                    (
+                        (oc:object{IgnisCollectorV1.OutputCumulator}
+                            (XI_VacateTrueFungibleFromLegs pool-id dptf-id legs)
+                        )
+                    )
+                    (do
+                        (XI_MaybeFinalizeVacate pool-id dptf-id VACATE-KIND-TF true)
+                        oc
+                    )
                 )
-                (XI_VacateTrueFungibleFromLegs pool-id dptf-id legs)
             )
         )
     )
     (defun C_FullVacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dpof-id:string)
-        (UEV_IMC)
-        (let
-            (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                ;;
-                (owner-rows:[object{VCT|VacateNonceLeg}]
-                    (URDC_VacateNonceOwnerRows pool-id dpof-id VACATE-KIND-OF))
-                (arr:object (UC_VacateOfLegsToVacateArrays owner-rows))
-                (owner-ids:[string] (at "owner-ids" arr))
-                (beneficiary-ids:[string] (at "beneficiary-ids" arr))
-                (nonces-array:[[integer]] (at "nonces-array" arr))
-            )
-            (with-capability (VCT|C>FULL-ORTO-FUNGIBLE-VACATE pool-id dpof-id owner-ids beneficiary-ids nonces-array)
-                (if (ref-AQP::UR_AQP|PoolStakeEnabled pool-id)
-                    (ref-AQP::XB_SetPoolStakeEnabled pool-id false)
-                    true
-                )
-                (XI_VacateOrtoFungibleBatch
-                    pool-id
-                    dpof-id
-                    owner-ids
-                    beneficiary-ids
-                    nonces-array
-                    (at "nonce-amounts-array" arr)
-                )
-            )
-        )
-    )
-    (defun C_FullVacateSemiFungible:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dpsf-id:string)
-        (UEV_IMC)
-        (let
-            (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                ;;
-                (owner-rows:[object{VCT|VacateNonceLeg}]
-                    (URDC_VacateNonceOwnerRows pool-id dpsf-id VACATE-KIND-DPSF))
-                (arr:object (UC_VacateCollectableLegsToVacateArrays owner-rows))
-                (owner-ids:[string] (at "owner-ids" arr))
-                (beneficiary-ids:[string] (at "beneficiary-ids" arr))
-                (nonces-array:[[integer]] (at "nonces-array" arr))
-            )
-            (with-capability (VCT|C>FULL-COLLECTABLE-VACATE pool-id dpsf-id true owner-ids beneficiary-ids nonces-array)
-                (if (ref-AQP::UR_AQP|PoolStakeEnabled pool-id)
-                    (ref-AQP::XB_SetPoolStakeEnabled pool-id false)
-                    true
-                )
-                (XI_VacateCollectableBatch
-                    pool-id
-                    dpsf-id
-                    true
-                    owner-ids
-                    beneficiary-ids
-                    nonces-array
-                    (at "amounts-array" arr)
-                )
-            )
-        )
-    )
-    (defun C_FullVacateNonFungible:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dpnf-id:string)
-        (UEV_IMC)
-        (let
-            (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                ;;
-                (owner-rows:[object{VCT|VacateNonceLeg}]
-                    (URDC_VacateNonceOwnerRows pool-id dpnf-id VACATE-KIND-DPNF))
-                (arr:object (UC_VacateCollectableLegsToVacateArrays owner-rows))
-                (owner-ids:[string] (at "owner-ids" arr))
-                (beneficiary-ids:[string] (at "beneficiary-ids" arr))
-                (nonces-array:[[integer]] (at "nonces-array" arr))
-            )
-            (with-capability (VCT|C>FULL-COLLECTABLE-VACATE pool-id dpnf-id false owner-ids beneficiary-ids nonces-array)
-                (if (ref-AQP::UR_AQP|PoolStakeEnabled pool-id)
-                    (ref-AQP::XB_SetPoolStakeEnabled pool-id false)
-                    true
-                )
-                (XI_VacateCollectableBatch
-                    pool-id
-                    dpnf-id
-                    false
-                    owner-ids
-                    beneficiary-ids
-                    nonces-array
-                    (at "amounts-array" arr)
-                )
-            )
-        )
-    )
-
-    ;; =============================================================================
-    ;; SLICED SESSION — C_BeginVacate → C_VacateChunk* → auto finalize
-    ;; =============================================================================
-    (defun C_BeginVacate:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string asset-id:string vacate-kind:integer slice-count:integer)
-        @doc "Open sliced vacate session — mint VacateJobID, write hash-only VCT|T|Slice rows, return slice plan OC."
-        (UEV_IMC)
-        (with-capability (VCT|C>BEGIN-VACATE pool-id asset-id vacate-kind slice-count)
-            (let
-                (
-                    (vacate-job-id:string (XI_MintVacateJobId))
-                    (draft-plan:object{VCT|VacateSlicePlan}
-                        (URDC_BuildVacateSlicePlan pool-id asset-id vacate-kind slice-count)
-                    )
-                    (plan:object{VCT|VacateSlicePlan}
-                        (UDC_VacateSlicePlan
-                            vacate-job-id
-                            pool-id
-                            asset-id
-                            vacate-kind
-                            slice-count
-                            (at "slices" draft-plan)
-                        )
-                    )
-                    (slice-hashes:[string]
-                        (map (lambda (s:object{VCT|SlicePayload}) (UC_HashSlicePayload s)) (at "slices" plan))
-                    )
-                    (manifest-hash:string (UC_HashSlicePlanManifest vacate-job-id slice-hashes))
-                    (job:object{VCT|Job}
-                        (UDC_Job
-                            pool-id asset-id vacate-kind slice-count manifest-hash
-                            false false false vacate-job-id
-                        )
-                    )
-                )
-                (XI_OpenBeginVacateSession vacate-job-id job plan pool-id manifest-hash)
-                (UC_SlicePlanOc plan)
-            )
-        )
-    )
-    (defun C_ResliceVacate:object{IgnisCollectorV1.OutputCumulator}
-        (vacate-job-id:string slice-count:integer)
-        (UEV_IMC)
-        (with-capability (VCT|C>RESLICE-VACATE vacate-job-id slice-count)
-            (let
-                (
-                    (pool-id:string (UR_J|PoolId vacate-job-id))
-                    (asset-id:string (UR_J|AssetId vacate-job-id))
-                    (kind:integer (UR_J|VacateAssetKind vacate-job-id))
-                    (new-job-id:string (XI_MintVacateJobId))
-                    (draft-plan:object{VCT|VacateSlicePlan}
-                        (URDC_BuildVacateSlicePlan pool-id asset-id kind slice-count)
-                    )
-                    (plan:object{VCT|VacateSlicePlan}
-                        (UDC_VacateSlicePlan
-                            new-job-id pool-id asset-id kind slice-count (at "slices" draft-plan)
-                        )
-                    )
-                    (slice-hashes:[string]
-                        (map (lambda (s:object{VCT|SlicePayload}) (UC_HashSlicePayload s)) (at "slices" plan))
-                    )
-                    (manifest-hash:string (UC_HashSlicePlanManifest new-job-id slice-hashes))
-                    (job:object{VCT|Job}
-                        (UDC_Job
-                            pool-id asset-id kind slice-count manifest-hash
-                            false false false new-job-id
-                        )
-                    )
-                )
-                (XI_MarkJobResliced vacate-job-id)
-                (XI_OpenBeginVacateSession new-job-id job plan pool-id manifest-hash)
-                (UC_SlicePlanOc plan)
-            )
-        )
-    )
-    (defun C_VacateChunkTrueFungible:object{IgnisCollectorV1.OutputCumulator}
-        (vacate-job-id:string slice-idx:integer owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
-        (UEV_IMC)
-        (with-capability
-            (VCT|C>VACATE-CHUNK-TRUE-FUNGIBLE vacate-job-id slice-idx owner-ids beneficiary-ids amounts)
-            (let
-                (
-                    (pool-id:string (UR_J|PoolId vacate-job-id))
-                    (dptf-id:string (UR_J|AssetId vacate-job-id))
-                    (slice-hash:string (UR_S|SliceHash vacate-job-id slice-idx))
-                    (job:object{VCT|Job} (UR_Job vacate-job-id))
-                    (legs:[object{VCT|VacateTfLeg}]
-                        (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts))
-                    (oc:object{IgnisCollectorV1.OutputCumulator}
-                        (XI_VacateTrueFungibleFromLegs pool-id dptf-id legs)
-                    )
-                )
-                (XI_CompleteVacateChunk pool-id vacate-job-id slice-idx slice-hash job oc)
-            )
-        )
-    )
-    (defun C_VacateChunkNonce:object{IgnisCollectorV1.OutputCumulator}
         (
-            vacate-job-id:string
-            slice-idx:integer
+            pool-id:string
+            dpof-id:string
             owner-ids:[string]
             beneficiary-ids:[string]
             nonces-array:[[integer]]
             amounts-array:[[integer]]
         )
+        @doc "Full OF vacate (one tx). Amounts may be zero-sentinels (resolved via URC point reads)."
         (UEV_IMC)
-        (with-capability
-            (VCT|C>VACATE-CHUNK-NONCE
-                vacate-job-id slice-idx owner-ids beneficiary-ids nonces-array amounts-array
-            )
-            (let
-                (
-                    (pool-id:string (UR_J|PoolId vacate-job-id))
-                    (asset-id:string (UR_J|AssetId vacate-job-id))
-                    (kind:integer (UR_J|VacateAssetKind vacate-job-id))
-                    (slice-hash:string (UR_S|SliceHash vacate-job-id slice-idx))
-                    (job:object{VCT|Job} (UR_Job vacate-job-id))
-                    (of-amounts:[[decimal]]
-                        (URDC_ResolveOfDecimalAmountsFromTracker
-                            pool-id asset-id owner-ids beneficiary-ids nonces-array
-                        )
-                    )
-                    (oc:object{IgnisCollectorV1.OutputCumulator}
-                        (if (= kind VACATE-KIND-OF)
-                            (XI_VacateOrtoFungibleBatch
-                                pool-id asset-id owner-ids beneficiary-ids nonces-array of-amounts
-                            )
-                            (XI_VacateCollectableBatch
-                                pool-id
-                                asset-id
-                                (UC_VacateKindSon kind)
-                                owner-ids
-                                beneficiary-ids
-                                nonces-array
-                                amounts-array
-                            )
-                        )
+        (let
+            (
+                (of-amounts:[[decimal]]
+                    (URC_ResolveOfDecimalAmountsFromTracker
+                        pool-id dpof-id owner-ids beneficiary-ids nonces-array
                     )
                 )
-                (XI_CompleteVacateChunk pool-id vacate-job-id slice-idx slice-hash job oc)
+            )
+            (with-capability
+                (VCT|C>FULL-ORTO-FUNGIBLE-VACATE pool-id dpof-id owner-ids beneficiary-ids nonces-array)
+                (XI_EnsureVacateBegun pool-id)
+                (let
+                    (
+                        (oc:object{IgnisCollectorV1.OutputCumulator}
+                            (XI_VacateOrtoFungibleBatch
+                                pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts
+                            )
+                        )
+                    )
+                    (do
+                        (XI_MaybeFinalizeVacate pool-id dpof-id VACATE-KIND-OF true)
+                        oc
+                    )
+                )
             )
         )
     )
-    (defun C_AbortVacate:object{IgnisCollectorV1.OutputCumulator} (vacate-job-id:string)
-        @doc "Abort active vacate session; stake stays disabled."
+    (defun C_FullVacateSemiFungible:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dpsf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+        @doc "Full DPSF vacate (one tx). UI supplies Legs arrays from dirty URD/URDC."
         (UEV_IMC)
-        (with-capability (VCT|C>ABORT-VACATE vacate-job-id)
+        (with-capability
+            (VCT|C>FULL-COLLECTABLE-VACATE
+                pool-id dpsf-id true owner-ids beneficiary-ids nonces-array
+            )
+            (XI_EnsureVacateBegun pool-id)
             (let
                 (
-                    (pool-id:string (UR_J|PoolId vacate-job-id))
+                    (oc:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_VacateCollectableBatch
+                            pool-id dpsf-id true owner-ids beneficiary-ids nonces-array amounts-array
+                        )
+                    )
                 )
-                (XI_AbortVacateSession pool-id vacate-job-id)
-                (UC_EmptyOc)
+                (do
+                    (XI_MaybeFinalizeVacate pool-id dpsf-id VACATE-KIND-DPSF true)
+                    oc
+                )
             )
+        )
+    )
+    (defun C_FullVacateNonFungible:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dpnf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+        @doc "Full DPNF vacate (one tx). UI supplies Legs arrays from dirty URD/URDC."
+        (UEV_IMC)
+        (with-capability
+            (VCT|C>FULL-COLLECTABLE-VACATE
+                pool-id dpnf-id false owner-ids beneficiary-ids nonces-array
+            )
+            (XI_EnsureVacateBegun pool-id)
+            (let
+                (
+                    (oc:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_VacateCollectableBatch
+                            pool-id dpnf-id false owner-ids beneficiary-ids nonces-array amounts-array
+                        )
+                    )
+                )
+                (do
+                    (XI_MaybeFinalizeVacate pool-id dpnf-id VACATE-KIND-DPNF true)
+                    oc
+                )
+            )
+        )
+    )
+
+    ;; =============================================================================
+    ;; STATELESS BATCHED LEGS — UI splits; auto-begin; finalize flag when asset empty
+    ;; =============================================================================
+    (defun C_VacateTrueFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dptf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+            finalize:bool
+        )
+        @doc "Vacate one gas-safe TF leg batch. Auto-begins vacate if needed. \
+            \ finalize=true requires this asset inventory empty after the batch, then re-enables stake."
+        (UEV_IMC)
+        (with-capability
+            (VCT|C>LEGS-TRUE-FUNGIBLE-VACATE pool-id dptf-id owner-ids beneficiary-ids amounts finalize)
+            (XI_EnsureVacateBegun pool-id)
+            (let
+                (
+                    (legs:[object{VCT|VacateTfLeg}]
+                        (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts)
+                    )
+                    (oc:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_VacateTrueFungibleFromLegs pool-id dptf-id legs)
+                    )
+                )
+                (do
+                    (XI_MaybeFinalizeVacate pool-id dptf-id VACATE-KIND-TF finalize)
+                    oc
+                )
+            )
+        )
+    )
+    (defun C_VacateOrtoFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+            finalize:bool
+        )
+        @doc "Vacate one gas-safe OF nonce batch. Amounts may be zero-sentinels (resolved from tracker)."
+        (UEV_IMC)
+        (let
+            (
+                (of-amounts:[[decimal]]
+                    (URC_ResolveOfDecimalAmountsFromTracker
+                        pool-id dpof-id owner-ids beneficiary-ids nonces-array
+                    )
+                )
+            )
+            (with-capability
+                (VCT|C>LEGS-ORTO-FUNGIBLE-VACATE
+                    pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts finalize
+                )
+                (XI_EnsureVacateBegun pool-id)
+                (let
+                    (
+                        (oc:object{IgnisCollectorV1.OutputCumulator}
+                            (XI_VacateOrtoFungibleBatch
+                                pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts
+                            )
+                        )
+                    )
+                    (do
+                        (XI_MaybeFinalizeVacate pool-id dpof-id VACATE-KIND-OF finalize)
+                        oc
+                    )
+                )
+            )
+        )
+    )
+    (defun C_VacateSemiFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dpsf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+            finalize:bool
+        )
+        (UEV_IMC)
+        (with-capability
+            (VCT|C>LEGS-COLLECTABLE-VACATE
+                pool-id dpsf-id true owner-ids beneficiary-ids nonces-array amounts-array finalize
+            )
+            (XI_EnsureVacateBegun pool-id)
+            (let
+                (
+                    (oc:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_VacateCollectableBatch
+                            pool-id dpsf-id true owner-ids beneficiary-ids nonces-array amounts-array
+                        )
+                    )
+                )
+                (do
+                    (XI_MaybeFinalizeVacate pool-id dpsf-id VACATE-KIND-DPSF finalize)
+                    oc
+                )
+            )
+        )
+    )
+    (defun C_VacateNonFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dpnf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+            finalize:bool
+        )
+        (UEV_IMC)
+        (with-capability
+            (VCT|C>LEGS-COLLECTABLE-VACATE
+                pool-id dpnf-id false owner-ids beneficiary-ids nonces-array amounts-array finalize
+            )
+            (XI_EnsureVacateBegun pool-id)
+            (let
+                (
+                    (oc:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_VacateCollectableBatch
+                            pool-id dpnf-id false owner-ids beneficiary-ids nonces-array amounts-array
+                        )
+                    )
+                )
+                (do
+                    (XI_MaybeFinalizeVacate pool-id dpnf-id VACATE-KIND-DPNF finalize)
+                    oc
+                )
+            )
+        )
+    )
+    (defun C_AbortVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string)
+        @doc "Clear vacate-in-progress; stake stays disabled (ops: C_EnablePoolStake)."
+        (UEV_IMC)
+        (with-capability (VCT|C>ABORT-VACATE-POOL pool-id)
+            (XI_ClearVacateInProgress pool-id)
+            (UC_EmptyOc)
         )
     )
 
     ;;{F7}  [X] — internal orchestration (after all C_* recipes)
     ;; Depth: C_* → XI_* (depth 0) → XI_1|* (depth 1) → XI_2|* (depth 2) → XI_3|* (depth 3).
-    ;; Session helpers: C_* uses XI_MintVacateJobId / XI_MarkJobResliced; XI_* uses XI_1|WriteSliceHashes / XI_1|FinalizeVacateIfComplete.
-    ;; AQP pool writes: ref-AQP::XB_* directly (no XI_2 hop).
+    ;; Begin/finalize: XI_EnsureVacateBegun / XI_MaybeFinalizeVacate / XI_ClearVacateInProgress.
+    ;; AQP pool writes: ref-AQP::XB_* / XE_SetVacateJobState directly (SECURE from master cap).
     ;; Table persistence: W_ layer only. XI_* call W_ directly with ;; SECURE: comments; no raw insert/update/write on VCT|T|*.
     ;; SECURE composed by master VCT|C>* cap or P|VCT|RECIPE (atomic vacate batch). No UEV_* in XI bodies.
     ;;
-    (defun XI_1|WriteSliceHashes
-        (vacate-job-id:string slices:[object{VCT|SlicePayload}] slice-hashes:[string])
-        ;; SECURE: granted by WI_Slice (underlying W_).
-        (map
-            (lambda (idx:integer)
-                (WI_Slice vacate-job-id idx
-                    (UDC_Slice (at idx slice-hashes) false vacate-job-id idx)
-                )
-            )
-            (enumerate 0 (- (length slice-hashes) 1))
-        )
-    )
-    (defun XI_MintVacateJobId:string
-        ()
-        @doc "Internal depth 1: issue next VacateJobID from seq counter + block entropy."
-        ;; SECURE: granted by WW_Seq (underlying W_).
-        (let
-            (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                ;;
-                (cur:integer (UR_Seq|NextId))
-                (next:integer (+ cur 1))
-            )
-            (WW_Seq next)
-            (ref-U|DALOS::UDC_Makeid (concat ["VACATE-" (format "{}" [next])]))
-        )
-    )
-    (defun XI_MarkJobResliced:string (vacate-job-id:string)
-        ;; SECURE: granted by WU_Job|Resliced (underlying W_).
-        (WU_Job|Resliced vacate-job-id)
-    )
-    (defun XI_OpenBeginVacateSession:object{VCT|VacateSlicePlan}
-        (
-            vacate-job-id:string
-            job:object{VCT|Job}
-            plan:object{VCT|VacateSlicePlan}
-            pool-id:string
-            manifest-hash:string
-        )
-        ;; SECURE: granted by WI_Job, WI_Slice (via XI_1|WriteSliceHashes), ref-AQP::XE_SetVacateJobState, ref-AQP::XB_SetPoolStakeEnabled.
-        (let
-            (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                ;;
-                (slice-hashes:[string]
-                    (map (lambda (s:object{VCT|SlicePayload}) (UC_HashSlicePayload s)) (at "slices" plan))
-                )
-            )
-            ;; SECURE: granted by WI_Job (underlying W_).
-            (WI_Job vacate-job-id job)
-            (XI_1|WriteSliceHashes vacate-job-id (at "slices" plan) slice-hashes)
-            (ref-AQP::XE_SetVacateJobState pool-id true manifest-hash manifest-hash "")
-            (if (ref-AQP::UR_AQP|PoolStakeEnabled pool-id)
-                (ref-AQP::XB_SetPoolStakeEnabled pool-id false)
-                true
-            )
-            plan
-        )
-    )
-    (defun XI_CompleteVacateChunk:object{IgnisCollectorV1.OutputCumulator}
-        (
-            pool-id:string
-            vacate-job-id:string
-            slice-idx:integer
-            slice-hash:string
-            job:object{VCT|Job}
-            oc:object{IgnisCollectorV1.OutputCumulator}
-        )
-        ;; SECURE: granted by WU_Slice|Processed, ref-AQP::XE_SetVacateJobState, and XI_1|FinalizeVacateIfComplete children.
+    (defun XI_EnsureVacateBegun:string (pool-id:string)
+        @doc "If vacate not in progress: set vacate-in-progress and disable pool stake."
+        ;; SECURE: granted by master vacate caps.
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
-            (WU_Slice|Processed vacate-job-id slice-idx)
-            (ref-AQP::XE_SetVacateJobState
-                pool-id
-                true
-                (at "initial-manifest-hash" job)
-                (at "initial-manifest-hash" job)
-                slice-hash
-            )
-            (XI_1|FinalizeVacateIfComplete pool-id vacate-job-id oc)
-        )
-    )
-    (defun XI_1|FinalizeVacateIfComplete:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string vacate-job-id:string oc:object{IgnisCollectorV1.OutputCumulator})
-        (if (URDC_AllSlicesProcessed vacate-job-id)
-            ;; SECURE: granted by WU_Job|Finalized, ref-AQP::XE_SetVacateJobState, ref-AQP::XB_SetPoolStakeEnabled.
-            (let
-                (
-                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                    ;;
-                    (pid pool-id)
+            (if (UR_VacateInProgress pool-id)
+                "already-begun"
+                (do
+                    (ref-AQP::XE_SetVacateJobState pool-id true "" "" "")
+                    (if (ref-AQP::UR_AQP|PoolStakeEnabled pool-id)
+                        (ref-AQP::XB_SetPoolStakeEnabled pool-id false)
+                        true
+                    )
+                    "begun"
                 )
-                (WU_Job|Finalized vacate-job-id)
-                (ref-AQP::XE_SetVacateJobState pid false "" "" "")
-                (ref-AQP::XB_SetPoolStakeEnabled pid true)
-                (UC_EmptyOc)
             )
-            oc
         )
     )
-    (defun XI_AbortVacateSession:string (pool-id:string vacate-job-id:string)
-        ;; SECURE: granted by WU_Job|Aborted and ref-AQP::XE_SetVacateJobState.
+    (defun XI_ClearVacateInProgress:string (pool-id:string)
+        ;; SECURE: granted by VCT|C>ABORT-VACATE-POOL / finalize path.
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
-            (WU_Job|Aborted vacate-job-id)
             (ref-AQP::XE_SetVacateJobState pool-id false "" "" "")
         )
     )
+    (defun XI_MaybeFinalizeVacate:string
+        (
+            pool-id:string
+            asset-id:string
+            vacate-kind:integer
+            finalize:bool
+        )
+        @doc "If finalize=true (UI claim this batch emptied the asset): clear vacate-in-progress, re-enable stake. \
+            \ Write-only — no OC, no enforce / no URD|URDC. asset-id/vacate-kind kept for call-site stability."
+        ;; SECURE: granted by master vacate caps.
+        (if finalize
+            (let
+                (
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                )
+                (ref-AQP::XE_SetVacateJobState pool-id false "" "" "")
+                (ref-AQP::XB_SetPoolStakeEnabled pool-id true)
+                "finalized"
+            )
+            "continued"
+        )
+    )
+    ;; Legs orchestration: XI_EnsureVacateBegun / XI_MaybeFinalizeVacate / XI_ClearVacateInProgress.
     (defun XI_3|RpsVacatePreZero:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
         @doc "TF vacate RPS prelude: bank pending at OLD deb per score plan. Skips ghost-TVL sync and row ensure."
@@ -2764,6 +2291,3 @@
 
 (create-table P|T)
 (create-table P|MT)
-(create-table VCT|T|Job)
-(create-table VCT|T|Slice)
-(create-table VCT|T|Seq)

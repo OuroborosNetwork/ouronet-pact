@@ -297,24 +297,26 @@
 
 | ID | Scenario | Pri | Status | Evidence |
 |----|----------|-----|--------|----------|
-| VCT-01 | Full vacate TF | P0 | PASS | `[6.2.5]` TX-VCT-TF01 via `aqp-deploy-gate.repl` |
-| VCT-02 | Full vacate OF | P0 | PASS | FVT-OF |
-| VCT-03 | Full vacate SF | P0 | PASS | FVT-DC |
-| VCT-04 | Full vacate NF | P0 | PASS | `[6.2.5]` TX-VCT-DPNF01 (mint probe DHB; Bloodshed-scale DEFER) |
+| VCT-01 | Full vacate TF (UI Legs payload) | P0 | PASS | `[6.2.5]` TX-VCT-TF01 via `aqp-deploy-gate.repl` |
+| VCT-02 | Full vacate OF (UI Legs payload) | P0 | PASS | FVT-OF |
+| VCT-03 | Full vacate SF (UI Legs payload) | P0 | PASS | FVT-DC |
+| VCT-04 | Full vacate NF (UI Legs payload) | P0 | PASS | `[6.2.5]` TX-VCT-DPNF01 (mint probe DHB; Bloodshed-scale DEFER) |
 | VCT-05 | Full vacate clears SCORE + ANK + FVT RPS state | P0 | PARTIAL | Asserts in DC/OF; TF/NF deepen |
 | VCT-06 | Pool stake disabled during vacate; re-enabled on success | P0 | PASS | Vacate flow |
 
-### 5.2 Sliced vacate
+### 5.2 Stateless Legs vacate
 
 | ID | Scenario | Pri | Status | Evidence |
 |----|----------|-----|--------|----------|
-| VCT-10 | Begin → Chunk* → auto finalize | P0 | PASS | `[6.2.5]` DPNF02/03 mint-probe sliced vacate |
-| VCT-11 | Reslice remaining inventory | P1 | PARTIAL | `[6.2.5]` |
-| VCT-12 | Abort leaves pool stake disabled | P0 | PASS | `[6.2.5]` TX-VCT-L03 expect stake stays disabled |
-| VCT-13 | Chunk hash mismatch REJECT | P1 | PASS | `[6.2.5]` TX-VCT-N01 expect-failure |
-| VCT-14 | Gas ceilings TF/OF/SF/NF respected | P1 | PARTIAL | Gas ladders |
-| VCT-15 | LP class-0 dual-stream vacate (TF LP + OF LP) | P0 | PASS | `[6.4]` TX-AQP-CL05; fixed ternary `and` in `URC_StakeOrtoFungibleDpofMatchesPool` + VST Sleeping-LP transfer-role gate |
-| VCT-16 | Multi-owner / multi-beneficiary chunk | P1 | PARTIAL | — |
+| VCT-10 | Legs auto-begin → batch(es) → finalize | P0 | PASS | `[6.2.5]` TF02 / DPNF02–03 / L01–L02 |
+| VCT-11 | Continue after partial (re-split remaining) | P1 | PASS | `[6.2.5]` TX-VCT-L02 + **L05 TF multi-batch** + **L06 OF multi-batch (2 owners)** |
+| VCT-12 | Abort clears vacate-in-progress; stake stays disabled | P0 | PASS | `[6.2.5]` TX-VCT-L03 |
+| VCT-13 | Legs reject (bad payload / bad finalize) | P1 | PASS | `[6.2.5]` TX-VCT-N01 (empty arrays) / N02 (amount mismatch) |
+| VCT-13b | `finalize=true` with leftover inventory (UI-trust) | P1 | PASS | `[6.2.5]` **TX-VCT-N03** — succeeds; stake re-enabled; leftover remains (UI must not do this) |
+| VCT-14 | Gas ceilings TF/OF/SF/NF respected | P1 | PASS | `REPL/Kursan/VCT-gas-sweep.repl` → `[6.2.6]` (run in DeployXY checklist) |
+| VCT-15 | LP class-0 dual-stream vacate (TF LP + OF LP) | P0 | PASS | `[6.4]` TX-AQP-CL05 / `triplet-collect-golden.repl` |
+| VCT-16 | Multi-owner / multi-beneficiary Legs | P1 | PASS | FVT-DC-05 / `[6.2.5]` L02 / **L05** |
+| VCT-17 | Offline plan helpers (URD + URDC_Build + UC_ComputeMinSliceCount) | P1 | PASS | `[6.2.5]` **TX-VCT-P01** |
 
 ### 5.3 VCT loader gap
 
@@ -398,7 +400,7 @@ Walk in this order when implementing REPL coverage:
 | `REPL/Stage_02/[6.5]_AQP-LP-VACATE.repl` | Wave A.3 |
 | `REPL/Stage_02/[6.5]_AQP-FARM-MULTI-STAKER.repl` | Wave B.6 |
 | `REPL/Stage_02/[6.5]_AQP-REJECTS.repl` | Wave B.8 (batched REJECT expects) |
-| `REPL/aqp-deploy-gate.repl` | Loads Z + VCT (TF/OF/SF/NF vacate + rejects; DPNF mint probe); run `triplet-collect-golden.repl` separately |
+| `REPL/aqp-deploy-gate.repl` | Loads Z + VCT (TF/OF/SF/NF vacate + rejects + multi-batch + offline plan + finalize-trust; DPNF mint probe); run `triplet-collect-golden.repl` + `Kursan/VCT-gas-sweep.repl` separately |
 
 ---
 

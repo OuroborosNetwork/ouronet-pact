@@ -1,6 +1,6 @@
 ;; DPL-UR — single deployer read module (canonical; keep aligned with live net).
 ;; Load only after Stage 1 and Stage 2 (REPL/StageZZ_Tester.repl after Stage02_Tester.repl).
-;; Implements DeployerReadsV7 + V8 (StoicTag) + V9 (PYTHIA dual-Apollo reads; PYTHIA required).
+;; Implements DeployerReadsV7 + V8 (StoicTag) + V9 (PYTHIA Apollo) + V10 (Elite) + V11 (Dual API + Pythia prices).
 ;;
 (interface DeployerReadsV7
     ;;
@@ -81,11 +81,22 @@
     @doc "PYTHIA dual-Apollo DPL reads (V9 additive — requires PYTHIA on chain)."
     (defun URC_0031:[object] (apollo-accounts:[string]))
 )
+(interface DeployerReadsV10
+    @doc "Elite Account DPL reads (V10 additive — DALOS elite + ELITE aurynz + discounts/bonuses)."
+    (defun URC_0032_EliteAccount (account:string))
+)
+(interface DeployerReadsV11
+    @doc "PYTHIA dual-API key + Config price DPL reads (V11 additive — requires PythiaV4)."
+    (defun URC_0033_DualApiKeyMapper:[object] (dual-api-keys:[string]))
+    (defun URC_0034_PythiaPrices ())
+)
 (module DPL-UR GOV
     ;;
     (implements DeployerReadsV7)
     (implements DeployerReadsV8)
     (implements DeployerReadsV9)
+    (implements DeployerReadsV10)
+    (implements DeployerReadsV11)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -2536,13 +2547,258 @@
     )
     (defun URC_0031:[object] (apollo-accounts:[string])
         @doc "Map PYTHIA.UR_ApiKeyRowOrNull over each Apollo account string (₱./Π.)."
-        (let ((ref-PYTHIA:module{PythiaV3} PYTHIA))
+        (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
             (map
                 (lambda (apollo-account:string)
                     (ref-PYTHIA::UR_ApiKeyRowOrNull apollo-account)
                 )
                 apollo-accounts
             )
+        )
+    )
+    (defun URC_0032_EliteAccount (account:string)
+        @doc "Elite Account panel: DALOS elite row, all Elite-Auryn variant supplies, \
+            \ Auryndex/EliteAuryndex, OURO dispo-credit (tier overspend % on native EA), \
+            \ IGNIS/STOA gas discounts, DEX swap-fee discount (same curve as IGNIS), \
+            \ DEB multiplier, and coded Elite unlocks (SWP special-fee targets, branding months, \
+            \ Elite-ATS cold-recovery positions). Extend this object as further Elite bonuses appear."
+        (let
+            (
+                (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-U|DPTF:module{UtilityDptfV1} U|DPTF)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-ELITE:module{EliteV1} ELITE)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-BRD:module{BrandingV1} BRD)
+                ;;
+                (elite-class:string (ref-DALOS::UR_Elite-Class account))
+                (elite-name:string (ref-DALOS::UR_Elite-Name account))
+                (elite-tier:string (ref-DALOS::UR_Elite-Tier account))
+                (elite-deb:decimal (ref-DALOS::UR_Elite-DEB account))
+                (major:integer (ref-DALOS::UR_Elite-Tier-Major account))
+                (minor:integer (ref-DALOS::UR_Elite-Tier-Minor account))
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (auryn-id:string (ref-DALOS::UR_AurynID))
+                (ea-id:string (ref-DALOS::UR_EliteAurynID))
+                (fea-id:string (if (!= ea-id BAR) (ref-DPTF::UR_Frozen ea-id) BAR))
+                (rea-id:string (if (!= ea-id BAR) (ref-DPTF::UR_Reservation ea-id) BAR))
+                (vea-id:string (if (!= ea-id BAR) (ref-DPTF::UR_Vesting ea-id) BAR))
+                (sea-id:string (if (!= ea-id BAR) (ref-DPTF::UR_Sleeping ea-id) BAR))
+                (hea-id:string (if (!= ea-id BAR) (ref-DPTF::UR_Hibernation ea-id) BAR))
+                (ea-supply:decimal
+                    (if (!= ea-id BAR) (ref-DPTF::UR_AccountSupply ea-id account) 0.0)
+                )
+                (fea-supply:decimal
+                    (if (!= fea-id BAR) (ref-DPTF::UR_AccountSupply fea-id account) 0.0)
+                )
+                (rea-supply:decimal
+                    (if (!= rea-id BAR) (ref-DPTF::UR_AccountSupply rea-id account) 0.0)
+                )
+                (vea-supply:decimal
+                    (if (!= vea-id BAR) (ref-DPOF::UR_AccountSupply vea-id account) 0.0)
+                )
+                (sea-supply:decimal
+                    (if (!= sea-id BAR) (ref-DPOF::UR_AccountSupply sea-id account) 0.0)
+                )
+                (hea-supply:decimal
+                    (if (!= hea-id BAR) (ref-DPOF::UR_AccountSupply hea-id account) 0.0)
+                )
+                (total-elite-aurynz:decimal (ref-ELITE::URC_EliteAurynzSupply account))
+                (et:[decimal] (ref-U|CT::CT_ET))
+                (et-last:decimal (at (- (length et) 1) et))
+                (elite-aurynz-next:decimal
+                    (if (>= total-elite-aurynz et-last)
+                        0.0
+                        (-
+                            (fold
+                                (lambda
+                                    (acc:decimal tier:decimal)
+                                    (if (and (> tier total-elite-aurynz) (< tier acc))
+                                        tier
+                                        acc
+                                    )
+                                )
+                                et-last
+                                et
+                            )
+                            total-elite-aurynz
+                        )
+                    )
+                )
+                ;; Indices — same ATS resolution as TFT.UDC_GetDispoData
+                (auryndex-id:string (at 0 (ref-DPTF::UR_RewardToken ouro-id)))
+                (elite-auryndex-id:string (at 0 (ref-DPTF::UR_RewardToken auryn-id)))
+                (auryndex-value:decimal (ref-ATS::URC_Index auryndex-id))
+                (elite-auryndex-value:decimal (ref-ATS::URC_Index elite-auryndex-id))
+                ;; OURO dispo-credit: tier % of native EA value in OURO (U|DPTF.UC_OuroDispo / TFT.URC_*)
+                (dispo-data:object{UtilityDptfV1.DispoData} (ref-TFT::UDC_GetDispoData account))
+                (dispo-overspend-percent:decimal
+                    (if (< (dec major) 3.0)
+                        0.0
+                        (floor (+ (/ (- (+ (* (- (dec major) 1.0) 7.0) (dec minor)) 15.0) 10.0) 11.5) 1)
+                    )
+                )
+                (ouro-dispo-capacity:decimal (ref-U|DPTF::UC_OuroDispo dispo-data))
+                (ouro-minimum:decimal (ref-TFT::URC_MinimumOuro account))
+                (ouro-balance:decimal (ref-DPTF::UR_AccountSupply ouro-id account))
+                (ouro-virtual:decimal (ref-TFT::URC_VirtualOuro account))
+                (elite-auryn-dispo-locked:bool (< ouro-balance 0.0))
+                ;;
+                (ignis-cost-multiplier:decimal (ref-DALOS::URC_IgnisGasDiscount account))
+                (stoa-cost-multiplier:decimal (ref-DALOS::URC_KadenaGasDiscount account))
+                (ignis-discount-percent:decimal (ref-U|DALOS::UC_GasDiscount major minor false))
+                (stoa-discount-percent:decimal (ref-U|DALOS::UC_GasDiscount major minor true))
+                ;; DEX LP/special/boost fees use the IGNIS (non-native) gas curve — SWPI.URC_EliteFeeReduction
+                (dex-fee-cost-multiplier:decimal ignis-cost-multiplier)
+                (dex-fee-discount-percent:decimal ignis-discount-percent)
+                ;;
+                (max-swp-special-fee-targets:integer
+                    (cond
+                        ((= major 2) 2)
+                        ((= major 3) 3)
+                        ((= major 4) 4)
+                        ((fold (or) false [(= major 5) (= major 6) (= major 7)]) 7)
+                        1
+                    )
+                )
+                (max-branding-blue-months:integer (ref-BRD::URC_MaxBluePayment account))
+                (elite-ats-cold-recovery-positions:integer
+                    (if (= major 0) 1 major)
+                )
+                (elite-ats-cold-recovery-duration-index:integer
+                    (if (= major 0)
+                        0
+                        (+ (* (- major 1) 7) minor)
+                    )
+                )
+            )
+            {"account"                              : account
+            ;; DALOS Elite Account
+            ,"elite-class"                          : elite-class
+            ,"elite-name"                           : elite-name
+            ,"elite-tier"                           : elite-tier
+            ,"elite-tier-major"                     : major
+            ,"elite-tier-minor"                     : minor
+            ,"elite-deb"                            : elite-deb
+            ;; Elite Auryn variants (ELITE.URC_EliteAurynzSupply constituents)
+            ,"ea-id"                                : ea-id
+            ,"ea-supply"                            : (UC_FormatTokenAmount ea-supply)
+            ,"ea-supply-hover"                      : ea-supply
+            ,"fea-id"                               : fea-id
+            ,"fea-supply"                           : (UC_FormatTokenAmount fea-supply)
+            ,"fea-supply-hover"                     : fea-supply
+            ,"rea-id"                               : rea-id
+            ,"rea-supply"                           : (UC_FormatTokenAmount rea-supply)
+            ,"rea-supply-hover"                     : rea-supply
+            ,"vea-id"                               : vea-id
+            ,"vea-supply"                           : (UC_FormatTokenAmount vea-supply)
+            ,"vea-supply-hover"                     : vea-supply
+            ,"sea-id"                               : sea-id
+            ,"sea-supply"                           : (UC_FormatTokenAmount sea-supply)
+            ,"sea-supply-hover"                     : sea-supply
+            ,"hea-id"                               : hea-id
+            ,"hea-supply"                           : (UC_FormatTokenAmount hea-supply)
+            ,"hea-supply-hover"                     : hea-supply
+            ,"total-elite-aurynz"                   : (UC_FormatTokenAmount total-elite-aurynz)
+            ,"total-elite-aurynz-hover"             : total-elite-aurynz
+            ,"elite-aurynz-for-next-tier"           : (UC_FormatTokenAmount elite-aurynz-next)
+            ,"elite-aurynz-for-next-tier-hover"     : elite-aurynz-next
+            ;; Auryndex / EliteAuryndex (feed dispo math)
+            ,"auryndex-id"                          : auryndex-id
+            ,"auryndex-name"                        : (ref-ATS::UR_IndexName auryndex-id)
+            ,"auryndex-value"                       : (UC_FormatIndex auryndex-value)
+            ,"auryndex-value-hover"                 : auryndex-value
+            ,"elite-auryndex-id"                    : elite-auryndex-id
+            ,"elite-auryndex-name"                  : (ref-ATS::UR_IndexName elite-auryndex-id)
+            ,"elite-auryndex-value"                 : (UC_FormatIndex elite-auryndex-value)
+            ,"elite-auryndex-value-hover"           : elite-auryndex-value
+            ;; OURO dispo-credit (native EA × indices × tier overspend %)
+            ,"dispo-overspend-percent"              : dispo-overspend-percent
+            ,"dispo-overspend-text"                 :
+                (format
+                    "{}% of native Elite-Auryn OURO-value may be overspent (requires Major Tier ≥ 3)"
+                    [dispo-overspend-percent]
+                )
+            ,"ouro-id"                              : ouro-id
+            ,"ouro-balance"                         : (UC_FormatTokenAmount ouro-balance)
+            ,"ouro-balance-hover"                   : ouro-balance
+            ,"ouro-dispo-capacity"                  : (UC_FormatTokenAmount ouro-dispo-capacity)
+            ,"ouro-dispo-capacity-hover"            : ouro-dispo-capacity
+            ,"ouro-minimum"                         : (UC_FormatTokenAmount ouro-minimum)
+            ,"ouro-minimum-hover"                   : ouro-minimum
+            ,"ouro-virtual"                         : (UC_FormatTokenAmount ouro-virtual)
+            ,"ouro-virtual-hover"                   : ouro-virtual
+            ,"elite-auryn-dispo-locked"             : elite-auryn-dispo-locked
+            ,"elite-auryn-dispo-locked-text"        :
+                (if elite-auryn-dispo-locked
+                    "Native Elite-Auryn is dispo-locked until OURO balance returns to ≥ 0"
+                    "Native Elite-Auryn is transferable (OURO not negative)"
+                )
+            ;; IGNIS / STOA / DEX fee discounts (multiplier 1.0 = no discount)
+            ,"ignis-cost-multiplier"                : ignis-cost-multiplier
+            ,"ignis-discount-percent"               : ignis-discount-percent
+            ,"ignis-discount-text"                  :
+                (format
+                    "IGNIS Discount {}% (You pay only {}% of IGNIS costs)"
+                    [ignis-discount-percent (* ignis-cost-multiplier 100.0)]
+                )
+            ,"stoa-cost-multiplier"                 : stoa-cost-multiplier
+            ,"stoa-discount-percent"                : stoa-discount-percent
+            ,"stoa-discount-text"                   :
+                (format
+                    "STOA Discount {}% (You pay only {}% of STOA costs)"
+                    [stoa-discount-percent (* stoa-cost-multiplier 100.0)]
+                )
+            ,"dex-fee-cost-multiplier"              : dex-fee-cost-multiplier
+            ,"dex-fee-discount-percent"             : dex-fee-discount-percent
+            ,"dex-fee-discount-text"                :
+                (format
+                    "DEX Fee Discount {}% (LP/Special/Boost fees; same curve as IGNIS)"
+                    [dex-fee-discount-percent]
+                )
+            ;; Other Elite bonuses coded on-chain
+            ,"deb-bonus-text"                       :
+                (format
+                    "DEB ×{} on AQP scores when deb-boost is enabled"
+                    [elite-deb]
+                )
+            ,"max-swp-special-fee-targets"          : max-swp-special-fee-targets
+            ,"max-branding-blue-months"             : max-branding-blue-months
+            ,"elite-ats-cold-recovery-positions"    : elite-ats-cold-recovery-positions
+            ,"elite-ats-cold-recovery-duration-index" : elite-ats-cold-recovery-duration-index
+            }
+        )
+    )
+    (defun URC_0033_DualApiKeyMapper:[object] (dual-api-keys:[string])
+        @doc "Map PYTHIA.UR_DualLinkRowOrNull over each dual-API key (Standard|Smart composite)."
+        (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
+            (map
+                (lambda (dual-api-key:string)
+                    (ref-PYTHIA::UR_DualLinkRowOrNull dual-api-key)
+                )
+                dual-api-keys
+            )
+        )
+    )
+    (defun URC_0034_PythiaPrices ()
+        @doc "PYTHIA Config deploy/rename STOA prices (UR_DeployPrice / UR_RenamePrice)."
+        (let
+            (
+                (ref-PYTHIA:module{PythiaV4} PYTHIA)
+                ;;
+                (deploy-price:decimal (ref-PYTHIA::UR_DeployPrice))
+                (rename-price:decimal (ref-PYTHIA::UR_RenamePrice))
+            )
+            {"deploy-price"         : deploy-price
+            ,"rename-price"         : rename-price
+            ,"deploy-price-text"    : (format "{} STOA per Apollo half deploy" [deploy-price])
+            ,"rename-price-text"    : (format "{} STOA to rename dual-link consumer lane" [rename-price])
+            }
         )
     )
     ;;{F2}  [UEV]

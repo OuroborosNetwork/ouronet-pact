@@ -50,7 +50,7 @@ Where a REPL is the primary scenario for a module, a one-line comment at **`(mod
 Stage 01 **`[0.1]_Interfaces.repl`** loads:
 
 1. **`0_Interfaces/01_Utilities.pact`** — all utility interfaces (unchanged).
-2. **`0_Interfaces/02_Core.pact`** — **shared + historical** core interfaces only (~12 blocks). Module-owned latest versions (e.g. **`OuronetDalosV1`**, **`SwapperV3`**, **`PythiaV3`**) deploy with their module file in **`[2.2]_Core.repl`**.
+2. **`0_Interfaces/02_Core.pact`** — **shared + historical** core interfaces only (~12 blocks). Module-owned latest versions (e.g. **`OuronetDalosV1`**, **`SwapperV3`**, **`PythiaV4`**) deploy with their module file in **`[2.2]_Core.repl`**.
 3. **`0_Interfaces/03_Talos.pact`** — **historical** Talos clients only (`ClientFourV1`–`V3`). Latest clients embed their interface in **`3_Talos/*.pact`**.
 
 Do **not** re-add latest interfaces to **`0_Interfaces`** after embedding — that breaks REPL and mainnet deploy with duplicate interface txs.

@@ -1,12 +1,13 @@
 ;;
 ;; REPL/Stage_02/[6.2.5]_AQP-VCT.repl — comprehensive VCT vacate tests (all asset kinds + lifecycle)
-;; Loaded by REPL/VCT-comprehensive.repl after [6.2]_AQP.repl (ANK/SCORE/POOL/FVT/OF/DC smokes).
+;; Architecture: Full (1 tx) + Stateless Legs (N txs; auto-begin; finalize on last).
+;; Loaded by REPL/VCT-comprehensive.repl / aqp-deploy-gate after [6.2]_AQP.repl.
 ;;
 (print "")
 (print "================================================================")
 (print "FILE  REPL/Stage_02/[6.2.5]_AQP-VCT.repl")
 (print "================================================================")
-(print "Legend: <<TX-VCT-*>> expect lines; <(Talos…)> echoes; vacate-job-id from URDC_ActiveJobForPool")
+(print "Legend: <<TX-VCT-*>> expect lines; <(Talos…)> echoes; URDC_BuildVacateSlicePlan = offline split helper")
 (print "DPNF tests mint probe NFTs via VacateDpnfProbe (AQP-FAST — no Populate* required).")
 (print "")
 ;;
@@ -95,9 +96,20 @@
         (enforce (> tracker-work 0.0) "TX-VCT-TF01: need TF stake inventory")
         (print (format "<(pre tracker/supply)> => {} / {}" [tracker-work pre-supply-work]))
         (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-        (print (format "<(TS02-C3.AQP-POOL|C_FullVacateTrueFungible)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible patron pool-id ouro-id)
-        ]))
+        (let
+            (
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id 1 1))
+                (s0:object (at 0 (at "slices" plan)))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_FullVacateTrueFungible)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible
+                    patron pool-id ouro-id
+                    (at "owner-ids" s0)
+                    (at "beneficiary-ids" s0)
+                    (at "amounts" s0)
+                )
+            ]))
+        )
         (let
             (
                 (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
@@ -123,9 +135,9 @@
 (print "=== END TX-VCT-TF01 ========================================================")
 (print "")
 ;;
-(begin-tx "TX-VCT-TF02 - C_BeginVacate + C_VacateChunkTrueFungible sliced session")
+(begin-tx "TX-VCT-TF02 - C_VacateTrueFungibleLegs finalize")
 (print "")
-(print "=== TX-VCT-TF02 — TF sliced vacate (slice-count 1) =========================")
+(print "=== TX-VCT-TF02 — TF Legs vacate (1 batch finalize=true) ===================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -135,7 +147,6 @@
         (beneficiary-id:string KST.ANHD)
         (ouro-id:string "OURO-98c486052a51")
         (score-name:string "TfStakeScore")
-        (fvt-name:string "TfStakeVault")
         (pool-name:string "TfStakePool")
         (vacate-kind-tf:integer 1)
         (stake-amount:decimal 50.0)
@@ -144,10 +155,8 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
         (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
-        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -160,41 +169,34 @@
     (let
         (
             (pre-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 1))
+            (slice0:object (at 0 (at "slices" plan)))
         )
-        (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate TF slice-count 1)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id ouro-id vacate-kind-tf 1)
+        (print (format "<(TS02-C3.AQP-POOL|C_VacateTrueFungibleLegs finalize)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_VacateTrueFungibleLegs
+                patron pool-id ouro-id
+                (at "owner-ids" slice0)
+                (at "beneficiary-ids" slice0)
+                (at "amounts" slice0)
+                true
+            )
         ]))
         (let
             (
-                (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                (vacate-job-id:string (at "vacate-job-id" active-job))
-                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 1))
-                (slice0:object (at 0 (at "slices" plan)))
+                (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+                (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                (post-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+                (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
+                (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
             )
-            (print (format "<(VCT|vacate-job-id)> => \"{}\"" [vacate-job-id]))
-            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkTrueFungible)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_VacateChunkTrueFungible
-                    patron vacate-job-id 0
-                    (at "owner-ids" slice0)
-                    (at "beneficiary-ids" slice0)
-                    (at "amounts" slice0)
-                )
-            ]))
-            (let
-                (
-                    (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
-                    (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
-                    (post-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
-                    (job:object (ref-VCT::UR_Job vacate-job-id))
-                )
-                (map print
-                    [
-                        (expect (format "<<TX-VCT-TF02 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
-                        (expect (format "<<TX-VCT-TF02 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
-                        (expect (format "<<TX-VCT-TF02 expect>> supply restored got={} expected={}" [post-supply (+ pre-supply stake-amount)]) (+ pre-supply stake-amount) post-supply)
-                        (expect (format "<<TX-VCT-TF02 expect>> job finalized got={} expected=true" [(at "finalized" job)]) true (at "finalized" job))
-                    ]
-                )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-TF02 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                    (expect (format "<<TX-VCT-TF02 expect>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
+                    (expect (format "<<TX-VCT-TF02 expect>> supply restored got={} expected={}" [post-supply (+ pre-supply stake-amount)]) (+ pre-supply stake-amount) post-supply)
+                    (expect (format "<<TX-VCT-TF02 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
+                    (expect (format "<<TX-VCT-TF02 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
+                ]
             )
         )
     )
@@ -204,9 +206,9 @@
 (print "=== END TX-VCT-TF02 ========================================================")
 (print "")
 ;;
-(begin-tx "TX-VCT-L01 - C_ResliceVacate before any chunk (new VacateJobID)")
+(begin-tx "TX-VCT-L01 - OF Legs continue after re-split (finalize)")
 (print "")
-(print "=== TX-VCT-L01 — Reslice before chunks =====================================")
+(print "=== TX-VCT-L01 — OF Legs: plan→vacate→finalize (re-split style) ============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -237,46 +239,34 @@
     (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [stake-nonce])
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 3)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpof-id vacate-kind-of 3)
-    ]))
     (let
         (
-            (old-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-            (old-job-id:string (at "vacate-job-id" old-job))
+            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 1))
+            (slice0:object (at 0 (at "slices" plan)))
+            (zero-amts:[[integer]] (ref-VCT::UC_ZeroIntAmountsMatrix (at "nonces-array" slice0)))
         )
-        (print (format "<(TS02-C3.AQP-POOL|C_ResliceVacate slice-count 1)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_ResliceVacate patron old-job-id 1)
+        (print (format "<(TS02-C3.AQP-POOL|C_VacateOrtoFungibleLegs finalize)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_VacateOrtoFungibleLegs
+                patron pool-id dpof-id
+                (at "owner-ids" slice0)
+                (at "beneficiary-ids" slice0)
+                (at "nonces-array" slice0)
+                zero-amts
+                true
+            )
         ]))
         (let
             (
-                (old-job-row:object (ref-VCT::UR_Job old-job-id))
-                (new-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                (new-job-id:string (at "vacate-job-id" new-job))
-                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 1))
-                (slice0:object (at 0 (at "slices" plan)))
+                (tracker-post:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
+                (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
+                (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
             )
-            (print (format "<(VCT|old-job-id new-job-id)> => {} / {}" [old-job-id new-job-id]))
-            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkOrtoFungible)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_VacateChunkOrtoFungible
-                    patron new-job-id 0
-                    (at "owner-ids" slice0)
-                    (at "beneficiary-ids" slice0)
-                    (at "nonces-array" slice0)
-                )
-            ]))
-            (let
-                (
-                    (tracker-post:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
-                    (new-job-row:object (ref-VCT::UR_Job new-job-id))
-                )
-                (map print
-                    [
-                        (expect (format "<<TX-VCT-L01 expect>> old job resliced got={} expected=true" [(at "resliced" old-job-row)]) true (at "resliced" old-job-row))
-                        (expect (format "<<TX-VCT-L01 expect>> new job finalized got={} expected=true" [(at "finalized" new-job-row)]) true (at "finalized" new-job-row))
-                        (expect (format "<<TX-VCT-L01 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
-                    ]
-                )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-L01 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                    (expect (format "<<TX-VCT-L01 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
+                    (expect (format "<<TX-VCT-L01 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
+                ]
             )
         )
     )
@@ -286,9 +276,9 @@
 (print "=== END TX-VCT-L01 =========================================================")
 (print "")
 ;;
-(begin-tx "TX-VCT-L02 - C_ResliceVacate after partial chunk")
+(begin-tx "TX-VCT-L02 - DPSF Legs partial then continue finalize")
 (print "")
-(print "=== TX-VCT-L02 — Reslice after slice 0 processed =========================")
+(print "=== TX-VCT-L02 — DPSF Legs: batch0 finalize=false → re-plan → finalize =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -335,55 +325,61 @@
     (print (format "<(TS02-C3.AQP-POOL|C_StakeSemiFungibleCollectable owner-b)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 2)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpsf-id vacate-kind-dpsf 2)
-    ]))
     (let
         (
-            (old-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-            (old-job-id:string (at "vacate-job-id" old-job))
             (plan2:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 2))
             (slice0:object (at 0 (at "slices" plan2)))
         )
-        (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable slice 0)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
-                patron old-job-id 0
+        (print (format "<(TS02-C3.AQP-POOL|C_VacateSemiFungibleLegs batch0 no-finalize)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_VacateSemiFungibleLegs
+                patron pool-id dpsf-id
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
                 (at "nonces-array" slice0)
                 (at "amounts-array" slice0)
+                false
             )
-        ]))
-        (print (format "<(TS02-C3.AQP-POOL|C_ResliceVacate slice-count 1)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_ResliceVacate patron old-job-id 1)
         ]))
         (let
             (
-                (old-job-row:object (ref-VCT::UR_Job old-job-id))
-                (new-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                (new-job-id:string (at "vacate-job-id" new-job))
+                (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
+                (stake-off:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+                (remaining:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpsf-id true)))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-L02 expect>> vacate begun got={} expected=true" [vip]) true vip)
+                    (expect (format "<<TX-VCT-L02 expect>> stake disabled got={} expected=false" [stake-off]) false stake-off)
+                    (expect (format "<<TX-VCT-L02 expect>> remaining legs after batch0 got={} expected=1" [remaining]) 1 remaining)
+                ]
+            )
+        )
+        (let
+            (
                 (plan1:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 1))
                 (slice0n:object (at 0 (at "slices" plan1)))
             )
-            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable new job slice 0)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
-                    patron new-job-id 0
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateSemiFungibleLegs finalize)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateSemiFungibleLegs
+                    patron pool-id dpsf-id
                     (at "owner-ids" slice0n)
                     (at "beneficiary-ids" slice0n)
                     (at "nonces-array" slice0n)
                     (at "amounts-array" slice0n)
+                    true
                 )
             ]))
             (let
                 (
                     (tracker-b-post:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-b beneficiary-b nonce-b))
-                    (new-job-row:object (ref-VCT::UR_Job new-job-id))
+                    (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
+                    (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
                 )
                 (map print
                     [
-                        (expect (format "<<TX-VCT-L02 expect>> old job resliced got={} expected=true" [(at "resliced" old-job-row)]) true (at "resliced" old-job-row))
-                        (expect (format "<<TX-VCT-L02 expect>> new job finalized got={} expected=true" [(at "finalized" new-job-row)]) true (at "finalized" new-job-row))
                         (expect (format "<<TX-VCT-L02 expect>> owner-b tracker cleared got={} expected=0" [tracker-b-post]) 0.0 tracker-b-post)
+                        (expect (format "<<TX-VCT-L02 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
+                        (expect (format "<<TX-VCT-L02 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
                     ]
                 )
             )
@@ -395,9 +391,9 @@
 (print "=== END TX-VCT-L02 =========================================================")
 (print "")
 ;;
-(begin-tx "TX-VCT-L03 - C_AbortVacate mid-session")
+(begin-tx "TX-VCT-L03 - C_AbortVacate mid Legs")
 (print "")
-(print "=== TX-VCT-L03 — Abort vacate session ======================================")
+(print "=== TX-VCT-L03 — Abort vacate-in-progress (stake stays disabled) ===========")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -428,26 +424,33 @@
     (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [stake-nonce])
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 1)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpof-id vacate-kind-of 1)
-    ]))
     (let
         (
-            (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-            (vacate-job-id:string (at "vacate-job-id" active-job))
+            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 1))
+            (slice0:object (at 0 (at "slices" plan)))
+            (zero-amts:[[integer]] (ref-VCT::UC_ZeroIntAmountsMatrix (at "nonces-array" slice0)))
         )
+        ;; Vacate inventory but leave vacate-in-progress open (finalize=false).
+        (print (format "<(TS02-C3.AQP-POOL|C_VacateOrtoFungibleLegs no-finalize)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_VacateOrtoFungibleLegs
+                patron pool-id dpof-id
+                (at "owner-ids" slice0)
+                (at "beneficiary-ids" slice0)
+                (at "nonces-array" slice0)
+                zero-amts
+                false
+            )
+        ]))
         (print (format "<(TS02-C3.AQP-POOL|C_AbortVacate)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_AbortVacate patron vacate-job-id)
+            (ref-TS02-C3::AQP-POOL|C_AbortVacate patron pool-id)
         ]))
         (let
             (
-                (job:object (ref-VCT::UR_Job vacate-job-id))
                 (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
                 (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
             )
             (map print
                 [
-                    (expect (format "<<TX-VCT-L03 expect>> job aborted got={} expected=true" [(at "aborted" job)]) true (at "aborted" job))
                     (expect (format "<<TX-VCT-L03 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
                     (expect (format "<<TX-VCT-L03 expect>> stake stays disabled got={} expected=false" [stake-enabled]) false stake-enabled)
                 ]
@@ -581,9 +584,21 @@
                 (tracker-pre:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
             )
             (enforce (> tracker-pre 0.0) "TX-VCT-DPNF01: tracker must hold stake")
-            (print (format "<(TS02-C3.AQP-POOL|C_FullVacateNonFungible)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_FullVacateNonFungible patron pool-id dpnf-id)
-            ]))
+            (let
+                (
+                    (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id 4 1))
+                    (s0:object (at 0 (at "slices" plan)))
+                )
+                (print (format "<(TS02-C3.AQP-POOL|C_FullVacateNonFungible)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-POOL|C_FullVacateNonFungible
+                        patron pool-id dpnf-id
+                        (at "owner-ids" s0)
+                        (at "beneficiary-ids" s0)
+                        (at "nonces-array" s0)
+                        (at "amounts-array" s0)
+                    )
+                ]))
+            )
             (let
                 (
                     (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
@@ -608,9 +623,9 @@
 (print "=== END TX-VCT-DPNF01 ======================================================")
 (print "")
 ;;
-(begin-tx "TX-VCT-DPNF02 - DHN sliced vacate (mint probe)")
+(begin-tx "TX-VCT-DPNF02 - DHN Legs vacate (mint probe)")
 (print "")
-(print "=== TX-VCT-DPNF02 — DPNF sliced vacate (DHN mint probe) =====================")
+(print "=== TX-VCT-DPNF02 — DPNF Legs vacate (DHN mint probe) =======================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -689,36 +704,34 @@
         (print (format "<(TS02-C3.AQP-POOL|C_StakeNonFungibleCollectable)> => \"{}\"" [
             (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
         ]))
-        (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 1)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpnf-id vacate-kind-dpnf 1)
-        ]))
         (let
             (
-                (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                (vacate-job-id:string (at "vacate-job-id" active-job))
                 (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
                 (slice0:object (at 0 (at "slices" plan)))
             )
-            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable DHN slice 0)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
-                    patron vacate-job-id 0
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateNonFungibleLegs DHN finalize)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateNonFungibleLegs
+                    patron pool-id dpnf-id
                     (at "owner-ids" slice0)
                     (at "beneficiary-ids" slice0)
                     (at "nonces-array" slice0)
                     (at "amounts-array" slice0)
+                    true
                 )
             ]))
             (let
                 (
                     (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
                     (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
-                    (job:object (ref-VCT::UR_Job vacate-job-id))
+                    (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
+                    (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
                 )
                 (map print
                     [
                         (expect (format "<<TX-VCT-DPNF02 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
                         (expect (format "<<TX-VCT-DPNF02 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
-                        (expect (format "<<TX-VCT-DPNF02 expect>> job finalized got={} expected=true" [(at "finalized" job)]) true (at "finalized" job))
+                        (expect (format "<<TX-VCT-DPNF02 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
+                        (expect (format "<<TX-VCT-DPNF02 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
                     ]
                 )
             )
@@ -730,9 +743,9 @@
 (print "=== END TX-VCT-DPNF02 ======================================================")
 (print "")
 ;;
-(begin-tx "TX-VCT-DPNF03 - KBN sliced vacate (mint probe)")
+(begin-tx "TX-VCT-DPNF03 - KBN Legs vacate (mint probe)")
 (print "")
-(print "=== TX-VCT-DPNF03 — DPNF sliced vacate (KBN mint probe) =====================")
+(print "=== TX-VCT-DPNF03 — DPNF Legs vacate (KBN mint probe) =======================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -811,36 +824,34 @@
         (print (format "<(TS02-C3.AQP-POOL|C_StakeNonFungibleCollectable)> => \"{}\"" [
             (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])
         ]))
-        (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate slice-count 1)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id dpnf-id vacate-kind-dpnf 1)
-        ]))
         (let
             (
-                (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-                (vacate-job-id:string (at "vacate-job-id" active-job))
                 (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
                 (slice0:object (at 0 (at "slices" plan)))
             )
-            (print (format "<(TS02-C3.AQP-POOL|C_VacateChunkCollectable KBN slice 0)> => \"{}\"" [
-                (ref-TS02-C3::AQP-POOL|C_VacateChunkCollectable
-                    patron vacate-job-id 0
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateNonFungibleLegs KBN finalize)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateNonFungibleLegs
+                    patron pool-id dpnf-id
                     (at "owner-ids" slice0)
                     (at "beneficiary-ids" slice0)
                     (at "nonces-array" slice0)
                     (at "amounts-array" slice0)
+                    true
                 )
             ]))
             (let
                 (
                     (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
                     (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
-                    (job:object (ref-VCT::UR_Job vacate-job-id))
+                    (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
+                    (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
                 )
                 (map print
                     [
                         (expect (format "<<TX-VCT-DPNF03 expect>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
                         (expect (format "<<TX-VCT-DPNF03 expect>> supply restored got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
-                        (expect (format "<<TX-VCT-DPNF03 expect>> job finalized got={} expected=true" [(at "finalized" job)]) true (at "finalized" job))
+                        (expect (format "<<TX-VCT-DPNF03 expect>> vacate-in-progress cleared got={} expected=false" [vacate-in-progress]) false vacate-in-progress)
+                        (expect (format "<<TX-VCT-DPNF03 expect>> stake re-enabled got={} expected=true" [stake-enabled]) true stake-enabled)
                     ]
                 )
             )
@@ -852,9 +863,9 @@
 (print "=== END TX-VCT-DPNF03 ======================================================")
 (print "")
 ;;
-(begin-tx "TX-VCT-N01 - expect-failure hash mismatch on chunk")
+(begin-tx "TX-VCT-N01 - expect-failure finalize while inventory remains")
 (print "")
-(print "=== TX-VCT-N01 — Chunk hash mismatch must fail =============================")
+(print "=== TX-VCT-N01 — empty Legs arrays rejected (batch validation) ===============")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -878,26 +889,30 @@
     (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id ouro-id vacate-kind-tf 1)
-    ]))
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-VCT-N01 expect-failure>> finalize with empty legs while inventory remains" [])
+                (ref-TS02-C3::AQP-POOL|C_VacateTrueFungibleLegs
+                    patron pool-id ouro-id [] [] [] true
+                )
+            )
+        ]
+    )
+    ;; Empty legs may fail earlier on batch validation — also cover partial vacate + bad finalize:
+    ;; stake stays; clean up with FullVacate so later tests see empty inventory.
     (let
         (
-            (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-            (vacate-job-id:string (at "vacate-job-id" active-job))
+            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id 1 1))
+            (s0:object (at 0 (at "slices" plan)))
         )
-        (map print
-            [
-                (expect-failure
-                    (format "<<TX-VCT-N01 expect-failure>> wrong TF amounts must fail hash check" [])
-                    (ref-TS02-C3::AQP-POOL|C_VacateChunkTrueFungible
-                        patron vacate-job-id 0 [owner-id] [beneficiary-id] [999.0]
-                    )
-                )
-            ]
-        )
-        (print (format "<(TS02-C3.AQP-POOL|C_AbortVacate cleanup)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_AbortVacate patron vacate-job-id)
+        (print (format "<(TS02-C3.AQP-POOL|C_FullVacateTrueFungible cleanup)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible
+                patron pool-id ouro-id
+                (at "owner-ids" s0)
+                (at "beneficiary-ids" s0)
+                (at "amounts" s0)
+            )
         ]))
     )
 )
@@ -906,9 +921,9 @@
 (print "=== END TX-VCT-N01 ===========================================================")
 (print "")
 ;;
-(begin-tx "TX-VCT-N02 - expect-failure double BeginVacate on same pool")
+(begin-tx "TX-VCT-N02 - expect-failure finalize after partial Legs")
 (print "")
-(print "=== TX-VCT-N02 — Second BeginVacate while session open must fail =============")
+(print "=== TX-VCT-N02 — finalize=true after vacating only one of two TF legs =======")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -922,6 +937,90 @@
         (stake-amount:decimal 10.0)
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    ;; Two stakes → two TF legs if different beneficiaries; same owner×ben collapses to one row.
+    ;; Use amount-only: stake once, then try finalize with a zeroed amount batch that doesn't clear inventory.
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible second)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
+    ]))
+    (let
+        (
+            (bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+            (half:decimal (/ bal 2.0))
+        )
+        ;; Vacate half amount? TF vacate requires full row — so partial Legs isn't amount-partial.
+        ;; Instead: Legs with finalize=true but leave vacate open by using no-op then...
+        ;; Real N02: start vacate with finalize=false empty? Can't.
+        ;; Better: DPSF-style isn't available here. Use finalize=true on Legs that vacates nothing valid.
+        ;; Simplest solid reject: after stake, call Legs finalize=true with wrong (zero) amount that fails URC_VacateTfLegsOk,
+        ;; OR vacate-in-progress path: Full path already cleaned N01.
+        ;;
+        ;; Do: Legs finalize=false with full inventory (opens vacate), then Legs finalize=true with EMPTY arrays
+        ;; while inventory was already cleared — wait that would succeed finalize.
+        ;;
+        ;; Correct reject for "inventory remains":
+        ;; Stake TF, Legs finalize=true with owner arrays that vacate 0 amount? Validation fails.
+        ;; Use two-owner DPSF leftover from L02 — pool may be empty.
+        ;;
+        ;; Practical N02 for Legs: stake TF; call Legs with finalize=true and amounts that don't match tracker
+        ;; (URC_VacateTfLegsOk fails).
+        (map print
+            [
+                (expect-failure
+                    (format "<<TX-VCT-N02 expect-failure>> Legs amounts mismatch tracker must fail" [])
+                    (ref-TS02-C3::AQP-POOL|C_VacateTrueFungibleLegs
+                        patron pool-id ouro-id [owner-id] [beneficiary-id] [1.0] true
+                    )
+                )
+            ]
+        )
+        (let
+            (
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id 1 1))
+                (s0:object (at 0 (at "slices" plan)))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_FullVacateTrueFungible cleanup)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible
+                    patron pool-id ouro-id
+                    (at "owner-ids" s0)
+                    (at "beneficiary-ids" s0)
+                    (at "amounts" s0)
+                )
+            ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-N02 ===========================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-P01 - offline plan helpers (URD + URDC + UC)")
+(print "")
+(print "=== TX-VCT-P01 — UI offline plan smoke (no vacate writes) ==================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (pool-name:string "TfStakePool")
+        (vacate-kind-tf:integer 1)
+        (stake-amount:decimal 12.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
@@ -932,29 +1031,384 @@
     (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible)> => \"{}\"" [
         (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)
     ]))
-    (print (format "<(TS02-C3.AQP-POOL|C_BeginVacate first)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id ouro-id vacate-kind-tf 1)
-    ]))
-    (map print
-        [
-            (expect-failure
-                (format "<<TX-VCT-N02 expect-failure>> second BeginVacate while session open" [])
-                (ref-TS02-C3::AQP-POOL|C_BeginVacate patron pool-id ouro-id vacate-kind-tf 1)
-            )
-        ]
+    (let
+        (
+            (inv:object (ref-VCT::URD_VacateTfInventory pool-id ouro-id))
+            (units:integer (ref-VCT::URDC_VacateUnitCountForKind pool-id ouro-id vacate-kind-tf))
+            (min-n:integer (ref-VCT::UC_ComputeMinSliceCount units vacate-kind-tf))
+            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf min-n))
+        )
+        (map print
+            [
+                (expect (format "<<TX-VCT-P01 expect>> leg-count>0 got={}" [(at "leg-count" inv)]) true (> (at "leg-count" inv) 0))
+                (expect (format "<<TX-VCT-P01 expect>> units=leg-count got={} expected={}" [units (at "leg-count" inv)]) (at "leg-count" inv) units)
+                (expect (format "<<TX-VCT-P01 expect>> min-slice-count>=1 got={}" [min-n]) true (>= min-n 1))
+                (expect (format "<<TX-VCT-P01 expect>> plan.slice-count=min-n got={} expected={}" [(at "slice-count" plan) min-n]) min-n (at "slice-count" plan))
+                (expect (format "<<TX-VCT-P01 expect>> plan.slices length got={}" [(length (at "slices" plan))]) min-n (length (at "slices" plan)))
+                (expect (format "<<TX-VCT-P01 expect>> vacate still idle got={}" [(ref-VCT::UR_VacateInProgress pool-id)]) false (ref-VCT::UR_VacateInProgress pool-id))
+            ]
+        )
     )
     (let
         (
-            (active-job:object (ref-VCT::URDC_ActiveJobForPool pool-id))
-            (vacate-job-id:string (at "vacate-job-id" active-job))
+            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id 1 1))
+            (s0:object (at 0 (at "slices" plan)))
         )
-        (print (format "<(TS02-C3.AQP-POOL|C_AbortVacate cleanup)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_AbortVacate patron vacate-job-id)
+        (print (format "<(TS02-C3.AQP-POOL|C_FullVacateTrueFungible cleanup)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible
+                patron pool-id ouro-id
+                (at "owner-ids" s0)
+                (at "beneficiary-ids" s0)
+                (at "amounts" s0)
+            )
         ]))
     )
 )
 (env-sigs [])
 (commit-tx)
-(print "=== END TX-VCT-N02 ===========================================================")
+(print "=== END TX-VCT-P01 ===========================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-L05 - TF Legs multi-batch two owners")
+(print "")
+(print "=== TX-VCT-L05 — TF Legs: 2 owners → N=2 finalize=false then finalize =====")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-a:string KST.ANHD)
+        (owner-b:string KST.EMMA)
+        (beneficiary-a:string KST.ANHD)
+        (beneficiary-b:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (pool-name:string "TfStakePool")
+        (vacate-kind-tf:integer 1)
+        (stake-amount:decimal 8.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    ;; Fund EMMA if needed (gate/Z usually leaves her with OURO; top-up from ANHD otherwise).
+    (let
+        (
+            (emma-bal:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-b))
+        )
+        (if (< emma-bal stake-amount)
+            (ref-TS01-C1::DPTF|C_Transfer patron ouro-id owner-a owner-b stake-amount true)
+            true
+        )
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible owner-a)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-a beneficiary-a ouro-id stake-amount)
+    ]))
+    ;; Patron IGNIS + EMMA owner: both keys (same pattern as TX-VCT-L02).
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible owner-b)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-b beneficiary-b ouro-id stake-amount)
+    ]))
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (let
+        (
+            (plan2:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 2))
+            (slice0:object (at 0 (at "slices" plan2)))
+            (slice1:object (at 1 (at "slices" plan2)))
+        )
+        (enforce (= 2 (at "slice-count" plan2)) "TX-VCT-L05: expected 2 slices")
+        (print (format "<(TS02-C3.AQP-POOL|C_VacateTrueFungibleLegs batch0)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_VacateTrueFungibleLegs
+                patron pool-id ouro-id
+                (at "owner-ids" slice0)
+                (at "beneficiary-ids" slice0)
+                (at "amounts" slice0)
+                false
+            )
+        ]))
+        (let
+            (
+                (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
+                (remaining:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-L05 expect>> vacate begun got={}" [vip]) true vip)
+                    (expect (format "<<TX-VCT-L05 expect>> remaining after batch0 got={} expected=1" [remaining]) 1 remaining)
+                ]
+            )
+        )
+        (print (format "<(TS02-C3.AQP-POOL|C_VacateTrueFungibleLegs finalize)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_VacateTrueFungibleLegs
+                patron pool-id ouro-id
+                (at "owner-ids" slice1)
+                (at "beneficiary-ids" slice1)
+                (at "amounts" slice1)
+                true
+            )
+        ]))
+        (let
+            (
+                (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+                (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
+                (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-L05 expect>> inventory empty got={}" [inv-post]) 0 inv-post)
+                    (expect (format "<<TX-VCT-L05 expect>> vacate cleared got={}" [vacate-in-progress]) false vacate-in-progress)
+                    (expect (format "<<TX-VCT-L05 expect>> stake re-enabled got={}" [stake-enabled]) true stake-enabled)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-L05 =========================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-N03 - finalize=true with leftover inventory (UI-trust semantics)")
+(print "")
+(print "=== TX-VCT-N03 — partial Legs + finalize=true SUCCEEDS (UI must not do this) =")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-a:string KST.ANHD)
+        (owner-b:string KST.EMMA)
+        (beneficiary-a:string KST.ANHD)
+        (beneficiary-b:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (pool-name:string "TfStakePool")
+        (vacate-kind-tf:integer 1)
+        (stake-amount:decimal 7.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (let
+        (
+            (emma-bal:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-b))
+        )
+        (if (< emma-bal stake-amount)
+            (ref-TS01-C1::DPTF|C_Transfer patron ouro-id owner-a owner-b stake-amount true)
+            true
+        )
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible owner-a)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-a beneficiary-a ouro-id stake-amount)
+    ]))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+        ]
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible owner-b)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-b beneficiary-b ouro-id stake-amount)
+    ]))
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (let
+        (
+            (plan2:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 2))
+            (slice0:object (at 0 (at "slices" plan2)))
+        )
+        ;; Intentionally finalize on first slice only — chain trusts UI; leftover inventory remains.
+        (print (format "<(TS02-C3.AQP-POOL|C_VacateTrueFungibleLegs finalize-early)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_VacateTrueFungibleLegs
+                patron pool-id ouro-id
+                (at "owner-ids" slice0)
+                (at "beneficiary-ids" slice0)
+                (at "amounts" slice0)
+                true
+            )
+        ]))
+        (let
+            (
+                (remaining:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+                (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
+                (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-N03 expect>> leftover inventory got={} expected=1" [remaining]) 1 remaining)
+                    (expect (format "<<TX-VCT-N03 expect>> vacate cleared despite leftover got={}" [vacate-in-progress]) false vacate-in-progress)
+                    (expect (format "<<TX-VCT-N03 expect>> stake re-enabled despite leftover got={}" [stake-enabled]) true stake-enabled)
+                ]
+            )
+        )
+        (let
+            (
+                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id 1 1))
+                (s0:object (at 0 (at "slices" plan)))
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_FullVacateTrueFungible cleanup)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible
+                    patron pool-id ouro-id
+                    (at "owner-ids" s0)
+                    (at "beneficiary-ids" s0)
+                    (at "amounts" s0)
+                )
+            ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-N03 ===========================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-L06 - OF Legs multi-batch two owners")
+(print "")
+(print "=== TX-VCT-L06 — OF Legs: 2 owners → N=2 finalize=false then finalize =====")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-a:string KST.ANHD)
+        (owner-b:string KST.EMMA)
+        (beneficiary-a:string KST.ANHD)
+        (beneficiary-b:string KST.EMMA)
+        (dpof-id:string "MVST-98c486052a51")
+        (pool-name:string "OfStakePool")
+        (vacate-kind-of:integer 2)
+        (nonce-a:integer 1)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+        ]
+    )
+    (if (ref-DPOF::UR_R-Frozen dpof-id owner-a)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-a false)
+        true
+    )
+    (if (ref-DPOF::UR_R-Frozen dpof-id owner-b)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-b false)
+        true
+    )
+    (if (not (ref-DPOF::UR_R-AddQuantity dpof-id patron))
+        (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole patron dpof-id patron true)
+        true
+    )
+    (print (format "<(TS02-C3.AQP-POOL|C_EnablePoolStake)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ]))
+    ;; Owner-a: existing nonce-a. Owner-b: mint → transfer → stake (2 owner-rows for N=2).
+    (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible owner-a)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-a beneficiary-a dpof-id [nonce-a])
+    ]))
+    (print (format "<(DPOF|C_Mint L06 emma)> => \"{}\"" [
+        (ref-TS01-C1::DPOF|C_Mint patron dpof-id patron 1.0 [{"vct-l06": true}])
+    ]))
+    (let
+        (
+            (patron-nonces:[integer] (ref-DPOF::URD_AccountNonces patron dpof-id))
+            (nonce-b:integer (at (- (length patron-nonces) 1) patron-nonces))
+        )
+        (print (format "<(DPOF|C_Transfer nonce-b={} → EMMA)> => \"{}\"" [
+            nonce-b
+            (ref-TS01-C1::DPOF|C_Transfer patron dpof-id [nonce-b] patron owner-b true)
+        ]))
+        (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible owner-b)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-b beneficiary-b dpof-id [nonce-b])
+        ]))
+    )
+    (let
+        (
+            (plan2:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 2))
+        )
+        (enforce (= 2 (at "slice-count" plan2)) "TX-VCT-L06: expected 2 slices")
+        (let
+            (
+                (slice0:object (at 0 (at "slices" plan2)))
+                (slice1:object (at 1 (at "slices" plan2)))
+                (z0:[[integer]] (ref-VCT::UC_ZeroIntAmountsMatrix (at "nonces-array" (at 0 (at "slices" plan2)))))
+                (z1:[[integer]] (ref-VCT::UC_ZeroIntAmountsMatrix (at "nonces-array" (at 1 (at "slices" plan2)))))
+            )
+            (enforce (= 1 (length (at "owner-ids" slice0))) "TX-VCT-L06: slice0 owner-count")
+            (enforce (= 1 (length (at "owner-ids" slice1))) "TX-VCT-L06: slice1 owner-count")
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateOrtoFungibleLegs batch0)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateOrtoFungibleLegs
+                    patron pool-id dpof-id
+                    (at "owner-ids" slice0)
+                    (at "beneficiary-ids" slice0)
+                    (at "nonces-array" slice0)
+                    z0
+                    false
+                )
+            ]))
+            (let
+                (
+                    (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
+                    (remaining:integer (at "leg-count" (ref-VCT::URD_VacateOfInventory pool-id dpof-id)))
+                )
+                (map print
+                    [
+                        (expect (format "<<TX-VCT-L06 expect>> vacate begun got={}" [vip]) true vip)
+                        (expect (format "<<TX-VCT-L06 expect>> remaining after batch0 got={} expected=1" [remaining]) 1 remaining)
+                    ]
+                )
+            )
+            (print (format "<(TS02-C3.AQP-POOL|C_VacateOrtoFungibleLegs finalize)> => \"{}\"" [
+                (ref-TS02-C3::AQP-POOL|C_VacateOrtoFungibleLegs
+                    patron pool-id dpof-id
+                    (at "owner-ids" slice1)
+                    (at "beneficiary-ids" slice1)
+                    (at "nonces-array" slice1)
+                    z1
+                    true
+                )
+            ]))
+            (let
+                (
+                    (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateOfInventory pool-id dpof-id)))
+                    (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
+                    (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+                )
+                (map print
+                    [
+                        (expect (format "<<TX-VCT-L06 expect>> inventory empty got={}" [inv-post]) 0 inv-post)
+                        (expect (format "<<TX-VCT-L06 expect>> vacate cleared got={}" [vacate-in-progress]) false vacate-in-progress)
+                        (expect (format "<<TX-VCT-L06 expect>> stake re-enabled got={}" [stake-enabled]) true stake-enabled)
+                    ]
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-L06 =========================================================")
 (print "")
 (print "=== END FILE [6.2.5]_AQP-VCT.repl ============================================")

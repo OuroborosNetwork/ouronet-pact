@@ -763,6 +763,94 @@
         ( patron:string
           apollo-account:string ))
 )
+(interface PythiaV3
+    @doc "Frozen — dual-Apollo pairs (deploy halves, link, Cronoton activate, revoke). Superseded by PythiaV4."
+    (defun GOV|CronotonKey ())
+    ;;
+    (defun UC_DeployPrice:decimal ())
+    (defun UC_RenamePrice:decimal ())
+    (defun UC_RevokeIgnisFee:decimal ())
+    (defun UC_IsStandardApollo:bool (apollo-account:string))
+    (defun UC_FeeDiscountAnchor:string ())
+    (defun UC_DualLinkKey:string (standard-apollo:string smart-apollo:string))
+    (defun UC_DualLinkStandard:string (dual-link-key:string))
+    (defun UC_DualLinkSmart:string (dual-link-key:string))
+    (defun UC_ChainEpoch:integer (block-height:integer))
+    (defun UC_CurrentChainEpoch:integer ())
+    ;;
+    (defun A_LinkDualApiKey:string (standard-apollo:string smart-apollo:string))
+    (defun A_RevokeDualLink:string (dual-link-key:string))
+    (defun A_UpdateDeployPrice:string (new-price:decimal))
+    (defun A_UpdateRenamePrice:string (new-price:decimal))
+    ;;
+    (defun C_DeployApolloPythiaApiKey:string
+        (
+            owner-account:string
+            apollo-account:string
+            public:string
+        ))
+    (defun C_LinkDualApiKey:string
+        (
+            standard-apollo:string
+            smart-apollo:string
+            consumer-lane:string
+        ))
+    (defun C_RevokeDualLink:string (dual-link-key:string))
+    (defun C_UpdateDualConsumerLane:string
+        (
+            dual-link-key:string
+            new-name:string
+        ))
+    ;;
+    (defun UR_Public:string (apollo-account:string))
+    (defun UR_Counterpart:string (apollo-account:string))
+    (defun UR_DualLinkConsumerLane:string (dual-link-key:string))
+    (defun UR_OwnerAccount:string (apollo-account:string))
+    (defun UR_RegisteredAt:time (apollo-account:string))
+    (defun UR_UpdatedAt:time (apollo-account:string))
+    (defun UR_ApiKeyRowOrNull:object (apollo-account:string))
+    (defun UR_DualLinkIzActive:bool (dual-link-key:string))
+    (defun UR_DualLinkRowOrNull:object (dual-link-key:string))
+    (defun UR_DualLinkIzActiveOrFalse:bool (dual-link-key:string))
+    (defun UR_RevocationAtHeight:integer ())
+    (defun UR_RevocationEpoch:integer ())
+    (defun UR_ActiveDualLinkSet:[string] ())
+    (defun UR_ApiKeyBySlot:object (standard-apollo:string))
+    (defun UR_ApiKeyByConsumer:object (smart-apollo:string))
+    ;;
+    (defun URD_ApiKeyCount:integer ())
+    (defun URD_ApiKeyCountStr:string ())
+    (defun URD_DualLinkCount:integer ())
+    (defun URD_ListAllApiKeys:[object] ())
+    (defun URD_ListAllDualLinks:[object] ())
+    (defun URD_ListActiveDualLinks:[object] ())
+    (defun URD_ListInactiveDualLinks:[object] ())
+    ;;
+    (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
+        (
+            patron:string
+            owner-account:string
+            apollo-account:string
+            public:string
+        ))
+    (defun PYTHIA|INFO_LinkDualApiKey:object{OuronetInfoV1.ClientInfo}
+        (
+            standard-apollo:string
+            smart-apollo:string
+            consumer-lane:string
+        ))
+    (defun PYTHIA|INFO_UnlinkDualApiKey:object{OuronetInfoV1.ClientInfo}
+        (
+            patron:string
+            dual-link-key:string
+        ))
+    (defun PYTHIA|INFO_UpdateDualConsumerLane:object{OuronetInfoV1.ClientInfo}
+        (
+            patron:string
+            dual-link-key:string
+            new-name:string
+        ))
+)
 (interface PythiaLedgerV1
     @doc "Frozen — insert-only daily flush; caller passes day + flushed-at (pre-Khronoton)."
     ;;

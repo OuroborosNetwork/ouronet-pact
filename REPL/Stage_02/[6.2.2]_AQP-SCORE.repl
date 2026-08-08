@@ -252,11 +252,11 @@
 (let
     (
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-        (score-ids:[string] (ref-SCR::UR_SCR|AllScoreIds))
+        (score-ids:[string] (ref-SCR::URD_SCR|AllScoreIds))
     )
-    ;;==== TX-SCORE-07 · 01 · list all issued scores (UR_SCR|AllScoreIds) =====================
-    (print "--- [TX-SCORE-07 · 01 · UR_SCR|AllScoreIds] ---")
-    (print (format "<(AQP-SCORE|UR_SCR|AllScoreIds)> count => \"{}\"" [(length score-ids)]))
+    ;;==== TX-SCORE-07 · 01 · list all issued scores (URD_SCR|AllScoreIds) =====================
+    (print "--- [TX-SCORE-07 · 01 · URD_SCR|AllScoreIds] ---")
+    (print (format "<(AQP-SCORE|URD_SCR|AllScoreIds)> count => \"{}\"" [(length score-ids)]))
     (map
         (lambda (sid:string)
             (print (format "  score-id: {} | class: {} | owner: {}" [sid (ref-SCR::UR_SCR|ScoreClass sid) (ref-SCR::UR_SCR|ScoreOwnerKonto sid)]))

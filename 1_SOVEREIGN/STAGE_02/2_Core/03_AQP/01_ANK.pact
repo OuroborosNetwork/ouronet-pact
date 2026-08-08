@@ -20,13 +20,13 @@
     (defun UR_ANK|NFTraitValue:string (anchor-id:string))
     (defun UR_ANK|NFNonceClass:integer (anchor-id:string))
     (defun UR_ANK|ID:string (anchor-id:string))
-    (defun UR_ANK|AllAnchorIds:[string] ())
+    (defun URD_ANK|AllAnchorIds:[string] ())
     (defun UR_ANK|AnchorsForAsset:[string] (asset-id:string))
     ;;  [UR] BoostClass
     (defun UR_BC|Anchors:integer (boost-class-id:string))
     (defun UR_BC|Active:bool (boost-class-id:string))
     (defun UR_BC|ID:string (boost-class-id:string))
-    (defun UR_BC|AllBoostClassIds:[string] ())
+    (defun URD_BC|AllBoostClassIds:[string] ())
     ;;  [UR] AssetAnchors
     (defun UR_AA|GroupsActive:integer (asset-id:string))
     (defun UR_AA|AnchorsActive:integer (asset-id:string))
@@ -616,7 +616,7 @@
         @doc "Reads anchor-id field from anchor row."
         (at "anchor-id" (UR_ANK|Data anchor-id))
     )
-    (defun UR_ANK|AllAnchorIds:[string] ()
+    (defun URD_ANK|AllAnchorIds:[string] ()
         @doc "Returns all row keys from ANK|T|Anchor."
         (keys ANK|T|Anchor)
     )
@@ -638,7 +638,7 @@
         @doc "Reads boost-class-id from BoostClass row."
         (at "boost-class-id" (read ANK|T|BoostClass boost-class-id ["boost-class-id"]))
     )
-    (defun UR_BC|AllBoostClassIds:[string] ()
+    (defun URD_BC|AllBoostClassIds:[string] ()
         @doc "Returns all row keys from ANK|T|BoostClass."
         (keys ANK|T|BoostClass)
     )
@@ -1303,14 +1303,15 @@
     )
     (defun UDC_AA|PlaceAnchor:object{ANK|AssetAnchors}
         (aa:object{ANK|AssetAnchors} new-anchor-id:string)
-        @doc "Places anchor in first group with a free slot; creates new group if needed."
+        @doc "Places anchor in first group with a free slot; creates new group if needed. \
+            \ Pure constructor — no enforce. Caller (issue caps via UEV_*) must ensure \
+            \ anchors-active < 49 (implies a free group slot exists under 7×7)."
         (let
             (
                 (ga:integer (at "groups-active" aa))
                 (ta:integer (at "anchors-active" aa))
                 (aid:string (at "asset-id" aa))
             )
-            (enforce (< ta 49) (format "{} 49-anchor cap reached for asset {}" [E-ANK aid]))
             (let
                 (
                     (result:list
@@ -1355,7 +1356,6 @@
                         (
                             (new-grp:object{ANK|InternalGroup} (UDC_IG|WithAddedAnchor (UDC_EmptyInternalGroup) new-anchor-id))
                         )
-                        (enforce (< ga 7) (format "{} 7-group cap reached for asset {}" [E-ANK aid]))
                         (URC_AA|SetGroupAtSlot aa new-grp ga (+ ta 1) ga true)
                     )
                 )

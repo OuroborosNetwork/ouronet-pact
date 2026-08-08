@@ -2,6 +2,8 @@
 
 Agent checklist for day-to-day edits. **Canonical home:** `OuronetInformational/` — this file is the map.
 
+**StoicSyntax (Ouronet’s Pact discipline):** [`../../StoicSyntax.md`](../../StoicSyntax.md) — rules for human-auditable large Pact and multi-module composition; offered for any Pact builder.
+
 ## Quick rules
 
 | Topic | Rule |

@@ -19,7 +19,7 @@
     (defun UCK_BenDpnfAnkMeta:string (beneficiary-id:string dpnf-id:string))
     ;;
     ;;  [UR] AQP|Schema (AQP|T|Pool)
-    (defun UR_AQP|AllPoolIds:[string] ())
+    (defun URD_AQP|AllPoolIds:[string] ())
     (defun UR_AQP|PoolAqpClass:integer (pool-id:string))
     (defun UR_AQP|PoolAssetId:string (pool-id:string))
     (defun UR_AQP|PoolScorePrimary:string (pool-id:string))
@@ -54,7 +54,7 @@
     (defun UR_AQP|BenDpsfLastAnkSyncCount:integer (beneficiary-id:string dpsf-id:string))
     (defun UR_AQP|BenDpsfActiveNonceCount:integer (beneficiary-id:string dpsf-id:string))
     (defun URD_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string))
-    (defun URDC_BenDpsfHasStake:bool (beneficiary-id:string dpsf-id:string))
+    (defun URC_BenDpsfHasStake:bool (beneficiary-id:string dpsf-id:string))
     (defun URC_BenDpsfAnchorsNeedSync:bool (beneficiary-id:string dpsf-id:string))
     ;;
     ;;  [UR] AQP|BenDpnfNonceTotal + AQP|BenDpnfAnkMeta — cross-pool DPNF ANK rollup
@@ -62,7 +62,7 @@
     (defun UR_AQP|BenDpnfLastAnkSyncCount:integer (beneficiary-id:string dpnf-id:string))
     (defun UR_AQP|BenDpnfActiveNonceCount:integer (beneficiary-id:string dpnf-id:string))
     (defun URD_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string))
-    (defun URDC_BenDpnfHasStake:bool (beneficiary-id:string dpnf-id:string))
+    (defun URC_BenDpnfHasStake:bool (beneficiary-id:string dpnf-id:string))
     (defun URC_BenDpnfAnchorsNeedSync:bool (beneficiary-id:string dpnf-id:string))
     ;;
     ;;  [UR] AQP|OrtoFungibleTracker (AQP|T|DPOFTracker)
@@ -393,7 +393,7 @@
         ;;
         stake-enabled:bool                                      ;;[M]   Gates new stakes when false; default true at issue. Unstake/vacate ignore.
         vacate-in-progress:bool                                 ;;[M]   True while AQP-VCT session active on this pool.
-        initial-vacate-hash:string                              ;;[M]   Manifest hash at C_BeginVacate ("" when idle).
+        initial-vacate-hash:string                              ;;[M]   Legacy vacate manifest hash ("" under Legs; unused).
         phase-vacate-hash:string                                ;;[M]   Current phase manifest hash after reslice ("" when idle).
         last-vacate-hash:string                                 ;;[M]   Last committed slice hash ("" when idle).
         ;;
@@ -1333,7 +1333,7 @@
     ;;     (6) DPSFScoreAttribution (7) DPNFScoreAttribution
     ;;
     ;; [1] AQP|T|Pool  (AQP|Schema)  Key = <Pool-ID>
-    (defun UR_AQP|AllPoolIds:[string] ()
+    (defun URD_AQP|AllPoolIds:[string] ()
         @doc "Returns all row keys from AQP|T|Pool."
         (keys AQP|T|Pool)
     )
@@ -1515,7 +1515,7 @@
             (if (= (length results) 0) [] results)
         )
     )
-    (defun URDC_BenDpsfHasStake:bool (beneficiary-id:string dpsf-id:string)
+    (defun URC_BenDpsfHasStake:bool (beneficiary-id:string dpsf-id:string)
         @doc "True when beneficiary has any positive DPSF per-nonce rollup under dpsf-id (O(1) meta counter)."
         (> (UR_AQP|BenDpsfActiveNonceCount beneficiary-id dpsf-id) 0)
     )
@@ -1528,7 +1528,7 @@
                 (last-sync:integer (UR_AQP|BenDpsfLastAnkSyncCount beneficiary-id dpsf-id))
                 (live-count:integer (ref-ANK::UR_AA|AnchorsActive dpsf-id))
             )
-            (and (URDC_BenDpsfHasStake beneficiary-id dpsf-id) (> live-count last-sync))
+            (and (URC_BenDpsfHasStake beneficiary-id dpsf-id) (> live-count last-sync))
         )
     )
     ;;
@@ -1590,7 +1590,7 @@
             (if (= (length results) 0) [] results)
         )
     )
-    (defun URDC_BenDpnfHasStake:bool (beneficiary-id:string dpnf-id:string)
+    (defun URC_BenDpnfHasStake:bool (beneficiary-id:string dpnf-id:string)
         @doc "True when beneficiary has any positive DPNF per-nonce rollup under dpnf-id (O(1) meta counter)."
         (> (UR_AQP|BenDpnfActiveNonceCount beneficiary-id dpnf-id) 0)
     )
@@ -1603,7 +1603,7 @@
                 (last-sync:integer (UR_AQP|BenDpnfLastAnkSyncCount beneficiary-id dpnf-id))
                 (live-count:integer (ref-ANK::UR_AA|AnchorsActive dpnf-id))
             )
-            (and (URDC_BenDpnfHasStake beneficiary-id dpnf-id) (> live-count last-sync))
+            (and (URC_BenDpnfHasStake beneficiary-id dpnf-id) (> live-count last-sync))
         )
     )
     ;;
@@ -2216,8 +2216,8 @@
     (defun URC_BenCollectableHasStake:bool (beneficiary-id:string collectable-id:string son:bool)
         @doc "True when beneficiary has active cross-pool collectable rollup (son dispatches DPSF vs DPNF table)."
         (if son
-            (URDC_BenDpsfHasStake beneficiary-id collectable-id)
-            (URDC_BenDpnfHasStake beneficiary-id collectable-id)
+            (URC_BenDpsfHasStake beneficiary-id collectable-id)
+            (URC_BenDpnfHasStake beneficiary-id collectable-id)
         )
     )
     (defun URC_CollectableUnstakeRollupSufficient:bool
