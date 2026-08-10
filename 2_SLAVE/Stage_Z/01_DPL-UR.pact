@@ -1,6 +1,6 @@
 ;; DPL-UR — single deployer read module (canonical; keep aligned with live net).
 ;; Load only after Stage 1 and Stage 2 (REPL/StageZZ_Tester.repl after Stage02_Tester.repl).
-;; Implements DeployerReadsV7 + V8 (StoicTag) + V9 (PYTHIA Apollo) + V10 (Elite) + V11 (Dual API + Pythia prices).
+;; Implements DeployerReadsV7 + V8 (StoicTag) + V9 (PYTHIA Apollo) + V10 (Elite) + V11 (Dual API + Pythia prices) + V12 (Elite rich list).
 ;;
 (interface DeployerReadsV7
     ;;
@@ -90,6 +90,10 @@
     (defun URC_0033_DualApiKeyMapper:[object] (dual-api-keys:[string]))
     (defun URC_0034_PythiaPrices ())
 )
+(interface DeployerReadsV12
+    @doc "Elite Account rich-list scan (V12 additive — all Standard Ouronet accounts)."
+    (defun URC_0035_EliteAccountRichList:[object] ())
+)
 (module DPL-UR GOV
     ;;
     (implements DeployerReadsV7)
@@ -97,6 +101,7 @@
     (implements DeployerReadsV9)
     (implements DeployerReadsV10)
     (implements DeployerReadsV11)
+    (implements DeployerReadsV12)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -2799,6 +2804,133 @@
             ,"deploy-price-text"    : (format "{} STOA per Apollo half deploy" [deploy-price])
             ,"rename-price-text"    : (format "{} STOA to rename dual-link consumer lane" [rename-price])
             }
+        )
+    )
+    (defun URC_0035_EliteAccountRichList:[object] ()
+        @doc "Elite rich-list scan: all Standard Ouronet accounts (excludes Smart), \
+            \ with StoicTag (BAR if none/inactive), native/frozen/reservation/vesting/sleeping/hibernation \
+            \ Elite-Auryn supplies and total (same constituents as ELITE.URC_EliteAurynzSupply), \
+            \ dispo-lock flag when OURO < 0 (native EA immovable), and movable native EA amount. \
+            \ Output ordered highest→lowest by total-elite-aurynz."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-CODEX:module{CodexV1} CODEX)
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ea-id:string (ref-DALOS::UR_EliteAurynID))
+                (fea-id:string (if (!= ea-id BAR) (ref-DPTF::UR_Frozen ea-id) BAR))
+                (rea-id:string (if (!= ea-id BAR) (ref-DPTF::UR_Reservation ea-id) BAR))
+                (vea-id:string (if (!= ea-id BAR) (ref-DPTF::UR_Vesting ea-id) BAR))
+                (sea-id:string (if (!= ea-id BAR) (ref-DPTF::UR_Sleeping ea-id) BAR))
+                (hea-id:string (if (!= ea-id BAR) (ref-DPTF::UR_Hibernation ea-id) BAR))
+                (standard-accounts:[string]
+                    (filter
+                        (lambda (account:string)
+                            (not (ref-DALOS::UR_AccountType account))
+                        )
+                        (keys DALOS.DALOS|AccountTable)
+                    )
+                )
+                (unsorted:[object]
+                    (map
+                        (lambda (account:string)
+                            (let
+                                (
+                                    (ouro-balance:decimal
+                                        (if (!= ouro-id BAR) (ref-DPTF::UR_AccountSupply ouro-id account) 0.0)
+                                    )
+                                    (ea-supply:decimal
+                                        (if (!= ea-id BAR) (ref-DPTF::UR_AccountSupply ea-id account) 0.0)
+                                    )
+                                    (fea-supply:decimal
+                                        (if (!= fea-id BAR) (ref-DPTF::UR_AccountSupply fea-id account) 0.0)
+                                    )
+                                    (rea-supply:decimal
+                                        (if (!= rea-id BAR) (ref-DPTF::UR_AccountSupply rea-id account) 0.0)
+                                    )
+                                    (vea-supply:decimal
+                                        (if (!= vea-id BAR) (ref-DPOF::UR_AccountSupply vea-id account) 0.0)
+                                    )
+                                    (sea-supply:decimal
+                                        (if (!= sea-id BAR) (ref-DPOF::UR_AccountSupply sea-id account) 0.0)
+                                    )
+                                    (hea-supply:decimal
+                                        (if (!= hea-id BAR) (ref-DPOF::UR_AccountSupply hea-id account) 0.0)
+                                    )
+                                    (total-elite-aurynz:decimal
+                                        (fold (+) 0.0 [ea-supply fea-supply rea-supply vea-supply sea-supply hea-supply])
+                                    )
+                                    (elite-auryn-dispo-locked:bool (< ouro-balance 0.0))
+                                    (ea-movable:decimal
+                                        (if elite-auryn-dispo-locked
+                                            0.0
+                                            ea-supply
+                                        )
+                                    )
+                                    (stba-data:object (ref-CODEX::UR_STBA|DataOrNull account))
+                                    (stoic-tag:string
+                                        (if (at "has-stoictag" stba-data)
+                                            (at "tag-name" stba-data)
+                                            BAR
+                                        )
+                                    )
+                                )
+                                {"account"                  : account
+                                ,"stoic-tag"                : stoic-tag
+                                ,"elite-class"              : (ref-DALOS::UR_Elite-Class account)
+                                ,"elite-name"               : (ref-DALOS::UR_Elite-Name account)
+                                ,"elite-tier"               : (ref-DALOS::UR_Elite-Tier account)
+                                ,"ouro-balance"             : ouro-balance
+                                ,"elite-auryn-dispo-locked" : elite-auryn-dispo-locked
+                                ,"ea-id"                    : ea-id
+                                ,"ea-supply"                : ea-supply
+                                ,"ea-movable"               : ea-movable
+                                ,"fea-id"                   : fea-id
+                                ,"fea-supply"               : fea-supply
+                                ,"rea-id"                   : rea-id
+                                ,"rea-supply"               : rea-supply
+                                ,"vea-id"                   : vea-id
+                                ,"vea-supply"               : vea-supply
+                                ,"sea-id"                   : sea-id
+                                ,"sea-supply"               : sea-supply
+                                ,"hea-id"                   : hea-id
+                                ,"hea-supply"               : hea-supply
+                                ,"total-elite-aurynz"       : total-elite-aurynz
+                                }
+                            )
+                        )
+                        standard-accounts
+                    )
+                )
+            )
+            ;; Insertion-sort descending by total-elite-aurynz
+            (fold
+                (lambda (sorted:[object] row:object)
+                    (let
+                        (
+                            (t:decimal (at "total-elite-aurynz" row))
+                            (higher:[object]
+                                (filter
+                                    (lambda (x:object) (> (at "total-elite-aurynz" x) t))
+                                    sorted
+                                )
+                            )
+                            (rest:[object]
+                                (filter
+                                    (lambda (x:object) (<= (at "total-elite-aurynz" x) t))
+                                    sorted
+                                )
+                            )
+                        )
+                        (+ higher (+ [row] rest))
+                    )
+                )
+                []
+                unsorted
+            )
         )
     )
     ;;{F2}  [UEV]

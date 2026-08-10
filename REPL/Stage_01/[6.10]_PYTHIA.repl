@@ -462,7 +462,7 @@
         [
             (expect "<<TX008>> UR_PythTotal|LastDay 0" 0 (ref-LEDGER::UR_PythTotal|LastDay))
             (expect "<<TX008>> UR_PythMaxFlushBatch > 0" true (> (ref-LEDGER::UR_PythMaxFlushBatch) 0))
-            (expect "<<TX008>> UR_PythLedgerEpochStart" (time "2026-07-21T00:00:00Z") (ref-LEDGER::UR_PythLedgerEpochStart))
+            (expect "<<TX008>> UR_PythLedgerEpochStart" (time "2026-08-01T00:00:00Z") (ref-LEDGER::UR_PythLedgerEpochStart))
             (expect "<<TX008>> total-metrics petitions 0" 0 (at "petitions" tm))
             (expect "<<TX008>> total-metrics pondus 0.0" 0.0 (at "pondus" tm))
             ;; URD_ListPythDaily maps UR_PythDay (hard read) — empty ledger: use invalid range → []

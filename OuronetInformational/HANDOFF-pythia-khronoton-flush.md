@@ -11,12 +11,12 @@ Canonical Pact spec (tables, metrics, reads): [`HANDOFF-pact-pyth-ledger.md`](HA
 
 ## Overview
 
-Khronoton maintains six cumulative counters per **UTC calendar day bucket** locally. On each flush tick, it sends a batch of day snapshots to the on-chain ledger:
+Khronoton maintains local day buckets and flushes **drain deltas** to the on-chain ledger:
 
 * `A_Flush` is **batch**: it takes `entries[]`, where each entry contains:
   * `day` (UTC ordinal since `PYTHIA|LEDGER-EPOCH-START`)
   * `iz-complete` (open vs seal)
-  * the six counters for that day (cumulative for that day)
+  * the six counters for that day (**delta since last flush**, not full-day cumulative)
 
 Khronoton may split a large backlog across multiple transactions. Transaction ordering is not relied upon.
 
@@ -132,9 +132,19 @@ Or direct: `PYTHIA.A_Flush entries`.
 
 ---
 
-## Metric semantics — cumulative for that UTC day
+## Metric semantics — gateway drain deltas (ADD on-chain)
 
-For each entry day `D`, all six counters must be the running totals for that UTC day bucket **so far** (since midnight UTC of day `D`), not deltas and not all-time totals.
+Each `A_Flush` entry is a **delta** (traffic since last flush for that day), matching Pythia’s
+local drain model (`beginFlush` / `commitFlush` subtracts what was sent).
+
+On-chain `XI_1|ApplyOneFlushEntry`:
+- **day row absent** → insert with entry metrics
+- **day row present (unsealed)** → **ADD** entry metrics onto existing day metrics
+- **`iz-complete`** → seal flag only (`iz-sealed: true`); does **not** replace metrics
+- **`PythTotal.total-metrics`** → **ADD** the same entry delta
+- **`last-day`** → `max(existing, entry.day)`
+
+Do **not** send cumulative day snapshots — replacing would under-count multi-flush days.
 
 ---
 
@@ -144,8 +154,8 @@ For each `PythFlushEntry` in `entries[]`:
 
 | Situation | On-chain effect |
 |-----------|-----------------|
-| Row absent for `day` | Insert `PythDaily`; set `iz-sealed` to `iz-complete`; add metrics to `PythTotal` |
-| Row present and unsealed | Replace day metrics; if `iz-complete` is true, seal (`iz-sealed: true`); adjust total via `total − oldDay + newDay` |
+| Row absent for `day` | Insert `PythDaily` with entry metrics; `iz-sealed` = `iz-complete`; **ADD** metrics to `PythTotal` |
+| Row present and unsealed | **ADD** entry metrics onto day row; if `iz-complete`, seal; **ADD** same delta to `PythTotal` |
 | Row present and sealed | Reject the tx (sealed-day updates are not allowed) |
 
 ---

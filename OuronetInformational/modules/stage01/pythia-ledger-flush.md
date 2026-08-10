@@ -29,7 +29,7 @@ Each `PythFlushEntry`:
 }
 ```
 
-Metrics are **cumulative for that UTC day**, not deltas.
+Metrics are **drain deltas** (traffic since last flush for that day). On-chain `A_Flush` **ADDs** each entry onto the day row and `PythTotal`; `iz-complete` only seals.
 
 ---
 

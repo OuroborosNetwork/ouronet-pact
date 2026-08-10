@@ -291,7 +291,7 @@
     (defun CT_Bar ()                                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR:string                                (CT_Bar))
     (defconst PYTHIA|EPOCH:time                         (time "1970-01-01T00:00:00Z"))
-    (defconst PYTHIA|LEDGER-EPOCH-START:time            (time "2026-07-21T00:00:00Z"))
+    (defconst PYTHIA|LEDGER-EPOCH-START:time            (time "2026-08-01T00:00:00Z"))
     (defconst PYTHIA|SECONDS-PER-DAY:decimal            86400.0)
     (defconst PYTHIA|APOLLO-LEN:integer                 162)
     (defconst PYTHIA|DUAL-LINK-LEN:integer              325)
@@ -523,27 +523,13 @@
             a:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
             b:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
         )
-        @doc "Element-wise sum of two PythMetrics blobs (running total += day delta)."
+        @doc "Element-wise sum — A_Flush ADDs each entry (gateway drain delta) onto day row and grand total."
         { "petitions": (+ (at "petitions" a) (at "petitions" b))
         , "pondus": (+ (at "pondus" a) (at "pondus" b))
         , "transactions": (+ (at "transactions" a) (at "transactions" b))
         , "gas-reserved": (+ (at "gas-reserved" a) (at "gas-reserved" b))
         , "failed-transactions": (+ (at "failed-transactions" a) (at "failed-transactions" b))
         , "wasted-gas-reserved": (+ (at "wasted-gas-reserved" a) (at "wasted-gas-reserved" b))
-        }
-    )
-    (defun UC_SubPythMetrics:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
-        (
-            a:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
-            b:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
-        )
-        @doc "Element-wise difference (total -= old day snapshot before same-day replace)."
-        { "petitions": (- (at "petitions" a) (at "petitions" b))
-        , "pondus": (- (at "pondus" a) (at "pondus" b))
-        , "transactions": (- (at "transactions" a) (at "transactions" b))
-        , "gas-reserved": (- (at "gas-reserved" a) (at "gas-reserved" b))
-        , "failed-transactions": (- (at "failed-transactions" a) (at "failed-transactions" b))
-        , "wasted-gas-reserved": (- (at "wasted-gas-reserved" a) (at "wasted-gas-reserved" b))
         }
     )
     (defun UC_FlushAccFromTotal:object{PythiaLedgerV2.PYTHIA|S|PythFlushAcc}
@@ -1318,7 +1304,7 @@
         (format "Pythia rename price set to {}" [new-price])
     )
     (defun A_Flush:string (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}])
-        @doc "Cronoton batch flush: explicit day per entry; txs may confirm in any order."
+        @doc "Cronoton batch flush: each entry is a drain DELTA — ADD onto day row + grand total; iz-complete seals only."
         (UEV_IMC)
         (with-capability (PYTHIA|A>FLUSH entries)
             (XI_FlushPythLedger entries)
@@ -1589,13 +1575,13 @@
             entry:object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}
             now:time
         )
-        @doc "Fold step: insert or update one day; order-independent across txs."
+        @doc "Fold step: ADD entry metrics (gateway drain delta) onto day row + grand total; seal flag only."
         ;; SECURE: granted by WI_/WU_PythDaily (underlying W_).
         (let
             (
                 (day:integer (at "day" entry))
                 (iz-complete:bool (at "iz-complete" entry))
-                (new-metrics:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
+                (delta:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
                     (UC_FlushEntryMetrics entry)
                 )
                 (total-metrics:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
@@ -1603,35 +1589,29 @@
                 )
                 (last-day:integer (at "last-day" acc))
                 (next-last:integer (UC_MaxDay last-day day))
+                (next-total:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
+                    (UC_AddPythMetrics total-metrics delta)
+                )
             )
             (if (UR_PythDailyExists day)
                 (let
                     (
                         (old-row:object{PythiaLedgerV2.PYTHIA|S|PythDaily} (UR_PythDay day))
-                        (old-metrics:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
-                            (at "metrics" old-row)
-                        )
-                        (summed:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
-                            (UC_AddPythMetrics
-                                (UC_SubPythMetrics total-metrics old-metrics)
-                                new-metrics
-                            )
+                        (day-metrics:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
+                            (UC_AddPythMetrics (at "metrics" old-row) delta)
                         )
                     )
-                    (WU_PythDaily|Metrics day new-metrics)
+                    (WU_PythDaily|Metrics day day-metrics)
                     (WU_PythDaily|FlushedAt day now)
                     (if iz-complete (WU_PythDaily|IzSealed day true) true)
-                    { "total-metrics": summed
+                    { "total-metrics": next-total
                     , "last-day": next-last }
                 )
                 (let
                     (
-                        (summed:object{PythiaLedgerV2.PYTHIA|S|PythMetrics}
-                            (UC_AddPythMetrics total-metrics new-metrics)
-                        )
+                        (_:string (WI_PythDaily day (UDC_PythDaily day now iz-complete delta)))
                     )
-                    (WI_PythDaily day (UDC_PythDaily day now iz-complete new-metrics))
-                    { "total-metrics": summed
+                    { "total-metrics": next-total
                     , "last-day": next-last }
                 )
             )
