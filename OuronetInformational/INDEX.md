@@ -4,6 +4,7 @@
 
 ## Start here
 
+0. **`SKILL.md`** — the **single entry point / load hook**. Read it first: it gives the load order, the fast-recall rules, the "scan the module before editing" habit, and the active-learning protocol. Agents (Cursor, Claudstermind Pact chat, Claude Code) should always begin here.
 1. **`StoicSyntax.md`** — Ouronet’s Pact **discipline** (human-auditable large code + multi-module composition); offered for any Pact builder
 2. **`CONTEXT.md`** — vocabulary, stages, stable facts
 3. **`ouronet/MODULE_ARCHITECTURE.md`** — prefixes, caps, Talos, UR/W layers (Ouronet detail behind StoicSyntax)
@@ -14,6 +15,7 @@
 | Path | Contents |
 |------|----------|
 | **`pact/`** | Pact language mechanics (enforce grouping, defcap order, `let` layout, `defun` params, interfaces) |
+| **`pact5/`** | Pact 5 **language** layer — source-verified semantics + builtin/type reference (from `kda-community/pact-5`) |
 | **`ouronet/`** | Platform architecture + cross-module conventions |
 | **`ouronet/conventions/`** | Day-to-day rules: UR layout, W writes, X guards, IMC, REPL layout, … |
 | **`ouronet/architecture/`** | Inventories, REPL spec, deploy patterns, stage module lists |
