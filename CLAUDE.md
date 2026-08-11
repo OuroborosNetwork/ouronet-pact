@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **START HERE — load the single skill hub first:** [`OuronetInformational/SKILL.md`](OuronetInformational/SKILL.md).
+> It is the one entry point: load order, the StoicSyntax discipline, the Pact 5 language layer, the module
+> map ([`MODULE-INDEX.md`](OuronetInformational/MODULE-INDEX.md)), and the active-learning protocol. Read it
+> before writing or reviewing any Pact — everything else hangs off it. (Cursor loads the same hub via the
+> `ouronet-pact` skill; Claudstermind's Pact workspace + brain point at it too.)
+
 ## What this repo is
 
 **Ouronet** is a virtual blockchain implemented entirely in **Pact** (Kadena's smart-contract language), deployed on **StoaChain** under the namespace **`ouronet-ns`** (migrated from legacy `free`). It defines its own token architecture (true fungibles, ortofungibles, collectables) and DeFi primitives (ATS autostake pools, SWP liquidity pools, AQP acquisition pools, DemiPad launchpad). Development is **REPL-first**: iteration happens through staged `.repl` harnesses before any on-chain deploy.
