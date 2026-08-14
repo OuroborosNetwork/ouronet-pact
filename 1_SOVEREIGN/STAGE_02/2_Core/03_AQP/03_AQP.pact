@@ -127,7 +127,6 @@
     ;;
     ;;  [URC]  internal stake helpers (cross-module read from SCR XE_Apply*StakeDelta; FVT recipe cap)
     (defun URC_DptfStakeIsNativeLeg:bool (dptf-id:string))
-    (defun URC_OrtoStakeWholeNonceAmounts:bool (dpof-id:string nonces:[integer] nonce-amounts:[decimal]))
     (defun URC_PoolActiveScoreIds:[string] (pool-id:string))
     (defun URC_PoolHasEmployedScores:bool (pool-id:string))
     (defun URC_PoolStakeAdmissionOk:bool (pool-id:string))
@@ -612,7 +611,9 @@
                 (stake-admission-ok:bool (if direction (URC_PoolStakeAdmissionOk pool-id) true))
                 (class-ok:bool (URC_StakeOrtoFungiblePoolClassOk pool-id))
                 (dpof-ok:bool (URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id))
-                (whole-nonce-ok:bool (URC_OrtoStakeWholeNonceAmounts dpof-id nonces nonce-amounts))
+                ;; L1 #16: no whole-nonce-amount check — DPOF::C_Transfer moves WHOLE nonces (ignores amounts),
+                ;; and every caller sources nonce-amounts from UR_NoncesSupplies, so "amount == nonce supply" was a
+                ;; tautology. Whole-nonce is a structural invariant of the token transfer, not a cap-level check.
                 (tracker-ok:bool
                     (if direction
                         true
@@ -623,8 +624,8 @@
                 (l-a:integer (length nonce-amounts))
             )
             (enforce
-                (fold (and) true [(> l-n 0) (= l-n l-a) stake-admission-ok class-ok dpof-ok whole-nonce-ok tracker-ok])
-                "Invalid OF pool custody: pool class/dpof-id, whole nonces/amounts, stake admission, or insufficient tracker balance"
+                (fold (and) true [(> l-n 0) (= l-n l-a) stake-admission-ok class-ok dpof-ok tracker-ok])
+                "Invalid OF pool custody: pool class/dpof-id, equal nonce/amount length, stake admission, or insufficient tracker balance"
             )
             (if direction
                 (let
@@ -1859,34 +1860,6 @@
                                 (bal:decimal (UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id n))
                             )
                             (>= bal q)
-                        )
-                    )
-                    (enumerate 0 (- l 1))
-                )
-            )
-        )
-    )
-    (defun URC_OrtoStakeWholeNonceAmounts:bool
-        (dpof-id:string nonces:[integer] nonce-amounts:[decimal])
-        @doc "True when each nonce-amount equals the full DPOF nonce supply (whole-nonce stake/unstake only)."
-        (let
-            (
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                ;;
-                (l:integer (length nonces))
-            )
-            (enforce (= l (length nonce-amounts)) "whole-nonce check: nonces and amounts length mismatch")
-            (fold
-                (and)
-                true
-                (map
-                    (lambda (idx:integer)
-                        (let
-                            (
-                                (n:integer (at idx nonces))
-                                (q:decimal (at idx nonce-amounts))
-                            )
-                            (= q (ref-DPOF::UR_NonceSupply dpof-id n))
                         )
                     )
                     (enumerate 0 (- l 1))

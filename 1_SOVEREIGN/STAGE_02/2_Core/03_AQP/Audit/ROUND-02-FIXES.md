@@ -834,3 +834,25 @@ are strictly stronger and now *prove* the core sound.
 
 **Result:** `AQP-comprehensive.repl` now **green (260/0)** — no longer an unmaintained kitchen-sink. Standard gates
 unchanged: golden 33/0, Z 241/0, deb-proof 121/0.
+
+## Fix #16 — L1 · POOL: delete a TAUTOLOGICAL whole-nonce check (not just a misplaced enforce)  ✅ DONE
+
+**Plan item:** #16 (LOW, Phase E). **Finding:** L1 (`enforce` inside a `URC_`). **Files:** `03_AQP.pact`, `04_FVT.pact`.
+
+**What it looked like:** `URC_OrtoStakeWholeNonceAmounts` had an `enforce` (URC contract violation) checking that each
+`nonce-amount` equals the full DPOF nonce supply.
+
+**What it actually was:** a **tautology**. `DPOF::C_Transfer dpof-id nonces sender receiver true` moves the WHOLE
+nonce and ignores amounts entirely, and every caller sources `nonce-amounts` from `UR_NoncesSupplies(nonces)` — the
+same supply the check compares against. So it asserted `UR_NonceSupply(n) == UR_NonceSupply(n)`, unfailable in every
+real path. Whole-nonce is a **structural token-layer invariant**, not something a cap check can add.
+
+**Fix:** deleted the helper (impl + interface decl) and removed the `whole-nonce-ok` term from both callers
+(`AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY` in `03_AQP`, `FVT|C>ORTO-FUNGIBLE-STAKE-FLOW` in `04_FVT`); left the invariant
+documented in a comment where the check was. The independent `(= l-n l-a)` length guard stays. golden 33/0, Z 241/0,
+comprehensive 260/0 — nothing depended on it (it always passed).
+
+**Follow-on:** wrote up the **tautological-check smell** as a reusable audit heuristic in
+`OuronetInformational/memories/2026-08-14-tautological-validation-checks.md` — value-checked-against-its-own-source,
+re-checking a structural token-layer invariant, duplicated caller guard, `enforce` in a `UC_`/`URC_`/`UR_`. A pass to
+hunt for more of these is a Round-III task.

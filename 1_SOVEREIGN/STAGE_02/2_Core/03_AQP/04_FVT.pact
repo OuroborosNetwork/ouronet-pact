@@ -767,7 +767,6 @@
                 ;;
                 (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) true))
                 (fvt-ready:bool (if direction (URC_PoolEmployedScoresFvtStakeReady pool-id) true))
-                (whole-nonce-ok:bool (ref-AQP::URC_OrtoStakeWholeNonceAmounts dpof-id nonces nonce-amounts))
                 (l-n:integer (length nonces))
                 (l-a:integer (length nonce-amounts))
             )
@@ -777,10 +776,12 @@
             ;;   (owner, beneficiary) tracker row is written on stake and removed on unstake; sufficiency for that exact
             ;;   row is enforced in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY. No BAR sentinel / self-key derivation any more.
             ;;4] dpof-id — issued DPOF; pool leg match in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
-            ;;5] nonces / nonce-amounts — equal positive length; each amount must equal full nonce supply
+            ;;5] nonces / nonce-amounts — equal positive length. L1 #16: no "amount == nonce supply" check —
+            ;;   DPOF::C_Transfer moves WHOLE nonces (ignores amounts) and callers source amounts from
+            ;;   UR_NoncesSupplies, so whole-nonce is a structural token-layer invariant, not a cap-level check.
             (enforce
-                (fold (and) true [(> l-n 0) (= l-n l-a) whole-nonce-ok])
-                "Invalid nonces / nonce-amounts: equal positive length and whole-nonce supplies required"
+                (fold (and) true [(> l-n 0) (= l-n l-a)])
+                "Invalid nonces / nonce-amounts: equal positive length required"
             )
             ;;6] direction — stake/unstake; unstake sufficiency in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
             ;;7] FVT reward pipeline — stake direction only
