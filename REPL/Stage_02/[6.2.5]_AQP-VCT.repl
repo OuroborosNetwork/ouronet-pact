@@ -584,6 +584,11 @@
                 (tracker-pre:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
             )
             (enforce (> tracker-pre 0.0) "TX-VCT-DPNF01: tracker must hold stake")
+            ;; L7 #19: the probe nonce is UNSCORED (DPDC sentinel -1.0). Model-0 must treat that as 0, so staking
+            ;; it yields base = 0 (never a negative weight). Pre-fix this was -1.0.
+            (map print
+                [(expect "<<TX-VCT-DPNF01 L7#19>> unscored nonce (sentinel -1.0) contributes base 0, not negative"
+                    0.0 (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))])
             (let
                 (
                     (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id 4 1))

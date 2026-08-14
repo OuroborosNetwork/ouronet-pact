@@ -669,9 +669,10 @@
                             true
                         )
                         (enforce
-                            (= (floor nonce-score-value precision) nonce-score-value)
+                            ;; L7 #19: precision-conform AND non-negative — a negative SF nonce score mangles rewards.
+                            (and (= (floor nonce-score-value precision) nonce-score-value) (>= nonce-score-value 0.0))
                             (format
-                                "Nonce score value {} does not match score precision {}"
+                                "Nonce score value {} must be non-negative and match score precision {}"
                                 [nonce-score-value precision]
                             )
                         )
@@ -2016,7 +2017,11 @@
                         (
                             (n:integer (at idx nonces))
                             (q:integer (at idx nonce-amounts))
-                            (unit-score:decimal (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NonceData dpnf-id false n)))
+                            (raw-unit-score:decimal (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NonceData dpnf-id false n)))
+                            ;; L7 #19: -1.0 is the DPDC "unscored" sentinel (= 0 score). Treat it — and any negative
+                            ;; native score — as 0 so an unscored nonce contributes 0, never a negative stake weight.
+                            ;; (Authoring negatives is also forbidden at DPDC UEV_Score + the SCR def validators.)
+                            (unit-score:decimal (if (< raw-unit-score 0.0) 0.0 raw-unit-score))
                         )
                         (+ acc (* (dec q) unit-score))
                     )
@@ -2714,6 +2719,7 @@
                                     (>= l4 2)
                                     (<= l4 256)
                                     (= (floor trait-score-value precision) trait-score-value)
+                                    (>= trait-score-value 0.0)   ;; L7 #19: forbid negative NF trait scores (mangles rewards)
                                 ]
                             )
                             (format
@@ -2761,6 +2767,7 @@
                                     (>= nc 0)
                                     (<= nc classes-used)
                                     (= (floor v precision) v)
+                                    (>= v 0.0)   ;; L7 #19: forbid negative NF set-class scores (mangles rewards)
                                 ]
                             )
                             (format

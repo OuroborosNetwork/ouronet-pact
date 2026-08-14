@@ -331,9 +331,15 @@
             (= (floor score 24) score)
             (format "The score {} can have up to 24 decimals precision" [score])
         )
-        (enforce 
-            (and (>= score -1.0) (<= score 100000000000.0))
-            "Score must be lower than 100 billion"
+        (enforce
+            ;; L7 #19: exactly -1.0 is the "unscored" sentinel; otherwise the score must be NON-negative and
+            ;; below 100 billion. (Was `>= -1.0`, which wrongly admitted the whole [-1.0, 0) range of real
+            ;; negatives — negative nonce scores mangle AQP reward weighting.)
+            (and
+                (or (= score -1.0) (>= score 0.0))
+                (<= score 100000000000.0)
+            )
+            "Score must be the -1.0 unscored sentinel or a non-negative value below 100 billion"
         )
     )
     ;;{F3}  [UDC]

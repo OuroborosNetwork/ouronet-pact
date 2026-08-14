@@ -53,12 +53,19 @@ The opposite mistake: adding a `max(0, x)` clamp to an accumulator whose negativ
 - **L6 (ANK promile), fix #18 — floor was CORRECT.** promile = `conform-nonces × ank-promile`, with
   `ank-promile ∈ [1,10000]` and `conform-nonces` a count `≥ 0` ⇒ promile is structurally `≥ 0`. A negative can only
   be a bug (asymmetric-def), so the floor never touches a valid value.
-- **L7 (SCORE user base), fix #19 — floor was WRONG.** base = `Σ trait-score-values`, and **trait scores can be
-  negative** (a trait that *reduces* weight). So a negative base is legitimate — staking a −1-trait NFT sets base to
-  −1, unstaking restores 0. Flooring the intermediate corrupted the round-trip and broke a live vacate test.
+- **L7 (SCORE user base), fix #19 — flooring the AGGREGATE was WRONG; fix the SOURCE instead.** My first read
+  ("negative base is legit / no fix") was *also* wrong. The real root: the DPDC `-1.0` **"unscored" sentinel**
+  (`UDC_MetaData` defaults a metadata-less nonce's native score to −1.0) was being read by the model-0 score weight
+  via the RAW reader and counted as a real negative → base = −1 on stake. So a negative here is neither "legit by
+  design" nor fixable by clamping the accumulator — the accumulator floor broke a live vacate that relied on the
+  −1→0 netting. The fix was at the **source**: clamp the per-nonce native score `<0 → 0` in the weight, forbid
+  negative def scores at authoring, and tighten DPDC `UEV_Score` so only the `-1.0` sentinel or `>= 0` is settable.
 
-**Rule:** before adding a non-negativity clamp/floor, prove the value has a real `≥ 0` lower bound from its *inputs*
-(bounded positive factors × non-negative counts). If any input can legitimately be negative (signed weights, signed
-deltas that net across steps, trait scores), the "negative" is not corruption and the floor will silently destroy
-valid data. Test it: a floor that changes any green test's outcome is flooring a value the system relied on.
-Reachability of a bad *negative* (L6) and legitimacy of a *negative value* (L7) are different questions — answer both.
+**Rules:**
+1. Before clamping, **trace where the negative comes from.** A sentinel (`-1.0` = "unscored/no value") counted as a
+   real number is a *source* bug — fix it where the value is read/authored, not by flooring a downstream accumulator.
+2. **Floor at the source (per-item input), never a running accumulator that nets across steps.** Clamping an
+   intermediate the system later corrects (a stake−unstake round-trip, a resync) silently destroys valid state.
+3. A floor that **changes any green test's outcome** is flooring a value the system relied on — stop and trace it.
+4. Watch for **two readers of the same datum** (DPDC `UR_N|RawScore` raw vs `UR_N|Score` cooked): a consumer on the
+   raw reader may skip sentinel/normalization the cooked one applies.

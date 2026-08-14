@@ -309,6 +309,9 @@
         )
     )
     (ref-TS02-C1::DPSF|C_UpdateNonceScore patron id emma 1 true 25.0)
+    ;; L7 #19: DPDC must reject a real negative score (only exactly -1.0 sentinel or >= 0 allowed).
+    (expect-failure "<<DPDC L7#19>> negative nonce score (-5.0) rejected by UEV_Score"
+        (ref-TS02-C1::DPSF|C_UpdateNonceScore patron id emma 1 true -5.0))
     ;(ref-TS02-C1::DPSF|C_RemoveNonceScore patron id emma 1)
     (ref-TS02-C1::DPSF|C_UpdateNonceMetaData patron id emma 1 true
         {"eye"      : "red"

@@ -927,3 +927,28 @@ logged in `memories/2026-08-14-tautological-validation-checks.md`.
 **Residual (the def-change asymmetry):** if a definition changes between stake and unstake the deltas differ, but a
 *wrong* base (not a negative-is-invalid case) is corrected by the existing `applied-def-revision-nonce` absolute
 resync — not by a floor. So L7 needs no guard. golden 33/0, Z 241/0.
+
+## Fix #19 (CORRECTED) — L7 · SCORE: negative score weight — real root was the DPDC −1.0 unscored sentinel  ✅ DONE
+
+**Supersedes the "NO FIX / misdiagnosis" entry above.** That first pass was wrong. Owner flagged that negative
+scores are NOT a designed feature, which forced a deeper trace of *where* the −1 came from.
+
+**Real root:** the `[6.2.5]` DPNF probe mints a **metadata-less** nonce. In the DPDC UDC layer,
+`UDC_NoMetaData → UDC_MetaData {} → UDC_NonceMetaData -1.0 …` — so an unscored nonce's native score defaults to the
+**`-1.0` "unscored" sentinel**. The score is model-0, whose weight (`URCX_DpnfModelZeroDpdcNativeRawWeight`) reads
+the **raw** score (`UR_N|RawScore`, returns −1.0) and counts it as a real negative → base = −1. (DPDC's *cooked*
+reader `UR_N|Score` already maps −1.0 → 0, but the weight path bypassed it.) Compounding it, DPDC `UEV_Score`
+enforced only `>= -1.0`, so real negatives in `[-1.0, 0)` were also settable.
+
+**Fix — all at the source (no aggregate floor; that broke the vacate netting):**
+1. **`02_SCORE.pact` `URCX_DpnfModelZeroDpdcNativeRawWeight`** — clamp each per-nonce native score `<0 → 0`, so an
+   unscored/sentinel (or any negative) nonce contributes 0, never a negative stake weight.
+2. **`02_SCORE.pact` definition validators** — `UEV_NonFungibleScoreDefinitionTrait` / `…Set` enforce
+   `trait/class score ≥ 0`; the SF `nonce-score-value` validator enforces `≥ 0`. Negatives can't be authored.
+3. **`10_DPDC-N.pact` `UEV_Score`** — tightened `>= -1.0` to `(or (= score -1.0) (>= score 0.0))` — only the exact
+   sentinel or a non-negative value is settable.
+
+**Proven:** `[6.2.5]` TX-VCT-DPNF01 now asserts the unscored nonce yields base **0** (was −1); `[6.2.2]` rejects a
+negative SF definition value; `[6.1]` rejects a negative DPDC nonce score (full DPDC chain). golden 33/0,
+**Z 242/0**, comprehensive 260/0, deb-proof 121/0. The def-change asymmetry (mutable def between stake/unstake) is
+still handled by the `applied-def-revision-nonce` resync — separate from this sentinel/negative fix.
