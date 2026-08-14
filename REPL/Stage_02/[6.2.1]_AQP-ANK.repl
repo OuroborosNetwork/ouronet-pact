@@ -106,13 +106,13 @@
     (print "--- [TX001 · 04 · issue 7 TF anchors (acnoi=true for 1st creates BoostClass, acnoi=false for 2..7)] ---")
     (map print
         [
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAa acnoi=true CoreBoostTFa)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAa" ouro-id true core-class-name 8 10.0 100.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAb acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAb" ouro-id false core-class-id 8 11.0 110.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAc acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAc" ouro-id false core-class-id 8 12.0 120.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAd acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAd" ouro-id false core-class-id 8 13.0 130.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAe acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAe" ouro-id false core-class-id 8 14.0 140.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAf acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAf" ouro-id false core-class-id 8 15.0 150.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAg acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAg" ouro-id false core-class-id 8 16.0 160.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAa acnoi=true CoreBoostTFa)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAa" ouro-id true core-class-name 3 100.0 1000.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAb acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAb" ouro-id false core-class-id 3 110.0 1100.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAc acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAc" ouro-id false core-class-id 3 120.0 1200.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAd acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAd" ouro-id false core-class-id 3 130.0 1300.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAe acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAe" ouro-id false core-class-id 3 140.0 1400.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAf acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAf" ouro-id false core-class-id 3 150.0 1500.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorAg acnoi=false)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorAg" ouro-id false core-class-id 3 160.0 1600.0)])
         ]
     )
     ;;==== TX001 · 05 · expect-failure (8th anchor slot in BoostClass) — REPL =========
@@ -121,20 +121,40 @@
         [
             (expect-failure
                 (format "<<TX001 expect-failure>> BoostClass must reject 8th anchor slot: <(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFAnchorfailslot)> (must fail)" [])
-                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorfailslot" ouro-id false core-class-id 8 99.0 990.0)
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFAnchorfailslot" ouro-id false core-class-id 3 990.0 9900.0)
             )
+        ]
+    )
+    ;;==== TX001 · 05b · M6 #15 anchor-definition bound guards (all must fail) — REPL ==
+    ;; precision must be exactly 3; promile in [1, 10000] and conform to precision 3; dptf-amount in [1000, 1,000,000].
+    ;; expect-failure rolls each back — no anchor/class is created. In-range acceptance is proven by TX001 · 04/06.
+    (print "--- [TX001 · 05b · M6 #15: promile [1,10000] · precision 3 · dptf-amount [1000,1M]] ---")
+    (map print
+        [
+            (expect-failure "<<TX001 M6#15>> promile > 10000 rejected"
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadPromileHi" ouro-id true "M6HiClass" 3 10001.0 1000.0))
+            (expect-failure "<<TX001 M6#15>> promile < 1 rejected"
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadPromileLo" ouro-id true "M6LoClass" 3 0.999 1000.0))
+            (expect-failure "<<TX001 M6#15>> promile not conform to precision 3 rejected"
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadConf" ouro-id true "M6ConfClass" 3 100.0001 1000.0))
+            (expect-failure "<<TX001 M6#15>> precision != 3 rejected"
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadPrec" ouro-id true "M6PrecClass" 4 100.0 1000.0))
+            (expect-failure "<<TX001 M6#15>> dptf-amount < 1000 rejected"
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadAmtLo" ouro-id true "M6AmtLoClass" 3 100.0 999.0))
+            (expect-failure "<<TX001 M6#15>> dptf-amount > 1,000,000 rejected"
+                (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFbadAmtHi" ouro-id true "M6AmtHiClass" 3 100.0 1000001.0))
         ]
     )
     ;;==== TX001 · 06 · Talos C_IssueTrueFungibleAnchor acnoi=true (6 more classes, 1 anchor each) =
     (print "--- [TX001 · 06 · issue 6 more TF anchors (acnoi=true each creates its own BoostClass)] ---")
     (map print
         [
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassBa acnoi=true CoreBoostTFb)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassBa" ouro-id true "CoreBoostTFb" 8 21.0 210.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassCa acnoi=true CoreBoostTFc)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassCa" ouro-id true "CoreBoostTFc" 8 22.0 220.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassDa acnoi=true CoreBoostTFd)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassDa" ouro-id true "CoreBoostTFd" 8 23.0 230.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassEa acnoi=true CoreBoostTFe)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassEa" ouro-id true "CoreBoostTFe" 8 24.0 240.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassFa acnoi=true CoreBoostTFf)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassFa" ouro-id true "CoreBoostTFf" 8 25.0 250.0)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassGa acnoi=true CoreBoostTFg)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassGa" ouro-id true "CoreBoostTFg" 8 26.0 260.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassBa acnoi=true CoreBoostTFb)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassBa" ouro-id true "CoreBoostTFb" 3 100.0 1000.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassCa acnoi=true CoreBoostTFc)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassCa" ouro-id true "CoreBoostTFc" 3 220.0 2200.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassDa acnoi=true CoreBoostTFd)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassDa" ouro-id true "CoreBoostTFd" 3 230.0 2300.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassEa acnoi=true CoreBoostTFe)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassEa" ouro-id true "CoreBoostTFe" 3 240.0 2400.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassFa acnoi=true CoreBoostTFf)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassFa" ouro-id true "CoreBoostTFf" 3 250.0 2500.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFclassGa acnoi=true CoreBoostTFg)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFclassGa" ouro-id true "CoreBoostTFg" 3 260.0 2600.0)])
         ]
     )
     ;;==== TX001 · 07 · ref-ANK UR_BC|Data / UR_AA|Data / UR_ANK|Data — REPL =========
@@ -226,7 +246,7 @@
         [
             (format "<(TS02-C3.AQP-ANK|C_RevokeAnchor TFclassGa-98c486052a51)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFclassGa-98c486052a51")])
             (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass CoreBoostTFg)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron class07-id)])
-            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFTEMPaa acnoi=true TempClassTF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFTEMPaa" ouro-id true temp-class-name 8 40.0 400.0)])
+            (format "<(TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor TFTEMPaa acnoi=true TempClassTF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "TFTEMPaa" ouro-id true temp-class-name 3 400.0 4000.0)])
         ]
     )
     ;;==== TX002 · 05 · expect-failure (revoke non-empty BoostClass) — REPL ===========
@@ -300,7 +320,7 @@
             (agg:decimal (ref-ANK::UR_UB|AggregatePromile beneficiary bc-id))
         )
         ;;==== TX003 · 04 · expect promile + UserBoost after XI_Update — REPL =============
-        (print "--- [TX003 · 04 · expect promile writes (500/210×21 = 50 on TFclassBa; solo BoostClass)] ---")
+        (print "--- [TX003 · 04 · expect promile writes (500/1000×100 = 50 on TFclassBa; solo BoostClass)] ---")
         (map print
             [
                 (expect (format "<<TX003 expect>> <(AQP-ANK|UR_ANK-U|Promile TFclassBa)> actual={} expected={}" [promile expected-promile]) expected-promile promile)

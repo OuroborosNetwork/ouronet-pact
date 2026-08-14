@@ -772,3 +772,37 @@ their interface decls; scrubbed the doc references on the DPSF/DPNF tracker sche
 
 **Proven (`[6.2.4]` TX-FVT-06b · 01b):** while ANHD→EMMA is staked, `URD_AQP|DpofStakesByOwner(ANHD)` lists the EMMA leg
 (query B) and `URD_AQP|DpofStakesByBeneficiary(EMMA)` lists it from ANHD (query C). golden **33/0**, Z **241/0**, deb-proof **121/0**.
+
+## Fix #15 — M6 · ANK: enforce anchor-definition bounds at issue  ✅ DONE + PROVEN
+
+**Plan item:** #15 (MED, Phase D) · **Finding:** M6 (code half; doc half was #2). **Files:** `01_ANK.pact`,
+`README_ANK.md`, test anchor definitions.
+
+**Gap:** `UEV_Promile` allowed `anchor-precision ∈ [2,8]` and `promile < 100,000,000,000` (100 **billion**); the TF
+`dptf-amount` got only `UEV_Amount` (precision/positive) — none of the documented sanity bounds were enforced, so a
+single anchor could be defined with an absurd multiplier.
+
+**Owner-set bounds (fit the mainnet AQP-BOOT anchors):**
+- `anchor-precision = 3` **exactly** (matches the boot NF anchors — no boot migration).
+- `ank-promile ∈ [1.0, 10000.0]`, conform to precision 3. (`10000` clears the boot `LegendaryStoa/VestaBooster`
+  anchors at `3500`; the ceiling caps a single anchor's boost.)
+- TF `dptf-amount ∈ [1000.0, 1,000,000.0]` — a tiny denominator can't leverage the pro-rated promile into an
+  insane boost. SF (nonce) / NF (trait) have no amount, so this is TF-only.
+
+The user's promile *accumulation* is still uncapped (pro-rate) — only the per-anchor **definition** is bounded.
+
+**Implementation:** added named `defconst`s (`CT_ANK_PRECISION=3`, `CT_ANK_MIN/MAX_PROMILE=1/10000`,
+`CT_ANK_MIN/MAX_DPTF_AMOUNT=1000/1,000,000`); rewrote `UEV_Promile` (precision `= 3`, conform, `∈ [1,10000]`);
+added the `dptf-amount ∈ [1000,1M]` enforce to `ANK|C>ISSUE-DPTF`.
+
+**Migration (all pre-mainnet):** the mainnet **boot** (`04_AQP-BOOT`) needed **no change** (already precision 3,
+NF, promile ≤ 3500). Test anchors were migrated: **precision 8 → 3** everywhere; **TF** anchors additionally scaled
+`(promile, amount) ×10` — **leverage-preserving** (`promile/amount` unchanged) so every downstream pro-rate/score
+assertion stays valid with no refix. One asserted anchor (`TFclassBa`) was retuned to `(100, 1000)` so its
+`500/1000×100 = 50` result stays exact at the coarser precision 3 (the mechanical ×10 gave `500/2100×210 = 49.999`,
+a division artifact).
+
+**Proven (`[6.2.1]` TX001·05b):** six `expect-failure` guards — promile `> 10000`, promile `< 1`, promile
+non-conform to precision 3, precision `≠ 3`, dptf-amount `< 1000`, dptf-amount `> 1,000,000` — all rejected;
+in-range acceptance is covered by the 20 migrated anchors that issue normally. golden **33/0**, Z **241/0**,
+deb-proof **121/0**.

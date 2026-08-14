@@ -345,6 +345,12 @@
         ,"ouronet-account"          : BAR
         ,"anchor-id"                : BAR}
     )
+    ;; M6 #15 — anchor-definition sanity bounds enforced at issue (UEV_Promile + ANK|C>ISSUE-DPTF).
+    (defconst CT_ANK_PRECISION:integer          3)          ;; anchors use exactly 3 decimals of promile precision
+    (defconst CT_ANK_MIN_PROMILE:decimal        1.0)        ;; minimum anchor promile
+    (defconst CT_ANK_MAX_PROMILE:decimal        10000.0)    ;; maximum anchor promile (caps a single anchor's boost)
+    (defconst CT_ANK_MIN_DPTF_AMOUNT:decimal    1000.0)     ;; minimum TF-anchor denominated amount
+    (defconst CT_ANK_MAX_DPTF_AMOUNT:decimal    1000000.0)  ;; maximum TF-anchor denominated amount
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -393,6 +399,12 @@
             (ref-U|ATS::UEV_AutostakeIndex anchor-name)
             (ref-DPTF::UEV_id dptf-id)
             (ref-DPTF::UEV_Amount dptf-id dptf-amount)
+            ;; M6 #15: TF-anchor denominated amount must sit within [1000, 1,000,000] so a tiny denominator can't
+            ;; leverage the pro-rated promile into an insane boost.
+            (enforce
+                (and (>= dptf-amount CT_ANK_MIN_DPTF_AMOUNT) (<= dptf-amount CT_ANK_MAX_DPTF_AMOUNT))
+                "TF anchor denominated amount (dptf-amount) must be within [1000, 1,000,000]"
+            )
             (if acnoi
                 (ref-U|ATS::UEV_AutostakeIndex boost-class-name-or-id)
                 true
@@ -1110,19 +1122,18 @@
         )
     )
     (defun UEV_Promile (anchor-precision:integer anchor-promile:decimal)
-        @doc "Validates Promile Variables"
+        @doc "M6 #15: anchor precision is exactly CT_ANK_PRECISION (3); anchor-promile is conform to that precision \
+            \ and within [CT_ANK_MIN_PROMILE, CT_ANK_MAX_PROMILE] = [1, 10000] (caps a single anchor's boost)."
         (enforce
-            (fold (and) true 
+            (fold (and) true
                 [
-                    (>= anchor-precision 2)                                     ;;<anchor-precision> must be minimum 2
-                    (<= anchor-precision 8)                                     ;;<anchor-precision> must be maximum 8
-                    (= (floor anchor-promile anchor-precision) anchor-promile)  ;;variables must be conform with each-other
-                    (> anchor-promile 0.0)                                      ;;<anchor-promile> must be bigger than 0.0
-                    (< anchor-promile 100000000000.0)                           ;;<anchor-promile> has a max ceiling of 100 billion promile
-                    
+                    (= anchor-precision CT_ANK_PRECISION)                             ;;<anchor-precision> must be exactly 3
+                    (= (floor anchor-promile CT_ANK_PRECISION) anchor-promile)        ;;<anchor-promile> conform to precision 3
+                    (>= anchor-promile CT_ANK_MIN_PROMILE)                            ;;<anchor-promile> must be >= 1.0
+                    (<= anchor-promile CT_ANK_MAX_PROMILE)                            ;;<anchor-promile> must be <= 10000.0
                 ]
             )
-            "Invalid Promile Variables"
+            "Invalid Promile Variables: precision must be 3 and promile within [1, 10000]"
         )
     )
     (defun UEV_IssueAnchor (ank-asset:string boost-class-id:string)

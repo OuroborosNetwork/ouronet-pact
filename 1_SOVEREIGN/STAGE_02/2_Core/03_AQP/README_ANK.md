@@ -130,9 +130,11 @@ Issuance functions: `C_IssueTrueFungibleAnchor` / `C_IssueSemiFungibleAnchor` / 
 `promile = floor((user-balance / dptf-amount) * ank-promile, ank-precision)` — **pro-rated** (continuous),
 **not** a whole-threshold step: staked balance scales the boost proportionally. E.g. `ank-promile = 500`,
 `dptf-amount = 1000`, user stakes `2500` → `floor(2.5 * 500) = 1250`. Guard: `dptf-amount <= 0.0` yields `0.0`.
-The computed **result is not capped**; instead the per-anchor *definition* `ank-promile` is bounded (intended
-`<= 1000`, with `dptf-amount <= 1,000,000`) at anchor issue — see audit fix #15. Matches
-`URC_TrueFungibleAnchorPromile` in `01_ANK.pact`.
+The computed **result is not capped**; instead the per-anchor *definition* is bounded at anchor issue
+(**audit fix #15**, enforced in `UEV_Promile` + `ANK|C>ISSUE-DPTF`): `anchor-precision = 3` exactly,
+`ank-promile ∈ [1.0, 10000.0]` (conform to precision 3), and TF `dptf-amount ∈ [1000.0, 1,000,000.0]`. So a
+single anchor's per-unit leverage (`ank-promile / dptf-amount`) is bounded, but a user's *accumulated* promile
+still pro-rates past 1000 by staking more. Matches `URC_TrueFungibleAnchorPromile` in `01_ANK.pact`.
 (Contrast SF/NF below: **whole-unit** — nonce-count × promile — because they are collectable-nonce based.)
 
 ### SF Anchors

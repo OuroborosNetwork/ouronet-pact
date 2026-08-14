@@ -233,7 +233,7 @@
         ]
     )
     (print (format "<(AQP-ANK|C_IssueSemiFungibleAnchor SfStakeAnchor)> => \"{}\"" [
-        (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SfStakeAnchor" dpsf-id true boost-class-name 8 50.0 1)
+        (ref-TS02-C3::AQP-ANK|C_IssueSemiFungibleAnchor patron "SfStakeAnchor" dpsf-id true boost-class-name 3 50.0 1)
     ]))
     (let
         (

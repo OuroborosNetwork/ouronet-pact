@@ -1128,7 +1128,7 @@
         ]
     )
     (print (format "<(AQP-ANK|C_IssueTrueFungibleAnchor VctGasTfAnchor)> => \"{}\"" [
-        (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "VctGasTfAnchor" ouro-id true "VctGasBoost" 8 50.0 500.0)
+        (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "VctGasTfAnchor" ouro-id true "VctGasBoost" 3 500.0 5000.0)
     ]))
 )
 (env-sigs [])
