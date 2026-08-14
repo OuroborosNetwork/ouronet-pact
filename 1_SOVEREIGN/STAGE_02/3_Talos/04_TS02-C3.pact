@@ -286,6 +286,12 @@
     (defun AQP-FVT|C_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
+    (defun AQP-FVT|CC_Inject:string
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    )
+    (defun MTX-AQP|C|2_Inject:string
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    )
     (defun AQP-FVT|C_Collect:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
@@ -373,6 +379,7 @@
                 (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
                 (ref-P|VCT:module{OuronetPolicyV1} AQP-VCT)
                 (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
+                (ref-P|MTX-AQP:module{OuronetPolicyV1} MTX-AQP)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -382,6 +389,8 @@
             (ref-P|FVT::P|A_AddIMP mg)
             (ref-P|VCT::P|A_AddIMP mg)
             (ref-P|ATSU::P|A_AddIMP mg)
+            ;; MTX-AQP defpact wrapper below — register the Talos summoner as an allowed IMC caller of MTX-AQP.
+            (ref-P|MTX-AQP::P|A_AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -1956,6 +1965,43 @@
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (format "Successfully injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|CC_Inject:string
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "HEAVY enforced-FRESH vault/treasury inject (M3 #12): refreshes every stale staker's deb so the \
+            \ divisor is live before injecting, then injects + collects IGNIS on patron. Same shape as C_Inject."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::CC_Inject patron fvt-id reward-dptf-id amount)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully FRESH-injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun MTX-AQP|C|2_Inject:string
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Starts the 2-step enforced-fresh inject defpact (MTX-AQP — spike fallback for AQP-FVT|CC_Inject when \
+            \ the stale set exceeds one tx). Step 0 runs here; advance with (continue-pact 1). Each defpact step \
+            \ collects its own IGNIS on patron, so this wrapper only summons the pact."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                )
+                (let ((r:string (ref-MTX-AQP::C|2_Inject patron fvt-id reward-dptf-id amount)))
+                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    r
+                )
             )
         )
     )

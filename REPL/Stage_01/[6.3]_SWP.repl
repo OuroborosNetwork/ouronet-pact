@@ -1709,38 +1709,10 @@
         (emma:string KST.EMMA)
         (pool8:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
         (ia:[decimal] [730.0 277.0 330.0 450.0 554.0 332.0 170.0])
-        ;(liq-info:object{OuronetInfoV1.ClientInfo} 
-        ;    (ouronet-ns.INFO-ONE.SWP|INFO_AddLiquidity
-        ;        patron patron pool8 ia 1.0
-        ;    )
-        ;)
-        (kda-pid:decimal 1.0)
-        ;;
-        ;;FUNCTION 0
-        (function-zero:list (ref-TS01-CP::SWP|F0|A_AddStandardLiquidity emma emma pool8 ia kda-pid))
-        ;;
-        (yielded-pool-state:object{SwapperLiquidityV1.PoolState} (at "pool-state" (at 1 function-zero)))
-        (yielded-ld:object{SwapperLiquidityV1.LiquidityData} (at "ld" (at 1 function-zero)))
-        (yielded-clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData} (at "clad" (at 1 function-zero)))
-        ;;
-        ;;FUNCTION 1
-        (function-one:list (ref-TS01-CP::SWP|F1|A_AddStandardLiquidity emma emma pool8 ia kda-pid yielded-pool-state yielded-ld yielded-clad))
-        (yielded-primary-lp-amount:decimal (at "primary-lp-amount" (at 1 function-one)))
-        (yielded-secondary-lp-amount:decimal (at "secondary-lp-amount" (at 1 function-one)))
-        ;;
-        
-
     )
-    [
-        ;;FUNCTION 2
-        (ref-TS01-CP::SWP|F2|A_AddStandardLiquidity emma emma pool8 ia kda-pid yielded-primary-lp-amount yielded-secondary-lp-amount)
-        ;(ref-TS01-CP::SWP|C_AddStandardLiquidity
-        ;    emma
-        ;    emma
-        ;    pool8
-        ;    ia
-        ;)
-    ]
+    ;; Step 0 of the MTX|C_AddLiquidity defpact. (Scaffold F0/F1/F2 path removed — this now mirrors the
+    ;; Iced/Glacial blocks: begin the pact here, advance via (continue-pact 1) / (continue-pact 2) below.)
+    (ref-TS01-CP::SWP|C_AddStandardLiquidity emma emma pool8 ia)
 )
 
 (print "")
@@ -1770,8 +1742,7 @@
     ]
 )
 
-true
-;(continue-pact 1 false "2n12TVKIdyigszwESxXUSOkAtK48XfsKcVoUGxWYSSE")
+(continue-pact 1 false "2n12TVKIdyigszwESxXUSOkAtK48XfsKcVoUGxWYSSE")
 
 
 (print "")
@@ -1802,8 +1773,7 @@ true
     ]
 )
 
-true
-;;(continue-pact 2 false "2n12TVKIdyigszwESxXUSOkAtK48XfsKcVoUGxWYSSE")
+(continue-pact 2 false "2n12TVKIdyigszwESxXUSOkAtK48XfsKcVoUGxWYSSE")
 
 
 (print "")

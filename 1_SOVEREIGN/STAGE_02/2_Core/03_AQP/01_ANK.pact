@@ -25,6 +25,7 @@
     ;;  [UR] BoostClass
     (defun UR_BC|Anchors:integer (boost-class-id:string))
     (defun UR_BC|Active:bool (boost-class-id:string))
+    (defun UR_BC|ScoreLinkCount:integer (boost-class-id:string))
     (defun UR_BC|ID:string (boost-class-id:string))
     (defun URD_BC|AllBoostClassIds:[string] ())
     ;;  [UR] AssetAnchors
@@ -95,6 +96,8 @@
     (defun XE_UpdateNonFungibleUserAnchorValues
         (account:string dpnf-id:string nonces:[integer] direction:bool)
     )
+    (defun XE_BumpBoostClassScoreLinks:string (boost-class-id:string))
+    (defun XE_UnbumpBoostClassScoreLinks:string (boost-class-id:string))
     (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
     )
@@ -314,11 +317,20 @@
         ouronet-account:string      ;;[.]   User account
         boost-class-id:string       ;;[.]   BoostClass reference
     )
+    (defschema ANK|BoostClassLinkCount
+        @doc "Key = <Boost-Class-ID>. Count of SCORE boost-class-links referencing this class — the H4 \
+            \ (#9) revoke lock. AQP-SCORE +1's it when a score links this class; revoke of ANY anchor in the \
+            \ class is blocked while count > 0. Decrement (unlink) is UNBUILT — pending the re-score sweep \
+            \ (see Audit/ANCHOR-STALENESS-INVENTORY.md). So today: once linked, the class's anchors lock."
+        count:integer
+        boost-class-id:string
+    )
     ;;
     ;;{2}
     (deftable ANK|T|Anchor:{ANK|Schema})                        ;;Key = <Anchor-ID>
     (deftable ANK|T|BoostClass:{ANK|BoostClass})                ;;Key = <Boost-Class-ID>
     (deftable ANK|T|AssetAnchors:{ANK|AssetAnchors})            ;;Key = <Asset-ID>
+    (deftable ANK|T|BoostClassLinkCount:{ANK|BoostClassLinkCount}) ;;Key = <Boost-Class-ID>
     ;;
     (deftable ANK|T|Anchors:{ANK|UserSchema})                   ;;Key = <Ouronet-Account> | <Anchor-ID>
     (deftable ANK|T|UserBoost:{ANK|UserBoostSchema})            ;;Key = <Ouronet-Account> | <Boost-Class-ID>
@@ -489,9 +501,20 @@
         )
     )
     (defcap ANK|C>REVOKE (anchor-id:string)
-        @doc "Authorizes anchor revocation for <anchor-id>; requires anchor ownership."
+        @doc "Authorizes anchor revocation for <anchor-id>; requires anchor ownership. H4 (#9) temp-patch: \
+            \ blocked while the anchor's BoostClass is linked by any score — vacate/unlink first (the \
+            \ re-score-sweep unwind is not built yet; see Audit/ANCHOR-STALENESS-INVENTORY.md)."
         @event
         (CAP_Owner anchor-id)
+        ;; #9 lock: cannot revoke an anchor whose BoostClass is employed by ≥1 score (stale-boost prevention).
+        (enforce
+            (= (UR_BC|ScoreLinkCount (UR_ANK|BoostClassId anchor-id)) 0)
+            "Anchor's BoostClass is in use by a score — revoke locked until scores are vacated/unlinked"
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap ANK|C>BUMP-BOOST-CLASS-LINKS (boost-class-id:string)
+        @doc "Authorizes AQP-SCORE (forward) to +1 a BoostClass score-link count — the H4 (#9) revoke lock."
         (compose-capability (SECURE))
     )
     (defcap ANK|C>REVOKE-BOOST-CLASS-ENTRY (boost-class-id:string)
@@ -633,6 +656,14 @@
     (defun UR_BC|Active:bool (boost-class-id:string)
         @doc "Reads active flag from BoostClass."
         (at "class-active" (read ANK|T|BoostClass boost-class-id ["class-active"]))
+    )
+    (defun UR_BC|ScoreLinkCount:integer (boost-class-id:string)
+        @doc "Count of SCORE links referencing this BoostClass (H4 #9 revoke lock); 0 when absent."
+        (with-default-read ANK|T|BoostClassLinkCount boost-class-id
+            {"count": 0}
+            {"count" := c}
+            c
+        )
     )
     (defun UR_BC|ID:string (boost-class-id:string)
         @doc "Reads boost-class-id from BoostClass row."
@@ -1432,6 +1463,24 @@
         (require-capability (SECURE))
         (update ANK|T|Anchor anchor-id {"ank-active": ank-active})
     )
+    (defun WU_BC|IncScoreLinkCount:string
+        (boost-class-id:string)
+        @doc "Increment the BoostClass score-link count by 1 (a score linked this class). Upsert (default 0). H4 #9."
+        (require-capability (SECURE))
+        (write ANK|T|BoostClassLinkCount boost-class-id
+            {"count"           : (+ (UR_BC|ScoreLinkCount boost-class-id) 1)
+            ,"boost-class-id"  : boost-class-id})
+    )
+    (defun WU_BC|DecScoreLinkCount:string
+        (boost-class-id:string)
+        @doc "Decrement the BoostClass score-link count by 1, floored at 0 (a score re-pointed its boost-class-link \
+            \ AWAY from this class — M4 #13). Upsert. Releases the class's revoke lock once no score references it."
+        (require-capability (SECURE))
+        (let ((old:integer (UR_BC|ScoreLinkCount boost-class-id)))
+            (write ANK|T|BoostClassLinkCount boost-class-id
+                {"count"           : (if (> old 0) (- old 1) 0)
+                ,"boost-class-id"  : boost-class-id}))
+    )
     ;; WU_Anchor|Promile — not mutable [.]
     ;; WU_Anchor|TFAmount — not mutable [.]
     ;; WU_Anchor|SFNonce — not mutable [.]
@@ -1724,6 +1773,25 @@
                 (XI_RevokeAnchorBookkeeping anchor-id)
                 (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
             )
+        )
+    )
+    (defun XE_BumpBoostClassScoreLinks:string
+        (boost-class-id:string)
+        @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink): +1 the BoostClass score-link count, locking revoke \
+            \ of any anchor in this class while > 0 (H4 #9 temp-patch; decrement/unlink pending re-score sweep)."
+        (UEV_IMC)
+        (with-capability (ANK|C>BUMP-BOOST-CLASS-LINKS boost-class-id)
+            (WU_BC|IncScoreLinkCount boost-class-id)
+        )
+    )
+    (defun XE_UnbumpBoostClassScoreLinks:string
+        (boost-class-id:string)
+        @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink re-point): −1 the BoostClass score-link count when a \
+            \ score moves its boost-class-link AWAY from this class (M4 #13, only reachable when the score is \
+            \ empty). UEV_IMC + ANK|C>BUMP-BOOST-CLASS-LINKS (composes SECURE)."
+        (UEV_IMC)
+        (with-capability (ANK|C>BUMP-BOOST-CLASS-LINKS boost-class-id)
+            (WU_BC|DecScoreLinkCount boost-class-id)
         )
     )
     ;;
@@ -2142,5 +2210,6 @@
 (create-table ANK|T|Anchor)
 (create-table ANK|T|BoostClass)
 (create-table ANK|T|AssetAnchors)
+(create-table ANK|T|BoostClassLinkCount)
 (create-table ANK|T|Anchors)
 (create-table ANK|T|UserBoost)

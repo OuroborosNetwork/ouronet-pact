@@ -187,60 +187,6 @@
         )
     )
     ;;
-    ;;Get KDA-PID
-    (defun SWP|F0|A_AddStandardLiquidity
-        (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal)
-        (with-capability (P|ATS)
-            (let
-                (
-                    (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
-                )
-                (ref-MTX-SWP::MTX|Step0|C_AddStandardLiquidity
-                    patron account swpair input-amounts kda-pid
-                )
-            )
-        )
-    )
-    (defun SWP|F1|A_AddStandardLiquidity
-        (
-            patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal
-            ;;
-            yielded-pool-state:object{SwapperLiquidityV1.PoolState} 
-            yielded-ld:object{SwapperLiquidityV1.LiquidityData} 
-            yielded-clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-        )
-        (with-capability (P|ATS)
-            (let
-                (
-                    (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
-                )
-                (ref-MTX-SWP::MTX|Step1|C_AddStandardLiquidity
-                    patron account swpair input-amounts kda-pid
-                    yielded-pool-state yielded-ld yielded-clad
-                )
-            )
-        )
-    )
-    (defun SWP|F2|A_AddStandardLiquidity
-        (
-            patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal
-            ;;
-            yielded-primary-lp-amount:decimal
-            yielded-secondary-lp-amount:decimal
-        )
-        (with-capability (P|ATS)
-            (let
-                (
-                    (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
-                )
-                (ref-MTX-SWP::MTX|Step2|C_AddStandardLiquidity
-                    patron account swpair input-amounts kda-pid
-                    yielded-primary-lp-amount yielded-secondary-lp-amount
-                )
-            )
-        )
-    )
-    ;;
     (defun SWP|C_AddStandardLiquidity
         (patron:string account:string swpair:string input-amounts:[decimal])
         (with-capability (P|TS)

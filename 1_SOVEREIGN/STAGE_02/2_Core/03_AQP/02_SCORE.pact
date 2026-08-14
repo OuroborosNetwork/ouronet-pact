@@ -21,6 +21,8 @@
     (defun UR_SCR|ScoreTotalBaseScore:decimal (score-id:string))
     (defun UR_SCR|ScoreTotalBoostedScore:decimal (score-id:string))
     (defun UR_SCR|ScoreTotalDebScore:decimal (score-id:string))
+    (defun UR_SCR|ScoreTotalBaseDebScore:decimal (score-id:string))
+    (defun UR_SCR|ScoreTotalBoostedDebScore:decimal (score-id:string))
     (defun UR_SCR|ScoreNzsCount:integer (score-id:string))
     (defun UR_SCR|ScoreClass:integer (score-id:string))
     (defun UR_SCR|ScoreLpDenominator:string (score-id:string))
@@ -33,6 +35,9 @@
     (defun UR_U-SCR|UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string))
     (defun UR_U-SCR|UserScoreBoostedScore:decimal (ouronet-account:string pool-id:string score-id:string))
     (defun UR_U-SCR|UserScoreDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreBaseDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
+    (defun UR_U-SCR|UserScoreBoostedDebScore:decimal (ouronet-account:string pool-id:string score-id:string))
+    (defun URC_U-SCR|UserScoreDebStale:bool (ouronet-account:string pool-id:string score-id:string))
     (defun UR_U-SCR|UserScoreOuronetAccount:string (ouronet-account:string pool-id:string score-id:string))
     (defun UR_U-SCR|UserScorePoolId:string (ouronet-account:string pool-id:string score-id:string))
     (defun UR_U-SCR|UserScoreScoreId:string (ouronet-account:string pool-id:string score-id:string))
@@ -68,7 +73,6 @@
     (defun URC_TripletExists:bool (triplet-id:string))
     (defun URC_TripletCategoryMatchesFvtClass:bool (triplet-category:string fvt-class:integer))
     (defun URC_IsTrueTriplet:bool (id0:string id1:string id2:string))
-    (defun URD_UserScoreStakerAccounts:[string] (pool-id:string score-id:string))
     ;;
     ;;  [UEV]
     (defun UEV_IMC ())
@@ -123,6 +127,7 @@
     (defun XE_ApplyTrueFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
     )
+    (defun XE_RefreshUserScoreDeb:string (ouronet-account:string pool-id:string score-id:string))
     (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool employed-ids:[string])
     )
@@ -281,6 +286,8 @@
         total-base-score:decimal    ;;[M]   Sum of user base-scores; same decimal precision as precision field
         total-boosted-score:decimal ;;[M]   Sum of user boosted-scores; same decimal precision as precision field
         total-deb-score:decimal     ;;[M]   Sum of user deb-scores; same decimal precision as precision field
+        total-base-deb-score:decimal    ;;[M] M3: Σ user base-deb-scores (aggregate base×deb decomposition)
+        total-boosted-deb-score:decimal ;;[M] M3: Σ user boosted-deb-scores. total-base-deb + total-boosted-deb = total-deb-score.
         nzs-count:integer           ;;[M]   Store the amount of Non-Zero-Scores
         ;;
         ;;Score Class
@@ -318,6 +325,8 @@
         base-score:decimal
         boosted-score:decimal
         deb-score:decimal
+        base-deb-score:decimal      ;;[M]  M3: base × deb (deb applied to the base part)
+        boosted-deb-score:decimal   ;;[M]  M3: boost × deb (deb applied to the boost part). base-deb + boosted-deb = deb-score.
         ;;
         ;;Select Keys
         ouronet-account:string
@@ -330,10 +339,14 @@
         new-user-base-score:decimal
         new-user-boosted-score:decimal
         new-user-deb-score:decimal
+        new-user-base-deb-score:decimal
+        new-user-boosted-deb-score:decimal
         nz-delta:integer
         delta-global-base-score:decimal
         delta-global-boosted-score:decimal
         delta-global-deb-score:decimal
+        delta-global-base-deb-score:decimal
+        delta-global-boosted-deb-score:decimal
     )
     ;;
     ;;3] SCR|T|SF|Score
@@ -597,7 +610,11 @@
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
                 (deb-boost:bool (UR_SCR|ScoreDebBoost score-id))
             )
-            (enforce (not deb-boost) "DEB boost is already enabled and cannot be disabled")
+            ;; M4 #13: only settable while the score is EMPTY (no stakers) — vacate to reconfigure a live score.
+            (enforce
+                (and (not deb-boost) (= (UR_SCR|ScoreNzsCount score-id) 0))
+                "Deb-boost must be off and the score must have no stakers (nzs-count = 0) — vacate to reconfigure"
+            )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
         )
@@ -712,11 +729,12 @@
                 (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
-                (current-link:string (UR_SCR|ScoreBoostClassLink score-id))
             )
+            ;; M4 #13: settable/re-settable only while the score is EMPTY (nzs-count = 0). One-time slot check
+            ;; dropped — reconfigure after a vacate; XI moves the class link-count (old class −1, new class +1).
             (enforce
-                (and (= current-link BAR) (!= boost-class-id BAR))
-                "Boost-class-link slot must be unset and boost-class-id must be non-BAR"
+                (and (!= boost-class-id BAR) (= (UR_SCR|ScoreNzsCount score-id) 0))
+                "boost-class-id must be non-BAR and the score must have no stakers (nzs-count = 0) — vacate to reconfigure"
             )
             (enforce (ref-ANK::UR_BC|Active boost-class-id) "BoostClass must be active")
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
@@ -731,19 +749,19 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 ;;
                 (owner-konto:string (UR_SCR|ScoreOwnerKonto score-id))
-                (boost-link:string (UR_SCR|ScoreBoostLink score-id))
                 (boost-row-sid:string (UR_SCR|ScoreScoreId boost-score-id))
             )
+            ;; M4 #13: re-settable only while the score is EMPTY (nzs-count = 0). One-time slot check dropped.
             (enforce
                 (fold (and) true
                     [
-                        (= boost-link BAR)
                         (!= boost-score-id BAR)
                         (!= boost-score-id score-id)
                         (= boost-row-sid boost-score-id)
+                        (= (UR_SCR|ScoreNzsCount score-id) 0)
                     ]
                 )
-                "SCR|C>CREATE-BOOST-LINK-SCORE: boost-link slot must be BAR; boost-score-id must exist, be non-BAR, and must not equal this score-id (no self-link)"
+                "SCR|C>CREATE-BOOST-LINK-SCORE: boost-score-id must exist, be non-BAR, not equal this score-id (no self-link); and the score must have no stakers (nzs-count = 0) — vacate to reconfigure"
             )
             (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
             (compose-capability (SECURE))
@@ -954,6 +972,13 @@
         )
         (compose-capability (SECURE))
     )
+    (defcap SCR|XE>REFRESH-USER-SCORE-DEB (ouronet-account:string pool-id:string score-id:string)
+        @doc "Forward (AQP-FVT collect / inject sweep): recompute a user's stored deb-score at the current live \
+            \ Elite-DEB (M3 deb-staleness backstop). Benign — no fund movement, just a recompute; the CALLER must \
+            \ have settled the user's pending at the OLD deb-score first (RPS settle-before-weight-change). \
+            \ Composes SECURE."
+        (compose-capability (SECURE))
+    )
     (defcap SCR|XE>UPDATE-STAKE-DPOF
         (
             ouronet-account:string
@@ -1146,39 +1171,49 @@
     ;;
     ;; Early UDC: SCR|UserSchema constructor is required before UR_U-SCR|UserScore (with-default-read default object).
     (defun UDC_SCR|UserSchema:object{SCR|UserSchema}
-        (a:decimal b:decimal c:decimal d:string e:string f:string)
-        @doc "Core constructor for object{SCR|UserSchema}."
-        {"base-score"       : a
-        ,"boosted-score"    : b
-        ,"deb-score"        : c
-        ,"ouronet-account"  : d
-        ,"pool-id"          : e
-        ,"score-id"         : f}
+        (a:decimal b:decimal c:decimal c1:decimal c2:decimal d:string e:string f:string)
+        @doc "Core constructor for object{SCR|UserSchema}. c1=base-deb-score, c2=boosted-deb-score (M3)."
+        {"base-score"           : a
+        ,"boosted-score"        : b
+        ,"deb-score"            : c
+        ,"base-deb-score"       : c1
+        ,"boosted-deb-score"    : c2
+        ,"ouronet-account"      : d
+        ,"pool-id"              : e
+        ,"score-id"             : f}
     )
     (defun UDC_SCR|SingularUserScoreDelta:object{SCR|SingularUserScoreDelta}
         (
             new-user-base-score:decimal
             new-user-boosted-score:decimal
             new-user-deb-score:decimal
+            new-user-base-deb-score:decimal
+            new-user-boosted-deb-score:decimal
             nz-delta:integer
             delta-global-base-score:decimal
             delta-global-boosted-score:decimal
             delta-global-deb-score:decimal
+            delta-global-base-deb-score:decimal
+            delta-global-boosted-deb-score:decimal
         )
         @doc "Constructor for URC_SingularUserScoreDeltaFromSignedUserBase result (named user + aggregate deltas)."
-        {"new-user-base-score"          : new-user-base-score
-        ,"new-user-boosted-score"       : new-user-boosted-score
-        ,"new-user-deb-score"           : new-user-deb-score
-        ,"nz-delta"                     : nz-delta
-        ,"delta-global-base-score"      : delta-global-base-score
-        ,"delta-global-boosted-score"   : delta-global-boosted-score
-        ,"delta-global-deb-score"       : delta-global-deb-score}
+        {"new-user-base-score"              : new-user-base-score
+        ,"new-user-boosted-score"           : new-user-boosted-score
+        ,"new-user-deb-score"               : new-user-deb-score
+        ,"new-user-base-deb-score"          : new-user-base-deb-score
+        ,"new-user-boosted-deb-score"       : new-user-boosted-deb-score
+        ,"nz-delta"                         : nz-delta
+        ,"delta-global-base-score"          : delta-global-base-score
+        ,"delta-global-boosted-score"       : delta-global-boosted-score
+        ,"delta-global-deb-score"           : delta-global-deb-score
+        ,"delta-global-base-deb-score"      : delta-global-base-deb-score
+        ,"delta-global-boosted-deb-score"   : delta-global-boosted-deb-score}
     )
     ;;
     ;;{F3}  [UDC] — schema / NF / SF constructors (after early UserSchema UDC)
     (defun UDC_SCR|Schema:object{SCR|Schema}
-        (a:string b:bool c:bool d:string e:string f:string g:string v:bool w:string h:bool i:integer j:decimal k:decimal l:decimal m:integer n:integer o:string p:decimal q:decimal r:decimal s:bool t:integer u:string)
-        @doc "Core constructor for object{SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers)."
+        (a:string b:bool c:bool d:string e:string f:string g:string v:bool w:string h:bool i:integer j:decimal k:decimal l:decimal l1:decimal l2:decimal m:integer n:integer o:string p:decimal q:decimal r:decimal s:bool t:integer u:string)
+        @doc "Core constructor for object{SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers). l1=total-base-deb-score, l2=total-boosted-deb-score (M3)."
         {"owner-konto"          : a
         ,"can-upgrade"          : b
         ,"can-change-owner"     : c
@@ -1193,6 +1228,8 @@
         ,"total-base-score"     : j
         ,"total-boosted-score"  : k
         ,"total-deb-score"      : l
+        ,"total-base-deb-score"    : l1
+        ,"total-boosted-deb-score" : l2
         ,"nzs-count"            : m
         ,"score-class"          : n
         ,"lp-denominator"       : o
@@ -1327,11 +1364,15 @@
                 (old-tb:decimal (at "total-base-score" fresh))
                 (old-tbst:decimal (at "total-boosted-score" fresh))
                 (old-td:decimal (at "total-deb-score" fresh))
+                (old-tbd:decimal (at "total-base-deb-score" fresh))
+                (old-tbbd:decimal (at "total-boosted-deb-score" fresh))
             )
             (update SCR|T|Score score-id
-                {"total-base-score"     : (floor (+ old-tb (at "delta-global-base-score" d)) p)
-                ,"total-boosted-score"  : (floor (+ old-tbst (at "delta-global-boosted-score" d)) p)
-                ,"total-deb-score"      : (floor (+ old-td (at "delta-global-deb-score" d)) p)}
+                {"total-base-score"         : (floor (+ old-tb (at "delta-global-base-score" d)) p)
+                ,"total-boosted-score"      : (floor (+ old-tbst (at "delta-global-boosted-score" d)) p)
+                ,"total-deb-score"          : (floor (+ old-td (at "delta-global-deb-score" d)) p)
+                ,"total-base-deb-score"     : (floor (+ old-tbd (at "delta-global-base-deb-score" d)) p)
+                ,"total-boosted-deb-score"  : (floor (+ old-tbbd (at "delta-global-boosted-deb-score" d)) p)}
             )
         )
     )
@@ -1517,6 +1558,14 @@
         @doc "Reads total-deb-score from score row."
         (at "total-deb-score" (read SCR|T|Score score-id ["total-deb-score"]))
     )
+    (defun UR_SCR|ScoreTotalBaseDebScore:decimal (score-id:string)
+        @doc "Reads total-base-deb-score (Σ base×deb) from score row (M3)."
+        (at "total-base-deb-score" (read SCR|T|Score score-id ["total-base-deb-score"]))
+    )
+    (defun UR_SCR|ScoreTotalBoostedDebScore:decimal (score-id:string)
+        @doc "Reads total-boosted-deb-score (Σ boost×deb) from score row (M3)."
+        (at "total-boosted-deb-score" (read SCR|T|Score score-id ["total-boosted-deb-score"]))
+    )
     (defun UR_SCR|ScoreNzsCount:integer (score-id:string)
         @doc "Reads nzs-count from score row."
         (at "nzs-count" (read SCR|T|Score score-id ["nzs-count"]))
@@ -1558,14 +1607,16 @@
     (defun UR_U-SCR|UserScore:object{SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads full user score row from SCR|T|UserScore; absent rows read as zero weights via UDC default."
         (with-default-read SCR|T|UserScore (UCK_UserScore ouronet-account pool-id score-id)
-            (UDC_SCR|UserSchema 0.0 0.0 0.0 ouronet-account pool-id score-id)
+            (UDC_SCR|UserSchema 0.0 0.0 0.0 0.0 0.0 ouronet-account pool-id score-id)
             {"base-score"        := b
             ,"boosted-score"    := bb
             ,"deb-score"        := d
+            ,"base-deb-score"   := bd
+            ,"boosted-deb-score" := bbd
             ,"ouronet-account"  := oa
             ,"pool-id"          := pid
             ,"score-id"         := sid}
-            (UDC_SCR|UserSchema b bb d oa pid sid)
+            (UDC_SCR|UserSchema b bb d bd bbd oa pid sid)
         )
     )
     (defun UR_U-SCR|UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string)
@@ -1579,6 +1630,33 @@
     (defun UR_U-SCR|UserScoreDebScore:decimal (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads deb-score from user score row."
         (at "deb-score" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    (defun UR_U-SCR|UserScoreBaseDebScore:decimal (ouronet-account:string pool-id:string score-id:string)
+        @doc "Reads base-deb-score (base×deb) from user score row (M3)."
+        (at "base-deb-score" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    (defun UR_U-SCR|UserScoreBoostedDebScore:decimal (ouronet-account:string pool-id:string score-id:string)
+        @doc "Reads boosted-deb-score (boost×deb) from user score row (M3)."
+        (at "boosted-deb-score" (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+    )
+    (defun URC_U-SCR|UserScoreDebStale:bool (ouronet-account:string pool-id:string score-id:string)
+        @doc "M3 deb-staleness (Part 2): true when the stored deb-score no longer equals (base+boost)×live-Elite-DEB \
+            \ — i.e. the account's deb changed since this score was last checkpointed (stake/unstake/collect). Only \
+            \ deb-boost scores can go stale (deb doesn't apply otherwise). Point-read compare, no scan. May \
+            \ over-detect for the rare foreign-boost-link surplus row — harmless, a refresh just recomputes it."
+        (if (not (UR_SCR|ScoreDebBoost score-id))
+            false
+            (let
+                (
+                    (ref-DALOS:module{OuronetDalosV1} DALOS)
+                    (p:integer (UR_SCR|ScorePrecision score-id))
+                    (u:object{SCR|UserSchema} (UR_U-SCR|UserScore ouronet-account pool-id score-id))
+                )
+                (!= (at "deb-score" u)
+                    (floor (* (+ (at "base-score" u) (at "boosted-score" u))
+                              (ref-DALOS::UR_Elite-DEB ouronet-account)) p))
+            )
+        )
     )
     (defun UR_U-SCR|UserScoreOuronetAccount:string (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads ouronet-account from user score row."
@@ -1829,27 +1907,9 @@
             )
         )
     )
-    (defun URD_UserScoreStakerAccounts:[string] (pool-id:string score-id:string)
-        @doc "Distinct ouronet-accounts with deb-score > 0 on pool × score (farm triplet Tier-2 denominator scan)."
-        (distinct
-            (map
-                (lambda (row:object)
-                    (at "ouronet-account" row)
-                )
-                (filter
-                    (lambda (row:object)
-                        (> (at "deb-score" row) 0.0)
-                    )
-                    (select SCR|T|UserScore ["ouronet-account" "deb-score"]
-                        (and?
-                            (where "pool-id" (= pool-id))
-                            (where "score-id" (= score-id))
-                        )
-                    )
-                )
-            )
-        )
-    )
+    ;; URD_UserScoreStakerAccounts (farm-triplet Tier-2 denominator scan) RETIRED — audit H5/LP redesign.
+    ;; The farm-triplet Level-1 divisor is now a maintained snapshot aggregate (FVT ScoreEntityLink.total-lane-weight,
+    ;; point-read), so the O(stakers) select over SCR|T|UserScore is gone. No callers remain.
     ;;{F1}  [URDCX]  Auxiliary raw-weight helpers (URD-backed) used from parent URC_* stake deltas.
     (defun URCX_StakeEqualNativeUnitRawWeight:decimal (nonces:[integer] nonce-amounts:[integer])
         @doc "Shared SFT equal-weight (sft-equality true) and NFT model -1: sum_i amount_i × (1.0 if nonce_i ≥ 0 else 0.001)."
@@ -2033,6 +2093,9 @@
         )
     )
     ;;{F1}  [URC]
+    ;; RETIRED from the Level-1 base path (audit H1 / fix #7): LP score is now the stable LP AMOUNT, not this
+    ;; reserve-dependent value. No callers remain. Kept pending the Level-2 decision (LP-SCORING-REDESIGN.md §6.3
+    ;; G1): relocate to FVT inject-time valuation, or remove. Do NOT reintroduce it into per-user scoring.
     (defun URC_LpAmountToLpDenominatorEquivalent:decimal
         (lp-id:string lp-amount:decimal lp-denominator:string)
         @doc "Class-0: maps staked LP amount into lp-denominator token units (e.g. OURO). \
@@ -2068,13 +2131,14 @@
     )
     (defun URC_SignedBaseDeltaForDptfLpStake:decimal
         (score-id:string lp-id:string lp-amount:decimal native-or-frozen:bool direction:bool)
-        @doc "Signed base delta (score precision) for one DPTF LP stake leg; shared by LP-stake cap and XE forwarder."
+        @doc "Signed base delta (score precision) for one DPTF LP stake leg; shared by LP-stake cap and XE forwarder. \
+            \ Level-1 = LP AMOUNT x mx (audit H1 / fix #7): the user's score is the STABLE staked LP amount, NOT its \
+            \ fluctuating STOA value — so a full unstake reverses exactly and nets to 0 (no negative base, no clamp). \
+            \ STOA valuation happens only at FVT inject (Level-2), never stored here. lp-id kept for signature stability."
         (let
             (
-                (lp-denom:string (UR_SCR|ScoreLpDenominator score-id))
-                (equiv:decimal (URC_LpAmountToLpDenominatorEquivalent lp-id lp-amount lp-denom))
                 (mxlp:decimal (if native-or-frozen 1.0 (UR_SCR|ScoreMxFrozen score-id)))
-                (raw-weight:decimal (* equiv mxlp))
+                (raw-weight:decimal (* lp-amount mxlp))
                 (p:integer (UR_SCR|ScorePrecision score-id))
             )
             (floor (* raw-weight (if direction 1.0 -1.0)) p)
@@ -2082,7 +2146,9 @@
     )
     (defun URC_SignedBaseDeltaForOrtoLpStake:decimal
         (score-id:string lp-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
-        @doc "Signed user-base delta for one sleeping-orto LP leg (denom-equiv × mx-sleeping, score precision); nonce-amounts are decimals summed for weight."
+        @doc "Signed user-base delta for one sleeping-orto LP leg. Level-1 = LP AMOUNT x mx-sleeping (audit H1 / \
+            \ fix #7): stable staked amount, NOT STOA value — full unstake nets to 0. nonce-amounts summed for the \
+            \ staked amount; STOA valuation is Level-2 (FVT inject) only. lp-id kept for signature stability."
         (let
             (
                 (sum-amounts:decimal
@@ -2092,10 +2158,8 @@
                         nonce-amounts
                     )
                 )
-                (lp-denom:string (UR_SCR|ScoreLpDenominator score-id))
-                (equiv:decimal (URC_LpAmountToLpDenominatorEquivalent lp-id sum-amounts lp-denom))
                 (mxlp:decimal (UR_SCR|ScoreMxSleeping score-id))
-                (raw-weight:decimal (* equiv mxlp))
+                (raw-weight:decimal (* sum-amounts mxlp))
                 (p:integer (UR_SCR|ScorePrecision score-id))
             )
             (floor (* raw-weight (if direction 1.0 -1.0)) p)
@@ -2258,6 +2322,8 @@
                 (ob:decimal (at "base-score" old-u))
                 (obb:decimal (at "boosted-score" old-u))
                 (od:decimal (at "deb-score" old-u))
+                (od-bd:decimal (at "base-deb-score" old-u))
+                (od-bbd:decimal (at "boosted-deb-score" old-u))
                 ;;
                 (local-base-raw:decimal (floor (+ ob signed-user-base-delta) p))
                 (foreign-boost-base:bool 
@@ -2304,13 +2370,30 @@
                         nominal-boosted-score
                     )
                 )
+                ;; M3: boost is ADDITIVE. boosted-score is the boost PART (base×promile/1000), not a replacement
+                ;; of base; deb is the alpha-omega end multiplier on the (base + boost) sum. So the final weight is
+                ;; deb-score = (base + boost)×deb — base is never dropped. (Foreign boost-link surplus branch below
+                ;; is a separate mechanism and keeps the nominal-* surplus math unchanged.)
+                (boost-part:decimal
+                    (if (= bcl BAR)
+                        0.0
+                        (floor (* base-for-boost (/ prom 1000.0)) p)
+                    )
+                )
+                (normal-pre-deb:decimal (+ new-user-base-score boost-part))
+                (normal-deb:decimal
+                    (if db-boost
+                        (floor (* normal-pre-deb (ref-DALOS::UR_Elite-DEB ouronet-account)) p)
+                        normal-pre-deb
+                    )
+                )
                 (new-user-boosted-score:decimal
                     (if apply-foreign-boost-surplus
                         (ref-U|DEC::UC_Max
                             0.0
                             (floor (- nominal-boosted-score foreign-base-ref) p)
                         )
-                        nominal-boosted-score
+                        boost-part
                     )
                 )
                 (new-user-deb-score:decimal
@@ -2319,7 +2402,7 @@
                             0.0
                             (floor (- nominal-deb-score foreign-base-ref) p)
                         )
-                        nominal-deb-score
+                        normal-deb
                     )
                 )
                 (was-nz:bool
@@ -2346,14 +2429,27 @@
                 (delta-global-base-score:decimal (- new-user-base-score ob))
                 (delta-global-boosted-score:decimal (- new-user-boosted-score obb))
                 (delta-global-deb-score:decimal (- new-user-deb-score od))
+                ;; M3 decomposition: split the final deb-score into base×deb and boost×deb. boosted-deb absorbs
+                ;; the rounding so base-deb + boosted-deb == deb-score exactly (works for the foreign-surplus case
+                ;; too, where new-user-base-score = 0 ⇒ base-deb = 0, boosted-deb = the whole surplus deb-score).
+                (new-user-base-deb-score:decimal
+                    (if db-boost
+                        (floor (* new-user-base-score (ref-DALOS::UR_Elite-DEB ouronet-account)) p)
+                        new-user-base-score))
+                (new-user-boosted-deb-score:decimal (- new-user-deb-score new-user-base-deb-score))
+                (delta-global-base-deb-score:decimal (- new-user-base-deb-score od-bd))
+                (delta-global-boosted-deb-score:decimal (- new-user-boosted-deb-score od-bbd))
             )
             (UDC_SCR|SingularUserScoreDelta
                 ;; 1 — User base-score after update: 0 when foreign boost-link + boost-class (surplus-only row); else floor(ob + signed, p).
                 new-user-base-score
-                ;; 2 — User boosted column after update (nominal boosted, or surplus over foreign base when foreign boost-link + boost-class).
+                ;; 2 — User boosted (boost PART) after update, or surplus over foreign base in the foreign-boost case.
                 new-user-boosted-score
-                ;; 3 — User deb column after update (nominal deb, or surplus over foreign base in that foreign-boost case).
+                ;; 3 — User deb column (final = (base+boost)×deb), or surplus in the foreign-boost case.
                 new-user-deb-score
+                ;; 3b/3c — M3 decomposition of the deb column: base×deb and boost×deb (sum to deb-score).
+                new-user-base-deb-score
+                new-user-boosted-deb-score
                 ;; 4 — Change to SCR|T|Score.nzs-count: -1 if user went from any non-zero triple to all zeros, +1 if reverse, else 0.
                 nz-delta
                 ;; 5 — Amount to add to SCR|T|Score.total-base-score (new user base − previous user base), floored at score precision in XI.
@@ -2362,6 +2458,9 @@
                 delta-global-boosted-score
                 ;; 7 — Amount to add to SCR|T|Score.total-deb-score (new user deb − previous user deb).
                 delta-global-deb-score
+                ;; 7b/7c — Amounts to add to SCR|T|Score.total-base-deb-score / total-boosted-deb-score.
+                delta-global-base-deb-score
+                delta-global-boosted-deb-score
             )
         )
     )
@@ -3002,7 +3101,7 @@
                     false BAR
                     false
                     precision
-                    0.0 0.0 0.0 0
+                    0.0 0.0 0.0 0.0 0.0 0
                     score-class lp-denominator mx-frozen mx-sleeping mx-hibernated
                     sft-equality nft-score-model
                     score-id
@@ -3141,9 +3240,25 @@
     ;; Link fields [..] on SCR|Schema: XI under SECURE from SCR|C>*; XE from forward modules (UEV_IMC + SCR|XE>*).
     (defun XI_CreateBoostClassLink:string
         (score-id:string boost-class-id:string)
-        @doc "Under SECURE: set boost-class-link only. Write only; C_CreateBoostClassLink builds IGNIS cumulator."
+        @doc "Under SECURE: (re)set boost-class-link + move the ANK BoostClass score-link count (H4 #9 revoke lock). \
+            \ M4 #13: if re-pointing (the score already linked a DIFFERENT class), −1 the OLD class first so its \
+            \ revoke lock releases, then +1 the new. Only reachable when the score is empty (nzs-count = 0, enforced \
+            \ in the cap). Write only; C_CreateBoostClassLink builds IGNIS cumulator."
         ;; SECURE: granted by WU_Score|BoostClassLink (underlying W_).
-        (WU_Score|BoostClassLink score-id boost-class-id)
+        (let
+            (
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (old-class:string (UR_SCR|ScoreBoostClassLink score-id))
+            )
+            ;; #13: release the old class's count when re-pointing (−1 old, +1 new below). old == new ⇒ net 0;
+            ;; old == BAR ⇒ nothing to release. Always unbump a non-BAR old so the counter stays exact.
+            (if (!= old-class BAR)
+                (ref-ANK::XE_UnbumpBoostClassScoreLinks old-class)
+                "no prior class link to release")
+            (WU_Score|BoostClassLink score-id boost-class-id)
+            ;; #9: register the (new) link so AQP-ANK locks revoke of the class's anchors while employed.
+            (ref-ANK::XE_BumpBoostClassScoreLinks boost-class-id)
+        )
     )
     (defun XI_CreateBoostLink:string
         (score-id:string boost-score-id:string)
@@ -3191,6 +3306,20 @@
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators score-ocs [])
+        )
+    )
+    (defun XE_RefreshUserScoreDeb:string
+        (ouronet-account:string pool-id:string score-id:string)
+        @doc "Forward (AQP-FVT): M3 deb-staleness backstop. If this user's score deb is stale (Elite-DEB changed \
+            \ since the score was last checkpointed), refresh the stored deb-score to the CURRENT live deb and \
+            \ delta the score totals — done via a 0-base-delta apply (recompute at live deb/promile, no base \
+            \ change). No-op when already fresh. The CALLER (collect/inject) MUST have settled the user's pending \
+            \ at the OLD deb-score first. UEV_IMC + SCR|XE>REFRESH-USER-SCORE-DEB."
+        (UEV_IMC)
+        (if (URC_U-SCR|UserScoreDebStale ouronet-account pool-id score-id)
+            (with-capability (SCR|XE>REFRESH-USER-SCORE-DEB ouronet-account pool-id score-id)
+                (XI_2|ApplySingularUserScoreDelta ouronet-account pool-id score-id 0.0))
+            "score deb already fresh — no refresh"
         )
     )
     (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
@@ -3491,6 +3620,8 @@
                         (at "new-user-base-score" d)
                         (at "new-user-boosted-score" d)
                         (at "new-user-deb-score" d)
+                        (at "new-user-base-deb-score" d)
+                        (at "new-user-boosted-deb-score" d)
                         ouronet-account
                         pool-id
                         score-id

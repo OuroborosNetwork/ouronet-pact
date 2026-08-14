@@ -273,3 +273,9 @@
 (print "")
 (print "=== END TX-POOL-02 ==========================================================")
 (print "")
+;;
+;;FULL> POOL extended suites — need the FULL profile (AQP-BOOT Step7 pools + [5.x] populate):
+;;FULL>   [6.4]_AQP-EXHAUSTIVE-BOOT-POOLS.repl  (stake/unstake all Step7 pools)
+;;FULL>   [6.4]_AQP-EXHAUSTIVE-DPNF.repl        (NF stakes; needs [5.1]/[5.2]/[5.4])
+;;GAS>  POOL stake gas — via Kursan/AQP-stake-gas-sweep.repl (VCTGAS + AQPGAS probes):
+;;GAS>    [6.2.8]_AQP-STAKE-GAS.repl · [6.2.9]_AQP-STAKE-GAS-LADDER.repl

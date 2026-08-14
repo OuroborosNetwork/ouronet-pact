@@ -2,9 +2,9 @@
 
 | | |
 |--|--|
-| **Version** | **1.6.7** |
+| **Version** | **1.7.0** |
 | **Status** | Published discipline — rules Ouronet follows; offered for any Pact builder |
-| **Date** | 2026-08-01 |
+| **Date** | 2026-08-11 |
 | **Home** | Ouronet (this repository) — the codebase that practices and proves the method |
 
 **What StoicSyntax is.** A **discipline and set of rules** for writing Pact: how to name and place functions, where validation lives, how writes are isolated, how modules authorize each other **without borrowing each other’s capabilities**, and how one module can safely **compose calls across many modules** into auditable client flows.
@@ -1345,6 +1345,79 @@ These paths document how Ouronet applies StoicSyntax in this tree. External adop
 
 ---
 
+## 19. Ouronet-specific rules (normative for Ouronet; optional for other adopters)
+
+Everything above is **generic StoicSyntax**. This chapter collects the rules that are **Ouronet-specific**:
+they layer on top of the discipline and are **normative for Ouronet code**, but an external adopter may
+ignore them (they concern IGNIS metering, the exact prefix universe, and Ouronet's observability tuning).
+Kept in one place per **R5** so Ouronet-specifics are not scattered across the handbook.
+
+### 19.1 `X-cm_` — X functions that emit an IGNIS cumulator (R1)
+
+§12 says X functions (`XI`/`XE`/`XB`) are writes-only and return **no** `OutputCumulator` — the `C_`/`A_`
+recipe composes IGNIS. In Ouronet this holds by default. **But** when a flow is complex enough that
+threading the cumulator all the way up to the `C_` obscures the logic, an X function **may** build and
+return the IGNIS `OutputCumulator` itself. Such a function is **named with `-cm` appended to the leading
+prefix token**, so the emission is visible at the call site:
+
+| Default (no cumulator) | Emits IGNIS cumulator |
+|------------------------|-----------------------|
+| `XI_Name` | `XI-cm_Name` |
+| `XI_1\|Name` (tier 1) | `XI-cm_1\|Name` |
+| `XE_Name` | `XE-cm_Name` |
+| `XB_Name` | `XB-cm_Name` |
+
+1. `-cm` is **only** for the IGNIS `OutputCumulator` return — not for other return values (those use R4).
+2. The tier marker stays after `-cm`: `XI-cm_1|…`, `XI-cm_2|…`.
+3. A plain `XI_`/`XE_`/`XB_` (no `-cm`) must **not** return a cumulator — the name is a promise.
+4. Prefer the default (cumulator built in the `C_`); reach for `-cm` only when it genuinely simplifies a
+   multi-leg flow, and say **why** in `@doc`.
+
+### 19.2 Multi-table X functions are allowed (R2)
+
+§11/§12 prefer "one focused write path per X." Ouronet **permits** a single `XI`/`XE`/`XB` to write to
+**more than one table** when the writes are part of **one indivisible bookkeeping step** (e.g. a
+nonce-total table + its ANK-meta counter that must move together). Keep it deliberate: the tables must be
+genuinely coupled by the same operation — do **not** use this to dump unrelated persistence into one X.
+Each underlying write still goes through its `W_*` (SECURE), and the X still carries **no** `enforce`.
+
+### 19.3 `CC_` / `AA_` — HEAVY recipes that unavoidably scan (R3)
+
+§10.2 bans `URD_`/`select`/`keys` on the execution path. That ban **stands** — avoid at all costs, and
+**never** on a daily-hot path (stake / unstake / collect / inject / transfer). But a few recipes have no
+correct alternative to a scan (e.g. a single-transaction **full-vacate** that must attempt to empty a
+pool). When a `C_`/`A_` — **or any function in its call graph** — unavoidably uses a `URD_`/scan, it is
+**HEAVY** and is renamed with a doubled prefix so it is instantly observable:
+
+| Normal recipe | HEAVY recipe (URD/scan somewhere in its graph) |
+|---------------|-------------------------------------------------|
+| `C_Name` | `CC_Name` |
+| `A_Name` | `AA_Name` |
+
+1. `CC_`/`AA_` is a **warning label, not a license** — every one must justify in `@doc` why the scan is
+   unavoidable and confirm it is not a daily-hot path.
+2. The scan still lives in a `URD_`/`URDC_` (never inline `select`/`keys` in the recipe body), and
+   **never** inside a `defcap`.
+3. If a maintained-aggregate row can replace the scan, do that and keep the plain `C_`/`A_`.
+
+### 19.4 X `@doc` output rule (R4)
+
+An X function may end on a value other than its final `W_*` (§12 default). When it **deliberately returns a
+value**, its `@doc` **must state what it outputs and why** ("returns the new nonce id", "returns the settle
+bundle for the caller"). Only the IGNIS `OutputCumulator` return is *also* reflected in the **name** (R1
+`-cm`); every other return is documented in `@doc` but keeps the plain prefix.
+
+### 19.5 Consolidation index (R5) — other Ouronet-specifics already in this handbook
+
+These stay explained in context; this is the single index of what is Ouronet-specific (not generic):
+- **IGNIS as optional-MUST metering** on the Talos blessed path — §2, §2.3a.
+- **Talos = the Aggregator**; the gas-station allowlist targets Talos, not an unbounded core set — §2, §2.4.
+- **Prefix universe** — `UC / UCK / UR / URD / URC / URDC / UDC / UEV / CAP` and
+  `A / C / CC / AA / XI / XE / XB` (+ `-cm`) — §6, §7, and §19.1 / §19.3 here.
+- **Deep inventory** of how Ouronet applies all the above — §18.
+
+---
+
 ## Versioning
 
 | Version | Date | Notes |
@@ -1365,6 +1438,7 @@ These paths document how Ouronet applies StoicSyntax in this tree. External adop
 | **1.6.5** | 2026-08-01 | **§ 10.3 Schema Select Keys**: denormalize key components for `select`/`where` |
 | **1.6.6** | 2026-08-01 | **§ 13.0**: indentation / visual observability discipline for human scan |
 | **1.6.7** | 2026-08-01 | **§ 12.1**: X source order = all tier 0, then all tier 1, then all tier 2… (no interleaved stacks) |
+| **1.7.0** | 2026-08-11 | **§ 19 Ouronet-specific rules** (new chapter): `X-cm_` naming for X funcs that emit an IGNIS cumulator (R1); multi-table X allowed (R2); `CC_`/`AA_` HEAVY prefixes for `C_`/`A_` that unavoidably scan (R3); X `@doc` output rule (R4); Ouronet-specifics consolidation index (R5). From AQP audit Round I owner feedback. |
 
 **Bump rules**
 

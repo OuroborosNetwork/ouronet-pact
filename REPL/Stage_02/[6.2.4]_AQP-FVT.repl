@@ -918,3 +918,17 @@
 (print "")
 (print "=== END TX-FVT-09 ==========================================================")
 (print "")
+;;<====================================================================>
+;; FVT sub-suites — bundled here so [6.2.4] is the SINGLE FVT test entry.
+;; (Previously loaded separately by [6.2]_AQP.repl; moved in for one-file-per-module.)
+;;<====================================================================>
+(load "[6.2.4]_AQP-FVT-OF.repl")   ;; OrtoFungible stake/collect (self-loads Stage_01/[6.5]_DPOF)
+(load "[6.2.4]_AQP-FVT-DC.repl")   ;; DPSF collectable stake/vacate
+(load "[6.2.4]_AQP-FVT-NF.repl")   ;; DPNF collectable stake (mints own DHB probes)
+;;
+;;FULL> Heavy FVT suites — require the FULL profile (AQP-BOOT Steps 1–12 + [5.x] populate).
+;;FULL> Run via REPL/AQP-comprehensive.repl or REPL/triplet-collect-golden.repl (NOT the fast pass):
+;;FULL>   [6.3]_AQP-COMPREHENSIVE.repl
+;;FULL>   [6.4]_AQP-EXHAUSTIVE-PREP.repl · -RPS.repl · -COLLECT.repl · -FVT-ADMIN.repl
+;;FULL>   [6.4]_AQP-TRIPLET-COLLECT.repl   (farm MULTIPLET golden)
+(print "")

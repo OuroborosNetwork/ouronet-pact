@@ -409,4 +409,7 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;; End [6.2.2]; load further Stage_02 REPLs as needed.
+;;
+;;FULL> SCR extended coverage — via the FULL profile:
+;;FULL>   [6.4]_AQP-TRIPLET-DIAG.repl        (triplet score diagnostics; also exercised by the FVT triplet suite)
 

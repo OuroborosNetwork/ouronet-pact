@@ -324,8 +324,10 @@
                 (asset-ok:bool (ref-AQP::URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id))
                 (gas-ok:bool (URC_BatchOwnerArraysGasOk owner-ids beneficiary-ids nonces-array VACATE-GAS-MAX-OF))
                 (nonce-ok:bool (URC_VacateBatchNonceTotalOk nonces-array))
+                (legs-ok:bool
+                    (URC_VacateOrtoLegsOk pool-id dpof-id owner-ids beneficiary-ids nonces-array nonce-amounts-array))
             )
-            (enforce (fold (and) true [asset-ok gas-ok nonce-ok]) "Invalid OF vacate batch")
+            (enforce (fold (and) true [asset-ok gas-ok nonce-ok legs-ok]) "Invalid OF vacate batch")
             (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (P|VCT|RECIPE))
         )
@@ -351,8 +353,10 @@
                 )
                 (gas-ok:bool (URC_BatchOwnerArraysGasOk owner-ids beneficiary-ids nonces-array gas-max))
                 (nonce-ok:bool (URC_VacateBatchNonceTotalOk nonces-array))
+                (legs-ok:bool
+                    (URC_VacateCollectableLegsOk pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
             )
-            (enforce (fold (and) true [class-ok asset-ok gas-ok nonce-ok]) "Invalid collectable vacate batch")
+            (enforce (fold (and) true [class-ok asset-ok gas-ok nonce-ok legs-ok]) "Invalid collectable vacate batch")
             (CAP_VctVacatePoolOwner pool-id)
             (compose-capability (P|VCT|RECIPE))
         )
@@ -457,6 +461,7 @@
                         (ref-AQP::URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id)
                         (URC_VacateFullBatchLegParityOk owner-ids beneficiary-ids nonces-array)
                         (URC_VacateFullBatchNonceTotalOk nonces-array)
+                        (URC_VacateOrtoLegsBeneficiaryOk pool-id dpof-id owner-ids beneficiary-ids nonces-array)
                     ]
                 )
                 "Invalid full OF vacate"
@@ -481,6 +486,7 @@
                         (ref-AQP::URC_StakeCollectableMatchesPool pool-id collectable-id)
                         (URC_VacateFullBatchLegParityOk owner-ids beneficiary-ids nonces-array)
                         (URC_VacateFullBatchNonceTotalOk nonces-array)
+                        (URC_VacateCollectableLegsBeneficiaryOk pool-id collectable-id son owner-ids beneficiary-ids nonces-array)
                     ]
                 )
                 "Invalid full collectable vacate"
@@ -1481,6 +1487,145 @@
             )
         )
     )
+    ;; [URC] OF / collectable vacate leg inventory (batch wrappers — mirror URC_VacateTfLegsOk)
+    (defun URC_VacateOrtoLegsOk:bool
+        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string]
+         nonces-array:[[integer]] nonce-amounts-array:[[decimal]])
+        @doc "OF Legs vacate: bind every leg to real tracker rows — supplied beneficiary matches the tracker \
+            \ row for (owner,beneficiary,nonce), and each amount equals the full staked balance (no partial, \
+            \ no redirect to a non-staker). Point reads, gas-bounded by VACATE-GAS-MAX-OF."
+        (let
+            (
+                (l:integer (length owner-ids))
+            )
+            (if (> l 0)
+                (fold (and) true
+                    (map
+                        (lambda (idx:integer)
+                            (and
+                                (URC_VacateOrtoLegBeneficiaryOk
+                                    pool-id dpof-id (at idx owner-ids) (at idx beneficiary-ids) (at idx nonces-array))
+                                (URC_VacateOrtoNoncesSufficient
+                                    pool-id dpof-id (at idx owner-ids) (at idx beneficiary-ids) (at idx nonces-array) (at idx nonce-amounts-array))
+                            )
+                        )
+                        (enumerate 0 (- l 1))
+                    )
+                )
+                true
+            )
+        )
+    )
+    (defun URC_VacateOrtoLegsBeneficiaryOk:bool
+        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
+        @doc "Full OF vacate: bind every leg's nonces to a real tracker row whose beneficiary equals the \
+            \ supplied beneficiary (blocks redirecting another staker's nonce). Amounts are whole-nonce (tracker-derived)."
+        (let
+            (
+                (l:integer (length owner-ids))
+            )
+            (if (> l 0)
+                (fold (and) true
+                    (map
+                        (lambda (idx:integer)
+                            (URC_VacateOrtoLegBeneficiaryOk
+                                pool-id dpof-id (at idx owner-ids) (at idx beneficiary-ids) (at idx nonces-array))
+                        )
+                        (enumerate 0 (- l 1))
+                    )
+                )
+                true
+            )
+        )
+    )
+    (defun URC_VacateCollectableLegsOk:bool
+        (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string]
+         nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "DPSF/DPNF Legs vacate: bind every leg to real tracker rows — supplied beneficiary matches, each \
+            \ amount equals the full staked balance, and the cross-pool rollup covers the amount. Point reads, gas-bounded."
+        (let
+            (
+                (l:integer (length owner-ids))
+            )
+            (if (> l 0)
+                (fold (and) true
+                    (map
+                        (lambda (idx:integer)
+                            (fold (and) true
+                                [
+                                    (URC_VacateCollectableLegBeneficiaryOk
+                                        pool-id collectable-id son (at idx owner-ids) (at idx beneficiary-ids) (at idx nonces-array))
+                                    (URC_VacateCollectableNoncesSufficient
+                                        pool-id collectable-id son (at idx owner-ids) (at idx beneficiary-ids) (at idx nonces-array) (at idx amounts-array))
+                                    (URC_VacateCollectableRollupSufficient
+                                        pool-id collectable-id son (at idx owner-ids) (at idx beneficiary-ids) (at idx nonces-array) (at idx amounts-array))
+                                ]
+                            )
+                        )
+                        (enumerate 0 (- l 1))
+                    )
+                )
+                true
+            )
+        )
+    )
+    (defun URC_VacateCollectableLegsBeneficiaryOk:bool
+        (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
+        @doc "Full DPSF/DPNF vacate: bind every leg's nonces to a real tracker row whose beneficiary equals \
+            \ the supplied beneficiary (blocks redirecting another staker's nonce)."
+        (let
+            (
+                (l:integer (length owner-ids))
+            )
+            (if (> l 0)
+                (fold (and) true
+                    (map
+                        (lambda (idx:integer)
+                            (URC_VacateCollectableLegBeneficiaryOk
+                                pool-id collectable-id son (at idx owner-ids) (at idx beneficiary-ids) (at idx nonces-array))
+                        )
+                        (enumerate 0 (- l 1))
+                    )
+                )
+                true
+            )
+        )
+    )
+    ;; [URC] Whole-pool emptiness gate for finalize (audit H3 / fix #6)
+    (defun URC_PoolFullyVacated:bool (pool-id:string)
+        @doc "True when EVERY employed score of the pool has nzs-count = 0 — i.e. no non-zero-score staker \
+            \ remains, so ALL streams (LP TF-leg + OF-leg) are empty. Bounded to ≤7 cross-module point reads \
+            \ (no scan). Gates finalize re-enabling stake. Exact once SCORE base floors at 0 (fix #7)."
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                ;;
+                (slots:[string]
+                    [
+                        (ref-AQP::UR_AQP|PoolScorePrimary pool-id)
+                        (ref-AQP::UR_AQP|PoolScoreSecondary pool-id)
+                        (ref-AQP::UR_AQP|PoolScoreTertiary pool-id)
+                        (ref-AQP::UR_AQP|PoolScoreQuaternary pool-id)
+                        (ref-AQP::UR_AQP|PoolScoreQuinary pool-id)
+                        (ref-AQP::UR_AQP|PoolScoreSenary pool-id)
+                        (ref-AQP::UR_AQP|PoolScoreSeptenary pool-id)
+                    ]
+                )
+            )
+            (fold (and) true
+                (map
+                    (lambda (score-id:string)
+                        (if (= score-id BAR)
+                            true
+                            (= (ref-SCR::UR_SCR|ScoreNzsCount score-id) 0)
+                        )
+                    )
+                    slots
+                )
+            )
+        )
+    )
     ;; [UC] TF vacate leg list helpers
     (defun UC_VacateUniqueBeneficiariesFromLegs:[string]
         (legs:[object{VCT|VacateTfLeg}])
@@ -1879,10 +2024,13 @@
             vacate-kind:integer
             finalize:bool
         )
-        @doc "If finalize=true (UI claim this batch emptied the asset): clear vacate-in-progress, re-enable stake. \
-            \ Write-only — no OC, no enforce / no URD|URDC. asset-id/vacate-kind kept for call-site stability."
+        @doc "If finalize=true AND the pool is verified empty (URC_PoolFullyVacated — every employed score \
+            \ nzs=0, so both LP streams are empty): clear vacate-in-progress and re-enable stake. If finalize \
+            \ is requested but inventory remains, stake stays DISABLED and the session continues (finalize is \
+            \ honoured only when truly empty — audit H3 / fix #6). Write path; the emptiness check is a bounded \
+            \ ≤7 point-read URC (no scan, no enforce). asset-id/vacate-kind kept for call-site stability."
         ;; SECURE: granted by master vacate caps.
-        (if finalize
+        (if (and finalize (URC_PoolFullyVacated pool-id))
             (let
                 (
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
@@ -1891,7 +2039,7 @@
                 (ref-AQP::XB_SetPoolStakeEnabled pool-id true)
                 "finalized"
             )
-            "continued"
+            (if finalize "finalize-deferred-inventory-remains" "continued")
         )
     )
     ;; Legs orchestration: XI_EnsureVacateBegun / XI_MaybeFinalizeVacate / XI_ClearVacateInProgress.

@@ -269,7 +269,7 @@
                 (let
                     (
                         (deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner pool-id silver-score))
-                        (entity-weight:decimal (ref-FVT::URC_ScoreEntityUserWeight owner pool-id 3 triplet-id))
+                        (entity-weight:decimal (ref-FVT::URC_ScoreEntityUserWeight owner farm-id pool-id 3 triplet-id))
                         (denom:decimal (ref-FVT::URC_InjectDenominator farm-id))
                         (ghost-s:decimal (ref-FVT::UR_FVT|TotalGhostTvlWeight farm-id))
                         (w-i:decimal (ref-FVT::UR_FVT-SEL|GhostTvlWeight farm-id triplet-id))
@@ -298,7 +298,10 @@
                             (elite-pre:decimal (ref-DPTF::UR_AccountSupply elite-auryn-id owner))
                         )
                         (print (format "<(pre-collect G L_i claimable)> => \"{} {} {}\"" [g-post li-pre claimable]))
-                        (expect (format "<<TX-AQP-CL03>> G>0 got={}" [g-post]) true (> g-post 0.0))
+                        ;; split-at-inject (audit LP redesign / #4/#8): farms advance the per-member index L_i
+                        ;; (MemberDebRps) at inject, NOT a global G — so g-post is legitimately 0 for a farm. Assert
+                        ;; the member index advanced (the real farm analog of the old "G>0").
+                        (expect (format "<<TX-AQP-CL03>> farm L_i advanced (split-at-inject) got={} g-post={}" [li-pre g-post]) true (> li-pre 0.0))
                         (print (format "<(C_Collect farm triplet OURO)> => \"{}\"" [
                             (ref-TS02-C3::AQP-FVT|C_Collect owner farm-id 3 triplet-id ouro-id)
                         ]))

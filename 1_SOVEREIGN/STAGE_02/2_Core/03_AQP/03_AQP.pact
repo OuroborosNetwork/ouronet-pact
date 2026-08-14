@@ -660,9 +660,14 @@
     )
     (defcap AQP|C>ENABLE-POOL-STAKE
         (pool-id:string)
-        @doc "Pool owner re-enables new stakes (stake-enabled → true). Idempotent when already true. \
-            \ Stake admission still requires ≥1 employed score and FVT pipeline ready."
+        @doc "Pool owner re-enables new stakes (stake-enabled → true). BLOCKED while a vacate session is in \
+            \ progress — the owner must finish the vacate or C_AbortVacate first (audit H2 / fix #5). \
+            \ Idempotent when already true; admission still requires ≥1 employed score and FVT pipeline ready."
         @event
+        (enforce
+            (not (UR_AQP|PoolVacateInProgress pool-id))
+            "Cannot enable pool stake while a vacate is in progress; finish or abort the vacate first"
+        )
         (CAP_PoolOwner pool-id)
         (compose-capability (SECURE))
     )
@@ -1385,6 +1390,10 @@
         @doc "Reads stake-enabled from pool row (true at issue; owner may disable to pause new stakes)."
         (at "stake-enabled" (read AQP|T|Pool pool-id ["stake-enabled"]))
     )
+    (defun UR_AQP|PoolVacateInProgress:bool (pool-id:string)
+        @doc "Point read: true while an AQP-VCT vacate session is active on this pool (audit H2 / fix #5)."
+        (at "vacate-in-progress" (read AQP|T|Pool pool-id ["vacate-in-progress"]))
+    )
     ;;
     ;; [2] AQP|T|DPTFTracker  (AQP|TrueFungibleTracker)
     (defun UR_AQP|DPTFTracker:object{AQP|TrueFungibleTracker}
@@ -2051,8 +2060,16 @@
         (> (length (URC_PoolActiveScoreIds pool-id)) 0)
     )
     (defun URC_PoolStakeAdmissionOk:bool (pool-id:string)
-        @doc "True when stake-enabled and pool has ≥1 employed score (stake direction only)."
-        (and (UR_AQP|PoolStakeEnabled pool-id) (URC_PoolHasEmployedScores pool-id))
+        @doc "True when stake-enabled, pool has ≥1 employed score, AND no vacate session is in progress \
+            \ (stake direction only). The vacate guard blocks new stakes mid-vacate even if stake-enabled \
+            \ was left true (audit H2 / fix #5)."
+        (fold (and) true
+            [
+                (UR_AQP|PoolStakeEnabled pool-id)
+                (URC_PoolHasEmployedScores pool-id)
+                (not (UR_AQP|PoolVacateInProgress pool-id))
+            ]
+        )
     )
     (defun URC_StakeTrueFungiblePoolClassOk:bool (pool-id:string)
         @doc "True when pool aqp-class is 0 (LP via TF) or 1 (non-LP DPTF)."

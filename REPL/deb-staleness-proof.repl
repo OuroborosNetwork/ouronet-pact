@@ -1,0 +1,802 @@
+;;
+;; REPL/deb-staleness-proof.repl — focused driver for M3 #12 Part-2 (deb-staleness).
+;; Loads the AQP-comprehensive prefix ONLY through [6.4]_AQP-EXHAUSTIVE-COLLECT.repl
+;; (which stands up the class-1 vault/treasury FVT + singular scores used by CL01/CL02),
+;; then exercises the deb-refresh / mirror-resync path via TX-AQP-DEB* in that file.
+;; Deliberately stops before the OF/swap/DPNF tail (pre-existing MVST-dup / C04-C05-NF04
+;; failures on main — out of #12 scope).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/deb-staleness-proof.repl  —  M3 #12 deb-staleness proof")
+(print "================================================================")
+(load "Stage00_Sanboxes.repl")
+(load "Stage01_Tester.repl")
+(load "Stage_02/[0.1]_Interfaces.repl")
+(load "Stage_02/[2.1]_DpdcCore.repl")
+(load "Stage_02/[2.2]_DemiPad.repl")
+(load "Stage_02/[2.3]_EarningPools.repl")
+(load "Stage_02/[3]_Talos.repl")
+(load "Stage_02/[4.0]_Sovereign-Executor.repl")
+(load "Stage_02/[5.2]_PopulateBloodshed.repl")
+(load "Stage_02/[5.1]_PopulateNosferatu.repl")
+(load "Stage_02/[5.4]_PopulateBunnies.repl")
+(begin-tx "TX-AQP-BOOT - AQP-BOOT module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../2_SLAVE/Stage_02/04_AQP-BOOT.pact")
+(commit-tx)
+(begin-tx "TX-AQP-BOOT - AQP-BOOT Step0 IMC + vault governor")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print (format "<(AQP-BOOT|C_Step0_WireImcAndGovernor)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
+(commit-tx)
+(load "Stage_02/[6.2.1]_AQP-ANK.repl")
+(load "Stage_02/[6.2.2]_AQP-SCORE.repl")
+(load "Stage_02/[6.2.3]_AQP-POOL.repl")
+(load "Stage_02/[6.2.9]_AQP-BOOT-FULL.repl")
+(load "Stage_02/[6.4]_AQP-EXHAUSTIVE-PREP.repl")
+(load "Stage_02/[6.4]_AQP-EXHAUSTIVE-BOOT-POOLS.repl")
+(load "Stage_02/[6.4]_AQP-EXHAUSTIVE-RPS.repl")
+(load "Stage_02/[6.4]_AQP-EXHAUSTIVE-COLLECT.repl")
+;;
+;; ============================================================================
+;; TX-AQP-DEB01 — M3 #12 deb-staleness: collect refresh + total-deb mirror resync
+;; Reuses the CL02 vault/treasury (class-1) singular position: ANHD staked in
+;; SubsidiaryWonderCoach of SubsidiaryTreasury. deb-score = (base+boost)×Elite-DEB.
+;; We MOVE ANHD's live Elite-DEB (transfer EliteAuryn away → TFT hook re-snapshots
+;; deb DOWN), which does NOT touch the stored SCORE deb-score → staleness. Then a
+;; collect must (a) refresh the stored deb-score to the live deb and (b) resync the
+;; FVT total-deb mirror by the SAME delta (conservation). The mirror-delta assertion
+;; FAILS on the pre-fix PHASE 6 (refresh without XI_SyncFvtTotalDebMirrors).
+;; ============================================================================
+(begin-tx "TX-AQP-DEB01a - snapshot fresh pre-state")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+    )
+    (map print
+        [
+            (format "<(DEB01 pre elite-deb)> => {}" [(ref-DALOS::UR_Elite-DEB anhd)])
+            (format "<(DEB01 pre stored-deb-score)> => {}" [(ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id)])
+            (format "<(DEB01 pre mirror)> => {}" [(ref-FVT::UR_FVT|TotalDebScore fvt-id)])
+            (expect "<<TX-AQP-DEB01>> pre: score is FRESH (not stale)"
+                false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd pool-id score-id))
+            ;; 2c presence: ANHD staked in this treasury (CL02) -> must be marked present, and enumerable
+            (expect "<<TX-AQP-DEB01>> presence: ANHD marked present in the FVT (stake-side ADD)"
+                true (ref-FVT::UR_FVT-UP|IsPresent fvt-id anhd))
+            (expect "<<TX-AQP-DEB01>> presence: ANHD enumerated by URD_FvtPresentUsers"
+                true (contains anhd (ref-FVT::URD_FvtPresentUsers fvt-id)))
+            ;; 2c removal DECISION logic (what XI_RecomputeFvtPresence writes on unstake):
+            (expect "<<TX-AQP-DEB01>> still-present: TRUE for the staked user (ANHD)"
+                true (ref-FVT::URC_FvtUserStillPresent fvt-id anhd))
+            (expect "<<TX-AQP-DEB01>> still-present: FALSE for an unstaked/absent account"
+                false (ref-FVT::URC_FvtUserStillPresent fvt-id "Ѻ.absent-never-staked-here"))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-DEB01b - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (ea-id:string (ref-DALOS::UR_EliteAurynID))
+        (deb-pre:decimal (ref-DALOS::UR_Elite-DEB anhd))
+        (stored-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+        (mirror-pre:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
+        (ea-bal:decimal (ref-DPTF::UR_AccountSupply ea-id anhd))
+    )
+    ;; drop ANHD's EliteAuryn to ~1% of holdings → live deb falls a tier or more
+    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (let
+        (
+            (deb-post:decimal (ref-DALOS::UR_Elite-DEB anhd))
+            (stored-still:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+            (mirror-still:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
+        )
+        (map print
+            [
+                (format "<(DEB01 post-move elite-deb)> => {} (was {})" [deb-post deb-pre])
+                (expect (format "<<TX-AQP-DEB01>> live Elite-DEB dropped got={} pre={}" [deb-post deb-pre]) true (< deb-post deb-pre))
+                (expect "<<TX-AQP-DEB01>> score now STALE (stored deb ≠ live)"
+                    true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd pool-id score-id))
+                (expect (format "<<TX-AQP-DEB01>> stored deb-score UNCHANGED by the EliteAuryn move got={} pre={}" [stored-still stored-pre]) stored-pre stored-still)
+                (expect (format "<<TX-AQP-DEB01>> mirror UNCHANGED by the EliteAuryn move got={} pre={}" [mirror-still mirror-pre]) mirror-pre mirror-still)
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-DEB01c - collect => PHASE 6 refresh + mirror resync (conservation)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (deb-live:decimal (ref-DALOS::UR_Elite-DEB anhd))
+        (stored-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+        (mirror-pre:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
+    )
+    (print (format "<(DEB01 C_Collect treasury Auryn)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id auryn-id)]))
+    (let
+        (
+            (stored-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+            (mirror-post:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
+        )
+        (map print
+            [
+                (format "<(DEB01 post-collect stored-deb)> => {} (was {})" [stored-post stored-pre])
+                (format "<(DEB01 post-collect mirror)> => {} (was {})" [mirror-post mirror-pre])
+                (format "<(DEB01 Δmirror vs Δstored)> => {} vs {}" [(- mirror-post mirror-pre) (- stored-post stored-pre)])
+                ;; (a) staleness cleared
+                (expect "<<TX-AQP-DEB01>> post-collect: score FRESH again"
+                    false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd pool-id score-id))
+                ;; (b) stored deb-score actually moved to the live deb (dropped)
+                (expect (format "<<TX-AQP-DEB01>> stored deb-score refreshed DOWN got={} pre={}" [stored-post stored-pre]) true (< stored-post stored-pre))
+                ;; (c) CONSERVATION / the fix: mirror moved by EXACTLY the stored-deb delta
+                (expect (format "<<TX-AQP-DEB01>> mirror resynced by Δdeb: Δmirror={} Δstored={}" [(- mirror-post mirror-pre) (- stored-post stored-pre)])
+                    (- stored-post stored-pre) (- mirror-post mirror-pre))
+            ]
+        )
+    )
+)
+(commit-tx)
+;; ============================================================================
+;; TX-AQP-DEB03 — end-to-end presence FLIP (false→true→false) on a REAL unstake.
+;; EMMA is a fresh account absent from SubsidiaryTreasury. Give her one DHWC nonce,
+;; she stakes it (→ her ONLY position in the FVT → present true), then fully
+;; unstakes (→ recompute finds no remaining position → present flips false).
+;; ============================================================================
+(begin-tx "TX-AQP-DEB03a - fund EMMA with a DHWC nonce; confirm she starts ABSENT")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (dhwc-id:string "DHWC-98c486052a51")
+        (nonce:integer 2)
+        (amt:integer (ref-DPDC::UR_AccountNonceSupply anhd dhwc-id true nonce))
+    )
+    (expect "<<TX-AQP-DEB03>> EMMA ABSENT from the FVT before any stake"
+        false (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
+    (ref-TS02-C1::DPSF|C_TransferNonce anhd dhwc-id anhd emma nonce amt false)
+    (expect "<<TX-AQP-DEB03>> EMMA still ABSENT after receiving the nonce (no stake yet)"
+        false (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
+)
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-DEB03b - EMMA stakes (present→true) then FULLY unstakes (present→false)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (dhwc-id:string "DHWC-98c486052a51")
+        (nonce:integer 2)
+        (amt:integer (ref-DPDC::UR_AccountNonceSupply emma dhwc-id true nonce))
+    )
+    ;; STAKE — EMMA's only position in the FVT
+    (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable emma pool-id emma emma dhwc-id [nonce])
+    (let
+        (
+            (present-after-stake:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
+            (enum-after-stake:bool (contains emma (ref-FVT::URD_FvtPresentUsers fvt-id)))
+        )
+        ;; FULL UNSTAKE — drops EMMA's last (only) position
+        (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable emma pool-id emma dhwc-id [nonce] [amt])
+        (let
+            (
+                (present-after-unstake:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
+                (still-present:bool (ref-FVT::URC_FvtUserStillPresent fvt-id emma))
+                (enum-after-unstake:bool (contains emma (ref-FVT::URD_FvtPresentUsers fvt-id)))
+            )
+            (map print
+                [
+                    (format "<(DEB03 present after stake / after unstake)> => {} / {}" [present-after-stake present-after-unstake])
+                    (expect "<<TX-AQP-DEB03>> FLIP UP: EMMA present=TRUE after stake" true present-after-stake)
+                    (expect "<<TX-AQP-DEB03>> FLIP UP: EMMA enumerated after stake" true enum-after-stake)
+                    (expect "<<TX-AQP-DEB03>> still-present recompute = FALSE after full unstake" false still-present)
+                    (expect "<<TX-AQP-DEB03>> FLIP DOWN: EMMA present=FALSE after full unstake" false present-after-unstake)
+                    (expect "<<TX-AQP-DEB03>> FLIP DOWN: EMMA no longer enumerated" false enum-after-unstake)
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; TX-AQP-DEB04 — MULTI-MEMBER partial-unstake invariant. ANHD is present in
+;; SubsidiaryTreasury via THREE members (Bunnies, CodingDivision, WonderCoach).
+;; Unstaking ONE whole member (WonderCoach, via DHWC) must KEEP is-present=true,
+;; because the recompute scans ALL members and finds Bunnies + CodingDivision
+;; still staked. This is the case EMMA (single position) could not show; together
+;; they prove: partial unstake → stays true, last unstake → flips false.
+;; ============================================================================
+(begin-tx "TX-AQP-DEB04 - partial unstake of one member keeps present=true")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
+        (dhwc-id:string "DHWC-98c486052a51")
+        (nonce:integer (at "nonce" (at 0 (ref-AQP::URD_AQP|BenDpsfActiveNonceSupplies anhd dhwc-id))))
+        (amt:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dhwc-id anhd anhd nonce)))
+    )
+    (expect "<<TX-AQP-DEB04>> ANHD present BEFORE (3 members)"
+        true (ref-FVT::UR_FVT-UP|IsPresent fvt-id anhd))
+    (expect "<<TX-AQP-DEB04>> ANHD WonderCoach weight >0 before"
+        true (> (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id) 0.0))
+    ;; fully unstake ONLY the WonderCoach member
+    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id anhd dhwc-id [nonce] [amt])
+    (let
+        (
+            (wc-after:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+        )
+        (map print
+            [
+                (format "<(DEB04 WonderCoach weight after unstake)> => {}" [wc-after])
+                (expect "<<TX-AQP-DEB04>> WonderCoach position fully zeroed" 0.0 wc-after)
+                ;; THE KEY ASSERTION — still present because Bunnies + CodingDivision remain
+                (expect "<<TX-AQP-DEB04>> MULTI-MEMBER: ANHD STILL present=TRUE after one member unstaked"
+                    true (ref-FVT::UR_FVT-UP|IsPresent fvt-id anhd))
+                (expect "<<TX-AQP-DEB04>> still-present recompute = TRUE (other members remain)"
+                    true (ref-FVT::URC_FvtUserStillPresent fvt-id anhd))
+                (expect "<<TX-AQP-DEB04>> ANHD still enumerated by URD_FvtPresentUsers"
+                    true (contains anhd (ref-FVT::URD_FvtPresentUsers fvt-id)))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+;; ============================================================================
+;; TX-AQP-DEB05 — FULL multi-member walk on ONE user (the exact scenario asked).
+;; EMMA (fresh) enters TWO members of SubsidiaryTreasury: WonderCoach (DHWC) and
+;; SubsidiaryBunnies (KBN NFT). Then unstake them one at a time:
+;;   member 1 (WonderCoach) out → STILL present (Bunnies remains)  → true
+;;   member 2 (Bunnies, last) out → present flips                  → false
+;; ============================================================================
+(begin-tx "TX-AQP-DEB05a - EMMA enters TWO members (DHWC WonderCoach + KBN Bunnies)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (wc-pool:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (bunnies-pool:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (dhwc-id:string "DHWC-98c486052a51")
+        (kbn-id:string "KBN-98c486052a51")
+    )
+    (expect "<<TX-AQP-DEB05>> EMMA absent before the 2-member setup"
+        false (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
+    (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable emma wc-pool emma emma dhwc-id [2])
+    (let ((after-wc:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)))
+        (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable emma bunnies-pool emma emma kbn-id [1])
+        (let ((after-both:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)))
+            (map print
+                [
+                    (format "<(DEB05 present after WonderCoach / after Bunnies)> => {} / {}" [after-wc after-both])
+                    (expect "<<TX-AQP-DEB05>> present after WonderCoach stake" true after-wc)
+                    (expect "<<TX-AQP-DEB05>> present after Bunnies stake too" true after-both)
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-DEB05b - unstake member 1 (WonderCoach): STILL present via Bunnies")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (wc-pool:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (dhwc-id:string "DHWC-98c486052a51")
+        (amt:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance wc-pool dhwc-id emma emma 2)))
+    )
+    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable emma wc-pool emma dhwc-id [2] [amt])
+    (map print
+        [
+            (format "<(DEB05 present after unstaking WonderCoach)> => {}" [(ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)])
+            (expect "<<TX-AQP-DEB05>> STILL present=TRUE after member 1 out (Bunnies remains)"
+                true (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
+            (expect "<<TX-AQP-DEB05>> still-present recompute = TRUE (Bunnies remains)"
+                true (ref-FVT::URC_FvtUserStillPresent fvt-id emma))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-DEB05c - unstake member 2 (Bunnies, the LAST): present flips FALSE")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (bunnies-pool:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (kbn-id:string "KBN-98c486052a51")
+    )
+    (ref-TS02-C3::AQP-POOL|C_UnstakeNonFungibleCollectable emma bunnies-pool emma kbn-id [1] [1])
+    (map print
+        [
+            (format "<(DEB05 present after unstaking Bunnies — the last)> => {}" [(ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)])
+            (expect "<<TX-AQP-DEB05>> FLIP: EMMA present=FALSE after the LAST member out"
+                false (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
+            (expect "<<TX-AQP-DEB05>> still-present recompute = FALSE (all members gone)"
+                false (ref-FVT::URC_FvtUserStillPresent fvt-id emma))
+            (expect "<<TX-AQP-DEB05>> EMMA no longer enumerated"
+                false (contains emma (ref-FVT::URD_FvtPresentUsers fvt-id)))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; TX-AQP-DEB06 — CC_Inject (enforced-fresh inject). DEB01 moved ANHD's Elite-DEB
+;; 4.29→1.39, so his Bunnies + CodingDivision scores in SubsidiaryTreasury are
+;; STALE (stored on the 4.29 basis). CC_Inject must fix EVERY stale present user
+;; before injecting, so the divisor is live. Proves: stale→fresh + mirror resynced
+;; by EXACTLY the fix deltas + the inject advanced G on the fresh divisor.
+;; ============================================================================
+(begin-tx "TX-AQP-DEB06 - CC_Inject fixes stale stakers then injects on a fresh divisor")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+        (coding-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryCodingDivision"))
+        (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink bunnies-score))
+        (coding-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink coding-score))
+        (inject-amt:decimal 10.0)
+        (bunnies-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd bunnies-pool bunnies-score))
+        (coding-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd coding-pool coding-score))
+        (mirror-pre:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
+        (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
+    )
+    (expect "<<TX-AQP-DEB06>> pre: ANHD Bunnies score STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
+    (expect "<<TX-AQP-DEB06>> pre: ANHD CodingDivision score STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd coding-pool coding-score))
+    (print (format "<(DEB06 CC_Inject)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id auryn-id inject-amt)]))
+    (let
+        (
+            (bunnies-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd bunnies-pool bunnies-score))
+            (coding-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd coding-pool coding-score))
+            (mirror-post:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
+            (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
+        )
+        (map print
+            [
+                (format "<(DEB06 Bunnies deb pre/post)> => {} / {}" [bunnies-pre bunnies-post])
+                (format "<(DEB06 CodingDivision deb pre/post)> => {} / {}" [coding-pre coding-post])
+                (format "<(DEB06 mirror pre/post, G pre/post)> => {}/{}  {}/{}" [mirror-pre mirror-post g-pre g-post])
+                ;; (a) every stale present user is now FRESH (the enforced-fresh guarantee)
+                (expect "<<TX-AQP-DEB06>> post: ANHD Bunnies FRESH" false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
+                (expect "<<TX-AQP-DEB06>> post: ANHD CodingDivision FRESH" false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd coding-pool coding-score))
+                ;; (b) refreshed DOWN (4.29-basis → 1.39-basis)
+                (expect (format "<<TX-AQP-DEB06>> Bunnies refreshed DOWN {}->{}" [bunnies-pre bunnies-post]) true (< bunnies-post bunnies-pre))
+                (expect (format "<<TX-AQP-DEB06>> CodingDivision refreshed DOWN {}->{}" [coding-pre coding-post]) true (< coding-post coding-pre))
+                ;; (c) CONSERVATION of the fix: mirror moved by EXACTLY the sum of the two fix deltas
+                (expect (format "<<TX-AQP-DEB06>> mirror resynced by Σ fix deltas Δm={} Σ={}" [(- mirror-post mirror-pre) (+ (- bunnies-post bunnies-pre) (- coding-post coding-pre))])
+                    (+ (- bunnies-post bunnies-pre) (- coding-post coding-pre)) (- mirror-post mirror-pre))
+                ;; (d) the inject happened — G advanced on the now-FRESH divisor
+                (expect (format "<<TX-AQP-DEB06>> inject advanced G {}->{}" [g-pre g-post]) true (> g-post g-pre))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; TX-AQP-DEB07 — 2e IGNIS penalty. DEB06's CC_Inject FORCE-fixed ANHD's 2 stale
+;; scores (Bunnies + CodingDivision) on the auryn lane → forced-fix-count = 2.
+;; At his next auryn collect he pays 2 × RATE non-discountable IGNIS and the count
+;; is zeroed. (Self-fixing at collect, PHASE 6, is never penalized.)
+;; ============================================================================
+(begin-tx "TX-AQP-DEB07 - forced-fix count recorded by CC_Inject; collect charges + zeroes it")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+        (ffc-pre:integer (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+    )
+    (map print
+        [
+            (format "<(DEB07 forced-fix-count before collect)> => {}" [ffc-pre])
+            ;; CC_Inject (DEB06) forced 2 fixes for ANHD on the auryn lane
+            (expect "<<TX-AQP-DEB07>> CC_Inject recorded 2 forced fixes for ANHD (Bunnies + CodingDivision)" 2 ffc-pre)
+            (format "<(DEB07 C_Collect Bunnies auryn)> => \"{}\""
+                [(ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 bunnies-score auryn-id)])
+            ;; the collect charged count×RATE non-discountable IGNIS and ZEROED the count
+            (expect "<<TX-AQP-DEB07>> forced-fix count ZEROED after collect (penalty charged)"
+                0 (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; TX-AQP-DEB08 — the MTX|2|C_Inject DEFPACT end-to-end (via Talos + continue-pact).
+;; Re-stale ANHD (move his deb again), then run the 2-step enforced-fresh inject:
+;; step 0 (Talos MTX-AQP|C|2_Inject) scans, finds S ≤ N_FIX → fixes all + injects
+;; (terminal); continue-pact 1 resumes {injected:true} → no-op. Proves the defpact
+;; path fixes stale stakers + injects on a fresh divisor, same as CC_Inject.
+;; ============================================================================
+(begin-tx "TX-AQP-DEB08a - re-stale ANHD (move deb again) for the MTX defpact run")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies")))
+        (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+        (ea-id:string (ref-DALOS::UR_EliteAurynID))
+        (ea-bal:decimal (ref-DPTF::UR_AccountSupply ea-id anhd))
+        (deb-pre:decimal (ref-DALOS::UR_Elite-DEB anhd))
+    )
+    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (map print
+        [
+            (format "<(DEB08 elite-deb {} -> {})> " [deb-pre (ref-DALOS::UR_Elite-DEB anhd)])
+            (expect (format "<<TX-AQP-DEB08>> ANHD deb moved again got={} pre={}" [(ref-DALOS::UR_Elite-DEB anhd) deb-pre]) true (< (ref-DALOS::UR_Elite-DEB anhd) deb-pre))
+            (expect "<<TX-AQP-DEB08>> ANHD Bunnies re-STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-DEB08b - MTX defpact STEP 0 (Talos MTX-AQP|C|2_Inject) + assert the fix")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; force a known pact-id so continue-pact below matches (default REPL tx hash)
+(env-hash (hash "deb08-mtx-inject"))
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies")))
+        (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+    )
+    (map print
+        [
+            (format "<(DEB08 MTX-AQP|C|2_Inject step 0)> => \"{}\""
+                [(ref-TS02-C3::MTX-AQP|C|2_Inject anhd fvt-id auryn-id 8.0)])
+            ;; step 0 found S ≤ N_FIX ⟹ it fixed ANHD + injected in this tx (terminal)
+            (expect "<<TX-AQP-DEB08>> defpact step 0 FIXED ANHD Bunnies (now FRESH)"
+                false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-DEB08c - continue-pact 1 (defpact step 1 = no-op, already injected)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print (format "<(DEB08 continue-pact 1)> => \"{}\""
+    [(continue-pact 1 false (hash "deb08-mtx-inject"))]))
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; TX-AQP-DEB09 — M4 #13: score boost/deb config is re-settable ONLY while the
+;; score is EMPTY (nzs-count = 0). A populated score (ANHD staked in Bunnies)
+;; must REJECT any (re)configuration; the operator has to vacate to reconfigure.
+;; Positive nzs==0 side is covered by all DEB01–DEB08 setup (config set on fresh
+;; scores). Here we prove the NEW negative guard on a live, populated score.
+;; ============================================================================
+(begin-tx "TX-AQP-DEB09 - populated score rejects boost/deb (re)config (M4 #13)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+        (wc-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
+    )
+    (let
+        (
+            (nzs-bunnies:integer (ref-SCR::UR_SCR|ScoreNzsCount bunnies-score))
+            (nzs-wc:integer (ref-SCR::UR_SCR|ScoreNzsCount wc-score))
+        )
+        (map print
+            [
+                (format "<(DEB09 nzs Bunnies / WonderCoach)> => {} / {}" [nzs-bunnies nzs-wc])
+                ;; Bunnies is populated (ANHD staked) ⟹ nzs > 0
+                (expect "<<TX-AQP-DEB09>> Bunnies score is POPULATED (nzs-count > 0)"
+                    true (> nzs-bunnies 0))
+                ;; WonderCoach was populated earlier (ANHD + EMMA) then fully vacated by the DEB04/DEB05
+                ;; unstakes ⟹ nzs back to 0 — the exact "vacate to reconfigure" state.
+                (expect "<<TX-AQP-DEB09>> WonderCoach score is VACATED (nzs-count = 0)"
+                    0 nzs-wc)
+                ;; M4 #13 core: (re)configuring a populated score is BLOCKED — must vacate first.
+                (expect-failure
+                    "<<TX-AQP-DEB09>> boost-link on a POPULATED score must fail (nzs>0 ⇒ vacate to reconfigure)"
+                    (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink anhd bunnies-score wc-score))
+                (expect-failure
+                    "<<TX-AQP-DEB09>> enable-deb-boost on a POPULATED score must fail (nzs>0 ⇒ vacate to reconfigure)"
+                    (ref-TS02-C3::AQP-SCR|C_EnableDebBoost anhd bunnies-score))
+            ]
+        )
+        ;; M4 #13 re-settable side: the SAME config on the VACATED WonderCoach (nzs=0) SUCCEEDS,
+        ;; and the boost-link slot actually moves to Bunnies — proving reconfigure-after-vacate.
+        (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostLink anhd wc-score bunnies-score)
+        (map print
+            [
+                (format "<(DEB09 WonderCoach boost-link after re-set)> => {}"
+                    [(ref-SCR::UR_SCR|ScoreBoostLink wc-score)])
+                (expect "<<TX-AQP-DEB09>> RE-SETTABLE: vacated score accepts config; boost-link moved to Bunnies"
+                    bunnies-score (ref-SCR::UR_SCR|ScoreBoostLink wc-score))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; TX-AQP-DEB10 — ESCROW-ON-EMPTY (zombie/limbo) inject. Drive CodingDivisionTreasury
+;; (class 1, single member TheCodingDivision, reward Wstoa) to ZERO total-deb by
+;; unstaking BOTH stakers (ANHD nonce5 + LUMY nonce5). Then:
+;;   (b) inject twice at zero total ⟹ NO revert; zombie accrues by amount each; G and
+;;       available-rewards UNTOUCHED (escrow isolated from the M1 dust sweep).
+;;   (c) re-stake ANHD (sole staker) ⟹ next inject FLUSHES amount + zombie: zombie→0,
+;;       G jumps by eff/denom, and ANHD collects the WHOLE escrowed sum + flush amount.
+;; Proves: injected-at-zero rewards are held, counted, and paid to whoever is staked
+;; when the first non-zero inject lands — NOT lost, NOT swept by a prior cohort.
+;; ============================================================================
+(begin-tx "TX-AQP-DEB10a - empty CodingDivisionTreasury (unstake ANHD + LUMY) => total-deb 0")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Lumy", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+        (dhcd-id:string "DHCD-98c486052a51")
+        (amt-anhd:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dhcd-id anhd anhd 5)))
+        (amt-lumy:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dhcd-id lumy lumy 5)))
+    )
+    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id anhd dhcd-id [5] [amt-anhd])
+    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id lumy dhcd-id [5] [amt-lumy])
+    (map print
+        [
+            (format "<(DEB10a unstaked ANHD/LUMY nonce5)> => {} / {}" [amt-anhd amt-lumy])
+            (format "<(DEB10a inject denominator after empty)> => {}" [(ref-FVT::URC_InjectDenominator fvt-id)])
+            (expect "<<TX-AQP-DEB10>> CodingDivisionTreasury now EMPTY (inject denominator = 0)"
+                0.0 (ref-FVT::URC_InjectDenominator fvt-id))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-DEB10b - inject twice at ZERO total => escrow accrues, G/available untouched")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+    )
+    (let
+        (
+            (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
+            (ar-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id wstoa-id))
+            (zb-pre:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
+        )
+        (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id wstoa-id 10.0)
+        (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id wstoa-id 15.0)
+        (let
+            (
+                (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
+                (ar-post:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id wstoa-id))
+                (zb-post:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
+            )
+            (map print
+                [
+                    (format "<(DEB10b zombie pre/post)> => {} / {} (expected +25)" [zb-pre zb-post])
+                    (format "<(DEB10b G pre/post)> => {} / {} (must be equal)" [g-pre g-post])
+                    (format "<(DEB10b available pre/post)> => {} / {} (must be equal)" [ar-pre ar-post])
+                    (expect "<<TX-AQP-DEB10>> zero-inject did NOT revert; escrow accrued 10+15=25"
+                        (+ zb-pre 25.0) zb-post)
+                    (expect "<<TX-AQP-DEB10>> escrow did NOT advance G (no distribution while empty)"
+                        g-pre g-post)
+                    (expect "<<TX-AQP-DEB10>> escrow did NOT bump available-rewards (isolated from dust sweep)"
+                        ar-pre ar-post)
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+(begin-tx "TX-AQP-DEB10c - re-stake ANHD, inject => FLUSH amount+zombie to the current staker")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHCodingDivision"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TheCodingDivision"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "CodingDivisionTreasury"))
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+        (dhcd-id:string "DHCD-98c486052a51")
+    )
+    ;; ANHD re-enters as the SOLE staker (LUMY stays out).
+    (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable anhd pool-id anhd anhd dhcd-id [5])
+    (let
+        (
+            (zb-pre:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
+            (denom:decimal (ref-FVT::URC_InjectDenominator fvt-id))
+        )
+        ;; The first NON-zero inject: R_eff = 5 (this amount) + 25 (escrow) = 30, distributed to ANHD.
+        (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id wstoa-id 5.0)
+        (let
+            (
+                (zb-post:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
+                ;; measure the COLLECT payout in isolation: balance immediately before vs after the collect.
+                (wstoa-pre-collect:decimal (ref-DPTF::UR_AccountSupply wstoa-id anhd))
+            )
+            (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id wstoa-id)
+            (let
+                (
+                    (payout:decimal (- (ref-DPTF::UR_AccountSupply wstoa-id anhd) wstoa-pre-collect))
+                )
+                (map print
+                    [
+                        (format "<(DEB10c denom after restake / zombie pre-flush)> => {} / {}" [denom zb-pre])
+                        (format "<(DEB10c zombie after flush)> => {} (expected 0)" [zb-post])
+                        (format "<(DEB10c ANHD collect payout)> => {} (expected 30 = 5 flush + 25 escrow)" [payout])
+                        (expect "<<TX-AQP-DEB10>> re-stake made the vault non-empty (denominator > 0)" true (> denom 0.0))
+                        (expect "<<TX-AQP-DEB10>> escrow was 25 before the flush" 25.0 zb-pre)
+                        (expect "<<TX-AQP-DEB10>> FLUSH zeroed the zombie" 0.0 zb-post)
+                        ;; the money shot: the sole staker present at the flush collects the WHOLE escrowed sum + flush.
+                        (expect "<<TX-AQP-DEB10>> sole staker collects flush + full escrow = 30 Wstoa" 30.0 payout)
+                    ]
+                )
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== deb-staleness-proof END ===")

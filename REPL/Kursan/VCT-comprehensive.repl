@@ -39,8 +39,7 @@
 (print "=== AQP integration suites (ANK / SCORE / POOL / FVT / OF / DC) ===")
 (load "Stage_02/[6.2]_AQP.repl")
 (print "")
-(print "=== VCT comprehensive suite (TF + lifecycle + DPNF + negatives) ===")
-(load "Stage_02/[6.2.5]_AQP-VCT.repl")
+;; [6.2.5]_AQP-VCT is now bundled inside [6.2]_AQP.repl (loaded above) — no separate load needed.
 (print "")
 (print "================================================================")
 (print "VCT-COMPREHENSIVE — ALL SUITES COMPLETE")

@@ -11,11 +11,11 @@
 (print "Legend (terminal observability): see ;; preface; echoes use <(…)> where helpful.")
 (print "Source: ;;|| NEXT > between txs; ;;==== … · mm · … ==== + banner before each begin-tx.")
 (print "")
-(load "[6.2.1]_AQP-ANK.repl")
-(load "[6.2.2]_AQP-SCORE.repl")
-(load "[6.2.3]_AQP-POOL.repl")
-(load "[6.2.4]_AQP-FVT.repl")
-(load "[6.2.4]_AQP-FVT-OF.repl")
-(load "[6.2.4]_AQP-FVT-DC.repl")
-(load "[6.2.4]_AQP-FVT-NF.repl")
+;; 5 per-module suites — each is the single entry for its module and self-bundles its
+;; sub-suites (see each file's ;;GAS> / ;;FULL> sections). Strict order: ANK→SCORE→POOL→FVT→VCT.
+(load "[6.2.1]_AQP-ANK.repl")     ;; ANK  — anchors + boost classes
+(load "[6.2.2]_AQP-SCORE.repl")   ;; SCR  — scores, links, weights, triplet bookkeeping
+(load "[6.2.3]_AQP-POOL.repl")    ;; POOL — pool issue, score slots, custody trackers, sync
+(load "[6.2.4]_AQP-FVT.repl")     ;; FVT  — self-loads FVT-OF/-DC/-NF (RPS inject/collect, stake flows)
+(load "[6.2.5]_AQP-VCT.repl")     ;; VCT  — pool-owner vacate (Full + Legs), all asset kinds
 

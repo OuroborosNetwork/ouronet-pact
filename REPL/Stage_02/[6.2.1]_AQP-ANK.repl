@@ -582,3 +582,7 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;; Follow with [6.2.2]_AQP-SCORE.repl or Stage02 harness.
+;;
+;;FULL> ANK extended suites — need the FULL profile (AQP-BOOT Steps 1–3/6 + [5.4] populate):
+;;FULL>   [6.4]_AQP-EXHAUSTIVE-ANK-LP.repl   (bunny anchors → LP score boost)
+;;FULL>   [6.4]_AQP-TRIPLET-DIAG.repl        (triplet ANK/score diagnostics)

@@ -1234,7 +1234,9 @@
             (plan2:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 2))
             (slice0:object (at 0 (at "slices" plan2)))
         )
-        ;; Intentionally finalize on first slice only — chain trusts UI; leftover inventory remains.
+        ;; Finalize on first slice only, but leftover inventory remains. Post-fix (audit H3 / #6) the on-chain
+        ;; guard HONOURS finalize only when the pool is truly empty — so vacate STAYS in progress and stake
+        ;; STAYS disabled here (previously the chain trusted the UI and wrongly cleared/re-enabled).
         (print (format "<(TS02-C3.AQP-POOL|C_VacateTrueFungibleLegs finalize-early)> => \"{}\"" [
             (ref-TS02-C3::AQP-POOL|C_VacateTrueFungibleLegs
                 patron pool-id ouro-id
@@ -1253,8 +1255,8 @@
             (map print
                 [
                     (expect (format "<<TX-VCT-N03 expect>> leftover inventory got={} expected=1" [remaining]) 1 remaining)
-                    (expect (format "<<TX-VCT-N03 expect>> vacate cleared despite leftover got={}" [vacate-in-progress]) false vacate-in-progress)
-                    (expect (format "<<TX-VCT-N03 expect>> stake re-enabled despite leftover got={}" [stake-enabled]) true stake-enabled)
+                    (expect (format "<<TX-VCT-N03 expect>> vacate STAYS in progress with leftover (H3/#6) got={}" [vacate-in-progress]) true vacate-in-progress)
+                    (expect (format "<<TX-VCT-N03 expect>> stake STAYS disabled with leftover (H3/#6) got={}" [stake-enabled]) false stake-enabled)
                 ]
             )
         )
@@ -1412,3 +1414,8 @@
 (print "=== END TX-VCT-L06 =========================================================")
 (print "")
 (print "=== END FILE [6.2.5]_AQP-VCT.repl ============================================")
+;;
+;;GAS> VCT gas / comparison suites — profiling only (need the VCTGAS probe module + synth accounts).
+;;GAS> Run via REPL/Kursan/VCT-gas-sweep.repl / VCT-full-vacate-gas.repl / VCT-tf-vacate-v1-v2-compare.repl:
+;;GAS>   [6.2.6]_AQP-VCT-GAS-BASE.repl · [6.2.6]_AQP-VCT-GAS.repl · [6.2.7]_AQP-VCT-FULL-GAS.repl
+;;GAS>   Kursan/6.2.10_AQP-VCT-TF-GAS-LADDER.repl · Kursan/6.2.10_AQP-VCT-TF-V1-V2-COMPARE.repl

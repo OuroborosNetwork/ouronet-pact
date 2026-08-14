@@ -124,7 +124,11 @@
                 (let
                     (
                         (deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner pool-id silver-score))
-                        (entity-weight:decimal (ref-FVT::URC_ScoreEntityUserWeight owner pool-id 3 triplet-id))
+                        (base-s:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore owner pool-id silver-score))
+                        (boosted-s:decimal (ref-SCR::UR_U-SCR|UserScoreBoostedScore owner pool-id silver-score))
+                        (base-deb-s:decimal (ref-SCR::UR_U-SCR|UserScoreBaseDebScore owner pool-id silver-score))
+                        (boosted-deb-s:decimal (ref-SCR::UR_U-SCR|UserScoreBoostedDebScore owner pool-id silver-score))
+                        (entity-weight:decimal (ref-FVT::URC_ScoreEntityUserWeight owner farm-id pool-id 3 triplet-id))
                         (denom:decimal (ref-FVT::URC_InjectDenominator farm-id))
                         (ghost-s:decimal (ref-FVT::UR_FVT|TotalGhostTvlWeight farm-id))
                         (w-i:decimal (ref-FVT::UR_FVT-SEL|GhostTvlWeight farm-id triplet-id))
@@ -137,6 +141,24 @@
                         ]
                     )
                     (expect (format "<<TX-AQP-CL03>> LP deb>0 got={}" [deb]) true (> deb 0.0))
+                    ;; M3: boost is additive — boosted-score is the boost PART, and deb-score = (base+boost)×deb,
+                    ;; so the base is NEVER dropped ⇒ deb-score ≥ base + boosted. (Pre-M3 deb-score = boost part only,
+                    ;; which is < base+boosted, so this assertion fails before the fix and passes after.)
+                    (map print
+                        [
+                            (format "<(M3 silver base/boosted/deb)> => \"{} {} {}\"" [base-s boosted-s deb])
+                            (format "<(M3 silver base-deb/boosted-deb)> => \"{} {}\"" [base-deb-s boosted-deb-s])
+                            (expect (format "<<TX-AQP-CL03>> M3 deb-score includes base: deb({}) >= base({})+boost({})"
+                                [deb base-s boosted-s])
+                                true
+                                (>= deb (- (+ base-s boosted-s) 0.000001)))
+                            ;; M3 5-field decomposition: base-deb + boosted-deb == deb-score exactly.
+                            (expect (format "<<TX-AQP-CL03>> M3 decomposition sums: base-deb({})+boosted-deb({})==deb({})"
+                                [base-deb-s boosted-deb-s deb])
+                                deb
+                                (+ base-deb-s boosted-deb-s))
+                        ]
+                    )
                     (expect (format "<<TX-AQP-CL03>> entity-weight>0 got={}" [entity-weight]) true (> entity-weight 0.0))
                     (expect (format "<<TX-AQP-CL03>> farm ghost S>0 got={}" [ghost-s]) true (> ghost-s 0.0))
                     (expect (format "<<TX-AQP-CL03>> inject denom>0 got={}" [denom]) true (> denom 0.0))
@@ -153,7 +175,13 @@
                             (elite-pre:decimal (ref-DPTF::UR_AccountSupply elite-auryn-id owner))
                         )
                         (print (format "<(pre-collect G L_i claimable)> => \"{} {} {}\"" [g-post li-pre claimable]))
-                        (expect (format "<<TX-AQP-CL03>> G>0 got={}" [g-post]) true (> g-post 0.0))
+                        ;; Split-at-inject (audit LP redesign / Stage 2): farms no longer bump the global G
+                        ;; (it stays 0); the injection is split into each member's Tier-1 index L_i (member-deb-rps).
+                        (map print
+                          [
+                            (expect (format "<<TX-AQP-CL03>> farm G stays 0 (split-at-inject) got={}" [g-post]) 0.0 g-post)
+                            (expect (format "<<TX-AQP-CL03>> member L_i advanced by inject got={}" [li-pre]) true (> li-pre 0.0))
+                          ])
                         (print (format "<(C_Collect farm triplet OURO)> => \"{}\"" [
                             (ref-TS02-C3::AQP-FVT|C_Collect owner farm-id 3 triplet-id ouro-id)
                         ]))
@@ -254,6 +282,22 @@
                 (lp-anhd:decimal (ref-DPTF::UR_AccountSupply lp-id anhd))
                 (lp-emma:decimal (ref-DPTF::UR_AccountSupply lp-id emma))
             )
+            ;; #9 (H4) revoke-lock armed: the triplet's boost-classes are score-linked, so ANK has bumped
+            ;; their score-link-count > 0 → any anchor in them is now revoke-locked (proves the SCORE→ANK wiring).
+            (let
+                (
+                    (slc-b:integer (ref-ANK::UR_BC|ScoreLinkCount bronze-bc))
+                    (slc-s:integer (ref-ANK::UR_BC|ScoreLinkCount silver-bc))
+                    (slc-g:integer (ref-ANK::UR_BC|ScoreLinkCount golden-bc))
+                )
+                (map print
+                    [
+                        (format "<(#9 revoke-lock: BoostClass score-link-count B/S/G)> => \"{} {} {}\"" [slc-b slc-s slc-g])
+                        (expect "<<TX-AQP-CL04>> #9 lock armed — triplet boost-classes are score-linked (Σ count>0)"
+                            true (> (+ slc-b (+ slc-s slc-g)) 0))
+                    ]
+                )
+            )
             (print "--- [TX-AQP-CL04 · 01 · EMMA AurynRain bunny stake (promile → W_user)] ---")
             (enforce (contains bunny-nonce emma-kbn) "CL04: EMMA needs Auryn Rain KBN nonce 85 from PopulateBunnies")
             (print (format "<(C_StakeNonFungible DHBunnies EMMA nonce {})> => \"{}\"" [bunny-nonce
@@ -301,9 +345,10 @@
             ]))
             (let
                 (
-                    (w-a:decimal (ref-FVT::URC_ScoreEntityUserWeight anhd pool-id 3 triplet-id))
-                    (w-e:decimal (ref-FVT::URC_ScoreEntityUserWeight emma pool-id 3 triplet-id))
-                    (w-sum:decimal (ref-FVT::URC_FarmTripletTier1Denominator triplet-id))
+                    (w-a:decimal (ref-FVT::URC_ScoreEntityUserWeight anhd farm-id pool-id 3 triplet-id))
+                    (w-e:decimal (ref-FVT::URC_ScoreEntityUserWeight emma farm-id pool-id 3 triplet-id))
+                    ;; divisor is now the maintained snapshot aggregate (point-read), not the retired staker scan
+                    (w-sum:decimal (ref-FVT::UR_FVT-SEL|TotalLaneWeight farm-id triplet-id))
                     (base-e:decimal
                         (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
                             (ref-SCR::UR_U-SCR|UserScoreBaseScore emma pool-id silver-score)
@@ -379,6 +424,28 @@
                                     (< ar-left 0.05)
                                 )
                             ]
+                        )
+                        ;; #10 wind-down: EMMA fully exits, then ANHD (sole claimant, gc==1) collects → the
+                        ;; two-tier sweep drains both vaults. Dust lanes fall back to token-0 (Ouro) so it never reverts.
+                        (print "--- [TX-AQP-CL04 · 04 · two-tier sweep drain proof] ---")
+                        (ref-TS02-C3::AQP-POOL|C_UnstakeTrueFungible patron pool-id emma emma lp-id stake-e)
+                        (ref-TS02-C3::AQP-FVT|C_Collect emma farm-id 3 triplet-id ouro-id)
+                        (ref-TS02-C3::AQP-FVT|C_Collect anhd farm-id 3 triplet-id ouro-id)
+                        (let
+                            (
+                                (ar-final:decimal (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))
+                                (mv-final:decimal (ref-FVT::UR_FVT-MV|AvailableRewards farm-id triplet-id ouro-id))
+                                (gc-final:integer (ref-FVT::UR_FVT-RG|UnclaimedCount farm-id ouro-id))
+                            )
+                            (map print
+                                [
+                                    (format "<(post-winddown ar/member-vault/gc)> => \"{} {} {}\"" [ar-final mv-final gc-final])
+                                    (expect (format "<<TX-AQP-CL04>> #10 sweep drains GLOBAL vault to ~0 got={}" [ar-final])
+                                        true (< ar-final 0.0000001))
+                                    (expect (format "<<TX-AQP-CL04>> #10 sweep drains MEMBER vault to ~0 got={}" [mv-final])
+                                        true (< mv-final 0.0000001))
+                                ]
+                            )
                         )
                     )
                 )

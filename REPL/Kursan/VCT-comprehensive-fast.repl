@@ -28,4 +28,4 @@
 (AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)
 (commit-tx)
 (load "Stage_02/[6.2]_AQP.repl")
-(load "Stage_02/[6.2.5]_AQP-VCT.repl")
+;; [6.2.5]_AQP-VCT is now bundled inside [6.2]_AQP.repl — no separate load needed.
