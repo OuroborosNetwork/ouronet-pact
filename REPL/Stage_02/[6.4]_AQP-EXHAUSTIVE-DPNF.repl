@@ -165,6 +165,10 @@
         (sub-bunnies:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
         (inject-amt:decimal 100.0)
         (total-bunnies:decimal (ref-SCR::UR_SCR|ScoreTotalDebScore sub-bunnies))
+        ;; #12a: this injects into the SAME SubsidiaryTreasury/AURYN as [6.3] TX-AQP-C04, so available-rewards
+        ;; already carries that accumulation. Assert the DELTA of THIS inject == inject-amt (proves no leak),
+        ;; not an absolute (which wrongly assumed a fresh treasury).
+        (ar-before:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id auryn-id))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (if (> total-bunnies 0.0)
@@ -180,7 +184,8 @@
                 (map print
                     [
                         (format "<(subsidiary inject denominator)> => \"{}\"" [denom])
-                        (expect (format "<<TX-AQP-NF04>> available-rewards got={} expected={}" [ar inject-amt]) inject-amt ar)
+                        (format "<(NF04 available-rewards before/after)> => {} / {}" [ar-before ar])
+                        (expect (format "<<TX-AQP-NF04>> available-rewards DELTA == inject got={} expected={}" [(- ar ar-before) inject-amt]) inject-amt (- ar ar-before))
                     ]
                 )
             )

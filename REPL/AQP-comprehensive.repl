@@ -57,10 +57,10 @@
 (print "=== AQP exhaustive collect — vault/treasury (G) vs farm (L_i) golden paths ===")
 (load "Stage_02/[6.4]_AQP-EXHAUSTIVE-COLLECT.repl")
 (print "")
-(print "=== AQP FVT integration (TF / OF / DC stake suites) ===")
+(print "=== AQP FVT integration (TF / OF / DC / NF stake suites) ===")
+;; [6.2.4]_AQP-FVT self-loads FVT-OF / FVT-DC / FVT-NF at its tail (which pull in Stage_01/[6.5]_DPOF).
+;; Do NOT re-load OF/DC here — a second [6.5]_DPOF load re-issues MVST → duplicate-insert abort (#12a).
 (load "Stage_02/[6.2.4]_AQP-FVT.repl")
-(load "Stage_02/[6.2.4]_AQP-FVT-OF.repl")
-(load "Stage_02/[6.2.4]_AQP-FVT-DC.repl")
 (print "")
 (print "=== AQP boot-entity wiring + RPS golden paths ===")
 (load "Stage_02/[6.3]_AQP-COMPREHENSIVE.repl")

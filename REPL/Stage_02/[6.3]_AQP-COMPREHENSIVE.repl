@@ -280,6 +280,10 @@
         (sub-coding-score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryCodingDivision"))
         (auryn-id:string "AURYN-98c486052a51")
         (inject-amount:decimal 250.0)
+        ;; #12a: SubsidiaryTreasury carries LEGITIMATE uncollected residual from earlier pipeline injects
+        ;; (deb-proof / [6.4] CL02). available-rewards = Σinjected − Σcollected, so assert the DELTA of this
+        ;; inject == inject-amount (proves no leak) rather than an absolute (which assumed a fresh treasury).
+        (ar-before:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id auryn-id))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print (format "<(TS02-C3.AQP-FVT|C_Inject Auryn amount={})> => \"{}\"" [inject-amount
@@ -294,7 +298,8 @@
         (map print
             [
                 (expect (format "<<TX-AQP-C04 expect>> enabled-reward-count got={} expected=1" [reward-count]) 1 reward-count)
-                (expect (format "<<TX-AQP-C04 expect>> available-rewards got={} expected={}" [ar inject-amount]) inject-amount ar)
+                (format "<(TX-AQP-C04 available-rewards before/after)> => {} / {}" [ar-before ar])
+                (expect (format "<<TX-AQP-C04 expect>> available-rewards DELTA == inject got={} expected={}" [(- ar ar-before) inject-amount]) inject-amount (- ar ar-before))
                 (expect (format "<<TX-AQP-C04 expect>> sub-coding ScoreLink enabled got={} expected=true" [sl-enabled]) true sl-enabled)
             ]
         )
@@ -344,6 +349,10 @@
             (let
                 (
                     (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouroboros-id))
+                    ;; #12a: patron is BOTH injector and collector here, so measure the collect payout from the
+                    ;; POST-INJECT balance (mirror TX-AQP-C02) — measuring from pre-inject would net the −100 inject
+                    ;; debit and read a spurious negative "payout". claimable is already read post-inject below.
+                    (bal-after-inject:decimal (ref-DPTF::UR_AccountSupply ouroboros-id patron))
                     (claimable:decimal (ref-FVT::URC_UserTier1AvailableRewards patron fvt-id shares-score-id ouroboros-id
                         (ref-SCR::UR_U-SCR|UserScoreDebScore patron pool-id shares-score-id)
                     ))
@@ -354,7 +363,7 @@
                 (let
                     (
                         (post-bal:decimal (ref-DPTF::UR_AccountSupply ouroboros-id patron))
-                        (payout:decimal (- post-bal pre-bal))
+                        (payout:decimal (- post-bal bal-after-inject))
                         (last-rps:decimal (ref-FVT::UR_FVT-RU|LastRps patron fvt-id shares-score-id ouroboros-id))
                     )
                     (map print

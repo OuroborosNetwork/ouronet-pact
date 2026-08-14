@@ -806,3 +806,31 @@ a division artifact).
 non-conform to precision 3, precision `≠ 3`, dptf-amount `< 1000`, dptf-amount `> 1,000,000` — all rejected;
 in-range acceptance is covered by the 20 migrated anchors that issue normally. golden **33/0**, Z **241/0**,
 deb-proof **121/0**.
+
+## Fix #12a — N1 · comprehensive-suite "negative payout" / "over-accumulate": NO core bug (3 test defects)  ✅ DONE
+
+**Plan item:** N1 (surfaced R2 while proving #12). **Files:** `REPL/AQP-comprehensive.repl`,
+`[6.3]_AQP-COMPREHENSIVE.repl`, `[6.4]_AQP-EXHAUSTIVE-DPNF.repl` (**tests only — no `.pact` changed**).
+
+**Verdict:** the reward core is **correct**; all three reported symptoms were test-layer. The corrected assertions
+are strictly stronger and now *prove* the core sound.
+
+1. **MVST duplicate-insert abort (blocked the whole driver).** `AQP-comprehensive.repl` loaded
+   `[6.2.4]_AQP-FVT` (which self-loads FVT-OF/-DC/-NF at its tail) **and then re-loaded** FVT-OF/-DC explicitly.
+   The second load re-ran `Stage_01/[6.5]_DPOF` → re-issued `MetaVesta/MVST` → `Value already found` insert abort,
+   before C04/C05/NF04 ever ran. **Fix:** dropped the two redundant explicit loads.
+
+2. **C04 + NF04 "available-rewards over-accumulate" (262 vs 250; 362 vs 100).** Both inject into
+   `SubsidiaryTreasury/AURYN`, which already carried **legitimate uncollected residual** (`available-rewards =
+   Σinjected − Σcollected`; earlier deb-proof / CL02 injects). The identical fraction
+   `…262.198557957874725030205201` in both proves NF04 is the *same* row + 100, i.e. correct accumulation, not a
+   leak. **Fix:** assert the **DELTA** of the inject (`avail_after − avail_before == inject`) instead of an absolute
+   — C04 Δ = 250.0, NF04 Δ = 100.0, exactly. This now *verifies* available-rewards conservation.
+
+3. **C05 "negative payout −50."** The patron is BOTH injector and collector; payout was measured
+   `post-collect − pre-**inject**`, netting the −100 inject debit into the number. `claimable` (read post-inject)
+   was already the correct `50`. **Fix:** measure payout from the **post-inject** balance (mirror TX-AQP-C02) →
+   payout = 50, and `payout == claimable` — proving the collect pays exactly the claimable.
+
+**Result:** `AQP-comprehensive.repl` now **green (260/0)** — no longer an unmaintained kitchen-sink. Standard gates
+unchanged: golden 33/0, Z 241/0, deb-proof 121/0.
