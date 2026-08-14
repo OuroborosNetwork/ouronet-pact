@@ -856,3 +856,20 @@ comprehensive 260/0 — nothing depended on it (it always passed).
 `OuronetInformational/memories/2026-08-14-tautological-validation-checks.md` — value-checked-against-its-own-source,
 re-checking a structural token-layer invariant, duplicated caller guard, `enforce` in a `UC_`/`URC_`/`UR_`. A pass to
 hunt for more of these is a Round-III task.
+
+## Fix #17 — L4 · ANK: gate anchor revoke on liveness (`UEV_LiveAnchor`)  ✅ DONE
+
+**Plan item:** #17 (LOW, Phase E). **Finding:** L4. **File:** `01_ANK.pact`, `[6.2.1]_AQP-ANK.repl`.
+
+**Gap:** `ANK|C>REVOKE` checked only ownership + the H4 #9 revoke-lock — **no liveness check**. `C_RevokeAnchor`
+sets `State→false` then removes the anchor from the BoostClass/AssetAnchors lists, so a **double-revoke** passed the
+cap, ran a redundant `State→false` write, then aborted deep inside the utility `UC_RemoveItemAt` ("item not found")
+— clean (no corruption) but opaque. The purpose-built `UEV_LiveAnchor` (`enforce (UR_ANK|State …)`) existed but was
+**completely unused**.
+
+**Fix:** added `(UEV_LiveAnchor anchor-id)` as the **first** line of `ANK|C>REVOKE`. A second revoke now aborts early
+and clearly ("Anchor … must be alive for operation") before any write, and the H4 lock never evaluates against a
+revoked anchor. One line; valid revokes unaffected.
+
+**Proven (`[6.2.1]` TX002·06b):** after `TFTEMPaa` is revoked, re-revoking it is rejected via `expect-failure`.
+golden 33/0, Z 241/0, comprehensive 260/0.

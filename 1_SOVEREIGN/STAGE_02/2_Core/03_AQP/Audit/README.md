@@ -44,7 +44,7 @@ place. Module `.pact` source changes **only** during a Fixes round, one fix at a
 | L1 | LOW | POOL | `enforce` in a `URC_` | CONFIRMED | **DONE ✅ (#16)** — `URC_OrtoStakeWholeNonceAmounts` wasn't just a misplaced `enforce`, the whole check was **tautological**: `DPOF::C_Transfer` moves WHOLE nonces (ignores amounts) and callers source `nonce-amounts` from `UR_NoncesSupplies`, so "amount == nonce supply" compared a value to its own source. Deleted the helper + `whole-nonce-ok` from both caps; whole-nonce is a structural token-layer invariant. Pattern written up in `memories/2026-08-14-tautological-validation-checks.md` (hunt for more). golden 33/0, Z 241/0, comprehensive 260/0 |
 | L2 | LOW | POOL | one X writes two tables | PLAUSIBLE | **CONVENTION R2** (allowed) |
 | L3 | LOW | POOL | `select`/URD on sync path | PLAUSIBLE | **CONVENTION R3** (→ `CC_`/`AA_` rename) |
-| L4 | LOW | ANK | no `UEV_LiveAnchor` on revoke | PLAUSIBLE | **CONFIRMED** |
+| L4 | LOW | ANK | no `UEV_LiveAnchor` on revoke | CONFIRMED | **DONE ✅ (#17)** — added `(UEV_LiveAnchor anchor-id)` as the first check in `ANK|C>REVOKE` (revoke sets `State→false`, so a double-revoke now aborts early + clearly instead of deep in `UC_RemoveItemAt`; the H4 lock never reads a dead anchor). Was the unused `UEV_LiveAnchor` (finally wired). Proven `[6.2.1]` TX002·06b (re-revoke of the dead TFTEMPaa rejected). golden 33/0, Z 241/0, comprehensive 260/0 |
 | L5 | LOW | ANK | XE returns OutputCumulator | PLAUSIBLE | **CONVENTION R1** (→ `X-cm_` rename) |
 | L6 | LOW | ANK | SF/NF incremental promile no floor | PLAUSIBLE | **CONFIRMED** |
 | L7 | LOW | SCORE | mutable defs → asymmetric delta | PLAUSIBLE | **CONFIRMED / INVESTIGATE** |
@@ -87,7 +87,7 @@ place. Module `.pact` source changes **only** during a Fixes round, one fix at a
 
 **Phase E — LOW (logic)**
 16. L1 · POOL — remove `enforce` from URC (turned out **tautological**; deleted whole check). ✅ **DONE (#16)**
-17. L4 · ANK — add `UEV_LiveAnchor` to revoke (may fold into H4-B).
+17. L4 · ANK — add `UEV_LiveAnchor` to revoke (may fold into H4-B). ✅ **DONE (#17)**
 18. L6 · ANK — hard floor on SF/NF incremental promile.
 19. L7 · SCORE — verify stop-stake closes mutable-def asymmetry; guard if not.
 20. L9 · VCT — remove dead `VACATE-MAX-LEGS` + parity helper.

@@ -267,6 +267,15 @@
             (format "<(TS02-C3.AQP-ANK|C_RevokeBoostClass TempClassTF)> => \"{}\"" [(ref-TS02-C3::AQP-ANK|C_RevokeBoostClass patron temp-class-id)])
         ]
     )
+    ;;==== TX002 · 06b · L4 #17: double-revoke of a now-dead anchor must fail (UEV_LiveAnchor) =
+    (print "--- [TX002 · 06b · L4 #17: re-revoking the dead TFTEMPaa anchor must fail] ---")
+    (map print
+        [
+            (expect-failure
+                "<<TX002 L4#17>> re-revoking an already-revoked anchor is rejected up front (anchor must be alive)"
+                (ref-TS02-C3::AQP-ANK|C_RevokeAnchor patron "TFTEMPaa-98c486052a51"))
+        ]
+    )
     ;;==== TX002 · 07 · ref-ANK UR_AA|Data / UR_ANK|Data — REPL =======================
     (print "--- [TX002 · 07 · UR reads] ---")
     (map print

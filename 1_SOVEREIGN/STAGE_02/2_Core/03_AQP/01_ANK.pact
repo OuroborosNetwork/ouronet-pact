@@ -513,10 +513,13 @@
         )
     )
     (defcap ANK|C>REVOKE (anchor-id:string)
-        @doc "Authorizes anchor revocation for <anchor-id>; requires anchor ownership. H4 (#9) temp-patch: \
-            \ blocked while the anchor's BoostClass is linked by any score — vacate/unlink first (the \
+        @doc "Authorizes anchor revocation for <anchor-id>; requires the anchor to be ALIVE + owned. H4 (#9) \
+            \ temp-patch: blocked while the anchor's BoostClass is linked by any score — vacate/unlink first (the \
             \ re-score-sweep unwind is not built yet; see Audit/ANCHOR-STALENESS-INVENTORY.md)."
         @event
+        ;; L4 #17: reject a dead/never-existed anchor up front (revoke sets State→false), so a double-revoke aborts
+        ;; cleanly here instead of deep in UC_RemoveItemAt — and the H4 lock below never reads a revoked anchor.
+        (UEV_LiveAnchor anchor-id)
         (CAP_Owner anchor-id)
         ;; #9 lock: cannot revoke an anchor whose BoostClass is employed by ≥1 score (stale-boost prevention).
         (enforce
