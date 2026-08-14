@@ -90,6 +90,7 @@
             patron:string
             pool-id:string
             owner-id:string
+            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
             nonce-amounts:[integer]
@@ -110,6 +111,7 @@
             patron:string
             pool-id:string
             owner-id:string
+            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
             nonce-amounts:[integer]
@@ -137,6 +139,7 @@
             patron:string
             pool-id:string
             owner-id:string
+            beneficiary-id:string
             dpof-id:string
             nonces:[integer]
         )
@@ -435,7 +438,7 @@
         (compose-capability (P|TS))
     )
     (defcap AQP|C>UNSTAKE-ORTO-FUNGIBLE
-        (patron:string pool-id:string owner-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal])
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal])
         @doc "AQP client event: unstake OrtoFungible. nonces and nonce-amounts resolved before this cap \
             \ (DPOF::UR_NoncesSupplies — whole nonce only) for explorer visibility."
         @event
@@ -448,7 +451,7 @@
         (compose-capability (P|TS))
     )
     (defcap AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE
-        (patron:string pool-id:string owner-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "AQP client event: unstake DPSF collectable (son=true). Composes P|TS only."
         @event
         (compose-capability (P|TS))
@@ -460,7 +463,7 @@
         (compose-capability (P|TS))
     )
     (defcap AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
-        (patron:string pool-id:string owner-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
         @doc "AQP client event: unstake DPNF collectable (son=false). Composes P|TS only."
         @event
         (compose-capability (P|TS))
@@ -1262,10 +1265,13 @@
             patron:string
             pool-id:string
             owner-id:string
+            beneficiary-id:string
             dpof-id:string
             nonces:[integer]
         )
-        @doc "Unstake whole DPOF nonces via C_Transfer. Poll UR_NoncesSupplies, then @event cap with resolved legs."
+        @doc "Unstake whole DPOF nonces via C_Transfer from the (owner, beneficiary) row. M5: beneficiary-id is \
+            \ caller-supplied (self OR foreign) so the exact staked row is located — mirrors TF. Poll UR_NoncesSupplies, \
+            \ then @event cap with resolved legs."
         (let
             (
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
@@ -1273,7 +1279,7 @@
                 (nonce-count:integer (length nonces))
                 (nonce-amounts:[decimal] (ref-DPOF::UR_NoncesSupplies dpof-id nonces))
             )
-            (with-capability (AQP|C>UNSTAKE-ORTO-FUNGIBLE patron pool-id owner-id dpof-id nonces nonce-amounts)
+            (with-capability (AQP|C>UNSTAKE-ORTO-FUNGIBLE patron pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts)
                 (let
                     (
                         (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1281,7 +1287,7 @@
                     )
                     (ref-IGNIS::C_Collect patron
                         (ref-FVT::C_OrtoFungibleStakeFlow
-                            pool-id owner-id BAR dpof-id nonces nonce-amounts false
+                            pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts false
                         )
                     )
                     (UC_FormatUnstakeOrtoFungibleResult pool-id owner-id dpof-id nonce-count)
@@ -1333,18 +1339,20 @@
             patron:string
             pool-id:string
             owner-id:string
+            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
             nonce-amounts:[integer]
         )
-        @doc "Unstake DPSF collectable (son=true)."
+        @doc "Unstake DPSF collectable (son=true) from the (owner, beneficiary) row. M5: beneficiary-id caller-supplied \
+            \ (self OR foreign) so the exact staked row is located — mirrors TF."
         (let
             (
                 (nonce-count:integer (length nonces))
             )
             (with-capability
                 (AQP|C>UNSTAKE-SEMI-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id collectable-id nonces nonce-amounts
+                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
                 )
                 (let
                     (
@@ -1353,7 +1361,7 @@
                     )
                     (ref-IGNIS::C_Collect patron
                         (ref-FVT::C_CollectableStakeFlow
-                            pool-id owner-id BAR collectable-id true nonces nonce-amounts false
+                            pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts false
                         )
                     )
                     (UC_FormatUnstakeCollectableResult pool-id owner-id collectable-id true nonce-count)
@@ -1404,18 +1412,20 @@
             patron:string
             pool-id:string
             owner-id:string
+            beneficiary-id:string
             collectable-id:string
             nonces:[integer]
             nonce-amounts:[integer]
         )
-        @doc "Unstake DPNF collectable (son=false)."
+        @doc "Unstake DPNF collectable (son=false) from the (owner, beneficiary) row. M5: beneficiary-id caller-supplied \
+            \ (self OR foreign) so the exact staked row is located — mirrors TF."
         (let
             (
                 (nonce-count:integer (length nonces))
             )
             (with-capability
                 (AQP|C>UNSTAKE-NON-FUNGIBLE-COLLECTABLE
-                    patron pool-id owner-id collectable-id nonces nonce-amounts
+                    patron pool-id owner-id beneficiary-id collectable-id nonces nonce-amounts
                 )
                 (let
                     (
@@ -1424,7 +1434,7 @@
                     )
                     (ref-IGNIS::C_Collect patron
                         (ref-FVT::C_CollectableStakeFlow
-                            pool-id owner-id BAR collectable-id false nonces nonce-amounts false
+                            pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts false
                         )
                     )
                     (UC_FormatUnstakeCollectableResult pool-id owner-id collectable-id false nonce-count)

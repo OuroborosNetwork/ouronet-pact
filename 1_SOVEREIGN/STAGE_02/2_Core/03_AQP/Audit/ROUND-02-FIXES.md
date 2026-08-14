@@ -701,3 +701,74 @@ golden **33/0**, Z **225/0**, deb-proof **121/0**.
 **Not yet covered (Round III regression):** a **farm-side** escrow proof (zero-S farm inject accrues zombie, then a
 member stakes and the next farm inject splits `amount + zombie`) — the vault path is proven and the farm branch is
 identical in shape (`s-fresh` in place of the deb-sum), but a dedicated farm scenario would close it.
+
+## Fix #14 — M5 · POOL: full non-self staking (self OR foreign beneficiary) for ALL asset types  ✅ DONE + PROVEN
+
+**Plan item:** #14 (MED) · **Finding:** M5 ("OF/collectable unstake self-key vs non-self stake"). **Files:**
+`03_AQP.pact`, `04_FVT.pact`, `04_TS02-C3.pact` (+ interfaces inline in each). **Owner decision:** non-self staking
+(an owner staking on behalf of a foreign beneficiary — owner supplies custody, beneficiary earns weight/rewards) is a
+**first-class feature for every asset type** (TF, OF, SF, NF), properly constructed so nothing strands.
+
+**Root cause:** trackers are keyed `(pool, instrument, owner, beneficiary[, nonce])`. Every **stake** wrote the row
+under the caller-supplied `beneficiary-id`, but the OF/SF/NF **unstake** path passed the sentinel `BAR` and re-derived
+the beneficiary from the **self-key** `(owner, owner)` (`URC_OrtoUnstakeBeneficiaryId` / `URC_CollectableUnstakeBeneficiaryId`);
+the FVT flow caps even hard-enforced `beneficiary-id == BAR` on unstake. So a stake with `owner ≠ beneficiary` landed at
+`(owner, ben)` and unstake looked at `(owner, owner)` → **stranded** (forced-vacate only). TF already threaded the real
+beneficiary through both legs and was the reference.
+
+**Fix (mirror TF end-to-end):** thread `beneficiary-id` through the whole OF/SF/NF unstake chain and delete the self-key
+derivation.
+1. **Talos** (`04_TS02-C3.pact`): added `beneficiary-id` to the three unstake interface decls + wrappers
+   (`C_UnstakeOrtoFungible` / `C_UnstakeSemiFungibleCollectable` / `C_UnstakeNonFungibleCollectable`) and their `@event`
+   caps; wrappers now pass the real `beneficiary-id` to the flow (was `BAR`).
+2. **FVT** (`04_FVT.pact`): `C_OrtoFungibleStakeFlow` / `C_CollectableStakeFlow` set `settle-beneficiary = beneficiary-id`
+   both directions (no derivation); the two flow caps drop the `= BAR` enforce and validate the beneficiary account
+   unconditionally (mirror `FVT|C>TRUE-FUNGIBLE-STAKE-FLOW`).
+3. **POOL** (`03_AQP.pact`): custody caps pass `beneficiary-id` to the sufficiency readers and call
+   `UEV_StakeBeneficiaryAccount` both directions; `URC_OrtoUnstakeNoncesSufficient` /
+   `URC_CollectableUnstakeNoncesSufficient` / `URC_CollectableUnstakeRollupSufficient` gained a `beneficiary-id` param and
+   read the exact `(owner, beneficiary)` row/rollup; the three XE writers (`XE_OrtoFungiblePoolTracker`,
+   `XE_CollectablePoolTracker`, `XE_CollectableBeneficiaryRollup`) write/remove under `beneficiary-id` both directions;
+   the two self-key helpers were **deleted** (interface + body).
+
+**Auth unchanged / no new attack surface:** unstake still authorizes on the **owner** (`CAP_StakeOwner`), returns tokens
+to the owner, and the beneficiary is only the row-lookup key — exactly TF's model. All existing self-stake call sites
+(tests) updated to pass `beneficiary = owner`.
+
+**Proven (`[6.2.4]` — runs in Z):** `TX-FVT-06b` (OF) and `TX-FVT-DC-03b` (SF, the shared `C_CollectableStakeFlow`; NF is
+the son=false twin): owner **ANHD** stakes for foreign beneficiary **EMMA** → row at `(owner, EMMA)` holds the stake, the
+self-key `(owner, owner)` row is **empty** (where the old code stranded), **EMMA** earns the deb and **ANHD earns nothing**;
+unstake naming the wrong beneficiary (owner) **fails**; unstake naming **EMMA** clears the row, removes EMMA's weight, and
+returns the tokens to ANHD (state-neutral round-trip). golden **33/0**, Z **239/0**, deb-proof **121/0**.
+
+**Not yet covered (Round III regression):** an explicit **NF** non-self scenario (identical to the SF proof with son=false)
+and a **TF** non-self assertion (TF already works; a focused foreign-beneficiary round-trip would document it alongside
+OF/SF).
+
+### #14 follow-through — design settled + UI observability + dead-code removal
+
+**Design settled (owner-driven, after a deep back-and-forth):** a *reverse-index / derive-beneficiary-on-unstake* model
+was considered and **rejected** — because (a) SF/NF nonces can be co-owned by two users and a splittable holding can be
+staked for *self plus multiple beneficiaries*, so a single `(owner, nonce)` maps to **many** legs, and (b) requirement 5
+(unstake a *specific amount* for a *specific beneficiary*) means the owner must **name** the beneficiary + amount. So there
+is no unique beneficiary to derive and no uniqueness invariant to enforce. **#14's supply-beneficiary unstake is therefore
+correct and final.** (OF is the exception where a nonce *is* single-beneficiary — splitting happens at the DPOF layer and
+mints distinct nonces — so OF stays whole-nonce; SF/NF keep partial-amount unstake.)
+
+**UI observability (all on-chain, `select`-based — no new maintained tables).** The trackers already hold every position
+`(pool, asset, owner, beneficiary[, nonce]) → amount`, so 8 cross-pool `URD_` readers over them (owner-side +
+beneficiary-side, per instrument) answer every UI query:
+- **A** staked-for-self = `…StakesByOwner(U)` rows where `beneficiary = U`;
+- **B** staked-for-others (how much / for whom) = `…StakesByOwner(U)` rows where `beneficiary ≠ U`;
+- **C** gifted-by-others (how much / from whom) = `…StakesByBeneficiary(U)` rows where `owner ≠ U`.
+Added `URD_AQP|{Dptf,Dpof,Dpsf,Dpnf}StakesBy{Owner,Beneficiary}` (+ interface decls). The `Ben*` rollups stay (they aggregate
+*across* owners for the ANK anchor mechanics, so they can't answer B/C's counterparty detail — the tracker `select` does).
+Since these readers hand the UI every field of every leg, **every unstake of every type already has all its inputs**.
+
+**Dead code removed.** `AQP|T|DPSFScoreAttribution` + `AQP|T|DPNFScoreAttribution` had **zero** write paths and **zero**
+consumers anywhere in the repo (verified: all 103 references were the definitions themselves) — a never-wired scaffold.
+Deleted the full cluster: 2 schemas, 2 deftables, 2 `create-table`s, the `UCK`/`UDC` builders, ~24 `UR_` readers, and all
+their interface decls; scrubbed the doc references on the DPSF/DPNF tracker schemas.
+
+**Proven (`[6.2.4]` TX-FVT-06b · 01b):** while ANHD→EMMA is staked, `URD_AQP|DpofStakesByOwner(ANHD)` lists the EMMA leg
+(query B) and `URD_AQP|DpofStakesByBeneficiary(EMMA)` lists it from ANHD (query C). golden **33/0**, Z **241/0**, deb-proof **121/0**.

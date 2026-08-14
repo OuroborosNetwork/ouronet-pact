@@ -226,7 +226,7 @@
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (print "--- [TX-FVT-06 · 01 · C_UnstakeOrtoFungible] ---")
     (print (format "<(TS02-C3.AQP-POOL|C_UnstakeOrtoFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_UnstakeOrtoFungible patron pool-id owner-id dpof-id [stake-nonce])
+        (ref-TS02-C3::AQP-POOL|C_UnstakeOrtoFungible patron pool-id owner-id owner-id dpof-id [stake-nonce])
     ]))
     (print "--- [TX-FVT-06 · 02 · post-unstake reads + expect] ---")
     (let
@@ -260,6 +260,133 @@
 (env-sigs [])
 (commit-tx)
 (print "=== END TX-FVT-06 ==========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+;; M5 (#14) — non-self stake: owner ANHD stakes an OF nonce FOR a FOREIGN beneficiary EMMA,
+;; then unstakes it by naming EMMA. Proves the (owner, beneficiary) row is located both ways
+;; (no stranding) and that the beneficiary is authoritative. State-neutral round-trip.
+(begin-tx "TX-FVT-06b - M5 non-self OF round-trip (owner ANHD, foreign beneficiary EMMA)")
+(print "")
+(print "=== TX-FVT-06b — M5 foreign-beneficiary OF stake/unstake (no stranding) ======")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (foreign-ben:string KST.EMMA)
+        (dpof-id:string "MVST-98c486052a51")
+        (score-name:string "OfStakeScore")
+        (pool-name:string "OfStakePool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (owned-nonces:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+    )
+    (enforce (> (length owned-nonces) 0) "owner needs an MVST nonce for the non-self proof")
+    (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
+        "not frozen")
+    (let
+        (
+            (stake-nonce:integer (at 0 owned-nonces))
+        )
+        (let
+            (
+                (stake-amount:decimal (ref-DPOF::UR_NonceSupply dpof-id stake-nonce))
+                (pre-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
+            )
+            ;;==== TX-FVT-06b · 01 · owner ANHD stakes FOR foreign beneficiary EMMA ====
+            (print "--- [TX-FVT-06b · 01 · stake owner=ANHD, beneficiary=EMMA] ---")
+            (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id foreign-ben dpof-id [stake-nonce])
+            (let
+                (
+                    (ben-bal:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id foreign-ben stake-nonce))
+                    (self-bal:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id owner-id stake-nonce))
+                    (ben-deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore foreign-ben pool-id score-id))
+                    (owner-deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner-id pool-id score-id))
+                )
+                (map print
+                    [
+                        (format "<(TX-FVT-06b (owner,EMMA) / (owner,owner) rows)> => {} / {}" [ben-bal self-bal])
+                        (format "<(TX-FVT-06b EMMA deb / ANHD deb)> => {} / {}" [ben-deb owner-deb])
+                        (expect "<<TX-FVT-06b>> stake landed at the (owner, FOREIGN beneficiary) row" stake-amount ben-bal)
+                        (expect "<<TX-FVT-06b>> self-key row (owner,owner) is EMPTY — where the OLD self-key unstake would strand" 0.0 self-bal)
+                        (expect "<<TX-FVT-06b>> the FOREIGN beneficiary EMMA earns the weight" true (> ben-deb 0.0))
+                        (expect "<<TX-FVT-06b>> the owner ANHD earns NOTHING (owner ≠ beneficiary)" 0.0 owner-deb)
+                    ]
+                )
+            )
+            ;;==== TX-FVT-06b · 01b · UI observability readers see BOTH sides of the leg ====
+            (print "--- [TX-FVT-06b · 01b · owner-side + beneficiary-side select readers] ---")
+            (let
+                (
+                    ;; B (staked-for-others): ANHD's OF legs where beneficiary ≠ ANHD (i.e. the EMMA leg).
+                    (for-others:[object]
+                        (filter (lambda (r:object) (!= (at "beneficiary-id" r) owner-id))
+                            (ref-AQP::URD_AQP|DpofStakesByOwner owner-id)))
+                    ;; C (gifted-to-EMMA): legs where EMMA is beneficiary and the owner is someone else (ANHD).
+                    (gifted:[object]
+                        (filter (lambda (r:object) (!= (at "owner-id" r) foreign-ben))
+                            (ref-AQP::URD_AQP|DpofStakesByBeneficiary foreign-ben)))
+                )
+                (map print
+                    [
+                        (format "<(TX-FVT-06b B·staked-for-others by ANHD)> => {}" [for-others])
+                        (format "<(TX-FVT-06b C·gifted-to-EMMA)> => {}" [gifted])
+                        (expect "<<TX-FVT-06b>> owner-side reader lists the EMMA leg (query B: staked-for-others)"
+                            true (contains {"pool-id": pool-id, "dpof-id": dpof-id, "beneficiary-id": foreign-ben,
+                                            "nonce": stake-nonce, "balance": stake-amount} for-others))
+                        (expect "<<TX-FVT-06b>> beneficiary-side reader lists it from ANHD (query C: gifted-by-others)"
+                            true (contains {"pool-id": pool-id, "dpof-id": dpof-id, "owner-id": owner-id,
+                                            "nonce": stake-nonce, "balance": stake-amount} gifted))
+                    ]
+                )
+            )
+            ;;==== TX-FVT-06b · 02 · wrong-beneficiary unstake must FAIL (no stranding path) ====
+            (print "--- [TX-FVT-06b · 02 · unstake with WRONG beneficiary must fail] ---")
+            (map print
+                [
+                    (expect-failure
+                        "<<TX-FVT-06b>> unstake naming beneficiary=owner (the OLD self-key) finds NO row → must fail"
+                        (ref-TS02-C3::AQP-POOL|C_UnstakeOrtoFungible patron pool-id owner-id owner-id dpof-id [stake-nonce]))
+                ]
+            )
+            ;;==== TX-FVT-06b · 03 · unstake naming the REAL beneficiary EMMA restores state ====
+            (print "--- [TX-FVT-06b · 03 · unstake owner=ANHD, beneficiary=EMMA] ---")
+            (ref-TS02-C3::AQP-POOL|C_UnstakeOrtoFungible patron pool-id owner-id foreign-ben dpof-id [stake-nonce])
+            (let
+                (
+                    (ben-bal-after:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id foreign-ben stake-nonce))
+                    (ben-deb-after:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore foreign-ben pool-id score-id))
+                    (post-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
+                )
+                (map print
+                    [
+                        (format "<(TX-FVT-06b (owner,EMMA) row after unstake)> => {}" [ben-bal-after])
+                        (format "<(TX-FVT-06b owner supply pre/post)> => {} / {}" [pre-supply post-supply])
+                        (expect "<<TX-FVT-06b>> the (owner, EMMA) row is fully cleared — NO stranding" 0.0 ben-bal-after)
+                        (expect "<<TX-FVT-06b>> EMMA weight removed on unstake" 0.0 ben-deb-after)
+                        (expect "<<TX-FVT-06b>> owner ANHD got the tokens back (custody returns to owner)" pre-supply post-supply)
+                    ]
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-06b =========================================================")
 (print "")
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >

@@ -773,11 +773,9 @@
             )
             ;;1] pool-id — stake direction: stake-enabled + ≥1 employed score
             (enforce stake-admission-ok "Invalid pool-id: pool stake disabled or has no employed scores")
-            ;;3] beneficiary-id — stake only: exists + standard account; unstake: BAR (read per nonce in phase 1)
-            (if direction
-                true
-                (enforce (= beneficiary-id BAR) "Unstake: beneficiary-id must be BAR; tracker row is authoritative")
-            )
+            ;;3] beneficiary-id — M5: caller-supplied and authoritative BOTH directions (self OR foreign). The real
+            ;;   (owner, beneficiary) tracker row is written on stake and removed on unstake; sufficiency for that exact
+            ;;   row is enforced in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY. No BAR sentinel / self-key derivation any more.
             ;;4] dpof-id — issued DPOF; pool leg match in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
             ;;5] nonces / nonce-amounts — equal positive length; each amount must equal full nonce supply
             (enforce
@@ -792,10 +790,8 @@
             )
             ;;2] owner-id — activated account; signer proof in AQP|XE>ORTO-FUNGIBLE-POOL-CUSTODY
             (UEV_TrueFungibleStakeOwnerAccount owner-id)
-            (if direction
-                (UEV_TrueFungibleStakeBeneficiaryAccount beneficiary-id)
-                true
-            )
+            ;;3a/3b] beneficiary must exist + be a standard account — BOTH directions (mirror TF flow cap).
+            (UEV_TrueFungibleStakeBeneficiaryAccount beneficiary-id)
             ;;--- UrStoa canonical phases (no 1.3 / 3.x on OF — reserved no-op) ---
             ;; PHASE 1   1.1–1.2 AQP-POOL; 1.3 no-op
             ;; PHASE 2   FVT::XI_RpsPreScore
@@ -832,10 +828,9 @@
             (enforce stake-admission-ok "Invalid pool-id: pool stake disabled or has no employed scores")
             (enforce class-ok "Invalid pool-id: collectable son does not match pool aqp-class")
             (enforce collectable-ok "Invalid collectable-id: leg does not match pool canonical asset")
-            (if direction
-                true
-                (enforce (= beneficiary-id BAR) "Unstake: beneficiary-id must be BAR; tracker row is authoritative")
-            )
+            ;; M5: beneficiary-id caller-supplied and authoritative BOTH directions (self OR foreign). The real
+            ;; (owner, beneficiary) tracker + Ben rollup rows are written on stake and removed on unstake; sufficiency
+            ;; for that exact row is enforced in AQP|XE>COLLECTABLE-POOL-CUSTODY. No BAR sentinel / self-key derivation.
             (enforce
                 (fold (and) true [(> l-n 0) (= l-n l-a)])
                 "Invalid nonces / nonce-amounts: equal positive length required"
@@ -845,10 +840,8 @@
                 true
             )
             (UEV_TrueFungibleStakeOwnerAccount owner-id)
-            (if direction
-                (UEV_TrueFungibleStakeBeneficiaryAccount beneficiary-id)
-                true
-            )
+            ;; beneficiary must exist + be a standard account — BOTH directions (mirror TF flow cap).
+            (UEV_TrueFungibleStakeBeneficiaryAccount beneficiary-id)
             (compose-capability (SECURE))
         )
     )
@@ -3370,12 +3363,10 @@
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
-                    (settle-beneficiary:string
-                        (if direction
-                            beneficiary-id
-                            (ref-AQP::URC_OrtoUnstakeBeneficiaryId pool-id dpof-id owner-id (at 0 nonces))
-                        )
-                    )
+                    ;; M5: beneficiary-id is authoritative BOTH directions (stake and unstake). The caller supplies
+                    ;; the real beneficiary on unstake too, so the exact (owner, beneficiary) tracker row is settled —
+                    ;; no self-key derivation (which stranded non-self stakes). Sufficiency is enforced in the cap.
+                    (settle-beneficiary:string beneficiary-id)
                     (settle-bundle:object{FVT|StakeSettleBundle}
                         (URDC_BuildStakeSettleBundle pool-id settle-beneficiary)
                     )
@@ -3450,14 +3441,10 @@
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
-                    (settle-beneficiary:string
-                        (if direction
-                            beneficiary-id
-                            (ref-AQP::URC_CollectableUnstakeBeneficiaryId
-                                pool-id collectable-id son owner-id (at 0 nonces)
-                            )
-                        )
-                    )
+                    ;; M5: beneficiary-id is authoritative BOTH directions (see C_OrtoFungibleStakeFlow). The caller
+                    ;; supplies the real beneficiary on unstake, so the exact (owner, beneficiary) tracker + Ben rollup
+                    ;; rows are settled — no self-key derivation. Sufficiency is enforced in the cap.
+                    (settle-beneficiary:string beneficiary-id)
                     (settle-bundle:object{FVT|StakeSettleBundle}
                         (URDC_BuildStakeSettleBundle pool-id settle-beneficiary)
                     )

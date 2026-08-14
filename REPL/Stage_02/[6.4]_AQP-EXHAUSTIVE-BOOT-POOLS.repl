@@ -40,7 +40,7 @@
         (expect (format "<<TX-AQP-BP01>> deb increased got={} pre={}" [deb-post deb-pre]) true (> deb-post deb-pre))
     )
     (print (format "<(C_UnstakeSemiFungible DHWC)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable patron pool-id owner dhwc-id [stake-nonce] [stake-amt])
+        (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable patron pool-id owner owner dhwc-id [stake-nonce] [stake-amt])
     ]))
     (let
         (

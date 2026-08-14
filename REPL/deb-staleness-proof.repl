@@ -237,7 +237,7 @@
             (enum-after-stake:bool (contains emma (ref-FVT::URD_FvtPresentUsers fvt-id)))
         )
         ;; FULL UNSTAKE — drops EMMA's last (only) position
-        (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable emma pool-id emma dhwc-id [nonce] [amt])
+        (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable emma pool-id emma emma dhwc-id [nonce] [amt])
         (let
             (
                 (present-after-unstake:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
@@ -292,7 +292,7 @@
     (expect "<<TX-AQP-DEB04>> ANHD WonderCoach weight >0 before"
         true (> (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id) 0.0))
     ;; fully unstake ONLY the WonderCoach member
-    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id anhd dhwc-id [nonce] [amt])
+    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id anhd anhd dhwc-id [nonce] [amt])
     (let
         (
             (wc-after:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
@@ -372,7 +372,7 @@
         (dhwc-id:string "DHWC-98c486052a51")
         (amt:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance wc-pool dhwc-id emma emma 2)))
     )
-    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable emma wc-pool emma dhwc-id [2] [amt])
+    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable emma wc-pool emma emma dhwc-id [2] [amt])
     (map print
         [
             (format "<(DEB05 present after unstaking WonderCoach)> => {}" [(ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)])
@@ -400,7 +400,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (kbn-id:string "KBN-98c486052a51")
     )
-    (ref-TS02-C3::AQP-POOL|C_UnstakeNonFungibleCollectable emma bunnies-pool emma kbn-id [1] [1])
+    (ref-TS02-C3::AQP-POOL|C_UnstakeNonFungibleCollectable emma bunnies-pool emma emma kbn-id [1] [1])
     (map print
         [
             (format "<(DEB05 present after unstaking Bunnies — the last)> => {}" [(ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)])
@@ -682,8 +682,8 @@
         (amt-anhd:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dhcd-id anhd anhd 5)))
         (amt-lumy:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dhcd-id lumy lumy 5)))
     )
-    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id anhd dhcd-id [5] [amt-anhd])
-    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id lumy dhcd-id [5] [amt-lumy])
+    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id anhd anhd dhcd-id [5] [amt-anhd])
+    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id lumy lumy dhcd-id [5] [amt-lumy])
     (map print
         [
             (format "<(DEB10a unstaked ANHD/LUMY nonce5)> => {} / {}" [amt-anhd amt-lumy])

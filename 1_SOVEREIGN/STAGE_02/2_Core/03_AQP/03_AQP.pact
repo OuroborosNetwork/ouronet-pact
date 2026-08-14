@@ -6,12 +6,6 @@
     (defun UCK_DPOFTracker:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
     (defun UCK_DPSFTracker:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
     (defun UCK_DPNFTracker:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UCK_DPSFScoreAttribution:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UCK_DPNFScoreAttribution:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
     (defun UCK_BenDptfTotal:string (beneficiary-id:string dptf-id:string))
     (defun UCK_BenDpsfNonceTotal:string (beneficiary-id:string dpsf-id:string nonce:integer))
     (defun UCK_BenDpnfNonceTotal:string (beneficiary-id:string dpnf-id:string nonce:integer))
@@ -36,6 +30,15 @@
     (defun URD_AQP|ActiveDpofTrackerRows:[object] (pool-id:string dpof-id:string))
     (defun URD_AQP|ActiveDpsfTrackerRows:[object] (pool-id:string dpsf-id:string))
     (defun URD_AQP|ActiveDpnfTrackerRows:[object] (pool-id:string dpnf-id:string))
+    ;; M5 (#14) UI observability — cross-pool per-user stake legs (owner-side + beneficiary-side).
+    (defun URD_AQP|DptfStakesByOwner:[object] (owner-id:string))
+    (defun URD_AQP|DptfStakesByBeneficiary:[object] (beneficiary-id:string))
+    (defun URD_AQP|DpofStakesByOwner:[object] (owner-id:string))
+    (defun URD_AQP|DpofStakesByBeneficiary:[object] (beneficiary-id:string))
+    (defun URD_AQP|DpsfStakesByOwner:[object] (owner-id:string))
+    (defun URD_AQP|DpsfStakesByBeneficiary:[object] (beneficiary-id:string))
+    (defun URD_AQP|DpnfStakesByOwner:[object] (owner-id:string))
+    (defun URD_AQP|DpnfStakesByBeneficiary:[object] (beneficiary-id:string))
     ;;
     ;;  [UR] AQP|TrueFungibleTracker (AQP|T|DPTFTracker)
     (defun UR_AQP|DPTFTrackerBalance:decimal (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
@@ -89,58 +92,6 @@
     (defun UR_AQP|DPNFTrackerBeneficiaryId:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
     (defun UR_AQP|DPNFTrackerNonce:integer (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
     ;;
-    ;;  [UR] AQP|DPSFScoreAttribution (AQP|T|DPSFScoreAttribution)
-    (defun UR_AQP|DPSFScoreAttributionCachedPositionScore:decimal
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPSFScoreAttributionAppliedDefRevisionNonce:integer
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPSFScoreAttributionPoolId:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPSFScoreAttributionDpsfId:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPSFScoreAttributionOwnerId:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPSFScoreAttributionBeneficiaryId:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPSFScoreAttributionNonce:integer
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPSFScoreAttributionScoreId:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    ;;
-    ;;  [UR] AQP|DPNFScoreAttribution (AQP|T|DPNFScoreAttribution)
-    (defun UR_AQP|DPNFScoreAttributionCachedPositionScore:decimal
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPNFScoreAttributionAppliedDefRevisionNonce:integer
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPNFScoreAttributionPoolId:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPNFScoreAttributionDpnfId:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPNFScoreAttributionOwnerId:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPNFScoreAttributionBeneficiaryId:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPNFScoreAttributionNonce:integer
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    (defun UR_AQP|DPNFScoreAttributionScoreId:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-    )
-    ;;
     ;;  [C]
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
         (patron:string pool-name:string asset-id:string aqp-class:integer)
@@ -176,7 +127,6 @@
     ;;
     ;;  [URC]  internal stake helpers (cross-module read from SCR XE_Apply*StakeDelta; FVT recipe cap)
     (defun URC_DptfStakeIsNativeLeg:bool (dptf-id:string))
-    (defun URC_OrtoUnstakeBeneficiaryId:string (pool-id:string dpof-id:string owner-id:string nonce:integer))
     (defun URC_OrtoStakeWholeNonceAmounts:bool (dpof-id:string nonces:[integer] nonce-amounts:[decimal]))
     (defun URC_PoolActiveScoreIds:[string] (pool-id:string))
     (defun URC_PoolHasEmployedScores:bool (pool-id:string))
@@ -186,15 +136,12 @@
     (defun URC_StakeOrtoFungiblePoolClassOk:bool (pool-id:string))
     (defun URC_StakeOrtoFungibleDpofMatchesPool:bool (pool-id:string dpof-id:string))
     (defun URC_OrtoUnstakeNoncesSufficient:bool
-        (pool-id:string dpof-id:string owner-id:string nonces:[integer] nonce-amounts:[decimal])
-    )
-    (defun URC_CollectableUnstakeBeneficiaryId:string
-        (pool-id:string collectable-id:string son:bool owner-id:string nonce:integer)
+        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[decimal])
     )
     (defun URC_StakeCollectablePoolClassOk:bool (pool-id:string son:bool))
     (defun URC_StakeCollectableMatchesPool:bool (pool-id:string collectable-id:string))
     (defun URC_CollectableUnstakeNoncesSufficient:bool
-        (pool-id:string collectable-id:string son:bool owner-id:string nonces:[integer] nonce-amounts:[integer])
+        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[integer])
     )
     ;;
     ;;  [XE]  cross-module forward (FVT::C_*StakeFlow · canonical phase 1 custody; AQP-VCT vacate session)
@@ -426,10 +373,7 @@
     ;;
     ;; [4] AQP|T|DPSFTracker
     (defschema AQP|SemiFungibleTracker
-        @doc "DPSF custody: staked balance per pool, collection, owner, \
-            \ beneficiary, nonce. Per-score contribution and revision live in \
-            \ AQP|T|DPSFScoreAttribution (one row per score-id that this stake \
-            \ updates, up to 7 per pool)."
+        @doc "DPSF custody: staked balance per pool, collection, owner, beneficiary, nonce."
         balance:decimal                                         ;;Stores DPSF Balance
         ;;
         ;;Select Keys
@@ -442,10 +386,7 @@
     ;;
     ;; [5] AQP|T|DPNFTracker
     (defschema AQP|NonFungibleTracker
-        @doc "DPNF custody: staked balance per pool, collection, owner, \
-            \ beneficiary, nonce. Per-score contribution and revision live in \
-            \ AQP|T|DPNFScoreAttribution (one row per score-id that this stake \
-            \ updates, up to 7 per pool)."
+        @doc "DPNF custody: staked balance per pool, collection, owner, beneficiary, nonce."
         balance:decimal                                         ;;Stores DPNF Balance
         ;;
         ;;Select Keys
@@ -454,48 +395,6 @@
         owner-id:string                                         ;;Owner-ID
         beneficiary-id:string                                   ;;Beneficiary-ID
         nonce:integer                                           ;;Nonce-Value
-    )
-    ;;
-    ;; [6] AQP|T|DPSFScoreAttribution
-    ;;Per pool score-id: one stake may update several of score-primary…septenary;
-    ;;each (pool, asset, position, score-id) gets its own cached contribution
-    ;;and def-revision cursor (SCR|T|SF|DefRevision / SCR|T|NF|DefRevision).
-    (defschema AQP|DPSFScoreAttribution
-        @doc "Last committed base score from this DPSF position for one \
-            \ pool score-id (same numeric sense as folded into \
-            \ SCR|T|UserScore.base-score). Compare applied-def-revision-nonce \
-            \ to SCR|T|SF|DefRevision at (score-id, dpsf-id). SFT: sft-equality \
-            \ vs nonce table. On refresh/unstake, delta user aggregate using \
-            \ cached-position-score vs recomputed value."
-        cached-position-score:decimal                           ;;[M] Last applied base score for this score-id
-        applied-def-revision-nonce:integer                      ;;Last applied SCR|T|SF|DefRevision revision
-        ;;
-        ;;Select Keys
-        pool-id:string
-        dpsf-id:string
-        owner-id:string
-        beneficiary-id:string
-        nonce:integer
-        score-id:string
-    )
-    ;;
-    ;; [7] AQP|T|DPNFScoreAttribution
-    (defschema AQP|DPNFScoreAttribution
-        @doc "Last committed base score from this DPNF position for one \
-            \ pool score-id. Compare applied-def-revision-nonce to \
-            \ SCR|T|NF|DefRevision.global-revision-nonce at (score-id, dpnf-id). NFT model 1: \
-            \ trait or class definition writes bump global (and their branch counter). Model 0 (native): compare \
-            \ cached-position-score to live native read when revision unchanged."
-        cached-position-score:decimal                           ;;[M] Last applied base score for this score-id
-        applied-def-revision-nonce:integer                      ;;Last applied SCR|T|NF|DefRevision.global-revision-nonce
-        ;;
-        ;;Select Keys
-        pool-id:string
-        dpnf-id:string
-        owner-id:string
-        beneficiary-id:string
-        nonce:integer
-        score-id:string
     )
     ;;
     ;; [8] AQP|T|BenDptfTotal
@@ -573,8 +472,6 @@
     (deftable AQP|T|DPOFTracker:{AQP|OrtoFungibleTracker})              ;;3] Key = <Pool-ID> | <DPOF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
     (deftable AQP|T|DPSFTracker:{AQP|SemiFungibleTracker})              ;;4] Key = <Pool-ID> | <DPSF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
     (deftable AQP|T|DPNFTracker:{AQP|NonFungibleTracker})               ;;5] Key = <Pool-ID> | <DPNF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce>
-    (deftable AQP|T|DPSFScoreAttribution:{AQP|DPSFScoreAttribution})    ;;6] Key = <Pool-ID> | <DPSF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce> | <Score-ID>
-    (deftable AQP|T|DPNFScoreAttribution:{AQP|DPNFScoreAttribution})    ;;7] Key = <Pool-ID> | <DPNF-ID> | <Owner-ID> | <Beneficiary-ID> | <Nonce> | <Score-ID>
     (deftable AQP|T|BenDptfTotal:{AQP|BenDptfTotal})                    ;;8] Key = <Beneficiary-ID> | <DPTF-ID>
     (deftable AQP|T|BenDpsfNonceTotal:{AQP|BenDpsfNonceTotal})          ;;9] Key = <Beneficiary-ID> | <DPSF-ID> | <Nonce>
     (deftable AQP|T|BenDpnfNonceTotal:{AQP|BenDpnfNonceTotal})          ;;10] Key = <Beneficiary-ID> | <DPNF-ID> | <Nonce>
@@ -719,7 +616,7 @@
                 (tracker-ok:bool
                     (if direction
                         true
-                        (URC_OrtoUnstakeNoncesSufficient pool-id dpof-id owner-id nonces nonce-amounts)
+                        (URC_OrtoUnstakeNoncesSufficient pool-id dpof-id owner-id beneficiary-id nonces nonce-amounts)
                     )
                 )
                 (l-n:integer (length nonces))
@@ -746,10 +643,9 @@
                 true
             )
             (UEV_StakeOrtoFungibleDpofLeg dpof-id)
-            (if direction
-                (UEV_StakeBeneficiaryAccount beneficiary-id)
-                true
-            )
+            ;; M5: beneficiary account must exist BOTH directions (owner may stake for self OR a foreign beneficiary;
+            ;; unstake removes that exact (owner, beneficiary) row). Mirror TF custody cap.
+            (UEV_StakeBeneficiaryAccount beneficiary-id)
             (CAP_StakeOwner owner-id)
             (compose-capability (P|AQP|CALLER))
             (compose-capability (AQP|GOV))
@@ -778,7 +674,7 @@
                     (if direction
                         true
                         (URC_CollectableUnstakeNoncesSufficient
-                            pool-id collectable-id son owner-id nonces nonce-amounts
+                            pool-id collectable-id son owner-id beneficiary-id nonces nonce-amounts
                         )
                     )
                 )
@@ -786,7 +682,7 @@
                     (if direction
                         true
                         (URC_CollectableUnstakeRollupSufficient
-                            pool-id collectable-id son owner-id nonces nonce-amounts
+                            pool-id collectable-id son owner-id beneficiary-id nonces nonce-amounts
                         )
                     )
                 )
@@ -807,10 +703,8 @@
                 true
             )
             (UEV_StakeCollectableLeg collectable-id son)
-            (if direction
-                (UEV_StakeBeneficiaryAccount beneficiary-id)
-                true
-            )
+            ;; M5: beneficiary account must exist BOTH directions (self OR foreign beneficiary). Mirror TF custody cap.
+            (UEV_StakeBeneficiaryAccount beneficiary-id)
             (CAP_StakeOwner owner-id)
             (compose-capability (P|AQP|CALLER))
             (compose-capability (AQP|GOV))
@@ -878,16 +772,6 @@
         @doc "Composite key for AQP|T|DPNFTracker: pool-id | dpnf-id | owner-id | beneficiary-id | nonce."
         (concat [pool-id BAR dpnf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce])])
     )
-    (defun UCK_DPSFScoreAttribution:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Composite key for AQP|T|DPSFScoreAttribution: pool | dpsf | owner | beneficiary | nonce | score-id."
-        (concat [pool-id BAR dpsf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce]) BAR score-id])
-    )
-    (defun UCK_DPNFScoreAttribution:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Composite key for AQP|T|DPNFScoreAttribution: pool | dpnf | owner | beneficiary | nonce | score-id."
-        (concat [pool-id BAR dpnf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce]) BAR score-id])
-    )
     (defun UCK_BenDptfTotal:string (beneficiary-id:string dptf-id:string)
         @doc "Composite key for AQP|T|BenDptfTotal: beneficiary-id | dptf-id."
         (concat [beneficiary-id BAR dptf-id])
@@ -949,30 +833,6 @@
         ,"owner-id"         : owner-id
         ,"beneficiary-id"   : beneficiary-id
         ,"nonce"            : nonce}
-    )
-    (defun UDC_AQP|DPSFScoreAttribution:object{AQP|DPSFScoreAttribution}
-        (cached:decimal rev:integer pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Default DPSF score attribution row."
-        {"cached-position-score"        : cached
-        ,"applied-def-revision-nonce"   : rev
-        ,"pool-id"                      : pool-id
-        ,"dpsf-id"                      : dpsf-id
-        ,"owner-id"                     : owner-id
-        ,"beneficiary-id"               : beneficiary-id
-        ,"nonce"                        : nonce
-        ,"score-id"                     : score-id}
-    )
-    (defun UDC_AQP|DPNFScoreAttribution:object{AQP|DPNFScoreAttribution}
-        (cached:decimal rev:integer pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Default DPNF score attribution row."
-        {"cached-position-score"        : cached
-        ,"applied-def-revision-nonce"   : rev
-        ,"pool-id"                      : pool-id
-        ,"dpnf-id"                      : dpnf-id
-        ,"owner-id"                     : owner-id
-        ,"beneficiary-id"               : beneficiary-id
-        ,"nonce"                        : nonce
-        ,"score-id"                     : score-id}
     )
     (defun UDC_AQP|BenDptfTotal:object{AQP|BenDptfTotal}
         (total:decimal sync-count:integer beneficiary-id:string dptf-id:string)
@@ -1222,30 +1082,6 @@
     ;; WU_DPNFTracker|BeneficiaryId — select key; WU not needed.
     ;; WU_DPNFTracker|Nonce — select key; WU not needed.
     ;;
-    ;; [6] AQP|T|DPSFScoreAttribution  (AQP|DPSFScoreAttribution)
-    ;; WI_DPSFScoreAttribution — not used: no write paths yet.
-    ;; WW_DPSFScoreAttribution — not used: no write paths yet.
-    ;; WU_DPSFScoreAttribution|CachedPositionScore — not used: no write paths yet.
-    ;; WU_DPSFScoreAttribution|AppliedDefRevisionNonce — not used: no write paths yet.
-    ;; WU_DPSFScoreAttribution|PoolId — select key; WU not needed.
-    ;; WU_DPSFScoreAttribution|DpsfId — select key; WU not needed.
-    ;; WU_DPSFScoreAttribution|OwnerId — select key; WU not needed.
-    ;; WU_DPSFScoreAttribution|BeneficiaryId — select key; WU not needed.
-    ;; WU_DPSFScoreAttribution|Nonce — select key; WU not needed.
-    ;; WU_DPSFScoreAttribution|ScoreId — select key; WU not needed.
-    ;;
-    ;; [7] AQP|T|DPNFScoreAttribution  (AQP|DPNFScoreAttribution)
-    ;; WI_DPNFScoreAttribution — not used: no write paths yet.
-    ;; WW_DPNFScoreAttribution — not used: no write paths yet.
-    ;; WU_DPNFScoreAttribution|CachedPositionScore — not used: no write paths yet.
-    ;; WU_DPNFScoreAttribution|AppliedDefRevisionNonce — not used: no write paths yet.
-    ;; WU_DPNFScoreAttribution|PoolId — select key; WU not needed.
-    ;; WU_DPNFScoreAttribution|DpnfId — select key; WU not needed.
-    ;; WU_DPNFScoreAttribution|OwnerId — select key; WU not needed.
-    ;; WU_DPNFScoreAttribution|BeneficiaryId — select key; WU not needed.
-    ;; WU_DPNFScoreAttribution|Nonce — select key; WU not needed.
-    ;; WU_DPNFScoreAttribution|ScoreId — select key; WU not needed.
-    ;;
     ;; [8] AQP|T|BenDptfTotal  (AQP|BenDptfTotal)
     ;; WI_BenDptfTotal — not used: first row touch is WW_BenDptfTotal (upsert path).
     (defun WW_BenDptfTotal:string
@@ -1334,8 +1170,7 @@
     ;;{F0}  [UR]
     ;; Reads follow schema order: (1) AQP|Schema (2) TrueFungibleTracker (2b) BenDptfTotal \
     ;;     (2c) BenDpsf* + BenDpnf* rollups \
-    ;;     (3) OrtoFungibleTracker (4) SemiFungibleTracker (5) NonFungibleTracker \
-    ;;     (6) DPSFScoreAttribution (7) DPNFScoreAttribution
+    ;;     (3) OrtoFungibleTracker (4) SemiFungibleTracker (5) NonFungibleTracker
     ;;
     ;; [1] AQP|T|Pool  (AQP|Schema)  Key = <Pool-ID>
     (defun URD_AQP|AllPoolIds:[string] ()
@@ -1736,124 +1571,6 @@
         (at "nonce" (UR_AQP|DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce))
     )
     ;;
-    ;; [6] AQP|T|DPSFScoreAttribution  (AQP|DPSFScoreAttribution)
-    (defun UR_AQP|DPSFScoreAttribution:object{AQP|DPSFScoreAttribution}
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads DPSF score attribution row; absent rows read as zero cache and revision 0."
-        (with-default-read AQP|T|DPSFScoreAttribution
-            (UCK_DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id)
-            (UDC_AQP|DPSFScoreAttribution 0.0 0 pool-id dpsf-id owner-id beneficiary-id nonce score-id)
-            {"cached-position-score"         := cps
-            ,"applied-def-revision-nonce"   := arn
-            ,"pool-id"                      := pid
-            ,"dpsf-id"                      := did
-            ,"owner-id"                     := oid
-            ,"beneficiary-id"               := bid
-            ,"nonce"                        := n
-            ,"score-id"                     := sid}
-            (UDC_AQP|DPSFScoreAttribution cps arn pid did oid bid n sid)
-        )
-    )
-    (defun UR_AQP|DPSFScoreAttributionCachedPositionScore:decimal
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads cached-position-score from DPSF score attribution row."
-        (at "cached-position-score" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPSFScoreAttributionAppliedDefRevisionNonce:integer
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads applied-def-revision-nonce from DPSF score attribution row."
-        (at "applied-def-revision-nonce" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPSFScoreAttributionPoolId:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads pool-id from DPSF score attribution row."
-        (at "pool-id" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPSFScoreAttributionDpsfId:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads dpsf-id from DPSF score attribution row."
-        (at "dpsf-id" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPSFScoreAttributionOwnerId:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads owner-id from DPSF score attribution row."
-        (at "owner-id" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPSFScoreAttributionBeneficiaryId:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads beneficiary-id from DPSF score attribution row."
-        (at "beneficiary-id" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPSFScoreAttributionNonce:integer
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads nonce from DPSF score attribution row."
-        (at "nonce" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPSFScoreAttributionScoreId:string
-        (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads score-id from DPSF score attribution row."
-        (at "score-id" (UR_AQP|DPSFScoreAttribution pool-id dpsf-id owner-id beneficiary-id nonce score-id))
-    )
-    ;;
-    ;; [7] AQP|T|DPNFScoreAttribution  (AQP|DPNFScoreAttribution)
-    (defun UR_AQP|DPNFScoreAttribution:object{AQP|DPNFScoreAttribution}
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads DPNF score attribution row; absent rows read as zero cache and revision 0."
-        (with-default-read AQP|T|DPNFScoreAttribution
-            (UCK_DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id)
-            (UDC_AQP|DPNFScoreAttribution 0.0 0 pool-id dpnf-id owner-id beneficiary-id nonce score-id)
-            {"cached-position-score"         := cps
-            ,"applied-def-revision-nonce"   := arn
-            ,"pool-id"                      := pid
-            ,"dpnf-id"                      := did
-            ,"owner-id"                     := oid
-            ,"beneficiary-id"               := bid
-            ,"nonce"                        := n
-            ,"score-id"                     := sid}
-            (UDC_AQP|DPNFScoreAttribution cps arn pid did oid bid n sid)
-        )
-    )
-    (defun UR_AQP|DPNFScoreAttributionCachedPositionScore:decimal
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads cached-position-score from DPNF score attribution row."
-        (at "cached-position-score" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPNFScoreAttributionAppliedDefRevisionNonce:integer
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads applied-def-revision-nonce from DPNF score attribution row."
-        (at "applied-def-revision-nonce" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPNFScoreAttributionPoolId:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads pool-id from DPNF score attribution row."
-        (at "pool-id" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPNFScoreAttributionDpnfId:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads dpnf-id from DPNF score attribution row."
-        (at "dpnf-id" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPNFScoreAttributionOwnerId:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads owner-id from DPNF score attribution row."
-        (at "owner-id" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPNFScoreAttributionBeneficiaryId:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads beneficiary-id from DPNF score attribution row."
-        (at "beneficiary-id" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPNFScoreAttributionNonce:integer
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads nonce from DPNF score attribution row."
-        (at "nonce" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
-    )
-    (defun UR_AQP|DPNFScoreAttributionScoreId:string
-        (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer score-id:string)
-        @doc "Reads score-id from DPNF score attribution row."
-        (at "score-id" (UR_AQP|DPNFScoreAttribution pool-id dpnf-id owner-id beneficiary-id nonce score-id))
-    )
-    ;;
     ;;{F1}  [URC]
     (defun URC_AqpOwnerKontoFromClassAndAsset:string (aqp-class:integer asset-id:string)
         @doc "Resolve pool governor konto from aqp-class and canonical native asset-id (issue-time or pre-pool-row)."
@@ -2123,8 +1840,9 @@
         )
     )
     (defun URC_OrtoUnstakeNoncesSufficient:bool
-        (pool-id:string dpof-id:string owner-id:string nonces:[integer] nonce-amounts:[decimal])
-        @doc "Unstake: each nonce has tracker balance ≥ unstake amount. v1 reads beneficiary from self-stake key (owner, owner)."
+        (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[decimal])
+        @doc "Unstake: each nonce has tracker balance ≥ unstake amount at the exact (owner, beneficiary) row. \
+            \ M5: beneficiary-id is caller-supplied (self OR foreign), not a self-key derivation."
         (let
             (
                 (l:integer (length nonces))
@@ -2138,8 +1856,7 @@
                             (
                                 (n:integer (at idx nonces))
                                 (q:decimal (at idx nonce-amounts))
-                                (bid:string (UR_AQP|DPOFTrackerBeneficiaryId pool-id dpof-id owner-id owner-id n))
-                                (bal:decimal (UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id bid n))
+                                (bal:decimal (UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id n))
                             )
                             (>= bal q)
                         )
@@ -2148,11 +1865,6 @@
                 )
             )
         )
-    )
-    (defun URC_OrtoUnstakeBeneficiaryId:string
-        (pool-id:string dpof-id:string owner-id:string nonce:integer)
-        @doc "Unstake: read beneficiary-id from DPOF tracker row. v1 uses self-stake key (beneficiary=owner); explicit beneficiary unstake TBD."
-        (UR_AQP|DPOFTrackerBeneficiaryId pool-id dpof-id owner-id owner-id nonce)
     )
     (defun URC_OrtoStakeWholeNonceAmounts:bool
         (dpof-id:string nonces:[integer] nonce-amounts:[decimal])
@@ -2190,17 +1902,10 @@
         @doc "True when collectable-id equals pool canonical asset-id."
         (= collectable-id (UR_AQP|PoolAssetId pool-id))
     )
-    (defun URC_CollectableUnstakeBeneficiaryId:string
-        (pool-id:string collectable-id:string son:bool owner-id:string nonce:integer)
-        @doc "Unstake: read beneficiary-id from DPSF/DPNF tracker row. v1 uses self-stake key (beneficiary=owner)."
-        (if son
-            (UR_AQP|DPSFTrackerBeneficiaryId pool-id collectable-id owner-id owner-id nonce)
-            (UR_AQP|DPNFTrackerBeneficiaryId pool-id collectable-id owner-id owner-id nonce)
-        )
-    )
     (defun URC_CollectableUnstakeNoncesSufficient:bool
-        (pool-id:string collectable-id:string son:bool owner-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "Unstake: each nonce has tracker balance ≥ unstake amount."
+        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Unstake: each nonce has tracker balance ≥ unstake amount at the exact (owner, beneficiary) row. \
+            \ M5: beneficiary-id is caller-supplied (self OR foreign), not a self-key derivation."
         (let
             (
                 (l:integer (length nonces))
@@ -2214,11 +1919,10 @@
                             (
                                 (n:integer (at idx nonces))
                                 (q:integer (at idx nonce-amounts))
-                                (bid:string (URC_CollectableUnstakeBeneficiaryId pool-id collectable-id son owner-id n))
                                 (bal:decimal
                                     (if son
-                                        (UR_AQP|DPSFTrackerBalance pool-id collectable-id owner-id bid n)
-                                        (UR_AQP|DPNFTrackerBalance pool-id collectable-id owner-id bid n)
+                                        (UR_AQP|DPSFTrackerBalance pool-id collectable-id owner-id beneficiary-id n)
+                                        (UR_AQP|DPNFTrackerBalance pool-id collectable-id owner-id beneficiary-id n)
                                     )
                                 )
                             )
@@ -2238,8 +1942,9 @@
         )
     )
     (defun URC_CollectableUnstakeRollupSufficient:bool
-        (pool-id:string collectable-id:string son:bool owner-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "Unstake: each nonce has cross-pool Ben* nonce rollup amount ≥ unstake amount."
+        (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Unstake: each nonce has cross-pool Ben* nonce rollup amount ≥ unstake amount for the beneficiary. \
+            \ M5: beneficiary-id is caller-supplied (self OR foreign), not a self-key derivation."
         (let
             (
                 (l:integer (length nonces))
@@ -2253,11 +1958,10 @@
                             (
                                 (n:integer (at idx nonces))
                                 (q:integer (at idx nonce-amounts))
-                                (bid:string (URC_CollectableUnstakeBeneficiaryId pool-id collectable-id son owner-id n))
                                 (rollup-amt:integer
                                     (if son
-                                        (UR_AQP|BenDpsfNonceAmount bid collectable-id n)
-                                        (UR_AQP|BenDpnfNonceAmount bid collectable-id n)
+                                        (UR_AQP|BenDpsfNonceAmount beneficiary-id collectable-id n)
+                                        (UR_AQP|BenDpnfNonceAmount beneficiary-id collectable-id n)
                                     )
                                 )
                             )
@@ -2340,6 +2044,111 @@
                     )
                 )
             )
+        )
+    )
+    ;;
+    ;; ── M5 (#14) UI OBSERVABILITY ──────────────────────────────────────────────
+    ;; Cross-pool, dirty-read `select` helpers over the trackers (no maintained tables). For a user U:
+    ;;   ByOwner(U)       → every leg U staked (as owner). Split: self = rows where beneficiary-id = U;
+    ;;                       staked-for-others = rows where beneficiary-id != U.  (answers query A + B)
+    ;;   ByBeneficiary(U) → every leg staked FOR U (as beneficiary). gifted-by-others = rows where owner-id != U.
+    ;;                       (answers query C; owner-id = U rows are U's own self-stakes)
+    ;; TF is amount-based (no nonce); OF/SF/NF carry nonce + amount. Rows include pool-id + asset-id + the
+    ;; counterparty so the UI can display everything and has all inputs for any unstake.
+    (defun URD_AQP|DptfStakesByOwner:[object] (owner-id:string)
+        @doc "UI: all TF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dptf-id, beneficiary-id, balance}."
+        (map
+            (lambda (row:object)
+                {"pool-id": (at "pool-id" row), "dptf-id": (at "dptf-id" row),
+                 "beneficiary-id": (at "beneficiary-id" row), "balance": (at "balance" row)}
+            )
+            (filter (lambda (row:object) (> (at "balance" row) 0.0))
+                (select AQP|T|DPTFTracker ["pool-id" "dptf-id" "beneficiary-id" "balance"]
+                    (where "owner-id" (= owner-id))))
+        )
+    )
+    (defun URD_AQP|DptfStakesByBeneficiary:[object] (beneficiary-id:string)
+        @doc "UI: all TF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dptf-id, owner-id, balance}."
+        (map
+            (lambda (row:object)
+                {"pool-id": (at "pool-id" row), "dptf-id": (at "dptf-id" row),
+                 "owner-id": (at "owner-id" row), "balance": (at "balance" row)}
+            )
+            (filter (lambda (row:object) (> (at "balance" row) 0.0))
+                (select AQP|T|DPTFTracker ["pool-id" "dptf-id" "owner-id" "balance"]
+                    (where "beneficiary-id" (= beneficiary-id))))
+        )
+    )
+    (defun URD_AQP|DpofStakesByOwner:[object] (owner-id:string)
+        @doc "UI: all OF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dpof-id, beneficiary-id, nonce, balance}."
+        (map
+            (lambda (row:object)
+                {"pool-id": (at "pool-id" row), "dpof-id": (at "dpof-id" row),
+                 "beneficiary-id": (at "beneficiary-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
+            )
+            (filter (lambda (row:object) (> (at "balance" row) 0.0))
+                (select AQP|T|DPOFTracker ["pool-id" "dpof-id" "beneficiary-id" "nonce" "balance"]
+                    (where "owner-id" (= owner-id))))
+        )
+    )
+    (defun URD_AQP|DpofStakesByBeneficiary:[object] (beneficiary-id:string)
+        @doc "UI: all OF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dpof-id, owner-id, nonce, balance}."
+        (map
+            (lambda (row:object)
+                {"pool-id": (at "pool-id" row), "dpof-id": (at "dpof-id" row),
+                 "owner-id": (at "owner-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
+            )
+            (filter (lambda (row:object) (> (at "balance" row) 0.0))
+                (select AQP|T|DPOFTracker ["pool-id" "dpof-id" "owner-id" "nonce" "balance"]
+                    (where "beneficiary-id" (= beneficiary-id))))
+        )
+    )
+    (defun URD_AQP|DpsfStakesByOwner:[object] (owner-id:string)
+        @doc "UI: all SF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dpsf-id, beneficiary-id, nonce, balance}."
+        (map
+            (lambda (row:object)
+                {"pool-id": (at "pool-id" row), "dpsf-id": (at "dpsf-id" row),
+                 "beneficiary-id": (at "beneficiary-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
+            )
+            (filter (lambda (row:object) (> (at "balance" row) 0.0))
+                (select AQP|T|DPSFTracker ["pool-id" "dpsf-id" "beneficiary-id" "nonce" "balance"]
+                    (where "owner-id" (= owner-id))))
+        )
+    )
+    (defun URD_AQP|DpsfStakesByBeneficiary:[object] (beneficiary-id:string)
+        @doc "UI: all SF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dpsf-id, owner-id, nonce, balance}."
+        (map
+            (lambda (row:object)
+                {"pool-id": (at "pool-id" row), "dpsf-id": (at "dpsf-id" row),
+                 "owner-id": (at "owner-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
+            )
+            (filter (lambda (row:object) (> (at "balance" row) 0.0))
+                (select AQP|T|DPSFTracker ["pool-id" "dpsf-id" "owner-id" "nonce" "balance"]
+                    (where "beneficiary-id" (= beneficiary-id))))
+        )
+    )
+    (defun URD_AQP|DpnfStakesByOwner:[object] (owner-id:string)
+        @doc "UI: all NF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dpnf-id, beneficiary-id, nonce, balance}."
+        (map
+            (lambda (row:object)
+                {"pool-id": (at "pool-id" row), "dpnf-id": (at "dpnf-id" row),
+                 "beneficiary-id": (at "beneficiary-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
+            )
+            (filter (lambda (row:object) (> (at "balance" row) 0.0))
+                (select AQP|T|DPNFTracker ["pool-id" "dpnf-id" "beneficiary-id" "nonce" "balance"]
+                    (where "owner-id" (= owner-id))))
+        )
+    )
+    (defun URD_AQP|DpnfStakesByBeneficiary:[object] (beneficiary-id:string)
+        @doc "UI: all NF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dpnf-id, owner-id, nonce, balance}."
+        (map
+            (lambda (row:object)
+                {"pool-id": (at "pool-id" row), "dpnf-id": (at "dpnf-id" row),
+                 "owner-id": (at "owner-id" row), "nonce": (at "nonce" row), "balance": (at "balance" row)}
+            )
+            (filter (lambda (row:object) (> (at "balance" row) 0.0))
+                (select AQP|T|DPNFTracker ["pool-id" "dpnf-id" "owner-id" "nonce" "balance"]
+                    (where "beneficiary-id" (= beneficiary-id))))
         )
     )
     ;;{F2}  [UEV]
@@ -2927,19 +2736,10 @@
                     (slot-ocs:[object{IgnisCollectorV1.OutputCumulator}]
                         (map
                             (lambda (idx:integer)
-                                (let
-                                    (
-                                        (n:integer (at idx nonces))
-                                        (bid:string
-                                            (if direction
-                                                beneficiary-id
-                                                (URC_OrtoUnstakeBeneficiaryId pool-id dpof-id owner-id n)
-                                            )
-                                        )
-                                    )
-                                    (XI_1|WriteDpofTrackerSlot
-                                        pool-id owner-id bid dpof-id n (at idx nonce-amounts) direction
-                                    )
+                                ;; M5: write/remove the exact (owner, beneficiary) tracker row BOTH directions —
+                                ;; beneficiary-id is caller-supplied (self OR foreign), no self-key derivation.
+                                (XI_1|WriteDpofTrackerSlot
+                                    pool-id owner-id beneficiary-id dpof-id (at idx nonces) (at idx nonce-amounts) direction
                                 )
                             )
                             (enumerate 0 (- l 1))
@@ -3001,21 +2801,10 @@
                     (slot-ocs:[object{IgnisCollectorV1.OutputCumulator}]
                         (map
                             (lambda (idx:integer)
-                                (let
-                                    (
-                                        (n:integer (at idx nonces))
-                                        (bid:string
-                                            (if direction
-                                                beneficiary-id
-                                                (URC_CollectableUnstakeBeneficiaryId
-                                                    pool-id collectable-id son owner-id n
-                                                )
-                                            )
-                                        )
-                                    )
-                                    (XI_1|WriteCollectableTrackerSlot
-                                        pool-id owner-id bid collectable-id son n (at idx nonce-amounts) direction
-                                    )
+                                ;; M5: write/remove the exact (owner, beneficiary) tracker row BOTH directions —
+                                ;; beneficiary-id is caller-supplied (self OR foreign), no self-key derivation.
+                                (XI_1|WriteCollectableTrackerSlot
+                                    pool-id owner-id beneficiary-id collectable-id son (at idx nonces) (at idx nonce-amounts) direction
                                 )
                             )
                             (enumerate 0 (- l 1))
@@ -3048,21 +2837,10 @@
                     (slot-ocs:[object{IgnisCollectorV1.OutputCumulator}]
                         (map
                             (lambda (idx:integer)
-                                (let
-                                    (
-                                        (n:integer (at idx nonces))
-                                        (bid:string
-                                            (if direction
-                                                beneficiary-id
-                                                (URC_CollectableUnstakeBeneficiaryId
-                                                    pool-id collectable-id son owner-id n
-                                                )
-                                            )
-                                        )
-                                    )
-                                    (XI_1|BumpBenCollectableNonceTotalSlot
-                                        bid collectable-id son n (at idx nonce-amounts) direction
-                                    )
+                                ;; M5: bump/unbump the exact beneficiary rollup slot BOTH directions —
+                                ;; beneficiary-id is caller-supplied (self OR foreign), no self-key derivation.
+                                (XI_1|BumpBenCollectableNonceTotalSlot
+                                    beneficiary-id collectable-id son (at idx nonces) (at idx nonce-amounts) direction
                                 )
                             )
                             (enumerate 0 (- l 1))
@@ -3344,8 +3122,6 @@
 (create-table AQP|T|DPOFTracker)
 (create-table AQP|T|DPSFTracker)
 (create-table AQP|T|DPNFTracker)
-(create-table AQP|T|DPSFScoreAttribution)
-(create-table AQP|T|DPNFScoreAttribution)
 (create-table AQP|T|BenDptfTotal)
 (create-table AQP|T|BenDpsfNonceTotal)
 (create-table AQP|T|BenDpnfNonceTotal)
