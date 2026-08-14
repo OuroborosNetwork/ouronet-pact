@@ -873,3 +873,32 @@ revoked anchor. One line; valid revokes unaffected.
 
 **Proven (`[6.2.1]` TX002·06b):** after `TFTEMPaa` is revoked, re-revoking it is rejected via `expect-failure`.
 golden 33/0, Z 241/0, comprehensive 260/0.
+
+## Fix #18 — L6 · ANK: floor per-anchor user promile at the write chokepoint  ✅ DONE
+
+**Plan item:** #18 (LOW, Phase E). **Finding:** L6. **File:** `01_ANK.pact`.
+
+**Gap:** `URC_SemiFungibleAnchorPromile` / `URC_NonFungibleAnchorPromile` maintain the user's per-anchor promile
+incrementally (`current ± delta`); the unstake branch subtracts with **no floor**, so if the unstake delta ever
+exceeds the recorded promile the stored value goes **negative** (and the aggregate, a Σ of these, with it).
+
+**Reachability (why guard — unlike the tautology in #16):** SF is provably safe (delta bounded by unstake
+sufficiency + immutable anchor def). **NF is not**: `conform-nonces` counts staked NFTs whose **trait** matches the
+anchor, read from **mutable collectable metadata**. NFT metadata can be changed *from outside the staked position*
+at the DPDC layer — and a collectable-level "lock metadata" tag doesn't truly close it (toggleable; and the DPDC
+**module admin** can bypass any lock via `acquire-module-admin` + direct table write). So AQP cannot rely on an
+upstream invariant; it must **guard its own accounting at its boundary** (owner decision).
+
+**Fix:** floored the stored promile at 0 in **`WW_Anchors`** — the SOLE write chokepoint through which every
+per-anchor user promile write flows (TF/SF/NF × incremental/absolute, and any future path). One guard covers them
+all; the aggregate (`XI_2|RecomputeAffectedBoostAggregates` = Σ of per-anchor promiles) is then non-negative too.
+Chose a **floor, not an `enforce`**: a hard abort on unstake would strand a staker's assets when the metadata is in
+a bad state; the clamp lets unstake always succeed, and the `…PromileAbsolute` resync recomputes the true value.
+(`max` is not a Pact-5 builtin — used `(if (< promile 0.0) 0.0 promile)`.)
+
+**Verification:** golden 33/0, Z 241/0, comprehensive 260/0 (valid flows unaffected — the clamp only bites a
+negative, which normal stake/unstake never produce). A forced-desync negative test (mutate an NFT trait while its
+nonce is staked, then unstake) is awkward to stand up in the harness → Round-III item.
+
+**Related:** L7 (#19) is the SCORE-side analogue (mutable SF/NF definition rows → asymmetric base-score delta) — same
+"reachable via mutable external definition" root; to be handled next.

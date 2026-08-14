@@ -1555,10 +1555,16 @@
     ;; WI_Anchors — not used: first row touch is WW_Anchors (upsert path).
     (defun WW_Anchors:string
         (account:string anchor-id:string promile:decimal)
-        @doc "Upsert user promile on ANK|T|Anchors for (account, anchor-id)."
+        @doc "Upsert user promile on ANK|T|Anchors for (account, anchor-id). L6 #18: floors the stored promile at \
+            \ 0 — this is the SOLE write chokepoint for per-anchor user promile (every TF/SF/NF, incremental AND \
+            \ absolute, path routes here), so an incremental delta can never persist a negative. The trigger is \
+            \ real and outside AQP's control (NFT metadata on a trait-anchor is mutable at the DPDC layer, even by \
+            \ module admin), so AQP guards its own accounting at its boundary. The aggregate (Σ of these) is then \
+            \ non-negative too; the …PromileAbsolute resync recomputes the true value. Floor, not enforce — a hard \
+            \ abort would strand a staker's assets; the clamp lets unstake always succeed."
         (require-capability (SECURE))
         (write ANK|T|Anchors (UCK_Anchors account anchor-id)
-            (UDC_AccountAnchor promile account anchor-id)
+            (UDC_AccountAnchor (if (< promile 0.0) 0.0 promile) account anchor-id)
         )
     )
     ;; WU_Anchors|Promile — not used: mutates via WW_Anchors (full row).

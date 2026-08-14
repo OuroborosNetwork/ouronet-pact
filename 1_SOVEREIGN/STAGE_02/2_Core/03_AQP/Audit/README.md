@@ -46,7 +46,7 @@ place. Module `.pact` source changes **only** during a Fixes round, one fix at a
 | L3 | LOW | POOL | `select`/URD on sync path | PLAUSIBLE | **CONVENTION R3** (→ `CC_`/`AA_` rename) |
 | L4 | LOW | ANK | no `UEV_LiveAnchor` on revoke | CONFIRMED | **DONE ✅ (#17)** — added `(UEV_LiveAnchor anchor-id)` as the first check in `ANK|C>REVOKE` (revoke sets `State→false`, so a double-revoke now aborts early + clearly instead of deep in `UC_RemoveItemAt`; the H4 lock never reads a dead anchor). Was the unused `UEV_LiveAnchor` (finally wired). Proven `[6.2.1]` TX002·06b (re-revoke of the dead TFTEMPaa rejected). golden 33/0, Z 241/0, comprehensive 260/0 |
 | L5 | LOW | ANK | XE returns OutputCumulator | PLAUSIBLE | **CONVENTION R1** (→ `X-cm_` rename) |
-| L6 | LOW | ANK | SF/NF incremental promile no floor | PLAUSIBLE | **CONFIRMED** |
+| L6 | LOW | ANK | SF/NF incremental promile no floor | CONFIRMED | **DONE ✅ (#18)** — floored the stored per-anchor promile at 0 in `WW_Anchors` (the SOLE write chokepoint for all TF/SF/NF, incremental+absolute paths). Owner call: the trigger IS reachable & outside AQP's control (NFT trait metadata on a trait-anchor is mutable at DPDC, even by module admin — a collectable lock is bypassable), so AQP guards its own accounting at its boundary. Floor not enforce (a hard abort would strand a staker's assets). Aggregate = Σ per-anchor promile ⇒ non-negative too. `max` isn't a Pact builtin → used `(if (< x 0.0) 0.0 x)`. golden 33/0, Z 241/0, comprehensive 260/0 |
 | L7 | LOW | SCORE | mutable defs → asymmetric delta | PLAUSIBLE | **CONFIRMED / INVESTIGATE** |
 | L8 | LOW | SCORE | trailing non-write X returns | PLAUSIBLE | **CONVENTION R4** (allowed + `@doc`) |
 | L9 | LOW | VCT | dead `VACATE-MAX-LEGS`=16 / parity helper | PLAUSIBLE | **CONFIRMED** (remove) |
@@ -88,7 +88,7 @@ place. Module `.pact` source changes **only** during a Fixes round, one fix at a
 **Phase E — LOW (logic)**
 16. L1 · POOL — remove `enforce` from URC (turned out **tautological**; deleted whole check). ✅ **DONE (#16)**
 17. L4 · ANK — add `UEV_LiveAnchor` to revoke (may fold into H4-B). ✅ **DONE (#17)**
-18. L6 · ANK — hard floor on SF/NF incremental promile.
+18. L6 · ANK — hard floor on SF/NF incremental promile (floored at the `WW_Anchors` write chokepoint). ✅ **DONE (#18)**
 19. L7 · SCORE — verify stop-stake closes mutable-def asymmetry; guard if not.
 20. L9 · VCT — remove dead `VACATE-MAX-LEGS` + parity helper.
 21. L10 · FVT — remove redundant double member-settle.
