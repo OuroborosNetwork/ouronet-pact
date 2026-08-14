@@ -902,3 +902,28 @@ nonce is staked, then unstake) is awkward to stand up in the harness → Round-I
 
 **Related:** L7 (#19) is the SCORE-side analogue (mutable SF/NF definition rows → asymmetric base-score delta) — same
 "reachable via mutable external definition" root; to be handled next.
+
+## Fix #19 — L7 · SCORE: NO FIX — misdiagnosis (negative user base is by design)  ✅ CLOSED
+
+**Plan item:** #19 (LOW, Phase E). **Finding:** L7 ("mutable defs → asymmetric delta → negative base; same no-floor
+root as H1"). **Outcome:** **no code change** — the finding's premise is wrong.
+
+**What we tried:** the obvious analogue of #18 — floor `local-base-raw` at 0 in
+`URC_SingularUserScoreDeltaFromSignedUserBase` (the single base-delta chokepoint for LP/TF/SF/NF).
+
+**Why it's wrong:** it immediately broke `[6.2.5]` TX-VCT-DPNF01/02/03 (Z 236/10). Instrumenting the base proved
+why: that DPNF probe stakes an NFT whose **trait-score definition is −1**, so on stake the user base goes to
+**−1** and on unstake back to **0** — a correct round-trip. SCORE base = **Σ trait-score-values**, and trait scores
+**can be negative by design** (a trait that *reduces* weight). A negative user base is therefore **legitimate**, not
+corruption. Flooring `local-base-raw` clamped the −1 stake to 0, so the +1 unstake left base = 1.0, the pool never
+registered as fully vacated (nzs stuck at 1), and stake never re-enabled. Reverted; Z back to 241/0.
+
+**The L6 vs L7 distinction (the real lesson):** #18's floor was correct because ANK promile = `count × ank-promile`
+with `ank-promile ∈ [1,10000]` and `count ≥ 0` ⇒ promile is **always ≥ 0**, so a negative there can *only* be an
+asymmetric-def bug and the floor never bites a valid value. SCORE base has no such lower bound (negative traits), so
+the same floor corrupts valid data. **Before flooring any accumulator, confirm the negative is actually invalid** —
+logged in `memories/2026-08-14-tautological-validation-checks.md`.
+
+**Residual (the def-change asymmetry):** if a definition changes between stake and unstake the deltas differ, but a
+*wrong* base (not a negative-is-invalid case) is corrected by the existing `applied-def-revision-nonce` absolute
+resync — not by a floor. So L7 needs no guard. golden 33/0, Z 241/0.
