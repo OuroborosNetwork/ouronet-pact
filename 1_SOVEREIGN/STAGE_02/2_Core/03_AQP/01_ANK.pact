@@ -99,6 +99,7 @@
     )
     (defun XE_BumpBoostClassScoreLinks:string (boost-class-id:string score-id:string))
     (defun XE_UnbumpBoostClassScoreLinks:string (boost-class-id:string score-id:string))
+    (defun XE_RecomputeUserBoostAggregates:string (account:string boost-class-ids:[string]))
     (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
     )
@@ -532,6 +533,11 @@
     )
     (defcap ANK|C>BUMP-BOOST-CLASS-LINKS (boost-class-id:string)
         @doc "Authorizes AQP-SCORE (forward) to +1 a BoostClass score-link count — the H4 (#9) revoke lock."
+        (compose-capability (SECURE))
+    )
+    (defcap ANK|XE>SWEEP ()
+        @doc "Forward (re-score sweep · MTX-AQP): authorize the anchor-retire sweep's ANK writes — per-holder \
+            \ aggregate-promile refold + swept anchor removal. NO fund movement. Composes SECURE."
         (compose-capability (SECURE))
     )
     (defcap ANK|C>REVOKE-BOOST-CLASS-ENTRY (boost-class-id:string)
@@ -1822,6 +1828,19 @@
         (UEV_IMC)
         (with-capability (ANK|C>BUMP-BOOST-CLASS-LINKS boost-class-id)
             (WU_BC|RemoveScoreLink boost-class-id score-id)
+        )
+    )
+    (defun XE_RecomputeUserBoostAggregates:string
+        (account:string boost-class-ids:[string])
+        @doc "Forward (re-score sweep): refold this user's aggregate-promile for the given boost-classes from the \
+            \ anchors CURRENTLY in each class. After a sweep removes (or re-prices) an anchor GLOBALLY, this \
+            \ re-derives each holder's stored aggregate-promile so it no longer reflects the retired anchor — the \
+            \ DEEPER recompute (the deb refresh alone assumes the aggregate is correct). NO fund movement; the \
+            \ sweep defpact bills IGNIS. UEV_IMC + ANK|XE>SWEEP (composes SECURE)."
+        (UEV_IMC)
+        (with-capability (ANK|XE>SWEEP)
+            (XI_2|RecomputeAffectedBoostAggregates account boost-class-ids)
+            (format "ANK sweep: refolded {} boost aggregate(s) for {}" [(length boost-class-ids) account])
         )
     )
     ;;

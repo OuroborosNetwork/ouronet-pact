@@ -6,8 +6,21 @@
 **DECISIONS (locked 2026-08-15):**
 - **D1** Module home = **extend `MTX-AQP`** (its charter is "all AQP multi-tx defpacts"). ✅
 - **D2** Anchor ops = **revoke + re-price** an in-use anchor (same walk serves both). ✅
-- **D3** Sweep freeze = disable **stake admission** on affected pools + `sweep-in-progress` flag; **collect stays
-  open** (self-heals via the PHASE-6 backstop). ✅
+- **D3** ~~Sweep freeze = disable stake admission only; collect stays open.~~ **REVISED 2026-08-15:** the sweep
+  freezes **stake admission AND collect** on affected pools until it completes. Reason: `XE_RefreshUserScoreDeb`
+  recomputes deb at the *stored* aggregate-promile — it does NOT recompute the aggregate. During a revoke/re-price
+  sweep the aggregate is in flux (anchor removed/re-priced globally, holders recomputed over N txs), so a holder
+  who collects **before being swept** would refresh deb against a stale-high aggregate ⇒ over-collect. The PHASE-6
+  backstop heals *deb* staleness, not *aggregate* staleness. Freezing collect for the bounded operator-run sweep is
+  the simple, correct fix. (Making the collect backstop aggregate-aware — the alternative — touches the hot collect
+  path; deferred.) ✅
+
+**Phase-3 build order (revoke-first):** (1) expose `XE_RecomputeUserBoostAggregates` (wrap
+`XI_2|RecomputeAffectedBoostAggregates`); (2) triplet-lane recompute XE_ (D5); (3) `sweep-in-progress` freeze
+(stake **+ collect**) on affected pools; (4) swept-revoke path (removes the anchor, skips the `set==0` lock because
+the sweep refreshed everyone — distinct from `C_RevokeAnchor`; the reverse-index set is UNCHANGED by anchor revoke,
+scores stay linked) + the paginated sweep defpact in MTX-AQP; (5) Talos + end-to-end proof. Re-price is a later 3b
+(adds a per-anchor-user-promile refresh before the aggregate refold).
 - **D4** Sweep gas = **owner-initiated → owner pays**; NO staker 2e-penalty. ✅
 - **D5** Triplet + anchor = **SUPPORTED — do NOT forbid.** The sweep MUST carry a **triplet-lane recompute** path
   (option a); an anchor change on a triplet's boost-class re-prices its lanes (`URC_ComputeTripletLanes`). ✅
