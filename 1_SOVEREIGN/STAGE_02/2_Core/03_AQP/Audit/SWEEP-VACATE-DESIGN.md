@@ -178,9 +178,17 @@ score *definitions* (few), not stakers. This replaces the coarse count with an e
 **Phase 3 must still BUILD (not reuse — sweep-specific, the DEEPER recompute):** an exposed aggregate-promile
 refresh XE_ (anchor def changed ⇒ stored aggregate-promile stale), a triplet-lane recompute XE_ (D5), the
 `sweep-in-progress` freeze, and the sweep client + defpact in MTX-AQP.
-- **Phase 3 — anchor sweep.** Reverse-index scan + freeze + per-position (promile-aggregate + deb + triplet-lane)
-  recompute + unlink/revoke/decrement teardown. New Talos client + defpact in MTX-AQP. Prove: retire an in-use
-  anchor end-to-end + re-price; lock releases.
+- **Phase 3 — anchor sweep.** ✅ **DONE (single-tx `CC_SweepRevokeAnchor`).** Built + PROVEN end-to-end
+  (`deb-proof` TX-AQP-SWEEP01: LUMY, the KBN-asset/anchor owner, retires the employed AurynRain anchor →
+  aggregate-promile 100→0, true-triplet lanes 20→0, reverse-index unchanged, pool unfrozen). Pieces: reverse-index
+  scan (leg→member via `UR_SCR|ScoreTripletId`) + `sweep-in-progress` freeze (stake+collect) + per-holder
+  `XI_SweepRecomputeUserMember` (settle → aggregate refold → deb refresh OR true-triplet lane refold) + swept-revoke
+  (`XE_SweepRevokeAnchor`, skips the #9 lock) + Talos wrapper. Two bugs the proof caught + fixed: the true-triplet
+  lane refold needed the aggregate refold FIRST (lanes read `UR_UB|AggregatePromile`); and
+  `XI_2|RecomputeAffectedBoostAggregates` skipped the write when a class emptied (stale aggregate on last-anchor
+  removal). Auth = the anchored-asset owner (owner clarification: no separate anchor-owner). **Deferred within
+  phase 3:** the RE-PRICE variant (3b — adds a per-anchor-user-promile refresh) and a paginated MTX|n defpact for
+  spike staker sets (mirrors CC_Inject → MTX|2|C_Inject).
 - **Phase 4 — vacate rehaul.** 8→1+2 defpacts, asset-kind dispatch, dead-code removal, hash-commitment. Riskiest
   (asset custody) → last, heavy tests. Absorbs L9/#20.
 
