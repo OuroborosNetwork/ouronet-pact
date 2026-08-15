@@ -140,6 +140,9 @@
     (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string fvt-id:string score-entity-id:string)
     )
+    (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV1.OutputCumulator}
+        (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
+    )
     (defun XB_FvtInject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
@@ -4322,6 +4325,64 @@
             )
         )
     )
+    (defun XI_SweepRecomputeUserMember:object{IgnisCollectorV1.OutputCumulator}
+        (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string swept-boost-class-id:string)
+        @doc "Re-score sweep per-holder recompute for one (user, member) after an anchor in `swept-boost-class-id` \
+            \ was removed/re-priced GLOBALLY. Order matters: (1) SETTLE every reward stream at the OLD weight + \
+            \ advance last-rps (banks pending before any weight change); then dispatch — TRUE triplet (deb- \
+            \ independent) → (2t) refold the Level-1 lanes at the live promile; deb-based (singular / non-true \
+            \ triplet) → (2) REFOLD the holder's aggregate-promile for the swept class (ANK — the DEEPER recompute \
+            \ XI_FixUserMemberDeb omits, since a DEF change makes the stored aggregate stale), (3) refresh the SCORE \
+            \ deb-score(s) at the new aggregate, (4) resync the FVT total-deb mirror. Reuses the SAME leaf primitives \
+            \ as the deb-fix, re-ordered to insert the aggregate refold. NO 2e penalty (owner-initiated, D4). \
+            \ require SECURE."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                (triplet:bool (= score-entity-type CT_SCORE_ENTITY_TRIPLET))
+                (triplet-true:bool (and (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletTrueTriplet score-entity-id)))
+                (silver-id:string (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET) (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id) score-entity-id))
+                ;; settle basis pool: singular → its own; triplet → silver leg (URC_ weight ignores pool for triplets)
+                (member-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id))
+            )
+            ;; 1. settle EVERY reward stream at OLD weight, then advance its last-rps to the current index
+            (map
+                (lambda (rdptf:string)
+                    (do
+                        (XI_2|BankUserTier1Pending user-id member-pool fvt-id score-entity-type score-entity-id rdptf)
+                        (WU_RpsUser|LastRps user-id fvt-id score-entity-id rdptf
+                            (URC_FvtTier1IndexRps fvt-id score-entity-id rdptf))))
+                (URD_FVT-RG|EnabledRewardRows fvt-id))
+            (if triplet-true
+                ;; TRUE triplet: deb-independent — refold the Level-1 lane weights at the live promile
+                (XI_SyncTripletLaneWeights user-id
+                    [(UDC_FVT|SettleScorePlan score-entity-type score-entity-id fvt-id [])])
+                ;; deb-based (singular / NON-true triplet): refold aggregate → refresh deb → resync mirror
+                (let
+                    (
+                        (pre-member-debs:[object{FVT|MemberPreDeb}]
+                            [ {"fvt-id"            : fvt-id
+                              ,"score-entity-type" : score-entity-type
+                              ,"score-entity-id"   : score-entity-id
+                              ,"pre-deb"           : (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)} ])
+                    )
+                    ;; 2. refold the holder's aggregate-promile for the swept class (the DEEPER recompute)
+                    (ref-ANK::XE_RecomputeUserBoostAggregates user-id [swept-boost-class-id])
+                    ;; 3. refresh the SCORE deb-score(s) at the new aggregate (triplet legs at their OWN pools)
+                    (if triplet
+                        (map
+                            (lambda (sid:string) (ref-SCR::XE_RefreshUserScoreDeb user-id (ref-SCR::UR_SCR|ScoreAqpoolLink sid) sid))
+                            [ (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id) silver-id (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id) ])
+                        (ref-SCR::XE_RefreshUserScoreDeb user-id member-pool score-entity-id))
+                    ;; 4. resync the FVT total-deb mirror by the member delta
+                    (XI_SyncFvtTotalDebMirrors pre-member-debs)
+                )
+            )
+            (UC_EmptyOc)
+        )
+    )
     (defun XI_FixUserFvtDeb:object{IgnisCollectorV1.OutputCumulator}
         (user-id:string fvt-id:string)
         @doc "Fix ALL of a user's stale deb-based members in the FVT — one XI_FixUserMemberDeb per enabled member \
@@ -4449,6 +4510,21 @@
         (with-capability (FVT|XE>SWEEP-FIX fvt-id)
             (XI_SyncTripletLaneWeights beneficiary-id
                 [(UDC_FVT|SettleScorePlan (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id fvt-id [])])
+            (UC_EmptyOc)
+        )
+    )
+    (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV1.OutputCumulator}
+        (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
+        @doc "Forward (re-score sweep defpact): recompute a CHUNK of holders on one (fvt, member) after the swept \
+            \ anchor's global removal — per user runs XI_SweepRecomputeUserMember (settle → aggregate refold → deb \
+            \ refresh + mirror, or true-triplet lane refold). NO fund movement, NO 2e penalty (owner sweep, D4). \
+            \ Caller passes `take N` of the member's present users. UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
+        (UEV_IMC)
+        (with-capability (FVT|XE>SWEEP-FIX fvt-id)
+            (map
+                (lambda (u:string)
+                    (XI_SweepRecomputeUserMember u fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id swept-boost-class-id))
+                users)
             (UC_EmptyOc)
         )
     )
