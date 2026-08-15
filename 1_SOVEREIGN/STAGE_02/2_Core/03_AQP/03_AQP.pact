@@ -25,6 +25,7 @@
     (defun UR_AQP|PoolScoreSeptenary:string (pool-id:string))
     (defun UR_AQP|PoolAqpId:string (pool-id:string))
     (defun UR_AQP|PoolStakeEnabled:bool (pool-id:string))
+    (defun UR_AQP|PoolSweepInProgress:bool (pool-id:string))
     (defun UR_AQP|PoolVacateSession:object (pool-id:string))
     (defun URD_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string))
     (defun URD_AQP|ActiveDpofTrackerRows:[object] (pool-id:string dpof-id:string))
@@ -149,6 +150,9 @@
     )
     (defun XE_SetVacateJobState:string
         (pool-id:string vacate-in-progress:bool initial-hash:string phase-hash:string last-hash:string)
+    )
+    (defun XE_SetSweepInProgress:string
+        (pool-id:string flag:bool)
     )
     (defun XE_TrueFungibleTransfer:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
@@ -339,6 +343,7 @@
         ;;
         stake-enabled:bool                                      ;;[M]   Gates new stakes when false; default true at issue. Unstake/vacate ignore.
         vacate-in-progress:bool                                 ;;[M]   True while AQP-VCT session active on this pool.
+        sweep-in-progress:bool                                  ;;[M]   True while a re-score sweep (anchor retire/re-price) runs; blocks stake + collect (D3).
         initial-vacate-hash:string                              ;;[M]   Legacy vacate manifest hash ("" under Legs; unused).
         phase-vacate-hash:string                                ;;[M]   Current phase manifest hash after reslice ("" when idle).
         last-vacate-hash:string                                 ;;[M]   Last committed slice hash ("" when idle).
@@ -889,6 +894,7 @@
         ,"score-septenary"      : BAR
         ,"stake-enabled"        : true
         ,"vacate-in-progress"   : false
+        ,"sweep-in-progress"    : false
         ,"initial-vacate-hash"  : ""
         ,"phase-vacate-hash"    : ""
         ,"last-vacate-hash"     : ""
@@ -969,6 +975,12 @@
         @doc "Update stake-enabled on AQP|T|Pool."
         (require-capability (SECURE))
         (update AQP|T|Pool pool-id {"stake-enabled": enabled})
+    )
+    (defun WU_Pool|SweepInProgress:string
+        (pool-id:string flag:bool)
+        @doc "Update sweep-in-progress on AQP|T|Pool (the re-score sweep freeze)."
+        (require-capability (SECURE))
+        (update AQP|T|Pool pool-id {"sweep-in-progress": flag})
     )
     (defun WU_Pool|ScoreSlot:string
         (pool-id:string slot-index:integer score-id:string)
@@ -1229,6 +1241,11 @@
     (defun UR_AQP|PoolVacateInProgress:bool (pool-id:string)
         @doc "Point read: true while an AQP-VCT vacate session is active on this pool (audit H2 / fix #5)."
         (at "vacate-in-progress" (read AQP|T|Pool pool-id ["vacate-in-progress"]))
+    )
+    (defun UR_AQP|PoolSweepInProgress:bool (pool-id:string)
+        @doc "Point read: true while a re-score sweep (anchor retire/re-price) is active on this pool — blocks new \
+            \ stakes AND collect until the sweep completes (the aggregate-promile is in flux; sweep D3)."
+        (at "sweep-in-progress" (read AQP|T|Pool pool-id ["sweep-in-progress"]))
     )
     ;;
     ;; [2] AQP|T|DPTFTracker  (AQP|TrueFungibleTracker)
@@ -1778,14 +1795,15 @@
         (> (length (URC_PoolActiveScoreIds pool-id)) 0)
     )
     (defun URC_PoolStakeAdmissionOk:bool (pool-id:string)
-        @doc "True when stake-enabled, pool has ≥1 employed score, AND no vacate session is in progress \
-            \ (stake direction only). The vacate guard blocks new stakes mid-vacate even if stake-enabled \
-            \ was left true (audit H2 / fix #5)."
+        @doc "True when stake-enabled, pool has ≥1 employed score, AND no vacate session NOR re-score sweep is in \
+            \ progress (stake direction only). The vacate guard blocks new stakes mid-vacate (audit H2 / fix #5); \
+            \ the sweep guard blocks new stakes mid-sweep so the recompute set stays bounded (sweep D3)."
         (fold (and) true
             [
                 (UR_AQP|PoolStakeEnabled pool-id)
                 (URC_PoolHasEmployedScores pool-id)
                 (not (UR_AQP|PoolVacateInProgress pool-id))
+                (not (UR_AQP|PoolSweepInProgress pool-id))
             ]
         )
     )
@@ -2564,6 +2582,17 @@
         (with-capability (P|SECURE-CALLER)
             ;; SECURE: granted by WU4_Pool|VacateJobState (underlying W_).
             (WU4_Pool|VacateJobState pool-id vacate-in-progress initial-hash phase-hash last-hash)
+        )
+        pool-id
+    )
+    (defun XE_SetSweepInProgress:string
+        (pool-id:string flag:bool)
+        @doc "Forward (re-score sweep · MTX-AQP): freeze/unfreeze a pool for a sweep — blocks new stakes AND collect \
+            \ while true (D3). UEV_IMC gates the caller; P|SECURE-CALLER composes SECURE."
+        (UEV_IMC)
+        (with-capability (P|SECURE-CALLER)
+            ;; SECURE: granted by WU_Pool|SweepInProgress (underlying W_).
+            (WU_Pool|SweepInProgress pool-id flag)
         )
         pool-id
     )

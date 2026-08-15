@@ -2690,8 +2690,19 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
+                ;; the score's employing pool (triplet ⇒ silver leg's pool — mirrors C_Collect's resolution)
+                (pool-id:string
+                    (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
+                        (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
+                        (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id)))
             )
+            ;; sweep D3: collect is frozen while a re-score sweep runs on the pool (the aggregate-promile is in
+            ;; flux; a mid-sweep collect on an unswept holder would refresh deb against a stale-high aggregate).
+            (enforce (not (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
+                "Collect is frozen while a re-score sweep is in progress on this pool")
             (enforce (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) "Reward link row must exist")
             (enforce (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id) "Reward token is disabled for collect")
             (enforce (URC_FvtScoreEntityLinkRowExists fvt-id score-entity-id) "ScoreEntityLink row must exist")
