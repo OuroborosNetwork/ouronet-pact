@@ -141,7 +141,30 @@ score *definitions* (few), not stakers. This replaces the coarse count with an e
   count==length, lock armed). The "primitive extraction" is a no-op — the map confirmed the deb-fix chain
   (`XE_RefreshUserScoreDeb`, `XI_FixUserMemberDeb`, `XE_FvtFixUserChunk`, the MTX pagination shape) is already
   well-factored + cross-module-callable; phases 2-4 reuse it directly.
-- **Phase 2 — re-host deb-fix onto the shared primitives.** Gates bit-identical = phase-1 proof.
+- **Phase 2 — re-host deb-fix onto the shared primitives.** Gates bit-identical = phase-1 proof. ✅ **DONE — VERIFIED,
+  no re-host needed.** The deb-fix and the vacate walk ALREADY converge on the same primitives (no duplication to
+  merge):
+  - **SETTLE (old-deb):** vacate's `XE_BankScorePendingRewards` (04_FVT:4728) → `XI_1|BankScorePendingRewards`
+    (3939) → `XI_2|SettleMemberTier2` + **`XI_2|BankUserTier1Pending`** (4199) — the *exact* primitive the deb-fix's
+    `XI_FixUserMemberDeb` calls directly per reward stream. One settle implementation, two callers.
+  - **RECOMPUTE (score weight):** both bottom out in **`XI_2|ApplySingularUserScoreDelta`** (02_SCORE:3613) —
+    deb-fix via `XE_RefreshUserScoreDeb` (0-base), vacate via `XE_ApplyTrueFungibleStakeDelta` (signed).
+  So phases 3-4 REUSE these directly; no code changed in phase 2 (gates unchanged from phase 1). See the
+  Shared-core contract below.
+
+### Shared-core contract (verified phase 2 — the primitives phases 3-4 bind to)
+| need | primitive (already exists) | how the sweep/vacate uses it |
+|---|---|---|
+| enumerate positions | `ANK::UR_BC|ScoreLinks` (phase 1) + `FVT::URD_FvtStalePresentUsers` / `FVT|T|UserPresence` | sweep: anchor→BC→scores→present users; vacate: legs |
+| settle @ old-deb (cross-module) | `FVT::XE_BankScorePendingRewards(ben, pool, plan)` | both — banks pending across streams before any weight change |
+| recompute deb (0-base) | `FVT::XE_RefreshUserScoreDeb`-driver / `SCR::XE_RefreshUserScoreDeb` → `XI_2|ApplySingularUserScoreDelta` | sweep deb terminal |
+| signed score delta (zero/unstake) | `SCR::XE_ApplyTrueFungibleStakeDelta` (+OF/SF/NF) `direction=false` | vacate terminal |
+| pagination | replicate the `MTX|2|C_Inject` defpact shape (scan → `take N` → chunk → yield/continue) | sweep + vacate defpacts |
+| lock decrement | `ANK::XE_UnbumpBoostClassScoreLinks(bc, score-id)` (phase 1) | sweep revoke teardown |
+
+**Phase 3 must still BUILD (not reuse — sweep-specific, the DEEPER recompute):** an exposed aggregate-promile
+refresh XE_ (anchor def changed ⇒ stored aggregate-promile stale), a triplet-lane recompute XE_ (D5), the
+`sweep-in-progress` freeze, and the sweep client + defpact in MTX-AQP.
 - **Phase 3 — anchor sweep.** Reverse-index scan + freeze + per-position (promile-aggregate + deb + triplet-lane)
   recompute + unlink/revoke/decrement teardown. New Talos client + defpact in MTX-AQP. Prove: retire an in-use
   anchor end-to-end + re-price; lock releases.
