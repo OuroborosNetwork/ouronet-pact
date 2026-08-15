@@ -962,4 +962,78 @@
 ;; — ANK|XE>SWEEP-REVOKE → CAP_Owner(anchor) → DPDC CAP_OwnerOrCreator(asset) — is not satisfied by the test signer.
 ;; The sweep's authorization model (who/how signs to retire an EMPLOYED anchor whose asset is staked) needs an owner
 ;; decision before this proof lands. See SWEEP-VACATE-DESIGN.md.
+;;
+;; ============================================================================
+;; TX-AQP-SWEEP01 — RE-SCORE SWEEP end-to-end (H4 half-2). Retire the EMPLOYED
+;; AurynRain anchor (SilverSnakePower boost-class, promile 100, employed by the
+;; SnakePower TRUE-triplet in OuroLpFarm where ANHD stakes). Auth: the anchor
+;; owner == the anchored-asset (KBN) owner == LUMY, who signs. CC_SweepRevokeAnchor
+;; FREEZES the pool → REMOVES the anchor (skipping the #9 lock) → RECOMPUTES every
+;; holder's aggregate-promile + triplet lanes → UNFREEZES.
+;; ============================================================================
+(begin-tx "TX-AQP-SWEEP01 - CC_SweepRevokeAnchor retires an employed anchor end-to-end")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+(let
+    (
+        (lumy:string KST.LUMY)
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
+        (silver-class:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+        (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+        (ouro-pool:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
+        (triplet-id:string (ref-SCR::UR_SCR|ScoreTripletId silver-score))
+    )
+    (let
+        (
+            (agg-pre:decimal (ref-ANK::UR_UB|AggregatePromile anhd silver-class))
+            (lane-pre:decimal (ref-FVT::UR_FVT-SEL|TotalLaneWeight farm-id triplet-id))
+            (links-pre:[string] (ref-ANK::UR_BC|ScoreLinks silver-class))
+            (frozen-pre:bool (ref-AQP::UR_AQP|PoolSweepInProgress ouro-pool))
+        )
+        (map print
+            [
+                (format "<(SWEEP01 pre: agg-promile / lane-weight)> => {} / {}" [agg-pre lane-pre])
+                (format "<(SWEEP01 pre: silver-class links / pool frozen)> => {} / {}" [links-pre frozen-pre])
+                (expect "<<TX-SWEEP01>> pre: ANHD has silver-class aggregate-promile (AurynRain employed)" true (> agg-pre 0.0))
+                (expect "<<TX-SWEEP01>> pre: pool NOT sweep-frozen" false frozen-pre)
+            ]
+        )
+        ;; THE SWEEP — the anchor owner (LUMY = KBN asset owner) retires the employed AurynRain anchor
+        (print (format "<(SWEEP01 CC_SweepRevokeAnchor)> => \"{}\""
+            [(ref-TS02-C3::MTX-AQP|CC_SweepRevokeAnchor lumy anchor-id)]))
+        (let
+            (
+                (agg-post:decimal (ref-ANK::UR_UB|AggregatePromile anhd silver-class))
+                (lane-post:decimal (ref-FVT::UR_FVT-SEL|TotalLaneWeight farm-id triplet-id))
+                (links-post:[string] (ref-ANK::UR_BC|ScoreLinks silver-class))
+                (frozen-post:bool (ref-AQP::UR_AQP|PoolSweepInProgress ouro-pool))
+            )
+            (map print
+                [
+                    (format "<(SWEEP01 post: agg-promile / lane-weight)> => {} / {}" [agg-post lane-post])
+                    (format "<(SWEEP01 post: silver-class links / pool frozen)> => {} / {}" [links-post frozen-post])
+                    ;; (a) the holder's aggregate-promile DROPPED (AurynRain removed from silver-class)
+                    (expect (format "<<TX-SWEEP01>> aggregate-promile DROPPED {}->{}" [agg-pre agg-post]) true (< agg-post agg-pre))
+                    ;; (b) the TRUE-triplet lanes refolded DOWN (silver promile gone ⇒ lower lane weight)
+                    (expect (format "<<TX-SWEEP01>> total-lane-weight refolded DOWN {}->{}" [lane-pre lane-post]) true (< lane-post lane-pre))
+                    ;; (c) the reverse-index set is UNCHANGED (revoke does NOT unlink scores — design)
+                    (expect "<<TX-SWEEP01>> reverse-index set UNCHANGED by anchor revoke" links-pre links-post)
+                    ;; (d) the pool was UNFROZEN after the sweep completed
+                    (expect "<<TX-SWEEP01>> pool UNFROZEN after sweep" false frozen-post)
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
 (print "=== deb-staleness-proof END ===")

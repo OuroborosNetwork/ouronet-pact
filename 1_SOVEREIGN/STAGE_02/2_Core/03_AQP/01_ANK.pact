@@ -2244,7 +2244,10 @@
                         (n:integer (at "anchors" bc))
                     )
                     (if (<= n 0)
-                        true
+                        ;; class has NO anchors left ⇒ aggregate-promile is 0. Must WRITE it (not skip) — the sweep
+                        ;; can remove the LAST anchor from a class, and a skipped write would leave a stale nonzero
+                        ;; aggregate (surfaced by the re-score sweep proof). Normal stake/unstake never hits n<=0.
+                        (WW_UserBoost account bcid 0.0)
                         (let
                             (
                                 (agg:decimal
