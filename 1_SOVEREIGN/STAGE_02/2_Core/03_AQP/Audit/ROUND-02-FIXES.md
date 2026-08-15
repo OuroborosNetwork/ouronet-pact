@@ -978,3 +978,31 @@ re-wire (the exact ordering trap L10 warned about). No interface/slave reference
 
 **Proven:** golden 33/0, **Z 242/0**, comprehensive 260/0, deb-proof 121/0 — bit-identical to pre-change, as
 expected for pure dead-code removal.
+
+## Refactor R-INJECT — FVT: collapse two duplicate inject-distribution blocks onto ONE core  ✅ DONE
+
+**Bad practice caught by owner (2026-08-15):** the inject distribution logic (custody transfer · escrow/flush ·
+available-rewards · `GAS|INJECT`) existed as **two hand-maintained copies** — inline in `C_Inject` (farm +
+vault/treasury) and again in `XI_FvtInjectCore` (vault/treasury only, used by `CC_Inject` + the `MTX|n|C_Inject`
+defpact via `XE_FvtInject`). #12 added escrow-on-empty to **both** by hand — exactly the drift risk two copies
+invite. Owner rule: *one operation ⟹ one code block; running two blocks for the same thing is forbidden.*
+
+**Fix — single source of truth:**
+- **Promoted `XI_FvtInjectCore` to THE inject core for all FVT classes** — added the farm branch (denominator
+  `URC_FarmInjectDenominatorFresh` + distribute via `XI_1|FarmSplitInject`) so it handles farm split-at-inject AND
+  vault/treasury RPS, escrow-aware. This block is now byte-for-byte the former `C_Inject` inline logic.
+- **`C_Inject` is now just cap wiring** — `(UEV_IMC)` + `(with-capability (FVT|C>INJECT …) (XI_FvtInjectCore …))`.
+  It's the NAIVE path (distributes over the current, possibly deb-stale divisor).
+- `CC_Inject` and `XE_FvtInject` are **unchanged** — both still enforce `class≠0` *before* calling the core, so
+  they never reach the new farm branch; behavior identical. Freshness stays a caller concern (they fix stale
+  members first; `C_Inject` doesn't).
+- Scrubbed the `UEV_InjectContext` doc that pointed at "the C_Inject body" → `XI_FvtInjectCore`.
+
+**Result:** all three inject entrypoints (`C_Inject`, `CC_Inject`, defpact) route through one distribution block —
+one place to audit, one place to fix. **Zero behavioral change** (the core IS the old inline logic; enforced-fresh
+variants are class-guarded away from the farm branch).
+
+**Proven:** golden 33/0, **Z 242/0**, comprehensive 260/0, deb-proof 121/0. Inject is exercised by 26 invocations
+across the suite (farms via golden triplet-collect + `[6.2.4]`, vaults/treasuries, escrow-on-empty DEB10, CC_Inject
+enforced-fresh, and the 2-step defpact). Principle written up in
+`memories/2026-08-15-single-core-no-duplicate-logic.md` (StoicSyntax candidate rule).

@@ -2665,7 +2665,7 @@
         @doc "C_Inject: patron account, issued reward DPTF, reward-enabled row, positive amount. \
             \ Escrow-on-empty: the inject denominator is NO LONGER required to be positive — a zero-denominator \
             \ inject (no stakers) is accepted and its amount is held as zombie-rewards (limbo), to be distributed \
-            \ by the next non-zero inject. The zero/non-zero split is handled in the C_Inject body (farm S and \
+            \ by the next non-zero inject. The zero/non-zero split is handled in XI_FvtInjectCore (farm S and \
             \ vault deb-sum are both computed there); this defcap only validates the token + amount + row."
         (let
             (
@@ -3026,82 +3026,13 @@
     ;;
     (defun C_Inject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Inject reward DPTF — phases 0 → 3 — see canonical inject map above. UrStoa ≡ C_URV|Inject."
+        @doc "Inject reward DPTF — the NAIVE path: distributes over the CURRENT divisor (may be deb-stale). All \
+            \ inject writes (transfer · escrow/flush distribute · available-rewards · GAS|INJECT) live in the ONE \
+            \ shared XI_FvtInjectCore — this is just cap wiring. For an enforced-FRESH divisor (fix every stale \
+            \ member first) use CC_Inject or the MTX|n|C_Inject defpact. UrStoa ≡ C_URV|Inject."
         (UEV_IMC)
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                    ;;
-                    ;; NOTE: the inject divisor S (denominator), gained-rps and new-g are intentionally
-                    ;; NOT bound here — they are computed inside PHASE 2.1 below, AFTER the phase-0.1
-                    ;; ghost-TVL sync has reconciled S. Binding them here would capture the pre-sync S
-                    ;; (stale) and break reward conservation (ΔG vs member weights). See audit C2 / fix #4.
-                    (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                    [
-                        ;; (audit LP redesign / Stage 2b) PHASE 0 ghost-TVL sync REMOVED — farms distribute at
-                        ;; inject via split-at-inject over fresh member values (PHASE 2 below); no cache to sync.
-                        ;;===>PHASE 1===
-                        ;; PHASE 1.1 — Custody transfer · UrStoa ≡ C_Transfer / C_Transmit
-                        (ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)
-                        ;;
-                        ;;===>PHASE 2+3=== distribute R + escrow-on-empty (zombie) + available-rewards
-                        ;; The reward tokens are ALREADY in custody (PHASE 1.1). Escrow-on-empty: when the inject
-                        ;; denominator is 0 (no stakers), HOLD `amount` as zombie-rewards and touch nothing else —
-                        ;; available-rewards is NOT bumped, so the M1 last-claimant dust sweep can never pay this
-                        ;; limbo balance to a prior cohort. Otherwise FLUSH: R_eff = amount + zombie is distributed
-                        ;; to whoever is staked NOW (VAULT/TREASURY: G += R_eff / deb-sum; FARM: split-at-inject over
-                        ;; fresh S into member Tier-1 indices), available-rewards += R_eff, and zombie is zeroed.
-                        ;; The denominator is computed HERE in the body: farm S needs a member scan that cannot live
-                        ;; in the defcap; vault deb-sum is the maintained mirror. UrStoa ≡ XI_URV|UpdateVaultRPS/Supply.
-                        (let
-                            (
-                                (zombie:decimal (UR_FVT-RG|ZombieRewards fvt-id reward-dptf-id))
-                                (denominator:decimal
-                                    (if (= (UR_FVT|FvtClass fvt-id) 0)
-                                        (URC_FarmInjectDenominatorFresh fvt-id)
-                                        (URC_InjectDenominator fvt-id)
-                                    )
-                                )
-                            )
-                            (if (> denominator 0.0)
-                                ;; FLUSH — distribute amount + any escrowed zombie to the CURRENT stakers.
-                                (let
-                                    (
-                                        (eff:decimal (+ amount zombie))
-                                    )
-                                    (if (= (UR_FVT|FvtClass fvt-id) 0)
-                                        (XI_1|FarmSplitInject fvt-id reward-dptf-id eff denominator)
-                                        (WU_RpsGlobal|CurrentRps fvt-id reward-dptf-id
-                                            (+ (UR_FVT-RG|CurrentRps fvt-id reward-dptf-id)
-                                               (UC_ComputeInjectGainedRps eff denominator)))
-                                    )
-                                    ;; available-rewards enters G only NOW (the flush) — bump by the full R_eff.
-                                    (WU_RpsGlobal|AvailableRewards fvt-id reward-dptf-id
-                                        (+ (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id) eff))
-                                    ;; zombie fully consumed by this flush (skip the write when there was none).
-                                    (if (> zombie 0.0)
-                                        (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id 0.0)
-                                        "no escrow to clear")
-                                )
-                                ;; ESCROW — no stakers (denominator 0): park `amount` in limbo, available-rewards untouched.
-                                (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id (+ zombie amount))
-                            )
-                            (UC_EmptyOc)
-                        )
-                        ;;
-                        ;; PHASE 4.1 — Do not reset unclaimed-count · UrStoa comment-only slot
-                        (ref-IGNIS::UDC_ConstructOutputCumulator
-                            GAS|INJECT owner-konto trigger [fvt-id reward-dptf-id (format "{}" [amount])]
-                        )
-                    ]
-                    []
-                )
-            )
+            (XI_FvtInjectCore patron fvt-id reward-dptf-id amount)
         )
     )
     (defun CC_Inject:object{IgnisCollectorV1.OutputCumulator}
@@ -4384,11 +4315,16 @@
     ;; --- Shared inject-CORE + cross-module XE_ building blocks (CC_Inject FVT-local; MTX|n|C_Inject via MTX-AQP) ---
     (defun XI_FvtInjectCore:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Shared vault/treasury inject-CORE: (1) custody transfer R patron→AQP|SC_NAME, (2) escrow-aware \
-            \ distribute — FLUSH (deb-sum > 0): G += (amount + zombie) / deb-sum, available-rewards += (amount + \
-            \ zombie), zombie→0; ESCROW (deb-sum = 0, no stakers): hold `amount` in zombie-rewards, available-rewards \
-            \ untouched, (3) GAS|INJECT cumulator. The CALLER MUST have already made the divisor FRESH (CC_Inject / \
-            \ MTX|n|C_Inject terminal step). require SECURE."
+        @doc "THE single inject-CORE for ALL FVT classes — the ONLY place inject writes exist. C_Inject, CC_Inject \
+            \ and the MTX|n|C_Inject defpact terminal step all route through here (one code path to audit/fix). \
+            \ (1) custody transfer R patron→AQP|SC_NAME; (2) escrow-aware distribute over the divisor — FARM \
+            \ (class 0): S = fresh split-at-inject value-sum, distribute (amount + zombie) across members via \
+            \ XI_1|FarmSplitInject; VAULT/TREASURY: divisor = maintained total-deb-score mirror, G += (amount + \
+            \ zombie) / divisor. FLUSH (divisor > 0): available-rewards += (amount + zombie), zombie→0. ESCROW \
+            \ (divisor = 0, no stakers): hold `amount` as zombie-rewards, available-rewards untouched; \
+            \ (3) GAS|INJECT cumulator. Freshness is a CALLER concern: C_Inject is the naive path (distributes over \
+            \ the CURRENT divisor); CC_Inject / the defpact FIX every stale member first so the divisor is live. \
+            \ require SECURE. UrStoa ≡ XI_URV|UpdateVaultRPS/Supply."
         (require-capability (SECURE))
         (let
             (
@@ -4399,32 +4335,51 @@
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
+                    ;;===>PHASE 1=== custody transfer · UrStoa ≡ C_Transfer / C_Transmit
                     (ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)
-                    ;; Escrow-on-empty (mirrors C_Inject): distribute amount + any held zombie to the CURRENT
-                    ;; stakers when the deb-sum divisor is positive; otherwise park `amount` in limbo untouched.
+                    ;;===>PHASE 2+3=== escrow-aware distribute + available-rewards. Reward tokens are ALREADY in
+                    ;; custody. ESCROW-on-empty: divisor 0 (no stakers) ⟹ HOLD `amount` as zombie-rewards and touch
+                    ;; nothing else — available-rewards is NOT bumped, so the M1 last-claimant dust sweep can never
+                    ;; pay this limbo balance to a prior cohort. Otherwise FLUSH R_eff = amount + zombie to whoever is
+                    ;; staked NOW (FARM: split-at-inject over fresh S; VAULT/TREASURY: G += R_eff / deb-sum),
+                    ;; available-rewards += R_eff, zombie→0. Divisor computed HERE (farm S needs a member scan that
+                    ;; cannot live in a defcap; vault deb-sum is the maintained mirror).
                     (let
                         (
                             (zombie:decimal (UR_FVT-RG|ZombieRewards fvt-id reward-dptf-id))
-                            (denominator:decimal (URC_InjectDenominator fvt-id))
+                            (denominator:decimal
+                                (if (= (UR_FVT|FvtClass fvt-id) 0)
+                                    (URC_FarmInjectDenominatorFresh fvt-id)
+                                    (URC_InjectDenominator fvt-id)
+                                )
+                            )
                         )
                         (if (> denominator 0.0)
+                            ;; FLUSH — distribute amount + any escrowed zombie to the CURRENT stakers.
                             (let
                                 (
                                     (eff:decimal (+ amount zombie))
                                 )
-                                (WU_RpsGlobal|CurrentRps fvt-id reward-dptf-id
-                                    (+ (UR_FVT-RG|CurrentRps fvt-id reward-dptf-id)
-                                       (UC_ComputeInjectGainedRps eff denominator)))
+                                (if (= (UR_FVT|FvtClass fvt-id) 0)
+                                    (XI_1|FarmSplitInject fvt-id reward-dptf-id eff denominator)
+                                    (WU_RpsGlobal|CurrentRps fvt-id reward-dptf-id
+                                        (+ (UR_FVT-RG|CurrentRps fvt-id reward-dptf-id)
+                                           (UC_ComputeInjectGainedRps eff denominator)))
+                                )
+                                ;; available-rewards enters G only NOW (the flush) — bump by the full R_eff.
                                 (WU_RpsGlobal|AvailableRewards fvt-id reward-dptf-id
                                     (+ (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id) eff))
+                                ;; zombie fully consumed by this flush (skip the write when there was none).
                                 (if (> zombie 0.0)
                                     (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id 0.0)
                                     "no escrow to clear")
                             )
+                            ;; ESCROW — no stakers (divisor 0): park `amount` in limbo, available-rewards untouched.
                             (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id (+ zombie amount))
                         )
                         (UC_EmptyOc)
                     )
+                    ;; PHASE 4.1 — Do not reset unclaimed-count · UrStoa comment-only slot
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         GAS|INJECT owner-konto trigger [fvt-id reward-dptf-id (format "{}" [amount])]
                     )

@@ -93,10 +93,19 @@ place. Module `.pact` source changes **only** during a Fixes round, one fix at a
 20. L9 · VCT — remove dead `VACATE-MAX-LEGS` + parity helper.
 21. L10 · FVT — remove redundant double member-settle.  ✅ DONE (already resolved by #12; removed the dead scaffolding).
 
-**Phase F — convention refactors (after logic is stable)**
-22. R3 · rename URD-using `C_`/`A_` (+deps) → `CC_`/`AA_` (VCT full-vacate, POOL sync, …).
-23. R1 · rename IGNIS-cumulator-returning X funcs → `X-cm_` (ANK XE updates, …).
-24. R4 · add `@doc` output notes to value-returning X funcs.
+**Phase F — convention refactors (after logic is stable) — ⏸ DEFERRED as a batch (owner, 2026-08-15)**
+
+> **All three DEFERRED to a single final pass, run immediately before the Round-III rescan.** Rationale: each is a
+> pure rename/annotation that cascades across every call site (module defun + interface decl + Talos wrappers +
+> slave callers + test REPLs + doc-comment maps). Pending logic work — the **H4 re-score-sweep / vacate rehaul**
+> (which also absorbs L9/#20) — will add/modify functions that must follow the same convention; doing the renames
+> now would either miss that new code or force redundant rename bookkeeping. Freeze the logic surface first, then
+> do #22–#24 in one sweep. (Exception: if the R3 taint-scan surfaces a scan on a **daily-hot** path, that's a
+> LOGIC red-flag to fix immediately, not a rename — track separately, don't defer.)
+
+22. R3 · rename URD-using `C_`/`A_` (+deps) → `CC_`/`AA_` (VCT full-vacate, POOL sync, …).  ⏸ DEFERRED (batch).
+23. R1 · rename IGNIS-cumulator-returning X funcs → `X-cm_` (ANK XE updates, …).  ⏸ DEFERRED (batch).
+24. R4 · add `@doc` output notes to value-returning X funcs.  ⏸ DEFERRED (batch).
 
 ## Method (Round I)
 One deep-read auditor per module → structured findings → the two CRITICALs + M6 lead-verified against code.
