@@ -952,3 +952,29 @@ enforced only `>= -1.0`, so real negatives in `[-1.0, 0)` were also settable.
 negative SF definition value; `[6.1]` rejects a negative DPDC nonce score (full DPDC chain). golden 33/0,
 **Z 242/0**, comprehensive 260/0, deb-proof 121/0. The def-change asymmetry (mutable def between stake/unstake) is
 still handled by the `applied-def-revision-nonce` resync — separate from this sentinel/negative fix.
+
+## Fix #21 — L10 · FVT: double member-settle in C_Collect — already resolved by #12; removed the dead scaffolding  ✅ DONE
+
+**The finding morphed.** ROUND-01 flagged that `C_Collect` settled the member Tier-2 **twice** (a bare pre-settle
+plus a second settle inside the PHASE-0 farm ghost-TVL sync) — traced harmless (2nd = no-op) but wasted work +
+ordering inconsistency vs the stake flow.
+
+**Current reality (post-#12):** the double-settle is **already gone.** The #12 2b split-at-inject redesign removed
+the farm ghost-TVL sync from `C_Collect`'s PHASE 0 (see the `04_FVT.pact` comment: *"farm ghost-TVL sync REMOVED …
+the pre-settle above still flushes parked pending"*). `C_Collect` now settles the member **exactly once** — the
+bare `XI_2|SettleMemberTier2` (farm-only, `FvtClass 0`). The second-settle path was **orphaned**:
+- `XI_CollectRpsPreScore` — zero real callers (only a doc-comment named it in the C_Collect call-tree map).
+- `XI_1|CollectSettleAndBank` — called **only** by the dead `XI_CollectRpsPreScore`.
+- `URDC_BuildCollectScorePlan` — built the ghost-TVL plan **only** for `XI_CollectRpsPreScore` (its `@doc` even
+  said "ghost TVL sync scope for C_Collect").
+
+Both jobs of the dead pair are covered live: **settle** → the bare `XI_2|SettleMemberTier2`; **bank pending** →
+`XI_1|BankScorePendingRewards` (the active score-pending bank path).
+
+**Fix:** deleted the three orphaned functions (`XI_CollectRpsPreScore`, `XI_1|CollectSettleAndBank`,
+`URDC_BuildCollectScorePlan`) + scrubbed the stale doc-comment reference. **Zero behavioral change** — all three
+were unreachable. Removing them also kills a live-looking `Settle`+`Bank` scaffold a future reader could wrongly
+re-wire (the exact ordering trap L10 warned about). No interface/slave references existed.
+
+**Proven:** golden 33/0, **Z 242/0**, comprehensive 260/0, deb-proof 121/0 — bit-identical to pre-change, as
+expected for pure dead-code removal.

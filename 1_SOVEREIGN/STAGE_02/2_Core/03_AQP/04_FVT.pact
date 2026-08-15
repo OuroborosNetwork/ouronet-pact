@@ -2401,11 +2401,6 @@
             )
         )
     )
-    (defun URDC_BuildCollectScorePlan:object{FVT|SettleScorePlan}
-        (fvt-id:string score-entity-type:integer score-entity-id:string)
-        @doc "One enabled score-entity line × enabled reward dptf-ids — ghost TVL sync scope for C_Collect."
-        (UDC_FVT|SettleScorePlan score-entity-type score-entity-id fvt-id (URD_FVT-RG|EnabledRewardRows fvt-id))
-    )
     (defun URDC_BuildStakeSettleBundle:object
         (pool-id:string beneficiary-id:string)
         @doc "Internal: one URD_FVT|SettleFvtRewardBundle per C_*StakeFlow pass — reuse in phases 2.1, 2.35, and 2.4. \
@@ -3699,7 +3694,6 @@
     ;;
     ;; --- Block E · Collect (UrStoa C_URV|Collect analogue) ---
     ;;   C_Collect — phased recipe in C_ body (same structure as C_Inject / C_TrueFungibleStakeFlow)
-    ;;     ├ XI_CollectRpsPreScore
     ;;     ├ XI_TransferRewardDptfFromVault            (coin 1 · URC_CollectClaimableRewards inside)
     ;;     ├ WU_RpsGlobal|AvailableRewards decrement (coin 5 · pre-reset URC read)
     ;;     ├ WU_RpsUser|PendingRewards reset           (coin 2)
@@ -3712,21 +3706,6 @@
         ;; SECURE: granted by XI_1|SyncFarmGhostTvlForEmployedScores (underlying W_).
         (if (= (UR_FVT|FvtClass fvt-id) 0)
             (XI_1|SyncFarmGhostTvlForEmployedScores (URDC_BuildInjectScorePlans fvt-id))
-            (UC_EmptyOc)
-        )
-    )
-    (defun XI_CollectRpsPreScore:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-        @doc "Tier 0 collect prelude: farm ghost-TVL sync, member settle, then user pending bank."
-        ;; SECURE: granted by XI_1|SyncFarmGhostTvlForEmployedScores / XI_1|CollectSettleAndBank (underlying W_).
-        (do
-            (if (= (UR_FVT|FvtClass fvt-id) 0)
-                (XI_1|SyncFarmGhostTvlForEmployedScores
-                    [(URDC_BuildCollectScorePlan fvt-id score-entity-type score-entity-id)]
-                )
-                true
-            )
-            (XI_1|CollectSettleAndBank patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
             (UC_EmptyOc)
         )
     )
@@ -3822,16 +3801,6 @@
             )
         )
         (UC_EmptyOc)
-    )
-    (defun XI_1|CollectSettleAndBank:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string pool-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-        @doc "Tier 1 collect prelude: settle member, then bank pending at current deb."
-        ;; SECURE: granted by XI_2|SettleMemberTier2 / XI_2|BankUserTier1Pending (underlying W_).
-        (do
-            (XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
-            (XI_2|BankUserTier1Pending patron pool-id fvt-id score-entity-type score-entity-id reward-dptf-id)
-            (UC_EmptyOc)
-        )
     )
     ;;
     ;; --- Block A · Phase 4.5 FVT total-deb mirror (post-SCORE) ---
