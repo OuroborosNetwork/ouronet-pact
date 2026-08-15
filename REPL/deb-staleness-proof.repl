@@ -519,7 +519,7 @@
 ;; ============================================================================
 ;; TX-AQP-DEB08 — the MTX|2|C_Inject DEFPACT end-to-end (via Talos + continue-pact).
 ;; Re-stale ANHD (move his deb again), then run the 2-step enforced-fresh inject:
-;; step 0 (Talos MTX-AQP|C|2_Inject) scans, finds S ≤ N_FIX → fixes all + injects
+;; step 0 (Talos MTX-AQP|C_2|Inject) scans, finds S ≤ N_FIX → fixes all + injects
 ;; (terminal); continue-pact 1 resumes {injected:true} → no-op. Proves the defpact
 ;; path fixes stale stakers + injects on a fresh divisor, same as CC_Inject.
 ;; ============================================================================
@@ -554,7 +554,7 @@
 (commit-tx)
 (print "")
 ;;
-(begin-tx "TX-AQP-DEB08b - MTX defpact STEP 0 (Talos MTX-AQP|C|2_Inject) + assert the fix")
+(begin-tx "TX-AQP-DEB08b - MTX defpact STEP 0 (Talos MTX-AQP|C_2|Inject) + assert the fix")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; force a known pact-id so continue-pact below matches (default REPL tx hash)
@@ -573,8 +573,8 @@
     )
     (map print
         [
-            (format "<(DEB08 MTX-AQP|C|2_Inject step 0)> => \"{}\""
-                [(ref-TS02-C3::MTX-AQP|C|2_Inject anhd fvt-id auryn-id 8.0)])
+            (format "<(DEB08 MTX-AQP|C_2|Inject step 0)> => \"{}\""
+                [(ref-TS02-C3::MTX-AQP|C_2|Inject anhd fvt-id auryn-id 8.0)])
             ;; step 0 found S ≤ N_FIX ⟹ it fixed ANHD + injected in this tx (terminal)
             (expect "<<TX-AQP-DEB08>> defpact step 0 FIXED ANHD Bunnies (now FRESH)"
                 false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
@@ -880,7 +880,7 @@
 ;; enforced-fresh spike-fallback path is no longer vault/treasury-only: step 0 scans
 ;; (0 stale ≤ N_FIX) → fixes all + injects (terminal) on the farm; step 1 = no-op.
 ;; ============================================================================
-(begin-tx "TX-AQP-DEB12a - MTX defpact step 0 on the FARM (Talos MTX-AQP|C|2_Inject)")
+(begin-tx "TX-AQP-DEB12a - MTX defpact step 0 on the FARM (Talos MTX-AQP|C_2|Inject)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-hash (hash "deb12-farm-mtx-inject"))
@@ -898,8 +898,8 @@
     )
     (map print
         [
-            (format "<(DEB12 MTX-AQP|C|2_Inject farm step 0)> => \"{}\""
-                [(ref-TS02-C3::MTX-AQP|C|2_Inject anhd farm-id ouro-id defpact-amt)])
+            (format "<(DEB12 MTX-AQP|C_2|Inject farm step 0)> => \"{}\""
+                [(ref-TS02-C3::MTX-AQP|C_2|Inject anhd farm-id ouro-id defpact-amt)])
             ;; the defpact ran the shared inject-core on the farm ⟹ available-rewards flushed by the amount
             (expect (format "<<TX-AQP-DEB12>> farm defpact flushed available-rewards +{} ({}->{})" [defpact-amt ar-pre (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id)])
                 defpact-amt (- (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id) ar-pre))

@@ -5,7 +5,7 @@
     @doc "Exposes AQP MultiStep (defpact) client functions. Currently: the tiered enforced-fresh FVT inject \
         \ (MTX|n|C_Inject) — the spike fallback for CC_Inject when the stale set exceeds one transaction."
     ;;
-    (defun C|2_Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal))
     ;;
 )
 ;;
@@ -145,7 +145,7 @@
     ;;<=======>
     ;;FUNCTIONS
     ;;{F0}  [C] client wrapper — acquires the flow cap, then runs the defpact
-    (defun C|2_Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "2-step enforced-fresh inject (spike fallback for AQP-FVT::CC_Inject; handles up to 2×N_FIX stale \
             \ stakers). Acquires MTX-AQP|C>INJECT, then runs the MTX|2|C_Inject defpact. Advance with \
             \ (continue-pact 1). Vault/treasury only (the defpact's inject is class≠0)."

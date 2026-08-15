@@ -3030,7 +3030,7 @@
     ;;   Entrypoint (Talos wrapper)        Farm(0,LP)  Vault(1,TF/SF/NF)  Treasury(2,OF)  Divisor  Tx
     ;;   C_Inject   (AQP-FVT|C_Inject)        yes           yes               yes          naive    1
     ;;   CC_Inject  (AQP-FVT|CC_Inject)       yes           yes               yes          fresh    1
-    ;;   MTX|2|C_Inject defpact (C|2_Inject)  yes           yes               yes          fresh    2*
+    ;;   MTX|2|C_Inject defpact (C_2|Inject)  yes           yes               yes          fresh    2*
     ;;   (* spike fallback for CC_Inject — up to 2×N_FIX stale stakers across 2 steps)
     ;;
     ;;   NAIVE  = distribute over the CURRENT divisor (may be deb-lagged; self-heals at each staker's collect).

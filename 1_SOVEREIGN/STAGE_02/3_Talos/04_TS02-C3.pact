@@ -292,7 +292,7 @@
     (defun AQP-FVT|CC_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
-    (defun MTX-AQP|C|2_Inject:string
+    (defun MTX-AQP|C_2|Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun AQP-FVT|C_Collect:string
@@ -1999,7 +1999,7 @@
             )
         )
     )
-    (defun MTX-AQP|C|2_Inject:string
+    (defun MTX-AQP|C_2|Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Starts the 2-step enforced-fresh inject defpact (MTX-AQP — spike fallback for AQP-FVT|CC_Inject when \
             \ the stale set exceeds one tx). Step 0 runs here; advance with (continue-pact 1). Each defpact step \
@@ -2010,7 +2010,7 @@
                     (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
-                (let ((r:string (ref-MTX-AQP::C|2_Inject patron fvt-id reward-dptf-id amount)))
+                (let ((r:string (ref-MTX-AQP::C_2|Inject patron fvt-id reward-dptf-id amount)))
                     (ref-TS01-A::XB_DynamicFuelKDA)
                     r
                 )
