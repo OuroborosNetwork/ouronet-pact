@@ -98,10 +98,17 @@
         (let
             (
                 (ref-P|FVT:module{OuronetPolicyV1} AQP-FVT)
+                (ref-P|ANK:module{OuronetPolicyV1} AQP-ANK)
+                (ref-P|AQP:module{OuronetPolicyV1} AQP-POOL)
                 (mg:guard (create-capability-guard (P|MTX-AQP|CALLER)))
             )
-            ;; MTX-AQP calls AQP-FVT's XE_ building blocks (UEV_IMC) — register as an allowed IMC caller.
+            ;; MTX-AQP calls the XE_ building blocks (UEV_IMC) of these modules — register as an allowed IMC caller.
+            ;;   AQP-FVT: inject fix-chunk + the sweep recompute chunk.
+            ;;   AQP-ANK: the re-score sweep's aggregate refold + swept anchor removal.
+            ;;   AQP-POOL: the sweep freeze (XE_SetSweepInProgress).
             (ref-P|FVT::P|A_AddIMP mg)
+            (ref-P|ANK::P|A_AddIMP mg)
+            (ref-P|AQP::P|A_AddIMP mg)
         )
     )
     (defun UEV_IMC ()
