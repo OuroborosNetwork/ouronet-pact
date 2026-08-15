@@ -137,6 +137,9 @@
     (defun XE_FvtFixUserChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])
     )
+    (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string fvt-id:string score-entity-id:string)
+    )
     (defun XB_FvtInject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
@@ -4420,6 +4423,21 @@
         (UEV_IMC)
         (with-capability (FVT|XE>SWEEP-FIX fvt-id)
             (map (lambda (u:string) (XI_FixUserFvtDebPenalized fvt-id reward-dptf-id u)) users)
+            (UC_EmptyOc)
+        )
+    )
+    (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV1.OutputCumulator}
+        (beneficiary-id:string fvt-id:string score-entity-id:string)
+        @doc "Forward (re-score sweep): re-snapshot a TRUE-triplet member's Level-1 lane weight for this holder at \
+            \ the LIVE promile (after an anchor change) and delta-adjust ScoreEntityLink.total-lane-weight — the \
+            \ triplet analogue of ANK::XE_RecomputeUserBoostAggregates / SCR::XE_RefreshUserScoreDeb (true-triplets \
+            \ are deb-independent; their anchor staleness lives in the lanes). Self-no-ops for non-true-triplet / \
+            \ singular members (XI_SyncTripletLaneWeights guards on the true-triplet flag). NO fund movement; the \
+            \ sweep defpact bills IGNIS. UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
+        (UEV_IMC)
+        (with-capability (FVT|XE>SWEEP-FIX fvt-id)
+            (XI_SyncTripletLaneWeights beneficiary-id
+                [(UDC_FVT|SettleScorePlan (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id fvt-id [])])
             (UC_EmptyOc)
         )
     )
