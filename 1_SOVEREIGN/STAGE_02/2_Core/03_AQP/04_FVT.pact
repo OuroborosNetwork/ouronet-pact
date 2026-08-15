@@ -4356,11 +4356,15 @@
                         (WU_RpsUser|LastRps user-id fvt-id score-entity-id rdptf
                             (URC_FvtTier1IndexRps fvt-id score-entity-id rdptf))))
                 (URD_FVT-RG|EnabledRewardRows fvt-id))
+            ;; 2. refold the holder's aggregate-promile for the swept class — BOTH paths need it: the deb path picks
+            ;;    it up via the score deb-recompute, AND the TRUE-triplet lanes read UR_UB|AggregatePromile directly
+            ;;    (URC_ComputeTripletLanes). The DEEPER recompute the deb-fix omits — must precede the dispatch.
+            (ref-ANK::XE_RecomputeUserBoostAggregates user-id [swept-boost-class-id])
             (if triplet-true
-                ;; TRUE triplet: deb-independent — refold the Level-1 lane weights at the live promile
+                ;; TRUE triplet (deb-independent): refold the Level-1 lanes — they read the now-fresh aggregate
                 (XI_SyncTripletLaneWeights user-id
                     [(UDC_FVT|SettleScorePlan score-entity-type score-entity-id fvt-id [])])
-                ;; deb-based (singular / NON-true triplet): refold aggregate → refresh deb → resync mirror
+                ;; deb-based (singular / NON-true triplet): refresh deb at the new aggregate → resync mirror
                 (let
                     (
                         (pre-member-debs:[object{FVT|MemberPreDeb}]
@@ -4369,8 +4373,6 @@
                               ,"score-entity-id"   : score-entity-id
                               ,"pre-deb"           : (URC_ScoreEntityMemberDebWeight score-entity-type score-entity-id)} ])
                     )
-                    ;; 2. refold the holder's aggregate-promile for the swept class (the DEEPER recompute)
-                    (ref-ANK::XE_RecomputeUserBoostAggregates user-id [swept-boost-class-id])
                     ;; 3. refresh the SCORE deb-score(s) at the new aggregate (triplet legs at their OWN pools)
                     (if triplet
                         (map

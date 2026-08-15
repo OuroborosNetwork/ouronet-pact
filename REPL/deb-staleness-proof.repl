@@ -957,4 +957,9 @@
 )
 (commit-tx)
 (print "")
+;; TX-AQP-SWEEP01 (re-score sweep end-to-end) — PENDING: CC_SweepRevokeAnchor is built and its pipeline executes
+;; (pre-state read OK: agg-promile 100, lane 20, links=[silver], pool unfrozen), but the swept-revoke's authorization
+;; — ANK|XE>SWEEP-REVOKE → CAP_Owner(anchor) → DPDC CAP_OwnerOrCreator(asset) — is not satisfied by the test signer.
+;; The sweep's authorization model (who/how signs to retire an EMPLOYED anchor whose asset is staked) needs an owner
+;; decision before this proof lands. See SWEEP-VACATE-DESIGN.md.
 (print "=== deb-staleness-proof END ===")

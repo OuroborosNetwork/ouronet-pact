@@ -295,6 +295,9 @@
     (defun MTX-AQP|C_2|Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
+    (defun MTX-AQP|CC_SweepRevokeAnchor:string
+        (patron:string anchor-id:string)
+    )
     (defun AQP-FVT|C_Collect:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
@@ -2011,6 +2014,24 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (let ((r:string (ref-MTX-AQP::C_2|Inject patron fvt-id reward-dptf-id amount)))
+                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    r
+                )
+            )
+        )
+    )
+    (defun MTX-AQP|CC_SweepRevokeAnchor:string
+        (patron:string anchor-id:string)
+        @doc "Single-tx re-score SWEEP that retires an EMPLOYED anchor (H4 half-2): freezes the affected pools, \
+            \ removes the anchor (swept-revoke), recomputes every affected holder (aggregate/lane refold + deb), \
+            \ then unfreezes. Owner-initiated (patron must own the anchor); collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                )
+                (let ((r:string (ref-MTX-AQP::CC_SweepRevokeAnchor patron anchor-id)))
                     (ref-TS01-A::XB_DynamicFuelKDA)
                     r
                 )
