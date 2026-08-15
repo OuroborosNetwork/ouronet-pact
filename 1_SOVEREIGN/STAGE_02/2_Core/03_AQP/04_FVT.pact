@@ -137,6 +137,7 @@
     (defun XE_FvtFixUserChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])
     )
+    (defun URD_FvtPresentUsers:[string] (fvt-id:string))
     (defun XE_SweepSyncTripletLaneWeights:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string fvt-id:string score-entity-id:string)
     )

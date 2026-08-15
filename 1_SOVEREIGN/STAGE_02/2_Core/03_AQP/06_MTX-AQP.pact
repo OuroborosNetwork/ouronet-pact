@@ -6,6 +6,7 @@
         \ (MTX|n|C_Inject) — the spike fallback for CC_Inject when the stale set exceeds one transaction."
     ;;
     (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun CC_SweepRevokeAnchor:string (patron:string anchor-id:string))
     ;;
 )
 ;;
@@ -148,6 +149,14 @@
         @event
         (compose-capability (P|SECURE-CALLER))
     )
+    (defcap MTX-AQP|C>SWEEP-REVOKE (patron:string anchor-id:string)
+        @doc "Protects the single-tx re-score sweep (CC_SweepRevokeAnchor). Composes P|SECURE-CALLER so \
+            \ P|MTX-AQP|CALLER is ACTIVE while the sweep calls the XE_ building blocks of AQP-ANK (aggregate refold + \
+            \ swept anchor removal), AQP-POOL (freeze), and AQP-FVT (recompute chunk) — each module's UEV_IMC admits \
+            \ MTX-AQP's registered caller guard (P|A_Define). Anchor owner is enforced inside ANK|XE>SWEEP-REVOKE."
+        @event
+        (compose-capability (P|SECURE-CALLER))
+    )
     ;;
     ;;<=======>
     ;;FUNCTIONS
@@ -159,6 +168,48 @@
         (UEV_IMC)
         (with-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount)
             (MTX|2|C_Inject patron fvt-id reward-dptf-id amount)
+        )
+    )
+    (defun CC_SweepRevokeAnchor:string
+        (patron:string anchor-id:string)
+        @doc "HEAVY (R3 CC_) single-tx RE-SCORE SWEEP that RETIRES an employed anchor (H4 half-2). Freezes the \
+            \ affected pools, removes the anchor globally (swept-revoke — skips the #9 score-link lock), recomputes \
+            \ EVERY present holder on every affected FVT member (settle → aggregate/lane refold → deb refresh → \
+            \ mirror), then unfreezes. Owner-initiated (owner pays; CAP_Owner enforced in ANK|XE>SWEEP-REVOKE). \
+            \ Scans the boost-class reverse index (ANK::UR_BC|ScoreLinks) × each score's present users — bounded by \
+            \ score DEFINITIONS × stakers. For staker sets that exceed one tx, a paginated MTX|n defpact variant is \
+            \ a future addition (mirrors CC_Inject → MTX|2|C_Inject). UEV_IMC + MTX-AQP|C>SWEEP-REVOKE."
+        (UEV_IMC)
+        (with-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id)
+            (let
+                (
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    ;;
+                    (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
+                    (score-ids:[string] (ref-ANK::UR_BC|ScoreLinks boost-class-id))
+                )
+                ;; 1. FREEZE every affected pool (stake + collect blocked) — idempotent per shared pool
+                (map (lambda (sid:string) (ref-AQP::XE_SetSweepInProgress (ref-SCR::UR_SCR|ScoreAqpoolLink sid) true)) score-ids)
+                ;; 2. REVOKE the anchor globally (swept — skips the #9 lock; the recompute below un-stales everyone)
+                (ref-ANK::XE_SweepRevokeAnchor anchor-id)
+                ;; 3. RECOMPUTE every present holder on every affected member. URD_FvtPresentUsers (ALL present) not
+                ;;    the stale subset: right after removal the aggregate is not yet refolded, so no holder reads as
+                ;;    deb-stale yet; the per-user recompute no-ops for holders whose aggregate did not change.
+                (map
+                    (lambda (sid:string)
+                        (ref-FVT::XE_FvtSweepRecomputeChunk
+                            (ref-SCR::UR_SCR|ScoreFvtLink sid)
+                            (if (ref-SCR::UR_SCR|ScoreTriplet sid) (ref-SCR::UR_SCR|ScoreTripletId sid) sid)
+                            boost-class-id
+                            (ref-FVT::URD_FvtPresentUsers (ref-SCR::UR_SCR|ScoreFvtLink sid))))
+                    score-ids)
+                ;; 4. UNFREEZE
+                (map (lambda (sid:string) (ref-AQP::XE_SetSweepInProgress (ref-SCR::UR_SCR|ScoreAqpoolLink sid) false)) score-ids)
+                (format "Sweep-retired anchor {} (BoostClass {}): recomputed holders across {} employing score(s)." [anchor-id boost-class-id (length score-ids)])
+            )
         )
     )
     ;;{F6.P}  [MTX|C]
