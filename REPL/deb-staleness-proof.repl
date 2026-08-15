@@ -916,4 +916,45 @@
     [(continue-pact 1 false (hash "deb12-farm-mtx-inject"))]))
 (commit-tx)
 (print "")
+;;
+;; ============================================================================
+;; TX-AQP-DEB13 — REVERSE INDEX (sweep phase 1). The H4 lock counter is now the
+;; length of an enumerable set boost-class → [score-ids] (single source of truth).
+;; The boot linked SilverSnakePower's score to its boost-class, so the set must
+;; enumerate that score — this is what the re-score sweep (phase 3) will walk.
+;; ============================================================================
+(begin-tx "TX-AQP-DEB13 - reverse index boost-class -> [score-ids] is enumerable + count = length")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+        (silver-class:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+    )
+    (let
+        (
+            (links:[string] (ref-ANK::UR_BC|ScoreLinks silver-class))
+            (cnt:integer (ref-ANK::UR_BC|ScoreLinkCount silver-class))
+        )
+        (map print
+            [
+                (format "<(DEB13 UR_BC|ScoreLinks SilverSnakePower class)> => {}" [links])
+                (format "<(DEB13 lock count vs set length)> => {} vs {}" [cnt (length links)])
+                ;; (a) the reverse index ENUMERATES the linked score — the sweep walks this set
+                (expect "<<TX-AQP-DEB13>> reverse index CONTAINS the linked score (SilverSnakePower)"
+                    true (contains silver-score links))
+                ;; (b) the #9 lock count is the single-source length (no separate count field)
+                (expect (format "<<TX-AQP-DEB13>> lock count == length of the reverse-index set ({}=={})" [cnt (length links)])
+                    (length links) cnt)
+                ;; (c) non-empty for an employed class ⟹ revoke lock armed (behavior preserved)
+                (expect "<<TX-AQP-DEB13>> reverse index NON-EMPTY for an employed class (lock armed)"
+                    true (> cnt 0))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
 (print "=== deb-staleness-proof END ===")

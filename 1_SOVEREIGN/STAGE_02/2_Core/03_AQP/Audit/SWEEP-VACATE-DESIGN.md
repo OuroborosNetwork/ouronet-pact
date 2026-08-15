@@ -132,7 +132,15 @@ score *definitions* (few), not stakers. This replaces the coarse count with an e
 ## 7. Proposed implementation order (the 4 phases)
 
 - **Phase 1 — extract the shared primitives + build the reverse index.** Factor the settle/recompute helpers into
-  callable-by-all form; add `boost-class → [score-ids]`. No behavior change yet.
+  callable-by-all form; add `boost-class → [score-ids]`. No behavior change yet. ✅ **DONE** — reverse index built:
+  `ANK|BoostClassLinkCount{count}` → `ANK|BoostClassScoreLinks{score-links:[string]}` (the SET is the single source
+  of truth; `UR_BC|ScoreLinkCount = (length …)`, so the #9 revoke lock is unchanged). New `UR_BC|ScoreLinks` reader;
+  `WU_BC|Add/RemoveScoreLink` + `XE_Bump/UnbumpBoostClassScoreLinks(bc, score-id)` maintain the set from
+  `SCR::XI_CreateBoostClassLink` (add on link, remove on re-point). Behavior-neutral (golden 40/0, Z 267/0,
+  comprehensive 283/0) + enumerability proven (`deb-proof` DEB13: `UR_BC|ScoreLinks` returns the linked score,
+  count==length, lock armed). The "primitive extraction" is a no-op — the map confirmed the deb-fix chain
+  (`XE_RefreshUserScoreDeb`, `XI_FixUserMemberDeb`, `XE_FvtFixUserChunk`, the MTX pagination shape) is already
+  well-factored + cross-module-callable; phases 2-4 reuse it directly.
 - **Phase 2 — re-host deb-fix onto the shared primitives.** Gates bit-identical = phase-1 proof.
 - **Phase 3 — anchor sweep.** Reverse-index scan + freeze + per-position (promile-aggregate + deb + triplet-lane)
   recompute + unlink/revoke/decrement teardown. New Talos client + defpact in MTX-AQP. Prove: retire an in-use

@@ -3260,11 +3260,12 @@
             ;; #13: release the old class's count when re-pointing (−1 old, +1 new below). old == new ⇒ net 0;
             ;; old == BAR ⇒ nothing to release. Always unbump a non-BAR old so the counter stays exact.
             (if (!= old-class BAR)
-                (ref-ANK::XE_UnbumpBoostClassScoreLinks old-class)
+                (ref-ANK::XE_UnbumpBoostClassScoreLinks old-class score-id)
                 "no prior class link to release")
             (WU_Score|BoostClassLink score-id boost-class-id)
             ;; #9: register the (new) link so AQP-ANK locks revoke of the class's anchors while employed.
-            (ref-ANK::XE_BumpBoostClassScoreLinks boost-class-id)
+            ;; Reverse index (sweep phase 1): the class's score-links set now includes score-id.
+            (ref-ANK::XE_BumpBoostClassScoreLinks boost-class-id score-id)
         )
     )
     (defun XI_CreateBoostLink:string
