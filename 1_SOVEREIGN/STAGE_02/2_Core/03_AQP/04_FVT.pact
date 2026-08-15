@@ -137,7 +137,7 @@
     (defun XE_FvtFixUserChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])
     )
-    (defun XE_FvtInject:object{IgnisCollectorV1.OutputCumulator}
+    (defun XB_FvtInject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun UR_FVT-FFC|Count:integer (fvt-id:string dptf-id:string user-id:string))
@@ -3050,14 +3050,12 @@
     (defun C_Inject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Inject reward DPTF — the NAIVE path (any FVT class): distributes over the CURRENT divisor (may be \
-            \ deb-lagged; each staker self-heals at their next collect). See the INJECT FUNCTION MATRIX above. All \
-            \ inject writes (transfer · escrow/flush distribute · available-rewards · GAS|INJECT) live in the ONE \
-            \ shared XI_FvtInjectCore — this is just cap wiring. For an enforced-FRESH divisor (fix every stale \
-            \ member first) use CC_Inject or the MTX|n|C_Inject defpact. UrStoa ≡ C_URV|Inject."
-        (UEV_IMC)
-        (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
-            (XI_FvtInjectCore patron fvt-id reward-dptf-id amount)
-        )
+            \ deb-lagged; each staker self-heals at their next collect). See the INJECT FUNCTION MATRIX above. This \
+            \ is the C_ client contract (Talos/gas) only — it delegates to the shared XB_FvtInject (UEV_IMC + \
+            \ FVT|C>INJECT + XI_FvtInjectCore), the SAME both-internal-and-external entry the MTX|n|C_Inject defpact \
+            \ uses. For an enforced-FRESH divisor (fix every stale member first) use CC_Inject or the defpact. \
+            \ UrStoa ≡ C_URV|Inject."
+        (XB_FvtInject patron fvt-id reward-dptf-id amount)
     )
     (defun CC_Inject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
@@ -4425,12 +4423,15 @@
             (UC_EmptyOc)
         )
     )
-    (defun XE_FvtInject:object{IgnisCollectorV1.OutputCumulator}
+    (defun XB_FvtInject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Forward (MTX-AQP defpact terminal step): the inject on the CURRENT (by then FRESH) divisor — same \
-            \ core as CC_Inject's inject, minus the scan/fix (the defpact already fixed everyone). Any FVT class \
-            \ (farm/vault/treasury); XI_FvtInjectCore branches on class. UEV_IMC + FVT|C>INJECT (validates + \
-            \ composes SECURE)."
+        @doc "THE single authorized inject entry — usable BOTH internally (C_Inject delegates here) and externally \
+            \ (the MTX|n|C_Inject defpact terminal step calls it cross-module), hence `XB`. Just the auth wrapper: \
+            \ UEV_IMC + FVT|C>INJECT (validates + composes SECURE) around the one XI_FvtInjectCore. Any FVT class \
+            \ (farm/vault/treasury); the core branches on class. Distributes over the CURRENT divisor — enforced- \
+            \ fresh callers (CC_Inject / the defpact) fix stale members BEFORE calling. Replaces the former \
+            \ XE_FvtInject: after the class-guard removal (N2) it was byte-identical to C_Inject's body, so the two \
+            \ collapsed onto this one XB entry."
         (UEV_IMC)
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
             (XI_FvtInjectCore patron fvt-id reward-dptf-id amount)

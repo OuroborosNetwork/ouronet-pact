@@ -1041,3 +1041,12 @@ lanes ⇒ correctly `stale=0`, nothing to fix). The stale→fresh fix itself is 
 with the **identical class-agnostic code**, so N2 is correct by equivalence. A direct mosaic-farm-**singular**-member
 stale→fresh demonstration needs a farm with a singular class-0 member added to the harness — deferred as a
 test-only follow-up (no code impact).
+
+**Follow-on cleanup (owner, StoicSyntax) — `XE_FvtInject` → `XB_FvtInject`:** once the class guard was gone, the
+former `XE_FvtInject` body was **byte-identical** to `C_Inject`'s (both `UEV_IMC` + `with-capability (FVT|C>INJECT)`
++ `XI_FvtInjectCore`). Owner: *"no point wrapping the core in an XE variant — use a singular `XB` variant protected
+with `UEV_IMC` + `with-capability`, so it works within AND outside the module."* Done: renamed to `XB_FvtInject`
+(the correct prefix — it's called internally by `C_Inject` and cross-module by the `MTX|n|C_Inject` defpact), and
+`C_Inject` now **delegates** to it (`(XB_FvtInject …)`) instead of re-declaring the same auth+core body. `CC_Inject`
+still calls `XI_FvtInjectCore` directly (it needs the scan/fix + inject under ONE `FVT|C>INJECT` scope so the
+`@event` fires once). Behavior-identical: golden 40/0, Z 267/0, comprehensive 283/0, deb-proof 146/0.
