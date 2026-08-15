@@ -133,6 +133,7 @@
     (defun CC_Inject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
+    (defun CC_SweepRevokeAnchor:string (patron:string anchor-id:string))
     (defun URD_FvtStalePresentUsers:[string] (fvt-id:string))
     (defun XE_FvtFixUserChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])
@@ -675,6 +676,15 @@
         (UEV_InjectContext patron fvt-id reward-dptf-id amount)
         (compose-capability (P|SECURE-CALLER))
         (compose-capability (P|FVT|REMOTE-GOV))
+    )
+    (defcap FVT|C>SWEEP-REVOKE (patron:string anchor-id:string)
+        @doc "Protects the single-tx re-score sweep (CC_SweepRevokeAnchor). Composes P|SECURE-CALLER so SECURE is \
+            \ granted for the intra-module recompute (XI_*) AND FVT's registered SECURE guard is satisfied for the \
+            \ cross-module XE calls into AQP-ANK (aggregate refold + swept anchor removal) and AQP-POOL (freeze) — \
+            \ FVT is in both IMPs (P|A_Define). The anchor owner (= anchored-asset owner) is enforced inside \
+            \ ANK|XE>SWEEP-REVOKE."
+        @event
+        (compose-capability (P|SECURE-CALLER))
     )
     (defcap FVT|C>COLLECT
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
@@ -3111,6 +3121,49 @@
             )
         )
     )
+    (defun CC_SweepRevokeAnchor:string
+        (patron:string anchor-id:string)
+        @doc "HEAVY (R3 CC_) single-tx RE-SCORE SWEEP that RETIRES an EMPLOYED anchor (H4 half-2). Freezes the \
+            \ affected pools, removes the anchor globally (swept-revoke — skips the #9 score-link lock), recomputes \
+            \ EVERY present holder on every affected FVT member (settle → aggregate/lane refold → deb refresh → \
+            \ mirror), then unfreezes. Owner-initiated: the anchor owner (= the anchored-asset owner) signs; CAP_Owner \
+            \ is enforced inside ANK|XE>SWEEP-REVOKE. Scans the boost-class reverse index (ANK::UR_BC|ScoreLinks) × \
+            \ each score's present users — bounded by score DEFINITIONS × stakers. For staker sets exceeding one tx, \
+            \ a paginated MTX|n defpact variant is a future addition (mirrors CC_Inject → MTX|2|C_Inject). Lives in \
+            \ AQP-FVT (earliest module that can call ANK/SCR/POOL/FVT + owns the recompute). UEV_IMC + \
+            \ FVT|C>SWEEP-REVOKE. `patron` is retained for symmetry / future IGNIS."
+        (UEV_IMC)
+        (with-capability (FVT|C>SWEEP-REVOKE patron anchor-id)
+            (let
+                (
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    ;;
+                    (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
+                    (score-ids:[string] (ref-ANK::UR_BC|ScoreLinks boost-class-id))
+                )
+                ;; 1. FREEZE every affected pool (stake + collect blocked) — idempotent per shared pool
+                (map (lambda (sid:string) (ref-AQP::XE_SetSweepInProgress (ref-SCR::UR_SCR|ScoreAqpoolLink sid) true)) score-ids)
+                ;; 2. REVOKE the anchor globally (swept — skips the #9 lock; the recompute below un-stales everyone)
+                (ref-ANK::XE_SweepRevokeAnchor anchor-id)
+                ;; 3. RECOMPUTE every present holder on every affected member. URD_FvtPresentUsers (ALL present) not
+                ;;    the stale subset: right after removal the aggregate is not yet refolded, so no holder reads as
+                ;;    deb-stale yet; the per-user recompute no-ops for holders whose aggregate did not change.
+                (map
+                    (lambda (sid:string)
+                        (XI_FvtSweepRecomputeChunk
+                            (ref-SCR::UR_SCR|ScoreFvtLink sid)
+                            (if (ref-SCR::UR_SCR|ScoreTriplet sid) (ref-SCR::UR_SCR|ScoreTripletId sid) sid)
+                            boost-class-id
+                            (URD_FvtPresentUsers (ref-SCR::UR_SCR|ScoreFvtLink sid))))
+                    score-ids)
+                ;; 4. UNFREEZE
+                (map (lambda (sid:string) (ref-AQP::XE_SetSweepInProgress (ref-SCR::UR_SCR|ScoreAqpoolLink sid) false)) score-ids)
+                (format "Sweep-retired anchor {} (BoostClass {}): recomputed holders across {} employing score(s)." [anchor-id boost-class-id (length score-ids)])
+            )
+        )
+    )
     (defun C_Collect:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collect reward DPTF — phases 0 → 5 — see canonical collect map above. UrStoa ≡ C_URV|Collect."
@@ -4516,19 +4569,27 @@
             (UC_EmptyOc)
         )
     )
+    (defun XI_FvtSweepRecomputeChunk:object{IgnisCollectorV1.OutputCumulator}
+        (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
+        @doc "Intra-module chunk: recompute a chunk of holders on one (fvt, member) after the swept anchor's global \
+            \ removal — per user runs XI_SweepRecomputeUserMember (settle → aggregate/lane refold → deb + mirror). \
+            \ NO fund movement, NO 2e penalty (owner sweep, D4). require SECURE. Shared by the intra-module client \
+            \ CC_SweepRevokeAnchor and the cross-module wrapper XE_FvtSweepRecomputeChunk."
+        (require-capability (SECURE))
+        (map
+            (lambda (u:string)
+                (XI_SweepRecomputeUserMember u fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id swept-boost-class-id))
+            users)
+        (UC_EmptyOc)
+    )
     (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
-        @doc "Forward (re-score sweep defpact): recompute a CHUNK of holders on one (fvt, member) after the swept \
-            \ anchor's global removal — per user runs XI_SweepRecomputeUserMember (settle → aggregate refold → deb \
-            \ refresh + mirror, or true-triplet lane refold). NO fund movement, NO 2e penalty (owner sweep, D4). \
-            \ Caller passes `take N` of the member's present users. UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
+        @doc "Forward (re-score sweep defpact — cross-module): recompute a CHUNK of holders on one (fvt, member). \
+            \ Thin UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE) wrapper over XI_FvtSweepRecomputeChunk. Caller passes \
+            \ `take N` of the member's present users. For the future paginated MTX|n sweep defpact."
         (UEV_IMC)
         (with-capability (FVT|XE>SWEEP-FIX fvt-id)
-            (map
-                (lambda (u:string)
-                    (XI_SweepRecomputeUserMember u fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id swept-boost-class-id))
-                users)
-            (UC_EmptyOc)
+            (XI_FvtSweepRecomputeChunk fvt-id score-entity-id swept-boost-class-id users)
         )
     )
     (defun XB_FvtInject:object{IgnisCollectorV1.OutputCumulator}

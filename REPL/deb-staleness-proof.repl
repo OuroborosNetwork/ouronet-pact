@@ -1009,7 +1009,7 @@
         )
         ;; THE SWEEP — the anchor owner (LUMY = KBN asset owner) retires the employed AurynRain anchor
         (print (format "<(SWEEP01 CC_SweepRevokeAnchor)> => \"{}\""
-            [(ref-TS02-C3::MTX-AQP|CC_SweepRevokeAnchor lumy anchor-id)]))
+            [(ref-TS02-C3::AQP-FVT|CC_SweepRevokeAnchor lumy anchor-id)]))
         (let
             (
                 (agg-post:decimal (ref-ANK::UR_UB|AggregatePromile anhd silver-class))

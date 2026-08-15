@@ -4,7 +4,10 @@
 (deb-fix chain, vacate walk, anchor lock/revoke, score-write path).
 
 **DECISIONS (locked 2026-08-15):**
-- **D1** Module home = **extend `MTX-AQP`** (its charter is "all AQP multi-tx defpacts"). ✅
+- **D1** Module home — REFINED (owner, 2026-08-15): the **single-tx `CC_SweepRevokeAnchor` lives in `AQP-FVT`**
+  (the earliest module that can call ANK/SCR/POOL/FVT, and it owns the recompute machinery; MTX-AQP's charter is
+  *defpacts only*, and a single-tx orchestrator isn't one). The future **paginated `MTX|n` defpact** variant DOES
+  belong in `MTX-AQP` (calling the FVT sweep helpers). ✅
 - **D2** Anchor ops = **revoke + re-price** an in-use anchor (same walk serves both). ✅
 - **D3** ~~Sweep freeze = disable stake admission only; collect stays open.~~ **REVISED 2026-08-15:** the sweep
   freezes **stake admission AND collect** on affected pools until it completes. Reason: `XE_RefreshUserScoreDeb`
