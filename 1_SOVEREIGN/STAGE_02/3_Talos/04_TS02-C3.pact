@@ -1980,8 +1980,10 @@
     )
     (defun AQP-FVT|CC_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "HEAVY enforced-FRESH vault/treasury inject (M3 #12): refreshes every stale staker's deb so the \
-            \ divisor is live before injecting, then injects + collects IGNIS on patron. Same shape as C_Inject."
+        @doc "HEAVY enforced-FRESH inject for ANY FVT class (farm/vault/treasury; M3 #12): refreshes every stale \
+            \ staker's deb so the divisor is live before injecting, then injects + collects IGNIS on patron. Same \
+            \ shape as C_Inject. Farms are covered too — a mosaic farm's singular/non-true-triplet members are \
+            \ deb-stale-exposed via SCR|ScoreTotalDebScore just like a vault."
         (with-capability (P|TS)
             (let
                 (

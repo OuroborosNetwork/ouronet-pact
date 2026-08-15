@@ -799,4 +799,121 @@
 )
 (commit-tx)
 (print "")
+;;
+;; ============================================================================
+;; TX-AQP-DEB11 — FARM enforced-fresh inject (guard-removal proof). OuroLpFarm is a
+;; class-0 mosaic farm carrying a deb-based member (SilverSnakePower). Bumping ANHD's
+;; Elite-DEB stales his farm member; CC_Inject on the FARM must FIX every stale present
+;; user before distributing — proving the enforced-fresh path is no longer
+;; vault/treasury-only. Asserts: (a) ZERO stale present users remain (enforced-fresh
+;; guarantee on a farm), (b) the farm inject flushed available-rewards by the amount.
+;; ============================================================================
+(begin-tx "TX-AQP-DEB11 - CC_Inject on a class-0 FARM: fix stale members then inject")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+        (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+        (ouro-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink silver-score))
+        (ouro-id:string "OURO-98c486052a51")
+        (ea-id:string (ref-DALOS::UR_EliteAurynID))
+        (inject-amt:decimal 50.0)
+    )
+    ;; 1] re-stale ANHD's farm member: pull EliteAuryn back from EMMA → Elite-DEB moves → stale
+    (let ((emma-ea:decimal (ref-DPTF::UR_AccountSupply ea-id emma)))
+        (if (> emma-ea 0.0)
+            (ref-TS01-C1::DPTF|C_Transfer emma ea-id emma anhd (floor (* emma-ea 0.99) 4) false)
+            true))
+    (let
+        (
+            (class:integer (ref-FVT::UR_FVT|FvtClass farm-id))
+            (stale-pre:[string] (ref-FVT::URD_FvtStalePresentUsers farm-id))
+            (silver-stale-pre:bool (ref-SCR::URC_U-SCR|UserScoreDebStale anhd ouro-pool silver-score))
+            (silver-deb-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd ouro-pool silver-score))
+            (ar-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))
+        )
+        (expect "<<TX-AQP-DEB11>> OuroLpFarm is class 0 (farm)" 0 class)
+        (let
+            (
+                (r:string (ref-TS02-C3::AQP-FVT|CC_Inject anhd farm-id ouro-id inject-amt))
+            )
+            (let
+                (
+                    (stale-post:[string] (ref-FVT::URD_FvtStalePresentUsers farm-id))
+                    (silver-stale-post:bool (ref-SCR::URC_U-SCR|UserScoreDebStale anhd ouro-pool silver-score))
+                    (silver-deb-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd ouro-pool silver-score))
+                    (ar-post:decimal (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))
+                )
+                (map print
+                    [
+                        (format "<(DEB11 farm CC_Inject)> => \"{}\"" [r])
+                        (format "<(DEB11 stale present users pre/post)> => {} / {}" [(length stale-pre) (length stale-post)])
+                        (format "<(DEB11 SilverSnakePower stale pre/post)> => {} / {}" [silver-stale-pre silver-stale-post])
+                        (format "<(DEB11 SilverSnakePower deb pre/post)> => {} / {}" [silver-deb-pre silver-deb-post])
+                        (format "<(DEB11 farm available-rewards pre/post)> => {} / {}" [ar-pre ar-post])
+                        ;; (a) enforced-fresh guarantee, now on a FARM: ZERO stale present users remain
+                        (expect "<<TX-AQP-DEB11>> enforced-fresh: NO stale present users remain on the farm" 0 (length stale-post))
+                        ;; (b) the farm inject actually distributed: available-rewards flushed by the amount
+                        (expect (format "<<TX-AQP-DEB11>> farm inject flushed available-rewards +{} ({}->{})" [inject-amt ar-pre ar-post]) inject-amt (- ar-post ar-pre))
+                    ]
+                )
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; TX-AQP-DEB12 — the MTX|2|C_Inject DEFPACT on the class-0 FARM. Proves the 2-step
+;; enforced-fresh spike-fallback path is no longer vault/treasury-only: step 0 scans
+;; (0 stale ≤ N_FIX) → fixes all + injects (terminal) on the farm; step 1 = no-op.
+;; ============================================================================
+(begin-tx "TX-AQP-DEB12a - MTX defpact step 0 on the FARM (Talos MTX-AQP|C|2_Inject)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-hash (hash "deb12-farm-mtx-inject"))
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+        (ouro-id:string "OURO-98c486052a51")
+        (defpact-amt:decimal 20.0)
+        (ar-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))
+    )
+    (map print
+        [
+            (format "<(DEB12 MTX-AQP|C|2_Inject farm step 0)> => \"{}\""
+                [(ref-TS02-C3::MTX-AQP|C|2_Inject anhd farm-id ouro-id defpact-amt)])
+            ;; the defpact ran the shared inject-core on the farm ⟹ available-rewards flushed by the amount
+            (expect (format "<<TX-AQP-DEB12>> farm defpact flushed available-rewards +{} ({}->{})" [defpact-amt ar-pre (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id)])
+                defpact-amt (- (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id) ar-pre))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+(begin-tx "TX-AQP-DEB12b - continue-pact (farm defpact step 1 = no-op, already injected)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print (format "<(DEB12 continue-pact 1)> => \"{}\""
+    [(continue-pact 1 false (hash "deb12-farm-mtx-inject"))]))
+(commit-tx)
+(print "")
 (print "=== deb-staleness-proof END ===")

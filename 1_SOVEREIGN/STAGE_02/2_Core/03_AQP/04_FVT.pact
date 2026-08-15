@@ -3024,9 +3024,33 @@
     ;;       (ICO slot after phase 1, before phase 2 — same URC read as UrStoa available-rewards let)
     ;; ═══════════════════════════════════════════════════════════════════════════
     ;;
+    ;; ───────────────────────────────────────────────────────────────────────────
+    ;; INJECT FUNCTION MATRIX — all three route through the ONE core XI_FvtInjectCore
+    ;; ───────────────────────────────────────────────────────────────────────────
+    ;;   Entrypoint (Talos wrapper)        Farm(0,LP)  Vault(1,TF/SF/NF)  Treasury(2,OF)  Divisor  Tx
+    ;;   C_Inject   (AQP-FVT|C_Inject)        yes           yes               yes          naive    1
+    ;;   CC_Inject  (AQP-FVT|CC_Inject)       yes           yes               yes          fresh    1
+    ;;   MTX|2|C_Inject defpact (C|2_Inject)  yes           yes               yes          fresh    2*
+    ;;   (* spike fallback for CC_Inject — up to 2×N_FIX stale stakers across 2 steps)
+    ;;
+    ;;   NAIVE  = distribute over the CURRENT divisor (may be deb-lagged; self-heals at each staker's collect).
+    ;;   FRESH  = scan URD_FvtStalePresentUsers + FIX every stale member first (settle@old-deb → refresh SCORE deb
+    ;;            → resync), so the distribution reflects LIVE debs and is fair across stakers. HEAVY (R3 `CC_`).
+    ;;
+    ;;   ALL FVT classes are deb-stale-exposed, so all three serve all classes:
+    ;;    · Vault/Treasury: inject divisor = maintained SCR/FVT total-deb-score mirror (stale-able).
+    ;;    · Farm: Tier-1 denominator S is fresh (URC_FarmInjectDenominatorFresh), but the Tier-2 per-member
+    ;;      L_i-advance divisor is SCR|ScoreTotalDebScore — stale-able for singular / non-true-triplet members
+    ;;      (e.g. a mosaic farm carrying a singular score). True-triplet members are deb-independent (lane weights)
+    ;;      and the fix no-ops on them.
+    ;;   Inject cost scales with MEMBER count (employed score-entities; a triplet = ONE member): a 4-member farm
+    ;;   costs one member-iteration more than a 3-member farm.
+    ;; ───────────────────────────────────────────────────────────────────────────
+    ;;
     (defun C_Inject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Inject reward DPTF — the NAIVE path: distributes over the CURRENT divisor (may be deb-stale). All \
+        @doc "Inject reward DPTF — the NAIVE path (any FVT class): distributes over the CURRENT divisor (may be \
+            \ deb-lagged; each staker self-heals at their next collect). See the INJECT FUNCTION MATRIX above. All \
             \ inject writes (transfer · escrow/flush distribute · available-rewards · GAS|INJECT) live in the ONE \
             \ shared XI_FvtInjectCore — this is just cap wiring. For an enforced-FRESH divisor (fix every stale \
             \ member first) use CC_Inject or the MTX|n|C_Inject defpact. UrStoa ≡ C_URV|Inject."
@@ -3037,18 +3061,19 @@
     )
     (defun CC_Inject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "HEAVY (R3 `CC_`) enforced-FRESH vault/treasury inject (M3 #12). Before injecting, SCAN the FVT's \
-            \ present users (`URD_FvtPresentUsers` — one select over the purpose-built presence table) and FIX every \
-            \ stale member (settle-at-old-deb across all streams → refresh → mirror-resync via XI_FixUserFvtDeb), so \
-            \ the inject divisor reflects LIVE debs and the distribution is fair to every current staker. Because the \
-            \ whole thing is atomic, fixing the entire scanned set leaves ZERO stale — NO second scan is needed. \
-            \ Vault/treasury only (class≠0): farms compute a fresh split-at-inject denominator and never read the \
-            \ mirror. Same authorization as C_Inject (FVT|C>INJECT). For spike loads that exceed one tx, use the \
-            \ MTX|n|C_Inject defpact (MTX-AQP). UrStoa ≡ C_URV|Inject with a pre-fresh divisor."
+        @doc "HEAVY (R3 `CC_`) enforced-FRESH inject for ANY FVT class (farm/vault/treasury) — see the INJECT \
+            \ FUNCTION MATRIX above C_Inject. Before injecting, SCAN the FVT's present users (`URD_FvtStalePresentUsers` \
+            \ — one select over the purpose-built presence table, populated for every class at stake) and FIX every \
+            \ stale member (settle-at-old-deb across all streams → refresh SCORE deb → resync via XI_FixUserFvtDeb), so \
+            \ the distribution reflects LIVE debs and is fair to every current staker. Atomic: fixing the whole scanned \
+            \ set leaves ZERO stale — NO second scan. Why farms need this too: a farm's Tier-1 denominator S is always \
+            \ fresh (URC_FarmInjectDenominatorFresh), BUT its Tier-2 per-member L_i-advance divisor is the maintained \
+            \ SCR|ScoreTotalDebScore mirror, which goes deb-stale for singular / non-true-triplet members (e.g. a \
+            \ mosaic farm carrying a singular score) exactly like a vault — the fix un-stales it (true-triplet members \
+            \ no-op: deb-independent lanes). Same authorization as C_Inject (FVT|C>INJECT). For spike loads that exceed \
+            \ one tx, use the MTX|n|C_Inject defpact (MTX-AQP). UrStoa ≡ C_URV|Inject with a pre-fresh divisor."
         (UEV_IMC)
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
-            (enforce (!= (UR_FVT|FvtClass fvt-id) 0)
-                "CC_Inject is vault/treasury only — farms compute a fresh denominator at inject")
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -4403,10 +4428,10 @@
     (defun XE_FvtInject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Forward (MTX-AQP defpact terminal step): the inject on the CURRENT (by then FRESH) divisor — same \
-            \ core as CC_Inject's inject, minus the scan/fix (the defpact already fixed everyone). Vault/treasury \
-            \ only. UEV_IMC + FVT|C>INJECT (validates + composes SECURE)."
+            \ core as CC_Inject's inject, minus the scan/fix (the defpact already fixed everyone). Any FVT class \
+            \ (farm/vault/treasury); XI_FvtInjectCore branches on class. UEV_IMC + FVT|C>INJECT (validates + \
+            \ composes SECURE)."
         (UEV_IMC)
-        (enforce (!= (UR_FVT|FvtClass fvt-id) 0) "XE_FvtInject is vault/treasury only")
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
             (XI_FvtInjectCore patron fvt-id reward-dptf-id amount)
         )

@@ -1006,3 +1006,38 @@ variants are class-guarded away from the farm branch).
 across the suite (farms via golden triplet-collect + `[6.2.4]`, vaults/treasuries, escrow-on-empty DEB10, CC_Inject
 enforced-fresh, and the 2-step defpact). Principle written up in
 `memories/2026-08-15-single-core-no-duplicate-logic.md` (StoicSyntax candidate rule).
+
+## Fix N2 — FVT: enforced-fresh inject (CC_Inject + defpact) was farm-excluded on an INCOMPLETE rationale  ✅ DONE
+
+**Finding (owner, 2026-08-15):** `CC_Inject` and the `MTX|2|C_Inject` defpact were `class≠0`-guarded
+("vault/treasury only"). The stated rationale — *"farms compute a fresh split-at-inject denominator and never read
+the mirror"* — is **only half true**. It holds for the farm **Tier-1** denominator `S`
+(`URC_FarmInjectDenominatorFresh`, recomputed live), but the farm **Tier-2** `L_i`-advance divisor is
+`URC_ScoreEntityMemberTier2Divisor` → `URC_ScoreEntityMemberDebWeight` → **`SCR|ScoreTotalDebScore`, the maintained
+deb mirror that goes stale (S1)** for singular / non-true-triplet members. A **mosaic farm** can carry exactly such
+a singular score (owner's motivating case). So a farm inject during a stale window splits that inject by lagged
+weights — the same inter-staker unfairness `CC_Inject` was built to eliminate for vaults — with no way to force
+freshness. (Not a conservation break: `ScoreTotalDebScore == Σ stored user debs` always, kept by
+`XE_RefreshUserScoreDeb`'s 0-base-delta apply; it's a fairness lag. Farms self-heal at collect via the
+class-agnostic PHASE-6 backstop.)
+
+**Fix — extend the enforced-fresh path to ALL FVT classes:**
+- Dropped the `class≠0` `enforce` on `CC_Inject` and `XE_FvtInject`. (Bonus StoicSyntax: those were bare enforces
+  after `UEV_IMC`; removing them also clears that wart.) The fix machinery is already class-agnostic
+  (`XE_FvtFixUserChunk` → `XI_FixUserMemberDeb` → `XE_RefreshUserScoreDeb`; `URC_FvtTier1IndexRps` settles farm
+  `L_i` vs vault `G`; `URD_FvtStalePresentUsers` is populated for every class at stake) and the inject core is
+  farm-capable after R-INJECT — so removing the guard is all that was needed.
+- Added the **INJECT FUNCTION MATRIX** + the farm Tier-2-deb rationale to the `@doc`s of `C_Inject` / `CC_Inject`
+  / `XE_FvtInject` and the Talos `AQP-FVT|CC_Inject` wrapper.
+
+**Proven — new `deb-proof` cases:** DEB11 (`AQP-FVT|CC_Inject` on the class-0 `OuroLpFarm`) → *"Successfully
+FRESH-injected 50.0 OURO"*, **zero stale present users after** (enforced-fresh guarantee on a farm), available-rewards
+flushed `0→50`. DEB12 (`MTX-AQP|C|2_Inject` defpact on the farm) → *"fixed 0 stale... INJECTED 20.0 (terminal)"*,
+`50→70`, step-1 no-op. golden 40/0, **Z 267/0**, comprehensive 283/0, **deb-proof 146/0**.
+
+**⚠️ Proof caveat (follow-up):** DEB11/DEB12 prove the farm inject paths **execute and distribute**, but did NOT
+exercise an actual farm-member **deb-fix** — `OuroLpFarm`'s only member is a **true-triplet** (deb-independent
+lanes ⇒ correctly `stale=0`, nothing to fix). The stale→fresh fix itself is proven on **treasuries** (DEB06/DEB08)
+with the **identical class-agnostic code**, so N2 is correct by equivalence. A direct mosaic-farm-**singular**-member
+stale→fresh demonstration needs a farm with a singular class-0 member added to the harness — deferred as a
+test-only follow-up (no code impact).
