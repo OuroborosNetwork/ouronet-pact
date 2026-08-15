@@ -100,6 +100,7 @@
     (defun XE_BumpBoostClassScoreLinks:string (boost-class-id:string score-id:string))
     (defun XE_UnbumpBoostClassScoreLinks:string (boost-class-id:string score-id:string))
     (defun XE_RecomputeUserBoostAggregates:string (account:string boost-class-ids:[string]))
+    (defun XE_SweepRevokeAnchor:string (anchor-id:string))
     (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
         (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
     )
@@ -538,6 +539,15 @@
     (defcap ANK|XE>SWEEP ()
         @doc "Forward (re-score sweep · MTX-AQP): authorize the anchor-retire sweep's ANK writes — per-holder \
             \ aggregate-promile refold + swept anchor removal. NO fund movement. Composes SECURE."
+        (compose-capability (SECURE))
+    )
+    (defcap ANK|XE>SWEEP-REVOKE (anchor-id:string)
+        @doc "Forward (re-score sweep terminal): authorize SWEPT revocation of an EMPLOYED anchor — liveness + \
+            \ owner enforced, but NOT the #9 score-link lock (the sweep has already refreshed every affected \
+            \ holder, so no staleness remains). Distinct from ANK|C>REVOKE (gated on set==0 for UNemployed anchors)."
+        @event
+        (UEV_LiveAnchor anchor-id)
+        (CAP_Owner anchor-id)
         (compose-capability (SECURE))
     )
     (defcap ANK|C>REVOKE-BOOST-CLASS-ENTRY (boost-class-id:string)
@@ -1809,6 +1819,20 @@
                 (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
             )
         )
+    )
+    (defun XE_SweepRevokeAnchor:string
+        (anchor-id:string)
+        @doc "Forward (re-score sweep terminal · MTX-AQP): revoke an EMPLOYED anchor after the sweep has refreshed \
+            \ every affected holder — set state false + remove it from its BoostClass/AssetAnchors, SKIPPING the #9 \
+            \ score-link lock (which C_RevokeAnchor enforces for UNemployed anchors). The reverse-index set is \
+            \ UNCHANGED: scores keep employing the class (via its other anchors, or an emptied class contributing \
+            \ 0 boost). No IGNIS (the sweep defpact bills). UEV_IMC + ANK|XE>SWEEP-REVOKE (liveness + owner + SECURE)."
+        (UEV_IMC)
+        (with-capability (ANK|XE>SWEEP-REVOKE anchor-id)
+            (WU_Anchor|State anchor-id false)
+            (XI_RevokeAnchorBookkeeping anchor-id)
+        )
+        anchor-id
     )
     (defun XE_BumpBoostClassScoreLinks:string
         (boost-class-id:string score-id:string)
