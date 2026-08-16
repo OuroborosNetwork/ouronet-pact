@@ -711,7 +711,7 @@
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
                 (pool-class-ok:bool (ref-AQP::URC_StakeTrueFungiblePoolClassOk pool-id))
-                (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) true))
+                (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) (ref-AQP::URC_PoolUnstakeAdmissionOk pool-id)))
                 (dptf-pool-ok:bool (ref-AQP::URC_StakeTrueFungibleDptfMatchesPool pool-id dptf-id))
                 (fvt-ready:bool (if direction (URC_PoolEmployedScoresFvtStakeReady pool-id) true))
             )
@@ -782,7 +782,7 @@
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
-                (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) true))
+                (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) (ref-AQP::URC_PoolUnstakeAdmissionOk pool-id)))
                 (fvt-ready:bool (if direction (URC_PoolEmployedScoresFvtStakeReady pool-id) true))
                 (l-n:integer (length nonces))
                 (l-a:integer (length nonce-amounts))
@@ -836,7 +836,7 @@
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 ;;
-                (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) true))
+                (stake-admission-ok:bool (if direction (ref-AQP::URC_PoolStakeAdmissionOk pool-id) (ref-AQP::URC_PoolUnstakeAdmissionOk pool-id)))
                 (fvt-ready:bool (if direction (URC_PoolEmployedScoresFvtStakeReady pool-id) true))
                 (class-ok:bool (ref-AQP::URC_StakeCollectablePoolClassOk pool-id son))
                 (collectable-ok:bool (ref-AQP::URC_StakeCollectableMatchesPool pool-id collectable-id))

@@ -133,6 +133,7 @@
     (defun URC_PoolActiveScoreIds:[string] (pool-id:string))
     (defun URC_PoolHasEmployedScores:bool (pool-id:string))
     (defun URC_PoolStakeAdmissionOk:bool (pool-id:string))
+    (defun URC_PoolUnstakeAdmissionOk:bool (pool-id:string))
     (defun URC_StakeTrueFungiblePoolClassOk:bool (pool-id:string))
     (defun URC_StakeTrueFungibleDptfMatchesPool:bool (pool-id:string dptf-id:string))
     (defun URC_StakeOrtoFungiblePoolClassOk:bool (pool-id:string))
@@ -585,7 +586,7 @@
                 (staked-bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
                 (rollup-bal:decimal (UR_AQP|BenDptfTotalBalance beneficiary-id dptf-id))
                 (class-ok:bool (URC_StakeTrueFungiblePoolClassOk pool-id))
-                (stake-admission-ok:bool (if direction (URC_PoolStakeAdmissionOk pool-id) true))
+                (stake-admission-ok:bool (if direction (URC_PoolStakeAdmissionOk pool-id) (URC_PoolUnstakeAdmissionOk pool-id)))
                 (dptf-ok:bool (URC_StakeTrueFungibleDptfMatchesPool pool-id dptf-id))
                 (tracker-ok:bool (or direction (>= staked-bal amount)))
                 (rollup-ok:bool (or direction (>= rollup-bal amount)))
@@ -615,7 +616,7 @@
             \ Whole-nonce DPOF::C_Transfer only. CAP_StakeOwner; compose P|AQP|CALLER + AQP|GOV for vault custody."
         (let
             (
-                (stake-admission-ok:bool (if direction (URC_PoolStakeAdmissionOk pool-id) true))
+                (stake-admission-ok:bool (if direction (URC_PoolStakeAdmissionOk pool-id) (URC_PoolUnstakeAdmissionOk pool-id)))
                 (class-ok:bool (URC_StakeOrtoFungiblePoolClassOk pool-id))
                 (dpof-ok:bool (URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id))
                 ;; L1 #16: no whole-nonce-amount check — DPOF::C_Transfer moves WHOLE nonces (ignores amounts),
@@ -675,7 +676,7 @@
             \ son=true DPSF (class-3 pool); son=false DPNF (class-4 pool)."
         (let
             (
-                (stake-admission-ok:bool (if direction (URC_PoolStakeAdmissionOk pool-id) true))
+                (stake-admission-ok:bool (if direction (URC_PoolStakeAdmissionOk pool-id) (URC_PoolUnstakeAdmissionOk pool-id)))
                 (class-ok:bool (URC_StakeCollectablePoolClassOk pool-id son))
                 (collectable-ok:bool (URC_StakeCollectableMatchesPool pool-id collectable-id))
                 (tracker-ok:bool
@@ -1808,6 +1809,13 @@
                 (not (UR_AQP|PoolSweepInProgress pool-id))
             ]
         )
+    )
+    (defun URC_PoolUnstakeAdmissionOk:bool (pool-id:string)
+        @doc "True when the UNSTAKE direction is allowed: the pool must NOT be vacate-in-progress. A vacate session \
+            \ (begin→finalize) force-unwinds every staker itself, so a concurrent user-initiated unstake would race \
+            \ the same tracker/aggregate rows the drain writes — freeze it until finalize. (Unlike stake admission, \
+            \ this does NOT require stake-enabled or employed scores — exiting a disabled/empty pool stays allowed.)"
+        (not (UR_AQP|PoolVacateInProgress pool-id))
     )
     (defun URC_StakeTrueFungiblePoolClassOk:bool (pool-id:string)
         @doc "True when pool aqp-class is 0 (LP via TF) or 1 (non-LP DPTF)."
