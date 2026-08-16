@@ -14,6 +14,9 @@
     (defun URD_VacateTfInventory:object (pool-id:string dptf-id:string))
     (defun URD_VacateOfInventory:object (pool-id:string dpof-id:string))
     (defun URD_VacateCollectableInventory:object (pool-id:string collectable-id:string son:bool))
+    ;;  [C/XB] Vacate REHAUL (phase 4) — agnostic, pool-id-only, legs read on-chain
+    (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
+    (defun XB_VacateTrueFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
     ;;  [C] Full vacate — one tx: UI dirty-reads inventory, passes full Legs payload, always finalize
     (defun C_FullVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
@@ -422,6 +425,16 @@
         @event
         (CAP_VctVacatePoolOwner pool-id)
         (compose-capability (SECURE))
+    )
+    (defcap VCT|C>VACATE (pool-id:string)
+        @doc "Master AGNOSTIC vacate cap (rehaul). Class-agnostic: the new vacate reads the pool's staker legs \
+            \ ON-CHAIN (no UI-supplied arrays to tamper/validate), so this only gates the pool OWNER + composes \
+            \ SECURE + P|VCT|RECIPE. Used by the single-tx dispatcher CC_FullVacate and the per-kind XB_Vacate* \
+            \ wrappers; the per-kind XI_Vacate*Pool functions run under it via require P|VCT|RECIPE."
+        @event
+        (CAP_VctVacatePoolOwner pool-id)
+        (compose-capability (SECURE))
+        (compose-capability (P|VCT|RECIPE))
     )
     (defcap VCT|C>FULL-TRUE-FUNGIBLE-VACATE
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
@@ -1701,6 +1714,42 @@
     ;; =============================================================================
     ;; FULL VACATE — one tx: UI-supplied full Legs payload + auto-begin + finalize
     ;; =============================================================================
+    ;; ═══════════════════════════════════════════════════════════════════════════
+    ;; VACATE REHAUL (phase 4) — agnostic pool-id-only vacate. Legs read ON-CHAIN.
+    ;;   CC_FullVacate(pool-id)  — one-tx, dispatches by aqp-class to per-kind XI_Vacate*Pool.
+    ;;   XB_Vacate{TF,OF,SF,NF}  — external per-kind wrappers over the same XI cores.
+    ;;   (multistep defpact + OF/SF/NF dispatch land in later steps of this phase.)
+    ;; ═══════════════════════════════════════════════════════════════════════════
+    (defun XB_VacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string)
+        @doc "Vacate rehaul — external per-kind TF vacate for a whole pool (both internal + external, hence XB). \
+            \ UEV_IMC + VCT|C>VACATE (owner + SECURE + P|VCT|RECIPE) around XI_VacateTrueFungiblePool. Vacates ONLY \
+            \ the pool's TF leg (native DPTF / LP); a class-1 pool's OF satellites are vacated by XB_VacateOrtoFungible \
+            \ — use CC_FullVacate to empty a whole pool of any class in one call."
+        (UEV_IMC)
+        (with-capability (VCT|C>VACATE pool-id)
+            (XI_VacateTrueFungiblePool pool-id)
+        )
+    )
+    (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string)
+        @doc "HEAVY (R3 CC_) AGNOSTIC single-tx full vacate: input is JUST the pool-id. Reads the pool's aqp-class \
+            \ and vacates EVERY asset type the pool holds by scanning its inventory ON-CHAIN — class 0 (LP farm) & 1 \
+            \ (DPTF family) → TF (class 1 also has OF sleep/hib satellites); class 2 → OF; class 3 → SF; class 4 → NF. \
+            \ Owner-gated (VCT|C>VACATE). For pools too large for one tx, use the C_MultiStepVacate defpact. \
+            \ REHAUL-IN-PROGRESS: OF/SF/NF dispatch pending — only class-0 (TF-only) is live this step."
+        (UEV_IMC)
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (aqp-class:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
+            )
+            (with-capability (VCT|C>VACATE pool-id)
+                (enforce (= aqp-class 0) "CC_FullVacate: only class-0 (TF) dispatch is live in this rehaul step")
+                (XI_VacateTrueFungiblePool pool-id)
+            )
+        )
+    )
     (defun C_FullVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
@@ -2163,6 +2212,22 @@
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [unwind-oc bulk-oc] [])
+        )
+    )
+    (defun XI_VacateTrueFungiblePool:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string)
+        @doc "Vacate rehaul — self-contained TF vacate for a WHOLE pool: derive the pool's TF asset (PoolAssetId; \
+            \ the native DPTF for class 1, the LP token for class 0), SCAN its full staker inventory ON-CHAIN \
+            \ (URDC_VacateTfOwnerRows — HEAVY), then unwind every leg + bulk custody-return \
+            \ (XI_VacateTrueFungibleFromLegs). No UI-supplied legs — nothing to tamper. Shared by the single-tx \
+            \ dispatcher CC_FullVacate and the external wrapper XB_VacateTrueFungible. require P|VCT|RECIPE."
+        (require-capability (P|VCT|RECIPE))
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (dptf-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
+            )
+            (XI_VacateTrueFungibleFromLegs pool-id dptf-id (URDC_VacateTfOwnerRows pool-id dptf-id))
         )
     )
     (defun XI_2|VacateOrtoFungibleScoreUnwind:object{IgnisCollectorV1.OutputCumulator}
