@@ -971,9 +971,11 @@
         )
     )
     (defun URC_VacatePoolOfIds:[string] (pool-id:string)
-        @doc "The pool's DPOF vacate-lane ids: class 2 → the standalone asset-id; class 0/1 → the native asset's \
-            \ sleeping (Z|) + hibernation (H|) DPOF satellites that EXIST (DPTF::UR_Sleeping / UR_Hibernation → \
-            \ BAR when not linked → dropped)."
+        @doc "The pool's DPOF vacate-lane ids, matching the 3 OF-bearing aqp-classes exactly \
+            \ (URC_StakeOrtoFungibleDpofMatchesPool): class 2 → the native ortofungible (the asset-id; special \
+            \ Z|/H| are NOT accepted); class 0 → ONLY the sleeping (Z|) LP satellite; class 1 → the sleeping (Z|) \
+            \ AND hibernation (H|) DPTF satellites. Satellites read via DPTF::UR_Sleeping / UR_Hibernation on the \
+            \ DPTF asset-id (class 0/1 asset-id is a DPTF); BAR (not linked) dropped."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
@@ -985,7 +987,10 @@
                 [asset-id]
                 (filter
                     (lambda (sat-id:string) (!= sat-id BAR))
-                    [(ref-DPTF::UR_Sleeping asset-id) (ref-DPTF::UR_Hibernation asset-id)]
+                    (if (= c 0)
+                        [(ref-DPTF::UR_Sleeping asset-id)]
+                        [(ref-DPTF::UR_Sleeping asset-id) (ref-DPTF::UR_Hibernation asset-id)]
+                    )
                 )
             )
         )
