@@ -143,15 +143,15 @@
         )
     )
     (defun UC_ReshapeUnstakeObject:object{UtilityAtsV2.Awo} (input:object{UtilityAtsV2.Awo} remove-position:integer)
-        (let
-            (
-                (is-valid:bool (UC_IzUnstakeObjectValid input))
-            )
-            (if is-valid
-                (UC_SolidifyUnstakeObject input remove-position)
-                input
-            )
-        )
+        @doc "Drops <remove-position> from <input>'s reward-tokens array and folds its value into slot 0 \
+            \ (the primal RT), mirroring the pool-level primal-RT swap in ATSU.X_RemoveSecondary. \
+            \ Fix (audit finding #1C / C2c): this MUST run unconditionally — an all-zero (never-touched) \
+            \ Awo still needs its array shrunk to match the post-removal reward-token list, or every later \
+            \ read (URCX_PosObjSt, XI_StoreUnstakeObject) that structurally compares it against a freshly \
+            \ length-derived zero/negative sentinel will see a stale, longer array and misclassify an \
+            \ empty slot as permanently occupied. UC_SolidifyUnstakeObject is safe to run unconditionally: \
+            \ merging a 0.0 removee into slot 0 is a no-op on the value, it only ever needs to shrink the array."
+        (UC_SolidifyUnstakeObject input remove-position)
     )
     (defun UC_SolidifyUnstakeObject:object{UtilityAtsV2.Awo} (input:object{UtilityAtsV2.Awo} remove-position:integer)
         (let*

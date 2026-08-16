@@ -551,27 +551,25 @@
     ;;{F5}  [A]
     (defun A_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator}
         (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
-        @doc "Administrative Variant, queries <accounts-with-ats-data> via <ATS.URD_ExistingAutostakePairs ats>"
+        @doc "Administrative Variant. Fix (audit finding #1C / C2b): <accounts-with-ats-data> is now \
+            \ IGNORED — X_RemoveSecondary always re-derives the complete account list on-chain via \
+            \ <ATS.URD_ExistingAutostakePairs ats> itself, so a caller-supplied list can no longer be \
+            \ incomplete/stale and silently desync some accounts' stored positions. The parameter is kept \
+            \ only for interface-signature compatibility (AutostakeUsageV1 is unchanged); do not rely on \
+            \ its contents."
         (UEV_IMC)
         (with-capability (ATSU|C>ADMINISTRATIVE-REMOVE-SECONDARY ats reward-token)
-            (X_RemoveSecondary remover ats reward-token accounts-with-ats-data)
+            (X_RemoveSecondary remover ats reward-token)
         )
     )
     ;;{F6}  [C]
     (defun C_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator}
         (remover:string ats:string reward-token:string)
-        @doc "Client Variant if <ATS.URD_ExistingAutostakePairs ats> is cheap enough \
-            \ for the whole function to fit inside one Transaction. \
-            \ In case it isnt, the Administrative Variant Must be used, with pre-read Data."
+        @doc "Client Variant. X_RemoveSecondary derives the complete account list itself via \
+            \ <ATS.URD_ExistingAutostakePairs ats>."
         (UEV_IMC)
-        (let
-            (
-                (ref-ATS:module{AutostakeV2} ATS)
-                (accounts-with-ats-data:[string] (ref-ATS::URD_ExistingAutostakePairs ats))
-            )
-            (with-capability (ATSU|C>REMOVE-SECONDARY ats reward-token)
-                (X_RemoveSecondary remover ats reward-token accounts-with-ats-data)
-            )
+        (with-capability (ATSU|C>REMOVE-SECONDARY ats reward-token)
+            (X_RemoveSecondary remover ats reward-token)
         )
     )
     (defun C_WithdrawRoyalties:object{IgnisCollectorV1.OutputCumulator}
@@ -1351,7 +1349,15 @@
         )
     )
     (defun X_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator}
-        (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
+        (remover:string ats:string reward-token:string)
+        @doc "Fix (audit finding #1C / C2): (1) the account list to reshape is ALWAYS derived on-chain \
+            \ here via <ATS.URD_ExistingAutostakePairs ats> — never trusted from a caller — so removal can \
+            \ no longer skip an account and leave its stored positions desynced from the live reward-token \
+            \ list (was C2b/C2c's root enabler). (2) the royalty bucket (RUR 3) is now migrated into the \
+            \ primal RT exactly like resident/unbonding (RUR 1/2) — previously it was silently deleted with \
+            \ the removed row and permanently stranded in ATS|SC_NAME custody with no reward-token entry \
+            \ left to reference it (was C2b). <remove-sum> now covers all three buckets on both transfer \
+            \ legs, preserving the existing 1:1 primal-RT buyout design without altering it."
         (require-capability (SECURE))
         (let
             (
@@ -1368,13 +1374,16 @@
                 (primal-rt:string (at 0 rt-lst))
                 (resident-sum:decimal (at remove-position (ref-ATS::UR_RewardTokenRUR ats 1)))
                 (unbound-sum:decimal (at remove-position (ref-ATS::UR_RewardTokenRUR ats 2)))
-                (remove-sum:decimal (+ resident-sum unbound-sum))
+                (royalty-sum:decimal (at remove-position (ref-ATS::UR_RewardTokenRUR ats 3)))
+                (remove-sum:decimal (+ (+ resident-sum unbound-sum) royalty-sum))
+                ;; Complete, on-chain-derived account list — never trusted from a caller (fix #1C/C2).
+                (accounts-with-ats-data:[string] (ref-ATS::URD_ExistingAutostakePairs ats))
                 ;;
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-IGNIS::UDC_ConstructOutputCumulator 
-                        (ref-DALOS::UR_UsagePrice "ignis|token-issue") 
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-DALOS::UR_UsagePrice "ignis|token-issue")
                         ATS|SC_NAME
-                        (ref-IGNIS::URC_IsVirtualGasZero) 
+                        (ref-IGNIS::URC_IsVirtualGasZero)
                         []
                     )
                 )
@@ -1387,12 +1396,14 @@
             )
             ;;1]The RT to be removed, is transfered to the remover, from the ATS|SC_NAME
                 ;via ico2
-            ;;2]The amount removed is added back as Primal-RT
+            ;;2]The amount removed (resident + unbonding + royalty) is added back as Primal-RT
                 ;via ico3
-            ;;3]ROU Table is updated with the new DATA, now as primal RT
+            ;;3]ROU Table is updated with the new DATA, now as primal RT — all three buckets
             (ref-ATS::XE_UpdateRUR ats primal-rt 1 true resident-sum)
             (ref-ATS::XE_UpdateRUR ats primal-rt 2 true unbound-sum)
-            ;;4]Client Accounts are modified to remove the RT Token and update balances with Primal RT
+            (ref-ATS::XE_UpdateRUR ats primal-rt 3 true royalty-sum)
+            ;;4]EVERY client account with ledger data for this pair is reshaped to remove the RT
+                ;position and keep balances aligned with the post-removal reward-token list
             (map
                 (lambda
                     (kontos:string)

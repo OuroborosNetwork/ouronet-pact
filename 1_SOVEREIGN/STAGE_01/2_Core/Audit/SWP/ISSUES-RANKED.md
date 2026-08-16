@@ -7,13 +7,19 @@ detail (location, failure scenario, fix direction, interface implication) in `RO
 
 ## CRITICAL
 
-#1C **[SWPL]** Asymmetric liquidity-add mints the naive (unreduced) LP amount instead of the invariant-fair
-`taxd-lp` — worked numeric exploit: deposit one token only, mint-then-burn immediately extracts value from
-other LPs, same block. — *C10*
+#1C **[SWPL]** ~~Asymmetric liquidity-add mints the naive (unreduced) LP amount instead of the invariant-fair
+`taxd-lp`~~ — **REFUTED 2026-08-16.** Owner supplied a live transaction showing the deficit *is* priced and
+charged via an oracle-based IGNIS tax (`URC|KDA-PID_LpToIgnis`, price input not caller-suppliable); the
+original exploit walkthrough omitted this mandatory payment. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`.
+Substance survives, narrowed, as the now-CONFIRMED **H8** (deficit tax goes to the shared `SWP|SC_NAME` vault,
+not back to the specific pool's own diluted LPs — a design question, not a drain). — *C10 → see H8*
 
-#2C **[SWPLC]** `C_Fuel`'s indirect branch can credit a pool's reserves with zero token backing; its only gate
-is a trivially-true capability chain — a shared-vault cross-pool drain if the IMC bypass is confirmed live.
-Also flags a codebase-wide question about whether `UEV_IMC` actually restricts callers anywhere. — *C13*
+#2C **[SWPLC]** ~~`C_Fuel`'s indirect branch can credit unbacked reserves; sole gate is a trivially-true IMC
+chain~~ — **REFUTED 2026-08-16.** Self-caught via a minimal Pact 5 REPL proof-of-concept: `with-capability` on
+a foreign module's capability requires that module's own admin/internal code, not just a `true` defcap body —
+the self-grant bypass this finding depended on isn't possible. Owner independently confirmed the branch's only
+real callers (`19_SWPU.pact:687,858`) are safe. Full mechanism trace in `ROUND-01-OWNER-FEEDBACK.md`. No
+finding survives at CRITICAL/HIGH/MEDIUM level. — *C13, retracted*
 
 #3C **[U|SWP]** StableSwap Newton solver has no domain guard — oversized swaps converge to the wrong root and
 can return more output than the pool actually holds. — *C2*
@@ -87,7 +93,9 @@ looks like a check but performs none. — *H5*
 under-converges on heavily skewed pools. — *H1*
 
 #25H **[SWPL]** Asymmetric-deficit tax compensation is never returned to the specific pool's own diluted LP
-holders — routed to generic ecosystem sinks instead (design question, not clearly a bug). — *H8*
+holders — confirmed routed to the shared `SWP|SC_NAME` vault instead (real IGNIS transfer, traced 2026-08-16
+while re-verifying #1C/C10). Design question for the owner: is protocol-wide value capture instead of
+per-pool LP protection intentional? — *H8*
 
 ## MEDIUM
 

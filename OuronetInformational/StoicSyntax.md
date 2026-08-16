@@ -1220,6 +1220,17 @@ RemoteGov rotate (concept): owner smart-account governor becomes `UEV_GuardOfAny
 - **`MODULE|GOV`** = “I **own** this account” (home only).  
 - **`P|*|REMOTE-GOV`** = “I **operate** your account from my module”.
 
+**Why `MODULE|GOV` is safe even with a `true`/no-`enforce` body:** Pact requires a *foreign* caller (a
+different module, or bare transaction/top-level code) to already hold **that module's admin** before it can
+`with-capability` one of its capabilities — verified empirically (Pact 5.4, two-module repro,
+2026-08-16, see `memories/2026-08-16-with-capability-requires-module-admin-for-foreign-callers.md`): only
+code physically inside the home module can freely compose `MODULE|GOV`; a foreign module or raw
+transaction attempting the same gets `"Module admin necessary for operation but has not been acquired"`.
+So `MODULE|GOV` is **not** a cross-module skeleton key — it cannot be forged from outside. The real risk
+to audit is narrower: every **public function inside the home module** that composes `MODULE|GOV` must
+still do its own real authorization (ownership/policy check) *before* composing it, since Pact does not
+restrict *which of the module's own public functions* may compose it — only *who outside the module* can.
+
 ### 14.6 XB shared writes (home + peers, still no foreign caps)
 
 | | Home | Peer |

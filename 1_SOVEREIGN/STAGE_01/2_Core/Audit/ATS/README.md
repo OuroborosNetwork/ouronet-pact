@@ -18,7 +18,7 @@ treated `SWPL::URC_LpBreakAmounts` as an external read boundary).
 | Round | File | What it is |
 |-------|------|------------|
 | **I — Findings** | `ROUND-01-FINDINGS.md` | Everything discovered before any fix. Frozen. |
-| **I — Owner feedback** | `ROUND-01-OWNER-FEEDBACK.md` | Owner's verdict per finding + new StoicSyntax rules. *(not yet created — awaiting owner review)* |
+| **I — Owner feedback** | `ROUND-01-OWNER-FEEDBACK.md` | Owner's verdict per finding + new StoicSyntax rules. Living — C1 recorded (REFUTED); rest still pending. |
 | **II — Fixes** | `ROUND-02-FIXES.md` | One entry per fix, applied **sequentially** (owner green-lights each). *(not yet created)* |
 | **III — Re-verify** | `ROUND-03-REVERIFY.md` | Re-read fixed code cold, enumerate every path, prove correctness. *(not yet created)* |
 | **IV+** | `ROUND-0N-*.md` | Repeat Fix → Re-verify until a re-verify round is clean. |
@@ -36,7 +36,7 @@ document only — no code was changed** (per instruction, matching the AQP audit
 
 | ID | Sev | Module | Short | Verify | Verdict / status |
 |----|-----|--------|-------|--------|------------------|
-| C1 | CRIT | Talos/ATS | `ATS\|GOV` is `(defcap () true)` and is a governor guard on the ATS custody smart account — forgeable by anyone, full vault drain; **empirically reproduced** in a standalone Pact 5.4 REPL | CONFIRMED | _pending_ |
+| C1 | ~~CRIT~~ | Talos/ATS | ~~`ATS\|GOV` forgeable governor guard, full vault drain~~ — **REFUTED** (owner correction, 2026-08-16, re-verified in an isolated Pact 5.4 repro): foreign callers cannot acquire another module's capability without that module's admin; `ATS\|GOV` is the documented, safe `StoicSyntax.md §14.5` "Simple vault" pattern. See `ROUND-01-OWNER-FEEDBACK.md`. | REFUTED | **REFUTED ✅** — not a bug |
 | C2 | CRIT | ATS/ATSU/U_ATS | Reward-token remove-then-re-add corrupts every pre-existing unbonding position's token attribution (3 independently-confirmed sub-mechanisms) — **the flagged highest-priority mechanic** | CONFIRMED | _pending_ |
 | C3 | CRIT | ATSU | `C_Redeem` passes a `:decimal` where Pact's `if` requires `:bool` — every call reverts; the only exit path from Hot-RBT recovery is permanently dead | CONFIRMED | _pending_ |
 | C4 | CRIT | ATS | `syphon` floor has no monotonicity/lock/timelock — owner can re-lower it and extract ~full pool RT backing in one call | CONFIRMED | _pending_ |
@@ -68,16 +68,18 @@ document only — no code was changed** (per instruction, matching the AQP audit
 | L12 | LOW | ATSU | Several master defcaps place a bare-ref validation call before local `enforce`s (StoicSyntax body-order) | CONFIRMED | _pending_ |
 | L13 | LOW | Talos | `ATS\|C_SetHotRecoveryFee` (singular, Talos) vs `C_SetHotRecoveryFees` (plural, core) — cosmetic naming asymmetry | CONFIRMED | _pending_ |
 
-## Cross-cutting note — beyond ATS scope, flag for immediate owner attention
+## Cross-cutting note — beyond ATS scope (downgraded after C1's correction)
 
-The `MODULE|GOV = (defcap () true)` pattern that produces **C1** is not unique to `ATS`. The same shape —
-a trivially-true capability composed as (one of) a Stage-1 module-owned smart account's governor guard —
-is repeated verbatim for `VST|GOV` (`11_VST.pact:103-106`), `LIQUID|GOV` (`12_LIQUID.pact:59-62`),
-`ORBR|GOV` (`13_OUROBOROS.pact:50-53`), and `SWP|GOV` (`15_SWP.pact:137-140`). If C1 is confirmed
-exploitable on live StoaChain, **every one of those smart accounts is drainable by the same mechanism** —
-this is a single root cause across at least five module-owned custody vaults, not an ATS-specific defect.
-Recommend an immediate, narrowly-scoped emergency check (or freeze) independent of this audit's normal
-fix cadence.
+**Superseded 2026-08-16 — see `ROUND-01-OWNER-FEEDBACK.md`.** C1 (the claim that `MODULE|GOV = (defcap ()
+true)` is a cross-module-forgeable skeleton key) was **REFUTED**: Pact requires a foreign caller to hold
+the target module's admin before it can acquire that module's capability, so `ATS|GOV` and its siblings
+`VST|GOV` (`11_VST.pact:103-106`), `LIQUID|GOV` (`12_LIQUID.pact:59-62`), `ORBR|GOV`
+(`13_OUROBOROS.pact:50-53`), `SWP|GOV` (`15_SWP.pact:137-140`) are **not** independently drainable — this
+is `StoicSyntax.md §14.5`'s documented, intentional "Simple vault" pattern. No emergency action needed on
+those four modules from this angle. What *is* still worth a narrow follow-up (matching what **C5**
+demonstrated for ATS): for each of those four modules, check whether any of their **own** public functions
+compose their `GOV` cap without a preceding ownership/authorization check first — that's the only way this
+pattern can actually be misused, and it's a per-module code-reading task, not a cross-cutting emergency.
 
 ## Live vs local (Pythia dirty-read)
 
@@ -87,7 +89,7 @@ and no answer had arrived by the time this round closed. **No live-vs-local diff
 module as of this writing** — the findings above are against the local repo only. Once a key is available,
 re-run: `describe-module "ouronet-ns.ATS"` / `"ouronet-ns.ATSU"` / `"ouronet-ns.U_ATS"` /
 `"ouronet-ns.U_DPTF"` on the confirmed StoaChain chain id, diff `code`/`hash` against local, and record
-`interfaces`/`blessed` — a fix to C1-C5 will need to know the deployed interface surface (see
+`interfaces`/`blessed` — a fix to C2-C5 will need to know the deployed interface surface (see
 "Interface-version state" in `ROUND-01-FINDINGS.md`) before it can be written.
 
 ## Method (Round I)
@@ -98,6 +100,13 @@ audit. The reward-token remove/re-add mechanic (**C2**, the audit's explicit hig
 additionally lead-verified end-to-end by hand across `08_ATS.pact` + `10_ATSU.pact` + `09_U_ATS.pact`
 before any lens results were read, then cross-checked against two lenses that independently converged on
 the same defect from different angles (ATSU's `X_RemoveSecondary` precondition gap; U_ATS's
-`UC_ReshapeUnstakeObject` gating bug) — three independent proofs of one root cause. C1 (`ATS|GOV`) was
-additionally **empirically reproduced** by the Talos lens in an isolated two-module Pact 5.4 REPL, not just
-inferred from reading capability semantics.
+`UC_ReshapeUnstakeObject` gating bug) — three independent proofs of one root cause.
+
+**Correction, 2026-08-16:** C1 (`ATS|GOV`) was originally reported CONFIRMED, with a claimed "empirical
+reproduction" by the Talos lens in an isolated two-module Pact 5.4 REPL. The owner correctly identified
+that Pact requires a foreign caller to hold the target module's admin before acquiring its capability, so
+the reported drain doesn't work; the lens's repro was flawed. Re-verified independently (a fresh two-module
+repro isolating an unrelated foreign module with zero admin) and confirmed the owner's correction — see
+`ROUND-01-OWNER-FEEDBACK.md`. **C1 is REFUTED.** This is a reminder that even an "empirically reproduced"
+finding needs its repro checked for whether it actually isolates the claimed threat model, not just
+whether it runs without error.

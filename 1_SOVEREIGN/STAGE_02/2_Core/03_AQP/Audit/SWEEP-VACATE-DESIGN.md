@@ -120,19 +120,86 @@ Add `boost-class → [score-ids]` (append on link in `SCR::XI_CreateBoostClassLi
 score *definitions* (few), not stakers. This replaces the coarse count with an enumerable set; the existing
 `BoostClassLinkCount` can be derived from it (or kept alongside as the O(1) lock gate).
 
-## 5. Consumer 3 — vacate rehaul
+## 5. Consumer 3 — vacate rehaul  [REVISED 2026-08-16 — parallel-safe model, owner-approved]
 
-- **Collapse** the 8 entrypoints (`C_FullVacate*`×4 + `C_Vacate*Legs`×4) → **1 shared vacate core** (asset-kind
-  dispatch INSIDE, kinds 1-4 already constants) **+ 2 defpact variants** (full one-tx for small pools; paginated
-  legs for large — the 10k-staker gas ceiling falls out) **+ `C_AbortVacate`**.
-- **Reuse** the shared walk: the per-leg unwind (settle → SCORE-zero → **custody-return last**) already exists
-  (05_VCT:2104-2166); wrap it in the pagination template. Vacate's terminal = zero + bulk custody-return + session
-  begin/finalize (`XI_EnsureVacateBegun` / `XI_MaybeFinalizeVacate`).
-- **Delete dead code (L9/#20):** `URC_VacateBatchLegParityOk` (05_VCT:1261) + `VACATE-MAX-LEGS`=16 (05_VCT:264) —
-  confirmed zero callers; live caps use `VACATE-GAS-MAX-*`.
-- **Hash-commitment decision:** the `initial/phase/last-vacate-hash` fields exist and are read but every writer
-  passes `""` (never populated). Either wire them (tamper-evidence across multi-tx legs) or drop them. Recommend
-  **wire** during the rehaul (cheap integrity for the paginated path); flag if you'd rather drop.
+> Supersedes the earlier "1 core + 2 defpact variants" plan. The defpact is **dropped** (see 5.1). The rehaul is now:
+> a single-tx agnostic path (shipped) + a parallel-safe multi-tx Legs path (begin → parallel drain → finalize).
+
+### 5.0 Single-tx agnostic path — ✅ SHIPPED (commits this session)
+`CC_FullVacate(pool-id)`: `UEV_IMC` → read `aqp-class` → dispatch to per-kind `XI_Vacate*Pool` → shared `XI_Vacate*Batch`
+cores. On-chain scan (`URDC_VacateNonceOwnerRowsRaw`, `URDC_VacateTfOwnerRows`), **no UI legs**. All 5 classes proven
+(`TX-VCT-{TF01b,L01b,L02b,DPNF02b,CC01}`). Class-1 drains native TF + every live DPOF satellite via new
+`URD_AQP|ActivePoolDpofIds` (HEAVY select). `XB_Vacate{True,Orto,Semi,Non}Fungible` + Talos wrappers. This is the
+"small pool, one click" path.
+
+### 5.1 Large-pool requirement — ABSOLUTE PARALLELISM (why not a defpact)
+Owner requirement: the UI splits the leg list into N txs; **two txs built from the same list must NEVER write-conflict**,
+or parallel submission errors out. A `defpact` is the wrong tool — vacate legs are *independent* (no ordered
+dependency), so a defpact's sequential guarantee buys nothing, and its **fixed step count caps pool size** (10 steps
+can't be extended mid-run). Use **independent txs** the UI fires until the pool is empty.
+
+### 5.2 Conflict trace (source: vacate leg-unwind write classification)
+- **PARALLEL-SAFE:** only the per-staker tracker-zero — `AQP|T|{DPTF,DPOF,DPSF,DPNF}Tracker`, keyed
+  `pool|asset|owner|beneficiary(|nonce)`. Disjoint slices touch different rows.
+- **Tier-1 per-beneficiary rows** (`UserScore`, `RPS|User`, `ANK|Anchors`, `ANK|UserBoost`, `BenDptfTotal`,
+  `BenDpsf/DpnfNonceTotal`, `BenDpsf/DpnfAnkMeta`): collide **iff a beneficiary spans two txs** → FIX: **partition by
+  beneficiary** (never split one beneficiary across txs).
+- **Tier-2 pool-wide aggregates** — collide **unconditionally** (any two slices hit the same row):
+  `SCR|T|Score.nzs-count` + `.total-base/boosted/deb` (key `score-id`); `FVT|T|RPS|Member` +
+  `MemberVault.available/unclaimed` (key `fvt|score|reward` — the reward accumulator, advanced on *every* beneficiary
+  unwind); `FVT|T|RPS|Global.unclaimed` (key `fvt|reward`). → FIX: **hoist out of the per-leg path**.
+- **Oracle chicken-and-egg:** `URC_PoolFullyVacated` decides "empty?" by reading `Score.nzs-count == 0` for every
+  employed score — the same Tier-2 aggregate we must stop touching per-leg → **re-base the oracle on tracker-row
+  absence** (leg-disjoint, already parallel-safe).
+
+### 5.3 Architecture: begin → parallel drain → finalize
+**Load-bearing fact (verified):** reward-per-share `G` advances **only on inject** (`04_FVT:3029` "current-rps
+G += floor(R/S)"), never time/collect-based. So with injects blocked during vacate, `G` is constant and every
+member/user can settle against a **frozen snapshot** independently — the basis for removing Tier-2 writes from the
+parallel middle.
+
+1. **begin — single tx** (`C_VacateBegin(pool-id)`, owner-gated): set `vacate-in-progress`; disable stake;
+   **block injects** (NEW — the inject path does not check vacate state today, `04_FVT` CC_Inject/XI_FvtInjectCore);
+   **settle every employed member once** (advance each pool-score member `g_i→G`, credit `MemberVault.available`).
+   Must be an explicit tx BEFORE the fan-out (parallel auto-begin would race the flag + member settles).
+2. **drain — N parallel txs, beneficiary-partitioned** (reworked `C_Vacate*Legs(pool, asset, legs, finalize=false)`):
+   per leg → tracker-zero + custody-return (disjoint); per beneficiary → Tier-1 reward-bank *against frozen G* +
+   `UserScore` SET-to-0 + `Anchors`/`UserBoost` SET. **Zero writes to any Tier-2 aggregate.** `finalize` is always
+   false on this path.
+3. **finalize — single tx** (`C_VacateFinalize(pool-id)`, owner-gated): verify empty via **tracker-row absence**
+   (new leg-disjoint oracle); SET `Score.nzs-count=0` + `Score.totals=0` per employed score; zero member
+   accumulators; reconcile `RPS|Global.unclaimed`; re-enable stake; unblock injects; clear `vacate-in-progress`.
+
+### 5.4 Partitioning + anti-tamper
+UI partitions so each beneficiary's full position lands in exactly ONE tx (partition by beneficiary → pack
+beneficiaries into gas-bounded txs; UI re-splits on gas failure — no static leg cap). Each Legs tx still **validates
+every leg against the live tracker** (`URC_VacateTfLegBalancesOk`, `URC_VacateOrtoNoncesSufficient`,
+`URC_VacateOrtoLegBeneficiaryOk`) so the UI can only choose *which real stakers*, never fake amounts. Add an on-chain
+guard that a tx carries a beneficiary's legs **completely** (no partial-beneficiary) so Tier-1 SETs are correct.
+
+### 5.5 Deltas vs the earlier plan
+- **REVERSES "no explicit begin/abort":** absolute parallelism *requires* explicit begin (freeze) + finalize
+  (reconcile) bookending the parallel middle. **Keep `C_AbortVacate`** (reset a stuck/abandoned campaign).
+- **Keep** `C_Vacate*Legs` (all 4 kinds), reworked to the drain contract (strip Tier-2 writes).
+- **Drop** the defpact entirely.
+- **Still delete dead code (L9/#20):** `URC_VacateBatchLegParityOk` + `VACATE-MAX-LEGS` (a static leg cap is *wrong*
+  once per-leg gas is data-dependent — let gas bound it, UI re-splits).
+- **D6 flips wire→DROP the hash-commitment fields:** per-leg tracker validation is the real anti-tamper guard, so
+  `initial/phase/last-vacate-hash` are redundant.
+
+### 5.6 Open items to confirm before FVT/SCORE edits
+- **Vault↔pool cardinality:** does blocking inject during vacate freeze the whole vault (if multiple pools share one
+  `fvt-id`) or just this pool's members? If shared, block only the vacating pool's inject path, or make the frozen
+  member snapshot robust to `G` advancing for non-vacating members.
+- **No other G-advancing path:** confirm `collect`/reward-claim never advances `G` (only reads it) so the freeze is exact.
+- **Gas:** begin (settle ≤7 members) + finalize (set ≤7 aggregates) are cheap/bounded; drain per-tx bounded by
+  beneficiary count × per-beneficiary cost — UI calibrates.
+
+### 5.7 Build order (Phase 4 remaining)
+(1) inject-block during vacate-in-progress → (2) `C_VacateBegin` (freeze + settle members) + re-based tracker-absence
+oracle → (3) rework `C_Vacate*Legs` to the drain contract (strip Tier-2) → (4) `C_VacateFinalize` (set-to-empty) →
+(5) prove: 2 disjoint-beneficiary parallel drain txs with NO conflict + full begin→drain→finalize empties pool with
+rewards conserved → (6) delete dead L9/#20 + hash fields.
 
 ## 6. Cross-cutting decisions (recommendations)
 
@@ -143,7 +210,8 @@ score *definitions* (few), not stakers. This replaces the coarse count with an e
 | D3 | Freeze semantics during a sweep | Disable **stake admission** on affected pools + `sweep-in-progress` flag on the AQP-POOL session row; **leave collect open** (self-heals). |
 | D4 | Who pays the sweep gas | **Owner-initiated → owner pays** the paginated sweep. NO staker 2e-penalty (they didn't cause it; contrast the inject forced-fix penalty). |
 | D5 | S4 / triplet+anchor | **LOCKED: build triplet-lane recompute** into the sweep (§4c). Anchors on triplets stay supported. |
-| D6 | Vacate hash-commitment | **LOCKED: wire** the existing hash fields. |
+| D6 | Vacate hash-commitment | **RE-LOCKED 2026-08-16: DROP** the hash fields (§5.5) — per-leg tracker validation is the real anti-tamper guard; on-chain scan / validated legs make the hashes redundant. |
+| D7 | Large-pool multi-tx mechanism | **LOCKED 2026-08-16: parallel independent txs, NOT a defpact** (§5.1). begin → parallel drain → finalize; reward accumulator frozen at begin (G is inject-driven, §5.3). |
 
 ## 7. Proposed implementation order (the 4 phases)
 
@@ -192,8 +260,14 @@ refresh XE_ (anchor def changed ⇒ stored aggregate-promile stale), a triplet-l
   removal). Auth = the anchored-asset owner (owner clarification: no separate anchor-owner). **Deferred within
   phase 3:** the RE-PRICE variant (3b — adds a per-anchor-user-promile refresh) and a paginated MTX|n defpact for
   spike staker sets (mirrors CC_Inject → MTX|2|C_Inject).
-- **Phase 4 — vacate rehaul.** 8→1+2 defpacts, asset-kind dispatch, dead-code removal, hash-commitment. Riskiest
-  (asset custody) → last, heavy tests. Absorbs L9/#20.
+- **Phase 4 — vacate rehaul.** [REVISED 2026-08-16 — see §5]
+  - ✅ **DONE (single-tx agnostic):** `CC_FullVacate(pool-id)` + per-kind `XI_Vacate*Pool` + `XB_Vacate*` + Talos +
+    `URD_AQP|ActivePoolDpofIds` (class-1 satellites). All 5 classes proven (`TX-VCT-{TF01b,L01b,L02b,DPNF02b,CC01}`).
+  - ⏳ **PARALLEL-SAFE LEGS (the reward-settlement refactor, §5.3):** inject-block during vacate → `C_VacateBegin`
+    (freeze + settle members) + tracker-absence oracle → drain-contract `C_Vacate*Legs` (strip Tier-2 writes) →
+    `C_VacateFinalize` (set-to-empty). Prove 2 disjoint-beneficiary parallel drains with no conflict. Touches
+    FVT/SCORE — riskiest, heavy tests.
+  - ⏳ **Dead-code removal (L9/#20 + hash fields, D6-drop):** last, after the above is proven.
 
 ## 8. Open risks / notes
 - Cross-module terminal actions can't be lambdas in Pact → each consumer owns its defpact; the shared part is the

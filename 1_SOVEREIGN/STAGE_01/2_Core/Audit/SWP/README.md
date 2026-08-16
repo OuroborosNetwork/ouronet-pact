@@ -58,10 +58,10 @@ audit-and-document only — no code was changed.**
 | C7 | CRIT | SWP | `C_ModifyWeights` — no length-parity check, dead precision `enforce` | CONFIRMED | _pending_ |
 | C8 | CRIT | SWP | `C_UpdateAmplifier` — zero bound-check on new value (incl. the `-1.0` type sentinel) | CONFIRMED | _pending_ |
 | C9 | CRIT | SWP / MTX-SWP | Pools issued via MTX-SWP defpact never registered in `SWP\|LP` — breaks AQP LP-stake admission | CONFIRMED | _pending_ |
-| C10 | CRIT | SWPL | Asymmetric-liquidity LP mint uses the naive (unreduced) amount, not the fair invariant `taxd-lp` | CONFIRMED (worked numeric exploit) | _pending_ |
+| C10 | ~~CRIT~~ | SWPL | ~~Asymmetric-liquidity LP mint uses the naive amount, not fair invariant `taxd-lp`~~ | **REFUTED** | **REFUTED (owner, 2026-08-16)** — deficit IS priced + charged via oracle-based IGNIS tax (`URC\|KDA-PID_LpToIgnis`, `kda-pid` not caller-suppliable); original exploit walkthrough omitted this mandatory payment. Substance folded into H8 (upgraded). See `ROUND-01-OWNER-FEEDBACK.md`. |
 | C11 | CRIT | SWPU | Slippage bound checks the fee-exclusive gross quote, never the actual net amount delivered | CONFIRMED | _pending_ |
 | C12 | CRIT | SWPU | `C_ToggleSwapCapability` — no ownership check anywhere; free DoS on any pool | CONFIRMED (lead re-read cap body) | _pending_ |
-| C13 | CRIT | SWPLC | `C_Fuel` indirect branch can credit unbacked reserves; sole gate is a trivially-true IMC chain | CONFIRMED mechanism / PLAUSIBLE full exploit (needs REPL PoC) | _pending_ |
+| C13 | ~~CRIT~~ | SWPLC | ~~`C_Fuel` indirect branch unbacked-credit / IMC bypass~~ | **REFUTED** | **REFUTED (self-caught via REPL PoC, 2026-08-16)** — Pact 5 requires module-admin of the target module for `with-capability` to grant its capabilities from outside; the "self-grant a trivially-true cap" bypass is not possible. Owner independently confirmed the branch's only real callers (`19_SWPU.pact:687,858`) are safe (transfer already handled, amount internally computed). See `ROUND-01-OWNER-FEEDBACK.md`. |
 | H1 | HIGH | U\|SWP | `UC_ComputeD`/`UC_ComputeY` fixed iteration count, no convergence check | CONFIRMED | _pending_ |
 | H2 | HIGH | SWPT | `URC_ComputeGraphPath` crashes (`at 0 []`) instead of a clean "no path" result | CONFIRMED | _pending_ |
 | H3 | HIGH | SWPT | Principal removal permanently orphans Tracer entries, no resync path | CONFIRMED | _pending_ |
@@ -69,7 +69,7 @@ audit-and-document only — no code was changed.**
 | H5 | HIGH | SWPI | Dead validation: weight-precision check computed, never `enforce`d | CONFIRMED | _pending_ |
 | H6 | HIGH | SWP | `A_DefinePrimordialPool` reads `primality` but never enforces it | CONFIRMED | _pending_ |
 | H7 | HIGH | SWPL | Two unreconciled asymmetric-deficit pricing models stack in Standard mode | PLAUSIBLE | _pending_ |
-| H8 | HIGH | SWPL | Asymmetric-deficit compensation not returned to the diluted pool's own LPs | DESIGN — confirm intent | _pending_ |
+| H8 | HIGH | SWPL | Asymmetric-deficit compensation not returned to the diluted pool's own LPs | **CONFIRMED** (mechanism traced, was DESIGN-flag) | _pending_ — owner: is protocol-wide value capture (vs. per-pool LP protection) intentional? See `ROUND-01-OWNER-FEEDBACK.md` C10 entry. |
 | H9 | HIGH | SWPU | Reentrancy ordering window in `XI_Swap` via smart-account guard callback | PLAUSIBLE | _pending_ |
 | H10 | HIGH | MTX-SWP / Talos | Global Admin Pause not honored on `defpact` continuation steps | CONFIRMED (2 independent auditors) | _pending_ |
 | H11 | HIGH | SWPLC | `can-add` toggle silently blocks both deposits **and** withdrawals | CONFIRMED | _pending_ |

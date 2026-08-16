@@ -61,7 +61,23 @@ detect "does this account have an open cold-recovery slot") are documented as C2
 
 # CRITICAL
 
-## C1 · Talos/ATS — `ATS|GOV` is `(defcap () true)` and backs the Autostake vault's governor guard — full drain, any caller `[CONFIRMED, empirically reproduced]`
+## C1 · Talos/ATS — `ATS|GOV` is `(defcap () true)` and backs the Autostake vault's governor guard — full drain, any caller `[REFUTED — see correction below]`
+
+> **CORRECTION (owner, 2026-08-16) — REFUTED. Not a bug.** This finding is factually wrong and is kept
+> below only as a frozen historical record of what was originally claimed (per this round's append-only
+> discipline), not as a live finding. **Do not act on this section.** Pact requires a foreign caller — a
+> different module, or bare transaction/top-level code — to already hold **`ATS`'s own module admin**
+> before it can acquire `ATS|GOV` (or any capability defined in `08_ATS.pact`) via `with-capability`.
+> Verified independently in an isolated two-module Pact 5.4 repro (a foreign module with zero relation to
+> the target, attempting to acquire the target's trivially-`true` capability, fails with `"Module admin
+> necessary for operation but has not been acquired"`). `ATS|GOV` is `StoicSyntax.md §14.5`'s documented,
+> intentional **"Simple vault"** pattern — safe precisely because only code physically inside `08_ATS.pact`
+> can ever compose it, which is exactly how `C_AddHotRBT`/`C_HOT-RBT|Repurpose` legitimately use it. The
+> "empirical reproduction" originally cited below did not actually isolate a truly foreign, non-admin
+> caller and was itself flawed. Full detail: `ROUND-01-OWNER-FEEDBACK.md` and
+> `memories/2026-08-16-with-capability-requires-module-admin-for-foreign-callers.md`. **What survives:**
+> **C5**, below, is a real, separate bug in the same neighborhood — two specific *public* ATS functions
+> compose `ATS|GOV` (safely, as home-module code) with no ownership check gating who may call them.
 
 **Location:** `08_ATS.pact:251-254` (`(defcap ATS|GOV () true)`); genesis wiring
 `REPL/Stage_01/[4.0]_Sovereign-Executor.repl:432-441` (`ats-sc`'s governor guard =
@@ -334,18 +350,21 @@ and `C_HOT-RBT|Repurpose` (`:1839-1870`, gated by `ATS|C>REPURPOSE-HOT-RBT`, `CA
 transitively) before doing anything privileged — confirmed for all 21 sibling functions, including this
 pair's own twin (pair-branding, above) and its neighbor (`Repurpose`, above). `C_HOT-RBT|
 UpdatePendingBranding`/`UpgradeBranding` are the sole exceptions: no `UEV_IMC`, no cap, no `CAP_Owner` —
-straight into `(with-capability (ATS|GOV) (ref-B|DPOF::C_UpdatePendingBranding entity-id ...))`. Two
-independent things make this exploitable: first, `ATS|GOV` is itself unconditionally `true` (**C1** — so
-today, calling this is already unauthenticated for anyone). Second, even in a hypothetical world where C1
-is fixed and `ATS|GOV` requires real admin authorization, DPOF's own branding gate resolves ownership via
-`CAP_EnforceAccountOwnership (UR_Konto id)` — for a Hot-RBT this is `ATS|SC_NAME`, evaluated **while
-`ATS|GOV` (or its fixed replacement) is already on the call stack** — so fixing C1 alone still leaves this
-pair of functions as "admin-only" with **no path for the actual ats-pair owner** to manage their own
-Hot-RBT's branding, which is inconsistent with every sibling function's ownership model. This directly
-contradicts what the sibling function's own doc string promises for the same subsystem:
-`C_HOT-RBT|Repurpose`'s Talos doc, `TS01-C2.pact:314`: *"Can only be done by atspair owner."*
+straight into `(with-capability (ATS|GOV) (ref-B|DPOF::C_UpdatePendingBranding entity-id ...))`. Since
+these two functions are themselves defined *inside* `08_ATS.pact`, their `with-capability (ATS|GOV)` call
+succeeds unconditionally for **any caller** — this is the correct, intended, safe way `ATS|GOV` is meant
+to be composed by the module's own code (see C1's correction — this is *not* a capability-forgery issue).
+The actual bug is narrower and doesn't need C1 at all: **nothing gates *who may call these two specific
+public functions in the first place***, unlike every sibling function, which checks `CAP_Owner` before
+doing anything. DPOF's own branding gate then resolves ownership via `CAP_EnforceAccountOwnership
+(UR_Konto id)` — for a Hot-RBT this is `ATS|SC_NAME`, and it passes because `ATS|GOV` is already
+legitimately on the call stack (composed by ATS's own code, per the corrected C1 semantics) — so DPOF has
+no way to know the *original* caller wasn't the pair owner. This is inconsistent with every sibling
+function's ownership model, and directly contradicts what the sibling function's own doc string promises
+for the same subsystem: `C_HOT-RBT|Repurpose`'s Talos doc, `TS01-C2.pact:314`: *"Can only be done by
+atspair owner."*
 
-**Failure scenario (today, pre-C1-fix):** any account calls, via Talos,
+**Failure scenario:** any account calls, via Talos,
 `ATS|C_HOT-RBT|UpdatePendingBranding(patron=attacker, entity-id=<victim's hot-rbt>, ...)` — gated only by
 the global-pause check `P|TS`, no per-caller/per-entity restriction. Succeeds end-to-end: attacker
 rewrites branding (logo/description/website/social) of a token they don't own. `UpgradeBranding` is the
@@ -353,8 +372,9 @@ paid variant — attacker pays KDA to force a branding *upgrade* onto someone el
 defacement primitive.
 
 **Fix direction:** add `CAP_Owner atspair` (resolved via `ref-DPOF::UR_RewardBearingToken hot-rbt`, exactly
-as `ATS|C>REPURPOSE-HOT-RBT` already does at `:513-515`) before composing whatever replaces `ATS|GOV`, in
-both functions, wrapped in a proper master-defcap per the `C_*` contract (`UEV_IMC` + `with-capability`).
+as `ATS|C>REPURPOSE-HOT-RBT` already does at `:513-515`) before composing `ATS|GOV`, in both functions,
+wrapped in a proper master-defcap per the `C_*` contract (`UEV_IMC` + `with-capability`) — mirroring the
+two sibling functions that already do this correctly. `ATS|GOV` itself needs no change (C1 is refuted).
 
 **Owner verdict:** _pending_
 
@@ -706,8 +726,8 @@ value across token identities or throwing a confusing out-of-bounds `at` error.
   for future maintainers. `[CONFIRMED dead code; PLAUSIBLE practical collision risk]`
 - **L11 · Talos** — `defcap P|ATS` in `05_TS01-P.pact:48-57` (module `TS01-CP`) is dead code: real
   enforcement (ownership of a hardcoded "master" account), but never called anywhere in the repo (`grep`
-  finds only the definition). Not itself a vulnerability (it does real enforcement, unlike C1's `ATS|GOV`)
-  but shadows the naming of the real ATS IMC machinery (`P|ATS|CALLER`, `08_ATS.pact:267`) — a landmine if
+  finds only the definition). Not itself a vulnerability — it does real enforcement — but shadows the
+  naming of the real ATS IMC machinery (`P|ATS|CALLER`, `08_ATS.pact:267`) — a landmine if
   ever wired in without understanding it's unrelated to ATS policy. `[CONFIRMED]`
 - **L12 · ATSU** — several master defcaps (`ATSU|C>FUEL`, `C>COIL`, `C>CURL`, `C>SYPHON`) place a bare-ref
   validation call before local `enforce`s, inverting StoicSyntax's "all enforce first, then bare refs" body
@@ -796,8 +816,11 @@ value across token identities or throwing a confusing out-of-bounds `at` error.
   match exactly in count, order, type.
 - **Policy wiring:** `P|A_Define` boilerplate matches the StoicSyntax hub+children pattern consistently
   across `TS01-A`/`TS01-C1`/`TS01-C2`/`08_ATS`/`10_ATSU`; the genuine admin-keyset gates (`GOV|ATS_ADMIN`,
-  `GOV|ATSU_ADMIN`, `GOV|TS01-A_ADMIN`) correctly `enforce-guard`/`enforce-one` real keysets and are **not**
-  affected by C1 (C1 is specific to the `MODULE|GOV` smart-account-vault capability class).
+  `GOV|ATSU_ADMIN`, `GOV|TS01-A_ADMIN`) correctly `enforce-guard`/`enforce-one` real keysets.
+- **`ATS|GOV` smart-account governor pattern** (originally misreported as C1): confirmed correct per
+  `StoicSyntax.md §14.5`'s "Simple vault" pattern — Pact requires a foreign caller to hold `ATS`'s module
+  admin before acquiring any of `08_ATS.pact`'s capabilities, so `ATS|GOV`'s `true` body is safe as a
+  governor guard; only `08_ATS.pact`'s own code can ever compose it. See `ROUND-01-OWNER-FEEDBACK.md`.
 
 ---
 
@@ -822,7 +845,7 @@ not a violation. **Stale-reference check:** zero remaining `module{AutostakeV1}`
 references anywhere in `1_SOVEREIGN/`/`2_SLAVE/` — every consumer types against V2 only; V1 survives solely
 as a historical/frozen entry in the interfaces pack, per StoicSyntax.
 
-**What this means for the fix round:** C1/C4/C5/H1/H2 are all **behavioral** fixes to `08_ATS.pact` (module
+**What this means for the fix round:** C4/C5/H1/H2 are all **behavioral** fixes to `08_ATS.pact` (module
 body only) — none require a new interface version, since none change a public function's signature or add
 a new public function whose type must be interface-declared. C2's minimum-viable fix (unconditional
 reshape) is also module-body-only. C2's long-term fix (replacing `Awo.reward-tokens:[decimal]` with an
@@ -839,9 +862,9 @@ the minimum-viable fix.
 (`OuronetInformational/pythia-dirty-read-access.md`) that was requested from the owner during this audit
 and had not arrived by the time this round closed. No `describe-module` call was made against any ATS-
 family module; **all findings above are against local repo source only, with no confirmation of what is
-actually deployed on StoaChain.** This is a material gap given C1's severity — if `ATS|GOV`'s wiring is
-already live, this is not a theoretical finding. See README.md's "Live vs local" section for the exact
-follow-up commands to run once a key is available.
+actually deployed on StoaChain.** Given C2's severity (the reward-token remove/re-add mechanic), this is
+still a material gap — see README.md's "Live vs local" section for the exact follow-up commands to run
+once a key is available.
 
 ---
 
@@ -850,8 +873,7 @@ follow-up commands to run once a key is available.
 Directly testable, each should become a regression assertion once fixed. `[6.6]_ATS.repl` should also be
 un-commented in `Stage01_Tester.repl` as part of closing L4.
 
-- **C1:** an outsider (non-Talos, self-paid) transaction wrapping `TFT::C_Transfer` in a forged
-  `(with-capability (ATS.ATS|GOV) ...)` against `ats-sc` → rejected after fix.
+- ~~**C1:** forged `ATS|GOV` transaction~~ — moot, C1 refuted (the scenario doesn't reach a live tx to test).
 - **C2(a):** remove reward token B from a 3-token pair, add token D, then cull a pre-existing position that
   had a nonzero B-denominated claim → payout must be in the *originally-claimed* token/amount, not D.
 - **C2(b):** remove a reward token with nonzero royalty bucket → rejected, or royalty transferred/migrated
