@@ -336,6 +336,54 @@
 (print "=== END TX-VCT-L01 =========================================================")
 (print "")
 ;;
+(begin-tx "TX-VCT-L01b - REHAUL: XB_VacateOrtoFungible (pool-id + dpof only, on-chain scan)")
+(print "")
+(print "=== TX-VCT-L01b — REHAUL OF vacate: pool-id + dpof only (legs scanned on-chain) ===")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpof-id:string "MVST-98c486052a51")
+        (pool-name:string "OfStakePool")
+        (stake-nonce:integer 1)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    ;; re-enable stake + re-stake the OF nonce so the rehaul path has inventory to scan
+    (if (ref-DPOF::UR_R-Frozen dpof-id owner-id)
+        (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false) true)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(restake OF nonce {})> => \"{}\"" [stake-nonce
+        (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [stake-nonce])]))
+    (let ((tracker-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce)))
+        (enforce (> tracker-pre 0.0) "TX-VCT-L01b: need OF stake inventory")
+        (print (format "<(pre OF tracker)> => {}" [tracker-pre]))
+        ;; THE REHAUL VACATE — pool-id + dpof only; VCT scans + resolves amounts on-chain
+        (print (format "<(AQP-POOL|XB_VacateOrtoFungible)> => \"{}\""
+            [(ref-TS02-C3::AQP-POOL|XB_VacateOrtoFungible patron pool-id dpof-id)]))
+        (let ((tracker-post:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce)))
+            (map print
+                [
+                    (format "<(post OF tracker)> => {}" [tracker-post])
+                    (expect (format "<<TX-VCT-L01b>> REHAUL OF tracker cleared got={}" [tracker-post]) 0.0 tracker-post)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-L01b ========================================================")
+(print "")
+;;
 (begin-tx "TX-VCT-L02 - DPSF Legs partial then continue finalize")
 (print "")
 (print "=== TX-VCT-L02 — DPSF Legs: batch0 finalize=false → re-plan → finalize =====")

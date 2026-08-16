@@ -205,6 +205,7 @@
     )
     (defun AQP-POOL|CC_FullVacate:string (patron:string pool-id:string))
     (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string pool-id:string))
+    (defun AQP-POOL|XB_VacateOrtoFungible:string (patron:string pool-id:string dpof-id:string))
     (defun AQP-POOL|C_FullVacateTrueFungible:string
         (
             patron:string
@@ -1653,6 +1654,21 @@
                 )
                 (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateTrueFungible pool-id))
                 (format "Successfully vacated the TrueFungible leg of Pool {}." [pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|XB_VacateOrtoFungible:string
+        (patron:string pool-id:string dpof-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of ONE OrtoFungible asset of a pool (one tx; standalone or per \
+            \ class-1 satellite). Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateOrtoFungible pool-id dpof-id))
+                (format "Successfully vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])
             )
         )
     )

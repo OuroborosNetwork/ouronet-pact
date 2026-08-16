@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/_Claude//**)",
+      "Read(//d/_Claude/**)"
+    ]
+  }
+}
