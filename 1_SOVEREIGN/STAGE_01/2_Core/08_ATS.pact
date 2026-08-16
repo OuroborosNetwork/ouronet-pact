@@ -522,8 +522,11 @@
     ;; ats-sc", which only ATS's own code can do), but nothing gated *which caller* could trigger it.
     ;; Mirrors ATS|C>REPURPOSE-HOT-RBT's exact shape: resolve the pair from the hot-rbt, check real
     ;; ownership, THEN compose ATS|GOV.
+    ;; Core (unevented) — shared validation body, StoicSyntax §14.7 layered-composition pattern
+    ;; (mirrors ATS|S>CONTROL-RECOVERY / ATS|C>CONTROL-COLD-RECOVERY just above): resolve the pair,
+    ;; check real ownership, compose ATS|GOV. Composed by both named leaf caps below — one body,
+    ;; two distinctly-named events.
     (defcap ATS|C>HOT-RBT-BRD (entity-id:string)
-        @event
         (let
             (
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
@@ -532,6 +535,14 @@
             (CAP_Owner atspair)
             (compose-capability (ATS|GOV))
         )
+    )
+    (defcap ATS|C>HOT-RBT-UPDATE-BRD (entity-id:string)
+        @event
+        (compose-capability (ATS|C>HOT-RBT-BRD entity-id))
+    )
+    (defcap ATS|C>HOT-RBT-UPGRADE-BRD (entity-id:string)
+        @event
+        (compose-capability (ATS|C>HOT-RBT-BRD entity-id))
     )
     (defcap ATS|C>ISSUE (account:string atspair:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string]rbt-nfr:[bool])
         @event
@@ -1839,7 +1850,7 @@
             (
                 (ref-B|DPOF:module{BrandingUsagePrimaryV1} DPOF)
             )
-            (with-capability (ATS|C>HOT-RBT-BRD entity-id)
+            (with-capability (ATS|C>HOT-RBT-UPDATE-BRD entity-id)
                 (ref-B|DPOF::C_UpdatePendingBranding entity-id logo description website social)
             )
         )
@@ -1850,7 +1861,7 @@
             (
                 (ref-B|DPOF:module{BrandingUsagePrimaryV1} DPOF)
             )
-            (with-capability (ATS|C>HOT-RBT-BRD entity-id)
+            (with-capability (ATS|C>HOT-RBT-UPGRADE-BRD entity-id)
                 (ref-B|DPOF::C_UpgradeBranding patron entity-id months)
             )
         )

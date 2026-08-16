@@ -33,8 +33,8 @@ Baseline REPL coverage: `REPL/Stage_01/[6.3]_SWP.repl` (4365 lines, full suite),
 | Round | File | What it is |
 |-------|------|------------|
 | **I — Findings** | `ROUND-01-FINDINGS.md` | Everything discovered before any fix. Frozen. |
-| **I — Owner feedback** | `ROUND-01-OWNER-FEEDBACK.md` | Owner's verdict per finding + new StoicSyntax rules. *(not yet created)* |
-| **II — Fixes** | `ROUND-02-FIXES.md` | One entry per fix, applied **sequentially** (owner green-lights each). *(not yet created)* |
+| **I — Owner feedback** | `ROUND-01-OWNER-FEEDBACK.md` | Owner's verdict per finding + new StoicSyntax rules. Living — C10, C13 refuted; C2 fixed; rest still pending. |
+| **II — Fixes** | `ROUND-02-FIXES.md` | One entry per fix, applied **sequentially** (owner green-lights each). Living — Fix #1 (C2) landed. |
 | **III — Re-verify** | `ROUND-03-REVERIFY.md` | Re-read fixed code cold, enumerate every path, prove correctness. *(not yet created)* |
 
 Round files are **append-only / immutable once closed**. Only this README's tracker is edited in place.
@@ -43,14 +43,15 @@ audit-and-document only — no code was changed.**
 
 ## Status legend
 `OPEN` awaiting verdict · `CONFIRMED` bug to fix · `DESIGN` confirmed, needs a design decision first ·
-`DOC-FIX` code right, doc wrong · `CONVENTION` not a bug → becomes a StoicSyntax rule/refactor.
+`DOC-FIX` code right, doc wrong · `CONVENTION` not a bug → becomes a StoicSyntax rule/refactor ·
+`FIXING` · `FIXED` (awaiting re-verify) · `VERIFIED` (re-audited clean).
 
 ## Status tracker (living)
 
 | ID | Sev | Module | Short | Verify | Verdict / status |
 |----|-----|--------|-------|--------|------------------|
 | C1 | CRIT | SWPI | `URC_BestEdge` picks the worst parallel-pool edge (argmin not argmax) | CONFIRMED (2 independent auditors + lead re-read) | _pending_ |
-| C2 | CRIT | U\|SWP | Newton solver (`UC_ComputeY`/`InverseY`) no domain guard — output can exceed pool balance | CONFIRMED (numeric simulation) | _pending_ |
+| C2 | CRIT | U\|SWP | Newton solver (`UC_ComputeY`/`InverseY`) no domain guard — output can exceed pool balance | CONFIRMED (numeric simulation) | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #1)** — scope narrowed to stable pools only (W/P are closed-form, no seed-dependent root); `UC_ComputeY` reseeded `y0 = D` (Curve-style reference), pure computation, no `enforce`; new permanent REPL regression (`[6.2+3]…repl` `SWP\|TX 015`) proven to fail pre-fix and pass post-fix. `UC_ComputeInverseY`'s sibling issue (different failure mode — corrupted coefficients, not wrong-root) is explicitly **not** covered — still open. |
 | C3 | CRIT | U\|SWP | All 6 solved-balance formulas round toward the trader — repeatable round-trip profit | CONFIRMED (numeric simulation, 2 independent auditors) | _pending_ |
 | C4 | CRIT | SWPI | `UEV_Issue` never checks individual weights `&gt;0` — permanent div-by-zero on a W pool | CONFIRMED | _pending_ |
 | C5 | CRIT | SWPI | `UEV_Issue` never checks individual genesis reserves `&gt;0` — permanent div-by-zero | CONFIRMED | _pending_ |

@@ -414,7 +414,7 @@ If you integrate a foreign module **without** an interface, StoicSyntax’s pref
 
 ### 4.5 Load-time consequence
 
-`(ref-X:module{Iface} OtherModule)` resolves when the **caller module is loaded**. `OtherModule` must **already be deployed**. Deploy order: Utilities → Core → Aggregator (§ 1). Avoid Core↔Aggregator load cycles in `P|A_Define` (§ 14.7).
+`(ref-X:module{Iface} OtherModule)` resolves when the **caller module is loaded**. `OtherModule` must **already be deployed**. Deploy order: Utilities → Core → Aggregator (§ 1). Avoid Core↔Aggregator load cycles in `P|A_Define` (§ 14.8).
 
 ### 4.6 Quick table
 
@@ -1239,7 +1239,68 @@ restrict *which of the module's own public functions* may compose it — only *w
 | Public | **`C_SetFoo`** — home caps → `XB_*` → metering | Does not duplicate XB |
 | Wire | Peer `P|A_Define` → Home `P|A_AddIMP` | Boot after both load |
 
-### 14.7 Load / deploy order (IMC wiring)
+### 14.7 Layered capability composition — unevented core + named event leaves
+
+**Rule:** when two or more client-facing actions need the **identical (or near-identical) authorization
+body** but must stay **distinguishable as separate events** (for indexers, off-chain listeners, or just
+readable transaction logs), factor the shared body into one **unevented "core" `defcap`**, then give each
+action its own **thin, `@event`-tagged "leaf" `defcap`** whose entire body is
+`(compose-capability (CORE args))`. Client `C_*` functions `with-capability` their own leaf, never the
+core directly, never each other's leaf.
+
+**Never duplicate a validation body across sibling `@event` caps just to get two event names.** That's
+exactly the failure mode this pattern exists to prevent: the same `CAP_Owner` / `UEV_*` checks
+copy-pasted into two (or more) places drifts the moment one copy gets fixed and the other doesn't.
+
+This composes exactly like the rest of § 14 — `compose-capability` stays **home-only** (§ 14.1), and a
+leaf may itself be composed by a still-more-specific leaf (a real chain, not just two levels) when an
+action needs the shared body **plus** one more check of its own. Two live examples, same file:
+
+**Multi-level (pre-existing, `08_ATS.pact`)** — one core, two mid-tier specializations, five `@event`
+leaves total:
+```pact
+(defcap ATS|S>CONTROL-RECOVERY (atspair:string)          ;; core — no @event
+    (CAP_Owner atspair)
+    (UEV_ParameterLockState atspair false)
+)
+(defcap ATS|C>CONTROL-COLD-RECOVERY (atspair:string)      ;; mid-tier — no @event, adds one check
+    (UEV_ColdRecoveryState atspair false)
+    (compose-capability (ATS|S>CONTROL-RECOVERY atspair))
+)
+(defcap ATS|C>SET_COLD_FEES (atspair:string ...)          ;; leaf — @event, thin
+    @event
+    (let (...)
+        (ref-U|ATS::UEV_CRF|Positions fee-positions)      ;; leaf may add its OWN extra checks too
+        (compose-capability (ATS|C>CONTROL-COLD-RECOVERY atspair))
+    )
+)
+;; ATS|C>CONTROL-COLD-FEES, ATS|C>SET_COLD-DURATION, ATS|C>TOGGLE_ELITE also compose
+;; ATS|C>CONTROL-COLD-RECOVERY as their own distinct leaves.
+```
+
+**Single-level (minimal case)** — one core, two thin leaves, nothing else:
+```pact
+(defcap ATS|C>HOT-RBT-BRD (entity-id:string)              ;; core — no @event
+    (let ((atspair:string (ref-DPOF::UR_RewardBearingToken entity-id)))
+        (CAP_Owner atspair)
+        (compose-capability (ATS|GOV))
+    )
+)
+(defcap ATS|C>HOT-RBT-UPDATE-BRD (entity-id:string)        ;; leaf — @event, thin
+    @event
+    (compose-capability (ATS|C>HOT-RBT-BRD entity-id))
+)
+(defcap ATS|C>HOT-RBT-UPGRADE-BRD (entity-id:string)       ;; leaf — @event, thin
+    @event
+    (compose-capability (ATS|C>HOT-RBT-BRD entity-id))
+)
+```
+
+**Naming:** core caps keep the `MODULE|S>*` or `MODULE|C>*` shape same as any other cap — nothing marks
+"this is a core" except the *absence* of `@event`. Leaves are named for the client-visible action they
+gate (`…UPDATE-BRD`, `…UPGRADE-BRD`), not for the shared mechanism.
+
+### 14.8 Load / deploy order (IMC wiring)
 
 ```
 Shared interfaces → Utilities → Core → Aggregator → Executor (all P|A_Define)
@@ -1248,7 +1309,7 @@ Shared interfaces → Utilities → Core → Aggregator → Executor (all P|A_De
 - `(ref-X:module{Iface} OtherModule)` resolves at **load** time.  
 - After redeploy of an IMC pair: re-run **`P|A_Define`** (and governor rotate if RemoteGov). Without it, `UEV_IMC` fails even when code is correct.
 
-### 14.8 Aggregator finalization (Talos)
+### 14.9 Aggregator finalization (Talos)
 
 See **§ 2** (curated Aggregator flows). Wire every new core **`A_` / `C_` / protected X** into the matching Aggregator; register summoner IMP (§ 14.3 C). Thin `@event` on Talos; validation stays in core master caps. Ouronet may also attach IGNIS as an optional-MUST post-step (§ 2.3a).
 
@@ -1277,6 +1338,7 @@ Use this when converting an older module or adopting StoicSyntax in a new codeba
 - [ ] **No foreign caps** — never compose/with/require another module’s capabilities (§ 14.1)  
 - [ ] Cross-module mutators gated with **`(UEV_IMC)`**; peers registered via **`P|A_Define` → P|A_AddIMP** (§ 14.3)  
 - [ ] Remote vault ops use **`P|*|REMOTE-GOV`** + named `P|A_Add`, not foreign `MODULE|GOV`  
+- [ ] Sibling `@event` caps with identical/near-identical bodies: factor into one unevented core `defcap` + thin `@event` leaves that only `compose-capability` it (§ 14.7) — never duplicate the validation body  
 - [ ] Rename mis-tiered helpers (`UC_` that reads → `URC_`; `URC_` that scans → `URDC_`)  
 - [ ] Strip `enforce` from UC/URC/URDC/XI/XE/XB/C/W  
 - [ ] Move all validation into **defcap** (+ reusable **UEV_**)  
@@ -1324,6 +1386,7 @@ Use this when converting an older module or adopting StoicSyntax in a new codeba
 | `XE_*` / `C_*` calls `XI_2|*` directly | Respect tier hops: `XI_*` → `XI_1|*` → `XI_2|*` (§ 12.1) |
 | Interleaved `XI_` / `XI_1|` / `XI_` stacks in source | Band by tier: all 0s, then all 1s, then all 2s (§ 12.1) |
 | Compose SECURE before all enforces | Enforce / ref first; compose last |
+| Two `@event` caps, same validation body pasted twice | One unevented core `defcap` + thin `@event` leaves composing it (§ 14.7) |
 | Core `P|A_Define` → Talos at load | Executor-time Define after both load |
 | Skip boot `P|A_Define` after redeploy | Re-wire IMP / RemoteGov or `UEV_IMC` fails |
 

@@ -441,11 +441,15 @@
     )
     (defcap VCT|C>VACATE (pool-id:string)
         @doc "Master AGNOSTIC vacate cap (rehaul). Class-agnostic: the new vacate reads the pool's staker legs \
-            \ ON-CHAIN (no UI-supplied arrays to tamper/validate), so this only gates the pool OWNER + composes \
+            \ ON-CHAIN (no UI-supplied arrays to tamper/validate), so this gates the pool OWNER, ENFORCES the pool's \
+            \ aqp-class is a known class (0-4) — all validation lives here, not in the function body — and composes \
             \ SECURE + P|VCT|RECIPE. Used by the single-tx dispatcher CC_FullVacate and the per-kind XB_Vacate* \
-            \ wrappers; the per-kind XI_Vacate*Pool functions run under it via require P|VCT|RECIPE."
+            \ wrappers; the per-kind XI_Vacate*FromLegs / *PoolLegs functions run under it via require P|VCT|RECIPE."
         @event
         (CAP_VctVacatePoolOwner pool-id)
+        (let ((ref-AQP:module{AcquisitionPoolsV1} AQP-POOL))
+            (enforce (contains (ref-AQP::UR_AQP|PoolAqpClass pool-id) [0 1 2 3 4])
+                "VCT|C>VACATE: unknown aqp-class"))
         (compose-capability (SECURE))
         (compose-capability (P|VCT|RECIPE))
     )
@@ -1844,9 +1848,10 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (c:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
+                (son:bool (= c 3))
             )
+            ;; aqp-class validity is enforced inside VCT|C>VACATE (all validation lives in the cap).
             (with-capability (VCT|C>VACATE pool-id)
-                (enforce (contains c [0 1 2 3 4]) "CC_FullVacate: unknown aqp-class")
                 (if (or (= c 0) (= c 1))
                     ;; TF-family: scan+consume the DPTF lanes AND the DPOF satellite lanes
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -1857,8 +1862,7 @@
                         [])
                     (if (= c 2)
                         (XI_VacateOrtoFungiblePoolLegs pool-id (URD_VacateOrtoFungiblePoolLegs pool-id))
-                        (XI_VacateCollectablesPoolLegs pool-id (= c 3)
-                            (URD_VacateCollectablesPoolLegs pool-id (= c 3)))
+                        (XI_VacateCollectablesPoolLegs pool-id son (URD_VacateCollectablesPoolLegs pool-id son))
                     )
                 )
             )

@@ -15,20 +15,32 @@ nothing checked that. Confirmed against source (grepped the exact 21 lines of bo
 `CAP_Owner`/`UEV_IMC`/any `defcap` wrapper — zero matches) before writing any code, per the owner's
 explicit request to see the fix location before it landed.
 
-**Fix — `08_ATS.pact`:**
-- New `defcap ATS|C>HOT-RBT-BRD (entity-id:string)`, inserted at the end of the
+**Fix — `08_ATS.pact` (revised after owner review — see correction below):**
+- **`defcap ATS|C>HOT-RBT-BRD (entity-id:string)`** — **unevented core**, inserted at the end of the
   `ATS|C>REPURPOSE-HOT-RBT` cap block (~line 519), mirroring that cap's exact shape: resolve the owning
   pair via `ref-DPOF::UR_RewardBearingToken entity-id`, `CAP_Owner atspair`, **then**
-  `compose-capability (ATS|GOV)` — one shared cap for both functions rather than duplicating the same
-  5-line body twice.
-- `C_HOT-RBT|UpdatePendingBranding` (was `:1818-1827`, now shifted ~9 lines down by the new cap) — added
-  `(UEV_IMC)` as the first statement, changed `with-capability (ATS|GOV)` to
-  `with-capability (ATS|C>HOT-RBT-BRD entity-id)`.
-- `C_HOT-RBT|UpgradeBranding` (was `:1829-1838`) — same two changes.
-- No signature changes on either function, no interface/schema touch (`AutostakeV2`'s declarations at
-  `:146-147` are unaffected), no Talos changes needed.
+  `compose-capability (ATS|GOV)`.
+- **`defcap ATS|C>HOT-RBT-UPDATE-BRD (entity-id:string)`** / **`ATS|C>HOT-RBT-UPGRADE-BRD (entity-id:string)`**
+  — two thin `@event` leaves, each just `(compose-capability (ATS|C>HOT-RBT-BRD entity-id))`.
+- `C_HOT-RBT|UpdatePendingBranding` — added `(UEV_IMC)` as the first statement, changed
+  `with-capability (ATS|GOV)` to `with-capability (ATS|C>HOT-RBT-UPDATE-BRD entity-id)`.
+- `C_HOT-RBT|UpgradeBranding` — same, using `ATS|C>HOT-RBT-UPGRADE-BRD`.
+- No signature changes on either function, no interface/schema touch, no Talos changes needed.
 
-**Verification:**
+**Correction (owner, 2026-08-17):** first pass used a **single `@event` capability shared by both**
+functions. Owner caught this: sharing one `@event` cap across two distinct client actions collapses their
+on-chain events into one indistinguishable signature, and — independently of the event issue — flagged
+that the codebase already has an established, undocumented pattern for exactly this situation:
+**one unevented "core" `defcap` holding the shared validation body, with thin, distinctly-`@event`-tagged
+"leaf" caps on top that only `compose-capability` the core.** Verified the pattern is already live in this
+same file before making the change: `ATS|S>CONTROL-RECOVERY` (no `@event`) → `ATS|C>CONTROL-COLD-RECOVERY`
+/ `ATS|C>CONTROL-HOT-RECOVERY` (also no `@event`, each adds one more check) → five real `@event` leaves on
+top. Refactored to the three-cap shape above (one core, two named leaves) to match. Formalized as a new,
+previously-undocumented rule: `StoicSyntax.md §14.7` (existing §§14.7–14.8 renumbered to §§14.8–14.9),
+plus a `§16` checklist bullet and a `§17` cheat-sheet row — this ATS case is the worked example in the
+doc. Detail: `memories/2026-08-17-layered-capability-composition-core-plus-event-leaves.md`.
+
+**Verification (re-run after the layering correction):**
 1. Full-suite reload (`REPL/_audit_ats_baseline.repl`): `Load successful`, no regressions.
 2. Negative proof, real Talos-driven call, real signer (`patron`, not the pair owner):
    `expect-failure` on `ATS|C_HOT-RBT|UpdatePendingBranding` targeting the pair-owned `DDKOSON` hot-rbt →

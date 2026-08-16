@@ -112,3 +112,86 @@ indirect branch reachable only via registered peers today — moving that branch
 mis-forwarding user input into it, not a fix for any currently-live issue.
 
 ---
+
+## C2 (#3C, `U|SWP` StableSwap Newton solver has no domain guard) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner's challenge (worth recording — it sharpened the finding considerably):** owner pushed back on the
+initial framing ("can you really confirm the math is wrong?", then "the fix has to be at the computation
+level, even if UC functions can't enforce," then correctly predicted the scope narrows to stable pools
+only, then correctly predicted a provably-correct solver removes the need for a pre-transfer sanity check).
+Every one of those challenges was verified, not just accepted:
+
+- **Is the math "wrong"?** No. Re-derived the algebra: `UC_YNext`'s numerator/denominator is exactly
+  Newton's method on `f(Y) = Y² + (b-D)Y - c`, a quadratic with one positive (physical) and one negative
+  (non-physical) root. The implementation is a correct root-finder. The actual defect: `y0 = xo -
+  input-amount` (line 73) goes negative once `input-amount >= xo`, seeding Newton into the wrong root's
+  basin. Confirmed by numeric replica of the exact Pact `floor`/`fold` sequence: `input=1010` against
+  `xo=1000` solved to `Y=-31.77` → `output=1031.77`, exceeding the pool's entire balance.
+- **Is a caller-side guard already in place (would make this dead-on-arrival, C13-style)?** Traced the
+  full call chain: `SWPI::URC_S-Swap` → `UC_ComputeY`, gated only by `UEV_SwapData`
+  (`16_SWPI.pact:1162-1188`), which checks token membership/list lengths only — never `input-amount` vs.
+  the output reserve. No guard exists anywhere in the real swap path (`19_SWPU.pact::XI_SmartSwapCore`
+  included).
+- **Is this self-limiting (transfer just reverts on insufficient funds)?** No — traced further than the
+  original finding: the oversized amount is transferred via `ref-TFT::C_Transfer o-id SWP|SC_NAME account
+  adjusted-netto true` *before* `XE_UpdateSupplies` persists the corrupted balance, and `SWP|SC_NAME` is
+  the **shared vault across every pool** (established in the C10 exchange above) — a token backing
+  multiple pools can have ample balance to cover an oversized draw against one specific pool's accounting.
+  Not self-correcting.
+- **Scope — stable pools only?** Confirmed. Read `UC_ComputeWP`/`InverseWP`/`UC_ComputeEP`/`InverseEP`
+  (`12_U_SWP.pact:250-362`) — all four are closed-form single-shot algebraic solves, no iteration, no
+  seed-dependent root ambiguity possible. Only `UC_ComputeY`/`UC_ComputeInverseY` (Newton-iterated) can
+  exhibit this failure mode.
+- **Pure-computation fix, no `enforce` needed?** Confirmed and applied — see fix below.
+- **Does a provably-correct solver make the pre-transfer sanity check unnecessary?** Agreed and retracted
+  from the recommendation — a proven-correct fix doesn't need a runtime insurance check for the same bug.
+
+**Asymmetry discovered mid-investigation:** `UC_ComputeInverseY`'s failure mode is *not* the same bug.
+Its `xo-minus = xo - output-amount` (not `y0`) feeds directly into `S-Prime`/`P-Prime` as a supposedly-known
+coefficient before Newton starts; numeric replica confirms it divides by zero exactly at `output-amount =
+xo` and produces corrupted (sign-flipped) coefficients past it — not a wrong-root-from-bad-seed problem, so
+reseeding doesn't fix it. **Left unfixed and unpatched**, flagged as needing its own separate treatment
+(likely a real domain enforcement on `output-amount`, since "solve the input needed to withdraw more than
+the pool has" has no valid answer to converge to). Not folded into this fix; tracked as still-open.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact`, `UC_ComputeY`, line 73:** reseeded `y0` from
+`(- xo input-amount)` to `D` (the already-computed invariant, line 61) — matching the Curve-style reference
+`get_y`'s own initial guess. `D` is always in the correct root's basin regardless of trade size, because the
+physical root (`0 < Y < xo`) exists for any positive input (the curve asymptotes toward but never reaches
+`0`). One-line change, pure arithmetic, no `enforce`/table read — stays fully `UC_*`-legal. `UC_YNext`,
+`UC_ComputeInverseY`, `UC_ZNext` untouched.
+
+**REPL regression test — `REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl`, new `SWP|TX 015 - C2
+Regression: Stable-Swap Newton Domain Guard`** (permanent, in the canonical default-loaded suite, not
+scratch — appended after `TX 014` where pool7 is live and swap-enabled). Reads pool7's real on-chain state
+(no hardcoded reserves) and asserts the actual invariant — `0 < output < xo` — at three input sizes: 1000.0
+(in-domain, unaffected), `1.2 × xo` (the exact size that broke the pre-fix solver), `1000 × xo` (extreme,
+must still resolve to the asymptote). Property-based rather than golden-value, so it survives future
+internal changes to the solver.
+
+**Verification:**
+1. Python replica of the exact Pact fold/floor sequence — `y0=D` keeps output inside `(0, xo)` from 1× up
+   through 1,000,000× the old breaking point.
+2. `pact Z.repl` (default, issuance-only SWP path) — exit 0, 0 `FAILURE`, `Load successful`.
+3. Temporarily switched to the full `[6.2]_DPTF.repl` + `[6.3]_SWP.repl` suite (README's stated baseline
+   coverage) and reran — exit 0, 0 `FAILURE`. Reverted the toggle after (diff shows only the intended files
+   changed).
+4. **Adversarial proof the new test is real, not vacuous:** `git stash`'d only `12_U_SWP.pact` back to the
+   pre-fix code, reran `Z.repl` — the two oversized/extreme assertions failed exactly as predicted
+   (`FAILURE: ... oversized swap ... expected: true, received: false`, same for extreme) while the
+   in-domain assertion still passed, confirming the test isolates precisely the C2 failure mode. Restored
+   the fix (`git stash pop`), reran — 6/6 `Expect: success`.
+
+**Unrelated, pre-existing note:** the full `Z.repl` pipeline currently fails later, in Stage 2, inside
+`AQP-VCT` (`Variable ln shadows native...` → `Load failed` loading `[2.3]_EarningPools.repl`) — this is
+in-progress, uncommitted work from a separate session (`05_VCT.pact` and friends), unrelated to and
+untouched by this fix. SWP's own Stage-1 run (including the new TX 015) completes and passes well before
+that point in every run above.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — narrowed to stable pools only (per owner's correct prediction),
+computation-level fix (per owner's correct requirement), no pre-transfer sanity check needed (per owner's
+correct prediction, now that the solver is provably correct at the source). `UC_ComputeInverseY`'s sibling
+issue is explicitly **not** covered by this fix and remains open. Full diff summary:
+`ROUND-02-FIXES.md` Fix #1. Awaiting Round III re-verify.
+
+---
