@@ -1726,12 +1726,12 @@
     (defun XB_VacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string)
         @doc "Vacate rehaul — external per-kind TF vacate for a whole pool (both internal + external, hence XB). \
-            \ UEV_IMC + VCT|C>VACATE (owner + SECURE + P|VCT|RECIPE) around XI_VacateTrueFungiblePool. Vacates ONLY \
-            \ the pool's TF leg (native DPTF / LP); a class-1 pool's OF satellites are vacated by XB_VacateOrtoFungible \
-            \ — use CC_FullVacate to empty a whole pool of any class in one call."
+            \ UEV_IMC + VCT|C>VACATE (owner + SECURE + P|VCT|RECIPE) around XI_VacateTrueFungibleAllLanes — vacates \
+            \ EVERY live TF lane (native asset-id + F| frozen leg). The pool's DPOF satellites (Z|/H|) are vacated \
+            \ by XB_VacateOrtoFungible; use CC_FullVacate to empty a whole pool of any class in one call."
         (UEV_IMC)
         (with-capability (VCT|C>VACATE pool-id)
-            (XI_VacateTrueFungiblePool pool-id)
+            (XI_VacateTrueFungibleAllLanes pool-id)
         )
     )
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
@@ -1767,11 +1767,11 @@
     (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string)
         @doc "HEAVY (R3 CC_) AGNOSTIC single-tx full vacate: input is JUST the pool-id. Reads the pool's aqp-class \
-            \ and vacates EVERY asset type the pool holds by scanning its inventory ON-CHAIN — class 0 (LP farm) & 1 \
-            \ (DPTF family) → TF (class 1 also has OF sleep/hib satellites); class 2 → OF; class 3 → SF; class 4 → NF. \
-            \ Owner-gated (VCT|C>VACATE). For pools too large for one tx, use the C_MultiStepVacate defpact. \
-            \ Dispatch: class 0 (LP farm → native TF) / 1 (DPTF family → native TF + every live DPOF satellite) / \
-            \ 2 (standalone OF) / 3 (DPSF collection) / 4 (DPNF collection)."
+            \ and vacates EVERY custody lane the pool holds by scanning its inventory ON-CHAIN. TF-FAMILY (class 0 \
+            \ LP farm / class 1 DPTF family) is MULTI-LANE — up to native TF + F| frozen TF + Z|/H| DPOF satellites \
+            \ (class 0 stakes a Z| sleeping-LP DPOF too, NOT TF-only) — so both dispatch to XI_VacateTrueFungibleFamilyPool \
+            \ which enumerates every live DPTF lane AND every live DPOF satellite. class 2 → standalone OF; class 3 → \
+            \ DPSF; class 4 → DPNF. Empty lanes are skipped (no abort). Owner-gated (VCT|C>VACATE)."
         (UEV_IMC)
         (let
             (
@@ -1782,7 +1782,7 @@
             (with-capability (VCT|C>VACATE pool-id)
                 (enforce (contains aqp-class [0 1 2 3 4]) "CC_FullVacate: unknown aqp-class")
                 (if (or (= aqp-class 0) (= aqp-class 1))
-                    (XI_VacateTrueFungibleFamilyPool pool-id (= aqp-class 1))
+                    (XI_VacateTrueFungibleFamilyPool pool-id)
                     (if (= aqp-class 2)
                         (XI_VacateOrtoFungiblePool pool-id asset-id)
                         (XI_VacateCollectablePool pool-id asset-id (= aqp-class 3))
@@ -2255,46 +2255,69 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [unwind-oc bulk-oc] [])
         )
     )
-    (defun XI_VacateTrueFungiblePool:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string)
-        @doc "Vacate rehaul — self-contained TF vacate for a WHOLE pool: derive the pool's TF asset (PoolAssetId; \
-            \ the native DPTF for class 1, the LP token for class 0), SCAN its full staker inventory ON-CHAIN \
-            \ (URDC_VacateTfOwnerRows — HEAVY), then unwind every leg + bulk custody-return \
-            \ (XI_VacateTrueFungibleFromLegs). No UI-supplied legs — nothing to tamper. Shared by the single-tx \
-            \ dispatcher CC_FullVacate and the external wrapper XB_VacateTrueFungible. require P|VCT|RECIPE."
+    (defun XI_VacateTrueFungibleForAsset:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dptf-id:string)
+        @doc "Vacate rehaul — self-contained TF vacate for ONE DPTF lane of a pool (a specific dptf-id: the native \
+            \ asset-id OR the F| frozen leg). SCAN that lane's staker inventory ON-CHAIN (URDC_VacateTfOwnerRows — \
+            \ HEAVY); if the lane is empty, NO-OP (return empty Oc — the batch core is not empty-safe: a zero-leg \
+            \ TF vacate would hit a 0.0 debit and abort); else unwind every leg + bulk custody-return \
+            \ (XI_VacateTrueFungibleFromLegs). require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
         (let
             (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (dptf-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
+                (legs:[object{VCT|VacateTfLeg}] (URDC_VacateTfOwnerRows pool-id dptf-id))
             )
-            (XI_VacateTrueFungibleFromLegs pool-id dptf-id (URDC_VacateTfOwnerRows pool-id dptf-id))
+            (if (= (length legs) 0)
+                (UC_EmptyOc)
+                (XI_VacateTrueFungibleFromLegs pool-id dptf-id legs)
+            )
         )
     )
-    (defun XI_VacateTrueFungibleFamilyPool:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string with-satellites:bool)
-        @doc "Vacate rehaul — TF-family full vacate. ALWAYS vacate the native TF leg (XI_VacateTrueFungiblePool). \
-            \ When with-satellites (class 1 DPTF family), ALSO enumerate every DPOF satellite that holds live stake \
-            \ in the pool ON-CHAIN (URD_AQP|ActivePoolDpofIds — HEAVY scan) and vacate each as an OF leg. Class 0 \
-            \ (LP farm) has no OF satellites → TF only. Concatenates all leg cumulators. require P|VCT|RECIPE."
+    (defun XI_VacateTrueFungibleAllLanes:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string)
+        @doc "Vacate rehaul — vacate EVERY live DPTF lane of a TF-family pool: enumerate the pool's active DPTF ids \
+            \ ON-CHAIN (URD_AQP|ActivePoolDptfIds — native asset-id AND the F| frozen leg, both separate tracker \
+            \ rows) and vacate each (XI_VacateTrueFungibleForAsset). Never orphans the frozen leg. Concatenates all \
+            \ lane cumulators; a pool with no TF stake → empty Oc (concat is not empty-safe). require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                ;; 1) native TF leg (LP token for class 0, native DPTF for class 1)
-                (tf-oc:object{IgnisCollectorV1.OutputCumulator} (XI_VacateTrueFungiblePool pool-id))
-                ;; 2) class-1 only: one OF vacate per DPOF satellite with live stake
-                (sat-ocs:[object{IgnisCollectorV1.OutputCumulator}]
-                    (if with-satellites
-                        (map
-                            (lambda (dpof-id:string) (XI_VacateOrtoFungiblePool pool-id dpof-id))
-                            (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id))
-                        []
-                    )
-                )
+                (lane-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (map
+                        (lambda (dptf-id:string) (XI_VacateTrueFungibleForAsset pool-id dptf-id))
+                        (ref-AQP::URD_AQP|ActivePoolDptfIds pool-id)))
             )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ [tf-oc] sat-ocs) [])
+            (if (= (length lane-ocs) 0)
+                (UC_EmptyOc)
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators lane-ocs [])
+            )
+        )
+    )
+    (defun XI_VacateTrueFungibleFamilyPool:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string)
+        @doc "Vacate rehaul — TF-FAMILY full vacate (class 0 LP farm / class 1 DPTF family). A TF-family pool can \
+            \ hold up to THREE custody lane KINDS: native TF (asset-id), F| frozen TF, and Z|/H| DPOF satellites \
+            \ (class 0 stakes a Z| sleeping-LP DPOF too — NOT TF-only). Vacate EVERY live DPTF lane \
+            \ (XI_VacateTrueFungibleAllLanes: native + F|) AND every live DPOF satellite (URD_AQP|ActivePoolDpofIds \
+            \ → XI_VacateOrtoFungiblePool). Fully agnostic on-chain scan — no orphaned lane, no wrong class \
+            \ assumption. `all-tf-oc` is always a valid Oc (empty if no TF stake), so the concat list is never \
+            \ empty. require P|VCT|RECIPE."
+        (require-capability (P|VCT|RECIPE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                ;; 1) every live DPTF lane (native + F| frozen)
+                (all-tf-oc:object{IgnisCollectorV1.OutputCumulator} (XI_VacateTrueFungibleAllLanes pool-id))
+                ;; 2) every live DPOF satellite (Z| sleeping for class 0; Z|/H| for class 1)
+                (sat-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (map
+                        (lambda (dpof-id:string) (XI_VacateOrtoFungiblePool pool-id dpof-id))
+                        (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id)))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ [all-tf-oc] sat-ocs) [])
         )
     )
     (defun XI_VacateOrtoFungiblePool:object{IgnisCollectorV1.OutputCumulator}
@@ -2309,14 +2332,18 @@
             (
                 (legs:[object{VCT|VacateNonceLeg}] (URDC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF))
             )
-            (let
-                (
-                    (owner-ids:[string] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "owner-id" l)) legs))
-                    (beneficiary-ids:[string] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs))
-                    (nonces-array:[[integer]] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "nonces" l)) legs))
+            ;; empty-safe: the batch core is not empty-safe (empty owner-ids → enumerate 0 -1 → out-of-bounds)
+            (if (= (length legs) 0)
+                (UC_EmptyOc)
+                (let
+                    (
+                        (owner-ids:[string] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "owner-id" l)) legs))
+                        (beneficiary-ids:[string] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs))
+                        (nonces-array:[[integer]] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "nonces" l)) legs))
+                    )
+                    (XI_VacateOrtoFungibleBatch pool-id dpof-id owner-ids beneficiary-ids nonces-array
+                        (URC_ResolveOfDecimalAmountsFromTracker pool-id dpof-id owner-ids beneficiary-ids nonces-array))
                 )
-                (XI_VacateOrtoFungibleBatch pool-id dpof-id owner-ids beneficiary-ids nonces-array
-                    (URC_ResolveOfDecimalAmountsFromTracker pool-id dpof-id owner-ids beneficiary-ids nonces-array))
             )
         )
     )
@@ -2334,19 +2361,24 @@
                     (URDC_VacateNonceOwnerRowsRaw pool-id collectable-id
                         (if son VACATE-KIND-DPSF VACATE-KIND-DPNF)))
             )
-            (let
-                (
-                    (owner-ids:[string] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "owner-id" l)) legs))
-                    (beneficiary-ids:[string] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs))
-                    (nonces-array:[[integer]] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "nonces" l)) legs))
-                    (amounts-array:[[integer]]
-                        (map
-                            (lambda (l:object{VCT|VacateNonceLeg})
-                                (map (lambda (q:decimal) (round q)) (at "amounts" l)))
-                            legs))
+            ;; empty-safe: the batch core is not empty-safe (empty owner-ids → enumerate 0 -1 → out-of-bounds)
+            (if (= (length legs) 0)
+                (UC_EmptyOc)
+                (let
+                    (
+                        (owner-ids:[string] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "owner-id" l)) legs))
+                        (beneficiary-ids:[string] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs))
+                        (nonces-array:[[integer]] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "nonces" l)) legs))
+                        ;; collectable units are whole → floor (parity with the proven UC_VacateDecimalAmountsToIntegers)
+                        (amounts-array:[[integer]]
+                            (map
+                                (lambda (l:object{VCT|VacateNonceLeg})
+                                    (map (lambda (q:decimal) (floor q)) (at "amounts" l)))
+                                legs))
+                    )
+                    (XI_VacateCollectableBatch pool-id collectable-id son
+                        owner-ids beneficiary-ids nonces-array amounts-array)
                 )
-                (XI_VacateCollectableBatch pool-id collectable-id son
-                    owner-ids beneficiary-ids nonces-array amounts-array)
             )
         )
     )

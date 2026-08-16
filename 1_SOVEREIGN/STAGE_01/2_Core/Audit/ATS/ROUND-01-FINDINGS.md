@@ -903,3 +903,43 @@ this figure does not corroborate C2, and does not exercise C1/C3/C4/C5/H4/M1 at 
 per L4). The temporary runner file has been left at `REPL/_audit_ats_baseline.repl` for reuse in Round III
 (it is not part of the canonical suite and should be deleted or formalized, not silently left as
 scratch — see `OuronetInformational/skills/` REPL layout conventions before promoting it).
+
+---
+
+# ROUND II addendum — new finding surfaced while building Fix #1's proof
+
+Not part of Round I (found 2026-08-16 while writing the end-to-end integration proof for C2 in
+`ROUND-02-FIXES.md`). Recorded here per the same rigor as everything else, not silently dropped.
+
+## N1 · ATSU — `URC_MultiCull` return-type mismatch crashes `C_Cull` when nothing is currently cullable `[CONFIRMED, reproduced]`
+
+**Location:** `10_ATSU.pact:443-511` (`URC_MultiCull`), consumed at `10_ATSU.pact:1321-1334`
+(`XI_MultiCull`, `(multi-cull-obj:object (URC_MultiCull ats acc))`).
+
+**What's wrong:**
+```pact
+(if (= how-many-cullables 0)
+    zr-output                          ;; :[decimal] — a raw list
+    (let (...) {"after-cull": ..., "to-be-culled": ..., ...})   ;; :object
+)
+```
+`URC_MultiCull`'s two branches return different types: a bare `[decimal]` list when nothing in the
+account's P0 array is past its `cull-time` yet, versus a full result `object` when something is. The
+consumer, `XI_MultiCull`, binds the call with an explicit `:object` type annotation — a hard runtime
+type-check failure whenever the "nothing cullable" branch is hit.
+
+**Failure scenario (reproduced, not hypothetical):** any account on a `positions = -1` ("unlimited"/P0-
+based) pool that calls `C_Cull` before any of its queued P0 positions reach their `cull-time` gets a
+runtime crash (`"Runtime typecheck failure, argument is list, but expected type object"`) instead of a
+graceful "nothing to cull yet" — reproduced directly while building this session's C2 integration proof
+(a freshly-opened `ColdRecovery` position, culled one day before its `cull-time`, crashed `ATS|C_Cull`
+outright). `C_Cull` also always invokes `XI_SingleCull` for positions 1-7 regardless of pool mode, but for
+a `positions = -1` pool those are always the default/negative sentinel, so `XI_MultiCull`'s crash is not
+avoidable by having other cullable positions elsewhere — any `C_Cull` call on such a pool with zero P0
+entries currently ripe will crash.
+
+**Fix direction:** make both branches of `URC_MultiCull` return the same `object` shape — e.g. the
+"nothing cullable" branch should return `{"after-cull": p0, "to-be-culled": [], "culled-values": [],
+"summed-culled-values": zr-output}` (mirroring the real branch's keys) instead of the bare list.
+
+**Owner verdict:** _pending_ — not fixed in this pass (out of scope for the C2 fix this was found during).

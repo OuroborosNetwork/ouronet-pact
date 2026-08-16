@@ -251,6 +251,45 @@
 (print "=== END TX-VCT-CC01 ========================================================")
 (print "")
 ;;
+(begin-tx "TX-VCT-CC02 - REHAUL: CC_FullVacate empty-lane no-op (already-empty pool)")
+(print "")
+(print "=== TX-VCT-CC02 — empty-lane guard: CC_FullVacate on an ALREADY-EMPTY pool must no-op ===")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (pool-name:string "TfStakePool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    ;; CC01 already emptied TfStakePool → all TF + DPOF lanes are empty. Pre-fix, a full vacate over an empty
+    ;; TF lane hit a 0.0 debit → UEV_Amount abort (finding #2). The empty-guard must make this a clean no-op.
+    (let
+        (
+            (dptf-pre:[string] (ref-AQP::URD_AQP|ActivePoolDptfIds pool-id))
+            (sat-pre:[string] (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id))
+        )
+        (map print
+            [
+                (expect (format "<<TX-VCT-CC02>> no live TF lanes got={}" [dptf-pre]) [] dptf-pre)
+                (expect (format "<<TX-VCT-CC02>> no live DPOF lanes got={}" [sat-pre]) [] sat-pre)
+            ]
+        )
+        ;; the proof: this call must SUCCEED (return a string), not abort on the empty native lane
+        (print (format "<(AQP-POOL|CC_FullVacate on empty pool)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
+        ]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-CC02 ========================================================")
+(print "")
+;;
 (begin-tx "TX-VCT-TF02 - C_VacateTrueFungibleLegs finalize")
 (print "")
 (print "=== TX-VCT-TF02 — TF Legs vacate (1 batch finalize=true) ===================")

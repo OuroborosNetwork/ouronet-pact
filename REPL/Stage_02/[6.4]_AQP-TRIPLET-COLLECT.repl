@@ -575,34 +575,20 @@
                                     (expect (format "<<TX-AQP-CL05>> dual OF tracker>0 got={}" [of-pre]) true (> of-pre 0.0))
                                 ]
                             )
+                            ;; REHAUL MULTI-LANE PROOF: ONE agnostic CC_FullVacate(pool-id) drains BOTH the native
+                            ;; LP (DPTF lane) AND the Z| sleeping-LP satellite (DPOF lane) of this class-0 pool.
+                            ;; Pre-fix, class-0 DPOF satellites were ORPHANED (with-satellites gated to class 1), so
+                            ;; of-post would stay non-zero — this scenario directly falsifies that bug.
                             (let
                                 (
-                                    (tf-plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id lp-id 1 1))
-                                    (tf-s0:object (at 0 (at "slices" tf-plan)))
+                                    (dptf-pre:[string] (ref-AQP::URD_AQP|ActivePoolDptfIds pool-id))
+                                    (sat-pre:[string] (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id))
                                 )
-                                (print (format "<(C_FullVacateTrueFungible LP)> => \"{}\"" [
-                                    (ref-TS02-C3::AQP-POOL|C_FullVacateTrueFungible
-                                        patron pool-id lp-id
-                                        (at "owner-ids" tf-s0)
-                                        (at "beneficiary-ids" tf-s0)
-                                        (at "amounts" tf-s0)
-                                    )
-                                ]))
-                            )
-                            (let
-                                (
-                                    (of-plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id z-lp-id 2 1))
-                                    (of-s0:object (at 0 (at "slices" of-plan)))
-                                    (z:[[integer]] (ref-VCT::UC_ZeroIntAmountsMatrix (at "nonces-array" of-s0)))
-                                )
-                                (print (format "<(C_FullVacateOrtoFungible Z|LP)> => \"{}\"" [
-                                    (ref-TS02-C3::AQP-POOL|C_FullVacateOrtoFungible
-                                        patron pool-id z-lp-id
-                                        (at "owner-ids" of-s0)
-                                        (at "beneficiary-ids" of-s0)
-                                        (at "nonces-array" of-s0)
-                                        z
-                                    )
+                                (enforce (contains lp-id dptf-pre) "CL05: native LP lane must be live pre-vacate")
+                                (enforce (contains z-lp-id sat-pre) "CL05: Z| satellite must be live pre-vacate")
+                                (print (format "<(pre lanes DPTF={} DPOF={})> " [dptf-pre sat-pre]))
+                                (print (format "<(AQP-POOL|CC_FullVacate — agnostic dual-lane, pool-id only)> => \"{}\"" [
+                                    (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
                                 ]))
                             )
                             (let

@@ -158,10 +158,16 @@ G += floor(R/S)"), never time/collect-based. So with injects blocked during vaca
 member/user can settle against a **frozen snapshot** independently — the basis for removing Tier-2 writes from the
 parallel middle.
 
-1. **begin — single tx** (`C_VacateBegin(pool-id)`, owner-gated): set `vacate-in-progress`; disable stake;
-   **block injects** (NEW — the inject path does not check vacate state today, `04_FVT` CC_Inject/XI_FvtInjectCore);
-   **settle every employed member once** (advance each pool-score member `g_i→G`, credit `MemberVault.available`).
-   Must be an explicit tx BEFORE the fan-out (parallel auto-begin would race the flag + member settles).
+1. **begin — single tx** (`C_VacateBegin(pool-id)`, owner-gated). Freeze EVERYTHING that could touch the pool's
+   rows during the drain window:
+   - **Pool-level:** set `vacate-in-progress`; disable **stake AND unstake** (unstake mid-drain hits the same
+     staker tracker row the vacate zeroes → direct conflict; unstake currently is NOT gated by `stake-enabled`, so
+     add a `vacate-in-progress` reject on the unstake path).
+   - **Per-FVT (all of the pool's FVTs):** walk the ≤7 employed scores → each `fvt-link`; for **every** distinct FVT,
+     set its `vacate-frozen` flag (blocks **both collect and inject** on that FVT — NEW; neither path checks vacate
+     state today) and **settle its member once** (advance `g_i→G`, credit `MemberVault.available`). If the 7 scores
+     map to 7 FVTs, all 7 are frozen + settled.
+   - Must be an explicit tx BEFORE the fan-out (a parallel auto-begin would race the flags + member settles).
 2. **drain — N parallel txs, beneficiary-partitioned** (reworked `C_Vacate*Legs(pool, asset, legs, finalize=false)`):
    per leg → tracker-zero + custody-return (disjoint); per beneficiary → Tier-1 reward-bank *against frozen G* +
    `UserScore` SET-to-0 + `Anchors`/`UserBoost` SET. **Zero writes to any Tier-2 aggregate.** `finalize` is always
@@ -196,8 +202,10 @@ FVTs (walk employed scores → `fvt-link`), blocking only pool-local injects —
 those FVTs is held constant for the drain. (Earlier "shared vault" concern was a mis-read of the many-members schema:
 many members = one pool's several scores / a mosaic farm, never cross-pool.)
 
-**Freeze mechanism:** an FVT-level `inject-frozen` flag, SET per employed-score's FVT at `C_VacateBegin`, checked by
-the inject path (`CC_Inject`/`XI_FvtInjectCore` — reject when frozen), CLEARED at `C_VacateFinalize`.
+**Freeze mechanism:** an FVT-level `vacate-frozen` flag (small `FVT|T|VacateFreeze` table, `with-default-read` false),
+SET on **each** of the pool's FVTs at `C_VacateBegin`, checked by **both** the inject path (`CC_Inject`/`XI_FvtInjectCore`)
+**and the collect path** (reject when frozen), CLEARED at `C_VacateFinalize`. Stake+unstake are frozen pool-level via
+`vacate-in-progress`. Because FVTs aren't shared across pools, freezing the pool's FVTs never blocks another pool.
 
 Remaining checks: confirm `collect`/reward-claim only READS `G` (never advances it) so the freeze is exact; gas —
 begin (settle ≤7 members) + finalize (set ≤7 aggregates) are bounded/cheap, drain per-tx bounded by beneficiary count

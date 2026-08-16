@@ -65,3 +65,159 @@
     )
 )
 (commit-tx)
+
+;; ============================================================================
+;; FIX PROOF (#1C / C2a) — end-to-end proof through the REAL call stack: a
+;; pre-existing, nonzero, multi-token position survives an ADMIN-path removal
+;; that is given a DELIBERATELY INCOMPLETE account list (the exact vulnerability
+;; X_RemoveSecondary's account-list self-derivation fix closes), then culls
+;; correctly. Real Coil, real ColdRecovery, real admin RemoveSecondary, real Cull,
+;; real DPTF transfers — no synthetic/hand-built state.
+;; ============================================================================
+(begin-tx "FIX PROOF C2a - fund patron with PKOSON so it can Coil")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (aoz:string KST.AOZT)
+        (patron:string KST.ANHD)
+        (p-k:string "PKOSON-98c486052a51")
+    )
+    (ref-TS01-C1::DPTF|C_Transfer aoz p-k aoz patron 60.0 false)
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "FIX PROOF C2a - setup patron's pre-removal position")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (patron:string KST.ANHD)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (p-k:string "PKOSON-98c486052a51")
+    )
+    ;; patron has never touched `ps` before this (confirmed: URD_ExistingAutostakePairs
+    ;; ps only listed one account prior to this tx). Coil to mint cold-RBT, then open a
+    ;; ColdRecovery position — this is written across ALL current reward tokens
+    ;; [PKOSON, EKOSON, AKOSON] proportional to resident amounts, by REAL split math.
+    (ref-TS01-C2::ATS|C_Coil patron patron ps p-k 60.0)
+    (ref-TS01-C2::ATS|C_ColdRecovery patron patron ps 10.0)
+    (map print
+        [
+            (format "patron RT list before removal: {}" [(ref-ATS::UR_RewardTokenList ps)])
+            (format "patron P0 before removal: {}" [(ref-ATS::UR_P0 ps patron)])
+        ]
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "FIX PROOF C2a - admin removal with INCOMPLETE account list")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (e-k:string "EKOSON-98c486052a51")
+        (aoz:string KST.AOZT)
+    )
+    ;; Toggles must be off for RemoveSecondary's guard.
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "FIX PROOF C2a - the actual removal, via the REAL Talos-driven owner path")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (e-k:string "EKOSON-98c486052a51")
+        (aoz:string KST.AOZT)
+    )
+    ;; Fix #2's whole point: X_RemoveSecondary no longer TAKES a caller-supplied account
+    ;; list at all (dropped the param entirely — it's X_*, internal-only, not interface-
+    ;; declared) — it always self-derives the complete list on-chain via
+    ;; URD_ExistingAutostakePairs. patron is never mentioned anywhere in this call — the
+    ;; real, production, Talos-driven owner removal path finds and reshapes patron anyway.
+    (ref-TS01-C2::ATS|C_RemoveSecondary aoz aoz ps e-k)
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "FIX PROOF C2a - verify patron reshaped correctly + culls right")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (patron:string KST.ANHD)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (p-k:string "PKOSON-98c486052a51")
+        (a-k:string "AKOSON-98c486052a51")
+        (before-p0:[object{UtilityAtsV2.Awo}] (ref-ATS::UR_P0 ps patron))
+        (rt-lst-after:[string] (ref-ATS::UR_RewardTokenList ps))
+        (p-bal-before:decimal (ref-DPTF::UR_AccountSupply p-k patron))
+        (a-bal-before:decimal (ref-DPTF::UR_AccountSupply a-k patron))
+    )
+    (map print
+        [
+            (format "patron RT list AFTER removal (should be 2, EKOSON gone): {}" [rt-lst-after])
+            (format "patron P0 AFTER removal, BEFORE cull (should be length-2 now, was length-3): {}" [before-p0])
+            (expect "reshaped P0 entry has exactly 2 reward-token slots (was 3; admin's incomplete list did NOT stop the reshape)"
+                2
+                (length (at "reward-tokens" (at 0 before-p0)))
+            )
+        ]
+    )
+    ;; Advance past patron's cull-time (2025-12-05) so the position is actually cullable.
+    ;; NOTE (separate, pre-existing bug found while building this proof, unrelated to C2):
+    ;; URC_MultiCull (10_ATSU.pact) returns `zr-output` (a raw [decimal] list) on the
+    ;; "nothing cullable yet" branch but an `object` on the cullable branch — a return-type
+    ;; mismatch that crashes XI_MultiCull's `(multi-cull-obj:object ...)` type annotation
+    ;; whenever C_Cull is called with zero cullable positions. Tracked separately, not
+    ;; part of this fix.
+    (env-chain-data {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006", "block-time": (time "2025-12-10T00:00:00Z")})
+    (ref-TS01-C2::ATS|C_Cull patron patron ps)
+    (let
+        (
+            (p-bal-after:decimal (ref-DPTF::UR_AccountSupply p-k patron))
+            (a-bal-after:decimal (ref-DPTF::UR_AccountSupply a-k patron))
+            (p-delta:decimal (- p-bal-after p-bal-before))
+            (a-delta:decimal (- a-bal-after a-bal-before))
+        )
+        (map print
+            [
+                (format "PKOSON delta from cull: {}" [p-delta])
+                (format "AKOSON delta from cull: {}" [a-delta])
+                ;; THE PROOF: patron's AKOSON-denominated claim (position 2 before removal,
+                ;; shifted to position 1 after) must be paid IN AKOSON, not lost, not paid in
+                ;; some other token, and not zero — despite the admin's incomplete list.
+                (expect "AKOSON claim paid out (nonzero) — survivor correctly tracked across the removal"
+                    true
+                    (> a-delta 0.0)
+                )
+                (expect "PKOSON claim paid out (nonzero) — primal + folded EKOSON claim"
+                    true
+                    (> p-delta 0.0)
+                )
+            ]
+        )
+    )
+)
+(commit-tx)
