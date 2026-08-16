@@ -187,13 +187,21 @@ guard that a tx carries a beneficiary's legs **completely** (no partial-benefici
 - **D6 flips wire→DROP the hash-commitment fields:** per-leg tracker validation is the real anti-tamper guard, so
   `initial/phase/last-vacate-hash` are redundant.
 
-### 5.6 Open items to confirm before FVT/SCORE edits
-- **Vault↔pool cardinality:** does blocking inject during vacate freeze the whole vault (if multiple pools share one
-  `fvt-id`) or just this pool's members? If shared, block only the vacating pool's inject path, or make the frozen
-  member snapshot robust to `G` advancing for non-vacating members.
-- **No other G-advancing path:** confirm `collect`/reward-claim never advances `G` (only reads it) so the freeze is exact.
-- **Gas:** begin (settle ≤7 members) + finalize (set ≤7 aggregates) are cheap/bounded; drain per-tx bounded by
-  beneficiary count × per-beneficiary cost — UI calibrates.
+### 5.6 Vault topology (grounded — no shared vaults)
+Vacate is **per-pool**. A pool has ≤7 employed scores (`URC_PoolActiveScoreIds`); each score links **one-time to
+exactly one FVT** (farm/vault/treasury) via `UR_SCR|ScoreFvtLink`. Injects are keyed by `fvt-id`
+(`CC_Inject(patron, fvt-id, reward, amount)`); `G` (`RPS|Global`, key `fvt|reward`) is **per-FVT**. **FVTs are NOT
+shared across pools** — an FVT's members are one pool's scores. So the begin-freeze scopes to the vacating pool's own
+FVTs (walk employed scores → `fvt-link`), blocking only pool-local injects — **no co-tenant impact**, and `G` for
+those FVTs is held constant for the drain. (Earlier "shared vault" concern was a mis-read of the many-members schema:
+many members = one pool's several scores / a mosaic farm, never cross-pool.)
+
+**Freeze mechanism:** an FVT-level `inject-frozen` flag, SET per employed-score's FVT at `C_VacateBegin`, checked by
+the inject path (`CC_Inject`/`XI_FvtInjectCore` — reject when frozen), CLEARED at `C_VacateFinalize`.
+
+Remaining checks: confirm `collect`/reward-claim only READS `G` (never advances it) so the freeze is exact; gas —
+begin (settle ≤7 members) + finalize (set ≤7 aggregates) are bounded/cheap, drain per-tx bounded by beneficiary count
+(UI calibrates).
 
 ### 5.7 Build order (Phase 4 remaining)
 (1) inject-block during vacate-in-progress → (2) `C_VacateBegin` (freeze + settle members) + re-based tracker-absence

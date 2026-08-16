@@ -14,3 +14,54 @@
 (load "Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl")
 (load "Stage_01/[6.5]_DPOF.repl")
 (load "Stage_01/[6.6]_ATS.repl")
+
+;; ============================================================================
+;; FIX PROOF (#1C / C2) — pure-function unit test of the core reshape defect.
+;; Not part of the canonical suite; audit-only scratch, proves UC_ReshapeUnstakeObject
+;; now unconditionally resizes an Awo's reward-tokens array on removal, instead of
+;; silently no-op'ing on all-zero (never-touched) positions — the C2(c) root cause.
+;; ============================================================================
+(begin-tx "FIX PROOF - UC_ReshapeUnstakeObject unconditional resize")
+(namespace "ouronet-ns")
+(let
+    (
+        (t:time (time "2026-01-01T00:00:00Z"))
+        ;; A position with real, nonzero claims across 3 reward-token slots:
+        ;; slot0=primal(10.0), slot1=to-be-removed(20.0), slot2=survivor(30.0)
+        (nonzero-awo:object{UtilityAtsV2.Awo} {"reward-tokens": [10.0, 20.0, 30.0], "cull-time": t})
+        ;; A never-touched, all-zero position — the case that was silently skipped before the fix.
+        (zero-awo:object{UtilityAtsV2.Awo} {"reward-tokens": [0.0, 0.0, 0.0], "cull-time": t})
+        (reshaped-nonzero:object{UtilityAtsV2.Awo} (U|ATS.UC_ReshapeUnstakeObject nonzero-awo 1))
+        (reshaped-zero:object{UtilityAtsV2.Awo} (U|ATS.UC_ReshapeUnstakeObject zero-awo 1))
+    )
+    (map print
+        [
+            ;; (a)/(c) fix: nonzero case — removee (20.0) folds into slot0 (10.0+20.0=30.0),
+            ;; survivor (30.0) shifts down to slot1. Array shrinks 3 -> 2. This already worked
+            ;; pre-fix (UC_IzUnstakeObjectValid was true), proving the fix didn't change
+            ;; correct existing behavior.
+            (expect "nonzero Awo reshapes correctly and conserves value (10+20=30 folded, 30 survives)"
+                {"reward-tokens": [30.0, 30.0], "cull-time": t}
+                reshaped-nonzero
+            )
+            ;; THE FIX: an all-zero (never-touched) Awo must ALSO shrink from length 3 to length 2.
+            ;; Before the fix, UC_ReshapeUnstakeObject returned `zero-awo` completely unchanged here
+            ;; (still length 3), which is exactly what made URCX_PosObjSt / XI_StoreUnstakeObject's
+            ;; structural-equality checks against a freshly-length-2 sentinel fail forever after
+            ;; (a still-length-3 stored object can never `=` a freshly length-2 zero object) —
+            ;; permanently misclassifying an empty slot as "occupied" (C2c).
+            (expect "all-zero Awo ALSO shrinks 3 -> 2 (was the C2c bug: this used to stay length 3)"
+                {"reward-tokens": [0.0, 0.0], "cull-time": t}
+                reshaped-zero
+            )
+            ;; Prove the downstream consumer's actual check now passes: a freshly-reshaped empty
+            ;; slot must structurally equal a freshly-derived zero sentinel for a 2-token list —
+            ;; this is EXACTLY the comparison URCX_PosObjSt performs to decide "is this slot open?".
+            (expect "reshaped empty slot now equals a fresh 2-token zero sentinel (URCX_PosObjSt's own check)"
+                true
+                (= reshaped-zero {"reward-tokens": [0.0, 0.0], "cull-time": t})
+            )
+        ]
+    )
+)
+(commit-tx)

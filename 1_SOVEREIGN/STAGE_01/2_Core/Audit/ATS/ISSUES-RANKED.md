@@ -11,7 +11,7 @@ L=Low). Cross-reference README.md's status tracker (module/verify-tag/verdict) a
 > detail: `ROUND-01-OWNER-FEEDBACK.md`. Everything below is renumbered accordingly; original finding IDs
 > (C2-C5, H1-H4, ...) are kept as-is for traceability against `ROUND-01-FINDINGS.md`.
 
-#1C — Reward-token remove-then-re-add corrupts per-account claim accounting — three confirmed sub-bugs: (a) cull payouts can pay a staker in the wrong token entirely; (b) royalty balances are permanently stranded on removal; (c) cold recovery becomes permanently unusable for every pre-existing account on the pair. The audit's flagged highest-priority mechanic. [C2]
+#1C — FIXED ✅ (ROUND-02-FIXES.md Fix #1) — Reward-token remove-then-re-add corrupts per-account claim accounting — three confirmed sub-bugs: (a) cull payouts can pay a staker in the wrong token entirely; (b) royalty balances are permanently stranded on removal; (c) cold recovery becomes permanently unusable for every pre-existing account on the pair. The audit's flagged highest-priority mechanic. Schema-preserving fix landed 2026-08-16; unit-proof + full-suite re-run green; end-to-end integration regression still TODO. [C2]
 #2C — C_Redeem passes a :decimal where Pact's if requires :bool — every call reverts. Permanent fund lock: no one who went through C_HotRecovery can ever get their RT back. [C3]
 #3C — syphon floor has no monotonicity/lock/timelock — owner can re-lower it and extract ~95%+ of total pool RT backing (principal + yield, commingled) in a single call. [C4]
 #4C — C_HOT-RBT|UpdatePendingBranding/UpgradeBranding have no owner/entity-linkage check at all — anyone can rewrite or paid-upgrade branding on a Hot-RBT token they don't own. [C5]

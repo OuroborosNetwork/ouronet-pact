@@ -19,7 +19,7 @@ treated `SWPL::URC_LpBreakAmounts` as an external read boundary).
 |-------|------|------------|
 | **I — Findings** | `ROUND-01-FINDINGS.md` | Everything discovered before any fix. Frozen. |
 | **I — Owner feedback** | `ROUND-01-OWNER-FEEDBACK.md` | Owner's verdict per finding + new StoicSyntax rules. Living — C1 recorded (REFUTED); rest still pending. |
-| **II — Fixes** | `ROUND-02-FIXES.md` | One entry per fix, applied **sequentially** (owner green-lights each). *(not yet created)* |
+| **II — Fixes** | `ROUND-02-FIXES.md` | One entry per fix, applied **sequentially** (owner green-lights each). Living — Fix #1 (C2) landed. |
 | **III — Re-verify** | `ROUND-03-REVERIFY.md` | Re-read fixed code cold, enumerate every path, prove correctness. *(not yet created)* |
 | **IV+** | `ROUND-0N-*.md` | Repeat Fix → Re-verify until a re-verify round is clean. |
 
@@ -37,7 +37,7 @@ document only — no code was changed** (per instruction, matching the AQP audit
 | ID | Sev | Module | Short | Verify | Verdict / status |
 |----|-----|--------|-------|--------|------------------|
 | C1 | ~~CRIT~~ | Talos/ATS | ~~`ATS\|GOV` forgeable governor guard, full vault drain~~ — **REFUTED** (owner correction, 2026-08-16, re-verified in an isolated Pact 5.4 repro): foreign callers cannot acquire another module's capability without that module's admin; `ATS\|GOV` is the documented, safe `StoicSyntax.md §14.5` "Simple vault" pattern. See `ROUND-01-OWNER-FEEDBACK.md`. | REFUTED | **REFUTED ✅** — not a bug |
-| C2 | CRIT | ATS/ATSU/U_ATS | Reward-token remove-then-re-add corrupts every pre-existing unbonding position's token attribution (3 independently-confirmed sub-mechanisms) — **the flagged highest-priority mechanic** | CONFIRMED | _pending_ |
+| C2 | CRIT | ATS/ATSU/U_ATS | Reward-token remove-then-re-add corrupts every pre-existing unbonding position's token attribution (3 independently-confirmed sub-mechanisms) — **the flagged highest-priority mechanic** | CONFIRMED | **FIXED ✅ (`ROUND-02-FIXES.md` Fix #1)** — schema-preserving, no interface change; unit-proof green, full suite re-run green; end-to-end integration regression still TODO (tracked, not blocking) |
 | C3 | CRIT | ATSU | `C_Redeem` passes a `:decimal` where Pact's `if` requires `:bool` — every call reverts; the only exit path from Hot-RBT recovery is permanently dead | CONFIRMED | _pending_ |
 | C4 | CRIT | ATS | `syphon` floor has no monotonicity/lock/timelock — owner can re-lower it and extract ~full pool RT backing in one call | CONFIRMED | _pending_ |
 | C5 | CRIT | ATS | `C_HOT-RBT\|UpdatePendingBranding`/`UpgradeBranding` have no owner/entity-linkage check at all | CONFIRMED | _pending_ |
