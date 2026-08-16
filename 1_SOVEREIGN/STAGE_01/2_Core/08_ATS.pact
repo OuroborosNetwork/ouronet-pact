@@ -449,22 +449,29 @@
             (CAP_Owner atspair)
         )
     )
+    ;; Fix (audit finding #6H / H1, owner-confirmed 2026-08-17): peak-hibernate-promile/hibernate-decay
+    ;; were added later (V2) and never got the parameter-lock gate the original fields have. Added here.
     (defcap ATS|S>SET-HIBERNATION-FEES (atspair:string peak:decimal decay:decimal)
         @event
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
             )
+            (UEV_ParameterLockState atspair false)
             (ref-U|ATS::UEV_HibernationFees peak decay)
             (CAP_Owner atspair)
         )
     )
+    ;; Fix (audit finding #6H / H1, owner-confirmed 2026-08-17): royalty-promile was added later (V2)
+    ;; and never got the parameter-lock gate. Added here. (syphon stays intentionally un-gated — #4C —
+    ;; it's designed to fluctuate; do not add a lock check there.)
     (defcap ATS|S>ROYALTY (atspair:string royalty:decimal)
         @event
         (let
             (
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
             )
+            (UEV_ParameterLockState atspair false)
             (ref-U|DALOS::UEV_Fee royalty)
             (CAP_Owner atspair)
         )

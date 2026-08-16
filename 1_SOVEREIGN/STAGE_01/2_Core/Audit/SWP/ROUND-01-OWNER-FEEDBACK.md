@@ -230,3 +230,51 @@ and disable branches. Retracted from CRITICAL; `README.md` and `ISSUES-RANKED.md
 renumbered, per this round's convention).
 
 ---
+
+## C11 (#5C, SWPU slippage bound checks the fee-exclusive gross quote, never the net delivered) — **DESIGN, confirmed intentional**
+
+**Owner's claim (in two steps):** (1) slippage compares two feeless amounts, which is fine because it's a
+like-for-like comparison; (2) the pool admin *can* change fees between quote and execution and nothing
+breaks — that's by design, and any pool owner who wants to rule it out can opt into `fee-lock`.
+
+**Verified in two passes, not accepted outright either time.**
+
+**Pass 1 — is the feeless-vs-feeless comparison itself sound?** Yes, conceded directly: if fee is held
+constant across the window, `gross = netto / (1 - fee%)` is a fixed scalar, so bounding gross to a tolerance
+bounds netto to the same proportional tolerance. This correctly protects against reserve/price movement
+between quote and execution — the finding's implicit assumption that "fee-exclusive" itself was the defect
+was wrong.
+
+**Pass 2 — is the residual fee-rate-change gap ("nothing breaks... this was so by design... admin may opt in
+to lock fees") actually covered?** Checked the mechanics directly rather than accept the description:
+- `C_UpdateFee` (`15_SWP.pact:1453-1465`) is gated by `SWP|S>UPDATE-FEE`, which hard-`enforce`s
+  `UEV_FeeLockState swpair false` (`419-424`, `994-1001`) — a fee change is **impossible** while a pool's
+  `fee-lock` is `true`. Confirmed load-bearing, not decorative.
+- `UR_FeeLock:bool (swpair:string)` (`692-693`) is a genuine public reader — an integrator/front-end **can**
+  check lock state before trusting a pool's slippage guarantee, refuse to quote unlocked pools, or warn the
+  user.
+- `fee-lock` defaults to `false` at genesis (`1563`) — unlocked-by-default, opt-in to lock. This is a
+  real trust-boundary choice, not an oversight: a trader on an unlocked pool is knowingly (or should be
+  knowingly) trusting that specific pool owner, same as for every other owner-controlled lever in this
+  module (amplifier, weights, special-fee targets, etc. — none of which have platform-wide timelocks
+  either).
+- "Nothing breaks" confirmed literally: a fee change mid-window doesn't revert, corrupt state, or misbehave
+  — the swap executes exactly per the (correctly, feeless) computed math. The only effect is the trader
+  receiving less than they'd have gotten pre-change, same category of risk as every other owner-mutable pool
+  parameter.
+
+**Verdict: DESIGN — confirmed intentional and mechanically sound.** Not a bug; `fee-lock` is a real,
+enforced, publicly-queryable primitive that fully answers the residual gap for any pool that opts in, and
+unlocked pools carrying owner trust risk is a deliberate, consistent design choice across the module, not
+specific to slippage.
+
+**Optional, non-blocking follow-up (documentation only, not a tracked finding):** every slippage-related
+`@doc` (`UDC_SlippageObject`, `UDC_SpawnSmartSwapSlippageBounds`, `C_Swap`, `C_SmartSwap`) correctly and
+explicitly says "fee-less" — the exclusion itself is documented. But `C_ToggleFeeLock` has **no `@doc` at
+all**, and the `fee-lock:bool` schema field (`269`) carries only a bare section-marker comment — nothing in
+the source connects "slippage is fee-exclusive" to "`fee-lock` is what makes that safe to rely on." A
+one-line `@doc` on `C_ToggleFeeLock` (and/or the schema field) stating that purpose would save a future
+integrator or auditor from re-deriving this same chain. Not raised as a separate action item by the owner;
+noted here only so it isn't silently lost.
+
+---

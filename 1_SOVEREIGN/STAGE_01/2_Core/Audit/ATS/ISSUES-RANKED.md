@@ -21,9 +21,11 @@ original numbering never shifts. Cross-reference `README.md` (status tracker), `
 #5C — [FIXED] — C_HOT-RBT|UpdatePendingBranding/UpgradeBranding have no owner/entity-linkage check at all — anyone can rewrite or paid-upgrade branding on a Hot-RBT token they don't own.
 　　→ **FIXED AND PROVEN**, 2026-08-17 (`ROUND-02-FIXES.md` Fix #3). New `ATS|C>HOT-RBT-BRD` capability (08_ATS.pact, ~line 519) mirrors the already-correct `ATS|C>REPURPOSE-HOT-RBT` sibling: resolves the owning pair from the hot-rbt id, checks real ownership, then composes ATS|GOV (which remains legitimately necessary — confirmed the full DPOF-ownership chain before fixing). Both functions now call UEV_IMC + this cap instead of a bare ATS|GOV. Proven both directions on the real Talos path: non-owner rejected, real owner unaffected.
 
-#6H — [ONGOING, narrowed] — Parameter-lock protects cold/hot/direct fee-schedule config but not royalty, syphon, hibernation-fees, ownership rotation, or the recovery on/off switches themselves. Narrowed by #4C's verdict: syphon is confirmed intentionally lock-exempt (owner discretion) — drop that piece. Royalty, hibernation-fees, ownership rotation, and the recovery switches still need their own owner confirmation before assuming a fix (or the same "not a bug" answer).
+#6H — [FIXED / CLOSED] — Parameter-lock protects cold/hot/direct fee-schedule config but not royalty, syphon, hibernation-fees, ownership rotation, or the recovery on/off switches themselves.
+　　→ **CLOSED**, 2026-08-17 (`ROUND-02-FIXES.md` Fix #4). Owner ruled per-field after a full schema walkthrough: royalty-promile and peak-hibernate-promile/hibernate-decay were V2 additions that never got the lock gate — oversight, fixed (both caps require UEV_ParameterLockState atspair false as their first check). syphon confirmed intentionally exempt (#4C). owner-konto (RotateOwnership), can-change-owner/syphoning/hibernate (Control), and the 3 recovery on/off switches themselves — owner confirmed these **stay as-is** too, same "owner discretion, stakers trust the owner" model. No code change on those; finding fully closed.
 
-#7H — [ONGOING] — Royalty ceiling (99.9%) applies instantly — no lock, no timelock, no per-tx delta cap.
+#7H — [PARTIALLY FIXED] — Royalty ceiling (99.9%) applies instantly — no lock, no timelock, no per-tx delta cap.
+　　→ **PARTIALLY FIXED**, 2026-08-17, via #6H/Fix #4 — lock-gate applied. The delta-cap/notice-window half of this finding was never asked about separately and remains open if wanted.
 
 #8H — [ONGOING] — URC_RBT's abs() masks the -1.0 "uninitialized index" sentinel — Coil/Curl can bootstrap a virgin pool before KickStart, permanently locking out KickStart and opening a genesis inflation-attack / zero-mint-donation path.
 
@@ -83,6 +85,7 @@ original numbering never shifts. Cross-reference `README.md` (status tracker), `
 
 ## Tally
 
-- **FIXED:** 3 (#2C, #3C, #5C)
+- **FIXED:** 4 (#2C, #3C, #5C, #6H — #6H closed: 2 fields fixed, rest confirmed intentional, nothing left pending)
+- **PARTIALLY FIXED:** 1 (#7H — royalty lock-gate applied; delta-cap/notice-window sub-question never separately asked, not pursued)
 - **NOT A BUG:** 2 (#1C — refuted, #4C — design confirmed)
-- **ONGOING:** 26 original items + 1 new (#32N) = 27
+- **ONGOING:** 24 original items + 1 new (#32N) = 25

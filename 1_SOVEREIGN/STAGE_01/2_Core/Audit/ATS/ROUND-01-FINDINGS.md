@@ -395,14 +395,32 @@ two sibling functions that already do this correctly. `ATS|GOV` itself needs no 
 
 # HIGH
 
-## H1 · ATS — parameter-lock protects fee-schedule config but not royalty/syphon/hibernation-fees/ownership/control `[CONFIRMED]`
+## H1 · ATS — parameter-lock protects fee-schedule config but not royalty/syphon/hibernation-fees/ownership/control `[CLOSED — partially fixed, rest confirmed intentional]`
+
+> **CORRECTION/CLOSURE (owner, 2026-08-17).** Walked through every ungated field precisely (schema-field-
+> by-field, `ATS|PropertiesSchemaV3`) before the owner ruled per-field:
+> - **`royalty-promile`** and **`peak-hibernate-promile`/`hibernate-decay`** — owner confirmed these were
+>   added later (V2) and simply never got the lock gate the original fields have; **not intended**.
+>   **FIXED** — see `ROUND-02-FIXES.md` Fix #4.
+> - **`syphon`** — owner confirmed **intentionally** ungated (already settled by **C4**): "designed to be
+>   fluctuant." No change, none wanted.
+> - **`owner-konto`** (`ATS|S>ROTATE_OWNERSHIP`), **`can-change-owner`/`syphoning`/`hibernate`**
+>   (`ATS|S>CONTROL`), and the raw **`cold-recovery`/`hot-recovery`/`direct-recovery`** on/off switches
+>   themselves — owner confirmed **stay as-is**, same "owner discretion, stakers trust the owner" model
+>   as `syphon`, extended to these on direct confirmation (2026-08-17) rather than assumed from C4's
+>   precedent. **No code change.** Full detail: `ROUND-01-OWNER-FEEDBACK.md`.
+>
+> **H1 is now fully closed:** 2 fields fixed, the rest confirmed intentional design. Nothing further
+> pending on this finding.
 
 **Location:** `08_ATS.pact:124` (`UEV_ParameterLockState` decl), `:1654-1660` (impl); composed by
 `ATS|C>CONTROL-COLD-RECOVERY` (`:647-650`), `ATS|C>CONTROL-HOT-RECOVERY` (`:694-697`),
-`ATS|S>CONTROL-DIRECT-RECOVERY`/`C>SET_DIRECT_FEE` (`:699-712`), `ATS|C>ADD-TOKEN` (`:593-599`). **Not**
-composed by `ATS|S>ROTATE_OWNERSHIP` (`:411-422`), `ATS|S>CONTROL` (`:423-437`), `ATS|S>ROYALTY`
-(`:462-471`), `ATS|S>SYPHON` (`:438-451` — see C4), `ATS|S>SET-HIBERNATION-FEES` (`:452-461`), or any of
-the cold/hot/direct recovery on/off *switches* themselves (`:477-491`).
+`ATS|S>CONTROL-DIRECT-RECOVERY`/`C>SET_DIRECT_FEE` (`:699-712`), `ATS|C>ADD-TOKEN` (`:593-599`), and (found
+during re-verification) `ATSU|C>X_REMOVE-SECONDARY` (`10_ATSU.pact:212`, direct check — removal is lock-
+gated same as addition). **Not** composed by `ATS|S>ROTATE_OWNERSHIP` (`:411-422`), `ATS|S>CONTROL`
+(`:423-437`), `ATS|S>SYPHON` (`:438-451` — confirmed intentional, C4), or any of the cold/hot/direct
+recovery on/off *switches* themselves (`:477-491`) — **all four still open**. `ATS|S>ROYALTY` (`:462-471`)
+and `ATS|S>SET-HIBERNATION-FEES` (`:452-461`) **were** on this list — now fixed, see below.
 
 **What's wrong:** the lock's own toggle cap (`ATS|C>TOGGLE-PARAMETER-LOCK`, `:548-576`) requires at least
 one recovery mechanism ON to lock, and all OFF to unlock — implying the lock is meant to freeze a pair's
@@ -412,14 +430,18 @@ on/off switches aren't themselves lock-gated, the owner can flip `cold-recovery`
 invariant the lock is meant to guarantee — and, more materially, royalty, syphon (C4), and hibernation
 fees can all be changed freely at any point during an active recovery window, lock notwithstanding.
 
-**Fix direction:** gate `C_UpdateRoyalty`, `C_UpdateSyphon`, `C_SetHibernationFees`,
-`C_SwitchColdRecovery`/`HotRecovery`/`DirectRecovery` on `UEV_ParameterLockState atspair false` too (or, at
-minimum, document the feature precisely as "cold/hot/direct fee-schedule + token-addition lock" so users
-don't read it as a general economics freeze — given C4's severity, gating is the safer default).
+**Fix direction:** ~~gate `C_UpdateRoyalty`, `C_UpdateSyphon`, `C_SetHibernationFees`,
+`C_SwitchColdRecovery`/`HotRecovery`/`DirectRecovery`...~~ **`C_UpdateSyphon` retracted from this list —
+confirmed intentional, C4.** `C_UpdateRoyalty`/`C_SetHibernationFees` — **done**, see `ROUND-02-FIXES.md`.
+`C_SwitchColdRecovery`/`HotRecovery`/`DirectRecovery` and `C_Control`/`RotateOwnership` — still need an
+owner ruling; not touched.
 
-**Owner verdict:** _pending_
+**Owner verdict:** CLOSED — `royalty-promile` + `peak-hibernate-promile`/`hibernate-decay` now lock-gated
+(owner-confirmed oversight, fixed 2026-08-17); `syphon` confirmed intentionally exempt (C4);
+`owner-konto`/`can-change-owner`/`syphoning`/`hibernate`/the three recovery on/off switches confirmed
+intentionally exempt too (2026-08-17) — same trust model as syphon, no code change.
 
-## H2 · ATS — royalty ceiling (99.9%) applies instantly, no lock/timelock `[CONFIRMED]`
+## H2 · ATS — royalty ceiling (99.9%) applies instantly, no lock/timelock `[PARTIALLY FIXED via H1]`
 
 **Location:** `08_ATS.pact:462-471` (`ATS|S>ROYALTY`), `1_Utilities/08_U_DALOS.pact:432-450` (`UEV_Fee`,
 bounds royalty to `{-1.0, 0.0} ∪ [1.0, 999.0]` promile, i.e. up to 99.9%).
@@ -428,10 +450,13 @@ bounds royalty to `{-1.0, 0.0} ∪ [1.0, 999.0]` promile, i.e. up to 99.9%).
 royalty from `0.0` to `999.0` in one call, instantly redirecting up to 99.9% of future yield to themselves
 with zero notice to stakers.
 
-**Fix direction:** gate on `UEV_ParameterLockState` (H1's fix); consider a maximum delta per update, or a
-minimum notice window for increases above some threshold.
+**Fix direction:** ~~gate on `UEV_ParameterLockState` (H1's fix)~~ — **done**, `ATS|S>ROYALTY` now requires
+`UEV_ParameterLockState atspair false` (H1 fix, `ROUND-02-FIXES.md`). The other half of this finding — "no
+per-tx delta cap, no minimum notice window for increases" — was **not** raised or requested by the owner
+when confirming the H1 fix; still open if wanted, not assumed.
 
-**Owner verdict:** _pending_
+**Owner verdict:** PARTIALLY FIXED — lock-gate applied (2026-08-17, via H1). Delta-cap / notice-window
+question still open, not yet asked separately.
 
 ## H3 · ATSU — `URC_RBT`'s `abs()` masks the `-1.0` uninitialized-index sentinel; `Coil`/`Curl` bypass `KickStart` `[CONFIRMED]`
 

@@ -1667,6 +1667,65 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 016 - C1 Reproduction: SmartSwap Best-Edge Selection")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 016 - C1 Reproduction: SmartSwap Best-Edge Selection · 01 · env-sigs (caps) ==== ======
+(print "--- [SWP|TX 016 - C1 Reproduction: SmartSwap Best-Edge Selection · 01 · env-sigs (caps)] ---")
+(env-sigs [])
+;;==== SWP|TX 016 - C1 Reproduction: SmartSwap Best-Edge Selection · 02 · let / invocation ==== =====
+(print "--- [SWP|TX 016 - C1 Reproduction: SmartSwap Best-Edge Selection · 02 · let / invocation] ---")
+;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #C1 — URC_BestEdge's edge-selection fold keeps the index
+;;whose output is SMALLER (argmin) instead of LARGER (argmax) among parallel pools serving the same
+;;token pair. Reproduced here against the two real, already-issued parallel pools that both directly
+;;connect DLK<->OURO (both are registered principals, TX-18 [4.1.19] in [4.0]_Sovereign-Executor.repl):
+;;  pool1 = W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 (deep:    3200/10000/6000)
+;;  pool2 = S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 (shallow:  800/900/850)
+;;No new fixtures needed. Both pool outputs are computed independently via the same URC_Swap each
+;;caller uses, so "which one is objectively better" isn't asserted from the audit doc — it's derived
+;;fresh, right here, from the live pool state.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+        (pool1:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (pool2:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (dlk:string (ref-DALOS::UR_SilverStoaID))
+        (ouro:string (ref-DALOS::UR_OuroborosID))
+        (input-amount:decimal 10.0)
+        (dsid:object{UtilitySwpV1.DirectSwapInputData}
+            (ref-U|SWP::UDC_DirectSwapInputData [dlk] [input-amount] ouro)
+        )
+        (pool1-out:decimal (ref-SWPI::URC_Swap pool1 dsid false))
+        (pool2-out:decimal (ref-SWPI::URC_Swap pool2 dsid false))
+        (better-pool:string (if (> pool1-out pool2-out) pool1 pool2))
+        (chosen-edge:string (ref-SWPI::URC_BestEdge input-amount dlk ouro))
+    )
+    (map print
+        [
+            (format "pool1 (W, deep) output for {} DLK->OURO is {}" [input-amount pool1-out])
+            (format "pool2 (S, shallow) output for {} DLK->OURO is {}" [input-amount pool2-out])
+            (format "URC_BestEdge actually chose: {}" [chosen-edge])
+            (format "Objectively better edge (higher independently-computed output) is: {}" [better-pool])
+            (expect "C1 reproduction — URC_BestEdge selects the higher-output edge" better-pool chosen-edge)
+        ]
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 016 - C1 Reproduction: SmartSwap Best-Edge Selection · 03 · gas echo ==== ===============
+(print "--- [SWP|TX 016 - C1 Reproduction: SmartSwap Best-Edge Selection · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 016 C1 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
 (print "")
 (print "===================DPTF + SWP Issuance-Only FINISHED==========================")
 (print "")

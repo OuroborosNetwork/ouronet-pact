@@ -30,9 +30,12 @@ The write path (`SWP::C_ToggleAddOrSwap` → `XE_CanAddOrSwapToggle`) is gated b
 composes real `CAP_Owner` unconditionally on both toggle directions — the original trace stopped one
 `with-capability` block too early. Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *C12, retracted*
 
-#5C **[SWPU]** Slippage min/max bound is computed and checked against the fee-exclusive gross swap quote,
+#5C **[SWPU]** ~~Slippage min/max bound is computed and checked against the fee-exclusive gross swap quote,
 never against the actual fee-inclusive amount delivered — a user's declared minimum is not a real floor on
-what they receive. — *C11*
+what they receive.~~ — **DESIGN, confirmed intentional 2026-08-17.** Feeless-vs-feeless correctly protects
+against reserve/price movement; the residual fee-rate-change gap is fully answered by the real, enforced,
+publicly-queryable `fee-lock` primitive — opt-in, unlocked-by-default is a deliberate trust-boundary choice.
+Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *C11, closed as DESIGN*
 
 #6C **[SWPI]** `URC_BestEdge` (multi-hop route edge selection) picks the pool with the *least* output, not
 the most — every "Smart Swap" across a pair served by ≥2 pools is systematically routed through the worse

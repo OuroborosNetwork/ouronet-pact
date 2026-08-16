@@ -299,3 +299,66 @@
     (print "PROOF: real pair owner (aoz) CAN still update pair branding — refactor didn't break it")
 )
 (commit-tx)
+
+;; ============================================================================
+;; FIX PROOF (#6H / H1, owner-confirmed) — royalty-promile and hibernation-fee
+;; params now gated by parameter-lock; syphon remains intentionally ungated.
+;; ============================================================================
+(begin-tx "FIX PROOF H1 - unlocked baseline: royalty update still works")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+    )
+    (print (format "lock before: {}" [(ATS.UR_Lock ps)]))
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 40.0)
+    (print (format "PROOF: royalty update succeeds while unlocked — new royalty-promile: {}" [(ATS.UR_Royalty ps)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "FIX PROOF H1 - engage lock (needs a recovery ON first)")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_SwitchColdRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_ToggleParameterLock aoz ps true)
+    (print (format "lock now: {}" [(ATS.UR_Lock ps)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "FIX PROOF H1 - locked: royalty and hibernation-fees both rejected")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+    )
+    (print (expect-failure "royalty update rejected while parameter-lock is ON"
+        (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 50.0)
+    ))
+    ;; SetHibernationFees is SEPARATELY broken by #10M (malformed predicate, always fails) — this proof
+    ;; only checks it's rejected AT ALL while locked; it cannot prove "would succeed if unlocked" until
+    ;; #10M is fixed too. The point here is only that THIS fix's gate fires before ever reaching #10M's
+    ;; broken validator.
+    (print (expect-failure "hibernation-fees update rejected while parameter-lock is ON"
+        (ref-TS01-C2::ATS|C_SetHibernationFees aoz ps 100.0 0.01)
+    ))
+)
+(commit-tx)
+;; NOTE: deliberately NOT disengaging the lock afterward — doing so costs a real, unlocks-count-scaled
+;; KDA fee (UC_UnlockPrice) that this deep into the shared scratch fixture aoz can no longer reliably
+;; afford; nothing later in this file depends on `ps` being unlocked again, so leaving it locked is safe.

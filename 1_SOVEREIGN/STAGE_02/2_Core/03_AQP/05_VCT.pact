@@ -948,29 +948,32 @@
     ;; ZERO reads. This clean scan/consume split is what the parallel batch functions reuse (UI dirty-reads
     ;; these same scanners off-chain to build slices, then feeds one XI_*FromLegs consumer per tx).
     ;; ═══════════════════════════════════════════════════════════════════════════
-    ;; All three PHASE-1 scanners share ONE shape: a single `let` (refs + the pool asset-id [+ class]),
-    ;; then `map` a per-kind lane-builder over an inline id-list DERIVED from the asset-id — no table scans,
-    ;; no nested lets. Only the id-list expression differs per asset family (that difference is inherent).
-    (defun URD_VacateTrueFungiblePoolLegs:[object{VCT|VacateTfLane}] (pool-id:string)
-        @doc "PHASE-1 — the pool's DPTF lanes as {asset-id, legs}, derived from the pool asset-id: the native leg \
-            \ (asset-id) and its F| frozen counterpart (\"F|\"+asset-id), both deterministic. An empty lane's legs \
-            \ are [] → the consumer no-ops it, so building both unconditionally is safe."
+    ;; PHASE-1 lane-id DERIVATION (URC_): each returns the pool's vacate-lane ids DERIVED from the single pool
+    ;; asset-id (a table field) — no table scans. Variant tokens (F| frozen / Z| sleeping / H| hibernating) are
+    ;; added ONLY when they exist (their DPTF link is non-BAR); a variant that exists but was never staked into
+    ;; this pool is still safe — its lane's legs read empty and the consumer no-ops it.
+    (defun URC_VacatePoolTfIds:[string] (pool-id:string)
+        @doc "The pool's DPTF vacate-lane ids: the native asset-id (always) + its F| frozen counterpart WHEN it \
+            \ exists (DPTF::UR_Frozen → BAR if never frozen → dropped). Same existence-filter idea as the OF variant."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (asset-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
             )
-            (map
-                (lambda (dptf-id:string)
-                    (UDC_VacateTfLane dptf-id (URDC_VacateTfOwnerRows pool-id dptf-id)))
-                [asset-id (+ "F|" asset-id)])
+            (+
+                [asset-id]
+                (filter
+                    (lambda (fid:string) (!= fid BAR))
+                    [(ref-DPTF::UR_Frozen asset-id)]
+                )
+            )
         )
     )
-    (defun URD_VacateOrtoFungiblePoolLegs:[object{VCT|VacateNonceLane}] (pool-id:string)
-        @doc "PHASE-1 — the pool's DPOF lanes as {asset-id, legs}, derived from the pool asset-id: class 2 → the \
-            \ asset-id itself (a standalone OF); class 0/1 (TF-family) → the native asset's sleeping (Z|) + \
-            \ hibernation (H|) DPOF satellites via DPTF::UR_Sleeping / UR_Hibernation (BAR = not linked → dropped). \
-            \ A pool can only hold DPOF stake in these linked ids, so derivation is complete."
+    (defun URC_VacatePoolOfIds:[string] (pool-id:string)
+        @doc "The pool's DPOF vacate-lane ids: class 2 → the standalone asset-id; class 0/1 → the native asset's \
+            \ sleeping (Z|) + hibernation (H|) DPOF satellites that EXIST (DPTF::UR_Sleeping / UR_Hibernation → \
+            \ BAR when not linked → dropped)."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
@@ -978,29 +981,79 @@
                 (c:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
                 (asset-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
             )
-            (map
-                (lambda (dpof-id:string)
-                    (UDC_VacateNonceLane dpof-id (URDC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF)))
-                (if (= c 2)
-                    [asset-id]
-                    (filter (lambda (sat-id:string) (!= sat-id BAR))
-                        [(ref-DPTF::UR_Sleeping asset-id) (ref-DPTF::UR_Hibernation asset-id)])))
+            (if (= c 2)
+                [asset-id]
+                (filter
+                    (lambda (sat-id:string) (!= sat-id BAR))
+                    [(ref-DPTF::UR_Sleeping asset-id) (ref-DPTF::UR_Hibernation asset-id)]
+                )
+            )
         )
     )
-    (defun URD_VacateCollectablesPoolLegs:[object{VCT|VacateNonceLane}] (pool-id:string son:bool)
-        @doc "PHASE-1 — the pool's DPSF (son=true) / DPNF (son=false) collection lane as [{asset-id, legs}], derived \
-            \ from the pool asset-id: a collectable pool holds ONE collection (the asset-id) → a single lane."
+    (defun URC_VacatePoolCollectableIds:[string] (pool-id:string)
+        @doc "The pool's collectable vacate-lane id: the single collection = the pool asset-id."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-                (asset-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
+            )
+            [(ref-AQP::UR_AQP|PoolAssetId pool-id)]
+        )
+    )
+    ;; PHASE-1 SCAN (URD_): identical shape — one `let` binding the NAMED id-list (from the URC_ above), then
+    ;; `map` the per-kind lane-builder over it. No inline id construction, no scan.
+    (defun URD_VacateTrueFungiblePoolLegs:[object{VCT|VacateTfLane}] (pool-id:string)
+        @doc "PHASE-1 — the pool's DPTF lanes as {asset-id, legs}: ids from URC_VacatePoolTfIds, legs from \
+            \ URDC_VacateTfOwnerRows. An empty lane → the consumer no-ops it."
+        (let
+            (
+                (dptf-ids:[string] (URC_VacatePoolTfIds pool-id))
+            )
+            (map
+                (lambda (dptf-id:string)
+                    (UDC_VacateTfLane
+                        dptf-id
+                        (URDC_VacateTfOwnerRows pool-id dptf-id)
+                    )
+                )
+                dptf-ids
+            )
+        )
+    )
+    (defun URD_VacateOrtoFungiblePoolLegs:[object{VCT|VacateNonceLane}] (pool-id:string)
+        @doc "PHASE-1 — the pool's DPOF lanes as {asset-id, legs}: ids from URC_VacatePoolOfIds, legs from \
+            \ URDC_VacateNonceOwnerRowsRaw (kind OF)."
+        (let
+            (
+                (dpof-ids:[string] (URC_VacatePoolOfIds pool-id))
+            )
+            (map
+                (lambda (dpof-id:string)
+                    (UDC_VacateNonceLane
+                        dpof-id
+                        (URDC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF)
+                    )
+                )
+                dpof-ids
+            )
+        )
+    )
+    (defun URD_VacateCollectablesPoolLegs:[object{VCT|VacateNonceLane}] (pool-id:string son:bool)
+        @doc "PHASE-1 — the pool's DPSF (son=true) / DPNF (son=false) collection lane as [{asset-id, legs}]: id \
+            \ from URC_VacatePoolCollectableIds, legs from URDC_VacateNonceOwnerRowsRaw (kind DPSF/DPNF)."
+        (let
+            (
+                (collectable-ids:[string] (URC_VacatePoolCollectableIds pool-id))
+                (vacate-kind:integer (if son VACATE-KIND-DPSF VACATE-KIND-DPNF))
             )
             (map
                 (lambda (collectable-id:string)
-                    (UDC_VacateNonceLane collectable-id
-                        (URDC_VacateNonceOwnerRowsRaw pool-id collectable-id
-                            (if son VACATE-KIND-DPSF VACATE-KIND-DPNF))))
-                [asset-id])
+                    (UDC_VacateNonceLane
+                        collectable-id
+                        (URDC_VacateNonceOwnerRowsRaw pool-id collectable-id vacate-kind)
+                    )
+                )
+                collectable-ids
+            )
         )
     )
     (defun URDC_BuildVacateSlicePlan:object

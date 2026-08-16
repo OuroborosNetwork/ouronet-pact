@@ -59,6 +59,20 @@ specific piece no longer applies. H1's other parameters (royalty, hibernation-fe
 recovery on/off switches) remain open — each needs its own owner confirmation; the same "stakers trust the
 owner" answer should not be assumed to automatically extend to them without asking.
 
+## H1 (remaining pieces) — `owner-konto`/control-toggles/recovery-switches stay unlocked — **NOT A BUG (design confirmed)**
+
+**Owner's confirmation (2026-08-17):** after fixing the two confirmed oversights (royalty, hibernation-
+fees — Fix #4), the owner ruled the remaining ungated fields **stay as they are**: `owner-konto`
+(`ATS|S>ROTATE_OWNERSHIP`), `can-change-owner`/`syphoning`/`hibernate` (`ATS|S>CONTROL`), and the three
+raw recovery on/off switches (`ATS|S>SWITCH-COLD-RECOVERY`/`…HOT-RECOVERY`/`…DIRECT-RECOVERY`) are
+**intentionally** left outside the parameter-lock — same "owner discretion, stakers trust the owner" trust
+model already established for `syphon` (C4), extended to these on direct confirmation rather than assumed.
+
+**Verdict: NOT A BUG.** No code change. H1 is now fully closed: 2 pieces fixed (Fix #4), the rest
+confirmed intentional. H2 (royalty ceiling) is correspondingly closed too — the lock-gate half of its fix
+direction is done, and the "delta-cap / notice-window" half was never requested as a separate ask, so it's
+not treated as an open action item, just an unexercised design option.
+
 ## Numbering after this correction
 
 Findings renumber sequentially with C1 removed; former C2-C5 become C1-C4, H1-H4 stay H1-H4 (unaffected),

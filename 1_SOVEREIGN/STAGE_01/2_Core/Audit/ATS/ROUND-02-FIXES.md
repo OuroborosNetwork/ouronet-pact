@@ -2,6 +2,47 @@
 
 One entry per fix, applied sequentially, owner green-lit before landing. Diff summary + why.
 
+## Fix #4 — H1/H2 (#6H/#7H, partial): royalty + hibernation-fee params now lock-gated
+
+**Pre-fix discussion:** walked every field of `ATS|PropertiesSchemaV3` against whether its setter checks
+`UEV_ParameterLockState`, corrected a polarity misunderstanding along the way (`parameter-lock = true`
+means **locked**, i.e. the gated fields *cannot* be changed — not the reverse), and laid out a table of
+protected vs. unprotected fields before the owner ruled per-field. Owner verdict: `royalty-promile` and
+`peak-hibernate-promile`/`hibernate-decay` were added later (V2 schema fields) and simply never got the
+lock gate the original fields already have — an oversight, fix it. `syphon` stays unprotected — confirmed
+intentional (C4), "designed to be fluctuant." `owner-konto`, `can-change-owner`/`syphoning`/`hibernate`,
+and the three recovery on/off switches remain **open** — not ruled on, not touched.
+
+**Fix — `08_ATS.pact`:**
+- `ATS|S>SET-HIBERNATION-FEES` (`:452-461`) — added `(UEV_ParameterLockState atspair false)` as the first
+  statement, before the existing `UEV_HibernationFees`/`CAP_Owner` checks.
+- `ATS|S>ROYALTY` (`:462-471`) — same, added as the first statement before `UEV_Fee`/`CAP_Owner`.
+- No signature/schema/interface changes; no changes to `C_UpdateSyphon` or any of the still-open items.
+
+**Verification:**
+1. Full-suite reload: `Load successful`, no regressions.
+2. Unlocked baseline: `ATS|C_UpdateRoyalty` succeeds normally (confirmed `royalty-promile` actually
+   updates, `40.0`).
+3. Engaged the lock for real (`ATS|C_SwitchColdRecovery … true` then `ATS|C_ToggleParameterLock … true` —
+   the toggle's own precondition requires a live recovery mechanism, confirmed still correct/unchanged).
+4. Locked: both `ATS|C_UpdateRoyalty` and `ATS|C_SetHibernationFees` → `expect-failure` green.
+5. Isolated a raw (non-`expect-failure`-wrapped) call to `ATS|C_SetHibernationFees` while locked to
+   capture the literal error text and confirm it's genuinely *this* fix's gate firing, not `#10M`'s
+   separate malformed-predicate bug (`UEV_HibernationFees`'s stray `(= () 0.0)` term) coincidentally
+   masking it: **`"Parameter-lock for ATS Pair PlebeicStrength-98c486052a51 must be set to false for this
+   operation"`** — confirmed, `08_ATS.pact:1699`, the lock check, evaluated and failing *before* the
+   broken validator is ever reached. `#10M` remains open and unrelated to this fix — once it's fixed,
+   `SetHibernationFees` will still correctly require the lock to be off, on top of that separate fix.
+
+**Note:** did not disengage the lock afterward in the proof — `UC_UnlockPrice` scales with an `unlocks`
+counter and the shared scratch fixture's `aoz` account doesn't reliably have enough KDA left this deep
+into the file to pay a re-unlock fee. Not a fix concern (nothing later in the scratch file depends on `ps`
+being unlocked again) — flagged for whoever next touches this scratch fixture.
+
+**Status:** FIXED ✅ AND PROVEN ✅ for the two fields the owner confirmed. `owner-konto`,
+`can-change-owner`/`syphoning`/`hibernate`, and the three recovery switches remain open findings — not
+resolved by this fix, need their own ruling before touching.
+
 ## Fix #3 — C5 (#5C): Hot-RBT branding functions have no owner check
 
 **Pre-fix discussion (owner-led):** the owner independently worked out why `with-capability (ATS|GOV)`
