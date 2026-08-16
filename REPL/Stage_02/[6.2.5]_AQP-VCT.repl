@@ -135,6 +135,66 @@
 (print "=== END TX-VCT-TF01 ========================================================")
 (print "")
 ;;
+(begin-tx "TX-VCT-TF01b - REHAUL: XB_VacateTrueFungible (pool-id only, on-chain scan)")
+(print "")
+(print "=== TX-VCT-TF01b — REHAUL TF vacate: input is JUST the pool-id (legs scanned on-chain) ===")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "TfStakeScore")
+        (pool-name:string "TfStakePool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    ;; re-stake 100 OURO so the rehaul path has inventory to scan + vacate
+    (print (format "<(restake 100 for rehaul vacate)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 100.0)]))
+    (let
+        (
+            (tracker-work:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+            (pre-supply-work:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+        )
+        (enforce (> tracker-work 0.0) "TX-VCT-TF01b: need TF stake inventory")
+        (print (format "<(pre tracker/supply)> => {} / {}" [tracker-work pre-supply-work]))
+        ;; THE REHAUL VACATE — pool-id ONLY; VCT scans the legs on-chain (no UI-supplied arrays)
+        (print (format "<(AQP-POOL|XB_VacateTrueFungible pool-id-only)> => \"{}\""
+            [(ref-TS02-C3::AQP-POOL|XB_VacateTrueFungible patron pool-id)]))
+        (let
+            (
+                (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+                (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                (post-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+                (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+            )
+            (map print
+                [
+                    (format "<(post tracker/supply/inv)> => {} / {} / {}" [tracker-post post-supply inv-post])
+                    (expect (format "<<TX-VCT-TF01b>> REHAUL tracker cleared got={}" [tracker-post]) 0.0 tracker-post)
+                    (expect (format "<<TX-VCT-TF01b>> REHAUL deb-score cleared got={}" [deb-user]) 0.0 deb-user)
+                    (expect (format "<<TX-VCT-TF01b>> REHAUL supply restored got={} exp={}" [post-supply (+ pre-supply-work tracker-work)]) (+ pre-supply-work tracker-work) post-supply)
+                    (expect (format "<<TX-VCT-TF01b>> REHAUL vacate inventory empty got={}" [inv-post]) 0 inv-post)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-TF01b =======================================================")
+(print "")
+;;
 (begin-tx "TX-VCT-TF02 - C_VacateTrueFungibleLegs finalize")
 (print "")
 (print "=== TX-VCT-TF02 — TF Legs vacate (1 batch finalize=true) ===================")

@@ -203,6 +203,8 @@
     (defun AQP-POOL|C_AbortVacate:string
         (patron:string pool-id:string)
     )
+    (defun AQP-POOL|CC_FullVacate:string (patron:string pool-id:string))
+    (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string pool-id:string))
     (defun AQP-POOL|C_FullVacateTrueFungible:string
         (
             patron:string
@@ -1620,6 +1622,37 @@
                 (format "Successfully full-vacated TrueFungible {} from Pool {}."
                     [dptf-id pool-id]
                 )
+            )
+        )
+    )
+    (defun AQP-POOL|CC_FullVacate:string
+        (patron:string pool-id:string)
+        @doc "Vacate rehaul — pool-owner AGNOSTIC full vacate (one tx): input is JUST the pool-id. VCT reads the \
+            \ pool class + scans its inventory on-chain and vacates every asset type. Owner enforced in VCT|C>VACATE; \
+            \ collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron (ref-VCT::CC_FullVacate pool-id))
+                (format "Successfully full-vacated Pool {} (all asset types)." [pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|XB_VacateTrueFungible:string
+        (patron:string pool-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of a pool's TrueFungible leg only (one tx; used standalone or by \
+            \ the agnostic CC_FullVacate for a class-1 TF+OF pool). Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateTrueFungible pool-id))
+                (format "Successfully vacated the TrueFungible leg of Pool {}." [pool-id])
             )
         )
     )
