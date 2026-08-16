@@ -37,6 +37,28 @@ callers.md`; durable rule folded into `StoicSyntax.md §14.5`.
   without a preceding ownership/authorization check (the actual pattern C5 demonstrates). Not an emergency
   cross-vault-drain; a narrower "check each module's own call sites" follow-up.
 
+## C4 — `syphon` floor "no monotonicity, owner can rug the pool" — **NOT A BUG (design confirmed)**
+
+**Owner's confirmation (2026-08-17):** full, at-will discretionary control over `syphon` — bounded only by
+the existing `>= 0.1` floor — is the intended design. **Stakers trust the pool owner** with this parameter,
+the same way they'd trust any other admin-controlled lever in the system. Explicitly rejected the proposed
+monotonic-ratchet fix: `0.6 → 0.5` must remain a legitimate, ordinary adjustment. No timelock/notice-period
+alternative was requested either — immediate, unrestricted discretion is the accepted trust model.
+
+**Why this one didn't need an independent technical re-verification the way C1 did:** C1 was a factual
+claim about Pact's capability semantics — checkable, and checked, against the language itself. C4 is a
+design-intent question (should the owner have unrestricted discretion over this parameter?) — the owner is
+the sole authority on that, not something to verify against code or language semantics. Accepted directly.
+
+**Verdict: NOT A BUG.** Closed without any code change. Full detail: `ROUND-01-FINDINGS.md` C4 (correction
+recorded inline, original finding kept as frozen historical record).
+
+**Cross-reference — narrows H1, does not resolve it:** H1 (`ROUND-01-FINDINGS.md`) lists gating
+`C_UpdateSyphon` behind `UEV_ParameterLockState` as part of its recommended fix. Per this verdict, that
+specific piece no longer applies. H1's other parameters (royalty, hibernation-fees, ownership rotation,
+recovery on/off switches) remain open — each needs its own owner confirmation; the same "stakers trust the
+owner" answer should not be assumed to automatically extend to them without asking.
+
 ## Numbering after this correction
 
 Findings renumber sequentially with C1 removed; former C2-C5 become C1-C4, H1-H4 stay H1-H4 (unaffected),

@@ -221,3 +221,43 @@
     )
 )
 (commit-tx)
+
+;; ============================================================================
+;; FIX PROOF (#5C / C5) — non-owner rejected, real owner still works, on the
+;; REAL Talos-driven path, against the already-registered DDKOSON hot-rbt.
+;; ============================================================================
+(begin-tx "FIX PROOF C5 - non-owner rejected")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (patron:string KST.ANHD)
+        (dd-k:string "DDKOSON-98c486052a51")
+    )
+    (print
+        (expect-failure "non-owner (patron) cannot update Hot-RBT branding of a pair they don't own"
+            (ref-TS01-C2::ATS|C_HOT-RBT|UpdatePendingBranding patron dd-k "evil-logo" "evil-desc" "evil.site" [])
+        )
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "FIX PROOF C5 - real owner still works")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (aoz:string KST.AOZT)
+        (dd-k:string "DDKOSON-98c486052a51")
+    )
+    ;; Bare call, not wrapped in expect: if CAP_Owner rejects aoz (it shouldn't — aoz IS the real
+    ;; owner), this whole tx aborts and the REPL load fails loudly. Reaching MARKER-C5-OWNER-OK below
+    ;; is itself the proof the legitimate owner path still works after the fix.
+    (ref-TS01-C2::ATS|C_HOT-RBT|UpdatePendingBranding aoz dd-k "real-logo" "real-desc" "real.site" [])
+    (print "PROOF: real pair owner (aoz) CAN still update Hot-RBT branding — fix didn't break the legitimate path")
+)
+(commit-tx)

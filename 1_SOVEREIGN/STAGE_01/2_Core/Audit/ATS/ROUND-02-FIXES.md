@@ -2,6 +2,101 @@
 
 One entry per fix, applied sequentially, owner green-lit before landing. Diff summary + why.
 
+## Fix #3 — C5 (#5C): Hot-RBT branding functions have no owner check
+
+**Pre-fix discussion (owner-led):** the owner independently worked out why `with-capability (ATS|GOV)`
+is present in `C_HOT-RBT|UpdatePendingBranding`/`UpgradeBranding` at all — the Hot-RBT's DPOF owner-konto
+is `ATS|SC_NAME` (rotated there by `C_AddHotRBT`), so DPOF's own branding gate
+(`DPOF|C>UPDATE-BRD`/`C>UPGRADE-BRD` → `UEV_ParentOwnership` → `CAP_Owner hot-rbt`, `06_DPOF.pact:527-536`,
+`:1389-1406`) resolves to "prove you own `ats-sc`" — something only ATS's own code can do, via `ATS|GOV`
+(confirmed correct per the #1C "home module" rule). So `ATS|GOV` itself was never the bug. The owner
+correctly identified the real gap: *who* is allowed to trigger that — should be the ATS-pair owner, and
+nothing checked that. Confirmed against source (grepped the exact 21 lines of both functions for
+`CAP_Owner`/`UEV_IMC`/any `defcap` wrapper — zero matches) before writing any code, per the owner's
+explicit request to see the fix location before it landed.
+
+**Fix — `08_ATS.pact`:**
+- New `defcap ATS|C>HOT-RBT-BRD (entity-id:string)`, inserted at the end of the
+  `ATS|C>REPURPOSE-HOT-RBT` cap block (~line 519), mirroring that cap's exact shape: resolve the owning
+  pair via `ref-DPOF::UR_RewardBearingToken entity-id`, `CAP_Owner atspair`, **then**
+  `compose-capability (ATS|GOV)` — one shared cap for both functions rather than duplicating the same
+  5-line body twice.
+- `C_HOT-RBT|UpdatePendingBranding` (was `:1818-1827`, now shifted ~9 lines down by the new cap) — added
+  `(UEV_IMC)` as the first statement, changed `with-capability (ATS|GOV)` to
+  `with-capability (ATS|C>HOT-RBT-BRD entity-id)`.
+- `C_HOT-RBT|UpgradeBranding` (was `:1829-1838`) — same two changes.
+- No signature changes on either function, no interface/schema touch (`AutostakeV2`'s declarations at
+  `:146-147` are unaffected), no Talos changes needed.
+
+**Verification:**
+1. Full-suite reload (`REPL/_audit_ats_baseline.repl`): `Load successful`, no regressions.
+2. Negative proof, real Talos-driven call, real signer (`patron`, not the pair owner):
+   `expect-failure` on `ATS|C_HOT-RBT|UpdatePendingBranding` targeting the pair-owned `DDKOSON` hot-rbt →
+   **`"Expect failure: Success: non-owner (patron) cannot update Hot-RBT branding of a pair they don't
+   own"`**.
+3. Positive proof, same call, signed by the real pair owner (`aoz`) → completes without aborting
+   (confirmed by reaching a marker print immediately after) — the legitimate path the fix must not break
+   still works.
+
+**Status:** FIXED ✅ AND PROVEN ✅ (both directions). Awaiting Round III re-verify.
+
+## Fix #2 — C3 (#3C): `C_Redeem` always reverts
+
+**Owner direction:** verify precisely under *correct* preconditions before touching anything (owner
+suspected the original REPL comment-out might have been a benign "nothing to redeem" state, not a real
+bug) — do not modify code until proven, then prove the fix with a real, permanent, rewritten REPL test.
+
+**Verification before any fix (three independent checks, escalating rigor):**
+1. Isolated Pact 5.4 repro: `(if <decimal>)` fails for both a nonzero decimal and exactly `0.0` — Pact
+   never coerces a decimal to bool either way.
+2. Empirical run #1: took the repo's own `[6.6]_ATS.repl`, uncommented the exact dead `C_Redeem` call as-
+   is. It failed — but via a *different, earlier* bug (`ico3`'s `TFT::C_MultiTransfer` rejected a negative
+   amount), traced to the fixture itself setting `block-time` to `2024-10-11`, two years *before* the
+   nonce's real mint time (`TIME00 = 2026-10-10`) — a fixture date bug, not evidence either way.
+3. Empirical run #2, under **corrected, honestly-forward-moving** time (mint at `2026-10-10`, redeem at
+   `2026-10-12`, past the full 1-day decay window — the legitimate "fully matured, zero fee" case):
+   execution passed cleanly through `ico1`/`ico2`/`ico3` and failed exactly where predicted:
+   `10_ATSU.pact:1067:28: expected bool value, got 0.0`. Confirmed: not "nothing to redeem" — the function
+   cannot complete under any input, including the cleanest possible one.
+
+**Fix — `10_ATSU.pact`, `C_Redeem`:** `are-fee-rts:decimal` (a summed fee amount) was fed directly into
+`(if are-fee-rts ...)`, which requires `:bool`. Added `have-fee-rts:bool (!= are-fee-rts 0.0)` and changed
+the `if` to use it — matching this codebase's `are-*`/`have-*` boolean naming convention used elsewhere
+(`are-e`, `are-transfer-roles-active`). No other change to the function's logic; `are-fee-rts` is otherwise
+unused. Schema/interface untouched (`C_Redeem`'s signature is unchanged).
+
+**REPL test — rewrote `REPL/Stage_01/[6.6]_ATS.repl`'s "Hot RBT and Redeem Test 1|5"–"5|5" section**
+(the canonical file, not scratch — this is a permanent addition to the real suite, not just an audit
+artifact) rather than patch around the original dead test:
+- Test 2|5: mints Hot-RBT nonce 1 (unchanged from original).
+- Test 3|5 (was purely observational): now also mints Hot-RBT nonce 2, same mint time as nonce 1.
+- Test 4|5 (was: `C_Redeem` commented out, `C_Reverse` substituted, wrong 2024 date): now sets a
+  *correct*, forward-moving time (~6h after mint, inside the 1-day decay window) and calls the real
+  `ATS|C_Redeem` on nonce 1 — the fee-bearing branch. Asserts, against real pre/post DPTF balance deltas:
+  nonce burned, payout nonzero, payout **strictly less than** the full no-fee value (proves a real fee was
+  actually withheld, not just "didn't crash").
+- Test 5|5 (was: pure observation, no assertions): sets time two full decay periods after mint and
+  redeems nonce 2 — the exact `are-fee-rts = 0.0` edge case that first exposed the bug. Asserts the payout
+  equals the full value **exactly** (no fee). Restores ambient chain-time to what the original file left
+  behind afterward, so nothing downstream of this section is perturbed.
+
+**Verification:** `REPL/_audit_ats_baseline.repl` (Stage00 → Stage01 prefix → `[6.5]_DPOF` →
+`[6.6]_ATS`, now with the rewritten Redeem section) reloaded end to end: `Load successful`, 19
+`expect`/`expect-failure` assertions, **0 failures**. Concrete numbers proven: nonce 1 (supply 100.0, full
+value 120.0) paid out **111.0** early (a real ~7.5-point fee withheld); nonce 2 (supply 50.0, full value
+60.0) paid out **60.0 exactly** once fully matured.
+
+**Side effect caught and fixed during this work:** the rewritten Test 5|5's time jump (to `2026-10-12`)
+left that as ambient chain-time for the next section ("Cold Recovery and Cull Test"), which incidentally
+tripped the *separately tracked* N1 finding (`URC_MultiCull` list/object type mismatch, see
+`ROUND-01-FINDINGS.md`) that hadn't fired under the original fixture's chronology. Fixed by restoring the
+original ambient time at the end of Test 5|5 rather than touching the unrelated downstream section —
+confirmed via `git`-comparable before/after: identical trailing behavior to the pre-Redeem-rewrite run.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — verified under correct preconditions before any code change (per
+owner instruction), fix applied, proof lives permanently in the canonical REPL suite (not scratch).
+Awaiting Round III re-verify.
+
 ## Fix #1 — C2 (#1C): reward-token remove/re-add corrupts per-account claim accounting
 
 **Owner direction:** complete, schema-preserving fix — no interface/schema changes. Confirmed safe to

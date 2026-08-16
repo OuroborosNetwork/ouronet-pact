@@ -69,8 +69,11 @@
                 (S-Prime:decimal (floor (fold (+) 0.0 X3) prec))
                 (P-Prime:decimal (floor (fold (*) 1.0 X3) prec))
                 ;;Y0 Initial Assumption
-                ;;For best results <input-amount> < 0.9975 * xo
-                (y0:decimal (- xo input-amount))
+                ;;Seeded at <D> (matching the Curve-style reference `get_y`), not <xo - input-amount> \
+                ;;<xo - input-amount> goes negative once <input-amount> >= <xo>, walking Newton into the \
+                ;;non-physical negative root of the same quadratic; <D> is always in the correct root's \
+                ;;basin regardless of trade size (C2 fix)
+                (y0:decimal D)
                 (output-lst:[decimal]
                     (fold
                         (lambda

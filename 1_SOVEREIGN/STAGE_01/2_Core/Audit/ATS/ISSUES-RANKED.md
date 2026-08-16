@@ -12,13 +12,16 @@ original numbering never shifts. Cross-reference `README.md` (status tracker), `
 #2C — [FIXED] — Reward-token remove-then-re-add corrupts per-account claim accounting — three confirmed sub-bugs: (a) cull payouts can pay a staker in the wrong token entirely; (b) royalty balances are permanently stranded on removal; (c) cold recovery becomes permanently unusable for every pre-existing account on the pair. The audit's flagged highest-priority mechanic.
 　　→ **FIXED AND PROVEN**, 2026-08-16 (`ROUND-02-FIXES.md` Fix #1). Schema-preserving, no interface/schema change. `UC_ReshapeUnstakeObject` now unconditionally resizes (closes a+c); `X_RemoveSecondary` now self-derives the complete account list on-chain instead of trusting caller input, and migrates the royalty bucket like the other two (closes b). Proven at 3 levels: unit test (isolated reshape logic), full-suite regression (zero failures), and full end-to-end integration proof through the real Talos owner-removal path with real Coil/ColdRecovery/Cull and real DPTF transfers — exact-amount assertions matched bit-for-bit.
 
-#3C — [ONGOING] — C_Redeem passes a :decimal where Pact's if requires :bool — every call reverts. Permanent fund lock: no one who went through C_HotRecovery can ever get their RT back.
+#3C — [FIXED] — C_Redeem passes a :decimal where Pact's if requires :bool — every call reverts. Permanent fund lock: no one who went through C_HotRecovery can ever get their RT back.
+　　→ **FIXED AND PROVEN**, 2026-08-16 (`ROUND-02-FIXES.md` Fix #2). Verified under *correct* preconditions before touching any code, per owner instruction — 3 independent checks, including an empirical run that first surfaced an unrelated REPL-fixture date bug (2 years in the past) before a corrected run confirmed the real defect under honest, forward-moving time. Fix: `have-fee-rts:bool (!= are-fee-rts 0.0)` replaces the raw decimal fed into `if`. Canonical `REPL/Stage_01/[6.6]_ATS.repl`'s dead "Redeem Test" section rewritten (was: call commented out, `C_Reverse` substituted, wrong date) into two real, assertion-backed regressions: an early fee-bearing redeem (paid 111.0 of 120.0 full value) and a fully-matured zero-fee redeem (paid exactly 60.0 of 60.0). 19/19 assertions green.
 
-#4C — [ONGOING] — syphon floor has no monotonicity/lock/timelock — owner can re-lower it and extract ~95%+ of total pool RT backing (principal + yield, commingled) in a single call.
+#4C — [NOT A BUG] — syphon floor has no monotonicity/lock/timelock — owner can re-lower it and extract ~95%+ of total pool RT backing (principal + yield, commingled) in a single call.
+　　→ **NOT A BUG**, owner confirmation 2026-08-17: full at-will discretionary control over syphon (bounded only by >= 0.1) is the intended design — stakers trust the pool owner with this parameter, same as any other admin-controlled lever. Proposed monotonic-ratchet fix explicitly rejected (0.6 → 0.5 must remain a legitimate ordinary adjustment). No timelock/notice-period alternative requested either. Closed without a code change. Narrows H1 (#6H below) — drop the "gate syphon behind parameter-lock" piece of its fix direction; H1's other parameters remain open.
 
-#5C — [ONGOING] — C_HOT-RBT|UpdatePendingBranding/UpgradeBranding have no owner/entity-linkage check at all — anyone can rewrite or paid-upgrade branding on a Hot-RBT token they don't own.
+#5C — [FIXED] — C_HOT-RBT|UpdatePendingBranding/UpgradeBranding have no owner/entity-linkage check at all — anyone can rewrite or paid-upgrade branding on a Hot-RBT token they don't own.
+　　→ **FIXED AND PROVEN**, 2026-08-17 (`ROUND-02-FIXES.md` Fix #3). New `ATS|C>HOT-RBT-BRD` capability (08_ATS.pact, ~line 519) mirrors the already-correct `ATS|C>REPURPOSE-HOT-RBT` sibling: resolves the owning pair from the hot-rbt id, checks real ownership, then composes ATS|GOV (which remains legitimately necessary — confirmed the full DPOF-ownership chain before fixing). Both functions now call UEV_IMC + this cap instead of a bare ATS|GOV. Proven both directions on the real Talos path: non-owner rejected, real owner unaffected.
 
-#6H — [ONGOING] — Parameter-lock protects cold/hot/direct fee-schedule config but not royalty, syphon, hibernation-fees, ownership rotation, or the recovery on/off switches themselves (relates to #4C).
+#6H — [ONGOING, narrowed] — Parameter-lock protects cold/hot/direct fee-schedule config but not royalty, syphon, hibernation-fees, ownership rotation, or the recovery on/off switches themselves. Narrowed by #4C's verdict: syphon is confirmed intentionally lock-exempt (owner discretion) — drop that piece. Royalty, hibernation-fees, ownership rotation, and the recovery switches still need their own owner confirmation before assuming a fix (or the same "not a bug" answer).
 
 #7H — [ONGOING] — Royalty ceiling (99.9%) applies instantly — no lock, no timelock, no per-tx delta cap.
 
@@ -80,6 +83,6 @@ original numbering never shifts. Cross-reference `README.md` (status tracker), `
 
 ## Tally
 
-- **FIXED:** 1 (#2C)
-- **NOT A BUG:** 1 (#1C — refuted)
-- **ONGOING:** 29 original items + 1 new (#32N) = 30
+- **FIXED:** 3 (#2C, #3C, #5C)
+- **NOT A BUG:** 2 (#1C — refuted, #4C — design confirmed)
+- **ONGOING:** 26 original items + 1 new (#32N) = 27

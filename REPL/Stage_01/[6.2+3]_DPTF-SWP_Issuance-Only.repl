@@ -1600,6 +1600,73 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 015 - C2 Regression: Stable-Swap Newton Domain Guard")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 015 - C2 Regression: Stable-Swap Newton Domain Guard · 01 · env-sigs (caps) ==== =====
+(print "--- [SWP|TX 015 - C2 Regression: Stable-Swap Newton Domain Guard · 01 · env-sigs (caps)] ---")
+(env-sigs [])
+;;==== SWP|TX 015 - C2 Regression: Stable-Swap Newton Domain Guard · 02 · let / invocation ==== ====
+(print "--- [SWP|TX 015 - C2 Regression: Stable-Swap Newton Domain Guard · 02 · let / invocation] ---")
+;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #C2 — UC_ComputeY's Newton solver used to seed y0 = xo -
+;;input-amount, which goes negative once input-amount >= xo and converges to the invariant's other
+;;(non-physical, negative) root instead of the true one. Fixed by seeding y0 = D (Curve-style
+;;reference `get_y`), which stays in the correct root's basin for any positive input-amount. This test
+;;reads pool7's own live, on-chain state (no hardcoded reserve figures) and proves the invariant that
+;;must hold regardless of trade size: for a Stable pool, 0 < output < output-reserve, always.
+(let
+    (
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+        (pool7:string "S|BUSD-98c486052a51|TUSD-98c486052a51|USDT-98c486052a51|USDC-98c486052a51|USDD-98c486052a51|AUSD-98c486052a51|CUSD-98c486052a51")
+        (busd:string "BUSD-98c486052a51")
+        (tusd:string "TUSD-98c486052a51")
+        (A:decimal (ref-SWP::UR_Amplifier pool7))
+        (X:[decimal] (ref-SWP::UR_PoolTokenSupplies pool7))
+        (w:[decimal] (ref-SWP::UR_Weigths pool7))
+        (ip:integer (ref-SWP::UR_PoolTokenPosition pool7 busd))
+        (op:integer (ref-SWP::UR_PoolTokenPosition pool7 tusd))
+        (o-prec:integer (at op (ref-SWP::UR_PoolTokenPrecisions pool7)))
+        (xo:decimal (at op X))
+        ;;input sizes relative to the live output reserve <xo>, not hardcoded absolutes:
+        ;;  in-domain : a normal, well-within-bounds trade (unaffected by the C2 reseed)
+        ;;  oversized : just over 1x <xo> — the exact size that broke the pre-fix solver
+        ;;  extreme   : 1000x <xo> — must still resolve to the physical asymptote, not crash/misfire
+        (in-domain-out:decimal
+            (ref-U|SWP::UC_ComputeY (ref-U|SWP::UDC_DirectRawSwapInput A X [1000.0] [ip] op o-prec w))
+        )
+        (oversized-out:decimal
+            (ref-U|SWP::UC_ComputeY (ref-U|SWP::UDC_DirectRawSwapInput A X [(* xo 1.2)] [ip] op o-prec w))
+        )
+        (extreme-out:decimal
+            (ref-U|SWP::UC_ComputeY (ref-U|SWP::UDC_DirectRawSwapInput A X [(* xo 1000.0)] [ip] op o-prec w))
+        )
+    )
+    (map print
+        [
+            (expect "C2 regression — in-domain swap (input=1000) output is positive" true (> in-domain-out 0.0))
+            (expect (format "C2 regression — in-domain swap output stays under live reserve {}" [xo]) true (< in-domain-out xo))
+            (expect "C2 regression — oversized swap (input=1.2x reserve) output is positive" true (> oversized-out 0.0))
+            (expect (format "C2 regression — oversized swap (input=1.2x reserve {}) output stays under it (pre-fix: exceeded it)" [xo]) true (< oversized-out xo))
+            (expect "C2 regression — extreme swap (input=1000x reserve) output is positive" true (> extreme-out 0.0))
+            (expect (format "C2 regression — extreme swap (input=1000x reserve {}) still stays under it (asymptotic, never crosses)" [xo]) true (< extreme-out xo))
+        ]
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 015 - C2 Regression: Stable-Swap Newton Domain Guard · 03 · gas echo ==== =============
+(print "--- [SWP|TX 015 - C2 Regression: Stable-Swap Newton Domain Guard · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 015 C2 Regression ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
 (print "")
 (print "===================DPTF + SWP Issuance-Only FINISHED==========================")
 (print "")

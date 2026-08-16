@@ -305,7 +305,22 @@ REPL regression exercising `C_Redeem` both pre- and post-decay before closing.
 
 ---
 
-## C4 · ATS — `syphon` floor has no monotonicity or lock; owner can extract ~full pool backing in one call `[CONFIRMED]`
+## C4 · ATS — `syphon` floor has no monotonicity or lock; owner can extract ~full pool backing in one call `[NOT A BUG — see correction below]`
+
+> **CORRECTION (owner, 2026-08-17) — NOT A BUG. Design confirmed, closed without a code change.** The
+> owner confirmed full, at-will discretionary control over `syphon` — bounded only by `>= 0.1` — is the
+> intended design: **stakers trust the pool owner** with this parameter, the same way they'd trust any
+> admin-controlled lever elsewhere in the system. A monotonic ratchet (this document's original fix
+> direction) was explicitly rejected: `0.6 → 0.5` must remain a legitimate, ordinary adjustment, not a
+> rejected transaction. No timelock/notice-period alternative was requested either — full immediate
+> discretion is the accepted trust model for this parameter. **Do not implement the ratchet or any other
+> restriction on `syphon`'s value from this finding.** Full detail: `ROUND-01-OWNER-FEEDBACK.md`.
+> **Cross-reference:** this narrows **H1** below — H1's fix direction currently lists gating
+> `C_UpdateSyphon` behind `UEV_ParameterLockState` as part of its recommended fix; per this verdict, that
+> specific piece no longer applies (syphon is meant to move freely, lock or no lock). H1's *other*
+> parameters (royalty, hibernation-fees, ownership rotation, recovery on/off switches) are **not**
+> resolved by this verdict — each needs its own owner confirmation before assuming the same trust-model
+> answer applies.
 
 **Location:** `08_ATS.pact:438-451` (`ATS|S>SYPHON`), `08_ATS.pact:2330-2335` (`XI_UpdateSyphon`),
 `08_ATS.pact:1168-1206` (`URC_MaxSyphon`), `08_ATS.pact:1097-1110` (`URC_Index`), issuance default
@@ -329,12 +344,10 @@ commingled). Owner calls `C_UpdateSyphon(atspair, 0.1)` — passes (`0.1 >= 0.1`
 call, no timelock, no user consent, and (per H1) no protection even while cold/hot/direct recovery is
 actively in progress for users trying to exit.
 
-**Fix direction:** enforce `syphon` can only move **upward** relative to its stored value (a ratchet —
-consistent with "syphon promises a floor the owner won't skim below"), and/or gate `C_UpdateSyphon` behind
-`UEV_ParameterLockState atspair false` (matching H1's broader fix). Consider bounding the *rate* of
-decrease per unlock cycle, or a timelock/notice period before a lowered floor takes effect.
+**Fix direction:** ~~enforce `syphon` can only move **upward**...~~ **RETRACTED, see correction above.**
 
-**Owner verdict:** _pending_
+**Owner verdict:** NOT A BUG — full discretionary control (bounded by `>= 0.1`) is the intended trust
+model. Closed without a code change, 2026-08-17.
 
 ---
 

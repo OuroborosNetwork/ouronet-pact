@@ -1050,6 +1050,12 @@
                 (earned-rts:[decimal] (ref-ATS::URC_RTSplitAmounts ats earned-rbt))
                 (fee-rts:[decimal] (zip (lambda (x:decimal y:decimal) (- x y)) total-rts earned-rts))
                 (are-fee-rts:decimal (fold (+) 0.0 fee-rts))
+                ;; Fix (audit finding #3C / C3): `are-fee-rts` is a summed :decimal fee amount, not a
+                ;; predicate — feeding it straight into `if` (which requires :bool) made every call to
+                ;; C_Redeem revert unconditionally, regardless of input (confirmed: Pact does not coerce
+                ;; a decimal to bool either way, 0.0 included). `have-fee-rts` is the real boolean gate:
+                ;; true only when the decay fee actually took a nonzero slice off the redemption.
+                (have-fee-rts:bool (!= are-fee-rts 0.0))
             )
             (with-capability (ATSU|C>REDEEM redeemer id)
                 (let
@@ -1064,7 +1070,7 @@
                             (ref-TFT::C_MultiTransfer rt-lst ATS|SC_NAME redeemer earned-rts true)
                         )
                         (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
-                            (if are-fee-rts
+                            (if have-fee-rts
                                 (fold
                                     (lambda
                                         (acc:[object{IgnisCollectorV1.OutputCumulator}] idx:integer)

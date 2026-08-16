@@ -514,7 +514,24 @@
             )
             (CAP_Owner atspair)
             (compose-capability (ATS|GOV))
-        )        
+        )
+    )
+    ;; Fix (audit finding #5C / C5): C_HOT-RBT|UpdatePendingBranding/UpgradeBranding composed ATS|GOV
+    ;; directly with no preceding ownership check — ATS|GOV is legitimately required (the hot-rbt's
+    ;; DPOF owner-konto is ATS|SC_NAME, so DPOF's own UEV_ParentOwnership resolves to "prove you own
+    ;; ats-sc", which only ATS's own code can do), but nothing gated *which caller* could trigger it.
+    ;; Mirrors ATS|C>REPURPOSE-HOT-RBT's exact shape: resolve the pair from the hot-rbt, check real
+    ;; ownership, THEN compose ATS|GOV.
+    (defcap ATS|C>HOT-RBT-BRD (entity-id:string)
+        @event
+        (let
+            (
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (atspair:string (ref-DPOF::UR_RewardBearingToken entity-id))
+            )
+            (CAP_Owner atspair)
+            (compose-capability (ATS|GOV))
+        )
     )
     (defcap ATS|C>ISSUE (account:string atspair:[string] index-decimals:[integer] reward-token:[string] rt-nfr:[bool] reward-bearing-token:[string]rbt-nfr:[bool])
         @event
@@ -1817,21 +1834,23 @@
     ;;Hot RBT Management
     (defun C_HOT-RBT|UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+        (UEV_IMC)
         (let
             (
                 (ref-B|DPOF:module{BrandingUsagePrimaryV1} DPOF)
             )
-            (with-capability (ATS|GOV)
+            (with-capability (ATS|C>HOT-RBT-BRD entity-id)
                 (ref-B|DPOF::C_UpdatePendingBranding entity-id logo description website social)
             )
         )
     )
     (defun C_HOT-RBT|UpgradeBranding (patron:string entity-id:string months:integer)
+        (UEV_IMC)
         (let
             (
                 (ref-B|DPOF:module{BrandingUsagePrimaryV1} DPOF)
             )
-            (with-capability (ATS|GOV)
+            (with-capability (ATS|C>HOT-RBT-BRD entity-id)
                 (ref-B|DPOF::C_UpgradeBranding patron entity-id months)
             )
         )
