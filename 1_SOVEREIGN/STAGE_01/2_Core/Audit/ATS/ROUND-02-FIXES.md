@@ -50,6 +50,17 @@ doc. Detail: `memories/2026-08-17-layered-capability-composition-core-plus-event
    (confirmed by reaching a marker print immediately after) — the legitimate path the fix must not break
    still works.
 
+**Follow-up (owner-requested, same session):** the *other* branding pair in this file —
+`ATS|C>UPDATE-BRD` / `ATS|C>UPGRADE-BRD` (pair-branding, not Hot-RBT-branding — these already had a real
+`CAP_Owner` check, so not part of C5's original finding) — had the exact duplication this new rule exists
+to prevent: both bodies were `(CAP_Owner atspair) (compose-capability (P|ATS|CALLER))`, pasted twice.
+Refactored the same way: new unevented core `ATS|S>BRD (atspair:string)` holding that body; both
+`ATS|C>UPDATE-BRD`/`ATS|C>UPGRADE-BRD` reduced to thin `@event` leaves composing it. **External cap names
+and both callers (`C_UpdatePendingBranding`/`C_UpgradeBranding`) unchanged** — purely an internal
+refactor, no signature/behavior change. Proven the same two ways: non-owner (`patron`) rejected
+(`expect-failure` green), real owner (`aoz`) unaffected (completes without aborting). Full-suite reload
+green throughout, 0 failures.
+
 **Status:** FIXED ✅ AND PROVEN ✅ (both directions). Awaiting Round III re-verify.
 
 ## Fix #2 — C3 (#3C): `C_Redeem` always reverts

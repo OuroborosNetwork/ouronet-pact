@@ -270,12 +270,16 @@
     ;; TF lane hit a 0.0 debit → UEV_Amount abort (finding #2). The empty-guard must make this a clean no-op.
     (let
         (
-            (dptf-pre:[string] (ref-AQP::URD_AQP|ActivePoolDptfIds pool-id))
+            (owner-id:string KST.ANHD)
+            (ouro-id:string "OURO-98c486052a51")
+            ;; native DPTF lane empty via point-read (DPTF lanes are deterministic — no scan reader);
+            ;; DPOF satellite lanes empty via the (kept) discovery scan.
+            (native-tf-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id owner-id))
             (sat-pre:[string] (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id))
         )
         (map print
             [
-                (expect (format "<<TX-VCT-CC02>> no live TF lanes got={}" [dptf-pre]) [] dptf-pre)
+                (expect (format "<<TX-VCT-CC02>> native TF lane empty got={}" [native-tf-bal]) 0.0 native-tf-bal)
                 (expect (format "<<TX-VCT-CC02>> no live DPOF lanes got={}" [sat-pre]) [] sat-pre)
             ]
         )

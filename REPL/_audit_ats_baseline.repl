@@ -261,3 +261,41 @@
     (print "PROOF: real pair owner (aoz) CAN still update Hot-RBT branding — fix didn't break the legitimate path")
 )
 (commit-tx)
+
+;; ============================================================================
+;; FIX PROOF (StoicSyntax §14.7 refactor) — pair-branding (ATS|C>UPDATE-BRD /
+;; ATS|C>UPGRADE-BRD) still works correctly after being re-layered onto the
+;; shared ATS|S>BRD core, for both the owner (allowed) and a non-owner (rejected).
+;; ============================================================================
+(begin-tx "FIX PROOF pair-branding refactor - non-owner rejected")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (patron:string KST.ANHD)
+        (ps:string "PlebeicStrength-98c486052a51")
+    )
+    (print
+        (expect-failure "non-owner (patron) cannot update pair branding of a pair they don't own"
+            (ref-TS01-C2::ATS|C_UpdatePendingBranding patron ps "evil-logo" "evil-desc" "evil.site" [])
+        )
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "FIX PROOF pair-branding refactor - real owner still works")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_UpdatePendingBranding aoz ps "real-logo" "real-desc" "real.site" [])
+    (print "PROOF: real pair owner (aoz) CAN still update pair branding — refactor didn't break it")
+)
+(commit-tx)

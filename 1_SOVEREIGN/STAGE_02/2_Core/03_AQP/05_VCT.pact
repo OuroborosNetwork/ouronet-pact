@@ -447,7 +447,10 @@
             \ wrappers; the per-kind XI_Vacate*FromLegs / *PoolLegs functions run under it via require P|VCT|RECIPE."
         @event
         (CAP_VctVacatePoolOwner pool-id)
-        (let ((ref-AQP:module{AcquisitionPoolsV1} AQP-POOL))
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+            )
             (enforce (contains (ref-AQP::UR_AQP|PoolAqpClass pool-id) [0 1 2 3 4])
                 "VCT|C>VACATE: unknown aqp-class"))
         (compose-capability (SECURE))
@@ -946,21 +949,36 @@
     ;; these same scanners off-chain to build slices, then feeds one XI_*FromLegs consumer per tx).
     ;; ═══════════════════════════════════════════════════════════════════════════
     (defun URD_VacateTrueFungiblePoolLegs:[object{VCT|VacateTfLane}] (pool-id:string)
-        @doc "PHASE-1 SCAN (HEAVY) — every live DPTF lane of a TF-family pool as {asset-id, legs}: the native \
-            \ asset-id AND the F| frozen leg are separate tracker rows, so enumerate active DPTF ids \
-            \ (URD_AQP|ActivePoolDptfIds) and scan each lane's TF legs (URDC_VacateTfOwnerRows)."
-        (let ((ref-AQP:module{AcquisitionPoolsV1} AQP-POOL))
-            (map
-                (lambda (dptf-id:string) (UDC_VacateTfLane dptf-id (URDC_VacateTfOwnerRows pool-id dptf-id)))
-                (ref-AQP::URD_AQP|ActivePoolDptfIds pool-id)
+        @doc "PHASE-1 SCAN — the pool's DPTF lanes as {asset-id, legs}. A TF-family pool has at most TWO DPTF lanes \
+            \ and BOTH are DETERMINISTIC from the pool asset-id — the native leg (asset-id) and its F| frozen \
+            \ counterpart (\"F|\"+asset-id) — so NO id-discovery scan is needed (unlike DPOF satellites, which are \
+            \ distinct minted collections). Construct both lanes and read each lane's legs (URDC_VacateTfOwnerRows); \
+            \ an empty lane's legs are [] → the consumer no-ops it (so building both unconditionally is safe)."
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (native-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
+            )
+            (let
+                (
+                    (frozen-id:string (+ "F|" native-id))
+                )
+                [
+                    (UDC_VacateTfLane native-id (URDC_VacateTfOwnerRows pool-id native-id))
+                    (UDC_VacateTfLane frozen-id (URDC_VacateTfOwnerRows pool-id frozen-id))
+                ]
             )
         )
     )
     (defun URD_VacateOrtoFungiblePoolLegs:[object{VCT|VacateNonceLane}] (pool-id:string)
         @doc "PHASE-1 SCAN (HEAVY) — every live DPOF lane of a pool as {asset-id, legs}: the Z|/H| satellites of a \
-            \ class-0/1 TF-family pool, or the standalone OF of a class-2 pool. Legs already carry each nonce's \
-            \ real tracker balance (URDC_VacateNonceOwnerRowsRaw), so the consumer needs no re-resolution."
-        (let ((ref-AQP:module{AcquisitionPoolsV1} AQP-POOL))
+            \ class-0/1 TF-family pool, or the standalone OF of a class-2 pool. Satellites are distinct minted \
+            \ collections (non-deterministic ids) so this DOES need the id-discovery scan (URD_AQP|ActivePoolDpofIds). \
+            \ Legs already carry each nonce's real tracker balance, so the consumer needs no re-resolution."
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+            )
             (map
                 (lambda (dpof-id:string)
                     (UDC_VacateNonceLane dpof-id (URDC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF)))
@@ -2377,7 +2395,10 @@
         @doc "TF-lane POOL consumer — no scan. Run XI_VacateTrueFungibleFromLegs on every pre-scanned DPTF lane \
             \ (native / F| frozen) and concatenate. Empty lane list → empty Oc. require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
             (if (= (length lanes) 0)
                 (UC_EmptyOc)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -2394,7 +2415,10 @@
         @doc "OF-lane POOL consumer — no scan. Run XI_VacateOrtoFungibleFromLegs on every pre-scanned DPOF lane \
             \ (Z|/H| satellite or class-2 standalone) and concatenate. Empty → empty Oc. require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
             (if (= (length lanes) 0)
                 (UC_EmptyOc)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -2411,7 +2435,10 @@
         @doc "Collectable-lane POOL consumer — no scan. Run XI_VacateCollectablesFromLegs (son) on every \
             \ pre-scanned DPSF/DPNF lane and concatenate. Empty → empty Oc. require P|VCT|RECIPE."
         (require-capability (P|VCT|RECIPE))
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
             (if (= (length lanes) 0)
                 (UC_EmptyOc)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators

@@ -29,7 +29,6 @@
     (defun UR_AQP|PoolVacateSession:object (pool-id:string))
     (defun URD_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string))
     (defun URD_AQP|ActiveDpofTrackerRows:[object] (pool-id:string dpof-id:string))
-    (defun URD_AQP|ActivePoolDptfIds:[string] (pool-id:string))
     (defun URD_AQP|ActivePoolDpofIds:[string] (pool-id:string))
     (defun URD_AQP|ActiveDpsfTrackerRows:[object] (pool-id:string dpsf-id:string))
     (defun URD_AQP|ActiveDpnfTrackerRows:[object] (pool-id:string dpnf-id:string))
@@ -2006,24 +2005,6 @@
                     (and?
                         (where "pool-id" (= pool-id))
                         (where "dpof-id" (= dpof-id))
-                    )
-                )
-            )
-        )
-    )
-    (defun URD_AQP|ActivePoolDptfIds:[string] (pool-id:string)
-        @doc "HEAVY: distinct DPTF asset-ids that hold live (balance>0) stake in a pool — on-chain TF-lane \
-            \ enumeration for class-0/1 (TF-family) full vacate. A TF-family pool can hold MORE than one DPTF lane: \
-            \ the native asset-id AND the F| frozen leg (id = \"F|\"+asset-id) are separate tracker rows. Selecting \
-            \ by pool-id across all dptf-ids returns every live TF lane so full vacate drains native + F| (never \
-            \ orphans the frozen leg). Table scan → use only from HEAVY (CC_/AA_) recipes."
-        (distinct
-            (map
-                (lambda (row:object) (at "dptf-id" row))
-                (filter
-                    (lambda (row:object) (> (at "balance" row) 0.0))
-                    (select AQP|T|DPTFTracker ["dptf-id" "balance"]
-                        (where "pool-id" (= pool-id))
                     )
                 )
             )

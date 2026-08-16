@@ -37,3 +37,10 @@ needs the shared body plus something extra of its own.
 Folded into `StoicSyntax.md` as new **§ 14.7** (existing §§ 14.7–14.8 renumbered to 14.8–14.9; one
 cross-reference at line ~417 updated), plus a `§ 16` migration-checklist bullet and a `§ 17` cheat-sheet
 row, since this pattern had zero documentation anywhere despite being in live use.
+
+**Same-session follow-up:** owner asked to sweep the sibling pair-branding caps too —
+`ATS|C>UPDATE-BRD`/`ATS|C>UPGRADE-BRD` had the identical duplication (`(CAP_Owner atspair)
+(compose-capability (P|ATS|CALLER))` pasted twice). Refactored onto a new core `ATS|S>BRD (atspair:string)`
+the same way; external cap names and both callers unchanged, purely internal. Worth grepping the rest of
+the codebase for the same duplicated-`@event`-body shape when touching other modules — this was found by
+`08_ATS.pact` having two *different* instances of the anti-pattern within ~1300 lines of each other.

@@ -494,15 +494,20 @@
         (CAP_Owner atspair)
     )
     ;;{C4}
-    (defcap ATS|C>UPDATE-BRD (atspair:string)
-        @event
+    ;; Core (unevented) — StoicSyntax §14.7 layered-composition pattern: shared body, distinct leaf
+    ;; events. Was two @event caps with the identical body pasted twice; refactored alongside the
+    ;; C5 fix (ATS|C>HOT-RBT-BRD, below) that introduced this pattern's documentation.
+    (defcap ATS|S>BRD (atspair:string)
         (CAP_Owner atspair)
         (compose-capability (P|ATS|CALLER))
     )
+    (defcap ATS|C>UPDATE-BRD (atspair:string)
+        @event
+        (compose-capability (ATS|S>BRD atspair))
+    )
     (defcap ATS|C>UPGRADE-BRD (atspair:string)
         @event
-        (CAP_Owner atspair)
-        (compose-capability (P|ATS|CALLER))
+        (compose-capability (ATS|S>BRD atspair))
     )
     ;;
     (defcap ATS|C>REPURPOSE-HOT-RBT (hot-rbt:string)

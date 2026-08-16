@@ -850,6 +850,7 @@ Readability is a **hard StoicSyntax requirement**, not cosmetics. Indentation an
 | **Aligned schema field comments** | Trailing `;;[M]` / class notes lined up where the file already does — domain meaning next to the field |
 | **Numbered step comments** | `;; 1] natives`, `;; 2] ref`, `;; 3] home`, `;; 4] caps` in complex caps/recipes |
 | **~88–92 character lines** | Avoid horizontal scrolling; break `@doc` with `\` continuation |
+| **`let` is ALWAYS expanded — never `(let ((…`** | `(let` on its own line; the binding-list `(` on its own indented line; **each binding on its own line**; the body follows the closed binding list. The compact `(let ((x …)) body)` (let + binding-list opener + first binding all on one line) is **forbidden**, even for a single binding — depth must be visible at a glance. Dependent bindings → **nested `let`** (the codebase does not use `let*`). |
 | **No drive-by reformat** | Behavioral PRs must not churn unrelated whitespace — preserves blame and review focus |
 
 ```pact
@@ -874,7 +875,31 @@ Readability is a **hard StoicSyntax requirement**, not cosmetics. Indentation an
 )
 ```
 
-**Anti-pattern:** dense one-liners, mixed tabs/spaces, params squeezed on continuation lines, or “reindent the whole module” in a logic PR.
+```pact
+;; WRONG — compact let: let + binding-list opener + first binding on one line (depth hidden)
+(let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+    (body …))
+
+;; RIGHT — expanded let, even for one binding
+(let
+    (
+        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+    )
+    (body …))
+
+;; RIGHT — dependent bindings use NESTED let (no let* in this codebase)
+(let
+    (
+        (native-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
+    )
+    (let
+        (
+            (frozen-id:string (+ "F|" native-id))
+        )
+        (body …)))
+```
+
+**Anti-pattern:** dense one-liners, the compact `(let ((…` form, mixed tabs/spaces, params squeezed on continuation lines, or “reindent the whole module” in a logic PR.
 
 Detail that feeds observability (already required elsewhere): **`let` order** (§ 13.1), **body statement order** (§ 13.2), **parameter layout** (§ 13.3), **`@doc` / `@event` / step comments** (§ 13.4).
 
