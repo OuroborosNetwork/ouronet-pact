@@ -581,14 +581,13 @@
                             ;; of-post would stay non-zero — this scenario directly falsifies that bug.
                             (let
                                 (
-                                    ;; native DPTF lane checked by point-read (deterministic id — no scan reader);
-                                    ;; Z| satellite via the DPOF discovery scan (non-deterministic ids).
+                                    ;; both lanes checked by point-read (asset-id-derived, no scan reader):
+                                    ;; native LP via DPTF tracker; Z| satellite via DPOF tracker (of-pre, above).
                                     (native-lp-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id lp-id owner owner))
-                                    (sat-pre:[string] (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id))
                                 )
                                 (enforce (> native-lp-bal 0.0) "CL05: native LP lane must be live pre-vacate")
-                                (enforce (contains z-lp-id sat-pre) "CL05: Z| satellite must be live pre-vacate")
-                                (print (format "<(pre lanes native-LP-bal={} DPOF={})> " [native-lp-bal sat-pre]))
+                                (enforce (> of-pre 0.0) "CL05: Z| satellite must be live pre-vacate")
+                                (print (format "<(pre lanes native-LP-bal={} Z|-sat-bal={})> " [native-lp-bal of-pre]))
                                 (print (format "<(AQP-POOL|CC_FullVacate — agnostic dual-lane, pool-id only)> => \"{}\"" [
                                     (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
                                 ]))

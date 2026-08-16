@@ -29,7 +29,6 @@
     (defun UR_AQP|PoolVacateSession:object (pool-id:string))
     (defun URD_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string))
     (defun URD_AQP|ActiveDpofTrackerRows:[object] (pool-id:string dpof-id:string))
-    (defun URD_AQP|ActivePoolDpofIds:[string] (pool-id:string))
     (defun URD_AQP|ActiveDpsfTrackerRows:[object] (pool-id:string dpsf-id:string))
     (defun URD_AQP|ActiveDpnfTrackerRows:[object] (pool-id:string dpnf-id:string))
     ;; M5 (#14) UI observability — cross-pool per-user stake legs (owner-side + beneficiary-side).
@@ -2005,24 +2004,6 @@
                     (and?
                         (where "pool-id" (= pool-id))
                         (where "dpof-id" (= dpof-id))
-                    )
-                )
-            )
-        )
-    )
-    (defun URD_AQP|ActivePoolDpofIds:[string] (pool-id:string)
-        @doc "HEAVY: distinct DPOF asset-ids that hold live (balance>0) stake in a pool — on-chain satellite \
-            \ enumeration for class-0/1 (TF-family) full vacate. Class 0 stakes a Z| sleeping-LP DPOF; class 1 \
-            \ stakes Z|/H| DPOF satellites — both keyed under the pool-id in the DPOF tracker. Returns the unique \
-            \ dpof-ids so full vacate drains every satellite (native/F| TF vacated separately). Table scan → use \
-            \ only from HEAVY (CC_/AA_) recipes."
-        (distinct
-            (map
-                (lambda (row:object) (at "dpof-id" row))
-                (filter
-                    (lambda (row:object) (> (at "balance" row) 0.0))
-                    (select AQP|T|DPOFTracker ["dpof-id" "balance"]
-                        (where "pool-id" (= pool-id))
                     )
                 )
             )

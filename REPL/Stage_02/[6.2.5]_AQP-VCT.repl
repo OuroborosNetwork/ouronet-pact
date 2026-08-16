@@ -221,26 +221,23 @@
     (let
         (
             (tracker-pre:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
-            (sat-pre:[string] (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id))
         )
         (enforce (> tracker-pre 0.0) "TX-VCT-CC01: need TF stake inventory")
-        (print (format "<(pre native-TF tracker / live satellites)> => {} / {}" [tracker-pre sat-pre]))
+        (print (format "<(pre native-TF tracker)> => {}" [tracker-pre]))
         ;; THE AGNOSTIC REHAUL VACATE — JUST the pool-id; VCT reads aqp-class, dispatches the family branch,
-        ;; vacates the native TF and every live DPOF satellite (URD_AQP|ActivePoolDpofIds scan) — no UI ids.
+        ;; vacates the native TF (satellites derived from asset-id). Real Z|-satellite drain proven by [6.4] CL05.
         (print (format "<(AQP-POOL|CC_FullVacate pool-id-only)> => \"{}\""
             [(ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)]))
         (let
             (
                 (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
                 (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
-                (sat-post:[string] (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id))
             )
             (map print
                 [
-                    (format "<(post tracker/inv/satellites)> => {} / {} / {}" [tracker-post inv-post sat-post])
+                    (format "<(post tracker/inv)> => {} / {}" [tracker-post inv-post])
                     (expect (format "<<TX-VCT-CC01>> CC_FullVacate native TF cleared got={}" [tracker-post]) 0.0 tracker-post)
                     (expect (format "<<TX-VCT-CC01>> CC_FullVacate TF inventory empty got={}" [inv-post]) 0 inv-post)
-                    (expect (format "<<TX-VCT-CC01>> CC_FullVacate satellites drained got={}" [sat-post]) [] sat-post)
                 ]
             )
         )
@@ -272,15 +269,12 @@
         (
             (owner-id:string KST.ANHD)
             (ouro-id:string "OURO-98c486052a51")
-            ;; native DPTF lane empty via point-read (DPTF lanes are deterministic — no scan reader);
-            ;; DPOF satellite lanes empty via the (kept) discovery scan.
+            ;; native DPTF lane empty via point-read (lanes are asset-id-derived — no scan reader).
             (native-tf-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id owner-id))
-            (sat-pre:[string] (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id))
         )
         (map print
             [
                 (expect (format "<<TX-VCT-CC02>> native TF lane empty got={}" [native-tf-bal]) 0.0 native-tf-bal)
-                (expect (format "<<TX-VCT-CC02>> no live DPOF lanes got={}" [sat-pre]) [] sat-pre)
             ]
         )
         ;; the proof: this call must SUCCEED (return a string), not abort on the empty native lane

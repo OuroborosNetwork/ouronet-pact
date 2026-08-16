@@ -971,18 +971,33 @@
         )
     )
     (defun URD_VacateOrtoFungiblePoolLegs:[object{VCT|VacateNonceLane}] (pool-id:string)
-        @doc "PHASE-1 SCAN (HEAVY) — every live DPOF lane of a pool as {asset-id, legs}: the Z|/H| satellites of a \
-            \ class-0/1 TF-family pool, or the standalone OF of a class-2 pool. Satellites are distinct minted \
-            \ collections (non-deterministic ids) so this DOES need the id-discovery scan (URD_AQP|ActivePoolDpofIds). \
-            \ Legs already carry each nonce's real tracker balance, so the consumer needs no re-resolution."
+        @doc "PHASE-1 — the pool's DPOF lanes as {asset-id, legs}, DERIVED from the pool asset-id (NO table scan, \
+            \ like the TF / collectable URDs): class 2 → the asset-id itself (one standalone OF); class 0/1 \
+            \ (TF-family) → the native asset's sleeping (Z|) + hibernation (H|) DPOF satellites via \
+            \ DPTF::UR_Sleeping / UR_Hibernation (BAR = not linked → dropped). A pool can only hold DPOF stake in \
+            \ these linked ids, so derivation is complete. Legs carry each nonce's real tracker balance."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (c:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
+                (asset-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
             )
-            (map
-                (lambda (dpof-id:string)
-                    (UDC_VacateNonceLane dpof-id (URDC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF)))
-                (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id)
+            (let
+                (
+                    (dpof-ids:[string]
+                        (if (= c 2)
+                            [asset-id]
+                            (filter (lambda (id:string) (!= id BAR))
+                                [
+                                    (ref-DPTF::UR_Sleeping asset-id)
+                                    (ref-DPTF::UR_Hibernation asset-id)
+                                ])))
+                )
+                (map
+                    (lambda (dpof-id:string)
+                        (UDC_VacateNonceLane dpof-id (URDC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF)))
+                    dpof-ids)
             )
         )
     )

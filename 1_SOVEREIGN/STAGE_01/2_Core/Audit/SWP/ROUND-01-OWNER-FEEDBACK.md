@@ -195,3 +195,38 @@ issue is explicitly **not** covered by this fix and remains open. Full diff summ
 `ROUND-02-FIXES.md` Fix #1. Awaiting Round III re-verify.
 
 ---
+
+## C12 (#4C, `SWPU::C_ToggleSwapCapability` no ownership check) — **REFUTED**
+
+**Owner's claim:** only the pool owner can toggle swap; the call chain ends in a capability that composes
+`CAP_Owner`, so there's no bug.
+
+**Verified against source, not accepted on say-so.** The original finding traced `SWP::C_ToggleAddOrSwap`
+(`15_SWP.pact:1337-1413`) and stopped at its **first** `with-capability` block (line 1354):
+`(with-capability (P|GOVERNING-CALLER) ...)`, which wraps only ancillary IGNIS/role bookkeeping (granting
+burn/mint/fee-exemption roles when a pool is *enabled* for the first time) and does trace to two
+trivially-`true` caps (`P|SWP|CALLER`, `SWP|GOV` — confirmed by reading both definitions). That's where the
+"no `CAP_Owner` anywhere in this function" conclusion came from — and it was wrong, because the function has
+a **second, later** `with-capability` block that the original trace never reached.
+
+**The actual persistence write:** line 1408, `(with-capability (SWP|C>ADD-OR-SWAP swpair toggle
+add-or-swap) (XE_CanAddOrSwapToggle swpair toggle add-or-swap))` — runs **unconditionally**, for both
+`toggle=true` and `toggle=false`. `XE_CanAddOrSwapToggle` (`1587-1606`) is the function that actually writes
+`can-swap`/`can-add` to `SWP|Pairs`. The cap gating it, `SWP|C>ADD-OR-SWAP` (`476-489`), ends with
+`(CAP_Owner swpair)` called unconditionally regardless of toggle direction; `CAP_Owner` (`1098-1106`) is
+`ref-DALOS::CAP_EnforceAccountOwnership (UR_OwnerKonto swpair)` — a real, live ownership-guard enforcement
+tied to the pool's actual recorded owner.
+
+**Why the original finding was wrong:** it correctly identified that `SPWU|C>TOGGLE-SWAP` (the outer,
+SWPU-layer cap) has no enforcement on its disable branch — that part is true in isolation. But it treated
+that shallow gate as the *only* protection in the chain and never followed the call into `SWP`'s own
+`C_ToggleAddOrSwap` far enough to find the second `with-capability` block that does the real, unconditional
+ownership check one hop deeper. Same shape as the C13 refutation: a shallow outer gate that looks
+unprotected, backed by a solid enforcement in the module that actually owns the write.
+
+**Verdict: REFUTED.** No live DoS path — any non-owner calling `SWP|C_ToggleSwapCapability` on a pool they
+don't own hits `CAP_EnforceAccountOwnership` inside `XE_CanAddOrSwapToggle` and reverts, on both the enable
+and disable branches. Retracted from CRITICAL; `README.md` and `ISSUES-RANKED.md` annotated accordingly (not
+renumbered, per this round's convention).
+
+---

@@ -24,8 +24,11 @@ finding survives at CRITICAL/HIGH/MEDIUM level. — *C13, retracted*
 #3C **[U|SWP]** StableSwap Newton solver has no domain guard — oversized swaps converge to the wrong root and
 can return more output than the pool actually holds. — *C2*
 
-#4C **[SWPU]** `C_ToggleSwapCapability` has no ownership check anywhere in its call chain — any account can
-disable swapping on any pool, a free, unauthenticated, protocol-wide DoS. — *C12*
+#4C **[SWPU]** ~~`C_ToggleSwapCapability` has no ownership check anywhere in its call chain — any account
+can disable swapping on any pool, a free, unauthenticated, protocol-wide DoS.~~ — **REFUTED 2026-08-17.**
+The write path (`SWP::C_ToggleAddOrSwap` → `XE_CanAddOrSwapToggle`) is gated by `SWP|C>ADD-OR-SWAP`, which
+composes real `CAP_Owner` unconditionally on both toggle directions — the original trace stopped one
+`with-capability` block too early. Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *C12, retracted*
 
 #5C **[SWPU]** Slippage min/max bound is computed and checked against the fee-exclusive gross swap quote,
 never against the actual fee-inclusive amount delivered — a user's declared minimum is not a real floor on
