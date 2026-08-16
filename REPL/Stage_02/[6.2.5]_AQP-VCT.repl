@@ -499,6 +499,67 @@
 (print "=== END TX-VCT-L02 =========================================================")
 (print "")
 ;;
+(begin-tx "TX-VCT-L02b - REHAUL: XB_VacateSemiFungible (pool-id + dpsf only, on-chain scan)")
+(print "")
+(print "=== TX-VCT-L02b — REHAUL DPSF vacate: pool-id + dpsf only (whole collection) ===")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-a:string KST.ANHD)
+        (owner-b:string KST.EMMA)
+        (beneficiary-a:string KST.ANHD)
+        (beneficiary-b:string KST.EMMA)
+        (dpsf-id:string "DHCD-98c486052a51")
+        (pool-name:string "SfStakePool")
+        (nonce-a:integer 1)
+        (nonce-b:integer 2)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+        ]
+    )
+    ;; re-enable stake + re-stake both owners' nonces so the rehaul path has a full collection to scan
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    (print (format "<(restake SF owner-a)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])]))
+    (print (format "<(restake SF owner-b)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])]))
+    (let ((legs-pre:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpsf-id true))))
+        (enforce (> legs-pre 0) "TX-VCT-L02b: need SF stake inventory")
+        (print (format "<(pre SF legs)> => {}" [legs-pre]))
+        ;; THE REHAUL VACATE — pool-id + dpsf only; whole collection scanned + amounts read on-chain
+        (print (format "<(AQP-POOL|XB_VacateSemiFungible)> => \"{}\""
+            [(ref-TS02-C3::AQP-POOL|XB_VacateSemiFungible patron pool-id dpsf-id)]))
+        (let
+            (
+                (tracker-a:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-a beneficiary-a nonce-a))
+                (tracker-b:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-b beneficiary-b nonce-b))
+                (legs-post:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpsf-id true)))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-L02b>> owner-a SF tracker cleared got={}" [tracker-a]) 0.0 tracker-a)
+                    (expect (format "<<TX-VCT-L02b>> owner-b SF tracker cleared got={}" [tracker-b]) 0.0 tracker-b)
+                    (expect (format "<<TX-VCT-L02b>> SF inventory emptied got={}" [legs-post]) 0 legs-post)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-L02b ========================================================")
+(print "")
+;;
 (begin-tx "TX-VCT-L03 - C_AbortVacate mid Legs")
 (print "")
 (print "=== TX-VCT-L03 — Abort vacate-in-progress (stake stays disabled) ===========")
@@ -854,6 +915,64 @@
 (env-sigs [])
 (commit-tx)
 (print "=== END TX-VCT-DPNF02 ======================================================")
+(print "")
+;;
+(begin-tx "TX-VCT-DPNF02b - REHAUL: XB_VacateNonFungible (pool-id + dpnf only, on-chain scan)")
+(print "")
+(print "=== TX-VCT-DPNF02b — REHAUL DPNF vacate: pool-id + dpnf only (whole collection) ===")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpnf-id:string "DHN-98c486052a51")
+        (pool-name:string "DhnVacatePool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        ;; DPNF02 vacated the DHN nonce back to ANHD — reuse that same nonce for the rehaul restake
+        (stake-nonce:integer (at 0 (ref-DPDC::URD_AccountNonces owner-id dpnf-id false)))
+    )
+    ;; DhnVacatePool is Lumy-owned — the vacate owner gate (VCT|C>VACATE) needs PK_Lumy.
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+        ]
+    )
+    ;; stake already enabled after DPNF02's finalize — just re-stake the DHN nonce (owned by ANHD)
+    (print (format "<(restake DHN nonce {})> => \"{}\"" [stake-nonce
+        (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])]))
+    (let ((legs-pre:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpnf-id false))))
+        (enforce (> legs-pre 0) "TX-VCT-DPNF02b: need NF stake inventory")
+        (print (format "<(pre NF legs)> => {}" [legs-pre]))
+        ;; THE REHAUL VACATE — pool-id + dpnf only; whole collection scanned + amounts read on-chain
+        (print (format "<(AQP-POOL|XB_VacateNonFungible)> => \"{}\""
+            [(ref-TS02-C3::AQP-POOL|XB_VacateNonFungible patron pool-id dpnf-id)]))
+        (let
+            (
+                (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+                (legs-post:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpnf-id false)))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-DPNF02b>> NF tracker cleared got={}" [tracker-post]) 0.0 tracker-post)
+                    (expect (format "<<TX-VCT-DPNF02b>> supply restored got={} expected=1" [post-supply]) 1 post-supply)
+                    (expect (format "<<TX-VCT-DPNF02b>> NF inventory emptied got={}" [legs-post]) 0 legs-post)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-DPNF02b =====================================================")
 (print "")
 ;;
 (begin-tx "TX-VCT-DPNF03 - KBN Legs vacate (mint probe)")

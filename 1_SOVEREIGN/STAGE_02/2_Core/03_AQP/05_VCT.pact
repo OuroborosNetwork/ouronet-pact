@@ -18,6 +18,8 @@
     (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
     (defun XB_VacateTrueFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpof-id:string))
+    (defun XB_VacateSemiFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpsf-id:string))
+    (defun XB_VacateNonFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpnf-id:string))
     ;;  [C] Full vacate — one tx: UI dirty-reads inventory, passes full Legs payload, always finalize
     (defun C_FullVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
@@ -1742,25 +1744,49 @@
             (XI_VacateOrtoFungiblePool pool-id dpof-id)
         )
     )
+    (defun XB_VacateSemiFungible:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dpsf-id:string)
+        @doc "Vacate rehaul — external per-kind DPSF (semi-fungible collection) vacate for ONE collectable of a \
+            \ pool (both internal + external). UEV_IMC + VCT|C>VACATE around XI_VacateCollectablePool (son=true). \
+            \ Class-3 pools hold one DPSF collection; use CC_FullVacate to empty the whole pool in one call."
+        (UEV_IMC)
+        (with-capability (VCT|C>VACATE pool-id)
+            (XI_VacateCollectablePool pool-id dpsf-id true)
+        )
+    )
+    (defun XB_VacateNonFungible:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dpnf-id:string)
+        @doc "Vacate rehaul — external per-kind DPNF (non-fungible collection) vacate for ONE collectable of a \
+            \ pool (both internal + external). UEV_IMC + VCT|C>VACATE around XI_VacateCollectablePool (son=false). \
+            \ Class-4 pools hold one DPNF collection; use CC_FullVacate to empty the whole pool in one call."
+        (UEV_IMC)
+        (with-capability (VCT|C>VACATE pool-id)
+            (XI_VacateCollectablePool pool-id dpnf-id false)
+        )
+    )
     (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string)
         @doc "HEAVY (R3 CC_) AGNOSTIC single-tx full vacate: input is JUST the pool-id. Reads the pool's aqp-class \
             \ and vacates EVERY asset type the pool holds by scanning its inventory ON-CHAIN — class 0 (LP farm) & 1 \
             \ (DPTF family) → TF (class 1 also has OF sleep/hib satellites); class 2 → OF; class 3 → SF; class 4 → NF. \
             \ Owner-gated (VCT|C>VACATE). For pools too large for one tx, use the C_MultiStepVacate defpact. \
-            \ REHAUL-IN-PROGRESS: class 0 (TF) + class 2 (OF) live; class 1 (TF+OF) / 3 (SF) / 4 (NF) dispatch pending."
+            \ REHAUL-IN-PROGRESS: class 0 (TF) / 2 (OF) / 3 (SF) / 4 (NF) live; class 1 (TF + OF satellites) pending."
         (UEV_IMC)
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (aqp-class:integer (ref-AQP::UR_AQP|PoolAqpClass pool-id))
+                (asset-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
             )
             (with-capability (VCT|C>VACATE pool-id)
-                (enforce (or (= aqp-class 0) (= aqp-class 2))
-                    "CC_FullVacate: class 1/3/4 dispatch pending (rehaul in progress)")
+                (enforce (contains aqp-class [0 2 3 4])
+                    "CC_FullVacate: class 1 (TF + OF satellites) dispatch pending (rehaul in progress)")
                 (if (= aqp-class 0)
                     (XI_VacateTrueFungiblePool pool-id)
-                    (XI_VacateOrtoFungiblePool pool-id (ref-AQP::UR_AQP|PoolAssetId pool-id))
+                    (if (= aqp-class 2)
+                        (XI_VacateOrtoFungiblePool pool-id asset-id)
+                        (XI_VacateCollectablePool pool-id asset-id (= aqp-class 3))
+                    )
                 )
             )
         )
@@ -2265,6 +2291,36 @@
                 )
                 (XI_VacateOrtoFungibleBatch pool-id dpof-id owner-ids beneficiary-ids nonces-array
                     (URC_ResolveOfDecimalAmountsFromTracker pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+            )
+        )
+    )
+    (defun XI_VacateCollectablePool:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string collectable-id:string son:bool)
+        @doc "Vacate rehaul — self-contained collectable vacate for ONE collection of a pool (son=true → DPSF, \
+            \ son=false → DPNF): SCAN its staker legs ON-CHAIN (URDC_VacateNonceOwnerRowsRaw, kind DPSF/DPNF — \
+            \ the scanned inventory already carries each row's full tracker balance), extract owner/beneficiary/ \
+            \ nonce arrays + the integer amounts (collectable units are whole → round the decimal balance), then \
+            \ bulk custody-return + unwind (XI_VacateCollectableBatch). require P|VCT|RECIPE."
+        (require-capability (P|VCT|RECIPE))
+        (let
+            (
+                (legs:[object{VCT|VacateNonceLeg}]
+                    (URDC_VacateNonceOwnerRowsRaw pool-id collectable-id
+                        (if son VACATE-KIND-DPSF VACATE-KIND-DPNF)))
+            )
+            (let
+                (
+                    (owner-ids:[string] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "owner-id" l)) legs))
+                    (beneficiary-ids:[string] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs))
+                    (nonces-array:[[integer]] (map (lambda (l:object{VCT|VacateNonceLeg}) (at "nonces" l)) legs))
+                    (amounts-array:[[integer]]
+                        (map
+                            (lambda (l:object{VCT|VacateNonceLeg})
+                                (map (lambda (q:decimal) (round q)) (at "amounts" l)))
+                            legs))
+                )
+                (XI_VacateCollectableBatch pool-id collectable-id son
+                    owner-ids beneficiary-ids nonces-array amounts-array)
             )
         )
     )

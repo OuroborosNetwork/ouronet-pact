@@ -206,6 +206,8 @@
     (defun AQP-POOL|CC_FullVacate:string (patron:string pool-id:string))
     (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string pool-id:string))
     (defun AQP-POOL|XB_VacateOrtoFungible:string (patron:string pool-id:string dpof-id:string))
+    (defun AQP-POOL|XB_VacateSemiFungible:string (patron:string pool-id:string dpsf-id:string))
+    (defun AQP-POOL|XB_VacateNonFungible:string (patron:string pool-id:string dpnf-id:string))
     (defun AQP-POOL|C_FullVacateTrueFungible:string
         (
             patron:string
@@ -1669,6 +1671,36 @@
                 )
                 (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateOrtoFungible pool-id dpof-id))
                 (format "Successfully vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|XB_VacateSemiFungible:string
+        (patron:string pool-id:string dpsf-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of the DPSF (semi-fungible) collection of a class-3 pool (one tx). \
+            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateSemiFungible pool-id dpsf-id))
+                (format "Successfully vacated SemiFungible {} of Pool {}." [dpsf-id pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|XB_VacateNonFungible:string
+        (patron:string pool-id:string dpnf-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of the DPNF (non-fungible) collection of a class-4 pool (one tx). \
+            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateNonFungible pool-id dpnf-id))
+                (format "Successfully vacated NonFungible {} of Pool {}." [dpnf-id pool-id])
             )
         )
     )
