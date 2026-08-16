@@ -1770,7 +1770,8 @@
             \ and vacates EVERY asset type the pool holds by scanning its inventory ON-CHAIN — class 0 (LP farm) & 1 \
             \ (DPTF family) → TF (class 1 also has OF sleep/hib satellites); class 2 → OF; class 3 → SF; class 4 → NF. \
             \ Owner-gated (VCT|C>VACATE). For pools too large for one tx, use the C_MultiStepVacate defpact. \
-            \ REHAUL-IN-PROGRESS: class 0 (TF) / 2 (OF) / 3 (SF) / 4 (NF) live; class 1 (TF + OF satellites) pending."
+            \ Dispatch: class 0 (LP farm → native TF) / 1 (DPTF family → native TF + every live DPOF satellite) / \
+            \ 2 (standalone OF) / 3 (DPSF collection) / 4 (DPNF collection)."
         (UEV_IMC)
         (let
             (
@@ -1779,10 +1780,9 @@
                 (asset-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
             )
             (with-capability (VCT|C>VACATE pool-id)
-                (enforce (contains aqp-class [0 2 3 4])
-                    "CC_FullVacate: class 1 (TF + OF satellites) dispatch pending (rehaul in progress)")
-                (if (= aqp-class 0)
-                    (XI_VacateTrueFungiblePool pool-id)
+                (enforce (contains aqp-class [0 1 2 3 4]) "CC_FullVacate: unknown aqp-class")
+                (if (or (= aqp-class 0) (= aqp-class 1))
+                    (XI_VacateTrueFungibleFamilyPool pool-id (= aqp-class 1))
                     (if (= aqp-class 2)
                         (XI_VacateOrtoFungiblePool pool-id asset-id)
                         (XI_VacateCollectablePool pool-id asset-id (= aqp-class 3))
@@ -2269,6 +2269,32 @@
                 (dptf-id:string (ref-AQP::UR_AQP|PoolAssetId pool-id))
             )
             (XI_VacateTrueFungibleFromLegs pool-id dptf-id (URDC_VacateTfOwnerRows pool-id dptf-id))
+        )
+    )
+    (defun XI_VacateTrueFungibleFamilyPool:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string with-satellites:bool)
+        @doc "Vacate rehaul — TF-family full vacate. ALWAYS vacate the native TF leg (XI_VacateTrueFungiblePool). \
+            \ When with-satellites (class 1 DPTF family), ALSO enumerate every DPOF satellite that holds live stake \
+            \ in the pool ON-CHAIN (URD_AQP|ActivePoolDpofIds — HEAVY scan) and vacate each as an OF leg. Class 0 \
+            \ (LP farm) has no OF satellites → TF only. Concatenates all leg cumulators. require P|VCT|RECIPE."
+        (require-capability (P|VCT|RECIPE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                ;; 1) native TF leg (LP token for class 0, native DPTF for class 1)
+                (tf-oc:object{IgnisCollectorV1.OutputCumulator} (XI_VacateTrueFungiblePool pool-id))
+                ;; 2) class-1 only: one OF vacate per DPOF satellite with live stake
+                (sat-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                    (if with-satellites
+                        (map
+                            (lambda (dpof-id:string) (XI_VacateOrtoFungiblePool pool-id dpof-id))
+                            (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id))
+                        []
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ [tf-oc] sat-ocs) [])
         )
     )
     (defun XI_VacateOrtoFungiblePool:object{IgnisCollectorV1.OutputCumulator}

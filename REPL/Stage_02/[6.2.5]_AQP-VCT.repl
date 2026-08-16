@@ -195,6 +195,62 @@
 (print "=== END TX-VCT-TF01b =======================================================")
 (print "")
 ;;
+(begin-tx "TX-VCT-CC01 - REHAUL: CC_FullVacate agnostic (class-1 pool, pool-id only)")
+(print "")
+(print "=== TX-VCT-CC01 — REHAUL agnostic full vacate: CC_FullVacate(pool-id) on class-1 ===")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (pool-name:string "TfStakePool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (enforce (= 1 (ref-AQP::UR_AQP|PoolAqpClass pool-id)) "TX-VCT-CC01: expected a class-1 pool")
+    ;; re-stake 100 OURO so the agnostic dispatcher has native-TF inventory to scan + vacate
+    (print (format "<(restake 100 for CC_FullVacate)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 100.0)]))
+    (let
+        (
+            (tracker-pre:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+            (sat-pre:[string] (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id))
+        )
+        (enforce (> tracker-pre 0.0) "TX-VCT-CC01: need TF stake inventory")
+        (print (format "<(pre native-TF tracker / live satellites)> => {} / {}" [tracker-pre sat-pre]))
+        ;; THE AGNOSTIC REHAUL VACATE — JUST the pool-id; VCT reads aqp-class, dispatches the family branch,
+        ;; vacates the native TF and every live DPOF satellite (URD_AQP|ActivePoolDpofIds scan) — no UI ids.
+        (print (format "<(AQP-POOL|CC_FullVacate pool-id-only)> => \"{}\""
+            [(ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)]))
+        (let
+            (
+                (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+                (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+                (sat-post:[string] (ref-AQP::URD_AQP|ActivePoolDpofIds pool-id))
+            )
+            (map print
+                [
+                    (format "<(post tracker/inv/satellites)> => {} / {} / {}" [tracker-post inv-post sat-post])
+                    (expect (format "<<TX-VCT-CC01>> CC_FullVacate native TF cleared got={}" [tracker-post]) 0.0 tracker-post)
+                    (expect (format "<<TX-VCT-CC01>> CC_FullVacate TF inventory empty got={}" [inv-post]) 0 inv-post)
+                    (expect (format "<<TX-VCT-CC01>> CC_FullVacate satellites drained got={}" [sat-post]) [] sat-post)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-CC01 ========================================================")
+(print "")
+;;
 (begin-tx "TX-VCT-TF02 - C_VacateTrueFungibleLegs finalize")
 (print "")
 (print "=== TX-VCT-TF02 — TF Legs vacate (1 batch finalize=true) ===================")
