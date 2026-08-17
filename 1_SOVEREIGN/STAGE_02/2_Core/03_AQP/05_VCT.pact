@@ -2287,12 +2287,15 @@
         )
     )
     (defun XI_ClearVacateInProgress:string (pool-id:string)
+        @doc "Abort/clear: clear vacate-in-progress AND unfreeze the pool's FVTs (collect+inject). Stake stays \
+            \ disabled (ops re-enable via C_EnablePoolStake) — matches C_AbortVacate semantics."
         ;; SECURE: granted by VCT|C>ABORT-VACATE-POOL / finalize path.
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
             (ref-AQP::XE_SetVacateJobState pool-id false "" "" "")
+            (XI_SetPoolFvtsVacateFrozen pool-id false)
         )
     )
     (defun XI_MaybeFinalizeVacate:string
