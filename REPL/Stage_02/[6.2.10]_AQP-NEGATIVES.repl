@@ -1,0 +1,59 @@
+;;
+;; REPL/Stage_02/[6.2.10]_AQP-NEGATIVES.repl — AQP negative-path coverage (Track C).
+;; IMC boundary: the ONLY supported client path is Talos. Every sovereign-core C_/CC_/X entrypoint
+;; opens with UEV_IMC, so a DIRECT ref-CORE::fn call (bypassing the TS02-C3 shell) must fail — even
+;; when made by the pool/asset OWNER (so the owner gate passes and UEV_IMC is the isolated cause).
+;; Loaded by REPL/Stage_02/[6.2]_AQP.repl after [6.2.5]. Assumes the [6.2.1-5] entities exist.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.10]_AQP-NEGATIVES.repl")
+(print "================================================================")
+(print "Legend: <<TX-AQP-NEG-*>> expect-failure lines — direct core calls must be rejected.")
+(print "")
+;;
+(begin-tx "TX-AQP-NEG-IMC1 - VCT/FVT/MTX core calls bypassing Talos must fail UEV_IMC")
+(print "")
+(print "=== TX-AQP-NEG-IMC1 — direct AQP-VCT / AQP-FVT / MTX-AQP calls rejected (Talos only) ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; ANHD is the OWNER of these entities — owner gate passes, so the ONLY thing that rejects is UEV_IMC.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-MTX:module{AqpMtxV1} MTX-AQP)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
+    )
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-AQP-NEG-IMC1>> direct AQP-VCT::CC_FullVacate rejected (UEV_IMC — Talos only)" [])
+                (ref-VCT::CC_FullVacate pool-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-IMC1>> direct AQP-VCT::C_AbortVacate rejected (UEV_IMC)" [])
+                (ref-VCT::C_AbortVacate pool-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_Inject rejected (UEV_IMC)" [])
+                (ref-FVT::CC_Inject patron fvt-id ouro-id 1.0))
+            (expect-failure
+                (format "<<TX-AQP-NEG-IMC1>> direct AQP-FVT::CC_SweepRevokeAnchor rejected (UEV_IMC)" [])
+                (ref-FVT::CC_SweepRevokeAnchor patron anchor-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-IMC1>> direct MTX-AQP::C_2|Inject rejected (UEV_IMC)" [])
+                (ref-MTX::C_2|Inject patron fvt-id ouro-id 1.0))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-AQP-NEG-IMC1 =====================================================")
+(print "")
+(print "=== END FILE [6.2.10]_AQP-NEGATIVES.repl =====================================")
+(print "")

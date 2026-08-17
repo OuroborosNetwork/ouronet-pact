@@ -18,4 +18,5 @@
 (load "[6.2.3]_AQP-POOL.repl")    ;; POOL — pool issue, score slots, custody trackers, sync
 (load "[6.2.4]_AQP-FVT.repl")     ;; FVT  — self-loads FVT-OF/-DC/-NF (RPS inject/collect, stake flows)
 (load "[6.2.5]_AQP-VCT.repl")     ;; VCT  — pool-owner vacate (Full + Legs), all asset kinds
+(load "[6.2.10]_AQP-NEGATIVES.repl") ;; NEG  - IMC boundary + owner/state negatives (Track C)
 
