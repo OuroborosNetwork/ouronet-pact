@@ -1340,43 +1340,6 @@
             (fold (and) true [(> tot 0) (<= tot VACATE-MAX-NONCES)])
         )
     )
-    (defun URC_VacateFullBatchLegParityOk:bool
-        (owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
-        @doc "Full vacate: owner/beneficiary/nonce legs same positive length ≤ VACATE-FULL-MAX-LEGS."
-        (let
-            (
-                (l:integer (length owner-ids))
-            )
-            (fold
-                (and)
-                true
-                [
-                    (> l 0)
-                    (<= l VACATE-FULL-MAX-LEGS)
-                    (= l (length beneficiary-ids))
-                    (= l (length nonces-array))
-                ]
-            )
-        )
-    )
-    (defun URC_VacateFullBatchNonceTotalOk:bool (nonces-array:[[integer]])
-        @doc "Full vacate: total nonce count across legs is positive and ≤ VACATE-FULL-MAX-NONCES."
-        (let
-            (
-                (tot:integer
-                    (fold
-                        (+)
-                        0
-                        (map
-                            (lambda (ns:[integer]) (length ns))
-                            nonces-array
-                        )
-                    )
-                )
-            )
-            (fold (and) true [(> tot 0) (<= tot VACATE-FULL-MAX-NONCES)])
-        )
-    )
     (defun URC_VacateCollectableLegBeneficiaryOk:bool
         (pool-id:string collectable-id:string son:bool owner-id:string beneficiary-id:string nonces:[integer])
         @doc "Vacate: each nonce tracker row beneficiary-id must equal the supplied beneficiary-id."
@@ -1561,28 +1524,6 @@
             )
         )
     )
-    (defun URC_VacateOrtoLegsBeneficiaryOk:bool
-        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
-        @doc "Full OF vacate: bind every leg's nonces to a real tracker row whose beneficiary equals the \
-            \ supplied beneficiary (blocks redirecting another staker's nonce). Amounts are whole-nonce (tracker-derived)."
-        (let
-            (
-                (l:integer (length owner-ids))
-            )
-            (if (> l 0)
-                (fold (and) true
-                    (map
-                        (lambda (idx:integer)
-                            (URC_VacateOrtoLegBeneficiaryOk
-                                pool-id dpof-id (at idx owner-ids) (at idx beneficiary-ids) (at idx nonces-array))
-                        )
-                        (enumerate 0 (- l 1))
-                    )
-                )
-                true
-            )
-        )
-    )
     (defun URC_VacateCollectableLegsOk:bool
         (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string]
          nonces-array:[[integer]] amounts-array:[[integer]])
@@ -1606,28 +1547,6 @@
                                         pool-id collectable-id son (at idx owner-ids) (at idx beneficiary-ids) (at idx nonces-array) (at idx amounts-array))
                                 ]
                             )
-                        )
-                        (enumerate 0 (- l 1))
-                    )
-                )
-                true
-            )
-        )
-    )
-    (defun URC_VacateCollectableLegsBeneficiaryOk:bool
-        (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
-        @doc "Full DPSF/DPNF vacate: bind every leg's nonces to a real tracker row whose beneficiary equals \
-            \ the supplied beneficiary (blocks redirecting another staker's nonce)."
-        (let
-            (
-                (l:integer (length owner-ids))
-            )
-            (if (> l 0)
-                (fold (and) true
-                    (map
-                        (lambda (idx:integer)
-                            (URC_VacateCollectableLegBeneficiaryOk
-                                pool-id collectable-id son (at idx owner-ids) (at idx beneficiary-ids) (at idx nonces-array))
                         )
                         (enumerate 0 (- l 1))
                     )

@@ -1512,7 +1512,6 @@
 (print "")
 (print "=== END FILE [6.2.5]_AQP-VCT.repl ============================================")
 ;;
-;;GAS> VCT gas / comparison suites — profiling only (need the VCTGAS probe module + synth accounts).
-;;GAS> Run via REPL/Kursan/VCT-gas-sweep.repl / VCT-full-vacate-gas.repl / VCT-tf-vacate-v1-v2-compare.repl:
-;;GAS>   [6.2.6]_AQP-VCT-GAS-BASE.repl · [6.2.6]_AQP-VCT-GAS.repl · [6.2.7]_AQP-VCT-FULL-GAS.repl
-;;GAS>   Kursan/6.2.10_AQP-VCT-TF-GAS-LADDER.repl · Kursan/6.2.10_AQP-VCT-TF-V1-V2-COMPARE.repl
+;;GAS> VCT batch-vacate gas suites — profiling only (need the VCTGAS probe module + synth accounts).
+;;GAS> Run via REPL/Kursan/VCT-gas-sweep.repl:
+;;GAS>   [6.2.6]_AQP-VCT-GAS-BASE.repl · [6.2.6]_AQP-VCT-GAS.repl (CC_BatchVacate* chunk-gas ladders).

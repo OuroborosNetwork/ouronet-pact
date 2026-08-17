@@ -123,15 +123,15 @@ Sovereign recipes live in **AQP-FVT** (`C_*StakeFlow`). Talos resolves amounts/n
 
 | Talos | Args (summary) | Use for | Assumes | Limits / notes | Phase |
 |-------|----------------|---------|---------|----------------|------:|
-| `AQP-POOL\|C_FullVacateTrueFungible` | patron, pool-id, dptf-id, owners, bens, amounts | One-tx TF vacate | Pool owner; inventory fits gas; UI builds Legs via plan N=1 | Auto begin+finalize | F |
-| `AQP-POOL\|C_FullVacateOrtoFungible` | … dpof-id, owners, bens, nonces, amounts | One-tx OF vacate | Same; OF amounts may be zero-sentinel | — | F |
-| `AQP-POOL\|C_FullVacateSemiFungible` | … dpsf-id, owners, bens, nonces, amounts | One-tx DPSF vacate | Same | — | F |
-| `AQP-POOL\|C_FullVacateNonFungible` | … dpnf-id, owners, bens, nonces, amounts | One-tx DPNF vacate | Same | — | F |
-| `AQP-POOL\|C_VacateTrueFungibleLegs` | … owners, bens, amounts, finalize | Batched TF vacate | Pool owner; gas-safe batch | Auto-begin; finalize iff asset empty | F |
-| `AQP-POOL\|C_VacateOrtoFungibleLegs` | … nonces, amounts, finalize | Batched OF | Amounts may be zero-sentinel | Same | F |
-| `AQP-POOL\|C_VacateSemiFungibleLegs` | … nonces, amounts, finalize | Batched DPSF | — | Same | F |
-| `AQP-POOL\|C_VacateNonFungibleLegs` | … nonces, amounts, finalize | Batched DPNF | — | Same | F |
-| `AQP-POOL\|C_AbortVacate` | patron, pool-id | Clear vacate-in-progress | Pool owner | **Stake stays disabled** | F |
+| `AQP-POOL\|CC_FullVacate` | patron, pool-id | One-tx AGNOSTIC full vacate (any class) | Pool owner; whole pool empties in one tx | VCT reads aqp-class, scans inventory on-chain, drains every stream, auto begin+finalize | F |
+| `AQP-POOL\|XB_VacateTrueFungible` | patron, pool-id | One-tx vacate of the pool's TF leg | Pool owner | On-chain scan; auto begin+finalize | F |
+| `AQP-POOL\|XB_VacateOrtoFungible` | patron, pool-id, dpof-id | One-tx vacate of ONE OF asset | Pool owner | On-chain scan | F |
+| `AQP-POOL\|XB_VacateSemiFungible` | patron, pool-id, dpsf-id | One-tx vacate of the DPSF collection | Pool owner (class 3) | On-chain scan | F |
+| `AQP-POOL\|XB_VacateNonFungible` | patron, pool-id, dpnf-id | One-tx vacate of the DPNF collection | Pool owner (class 4) | On-chain scan | F |
+| `AQP-POOL\|CC_BatchVacateTrueFungible` | patron, pool-id, dptf-id, owners, bens, amounts | One UI-sliced TF batch | Pool owner; disjoint gas-safe slice; per-leg amount == tracker | No finalize flag: first batch auto-begins (freezes), the batch that empties the pool auto-finalizes | F |
+| `AQP-POOL\|CC_BatchVacateOrtoFungible` | patron, pool-id, dpof-id, owners, bens, nonces | One UI-sliced OF batch | Pool owner; amounts resolved on-chain from tracker | Same auto-begin / auto-finalize | F |
+| `AQP-POOL\|CC_BatchVacateCollectables` | patron, pool-id, collectable-id, son, owners, bens, nonces, amounts | One UI-sliced DPSF (son=true) / DPNF (son=false) batch | Pool owner | Same auto-begin / auto-finalize | F |
+| `AQP-POOL\|C_AbortVacate` | patron, pool-id | Clear vacate-in-progress mid-campaign | Pool owner | **Stake stays disabled** (ops re-enable) | F |
 
 **UI offline helpers (not Talos):** `AQP-VCT.URD_Vacate*Inventory`, `URDC_BuildVacateSlicePlan`, `UC_ComputeMinSliceCount`.  
 Full protocol: [README_VACATE_UI.md](README_VACATE_UI.md).
