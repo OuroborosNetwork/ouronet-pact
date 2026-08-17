@@ -204,6 +204,12 @@
         (patron:string pool-id:string)
     )
     (defun AQP-POOL|CC_FullVacate:string (patron:string pool-id:string))
+    (defun AQP-POOL|CC_BatchVacateTrueFungible:string
+        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
+    (defun AQP-POOL|CC_BatchVacateOrtoFungible:string
+        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
+    (defun AQP-POOL|CC_BatchVacateCollectables:string
+        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string pool-id:string))
     (defun AQP-POOL|XB_VacateOrtoFungible:string (patron:string pool-id:string dpof-id:string))
     (defun AQP-POOL|XB_VacateSemiFungible:string (patron:string pool-id:string dpsf-id:string))
@@ -1641,6 +1647,55 @@
                 )
                 (ref-IGNIS::C_Collect patron (ref-VCT::CC_FullVacate pool-id))
                 (format "Successfully full-vacated Pool {} (all asset types)." [pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CC_BatchVacateTrueFungible:string
+        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
+        @doc "One TF batch of a UI-sliced vacate campaign. The first successful batch freezes the pool + its FVTs; \
+            \ the batch that empties the pool auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::CC_BatchVacateTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
+                (format "Batch-vacated {} TF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dptf-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CC_BatchVacateOrtoFungible:string
+        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
+        @doc "One OF batch of a UI-sliced vacate campaign (amounts resolved on-chain from the tracker). First batch \
+            \ freezes; the emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::CC_BatchVacateOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+                (format "Batch-vacated {} OF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dpof-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CC_BatchVacateCollectables:string
+        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "One DPSF (son=true) / DPNF (son=false) batch of a UI-sliced vacate campaign. First batch freezes; the \
+            \ emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::CC_BatchVacateCollectables pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
+                (format "Batch-vacated {} collectable leg(s) on Pool {} (asset {}, son {})."
+                    [(length owner-ids) pool-id collectable-id son])
             )
         )
     )
