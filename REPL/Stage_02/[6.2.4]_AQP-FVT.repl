@@ -918,6 +918,80 @@
 (print "")
 (print "=== END TX-FVT-09 ==========================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-FVT-10 - M5 non-self TF stake/unstake (owner ANHD, foreign beneficiary EMMA)")
+(print "")
+(print "=== TX-FVT-10 — M5 foreign-beneficiary TF stake/unstake (no stranding) ======")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (foreign-ben:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "TfStakeScore")
+        (pool-name:string "TfStakePool")
+        (stake-amount:decimal 50.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        ;; Deltas (robust to FVT-09's ANHD self-stake leftover in TfStakePool):
+        (pre-owner-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
+        (pre-ben-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id foreign-ben))
+        (pre-emma-deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore foreign-ben pool-id score-id))
+        (pre-anhd-deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner-id pool-id score-id))
+    )
+    (enforce (>= pre-owner-supply stake-amount) "TX-FVT-10: owner needs OURO for the non-self proof")
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ;;==== TX-FVT-10 · 01 · owner ANHD stakes FOR foreign beneficiary EMMA ====
+    (print "--- [TX-FVT-10 · 01 · stake owner=ANHD, beneficiary=EMMA] ---")
+    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
+    (let
+        (
+            (post-ben-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id foreign-ben))
+            (post-emma-deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore foreign-ben pool-id score-id))
+            (post-anhd-deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore owner-id pool-id score-id))
+        )
+        (map print
+            [
+                (format "<(TX-FVT-10 (owner,EMMA) row Δ / EMMA deb Δ / ANHD deb Δ)> => {} / {} / {}" [(- post-ben-bal pre-ben-bal) (- post-emma-deb pre-emma-deb) (- post-anhd-deb pre-anhd-deb)])
+                (expect (format "<<TX-FVT-10>> stake landed at (owner, FOREIGN beneficiary EMMA) row Δ={} expected={}" [(- post-ben-bal pre-ben-bal) stake-amount]) stake-amount (- post-ben-bal pre-ben-bal))
+                (expect (format "<<TX-FVT-10>> FOREIGN beneficiary EMMA earns weight (deb up) Δ={}" [(- post-emma-deb pre-emma-deb)]) true (> post-emma-deb pre-emma-deb))
+                (expect (format "<<TX-FVT-10>> owner ANHD earns NOTHING from a non-self stake (deb unchanged) got={} pre={}" [post-anhd-deb pre-anhd-deb]) pre-anhd-deb post-anhd-deb)
+            ]
+        )
+    )
+    ;;==== TX-FVT-10 · 02 · non-self unstake removes EMMA's weight + clears the foreign row ====
+    (print "--- [TX-FVT-10 · 02 · unstake owner=ANHD, beneficiary=EMMA] ---")
+    (ref-TS02-C3::AQP-POOL|C_UnstakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
+    (let
+        (
+            (post2-ben-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id foreign-ben))
+            (post2-emma-deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore foreign-ben pool-id score-id))
+        )
+        (map print
+            [
+                (format "<(TX-FVT-10 post ben-bal / EMMA deb)> => {} / {}" [post2-ben-bal post2-emma-deb])
+                (expect (format "<<TX-FVT-10>> foreign tracker back to pre after non-self unstake got={} expected={}" [post2-ben-bal pre-ben-bal]) pre-ben-bal post2-ben-bal)
+                (expect (format "<<TX-FVT-10>> EMMA weight removed on unstake (deb back to pre) got={} expected={}" [post2-emma-deb pre-emma-deb]) pre-emma-deb post2-emma-deb)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-10 ==========================================================")
+(print "")
 ;;<====================================================================>
 ;; FVT sub-suites — bundled here so [6.2.4] is the SINGLE FVT test entry.
 ;; (Previously loaded separately by [6.2]_AQP.repl; moved in for one-file-per-module.)

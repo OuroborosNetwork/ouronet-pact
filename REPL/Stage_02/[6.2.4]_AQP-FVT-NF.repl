@@ -356,5 +356,79 @@
 (commit-tx)
 (print "=== END TX-FVT-NF-04 =======================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-FVT-NF-05 - M5 non-self NF stake/unstake (owner ANHD, foreign beneficiary EMMA)")
+(print "")
+(print "=== TX-FVT-NF-05 — M5 foreign-beneficiary NF stake/unstake (no stranding) ===")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (foreign-ben:string KST.EMMA)
+        (dpnf-id:string "DHB-98c486052a51")
+        (pool-name:string "NfSyncPool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        ;; ANHD holds the DHB nonce (returned by NF-03) — stake it FOR the foreign beneficiary EMMA.
+        (owned:[integer] (ref-DPDC::URD_AccountNonces owner-id dpnf-id false))
+    )
+    (enforce (> (length owned) 0) "TX-FVT-NF-05: owner needs a held DHB nonce for the non-self proof")
+    (let
+        (
+            (stake-nonce:integer (at 0 owned))
+        )
+        (let
+            (
+                (pre-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+            )
+            ;;==== TX-FVT-NF-05 · 01 · owner ANHD stakes FOR foreign beneficiary EMMA ====
+            (print "--- [TX-FVT-NF-05 · 01 · stake owner=ANHD, beneficiary=EMMA] ---")
+            (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id foreign-ben dpnf-id [stake-nonce])
+            (let
+                (
+                    (ben-bal:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id foreign-ben stake-nonce))
+                    (self-bal:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id owner-id stake-nonce))
+                )
+                (map print
+                    [
+                        (format "<(TX-FVT-NF-05 (owner,EMMA) / (owner,owner) rows)> => {} / {}" [ben-bal self-bal])
+                        (expect (format "<<TX-FVT-NF-05>> stake landed at (owner, FOREIGN beneficiary EMMA) row got={}" [ben-bal]) true (> ben-bal 0.0))
+                        (expect (format "<<TX-FVT-NF-05>> self-key row (owner,owner) EMPTY (no stranding) got={}" [self-bal]) 0.0 self-bal)
+                    ]
+                )
+            )
+            ;;==== TX-FVT-NF-05 · 02 · non-self unstake returns the nonce to the OWNER (ANHD) ====
+            (print "--- [TX-FVT-NF-05 · 02 · unstake owner=ANHD, beneficiary=EMMA] ---")
+            (ref-TS02-C3::AQP-POOL|C_UnstakeNonFungibleCollectable patron pool-id owner-id foreign-ben dpnf-id [stake-nonce] [1])
+            (let
+                (
+                    (ben-bal-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id foreign-ben stake-nonce))
+                    (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+                )
+                (map print
+                    [
+                        (format "<(TX-FVT-NF-05 post ben-bal / owner supply)> => {} / {}" [ben-bal-post post-supply])
+                        (expect (format "<<TX-FVT-NF-05>> foreign tracker cleared after non-self unstake got={}" [ben-bal-post]) 0.0 ben-bal-post)
+                        (expect (format "<<TX-FVT-NF-05>> nonce returned to the OWNER ANHD (not EMMA) got={} expected={}" [post-supply pre-supply]) pre-supply post-supply)
+                    ]
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-NF-05 =======================================================")
+(print "")
 (print "=== END FILE [6.2.4]_AQP-FVT-NF.repl ========================================")
 (print "")
