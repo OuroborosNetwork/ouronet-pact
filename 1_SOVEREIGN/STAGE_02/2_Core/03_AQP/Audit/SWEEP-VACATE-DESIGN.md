@@ -211,11 +211,81 @@ Remaining checks: confirm `collect`/reward-claim only READS `G` (never advances 
 begin (settle ≤7 members) + finalize (set ≤7 aggregates) are bounded/cheap, drain per-tx bounded by beneficiary count
 (UI calibrates).
 
-### 5.7 Build order (Phase 4 remaining)
-(1) inject-block during vacate-in-progress → (2) `C_VacateBegin` (freeze + settle members) + re-based tracker-absence
-oracle → (3) rework `C_Vacate*Legs` to the drain contract (strip Tier-2) → (4) `C_VacateFinalize` (set-to-empty) →
-(5) prove: 2 disjoint-beneficiary parallel drain txs with NO conflict + full begin→drain→finalize empties pool with
-rewards conserved → (6) delete dead L9/#20 + hash fields.
+### 5.7 Build phases (Phase 4 remaining) [REVISED 2026-08-17 — serial-execution model]
+
+**Key simplification (owner, authoritative — SUPERSEDES §5.3's freeze-at-begin/settle-once/hoist-Tier-2 design):**
+Chainweb executes txs **serially** — the UI "fires in parallel" only means submitting to the mempool; miners integrate
+txs into blocks **one at a time**, and at ~1.8–1.95M gas per vacate tx that is effectively **one vacate tx per block**
+(≈2 blocks/min → e.g. 20 batches ≈ 10 min). So there are **no same-block write conflicts**: every batch executes
+against committed state and composes its delta. Consequences: **no Tier-2 hoisting** (`nzs`, Score totals, `RPS|Member`
+stay maintained per batch); **no "partition by beneficiary" constraint** (a beneficiary split across batches drains
+incrementally); first/last detection is trivially safe.
+
+- **Phase 1 — Freeze layer (foundation, cross-module).** Per-FVT `vacate-frozen` flag (small table, `with-default-read`
+  false); extend `XI_EnsureVacateBegun` → set `vacate-in-progress` + disable stake + freeze the pool's ≤7
+  employed-score FVTs (walk `URC_PoolActiveScoreIds` → `UR_SCR|ScoreFvtLink`); add rejects to **unstake** (pool, on
+  `vacate-in-progress`), **collect** + **inject** (FVT, on `vacate-frozen`); `XI_MaybeFinalizeBatchVacate` → when
+  `URC_PoolFullyVacated` (all ≤7 scores `nzs==0`) clear `vacate-in-progress` + re-enable stake + unfreeze the FVTs.
+  Prove isolated (begin freezes; the 4 ops reject mid-vacate; finalize lifts all).
+- **Phase 2 — 3 batch functions.** `CC_BatchVacate{TrueFungible,OrtoFungible,Collectables}` + `VCT|C>BATCH-VACATE`
+  cap (owner-gate + validate the supplied slice vs the live tracker per kind — `URC_VacateTfLegBalancesOk` /
+  `URC_VacateOrtoNoncesSufficient`+`…LegBeneficiaryOk` / `URC_VacateCollectableNoncesSufficient`+`…LegBeneficiaryOk`)
+  + Talos wrappers + IGNIS. Skeleton (identical, only the consume line differs):
+  `EnsureVacateBegun → XI_Vacate<Kind>FromLegs → MaybeFinalizeBatchVacate`. Prove single-batch each.
+- **Phase 3 — E2E multi-tx proofs.** Multi-batch drain (auto begin→N slices→finalize); split beneficiary (one
+  beneficiary's nonces across 2 batches, `nzs`→0 only on the 2nd); dual pool (class-1 TF series + OF series, finalize
+  only after BOTH drain).
+- **Phase 4 — Cleanup (deferred end pass).** Remove superseded `C_Vacate*Legs` / `C_FullVacate*` /
+  `C_AbortVacate` + old begin/finalize surface, dead L9/#20 + hash fields, function-ordering sweep.
+
+### 5.8 Split capability — UI batch-construction spec
+
+The UI drives the whole campaign, so the split model must be precise. A vacate **leg** = one `(owner-id,
+beneficiary-id)` pair's stake in ONE asset lane (TF: `{owner,beneficiary,balance}`; nonce kinds:
+`{owner,beneficiary,nonces[],amounts[]}`). Both `owner` and `beneficiary` matter — one owner may stake for hundreds
+of beneficiaries, and one beneficiary may be staked-for by many owners; each `(owner,beneficiary)` is its own leg.
+
+**Where a split IS possible — two granularities:**
+1. **Across legs — ALL asset types (TF, OF, SF, NF).** The pool's legs for one asset are partitioned into slices;
+   each batch tx carries a disjoint subset of legs. This is the primary split (hundreds of `(owner,beneficiary)` legs).
+2. **Within a leg, by nonces — nonce kinds ONLY (OF, SF, NF).** A nonce leg's `(nonces[],amounts[])` is partitioned;
+   a slice may carry a *subset* of one beneficiary's nonces (e.g. 800 NFTs → 400 + 400). TF has no nonces (one
+   fungible balance) → **not** splittable within a leg.
+
+**Atomic unit — indivisible:**
+- **One nonce** (OF/SF/NF): vacated in full — its `amount` must equal that nonce's live tracker balance
+  (`URC_Vacate*NoncesSufficient`). No partial-within-a-nonce. A single nonce's custody-return + unwind is O(1) → a
+  nonce always fits one tx, so splitting by nonce is always sufficient.
+- **One TF `(owner,beneficiary)` balance**: vacated in full (`URC_VacateTfLegBalancesOk`). O(1) per leg → always fits
+  one tx; TF is atomic at the leg level (split only *across* legs).
+
+**Gas sizing (UI responsibility):** per-leg/per-nonce cost is data-dependent (≤7 score updates + custody-return +
+settle). The UI estimates and packs slices under the ~1.9M ceiling; a tx that fails on gas → re-split smaller +
+resubmit. No fixed on-chain leg cap (`VACATE-MAX-LEGS` is dead).
+
+**Disjointness + validation:** slices MUST be disjoint (no leg/nonce in two slices) — otherwise the second tx
+double-vacates an already-zeroed row and fails validation. Each supplied leg/nonce is validated against the LIVE
+tracker at execution (amount == balance per nonce/leg; beneficiary matches the row), so a stale slice fails and the
+UI re-reads + rebuilds.
+
+**Snapshot validity:** once the FIRST batch establishes the freeze (`vacate-in-progress` + per-FVT `vacate-frozen`),
+no external op (stake/unstake/collect/inject) can mutate the trackers, so the UI's initial dirty-read snapshot stays
+valid for every subsequent batch. Only the first batch risks pre-freeze staleness (retry-safe); a UI may instead fire
+a freeze-only prime batch first, then scan.
+
+**Serial-drain correctness:** because blocks integrate txs serially, a beneficiary split across slices drains
+incrementally — each slice subtracts its portion of that beneficiary's score/anchor/RPS rows; the score's `nzs` flips
+to 0 only when the beneficiary's TOTAL stake (all their legs/nonces, TF + OF) is gone → `URC_PoolFullyVacated`
+(finalize) fires only on the genuinely-last batch, unifying TF and OF series automatically (§5-mixed-pool note).
+
+**Dual pools (class 0/1):** the UI dirty-reads BOTH `URD_VacateTrueFungiblePoolLegs` and
+`URD_VacateOrtoFungiblePoolLegs`, builds a TF series (`CC_BatchVacateTrueFungible`) AND an OF series
+(`CC_BatchVacateOrtoFungible`), and fires them as ONE campaign; finalize fires only when the whole pool is empty.
+
+**UI algorithm:** (1) read `aqp-class` + `PoolAssetId`; (2) dirty-read the class's lanes (TF+OF for 0/1; OF for 2;
+DPSF/DPNF for 3/4) via the `URD_Vacate*PoolLegs` scanners; (3) flatten to legs, partition into disjoint gas-bounded
+slices (across legs; within a leg by nonces for nonce kinds); (4) fire `CC_BatchVacate<Kind>` per slice; (5) on a
+validation/gas failure, re-read the affected lane and rebuild the remaining slices.
 
 ## 6. Cross-cutting decisions (recommendations)
 
