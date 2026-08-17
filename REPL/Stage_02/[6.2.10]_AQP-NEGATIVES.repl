@@ -60,6 +60,51 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
+(begin-tx "TX-AQP-NEG-IMC2 - ANK/SCORE/POOL core calls bypassing Talos must fail UEV_IMC")
+(print "")
+(print "=== TX-AQP-NEG-IMC2 — direct AQP-ANK / AQP-SCR / AQP-POOL calls rejected (Talos only) ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; ANHD owns these entities — owner gate passes, so UEV_IMC is the isolated rejection cause.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
+    )
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-AQP-NEG-IMC2>> direct AQP-ANK::C_RevokeAnchor rejected (UEV_IMC — Talos only)" [])
+                (ref-ANK::C_RevokeAnchor anchor-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-IMC2>> direct AQP-SCR::C_EnableDebBoost rejected (UEV_IMC)" [])
+                (ref-SCR::C_EnableDebBoost score-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-IMC2>> direct AQP-POOL::C_DisablePoolStake rejected (UEV_IMC)" [])
+                (ref-AQP::C_DisablePoolStake patron pool-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-IMC2>> direct AQP-POOL::C_Issue rejected (UEV_IMC)" [])
+                (ref-AQP::C_Issue patron "NegProbePool" ouro-id 1))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-AQP-NEG-IMC2 =====================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
 (begin-tx "TX-AQP-NEG-STATE - stake into a stake-DISABLED pool must fail")
 (print "")
 (print "=== TX-AQP-NEG-STATE — C_StakeTrueFungible into a disabled pool rejected =====")
