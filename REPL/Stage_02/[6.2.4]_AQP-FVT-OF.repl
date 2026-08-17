@@ -393,9 +393,9 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-FVT-07 - C_VacateOrtoFungibleLegs (stateless Legs vacate)")
+(begin-tx "TX-FVT-07 - CC_BatchVacateOrtoFungible (UI-sliced batch vacate)")
 (print "")
-(print "=== TX-FVT-07 — VacateOrtoFungibleLegs finalize=true =========================")
+(print "=== TX-FVT-07 — CC_BatchVacateOrtoFungible (single batch drains → auto-finalize) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -440,19 +440,16 @@
             (pre-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
             (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 1))
             (slice0:object (at 0 (at "slices" plan)))
-            (zero-amts:[[integer]] (ref-VCT::UC_ZeroIntAmountsMatrix (at "nonces-array" slice0)))
         )
         (enforce (> vacate-amount 0.0) "tracker must hold stake before vacate")
         (print (format "<(vacate-nonce vacate-amount)> => {} / {}" [stake-nonce vacate-amount]))
-        (print "--- [TX-FVT-07 · 02 · C_VacateOrtoFungibleLegs finalize] ---")
-        (print (format "<(TS02-C3.AQP-POOL|C_VacateOrtoFungibleLegs)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_VacateOrtoFungibleLegs
+        (print "--- [TX-FVT-07 · 02 · CC_BatchVacateOrtoFungible (single batch drains → auto-finalize)] ---")
+        (print (format "<(TS02-C3.AQP-POOL|CC_BatchVacateOrtoFungible)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|CC_BatchVacateOrtoFungible
                 patron pool-id dpof-id
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
                 (at "nonces-array" slice0)
-                zero-amts
-                true
             )
         ]))
         (print "--- [TX-FVT-07 · 03 · post-vacate expects] ---")
@@ -492,9 +489,9 @@
 (print "=== END TX-FVT-07 ==========================================================")
 (print "")
 ;;
-(begin-tx "TX-FVT-08 - C_FullVacateOrtoFungible (URD-driven one-tx vacate)")
+(begin-tx "TX-FVT-08 - CC_FullVacate (agnostic one-tx vacate, class-2 OF)")
 (print "")
-(print "=== TX-FVT-08 — C_FullVacateOrtoFungible (Legs payload from plan) ===========")
+(print "=== TX-FVT-08 — CC_FullVacate (agnostic; pool-id only; on-chain scan) =======")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -539,22 +536,13 @@
             (inv-count:integer (at "leg-count" (ref-VCT::URD_VacateOfInventory pool-id dpof-id)))
             (tracker-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
             (pre-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
-            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id 2 1))
-            (s0:object (at 0 (at "slices" plan)))
-            (z:[[integer]] (ref-VCT::UC_ZeroIntAmountsMatrix (at "nonces-array" s0)))
         )
         (enforce (> inv-count 0) "URD must show OF vacate inventory before full vacate")
         (enforce (> tracker-pre 0.0) "tracker must hold stake before full vacate")
         (print (format "<(URD_AQP|VacateOfInventory leg-count)> => {}" [inv-count]))
-        (print "--- [TX-FVT-08 · 01 · C_FullVacateOrtoFungible] ---")
-        (print (format "<(TS02-C3.AQP-POOL|C_FullVacateOrtoFungible)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_FullVacateOrtoFungible
-                patron pool-id dpof-id
-                (at "owner-ids" s0)
-                (at "beneficiary-ids" s0)
-                (at "nonces-array" s0)
-                z
-            )
+        (print "--- [TX-FVT-08 · 01 · CC_FullVacate (agnostic, class-2 OF; pool-id only)] ---")
+        (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
         ]))
         (print "--- [TX-FVT-08 · 02 · post full-vacate expects] ---")
         (let

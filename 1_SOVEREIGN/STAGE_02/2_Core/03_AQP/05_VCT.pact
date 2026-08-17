@@ -23,24 +23,6 @@
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpof-id:string))
     (defun XB_VacateSemiFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpsf-id:string))
     (defun XB_VacateNonFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpnf-id:string))
-    ;;  [C] Full vacate — one tx: UI dirty-reads inventory, passes full Legs payload, always finalize
-    (defun C_FullVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun C_FullVacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun C_FullVacateSemiFungible:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dpsf-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun C_FullVacateNonFungible:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dpnf-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    ;;  [C] Stateless batched legs — UI splits inventory; auto-begin; finalize=UI claim when asset empty
-    (defun C_VacateTrueFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal] finalize:bool))
-    (defun C_VacateOrtoFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]] finalize:bool))
-    (defun C_VacateSemiFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dpsf-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]] finalize:bool))
-    (defun C_VacateNonFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
-        (pool-id:string dpnf-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]] finalize:bool))
     (defun C_AbortVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
 )
 
@@ -49,18 +31,21 @@
 ;; =============================================================================
 ;; Two UI variants — pick one per pool × asset stream:
 ;;
-;;   FULL (one tx, Talos wired)
-;;     C_FullVacate*(… Legs payload …) — UI dirty-reads URD/URDC (no scan in C_*), passes the
-;;     full inventory arrays, auto-begin → vacate all → finalize (re-enable stake). Same payload
-;;     shape as Legs; always finalizes (UI-trust, like Legs finalize=true).
+;;   FULL (one tx, Talos wired) — input is JUST the pool-id (+ asset-id for the XB_ per-stream forms)
+;;     CC_FullVacate(pool-id) — AGNOSTIC: VCT reads aqp-class, scans the pool inventory ON-CHAIN
+;;       (lanes derived from asset-id, no UI arrays) and vacates every asset type; auto-begin →
+;;       vacate all → auto-finalize (re-enable stake). Fits a pool that empties inside one tx.
+;;     XB_Vacate{TrueFungible,OrtoFungible,SemiFungible,NonFungible} — one asset stream of a pool,
+;;       same on-chain scan, standalone or as the family branch CC_FullVacate composes.
 ;;
-;;   STATELESS BATCHED LEGS (multi-tx, Talos wired)
-;;     C_Vacate*Legs(..., finalize) — UI dirty-reads URD inventory, splits into gas-safe batches,
-;;     dumps N txs. First successful tx auto-begins (disable stake + vacate-in-progress).
-;;     Last tx sets finalize=true (UI claim that asset emptied — write-only finalize, no on-chain scan).
-;;     If some txs fail, remaining inventory stays; UI re-reads, re-splits, continues.
+;;   STATELESS BATCHED LEGS (multi-tx, Talos wired) — for pools too large to empty in one tx
+;;     CC_BatchVacate{TrueFungible,OrtoFungible,Collectables}(… owner/beneficiary/nonce slice …) —
+;;       UI splits inventory into gas-safe, disjoint (owner,beneficiary[,nonce]) slices and fires N
+;;       parallel txs. There is NO finalize flag: the first batch auto-begins (freeze stake+unstake+
+;;       the pool's FVTs), each batch drains its slice, and the batch that empties the pool
+;;       (URC_PoolFullyVacated — all ≤7 scores nzs==0) auto-finalizes/unfreezes. Chainweb serial
+;;       execution means the batches integrate one-at-a-time → no write conflicts, first/last safe.
 ;;     C_AbortVacate(pool-id) clears vacate-in-progress; stake stays disabled (ops re-enable).
-;;     Preflight: URDC_BuildVacateSlicePlan (offline plan only — no on-chain job/slice writes).
 ;;
 ;; Vacate entity = OWNER (custody recipient). One owner may have multiple beneficiaries.
 ;; Bulk transfer list: parallel owner-ids, beneficiary-ids, amounts (or nonces per owner row).
@@ -456,79 +441,6 @@
                 "VCT|C>VACATE: unknown aqp-class"))
         (compose-capability (SECURE))
         (compose-capability (P|VCT|RECIPE))
-    )
-    (defcap VCT|C>FULL-TRUE-FUNGIBLE-VACATE
-        (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
-        @doc "Master recipe cap: one-tx full TF vacate (pool owner). Validates leg inventory; composes SECURE + P|VCT|RECIPE."
-        @event
-        (let
-            (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-            )
-            (enforce
-                (fold (and) true
-                    [
-                        (ref-AQP::URC_StakeTrueFungiblePoolClassOk pool-id)
-                        (ref-AQP::URC_StakeTrueFungibleDptfMatchesPool pool-id dptf-id)
-                        (URC_VacateTfLegsOk pool-id dptf-id legs)
-                    ]
-                )
-                "Invalid full TF vacate"
-            )
-            (CAP_VctVacatePoolOwner pool-id)
-            (UEV_TrueFungibleStakeNotReserved dptf-id)
-            (compose-capability (SECURE))
-            (compose-capability (P|VCT|RECIPE))
-        )
-    )
-    (defcap VCT|C>FULL-ORTO-FUNGIBLE-VACATE
-        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
-        @doc "Master recipe cap: one-tx full OF vacate (pool owner)."
-        @event
-        (let
-            (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-            )
-            (enforce
-                (fold (and) true
-                    [
-                        (ref-AQP::URC_StakeOrtoFungibleDpofMatchesPool pool-id dpof-id)
-                        (URC_VacateFullBatchLegParityOk owner-ids beneficiary-ids nonces-array)
-                        (URC_VacateFullBatchNonceTotalOk nonces-array)
-                        (URC_VacateOrtoLegsBeneficiaryOk pool-id dpof-id owner-ids beneficiary-ids nonces-array)
-                    ]
-                )
-                "Invalid full OF vacate"
-            )
-            (CAP_VctVacatePoolOwner pool-id)
-            (compose-capability (SECURE))
-            (compose-capability (P|VCT|RECIPE))
-        )
-    )
-    (defcap VCT|C>FULL-COLLECTABLE-VACATE
-        (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
-        @doc "Master recipe cap: one-tx full DPSF/DPNF vacate (pool owner)."
-        @event
-        (let
-            (
-                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
-            )
-            (enforce
-                (fold (and) true
-                    [
-                        (ref-AQP::URC_StakeCollectablePoolClassOk pool-id son)
-                        (ref-AQP::URC_StakeCollectableMatchesPool pool-id collectable-id)
-                        (URC_VacateFullBatchLegParityOk owner-ids beneficiary-ids nonces-array)
-                        (URC_VacateFullBatchNonceTotalOk nonces-array)
-                        (URC_VacateCollectableLegsBeneficiaryOk pool-id collectable-id son owner-ids beneficiary-ids nonces-array)
-                    ]
-                )
-                "Invalid full collectable vacate"
-            )
-            (CAP_VctVacatePoolOwner pool-id)
-            (compose-capability (SECURE))
-            (compose-capability (P|VCT|RECIPE))
-        )
     )
     ;;<=======>
     ;;FUNCTIONS — UC → UCK → UR → UDC → W → URD → URC → URDC → UEV → C → X
@@ -2024,277 +1936,6 @@
                 (XI_MaybeFinalizeVacate pool-id collectable-id
                     (if son VACATE-KIND-DPSF VACATE-KIND-DPNF) true)
                 oc
-            )
-        )
-    )
-    (defun C_FullVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
-        (
-            pool-id:string
-            dptf-id:string
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            amounts:[decimal]
-        )
-        @doc "Full TF vacate (one tx): begin → unwind UI-supplied inventory → finalize. \
-            \ No URD/URDC in C_* — UI dirty-reads then passes Legs arrays (StoicSyntax §10.2)."
-        (UEV_IMC)
-        (let
-            (
-                (legs:[object{VCT|VacateTfLeg}]
-                    (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts)
-                )
-            )
-            (with-capability (VCT|C>FULL-TRUE-FUNGIBLE-VACATE pool-id dptf-id legs)
-                (XI_EnsureVacateBegun pool-id)
-                (let
-                    (
-                        (oc:object{IgnisCollectorV1.OutputCumulator}
-                            (XI_VacateTrueFungibleFromLegs pool-id dptf-id legs)
-                        )
-                    )
-                    (do
-                        (XI_MaybeFinalizeVacate pool-id dptf-id VACATE-KIND-TF true)
-                        oc
-                    )
-                )
-            )
-        )
-    )
-    (defun C_FullVacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
-        (
-            pool-id:string
-            dpof-id:string
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-            amounts-array:[[integer]]
-        )
-        @doc "Full OF vacate (one tx). Amounts may be zero-sentinels (resolved via URC point reads)."
-        (UEV_IMC)
-        (let
-            (
-                (of-amounts:[[decimal]]
-                    (URC_ResolveOfDecimalAmountsFromTracker
-                        pool-id dpof-id owner-ids beneficiary-ids nonces-array
-                    )
-                )
-            )
-            (with-capability
-                (VCT|C>FULL-ORTO-FUNGIBLE-VACATE pool-id dpof-id owner-ids beneficiary-ids nonces-array)
-                (XI_EnsureVacateBegun pool-id)
-                (let
-                    (
-                        (oc:object{IgnisCollectorV1.OutputCumulator}
-                            (XI_VacateOrtoFungibleBatch
-                                pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts
-                            )
-                        )
-                    )
-                    (do
-                        (XI_MaybeFinalizeVacate pool-id dpof-id VACATE-KIND-OF true)
-                        oc
-                    )
-                )
-            )
-        )
-    )
-    (defun C_FullVacateSemiFungible:object{IgnisCollectorV1.OutputCumulator}
-        (
-            pool-id:string
-            dpsf-id:string
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-            amounts-array:[[integer]]
-        )
-        @doc "Full DPSF vacate (one tx). UI supplies Legs arrays from dirty URD/URDC."
-        (UEV_IMC)
-        (with-capability
-            (VCT|C>FULL-COLLECTABLE-VACATE
-                pool-id dpsf-id true owner-ids beneficiary-ids nonces-array
-            )
-            (XI_EnsureVacateBegun pool-id)
-            (let
-                (
-                    (oc:object{IgnisCollectorV1.OutputCumulator}
-                        (XI_VacateCollectableBatch
-                            pool-id dpsf-id true owner-ids beneficiary-ids nonces-array amounts-array
-                        )
-                    )
-                )
-                (do
-                    (XI_MaybeFinalizeVacate pool-id dpsf-id VACATE-KIND-DPSF true)
-                    oc
-                )
-            )
-        )
-    )
-    (defun C_FullVacateNonFungible:object{IgnisCollectorV1.OutputCumulator}
-        (
-            pool-id:string
-            dpnf-id:string
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-            amounts-array:[[integer]]
-        )
-        @doc "Full DPNF vacate (one tx). UI supplies Legs arrays from dirty URD/URDC."
-        (UEV_IMC)
-        (with-capability
-            (VCT|C>FULL-COLLECTABLE-VACATE
-                pool-id dpnf-id false owner-ids beneficiary-ids nonces-array
-            )
-            (XI_EnsureVacateBegun pool-id)
-            (let
-                (
-                    (oc:object{IgnisCollectorV1.OutputCumulator}
-                        (XI_VacateCollectableBatch
-                            pool-id dpnf-id false owner-ids beneficiary-ids nonces-array amounts-array
-                        )
-                    )
-                )
-                (do
-                    (XI_MaybeFinalizeVacate pool-id dpnf-id VACATE-KIND-DPNF true)
-                    oc
-                )
-            )
-        )
-    )
-
-    ;; =============================================================================
-    ;; STATELESS BATCHED LEGS — UI splits; auto-begin; finalize flag when asset empty
-    ;; =============================================================================
-    (defun C_VacateTrueFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
-        (
-            pool-id:string
-            dptf-id:string
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            amounts:[decimal]
-            finalize:bool
-        )
-        @doc "Vacate one gas-safe TF leg batch. Auto-begins vacate if needed. \
-            \ finalize=true requires this asset inventory empty after the batch, then re-enables stake."
-        (UEV_IMC)
-        (with-capability
-            (VCT|C>LEGS-TRUE-FUNGIBLE-VACATE pool-id dptf-id owner-ids beneficiary-ids amounts finalize)
-            (XI_EnsureVacateBegun pool-id)
-            (let
-                (
-                    (legs:[object{VCT|VacateTfLeg}]
-                        (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts)
-                    )
-                    (oc:object{IgnisCollectorV1.OutputCumulator}
-                        (XI_VacateTrueFungibleFromLegs pool-id dptf-id legs)
-                    )
-                )
-                (do
-                    (XI_MaybeFinalizeVacate pool-id dptf-id VACATE-KIND-TF finalize)
-                    oc
-                )
-            )
-        )
-    )
-    (defun C_VacateOrtoFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
-        (
-            pool-id:string
-            dpof-id:string
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-            amounts-array:[[integer]]
-            finalize:bool
-        )
-        @doc "Vacate one gas-safe OF nonce batch. Amounts may be zero-sentinels (resolved from tracker)."
-        (UEV_IMC)
-        (let
-            (
-                (of-amounts:[[decimal]]
-                    (URC_ResolveOfDecimalAmountsFromTracker
-                        pool-id dpof-id owner-ids beneficiary-ids nonces-array
-                    )
-                )
-            )
-            (with-capability
-                (VCT|C>LEGS-ORTO-FUNGIBLE-VACATE
-                    pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts finalize
-                )
-                (XI_EnsureVacateBegun pool-id)
-                (let
-                    (
-                        (oc:object{IgnisCollectorV1.OutputCumulator}
-                            (XI_VacateOrtoFungibleBatch
-                                pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts
-                            )
-                        )
-                    )
-                    (do
-                        (XI_MaybeFinalizeVacate pool-id dpof-id VACATE-KIND-OF finalize)
-                        oc
-                    )
-                )
-            )
-        )
-    )
-    (defun C_VacateSemiFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
-        (
-            pool-id:string
-            dpsf-id:string
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-            amounts-array:[[integer]]
-            finalize:bool
-        )
-        (UEV_IMC)
-        (with-capability
-            (VCT|C>LEGS-COLLECTABLE-VACATE
-                pool-id dpsf-id true owner-ids beneficiary-ids nonces-array amounts-array finalize
-            )
-            (XI_EnsureVacateBegun pool-id)
-            (let
-                (
-                    (oc:object{IgnisCollectorV1.OutputCumulator}
-                        (XI_VacateCollectableBatch
-                            pool-id dpsf-id true owner-ids beneficiary-ids nonces-array amounts-array
-                        )
-                    )
-                )
-                (do
-                    (XI_MaybeFinalizeVacate pool-id dpsf-id VACATE-KIND-DPSF finalize)
-                    oc
-                )
-            )
-        )
-    )
-    (defun C_VacateNonFungibleLegs:object{IgnisCollectorV1.OutputCumulator}
-        (
-            pool-id:string
-            dpnf-id:string
-            owner-ids:[string]
-            beneficiary-ids:[string]
-            nonces-array:[[integer]]
-            amounts-array:[[integer]]
-            finalize:bool
-        )
-        (UEV_IMC)
-        (with-capability
-            (VCT|C>LEGS-COLLECTABLE-VACATE
-                pool-id dpnf-id false owner-ids beneficiary-ids nonces-array amounts-array finalize
-            )
-            (XI_EnsureVacateBegun pool-id)
-            (let
-                (
-                    (oc:object{IgnisCollectorV1.OutputCumulator}
-                        (XI_VacateCollectableBatch
-                            pool-id dpnf-id false owner-ids beneficiary-ids nonces-array amounts-array
-                        )
-                    )
-                )
-                (do
-                    (XI_MaybeFinalizeVacate pool-id dpnf-id VACATE-KIND-DPNF finalize)
-                    oc
-                )
             )
         )
     )

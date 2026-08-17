@@ -453,9 +453,9 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-FVT-DC-04 - C_FullVacateSemiFungible (pool-owner forced unstake)")
+(begin-tx "TX-FVT-DC-04 - CC_FullVacate (agnostic one-tx vacate, class-3 DPSF)")
 (print "")
-(print "=== TX-FVT-DC-04 — C_FullVacateSemiFungible ================================")
+(print "=== TX-FVT-DC-04 — CC_FullVacate (agnostic; pool-id only; on-chain scan) ====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -492,20 +492,12 @@
             (tracker-pre:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-id beneficiary-id stake-nonce))
             (vacate-amount:integer (floor tracker-pre))
             (pre-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpsf-id true stake-nonce))
-            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id 3 1))
-            (s0:object (at 0 (at "slices" plan)))
         )
         (enforce (> vacate-amount 0) "tracker must hold stake before vacate")
         (print (format "<(vacate-nonce vacate-amount)> => {} / {}" [stake-nonce vacate-amount]))
-        (print "--- [TX-FVT-DC-04 · 02 · C_FullVacateSemiFungible (URD-driven one tx)] ---")
-        (print (format "<(TS02-C3.AQP-POOL|C_FullVacateSemiFungible)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_FullVacateSemiFungible
-                patron pool-id dpsf-id
-                (at "owner-ids" s0)
-                (at "beneficiary-ids" s0)
-                (at "nonces-array" s0)
-                (at "amounts-array" s0)
-            )
+        (print "--- [TX-FVT-DC-04 · 02 · CC_FullVacate (agnostic, class-3 DPSF; pool-id only)] ---")
+        (print (format "<(TS02-C3.AQP-POOL|CC_FullVacate)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|CC_FullVacate patron pool-id)
         ]))
         (print "--- [TX-FVT-DC-04 · 03 · post-vacate expects] ---")
         (let
@@ -543,9 +535,9 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-FVT-DC-05 - C_VacateSemiFungibleLegs multi-owner")
+(begin-tx "TX-FVT-DC-05 - CC_BatchVacateCollectables multi-owner (2 legs)")
 (print "")
-(print "=== TX-FVT-DC-05 — VacateSemiFungibleLegs 2 owner legs finalize =============")
+(print "=== TX-FVT-DC-05 — CC_BatchVacateCollectables 2 owner legs (1 batch drains) ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -621,15 +613,14 @@
         (enforce (> vacate-a 0) "owner-a tracker must hold stake")
         (enforce (> vacate-b 0) "owner-b tracker must hold stake")
         (print (format "<(URD vacate legs)> => {}" [inventory]))
-        (print "--- [TX-FVT-DC-05 · 02 · C_VacateSemiFungibleLegs finalize] ---")
-        (print (format "<(TS02-C3.AQP-POOL|C_VacateSemiFungibleLegs)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_VacateSemiFungibleLegs
-                patron pool-id dpsf-id
+        (print "--- [TX-FVT-DC-05 · 02 · CC_BatchVacateCollectables (2 legs, 1 batch → auto-finalize)] ---")
+        (print (format "<(TS02-C3.AQP-POOL|CC_BatchVacateCollectables)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|CC_BatchVacateCollectables
+                patron pool-id dpsf-id true
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
                 (at "nonces-array" slice0)
                 (at "amounts-array" slice0)
-                true
             )
         ]))
         (print "--- [TX-FVT-DC-05 · 03 · post-vacate expects] ---")
@@ -677,7 +668,7 @@
 (print "=== END TX-FVT-DC-05 =======================================================")
 (print "")
 ;; DEFERRED (see TEST_DEFERRED.md + README_VACATE_UI.md):
-;; - DPNF Bloodshed-scale vacate (repeat C_VacateNonFungibleLegs per owner / nonce chunk)
-;; - C_VacateTrueFungibleLegs + C_VacateOrtoFungibleLegs on class-0 LP pool
+;; - DPNF Bloodshed-scale vacate (repeat CC_BatchVacateCollectables per owner / nonce chunk)
+;; - CC_BatchVacateTrueFungible + CC_BatchVacateOrtoFungible on class-0 LP pool
 ;; - Bloodshed DPNF full-collection vacate gas limit (tune VACATE-GAS-MAX-*)
 (print "")
