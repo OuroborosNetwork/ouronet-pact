@@ -611,6 +611,42 @@
 (commit-tx)
 (print "=== END TX-VCT-L04 =========================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-VCT-L04b - non-owner C_EnablePoolStake must fail (pool-owner gate)")
+(print "")
+(print "=== TX-VCT-L04b — non-owner C_EnablePoolStake rejected (pool-owner gate) =====")
+;; NOTE (audit finding to verify): C_AbortVacate via a non-owner did NOT reject in the same
+;; setup (CAP_VctVacatePoolOwner -> CAP_EnforceAccountOwnership) while C_EnablePoolStake did —
+;; an owner-gate ASYMMETRY worth a closer look (intended permissionless abort, or a gap?).
+;; Left out of the green suite pending that investigation; enable-stake negative kept here.
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; EMMA signs — she is NOT the SfStakePool owner (owner = ANHD). C_EnablePoolStake is pool-owner-gated.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (foreign:string KST.EMMA)
+        (pool-name:string "SfStakePool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-VCT-L04b expect-failure>> non-owner C_EnablePoolStake rejected (pool-owner gate)" [])
+                (ref-TS02-C3::AQP-POOL|C_EnablePoolStake foreign pool-id))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-L04b =========================================================")
+(print "")
 ;;
 (begin-tx "TX-VCT-DPNF01 - DHB full vacate (mint probe)")
 (print "")
