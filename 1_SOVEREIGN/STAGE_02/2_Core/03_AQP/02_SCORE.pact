@@ -5,6 +5,7 @@
     (defun UCk_NFScore:string (score-id:string dpnf-id:string trait-key:string trait-value:string dpnf-nonce-class:integer))
     (defun UCk_SFDefRevision:string (score-id:string dpsf-id:string))
     (defun UCk_NFDefRevision:string (score-id:string dpnf-id:string))
+    (defun UCk_NFTraitKeys:string (score-id:string dpnf-id:string))
     (defun UCk_Triplet:string (bronze-score-id:string silver-score-id:string golden-score-id:string))
     ;;
     ;;  [UR]
@@ -409,6 +410,19 @@
         score-id:string
         dpnf-id:string
     )
+    ;;7b] SCR|T|NF|TraitKeys — the DISTINCT trait-keys that have any definition for (score-id, dpnf-id).
+    ;; Segregated from SCR|NF|DefRevision so the hot revision-nonce reads stay lean; this row is read ONLY on the
+    ;; model-1 trait stake path, where it drives bounded point reads (kills the select). Bounded by the collection's
+    ;; trait schema (grows with distinct trait-keys, not nonces or values), so it stays small.
+    (defschema SCR|NF|TraitKeys
+        @doc "Per (score-id, dpnf-id): the DISTINCT trait-keys with any SCR|T|NF|TraitScore definition. Lets model-1 \
+            \ trait scoring point-read each defined key against a staked nonce's metadata instead of scanning."
+        trait-keys:[string]         ;;[M]   distinct defined trait-keys
+        ;;
+        ;;Select Keys
+        score-id:string
+        dpnf-id:string
+    )
     ;;8] SCR|T|Triplet
     (defschema SCR|Triplet
         @doc "Key = T|<bronze-score-id>|<silver-score-id>|<golden-score-id>. Bundles three SCORE rows for FVT TripletLink membership. \
@@ -430,6 +444,7 @@
     (deftable SCR|T|NF|ClassScore:{SCR|NF|ClassSchema})         ;;5] Key = <Score-ID> | <DPNF-ID> | <DPNF-Nonce-Class>
     (deftable SCR|T|SF|DefRevision:{SCR|SF|DefRevision})        ;;6] Key = <Score-ID> | <DPSF-ID>
     (deftable SCR|T|NF|DefRevision:{SCR|NF|DefRevision})        ;;7] Key = <Score-ID> | <DPNF-ID>
+    (deftable SCR|T|NF|TraitKeys:{SCR|NF|TraitKeys})            ;;7b] Key = <Score-ID> | <DPNF-ID>
     (deftable SCR|T|Triplet:{SCR|Triplet})                      ;;8] Key = <Triplet-ID>
     ;;{3}
     (defun CT_Bar ()
@@ -1157,6 +1172,10 @@
         @doc "Composite key for SCR|T|SF|DefRevision: score-id | dpsf-id."
         (concat [score-id BAR dpsf-id])
     )
+    (defun UCk_NFTraitKeys:string (score-id:string dpnf-id:string)
+        @doc "Composite key for SCR|T|NF|TraitKeys: score-id | dpnf-id."
+        (concat [score-id BAR dpnf-id])
+    )
     (defun UCk_NFDefRevision:string (score-id:string dpnf-id:string)
         @doc "Composite key for SCR|T|NF|DefRevision: score-id | dpnf-id."
         (concat [score-id BAR dpnf-id])
@@ -1475,6 +1494,21 @@
         @doc "Upsert SCR|T|NF|DefRevision row."
         (require-capability (SECURE))
         (write SCR|T|NF|DefRevision (UCk_NFDefRevision score-id dpnf-id) row)
+    )
+    (defun WW_NFTraitKeys:string
+        (score-id:string dpnf-id:string trait-keys:[string])
+        @doc "Upsert SCR|T|NF|TraitKeys with the DISTINCT defined trait-keys for (score-id, dpnf-id)."
+        (require-capability (SECURE))
+        (write SCR|T|NF|TraitKeys (UCk_NFTraitKeys score-id dpnf-id)
+            {"trait-keys" : trait-keys, "score-id" : score-id, "dpnf-id" : dpnf-id})
+    )
+    (defun URC_NFTraitKeysList:[string] (score-id:string dpnf-id:string)
+        @doc "The distinct defined trait-keys for (score-id, dpnf-id); [] when none defined. Point read \
+            \ (with-default-read) — the model-1 trait stake path reads this once, then point-reads each key's score."
+        (with-default-read SCR|T|NF|TraitKeys (UCk_NFTraitKeys score-id dpnf-id)
+            {"trait-keys" : []}
+            {"trait-keys" := tk}
+            tk)
     )
     ;; WU_NFDefRevision|GlobalRevisionNonce — not used: mutates via WW_NFDefRevision (full row).
     ;; WU_NFDefRevision|TraitRevisionNonce — not used: mutates via WW_NFDefRevision (full row).
@@ -1880,25 +1914,10 @@
         )
     )
     ;;
-    ;;{F1}  [URD]
-    (defun URH_NF|TraitRows:[object] (score-id:string dpnf-id:string)
-        @doc "Expensive read: selects all trait definition rows for (score-id, dpnf-id)."
-        (select SCR|T|NF|TraitScore ["trait-key" "trait-value" "trait-score-value"]
-            (and?
-                (where "score-id" (= score-id))
-                (where "dpnf-id" (= dpnf-id))
-            )
-        )
-    )
-    (defun URH_NF|ClassRows:[object] (score-id:string dpnf-id:string)
-        @doc "Expensive read: selects all class definition rows for (score-id, dpnf-id)."
-        (select SCR|T|NF|ClassScore ["dpnf-nonce-class" "trait-score-value"]
-            (and?
-                (where "score-id" (= score-id))
-                (where "dpnf-id" (= dpnf-id))
-            )
-        )
-    )
+    ;;{F1}  [URH]
+    ;; URH_NF|TraitRows / URH_NF|ClassRows (full SCR|T|NF|TraitScore / ClassScore selects) REMOVED (#FP0) — the
+    ;; model-1 stake-path weight now point-reads: class by the nonce's class, traits by the SCR|T|NF|TraitKeys
+    ;; aggregate. No scan on the execution path.
     ;; URH_S-DEF|SFScoreRows (full SCR|T|SF|Score select) REMOVED — the stake-path SF definition weight now
     ;; point-reads per staked nonce (URCx_SfStakeDefinitionWeightedRawWeight), so no scan sits on the execution path.
     ;; URH_UserScoreStakerAccounts (farm-triplet Tier-2 denominator scan) RETIRED — audit H5/LP redesign.
@@ -1993,11 +2012,14 @@
             )
         )
     )
-    (defun URHCx_DpnfModelOneScrDefinitionRawWeight:decimal
+    (defun URCx_DpnfModelOneScrDefinitionRawWeight:decimal
         (score-id:string dpnf-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "NFT model 1: global-revision-nonce 0 ⇒ 0. Else step class-revision-nonce: if 0 class leg is 0.0 and no URD; if non-zero URH_NF|ClassRows then class scores from that list. \
-            \ Then step trait-revision-nonce: if 0 trait leg is 0.0 and no URD; if non-zero URH_NF|TraitRows then trait scores from that list. \
-            \ Per-nonce base = class-part + trait-part, then fragment scale on negative nonces."
+        @doc "NFT model 1 (#FP0 — POINT READS only, no stake-path scan): global-revision-nonce 0 => 0. Else per \
+            \ staked nonce: class-part point-reads the nonce's class def (with-default-read => 0; 0 when class-rev 0); \
+            \ trait-part reads the (score,dpnf) TraitKeys aggregate once, then for each defined key the nonce carries \
+            \ point-reads its (key,value) trait def (with-default-read => 0; 0 when trait-rev 0). base = class + trait, \
+            \ fragment-scaled (/1000) on negative nonces, x amount. Bounded by staked-nonce count x distinct-trait-keys. \
+            \ Auxiliary of URC_SignedBaseDeltaForDpnfStake."
         (let
             (
                 (g:integer (UR_N-DEF-REV|NFDefRevisionGlobalRevisionNonce score-id dpnf-id))
@@ -2009,51 +2031,54 @@
                         (ref-DPDC:module{DpdcV1} DPDC)
                         ;;
                         (class-rev:integer (UR_N-DEF-REV|NFDefRevisionClassRevisionNonce score-id dpnf-id))
-                        (class-rows:[object]
-                            (if (= class-rev 0)
-                                []
-                                (URH_NF|ClassRows score-id dpnf-id)
-                            )
+                        (trait-rev:integer (UR_N-DEF-REV|NFDefRevisionTraitRevisionNonce score-id dpnf-id))
+                        (trait-keys:[string]
+                            (if (= trait-rev 0) [] (URC_NFTraitKeysList score-id dpnf-id))
                         )
                     )
-                    (let
-                        (
-                            (trait-rev:integer (UR_N-DEF-REV|NFDefRevisionTraitRevisionNonce score-id dpnf-id))
-                            (trait-rows:[object]
-                                (if (= trait-rev 0)
-                                    []
-                                    (URH_NF|TraitRows score-id dpnf-id)
-                                )
-                            )
-                        )
-                        (fold
-                            (lambda (acc:decimal idx:integer)
-                                (let
-                                    (
-                                        (n:integer (at idx nonces))
-                                        (q:integer (at idx nonce-amounts))
-                                        (class-nonce:integer (if (< n 0) (abs n) n))
-                                        (nonce-class:integer (ref-DPDC::UR_NonceClass dpnf-id false class-nonce))
-                                        (class-part:decimal (URC_NFClassScoreFromRows class-rows nonce-class))
-                                        (trait-part:decimal
-                                            (URC_NFTraitScoreFromRows trait-rows
-                                                (ref-DPDC::UR_N|RawMetaData (ref-DPDC::UR_NonceData dpnf-id false n))
-                                            )
-                                        )
-                                        (base-score:decimal (+ class-part trait-part))
-                                        (unit-score:decimal
-                                            (if (< n 0)
-                                                (/ base-score 1000.0)
-                                                base-score
-                                            )
+                    (fold
+                        (lambda (acc:decimal idx:integer)
+                            (let
+                                (
+                                    (n:integer (at idx nonces))
+                                    (q:integer (at idx nonce-amounts))
+                                    (class-nonce:integer (if (< n 0) (abs n) n))
+                                    (class-part:decimal
+                                        (if (= class-rev 0)
+                                            0.0
+                                            (with-default-read SCR|T|NF|ClassScore
+                                                (UCk_NFClassScore score-id dpnf-id
+                                                    (ref-DPDC::UR_NonceClass dpnf-id false class-nonce))
+                                                {"trait-score-value" : 0.0}
+                                                {"trait-score-value" := csv}
+                                                csv)
                                         )
                                     )
-                                    (+ acc (* (dec q) unit-score))
+                                    (nonce-meta:object
+                                        (ref-DPDC::UR_N|RawMetaData (ref-DPDC::UR_NonceData dpnf-id false n)))
+                                    (trait-part:decimal
+                                        (fold
+                                            (lambda (tacc:decimal k:string)
+                                                (if (contains k nonce-meta)
+                                                    (+ tacc
+                                                        (with-default-read SCR|T|NF|TraitScore
+                                                            (UCk_NFTraitScore score-id dpnf-id k (at k nonce-meta))
+                                                            {"trait-score-value" : 0.0}
+                                                            {"trait-score-value" := tsv}
+                                                            tsv))
+                                                    tacc))
+                                            0.0
+                                            trait-keys)
+                                    )
+                                    (base-score:decimal (+ class-part trait-part))
+                                    (unit-score:decimal
+                                        (if (< n 0) (/ base-score 1000.0) base-score))
                                 )
+                                (+ acc (* (dec q) unit-score))
                             )
-                            0.0
-                            (enumerate 0 (- (length nonces) 1))
                         )
+                        0.0
+                        (enumerate 0 (- (length nonces) 1))
                     )
                 )
             )
@@ -2216,7 +2241,8 @@
     (defun URC_SignedBaseDeltaForDpnfStake:decimal
         (score-id:string dpnf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
         @doc "Signed base delta for class-4 DPNF (score precision): model -1 uses UCx_StakeEqualNativeUnitRawWeight; \
-            \ model 0 uses URCx_DpnfModelZeroDpdcNativeRawWeight; model 1 uses URHCx_DpnfModelOneScrDefinitionRawWeight."
+            \ model 0 uses URCx_DpnfModelZeroDpdcNativeRawWeight; model 1 uses URCx_DpnfModelOneScrDefinitionRawWeight. \
+            \ All three are point-read/compute only — statically light (URC), no stake-path scan (#FP0)."
         (let
             (
                 (model:integer (UR_SCR|ScoreNftScoreModel score-id))
@@ -2225,7 +2251,7 @@
                         (UCx_StakeEqualNativeUnitRawWeight nonces nonce-amounts)
                         (if (= model 0)
                             (URCx_DpnfModelZeroDpdcNativeRawWeight dpnf-id nonces nonce-amounts)
-                            (URHCx_DpnfModelOneScrDefinitionRawWeight score-id dpnf-id nonces nonce-amounts)
+                            (URCx_DpnfModelOneScrDefinitionRawWeight score-id dpnf-id nonces nonce-amounts)
                         )
                     )
                 )
@@ -2234,41 +2260,8 @@
             (floor (* raw-weight (if direction 1.0 -1.0)) p)
         )
     )
-    (defun URC_NFClassScoreFromRows:decimal (rows:[object] nonce-class:integer)
-        @doc "Returns class score for nonce-class from selected class rows; 0.0 when no matching class definition exists."
-        (fold
-            (lambda
-                (acc:decimal row)
-                (if (= (at "dpnf-nonce-class" row) nonce-class)
-                    (+ acc (at "trait-score-value" row))
-                    acc
-                )
-            )
-            0.0
-            rows
-        )
-    )
-    (defun URC_NFTraitScoreFromRows:decimal (rows:[object] nonce-meta:object)
-        @doc "Returns sum of trait definition scores that match nonce metadata."
-        (fold
-            (lambda
-                (acc:decimal row)
-                (let
-                    (
-                        (k:string (at "trait-key" row))
-                        (v:string (at "trait-value" row))
-                        (s:decimal (at "trait-score-value" row))
-                    )
-                    (if (and (contains k nonce-meta) (= (at k nonce-meta) v))
-                        (+ acc s)
-                        acc
-                    )
-                )
-            )
-            0.0
-            rows
-        )
-    )
+    ;; URC_NFClassScoreFromRows / URC_NFTraitScoreFromRows (searched the selected def-row lists) REMOVED (#FP0) —
+    ;; the model-1 weight now point-reads class + trait scores directly, so there are no row-lists to search.
     (defun URC_SingularUserScoreDeltaFromSignedUserBase:object{SCR|SingularUserScoreDelta}
         (ouronet-account:string pool-id:string score-id:string signed-user-base-delta:decimal)
         @doc "Core singular user-score step: from one signed user-base delta already at score precision (e.g. LP weight × mx after URC_SignedBaseDeltaForDptfLpStake / URC_SignedBaseDeltaForOrtoLpStake / URC_SignedBaseDeltaForDptfStake / DPOF|DPSF|DPNF stake URC_*), \
@@ -3200,6 +3193,14 @@
                     (enumerate 0 (- (length dpnf-nonce-classes) 1))
                 )
             )
+            ;; #FP0: on trait defs, distinct-merge this batch's trait-keys into the SCR|T|NF|TraitKeys aggregate
+            ;; (off-path, cheap) so the model-1 stake path point-reads by these keys instead of scanning the def table.
+            (if trait-mode
+                (WW_NFTraitKeys score-id dpnf-id
+                    (distinct (+ (URC_NFTraitKeysList score-id dpnf-id) trait-keys))
+                )
+                "class-mode: no trait-keys aggregate update"
+            )
             (WW_NFDefRevision score-id dpnf-id
                 (if trait-mode
                     (UDC_SCR|NF|DefRevision (+ g 1) (+ tr 1) cl score-id dpnf-id)
@@ -3648,4 +3649,5 @@
 (create-table SCR|T|NF|ClassScore)
 (create-table SCR|T|SF|DefRevision)
 (create-table SCR|T|NF|DefRevision)
+(create-table SCR|T|NF|TraitKeys)
 (create-table SCR|T|Triplet)
