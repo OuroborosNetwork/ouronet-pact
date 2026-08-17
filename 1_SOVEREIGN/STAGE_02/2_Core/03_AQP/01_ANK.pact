@@ -588,6 +588,9 @@
         (compose-capability (ANK|C>UPDATE-DPDC account dpnf-id nonces false))
     )
     (defcap ANK|C>UPDATE-DPDC (account:string asset-id:string nonces:[integer] son:bool)
+        @doc "Authorizes a DPDC anchor-value update for <account> on <asset-id>'s <nonces> \
+            \ (<son> discriminates the set / non-set collectable fungibility mode). Validates the \
+            \ account exists and the nonces exist for the target DPDC asset; composes SECURE for the write."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)

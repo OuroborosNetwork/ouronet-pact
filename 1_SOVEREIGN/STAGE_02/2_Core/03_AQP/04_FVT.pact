@@ -2585,6 +2585,10 @@
     )
     (defun UEV_AddScoreEntityScoreContext
         (fvt-id:string score-id:string swpair:string ghost-weight:decimal)
+        @doc "Validates the context for linking a SCORE entity to <fvt-id>: score-owner matches FVT-owner, \
+            \ membership mode admits scores (or mosaic), no pre-existing link, score class matches FVT class, \
+            \ correct <swpair>, and the class-0 farm rule (lp-denominator = common-denominator + positive \
+            \ ghost-weight) vs the vault/treasury rule (swpair | + zero ghost-weight). Enforces FVT-owner ownership."
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
@@ -2622,6 +2626,11 @@
     )
     (defun UEV_AddScoreEntityTripletContext
         (fvt-id:string triplet-id:string swpair:string ghost-weight:decimal)
+        @doc "Validates the context for linking a TRIPLET entity to <fvt-id>: triplet is issued with a category \
+            \ matching the FVT class, membership mode admits the triplet kind (true vs standard, or mosaic), \
+            \ silver-owner matches FVT-owner, no pre-existing link, silver has an aqpool link, all three \
+            \ (bronze/silver/golden) score fvt-links are BAR, correct <swpair>, and the class-0 farm vs \
+            \ vault/treasury weight rule. Enforces FVT-owner ownership."
         (let
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
@@ -4979,6 +4988,8 @@
     )
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
+        @doc "Forward (stake/unstake/collect flow): bank the beneficiary's pending per-score rewards for \
+            \ <pool-id> into the claimable ledger following <plan> (the pre-computed settle plan). UEV_IMC + SECURE."
         (UEV_IMC)
         (with-capability (SECURE)
             (do
@@ -4989,6 +5000,8 @@
     )
     (defun XE_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
+        @doc "Forward (stake/unstake flow): recompute the beneficiary's true-fungible stake-anchor values for \
+            \ <dptf-id> after a stake delta, keeping the anchor aggregates in sync with the live stake. UEV_IMC + SECURE."
         (UEV_IMC)
         (with-capability (SECURE)
             (XI_RefreshTrueFungibleStakeAnchors beneficiary-id dptf-id)
@@ -5003,6 +5016,9 @@
             nonce-amounts:[integer]
             direction:bool
         )
+        @doc "Forward (stake/unstake flow): recompute the beneficiary's collectable (SF/NF) stake-anchor values \
+            \ for <collectable-id>'s <nonces>/<nonce-amounts> in <direction> (stake vs unstake), keeping the \
+            \ anchor aggregates in sync with the live nonce stake. UEV_IMC + SECURE."
         (UEV_IMC)
         (with-capability (SECURE)
             (XI_RefreshCollectableStakeAnchors
@@ -5012,6 +5028,8 @@
     )
     (defun XE_BookStakeUnclaimedCounts:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
+        @doc "Forward (stake/unstake/collect flow): book the beneficiary's unclaimed-reward counts for \
+            \ <pool-id> from <settle-bundle> so later collects settle the correct outstanding units. UEV_IMC + SECURE."
         (UEV_IMC)
         (with-capability (SECURE)
             (XI_BookStakeUnclaimedCounts beneficiary-id pool-id settle-bundle)
@@ -5019,6 +5037,8 @@
     )
     (defun XE_CheckpointStakeRps:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string settle-bundle:object)
+        @doc "Forward (stake/unstake/collect flow): checkpoint the beneficiary's reward-per-share (RPS) baseline \
+            \ for <pool-id> from <settle-bundle> so subsequent accrual is measured from the new stake state. UEV_IMC + SECURE."
         (UEV_IMC)
         (with-capability (SECURE)
             (XI_CheckpointStakeRps beneficiary-id pool-id settle-bundle)

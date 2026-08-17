@@ -242,6 +242,10 @@
     )
     ;;{F6.P}  [MTX|C]
     (defpact MTX|2|C_Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Enforced-fresh vault/treasury inject as a 2-step defpact: each step's opening stale scan IS the \
+            \ pre-inject freshness proof — atomically fixing a whole scanned set of size <= N_FIX leaves zero \
+            \ stale, so no re-scan is needed. Step 0 injects terminally when the stale set fits, else fixes \
+            \ N_FIX and continues to step 1. Handles up to 2xN_FIX stale stakers; larger spikes need a higher-n variant."
         ;; Enforced-fresh vault/treasury inject over 2 steps (owner design §2.8). Each step's opening scan IS the
         ;; pre-inject freshness proof: fixing an entire scanned set of size ≤ N_FIX atomically leaves ZERO stale, so
         ;; no separate re-scan is needed. Handles up to 2×N_FIX; larger spikes → a higher-n variant (add when needed).
@@ -297,6 +301,11 @@
         )
     )
     (defpact MTX|2|C_SweepRevokeAnchor (patron:string anchor-id:string)
+        @doc "Paginated re-score sweep + anchor revoke as a 2-step defpact (Phase 3 closeout): step 0 brackets \
+            \ the sweep (freezes every affected pool + swept-revokes the anchor) then recomputes the first window \
+            \ of present holders; sweep-in-progress holds across steps (separate txs) so the flattened holder \
+            \ window pages deterministically. Terminal in step 0 when the whole holder set fits (<= N_SWEEP); \
+            \ handles up to 2xN_SWEEP holders, larger spikes need a higher-n variant."
         ;; Paginated re-score SWEEP over 2 steps (Phase 3 closeout). Step 0 brackets the sweep (freeze every affected
         ;; pool + swept-revoke the anchor) then recomputes the first window of present holders; if the whole set fits
         ;; (≤ N_SWEEP) it unfreezes + terminates, else it yields the cursor. sweep-in-progress holds ACROSS steps
