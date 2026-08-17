@@ -202,5 +202,49 @@
 (commit-tx)
 (print "=== END TX-AQP-NEG-OWNER ====================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-AQP-NEG-OWNER2 - non-owner ANK/SCORE/FVT owner-gated ops must fail")
+(print "")
+(print "=== TX-AQP-NEG-OWNER2 — non-owner AQP-ANK/AQP-SCR/AQP-FVT owner-gated ops rejected ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; EMMA signs — NOT the owner (ANHD) of AurynRain / ResumeVacScore / ResumeVacVault. Each op goes
+;; through the Talos client path (so UEV_IMC passes) and must reject at the OWNER gate specifically:
+;;   · AurynRain is alive → ANK|C>REVOKE's owner check precedes the #9 BoostClass lock.
+;;   · ResumeVacScore is fully vacated (nzs=0, deb-boost false) → ENABLE-DEB-BOOST precondition passes.
+;;   · ResumeVacVault has can-upgrade=true (default) → CONTROL-FVT precondition passes.
+;; So in every case the ONLY thing that could reject EMMA is ownership — non-vacuous by construction.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (foreign:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "ResumeVacScore"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "ResumeVacVault"))
+    )
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-ANK|C_RevokeAnchor rejected (anchor-owner gate)" [])
+                (ref-TS02-C3::AQP-ANK|C_RevokeAnchor foreign anchor-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-SCR|C_EnableDebBoost rejected (score-owner gate)" [])
+                (ref-TS02-C3::AQP-SCR|C_EnableDebBoost foreign score-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER2>> non-owner AQP-FVT|C_Control rejected (fvt-owner gate)" [])
+                (ref-TS02-C3::AQP-FVT|C_Control foreign fvt-id false false))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-AQP-NEG-OWNER2 ===================================================")
+(print "")
 (print "=== END FILE [6.2.10]_AQP-NEGATIVES.repl =====================================")
 (print "")
