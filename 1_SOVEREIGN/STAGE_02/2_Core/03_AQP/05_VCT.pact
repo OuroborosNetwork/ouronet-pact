@@ -2232,8 +2232,41 @@
     ;; Table persistence: W_ layer only. XI_* call W_ directly with ;; SECURE: comments; no raw insert/update/write on VCT|T|*.
     ;; SECURE composed by master VCT|C>* cap or P|VCT|RECIPE (atomic vacate batch). No UEV_* in XI bodies.
     ;;
+    (defun XI_SetPoolFvtsVacateFrozen:string (pool-id:string frozen:bool)
+        @doc "Freeze (frozen=true at begin) / unfreeze (false at finalize) collect + inject on every FVT the \
+            \ vacating pool's employed scores link to: walk URC_PoolActiveScoreIds → UR_SCR|ScoreFvtLink (BAR \
+            \ dropped) → distinct FVTs → FVT::XE_SetFvtVacateFrozen. Bounded (≤7 scores). The FVTs are the pool's \
+            \ own, so this never freezes another pool. Stake/unstake are frozen pool-side (PoolVacateInProgress)."
+        ;; SECURE: granted by master vacate caps.
+        (let
+            (
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (fvt-ids:[string]
+                    (distinct
+                        (filter
+                            (lambda (fid:string) (!= fid BAR))
+                            (map
+                                (lambda (score-id:string) (ref-SCR::UR_SCR|ScoreFvtLink score-id))
+                                (ref-AQP::URC_PoolActiveScoreIds pool-id)
+                            )
+                        )
+                    )
+                )
+            )
+            (do
+                (map
+                    (lambda (fvt-id:string) (ref-FVT::XE_SetFvtVacateFrozen fvt-id frozen))
+                    fvt-ids
+                )
+                "pool-fvts-freeze-set"
+            )
+        )
+    )
     (defun XI_EnsureVacateBegun:string (pool-id:string)
-        @doc "If vacate not in progress: set vacate-in-progress and disable pool stake."
+        @doc "If vacate not in progress: set vacate-in-progress, disable pool stake (stake+unstake are then blocked \
+            \ pool-side), AND freeze collect + inject on the pool's employed-score FVTs (XI_SetPoolFvtsVacateFrozen)."
         ;; SECURE: granted by master vacate caps.
         (let
             (
@@ -2247,6 +2280,7 @@
                         (ref-AQP::XB_SetPoolStakeEnabled pool-id false)
                         true
                     )
+                    (XI_SetPoolFvtsVacateFrozen pool-id true)
                     "begun"
                 )
             )
@@ -2281,6 +2315,7 @@
                 )
                 (ref-AQP::XE_SetVacateJobState pool-id false "" "" "")
                 (ref-AQP::XB_SetPoolStakeEnabled pool-id true)
+                (XI_SetPoolFvtsVacateFrozen pool-id false)
                 "finalized"
             )
             (if finalize "finalize-deferred-inventory-remains" "continued")

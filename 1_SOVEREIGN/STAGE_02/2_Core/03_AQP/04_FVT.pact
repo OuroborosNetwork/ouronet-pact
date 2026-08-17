@@ -13,6 +13,7 @@
     (defun UR_FVT|OwnerKonto:string (fvt-id:string))
     (defun UR_FVT|CanUpgrade:bool (fvt-id:string))
     (defun UR_FVT|CanChangeOwner:bool (fvt-id:string))
+    (defun UR_FVT|VacateFrozen:bool (fvt-id:string))
     (defun UR_FVT|CommonDenominator:string (fvt-id:string))
     (defun UR_FVT|TotalGhostTvlWeight:decimal (fvt-id:string))
     (defun UR_FVT|TotalBaseScore:decimal (fvt-id:string))
@@ -155,6 +156,7 @@
     (defun URDC_BuildStakeSettleBundle:object
         (pool-id:string beneficiary-id:string)
     )
+    (defun XE_SetFvtVacateFrozen:string (fvt-id:string frozen:bool))
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
     )
@@ -467,6 +469,13 @@
         pre-nz-flags:[object{FVT|ScorePreNzFlag}]
         pre-member-debs:[object{FVT|MemberPreDeb}]
     )
+    (defschema FVT|VacateFreeze
+        @doc "Key = <FVT-ID>. True while a pool this FVT serves is mid-vacate — blocks collect + inject on the FVT \
+            \ so the owner-forced vacate is not interfered with (stake/unstake are frozen pool-side via \
+            \ PoolVacateInProgress). Set by AQP-VCT begin (XI_EnsureVacateBegun) on each of the vacating pool's \
+            \ employed-score FVTs; cleared by VCT finalize. Read via UR_FVT|VacateFrozen (with-default-read false)."
+        frozen:bool
+    )
     ;;
     ;;{2}
     (deftable FVT|T:{FVT|Schema})                               ;; Key = <FVT-ID>
@@ -479,6 +488,7 @@
     (deftable FVT|T|MemberVault:{FVT|MemberVault})              ;; Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
     (deftable FVT|T|UserPresence:{FVT|UserPresence})           ;; Key = <FVT-ID> | <Ouronet-ID>
     (deftable FVT|T|ForcedFixCount:{FVT|ForcedFixCount})        ;; Key = <FVT-ID> | <DPTF-ID> | <User-ID>
+    (deftable FVT|T|VacateFreeze:{FVT|VacateFreeze})            ;; Key = <FVT-ID>
     ;;{3}
     (defconst CT_FVT_RPS_PREC 48)
     ;; M3 #12 2e — IGNIS charged per inject-forced deb-fix, at the user's next collect (non-discountable). Governance
@@ -1151,6 +1161,11 @@
         (require-capability (SECURE))
         (update FVT|T fvt-id {"member-link-count": member-link-count})
     )
+    (defun WU_FvtVacateFreeze:string (fvt-id:string frozen:bool)
+        @doc "Set the FVT vacate-frozen flag on FVT|T|VacateFreeze (write = upsert; reader defaults false)."
+        (require-capability (SECURE))
+        (write FVT|T|VacateFreeze fvt-id {"frozen": frozen})
+    )
     (defun WU_Fvt|Mosaic:string
         (fvt-id:string mosaic:bool)
         @doc "Update mosaic on FVT|T (C_SetMosaic only when no member links)."
@@ -1401,6 +1416,14 @@
     (defun UR_FVT|CanChangeOwner:bool (fvt-id:string)
         @doc "Reads can-change-owner from FVT row."
         (at "can-change-owner" (read FVT|T fvt-id ["can-change-owner"]))
+    )
+    (defun UR_FVT|VacateFrozen:bool (fvt-id:string)
+        @doc "True when the FVT is frozen for a pool vacate (blocks collect + inject). Default false (unset)."
+        (with-default-read FVT|T|VacateFreeze fvt-id
+            {"frozen": false}
+            {"frozen":= frozen}
+            frozen
+        )
     )
     (defun UR_FVT|CommonDenominator:string (fvt-id:string)
         @doc "Reads common-denominator from FVT row."
@@ -2689,6 +2712,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
             )
+            (enforce (not (UR_FVT|VacateFrozen fvt-id)) "FVT is frozen: a pool it serves is mid-vacate")
             (enforce (> amount 0.0) "Inject amount must be positive")
             (enforce (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) "Reward link row must exist")
             (enforce (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id) "Reward token is disabled for inject")
@@ -2717,6 +2741,7 @@
             ;; flux; a mid-sweep collect on an unswept holder would refresh deb against a stale-high aggregate).
             (enforce (not (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
                 "Collect is frozen while a re-score sweep is in progress on this pool")
+            (enforce (not (UR_FVT|VacateFrozen fvt-id)) "FVT is frozen: a pool it serves is mid-vacate")
             (enforce (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) "Reward link row must exist")
             (enforce (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id) "Reward token is disabled for collect")
             (enforce (URC_FvtScoreEntityLinkRowExists fvt-id score-entity-id) "ScoreEntityLink row must exist")
@@ -4894,6 +4919,14 @@
     )
     ;;
     ;; --- XE forwarders (AQP-VCT TF vacate composes stake/RPS primitives via IMC) ---
+    (defun XE_SetFvtVacateFrozen:string (fvt-id:string frozen:bool)
+        @doc "AQP-VCT begin/finalize: set this FVT's vacate-frozen flag (blocks collect + inject during a pool \
+            \ vacate). Called once per the vacating pool's employed-score FVTs. UEV_IMC + SECURE."
+        (UEV_IMC)
+        (with-capability (SECURE)
+            (WU_FvtVacateFreeze fvt-id frozen)
+        )
+    )
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
         (UEV_IMC)
@@ -5006,3 +5039,4 @@
 (create-table FVT|T|MemberVault)                                ;; Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
 (create-table FVT|T|UserPresence)                               ;; Key = <FVT-ID> | <Ouronet-ID>
 (create-table FVT|T|ForcedFixCount)                             ;; Key = <FVT-ID> | <DPTF-ID> | <User-ID>
+(create-table FVT|T|VacateFreeze)                               ;; Key = <FVT-ID>
