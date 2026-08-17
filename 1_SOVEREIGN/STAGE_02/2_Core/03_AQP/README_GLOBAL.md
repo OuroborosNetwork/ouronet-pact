@@ -162,7 +162,7 @@ Full construction recipe (exact reads → Full try → Legs verify/shrink → Ta
 [README_VACATE_UI.md §1](README_VACATE_UI.md#1-ui-vacate-engine-canonical-construction).
 
 1. UI **dirty-reads** inventory (`AQP-VCT.URD_Vacate*Inventory`) + unit-count helpers.
-2. Prefer **Full** if ~2M gas; else split with `URDC_BuildVacateSlicePlan` / `VACATE-GAS-MAX-*`, verifying each leg.
+2. Prefer **Full** if ~2M gas; else split with `URHC_BuildVacateSlicePlan` / `VACATE-GAS-MAX-*`, verifying each leg.
 3. UI presents N txs; user confirms **dump on chain**.
 4. First successful Legs tx **auto-begins** (`vacate-in-progress`, stake off).
 5. Last intended tx sets `finalize=true` — succeeds only if **that asset** unit count is 0 → stake on.

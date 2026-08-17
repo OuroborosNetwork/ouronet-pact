@@ -49,7 +49,7 @@ function** — it's:
    (`XI_3|RpsVacatePreZero` → `FVT::XE_BankScorePendingRewards`). *(exists)*
 3. **A pagination defpact template** — re-scan a bounded set each step, `take N`, apply a chunk, `yield`/`continue`
    until dry. This is exactly `MTX|2|C_Inject` (06_MTX-AQP:158) with `N_FIX=400`. *(exists as a shape to replicate)*
-4. **Present-user enumeration** — `FVT|T|UserPresence` + `URD_FvtStalePresentUsers`, class-agnostic, maintained at
+4. **Present-user enumeration** — `FVT|T|UserPresence` + `URH_FvtStalePresentUsers`, class-agnostic, maintained at
    stake (`XI_SyncFvtPresence`). *(exists)*
 
 **The ONE missing piece:** a **reverse index** `boost-class → [score-ids]`. Today `ANK|BoostClassLinkCount` stores
@@ -74,7 +74,7 @@ enumerate bounded unit-set              (per-consumer SCAN — differs)
 
 | consumer | scan (position source) | terminal action |
 |---|---|---|
-| **deb-fix** (exists) | `URD_FvtStalePresentUsers` (one FVT) | recompute: delta=0, refresh deb. No custody, no unlink. |
+| **deb-fix** (exists) | `URH_FvtStalePresentUsers` (one FVT) | recompute: delta=0, refresh deb. No custody, no unlink. |
 | **anchor sweep** (new) | reverse-index: anchor→BC→scores→pools/FVTs→present users | recompute (see §4 — DEEPER than deb-fix), then ONCE at end: unlink + revoke + `WU_BC|DecScoreLinkCount`. |
 | **vacate** (rehaul) | `URDC_Vacate*OwnerRows` → legs → unique beneficiaries (one pool) | zero: delta=−full, zero tracker slots, then **bulk custody-return** last; toggle session begin/finalize. |
 
@@ -127,7 +127,7 @@ score *definitions* (few), not stakers. This replaces the coarse count with an e
 
 ### 5.0 Single-tx agnostic path — ✅ SHIPPED (commits this session)
 `CC_FullVacate(pool-id)`: `UEV_IMC` → read `aqp-class` → dispatch to per-kind `XI_Vacate*Pool` → shared `XI_Vacate*Batch`
-cores. On-chain scan (`URDC_VacateNonceOwnerRowsRaw`, `URDC_VacateTfOwnerRows`), **no UI legs**. All 5 classes proven
+cores. On-chain scan (`URHC_VacateNonceOwnerRowsRaw`, `URHC_VacateTfOwnerRows`), **no UI legs**. All 5 classes proven
 (`TX-VCT-{TF01b,L01b,L02b,DPNF02b,CC01}`). Class-1 drains native TF + every live DPOF satellite via new
 `URD_AQP|ActivePoolDpofIds` (HEAVY select). `XB_Vacate{True,Orto,Semi,Non}Fungible` + Talos wrappers. This is the
 "small pool, one click" path.
@@ -278,8 +278,8 @@ incrementally — each slice subtracts its portion of that beneficiary's score/a
 to 0 only when the beneficiary's TOTAL stake (all their legs/nonces, TF + OF) is gone → `URC_PoolFullyVacated`
 (finalize) fires only on the genuinely-last batch, unifying TF and OF series automatically (§5-mixed-pool note).
 
-**Dual pools (class 0/1):** the UI dirty-reads BOTH `URD_VacateTrueFungiblePoolLegs` and
-`URD_VacateOrtoFungiblePoolLegs`, builds a TF series (`CC_BatchVacateTrueFungible`) AND an OF series
+**Dual pools (class 0/1):** the UI dirty-reads BOTH `URH_VacateTrueFungiblePoolLegs` and
+`URH_VacateOrtoFungiblePoolLegs`, builds a TF series (`CC_BatchVacateTrueFungible`) AND an OF series
 (`CC_BatchVacateOrtoFungible`), and fires them as ONE campaign; finalize fires only when the whole pool is empty.
 
 **UI algorithm:** (1) read `aqp-class` + `PoolAssetId`; (2) dirty-read the class's lanes (TF+OF for 0/1; OF for 2;
@@ -325,7 +325,7 @@ validation/gas failure, re-read the affected lane and rebuild the remaining slic
 ### Shared-core contract (verified phase 2 — the primitives phases 3-4 bind to)
 | need | primitive (already exists) | how the sweep/vacate uses it |
 |---|---|---|
-| enumerate positions | `ANK::UR_BC|ScoreLinks` (phase 1) + `FVT::URD_FvtStalePresentUsers` / `FVT|T|UserPresence` | sweep: anchor→BC→scores→present users; vacate: legs |
+| enumerate positions | `ANK::UR_BC|ScoreLinks` (phase 1) + `FVT::URH_FvtStalePresentUsers` / `FVT|T|UserPresence` | sweep: anchor→BC→scores→present users; vacate: legs |
 | settle @ old-deb (cross-module) | `FVT::XE_BankScorePendingRewards(ben, pool, plan)` | both — banks pending across streams before any weight change |
 | recompute deb (0-base) | `FVT::XE_RefreshUserScoreDeb`-driver / `SCR::XE_RefreshUserScoreDeb` → `XI_2|ApplySingularUserScoreDelta` | sweep deb terminal |
 | signed score delta (zero/unstake) | `SCR::XE_ApplyTrueFungibleStakeDelta` (+OF/SF/NF) `direction=false` | vacate terminal |

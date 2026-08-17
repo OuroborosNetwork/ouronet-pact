@@ -2,15 +2,15 @@
     (defun GOV|Demiurgoi ())
     (defun UC_ComputeMinSliceCount:integer (unit-count:integer vacate-kind:integer))
     (defun UC_ZeroIntAmountsMatrix:[[integer]] (nonces-array:[[integer]]))
-    (defun URDC_BuildVacateSlicePlan:object
+    (defun URHC_BuildVacateSlicePlan:object
         (pool-id:string asset-id:string vacate-kind:integer slice-count:integer))
-    (defun URDC_VacateUnitCountForKind:integer
+    (defun URHC_VacateUnitCountForKind:integer
         (pool-id:string asset-id:string vacate-kind:integer))
     ;;  [UR/URD] vacate inventory + vacate-in-progress observability (UI preflight)
     (defun UR_VacateInProgress:bool (pool-id:string))
-    (defun URD_VacateTfInventory:object (pool-id:string dptf-id:string))
-    (defun URD_VacateOfInventory:object (pool-id:string dpof-id:string))
-    (defun URD_VacateCollectableInventory:object (pool-id:string collectable-id:string son:bool))
+    (defun URH_VacateTfInventory:object (pool-id:string dptf-id:string))
+    (defun URH_VacateOfInventory:object (pool-id:string dpof-id:string))
+    (defun URH_VacateCollectableInventory:object (pool-id:string collectable-id:string son:bool))
     ;;  [C/XB] Vacate REHAUL (phase 4) — agnostic, pool-id-only, legs read on-chain
     (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
     (defun CC_BatchVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
@@ -52,7 +52,7 @@
 ;; Table unwind dedupes by unique beneficiary (shared beneficiaries across owners).
 ;;
 ;; TF vacate unit of work = one object{VCT|VacateTfLeg} (owner × beneficiary × balance).
-;;   URDC_VacateTfOwnerRows → legs; all TF vacate XI_* take legs:[object{VCT|VacateTfLeg}].
+;;   URHC_VacateTfOwnerRows → legs; all TF vacate XI_* take legs:[object{VCT|VacateTfLeg}].
 ;;
 ;; Phases for FULL TF VACATE (unwind before transfer):
 ;;   2] Trackers — per leg: AQP|XE_ZeroDptfTrackerSlot (write-only)
@@ -877,31 +877,31 @@
     )
 
     ;; [URDC]
-    (defun URDC_VacateTfOwnerRows:[object{VCT|VacateTfLeg}]
+    (defun URHC_VacateTfOwnerRows:[object{VCT|VacateTfLeg}]
         (pool-id:string dptf-id:string)
-        @doc "TF vacate owner rows from URD_VacateTfInventory."
-        (at "legs" (URD_VacateTfInventory pool-id dptf-id))
+        @doc "TF vacate owner rows from URH_VacateTfInventory."
+        (at "legs" (URH_VacateTfInventory pool-id dptf-id))
     )
-    (defun URDC_VacateNonceOwnerRowsRaw:[object{VCT|VacateNonceLeg}]
+    (defun URHC_VacateNonceOwnerRowsRaw:[object{VCT|VacateNonceLeg}]
         (pool-id:string asset-id:string vacate-kind:integer)
         @doc "Grouped nonce vacate owner rows from VCT inventory URD (unexpanded)."
         (let ((son:bool (UC_VacateKindSon vacate-kind)))
             (if (= vacate-kind VACATE-KIND-OF)
-                (at "legs" (URD_VacateOfInventory pool-id asset-id))
-                (at "legs" (URD_VacateCollectableInventory pool-id asset-id son))
+                (at "legs" (URH_VacateOfInventory pool-id asset-id))
+                (at "legs" (URH_VacateCollectableInventory pool-id asset-id son))
             )
         )
     )
-    (defun URDC_VacateNonceOwnerRows:[object{VCT|VacateNonceLeg}]
+    (defun URHC_VacateNonceOwnerRows:[object{VCT|VacateNonceLeg}]
         (pool-id:string asset-id:string vacate-kind:integer)
         @doc "Nonce vacate owner rows gas-expanded for slice/full vacate chunk limits."
         (UC_ExpandNonceOwnerRowsForGasMax
-            (URDC_VacateNonceOwnerRowsRaw pool-id asset-id vacate-kind)
+            (URHC_VacateNonceOwnerRowsRaw pool-id asset-id vacate-kind)
             (UC_GasMaxForKind vacate-kind)
         )
     )
     ;; ═══════════════════════════════════════════════════════════════════════════
-    ;; VACATE — PHASE 1: SCAN. One URD_ per asset family builds the pool's legs, grouped by asset-lane
+    ;; VACATE — PHASE 1: SCAN. One URH_ per asset family builds the pool's legs, grouped by asset-lane
     ;; ({asset-id, legs}). ALL on-chain scanning lives here; the XI_*PoolLegs consumers do the writes with
     ;; ZERO reads. This clean scan/consume split is what the parallel batch functions reuse (UI dirty-reads
     ;; these same scanners off-chain to build slices, then feeds one XI_*FromLegs consumer per tx).
@@ -962,11 +962,11 @@
             [(ref-AQP::UR_AQP|PoolAssetId pool-id)]
         )
     )
-    ;; PHASE-1 SCAN (URD_): identical shape — one `let` binding the NAMED id-list (from the URC_ above), then
+    ;; PHASE-1 SCAN (URH_): identical shape — one `let` binding the NAMED id-list (from the URC_ above), then
     ;; `map` the per-kind lane-builder over it. No inline id construction, no scan.
-    (defun URD_VacateTrueFungiblePoolLegs:[object{VCT|VacateTfLane}] (pool-id:string)
+    (defun URH_VacateTrueFungiblePoolLegs:[object{VCT|VacateTfLane}] (pool-id:string)
         @doc "PHASE-1 — the pool's DPTF lanes as {asset-id, legs}: ids from URC_VacatePoolTfIds, legs from \
-            \ URDC_VacateTfOwnerRows. An empty lane → the consumer no-ops it."
+            \ URHC_VacateTfOwnerRows. An empty lane → the consumer no-ops it."
         (let
             (
                 (dptf-ids:[string] (URC_VacatePoolTfIds pool-id))
@@ -975,16 +975,16 @@
                 (lambda (dptf-id:string)
                     (UDC_VacateTfLane
                         dptf-id
-                        (URDC_VacateTfOwnerRows pool-id dptf-id)
+                        (URHC_VacateTfOwnerRows pool-id dptf-id)
                     )
                 )
                 dptf-ids
             )
         )
     )
-    (defun URD_VacateOrtoFungiblePoolLegs:[object{VCT|VacateNonceLane}] (pool-id:string)
+    (defun URH_VacateOrtoFungiblePoolLegs:[object{VCT|VacateNonceLane}] (pool-id:string)
         @doc "PHASE-1 — the pool's DPOF lanes as {asset-id, legs}: ids from URC_VacatePoolOfIds, legs from \
-            \ URDC_VacateNonceOwnerRowsRaw (kind OF)."
+            \ URHC_VacateNonceOwnerRowsRaw (kind OF)."
         (let
             (
                 (dpof-ids:[string] (URC_VacatePoolOfIds pool-id))
@@ -993,16 +993,16 @@
                 (lambda (dpof-id:string)
                     (UDC_VacateNonceLane
                         dpof-id
-                        (URDC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF)
+                        (URHC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF)
                     )
                 )
                 dpof-ids
             )
         )
     )
-    (defun URD_VacateCollectablesPoolLegs:[object{VCT|VacateNonceLane}] (pool-id:string son:bool)
+    (defun URH_VacateCollectablesPoolLegs:[object{VCT|VacateNonceLane}] (pool-id:string son:bool)
         @doc "PHASE-1 — the pool's DPSF (son=true) / DPNF (son=false) collection lane as [{asset-id, legs}]: id \
-            \ from URC_VacatePoolCollectableIds, legs from URDC_VacateNonceOwnerRowsRaw (kind DPSF/DPNF)."
+            \ from URC_VacatePoolCollectableIds, legs from URHC_VacateNonceOwnerRowsRaw (kind DPSF/DPNF)."
         (let
             (
                 (collectable-ids:[string] (URC_VacatePoolCollectableIds pool-id))
@@ -1012,14 +1012,14 @@
                 (lambda (collectable-id:string)
                     (UDC_VacateNonceLane
                         collectable-id
-                        (URDC_VacateNonceOwnerRowsRaw pool-id collectable-id vacate-kind)
+                        (URHC_VacateNonceOwnerRowsRaw pool-id collectable-id vacate-kind)
                     )
                 )
                 collectable-ids
             )
         )
     )
-    (defun URDC_BuildVacateSlicePlan:object
+    (defun URHC_BuildVacateSlicePlan:object
         (pool-id:string asset-id:string vacate-kind:integer slice-count:integer)
         @doc "Slice plan from live pool inventory (URDC read + UC partition)."
         (if (= vacate-kind VACATE-KIND-TF)
@@ -1027,14 +1027,14 @@
                 pool-id
                 asset-id
                 slice-count
-                (URDC_VacateTfOwnerRows pool-id asset-id)
+                (URHC_VacateTfOwnerRows pool-id asset-id)
             )
             (UC_BuildNonceVacateSlicePlanFromOwnerRows
                 pool-id
                 asset-id
                 vacate-kind
                 slice-count
-                (URDC_VacateNonceOwnerRows pool-id asset-id vacate-kind)
+                (URHC_VacateNonceOwnerRows pool-id asset-id vacate-kind)
             )
         )
     )
@@ -1066,7 +1066,7 @@
             )
         )
     )
-    (defun URDC_VacateOwnerCountForKind:integer
+    (defun URHC_VacateOwnerCountForKind:integer
         (pool-id:string asset-id:string vacate-kind:integer)
         @doc "Owner-row count from live vacate inventory — UI preflight before Full/Legs."
         (let
@@ -1076,25 +1076,25 @@
                 (son:bool (UC_VacateKindSon vacate-kind))
             )
             (if (= vacate-kind VACATE-KIND-TF)
-                (at "leg-count" (URD_VacateTfInventory pool-id asset-id))
+                (at "leg-count" (URH_VacateTfInventory pool-id asset-id))
                 (if (= vacate-kind VACATE-KIND-OF)
-                    (at "leg-count" (URD_VacateOfInventory pool-id asset-id))
-                    (at "leg-count" (URD_VacateCollectableInventory pool-id asset-id son))
+                    (at "leg-count" (URH_VacateOfInventory pool-id asset-id))
+                    (at "leg-count" (URH_VacateCollectableInventory pool-id asset-id son))
                 )
             )
         )
     )
-    (defun URDC_VacateNonceTotalForKind:integer
+    (defun URHC_VacateNonceTotalForKind:integer
         (pool-id:string asset-id:string vacate-kind:integer)
         @doc "Sum of nonces across all owner rows — gas unit for OF/DPSF/DPNF slice planning."
-        (UC_OwnerRowNonceTotal (URDC_VacateNonceOwnerRowsRaw pool-id asset-id vacate-kind))
+        (UC_OwnerRowNonceTotal (URHC_VacateNonceOwnerRowsRaw pool-id asset-id vacate-kind))
     )
-    (defun URDC_VacateUnitCountForKind:integer
+    (defun URHC_VacateUnitCountForKind:integer
         (pool-id:string asset-id:string vacate-kind:integer)
         @doc "TF → owner count; OF/DPSF/DPNF → total nonce count (for UC_ComputeMinSliceCount)."
         (if (= vacate-kind VACATE-KIND-TF)
-            (URDC_VacateOwnerCountForKind pool-id asset-id vacate-kind)
-            (URDC_VacateNonceTotalForKind pool-id asset-id vacate-kind)
+            (URHC_VacateOwnerCountForKind pool-id asset-id vacate-kind)
+            (URHC_VacateNonceTotalForKind pool-id asset-id vacate-kind)
         )
     )
     ;; [UEV]
@@ -1148,7 +1148,7 @@
             (ref-AQP::UR_AQP|PoolVacateSession pool-id)
         )
     )
-    (defun URD_VacateTfInventory:object (pool-id:string dptf-id:string)
+    (defun URH_VacateTfInventory:object (pool-id:string dptf-id:string)
         @doc "Live TF vacate inventory for <pool-id>/<dptf-id>: reads the active DPTF tracker rows and builds \
             \ per-owner TF legs. Being a live tracker read, a vacated leg zeroes its slot, so a re-read after a \
             \ partial vacate naturally returns the outstanding remains (the UI's 'construct remains' is implicit)."
@@ -1158,23 +1158,23 @@
                     (lambda (row:object)
                         (UDC_VacateTfLeg (at "owner-id" row) (at "beneficiary-id" row) (at "balance" row))
                     )
-                    (ref-AQP::URD_AQP|ActiveDptfTrackerRows pool-id dptf-id)
+                    (ref-AQP::URH_AQP|ActiveDptfTrackerRows pool-id dptf-id)
                 )
             )
         )
     )
-    (defun URD_VacateOfNonceRows:[object{VCT|VacateNonceRow}] (pool-id:string dpof-id:string)
+    (defun URH_VacateOfNonceRows:[object{VCT|VacateNonceRow}] (pool-id:string dpof-id:string)
         @doc "Live per-nonce OF vacate rows for <pool-id>/<dpof-id> from the active DPOF tracker."
         (let ((ref-AQP:module{AcquisitionPoolsV1} AQP-POOL))
             (map
                 (lambda (row:object)
                     (UDC_VacateNonceRow (at "owner-id" row) (at "beneficiary-id" row) (at "nonce" row) (at "balance" row))
                 )
-                (ref-AQP::URD_AQP|ActiveDpofTrackerRows pool-id dpof-id)
+                (ref-AQP::URH_AQP|ActiveDpofTrackerRows pool-id dpof-id)
             )
         )
     )
-    (defun URD_VacateOfInventory:object (pool-id:string dpof-id:string)
+    (defun URH_VacateOfInventory:object (pool-id:string dpof-id:string)
         @doc "Live OF vacate inventory: folds the per-nonce rows into per-owner nonce legs (legs + leg-count)."
         (UDC_VacateNonceLegInventory
             (fold
@@ -1182,11 +1182,11 @@
                     (UC_MergeVacateNonceRowIntoLegs acc (at "owner-id" row) (at "beneficiary-id" row) (at "nonce" row) (at "balance" row))
                 )
                 []
-                (URD_VacateOfNonceRows pool-id dpof-id)
+                (URH_VacateOfNonceRows pool-id dpof-id)
             )
         )
     )
-    (defun URD_VacateCollectableNonceRows:[object{VCT|VacateNonceRow}]
+    (defun URH_VacateCollectableNonceRows:[object{VCT|VacateNonceRow}]
         (pool-id:string collectable-id:string son:bool)
         @doc "Live per-nonce collectable vacate rows for <pool-id>/<collectable-id> (<son> selects the DPSF vs \
             \ DPNF active tracker)."
@@ -1196,13 +1196,13 @@
                     (UDC_VacateNonceRow (at "owner-id" row) (at "beneficiary-id" row) (at "nonce" row) (at "balance" row))
                 )
                 (if son
-                    (ref-AQP::URD_AQP|ActiveDpsfTrackerRows pool-id collectable-id)
-                    (ref-AQP::URD_AQP|ActiveDpnfTrackerRows pool-id collectable-id)
+                    (ref-AQP::URH_AQP|ActiveDpsfTrackerRows pool-id collectable-id)
+                    (ref-AQP::URH_AQP|ActiveDpnfTrackerRows pool-id collectable-id)
                 )
             )
         )
     )
-    (defun URD_VacateCollectableInventory:object
+    (defun URH_VacateCollectableInventory:object
         (pool-id:string collectable-id:string son:bool)
         @doc "Live collectable vacate inventory: folds the per-nonce rows into per-owner nonce legs (legs + leg-count)."
         (UDC_VacateNonceLegInventory
@@ -1211,7 +1211,7 @@
                     (UC_MergeVacateCollectableRowIntoLegs acc (at "owner-id" row) (at "beneficiary-id" row) (at "nonce" row) (at "balance" row))
                 )
                 []
-                (URD_VacateCollectableNonceRows pool-id collectable-id son)
+                (URH_VacateCollectableNonceRows pool-id collectable-id son)
             )
         )
     )
@@ -1740,51 +1740,51 @@
     (defun XB_VacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string)
         @doc "Vacate rehaul — external per-kind TF vacate for a whole pool (both internal + external, hence XB). \
-            \ 2-phase: SCAN every live DPTF lane (URD_VacateTrueFungiblePoolLegs: native + F| frozen) → CONSUME \
+            \ 2-phase: SCAN every live DPTF lane (URH_VacateTrueFungiblePoolLegs: native + F| frozen) → CONSUME \
             \ (XI_VacateTrueFungiblePoolLegs). The pool's DPOF satellites (Z|/H|) are vacated by XB_VacateOrtoFungible; \
             \ use CC_FullVacate to empty a whole pool of any class in one call."
         (UEV_IMC)
         (with-capability (VCT|C>VACATE pool-id)
-            (XI_VacateTrueFungiblePoolLegs pool-id (URD_VacateTrueFungiblePoolLegs pool-id))
+            (XI_VacateTrueFungiblePoolLegs pool-id (URH_VacateTrueFungiblePoolLegs pool-id))
         )
     )
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string dpof-id:string)
         @doc "Vacate rehaul — external per-kind OF vacate for ONE OF asset of a pool (both internal + external). \
-            \ 2-phase: SCAN that asset's legs (URDC_VacateNonceOwnerRowsRaw) → CONSUME (XI_VacateOrtoFungibleFromLegs). \
+            \ 2-phase: SCAN that asset's legs (URHC_VacateNonceOwnerRowsRaw) → CONSUME (XI_VacateOrtoFungibleFromLegs). \
             \ A class-1 pool has TF + ≥1 OF satellite; call per satellite, or use CC_FullVacate for the whole pool."
         (UEV_IMC)
         (with-capability (VCT|C>VACATE pool-id)
             (XI_VacateOrtoFungibleFromLegs pool-id dpof-id
-                (URDC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF))
+                (URHC_VacateNonceOwnerRowsRaw pool-id dpof-id VACATE-KIND-OF))
         )
     )
     (defun XB_VacateSemiFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string dpsf-id:string)
         @doc "Vacate rehaul — external per-kind DPSF (semi-fungible collection) vacate for ONE collectable of a \
-            \ pool. 2-phase: SCAN (URDC_VacateNonceOwnerRowsRaw, DPSF) → CONSUME (XI_VacateCollectablesFromLegs, \
+            \ pool. 2-phase: SCAN (URHC_VacateNonceOwnerRowsRaw, DPSF) → CONSUME (XI_VacateCollectablesFromLegs, \
             \ son=true). Use CC_FullVacate to empty the whole pool in one call."
         (UEV_IMC)
         (with-capability (VCT|C>VACATE pool-id)
             (XI_VacateCollectablesFromLegs pool-id dpsf-id true
-                (URDC_VacateNonceOwnerRowsRaw pool-id dpsf-id VACATE-KIND-DPSF))
+                (URHC_VacateNonceOwnerRowsRaw pool-id dpsf-id VACATE-KIND-DPSF))
         )
     )
     (defun XB_VacateNonFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string dpnf-id:string)
         @doc "Vacate rehaul — external per-kind DPNF (non-fungible collection) vacate for ONE collectable of a \
-            \ pool. 2-phase: SCAN (URDC_VacateNonceOwnerRowsRaw, DPNF) → CONSUME (XI_VacateCollectablesFromLegs, \
+            \ pool. 2-phase: SCAN (URHC_VacateNonceOwnerRowsRaw, DPNF) → CONSUME (XI_VacateCollectablesFromLegs, \
             \ son=false). Use CC_FullVacate to empty the whole pool in one call."
         (UEV_IMC)
         (with-capability (VCT|C>VACATE pool-id)
             (XI_VacateCollectablesFromLegs pool-id dpnf-id false
-                (URDC_VacateNonceOwnerRowsRaw pool-id dpnf-id VACATE-KIND-DPNF))
+                (URHC_VacateNonceOwnerRowsRaw pool-id dpnf-id VACATE-KIND-DPNF))
         )
     )
     (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string)
         @doc "HEAVY (R3 CC_) AGNOSTIC single-tx full vacate: input is JUST the pool-id. Clean 2-PHASE per aqp-class: \
-            \ PHASE 1 URD_Vacate*PoolLegs SCANs the pool's legs (grouped by asset-lane); PHASE 2 XI_Vacate*PoolLegs \
+            \ PHASE 1 URH_Vacate*PoolLegs SCANs the pool's legs (grouped by asset-lane); PHASE 2 XI_Vacate*PoolLegs \
             \ CONSUMEs them. TF-FAMILY (class 0 LP farm / class 1 DPTF family) is MULTI-LANE — up to native TF + F| \
             \ frozen TF + Z|/H| DPOF satellites (class 0 stakes a Z| sleeping-LP DPOF too, NOT TF-only) — so it runs \
             \ BOTH the TF pair AND the OF pair. class 2 → OF; class 3 → DPSF; class 4 → DPNF. Empty lanes no-op. \
@@ -1803,13 +1803,13 @@
                     ;; TF-family: scan+consume the DPTF lanes AND the DPOF satellite lanes
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators
                         [
-                            (XI_VacateTrueFungiblePoolLegs pool-id (URD_VacateTrueFungiblePoolLegs pool-id))
-                            (XI_VacateOrtoFungiblePoolLegs pool-id (URD_VacateOrtoFungiblePoolLegs pool-id))
+                            (XI_VacateTrueFungiblePoolLegs pool-id (URH_VacateTrueFungiblePoolLegs pool-id))
+                            (XI_VacateOrtoFungiblePoolLegs pool-id (URH_VacateOrtoFungiblePoolLegs pool-id))
                         ]
                         [])
                     (if (= c 2)
-                        (XI_VacateOrtoFungiblePoolLegs pool-id (URD_VacateOrtoFungiblePoolLegs pool-id))
-                        (XI_VacateCollectablesPoolLegs pool-id son (URD_VacateCollectablesPoolLegs pool-id son))
+                        (XI_VacateOrtoFungiblePoolLegs pool-id (URH_VacateOrtoFungiblePoolLegs pool-id))
+                        (XI_VacateCollectablesPoolLegs pool-id son (URH_VacateCollectablesPoolLegs pool-id son))
                     )
                 )
             )
@@ -1817,7 +1817,7 @@
     )
     ;; ═══════════════════════════════════════════════════════════════════════════
     ;; PHASE 2 — CC_BatchVacate<Kind>: one tx of a UI-sliced multi-tx campaign. The UI dirty-reads the
-    ;; URD_Vacate*PoolLegs scanners, splits into disjoint gas-bounded slices (across legs; within a leg by nonces
+    ;; URH_Vacate*PoolLegs scanners, splits into disjoint gas-bounded slices (across legs; within a leg by nonces
     ;; for nonce kinds), and fires one CC_BatchVacate<Kind> per slice. Each: validate the slice vs the LIVE tracker
     ;; + owner-gate (VCT|C>LEGS-*-VACATE), EnsureVacateBegun (first tx freezes stake/unstake pool-side + collect/
     ;; inject on the pool's FVTs), consume the slice, then MaybeFinalizeVacate with finalize=true (auto — honoured
@@ -2069,7 +2069,7 @@
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 ;;
                 (settle-bundle:object
-                    (ref-FVT::URDC_BuildStakeSettleBundle pool-id beneficiary-id)
+                    (ref-FVT::URHC_BuildStakeSettleBundle pool-id beneficiary-id)
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -2274,7 +2274,7 @@
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 ;;
                 (settle-bundle:object
-                    (ref-FVT::URDC_BuildStakeSettleBundle pool-id beneficiary-id)
+                    (ref-FVT::URHC_BuildStakeSettleBundle pool-id beneficiary-id)
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
@@ -2311,7 +2311,7 @@
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 ;;
                 (settle-bundle:object
-                    (ref-FVT::URDC_BuildStakeSettleBundle pool-id beneficiary-id)
+                    (ref-FVT::URHC_BuildStakeSettleBundle pool-id beneficiary-id)
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators

@@ -4,8 +4,8 @@
     (defun GOV|AQP|PBL ())
     ;;
     ;;  [UCK]
-    (defun UCK_Anchors:string (account:string anchor-id:string))
-    (defun UCK_UserBoost:string (account:string boost-class-id:string))
+    (defun UCk_Anchors:string (account:string anchor-id:string))
+    (defun UCk_UserBoost:string (account:string boost-class-id:string))
     ;;
     ;;  [UR] ANK|Schema
     (defun UR_ANK|AnchoredAsset:string (anchor-id:string))
@@ -20,7 +20,7 @@
     (defun UR_ANK|NFTraitValue:string (anchor-id:string))
     (defun UR_ANK|NFNonceClass:integer (anchor-id:string))
     (defun UR_ANK|ID:string (anchor-id:string))
-    (defun URD_ANK|AllAnchorIds:[string] ())
+    (defun URH_ANK|AllAnchorIds:[string] ())
     (defun UR_ANK|AnchorsForAsset:[string] (asset-id:string))
     ;;  [UR] BoostClass
     (defun UR_BC|Anchors:integer (boost-class-id:string))
@@ -28,7 +28,7 @@
     (defun UR_BC|ScoreLinks:[string] (boost-class-id:string))
     (defun UR_BC|ScoreLinkCount:integer (boost-class-id:string))
     (defun UR_BC|ID:string (boost-class-id:string))
-    (defun URD_BC|AllBoostClassIds:[string] ())
+    (defun URH_BC|AllBoostClassIds:[string] ())
     ;;  [UR] AssetAnchors
     (defun UR_AA|GroupsActive:integer (asset-id:string))
     (defun UR_AA|AnchorsActive:integer (asset-id:string))
@@ -606,12 +606,12 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun UCK_Anchors:string
+    (defun UCk_Anchors:string
         (account:string anchor-id:string)
         @doc "Composite key for ANK|T|Anchors (account BAR anchor-id)."
         (concat [account BAR anchor-id])
     )
-    (defun UCK_UserBoost:string
+    (defun UCk_UserBoost:string
         (account:string boost-class-id:string)
         @doc "Composite key for ANK|T|UserBoost (account BAR boost-class-id)."
         (concat [account BAR boost-class-id])
@@ -675,7 +675,7 @@
         @doc "Reads anchor-id field from anchor row."
         (at "anchor-id" (UR_ANK|Data anchor-id))
     )
-    (defun URD_ANK|AllAnchorIds:[string] ()
+    (defun URH_ANK|AllAnchorIds:[string] ()
         @doc "Returns all row keys from ANK|T|Anchor."
         (keys ANK|T|Anchor)
     )
@@ -711,7 +711,7 @@
         @doc "Reads boost-class-id from BoostClass row."
         (at "boost-class-id" (read ANK|T|BoostClass boost-class-id ["boost-class-id"]))
     )
-    (defun URD_BC|AllBoostClassIds:[string] ()
+    (defun URH_BC|AllBoostClassIds:[string] ()
         @doc "Returns all row keys from ANK|T|BoostClass."
         (keys ANK|T|BoostClass)
     )
@@ -813,7 +813,7 @@
     ;; Core row: UR_ANK-U|Data
     (defun UR_ANK-U|Data:object{ANK|UserSchema} (account:string anchor-id:string)
         @doc "Core read: user cumulative promile row for account x anchor."
-        (with-default-read ANK|T|Anchors (UCK_Anchors account anchor-id)
+        (with-default-read ANK|T|Anchors (UCk_Anchors account anchor-id)
             (UDC_AccountAnchor 0.0 account anchor-id)
             {"promile"                  := p
             ,"ouronet-account"          := oa
@@ -837,7 +837,7 @@
     ;; [5] ANK|T|UserBoost  (ANK|UserBoostSchema)  Key = <Ouronet-Account> | <Boost-Class-ID>
     (defun UR_UB|Data:object{ANK|UserBoostSchema} (account:string boost-class-id:string)
         @doc "Reads user-boost aggregate row (with-default-read when absent)."
-        (with-default-read ANK|T|UserBoost (UCK_UserBoost account boost-class-id)
+        (with-default-read ANK|T|UserBoost (UCk_UserBoost account boost-class-id)
             (UDC_UserBoost 0.0 account boost-class-id)
             {"aggregate-promile"   := ap
             ,"ouronet-account"     := oa
@@ -1591,7 +1591,7 @@
             \ non-negative too; the …PromileAbsolute resync recomputes the true value. Floor, not enforce — a hard \
             \ abort would strand a staker's assets; the clamp lets unstake always succeed."
         (require-capability (SECURE))
-        (write ANK|T|Anchors (UCK_Anchors account anchor-id)
+        (write ANK|T|Anchors (UCk_Anchors account anchor-id)
             (UDC_AccountAnchor (if (< promile 0.0) 0.0 promile) account anchor-id)
         )
     )
@@ -1605,7 +1605,7 @@
         (account:string boost-class-id:string aggregate-promile:decimal)
         @doc "Upsert aggregate-promile on ANK|T|UserBoost."
         (require-capability (SECURE))
-        (write ANK|T|UserBoost (UCK_UserBoost account boost-class-id)
+        (write ANK|T|UserBoost (UCk_UserBoost account boost-class-id)
             (UDC_UserBoost aggregate-promile account boost-class-id)
         )
     )

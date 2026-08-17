@@ -2,18 +2,18 @@
     (defun GOV|Demiurgoi ())
     ;;
     ;;  [UCK]
-    (defun UCK_DPTFTracker:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
-    (defun UCK_DPOFTracker:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UCK_DPSFTracker:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UCK_DPNFTracker:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
-    (defun UCK_BenDptfTotal:string (beneficiary-id:string dptf-id:string))
-    (defun UCK_BenDpsfNonceTotal:string (beneficiary-id:string dpsf-id:string nonce:integer))
-    (defun UCK_BenDpnfNonceTotal:string (beneficiary-id:string dpnf-id:string nonce:integer))
-    (defun UCK_BenDpsfAnkMeta:string (beneficiary-id:string dpsf-id:string))
-    (defun UCK_BenDpnfAnkMeta:string (beneficiary-id:string dpnf-id:string))
+    (defun UCk_DPTFTracker:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
+    (defun UCk_DPOFTracker:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UCk_DPSFTracker:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UCk_DPNFTracker:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer))
+    (defun UCk_BenDptfTotal:string (beneficiary-id:string dptf-id:string))
+    (defun UCk_BenDpsfNonceTotal:string (beneficiary-id:string dpsf-id:string nonce:integer))
+    (defun UCk_BenDpnfNonceTotal:string (beneficiary-id:string dpnf-id:string nonce:integer))
+    (defun UCk_BenDpsfAnkMeta:string (beneficiary-id:string dpsf-id:string))
+    (defun UCk_BenDpnfAnkMeta:string (beneficiary-id:string dpnf-id:string))
     ;;
     ;;  [UR] AQP|Schema (AQP|T|Pool)
-    (defun URD_AQP|AllPoolIds:[string] ())
+    (defun URH_AQP|AllPoolIds:[string] ())
     (defun UR_AQP|PoolAqpClass:integer (pool-id:string))
     (defun UR_AQP|PoolAssetId:string (pool-id:string))
     (defun UR_AQP|PoolScorePrimary:string (pool-id:string))
@@ -27,19 +27,19 @@
     (defun UR_AQP|PoolStakeEnabled:bool (pool-id:string))
     (defun UR_AQP|PoolSweepInProgress:bool (pool-id:string))
     (defun UR_AQP|PoolVacateSession:object (pool-id:string))
-    (defun URD_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string))
-    (defun URD_AQP|ActiveDpofTrackerRows:[object] (pool-id:string dpof-id:string))
-    (defun URD_AQP|ActiveDpsfTrackerRows:[object] (pool-id:string dpsf-id:string))
-    (defun URD_AQP|ActiveDpnfTrackerRows:[object] (pool-id:string dpnf-id:string))
+    (defun URH_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string))
+    (defun URH_AQP|ActiveDpofTrackerRows:[object] (pool-id:string dpof-id:string))
+    (defun URH_AQP|ActiveDpsfTrackerRows:[object] (pool-id:string dpsf-id:string))
+    (defun URH_AQP|ActiveDpnfTrackerRows:[object] (pool-id:string dpnf-id:string))
     ;; M5 (#14) UI observability — cross-pool per-user stake legs (owner-side + beneficiary-side).
-    (defun URD_AQP|DptfStakesByOwner:[object] (owner-id:string))
-    (defun URD_AQP|DptfStakesByBeneficiary:[object] (beneficiary-id:string))
-    (defun URD_AQP|DpofStakesByOwner:[object] (owner-id:string))
-    (defun URD_AQP|DpofStakesByBeneficiary:[object] (beneficiary-id:string))
-    (defun URD_AQP|DpsfStakesByOwner:[object] (owner-id:string))
-    (defun URD_AQP|DpsfStakesByBeneficiary:[object] (beneficiary-id:string))
-    (defun URD_AQP|DpnfStakesByOwner:[object] (owner-id:string))
-    (defun URD_AQP|DpnfStakesByBeneficiary:[object] (beneficiary-id:string))
+    (defun URH_AQP|DptfStakesByOwner:[object] (owner-id:string))
+    (defun URH_AQP|DptfStakesByBeneficiary:[object] (beneficiary-id:string))
+    (defun URH_AQP|DpofStakesByOwner:[object] (owner-id:string))
+    (defun URH_AQP|DpofStakesByBeneficiary:[object] (beneficiary-id:string))
+    (defun URH_AQP|DpsfStakesByOwner:[object] (owner-id:string))
+    (defun URH_AQP|DpsfStakesByBeneficiary:[object] (beneficiary-id:string))
+    (defun URH_AQP|DpnfStakesByOwner:[object] (owner-id:string))
+    (defun URH_AQP|DpnfStakesByBeneficiary:[object] (beneficiary-id:string))
     ;;
     ;;  [UR] AQP|TrueFungibleTracker (AQP|T|DPTFTracker)
     (defun UR_AQP|DPTFTrackerBalance:decimal (pool-id:string dptf-id:string owner-id:string beneficiary-id:string))
@@ -57,7 +57,7 @@
     (defun UR_AQP|BenDpsfNonceAmount:integer (beneficiary-id:string dpsf-id:string nonce:integer))
     (defun UR_AQP|BenDpsfLastAnkSyncCount:integer (beneficiary-id:string dpsf-id:string))
     (defun UR_AQP|BenDpsfActiveNonceCount:integer (beneficiary-id:string dpsf-id:string))
-    (defun URD_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string))
+    (defun URH_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string))
     (defun URC_BenDpsfHasStake:bool (beneficiary-id:string dpsf-id:string))
     (defun URC_BenDpsfAnchorsNeedSync:bool (beneficiary-id:string dpsf-id:string))
     ;;
@@ -65,7 +65,7 @@
     (defun UR_AQP|BenDpnfNonceAmount:integer (beneficiary-id:string dpnf-id:string nonce:integer))
     (defun UR_AQP|BenDpnfLastAnkSyncCount:integer (beneficiary-id:string dpnf-id:string))
     (defun UR_AQP|BenDpnfActiveNonceCount:integer (beneficiary-id:string dpnf-id:string))
-    (defun URD_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string))
+    (defun URH_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string))
     (defun URC_BenDpnfHasStake:bool (beneficiary-id:string dpnf-id:string))
     (defun URC_BenDpnfAnchorsNeedSync:bool (beneficiary-id:string dpnf-id:string))
     ;;
@@ -760,39 +760,39 @@
     ;;<=======>
     ;;FUNCTIONS
     ;;  [UCK]
-    (defun UCK_DPTFTracker:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
+    (defun UCk_DPTFTracker:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
         @doc "Composite key for AQP|T|DPTFTracker: pool-id | dptf-id | owner-id | beneficiary-id."
         (concat [pool-id BAR dptf-id BAR owner-id BAR beneficiary-id])
     )
-    (defun UCK_DPOFTracker:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+    (defun UCk_DPOFTracker:string (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Composite key for AQP|T|DPOFTracker: pool-id | dpof-id | owner-id | beneficiary-id | nonce."
         (concat [pool-id BAR dpof-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce])])
     )
-    (defun UCK_DPSFTracker:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+    (defun UCk_DPSFTracker:string (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Composite key for AQP|T|DPSFTracker: pool-id | dpsf-id | owner-id | beneficiary-id | nonce."
         (concat [pool-id BAR dpsf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce])])
     )
-    (defun UCK_DPNFTracker:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+    (defun UCk_DPNFTracker:string (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Composite key for AQP|T|DPNFTracker: pool-id | dpnf-id | owner-id | beneficiary-id | nonce."
         (concat [pool-id BAR dpnf-id BAR owner-id BAR beneficiary-id BAR (format "{}" [nonce])])
     )
-    (defun UCK_BenDptfTotal:string (beneficiary-id:string dptf-id:string)
+    (defun UCk_BenDptfTotal:string (beneficiary-id:string dptf-id:string)
         @doc "Composite key for AQP|T|BenDptfTotal: beneficiary-id | dptf-id."
         (concat [beneficiary-id BAR dptf-id])
     )
-    (defun UCK_BenDpsfNonceTotal:string (beneficiary-id:string dpsf-id:string nonce:integer)
+    (defun UCk_BenDpsfNonceTotal:string (beneficiary-id:string dpsf-id:string nonce:integer)
         @doc "Composite key for AQP|T|BenDpsfNonceTotal: beneficiary-id | dpsf-id | nonce."
         (concat [beneficiary-id BAR dpsf-id BAR (format "{}" [nonce])])
     )
-    (defun UCK_BenDpnfNonceTotal:string (beneficiary-id:string dpnf-id:string nonce:integer)
+    (defun UCk_BenDpnfNonceTotal:string (beneficiary-id:string dpnf-id:string nonce:integer)
         @doc "Composite key for AQP|T|BenDpnfNonceTotal: beneficiary-id | dpnf-id | nonce."
         (concat [beneficiary-id BAR dpnf-id BAR (format "{}" [nonce])])
     )
-    (defun UCK_BenDpsfAnkMeta:string (beneficiary-id:string dpsf-id:string)
+    (defun UCk_BenDpsfAnkMeta:string (beneficiary-id:string dpsf-id:string)
         @doc "Composite key for AQP|T|BenDpsfAnkMeta: beneficiary-id | dpsf-id."
         (concat [beneficiary-id BAR dpsf-id])
     )
-    (defun UCK_BenDpnfAnkMeta:string (beneficiary-id:string dpnf-id:string)
+    (defun UCk_BenDpnfAnkMeta:string (beneficiary-id:string dpnf-id:string)
         @doc "Composite key for AQP|T|BenDpnfAnkMeta: beneficiary-id | dpnf-id."
         (concat [beneficiary-id BAR dpnf-id])
     )
@@ -1031,7 +1031,7 @@
         (pool-id:string dptf-id:string owner-id:string beneficiary-id:string row:object{AQP|TrueFungibleTracker})
         @doc "Upsert full AQP|T|DPTFTracker row for (pool, dptf, owner, beneficiary)."
         (require-capability (SECURE))
-        (write AQP|T|DPTFTracker (UCK_DPTFTracker pool-id dptf-id owner-id beneficiary-id) row)
+        (write AQP|T|DPTFTracker (UCk_DPTFTracker pool-id dptf-id owner-id beneficiary-id) row)
     )
     ;; WU_DPTFTracker|Balance — not used: mutates via WW_DPTFTracker (full row).
     ;; WU_DPTFTracker|PoolId — select key; WU not needed.
@@ -1045,7 +1045,7 @@
         (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AQP|OrtoFungibleTracker})
         @doc "Upsert full AQP|T|DPOFTracker row for (pool, dpof, owner, beneficiary, nonce)."
         (require-capability (SECURE))
-        (write AQP|T|DPOFTracker (UCK_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce) row)
+        (write AQP|T|DPOFTracker (UCk_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce) row)
     )
     ;; WU_DPOFTracker|Balance — not used: mutates via WW_DPOFTracker (full row).
     ;; WU_DPOFTracker|PoolId — select key; WU not needed.
@@ -1060,7 +1060,7 @@
         (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AQP|SemiFungibleTracker})
         @doc "Upsert full AQP|T|DPSFTracker row for (pool, dpsf, owner, beneficiary, nonce)."
         (require-capability (SECURE))
-        (write AQP|T|DPSFTracker (UCK_DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce) row)
+        (write AQP|T|DPSFTracker (UCk_DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce) row)
     )
     ;; WU_DPSFTracker|Balance — not used: mutates via WW_DPSFTracker (full row).
     ;; WU_DPSFTracker|PoolId — select key; WU not needed.
@@ -1075,7 +1075,7 @@
         (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer row:object{AQP|NonFungibleTracker})
         @doc "Upsert full AQP|T|DPNFTracker row for (pool, dpnf, owner, beneficiary, nonce)."
         (require-capability (SECURE))
-        (write AQP|T|DPNFTracker (UCK_DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce) row)
+        (write AQP|T|DPNFTracker (UCk_DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce) row)
     )
     ;; WU_DPNFTracker|Balance — not used: mutates via WW_DPNFTracker (full row).
     ;; WU_DPNFTracker|PoolId — select key; WU not needed.
@@ -1090,14 +1090,14 @@
         (beneficiary-id:string dptf-id:string row:object{AQP|BenDptfTotal})
         @doc "Upsert full AQP|T|BenDptfTotal row for (beneficiary, dptf-id)."
         (require-capability (SECURE))
-        (write AQP|T|BenDptfTotal (UCK_BenDptfTotal beneficiary-id dptf-id) row)
+        (write AQP|T|BenDptfTotal (UCk_BenDptfTotal beneficiary-id dptf-id) row)
     )
     (defun WU_BenDptfTotal|LastAnkSyncCount:string
         (beneficiary-id:string dptf-id:string row:object{AQP|BenDptfTotal} sync-count:integer)
         @doc "Update last-ank-sync-count on AQP|T|BenDptfTotal; preserve other fields. \
             \ <row> kept for call-site symmetry with collectable meta WU_*; write uses update (not object-+ merge)."
         (require-capability (SECURE))
-        (update AQP|T|BenDptfTotal (UCK_BenDptfTotal beneficiary-id dptf-id)
+        (update AQP|T|BenDptfTotal (UCk_BenDptfTotal beneficiary-id dptf-id)
             {"last-ank-sync-count": sync-count}
         )
     )
@@ -1111,7 +1111,7 @@
         (beneficiary-id:string dpsf-id:string nonce:integer row:object{AQP|BenDpsfNonceTotal})
         @doc "Upsert full AQP|T|BenDpsfNonceTotal row for (beneficiary, dpsf-id, nonce)."
         (require-capability (SECURE))
-        (write AQP|T|BenDpsfNonceTotal (UCK_BenDpsfNonceTotal beneficiary-id dpsf-id nonce) row)
+        (write AQP|T|BenDpsfNonceTotal (UCk_BenDpsfNonceTotal beneficiary-id dpsf-id nonce) row)
     )
     ;; WU_BenDpsfNonceTotal|Amount — not used: mutates via WW_BenDpsfNonceTotal (full row).
     ;; WU_BenDpsfNonceTotal|BeneficiaryId — select key; WU not needed.
@@ -1124,7 +1124,7 @@
         (beneficiary-id:string dpnf-id:string nonce:integer row:object{AQP|BenDpnfNonceTotal})
         @doc "Upsert full AQP|T|BenDpnfNonceTotal row for (beneficiary, dpnf-id, nonce)."
         (require-capability (SECURE))
-        (write AQP|T|BenDpnfNonceTotal (UCK_BenDpnfNonceTotal beneficiary-id dpnf-id nonce) row)
+        (write AQP|T|BenDpnfNonceTotal (UCk_BenDpnfNonceTotal beneficiary-id dpnf-id nonce) row)
     )
     ;; WU_BenDpnfNonceTotal|Amount — not used: mutates via WW_BenDpnfNonceTotal (full row).
     ;; WU_BenDpnfNonceTotal|BeneficiaryId — select key; WU not needed.
@@ -1137,13 +1137,13 @@
         (beneficiary-id:string dpsf-id:string row:object{AQP|BenDpsfAnkMeta})
         @doc "Upsert full AQP|T|BenDpsfAnkMeta row for (beneficiary, dpsf-id)."
         (require-capability (SECURE))
-        (write AQP|T|BenDpsfAnkMeta (UCK_BenDpsfAnkMeta beneficiary-id dpsf-id) row)
+        (write AQP|T|BenDpsfAnkMeta (UCk_BenDpsfAnkMeta beneficiary-id dpsf-id) row)
     )
     (defun WU_BenDpsfAnkMeta|LastAnkSyncCount:string
         (beneficiary-id:string dpsf-id:string row:object{AQP|BenDpsfAnkMeta} sync-count:integer)
         @doc "Update last-ank-sync-count; preserve active-nonce-count from <row>."
         (require-capability (SECURE))
-        (write AQP|T|BenDpsfAnkMeta (UCK_BenDpsfAnkMeta beneficiary-id dpsf-id)
+        (write AQP|T|BenDpsfAnkMeta (UCk_BenDpsfAnkMeta beneficiary-id dpsf-id)
             (UDC_AQP|BenDpsfAnkMeta sync-count (at "active-nonce-count" row) beneficiary-id dpsf-id)
         )
     )
@@ -1156,13 +1156,13 @@
         (beneficiary-id:string dpnf-id:string row:object{AQP|BenDpnfAnkMeta})
         @doc "Upsert full AQP|T|BenDpnfAnkMeta row for (beneficiary, dpnf-id)."
         (require-capability (SECURE))
-        (write AQP|T|BenDpnfAnkMeta (UCK_BenDpnfAnkMeta beneficiary-id dpnf-id) row)
+        (write AQP|T|BenDpnfAnkMeta (UCk_BenDpnfAnkMeta beneficiary-id dpnf-id) row)
     )
     (defun WU_BenDpnfAnkMeta|LastAnkSyncCount:string
         (beneficiary-id:string dpnf-id:string row:object{AQP|BenDpnfAnkMeta} sync-count:integer)
         @doc "Update last-ank-sync-count; preserve active-nonce-count from <row>."
         (require-capability (SECURE))
-        (write AQP|T|BenDpnfAnkMeta (UCK_BenDpnfAnkMeta beneficiary-id dpnf-id)
+        (write AQP|T|BenDpnfAnkMeta (UCk_BenDpnfAnkMeta beneficiary-id dpnf-id)
             (UDC_AQP|BenDpnfAnkMeta sync-count (at "active-nonce-count" row) beneficiary-id dpnf-id)
         )
     )
@@ -1175,7 +1175,7 @@
     ;;     (3) OrtoFungibleTracker (4) SemiFungibleTracker (5) NonFungibleTracker
     ;;
     ;; [1] AQP|T|Pool  (AQP|Schema)  Key = <Pool-ID>
-    (defun URD_AQP|AllPoolIds:[string] ()
+    (defun URH_AQP|AllPoolIds:[string] ()
         @doc "Returns all row keys from AQP|T|Pool."
         (keys AQP|T|Pool)
     )
@@ -1241,7 +1241,7 @@
     (defun UR_AQP|DPTFTracker:object{AQP|TrueFungibleTracker}
         (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
         @doc "Reads DPTF tracker row; absent rows read as zero balance via default object."
-        (with-default-read AQP|T|DPTFTracker (UCK_DPTFTracker pool-id dptf-id owner-id beneficiary-id)
+        (with-default-read AQP|T|DPTFTracker (UCk_DPTFTracker pool-id dptf-id owner-id beneficiary-id)
             (UDC_AQP|TrueFungibleTracker 0.0 pool-id dptf-id owner-id beneficiary-id)
             {"balance"          := bal
             ,"pool-id"          := pid
@@ -1276,7 +1276,7 @@
     (defun UR_AQP|BenDptfTotal:object{AQP|BenDptfTotal}
         (beneficiary-id:string dptf-id:string)
         @doc "Reads cross-pool DPTF stake rollup for beneficiary × dptf-id; absent row reads as zero total."
-        (with-default-read AQP|T|BenDptfTotal (UCK_BenDptfTotal beneficiary-id dptf-id)
+        (with-default-read AQP|T|BenDptfTotal (UCk_BenDptfTotal beneficiary-id dptf-id)
             (UDC_AQP|BenDptfTotal 0.0 0 beneficiary-id dptf-id)
             {"total-balance"        := tb
             ,"last-ank-sync-count"  := sc
@@ -1313,7 +1313,7 @@
         (beneficiary-id:string dpsf-id:string nonce:integer)
         @doc "Reads cross-pool per-nonce DPSF rollup; absent row reads as zero amount."
         (with-default-read AQP|T|BenDpsfNonceTotal
-            (UCK_BenDpsfNonceTotal beneficiary-id dpsf-id nonce)
+            (UCk_BenDpsfNonceTotal beneficiary-id dpsf-id nonce)
             (UDC_AQP|BenDpsfNonceTotal 0 beneficiary-id dpsf-id nonce)
             {"amount"           := amt
             ,"beneficiary-id"   := bid
@@ -1330,7 +1330,7 @@
         (beneficiary-id:string dpsf-id:string)
         @doc "Reads ANK sync metadata for one DPSF leg; absent row reads as never synced / no active nonces."
         (with-default-read AQP|T|BenDpsfAnkMeta
-            (UCK_BenDpsfAnkMeta beneficiary-id dpsf-id)
+            (UCk_BenDpsfAnkMeta beneficiary-id dpsf-id)
             (UDC_AQP|BenDpsfAnkMeta 0 0 beneficiary-id dpsf-id)
             {"last-ank-sync-count"  := sc
             ,"active-nonce-count"   := anc
@@ -1347,7 +1347,7 @@
         @doc "O(1) count of positive BenDpsfNonceTotal rows — defcap-safe has-stake signal."
         (at "active-nonce-count" (UR_AQP|BenDpsfAnkMeta beneficiary-id dpsf-id))
     )
-    (defun URD_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string)
+    (defun URH_AQP|BenDpsfActiveNonceSupplies:[object] (beneficiary-id:string dpsf-id:string)
         @doc "Nonce × amount objects for (beneficiary, dpsf-id) where rollup amount > 0 — DPSF resync inventory."
         (let
             (
@@ -1388,7 +1388,7 @@
         (beneficiary-id:string dpnf-id:string nonce:integer)
         @doc "Reads cross-pool per-nonce DPNF rollup; absent row reads as zero amount."
         (with-default-read AQP|T|BenDpnfNonceTotal
-            (UCK_BenDpnfNonceTotal beneficiary-id dpnf-id nonce)
+            (UCk_BenDpnfNonceTotal beneficiary-id dpnf-id nonce)
             (UDC_AQP|BenDpnfNonceTotal 0 beneficiary-id dpnf-id nonce)
             {"amount"           := amt
             ,"beneficiary-id"   := bid
@@ -1405,7 +1405,7 @@
         (beneficiary-id:string dpnf-id:string)
         @doc "Reads ANK sync metadata for one DPNF leg; absent row reads as never synced / no active nonces."
         (with-default-read AQP|T|BenDpnfAnkMeta
-            (UCK_BenDpnfAnkMeta beneficiary-id dpnf-id)
+            (UCk_BenDpnfAnkMeta beneficiary-id dpnf-id)
             (UDC_AQP|BenDpnfAnkMeta 0 0 beneficiary-id dpnf-id)
             {"last-ank-sync-count"  := sc
             ,"active-nonce-count"   := anc
@@ -1422,7 +1422,7 @@
         @doc "O(1) count of positive BenDpnfNonceTotal rows — defcap-safe has-stake signal."
         (at "active-nonce-count" (UR_AQP|BenDpnfAnkMeta beneficiary-id dpnf-id))
     )
-    (defun URD_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string)
+    (defun URH_AQP|BenDpnfActiveNonceSupplies:[object] (beneficiary-id:string dpnf-id:string)
         @doc "Nonce × amount objects for (beneficiary, dpnf-id) where rollup amount > 0 — DPNF resync inventory."
         (let
             (
@@ -1462,7 +1462,7 @@
     (defun UR_AQP|DPOFTracker:object{AQP|OrtoFungibleTracker}
         (pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Reads DPOF tracker row; absent rows read as zero balance via default object."
-        (with-default-read AQP|T|DPOFTracker (UCK_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce)
+        (with-default-read AQP|T|DPOFTracker (UCk_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce)
             (UDC_AQP|OrtoFungibleTracker 0.0 pool-id dpof-id owner-id beneficiary-id nonce)
             {"balance"          := bal
             ,"pool-id"          := pid
@@ -1502,7 +1502,7 @@
     (defun UR_AQP|DPSFTracker:object{AQP|SemiFungibleTracker}
         (pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Reads DPSF tracker row; absent rows read as zero balance via default object."
-        (with-default-read AQP|T|DPSFTracker (UCK_DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce)
+        (with-default-read AQP|T|DPSFTracker (UCk_DPSFTracker pool-id dpsf-id owner-id beneficiary-id nonce)
             (UDC_AQP|SemiFungibleTracker 0.0 pool-id dpsf-id owner-id beneficiary-id nonce)
             {"balance"          := bal
             ,"pool-id"          := pid
@@ -1542,7 +1542,7 @@
     (defun UR_AQP|DPNFTracker:object{AQP|NonFungibleTracker}
         (pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
         @doc "Reads DPNF tracker row; absent rows read as zero balance via default object."
-        (with-default-read AQP|T|DPNFTracker (UCK_DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce)
+        (with-default-read AQP|T|DPNFTracker (UCk_DPNFTracker pool-id dpnf-id owner-id beneficiary-id nonce)
             (UDC_AQP|NonFungibleTracker 0.0 pool-id dpnf-id owner-id beneficiary-id nonce)
             {"balance"          := bal
             ,"pool-id"          := pid
@@ -1967,7 +1967,7 @@
         (read AQP|T|Pool pool-id
             ["vacate-in-progress"])
     )
-    (defun URD_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string)
+    (defun URH_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string)
         @doc "Core pool read: active DPTF tracker rows (balance>0) for pool×asset."
         (filter
             (lambda (row:object) (> (at "balance" row) 0.0))
@@ -1979,7 +1979,7 @@
             )
         )
     )
-    (defun URD_AQP|ActiveDpofTrackerRows:[object] (pool-id:string dpof-id:string)
+    (defun URH_AQP|ActiveDpofTrackerRows:[object] (pool-id:string dpof-id:string)
         @doc "Core pool read: active DPOF tracker rows (balance>0) for pool×asset."
         (map
             (lambda (row:object)
@@ -1997,7 +1997,7 @@
             )
         )
     )
-    (defun URD_AQP|ActiveDpsfTrackerRows:[object] (pool-id:string dpsf-id:string)
+    (defun URH_AQP|ActiveDpsfTrackerRows:[object] (pool-id:string dpsf-id:string)
         @doc "Core pool read: active DPSF tracker rows (balance>0) for pool×asset."
         (map
             (lambda (row:object)
@@ -2015,7 +2015,7 @@
             )
         )
     )
-    (defun URD_AQP|ActiveDpnfTrackerRows:[object] (pool-id:string dpnf-id:string)
+    (defun URH_AQP|ActiveDpnfTrackerRows:[object] (pool-id:string dpnf-id:string)
         @doc "Core pool read: active DPNF tracker rows (balance>0) for pool×asset."
         (map
             (lambda (row:object)
@@ -2042,7 +2042,7 @@
     ;;                       (answers query C; owner-id = U rows are U's own self-stakes)
     ;; TF is amount-based (no nonce); OF/SF/NF carry nonce + amount. Rows include pool-id + asset-id + the
     ;; counterparty so the UI can display everything and has all inputs for any unstake.
-    (defun URD_AQP|DptfStakesByOwner:[object] (owner-id:string)
+    (defun URH_AQP|DptfStakesByOwner:[object] (owner-id:string)
         @doc "UI: all TF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dptf-id, beneficiary-id, balance}."
         (map
             (lambda (row:object)
@@ -2054,7 +2054,7 @@
                     (where "owner-id" (= owner-id))))
         )
     )
-    (defun URD_AQP|DptfStakesByBeneficiary:[object] (beneficiary-id:string)
+    (defun URH_AQP|DptfStakesByBeneficiary:[object] (beneficiary-id:string)
         @doc "UI: all TF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dptf-id, owner-id, balance}."
         (map
             (lambda (row:object)
@@ -2066,7 +2066,7 @@
                     (where "beneficiary-id" (= beneficiary-id))))
         )
     )
-    (defun URD_AQP|DpofStakesByOwner:[object] (owner-id:string)
+    (defun URH_AQP|DpofStakesByOwner:[object] (owner-id:string)
         @doc "UI: all OF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dpof-id, beneficiary-id, nonce, balance}."
         (map
             (lambda (row:object)
@@ -2078,7 +2078,7 @@
                     (where "owner-id" (= owner-id))))
         )
     )
-    (defun URD_AQP|DpofStakesByBeneficiary:[object] (beneficiary-id:string)
+    (defun URH_AQP|DpofStakesByBeneficiary:[object] (beneficiary-id:string)
         @doc "UI: all OF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dpof-id, owner-id, nonce, balance}."
         (map
             (lambda (row:object)
@@ -2090,7 +2090,7 @@
                     (where "beneficiary-id" (= beneficiary-id))))
         )
     )
-    (defun URD_AQP|DpsfStakesByOwner:[object] (owner-id:string)
+    (defun URH_AQP|DpsfStakesByOwner:[object] (owner-id:string)
         @doc "UI: all SF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dpsf-id, beneficiary-id, nonce, balance}."
         (map
             (lambda (row:object)
@@ -2102,7 +2102,7 @@
                     (where "owner-id" (= owner-id))))
         )
     )
-    (defun URD_AQP|DpsfStakesByBeneficiary:[object] (beneficiary-id:string)
+    (defun URH_AQP|DpsfStakesByBeneficiary:[object] (beneficiary-id:string)
         @doc "UI: all SF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dpsf-id, owner-id, nonce, balance}."
         (map
             (lambda (row:object)
@@ -2114,7 +2114,7 @@
                     (where "beneficiary-id" (= beneficiary-id))))
         )
     )
-    (defun URD_AQP|DpnfStakesByOwner:[object] (owner-id:string)
+    (defun URH_AQP|DpnfStakesByOwner:[object] (owner-id:string)
         @doc "UI: all NF legs where OWNER = owner-id (balance>0), cross-pool. Row: {pool-id, dpnf-id, beneficiary-id, nonce, balance}."
         (map
             (lambda (row:object)
@@ -2126,7 +2126,7 @@
                     (where "owner-id" (= owner-id))))
         )
     )
-    (defun URD_AQP|DpnfStakesByBeneficiary:[object] (beneficiary-id:string)
+    (defun URH_AQP|DpnfStakesByBeneficiary:[object] (beneficiary-id:string)
         @doc "UI: all NF legs where BENEFICIARY = beneficiary-id (balance>0), cross-pool. Row: {pool-id, dpnf-id, owner-id, nonce, balance}."
         (map
             (lambda (row:object)
@@ -2511,8 +2511,8 @@
             (
                 (supplies:[object]
                     (if son
-                        (URD_AQP|BenDpsfActiveNonceSupplies beneficiary-id collectable-id)
-                        (URD_AQP|BenDpnfActiveNonceSupplies beneficiary-id collectable-id)
+                        (URH_AQP|BenDpsfActiveNonceSupplies beneficiary-id collectable-id)
+                        (URH_AQP|BenDpnfActiveNonceSupplies beneficiary-id collectable-id)
                     )
                 )
             )

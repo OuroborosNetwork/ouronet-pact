@@ -172,7 +172,7 @@
             )
             (fold (+) 0
                 (map
-                    (lambda (sid:string) (length (ref-FVT::URD_FvtPresentUsers (ref-SCR::UR_SCR|ScoreFvtLink sid))))
+                    (lambda (sid:string) (length (ref-FVT::URH_FvtPresentUsers (ref-SCR::UR_SCR|ScoreFvtLink sid))))
                     score-ids))
         )
     )
@@ -201,7 +201,7 @@
         (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
         @doc "Recompute holders whose GLOBAL flattened index — present users concatenated across score-ids in order \
             \ — falls in [win-lo, win-hi). Per score, slice its present users to the window overlap and forward one \
-            \ AQP-FVT::XE_FvtSweepRecomputeChunk. The sweep freeze makes URD_FvtPresentUsers order deterministic \
+            \ AQP-FVT::XE_FvtSweepRecomputeChunk. The sweep freeze makes URH_FvtPresentUsers order deterministic \
             \ across steps, so (drop offset) advances the window without re-processing (contrast the inject's \
             \ shrinking (take N) set). Returns the number of holders recomputed. Runs under MTX-AQP|C>SWEEP-REVOKE."
         (at "processed"
@@ -218,7 +218,7 @@
                         )
                         (let
                             (
-                                (users:[string] (ref-FVT::URD_FvtPresentUsers fvt))
+                                (users:[string] (ref-FVT::URH_FvtPresentUsers fvt))
                             )
                             (let
                                 (
@@ -260,7 +260,7 @@
               (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (stale:[string] (ref-FVT::URD_FvtStalePresentUsers fvt-id))
+                    (stale:[string] (ref-FVT::URH_FvtStalePresentUsers fvt-id))
                 )
                 (if (<= (length stale) N_FIX)
                     (let ((n:integer (length stale)))
@@ -289,7 +289,7 @@
                             (
                                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                                 (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                                (stale:[string] (ref-FVT::URD_FvtStalePresentUsers fvt-id))
+                                (stale:[string] (ref-FVT::URH_FvtStalePresentUsers fvt-id))
                             )
                             (ref-FVT::XE_FvtFixUserChunk fvt-id reward-dptf-id stale)
                             (ref-IGNIS::C_Collect patron (ref-FVT::XB_FvtInject patron fvt-id reward-dptf-id amount))

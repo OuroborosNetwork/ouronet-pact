@@ -129,6 +129,35 @@ their base, optionally **dimmed / desaturated / italic** to signal "specializati
 | **PROTECTED**  | `XI_ XE_ XB_` | protected orchestration — distinct band |
 | **STRUCTURAL** | `GOV GOV\|* P\|* SECURE UEV_IMC` | standardized boilerplate — dim/grey |
 
+---
+
+## 5. Interface-membership rule
+
+A module's interface is its **cross-module contract**. Because callers reach a module through a
+typed reference (`ref-M:module{SomeInterface}` → `ref-M::fn`), **only functions declared in the
+interface are callable from outside the module.** Therefore:
+
+> **Every function is declared in the module's interface — EXCEPT the four kinds below, which are
+> module-internal and must NOT appear in the interface:**
+>
+> 1. **`…x` auxiliaries** (`UCx_`, `URCx_`, `URHCx_`, `UDCx_`) — private helpers of the function above them.
+> 2. **`W…` writers** (`WI_`, `WU_`, `WU2/3/4_`, `WW_`) — raw persistence, only ever called inside the module.
+> 3. **`XI_`** — internal-only protected orchestration.
+> 4. **Any function returning `object{Schema}` where `Schema` is defined in the *module* (not the interface)** —
+>    a hard Pact load-order constraint: the interface loads before the module's schemas exist, so such a
+>    return type cannot be declared there. (Ouronet keeps schemas in modules, so these stay module-only.)
+>
+> **Corollary — these MUST appear in the interface** (they are reachable from outside):
+> `XE_` and `XB_` (external / both), `C_` / `CC_` / `A_` recipes, and all unprotected readers/validators/
+> constructors/compute (`UR_`, `URC_`, `URH_`, `URHC_`, `UEV_`, `CAP_`, `UDC_`, `UC_`, `UCk_`) **unless**
+> they hit exclusion #4 (module-schema return).
+
+So an `XE_`/`XB_` missing from the interface is a **bug** (it's callable from outside but undeclared);
+a `URH_` reader used by the UI/another module belongs in the interface (subject to #4); a `URH_` reader
+used only inside its own module does not.
+
+---
+
 **Two hard rules the colour should reinforce:**
 1. **HEAVY-READ must be visually loud** — its entire reason to exist as a separate class is so a
    reviewer instantly sees a scan and checks it is **off the execution path** (never called from a

@@ -7,7 +7,7 @@
 (print "================================================================")
 (print "FILE  REPL/Stage_02/[6.2.5]_AQP-VCT.repl")
 (print "================================================================")
-(print "Legend: <<TX-VCT-*>> expect lines; <(Talos…)> echoes; URDC_BuildVacateSlicePlan = offline split helper")
+(print "Legend: <<TX-VCT-*>> expect lines; <(Talos…)> echoes; URHC_BuildVacateSlicePlan = offline split helper")
 (print "DPNF tests mint probe NFTs via VacateDpnfProbe (AQP-FAST — no Populate* required).")
 (print "")
 ;;
@@ -87,7 +87,7 @@
                 (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
                 (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
                 (post-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
-                (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+                (inv-post:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
             )
             (map print
                 [
@@ -142,7 +142,7 @@
         (let
             (
                 (tracker-post:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
-                (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+                (inv-post:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
             )
             (map print
                 [
@@ -233,7 +233,7 @@
     (let
         (
             (pre-supply:decimal (ref-DPTF::UR_AccountSupply ouro-id owner-id))
-            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 1))
+            (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 1))
             (slice0:object (at 0 (at "slices" plan)))
         )
         (print (format "<(TS02-C3.AQP-POOL|CC_BatchVacateTrueFungible single-batch → auto-finalize)> => \"{}\"" [
@@ -368,7 +368,7 @@
     ]))
     (let
         (
-            (plan2:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 2))
+            (plan2:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 2))
             (slice0:object (at 0 (at "slices" plan2)))
         )
         (print (format "<(TS02-C3.AQP-POOL|CC_BatchVacateCollectables batch0 partial)> => \"{}\"" [
@@ -384,7 +384,7 @@
             (
                 (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
                 (stake-off:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
-                (remaining:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpsf-id true)))
+                (remaining:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpsf-id true)))
             )
             (map print
                 [
@@ -396,7 +396,7 @@
         )
         (let
             (
-                (plan1:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 1))
+                (plan1:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 1))
                 (slice0n:object (at 0 (at "slices" plan1)))
             )
             (print (format "<(TS02-C3.AQP-POOL|CC_BatchVacateCollectables batch1 drains → auto-finalize)> => \"{}\"" [
@@ -464,7 +464,7 @@
         [(ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id owner-a beneficiary-a dpsf-id [nonce-a])]))
     (print (format "<(restake SF owner-b)> => \"{}\""
         [(ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])]))
-    (let ((legs-pre:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpsf-id true))))
+    (let ((legs-pre:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpsf-id true))))
         (enforce (> legs-pre 0) "TX-VCT-L02b: need SF stake inventory")
         (print (format "<(pre SF legs)> => {}" [legs-pre]))
         ;; THE REHAUL VACATE — pool-id + dpsf only; whole collection scanned + amounts read on-chain
@@ -474,7 +474,7 @@
             (
                 (tracker-a:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-a beneficiary-a nonce-a))
                 (tracker-b:decimal (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-b beneficiary-b nonce-b))
-                (legs-post:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpsf-id true)))
+                (legs-post:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpsf-id true)))
             )
             (map print
                 [
@@ -529,7 +529,7 @@
         [(ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id owner-b beneficiary-b dpsf-id [nonce-b])]))
     (let
         (
-            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 2))
+            (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 2))
             (slice0:object (at 0 (at "slices" plan)))
         )
         (enforce (= 2 (at "slice-count" plan)) "TX-VCT-L03: expected 2 slices")
@@ -546,7 +546,7 @@
         (let
             (
                 (vip-mid:bool (ref-VCT::UR_VacateInProgress pool-id))
-                (remaining:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpsf-id true)))
+                (remaining:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpsf-id true)))
             )
             (map print
                 [
@@ -752,7 +752,7 @@
                     (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
                     (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
                     (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
-                    (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpnf-id false)))
+                    (inv-post:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpnf-id false)))
                 )
                 (map print
                     [
@@ -854,7 +854,7 @@
         ]))
         (let
             (
-                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
+                (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
                 (slice0:object (at 0 (at "slices" plan)))
             )
             (print (format "<(TS02-C3.AQP-POOL|CC_BatchVacateCollectables DHN son=false → auto-finalize)> => \"{}\"" [
@@ -921,7 +921,7 @@
     ;; stake already enabled after DPNF02's finalize — just re-stake the DHN nonce (owned by ANHD)
     (print (format "<(restake DHN nonce {})> => \"{}\"" [stake-nonce
         (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce])]))
-    (let ((legs-pre:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpnf-id false))))
+    (let ((legs-pre:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpnf-id false))))
         (enforce (> legs-pre 0) "TX-VCT-DPNF02b: need NF stake inventory")
         (print (format "<(pre NF legs)> => {}" [legs-pre]))
         ;; THE REHAUL VACATE — pool-id + dpnf only; whole collection scanned + amounts read on-chain
@@ -931,7 +931,7 @@
             (
                 (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
                 (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
-                (legs-post:integer (at "leg-count" (ref-VCT::URD_VacateCollectableInventory pool-id dpnf-id false)))
+                (legs-post:integer (at "leg-count" (ref-VCT::URH_VacateCollectableInventory pool-id dpnf-id false)))
             )
             (map print
                 [
@@ -1031,7 +1031,7 @@
         ]))
         (let
             (
-                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
+                (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpnf-id vacate-kind-dpnf 1))
                 (slice0:object (at 0 (at "slices" plan)))
             )
             (print (format "<(TS02-C3.AQP-POOL|CC_BatchVacateCollectables KBN son=false → auto-finalize)> => \"{}\"" [
@@ -1201,10 +1201,10 @@
     ]))
     (let
         (
-            (inv:object (ref-VCT::URD_VacateTfInventory pool-id ouro-id))
-            (units:integer (ref-VCT::URDC_VacateUnitCountForKind pool-id ouro-id vacate-kind-tf))
+            (inv:object (ref-VCT::URH_VacateTfInventory pool-id ouro-id))
+            (units:integer (ref-VCT::URHC_VacateUnitCountForKind pool-id ouro-id vacate-kind-tf))
             (min-n:integer (ref-VCT::UC_ComputeMinSliceCount units vacate-kind-tf))
-            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf min-n))
+            (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf min-n))
         )
         (map print
             [
@@ -1280,7 +1280,7 @@
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let
         (
-            (plan2:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 2))
+            (plan2:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 2))
             (slice0:object (at 0 (at "slices" plan2)))
             (slice1:object (at 1 (at "slices" plan2)))
         )
@@ -1296,7 +1296,7 @@
         (let
             (
                 (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
-                (remaining:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+                (remaining:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
             )
             (map print
                 [
@@ -1315,7 +1315,7 @@
         ]))
         (let
             (
-                (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+                (inv-post:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
                 (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
                 (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
             )
@@ -1386,7 +1386,7 @@
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let
         (
-            (plan2:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 2))
+            (plan2:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id ouro-id vacate-kind-tf 2))
             (slice0:object (at 0 (at "slices" plan2)))
         )
         ;; Vacate ONLY the first slice — owner-b's leg stays staked. There is no finalize flag:
@@ -1402,7 +1402,7 @@
         ]))
         (let
             (
-                (remaining:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+                (remaining:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
                 (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
                 (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
             )
@@ -1491,7 +1491,7 @@
     )
     (let
         (
-            (plan2:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 2))
+            (plan2:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 2))
         )
         (enforce (= 2 (at "slice-count" plan2)) "TX-VCT-L06: expected 2 slices")
         (let
@@ -1512,7 +1512,7 @@
             (let
                 (
                     (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
-                    (remaining:integer (at "leg-count" (ref-VCT::URD_VacateOfInventory pool-id dpof-id)))
+                    (remaining:integer (at "leg-count" (ref-VCT::URH_VacateOfInventory pool-id dpof-id)))
                 )
                 (map print
                     [
@@ -1531,7 +1531,7 @@
             ]))
             (let
                 (
-                    (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateOfInventory pool-id dpof-id)))
+                    (inv-post:integer (at "leg-count" (ref-VCT::URH_VacateOfInventory pool-id dpof-id)))
                     (vacate-in-progress:bool (ref-VCT::UR_VacateInProgress pool-id))
                     (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
                 )
@@ -1621,7 +1621,7 @@
     (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id ben-c ouro-id amt)
     (let
         (
-            (legs-staked:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+            (legs-staked:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
         )
         (enforce (= legs-staked 3) "TX-VCT-RESUME-A: expected exactly our 3 legs (dedicated pool)")
         (print "--- [TX-VCT-RESUME-A · 01 · ROUND 1 batch: drain leg (owner,ANHD) only] ---")
@@ -1633,7 +1633,7 @@
                 (bal-c:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-c))
                 (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
                 (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
-                (remaining:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+                (remaining:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
             )
             (map print
                 [
@@ -1679,7 +1679,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
     )
     ;; UI re-reads the remaining inventory (2 legs) and constructs a fresh round.
-    (let ((remaining-pre:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id))))
+    (let ((remaining-pre:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id))))
         (enforce (= remaining-pre 2) "TX-VCT-RESUME-B: expected 2 legs left from the failed round")
         (print "--- [TX-VCT-RESUME-B · 01 · new-round batch continues the SAME frozen campaign] ---")
         ;; This batch's XI_EnsureVacateBegun sees vacate-in-progress already true → no-op (continue).
@@ -1690,7 +1690,7 @@
                 (bal-c:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-c))
                 (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
                 (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
-                (remaining:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+                (remaining:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
             )
             (map print
                 [
@@ -1740,7 +1740,7 @@
             (bal-c:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-c))
             (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
             (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
-            (remaining:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+            (remaining:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
         )
         (map print
             [

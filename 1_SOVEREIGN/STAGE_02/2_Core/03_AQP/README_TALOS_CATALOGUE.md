@@ -133,7 +133,7 @@ Sovereign recipes live in **AQP-FVT** (`C_*StakeFlow`). Talos resolves amounts/n
 | `AQP-POOL\|CC_BatchVacateCollectables` | patron, pool-id, collectable-id, son, owners, bens, nonces, amounts | One UI-sliced DPSF (son=true) / DPNF (son=false) batch | Pool owner | Same auto-begin / auto-finalize | F |
 | `AQP-POOL\|C_AbortVacate` | patron, pool-id | Clear vacate-in-progress mid-campaign | Pool owner | **Stake stays disabled** (ops re-enable) | F |
 
-**UI offline helpers (not Talos):** `AQP-VCT.URD_Vacate*Inventory`, `URDC_BuildVacateSlicePlan`, `UC_ComputeMinSliceCount`.  
+**UI offline helpers (not Talos):** `AQP-VCT.URD_Vacate*Inventory`, `URHC_BuildVacateSlicePlan`, `UC_ComputeMinSliceCount`.  
 Full protocol: [README_VACATE_UI.md](README_VACATE_UI.md).
 
 ---

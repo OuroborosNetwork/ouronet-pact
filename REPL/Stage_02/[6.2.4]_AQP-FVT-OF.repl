@@ -334,11 +334,11 @@
                     ;; B (staked-for-others): ANHD's OF legs where beneficiary ≠ ANHD (i.e. the EMMA leg).
                     (for-others:[object]
                         (filter (lambda (r:object) (!= (at "beneficiary-id" r) owner-id))
-                            (ref-AQP::URD_AQP|DpofStakesByOwner owner-id)))
+                            (ref-AQP::URH_AQP|DpofStakesByOwner owner-id)))
                     ;; C (gifted-to-EMMA): legs where EMMA is beneficiary and the owner is someone else (ANHD).
                     (gifted:[object]
                         (filter (lambda (r:object) (!= (at "owner-id" r) foreign-ben))
-                            (ref-AQP::URD_AQP|DpofStakesByBeneficiary foreign-ben)))
+                            (ref-AQP::URH_AQP|DpofStakesByBeneficiary foreign-ben)))
                 )
                 (map print
                     [
@@ -438,7 +438,7 @@
             (tracker-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
             (vacate-amount:decimal tracker-pre)
             (pre-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
-            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 1))
+            (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpof-id vacate-kind-of 1))
             (slice0:object (at 0 (at "slices" plan)))
         )
         (enforce (> vacate-amount 0.0) "tracker must hold stake before vacate")
@@ -533,7 +533,7 @@
     ]))
     (let
         (
-            (inv-count:integer (at "leg-count" (ref-VCT::URD_VacateOfInventory pool-id dpof-id)))
+            (inv-count:integer (at "leg-count" (ref-VCT::URH_VacateOfInventory pool-id dpof-id)))
             (tracker-pre:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
             (pre-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id owner-id))
         )
@@ -547,7 +547,7 @@
         (print "--- [TX-FVT-08 · 02 · post full-vacate expects] ---")
         (let
             (
-                (inv-post:integer (at "leg-count" (ref-VCT::URD_VacateOfInventory pool-id dpof-id)))
+                (inv-post:integer (at "leg-count" (ref-VCT::URH_VacateOfInventory pool-id dpof-id)))
                 (tracker-post:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id beneficiary-id stake-nonce))
                 (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
                 (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))

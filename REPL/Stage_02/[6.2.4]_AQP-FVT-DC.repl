@@ -601,12 +601,12 @@
     ]))
     (let
         (
-            (inventory:[object] (at "legs" (ref-VCT::URD_VacateCollectableInventory pool-id dpsf-id true)))
+            (inventory:[object] (at "legs" (ref-VCT::URH_VacateCollectableInventory pool-id dpsf-id true)))
             (pre-supply-a:integer (ref-DPDC::UR_AccountNonceSupply owner-a dpsf-id true nonce-a))
             (pre-supply-b:integer (ref-DPDC::UR_AccountNonceSupply owner-b dpsf-id true nonce-b))
             (vacate-a:integer (floor (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-a beneficiary-a nonce-a)))
             (vacate-b:integer (floor (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dpsf-id owner-b beneficiary-b nonce-b)))
-            (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 1))
+            (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpsf-id vacate-kind-dpsf 1))
             (slice0:object (at 0 (at "slices" plan)))
         )
         (enforce (= (length inventory) 2) "TX-FVT-DC-05: expect 2 vacate legs from URD")

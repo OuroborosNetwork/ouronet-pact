@@ -271,7 +271,7 @@
         (my-legs:[object]
             (filter
                 (lambda (l:object) (and (= (at "owner-id" l) owner-id) (= (at "beneficiary-id" l) beneficiary-id)))
-                (at "legs" (ref-VCT::URD_VacateCollectableInventory pool-id dpnf-id false))))
+                (at "legs" (ref-VCT::URH_VacateCollectableInventory pool-id dpnf-id false))))
     )
     (enforce (= (length my-legs) 1) "TX-FVT-NF-03: expected exactly one staked NF leg from NF-01")
     (let

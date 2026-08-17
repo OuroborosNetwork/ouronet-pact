@@ -39,8 +39,8 @@
             ;; 2c presence: ANHD staked in this treasury (CL02) -> must be marked present, and enumerable
             (expect "<<TX-AQP-DEB01>> presence: ANHD marked present in the FVT (stake-side ADD)"
                 true (ref-FVT::UR_FVT-UP|IsPresent fvt-id anhd))
-            (expect "<<TX-AQP-DEB01>> presence: ANHD enumerated by URD_FvtPresentUsers"
-                true (contains anhd (ref-FVT::URD_FvtPresentUsers fvt-id)))
+            (expect "<<TX-AQP-DEB01>> presence: ANHD enumerated by URH_FvtPresentUsers"
+                true (contains anhd (ref-FVT::URH_FvtPresentUsers fvt-id)))
             ;; 2c removal DECISION logic (what XI_RecomputeFvtPresence writes on unstake):
             (expect "<<TX-AQP-DEB01>> still-present: TRUE for the staked user (ANHD)"
                 true (ref-FVT::URC_FvtUserStillPresent fvt-id anhd))
@@ -197,7 +197,7 @@
     (let
         (
             (present-after-stake:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
-            (enum-after-stake:bool (contains emma (ref-FVT::URD_FvtPresentUsers fvt-id)))
+            (enum-after-stake:bool (contains emma (ref-FVT::URH_FvtPresentUsers fvt-id)))
         )
         ;; FULL UNSTAKE — drops EMMA's last (only) position
         (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable emma pool-id emma emma dhwc-id [nonce] [amt])
@@ -205,7 +205,7 @@
             (
                 (present-after-unstake:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
                 (still-present:bool (ref-FVT::URC_FvtUserStillPresent fvt-id emma))
-                (enum-after-unstake:bool (contains emma (ref-FVT::URD_FvtPresentUsers fvt-id)))
+                (enum-after-unstake:bool (contains emma (ref-FVT::URH_FvtPresentUsers fvt-id)))
             )
             (map print
                 [
@@ -247,7 +247,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
         (dhwc-id:string "DHWC-98c486052a51")
-        (nonce:integer (at "nonce" (at 0 (ref-AQP::URD_AQP|BenDpsfActiveNonceSupplies anhd dhwc-id))))
+        (nonce:integer (at "nonce" (at 0 (ref-AQP::URH_AQP|BenDpsfActiveNonceSupplies anhd dhwc-id))))
         (amt:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dhwc-id anhd anhd nonce)))
     )
     (expect "<<TX-AQP-DEB04>> ANHD present BEFORE (3 members)"
@@ -269,8 +269,8 @@
                     true (ref-FVT::UR_FVT-UP|IsPresent fvt-id anhd))
                 (expect "<<TX-AQP-DEB04>> still-present recompute = TRUE (other members remain)"
                     true (ref-FVT::URC_FvtUserStillPresent fvt-id anhd))
-                (expect "<<TX-AQP-DEB04>> ANHD still enumerated by URD_FvtPresentUsers"
-                    true (contains anhd (ref-FVT::URD_FvtPresentUsers fvt-id)))
+                (expect "<<TX-AQP-DEB04>> ANHD still enumerated by URH_FvtPresentUsers"
+                    true (contains anhd (ref-FVT::URH_FvtPresentUsers fvt-id)))
             ]
         )
     )
@@ -372,7 +372,7 @@
             (expect "<<TX-AQP-DEB05>> still-present recompute = FALSE (all members gone)"
                 false (ref-FVT::URC_FvtUserStillPresent fvt-id emma))
             (expect "<<TX-AQP-DEB05>> EMMA no longer enumerated"
-                false (contains emma (ref-FVT::URD_FvtPresentUsers fvt-id)))
+                false (contains emma (ref-FVT::URH_FvtPresentUsers fvt-id)))
         ]
     )
 )
@@ -801,7 +801,7 @@
     (let
         (
             (class:integer (ref-FVT::UR_FVT|FvtClass farm-id))
-            (stale-pre:[string] (ref-FVT::URD_FvtStalePresentUsers farm-id))
+            (stale-pre:[string] (ref-FVT::URH_FvtStalePresentUsers farm-id))
             (silver-stale-pre:bool (ref-SCR::URC_U-SCR|UserScoreDebStale anhd ouro-pool silver-score))
             (silver-deb-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd ouro-pool silver-score))
             (ar-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))
@@ -813,7 +813,7 @@
             )
             (let
                 (
-                    (stale-post:[string] (ref-FVT::URD_FvtStalePresentUsers farm-id))
+                    (stale-post:[string] (ref-FVT::URH_FvtStalePresentUsers farm-id))
                     (silver-stale-post:bool (ref-SCR::URC_U-SCR|UserScoreDebStale anhd ouro-pool silver-score))
                     (silver-deb-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd ouro-pool silver-score))
                     (ar-post:decimal (ref-FVT::UR_FVT-RG|AvailableRewards farm-id ouro-id))

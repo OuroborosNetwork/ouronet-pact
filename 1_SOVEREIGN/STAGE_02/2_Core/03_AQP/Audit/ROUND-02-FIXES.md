@@ -261,7 +261,7 @@ stake/unstake, both point-read at settle. Accepts the same eventual-consistency 
 - Schema: `FVT|ScoreEntityLink` + `total-lane-weight:decimal` (per-member Σ w-user); new table
   `FVT|T|MemberUserWeight` (key `user | fvt | entity`, field `contrib-weight`) + `create-table`.
 - Plumbing: `UDC_FVT|ScoreEntityLink` +param (all 5 call sites updated incl. base-reader default/reconstruct);
-  writer `WU_ScoreEntityLink|TotalLaneWeight`; reader `UR_FVT-SEL|TotalLaneWeight`; `UCK_MemberUserWeight` +
+  writer `WU_ScoreEntityLink|TotalLaneWeight`; reader `UR_FVT-SEL|TotalLaneWeight`; `UCk_MemberUserWeight` +
   upsert `WW_MemberUserWeight` + `with-default-read 0.0` reader `UR_FVT-MUW|ContribWeight`. (All module-internal —
   no interface churn.)
 - **Numerator:** `URC_ScoreEntityUserWeight` gains `fvt-id`; farm-triplet branch now returns the **stored**
@@ -568,7 +568,7 @@ Z **225/0**. **Part 1 COMPLETE.**
   (member-vault sweep is now farm-only) + 2 stale tests; logged pre-existing comprehensive-suite failures as N1
   (negative payout). **2c presence:** owner-designed purpose-built `FVT|T|UserPresence` (`fvt-id | ouronet-id →
   is-present`), maintained for ALL FVT classes (shared with H4 anchor sweep). Readers `UR_FVT-UP|IsPresent` (point) +
-  `URD_FvtPresentUsers` (one HEAVY select — owner confirmed cheap: ~40k gas over a 15k-row mainnet table vs ~2M ceiling;
+  `URH_FvtPresentUsers` (one HEAVY select — owner confirmed cheap: ~40k gas over a 15k-row mainnet table vs ~2M ceiling;
   dirty-read + locked-consumer is the fallback if a read ever outgrows the ceiling — see the dated memory note).
   Direction-aware phase-4.7 maintenance in all 3 stake flows: STAKE add-only true; UNSTAKE `URC_FvtUserStillPresent`
   recompute across all the FVT's members → flip false only on the user's LAST withdrawal. Proven three ways:
@@ -588,7 +588,7 @@ Z **225/0**. **Part 1 COMPLETE.**
   blocks: `XI_FixUserMemberDeb` (one (user,member): iff deb-based+stale → settle EVERY enabled reward stream at OLD
   deb + advance each last-rps → `XE_RefreshUserScoreDeb` live → `XI_SyncFvtTotalDebMirrors`; true-triplet/fresh =
   no-op) and `XI_FixUserFvtDeb` (maps it over the FVT's members). `CC_Inject` (`CC_`=R3 HEAVY, vault/treasury only)
-  = scan `URD_FvtPresentUsers` → `XI_FixUserFvtDeb` each (scan-cut: atomic ⟹ zero-stale after, no re-scan) → inject
+  = scan `URH_FvtPresentUsers` → `XI_FixUserFvtDeb` each (scan-cut: atomic ⟹ zero-stale after, no re-scan) → inject
   on the now-fresh divisor. Presence table resolves the §2.5-PRE enumeration blocker (scan is over the small presence
   table, not RPS|User). Interface decl added; Talos wrapper `AQP-FVT|CC_Inject` (TS02-C3). **Proven (deb-proof
   DEB06):** ANHD's stale Bunnies 4.29→1.39 + CodingDivision 429→139 fixed, both FRESH; **Δmirror = −292.9 = Σ fix
@@ -601,7 +601,7 @@ Z **225/0**. **Part 1 COMPLETE.**
   S>`N_FIX`→fix `N_FIX` (`take`), yield injected:false, continue; step 1 resumes → no-op if injected, else fix
   remainder + inject. `C|2_Inject` wrapper acquires `MTX-AQP|C>INJECT` (composes `P|SECURE-CALLER` so
   `P|MTX-AQP|CALLER` is active for FVT's `UEV_IMC`), each step re-acquires it (separate txs). FVT now exposes the
-  shared building blocks the defpact calls: `URD_FvtStalePresentUsers` (scan), `XE_FvtFixUserChunk` (chunked fix,
+  shared building blocks the defpact calls: `URH_FvtStalePresentUsers` (scan), `XE_FvtFixUserChunk` (chunked fix,
   `FVT|XE>SWEEP-FIX`), `XE_FvtInject` (inject-core); `CC_Inject` refactored to use the same `XI_FvtInjectCore` +
   scan (DEB06 still 105/0 — behaviour-preserving). Deployed in `[2.3]_EarningPools`; `P|A_Define` (registers MTX-AQP
   in FVT's IMP) runs in `[4.0]_Sovereign-Executor`. `N_FIX=400` placeholder (calibration-gated §2.7).
@@ -775,8 +775,8 @@ consumers anywhere in the repo (verified: all 103 references were the definition
 Deleted the full cluster: 2 schemas, 2 deftables, 2 `create-table`s, the `UCK`/`UDC` builders, ~24 `UR_` readers, and all
 their interface decls; scrubbed the doc references on the DPSF/DPNF tracker schemas.
 
-**Proven (`[6.2.4]` TX-FVT-06b · 01b):** while ANHD→EMMA is staked, `URD_AQP|DpofStakesByOwner(ANHD)` lists the EMMA leg
-(query B) and `URD_AQP|DpofStakesByBeneficiary(EMMA)` lists it from ANHD (query C). golden **33/0**, Z **241/0**, deb-proof **121/0**.
+**Proven (`[6.2.4]` TX-FVT-06b · 01b):** while ANHD→EMMA is staked, `URH_AQP|DpofStakesByOwner(ANHD)` lists the EMMA leg
+(query B) and `URH_AQP|DpofStakesByBeneficiary(EMMA)` lists it from ANHD (query C). golden **33/0**, Z **241/0**, deb-proof **121/0**.
 
 ## Fix #15 — M6 · ANK: enforce anchor-definition bounds at issue  ✅ DONE + PROVEN
 
@@ -940,13 +940,13 @@ scores are NOT a designed feature, which forced a deeper trace of *where* the �
 
 **Real root:** the `[6.2.5]` DPNF probe mints a **metadata-less** nonce. In the DPDC UDC layer,
 `UDC_NoMetaData → UDC_MetaData {} → UDC_NonceMetaData -1.0 …` — so an unscored nonce's native score defaults to the
-**`-1.0` "unscored" sentinel**. The score is model-0, whose weight (`URCX_DpnfModelZeroDpdcNativeRawWeight`) reads
+**`-1.0` "unscored" sentinel**. The score is model-0, whose weight (`URCx_DpnfModelZeroDpdcNativeRawWeight`) reads
 the **raw** score (`UR_N|RawScore`, returns −1.0) and counts it as a real negative → base = −1. (DPDC's *cooked*
 reader `UR_N|Score` already maps −1.0 → 0, but the weight path bypassed it.) Compounding it, DPDC `UEV_Score`
 enforced only `>= -1.0`, so real negatives in `[-1.0, 0)` were also settable.
 
 **Fix — all at the source (no aggregate floor; that broke the vacate netting):**
-1. **`02_SCORE.pact` `URCX_DpnfModelZeroDpdcNativeRawWeight`** — clamp each per-nonce native score `<0 → 0`, so an
+1. **`02_SCORE.pact` `URCx_DpnfModelZeroDpdcNativeRawWeight`** — clamp each per-nonce native score `<0 → 0`, so an
    unscored/sentinel (or any negative) nonce contributes 0, never a negative stake weight.
 2. **`02_SCORE.pact` definition validators** — `UEV_NonFungibleScoreDefinitionTrait` / `…Set` enforce
    `trait/class score ≥ 0`; the SF `nonce-score-value` validator enforces `≥ 0`. Negatives can't be authored.
@@ -1030,7 +1030,7 @@ class-agnostic PHASE-6 backstop.)
 - Dropped the `class≠0` `enforce` on `CC_Inject` and `XE_FvtInject`. (Bonus StoicSyntax: those were bare enforces
   after `UEV_IMC`; removing them also clears that wart.) The fix machinery is already class-agnostic
   (`XE_FvtFixUserChunk` → `XI_FixUserMemberDeb` → `XE_RefreshUserScoreDeb`; `URC_FvtTier1IndexRps` settles farm
-  `L_i` vs vault `G`; `URD_FvtStalePresentUsers` is populated for every class at stake) and the inject core is
+  `L_i` vs vault `G`; `URH_FvtStalePresentUsers` is populated for every class at stake) and the inject core is
   farm-capable after R-INJECT — so removing the guard is all that was needed.
 - Added the **INJECT FUNCTION MATRIX** + the farm Tier-2-deb rationale to the `@doc`s of `C_Inject` / `CC_Inject`
   / `XE_FvtInject` and the Talos `AQP-FVT|CC_Inject` wrapper.

@@ -199,7 +199,7 @@
                 )
                 (let
                     (
-                        (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpsf-id AQP-VCT.VACATE-KIND-DPSF slice-count))
+                        (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpsf-id AQP-VCT.VACATE-KIND-DPSF slice-count))
                         (slice0:object (at 0 (at "slices" plan)))
                     )
                     {
@@ -257,7 +257,7 @@
                 )
                 (let
                     (
-                        (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id ouro-id AQP-VCT.VACATE-KIND-TF slice-count))
+                        (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id ouro-id AQP-VCT.VACATE-KIND-TF slice-count))
                         (slice0:object (at 0 (at "slices" plan)))
                     )
                     {
@@ -335,7 +335,7 @@
                 )
                 (let
                     (
-                        (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count))
+                        (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count))
                         (slice0:object (at 0 (at "slices" plan)))
                     )
                     {
@@ -410,7 +410,7 @@
                 )
                 (let
                     (
-                        (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpnf-id AQP-VCT.VACATE-KIND-DPNF slice-count))
+                        (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpnf-id AQP-VCT.VACATE-KIND-DPNF slice-count))
                         (slice0:object (at 0 (at "slices" plan)))
                     )
                     {
@@ -443,9 +443,9 @@
         (let
             (
                 (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                (unit-count:integer (ref-VCT::URDC_VacateUnitCountForKind pool-id asset-id vacate-kind))
+                (unit-count:integer (ref-VCT::URHC_VacateUnitCountForKind pool-id asset-id vacate-kind))
                 (slice-count:integer (UC_ProbeSliceCount unit-count vacate-kind))
-                (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id asset-id vacate-kind slice-count))
+                (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id asset-id vacate-kind slice-count))
                 (slice0:object (at 0 (at "slices" plan)))
             )
             (if (= vacate-kind AQP-VCT.VACATE-KIND-TF)
@@ -681,7 +681,7 @@
                 )
                 (let
                     (
-                        (plan:object (ref-VCT::URDC_BuildVacateSlicePlan pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count))
+                        (plan:object (ref-VCT::URHC_BuildVacateSlicePlan pool-id dpof-id AQP-VCT.VACATE-KIND-OF slice-count))
                         (slice0:object (at 0 (at "slices" plan)))
                     )
                     {

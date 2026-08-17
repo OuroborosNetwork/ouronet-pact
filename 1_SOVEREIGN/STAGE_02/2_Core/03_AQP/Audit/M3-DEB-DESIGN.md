@@ -195,7 +195,7 @@ Holds ALL AQP multi-transaction (defpact) functions. Must be a full Ouronet modu
 
 ### `CC_Inject` (single tx) — scan-cut = collapses to ONE scan
 Because the whole thing is atomic, no external deb change can occur mid-tx, so:
-1. **scan** the FVT's present users (`URD_FvtPresentUsers`) for staleness.
+1. **scan** the FVT's present users (`URH_FvtPresentUsers`) for staleness.
 2. if **none stale** → **direct inject** (nothing to fix).
 3. if **stale** → **fix every stale user** (settle-at-old-deb → refresh → mirror-resync) — unbounded, one tx does all.
 4. **inject.** No second scan: we fixed exactly the scanned set atomically, so zero stale is guaranteed.

@@ -129,9 +129,9 @@ Same pattern as SF with:
 Short version per asset stream:
 
 1. Resolve asset-id(s) from `UR_AQP|PoolAqpClass` / `PoolAssetId` (+ `DPTF.UR_Sleeping` for class-0 Z\|).
-2. Dirty-read `AQP-VCT.URD_Vacate*Inventory` (+ `URDC_VacateUnitCountForKind`).
+2. Dirty-read `AQP-VCT.URD_Vacate*Inventory` (+ `URHC_VacateUnitCountForKind`).
 3. If units fit Full (~2M + hard caps) → one `C_FullVacate*` (Legs payload from plan `N=1`).
-4. Else `UC_ComputeMinSliceCount` → `URDC_BuildVacateSlicePlan` → N `C_Vacate*Legs`; gas-check each leg; grow N until all fit; last batch `finalize=true`.
+4. Else `UC_ComputeMinSliceCount` → `URHC_BuildVacateSlicePlan` → N `C_Vacate*Legs`; gas-check each leg; grow N until all fit; last batch `finalize=true`.
 5. Class-0 with TF+OF inventory → run for **both** streams independently.
 
 Show construction iterations + tx list; confirm; dump. On gas failures, re-read and re-split.

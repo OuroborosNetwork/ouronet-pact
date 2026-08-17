@@ -49,22 +49,22 @@ Class-0 LP farms usually have **two streams** (native TF LP + Z\| OF LP); other 
 
 | Stream | Call | Returns |
 |--------|------|---------|
-| TF | `AQP-VCT.URD_VacateTfInventory pool-id dptf-id` | `{ legs:[{owner-id, beneficiary-id, balance}], leg-count }` |
-| OF | `AQP-VCT.URD_VacateOfInventory pool-id dpof-id` | `{ legs:[{owner-id, beneficiary-id, nonces:[int], amounts:[decimal]}], leg-count }` |
-| DPSF | `AQP-VCT.URD_VacateCollectableInventory pool-id dpsf-id true` | same nonce-leg shape |
-| DPNF | `AQP-VCT.URD_VacateCollectableInventory pool-id dpnf-id false` | same nonce-leg shape |
+| TF | `AQP-VCT.URH_VacateTfInventory pool-id dptf-id` | `{ legs:[{owner-id, beneficiary-id, balance}], leg-count }` |
+| OF | `AQP-VCT.URH_VacateOfInventory pool-id dpof-id` | `{ legs:[{owner-id, beneficiary-id, nonces:[int], amounts:[decimal]}], leg-count }` |
+| DPSF | `AQP-VCT.URH_VacateCollectableInventory pool-id dpsf-id true` | same nonce-leg shape |
+| DPNF | `AQP-VCT.URH_VacateCollectableInventory pool-id dpnf-id false` | same nonce-leg shape |
 
 Skip a stream when `leg-count = 0`. (`CC_FullVacate` no-ops empty streams on-chain — an already-empty pool is a clean no-op.)
 
-Optional raw nonce rows (same data, ungrouped): `URD_VacateOfNonceRows` / `URD_VacateCollectableNonceRows` — UI normally uses the **Inventory** URDs above.
+Optional raw nonce rows (same data, ungrouped): `URH_VacateOfNonceRows` / `URH_VacateCollectableNonceRows` — UI normally uses the **Inventory** URDs above.
 
 #### C. Sizing helpers (per stream — Batch only)
 
 | Call | Use |
 |------|-----|
-| `AQP-VCT.URDC_VacateUnitCountForKind pool-id asset-id vacate-kind` | TF → owner-row count; OF/DPSF/DPNF → **total nonces** (gas unit) |
+| `AQP-VCT.URHC_VacateUnitCountForKind pool-id asset-id vacate-kind` | TF → owner-row count; OF/DPSF/DPNF → **total nonces** (gas unit) |
 | `AQP-VCT.UC_ComputeMinSliceCount unit-count vacate-kind` | `ceil(units / VACATE-GAS-MAX-*)`, min 1 → starting **N** for Batch |
-| `AQP-VCT.URDC_BuildVacateSlicePlan pool-id asset-id vacate-kind N` | Offline partition → `{ slices:[SlicePayload], slice-count, … }` **no chain writes** |
+| `AQP-VCT.URHC_BuildVacateSlicePlan pool-id asset-id vacate-kind N` | Offline partition → `{ slices:[SlicePayload], slice-count, … }` **no chain writes** |
 
 **Gas ceilings (profiled for ~2M per batch tx — `[6.2.6]_AQP-VCT-GAS.repl`):**
 
@@ -91,11 +91,11 @@ if wholePoolFitsOneTx:
 
 # --- Step 2: Batch construction loop, per stream ---
 for each stream with inventory:
-  units = URDC_VacateUnitCountForKind(...)
+  units = URHC_VacateUnitCountForKind(...)
   if units == 0: continue
   N = UC_ComputeMinSliceCount(units, vacate-kind)        # ceil(units / GAS-MAX)
   repeat:
-    plan = URDC_BuildVacateSlicePlan(pool-id, asset-id, vacate-kind, N)
+    plan = URHC_BuildVacateSlicePlan(pool-id, asset-id, vacate-kind, N)
     txs, allFit = [], true
     for i in 0 .. N-1:
       slice = plan.slices[i]
@@ -127,7 +127,7 @@ for each stream with inventory:
 | DPSF collection | `AQP-POOL\|XB_VacateSemiFungible patron pool-id dpsf-id` |
 | DPNF collection | `AQP-POOL\|XB_VacateNonFungible patron pool-id dpnf-id` |
 
-#### Batch — one `URDC_BuildVacateSlicePlan` slice per tx (**no `finalize`**)
+#### Batch — one `URHC_BuildVacateSlicePlan` slice per tx (**no `finalize`**)
 
 Each slice is a `VCT|SlicePayload`:
 
@@ -140,7 +140,7 @@ Each slice is a `VCT|SlicePayload`:
 | `amounts-array` | — | — (resolved on-chain) | `floor(balances)` ints |
 
 ```text
-plan  = URDC_BuildVacateSlicePlan pool-id asset-id kind N
+plan  = URHC_BuildVacateSlicePlan pool-id asset-id kind N
 slice = (at i (at "slices" plan))
 
 # TF — per-leg amount MUST equal the live tracker balance (URC_VacateTfLegBalancesOk)
