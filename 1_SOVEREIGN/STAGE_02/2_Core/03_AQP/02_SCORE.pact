@@ -1899,15 +1899,8 @@
             )
         )
     )
-    (defun URH_S-DEF|SFScoreRows:[object] (score-id:string dpsf-id:string)
-        @doc "Expensive read: selects nonce + nonce-score-value for every SF definition row at (score-id, dpsf-id)."
-        (select SCR|T|SF|Score ["nonce" "nonce-score-value"]
-            (and?
-                (where "score-id" (= score-id))
-                (where "dpsf-id" (= dpsf-id))
-            )
-        )
-    )
+    ;; URH_S-DEF|SFScoreRows (full SCR|T|SF|Score select) REMOVED — the stake-path SF definition weight now
+    ;; point-reads per staked nonce (URCx_SfStakeDefinitionWeightedRawWeight), so no scan sits on the execution path.
     ;; URH_UserScoreStakerAccounts (farm-triplet Tier-2 denominator scan) RETIRED — audit H5/LP redesign.
     ;; The farm-triplet Level-1 divisor is now a maintained snapshot aggregate (FVT ScoreEntityLink.total-lane-weight,
     ;; point-read), so the O(stakers) select over SCR|T|UserScore is gone. No callers remain.
@@ -1935,70 +1928,39 @@
             )
         )
     )
-    (defun URHCx_SfStakeDefinitionWeightedRawWeight:decimal
+    (defun URCx_SfStakeDefinitionWeightedRawWeight:decimal
         (score-id:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "SFT non-equal mode: revision-nonce 0 ⇒ 0; else one URD select, parallel def-nonces and def-values, weighted sum with native/fragment scale."
+        @doc "SFT non-equal mode (POINT READS only — no stake-path scan): revision-nonce 0 => 0; else per staked \
+            \ nonce point-read its SF definition score via UR_S-DEF|SFScoreNonceScoreValue (0.0 when the nonce is \
+            \ undefined) x fragment scale (0.001 for negative/fragment nonces, else 1.0) x nonce-amount, summed. \
+            \ Auxiliary of URC_SignedBaseDeltaForDpsfStake; bounded by the staked-nonce count."
         (let
             (
                 (rev:integer (UR_S-DEF-REV|SFDefRevisionRevisionNonce score-id dpsf-id))
             )
             (if (= rev 0)
                 0.0
-                (let
-                    (
-                        (def-rows:[object] (URH_S-DEF|SFScoreRows score-id dpsf-id))
-                        (paired:object
-                            (fold
-                                (lambda (acc:object r:object)
-                                    {"def-nonces": (+ (at "def-nonces" acc) [(at "nonce" r)])
-                                    ,"def-values": (+ (at "def-values" acc) [(at "nonce-score-value" r)])}
-                                )
-                                {"def-nonces": [], "def-values": []}
-                                def-rows
+                (fold
+                    (lambda (acc:decimal idx:integer)
+                        (let
+                            (
+                                (nonce:integer (at idx nonces))
+                                (nonce-amount:integer (at idx nonce-amounts))
                             )
-                        )
-                        (def-nonces:[integer] (at "def-nonces" paired))
-                        (def-values:[decimal] (at "def-values" paired))
-                        (l1:integer (length nonces))
-                    )
-                    (fold
-                        (lambda (acc:decimal idx:integer)
-                            (let
-                                (
-                                    (nonce:integer (at idx nonces))
-                                    (nonce-amount:integer (at idx nonce-amounts))
-                                )
-                                (+ acc
+                            (+ acc
+                                (*
+                                    (dec nonce-amount)
                                     (*
-                                        (dec nonce-amount)
-                                        (*
-                                            (URCXX_SFScoreForNonceFromDefLists nonce def-nonces def-values)
-                                            (if (< nonce 0)
-                                                0.001
-                                                1.0
-                                            )
-                                        )
+                                        (UR_S-DEF|SFScoreNonceScoreValue score-id dpsf-id nonce)
+                                        (if (< nonce 0) 0.001 1.0)
                                     )
                                 )
                             )
                         )
-                        0.0
-                        (enumerate 0 (- l1 1))
                     )
+                    0.0
+                    (enumerate 0 (- (length nonces) 1))
                 )
-            )
-        )
-    )
-    (defun URCXX_SFScoreForNonceFromDefLists:decimal
-        (nonce:integer def-nonces:[integer] def-values:[decimal])
-        @doc "If nonce is not in def-nonces returns 0.0; else first index from U|LST::UC_Search on def-nonces, then def-values at that position. Lists are built in lockstep from URH_S-DEF|SFScoreRows."
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-            )
-            (if (contains nonce def-nonces)
-                (at (at 0 (ref-U|LST::UC_Search def-nonces nonce)) def-values)
-                0.0
             )
         )
     )
@@ -2234,14 +2196,16 @@
     (defun URC_SignedBaseDeltaForDpsfStake:decimal
         (score-id:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
         @doc "Signed base delta for class-3 DPSF (score precision): sft-equality true uses UCx_StakeEqualNativeUnitRawWeight; \
-            \ false uses URHCx_SfStakeDefinitionWeightedRawWeight (revision 0 ⇒ 0; else URD + parallel def lists, missing nonce ⇒ 0 score)."
+            \ false uses URCx_SfStakeDefinitionWeightedRawWeight (revision 0 => 0; else per-nonce point-read of the SF \
+            \ definition score, undefined nonce => 0). Both branches are point-read/compute only — statically light (URC), \
+            \ no stake-path scan."
         (let
             (
                 (sft-equality:bool (UR_SCR|ScoreSftEquality score-id))
                 (raw-weight:decimal
                     (if sft-equality
                         (UCx_StakeEqualNativeUnitRawWeight nonces nonce-amounts)
-                        (URHCx_SfStakeDefinitionWeightedRawWeight score-id dpsf-id nonces nonce-amounts)
+                        (URCx_SfStakeDefinitionWeightedRawWeight score-id dpsf-id nonces nonce-amounts)
                     )
                 )
                 (p:integer (UR_SCR|ScorePrecision score-id))
