@@ -1971,10 +1971,8 @@
                             )
                         )
                     )
-                    (do
-                        (XI_MaybeFinalizeVacate pool-id dpof-id VACATE-KIND-OF true)
-                        oc
-                    )
+                    (XI_MaybeFinalizeVacate pool-id dpof-id VACATE-KIND-OF true)
+                    oc
                 )
             )
         )
@@ -2002,10 +2000,8 @@
                             (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts))
                     )
                 )
-                (do
-                    (XI_MaybeFinalizeVacate pool-id dptf-id VACATE-KIND-TF true)
-                    oc
-                )
+                (XI_MaybeFinalizeVacate pool-id dptf-id VACATE-KIND-TF true)
+                oc
             )
         )
     )
@@ -2037,11 +2033,9 @@
                         )
                     )
                 )
-                (do
-                    (XI_MaybeFinalizeVacate pool-id collectable-id
-                        (if son VACATE-KIND-DPSF VACATE-KIND-DPNF) true)
-                    oc
-                )
+                (XI_MaybeFinalizeVacate pool-id collectable-id
+                    (if son VACATE-KIND-DPSF VACATE-KIND-DPNF) true)
+                oc
             )
         )
     )
