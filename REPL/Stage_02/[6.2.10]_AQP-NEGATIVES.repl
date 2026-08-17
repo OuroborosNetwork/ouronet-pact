@@ -246,5 +246,49 @@
 (commit-tx)
 (print "=== END TX-AQP-NEG-OWNER2 ===================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-AQP-NEG-XE - direct XE forward-entrypoint calls must fail UEV_IMC")
+(print "")
+(print "=== TX-AQP-NEG-XE — direct AQP-ANK/AQP-SCR/AQP-POOL XE_ forward calls rejected ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; XE_ are forward-module entrypoints (called only by a peer sovereign module through the IMC boundary),
+;; each opening with UEV_IMC. A direct REPL call is not a registered IMC principal, so it must fail UEV_IMC
+;; — proving the inter-module surface rejects rogue direct callers, not just the client C_/CC_ surface.
+;; Signed as OWNER ANHD so the owner half of each XE cap would pass and UEV_IMC is the isolated cause.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (account:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+    )
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-AQP-NEG-XE>> direct AQP-ANK::XE_SweepRevokeAnchor rejected (UEV_IMC — forward only)" [])
+                (ref-ANK::XE_SweepRevokeAnchor anchor-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-XE>> direct AQP-SCR::XE_RefreshUserScoreDeb rejected (UEV_IMC)" [])
+                (ref-SCR::XE_RefreshUserScoreDeb account pool-id score-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-XE>> direct AQP-POOL::XE_SetVacateJobState rejected (UEV_IMC)" [])
+                (ref-AQP::XE_SetVacateJobState pool-id true))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-AQP-NEG-XE =======================================================")
+(print "")
 (print "=== END FILE [6.2.10]_AQP-NEGATIVES.repl =====================================")
 (print "")
