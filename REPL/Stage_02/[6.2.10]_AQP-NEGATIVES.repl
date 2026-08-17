@@ -290,5 +290,42 @@
 (commit-tx)
 (print "=== END TX-AQP-NEG-XE =======================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-AQP-NEG-INPUT - negative NF set-class definition score rejected (L7 #19)")
+(print "")
+(print "=== TX-AQP-NEG-INPUT — negative NF set-class score value rejected at definition (#19) ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; NfSyncScore (class-4 DPNF, precision 6, owner ANHD) + DHB DPNF both exist from [6.2.4]_AQP-FVT-NF.
+;; UEV_NonFungibleScoreDefinitionSet enforces, per class: (>= nc 0) (<= nc classes-used) precision-conform
+;; (>= v 0.0). With nc=0 the first two hold for ANY DPNF (classes-used >= 0) and (floor -1.0 6) = -1.0 is
+;; precision-conform, so the ONLY condition that can reject v=-1.0 is the L7 #19 non-negativity guard —
+;; non-vacuous by construction (the same call with v=1.0 would pass). Complements the SF negative-def test
+;; ([6.2.2] TX-SCORE-11) so both surviving #19 def-score guards (SF nonce + NF set-class) are proven.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (dpnf-id:string "DHB-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "NfSyncScore"))
+    )
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-AQP-NEG-INPUT>> negative NF set-class score value (-1.0) rejected at definition (#19)" [])
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleSetScoreDefinition patron score-id dpnf-id [0] [-1.0]))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-AQP-NEG-INPUT =====================================================")
+(print "")
 (print "=== END FILE [6.2.10]_AQP-NEGATIVES.repl =====================================")
 (print "")
