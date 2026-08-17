@@ -281,9 +281,7 @@
     (defconst VACATE-KIND-DPNF 4)
 
     ;; REPL gas sweep (REPL/VCT-gas-sweep.repl) tunes these; keep above probe ladder max during profiling.
-    ;; TF: max unique owners (custody recipients) per chunk tx.
     ;; OF/DPSF/DPNF: max total nonces summed across all owner rows per chunk tx (not owner count).
-    (defconst VACATE-MAX-LEGS 16)
     (defconst VACATE-MAX-NONCES 64)
     (defconst VACATE-FULL-MAX-LEGS 128)
     (defconst VACATE-FULL-MAX-NONCES 512)
@@ -1423,25 +1421,6 @@
                 legs
             )
         }
-    )
-    (defun URC_VacateBatchLegParityOk:bool
-        (owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
-        @doc "Vacate batch: owner/beneficiary/nonce legs same positive length ≤ VACATE-MAX-LEGS."
-        (let
-            (
-                (l:integer (length owner-ids))
-            )
-            (fold
-                (and)
-                true
-                [
-                    (> l 0)
-                    (<= l VACATE-MAX-LEGS)
-                    (= l (length beneficiary-ids))
-                    (= l (length nonces-array))
-                ]
-            )
-        )
     )
     (defun URC_VacateBatchNonceTotalOk:bool (nonces-array:[[integer]])
         @doc "Vacate batch: total nonce count across legs is positive and ≤ VACATE-MAX-NONCES."
