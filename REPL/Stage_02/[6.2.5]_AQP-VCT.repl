@@ -1550,6 +1550,212 @@
 (commit-tx)
 (print "=== END TX-VCT-L06 =========================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+;; ============================================================================
+;; TX-VCT-RESUME — RE-INITIATE A PARTIALLY-FAILED VACATE CAMPAIGN (owner scenario).
+;; Models: a 7-tx campaign where 2 batches fail (gas) — the frozen vacate-in-progress
+;; state persists, so the UI re-reads the remaining inventory and fires a NEW round of
+;; CC_BatchVacate* for the still-staked legs. Each new-round batch CONTINUES the same
+;; frozen campaign (XI_EnsureVacateBegun is idempotent — no re-freeze/error), and the
+;; batch that drains the LAST leg auto-finalizes (URC_PoolFullyVacated) + re-enables stake.
+;; Here: 3 scored TF legs (ANHD stakes OURO for ANHD / EMMA / LUMY). Round 1 drains 1 leg
+;; (partial); a fresh Round 2 (two txs) drains the other 2 and finalizes.
+;; TfStakePool is empty here (N03 cleaned it up), so its 3 legs are exactly ours.
+;; ============================================================================
+(begin-tx "TX-VCT-RESUME-A - dedicated pool bootstrap + stake 3 legs + ROUND 1 (partial)")
+(print "")
+(print "=== TX-VCT-RESUME-A — Round 1 drains 1 of 3 legs; campaign FREEZES, not finalized ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (ben-a:string KST.ANHD)
+        (ben-b:string KST.EMMA)
+        (ben-c:string KST.LUMY)
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "ResumeVacScore")
+        (fvt-name:string "ResumeVacVault")
+        (pool-name:string "ResumeVacPool")
+        (amt:decimal 20.0)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    ;; --- dedicated class-1 TF pool + TF score + vault (so its 3 legs are exactly ours) ---
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                ]
+            }
+        ]
+    )
+    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-id score-name 12 1.0)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    ;; 3 scored TF legs (owner ANHD; beneficiaries ANHD / EMMA / LUMY)
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
+    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id ben-b ouro-id amt)
+    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id ben-c ouro-id amt)
+    (let
+        (
+            (legs-staked:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+        )
+        (enforce (= legs-staked 3) "TX-VCT-RESUME-A: expected exactly our 3 legs (dedicated pool)")
+        (print "--- [TX-VCT-RESUME-A · 01 · ROUND 1 batch: drain leg (owner,ANHD) only] ---")
+        (ref-TS02-C3::AQP-POOL|CC_BatchVacateTrueFungible patron pool-id ouro-id [owner-id] [ben-a] [amt])
+        (let
+            (
+                (bal-a:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-a))
+                (bal-b:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-b))
+                (bal-c:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-c))
+                (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
+                (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+                (remaining:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-RESUME-A>> round1 leg (ANHD) drained got={}" [bal-a]) 0.0 bal-a)
+                    (expect (format "<<TX-VCT-RESUME-A>> EMMA leg STILL staked got={}" [bal-b]) amt bal-b)
+                    (expect (format "<<TX-VCT-RESUME-A>> LUMY leg STILL staked got={}" [bal-c]) amt bal-c)
+                    (expect (format "<<TX-VCT-RESUME-A>> campaign FROZEN (vacate-in-progress) got={}" [vip]) true vip)
+                    (expect (format "<<TX-VCT-RESUME-A>> stake DISABLED mid-campaign got={}" [stake-enabled]) false stake-enabled)
+                    (expect (format "<<TX-VCT-RESUME-A>> 2 legs remain (not finalized) got={}" [remaining]) 2 remaining)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-RESUME-A =====================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-VCT-RESUME-B - RE-INITIATE round 2, tx 1 of 2 (continue from frozen state)")
+(print "")
+(print "=== TX-VCT-RESUME-B — Round 2 tx1: UI re-reads remaining, drains EMMA; STILL frozen ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (ben-b:string KST.EMMA)
+        (ben-c:string KST.LUMY)
+        (ouro-id:string "OURO-98c486052a51")
+        (pool-name:string "ResumeVacPool")
+        (amt:decimal 20.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    ;; UI re-reads the remaining inventory (2 legs) and constructs a fresh round.
+    (let ((remaining-pre:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id))))
+        (enforce (= remaining-pre 2) "TX-VCT-RESUME-B: expected 2 legs left from the failed round")
+        (print "--- [TX-VCT-RESUME-B · 01 · new-round batch continues the SAME frozen campaign] ---")
+        ;; This batch's XI_EnsureVacateBegun sees vacate-in-progress already true → no-op (continue).
+        (ref-TS02-C3::AQP-POOL|CC_BatchVacateTrueFungible patron pool-id ouro-id [owner-id] [ben-b] [amt])
+        (let
+            (
+                (bal-b:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-b))
+                (bal-c:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-c))
+                (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
+                (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+                (remaining:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-RESUME-B>> EMMA leg drained got={}" [bal-b]) 0.0 bal-b)
+                    (expect (format "<<TX-VCT-RESUME-B>> LUMY leg STILL staked got={}" [bal-c]) amt bal-c)
+                    (expect (format "<<TX-VCT-RESUME-B>> campaign STILL frozen (1 leg left) got={}" [vip]) true vip)
+                    (expect (format "<<TX-VCT-RESUME-B>> stake STILL disabled got={}" [stake-enabled]) false stake-enabled)
+                    (expect (format "<<TX-VCT-RESUME-B>> 1 leg remains got={}" [remaining]) 1 remaining)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-RESUME-B =====================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-VCT-RESUME-C - round 2, tx 2 of 2: drain LAST leg → AUTO-FINALIZE")
+(print "")
+(print "=== TX-VCT-RESUME-C — Round 2 tx2: last leg drained → campaign auto-finalizes ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (ben-c:string KST.LUMY)
+        (ouro-id:string "OURO-98c486052a51")
+        (pool-name:string "ResumeVacPool")
+        (amt:decimal 20.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (print "--- [TX-VCT-RESUME-C · 01 · final batch drains the last leg (LUMY)] ---")
+    (ref-TS02-C3::AQP-POOL|CC_BatchVacateTrueFungible patron pool-id ouro-id [owner-id] [ben-c] [amt])
+    (let
+        (
+            (bal-c:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-c))
+            (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
+            (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+            (remaining:integer (at "leg-count" (ref-VCT::URD_VacateTfInventory pool-id ouro-id)))
+        )
+        (map print
+            [
+                (expect (format "<<TX-VCT-RESUME-C>> LUMY (last) leg drained got={}" [bal-c]) 0.0 bal-c)
+                (expect (format "<<TX-VCT-RESUME-C>> pool fully vacated — 0 legs got={}" [remaining]) 0 remaining)
+                (expect (format "<<TX-VCT-RESUME-C>> campaign AUTO-FINALIZED (vacate-in-progress cleared) got={}" [vip]) false vip)
+                (expect (format "<<TX-VCT-RESUME-C>> stake RE-ENABLED on finalize got={}" [stake-enabled]) true stake-enabled)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-RESUME-C =====================================================")
+(print "")
 (print "=== END FILE [6.2.5]_AQP-VCT.repl ============================================")
 ;;
 ;;GAS> VCT batch-vacate gas suites — profiling only (need the VCTGAS probe module + synth accounts).
