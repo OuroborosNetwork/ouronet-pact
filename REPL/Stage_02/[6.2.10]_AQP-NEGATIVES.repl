@@ -55,5 +55,107 @@
 (commit-tx)
 (print "=== END TX-AQP-NEG-IMC1 =====================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-AQP-NEG-STATE - stake into a stake-DISABLED pool must fail")
+(print "")
+(print "=== TX-AQP-NEG-STATE — C_StakeTrueFungible into a disabled pool rejected =====")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        ;; ResumeVacPool ends [6.2.5] fully vacated → auto-finalized → stake RE-ENABLED and NOT
+        ;; vacate-in-progress, so it is a genuinely clean owned pool: disable does real work and the
+        ;; cleanup re-enable is unblocked (TfStakePool is left vacate-in-progress by the VCT suite).
+        (pool-name:string "ResumeVacPool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+    )
+    (ref-TS02-C3::AQP-POOL|C_DisablePoolStake patron pool-id)
+    (map print
+        [
+            (expect (format "<<TX-AQP-NEG-STATE>> pool now stake-disabled got={}" [(ref-AQP::UR_AQP|PoolStakeEnabled pool-id)]) false (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-STATE>> stake into a DISABLED pool rejected (URC_PoolStakeAdmissionOk)" [])
+                (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 10.0))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-AQP-NEG-STATE ====================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+;; cleanup: re-enable ResumeVacPool in its OWN tx (one IGNIS-collecting client op per tx)
+(begin-tx "TX-AQP-NEG-STATE-cleanup - re-enable ResumeVacPool (leave as found)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ResumeVacPool"))
+    )
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-AQP-NEG-OWNER - non-owner pool-config ops must fail (owner gate)")
+(print "")
+(print "=== TX-AQP-NEG-OWNER — non-owner C_DisablePoolStake / C_AddScore / C_RevokeScore rejected ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; EMMA signs — NOT the TfStakePool owner (ANHD). All three are pool-owner-gated (CAP_PoolOwner defun).
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (foreign:string KST.EMMA)
+        (pool-name:string "TfStakePool")
+        (score-name:string "TfStakeScore")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+    )
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER>> non-owner C_DisablePoolStake rejected (pool-owner gate)" [])
+                (ref-TS02-C3::AQP-POOL|C_DisablePoolStake foreign pool-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER>> non-owner C_AddScore rejected (pool-owner gate)" [])
+                (ref-TS02-C3::AQP-POOL|C_AddScore foreign pool-id score-id))
+            (expect-failure
+                (format "<<TX-AQP-NEG-OWNER>> non-owner C_RevokeScore rejected (pool-owner gate)" [])
+                (ref-TS02-C3::AQP-POOL|C_RevokeScore foreign pool-id score-id))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-AQP-NEG-OWNER ====================================================")
+(print "")
 (print "=== END FILE [6.2.10]_AQP-NEGATIVES.repl =====================================")
 (print "")
