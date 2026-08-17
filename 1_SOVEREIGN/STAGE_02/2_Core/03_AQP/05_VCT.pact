@@ -274,8 +274,13 @@
 
     ;;<==========>
     ;;CAPABILITIES
-    (defcap CAP_VctVacatePoolOwner (pool-id:string)
-        @doc "Vacate operations require tx sender ownership of pool canonical owner konto."
+    ;; [CAP] pool-owner enforce predicate. MUST be a defun (not a defcap): every VCT|C>* vacate/abort
+    ;; cap calls it BARE — `(CAP_VctVacatePoolOwner pool-id)` — as an inline enforce. A defcap bare-called
+    ;; that way does NOT run its body, which silently no-opped the owner gate on the WHOLE vacate surface
+    ;; (CC_FullVacate / XB_Vacate* / CC_BatchVacate* / C_AbortVacate) — any non-owner could vacate or abort.
+    ;; A defun runs the enforce, exactly like AQP-POOL::CAP_PoolOwner. Only the pool owner may vacate/abort.
+    (defun CAP_VctVacatePoolOwner (pool-id:string)
+        @doc "Vacate operations require tx sender ownership of the pool's canonical owner konto."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)

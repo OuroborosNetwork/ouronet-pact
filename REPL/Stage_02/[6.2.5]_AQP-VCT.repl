@@ -616,16 +616,14 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-VCT-L04b - non-owner C_EnablePoolStake must fail (pool-owner gate)")
+(begin-tx "TX-VCT-L04b - only the pool OWNER may vacate / abort / enable (owner-gate negatives)")
 (print "")
-(print "=== TX-VCT-L04b — non-owner C_EnablePoolStake rejected (pool-owner gate) =====")
-;; NOTE (audit finding to verify): C_AbortVacate via a non-owner did NOT reject in the same
-;; setup (CAP_VctVacatePoolOwner -> CAP_EnforceAccountOwnership) while C_EnablePoolStake did —
-;; an owner-gate ASYMMETRY worth a closer look (intended permissionless abort, or a gap?).
-;; Left out of the green suite pending that investigation; enable-stake negative kept here.
+(print "=== TX-VCT-L04b — non-owner CC_FullVacate / C_AbortVacate / C_EnablePoolStake rejected ==")
+;; Regression guard for the owner-gate fix: CAP_VctVacatePoolOwner was a defcap bare-called inside the
+;; VCT|C>* caps, which no-opped the owner enforce — a non-owner could vacate OR abort any pool. It is now
+;; a defun (runs the enforce). EMMA is NOT the SfStakePool owner (owner = ANHD); all three must fail.
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;; EMMA signs — she is NOT the SfStakePool owner (owner = ANHD). C_EnablePoolStake is pool-owner-gated.
 (env-sigs [{ "key": "PK_Emma", "caps": [] }])
 (let
     (
@@ -637,6 +635,12 @@
     )
     (map print
         [
+            (expect-failure
+                (format "<<TX-VCT-L04b expect-failure>> non-owner CC_FullVacate rejected (pool-owner gate)" [])
+                (ref-TS02-C3::AQP-POOL|CC_FullVacate foreign pool-id))
+            (expect-failure
+                (format "<<TX-VCT-L04b expect-failure>> non-owner C_AbortVacate rejected (pool-owner gate)" [])
+                (ref-TS02-C3::AQP-POOL|C_AbortVacate foreign pool-id))
             (expect-failure
                 (format "<<TX-VCT-L04b expect-failure>> non-owner C_EnablePoolStake rejected (pool-owner gate)" [])
                 (ref-TS02-C3::AQP-POOL|C_EnablePoolStake foreign pool-id))
