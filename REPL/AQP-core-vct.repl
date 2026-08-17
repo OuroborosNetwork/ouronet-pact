@@ -1,0 +1,10 @@
+;;
+;; REPL/AQP-core-vct.repl — self-contained AQP core + VACATE assertion run.
+;; Full deploy (Stage 00 sandboxes -> Stage 01 -> Stage 02 deploy + AQP-BOOT Step0) then the
+;; canonical AQP suite [6.2]_AQP => [6.2.1] ANK, [6.2.2] SCORE, [6.2.3] POOL, [6.2.4] FVT
+;; (TF/OF/DC/NF stake+unstake+inject+collect), [6.2.5] VCT (pool-owner vacate, all asset kinds).
+;; A proven subset of Z.repl, AQP-scoped. Companion to AQP-comprehensive.repl (full mainnet-sim boot).
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage01_Tester.repl")
+(load "Stage02_Tester.repl")

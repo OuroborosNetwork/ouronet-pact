@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+#
+# REPL/run-aqp-audit.sh — CONSOLIDATED AQP audit gate (one command).
+#
+# Runs every coherent AQP coverage suite. Each suite is a self-contained pact process:
+# full deploy (Stage 00 sandboxes -> Stage 01 -> Stage 02) + population slaves + the FULL
+# AQP-BOOT mainnet-sim provisioning (module + Steps 0-12: anchor classes, OURO-LP triplet,
+# DPSF/DPNF pools, FVT entities, score+reward links, TripletFamily, farm wiring). They are
+# separate processes because they are deep state-mutators (vacate drains pools; the DEB/MTX
+# suite retires the AurynRain anchor) that cannot be linearly composed in one process without
+# a full hermetic rewrite. This driver gives a single command + a single aggregate verdict.
+#
+# Scope: the six AQP audit modules only (01_ANK, 02_SCORE, 03_AQP/POOL, 04_FVT, 05_VCT,
+# 06_MTX-AQP). Not Stage 1 or the rest of Stage 2.
+#
+# Usage:  bash REPL/run-aqp-audit.sh
+# Exit:   0 if every suite is green (0 FAILURE, no Load failed), 1 otherwise.
+#
+set -uo pipefail
+cd "$(dirname "$0")"
+export PATH="$HOME/.local/bin:$PATH"
+
+SUITES=(
+  "AQP-comprehensive.repl|functional + full AQP-BOOT mainnet-sim + RPS/collect/DPNF/ANK-LP/triplet-diag/FVT-admin + [6.3] golden paths"
+  "AQP-core-vct.repl|core [6.2.1-4] ANK/SCORE/POOL/FVT stake+unstake+inject+collect + [6.2.5] VCT vacate (all asset kinds)"
+  "deb-staleness-proof.repl|deb-staleness conservation (M3 #12) + CC_Inject + MTX|2|C_Inject & MTX|2|C_SweepRevokeAnchor defpacts + sweep"
+  "triplet-collect-golden.repl|farm multiplet triplet collect fairness + dual-stream vacate"
+)
+
+echo "================================================================"
+echo "AQP AUDIT — consolidated run  ($(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo now))"
+echo "================================================================"
+
+overall=0
+declare -a rows
+for entry in "${SUITES[@]}"; do
+  file="${entry%%|*}"
+  desc="${entry#*|}"
+  if [ ! -f "$file" ]; then
+    rows+=("MISSING  | $file — file not found")
+    overall=1
+    continue
+  fi
+  echo ""
+  echo ">>> RUN  $file"
+  echo "         $desc"
+  err="/tmp/aqp-audit-$(echo "$file" | tr '/[]' '___').err"
+  out=$(pact "$file" 2>"$err")
+  fails=$(printf '%s\n' "$out" | grep -cE 'FAILURE')
+  passes=$(printf '%s\n' "$out" | grep -cE 'Expect: success|Expect failure: Success')
+  loadfail=$(grep -cE 'Load failed' "$err")
+  # openFile / missing-file / fatal that pact reports on stderr WITHOUT the "Load failed" string
+  filerr=$(grep -cE 'does not exist|openFile|No such file' "$err")
+  # A suite that produced ZERO assertions never really ran — treat as FAIL, not a vacuous pass.
+  if [ "$fails" -eq 0 ] && [ "$loadfail" -eq 0 ] && [ "$filerr" -eq 0 ] && [ "$passes" -gt 0 ]; then
+    status="PASS"
+  else
+    status="FAIL"
+    overall=1
+  fi
+  rows+=("$(printf '%-4s | %-26s | asserts=%-5s fails=%-3s load-fail=%s file-err=%s' "$status" "$file" "$passes" "$fails" "$loadfail" "$filerr")")
+  echo "         => $status  (asserts=$passes, failures=$fails, load-fail=$loadfail, file-err=$filerr)"
+  if [ "$status" = "FAIL" ]; then
+    echo "         --- diagnostics ---"
+    printf '%s\n' "$out" | grep -E 'FAILURE' | head -5 | sed 's/^/         /'
+    grep -E 'Load failed|Fatal execution error|does not exist|openFile' "$err" | head -3 | sed 's/^/         /'
+    [ "$passes" -eq 0 ] && echo "         (0 assertions — suite did not execute its test body)"
+  fi
+done
+
+echo ""
+echo "================================================================"
+echo "AQP AUDIT — SUMMARY"
+echo "================================================================"
+for r in "${rows[@]}"; do echo "  $r"; done
+echo "----------------------------------------------------------------"
+if [ "$overall" -eq 0 ]; then
+  echo "  RESULT: ALL GREEN ✓"
+else
+  echo "  RESULT: FAILURES PRESENT ✗"
+fi
+echo "================================================================"
+exit "$overall"
