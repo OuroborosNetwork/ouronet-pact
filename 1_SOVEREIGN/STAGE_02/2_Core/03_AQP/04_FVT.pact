@@ -146,6 +146,8 @@
     (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
     )
+    (defun XE_SweepBegin:string (anchor-id:string))
+    (defun XE_SweepEnd:string (anchor-id:string))
     (defun XB_FvtInject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
@@ -708,6 +710,13 @@
         @doc "Forward (MTX-AQP MTX|n|C_Inject defpact): authorize a chunked deb-staleness FIX pass over an FVT's \
             \ stale stakers — NO fund movement (settle + refresh + mirror-resync only). Composes SECURE."
         (compose-capability (SECURE))
+    )
+    (defcap FVT|XE>SWEEP-BRACKET (anchor-id:string)
+        @doc "Forward (paginated MTX|n|C_SweepRevokeAnchor defpact): authorize the sweep BRACKET — freeze/unfreeze \
+            \ every affected pool and the one-shot swept-revoke of the anchor. Composes P|SECURE-CALLER so FVT's \
+            \ SECURE guard is satisfied for the cross-module XE calls into AQP-POOL (freeze) and AQP-ANK (revoke); \
+            \ the anchor owner (= anchored-asset owner) is enforced inside ANK|XE>SWEEP-REVOKE."
+        (compose-capability (P|SECURE-CALLER))
     )
     ;;{C3}
     (defcap FVT|C>TRUE-FUNGIBLE-STAKE-FLOW
@@ -3154,7 +3163,7 @@
             \ mirror), then unfreezes. Owner-initiated: the anchor owner (= the anchored-asset owner) signs; CAP_Owner \
             \ is enforced inside ANK|XE>SWEEP-REVOKE. Scans the boost-class reverse index (ANK::UR_BC|ScoreLinks) × \
             \ each score's present users — bounded by score DEFINITIONS × stakers. For staker sets exceeding one tx, \
-            \ a paginated MTX|n defpact variant is a future addition (mirrors CC_Inject → MTX|2|C_Inject). Lives in \
+            \ use the paginated MTX-AQP::MTX|2|C_SweepRevokeAnchor defpact (mirrors CC_Inject → MTX|2|C_Inject). Lives in \
             \ AQP-FVT (earliest module that can call ANK/SCR/POOL/FVT + owns the recompute). UEV_IMC + \
             \ FVT|C>SWEEP-REVOKE. `patron` is retained for symmetry / future IGNIS."
         (UEV_IMC)
@@ -4611,10 +4620,51 @@
         (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
         @doc "Forward (re-score sweep defpact — cross-module): recompute a CHUNK of holders on one (fvt, member). \
             \ Thin UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE) wrapper over XI_FvtSweepRecomputeChunk. Caller passes \
-            \ `take N` of the member's present users. For the future paginated MTX|n sweep defpact."
+            \ `take N` of the member's present users. Paged by MTX-AQP::MTX|2|C_SweepRevokeAnchor (XI_SweepRecomputeWindow)."
         (UEV_IMC)
         (with-capability (FVT|XE>SWEEP-FIX fvt-id)
             (XI_FvtSweepRecomputeChunk fvt-id score-entity-id swept-boost-class-id users)
+        )
+    )
+    (defun XE_SweepBegin:string (anchor-id:string)
+        @doc "Sweep bracket BEGIN (paginated MTX|n|C_SweepRevokeAnchor): freeze every affected pool (stake + collect \
+            \ blocked) then remove the anchor globally (swept-revoke — skips the #9 score-link lock). Mirrors steps \
+            \ 1-2 of the single-tx CC_SweepRevokeAnchor. UEV_IMC + FVT|XE>SWEEP-BRACKET (P|SECURE-CALLER)."
+        (UEV_IMC)
+        (with-capability (FVT|XE>SWEEP-BRACKET anchor-id)
+            (let
+                (
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (score-ids:[string]
+                        (ref-ANK::UR_BC|ScoreLinks (ref-ANK::UR_ANK|BoostClassId anchor-id)))
+                )
+                ;; 1. FREEZE every affected pool (idempotent per shared pool)
+                (map (lambda (sid:string) (ref-AQP::XE_SetSweepInProgress (ref-SCR::UR_SCR|ScoreAqpoolLink sid) true)) score-ids)
+                ;; 2. REVOKE the anchor globally (swept — keeps scores linked; the paged recompute un-stales everyone)
+                (ref-ANK::XE_SweepRevokeAnchor anchor-id)
+                (format "Sweep begun for anchor {}: froze {} affected pool(s), anchor swept-revoked." [anchor-id (length score-ids)])
+            )
+        )
+    )
+    (defun XE_SweepEnd:string (anchor-id:string)
+        @doc "Sweep bracket END (paginated MTX|n|C_SweepRevokeAnchor terminal step): unfreeze every affected pool. \
+            \ The anchor was already swept-revoked in XE_SweepBegin; the reverse index is unchanged so score-ids \
+            \ still resolve. UEV_IMC + FVT|XE>SWEEP-BRACKET (P|SECURE-CALLER)."
+        (UEV_IMC)
+        (with-capability (FVT|XE>SWEEP-BRACKET anchor-id)
+            (let
+                (
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (score-ids:[string]
+                        (ref-ANK::UR_BC|ScoreLinks (ref-ANK::UR_ANK|BoostClassId anchor-id)))
+                )
+                (map (lambda (sid:string) (ref-AQP::XE_SetSweepInProgress (ref-SCR::UR_SCR|ScoreAqpoolLink sid) false)) score-ids)
+                (format "Sweep ended for anchor {}: unfroze {} affected pool(s)." [anchor-id (length score-ids)])
+            )
         )
     )
     (defun XB_FvtInject:object{IgnisCollectorV1.OutputCumulator}

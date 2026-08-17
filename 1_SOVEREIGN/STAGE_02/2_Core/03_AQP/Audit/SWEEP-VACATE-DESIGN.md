@@ -344,8 +344,10 @@ refresh XE_ (anchor def changed ⇒ stored aggregate-promile stale), a triplet-l
   lane refold needed the aggregate refold FIRST (lanes read `UR_UB|AggregatePromile`); and
   `XI_2|RecomputeAffectedBoostAggregates` skipped the write when a class emptied (stale aggregate on last-anchor
   removal). Auth = the anchored-asset owner (owner clarification: no separate anchor-owner). **Deferred within
-  phase 3:** the RE-PRICE variant (3b — adds a per-anchor-user-promile refresh) and a paginated MTX|n defpact for
-  spike staker sets (mirrors CC_Inject → MTX|2|C_Inject).
+  phase 3:** the RE-PRICE variant (3b — adds a per-anchor-user-promile refresh). **DONE (Phase 3 closeout):** the
+  paginated `MTX-AQP::MTX|2|C_SweepRevokeAnchor` defpact for spike staker sets (mirrors CC_Inject → MTX|2|C_Inject) —
+  FVT `XE_SweepBegin`/`XE_SweepEnd` bracket + `XI_SweepRecomputeWindow` global-offset paging over the frozen present
+  set; proven in `deb-staleness-proof.repl` TX-AQP-SWEEP01/02. `N_SWEEP` is a calibration-gated placeholder.
 - **Phase 4 — vacate rehaul.** [REVISED 2026-08-16 — see §5]
   - ✅ **DONE (single-tx agnostic):** `CC_FullVacate(pool-id)` + per-kind `XI_Vacate*Pool` + `XB_Vacate*` + Talos +
     `URD_AQP|ActivePoolDpofIds` (class-1 satellites). All 5 classes proven (`TX-VCT-{TF01b,L01b,L02b,DPNF02b,CC01}`).

@@ -6,6 +6,7 @@
         \ (MTX|n|C_Inject) — the spike fallback for CC_Inject when the stale set exceeds one transaction."
     ;;
     (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal))
+    (defun C_2|SweepRevokeAnchor (patron:string anchor-id:string))
     ;;
 )
 ;;
@@ -128,6 +129,11 @@
     ;; (settle+refresh+mirror-resync) fix + the O(present-users) scan that shares the step, staying under ~2M.
     ;; Placeholder pending real-state measurement (design §2.7 / Pre-build calibration). Start conservative.
     (defconst N_FIX:integer 400)
+    ;; Per-step recompute capacity (re-score SWEEP). CALIBRATION-GATED — size N_SWEEP against the measured gas of one
+    ;; holder recompute (settle → aggregate/lane refold → deb + mirror) plus the O(present) window scan it shares,
+    ;; staying under ~2M. The sweep unit is HEAVIER than the inject fix (deeper refold), so N_SWEEP < N_FIX.
+    ;; Placeholder pending real-state measurement (design §2.7 / Pre-build calibration).
+    (defconst N_SWEEP:integer 300)
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -143,6 +149,15 @@
         @event
         (compose-capability (P|SECURE-CALLER))
     )
+    (defcap MTX-AQP|C>SWEEP-REVOKE (patron:string anchor-id:string)
+        @doc "Protects the MTX|n|C_SweepRevokeAnchor multistep flow. Composes P|SECURE-CALLER so P|MTX-AQP|CALLER is \
+            \ ACTIVE while the steps call AQP-FVT's XE_ bracket (freeze/revoke/unfreeze) + recompute-chunk building \
+            \ blocks (FVT's UEV_IMC checks MTX-AQP's registered caller guard — see P|A_Define). Acquired fresh per \
+            \ step (steps are separate txs; the pact-id gates continuation). The anchor owner (= anchored-asset \
+            \ owner) is enforced downstream inside ANK|XE>SWEEP-REVOKE."
+        @event
+        (compose-capability (P|SECURE-CALLER))
+    )
     ;;
     ;;<=======>
     ;;FUNCTIONS
@@ -154,6 +169,76 @@
         (UEV_IMC)
         (with-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount)
             (MTX|2|C_Inject patron fvt-id reward-dptf-id amount)
+        )
+    )
+    ;;{F1}  [URC] sweep recompute-set sizing (read-only; the freeze keeps it fixed across steps)
+    (defun URC_SweepTotalPresent:integer (score-ids:[string])
+        @doc "Total present holders across every FVT member employing the swept boost-class — the paginated \
+            \ recompute-set size. Read-only; sweep-in-progress keeps it fixed across defpact steps."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+            )
+            (fold (+) 0
+                (map
+                    (lambda (sid:string) (length (ref-FVT::URD_FvtPresentUsers (ref-SCR::UR_SCR|ScoreFvtLink sid))))
+                    score-ids))
+        )
+    )
+    ;;{F2}  [XI] paginated window recompute — advances by GLOBAL offset over the fixed flattened present set
+    (defun XI_SweepRecomputeWindow:integer
+        (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
+        @doc "Recompute holders whose GLOBAL flattened index — present users concatenated across score-ids in order \
+            \ — falls in [win-lo, win-hi). Per score, slice its present users to the window overlap and forward one \
+            \ AQP-FVT::XE_FvtSweepRecomputeChunk. The sweep freeze makes URD_FvtPresentUsers order deterministic \
+            \ across steps, so (drop offset) advances the window without re-processing (contrast the inject's \
+            \ shrinking (take N) set). Returns the number of holders recomputed. Runs under MTX-AQP|C>SWEEP-REVOKE."
+        (at "processed"
+            (fold
+                (lambda (acc:object sid:string)
+                    (let
+                        (
+                            (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                            (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                            (seen-before:integer (at "seen" acc))
+                            (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
+                            (member:string
+                                (if (ref-SCR::UR_SCR|ScoreTriplet sid) (ref-SCR::UR_SCR|ScoreTripletId sid) sid))
+                        )
+                        (let
+                            (
+                                (users:[string] (ref-FVT::URD_FvtPresentUsers fvt))
+                            )
+                            (let
+                                (
+                                    (seen-after:integer (+ seen-before (length users)))
+                                    (lo:integer (if (> win-lo seen-before) win-lo seen-before))
+                                )
+                                (let
+                                    (
+                                        (hi:integer (if (< win-hi seen-after) win-hi seen-after))
+                                    )
+                                    (if (> hi lo)
+                                        (let
+                                            (
+                                                (slice:[string] (take (- hi lo) (drop (- lo seen-before) users)))
+                                            )
+                                            (ref-FVT::XE_FvtSweepRecomputeChunk fvt member boost-class-id slice)
+                                            {"seen": seen-after, "processed": (+ (at "processed" acc) (length slice))})
+                                        {"seen": seen-after, "processed": (at "processed" acc)}))))))
+                {"seen": 0, "processed": 0}
+                score-ids))
+    )
+    ;;{F3}  [C] client wrapper — acquire the flow cap, run the sweep defpact
+    (defun C_2|SweepRevokeAnchor (patron:string anchor-id:string)
+        @doc "2-step paginated re-score SWEEP that retires an employed anchor (Phase 3 closeout; spike fallback for \
+            \ AQP-FVT::CC_SweepRevokeAnchor when the recompute set exceeds one tx). Acquires MTX-AQP|C>SWEEP-REVOKE, \
+            \ then runs the MTX|2|C_SweepRevokeAnchor defpact. Step 0 brackets (freeze + swept-revoke) + recomputes \
+            \ the first window; advance with (continue-pact 1). Owner enforced downstream in ANK|XE>SWEEP-REVOKE."
+        (UEV_IMC)
+        (with-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id)
+            (MTX|2|C_SweepRevokeAnchor patron anchor-id)
         )
     )
     ;;{F6.P}  [MTX|C]
@@ -211,6 +296,69 @@
                 )
             )
         )
+    )
+    (defpact MTX|2|C_SweepRevokeAnchor (patron:string anchor-id:string)
+        ;; Paginated re-score SWEEP over 2 steps (Phase 3 closeout). Step 0 brackets the sweep (freeze every affected
+        ;; pool + swept-revoke the anchor) then recomputes the first window of present holders; if the whole set fits
+        ;; (≤ N_SWEEP) it unfreezes + terminates, else it yields the cursor. sweep-in-progress holds ACROSS steps
+        ;; (separate txs), keeping the recompute set FIXED (stake + collect blocked) so the flattened [offset, …)
+        ;; window pages deterministically. Handles up to 2×N_SWEEP holders; larger spikes → a higher-n variant.
+        ;;
+        ;;Step 0 — bracket (freeze + swept-revoke) + recompute window [0, N_SWEEP); terminal if the whole set fits.
+        (step
+            (let
+                (
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (require-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id))
+                (let
+                    (
+                        (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
+                    )
+                    (let
+                        (
+                            (score-ids:[string] (ref-ANK::UR_BC|ScoreLinks boost-class-id))
+                        )
+                        (ref-FVT::XE_SweepBegin anchor-id)
+                        (let
+                            (
+                                (total:integer (URC_SweepTotalPresent score-ids))
+                            )
+                            (if (<= total N_SWEEP)
+                                (let
+                                    (
+                                        (n:integer (XI_SweepRecomputeWindow score-ids boost-class-id 0 total))
+                                    )
+                                    (ref-FVT::XE_SweepEnd anchor-id)
+                                    (yield {"done": true, "boost-class-id": boost-class-id, "score-ids": score-ids, "offset": 0})
+                                    (format "MTX Sweep 1|2: swept-revoked anchor {} and recomputed {} holder(s) across {} score(s) (terminal)." [anchor-id n (length score-ids)]))
+                                (let
+                                    (
+                                        (n:integer (XI_SweepRecomputeWindow score-ids boost-class-id 0 N_SWEEP))
+                                    )
+                                    (yield {"done": false, "boost-class-id": boost-class-id, "score-ids": score-ids, "offset": N_SWEEP})
+                                    (format "MTX Sweep 1|2: swept-revoked anchor {}; recomputed {} of {} holder(s) — {} remain, continue to step 2." [anchor-id n total (- total N_SWEEP)]))))))
+            )
+        )
+        ;;Step 1 — if step 0 already finished, no-op; else recompute the remainder [offset, total) then unfreeze.
+        (step
+            (resume
+                {"done" := done, "boost-class-id" := boost-class-id, "score-ids" := score-ids, "offset" := offset}
+                (if done
+                    "MTX Sweep 2|2: already completed in step 1 — no-op."
+                    (with-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id)
+                        (let
+                            (
+                                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                                (total:integer (URC_SweepTotalPresent score-ids))
+                            )
+                            (let
+                                (
+                                    (n:integer (XI_SweepRecomputeWindow score-ids boost-class-id offset total))
+                                )
+                                (ref-FVT::XE_SweepEnd anchor-id)
+                                (format "MTX Sweep 2|2: recomputed {} remaining holder(s) — anchor {} retired." [n anchor-id])))))))
     )
     ;;
 )

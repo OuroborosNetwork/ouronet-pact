@@ -964,16 +964,22 @@
 ;; decision before this proof lands. See SWEEP-VACATE-DESIGN.md.
 ;;
 ;; ============================================================================
-;; TX-AQP-SWEEP01 — RE-SCORE SWEEP end-to-end (H4 half-2). Retire the EMPLOYED
-;; AurynRain anchor (SilverSnakePower boost-class, promile 100, employed by the
-;; SnakePower TRUE-triplet in OuroLpFarm where ANHD stakes). Auth: the anchor
-;; owner == the anchored-asset (KBN) owner == LUMY, who signs. CC_SweepRevokeAnchor
-;; FREEZES the pool → REMOVES the anchor (skipping the #9 lock) → RECOMPUTES every
-;; holder's aggregate-promile + triplet lanes → UNFREEZES.
+;; TX-AQP-SWEEP01 — PAGINATED RE-SCORE SWEEP end-to-end (Phase 3 closeout). Retire
+;; the EMPLOYED AurynRain anchor (SilverSnakePower boost-class, promile 100, employed
+;; by the SnakePower TRUE-triplet in OuroLpFarm where ANHD stakes) via the 2-step
+;; MTX|2|C_SweepRevokeAnchor defpact. Auth: the anchor owner == the anchored-asset
+;; (KBN) owner == LUMY, who signs. Step 0 (here) XE_SweepBegin FREEZES the pool +
+;; swept-REMOVES the anchor (skipping the #9 lock), then XI_SweepRecomputeWindow
+;; RECOMPUTES every present holder's aggregate-promile + triplet lanes; ANHD is the
+;; only present holder (≤ N_SWEEP) so step 0 is TERMINAL → XE_SweepEnd UNFREEZES.
+;; Step 1 (continue-pact, SWEEP02) is a no-op. Proves the paginated path reaches the
+;; same end-state as the single-tx CC_SweepRevokeAnchor, across defpact steps.
 ;; ============================================================================
-(begin-tx "TX-AQP-SWEEP01 - CC_SweepRevokeAnchor retires an employed anchor end-to-end")
+(begin-tx "TX-AQP-SWEEP01 - MTX|2|C_SweepRevokeAnchor defpact step 0 retires an employed anchor")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; force a known pact-id so continue-pact in SWEEP02 matches
+(env-hash (hash "sweep-mtx-defpact"))
 (env-sigs [{ "key": "PK_Lumy", "caps": [] }])
 (let
     (
@@ -1007,9 +1013,10 @@
                 (expect "<<TX-SWEEP01>> pre: pool NOT sweep-frozen" false frozen-pre)
             ]
         )
-        ;; THE SWEEP — the anchor owner (LUMY = KBN asset owner) retires the employed AurynRain anchor
-        (print (format "<(SWEEP01 CC_SweepRevokeAnchor)> => \"{}\""
-            [(ref-TS02-C3::AQP-FVT|CC_SweepRevokeAnchor lumy anchor-id)]))
+        ;; THE PAGINATED SWEEP — the anchor owner (LUMY = KBN asset owner) retires the employed AurynRain
+        ;; anchor via the 2-step defpact. ANHD is the only present holder (≤ N_SWEEP) ⇒ step 0 is terminal.
+        (print (format "<(SWEEP01 MTX-AQP|C_2|SweepRevokeAnchor step 0)> => \"{}\""
+            [(ref-TS02-C3::MTX-AQP|C_2|SweepRevokeAnchor lumy anchor-id)]))
         (let
             (
                 (agg-post:decimal (ref-ANK::UR_UB|AggregatePromile anhd silver-class))
@@ -1032,6 +1039,32 @@
                 ]
             )
         )
+    )
+)
+(commit-tx)
+(print "")
+;;
+;; TX-AQP-SWEEP02 — continue-pact 1 completes the defpact (step 1 = no-op; step 0 was terminal).
+;; Idempotence across the step boundary: the anchor STAYS retired and the pool STAYS unfrozen — step 1
+;; must not re-freeze, re-revoke, or re-recompute.
+(begin-tx "TX-AQP-SWEEP02 - continue-pact 1 (defpact step 1 = no-op) + idempotence")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+(print (format "<(SWEEP02 continue-pact 1)> => \"{}\"" [(continue-pact 1 false (hash "sweep-mtx-defpact"))]))
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
+        (ouro-pool:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
+    )
+    (map print
+        [
+            (expect "<<TX-SWEEP02>> anchor STAYS retired after step 1 no-op" false (ref-ANK::UR_ANK|State anchor-id))
+            (expect "<<TX-SWEEP02>> pool STAYS unfrozen after step 1 no-op" false (ref-AQP::UR_AQP|PoolSweepInProgress ouro-pool))
+        ]
     )
 )
 (commit-tx)

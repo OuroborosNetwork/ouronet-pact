@@ -216,6 +216,9 @@
     (defun MTX-AQP|C_2|Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
+    (defun MTX-AQP|C_2|SweepRevokeAnchor:string
+        (patron:string anchor-id:string)
+    )
     (defun AQP-FVT|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
     )
@@ -1696,6 +1699,25 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (let ((r:string (ref-MTX-AQP::C_2|Inject patron fvt-id reward-dptf-id amount)))
+                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    r
+                )
+            )
+        )
+    )
+    (defun MTX-AQP|C_2|SweepRevokeAnchor:string
+        (patron:string anchor-id:string)
+        @doc "Starts the 2-step paginated re-score SWEEP defpact (MTX-AQP — spike fallback for \
+            \ AQP-FVT|CC_SweepRevokeAnchor when the recompute set exceeds one tx). Step 0 brackets (freeze + \
+            \ swept-revoke) + recomputes the first window here; advance with (continue-pact 1). The defpact is \
+            \ gas-only (no reward inject), so this wrapper just summons the pact and refuels."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-MTX-AQP:module{AqpMtxV1} MTX-AQP)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                )
+                (let ((r:string (ref-MTX-AQP::C_2|SweepRevokeAnchor patron anchor-id)))
                     (ref-TS01-A::XB_DynamicFuelKDA)
                     r
                 )
