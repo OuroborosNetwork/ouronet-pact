@@ -27,15 +27,22 @@ Ouronet needs **large** Pact surfaces (many modules, many tables, many client re
 
 In StoicSyntax, a function’s **prefix is its contract**. You know privilege and side-effect class before opening the body:
 
+> **The complete, authoritative prefix registry — every class, the `k`/`x` role suffixes, the
+> old→new migration (`URD→URH`, `URDC→URHC`, `UCK→UCk`, uppercase-`X`→lowercase-`x`), and the colour
+> families — lives in [`StoicSyntax-Prefixes.md`](StoicSyntax-Prefixes.md).** Make prefix changes
+> there first; the table below is a quick-glance summary using the **new** heavy-read spelling.
+
 | Prefix signal | Meaning |
 |---------------|---------|
-| `UC_` | Pure compute on arguments |
-| `UR_` / `URD_` | Point read / table scan |
-| `URC_` / `URDC_` | Derive from reads (no `enforce`) |
-| `UEV_` | May fail the transaction |
-| `W_` | Persistence only |
+| `UC_` / `UCk_` | Pure compute / compute that builds a composite table key |
+| `UR_` / `URH_` | Point read / table scan (heavy — off-path only) |
+| `URC_` / `URHC_` | Derive from reads (no `enforce`) — point / heavy |
+| `UEV_` / `CAP_` | May fail the transaction (enforce / ownership) |
+| `UDC_` | Data constructor |
+| `WI_` / `WU_` / `WW_` | Persistence only (insert / update / write) |
 | `XI_` / `XE_` / `XB_` | Orchestrate writes (no validation) |
-| `C_` / `A_` | Client / admin recipes |
+| `C_` / `CC_` / `A_` | Client / single-tx client / admin recipes |
+| `…x` (lowercase) | Auxiliary of the function directly above it (same class + colour) |
 
 Capabilities are banded (**C1–C4**), FUNCTIONS are ordered (**UC → … → X**), and `defcap` / `let` bodies follow a fixed statement order. A reader can navigate a multi-thousand-line module by **prefix and section**, not by hunting for side effects. That is intentional: **the layout is the first audit pass**.
 
