@@ -238,4 +238,77 @@
 (commit-tx)
 (print "=== END TX-AQP-NF-NEGDEF ====================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-AQP-M1 - DPNF model-1 point-read scoring correctness (#FP0 validation)")
+(print "")
+(print "=== TX-AQP-M1 — model-1 NF trait scoring via TraitKeys aggregate + point reads (#FP0) ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; #FP0 validation. KBN (PopulateBunnies) nonce 1 = {Rarity:Common, Background:"Movie Set", ...},
+;; nonce 25 = {Rarity:Legendary, Background:"Legendary Photo Shoot", ...}, both ANHD-owned. We issue a
+;; model-1 (definition) NF score on KBN, define trait scores, and assert the point-read raw base delta:
+;;   Rarity Common=50, Rarity Legendary=9999, Background "Movie Set"=10.
+;; nonce1 => Common(50)+Movie Set(10) = 60  (Legendary EXCLUDED — proves per-nonce point-read of the
+;;           CORRECT (key,value) def, not a sum-over-all-defs scan; and that the TraitKeys aggregate was
+;;           populated with Rarity+Background at def-issuance).
+;; nonce25 => Legendary(9999)+"Legendary Photo Shoot"(undefined=>0) = 9999 (proves it picks Legendary for
+;;           THIS nonce, and undefined (key,value) => 0). No class def => class-part = 0 (class-rev 0 branch).
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (kbn-id:string "KBN-98c486052a51")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "M1Probe"))
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    ;; issue the model-1 (definition-mode) class-4 NF score on KBN, precision 6 (STOA smart fee → coin caps)
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                ]
+            }
+        ]
+    )
+    (print (format "<(AQP-SCR|C_IssueNonFungibleScore M1Probe model=1)> => \"{}\"" [
+        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id "M1Probe" 6 1)]))
+    ;; trait definitions (IGNIS only → plain ANHD sig)
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (print (format "<(AQP-SCR|C_IssueNonFungibleScoreDefinition Rarity/Background)> => \"{}\"" [
+        (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron score-id kbn-id
+            ["Rarity" "Rarity" "Background"] ["Common" "Legendary" "Movie Set"] [50.0 9999.0 10.0])]))
+    ;;==== TX-AQP-M1 · 01 · point-read scoring assertions ====
+    (print "--- [TX-AQP-M1 · 01 · point-read scoring assertions] ---")
+    (map print
+        [
+            (expect (format "<<TX-AQP-M1>> nonce1 (Common 50 + Movie Set 10) base = 60.0 got={}" [(ref-SCR::URC_SignedBaseDeltaForDpnfStake score-id kbn-id [1] [1] true)])
+                60.0 (ref-SCR::URC_SignedBaseDeltaForDpnfStake score-id kbn-id [1] [1] true))
+            (expect (format "<<TX-AQP-M1>> nonce25 (Legendary 9999) base = 9999.0 got={}" [(ref-SCR::URC_SignedBaseDeltaForDpnfStake score-id kbn-id [25] [1] true)])
+                9999.0 (ref-SCR::URC_SignedBaseDeltaForDpnfStake score-id kbn-id [25] [1] true))
+            (expect (format "<<TX-AQP-M1>> batch [1,25] = 60 + 9999 = 10059.0 got={}" [(ref-SCR::URC_SignedBaseDeltaForDpnfStake score-id kbn-id [1 25] [1 1] true)])
+                10059.0 (ref-SCR::URC_SignedBaseDeltaForDpnfStake score-id kbn-id [1 25] [1 1] true))
+            (expect (format "<<TX-AQP-M1>> nonce1 unstake (direction false) = -60.0 got={}" [(ref-SCR::URC_SignedBaseDeltaForDpnfStake score-id kbn-id [1] [1] false)])
+                -60.0 (ref-SCR::URC_SignedBaseDeltaForDpnfStake score-id kbn-id [1] [1] false))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-AQP-M1 ===========================================================")
+(print "")
 (print "=== END [6.4]_AQP-EXHAUSTIVE-DPNF.repl ======================================")

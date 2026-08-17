@@ -73,6 +73,7 @@
     (defun UR_SCR|ScoreTripletId:string (score-id:string))
     (defun URC_TripletExists:bool (triplet-id:string))
     (defun URC_TripletCategoryMatchesFvtClass:bool (triplet-category:string fvt-class:integer))
+    (defun URC_SignedBaseDeltaForDpnfStake:decimal (score-id:string dpnf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool))
     (defun URC_IsTrueTriplet:bool (id0:string id1:string id2:string))
     ;;
     ;;  [UEV]
