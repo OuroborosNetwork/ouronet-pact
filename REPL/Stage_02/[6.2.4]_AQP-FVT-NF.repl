@@ -235,5 +235,126 @@
 (commit-tx)
 (print "=== END TX-FVT-NF-02 =======================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-FVT-NF-03 - C_UnstakeNonFungibleCollectable round-trip + conservation")
+(print "")
+(print "=== TX-FVT-NF-03 — C_UnstakeNonFungibleCollectable (round-trip) =============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpnf-id:string "DHB-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "NfSyncScore")
+        (fvt-name:string "NfSyncVault")
+        (pool-name:string "NfSyncPool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        ;; Source the staked NF nonce from THIS pool's collectable inventory (robust to nonce numbering,
+        ;; and per-pool so it never picks up boot/other-suite DHB stakes in the consolidated run).
+        (my-legs:[object]
+            (filter
+                (lambda (l:object) (and (= (at "owner-id" l) owner-id) (= (at "beneficiary-id" l) beneficiary-id)))
+                (at "legs" (ref-VCT::URD_VacateCollectableInventory pool-id dpnf-id false))))
+    )
+    (enforce (= (length my-legs) 1) "TX-FVT-NF-03: expected exactly one staked NF leg from NF-01")
+    (let
+        (
+            (stake-nonce:integer (at 0 (at "nonces" (at 0 my-legs))))
+        )
+        (let
+            (
+                (tracker-pre:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                (pre-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+            )
+            (enforce (> tracker-pre 0.0) "TX-FVT-NF-03: NF must be staked before unstake")
+            (print "--- [TX-FVT-NF-03 · 01 · C_UnstakeNonFungibleCollectable] ---")
+            (print (format "<(AQP-POOL|C_UnstakeNonFungibleCollectable nonce {})> => \"{}\"" [stake-nonce
+                (ref-TS02-C3::AQP-POOL|C_UnstakeNonFungibleCollectable
+                    patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce] [1])
+            ]))
+            (print "--- [TX-FVT-NF-03 · 02 · post-unstake reads + expect] ---")
+            (let
+                (
+                    (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                    (deb-user:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                    (has-stake:bool (ref-AQP::URC_BenDpnfHasStake beneficiary-id dpnf-id))
+                    (anc:integer (ref-AQP::UR_AQP|BenDpnfActiveNonceCount beneficiary-id dpnf-id))
+                    (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
+                    (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+                )
+                (map print
+                    [
+                        (format "<(tracker/deb/has-stake/anc/supply)> => \"{} {} {} {} {}\"" [tracker-post deb-user has-stake anc post-supply])
+                        (expect (format "<<TX-FVT-NF-03>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
+                        (expect (format "<<TX-FVT-NF-03>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
+                        (expect (format "<<TX-FVT-NF-03>> has-stake false got={} expected=false" [has-stake]) false has-stake)
+                        (expect (format "<<TX-FVT-NF-03>> active-nonce-count 0 got={} expected=0" [anc]) 0 anc)
+                        (expect (format "<<TX-FVT-NF-03>> unclaimed-count 0 got={} expected=0" [unclaimed]) 0 unclaimed)
+                        (expect (format "<<TX-FVT-NF-03>> NF nonce returned to owner got={} expected={}" [post-supply (+ pre-supply 1)]) (+ pre-supply 1) post-supply)
+                    ]
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-NF-03 =======================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
+(begin-tx "TX-FVT-NF-04 - unstake an unstaked NF nonce must fail (negative)")
+(print "")
+(print "=== TX-FVT-NF-04 — C_UnstakeNonFungibleCollectable negative (nothing staked) =")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpnf-id:string "DHB-98c486052a51")
+        (pool-name:string "NfSyncPool")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        ;; ANHD now HOLDS the nonce (returned by NF-03) but it is NOT staked in NfSyncPool → unstake must fail.
+        (held-nonce:integer (at 0 (ref-DPDC::URD_AccountNonces owner-id dpnf-id false)))
+    )
+    (map print
+        [
+            (expect-failure
+                (format "<<TX-FVT-NF-04 expect-failure>> unstake a non-staked NF nonce must fail" [])
+                (ref-TS02-C3::AQP-POOL|C_UnstakeNonFungibleCollectable
+                    patron pool-id owner-id beneficiary-id dpnf-id [held-nonce] [1]))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-NF-04 =======================================================")
+(print "")
 (print "=== END FILE [6.2.4]_AQP-FVT-NF.repl ========================================")
 (print "")
