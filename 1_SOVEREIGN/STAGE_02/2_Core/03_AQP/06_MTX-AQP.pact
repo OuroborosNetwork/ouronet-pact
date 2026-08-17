@@ -161,17 +161,7 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [C] client wrapper — acquires the flow cap, then runs the defpact
-    (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "2-step enforced-fresh inject (spike fallback for AQP-FVT::CC_Inject; handles up to 2×N_FIX stale \
-            \ stakers). Acquires MTX-AQP|C>INJECT, then runs the MTX|2|C_Inject defpact. Advance with \
-            \ (continue-pact 1). Vault/treasury only (the defpact's inject is class≠0)."
-        (UEV_IMC)
-        (with-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount)
-            (MTX|2|C_Inject patron fvt-id reward-dptf-id amount)
-        )
-    )
-    ;;{F1}  [URC] sweep recompute-set sizing (read-only; the freeze keeps it fixed across steps)
+    ;;{F0}  [URC] sweep recompute-set sizing (read-only; the freeze keeps it fixed across steps)
     (defun URC_SweepTotalPresent:integer (score-ids:[string])
         @doc "Total present holders across every FVT member employing the swept boost-class — the paginated \
             \ recompute-set size. Read-only; sweep-in-progress keeps it fixed across defpact steps."
@@ -184,6 +174,26 @@
                 (map
                     (lambda (sid:string) (length (ref-FVT::URD_FvtPresentUsers (ref-SCR::UR_SCR|ScoreFvtLink sid))))
                     score-ids))
+        )
+    )
+    ;;{F1}  [C] client wrappers — acquire the flow cap, then run the defpact
+    (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "2-step enforced-fresh inject (spike fallback for AQP-FVT::CC_Inject; handles up to 2×N_FIX stale \
+            \ stakers). Acquires MTX-AQP|C>INJECT, then runs the MTX|2|C_Inject defpact. Advance with \
+            \ (continue-pact 1). Vault/treasury only (the defpact's inject is class≠0)."
+        (UEV_IMC)
+        (with-capability (MTX-AQP|C>INJECT patron fvt-id reward-dptf-id amount)
+            (MTX|2|C_Inject patron fvt-id reward-dptf-id amount)
+        )
+    )
+    (defun C_2|SweepRevokeAnchor (patron:string anchor-id:string)
+        @doc "2-step paginated re-score SWEEP that retires an employed anchor (Phase 3 closeout; spike fallback for \
+            \ AQP-FVT::CC_SweepRevokeAnchor when the recompute set exceeds one tx). Acquires MTX-AQP|C>SWEEP-REVOKE, \
+            \ then runs the MTX|2|C_SweepRevokeAnchor defpact. Step 0 brackets (freeze + swept-revoke) + recomputes \
+            \ the first window; advance with (continue-pact 1). Owner enforced downstream in ANK|XE>SWEEP-REVOKE."
+        (UEV_IMC)
+        (with-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id)
+            (MTX|2|C_SweepRevokeAnchor patron anchor-id)
         )
     )
     ;;{F2}  [XI] paginated window recompute — advances by GLOBAL offset over the fixed flattened present set
@@ -229,17 +239,6 @@
                                         {"seen": seen-after, "processed": (at "processed" acc)}))))))
                 {"seen": 0, "processed": 0}
                 score-ids))
-    )
-    ;;{F3}  [C] client wrapper — acquire the flow cap, run the sweep defpact
-    (defun C_2|SweepRevokeAnchor (patron:string anchor-id:string)
-        @doc "2-step paginated re-score SWEEP that retires an employed anchor (Phase 3 closeout; spike fallback for \
-            \ AQP-FVT::CC_SweepRevokeAnchor when the recompute set exceeds one tx). Acquires MTX-AQP|C>SWEEP-REVOKE, \
-            \ then runs the MTX|2|C_SweepRevokeAnchor defpact. Step 0 brackets (freeze + swept-revoke) + recomputes \
-            \ the first window; advance with (continue-pact 1). Owner enforced downstream in ANK|XE>SWEEP-REVOKE."
-        (UEV_IMC)
-        (with-capability (MTX-AQP|C>SWEEP-REVOKE patron anchor-id)
-            (MTX|2|C_SweepRevokeAnchor patron anchor-id)
-        )
     )
     ;;{F6.P}  [MTX|C]
     (defpact MTX|2|C_Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
