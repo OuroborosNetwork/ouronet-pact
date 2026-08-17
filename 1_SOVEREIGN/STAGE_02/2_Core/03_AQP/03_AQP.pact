@@ -150,7 +150,7 @@
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
     )
     (defun XE_SetVacateJobState:string
-        (pool-id:string vacate-in-progress:bool initial-hash:string phase-hash:string last-hash:string)
+        (pool-id:string vacate-in-progress:bool)
     )
     (defun XE_SetSweepInProgress:string
         (pool-id:string flag:bool)
@@ -345,9 +345,6 @@
         stake-enabled:bool                                      ;;[M]   Gates new stakes when false; default true at issue. Unstake/vacate ignore.
         vacate-in-progress:bool                                 ;;[M]   True while AQP-VCT session active on this pool.
         sweep-in-progress:bool                                  ;;[M]   True while a re-score sweep (anchor retire/re-price) runs; blocks stake + collect (D3).
-        initial-vacate-hash:string                              ;;[M]   Legacy vacate manifest hash ("" under Legs; unused).
-        phase-vacate-hash:string                                ;;[M]   Current phase manifest hash after reslice ("" when idle).
-        last-vacate-hash:string                                 ;;[M]   Last committed slice hash ("" when idle).
         ;;
         ;;Select Keys
         aqp-id:string
@@ -896,9 +893,6 @@
         ,"stake-enabled"        : true
         ,"vacate-in-progress"   : false
         ,"sweep-in-progress"    : false
-        ,"initial-vacate-hash"  : ""
-        ,"phase-vacate-hash"    : ""
-        ,"last-vacate-hash"     : ""
         ,"aqp-id"               : aqp-id}
     )
     (defun UDC_AQP|SchemaWithScoreSlots:object{AQP|Schema}
@@ -990,14 +984,11 @@
         (update AQP|T|Pool pool-id (UC_PoolScoreSlotPatch slot-index score-id))
     )
     (defun WU4_Pool|VacateJobState:string
-        (pool-id:string vacate-in-progress:bool initial-hash:string phase-hash:string last-hash:string)
-        @doc "Update vacate session fields on AQP|T|Pool."
+        (pool-id:string vacate-in-progress:bool)
+        @doc "Update vacate-in-progress on AQP|T|Pool."
         (require-capability (SECURE))
         (update AQP|T|Pool pool-id
-            {"vacate-in-progress"   : vacate-in-progress
-            ,"initial-vacate-hash"  : initial-hash
-            ,"phase-vacate-hash"    : phase-hash
-            ,"last-vacate-hash"     : last-hash}
+            {"vacate-in-progress"   : vacate-in-progress}
         )
     )
     (defun WU7_Pool|ScoreSlots:string
@@ -1032,9 +1023,6 @@
     ;; WU_Pool|ScoreSenary — not used: mutates via WU_Pool|ScoreSlot or WU7_Pool|ScoreSlots.
     ;; WU_Pool|ScoreSeptenary — not used: mutates via WU_Pool|ScoreSlot or WU7_Pool|ScoreSlots.
     ;; WU_Pool|VacateInProgress — not used: mutates via WU4_Pool|VacateJobState.
-    ;; WU_Pool|InitialVacateHash — not used: mutates via WU4_Pool|VacateJobState.
-    ;; WU_Pool|PhaseVacateHash — not used: mutates via WU4_Pool|VacateJobState.
-    ;; WU_Pool|LastVacateHash — not used: mutates via WU4_Pool|VacateJobState.
     ;; WU_Pool|AqpId — select key; WU not needed.
     ;;
     ;; [2] AQP|T|DPTFTracker  (AQP|TrueFungibleTracker)
@@ -1977,7 +1965,7 @@
         (pool-id:string)
         @doc "Pool-row vacate session observability (AQP|T|Pool fields)."
         (read AQP|T|Pool pool-id
-            ["vacate-in-progress" "initial-vacate-hash" "phase-vacate-hash" "last-vacate-hash"])
+            ["vacate-in-progress"])
     )
     (defun URD_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string)
         @doc "Core pool read: active DPTF tracker rows (balance>0) for pool×asset."
@@ -2584,12 +2572,12 @@
         pool-id
     )
     (defun XE_SetVacateJobState:string
-        (pool-id:string vacate-in-progress:bool initial-hash:string phase-hash:string last-hash:string)
-        @doc "Write vacate session fields on AQP|T|Pool. UEV_IMC gates AQP-VCT caller."
+        (pool-id:string vacate-in-progress:bool)
+        @doc "Write vacate-in-progress on AQP|T|Pool. UEV_IMC gates AQP-VCT caller."
         (UEV_IMC)
         (with-capability (P|SECURE-CALLER)
             ;; SECURE: granted by WU4_Pool|VacateJobState (underlying W_).
-            (WU4_Pool|VacateJobState pool-id vacate-in-progress initial-hash phase-hash last-hash)
+            (WU4_Pool|VacateJobState pool-id vacate-in-progress)
         )
         pool-id
     )

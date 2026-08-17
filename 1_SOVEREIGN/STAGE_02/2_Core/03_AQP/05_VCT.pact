@@ -8,9 +8,6 @@
         (pool-id:string asset-id:string vacate-kind:integer))
     ;;  [UR/URD] vacate inventory + vacate-in-progress observability (UI preflight)
     (defun UR_VacateInProgress:bool (pool-id:string))
-    (defun UR_InitialVacateHash:string (pool-id:string))
-    (defun UR_PhaseVacateHash:string (pool-id:string))
-    (defun UR_LastVacateHash:string (pool-id:string))
     (defun URD_VacateTfInventory:object (pool-id:string dptf-id:string))
     (defun URD_VacateOfInventory:object (pool-id:string dpof-id:string))
     (defun URD_VacateCollectableInventory:object (pool-id:string collectable-id:string son:bool))
@@ -1179,15 +1176,6 @@
     )
     (defun UR_VacateInProgress:bool (pool-id:string)
         (at "vacate-in-progress" (UR_VacateSessionFields pool-id))
-    )
-    (defun UR_InitialVacateHash:string (pool-id:string)
-        (at "initial-vacate-hash" (UR_VacateSessionFields pool-id))
-    )
-    (defun UR_PhaseVacateHash:string (pool-id:string)
-        (at "phase-vacate-hash" (UR_VacateSessionFields pool-id))
-    )
-    (defun UR_LastVacateHash:string (pool-id:string)
-        (at "last-vacate-hash" (UR_VacateSessionFields pool-id))
     )
     (defun UR_VacateSessionFields:object
         (pool-id:string)
@@ -2369,7 +2357,7 @@
             (if (UR_VacateInProgress pool-id)
                 "already-begun"
                 (do
-                    (ref-AQP::XE_SetVacateJobState pool-id true "" "" "")
+                    (ref-AQP::XE_SetVacateJobState pool-id true)
                     (if (ref-AQP::UR_AQP|PoolStakeEnabled pool-id)
                         (ref-AQP::XB_SetPoolStakeEnabled pool-id false)
                         true
@@ -2388,7 +2376,7 @@
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
             )
-            (ref-AQP::XE_SetVacateJobState pool-id false "" "" "")
+            (ref-AQP::XE_SetVacateJobState pool-id false)
             (XI_SetPoolFvtsVacateFrozen pool-id false)
         )
     )
@@ -2410,7 +2398,7 @@
                 (
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 )
-                (ref-AQP::XE_SetVacateJobState pool-id false "" "" "")
+                (ref-AQP::XE_SetVacateJobState pool-id false)
                 (ref-AQP::XB_SetPoolStakeEnabled pool-id true)
                 (XI_SetPoolFvtsVacateFrozen pool-id false)
                 "finalized"
