@@ -196,4 +196,46 @@
 (env-sigs [])
 (commit-tx)
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-AQP-NF-NEGDEF - negative NF trait definition score rejected (L7 #19)")
+(print "")
+(print "=== TX-AQP-NF-NEGDEF — negative NF trait score value rejected at definition (#19) ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; SubsidiaryBunnies (class-4 DPNF NF score, owner ANHD, precision 6; AQP-BOOT Step 5) + KBN DPNF (nonce 1
+;; minted by PopulateBunnies) exist here. UEV_NonFungibleScoreDefinitionTrait enforces, per trait, the fold
+;; [iz-key-present (>= l4 2) (<= l4 256) precision-conform (>= v 0.0)]. The precondition assert below proves
+;; "Rarity" IS a key in KBN nonce-1 metadata (iz-key-present = true); with value "Common" (len 6) and a
+;; precision-6-conform score, the ONLY condition that can reject v=-1.0 is the L7 #19 non-negativity guard
+;; (02_SCORE.pact:2722) — non-vacuous by construction. Completes #19 def-score coverage across all three
+;; surviving guards: SF nonce ([6.2.2]), NF set-class ([6.2.10]), NF trait (here).
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (kbn-id:string "KBN-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+        (nonce1-meta:object (ref-DPDC::UR_N|RawMetaData (ref-DPDC::UR_NativeNonceData kbn-id false 1)))
+    )
+    (map print
+        [
+            (expect
+                "<<TX-AQP-NF-NEGDEF>> precondition: KBN nonce-1 metadata has trait key 'Rarity' (iz-key-present true)"
+                true (contains "Rarity" nonce1-meta))
+            (expect-failure
+                (format "<<TX-AQP-NF-NEGDEF>> negative NF trait score value (-1.0) rejected at definition (#19)" [])
+                (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron score-id kbn-id ["Rarity"] ["Common"] [-1.0]))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-AQP-NF-NEGDEF ====================================================")
+(print "")
 (print "=== END [6.4]_AQP-EXHAUSTIVE-DPNF.repl ======================================")
