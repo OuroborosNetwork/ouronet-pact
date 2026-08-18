@@ -29,6 +29,7 @@
     ;;
     ;;ATS Functions
     (defun ATS|A_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
+    (defun ATS|A_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     ;;
     ;;LIQUID Functions
     (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-kda-account:string))
@@ -437,6 +438,23 @@
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-ATSU::A_RemoveSecondary remover ats reward-token accounts-with-ats-data)
+                )
+            )
+        )
+    )
+    (defun ATS|A_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        @doc "Administrative Variant (audit finding #11M / M2): forgoes pool ownership \
+            \ for module governance, with no upper bound on the resulting KickStart \
+            \ index (still subject to the shared 0.1 floor) - for legitimate ratios \
+            \ above the owner-facing ATS|C_KickStart's 100.0 ceiling."
+        (with-capability (P|ADMINISTRATIVE-SUMMONER)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-ATSU:module{AutostakeUsageV1} ATSU)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-ATSU::A_KickStart kickstarter ats rt-amounts rbt-request-amount)
                 )
             )
         )

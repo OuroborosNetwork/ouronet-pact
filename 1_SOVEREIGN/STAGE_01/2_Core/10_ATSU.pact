@@ -481,7 +481,15 @@
     ;;{F0}  [UR]
     ;;{F1}  [URC]
     (defun URC_MultiCull:object (ats:string acc:string)
-        @doc "Outputs <after-cull> <to-be-culled> <culled-values> and <summed-culled-values> values in an object"
+        @doc "Outputs <after-cull> <to-be-culled> <culled-values> and <summed-culled-values> values in an object. \
+            \ Fix (audit finding #32N / N1): the 'nothing cullable yet' branch used to return a bare \
+            \ [decimal] list instead of an object, violating this function's own declared :object \
+            \ return type - XI_MultiCull's :object-typed binding made that a hard runtime crash \
+            \ instead of a graceful 'nothing to cull yet' result. Confirmed live on mainnet via Pythia \
+            \ dirty read (identical bug present in the deployed ouronet-ns.ATSU, on V1 interfaces) - \
+            \ not yet triggered there only because every existing live account currently has something \
+            \ already past its cull-time. This is a soft-failure fix: the outcome (nothing culled) is \
+            \ unchanged, only the failure mode changes from a raw crash to a well-formed empty result."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -509,7 +517,10 @@
                 (how-many-cullables:integer (length cullables))
             )
             (if (= how-many-cullables 0)
-                zr-output
+                {"after-cull"           : p0
+                ,"to-be-culled"         : []
+                ,"culled-values"        : []
+                ,"summed-culled-values" : zr-output}
                 (let
                     (
                         (after-cull:[object{UtilityAtsV2.Awo}]

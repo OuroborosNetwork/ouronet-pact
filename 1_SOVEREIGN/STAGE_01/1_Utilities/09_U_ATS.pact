@@ -375,9 +375,11 @@
         (enforce (contains fee-positions (+ [-1] (enumerate 1 7))) (format "Fee Position {} is invalid" [fee-positions]))
     )
     (defun UEV_CRF|FeeThresholds (fee-thresholds:[decimal] c-rbt-prec:integer)
-        @doc "Enforces <fee-thresholds> are between 1 and 100, \
-            \ conform with the C-RBT precision, \
-            \ and are increasing one after another."
+        @doc "Enforces <fee-thresholds> has between 1 and 100 entries (a doc-wording \
+            \ fix, audit finding #15M / M6 - this bounds the COUNT of thresholds, not \
+            \ their values; thresholds are raw cold-RBT token amounts with no inherent \
+            \ value ceiling), each entry conforms with the C-RBT precision, and entries \
+            \ are strictly increasing one after another."
         (let
             (
                 (size:integer (length fee-thresholds))

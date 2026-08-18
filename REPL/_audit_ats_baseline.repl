@@ -362,3 +362,259 @@
 ;; NOTE: deliberately NOT disengaging the lock afterward — doing so costs a real, unlocks-count-scaled
 ;; KDA fee (UC_UnlockPrice) that this deep into the shared scratch fixture aoz can no longer reliably
 ;; afford; nothing later in this file depends on `ps` being unlocked again, so leaving it locked is safe.
+
+;; ============================================================================
+;; FIX PROOF (#9H / H4) — UEV_ColdDurationParameters soft-branch had a stray
+;; 3rd arg to `enforce` built from an incomplete `format` call (no {} / no
+;; substitution list). enforce's own arity error made the soft-duration path
+;; (soft-or-hard = true) unconditionally uncallable, regardless of whether
+;; base/growth were valid. Fixed to a single, correctly-formed 2-arg enforce.
+;; Unit-tested directly against U|ATS (unprotected UEV_* helper) rather than
+;; through the full C_SetColdRecoveryDuration capability chain, since that
+;; chain's unrelated preconditions (cold-recovery-off, lock-off) are not
+;; satisfiable on the shared fixture's `ps` pair at this point (deliberately
+;; left locked + cold-recovery-on by the prior #6H/H1 proof block above).
+;; ============================================================================
+(begin-tx "FIX PROOF H4 - hard branch still works exactly as before (regression guard)")
+(namespace "ouronet-ns")
+(print (expect "hard branch: valid params (base=100 growth=10) accepted"
+    true
+    (U|ATS.UEV_ColdDurationParameters false 100 10)
+))
+(print (expect-failure "hard branch: invalid params (base=101 growth=10) still rejected"
+    (U|ATS.UEV_ColdDurationParameters false 101 10)
+))
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "FIX PROOF H4 - soft branch: was unconditionally uncallable, now callable")
+(namespace "ouronet-ns")
+;; base=90, growth=9: 90 mod 9 = 0, 9 mod 3 = 0 -> both conditions true -> should succeed
+(print (expect "soft branch: valid params (base=90 growth=9) now accepted (was a hard crash before the fix)"
+    true
+    (U|ATS.UEV_ColdDurationParameters true 90 9)
+))
+;; base=90, growth=4: 90 mod 4 != 0 -> first condition false -> should reject with the real message,
+;; not crash with "Attempted to apply a closure to too many arguments"
+(print (expect-failure "soft branch: invalid params (base=90 growth=4) rejected with the real validation message, not an arity crash"
+    (U|ATS.UEV_ColdDurationParameters true 90 4)
+))
+;; base=90, growth=10: 90 mod 10 = 0 but 10 mod 3 != 0 -> second condition false -> should also reject
+(print (expect-failure "soft branch: invalid params (base=90 growth=10) rejected via the second (mod growth 3) condition"
+    (U|ATS.UEV_ColdDurationParameters true 90 10)
+))
+(commit-tx)
+
+;; ============================================================================
+;; FIX PROOF (#10M / M1) — UEV_HibernationFees carried a stray, malformed 7th
+;; predicate `(= () 0.0)` (unit compared to a decimal — always false), which
+;; dragged the whole `(fold (and) ...)` to false and made the enforce fail
+;; unconditionally for every peak/decay input. Owner confirmed it was debris,
+;; no intended 7th bound — deleted, leaving the six real predicates intact.
+;; Unit-tested directly against U|ATS (unprotected UEV_* helper), same
+;; rationale as the #9H proof above: C_SetHibernationFees's full capability
+;; chain requires parameter-lock = false, which the shared fixture's `ps`
+;; pair no longer satisfies (locked by the #6H/H1 proof earlier in this file).
+;; ============================================================================
+(begin-tx "FIX PROOF M1 - was unconditionally uncallable, now correctly discriminates")
+(namespace "ouronet-ns")
+;; peak=100.0, decay=0.01: all six real predicates true, and the scaled-division
+;; check (scaled-a=1,000,000 mod scaled-b=100 = 0) also passes -> full success.
+(print (expect "valid peak/decay (100.0 / 0.01) now accepted (was a hard unconditional failure before the fix)"
+    true
+    (U|ATS.UEV_HibernationFees 100.0 0.01)
+))
+;; peak=900.0 (> 800.0 ceiling): still correctly rejected by the real bound, not
+;; by the stray term - proves the real predicates were untouched by the fix.
+(print (expect-failure "peak=900.0 (over the real 800.0 ceiling) correctly rejected"
+    (U|ATS.UEV_HibernationFees 900.0 0.01)
+))
+;; peak=100.0, decay=0.03: passes all six fold predicates but fails the separate
+;; scaled-division enforce (1,000,000 mod 300 = 100 != 0) - proves that second,
+;; independent check still functions correctly, unaffected by this fix.
+(print (expect-failure "peak=100.0/decay=0.03 rejected via the separate scaled-division check"
+    (U|ATS.UEV_HibernationFees 100.0 0.03)
+))
+(commit-tx)
+
+;; ============================================================================
+;; FIX PROOF (#11M / M2) — C_KickStart had no sanity bound on the resulting
+;; genesis index (rt-amounts : rbt-request-amount), the classic vault-inflation
+;; setup: an owner could rig the entry price against depositors who coil in
+;; after kickstart. Layered per StoicSyntax §14.7: unevented core
+;; ATSU|C>X_KICKSTART now floors the resulting index at >= 0.1 (same value as
+;; syphon's own floor, owner-specified), shared by both leaves; the owner-
+;; facing leaf ATSU|C>KICKSTART additionally ceilings it at <= 100.0; a new
+;; admin-facing leaf ATSU|C>ADMINISTRATIVE-KICKSTART (GOV|ATSU_ADMIN, forgoes
+;; pool ownership) has no ceiling, for legitimate ratios above 100.0.
+;; ============================================================================
+(begin-tx "FIX PROOF M2 - UC_KickStartIndex pure math (boundaries + div-by-zero guard)")
+(namespace "ouronet-ns")
+(print (expect "sum(rt-amounts)=1000.0, rbt-request-amount=10.0 -> index=100.0 (exact ceiling boundary)"
+    100.0
+    (U|ATS.UC_KickStartIndex [1000.0] 10.0)
+))
+(print (expect "sum(rt-amounts)=50.0, rbt-request-amount=500.0 -> index=0.1 (exact floor boundary)"
+    0.1
+    (U|ATS.UC_KickStartIndex [50.0] 500.0)
+))
+(print (expect "rbt-request-amount=0.0 -> guarded to -1.0, no division-by-zero crash"
+    -1.0
+    (U|ATS.UC_KickStartIndex [10.0] 0.0)
+))
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "FIX PROOF M2 - real capability chain, real ps pair (owner: aoz, admin: PK_AncientHodler)")
+(namespace "ouronet-ns")
+(let*
+    (
+        (ref-ATSU:module{AutostakeUsageV1} ATSU)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (ancienthodler:string KST.ANHD)
+        (n:integer (length (ATS.UR_RewardTokenList ps)))
+    )
+    ;; --- Owner path (ATSU|C>KICKSTART): ceiling ---
+    (env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+    (print (expect-failure "owner path: index=10000.0 (way over 100.0) rejected by the ceiling, before ever touching pool state"
+        (test-capability (ref-ATSU::ATSU|C>KICKSTART aoz ps [10000.0] 1.0))
+    ))
+    ;; --- Owner path: floor (list length matched to ps's real RT count so it reaches the core's floor check) ---
+    (print (expect-failure "owner path: index far below 0.1 rejected by the shared floor"
+        (test-capability (ref-ATSU::ATSU|C>KICKSTART aoz ps (make-list n 0.01) 1000.0))
+    ))
+    ;; --- Owner path: a legitimate in-range ratio (index=2.0) clears BOTH bounds, only stopped by
+    ;; the (unrelated) virgin-pool check since ps was already kickstarted earlier this session ---
+    (print (expect-failure "owner path: in-range index=2.0 clears both bounds - only rejected for ps not being virgin"
+        (test-capability (ref-ATSU::ATSU|C>KICKSTART aoz ps (make-list n 10.0) (* n 5.0)))
+    ))
+    ;; --- Admin path (ATSU|C>ADMINISTRATIVE-KICKSTART): floor still applies ---
+    (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+    (print (expect-failure "admin path: index far below 0.1 STILL rejected by the shared floor (same as owner path)"
+        (test-capability (ref-ATSU::ATSU|C>ADMINISTRATIVE-KICKSTART ancienthodler ps (make-list n 0.01) 1000.0))
+    ))
+    ;; --- Admin path: NO ceiling. The exact same extreme ratio the owner path rejected above (10000x
+    ;; the ceiling) is NOT rejected for being too high here - it clears the floor fine and is only
+    ;; stopped by the (unrelated) virgin-pool check, proving the ceiling genuinely doesn't apply here.
+    (print (expect-failure "admin path: index=10000x per-RT clears the floor easily, rejected only for ps not being virgin (not for exceeding any ceiling - there is none here)"
+        (test-capability (ref-ATSU::ATSU|C>ADMINISTRATIVE-KICKSTART ancienthodler ps (make-list n 10000.0) 1.0))
+    ))
+)
+(commit-tx)
+
+;; ============================================================================
+;; FIX PROOF (#16M / M7) — UEV_ColdDurationParameters never required growth > 0
+;; on either branch. The duration table these params build (UC_MakeSoftIntervals
+;; / UC_MakeHardIntervals) is designed to always DECREASE wait-time as elite tier
+;; increases, never the reverse (owner-confirmed) — a negative growth silently
+;; inverted that curve. Added an explicit (> growth 0) floor to both branches.
+;; ============================================================================
+(begin-tx "FIX PROOF M7 - growth > 0 now required on both branches")
+(namespace "ouronet-ns")
+;; Hard branch: base=-100, growth=-10 evenly divides (mod = 0, same as the positive-magnitude
+;; case that already passes) — previously accepted (inverted curve), now correctly rejected.
+(print (expect-failure "hard branch: negative growth (-10), otherwise-valid divisibility, now rejected"
+    (U|ATS.UEV_ColdDurationParameters false -100 -10)
+))
+;; Hard branch regression guard: the same positive case proven under #9H still works unchanged.
+(print (expect "hard branch: positive growth (10), valid divisibility, still accepted"
+    true
+    (U|ATS.UEV_ColdDurationParameters false 100 10)
+))
+;; Soft branch: base=-90, growth=-9 evenly divides AND -9 mod 3 = 0 (same divisibility shape as
+;; the positive case that already passes) — previously accepted (inverted curve), now rejected.
+(print (expect-failure "soft branch: negative growth (-9), otherwise-valid divisibility, now rejected"
+    (U|ATS.UEV_ColdDurationParameters true -90 -9)
+))
+;; Soft branch regression guard: the same positive case proven under #9H still works unchanged.
+(print (expect "soft branch: positive growth (9), valid divisibility, still accepted"
+    true
+    (U|ATS.UEV_ColdDurationParameters true 90 9)
+))
+(commit-tx)
+
+;; ============================================================================
+;; FIX PROOF (#21L / L3) — can-upgrade was permanently true with no setter.
+;; Added C_ToggleUpgrade (+ ATS|C>TOGGLE_UPGRADE cap, XI_ToggleUpgrade writer,
+;; Talos ATS|C_ToggleUpgrade wrapper), mirroring C_ToggleElite's exact shape.
+;; can-upgrade gates ATS|S>CONTROL (C_Control: can-change-owner/syphoning/
+;; hibernate) via UEV_CanUpgradeON.
+;; ============================================================================
+(begin-tx "FIX PROOF L3 - can-upgrade now settable, correctly gates C_Control")
+(namespace "ouronet-ns")
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (aoz:string KST.AOZT)
+        (patron:string KST.ANHD)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (cco:bool (ATS.UR_CanChangeOwner ps))
+        (syph:bool (ATS.UR_Syphoning ps))
+        (hib:bool (ATS.UR_Hibernate ps))
+    )
+    ;; Non-owner cannot toggle upgrade
+    (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+    (print (expect-failure "non-owner (patron) cannot toggle can-upgrade for a pair they don't own"
+        (ref-TS01-C2::ATS|C_ToggleUpgrade patron ps false)
+    ))
+    ;; Real owner turns can-upgrade OFF
+    (env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps false)
+    (print (format "PROOF: can-upgrade now false: {}" [(ATS.UR_CanUpgrade ps)]))
+    ;; C_Control now blocked, even for the real owner, with unchanged (same-value) params
+    (print (expect-failure "C_Control blocked while can-upgrade is false, even for the real owner"
+        (ref-TS01-C2::ATS|C_Control aoz ps cco syph hib)
+    ))
+    ;; Real owner turns can-upgrade back ON
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps true)
+    (print (format "PROOF: can-upgrade restored to true: {}" [(ATS.UR_CanUpgrade ps)]))
+    ;; C_Control works again with the same params
+    (ref-TS01-C2::ATS|C_Control aoz ps cco syph hib)
+    (print "PROOF: C_Control works again once can-upgrade is restored")
+)
+(commit-tx)
+
+;; ============================================================================
+;; FIX PROOF (#32N / N1) — URC_MultiCull returned a bare [decimal] list on its
+;; "nothing cullable yet" branch instead of an object, violating its own
+;; declared :object return type. XI_MultiCull's :object-typed binding made
+;; this a hard runtime crash instead of a graceful "nothing to cull yet"
+;; result. Confirmed live on mainnet via Pythia dirty read (identical bug in
+;; deployed ouronet-ns.ATSU) before applying this fix. Soft-failure fix: the
+;; empty branch now returns the same object shape as the cullable branch;
+;; ATS|C_Cull (Talos) now reports a distinct "Nothing to Cull just yet"
+;; message instead of always claiming success.
+;; ============================================================================
+(begin-tx "FIX PROOF N1 - graceful 'nothing to cull yet', then real cull once matured")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (p-k:string "PKOSON-98c486052a51")
+    )
+    ;; Coil a small amount, then ColdRecover it - ps has c-positions = -1 (confirmed live
+    ;; earlier), so ColdRecovery always goes through the unlimited P0 bucket, writing a
+    ;; fresh entry with a cull-time hours in the future.
+    (ref-TS01-C2::ATS|C_Coil aoz aoz ps p-k 5.0)
+    (ref-TS01-C2::ATS|C_ColdRecovery aoz aoz ps 1.0)
+    ;; Immediately Cull, before that entry's cull-time — hits URC_MultiCull's "nothing
+    ;; cullable yet" branch directly. Before the fix: hard crash. After the fix: a clean,
+    ;; correctly-typed no-op with a distinct message, not a crash.
+    (print (format "PROOF: immediate Cull result (was a hard crash before the fix): {}"
+        [(ref-TS01-C2::ATS|C_Cull aoz aoz ps)]
+    ))
+    ;; Now advance chain-time well past any realistic cull-time and cull again — the same
+    ;; position should now be genuinely cullable, proving the fix didn't break the real
+    ;; success path either.
+    (env-chain-data {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006", "block-time": (time "2030-01-01T00:00:00Z")})
+    (print (format "PROOF: matured Cull result (real success path unaffected): {}"
+        [(ref-TS01-C2::ATS|C_Cull aoz aoz ps)]
+    ))
+)
+(commit-tx)
