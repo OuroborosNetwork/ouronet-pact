@@ -451,5 +451,127 @@
 (commit-tx)
 (print "=== END TX-FVT-NF-05 =======================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-FVT-NF-DRAIN - vacate-v2 collectable(NF) fast-drain: nonce back + occupancy cleared + not finalized")
+(print "")
+(print "=== TX-FVT-NF-DRAIN — v2 CC_BatchDrainCollectable(son=false): return nonce, occupancy via unn (ghost) ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; DEDICATED class-4 NF pool (freeze isolated). Mint 1 DHB nonce (a model-0 GHOST -> score 0), stake it, then
+;; FAST-DRAIN via CC_BatchDrainCollectable. Proves the collectable drain wiring end-to-end: nonce returns, the
+;; pool nns / user unn track the ghost position (nns/unn go 0->1->0 — the #FP1 point, caught by occupancy not
+;; nzs), settle-on-last-drain fires, score is UNTOUCHED (0 ghost), and the pool stays FROZEN (never finalizes).
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (source:string KST.EMMA)
+        (dpnf-id:string "DHB-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "NfDrainScore")
+        (fvt-name:string "NfDrainVault")
+        (pool-name:string "NfDrainPool")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî" 50.0)
+                ]
+            }
+        ]
+    )
+    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id score-name 6 0)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpnf-id 4)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    (ref-TS02-C2::DPNF|C_Create patron dpnf-id (NfSyncProbe.UC_DpnfNonceRows 1))
+    (let
+        (
+            (stake-nonce:integer (at pre-count (ref-DPDC::URD_AccountNonces source dpnf-id false)))
+        )
+        (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id [stake-nonce] [1] false)
+        ;; keep the DHB pool-owner keyset signed through stake AND drain (the drain's CAP_VctVacatePoolOwner
+        ;; enforces ownership of the DHB pool's owner konto, which needs PK_Lumy — same as TX-VCT-DPNF02).
+        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] } { "key": "PK_Lumy", "caps": [] }])
+        (print "--- [TX-FVT-NF-DRAIN · 01 · stake ghost nonce] ---")
+        (let
+            (
+                (nns0:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                (unn0:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
+                (x:string (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id beneficiary-id dpnf-id [stake-nonce]))
+            )
+            (let
+                (
+                    (deb-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                    (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                    (unn1:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
+                )
+                (print "--- [TX-FVT-NF-DRAIN · 02 · FAST-DRAIN the nonce] ---")
+                (let
+                    (
+                        (y:string (ref-TS02-C3::AQP-POOL|CC_BatchDrainCollectable patron pool-id dpnf-id false [owner-id] [beneficiary-id] [[stake-nonce]] [[1]]))
+                    )
+                    (let
+                        (
+                            (owned-post:[integer] (ref-DPDC::URD_AccountNonces owner-id dpnf-id false))
+                            (tracker-post:decimal (ref-AQP::UR_AQP|DPNFTrackerBalance pool-id dpnf-id owner-id beneficiary-id stake-nonce))
+                            (nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                            (unn2:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
+                            (deb-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
+                            (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
+                            (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+                        )
+                        (map print
+                            [
+                                (format "<(NF nns 0/1/2 · unn 0/1/2 · nonce)> => {} {} {} · {} {} {} · {}" [nns0 nns1 nns2 unn0 unn1 unn2 stake-nonce])
+                                (expect (format "<<TX-FVT-NF-DRAIN>> nns +1 on stake (ghost tracked by occupancy) got={}" [nns1]) (+ nns0 1) nns1)
+                                (expect (format "<<TX-FVT-NF-DRAIN>> unn +1 on stake got={}" [unn1]) (+ unn0 1) unn1)
+                                (expect (format "<<TX-FVT-NF-DRAIN>> nonce returned to owner (drained) got={}" [(contains stake-nonce owned-post)]) true (contains stake-nonce owned-post))
+                                (expect (format "<<TX-FVT-NF-DRAIN>> tracker slot cleared got={}" [tracker-post]) 0.0 tracker-post)
+                                (expect (format "<<TX-FVT-NF-DRAIN>> nns back to pre-stake got={}" [nns2]) nns0 nns2)
+                                (expect (format "<<TX-FVT-NF-DRAIN §4>> unn back to pre-stake (settled on drain) got={}" [unn2]) unn0 unn2)
+                                (expect (format "<<TX-FVT-NF-DRAIN §5>> NF score UNTOUCHED by drain got={}" [deb-post]) deb-pre deb-post)
+                                (expect (format "<<TX-FVT-NF-DRAIN §8>> pool FROZEN (drain does not finalize) got={}" [vip]) true vip)
+                                (expect (format "<<TX-FVT-NF-DRAIN §8>> stake DISABLED (awaiting nuke) got={}" [stake-enabled]) false stake-enabled)
+                            ]
+                        )
+                    )
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-NF-DRAIN =====================================================")
+(print "")
 (print "=== END FILE [6.2.4]_AQP-FVT-NF.repl ========================================")
 (print "")
