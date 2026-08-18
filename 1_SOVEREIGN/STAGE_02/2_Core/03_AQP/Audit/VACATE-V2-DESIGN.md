@@ -67,13 +67,20 @@ O(users) cost in a single tx and forces the finalize to paginate.)
 ## 5. Per-user score-row invalidation — `vacate-generation` (LOCKED)
 
 Clearing per-user score rows directly is O(users×scores) writes — the exact cost v2 exists to avoid. Instead:
-- Each pool carries a `vacate-generation:integer`. Each per-user score row carries the generation it was
-  written under.
-- **Reads** (`URC` score readers) treat a row whose stored generation `< pool.vacate-generation` as **0**
-  (stale ⇒ empty). No write needed to "clear" it.
-- **The nuke bumps `vacate-generation` once** → every prior per-user row is instantly, lazily invalid.
+- **The counter is per-SCORE, not per-pool** (deploy order forces this): the per-user row to invalidate,
+  `SCR|T|UserScore`, lives in the SCORE module (02), which loads *before* POOL (03) — so a UserScore reader
+  cannot read a pool-level field in POOL. A score maps 1:1 to a pool (`aqpool-link`), and a pool's ≤7 scores
+  are exactly the `SCR|T|Score` rows the nuke already zeroes, so the counter sits on `SCR|Schema` and the
+  ≤7 scores bump together. Field: `SCR|Schema.vacate-generation:integer` (default 0). *(Implemented — Step 1,
+  commit `4186bd3`.)*
+- Each per-user row carries `SCR|UserSchema.stamped-generation:integer` — the generation it was written under.
+- **Reads** (`URC` score readers) treat a row whose `stamped-generation < score.vacate-generation` as **0**
+  (stale ⇒ empty). No write needed to "clear" it. *(Step 2.)*
+- **The nuke bumps each employed score's `vacate-generation` once** (≤7 writes, alongside the aggregate
+  zero) → every prior per-user row for those scores is instantly, lazily invalid. *(Step 4.)*
 - **Re-stake after vacate** writes the row fresh at the current generation (resetting it to a real value),
-  so a reused pool starts clean with no migration.
+  so a reused pool starts clean with no migration. *(The stake write already stamps `score.vacate-generation`
+  — Step 1.)*
 
 Net: the O(users) per-row clear becomes **one integer increment**. Combined with §4 (rewards already
 settled on last drain), finalize touches only: the ≤7 aggregates (set 0), `nns` (already 0), and
