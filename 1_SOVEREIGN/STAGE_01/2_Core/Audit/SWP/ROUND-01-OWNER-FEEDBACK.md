@@ -953,3 +953,69 @@ Restored the guard, re-ran: `URC_HopperActive(AG, CO, …)` returns the clean em
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #10. Awaiting Round III re-verify.
 
 ---
+
+## C4 (#11C, `UEV_Issue` never validates individual pool weights are non-zero) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner direction:** fix it, floor at 0.1 — matching the bound already decided for post-issuance reweights
+(`SWP|S>WEIGHTS`, C7/#8C's fix).
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`, `UEV_Issue`:** the existing weight-precision `map`
+computed `(= (floor w fee-precision) w)` per weight and **discarded the result** — dead validation, the
+same pattern independently flagged as H5/#23H, living in exactly this map. Wrapped it in a real `enforce`
+and added the `>=0.1` floor to the same condition, one change closing both C4 and H5's duplicate in this
+function:
+```diff
+-            (map
+-                (lambda
+-                    (w:decimal)
+-                    (= (floor w fee-precision) w)
+-                )
+-                weights
+-            )
++            (map
++                (lambda
++                    (w:decimal)
++                    (enforce
++                        (fold (and) true [(= (floor w fee-precision) w) (>= w 0.1)])
++                        (format "Weight {} must respect fee precision and be at least 0.1" [w])
++                    )
++                )
++                weights
++            )
+```
+
+**Reproduced live, adversarially — and the revert surfaced a sharper, more useful result than the
+finding's own description.** New `SWP|TX 030` in `[6.2+3]…repl`: attempted issuing `W|OURO|CU|RU` (previously
+unpooled tokens) with `[0.9, 0.1, 0.0]` and separately with `[0.85, 0.1, 0.05]`. Reverted only this one map
+back to the dead-validation original, reran:
+- The literal `0.0`-weight attempt **still failed** even reverted — something else downstream (a real
+  division-by-zero, matching the finding's own "permanent div-by-zero" framing) already aborts on exact
+  zero, just with no clean validation message pointing at the real cause.
+- The `0.05` attempt — below the intended floor but not literally zero — **succeeded outright** and issued
+  a real, live, badly-conditioned pool. This is the sharper half of the bug: not "creates a pool that then
+  crashes on first touch" but "creates a pool that never crashes and is simply badly conditioned/exploitable
+  the whole time it exists," pre-fix, with zero on-chain signal anything is wrong.
+
+Restored the fix, reran: both attempts correctly rejected, and a legitimate `[0.5, 0.3, 0.2]` issuance still
+succeeds end-to-end (real pool + LP token minted). Full suite: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #11. Also closes H5/#23H's duplicate
+instance in this same function (not its own turn, but the identical dead-map pattern, same fix). No
+interface change. Awaiting Round III re-verify.
+
+---
+
+## H5 (#23H, `UEV_Issue` weight-precision validation computed and discarded) — **CONFIRMED, FIXED, PROVEN** — closed as a byproduct of C4 (#11C)
+
+Not its own turn (ranked well after where the pass currently is) — but H5's finding location
+(`16_SWPI.pact:1255-1261`, the discarded `map (lambda (w) (= (floor w fee-precision) w)) weights`) turned
+out to be **exactly** the map C4/#11C's fix touches — there was no way to fix #11C without also fixing
+this. Logged explicitly here, same turn, rather than left showing `_pending_` once it no longer is —
+that's the entire reason the HARD RULE at the top of `README.md` exists.
+
+**Fix + proof:** identical to C4/#11C's entry above — same diff, same `SWP|TX 030` reproduction. No
+separate work performed or needed.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #11. Awaiting Round III re-verify.
+
+---

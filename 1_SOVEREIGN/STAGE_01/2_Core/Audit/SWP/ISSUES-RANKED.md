@@ -75,8 +75,12 @@ bad values rejected, legitimate updates still work. — *C8*
 (shared by both issuance paths); reproduced against pool7 (a real pool actually issued via the buggy path
 in this same REPL suite) — hard-aborted pre-fix, resolves correctly post-fix. — *C9*
 
-#11C **[SWPI]** `UEV_Issue` never checks individual pool weights are `>0` — a `0.0`-weight token in a new W
-pool is permanently untradeable (div-by-zero). — *C4*
+#11C **[SWPI]** ~~`UEV_Issue` never checks individual pool weights are `>0` — a `0.0`-weight token in a new W
+pool is permanently untradeable (div-by-zero).~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-18**
+(`ROUND-02-FIXES.md` Fix #11): dead precision-check map now wraps a real `enforce` + `>=0.1` floor
+(matches C7/#8C's bound). Adversarially proven: reverted, a literal `0.0` weight still crashed elsewhere,
+but a sub-floor `0.05` weight sailed through and issued a real, live, badly-conditioned pool — the sharper
+half of the bug. Also closes H5/#23H's duplicate instance in the same function. — *C4*
 
 #12C **[SWPI]** `UEV_Issue` never checks individual genesis reserves are `>0` — a `0`-reserve token in a new
 pool permanently bricks that token (div-by-zero on first touching swap). — *C5*
@@ -144,8 +148,10 @@ path exists anywhere in the module. — *H3*
 #22H **[SWPL]** Two independent, unreconciled asymmetric-deficit pricing models both fire for Standard-mode
 liquidity adds — possible double-charging honest depositors. — *H7*
 
-#23H **[SWPI]** Weight-precision validation in `UEV_Issue` is computed and then discarded — dead code that
-looks like a check but performs none. — *H5*
+#23H **[SWPI]** ~~Weight-precision validation in `UEV_Issue` is computed and then discarded — dead code that
+looks like a check but performs none.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-18** (`ROUND-02-FIXES.md`
+Fix #11): closed as a byproduct of #11C — this finding's exact location *is* the map #11C's fix wraps in
+a real `enforce`. Logged same turn per README's hard rule rather than left showing stale `_pending_`. — *H5*
 
 #24H **[U|SWP]** `UC_ComputeD`/`UC_ComputeY` use a fixed iteration count with no convergence check — silently
 under-converges on heavily skewed pools. — *H1*

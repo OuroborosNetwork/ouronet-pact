@@ -688,3 +688,48 @@ tree — confirmed via `git stash` on a clean checkout before touching anything)
 
 **Status:** FIXED ✅ AND PROVEN ✅ (all three findings, each independently adversarially reproduced
 pre-fix and reconfirmed post-fix). Awaiting Round III re-verify.
+
+---
+
+## Fix #11 — C4 (#11C): `UEV_Issue` never validates individual pool weights are non-zero
+
+**Owner direction:** floor at 0.1, matching the bound already decided for `SWP|S>WEIGHTS` (C7/#8C).
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`, `UEV_Issue`:**
+```diff
+-            (map
+-                (lambda
+-                    (w:decimal)
+-                    (= (floor w fee-precision) w)
+-                )
+-                weights
+-            )
++            (map
++                (lambda
++                    (w:decimal)
++                    (enforce
++                        (fold (and) true [(= (floor w fee-precision) w) (>= w 0.1)])
++                        (format "Weight {} must respect fee precision and be at least 0.1" [w])
++                    )
++                )
++                weights
++            )
+```
+The precision check already existed but was computed and discarded (dead validation, same pattern as
+H5/#23H — fixing this map in place closes both, it's the one place the check lives). No interface change.
+
+**Adversarially proven, live — new `SWP|TX 030` in `[6.2+3]_DPTF-SWP_Issuance-Only.repl`.** Attempted
+issuing `W|OURO|CU|RU` (previously unpooled tokens) with `[0.9, 0.1, 0.0]` and `[0.85, 0.1, 0.05]`.
+Temporarily reverted only this map to the original dead-validation form, reran:
+- `0.0` weight still failed even reverted (a real division-by-zero elsewhere already catches the literal-
+  zero case, just with no clean error).
+- `0.05` weight — below the floor, not literally zero — **succeeded and issued a real, live,
+  badly-conditioned pool.** This is the sharper part of the bug: it never crashes, it just silently exists
+  in an exploitable state, with the original finding's "div-by-zero" framing only covering the exact-zero
+  half of it.
+
+Restored the fix: both bad-weight attempts correctly rejected; a legitimate `[0.5, 0.3, 0.2]` issuance
+still succeeds end-to-end (real pool + LP token minted). Full suite: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — also closes H5/#23H's duplicate instance in this same function.
+Awaiting Round III re-verify.

@@ -1318,10 +1318,19 @@
                 )
                 ptte
             )
+            ;;#11C fix: real per-weight enforce — the original computed this exact precision check via
+            ;;`=` and discarded the result (same dead-map pattern independently flagged as H5/#23H;
+            ;;fixing this map in place closes both, since it's the one place the check lives). Combines
+            ;;the precision check with a >=0.1 floor per weight — rules out the 0.0-weight div-by-zero
+            ;;this finding is about, matching the floor already enforced for post-issuance reweights
+            ;;(SWP|S>WEIGHTS, C7/#8C fix) so issuance and modification agree on the same bound.
             (map
                 (lambda
                     (w:decimal)
-                    (= (floor w fee-precision) w)
+                    (enforce
+                        (fold (and) true [(= (floor w fee-precision) w) (>= w 0.1)])
+                        (format "Weight {} must respect fee precision and be at least 0.1" [w])
+                    )
                 )
                 weights
             )

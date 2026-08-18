@@ -2626,6 +2626,83 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 030 - #11C Reproduction: UEV_Issue Per-Weight Floor")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 030 - #11C Reproduction · 01 · let / invocation] ---")
+;;Audit ref: ROUND-01-FINDINGS.md #11C — UEV_Issue only ever checked that weights SUM to 1.0, never
+;;that each individual weight is >0 (let alone >=0.1). A 0.0-weight token in a new W pool div-by-zeros
+;;every swap that touches it, permanently, via UC_ComputeWP/UC_ComputeInverseWP. Uses previously-
+;;unpooled tokens (CU/RU), touches no existing pool/test state. Owner direction: floor at 0.1, matching
+;;the C7/#8C fix already enforced for post-issuance reweights (SWP|S>WEIGHTS).
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+    (print "--- [SWP|TX 030 - #11C Reproduction · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+            (cu:string "CU-98c486052a51")
+            (ru:string "RU-98c486052a51")
+            (tokens:[object{SwapperV3.PoolTokens}]
+                [ { "token-id": ouro, "token-supply": 800.0}
+                  { "token-id": cu,   "token-supply": 800.0}
+                  { "token-id": ru,   "token-supply": 800.0} ]
+            )
+        )
+        (map print
+            [
+                (expect-failure
+                    "#11C fix — a 0.0-weight token is rejected, not just the sum check"
+                    (ref-TS01-C3::SWP|C_IssueWeighted KST.ANHD KST.ANHD tokens 10.0 [0.9 0.1 0.0] false)
+                )
+                (expect-failure
+                    "#11C fix — a weight below the 0.1 floor is rejected"
+                    (ref-TS01-C3::SWP|C_IssueWeighted KST.ANHD KST.ANHD tokens 10.0 [0.85 0.1 0.05] false)
+                )
+            ]
+        )
+        (print "")
+        (print "--- [SWP|TX 030 - #11C Reproduction · 03 · legitimate issuance still works] ---")
+        (print
+            (format "#11C proof — legitimate weights [0.5 0.3 0.2] (all >=0.1): {}"
+                [ (ref-TS01-C3::SWP|C_IssueWeighted KST.ANHD KST.ANHD tokens 10.0 [0.5 0.3 0.2] false) ]
+            )
+        )
+    )
+)
+(print "")
+(print "--- [SWP|TX 030 - #11C Reproduction · 04 · gas echo] ---")
+(format "<<<<<<<SWP|TX 030 #11C Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
 (print "")
 (print "===================DPTF + SWP Issuance-Only FINISHED==========================")
 (print "")
