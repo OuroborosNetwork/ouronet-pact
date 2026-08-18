@@ -230,13 +230,19 @@ per-beneficiary costs, and it **corrects §1/§10's optimistic model**:
 check inside `URC_TfOwnerArraysGasOk` / `URC_BatchOwnerArraysGasOk` (both entrypoint families share them).
 Coefficients are conservative upper bounds covering trait-rich model-1 NFTs.
 
-**Capacity now (2M ceiling):**
-| pool shape | positions/tx | vs old flat |
-|---|---|---|
-| **concentrated** (few beneficiaries, many positions each — e.g. 13k NFTs from 1 owner) | **~159** | ~5.3× (was ~30) |
-| **spread** (1 position per beneficiary — e.g. 1500 distinct TF stakers) | **~19** | ~unchanged (settle-bound) |
+**Step 3 (`dd05547`) — the cap is a loose backstop + UI seed, not the optimizer.** The UI sizes real batches
+by **simulating** (`/local` dry-run) against the true, model-dependent gas; the **node gas meter** is the real
+enforcement (an oversized batch aborts atomically — submitter's gas, no protocol harm). A tight on-chain cap
+would only throttle the UI below its simulated optimum. So the coefficients were loosened to the cheapest
+realistic case (`PER_BEN 75k`, `PER_POS 4k`) → a generous ceiling that never throttles and only rejects
+egregious/non-simulated batches early. `UC_ComputeMinSliceCount` seeds the UI's loop from the same model.
+
+| shape | old flat cap | cap ceiling (loose backstop) | true UI optimum (simulated) |
+|---|---|---|---|
+| **concentrated** (few beneficiaries, many positions — e.g. 13k NFTs, 1 owner) | ~30 | **~481** | ~446 bare / ~195 trait-rich |
+| **spread** (1 position per beneficiary — e.g. 1500 distinct stakers) | ~30 | **~25** | ~24 bare / ~19 trait-rich (settle-bound) |
 
 So the honest picture: **v2 is worth keeping for its architecture, but the transaction-count win comes from
-the beneficiary-aware cap and accrues to v1 vacate equally.** TF/OF are cheaper (no metadata) and could get
-higher per-kind caps with dedicated measurement; the shared `PER_POS=12k` is a safe floor. Both v1 and v2
-are retained pending a later decision on whether to consolidate.
+the beneficiary-aware model + the UI's simulate-and-optimize loop, and it accrues to v1 vacate equally.** The
+on-chain cap is now just a coarse safety ceiling around that loop. Both v1 and v2 are retained pending a
+later decision on whether to consolidate.
