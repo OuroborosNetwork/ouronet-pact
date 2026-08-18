@@ -139,8 +139,20 @@ aggregate touched).
 >
 > Each drain returns assets, settles each beneficiary once when their `unn` hits 0, leaves per-user scores
 > UNTOUCHED (for the lazy generation-bump nuke), and keeps the pool FROZEN. A drain batch must carry unique
-> owners (bulk-transfer receivers). **Remaining: Step 4 = `C_FinalizeVacate` nuke** (bump each score's
-> `vacate-generation` + bulk-zero the ≤7 aggregates, gated on `nns==0`).
+> owners (bulk-transfer receivers).
+>
+> **STATUS — Step 4 (`C_FinalizeVacate` nuke) SHIPPED (`85f5d3f`). VACATE-V2 PHASE 1 COMPLETE.** Pool-owner +
+> `nns==0` gated. Nukes each employed score via `XE_NukeScoreForVacate` (`WU_Score|Nuke`: bulk-zero
+> aggregates + bump `vacate-generation` — **O(scores), ≤7 writes, not O(users)**), then clears
+> vacate-in-progress + re-enables stake + unfreezes FVTs. Proven end-to-end by `TX-VCT-FINALIZE` (10
+> assertions): per-user scores the drain left at 20 read **0** after the generation bump (lazy, zero per-user
+> writes), aggregate bulk-zeroed, generation +1, pool re-enabled, and a **re-stake reads live again (fresh,
+> generation reset)** — the pool is fully reusable. The §5 lazy-invalidation design is fully validated.
+>
+> **Phase 1 done:** S1 generation state · S2 generation-aware reads · S3 `unn` + drains (TF/OF/SF/NF) ·
+> S4 finalize nuke. Phase 2+ (drain-slice gas calibration; paginated finalize-settle only if a pool's
+> beneficiary set ever exceeds one-tx capacity — moot under settle-on-last-drain since finalize is O(scores))
+> is future work.
 
 **Phase B — FINALIZE (single gated defun).** `C_FinalizeVacate`: cap enforces `nns == 0` (all drained and,
 by §4, all users already settled). Body = bulk-zero the ≤7 aggregates + bump `vacate-generation` + clear
