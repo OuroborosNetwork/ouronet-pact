@@ -121,6 +121,20 @@ count`, plus per-user `unn -= drained` and settle-on-`unn==0` (§4). No aggregat
 cost ≈ transfer floor → cap ~700–800/tx (calibrated). Parallel-safe (disjoint tracker rows, no shared
 aggregate touched).
 
+> **Batch-slicing constraint (inherited from v1):** the TFT/collectable bulk-transfer requires **unique
+> receivers**, so a single drain batch must not carry two legs with the **same owner** (both would resolve
+> to the same receiver). The UI slices batches by unique owner (`UC_Vacate*LegsToBulkArrays` maps leg→owner
+> without aggregating). Same rule the v1 `CC_BatchVacate*` batches follow.
+
+> **STATUS — TF drain SHIPPED (commit `18e3e55`).** `CC_BatchDrainTrueFungible` + `XI_2|SettleBeneficiary
+> RewardsOnly` (the asset-agnostic Bank→Book→Checkpoint reward triple) + Talos `AQP-POOL|CC_BatchDrain
+> TrueFungible`, proven by `TX-VCT-DRAIN` (assets returned, `nns`/`unn`→0 with settle-on-last-drain, per-user
+> scores UNTOUCHED, pool never auto-finalizes). The settle helper is asset-agnostic; the **collectable/OF
+> drain** entrypoints (`CC_BatchDrainCollectable`, `CC_BatchDrainOrtoFungible`) are the identical shape with
+> the collectable/OF rollup + `WriteCollectableTrackerSlot`(dir=false) tracker-clear (no dedicated zero-writer
+> for OF/SF/NF) — the remaining Step-3 increment. Step 4 = `C_FinalizeVacate` nuke (generation bump + aggregate
+> zero) gated on `nns==0`.
+
 **Phase B — FINALIZE (single gated defun).** `C_FinalizeVacate`: cap enforces `nns == 0` (all drained and,
 by §4, all users already settled). Body = bulk-zero the ≤7 aggregates + bump `vacate-generation` + clear
 flags. **No defpact** — because §4 moved the O(users) settle into the drains, the finalize is O(scores),
