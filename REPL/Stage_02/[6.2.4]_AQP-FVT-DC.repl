@@ -667,6 +667,74 @@
 (commit-tx)
 (print "=== END TX-FVT-DC-05 =======================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-FVT-DC-NNS - #FP1 SF partial-unstake nns edge (no decrement until last amount)")
+(print "")
+(print "=== TX-FVT-DC-NNS — #FP1: SF PARTIAL unstake does NOT decrement pool nns until last amount ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; Delta-based (robust to whatever nns state SfStakePool is in post-vacate). Stake the whole DHCD nonce (+1),
+;; partial-unstake amount 1 leaving supply-1 > 0 (nns MUST stay — the position is still occupied), then unstake
+;; the remainder (last amount -> position empties -> nns -1). Proves the SF "decrement only on last amount" rule.
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpsf-id:string "DHCD-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "SfStakePool"))
+        (owned:[integer] (ref-DPDC::URD_AccountNonces owner-id dpsf-id true))
+    )
+    (if (= (length owned) 0)
+        (print "SKIP TX-FVT-DC-NNS: owner holds no DHCD nonce post-vacate")
+        (let
+            (
+                (nonce:integer (at 0 owned))
+                (supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpsf-id true (at 0 owned)))
+                (nns0:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+            )
+            (if (< supply 2)
+                (print (format "SKIP TX-FVT-DC-NNS: DHCD nonce {} supply {} < 2 (need >1 for a partial)" [nonce supply]))
+                (let ((x:string (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id [nonce])))
+                    (let
+                        (
+                            (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                            (y:string (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id [nonce] [1]))
+                        )
+                        (let
+                            (
+                                (nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                                (z:string (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable patron pool-id owner-id beneficiary-id dpsf-id [nonce] [(- supply 1)]))
+                            )
+                            (let ((nns3:integer (ref-AQP::UR_AQP|PoolNns pool-id)))
+                                (map print
+                                    [
+                                        (format "<(nns 0/1/2/3 · supply)> => {} {} {} {} · {}" [nns0 nns1 nns2 nns3 supply])
+                                        (expect (format "<<TX-FVT-DC-NNS #FP1>> stake -> nns +1 got={}" [nns1]) (+ nns0 1) nns1)
+                                        (expect (format "<<TX-FVT-DC-NNS #FP1>> PARTIAL unstake (leave {}) -> nns UNCHANGED got={}" [(- supply 1) nns2]) (+ nns0 1) nns2)
+                                        (expect (format "<<TX-FVT-DC-NNS #FP1>> last-amount unstake -> nns -1 (back to {}) got={}" [nns0 nns3]) nns0 nns3)
+                                    ]
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-DC-NNS =======================================================")
+(print "")
 ;; DEFERRED (see TEST_DEFERRED.md + README_VACATE_UI.md):
 ;; - DPNF Bloodshed-scale vacate (repeat CC_BatchVacateCollectables per owner / nonce chunk)
 ;; - CC_BatchVacateTrueFungible + CC_BatchVacateOrtoFungible on class-0 LP pool

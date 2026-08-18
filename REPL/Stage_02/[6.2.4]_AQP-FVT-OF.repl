@@ -578,3 +578,58 @@
 (commit-tx)
 (print "=== END TX-FVT-08 ==========================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-FVT-OF-NNS - #FP1 OF whole-nonce in/out nns edge")
+(print "")
+(print "=== TX-FVT-OF-NNS — #FP1: OF whole-nonce stake +1 / unstake -1 on pool nns ============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; OF moves the WHOLE nonce, so each stake/unstake is a full 0<->occupied transition: stake +1, unstake -1.
+;; Delta-based against whatever nns OfStakePool holds post-vacate.
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpof-id:string "MVST-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "OfStakePool"))
+        (owned:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+    )
+    (if (= (length owned) 0)
+        (print "SKIP TX-FVT-OF-NNS: owner holds no MVST nonce post-vacate")
+        (let
+            (
+                (nonce:integer (at 0 owned))
+                (nns0:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                (x:string (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce]))
+            )
+            (let
+                (
+                    (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                    (y:string (ref-TS02-C3::AQP-POOL|C_UnstakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce]))
+                )
+                (let ((nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id)))
+                    (map print
+                        [
+                            (format "<(nns 0/1/2 · nonce)> => {} {} {} · {}" [nns0 nns1 nns2 nonce])
+                            (expect (format "<<TX-FVT-OF-NNS #FP1>> OF stake -> nns +1 got={}" [nns1]) (+ nns0 1) nns1)
+                            (expect (format "<<TX-FVT-OF-NNS #FP1>> OF unstake (whole nonce) -> nns -1 (back to {}) got={}" [nns0 nns2]) nns0 nns2)
+                        ]
+                    )
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-OF-NNS =======================================================")
+(print "")
