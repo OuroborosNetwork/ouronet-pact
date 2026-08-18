@@ -2004,8 +2004,8 @@
     )
     (let
         (
-            (conc:integer (/ (- budget per-ben) per-pos))        ;; 1 beneficiary, N positions -> ~159
-            (spread:integer (/ budget (+ per-ben per-pos)))      ;; N beneficiaries, 1 position each -> ~19
+            (conc:integer (/ (- budget per-ben) per-pos))        ;; 1 beneficiary, N positions -> ~481 (loose ceiling)
+            (spread:integer (/ budget (+ per-ben per-pos)))      ;; N beneficiaries, 1 position each -> ~25
         )
         (let
             (

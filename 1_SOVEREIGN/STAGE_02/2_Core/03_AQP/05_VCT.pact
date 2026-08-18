@@ -282,14 +282,18 @@
     (defconst VACATE-GAS-MAX-DPSF 29)
     (defconst VACATE-GAS-MAX-DPNF 30)
     ;; Vacate-v2 Phase 2 — beneficiary-aware gas model (measured; applies to BOTH v1 vacate and v2 drain).
-    ;; A batch's cost is dominated by the per-beneficiary settle (~67-85k), with a much smaller per-position
-    ;; marginal (~4k bare / ~10k trait-rich). So: est = unique-bens × PER-BEN + positions × PER-POS ≤ BUDGET.
-    ;; Concentrated batches (few beneficiaries, many positions) now fit ~159 vs the old flat ~30; spread
-    ;; batches (1 position per beneficiary) stay ~19 (≈ the old flat cap). Coefficients are conservative
-    ;; upper bounds covering trait-rich model-1 NFTs (measured worst-case marginal ~9.9k/nonce).
+    ;; est = unique-bens × PER-BEN + positions × PER-POS ≤ BUDGET. Cost is dominated by the per-beneficiary
+    ;; settle (~67-85k); the per-position marginal is small (~4k bare / ~10k trait-rich).
+    ;; ROLE (Phase 2 Step 3): this on-chain check is a GENEROUS BACKSTOP + the UI's seed — NOT the optimizer.
+    ;; The UI sizes real batches by simulating (/local dry-run) against the true, model-dependent gas and the
+    ;; node's gas meter is the real enforcement; an aborted oversized batch is atomic (rolls back — submitter's
+    ;; gas, no protocol harm). So the coefficients are the CHEAPEST realistic case (bare NFT, low settle), making
+    ;; the cap loose enough to never throttle a well-simulated batch: ~481 concentrated / ~25 spread. It only
+    ;; rejects egregiously-oversized / non-simulated batches early with a clean error. UC_ComputeMinSliceCount
+    ;; seeds the UI's optimization loop from the same model (concentrated slice size).
     (defconst VACATE-GAS-BUDGET 2000000)
-    (defconst VACATE-GAS-PER-BEN 90000)
-    (defconst VACATE-GAS-PER-POS 12000)
+    (defconst VACATE-GAS-PER-BEN 75000)
+    (defconst VACATE-GAS-PER-POS 4000)
 
     ;;<==========>
     ;;CAPABILITIES
@@ -528,10 +532,17 @@
         )
     )
     (defun UC_ComputeMinSliceCount:integer (unit-count:integer vacate-kind:integer)
-        @doc "Minimum slice txs: TF unit-count = owner count; OF/DPSF/DPNF unit-count = total nonces."
+        @doc "UI SEED for the batch-optimization loop (Phase 2 Step 3): minimum slice txs assuming the best case \
+            \ (fully concentrated — one beneficiary, so the ~PER-BEN settle is paid once), i.e. slice size = \
+            \ (BUDGET - PER-BEN) / PER-POS ~= 481 positions. This is the aggressive starting point; the UI then \
+            \ SIMULATES each candidate (/local) against the true gas and ADDS slices if a chunk doesn't fit (a \
+            \ spread pool pays the settle per position, so it needs more slices). Kind-agnostic now — the gas \
+            \ model is beneficiary/position-based, not per-kind. TF unit-count = owner count; OF/SF/NF = total \
+            \ nonces. vacate-kind retained for call-site stability."
         (let
             (
-                (raw:integer (UC_CeilDiv unit-count (UC_GasMaxForKind vacate-kind)))
+                (slice-size:integer (/ (- VACATE-GAS-BUDGET VACATE-GAS-PER-BEN) VACATE-GAS-PER-POS))
+                (raw:integer (UC_CeilDiv unit-count slice-size))
             )
             (if (> raw 1) raw 1)
         )
