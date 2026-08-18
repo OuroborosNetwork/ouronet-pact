@@ -163,6 +163,8 @@
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
     (defun AQP-POOL|CC_BatchVacateCollectables:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
+    (defun AQP-POOL|CC_BatchDrainTrueFungible:string
+        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
     (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string pool-id:string))
     (defun AQP-POOL|XB_VacateOrtoFungible:string (patron:string pool-id:string dpof-id:string))
     (defun AQP-POOL|XB_VacateSemiFungible:string (patron:string pool-id:string dpsf-id:string))
@@ -1305,6 +1307,26 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-VCT::CC_BatchVacateTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
                 (format "Batch-vacated {} TF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dptf-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CC_BatchDrainTrueFungible:string
+        (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
+        @doc "Vacate-v2 FAST-DRAIN — one TF batch that returns assets + preserves rewards WITHOUT touching scores \
+            \ and WITHOUT finalizing (cheaper than CC_BatchVacateTrueFungible for large pools). First batch freezes \
+            \ the pool + its FVTs; the pool stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once \
+            \ empty. Owner enforced in VCT; IGNIS on patron. Commit-forward — CC_BatchVacateTrueFungible is the \
+            \ abortable path."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::CC_BatchDrainTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
+                (format "Fast-drained {} TF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
+                    [(length owner-ids) pool-id dptf-id])
             )
         )
     )

@@ -1768,6 +1768,137 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "TX-VCT-DRAIN - vacate-v2 FAST-DRAIN: assets back + scores UNTOUCHED + not finalized")
+(print "")
+(print "=== TX-VCT-DRAIN — v2 CC_BatchDrainTrueFungible: return assets + preserve rewards, NO score delta ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; v2 fast-drain vs v1 vacate: the drain returns every asset + settles each fully-drained beneficiary's rewards
+;; ONCE (unn==0), but does NOT decrement the per-user score and does NOT finalize. Scores stay live (to be
+;; nuked lazily by the finalize generation bump, Step 4); the pool stays FROZEN until finalize. This is what
+;; makes the drain cheap: no per-position score math, no aggregate delta.
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (ben-a:string KST.ANHD)
+        (ben-b:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "DrainVacScore")
+        (fvt-name:string "DrainVacVault")
+        (pool-name:string "DrainVacPool")
+        (amt:decimal 20.0)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    ;; --- dedicated class-1 TF pool + TF score + vault; 2 scored legs (ben ANHD / EMMA) ---
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                ]
+            }
+        ]
+    )
+    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron owner-id score-name 12 1.0)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name ouro-id 1)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
+    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id ben-b ouro-id amt)
+    (print "--- [TX-VCT-DRAIN · 01 · pre-drain snapshot] ---")
+    (let
+        (
+            ;; per-user base-scores BEFORE drain (each staked 20 @ mx 1.0 -> base 20.0)
+            (base-a-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore ben-a pool-id score-id))
+            (base-b-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore ben-b pool-id score-id))
+            (nns-pre:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+        )
+        ;; NOTE: one owner (ANHD) holds both legs, and TFT bulk-transfer requires UNIQUE receivers, so a batch
+        ;; must not carry two same-owner legs (inherited v1 constraint — the UI slices by unique owner). We drain
+        ;; one leg per batch, which ALSO proves settle-per-beneficiary + drain-never-finalizes.
+        (print "--- [TX-VCT-DRAIN · 02 · BATCH 1: fast-drain ANHD's leg only] ---")
+        (ref-TS02-C3::AQP-POOL|CC_BatchDrainTrueFungible patron pool-id ouro-id [owner-id] [ben-a] [amt])
+        (let
+            (
+                (bal-a1:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-a))
+                (bal-b1:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-b))
+                (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                (unn-a1:integer (ref-AQP::UR_AQP|UserUnn pool-id ben-a))
+                (unn-b1:integer (ref-AQP::UR_AQP|UserUnn pool-id ben-b))
+                (base-a1:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore ben-a pool-id score-id))
+                (vip1:bool (ref-VCT::UR_VacateInProgress pool-id))
+            )
+            (map print
+                [
+                    (format "<(base A pre · nns pre)> => {} · {}" [base-a-pre nns-pre])
+                    (expect (format "<<TX-VCT-DRAIN b1>> ANHD leg drained (asset returned) got={}" [bal-a1]) 0.0 bal-a1)
+                    (expect (format "<<TX-VCT-DRAIN b1>> EMMA leg still staked got={}" [bal-b1]) amt bal-b1)
+                    (expect (format "<<TX-VCT-DRAIN b1>> nns 2 -> 1 (one leg left) got={}" [nns1]) 1 nns1)
+                    (expect (format "<<TX-VCT-DRAIN b1 §4>> unn(ANHD) -> 0 (fully drained, settled once) got={}" [unn-a1]) 0 unn-a1)
+                    (expect (format "<<TX-VCT-DRAIN b1 §4>> unn(EMMA) STILL 1 (not settled yet) got={}" [unn-b1]) 1 unn-b1)
+                    ;; v2 differentiator: the drain does NOT decrement the score (v1 vacate would zero it)
+                    (expect (format "<<TX-VCT-DRAIN b1 §5>> ANHD score UNTOUCHED by drain got={}" [base-a1]) base-a-pre base-a1)
+                    (expect (format "<<TX-VCT-DRAIN b1 §8>> pool FROZEN mid-drain (not finalized) got={}" [vip1]) true vip1)
+                ]
+            )
+        )
+        (print "--- [TX-VCT-DRAIN · 03 · BATCH 2: fast-drain EMMA's leg -> pool empty] ---")
+        (ref-TS02-C3::AQP-POOL|CC_BatchDrainTrueFungible patron pool-id ouro-id [owner-id] [ben-b] [amt])
+        (let
+            (
+                (bal-b2:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id ben-b))
+                (nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                (unn-b2:integer (ref-AQP::UR_AQP|UserUnn pool-id ben-b))
+                ;; both per-user scores AFTER full drain — still UNTOUCHED (v2 nukes lazily at finalize, Step 4)
+                (base-a2:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore ben-a pool-id score-id))
+                (base-b2:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore ben-b pool-id score-id))
+                (vip2:bool (ref-VCT::UR_VacateInProgress pool-id))
+                (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+            )
+            (map print
+                [
+                    (format "<(base A/B post · nns)> => {} / {} · {}" [base-a2 base-b2 nns2])
+                    (expect (format "<<TX-VCT-DRAIN b2>> EMMA leg drained got={}" [bal-b2]) 0.0 bal-b2)
+                    (expect (format "<<TX-VCT-DRAIN b2>> pool nns -> 0 (tracker empty) got={}" [nns2]) 0 nns2)
+                    (expect (format "<<TX-VCT-DRAIN b2 §4>> unn(EMMA) -> 0 (settled on last drain) got={}" [unn-b2]) 0 unn-b2)
+                    ;; THE v2 differentiator: BOTH per-user scores are UNTOUCHED (no ApplyStakeDelta). v1 vacate zeroes them.
+                    (expect (format "<<TX-VCT-DRAIN b2 §5>> ANHD score STILL untouched got={}" [base-a2]) base-a-pre base-a2)
+                    (expect (format "<<TX-VCT-DRAIN b2 §5>> EMMA score STILL untouched got={}" [base-b2]) base-b-pre base-b2)
+                    (expect (format "<<TX-VCT-DRAIN b2 §5>> ANHD score > 0 (not decremented) got={}" [base-a2]) true (> base-a2 0.0))
+                    ;; commit-forward: the drain NEVER finalizes, even when empty — pool stays frozen until C_FinalizeVacate (Step 4)
+                    (expect (format "<<TX-VCT-DRAIN b2 §8>> pool STILL frozen after full drain (no auto-finalize) got={}" [vip2]) true vip2)
+                    (expect (format "<<TX-VCT-DRAIN b2 §8>> stake STILL disabled (awaiting nuke) got={}" [stake-enabled]) false stake-enabled)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-DRAIN ========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX-VCT-GASBOUND - #FP2 Gap 1: vacate gas-max backstop (URC_*GasOk boundaries)")
 (print "")
 (print "=== TX-VCT-GASBOUND — #FP2: vacate slice caps enforced (= max accepted, > max REJECTED) ==")

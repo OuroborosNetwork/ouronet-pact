@@ -22,6 +22,8 @@
         (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
     (defun CC_BatchVacateCollectables:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
+    (defun CC_BatchDrainTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
     (defun XB_VacateTrueFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpof-id:string))
     (defun XB_VacateSemiFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpsf-id:string))
@@ -1904,6 +1906,29 @@
             )
         )
     )
+    (defun CC_BatchDrainTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dptf-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            amounts:[decimal]
+        )
+        @doc "Vacate-v2 FAST-DRAIN: one TF batch that returns assets to owners and preserves each fully-drained \
+            \ beneficiary's rewards, but does NOT touch scores and does NOT finalize. Same validation + owner gate \
+            \ as CC_BatchVacateTrueFungible (VCT|C>LEGS-TRUE-FUNGIBLE-VACATE, finalize=false), EnsureVacateBegun \
+            \ (freeze if first), then XI_DrainTrueFungibleFromLegs (per-leg transfer+tracker-zero+rollup; \
+            \ settle-once for beneficiaries whose last position drained). The pool stays FROZEN until \
+            \ C_FinalizeVacate nukes the scores (generation bump + aggregate zero) once nns==0. Commit-forward: v1 \
+            \ CC_BatchVacateTrueFungible remains the abortable/score-delta path."
+        (UEV_IMC)
+        (with-capability
+            (VCT|C>LEGS-TRUE-FUNGIBLE-VACATE pool-id dptf-id owner-ids beneficiary-ids amounts false)
+            (XI_EnsureVacateBegun pool-id)
+            (XI_DrainTrueFungibleFromLegs pool-id dptf-id
+                (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts))
+        )
+    )
     (defun CC_BatchVacateCollectables:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
@@ -2072,6 +2097,33 @@
             )
         )
     )
+    (defun XI_2|SettleBeneficiaryRewardsOnly:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string beneficiary-id:string)
+        @doc "Vacate-v2 §4 settle-on-last-drain: preserve ONE beneficiary's pending rewards into unclaimed \
+            \ WITHOUT touching their score. The asset-agnostic reward triple — Bank (XI_3|RpsVacatePreZero, \
+            \ settle pending at live deb) -> Book (XE_BookStakeUnclaimedCounts, unclaimed-count hygiene) -> \
+            \ Checkpoint (XE_CheckpointStakeRps, advance RPS) — identical to the v1 beneficiary unwind's reward \
+            \ steps but WITHOUT XE_ApplyStakeDelta and WITHOUT the rollup/anchor legs (those are asset-specific \
+            \ and handled per-position in the drain). MUST run BEFORE the fast-vacate generation bump: Bank reads \
+            \ the beneficiary's LIVE per-user deb, so a stale/zeroed score would bank 0. Same depth-2 no-self-cap \
+            \ convention as XI_2|Vacate*BeneficiaryUnwind — the XE_ forward calls each enforce their own IMC."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                ;;
+                (settle-bundle:object (ref-FVT::URHC_BuildStakeSettleBundle pool-id beneficiary-id))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (XI_3|RpsVacatePreZero beneficiary-id pool-id settle-bundle)
+                    (ref-FVT::XE_BookStakeUnclaimedCounts beneficiary-id pool-id settle-bundle)
+                    (ref-FVT::XE_CheckpointStakeRps beneficiary-id pool-id settle-bundle)
+                ]
+                []
+            )
+        )
+    )
     (defun XI_2|VacateTrueFungibleBeneficiaryUnwind:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal)
         @doc "TF vacate per beneficiary: rollup → RPS bank → ANK → SCORE unstake → RPS book+checkpoint."
@@ -2159,6 +2211,102 @@
                     ;;
                     (unwind-oc:object{IgnisCollectorV1.OutputCumulator}
                         (XI_1|VacateTrueFungibleUnwindFromLegs pool-id dptf-id legs)
+                    )
+                    (bulk-arr:object (UC_VacateTfLegsToTftBulkArrays legs))
+                    (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-TFT::C_MultiBulkTransfer
+                            [dptf-id]
+                            AQP|SC_NAME
+                            (at "receiver-array" bulk-arr)
+                            (at "transfer-amount-array" bulk-arr)
+                        )
+                    )
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [unwind-oc bulk-oc] [])
+            )
+        )
+    )
+    (defun XI_1|DrainTrueFungibleFromLegs:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
+        @doc "Vacate-v2 TF DRAIN phases 2-4 (no score delta). Per leg: zero the tracker row (nns--/unn--) AND \
+            \ decrement the cross-pool rollup by the leg amount (amount-linear; owner-id unused in the bump). \
+            \ THEN — unn is now decremented — for each unique beneficiary whose unn hit 0 (their LAST position \
+            \ drained) refresh anchors + settle their rewards ONCE. Beneficiaries still holding positions are \
+            \ left untouched (settled on their own last drain). The per-user score is NEVER decremented here: it \
+            \ stays live so this-round settles bank the correct deb, then the finalize generation bump zeroes it \
+            \ lazily and the nuke bulk-zeroes the aggregate. Nested lets force the tracker side effects to land \
+            \ before the unn==0 gate is read."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiariesFromLegs legs))
+            )
+            ;; Phase A — per-leg tracker-zero (nns--/unn--) + cross-pool rollup decrement (side effects first)
+            (let
+                (
+                    (tracker-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                        (map
+                            (lambda (leg:object{VCT|VacateTfLeg})
+                                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                    [
+                                        (ref-AQP::XE_ZeroDptfTrackerSlot
+                                            pool-id (at "owner-id" leg) (at "beneficiary-id" leg) dptf-id)
+                                        (ref-AQP::XE_TrueFungibleBeneficiaryRollup
+                                            pool-id (at "owner-id" leg) (at "beneficiary-id" leg)
+                                            dptf-id (at "balance" leg) false)
+                                    ]
+                                    []
+                                )
+                            )
+                            legs
+                        )
+                    )
+                )
+                ;; Phase B — unn now reflects the drain: settle ONLY beneficiaries fully drained this round
+                (let
+                    (
+                        (settle-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                            (map
+                                (lambda (beneficiary-id:string)
+                                    (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0)
+                                        ;; Bank must read PRE-anchor-refresh deb (v1 order: Bank(2) before ANK(3)),
+                                        ;; so settle FIRST, then refresh anchors from the decremented rollup.
+                                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                            [
+                                                (XI_2|SettleBeneficiaryRewardsOnly pool-id beneficiary-id)
+                                                (ref-FVT::XE_RefreshTrueFungibleStakeAnchors beneficiary-id dptf-id)
+                                            ]
+                                            []
+                                        )
+                                        (UC_EmptyOc)
+                                    )
+                                )
+                                unique-beneficiaries
+                            )
+                        )
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ tracker-ocs settle-ocs) [])
+                )
+            )
+        )
+    )
+    (defun XI_DrainTrueFungibleFromLegs:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
+        @doc "Vacate-v2 TF DRAIN CONSUMER (per DPTF asset) — no scan. Phases 2-4 drain-unwind from the pre-built \
+            \ leg list, then phase 0 bulk TFT transfer back to owners last. Empty legs -> no-op. NO finalize: the \
+            \ drain leaves the pool frozen; C_FinalizeVacate (nuke) re-enables it once nns==0. require P|VCT|RECIPE."
+        (require-capability (P|VCT|RECIPE))
+        (if (= (length legs) 0)
+            (UC_EmptyOc)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                    ;;
+                    (unwind-oc:object{IgnisCollectorV1.OutputCumulator}
+                        (XI_1|DrainTrueFungibleFromLegs pool-id dptf-id legs)
                     )
                     (bulk-arr:object (UC_VacateTfLegsToTftBulkArrays legs))
                     (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
