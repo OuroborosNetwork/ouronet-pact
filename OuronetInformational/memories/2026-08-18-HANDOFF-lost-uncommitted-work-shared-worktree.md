@@ -13,6 +13,35 @@ same git working tree stepping on each other's uncommitted changes, (2) somethin
 modifications are surfaced to the user for approval (an "accept all" action) that might be silently
 reverting or dropping edits. Investigate both; there may be a third explanation not yet considered.
 
+**UPDATE (same session, ~30–60 min later): it recurred, this time around a commit itself.** After
+recovering from the incident in §§1–5 below, this session committed the recovered work (`97bebdb`). A
+follow-up `git status` check — prompted by the owner relaying a warning from **another, separate agent
+session** — showed 4 files with fresh uncommitted diffs *against `97bebdb` itself*: `1_Utilities/09_U_ATS.pact`,
+`2_Core/10_ATSU.pact`, `3_Talos/01_TS01-A.pact`, and `REPL/_audit_ats_baseline.repl`. Diffing the working
+tree against `97bebdb` (not `HEAD`) showed real content — a doc-wording fix, a bug fix, an admin-function
+wrapper, and ~260 lines of REPL proof history — that had been verified present and correct in the working
+tree shortly before that commit, yet was absent from the commit's actual diff. In other words: **the
+commit itself did not fully capture what was on disk at commit time**, or something modified the working
+tree again in the narrow window around/after the `git commit` call. This content was re-verified (clean
+REPL reload, 0 failures) and committed separately (`90d02e0`). Both commits are now confirmed ancestors of
+`HEAD` and `git status` is clean of tracked-file changes.
+
+**Also newly relevant:** `git log` at this point shows a *third* concurrent work-stream's commit —
+`00e3126 audit(swp): Round-I fix-cycle — 13 CRITICAL/HIGH findings closed, session handoff` — using
+a near-identical commit-message convention to this session's own ATS-audit commits, strongly suggesting
+**at least three agent sessions** (this one on ATS, one on AQP, one on SWP) have been committing to this
+same shared branch concurrently, not two. The owner also confirmed a separate agent (in a different chat)
+independently noticed the uncommitted state here, which is how this second incident was caught at all —
+worth asking that other agent/session what it saw and when, if reachable, since it may have visibility
+into the collision from a different angle.
+
+This second incident makes the "one-off git operation" reading of §3 less likely on its own — a `git
+checkout <path>` run once, mid-session, wouldn't explain content going missing again right around a
+*different* commit event, on a *different, overlapping* set of files. Consider whether the actual commit
+tooling/wrapper used in this environment (not raw `git commit`) does something that races with concurrent
+disk writes — e.g. staging from a cached tree, or reading files at a slightly different point in time than
+when the "commit" action was actually invoked/approved.
+
 ---
 
 ## 1. What was observed
