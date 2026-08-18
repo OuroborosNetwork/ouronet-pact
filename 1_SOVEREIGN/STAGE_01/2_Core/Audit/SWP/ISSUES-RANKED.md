@@ -146,8 +146,12 @@ time. `(at 0 fp)` guarded. First repro scenario was wrong (hit the pre-existing 
 instead of the crash line) — corrected and reproduced the real `Array index out of bounds` crash live;
 restored, clean empty result. — *H2*
 
-#21H **[SWPT]** Removing a principal token permanently orphans every Tracer entry filed under it — no resync
-path exists anywhere in the module. — *H3*
+#21H **[SWPT]** ~~Removing a principal token permanently orphans every Tracer entry filed under it — no
+resync path exists anywhere in the module.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-19** (`ROUND-02-FIXES.md`
+Fix #12): full redesign, not a patch — `SwapTracerV1`→`V2`, principal-keyed storage replaced with plain
+token-adjacency (`SWPT|Graph`); nothing is keyed by principal identity anymore, so orphaning is
+structurally impossible. Migration utility `SWPI::A_RebuildGraph` added and proven idempotent; every
+prior #13C/#19H/#20H/#11C proof re-confirmed byte-identical post-redesign. — *H3*
 
 #22H **[SWPL]** Two independent, unreconciled asymmetric-deficit pricing models both fire for Standard-mode
 liquidity adds — possible double-charging honest depositors. — *H7*

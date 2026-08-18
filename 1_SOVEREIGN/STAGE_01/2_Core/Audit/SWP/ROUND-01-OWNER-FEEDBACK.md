@@ -1051,3 +1051,76 @@ non-zero) is false; every pool-token's genesis reserve is validated on every iss
 mandatory funding transfer's own capability chain, not via `UEV_Issue` itself. No fix needed. — *C5*
 
 ---
+
+## H3 (#21H, principal removal permanently orphans Tracer entries) — **CONFIRMED, FIXED, PROVEN** — full architecture redesign, not a patch
+
+**Owner design decision, arrived at through discussion, not the finding's own suggested fix
+direction:** principals should only ever be *replaced*, never bare-removed, and capped at a maximum of
+7 (mirroring the existing 2–7 pool-token bound `UEV_Issue` already enforces). Working through what
+"replace" actually requires surfaced that a bare swap-in-place doesn't fix the underlying problem by
+itself — the retiring principal's already-traced entries orphan exactly the same way under replace as
+under removal, unless paired with either a real resync of every existing swpair, or forbidding replacing
+a principal that already has live swpairs traced under it.
+
+**That led to a deeper question: does SWPT need to be keyed by principal identity at all anymore?**
+Walking through the actual mechanism (`SWPT.SWPT|Tracer[token].links`, one `{principal, swpairs}` entry
+per principal, `SWPT.URC_TokenSwpairs` only ever looking up entries for principals in the *current*
+list) showed principal-based partitioning served no remaining purpose once routing already operates over
+the full swpair universe (post-#13C/#19H) — it didn't reduce storage (a multi-principal pool gets
+recorded once per principal it touches — duplicated, not compressed) or reduce read cost (every read
+concatenates every bucket anyway). It only introduced the fragility being discussed, plus real scaling
+cost (concatenate-then-dedup across every principal bucket, on every BFS node visit, growing with total
+connected-pool count for hub tokens).
+
+**Fix — full replacement of SWPT's storage model, not a patch on top of it (#21H's actual resolution):**
+- **`SwapTracerV1` → `SwapTracerV2`** (`14_SWPT.pact`). Old `Edges{principal, swpairs}` schema and the
+  principal-keyed `SWPT|Tracer` table removed entirely. New `NeighbourEdge{token, swpairs}` schema and
+  `SWPT|Graph` table — plain token-to-token adjacency, principal identity plays no role anywhere in
+  this module's storage, keys, or reads. `URC_TokenNeighbours`, `URC_Edges`, `URC_EdgesActive`,
+  `URC_ComputeGraphPath`, `URC_AllGraphPaths`, `URC_MakeGraph` all lose their `principal-lst` parameter
+  entirely — a genuine interface simplification, not just an internal change.
+- **`URC_MakeGraph`'s active-edge-filter logic (#13C/#19H's fix) carries over completely unchanged in
+  structure** — still requires a genuine `URC_EdgesActive` match between each node and candidate
+  neighbor, not just node-set membership; only *how* `URC_TokenNeighbours`/`URC_Edges` compute their
+  answer changed underneath it. Same for `URC_ComputeGraphPath`'s #20H empty-result guard.
+- **`XE_UpdateGraph(swpair)`** replaces `XE_MultiPathTracer` — for every pair of tokens in the swpair
+  (all ordered pairs, both directions), idempotently appends the swpair to each token's neighbour entry
+  for the other (creates the entry if this is their first connection; skips the append if the swpair is
+  already recorded there). Called from the identical two sites as before (`SWPI::C_Issue`,
+  `MTX-SWP`'s Step 3) — neither `SwapperIssueV3` nor `SwapperMtxV3` needed any interface change, since
+  `principal-lst` was always fetched *internally* by both call sites, never part of their own declared
+  signatures. Blast radius confirmed via full grep before starting: exactly these two call sites, plus
+  three internal `SWPI` functions (`URCX_Hopper`, `URC_BestEdge`, `URC_BestEdgeFiltered`) — all
+  module-body-only changes.
+- **Migration utility (`SWPI::A_RebuildGraph`), for backfilling pools issued under the old
+  architecture.** Deliberately placed in `SWPI`, not `SWPT` — `SWPT` deploys *before* `SWP` in this
+  codebase's deploy order and can't hold a compile-time reference to `SwapperV3` in its own initial
+  module body (caught by a real load failure, not anticipated in advance); `SWPI` already deploys after
+  both and is already a legitimate `XE_UpdateGraph` caller. Walks `SWP::URC_Swpairs()` and calls the
+  exact same `XE_UpdateGraph` normal issuance already uses, once per existing pool. A second real issue
+  surfaced building this: calling `XE_UpdateGraph` from `A_RebuildGraph`'s own capability context failed
+  `UEV_IMC` — the IMC check verifies a *specific* capability (`P|SWPI|CALLER`, registered with `SWPT` via
+  `SWPI::P|A_Define`) is actively composed, not merely "the call originates from SWPI's module code";
+  `C_Issue` satisfies it via its own cap chain (`SWPI|C>ISSUE` → `P|DT`), `A_RebuildGraph` didn't compose
+  anything that did. Fixed by wrapping the migration loop in `(with-capability (P|SECURE-CALLER))`,
+  matching what `C_Issue` effectively provides.
+
+**Adversarially proven, live — `SWP|TX 031`:** ran `SWPI::A_RebuildGraph` against already-current state
+and confirmed a genuinely non-empty, real route (`OURO→AG`, deliberately left active by an earlier test)
+is byte-identical before and after — proving the migration is safe to re-run without duplicating or
+corrupting anything, the core safety property required for a function meant to run exactly once, blind,
+immediately after a mainnet upgrade.
+
+**Every existing #13C/#19H/#20H/#11C adversarial proof (`SWP|TX 026/028/029/030`) was re-run against the
+full redesign and produced byte-identical results** to before the storage change — confirming the new
+architecture preserves every prior guarantee while eliminating the principal-keying fragility structurally,
+not by patching around it.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #12 for the full diff. Note: this closes
+#21H's actual bug (orphaning is now structurally impossible, since nothing is keyed by principal identity
+at all) independent of whether the retiring principal is removed or replaced. The owner's separate
+"replace-only, capped at 7" *policy* layer on `SWP::A_UpdatePrincipal` itself — no longer required to fix
+this finding, since the underlying fragility is gone, but still wanted for operational discipline — is
+**not yet built**; that's the natural next turn if still desired. Awaiting Round III re-verify.
+
+---

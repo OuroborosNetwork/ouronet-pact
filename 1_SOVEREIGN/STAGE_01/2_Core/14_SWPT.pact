@@ -2,39 +2,44 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/02_Core.pact
 ;;
-(interface SwapTracerV1
-    @doc "Exposes Tracer Functions, needed to compute Paths between Tokens existing on Liquidity Pools"
-    ;;
-    (defschema Edges
-        principal:string
+(interface SwapTracerV2
+    @doc "Exposes Tracer Functions, needed to compute Paths between Tokens existing on \
+        \ Liquidity Pools. \
+        \ \
+        \ #21H redesign (V1 -> V2): V1 stored adjacency keyed by PRINCIPAL identity — \
+        \ every swpair got filed under one Edges entry per principal it touched, at \
+        \ trace time. That broke the moment a principal was removed or replaced: every \
+        \ entry filed under the retired principal became permanently unreachable to \
+        \ every normal read path, silently, system-wide, for every token ever pooled \
+        \ against it — with no resync mechanism anywhere. It also duplicated storage \
+        \ (a swpair touching 2 principals got recorded twice) and grew read cost with \
+        \ every read via repeated concatenate-then-dedup over all principal buckets. \
+        \ \
+        \ V2 stores plain token-to-token adjacency instead — principal identity plays \
+        \ no role anywhere in this module's storage, keys, or reads. Principal changes \
+        \ (SWP::A_UpdatePrincipal or its future replacement-only successor) never touch \
+        \ this module at all; there is nothing here that could go stale."
+
+    (defschema NeighbourEdge
+        token:string
         swpairs:[string]
     )
-    ;;
-    (defun UC_PSwpairsFTO:[string] (traces:[object{Edges}] id:string principal:string principals-lst:[string]))
-    (defun UC_PrincipalsFromTraces:[string] (traces:[object{Edges}]))
-    ;;
-    (defun UR_PathTrace:[object{Edges}] (id:string))
-    ;;
-    (defun URC_PathTracer:[object{Edges}] (old-path-tracer:[object{Edges}] id:string swpair:string principals-lst:[string]))
-    (defun URC_ContainsPrincipals:bool (swpair:string principals-lst:[string]))
-    (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string] principal-lst:[string]))
-    (defun URC_AllGraphPaths:[[string]] (input:string output:string swpairs:[string] principal-lst:[string]))
-    (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string] principal-lst:[string]))
-    (defun URC_TokenNeighbours:[string] (token-id:string principal-lst:[string]))
-    (defun URC_TokenSwpairs:[string] (token-id:string principal-lst:[string]))
-    (defun URC_PrincipalSwpairs:[string] (id:string principal:string principal-lst:[string]))
-    (defun URC_Edges:[string] (t1:string t2:string principal-lst:[string])) ;;1
-    (defun URC_EdgesActive:[string] (t1:string t2:string principal-lst:[string] whitelist:[string]))
-    ;;
-    (defun UEV_IdAsPrincipal (id:string for-trace:bool principals-lst:[string]))
-    ;;
-    (defun XE_MultiPathTracer (swpair:string principals-lst:[string]))
+
+    (defun UR_Graph:[object{NeighbourEdge}] (token:string))
+    (defun URC_TokenNeighbours:[string] (token:string))
+    (defun URC_Edges:[string] (t1:string t2:string))
+    (defun URC_EdgesActive:[string] (t1:string t2:string whitelist:[string]))
+    (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string]))
+    (defun URC_AllGraphPaths:[[string]] (input:string output:string swpairs:[string]))
+    (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string]))
+
+    (defun XE_UpdateGraph (swpair:string))
 )
 ;;
 (module SWPT GOV
     ;;
     (implements OuronetPolicyV1)
-    (implements SwapTracerV1)
+    (implements SwapTracerV2)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -128,19 +133,14 @@
     ;;<======================>
     ;;SCHEMAS-TABLES-CONSTANTS
     ;;{1}
-    (defschema SWPT|TracerSchema
-        links:[object{SwapTracerV1.Edges}]
+    (defschema SWPT|GraphSchema
+        neighbours:[object{SwapTracerV2.NeighbourEdge}]
     )
     ;;{2}
-    (deftable SWPT|Tracer:{SWPT|TracerSchema})
+    (deftable SWPT|Graph:{SWPT|GraphSchema})
     ;;{3}
     (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                   (CT_Bar))
-    (defconst NLE [NLEO])
-    (defconst NLEO
-        { "principal" : BAR
-        , "swpairs"   : [BAR]}
-    )
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -154,136 +154,65 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun UC_PSwpairsFTO:[string] (traces:[object{SwapTracerV1.Edges}] id:string principal:string principals-lst:[string])
-        @doc "Principal Swpairs From Trace Object: given a trace object, id and principal, output the stored swpairs\
-        \ UTILS.BAR can be used as principal, returning swpairs that contain no principals. \
-        \ Swpairs that contain no principals, can only be stable swap pairs."
-        (UEV_IdAsPrincipal principal true principals-lst)
+    (defun UC_FindNeighbourIndex:[integer] (neighbours:[object{SwapTracerV2.NeighbourEdge}] token:string)
+        @doc "Returns [idx] of the entry in <neighbours> whose token field matches \
+            \ <token>, or [] if no such entry exists yet."
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (principals-from-traces:[string] (UC_PrincipalsFromTraces traces))
-                (search:[integer] (ref-U|LST::UC_Search principals-from-traces principal))
+                (l:integer (length neighbours))
             )
-            (if (!= (length search) 0)
-                (at "swpairs" (at (at 0 search) traces))
-                [BAR]
-            )
-        )
-    )
-    (defun UC_PrincipalsFromTraces:[string] (traces:[object{SwapTracerV1.Edges}])
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-            )
-            (fold
-                (lambda
-                    (acc:[string] idx:integer)
-                    (ref-U|LST::UC_AppL
-                        acc
-                        (at "principal" (at idx traces))
-                    )
-                )
+            (if (= l 0)
                 []
-                (enumerate 0 (- (length traces) 1))
+                (fold
+                    (lambda
+                        (acc:[integer] idx:integer)
+                        (if (!= acc [])
+                            acc
+                            (if (= (at "token" (at idx neighbours)) token) [idx] [])
+                        )
+                    )
+                    []
+                    (enumerate 0 (- l 1))
+                )
             )
         )
     )
     ;;{F0}  [UR]
-    (defun UR_PathTrace:[object{SwapTracerV1.Edges}] (id:string)
-        (at "links" (read SWPT|Tracer id ["links"]))
+    (defun UR_Graph:[object{SwapTracerV2.NeighbourEdge}] (token:string)
+        (with-default-read SWPT|Graph token
+            {"neighbours" : []}
+            {"neighbours" := n}
+            n
+        )
     )
     ;;{F1}  [URC]
-    (defun URC_PathTracer:[object{SwapTracerV1.Edges}] (old-path-tracer:[object{SwapTracerV1.Edges}] id:string swpair:string principals-lst:[string])
-        "Computes a new Path-tracer object list, given <old-path-tracer> object, token-id <id> and Swap-Pair <swpair>"
-        (let
+    (defun URC_TokenNeighbours:[string] (token:string)
+        (map (at "token") (UR_Graph token))
+    )
+    (defun URC_Edges:[string] (t1:string t2:string)
+        @doc "All swpairs directly connecting <t1> and <t2> — regardless of can-swap \
+            \ state. Direct keyed lookup against <t1>'s own row; O(deg(t1)), never a \
+            \ table scan."
+        (let*
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (swpair-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
-                (has-principals:bool (URC_ContainsPrincipals swpair principals-lst))
-                (current-element-zero-swpairs:[string] (UC_PSwpairsFTO old-path-tracer id BAR principals-lst))
-                (new-element-zero-swpairs:[string]
-                    (if (= current-element-zero-swpairs [BAR])
-                        (if has-principals
-                            [BAR]
-                            [swpair]
-                        )
-                        (if has-principals
-                            current-element-zero-swpairs
-                            (ref-U|LST::UC_AppL current-element-zero-swpairs swpair)
-                        )
-                    )
-                )
-                (element-zero:object{SwapTracerV1.Edges}
-                    { "principal" : BAR , "swpairs" : new-element-zero-swpairs}
-                )
+                (neighbours:[object{SwapTracerV2.NeighbourEdge}] (UR_Graph t1))
+                (idx:[integer] (UC_FindNeighbourIndex neighbours t2))
             )
-            (fold
-                (lambda
-                    (acc:[object{SwapTracerV1.Edges}] idx:integer)
-                    (ref-U|LST::UC_AppL
-                        acc
-                        (let
-                            (
-                                (current-element-swpairs:[string] (UC_PSwpairsFTO old-path-tracer id (at idx principals-lst) principals-lst))
-                                (lopt:integer (length old-path-tracer))
-                                (iz-principal-on-swpair:bool (contains (at idx principals-lst) swpair-tokens))
-                                (check:bool iz-principal-on-swpair)
-                                (swpairs-to-add:[string]
-                                    (if (= lopt 1)
-                                        (if check
-                                            [swpair]
-                                            [BAR]
-                                        )
-                                        (if check
-                                            (ref-U|LST::UC_AppL current-element-swpairs swpair)
-                                            current-element-swpairs
-                                        )
-                                    )
-                                )
-                                (filtered-swpairs-to-add:[string]
-                                    (if (= swpairs-to-add [BAR])
-                                        swpairs-to-add
-                                        (if (= (at 0 swpairs-to-add) BAR)
-                                            (drop 1 swpairs-to-add)
-                                            swpairs-to-add
-                                        )
-                                    )
-                                )
-                            )
-                            {
-                                "principal" : (at idx principals-lst),
-                                "swpairs"   : filtered-swpairs-to-add
-                            }
-                        )
-                    )
-                )
-                [element-zero]
-                (enumerate 0 (- (length principals-lst) 1))
+            (if (= (length idx) 0)
+                []
+                (at "swpairs" (at (at 0 idx) neighbours))
             )
         )
     )
-    (defun URC_ContainsPrincipals:bool (swpair:string principals-lst:[string])
-        (let
-            (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (swpair-tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
-            )
-            (fold
-                (lambda
-                    (acc:bool idx:integer)
-                    (or
-                        acc
-                        (contains (at idx swpair-tokens) principals-lst)
-                    )
-                )
-                false
-                (enumerate 0 (- (length swpair-tokens) 1))
-            )
-        )
+    (defun URC_EdgesActive:[string] (t1:string t2:string whitelist:[string])
+        @doc "Same as <URC_Edges>, but the result is restricted to swpairs also \
+            \ present in <whitelist> (e.g. <SWP::URC_ActiveSwpairs>) — so a disabled \
+            \ parallel pool between the same token pair is never offered as an edge \
+            \ candidate to <SWPI::URC_BestEdgeFiltered>. #19H fix, carried over \
+            \ unchanged by the #21H storage redesign."
+        (filter (lambda (swpair:string) (contains swpair whitelist)) (URC_Edges t1 t2))
     )
-    (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string] principal-lst:[string])
+    (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string])
         @doc "Computes the path between an <input> and <output> using BFS via <URC_AllGraphPaths> \
         \ from a passed down list of existing <swpairs>. \
         \ #20H fix: returns the clean [BAR] sentinel — never a bare out-of-bounds \
@@ -293,7 +222,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (all-paths:[[string]] (URC_AllGraphPaths input output swpairs principal-lst))
+                (all-paths:[[string]] (URC_AllGraphPaths input output swpairs))
 
             )
             (if (!= all-paths [[BAR]])
@@ -329,39 +258,27 @@
             )
         )
     )
-    (defun URC_AllGraphPaths:[[string]] (input:string output:string swpairs:[string] principal-lst:[string])
+    (defun URC_AllGraphPaths:[[string]] (input:string output:string swpairs:[string])
         @doc "Computes all paths that exist in a Graph defined from <input> ids, <output> ids \
         \ over a specific passed-down list of existing <swpairs>"
         (let
             (
                 (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
-                (graph:[object{BreadthFirstSearchV1.GraphNode}] (URC_MakeGraph input output swpairs principal-lst))
+                (graph:[object{BreadthFirstSearchV1.GraphNode}] (URC_MakeGraph input output swpairs))
                 (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFS graph input))
             )
             (at "chains" bfs-obj)
         )
     )
-    (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string] principal-lst:[string])
-        @doc "#13C fix (2nd layer) + #19H fix (2nd layer): <URC_TokenNeighbours> \
-            \ reads the FULL, live <SWPT|Tracer> table directly — it has no \
-            \ notion of the caller's <swpairs> universe at all. Two problems \
-            \ follow, both closed here: \
-            \ 1] (#13C) A neighbor reachable only through a swpair OUTSIDE \
-            \    <swpairs> would otherwise be returned as a link with no \
-            \    matching <GraphNode> entry in <nodes> at all. \
-            \ 2] (#19H) A neighbor token can be a perfectly valid node overall \
-            \    (has SOME active pool elsewhere) while the ONLY swpair directly \
-            \    connecting it to THIS node is outside <swpairs> (e.g. disabled) \
-            \    — merely checking 'is this token a valid node' (#1's fix) does \
-            \    NOT catch this, since the neighbor token legitimately belongs \
-            \    to <nodes> via its other pools. BFS would still treat the two \
-            \    as directly linked, discover a 'path' through a non-existent \
-            \    active edge, and crash downstream in <SWPI::URC_BestEdgeFiltered> \
-            \    when no active edge is actually found. \
-            \ Requiring a genuine <URC_EdgesActive> match (not just <nodes> \
-            \ membership) between each node and its candidate neighbor closes \
-            \ both — and subsumes the plain membership check, since any real \
-            \ active edge implies both endpoints are already valid nodes."
+    (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string])
+        @doc "#13C fix + #19H fix, carried over unchanged by the #21H storage redesign: \
+            \ a node's links must be genuine active edges (<URC_EdgesActive> non-empty), \
+            \ not just 'is this token a valid node somewhere' — a neighbor token can be \
+            \ a perfectly valid node overall while the ONLY swpair directly connecting \
+            \ it to THIS node is outside <swpairs> (e.g. disabled). Requiring a real \
+            \ <URC_EdgesActive> match subsumes plain node-membership (a real active edge \
+            \ implies both endpoints are already valid nodes) and closes both problems \
+            \ with one condition."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -377,8 +294,8 @@
                             "node": (at idx nodes),
                             "links":
                                 (filter
-                                    (lambda (n:string) (!= (URC_EdgesActive (at idx nodes) n principal-lst swpairs) []))
-                                    (URC_TokenNeighbours (at idx nodes) principal-lst)
+                                    (lambda (n:string) (!= (URC_EdgesActive (at idx nodes) n swpairs) []))
+                                    (URC_TokenNeighbours (at idx nodes))
                                 )
                         }
                     )
@@ -388,115 +305,70 @@
             )
         )
     )
-    (defun URC_TokenNeighbours:[string] (token-id:string principal-lst:[string])
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (token-swpairs:[string] (URC_TokenSwpairs token-id principal-lst))
-                (unique-tokens:[string] (ref-U|SWP::UC_UniqueTokens token-swpairs))
-            )
-            (ref-U|LST::UC_RemoveItem unique-tokens token-id)
-        )
-    )
-    (defun URC_TokenSwpairs:[string] (token-id:string principal-lst:[string])
-        @doc "Reads all swpairs attached to the <token-id> and outputs them into a string list \
-        \ Requires a list of principals through <principal-lst>"
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (cp:[string] (ref-U|LST::UC_InsertFirst principal-lst BAR))
-                (swpairs-array:[[string]]
-                    (fold
-                        (lambda
-                            (acc:[[string]] idx:integer)
-                            (let
-                                (
-                                    (swpairs:[string] (URC_PrincipalSwpairs token-id (at idx cp) principal-lst))
-                                    (u2:[string] [BAR])
-                                )
-                                (if (!= swpairs u2)
-                                    (ref-U|LST::UC_AppL
-                                        acc
-                                        swpairs
-                                    )
-                                    acc
-                                )
-                            )
-                        )
-                        []
-                        (enumerate 0 (- (length cp) 1))
-                    )
-                )
-            )
-            (fold (+) [] swpairs-array)
-        )
-    )
-    (defun URC_PrincipalSwpairs:[string] (id:string principal:string principal-lst:[string])
-        (UC_PSwpairsFTO (UR_PathTrace id) id principal principal-lst)
-    )
-    (defun URC_Edges:[string] (t1:string t2:string principal-lst:[string])
-        (let
-            (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (swp1:[string] (URC_TokenSwpairs t1 principal-lst))
-                (swp2:[string] (URC_TokenSwpairs t2 principal-lst))
-                (swps:[string] (+ swp1 swp2))
-                (d:[string] (distinct swps))
-            )
-            (ref-U|SWP::UC_FilterTwo d t1 t2)
-        )
-    )
-    (defun URC_EdgesActive:[string] (t1:string t2:string principal-lst:[string] whitelist:[string])
-        @doc "Same as <URC_Edges>, but the result is restricted to swpairs also \
-            \ present in <whitelist> (e.g. <SWP::URC_ActiveSwpairs>) — so a \
-            \ disabled parallel pool between the same token pair is never offered \
-            \ as an edge candidate to <SWPI::URC_BestEdgeFiltered>. #19H fix."
-        (filter (lambda (swpair:string) (contains swpair whitelist)) (URC_Edges t1 t2 principal-lst))
-    )
-    ;;{F2}  [UEV]
-    (defun UEV_IdAsPrincipal (id:string for-trace:bool principals-lst:[string])
-        (let
-            (
-                (iz-principal:bool (contains id principals-lst))
-            )
-            (if for-trace
-                (enforce (or iz-principal (= id BAR)) (format "ID {} is not a valid principal for trace operations" [id]))
-                (enforce iz-principal (format "ID {} is not a principal" [id]))
-            )
-        )
-    )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
     ;;{F7}  [X]
-    (defun XE_MultiPathTracer (swpair:string principals-lst:[string])
+    (defun XE_UpdateGraph (swpair:string)
+        @doc "Records <swpair> in the adjacency graph: every token in <swpair> gets \
+            \ every OTHER token in <swpair> appended to its neighbour list (idempotent \
+            \ — safe to call more than once for the same swpair). Called once at \
+            \ issuance from both SWPI::C_Issue and the MTX-SWP defpact path."
         (UEV_IMC)
         (with-capability (SECURE)
-            (let
-                (
-                    (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                )
-                (map
-                    (lambda
-                        (token:string)
-                        (XI_SinglePathTracer token swpair principals-lst)
+            (XI_UpdateGraphForSwpair swpair)
+        )
+    )
+    (defun XI_UpdateGraphForSwpair (swpair:string)
+        (require-capability (SECURE))
+        (let*
+            (
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (tokens:[string] (ref-U|SWP::UC_TokensFromSwpairString swpair))
+                (n:integer (length tokens))
+            )
+            (map
+                (lambda (i:integer)
+                    (map
+                        (lambda (j:integer)
+                            (if (= i j)
+                                BAR
+                                (XI_UpdatePair (at i tokens) (at j tokens) swpair)
+                            )
+                        )
+                        (enumerate 0 (- n 1))
                     )
-                    (ref-U|SWP::UC_TokensFromSwpairString swpair)
                 )
+                (enumerate 0 (- n 1))
             )
         )
     )
-    (defun XI_SinglePathTracer (id:string swpair:string principals-lst:[string])
+    (defun XI_UpdatePair (from:string to:string swpair:string)
+        @doc "Adds <to> as a neighbour of <from> via <swpair>, creating the neighbour \
+            \ entry if this is the first connection between them, or appending \
+            \ <swpair> to the existing entry's swpairs list if not already present."
         (require-capability (SECURE))
-        (with-default-read SWPT|Tracer id
-            { "links" : NLE }
-            { "links" := lks }
-            (write SWPT|Tracer id
-                { "links" : (URC_PathTracer lks id swpair principals-lst)}
+        (let*
+            (
+                (existing:[object{SwapTracerV2.NeighbourEdge}] (UR_Graph from))
+                (idx:[integer] (UC_FindNeighbourIndex existing to))
+                (new-neighbours:[object{SwapTracerV2.NeighbourEdge}]
+                    (if (= (length idx) 0)
+                        (+ existing [{"token": to, "swpairs": [swpair]}])
+                        (let*
+                            (
+                                (i:integer (at 0 idx))
+                                (old-swpairs:[string] (at "swpairs" (at i existing)))
+                                (new-swpairs:[string]
+                                    (if (contains swpair old-swpairs)
+                                        old-swpairs
+                                        (+ old-swpairs [swpair])
+                                    )
+                                )
+                            )
+                            (+ (+ (take i existing) [{"token": to, "swpairs": new-swpairs}]) (drop (+ i 1) existing))
+                        )
+                    )
+                )
             )
+            (write SWPT|Graph from {"neighbours": new-neighbours})
         )
     )
     ;;
@@ -504,4 +376,4 @@
 
 (create-table P|T)
 (create-table P|MT)
-(create-table SWPT|Tracer)
+(create-table SWPT|Graph)

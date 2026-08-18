@@ -733,3 +733,58 @@ still succeeds end-to-end (real pool + LP token minted). Full suite: exit 0, 0 `
 
 **Status:** FIXED ✅ AND PROVEN ✅ — also closes H5/#23H's duplicate instance in this same function.
 Awaiting Round III re-verify.
+
+---
+
+## Fix #12 — H3 (#21H): SWPT redesigned as a principal-agnostic adjacency graph (SwapTracerV1 → V2)
+
+**Owner direction:** principals should be replace-only (never bare-removed), capped at 7. Working
+through what "replace" actually requires led to the real fix: principal-based partitioning of the
+Tracer served no remaining purpose once routing already operates over the full swpair universe
+(post-#13C/#19H) — it only added fragility (retiring principal's entries orphan on removal *or*
+replace) and real scaling cost (every read concatenates+dedupes every principal bucket). Full redesign,
+not a patch.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`, complete rewrite of the schema/table/functions
+section (governance/policy blocks unchanged):**
+- `SwapTracerV1` → `SwapTracerV2`. `Edges{principal, swpairs}` / `SWPT|Tracer` removed entirely.
+  New `NeighbourEdge{token, swpairs}` / `SWPT|Graph` — plain token adjacency, no principal anywhere.
+- `URC_TokenNeighbours`, `URC_Edges`, `URC_EdgesActive`, `URC_ComputeGraphPath`, `URC_AllGraphPaths`,
+  `URC_MakeGraph` all drop their `principal-lst` parameter — real interface simplification.
+- `URC_MakeGraph`'s #13C/#19H active-edge-filter logic and `URC_ComputeGraphPath`'s #20H empty-result
+  guard carry over structurally unchanged — only the underlying neighbour/edge lookup changed.
+- New `XE_UpdateGraph(swpair)` (replaces `XE_MultiPathTracer`): for every ordered pair of tokens in
+  the swpair, idempotently appends the swpair to each token's neighbour entry for the other.
+- New internal `XI_UpdateGraphForSwpair`/`XI_UpdatePair`, `UC_FindNeighbourIndex` helper.
+
+**`1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`:** `URCX_Hopper`, `URC_BestEdge`, `URC_BestEdgeFiltered`,
+`C_Issue` updated to the simplified `SwapTracerV2` calls (drop principal fetching/threading). New
+`A_RebuildGraph()` — one-time migration/backfill utility, walks `SWP::URC_Swpairs()` and calls
+`XE_UpdateGraph` for every existing pool, exactly mirroring what normal issuance already does. Deliberately
+placed here rather than in `SWPT` — `SWPT` deploys before `SWP` and can't hold a compile-time reference to
+`SwapperV3` (a real load failure caught this, not anticipated); `SWPI` already deploys after both. Wrapped
+in `(with-capability (P|SECURE-CALLER))` — a second real issue caught by testing: `XE_UpdateGraph`'s
+`UEV_IMC` check verifies the specific `P|SWPI|CALLER` capability is actively composed, not merely that the
+call originates from SWPI's module code; `C_Issue` satisfies it via its own cap chain, a bare
+`GOV|SWPI_ADMIN`-gated function does not.
+
+**`1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact`:** Step 3 updated to the simplified `XE_UpdateGraph` call.
+
+**Interface implication:** `SwapTracerV1` → `SwapTracerV2`, a real breaking signature change — but
+verified via full grep before starting that no other module's *interface* references `SwapTracerV1`
+(only internal `16_SWPI.pact`/`20_MTX-SWP.pact` function bodies do) — so `SwapperIssueV3` and
+`SwapperMtxV3` needed **zero** interface changes, only module-body updates.
+
+**Adversarially proven, live:**
+- Every prior #13C/#19H/#20H/#11C adversarial proof (`SWP|TX 026/028/029/030`) re-run against the full
+  redesign — byte-identical results to before the storage change.
+- New `SWP|TX 031`: ran `SWPI::A_RebuildGraph` against already-current state; confirmed a genuinely
+  non-empty real route (`OURO→AG`) is byte-identical before and after — proving the migration is safe
+  to re-run without duplicating or corrupting anything.
+- Full suite: exit 0, 0 `FAILURE`, `Load successful`, re-run clean after both fixes discovered mid-build
+  (the deploy-order failure, and the `UEV_IMC` capability-scope failure).
+
+**Status:** FIXED ✅ AND PROVEN ✅. The owner's separate "replace-only, capped at 7" policy layer on
+`SWP::A_UpdatePrincipal` is not yet built — no longer required to close #21H (orphaning is now
+structurally impossible regardless of remove vs. replace), but still wanted for operational discipline.
+Awaiting Round III re-verify.

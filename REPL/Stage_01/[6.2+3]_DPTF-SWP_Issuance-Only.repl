@@ -2703,6 +2703,56 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 031 - #21H Reproduction: SWPT Graph Redesign + Migration Idempotency")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 031 - #21H Reproduction · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [SWP|TX 031 - #21H Reproduction · 02 · let / invocation] ---")
+;;Audit ref: #21H — SWPT redesigned as a principal-agnostic adjacency graph
+;;(SwapTracerV2), replacing the old principal-keyed SWPT|Tracer storage that broke on
+;;principal removal/replacement. This confirms SWPI::A_RebuildGraph (the migration
+;;utility meant to backfill pools issued under the old architecture) is safe to run
+;;against already-current state: re-running it must not duplicate/corrupt anything,
+;;and routing must be byte-identical before and after — the same safety property that
+;;makes it safe to run exactly once, blind, immediately after a real mainnet upgrade.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ouro:string (ref-DALOS::UR_OuroborosID))
+        (ag:string "AG-98c486052a51")
+        ;;S|OURO|AG was deliberately left active by TX029 (only the chain past AG was
+        ;;disabled there, to test #20H's "some active nodes, target unreachable" case)
+        ;;so this is a genuinely non-trivial, non-empty result to prove idempotency
+        ;;against — not just "[] stays []" the way AG->CO would be at this point.
+        (before:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive ouro ag 10.0))
+    )
+    (ref-SWPI::A_RebuildGraph)
+    (let
+        (
+            (after:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive ouro ag 10.0))
+        )
+        (map print
+            [
+                (format "#21H proof — OURO->AG nodes before A_RebuildGraph: {}" [(at "nodes" before)])
+                (format "#21H proof — OURO->AG nodes after A_RebuildGraph:  {}" [(at "nodes" after)])
+                (expect "#21H fix — OURO->AG route is genuinely non-empty (proves this is a real, live check, not a trivial []=[] pass)" true (> (length (at "nodes" before)) 0))
+                (expect "#21H fix — A_RebuildGraph is idempotent: identical nodes before/after re-running it against already-current state" before after)
+            ]
+        )
+    )
+)
+(print "")
+(print "--- [SWP|TX 031 - #21H Reproduction · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 031 #21H Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
 (print "")
 (print "===================DPTF + SWP Issuance-Only FINISHED==========================")
 (print "")

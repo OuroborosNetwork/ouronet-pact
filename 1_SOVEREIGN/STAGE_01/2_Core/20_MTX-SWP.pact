@@ -885,10 +885,10 @@
                         (ref-BRD:module{BrandingV1} BRD)
                         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                         (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                        (ref-SWPT:module{SwapTracerV1} SWPT)
+                        ;;#21H: SWPT no longer needs a principal list.
+                        (ref-SWPT:module{SwapTracerV2} SWPT)
                         (ref-SWP:module{SwapperV3} SWP)
                         ;;
-                        (principals:[string] (ref-SWP::UR_Principals))
                         (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
                         (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
                         (lp-name-ticker:[string] (ref-SWP::URC_LpComposer pool-tokens weights amp))
@@ -904,7 +904,7 @@
                     (ref-TFT::C_MultiTransfer pool-token-ids account SWP|SC_NAME pool-token-amounts true)
                     (ref-DPTF::C_Mint token-lp SWP|SC_NAME 10000000.0 true)
                     (ref-TFT::C_Transfer token-lp SWP|SC_NAME account 10000000.0 true)
-                    (ref-SWPT::XE_MultiPathTracer swpair principals)
+                    (ref-SWPT::XE_UpdateGraph swpair)
                     (format "Swpair with ID {} and LP Token {} ID created succesfully" [swpair token-lp])
                 )
             )

@@ -672,8 +672,8 @@
             \ \
             \ #13C fix: previously this only kept swpairs directly touching \
             \ <input-id> or <output-id> (<=1 hop from either end), while \
-            \ <SWPT::URC_TokenNeighbours>/<URC_TokenSwpairs> read the FULL \
-            \ unrestricted <swpairs> for each node's links — a node envelope \
+            \ <SWPT::URC_TokenNeighbours> (post-#21H: reads SWPT|Graph directly) \
+            \ read the FULL unrestricted set for each node's links — a node envelope \
             \ narrower than the live edge-set, so BFS could expand into a token \
             \ with no <GraphNode> entry and corrupt/lose the chain. Building nodes \
             \ from the full <swpairs> list makes the envelope equal to the \

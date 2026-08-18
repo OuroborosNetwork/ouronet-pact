@@ -832,10 +832,10 @@
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-SWPT:module{SwapTracerV1} SWPT)
-                (ref-SWP:module{SwapperV3} SWP)
-                (principal-lst:[string] (ref-SWP::UR_Principals))
-                (nodes:[string] (ref-SWPT::URC_ComputeGraphPath hopper-input-id hopper-output-id swpairs principal-lst))
+                ;;#21H: SWPT no longer needs a principal list at all — the Tracer's
+                ;;storage is principal-agnostic (SwapTracerV2).
+                (ref-SWPT:module{SwapTracerV2} SWPT)
+                (nodes:[string] (ref-SWPT::URC_ComputeGraphPath hopper-input-id hopper-output-id swpairs))
             )
             (if (!= nodes [BAR])
                 (let
@@ -965,11 +965,10 @@
             \ swap-execution callers should use <URC_BestEdgeFiltered> instead."
         (let
             (
-                (ref-SWPT:module{SwapTracerV1} SWPT)
-                (ref-SWP:module{SwapperV3} SWP)
-                (principals:[string] (ref-SWP::UR_Principals))
+                ;;#21H: SWPT no longer needs a principal list.
+                (ref-SWPT:module{SwapTracerV2} SWPT)
             )
-            (URCX_BestEdgeOf ia i o (ref-SWPT::URC_Edges i o principals))
+            (URCX_BestEdgeOf ia i o (ref-SWPT::URC_Edges i o))
         )
     )
     (defun URC_BestEdgeFiltered:string (ia:decimal i:string o:string swpairs:[string])
@@ -979,11 +978,10 @@
             \ parallel pool exists between the same two tokens (#19H)."
         (let
             (
-                (ref-SWPT:module{SwapTracerV1} SWPT)
-                (ref-SWP:module{SwapperV3} SWP)
-                (principals:[string] (ref-SWP::UR_Principals))
+                ;;#21H: SWPT no longer needs a principal list.
+                (ref-SWPT:module{SwapTracerV2} SWPT)
             )
-            (URCX_BestEdgeOf ia i o (ref-SWPT::URC_EdgesActive i o principals swpairs))
+            (URCX_BestEdgeOf ia i o (ref-SWPT::URC_EdgesActive i o swpairs))
         )
     )
     ;;Value Computations
@@ -1454,6 +1452,38 @@
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]
+    (defun A_RebuildGraph ()
+        @doc "One-time migration/backfill utility (#21H). Rebuilds SWPT's adjacency \
+            \ graph (SwapTracerV2) from every currently-existing swpair \
+            \ (SWP::URC_Swpairs()), by calling SWPT::XE_UpdateGraph exactly as normal \
+            \ issuance already does — just once per EXISTING pool instead of once for \
+            \ a newly-issued one. Lives here rather than in SWPT itself because SWPT \
+            \ deploys before SWP in this codebase's deploy order and can't hold a \
+            \ compile-time reference to SwapperV3; SWPI already deploys after both and \
+            \ is already a legitimate XE_UpdateGraph caller (C_Issue uses the same \
+            \ call). XE_UpdateGraph's own writes are idempotent (XI_UpdatePair only \
+            \ appends a swpair if not already present), so this is safe to re-run — \
+            \ pools issued after this upgrade (which already populate the graph \
+            \ directly at issuance) are a no-op here. Intended to be run exactly once \
+            \ by an admin immediately after deploying the #21H architecture change, to \
+            \ backfill every pool that was issued under the old, now-removed \
+            \ principal-keyed SWPT|Tracer storage."
+        (with-capability (GOV|SWPI_ADMIN)
+            ;;XE_UpdateGraph's own UEV_IMC checks that P|SWPI|CALLER (the guard SWPI
+            ;;registers with SWPT via P|A_Define) is actively composed — true when
+            ;;reached via C_Issue's cap chain (SWPI|C>ISSUE -> P|DT), not true by
+            ;;default just because this code happens to live in SWPI's module.
+            (with-capability (P|SECURE-CALLER)
+                (let
+                    (
+                        (ref-SWP:module{SwapperV3} SWP)
+                        (ref-SWPT:module{SwapTracerV2} SWPT)
+                    )
+                    (map (lambda (sp:string) (ref-SWPT::XE_UpdateGraph sp)) (ref-SWP::URC_Swpairs))
+                )
+            )
+        )
+    )
     ;;{F6}  [C]
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
@@ -1467,7 +1497,8 @@
                     (ref-BRD:module{BrandingV1} BRD)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                    (ref-SWPT:module{SwapTracerV1} SWPT)
+                    ;;#21H: SWPT no longer needs a principal list.
+                    (ref-SWPT:module{SwapTracerV2} SWPT)
                     (ref-SWP:module{SwapperV3} SWP)
                     ;;
                     (kda-dptf-cost:decimal (ref-DALOS::UR_UsagePrice "dptf"))
@@ -1503,7 +1534,7 @@
                     ;;C9 fix: SWP|LP registration moved into SWP::XE_Issue itself (called just above via
                     ;;<swpair>'s own binding), so it's no longer a standalone call every issuance path has
                     ;;to remember separately — this call site used to be the only one that remembered it.
-                    (ref-SWPT::XE_MultiPathTracer swpair (ref-SWP::UR_Principals))
+                    (ref-SWPT::XE_UpdateGraph swpair)
                     (ref-IGNIS::KDA|C_Collect patron kda-costs)
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])
                 )
