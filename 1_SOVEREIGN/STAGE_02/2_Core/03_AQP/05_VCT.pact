@@ -1623,35 +1623,46 @@
     )
     ;; [URC] Whole-pool emptiness gate for finalize (audit H3 / fix #6)
     (defun URC_PoolFullyVacated:bool (pool-id:string)
-        @doc "True when EVERY employed score of the pool has nzs-count = 0 — i.e. no non-zero-score staker \
-            \ remains, so ALL streams (LP TF-leg + OF-leg) are empty. Bounded to ≤7 cross-module point reads \
-            \ (no scan). Gates finalize re-enabling stake. Exact once SCORE base floors at 0 (fix #7)."
+        @doc "#FP1 pool-empty oracle. AMOUNT pools (class 0/1, nns = -1): every employed score has nzs-count = 0 — \
+            \ amount stakes always score, so nzs is exact. NONCE pools (class 2/3/4): pool nns = 0 — the occupancy \
+            \ counter of staked nonce positions, which counts GHOST nonces (0-score assets) that nzs would miss, \
+            \ so a vacate can't finalize while ghost stake remains. Bounded point reads, no scan. Gates finalize."
         (let
             (
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 ;;
-                (slots:[string]
-                    [
-                        (ref-AQP::UR_AQP|PoolScorePrimary pool-id)
-                        (ref-AQP::UR_AQP|PoolScoreSecondary pool-id)
-                        (ref-AQP::UR_AQP|PoolScoreTertiary pool-id)
-                        (ref-AQP::UR_AQP|PoolScoreQuaternary pool-id)
-                        (ref-AQP::UR_AQP|PoolScoreQuinary pool-id)
-                        (ref-AQP::UR_AQP|PoolScoreSenary pool-id)
-                        (ref-AQP::UR_AQP|PoolScoreSeptenary pool-id)
-                    ]
-                )
+                (nns:integer (ref-AQP::UR_AQP|PoolNns pool-id))
             )
-            (fold (and) true
-                (map
-                    (lambda (score-id:string)
-                        (if (= score-id BAR)
-                            true
-                            (= (ref-SCR::UR_SCR|ScoreNzsCount score-id) 0)
+            (if (!= nns -1)
+                ;; nonce-based pool: occupancy oracle (ghost-safe)
+                (= nns 0)
+                ;; amount-based pool: nzs across the ≤7 employed scores
+                (let
+                    (
+                        (slots:[string]
+                            [
+                                (ref-AQP::UR_AQP|PoolScorePrimary pool-id)
+                                (ref-AQP::UR_AQP|PoolScoreSecondary pool-id)
+                                (ref-AQP::UR_AQP|PoolScoreTertiary pool-id)
+                                (ref-AQP::UR_AQP|PoolScoreQuaternary pool-id)
+                                (ref-AQP::UR_AQP|PoolScoreQuinary pool-id)
+                                (ref-AQP::UR_AQP|PoolScoreSenary pool-id)
+                                (ref-AQP::UR_AQP|PoolScoreSeptenary pool-id)
+                            ]
                         )
                     )
-                    slots
+                    (fold (and) true
+                        (map
+                            (lambda (score-id:string)
+                                (if (= score-id BAR)
+                                    true
+                                    (= (ref-SCR::UR_SCR|ScoreNzsCount score-id) 0)
+                                )
+                            )
+                            slots
+                        )
+                    )
                 )
             )
         )

@@ -25,6 +25,7 @@
     (defun UR_AQP|PoolScoreSeptenary:string (pool-id:string))
     (defun UR_AQP|PoolAqpId:string (pool-id:string))
     (defun UR_AQP|PoolStakeEnabled:bool (pool-id:string))
+    (defun UR_AQP|PoolNns:integer (pool-id:string))
     (defun UR_AQP|PoolSweepInProgress:bool (pool-id:string))
     (defun UR_AQP|PoolVacateSession:object (pool-id:string))
     (defun URH_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string))
@@ -345,6 +346,10 @@
         stake-enabled:bool                                      ;;[M]   Gates new stakes when false; default true at issue. Unstake/vacate ignore.
         vacate-in-progress:bool                                 ;;[M]   True while AQP-VCT session active on this pool.
         sweep-in-progress:bool                                  ;;[M]   True while a re-score sweep (anchor retire/re-price) runs; blocks stake + collect (D3).
+        nns:integer                                             ;;[M]   #FP1: number of OCCUPIED nonce positions in the pool tracker (occupancy oracle,
+        ;;                                                        counts ghost nonces that nzs misses). -1 for amount-based pools (class 0/1, N/A);
+        ;;                                                        0 at issue for nonce-based pools (class 2/3/4). +1 on a position going empty->occupied,
+        ;;                                                        -1 on occupied->empty (last amount removed). Finalize uses nns==0 for nonce pools.
         ;;
         ;;Select Keys
         aqp-id:string
@@ -880,7 +885,8 @@
     )
     (defun UDC_AQP|Schema:object{AQP|Schema}
         (aqp-class:integer asset-id:string aqp-id:string)
-        @doc "Default new pool row: all seven score slots BAR; aqp-id equals pool-id (table key)."
+        @doc "Default new pool row: all seven score slots BAR; aqp-id equals pool-id (table key). #FP1: nns \
+            \ starts -1 for amount-based pools (class 0/1, N/A) and 0 for nonce-based pools (class 2/3/4)."
         {"aqp-class"            : aqp-class
         ,"asset-id"             : asset-id
         ,"score-primary"        : BAR
@@ -893,6 +899,7 @@
         ,"stake-enabled"        : true
         ,"vacate-in-progress"   : false
         ,"sweep-in-progress"    : false
+        ,"nns"                  : (if (< aqp-class 2) -1 0)
         ,"aqp-id"               : aqp-id}
     )
     (defun UDC_AQP|SchemaWithScoreSlots:object{AQP|Schema}
@@ -989,6 +996,21 @@
         (require-capability (SECURE))
         (update AQP|T|Pool pool-id
             {"vacate-in-progress"   : vacate-in-progress}
+        )
+    )
+    (defun WU_Pool|Nns:string
+        (pool-id:string delta:integer)
+        @doc "#FP1: add <delta> to the pool nns occupancy counter. Defensive no-op on amount pools (nns=-1) — the \
+            \ nonce-tracker slot writers only call this for class 2/3/4, on a 0<->occupied position transition."
+        (require-capability (SECURE))
+        (let
+            (
+                (cur:integer (at "nns" (read AQP|T|Pool pool-id ["nns"])))
+            )
+            (if (= cur -1)
+                "nns N/A (amount pool)"
+                (update AQP|T|Pool pool-id {"nns" : (+ cur delta)})
+            )
         )
     )
     (defun WU7_Pool|ScoreSlots:string
@@ -1226,6 +1248,11 @@
     (defun UR_AQP|PoolStakeEnabled:bool (pool-id:string)
         @doc "Reads stake-enabled from pool row (true at issue; owner may disable to pause new stakes)."
         (at "stake-enabled" (read AQP|T|Pool pool-id ["stake-enabled"]))
+    )
+    (defun UR_AQP|PoolNns:integer (pool-id:string)
+        @doc "#FP1: reads the pool nns occupancy counter — -1 for amount pools (class 0/1); for nonce pools \
+            \ (class 2/3/4) the number of occupied nonce positions (0 = tracker empty, the finalize oracle)."
+        (at "nns" (read AQP|T|Pool pool-id ["nns"]))
     )
     (defun UR_AQP|PoolVacateInProgress:bool (pool-id:string)
         @doc "Point read: true while an AQP-VCT vacate session is active on this pool (audit H2 / fix #5)."
@@ -2877,6 +2904,9 @@
                     (WW_DPSFTracker pool-id collectable-id owner-id beneficiary-id nonce
                         (UDC_AQP|SemiFungibleTracker new-bal pool-id collectable-id owner-id beneficiary-id nonce)
                     )
+                    ;; #FP1: pool nns occupancy — +1 when this position goes empty->occupied, -1 on last-amount removal
+                    (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Nns pool-id 1)
+                        (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Nns pool-id -1) "no nns transition"))
                 )
                 (let
                     (
@@ -2886,6 +2916,9 @@
                     (WW_DPNFTracker pool-id collectable-id owner-id beneficiary-id nonce
                         (UDC_AQP|NonFungibleTracker new-bal pool-id collectable-id owner-id beneficiary-id nonce)
                     )
+                    ;; #FP1: pool nns occupancy — +1 when this position goes empty->occupied, -1 on last-amount removal
+                    (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Nns pool-id 1)
+                        (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Nns pool-id -1) "no nns transition"))
                 )
             )
             (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
@@ -3048,6 +3081,9 @@
             (WW_DPOFTracker pool-id dpof-id owner-id beneficiary-id nonce
                 (UDC_AQP|OrtoFungibleTracker new-bal pool-id dpof-id owner-id beneficiary-id nonce)
             )
+            ;; #FP1: pool nns occupancy — OF moves the whole nonce, so every move is a full 0<->occupied transition
+            (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Nns pool-id 1)
+                (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Nns pool-id -1) "no nns transition"))
             (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
         )
     )
