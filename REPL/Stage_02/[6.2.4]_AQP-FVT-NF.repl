@@ -132,6 +132,10 @@
                 (deb:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore beneficiary-id pool-id score-id))
                 (has-stake:bool (ref-AQP::URC_BenDpnfHasStake beneficiary-id dpnf-id))
                 (anc:integer (ref-AQP::UR_AQP|BenDpnfActiveNonceCount beneficiary-id dpnf-id))
+                (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                ;; #FP1: this staked nonce is a model-0 GHOST (UDC_NoMetaData => native score -1.0 => clamped 0).
+                (pool-nns:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                (score-nzs:integer (ref-SCR::UR_SCR|ScoreNzsCount score-id))
             )
             (map print
                 [
@@ -139,6 +143,13 @@
                     (expect (format "<<TX-FVT-NF-01>> tracker>0 got={}" [tracker]) true (> tracker 0.0))
                     (expect (format "<<TX-FVT-NF-01>> has-stake got={}" [has-stake]) true has-stake)
                     (expect (format "<<TX-FVT-NF-01>> active-nonce-count got={} expected=1" [anc]) 1 anc)
+                    ;; #FP1 GHOST PROOF: the nonce scores 0 (deb=0) so nzs MISSES it (nzs=0), but the pool nns
+                    ;; occupancy counter DOES count it (nns=1) — so the finalize oracle reports NOT empty, which
+                    ;; is exactly what prevents premature vacate finalization with ghost stake stranded.
+                    (expect (format "<<TX-FVT-NF-01 #FP1>> ghost deb = 0.0 got={}" [deb]) 0.0 deb)
+                    (expect (format "<<TX-FVT-NF-01 #FP1>> score nzs = 0 (ghost invisible to nzs) got={}" [score-nzs]) 0 score-nzs)
+                    (expect (format "<<TX-FVT-NF-01 #FP1>> pool nns = 1 (ghost counted by occupancy) got={}" [pool-nns]) 1 pool-nns)
+                    (expect (format "<<TX-FVT-NF-01 #FP1>> URC_PoolFullyVacated = false (nns>0 blocks premature finalize) got={}" [(ref-VCT::URC_PoolFullyVacated pool-id)]) false (ref-VCT::URC_PoolFullyVacated pool-id))
                 ]
             )
         )
@@ -298,12 +309,18 @@
                     (anc:integer (ref-AQP::UR_AQP|BenDpnfActiveNonceCount beneficiary-id dpnf-id))
                     (unclaimed:integer (ref-FVT::UR_FVT-RG|UnclaimedCount fvt-id ouro-id))
                     (post-supply:integer (ref-DPDC::UR_AccountNonceSupply owner-id dpnf-id false stake-nonce))
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                    (pool-nns-post:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                 )
                 (map print
                     [
                         (format "<(tracker/deb/has-stake/anc/supply)> => \"{} {} {} {} {}\"" [tracker-post deb-user has-stake anc post-supply])
                         (expect (format "<<TX-FVT-NF-03>> tracker cleared got={} expected=0" [tracker-post]) 0.0 tracker-post)
                         (expect (format "<<TX-FVT-NF-03>> deb-score cleared got={} expected=0" [deb-user]) 0.0 deb-user)
+                        ;; #FP1 DRAIN PROOF: unstaking the ghost drops the pool nns occupancy to 0 -> the pool is now
+                        ;; truly empty, so the finalize oracle flips to true (it stayed false while the ghost was in).
+                        (expect (format "<<TX-FVT-NF-03 #FP1>> pool nns = 0 after ghost drained got={}" [pool-nns-post]) 0 pool-nns-post)
+                        (expect (format "<<TX-FVT-NF-03 #FP1>> URC_PoolFullyVacated = true (ghost gone) got={}" [(ref-VCT::URC_PoolFullyVacated pool-id)]) true (ref-VCT::URC_PoolFullyVacated pool-id))
                         (expect (format "<<TX-FVT-NF-03>> has-stake false got={} expected=false" [has-stake]) false has-stake)
                         (expect (format "<<TX-FVT-NF-03>> active-nonce-count 0 got={} expected=0" [anc]) 0 anc)
                         (expect (format "<<TX-FVT-NF-03>> unclaimed-count 0 got={} expected=0" [unclaimed]) 0 unclaimed)

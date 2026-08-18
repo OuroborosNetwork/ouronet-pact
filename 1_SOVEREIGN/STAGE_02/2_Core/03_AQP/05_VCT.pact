@@ -8,6 +8,7 @@
         (pool-id:string asset-id:string vacate-kind:integer))
     ;;  [UR/URD] vacate inventory + vacate-in-progress observability (UI preflight)
     (defun UR_VacateInProgress:bool (pool-id:string))
+    (defun URC_PoolFullyVacated:bool (pool-id:string))
     (defun URH_VacateTfInventory:object (pool-id:string dptf-id:string))
     (defun URH_VacateOfInventory:object (pool-id:string dpof-id:string))
     (defun URH_VacateCollectableInventory:object (pool-id:string collectable-id:string son:bool))
