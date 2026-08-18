@@ -126,14 +126,21 @@ aggregate touched).
 > to the same receiver). The UI slices batches by unique owner (`UC_Vacate*LegsToBulkArrays` maps leg→owner
 > without aggregating). Same rule the v1 `CC_BatchVacate*` batches follow.
 
-> **STATUS — TF drain SHIPPED (commit `18e3e55`).** `CC_BatchDrainTrueFungible` + `XI_2|SettleBeneficiary
-> RewardsOnly` (the asset-agnostic Bank→Book→Checkpoint reward triple) + Talos `AQP-POOL|CC_BatchDrain
-> TrueFungible`, proven by `TX-VCT-DRAIN` (assets returned, `nns`/`unn`→0 with settle-on-last-drain, per-user
-> scores UNTOUCHED, pool never auto-finalizes). The settle helper is asset-agnostic; the **collectable/OF
-> drain** entrypoints (`CC_BatchDrainCollectable`, `CC_BatchDrainOrtoFungible`) are the identical shape with
-> the collectable/OF rollup + `WriteCollectableTrackerSlot`(dir=false) tracker-clear (no dedicated zero-writer
-> for OF/SF/NF) — the remaining Step-3 increment. Step 4 = `C_FinalizeVacate` nuke (generation bump + aggregate
-> zero) gated on `nns==0`.
+> **STATUS — Step 3 drain paths COMPLETE + runtime-proven for ALL asset families.** All reuse the
+> asset-agnostic `XI_2|SettleBeneficiaryRewardsOnly` (Bank→Book→Checkpoint reward triple), drop their
+> `XE_Apply*StakeDelta`, and never finalize:
+> - **TF** — `CC_BatchDrainTrueFungible` (`18e3e55`), proven by `TX-VCT-DRAIN` (15 assertions).
+> - **OF** — `CC_BatchDrainOrtoFungible` (`aee4a11` code / `f8bbcf6` test `TX-FVT-OF-DRAIN`, 7 assertions):
+>   tracker-clear only (no rollup/anchor).
+> - **Collectable (SF/NF)** — `CC_BatchDrainCollectable` (`aee4a11` / `4d5c577` test `TX-FVT-NF-DRAIN`, 9
+>   assertions): tracker-clear + per-leg rollup + per-leg anchor refresh (delta-based; verified the anchor
+>   refresh never writes the per-user deb, so it's safe before the last-drain Bank). Proven for a **ghost
+>   nonce** (0-score) — occupancy via `unn`, the #FP1 point `nzs` misses.
+>
+> Each drain returns assets, settles each beneficiary once when their `unn` hits 0, leaves per-user scores
+> UNTOUCHED (for the lazy generation-bump nuke), and keeps the pool FROZEN. A drain batch must carry unique
+> owners (bulk-transfer receivers). **Remaining: Step 4 = `C_FinalizeVacate` nuke** (bump each score's
+> `vacate-generation` + bulk-zero the ≤7 aggregates, gated on `nns==0`).
 
 **Phase B — FINALIZE (single gated defun).** `C_FinalizeVacate`: cap enforces `nns == 0` (all drained and,
 by §4, all users already settled). Body = bulk-zero the ≤7 aggregates + bump `vacate-generation` + clear
