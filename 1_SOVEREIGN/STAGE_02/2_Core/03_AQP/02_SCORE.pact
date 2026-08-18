@@ -25,6 +25,7 @@
     (defun UR_SCR|ScoreTotalBaseDebScore:decimal (score-id:string))
     (defun UR_SCR|ScoreTotalBoostedDebScore:decimal (score-id:string))
     (defun UR_SCR|ScoreNzsCount:integer (score-id:string))
+    (defun UR_SCR|ScoreVacateGeneration:integer (score-id:string))
     (defun UR_SCR|ScoreClass:integer (score-id:string))
     (defun UR_SCR|ScoreLpDenominator:string (score-id:string))
     (defun UR_SCR|ScoreMxFrozen:decimal (score-id:string))
@@ -291,6 +292,9 @@
         total-base-deb-score:decimal    ;;[M] M3: Σ user base-deb-scores (aggregate base×deb decomposition)
         total-boosted-deb-score:decimal ;;[M] M3: Σ user boosted-deb-scores. total-base-deb + total-boosted-deb = total-deb-score.
         nzs-count:integer           ;;[M]   Store the amount of Non-Zero-Scores
+        vacate-generation:integer   ;;[M]   Vacate-v2 lazy-invalidation counter (§5). Bumped once at fast-vacate
+        ;;                                  finalize (nuke). A SCR|T|UserScore row whose stamped-generation < this
+        ;;                                  reads as 0 (stale); re-stake stamps the current value. Default 0.
         ;;
         ;;Score Class
         score-class:integer         ;;[.]   Defines the Score Class, there are 5
@@ -329,6 +333,9 @@
         deb-score:decimal
         base-deb-score:decimal      ;;[M]  M3: base × deb (deb applied to the base part)
         boosted-deb-score:decimal   ;;[M]  M3: boost × deb (deb applied to the boost part). base-deb + boosted-deb = deb-score.
+        stamped-generation:integer  ;;[M]  Vacate-v2 (§5): the SCR|Schema.vacate-generation this row was written under.
+        ;;                                 When < the score's current vacate-generation, readers treat this row as 0
+        ;;                                 (stale after a fast-vacate); a fresh stake re-stamps it live. Default 0.
         ;;
         ;;Select Keys
         ouronet-account:string
@@ -1192,13 +1199,15 @@
     ;;
     ;; Early UDC: SCR|UserSchema constructor is required before UR_U-SCR|UserScore (with-default-read default object).
     (defun UDC_SCR|UserSchema:object{SCR|UserSchema}
-        (a:decimal b:decimal c:decimal c1:decimal c2:decimal d:string e:string f:string)
-        @doc "Core constructor for object{SCR|UserSchema}. c1=base-deb-score, c2=boosted-deb-score (M3)."
+        (a:decimal b:decimal c:decimal c1:decimal c2:decimal g:integer d:string e:string f:string)
+        @doc "Core constructor for object{SCR|UserSchema}. c1=base-deb-score, c2=boosted-deb-score (M3); \
+            \ g=stamped-generation (vacate-v2 §5)."
         {"base-score"           : a
         ,"boosted-score"        : b
         ,"deb-score"            : c
         ,"base-deb-score"       : c1
         ,"boosted-deb-score"    : c2
+        ,"stamped-generation"   : g
         ,"ouronet-account"      : d
         ,"pool-id"              : e
         ,"score-id"             : f}
@@ -1233,8 +1242,8 @@
     ;;
     ;;{F3}  [UDC] — schema / NF / SF constructors (after early UserSchema UDC)
     (defun UDC_SCR|Schema:object{SCR|Schema}
-        (a:string b:bool c:bool d:string e:string f:string g:string v:bool w:string h:bool i:integer j:decimal k:decimal l:decimal l1:decimal l2:decimal m:integer n:integer o:string p:decimal q:decimal r:decimal s:bool t:integer u:string)
-        @doc "Core constructor for object{SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers). l1=total-base-deb-score, l2=total-boosted-deb-score (M3)."
+        (a:string b:bool c:bool d:string e:string f:string g:string v:bool w:string h:bool i:integer j:decimal k:decimal l:decimal l1:decimal l2:decimal m:integer m2:integer n:integer o:string p:decimal q:decimal r:decimal s:bool t:integer u:string)
+        @doc "Core constructor for object{SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers). l1=total-base-deb-score, l2=total-boosted-deb-score (M3); m2=vacate-generation (vacate-v2 §5)."
         {"owner-konto"          : a
         ,"can-upgrade"          : b
         ,"can-change-owner"     : c
@@ -1252,6 +1261,7 @@
         ,"total-base-deb-score"    : l1
         ,"total-boosted-deb-score" : l2
         ,"nzs-count"            : m
+        ,"vacate-generation"    : m2
         ,"score-class"          : n
         ,"lp-denominator"       : o
         ,"mx-frozen"            : p
@@ -1606,6 +1616,10 @@
         @doc "Reads nzs-count from score row."
         (at "nzs-count" (read SCR|T|Score score-id ["nzs-count"]))
     )
+    (defun UR_SCR|ScoreVacateGeneration:integer (score-id:string)
+        @doc "Reads vacate-generation from score row (vacate-v2 §5 lazy-invalidation counter)."
+        (at "vacate-generation" (read SCR|T|Score score-id ["vacate-generation"]))
+    )
     (defun UR_SCR|ScoreClass:integer (score-id:string)
         @doc "Reads score-class from score row."
         (at "score-class" (read SCR|T|Score score-id ["score-class"]))
@@ -1643,16 +1657,17 @@
     (defun UR_U-SCR|UserScore:object{SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
         @doc "Reads full user score row from SCR|T|UserScore; absent rows read as zero weights via UDC default."
         (with-default-read SCR|T|UserScore (UCk_UserScore ouronet-account pool-id score-id)
-            (UDC_SCR|UserSchema 0.0 0.0 0.0 0.0 0.0 ouronet-account pool-id score-id)
+            (UDC_SCR|UserSchema 0.0 0.0 0.0 0.0 0.0 0 ouronet-account pool-id score-id)
             {"base-score"        := b
             ,"boosted-score"    := bb
             ,"deb-score"        := d
             ,"base-deb-score"   := bd
             ,"boosted-deb-score" := bbd
+            ,"stamped-generation" := g
             ,"ouronet-account"  := oa
             ,"pool-id"          := pid
             ,"score-id"         := sid}
-            (UDC_SCR|UserSchema b bb d bd bbd oa pid sid)
+            (UDC_SCR|UserSchema b bb d bd bbd g oa pid sid)
         )
     )
     (defun UR_U-SCR|UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string)
@@ -3066,7 +3081,7 @@
                     false BAR
                     false
                     precision
-                    0.0 0.0 0.0 0.0 0.0 0
+                    0.0 0.0 0.0 0.0 0.0 0 0
                     score-class lp-denominator mx-frozen mx-sleeping mx-hibernated
                     sft-equality nft-score-model
                     score-id
@@ -3596,6 +3611,9 @@
                         (at "new-user-deb-score" d)
                         (at "new-user-base-deb-score" d)
                         (at "new-user-boosted-deb-score" d)
+                        ;; vacate-v2 §5: stamp the row with the score's current vacate-generation. A later
+                        ;; fast-vacate bumps the score's generation, lazily invalidating this row until re-stake.
+                        (at "vacate-generation" scr)
                         ouronet-account
                         pool-id
                         score-id
