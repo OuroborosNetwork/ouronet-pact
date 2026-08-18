@@ -816,3 +816,29 @@ storage makes rotation harmless in practice, not just on paper. Confirmed a new 
 to the retired principal but can anchor to the new one. Full suite: exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #14 — H3/#21H second follow-up: re-allow removal with a 2-minimum floor, split rotate-into-self
+
+**Owner refinement:** rotate-into-self needs its own distinct enforce (not bundled), gated by the same
+admin capability as `A_UpdatePrincipal` (already true — verified, not assumed). Standalone removal
+should be re-allowed (safe now, post-#21H storage redesign) but never below 2 principals defined.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:**
+- `SWP|C>ROTATE-PRINCIPAL`: split the combined `fold (and) [...]` into two separate enforces — this
+  also fixes a convention violation (2 conditions should be `(enforce (and p q) msg)`, not `fold`).
+- `SWP|C>PRINCIPAL`: removal re-enabled, `(enforce (> current-count 2) ...)` on the remove path.
+  `(let () ...)` (empty bindings, for sequencing two enforces per `if` branch) isn't valid in this
+  parser — used `(and (enforce ...) (enforce ...))` instead.
+- `A_UpdatePrincipal`: removal write-logic restored (deleted as dead code in Fix #12, live again now
+  that the defcap conditionally allows it).
+- `1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact`: docstrings corrected.
+
+**Adversarially proven, live — `SWP|TX 033` rewritten:** drained 5 disposable test principals (7 → 2,
+never touching the 2 genesis principals other tests need), proving removal works; removing `OURO` at
+count=2 correctly rejected; restored to 7. Floor guard reverted (`> 0`) and reconfirmed the same removal
+unexpectedly succeeds pre-fix; restored, reconfirmed rejected. Full suite: exit 0, 0 `FAILURE`,
+`Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

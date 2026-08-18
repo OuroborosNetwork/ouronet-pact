@@ -2784,36 +2784,44 @@
 (env-sigs [])
 (commit-tx)
 ;;|| NEXT >
-(begin-tx "SWP|TX 033 - Principal Cap + Standalone-Removal Reproduction")
+(begin-tx "SWP|TX 033 - Principal Cap + Removal-Floor Reproduction")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(print "--- [SWP|TX 033 - Principal Cap/Removal Reproduction · 01 · env-sigs (caps)] ---")
+(print "--- [SWP|TX 033 - Principal Cap/Removal-Floor Reproduction · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
-(print "--- [SWP|TX 033 - Principal Cap/Removal Reproduction · 02 · let / invocation] ---")
-;;Audit ref: #21H design — 7 is a hard cap (8th add rejected); standalone removal is permanently
-;;disabled (only SWP|A_RotatePrincipal may retire a principal).
+(print "--- [SWP|TX 033 - Principal Cap/Removal-Floor Reproduction · 02 · let / invocation] ---")
+;;Audit ref: owner refinement — removal is allowed again (SWPT's storage is principal-agnostic,
+;;#21H, so removal itself is safe), but must never drop below 2 principals defined. Drains all 5
+;;test-only principals from TX032 (7 -> 2, using only disposable test tokens — SilverStoa/OURO,
+;;the 2 genesis principals other tests depend on, are never touched) to prove removal genuinely
+;;works, then proves the floor blocks going lower, then restores all 5 back to 7 so TX034/035's
+;;setup (which needs HG present as a principal) is unaffected by this test having run.
 (let
     (
         (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-SWP:module{SwapperV3} SWP)
         (eighth:string "RE-98c486052a51")
-        (existing:string "PD-98c486052a51")
+        (test-principals:[string]
+            [ "PD-98c486052a51" "OS-98c486052a51" "IR-98c486052a51" "PT-98c486052a51" "HG-98c486052a51" ]
+        )
+        (ouro:string "OURO-98c486052a51")
     )
-    (map print
-        [
-            (expect-failure
-                "Principal cap fix — an 8th principal is rejected (7 maximum already defined)"
-                (ref-TS01-A::SWP|A_UpdatePrincipal eighth true)
-            )
-            (expect-failure
-                "#21H design — standalone removal (add-or-remove=false) is unconditionally rejected"
-                (ref-TS01-A::SWP|A_UpdatePrincipal existing false)
-            )
-        ]
-    )
+    (print (expect-failure
+        "Principal cap fix — an 8th principal is rejected (7 maximum already defined)"
+        (ref-TS01-A::SWP|A_UpdatePrincipal eighth true)
+    ))
+    (map (lambda (p:string) (ref-TS01-A::SWP|A_UpdatePrincipal p false)) test-principals)
+    (print (format "Removal-floor proof — count after draining all 5 test principals (7 -> 2): {}" [(length (ref-SWP::UR_Principals))]))
+    (print (expect-failure
+        "Removal-floor fix — removing below 2 principals is rejected, even a genuine genesis principal (OURO)"
+        (ref-TS01-A::SWP|A_UpdatePrincipal ouro false)
+    ))
+    (map (lambda (p:string) (ref-TS01-A::SWP|A_UpdatePrincipal p true)) test-principals)
+    (print (format "Removal-floor proof — count after restoring all 5 (2 -> 7): {}" [(length (ref-SWP::UR_Principals))]))
 )
 (print "")
-(print "--- [SWP|TX 033 - Principal Cap/Removal Reproduction · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 033 Principal Cap/Removal Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "--- [SWP|TX 033 - Principal Cap/Removal-Floor Reproduction · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 033 Principal Cap/Removal-Floor Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)

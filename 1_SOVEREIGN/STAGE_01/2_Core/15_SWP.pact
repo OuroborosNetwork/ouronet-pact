@@ -528,11 +528,13 @@
         )
     )
     (defcap SWP|C>PRINCIPAL (principal:string add-or-remove:bool)
-        @doc "#21H design decision: standalone principal removal is permanently \
-            \ disabled — a principal can only be added (while under the 7 maximum) \
-            \ or retired via A_RotatePrincipal, never bare-removed. <add-or-remove> \
-            \ stays in the signature for interface stability but must always be \
-            \ <true>; passing <false> always aborts."
+        @doc "Adds are capped at 7 total and must not duplicate an existing \
+            \ principal. Removes must leave at least 2 principals defined — SWPT's \
+            \ storage is principal-agnostic (#21H), so removal itself is safe; the \
+            \ floor exists so issuance-time principal-anchoring validation \
+            \ (SWPI::UEV_Issue) always has somewhere real to anchor a new W/P pool. \
+            \ Gated by the same GOV|SWP_ADMIN admin capability as \
+            \ SWP|C>ROTATE-PRINCIPAL."
         @event
         (let
             (
@@ -541,16 +543,28 @@
                 (current-count:integer (if (= current [BAR]) 0 (length current)))
             )
             (ref-DPTF::UEV_id principal)
-            (enforce add-or-remove "Standalone principal removal is disabled — use A_RotatePrincipal to retire a principal")
-            (enforce (not (contains principal current)) (format "{} is already a principal" [principal]))
-            (enforce (< current-count 7) (format "Cannot add principal — {} of 7 maximum already defined" [current-count]))
+            (if add-or-remove
+                (and
+                    (enforce (not (contains principal current)) (format "{} is already a principal" [principal]))
+                    (enforce (< current-count 7) (format "Cannot add principal — {} of 7 maximum already defined" [current-count]))
+                )
+                (and
+                    (enforce (contains principal current) (format "{} is not currently a principal" [principal]))
+                    (enforce (> current-count 2) (format "Cannot remove principal — at least 2 must remain defined ({} currently)" [current-count]))
+                )
+            )
             (compose-capability (GOV|SWP_ADMIN))
         )
     )
     (defcap SWP|C>ROTATE-PRINCIPAL (old:string new:string)
-        @doc "Validates an atomic principal replacement: <old> must currently be a \
-            \ principal, <new> must not already be one, and they must differ. \
-            \ Count-preserving — never interacts with the 7-principal cap."
+        @doc "Validates an atomic principal replacement. Each rejection reason gets \
+            \ its own distinct enforce, not a combined boolean, since they're \
+            \ separate concerns with separate causes: <old> must currently be a \
+            \ principal, <new> must not already be one, and rotating a principal \
+            \ into itself is never allowed regardless of whether it's already a \
+            \ principal (it always would be, since <old> = <new>). Count-preserving \
+            \ — never interacts with the 7-principal cap. Gated by the same \
+            \ GOV|SWP_ADMIN admin capability as SWP|C>PRINCIPAL."
         @event
         (let
             (
@@ -560,7 +574,8 @@
             )
             (ref-DPTF::UEV_id new)
             (ref-U|LST::UEV_StringPresence old current)
-            (enforce (fold (and) true [(!= old new) (not (contains new current))]) (format "Cannot rotate {} into {} — already a principal, or rotating into itself" [old new]))
+            (enforce (!= old new) "Cannot rotate a principal into itself")
+            (enforce (not (contains new current)) (format "{} is already a principal" [new]))
             (compose-capability (GOV|SWP_ADMIN))
         )
     )
@@ -1181,10 +1196,12 @@
     ;;
     ;;{F5}
     (defun A_UpdatePrincipal (principal:string add-or-remove:bool)
-        @doc "Adds <principal> to the principal list, while under the 7 maximum. \
-            \ <add-or-remove> must always be <true> — SWP|C>PRINCIPAL rejects \
-            \ <false> unconditionally; standalone removal is disabled (#21H design \
-            \ decision). To retire a principal, use A_RotatePrincipal instead."
+        @doc "Adds <principal> (while under the 7 maximum) or removes it (while at \
+            \ least 2 would remain defined). SWPT's storage is principal-agnostic \
+            \ (#21H), so removal is safe — it only affects future \
+            \ SWPI::UEV_Issue principal-anchoring validation, never existing \
+            \ routing. A_RotatePrincipal remains available as an atomic, \
+            \ count-preserving alternative that never touches the floor or cap."
         (UEV_IMC)
         (let
             (
@@ -1193,12 +1210,22 @@
             (with-read SWP|Properties SWP|INFO
                 { "principals" := pp }
                 (with-capability (SWP|C>PRINCIPAL principal add-or-remove)
-                    (if (= pp [BAR])
-                        (update SWP|Properties SWP|INFO
-                            {"principals" : [principal]}
+                    (if add-or-remove
+                        (if (= pp [BAR])
+                            (update SWP|Properties SWP|INFO
+                                {"principals" : [principal]}
+                            )
+                            (update SWP|Properties SWP|INFO
+                                {"principals" : (ref-U|LST::UC_AppL pp principal)}
+                            )
                         )
-                        (update SWP|Properties SWP|INFO
-                            {"principals" : (ref-U|LST::UC_AppL pp principal)}
+                        (let
+                            (
+                                (pp-position:integer (at 0 (ref-U|LST::UC_Search pp principal)))
+                            )
+                            (update SWP|Properties SWP|INFO
+                                {"principals" : (ref-U|LST::UC_RemoveItem pp (at pp-position pp))}
+                            )
                         )
                     )
                 )

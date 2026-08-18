@@ -1161,3 +1161,44 @@ way to retire a principal is a new atomic rotate.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #13. Awaiting Round III re-verify.
 
 ---
+
+## H3/#21H second follow-up — removal re-allowed with a 2-minimum floor; rotate-into-self split out — **BUILT AND PROVEN**
+
+**Owner refinement to Fix #13's policy:** rotating a principal into itself must be its own explicit,
+distinct rejection (not bundled with the "already exists" check) and gated by the same module-admin
+capability as `A_UpdatePrincipal` — verified this was already true (`SWP|C>ROTATE-PRINCIPAL` already
+composed `GOV|SWP_ADMIN`, identical to `SWP|C>PRINCIPAL`), but the two conditions were combined into one
+`fold (and) [...]` enforce, which also violated this codebase's own 2-condition convention
+(`(enforce (and p q) msg)`, not `fold`, for exactly 2 booleans) — split into two separate, clearly-
+messaged enforces. Separately: standalone removal should be **re-allowed** — since #21H's storage
+redesign already makes removal harmless (`SWPT` is principal-agnostic, nothing orphans), the earlier
+"replace-only" restriction was pure caution that's no longer warranted — but must never drop the count
+below 2, so `SWPI::UEV_Issue`'s principal-anchoring validation always has somewhere real to anchor a new
+pool.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:**
+- `SWP|C>ROTATE-PRINCIPAL`: split the combined `fold` into two distinct enforces —
+  `(enforce (!= old new) "Cannot rotate a principal into itself")` and a separate "already a principal"
+  check.
+- `SWP|C>PRINCIPAL`: removal path re-enabled, gated by `(enforce (> current-count 2) ...)` — current
+  count must exceed 2 for a removal to be allowed (leaving at least 2). Pact's parser rejected
+  `(let () ...)` for sequencing two enforces per `if` branch (empty binding lists aren't valid here) —
+  used `(and (enforce ...) (enforce ...))` instead, which sequences correctly since `enforce` returns
+  `true` on success and aborts the whole transaction on failure either way.
+- `A_UpdatePrincipal`: removal logic restored (was deleted as "dead code" in Fix #12 when removal was
+  still permanently blocked) — the old empty-list special case (`pp = [BAR]`) is no longer reachable
+  since the 2-minimum floor guarantees the list can never empty out via this path.
+- `1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact`: both `SWP|A_UpdatePrincipal`/`SWP|A_RotatePrincipal`
+  docstrings corrected (no longer claim removal is disabled).
+
+**Adversarially proven, live — `SWP|TX 033` rewritten:** drained all 5 disposable test principals from
+Fix #13's setup (7 → 2, touching only test-only tokens — the 2 genesis principals other tests depend on,
+`OURO`/`SilverStoa`, are never removed), proving removal genuinely works now; attempted removing `OURO`
+at count=2 — correctly rejected by the floor; restored all 5 back to 7 so the later rotation test's setup
+(`HG` needs to still be a principal) is unaffected. Floor guard reverted (loosened to `> 0`) and
+reconfirmed the same `OURO`-at-count-2 removal unexpectedly succeeds pre-fix; restored, reconfirmed
+rejected. Full suite: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #14. Awaiting Round III re-verify.
+
+---
