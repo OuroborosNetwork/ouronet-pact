@@ -1756,6 +1756,53 @@
 (commit-tx)
 (print "=== END TX-VCT-RESUME-C =====================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-VCT-GASBOUND - #FP2 Gap 1: vacate gas-max backstop (URC_*GasOk boundaries)")
+(print "")
+(print "=== TX-VCT-GASBOUND — #FP2: vacate slice caps enforced (= max accepted, > max REJECTED) ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; #FP2 Gap 1 (backstop): the vacate caps fold URC_TfOwnerArraysGasOk / URC_BatchOwnerArraysGasOk to reject any
+;; batch exceeding the per-tx slice cap (VACATE-GAS-MAX-*). Pure array checks -> tested directly at the boundary,
+;; reading the ACTUAL constants so a calibration change is caught. These caps are conservative placeholders: the
+;; UI sizes real vacate slices to them (simulate + construct) and the chain enforces them as a hard ceiling.
+(let
+    (
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (tf:integer AQP-VCT.VACATE-GAS-MAX-TF)
+        (of:integer AQP-VCT.VACATE-GAS-MAX-OF)
+        (sf:integer AQP-VCT.VACATE-GAS-MAX-DPSF)
+        (nf:integer AQP-VCT.VACATE-GAS-MAX-DPNF)
+    )
+    (map print
+        [
+            (format "<(gas-max TF/OF/SF/NF)> => {} {} {} {}" [tf of sf nf])
+            ;; TF — caps the LEG count
+            (expect (format "<<TX-VCT-GASBOUND TF>> {} legs (= max) accepted" [tf]) true (ref-VCT::URC_TfOwnerArraysGasOk (make-list tf "o") (make-list tf "b") (make-list tf 1.0)))
+            (expect (format "<<TX-VCT-GASBOUND TF>> {} legs (> max) REJECTED" [(+ tf 1)]) false (ref-VCT::URC_TfOwnerArraysGasOk (make-list (+ tf 1) "o") (make-list (+ tf 1) "b") (make-list (+ tf 1) 1.0)))
+            (expect "<<TX-VCT-GASBOUND TF>> owner/ben length mismatch REJECTED" false (ref-VCT::URC_TfOwnerArraysGasOk (make-list tf "o") (make-list (- tf 1) "b") (make-list tf 1.0)))
+            (expect "<<TX-VCT-GASBOUND TF>> empty batch REJECTED" false (ref-VCT::URC_TfOwnerArraysGasOk [] [] []))
+            ;; OF / SF / NF — cap the TOTAL nonce count across owner rows
+            (expect (format "<<TX-VCT-GASBOUND OF>> {} nonces (= max) accepted" [of]) true (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 of)] of))
+            (expect (format "<<TX-VCT-GASBOUND OF>> {} nonces (> max) REJECTED" [(+ of 1)]) false (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 (+ of 1))] of))
+            (expect (format "<<TX-VCT-GASBOUND SF>> {} nonces (= max) accepted" [sf]) true (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 sf)] sf))
+            (expect (format "<<TX-VCT-GASBOUND SF>> {} nonces (> max) REJECTED" [(+ sf 1)]) false (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 (+ sf 1))] sf))
+            (expect (format "<<TX-VCT-GASBOUND NF>> {} nonces (= max) accepted" [nf]) true (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 nf)] nf))
+            (expect (format "<<TX-VCT-GASBOUND NF>> {} nonces (> max) REJECTED" [(+ nf 1)]) false (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 (+ nf 1))] nf))
+            ;; batch shape validations + total-not-rows semantics
+            (expect "<<TX-VCT-GASBOUND Batch>> owner/ben length mismatch REJECTED" false (ref-VCT::URC_BatchOwnerArraysGasOk ["o" "o2"] ["b"] [[1] [2]] of))
+            (expect "<<TX-VCT-GASBOUND Batch>> zero nonces REJECTED" false (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [[]] of))
+            (expect (format "<<TX-VCT-GASBOUND Batch>> total {}>max across 2 rows REJECTED (caps TOTAL not rows)" [(+ of 1)]) false (ref-VCT::URC_BatchOwnerArraysGasOk ["o" "o2"] ["b" "b2"] [(enumerate 1 of) [1]] of))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-GASBOUND =====================================================")
+(print "")
 (print "=== END FILE [6.2.5]_AQP-VCT.repl ============================================")
 ;;
 ;;GAS> VCT batch-vacate gas suites — profiling only (need the VCTGAS probe module + synth accounts).

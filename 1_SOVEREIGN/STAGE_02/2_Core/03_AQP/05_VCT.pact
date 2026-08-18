@@ -9,6 +9,8 @@
     ;;  [UR/URD] vacate inventory + vacate-in-progress observability (UI preflight)
     (defun UR_VacateInProgress:bool (pool-id:string))
     (defun URC_PoolFullyVacated:bool (pool-id:string))
+    (defun URC_TfOwnerArraysGasOk:bool (owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
+    (defun URC_BatchOwnerArraysGasOk:bool (owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] gas-max:integer))
     (defun URH_VacateTfInventory:object (pool-id:string dptf-id:string))
     (defun URH_VacateOfInventory:object (pool-id:string dpof-id:string))
     (defun URH_VacateCollectableInventory:object (pool-id:string collectable-id:string son:bool))
