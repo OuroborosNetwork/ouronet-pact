@@ -89,9 +89,13 @@
                         [y0]
                         (enumerate 0 10)
                     )
-                )        
+                )
             )
-            (- xo (floor (ref-U|LST::UC_LE output-lst) o-prec))
+            ;;C3 fix: floor the FINAL output, not the intermediate solved balance. Flooring <Y> before
+            ;;subtracting it from <xo> made <output> systematically LARGER than the exact invariant value
+            ;;(favoring the trader); flooring the final <xo - Y> instead rounds what's actually paid out
+            ;;down, favoring the pool, matching the Curve reference convention.
+            (floor (- xo (ref-U|LST::UC_LE output-lst)) o-prec)
         )
     )
     (defun UC_ComputeInverseY
@@ -137,9 +141,13 @@
                         [y0]
                         (enumerate 0 10)
                     )
-                )   
+                )
             )
-            (- (floor (ref-U|LST::UC_LE output-lst) i-prec) xi)
+            ;;C3 fix: ceiling the FINAL input-needed, not the intermediate solved balance. Flooring <Y>
+            ;;before subtracting <xi> made <input-needed> systematically SMALLER than the exact invariant
+            ;;value (favoring the trader); ceiling-ing the final <Y - xi> instead rounds what's actually
+            ;;required in up, favoring the pool.
+            (ceiling (- (ref-U|LST::UC_LE output-lst) xi) i-prec)
         )
     )
     (defun UC_YNext (Y:decimal A:decimal D:decimal n:decimal S-Prime:decimal P-Prime:decimal)
@@ -163,10 +171,13 @@
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (prec:integer 24)
                 (n1:decimal (+ 1.0 n))
-                (nn:decimal (^ n n))
-                (c:decimal (floor (/ (^ D n1) (fold (*) 1.0 [nn P-Prime A nn])) prec))
+                ;;C3 fix: <n>/<n1>/<Y^2> are always whole-number powers — use exact UC_IntPow / plain
+                ;;multiplication, not native <^> (see UC_IntPow @doc for why <^> isn't safe here).
+                (ni:integer (round n))
+                (nn:decimal (UC_IntPow n ni))
+                (c:decimal (floor (/ (UC_IntPow D (+ ni 1)) (fold (*) 1.0 [nn P-Prime A nn])) prec))
                 (b:decimal (floor (+ S-Prime (/ D (* A nn))) prec))
-                (Ysq:decimal (^ Y 2.0))
+                (Ysq:decimal (* Y Y))
                 (numerator:decimal (floor (+ Ysq c) prec))
                 (denominator:decimal (floor (- (+ (* Y 2.0) b) D) prec))
             )
@@ -190,6 +201,17 @@
             \ Denominator = 2*Y + b - D \
             \ YNext = Numerator / Denominator"
         (UC_YNext Y A D n S-Prime P-Prime)
+    )
+    (defun UC_IntPow:decimal (base:decimal power:integer)
+        @doc "Computes <base>^<power> for a non-negative INTEGER <power> via exact repeated multiplication. \
+            \ C3 fix: Pact's native <^> silently drops to IEEE-754 double precision for decimal \
+            \ exponentiation (confirmed empirically — a ~2550.0 base raised to a whole-number power via \
+            \ <^> differs from the exact repeated-multiplication result by ~1e-2 in absolute terms), which \
+            \ was the true source of the stable-pool round-trip rounding bias, not the floor/ceiling \
+            \ placement. Use this instead of <^> everywhere the exponent is a whole number (token-count- \
+            \ derived powers); genuinely fractional exponents (weighted-pool <x^weight>) still route \
+            \ through native <^> and are NOT fixed by this helper."
+        (fold (*) 1.0 (make-list power base))
     )
     (defun UC_ComputeD:decimal (A:decimal X:[decimal])
         @doc "Computes D Parameter given an amplifier <A> and a value of Pool Tokens \
@@ -233,8 +255,10 @@
                 (S:decimal (fold (+) 0.0 X))
                 (P:decimal (floor (fold (*) 1.0 X) prec))
                 (n1:decimal (+ 1.0 n))
-                (nn:decimal (^ n n))
-                (Dp:decimal (floor (/ (^ D n1) (* nn P)) prec))
+                ;;C3 fix: <n>/<n1> are always whole numbers (token count / +1) — use exact UC_IntPow,
+                ;;not native <^>, which silently loses precision through a float64 path (see UC_IntPow @doc).
+                (nn:decimal (UC_IntPow n (length X)))
+                (Dp:decimal (floor (/ (UC_IntPow D (+ (length X) 1)) (* nn P)) prec))
                 ;;
                 (v1:decimal (floor (fold (*) 1.0 [A nn S]) prec))
                 (v2:decimal (* Dp n))
@@ -250,6 +274,22 @@
         )
     )
     ;;W - Weigthed Constant Product Pools Computations
+    ;;
+    ;;KNOWN, ACCEPTED LIMITATION (C3, weighted-pool residual — see Audit/SWP/ROUND-02-FIXES.md Fix #3):
+    ;;<x^weight> below routes through Pact's native <^>, which computes decimal exponentiation via
+    ;;IEEE-754 double precision internally (confirmed empirically: a ~2550.0 base raised to a whole-number
+    ;;power via <^> differs from the exact repeated-multiplication result by ~1e-2 absolute) — unlike
+    ;;+/-/*// on Pact decimals, which genuinely are exact/arbitrary-precision. <UC_IntPow> works around
+    ;;this for the STABLE-pool math (UC_ComputeD/UC_YNext), which only ever needs whole-number exponents.
+    ;;It cannot work around this here: <weight> is a genuine fraction (e.g. 0.3), so this needs a real
+    ;;fractional power, and no exact-multiplication trick exists for that in pure Pact. Fixing this fully
+    ;;would mean writing a from-scratch high-precision power routine (Newton's method / power series) —
+    ;;assessed and explicitly declined as disproportionate to the residual risk: the resulting bias scales
+    ;;with float64's ~1e-16 *relative* precision times the magnitude of the numbers involved, is many
+    ;;orders of magnitude below anything resembling pool insolvency, stays internally consistent (the same
+    ;;computed value backs both the transfer and the tracked-reserve update), and for realistic (non-24-
+    ;;decimal) token precisions is routinely swallowed entirely by the final settlement-precision rounding.
+    ;;Accepted as a bounded, documented limitation of the underlying language, not tracked as an open bug.
     (defun UC_ComputeWP
         (drsi:object{UtilitySwpV1.DirectRawSwapInput})
         @doc "Swapping 100A for y amount of C >> Equation in a weighted constant product pool: \
@@ -277,9 +317,14 @@
                 (ow:decimal (at op w))
                 (inverse-ow:decimal (floor (/ 1.0 ow) 24))
                 (output-missing-term-raised:decimal (floor (/ pool-product rm-output-raised-multiplied) 24))
-                (output-missing-term:decimal (floor (^ output-missing-term-raised inverse-ow) o-prec))
+                ;;C3 fix: keep this intermediate at internal precision (24), not <o-prec> — the final
+                ;;<output> rounding happens once, below, on the actual amount paid out.
+                (output-missing-term:decimal (floor (^ output-missing-term-raised inverse-ow) 24))
             )
-            (- (at op X) output-missing-term)
+            ;;C3 fix: floor the FINAL output, not the intermediate missing-term. Flooring the missing-term
+            ;;before subtracting it from <X[op]> made <output> systematically larger than the exact
+            ;;invariant value (favoring the trader); flooring the final subtraction favors the pool.
+            (floor (- (at op X) output-missing-term) o-prec)
         )
     )
     (defun UC_ComputeInverseWP
@@ -309,9 +354,15 @@
                 (iw:decimal (at ip w))
                 (inverse-iw:decimal (floor (/ 1.0 iw) 24))
                 (input-missing-term-raised:decimal (floor (/ pool-product rm-input-raised-multiplied) 24))
-                (input-missing-term:decimal (floor (^ input-missing-term-raised inverse-iw) i-prec))
+                ;;C3 fix: keep this intermediate at internal precision (24), not <i-prec> — the final
+                ;;<input-needed> rounding happens once, below, on the actual amount required in.
+                (input-missing-term:decimal (floor (^ input-missing-term-raised inverse-iw) 24))
             )
-            (- input-missing-term (at ip X))
+            ;;C3 fix: ceiling the FINAL input-needed, not the intermediate missing-term. Flooring the
+            ;;missing-term before subtracting <X[ip]> made <input-needed> systematically smaller than the
+            ;;exact invariant value (favoring the trader); ceiling-ing the final subtraction favors the
+            ;;pool.
+            (ceiling (- input-missing-term (at ip X)) i-prec)
         )
     )
     ;;W - Equal Weight Constant Product Pools Computations
@@ -334,12 +385,14 @@
                 (added-supplies:[decimal] (UC_AddSupply X input-amounts ip))
                 (rm-output:[decimal] (ref-U|LST::UC_RemoveItemAt added-supplies op))
                 (rm-output-multiplied:decimal (floor (fold (*) 1.0 rm-output) 24))
-                (output-missing-term:decimal (floor (/ pool-product rm-output-multiplied) o-prec))
+                ;;C3 fix: keep this intermediate at internal precision (24), not <o-prec> — see UC_ComputeY.
+                (output-missing-term:decimal (floor (/ pool-product rm-output-multiplied) 24))
             )
-            (- (at op X) output-missing-term)
+            ;;C3 fix: floor the FINAL output, not the intermediate missing-term (see UC_ComputeWP).
+            (floor (- (at op X) output-missing-term) o-prec)
         )
     )
-    (defun UC_ComputeInverseEP:decimal 
+    (defun UC_ComputeInverseEP:decimal
         (irsi:object{UtilitySwpV1.InverseRawSwapInput})
         @doc "How Much A is needed to get 100C >> Equation in an equal weight constant product pool: \
             \ xA * xB * xC * xD = (xA + y) * xB * (xC - 100) * xD \
@@ -358,9 +411,11 @@
                 (removed-supplies:[decimal] (UC_RemoveSupply X output-amount op))
                 (rm-input:[decimal] (ref-U|LST::UC_RemoveItemAt removed-supplies ip))
                 (rm-input-multiplied:decimal (floor (fold (*) 1.0 rm-input) 24))
-                (input-missing-term:decimal (floor (/ pool-product rm-input-multiplied) i-prec))
+                ;;C3 fix: keep this intermediate at internal precision (24), not <i-prec> — see UC_ComputeInverseWP.
+                (input-missing-term:decimal (floor (/ pool-product rm-input-multiplied) 24))
             )
-            (- input-missing-term (at ip X))
+            ;;C3 fix: ceiling the FINAL input-needed, not the intermediate missing-term (see UC_ComputeInverseWP).
+            (ceiling (- input-missing-term (at ip X)) i-prec)
         )
     )
     ;;LP Computations
@@ -610,22 +665,26 @@
         )
     )
     (defun UC_MakeGraphNodes:[string] (input-id:string output-id:string swpairs:[string])
-        @doc "Given an <input-id> and <output-id>, creates a list of ids: \
-            \ Representing the nodes of the graph. \
-            \ Uses 2 Steps: \
+        @doc "Builds the BFS node set as every token appearing across the FULL \
+            \ passed-down <swpairs> list (the caller is expected to already have \
+            \ narrowed <swpairs> to whatever universe should be routable, e.g. \
+            \ active-only via <SWP::URC_ActiveSwpairs> — see <SWPI::URC_Hopper>). \
             \ \
-            \ Step1 = Filter All Existing <swpairs>, to those containing <input-id> and <output-id> = select-swpairs\
-            \ Step2 = Extract all Tokens from relevant pairs => these are the nodes = nodes \
+            \ #13C fix: previously this only kept swpairs directly touching \
+            \ <input-id> or <output-id> (<=1 hop from either end), while \
+            \ <SWPT::URC_TokenNeighbours>/<URC_TokenSwpairs> read the FULL \
+            \ unrestricted <swpairs> for each node's links — a node envelope \
+            \ narrower than the live edge-set, so BFS could expand into a token \
+            \ with no <GraphNode> entry and corrupt/lose the chain. Building nodes \
+            \ from the full <swpairs> list makes the envelope equal to the \
+            \ edge-set by construction, so that mismatch is now structurally \
+            \ impossible. <input-id>/<output-id> stay in the signature (unused) so \
+            \ this remains a zero-interface-change fix. \
             \ \
             \ Uses p2-p7 s2-s7 Swpair Information Data via passed down <swpairs>"
         (let*
             (
-                (in:[string] (UC_FilterOne swpairs input-id))
-                (out:[string] (UC_FilterOne swpairs output-id))
-                (l0:[string] (+ in out))
-                (select-swpairs:[string] (distinct l0))
-
-                (non-distinct-nodes-array:[[string]] (UC_PoolTokensFromPairs select-swpairs))
+                (non-distinct-nodes-array:[[string]] (UC_PoolTokensFromPairs swpairs))
                 (non-distinct-nodes:[string] (fold (+) [] non-distinct-nodes-array))
             )
             (distinct non-distinct-nodes)

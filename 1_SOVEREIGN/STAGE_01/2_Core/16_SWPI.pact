@@ -61,7 +61,9 @@
     (defun URC_P-InverseSwap (swpair:string rsid:object{UtilitySwpV1.ReverseSwapInputData}))
         ;;
     (defun URC_Hopper:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
+    (defun URC_HopperActive:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
     (defun URC_BestEdge:string (ia:decimal i:string o:string))
+    (defun URC_BestEdgeFiltered:string (ia:decimal i:string o:string swpairs:[string]))
         ;;
     (defun URC_OuroPrimordialPrice:decimal ())
     (defun URC_TokenDollarPrice (id:string kda-pid:decimal))
@@ -817,9 +819,12 @@
         )
     )
     ;;
-    (defun URC_Hopper:object{SwapperIssueV3.Hopper}
-        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal)
-        @doc "Creates a Hopper Object, by computing \
+    (defun URCX_Hopper:object{SwapperIssueV3.Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal swpairs:[string])
+        @doc "Shared Hopper-computation core for <URC_Hopper>/<URC_HopperActive> — \
+            \ identical in every respect except which <swpairs> universe routing \
+            \ is allowed to consider. Internal only, not on <SwapperIssueV3>. \
+            \ Computes: \
             \ 1] The trace between <hopper-input-id> and <hopper-output-id>, the <nodes> \
             \ 2] The hops between them, the <edges> as the cheapest available edge from all available \
             \ 3] The best <output> values using said best <edges>, given the <hopper-input-amount>"
@@ -829,7 +834,6 @@
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-SWPT:module{SwapTracerV1} SWPT)
                 (ref-SWP:module{SwapperV3} SWP)
-                (swpairs:[string] (ref-SWP::URC_Swpairs))
                 (principal-lst:[string] (ref-SWP::UR_Principals))
                 (nodes:[string] (ref-SWPT::URC_ComputeGraphPath hopper-input-id hopper-output-id swpairs principal-lst))
             )
@@ -853,7 +857,12 @@
                                                 )
                                                 (i-id:string (at idx nodes))
                                                 (o-id:string (at (+ idx 1) nodes))
-                                                (best-edge:string (URC_BestEdge input i-id o-id))
+                                                ;;#19H fix: restrict edge candidates to this call's
+                                                ;;<swpairs> universe (full for <URC_Hopper>, active-only
+                                                ;;for <URC_HopperActive>) — a disabled parallel pool can
+                                                ;;never be chosen over an active one, or at all when
+                                                ;;routing active-only.
+                                                (best-edge:string (URC_BestEdgeFiltered input i-id o-id swpairs))
                                                 (dsid:object{UtilitySwpV1.DirectSwapInputData}
                                                     (ref-U|SWP::UDC_DirectSwapInputData [i-id] [input] o-id)
                                                 )
@@ -878,15 +887,43 @@
             )
         )
     )
-    (defun URC_BestEdge:string (ia:decimal i:string o:string)
+    (defun URC_Hopper:object{SwapperIssueV3.Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal)
+        @doc "Creates a Hopper Object routed over the FULL swpair universe, \
+            \ including <can-swap>=false pools. Used internally for issuance-time \
+            \ pricing (<URC_WorthDWK>, <UEV_Issue>'s principal-anchoring check), \
+            \ which must work even when neighboring pools aren't swap-enabled yet. \
+            \ Live swap-execution/quote callers must use <URC_HopperActive> \
+            \ instead (#19H) — routing a real user swap over disabled pools is \
+            \ the exact bug that fix closes."
+        (let
+            (
+                (ref-SWP:module{SwapperV3} SWP)
+            )
+            (URCX_Hopper hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs))
+        )
+    )
+    (defun URC_HopperActive:object{SwapperIssueV3.Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal)
+        @doc "Live-swap-execution routing entrypoint — restricts BFS routing to \
+            \ <can-swap>=true pools only, so a disabled pool can never be \
+            \ BFS-selected and then rejected downstream with no fallback (#19H). \
+            \ Used by SWPU's actual swap-execution and slippage-quote call sites."
+        (let
+            (
+                (ref-SWP:module{SwapperV3} SWP)
+            )
+            (URCX_Hopper hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_ActiveSwpairs))
+        )
+    )
+    (defun URCX_BestEdgeOf:string (ia:decimal i:string o:string edges:[string])
+        @doc "Shared best-edge-selection core for <URC_BestEdge>/<URC_BestEdgeFiltered> \
+            \ — identical in every respect except which <edges> candidate list is \
+            \ passed in. Internal only, not on the interface."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-SWPT:module{SwapTracerV1} SWPT)
-                (ref-SWP:module{SwapperV3} SWP)
-                (principals:[string] (ref-SWP::UR_Principals))
-                (edges:[string] (ref-SWPT::URC_Edges i o principals))
                 (svl:[decimal]
                     (fold
                         (lambda
@@ -900,13 +937,15 @@
                         (enumerate 0 (- (length edges) 1))
                     )
                 )
+                ;;C1 fix: keep the index with the LARGER output (argmax), not smaller (argmin) — "best"
+                ;;edge for a fixed input means most output, matching URC_Hopper's own documented intent.
                 (sp:integer
                     (fold
                         (lambda
                             (acc:integer idx:integer)
                             (if (= idx 0)
                                 acc
-                                (if (< (at idx svl) (at acc svl))
+                                (if (> (at idx svl) (at acc svl))
                                     idx
                                     acc
                                 )
@@ -918,6 +957,33 @@
                 )
             )
             (at sp edges)
+        )
+    )
+    (defun URC_BestEdge:string (ia:decimal i:string o:string)
+        @doc "Best edge across ALL swpairs connecting <i>/<o>, including disabled \
+            \ ones — matches <URC_Hopper>'s full-universe scope. Live \
+            \ swap-execution callers should use <URC_BestEdgeFiltered> instead."
+        (let
+            (
+                (ref-SWPT:module{SwapTracerV1} SWPT)
+                (ref-SWP:module{SwapperV3} SWP)
+                (principals:[string] (ref-SWP::UR_Principals))
+            )
+            (URCX_BestEdgeOf ia i o (ref-SWPT::URC_Edges i o principals))
+        )
+    )
+    (defun URC_BestEdgeFiltered:string (ia:decimal i:string o:string swpairs:[string])
+        @doc "Best edge restricted to swpairs also present in <swpairs> — used by \
+            \ <URCX_Hopper> so a disabled parallel pool between the same token \
+            \ pair is never selected as the executed hop, even when an active \
+            \ parallel pool exists between the same two tokens (#19H)."
+        (let
+            (
+                (ref-SWPT:module{SwapTracerV1} SWPT)
+                (ref-SWP:module{SwapperV3} SWP)
+                (principals:[string] (ref-SWP::UR_Principals))
+            )
+            (URCX_BestEdgeOf ia i o (ref-SWPT::URC_EdgesActive i o principals swpairs))
         )
     )
     ;;Value Computations
@@ -1425,7 +1491,9 @@
                             (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
                         )
                     )
-                    (ref-SWP::XE_AddLPTracker token-lp swpair)
+                    ;;C9 fix: SWP|LP registration moved into SWP::XE_Issue itself (called just above via
+                    ;;<swpair>'s own binding), so it's no longer a standalone call every issuance path has
+                    ;;to remember separately — this call site used to be the only one that remembered it.
                     (ref-SWPT::XE_MultiPathTracer swpair (ref-SWP::UR_Principals))
                     (ref-IGNIS::KDA|C_Collect patron kda-costs)
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])

@@ -368,13 +368,26 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
+                (ref-U|INT:module{OuronetIntegersV1} U|INT)
                 (pp:string (take 1 swpair))
                 (ws:decimal (fold (+) 0.0 new-weights))
+                (fee-precision:integer (ref-U|CT::CT_FEE_PRECISION))
+                (l0:integer (length (UR_PoolTokens swpair)))
+                (l1:integer (length new-weights))
             )
+            ;;C7 fix: length-parity, mirroring the sibling SWP|S>UPDATE-SUPPLIES cap.
+            (ref-U|INT::UEV_UniformList [l0 l1])
+            ;;C7 fix: real per-weight enforce inside the map lambda (the original code computed this exact
+            ;;check via `=` and threw the result away — matching UEV_UniformList's working idiom, not the
+            ;;original dead-map one). Combines the precision check with a >= 0.1 floor per weight (also
+            ;;rules out negative weights) into a single `enforce` per element.
             (map
                 (lambda
                     (w:decimal)
-                    (= (floor w (ref-U|CT::CT_FEE_PRECISION)) w)
+                    (enforce
+                        (fold (and) true [(= (floor w fee-precision) w) (>= w 0.1)])
+                        (format "Weight {} must respect fee precision and be at least 0.1" [w])
+                    )
                 )
                 new-weights
             )
@@ -395,12 +408,25 @@
             )
             (UEV_id swpair)
             (ref-U|INT::UEV_UniformList lengths)
+            ;;H12 fix: the old code only validated a new supply when it was already > 0.0, silently
+            ;;skipping any check at all for <= 0.0 (letting a negative supply persist unenforced). Added
+            ;;an unconditional non-negativity enforce inside the lambda, real-guard-style (matches the
+            ;;C7/UEV_UniformList idiom), on top of the pre-existing positive-value precision check.
             (map
                 (lambda
                     (idx:integer)
-                    (if (> (at idx new-supplies) 0.0)
-                        (ref-DPTF::UEV_Amount (at idx pool-tokens) (at idx new-supplies))
-                        true
+                    (let
+                        (
+                            (val:decimal (at idx new-supplies))
+                        )
+                        (enforce
+                            (>= val 0.0)
+                            (format "New supply {} for pool token {} cannot be negative" [val (at idx pool-tokens)])
+                        )
+                        (if (> val 0.0)
+                            (ref-DPTF::UEV_Amount (at idx pool-tokens) val)
+                            true
+                        )
                     )
                 )
                 (enumerate 0 (- l0 1))
@@ -430,6 +456,19 @@
                 (current-amp:decimal (UR_Amplifier swpair))
             )
             (enforce (> current-amp 0.0) "Amplifier can only be updated for Stable Pools")
+            ;;C8 fix: <new-amplifier> was never validated at all — no bound, and critically no exclusion
+            ;;of the module's own -1.0 "not a stable pool" sentinel. Mirrors UEV_Issue's own >= 1.0 floor
+            ;;at creation (16_SWPI.pact:1267); ceiling of 2000.0 is evidence-backed, not arbitrary — REPL-
+            ;;verified: round-trip convergence on a skewed pool stays excellent (~1e-13) through the low
+            ;;hundreds, then measurably degrades (~1e-7 by A=5000+) because the Newton solver's fixed
+            ;;11-iteration limit (H1, separately tracked, still open) stops fully converging at high A on
+            ;;skewed reserves. 2000.0 covers realistic real-world stable-pool ranges with margin to spare
+            ;;below that degradation. A single range check also excludes -1.0/0.0/negatives with no
+            ;;separate sentinel check needed.
+            (enforce
+                (and (>= new-amplifier 1.0) (<= new-amplifier 2000.0))
+                (format "Amplifier {} must be between 1.0 and 2000.0" [new-amplifier])
+            )
         )
     )
     (defcap SPW|S>UPDATE_SPECIAL-FEE-TARGETS (swpair:string targets:[object{SwapperV3.FeeSplit}])
@@ -551,7 +590,11 @@
                 (has-lkda:bool (contains lkda pt))
                 (iz-three:bool (= (length pt) 3))
             )
-            (enforce (fold (and) true [iz-weigthed has-ouro has-wkda has-lkda iz-three]) "Pool is not the primordial pool")
+            ;;H6 fix: <primality> was bound above but never included in this fold, so the only checks
+            ;;actually enforced were the 5 composable "does it look like the right shape" conditions —
+            ;;the issuance-time eligibility flag that's supposed to gate this (owner: also means exempt
+            ;;from low-liquidity gates / never autonomously disabled) was read and silently unused.
+            (enforce (fold (and) true [iz-weigthed has-ouro has-wkda has-lkda iz-three primality]) "Pool is not the primordial pool")
             (compose-capability (GOV|SWP_ADMIN))
         )
     )
@@ -901,6 +944,14 @@
             )
             (fold (+) [] (ref-U|LST::UC_RemoveItem fl [BAR]))
         )
+    )
+    (defun URC_ActiveSwpairs:[string] ()
+        @doc "Outputs all current Existing Swpairs where <can-swap> = true. Used by \
+            \ routing (<SWPI::URC_Hopper>) so a disabled pool never enters the BFS \
+            \ graph as a hop candidate in the first place, instead of being picked \
+            \ by BFS and only rejected afterwards deep inside \
+            \ <SPWU|X>SMART-SWAP> with no fallback. Audit ref: #19H."
+        (filter (lambda (swpair:string) (UR_CanSwap swpair)) (URC_Swpairs))
     )
     (defun URC_LpComposer:[string] (pool-tokens:[object{SwapperV3.PoolTokens}] weights:[decimal] amp:decimal)
         (let
@@ -1570,6 +1621,13 @@
                 ,"stoa-value"           : 0.0
                 }
             )
+            ;;C9 fix: SWP|LP must be populated by EVERY issuance path. Folded here (both <token-lp> and
+            ;;<swpair> are already in scope) instead of leaving it a standalone call each caller must
+            ;;remember — 16_SWPI.pact::C_Issue did remember; 20_MTX-SWP.pact::MTX|C_Issue (the defpact
+            ;;path, which also calls XE_Issue) never did, so every pool issued through it had an LP token
+            ;;that could never be resolved back to its swpair (UR_GetLpSwpair hard-aborts on the missing
+            ;;row), permanently blocking AQP LP-stake admission for that pool.
+            (XE_AddLPTracker token-lp swpair)
             (with-capability (P|SECURE-CALLER)
                 (XI_SavePool n what swpair)
                 (ref-DPTF::C_DeployAccount token-lp account)

@@ -406,18 +406,24 @@
         )
     )
     (defun UEV_RemoveLiquidity (swpair:string lp-amount:decimal)
+        @doc "H11 fix: intentionally does NOT gate on <can-add>. <can-add> is a pool-owner switch meant \
+            \ to pause new liquidity provisioning; it must never also block existing LPs from getting \
+            \ their own principal back — an admin-controlled ability to freeze user funds already \
+            \ deposited isn't a safety mechanism, it's a trust violation (owner's own framing, matching \
+            \ how Curve's kill_me exempts plain remove_liquidity and Balancer's Recovery Mode is \
+            \ deliberately permissionless while paused, 'so that funds can never be locked by governance \
+            \ action'). Removal stays subject only to genuine validity checks below, never to the pool \
+            \ owner's add-liquidity switch."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-SWP:module{SwapperV3} SWP)
                 ;;
-                (can-add:bool (ref-SWP::UR_CanAdd swpair))
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
                 (pool-lp-amount:decimal (ref-DPTF::UR_Supply lp-id))
             )
             (ref-DPTF::UEV_Amount lp-id lp-amount)
             (enforce (<= lp-amount pool-lp-amount) (format "{} is an invalid LP Amount for removing Liquidity" [lp-amount]))
-            (enforce can-add (format "Liquidity Adding and Removal isn't enabled on pool {}" [swpair]))
         )
     )
     ;;{F3}  [UDC]

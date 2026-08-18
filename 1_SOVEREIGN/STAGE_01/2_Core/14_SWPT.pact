@@ -24,6 +24,7 @@
     (defun URC_TokenSwpairs:[string] (token-id:string principal-lst:[string]))
     (defun URC_PrincipalSwpairs:[string] (id:string principal:string principal-lst:[string]))
     (defun URC_Edges:[string] (t1:string t2:string principal-lst:[string])) ;;1
+    (defun URC_EdgesActive:[string] (t1:string t2:string principal-lst:[string] whitelist:[string]))
     ;;
     (defun UEV_IdAsPrincipal (id:string for-trace:bool principals-lst:[string]))
     ;;
@@ -284,7 +285,11 @@
     )
     (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string] principal-lst:[string])
         @doc "Computes the path between an <input> and <output> using BFS via <URC_AllGraphPaths> \
-        \ from a passed down list of existing <swpairs>"
+        \ from a passed down list of existing <swpairs>. \
+        \ #20H fix: returns the clean [BAR] sentinel — never a bare out-of-bounds \
+        \ <at> crash — whenever no chain reaches <output>, including the case of a \
+        \ genuinely disconnected pair once <swpairs> has been narrowed upstream \
+        \ (e.g. to active-only pools, #19H)."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -315,7 +320,10 @@
                             )
                         )
                     )
-                    (at 0 fp)
+                    ;;#20H fix: guard against fp coming back empty (no chain
+                    ;;reached output — e.g. a genuinely disconnected pair after
+                    ;;active-only filtering) instead of a bare out-of-bounds `at`.
+                    (if (> (length fp) 0) (at 0 fp) [BAR])
                 )
                 [BAR]
             )
@@ -334,6 +342,26 @@
         )
     )
     (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string] principal-lst:[string])
+        @doc "#13C fix (2nd layer) + #19H fix (2nd layer): <URC_TokenNeighbours> \
+            \ reads the FULL, live <SWPT|Tracer> table directly — it has no \
+            \ notion of the caller's <swpairs> universe at all. Two problems \
+            \ follow, both closed here: \
+            \ 1] (#13C) A neighbor reachable only through a swpair OUTSIDE \
+            \    <swpairs> would otherwise be returned as a link with no \
+            \    matching <GraphNode> entry in <nodes> at all. \
+            \ 2] (#19H) A neighbor token can be a perfectly valid node overall \
+            \    (has SOME active pool elsewhere) while the ONLY swpair directly \
+            \    connecting it to THIS node is outside <swpairs> (e.g. disabled) \
+            \    — merely checking 'is this token a valid node' (#1's fix) does \
+            \    NOT catch this, since the neighbor token legitimately belongs \
+            \    to <nodes> via its other pools. BFS would still treat the two \
+            \    as directly linked, discover a 'path' through a non-existent \
+            \    active edge, and crash downstream in <SWPI::URC_BestEdgeFiltered> \
+            \    when no active edge is actually found. \
+            \ Requiring a genuine <URC_EdgesActive> match (not just <nodes> \
+            \ membership) between each node and its candidate neighbor closes \
+            \ both — and subsumes the plain membership check, since any real \
+            \ active edge implies both endpoints are already valid nodes."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -347,7 +375,11 @@
                         acc
                         {
                             "node": (at idx nodes),
-                            "links": (URC_TokenNeighbours (at idx nodes) principal-lst)
+                            "links":
+                                (filter
+                                    (lambda (n:string) (!= (URC_EdgesActive (at idx nodes) n principal-lst swpairs) []))
+                                    (URC_TokenNeighbours (at idx nodes) principal-lst)
+                                )
                         }
                     )
                 )
@@ -414,6 +446,13 @@
             )
             (ref-U|SWP::UC_FilterTwo d t1 t2)
         )
+    )
+    (defun URC_EdgesActive:[string] (t1:string t2:string principal-lst:[string] whitelist:[string])
+        @doc "Same as <URC_Edges>, but the result is restricted to swpairs also \
+            \ present in <whitelist> (e.g. <SWP::URC_ActiveSwpairs>) — so a \
+            \ disabled parallel pool between the same token pair is never offered \
+            \ as an edge candidate to <SWPI::URC_BestEdgeFiltered>. #19H fix."
+        (filter (lambda (swpair:string) (contains swpair whitelist)) (URC_Edges t1 t2 principal-lst))
     )
     ;;{F2}  [UEV]
     (defun UEV_IdAsPrincipal (id:string for-trace:bool principals-lst:[string])

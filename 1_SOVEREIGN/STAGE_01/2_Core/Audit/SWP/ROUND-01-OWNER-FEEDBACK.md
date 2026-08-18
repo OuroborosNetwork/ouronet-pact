@@ -278,3 +278,678 @@ integrator or auditor from re-deriving this same chain. Not raised as a separate
 noted here only so it isn't silently lost.
 
 ---
+
+## C1 (#6C, SWPI `URC_BestEdge` picks the worst parallel-pool edge) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner direction:** verify empirically in REPL before accepting the finding at all — "construct a swap
+architecture in repl, there are already enough pools created, look them up, add what's missing, and let's
+observe if your assessment holds true in repl first."
+
+**Reproduction (before any fix):** used two already-existing pools that both directly connect DLK and OURO
+(no new fixtures needed) — `W|DLK|OURO|DWK` (deep genesis: 3200/10000/6000) and `S|DLK|OURO|DWK` (shallow
+genesis: 800/900/850), both registered principals, both swap-enabled by `TX 014`. Added
+`REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl`, new `SWP|TX 016 - C1 Reproduction`: computed each
+pool's real output for the same `10.0` DLK input independently via the same `URC_Swap` any real caller
+uses (so "which pool is better" is derived live, not asserted from the audit doc), then compared that
+against what `URC_BestEdge` actually picked. Result, live from the interpreter, not predicted:
+
+```
+pool1 (W, deep)     output for 10.0 DLK->OURO = 18.703251597095004399307073
+pool2 (S, shallow)  output for 10.0 DLK->OURO = 10.001390223588246869505299
+URC_BestEdge actually chose:            S|DLK|OURO|DWK   (the WORSE pool — 10.00 output)
+Objectively better edge (higher output): W|DLK|OURO|DWK   (18.70 output — nearly 2x)
+```
+`FAILURE: C1 reproduction — URC_BestEdge selects the higher-output edge` — confirmed live, not just from
+reading the fold. Finding upheld.
+
+**Fix — `16_SWPI.pact`, `URC_BestEdge`, line 909:** one-character comparator flip in the edge-selection
+fold, `<` → `>` (argmin → argmax), plus a one-line comment recording why:
+```diff
+-                                (if (< (at idx svl) (at acc svl))
++                                (if (> (at idx svl) (at acc svl))
+```
+No interface change — `URC_BestEdge` is internal to `SwapperIssueV3`, not on the public surface.
+
+**Verification (after the fix):** same `Z.repl` run, same `SWP|TX 016` block (unchanged — it already
+encoded the correct behavior as its `expect`), only the comparator changed underneath it:
+```
+URC_BestEdge actually chose:            W|DLK|OURO|DWK   (now the BETTER pool — 18.70 output)
+"Expect: success C1 reproduction — URC_BestEdge selects the higher-output edge"
+```
+Full `Z.repl` pipeline: exit 0, 0 `FAILURE`, `Load successful`, end to end.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — same block serves as both the pre-fix reproduction (failed as
+predicted) and the permanent post-fix regression proof (passes now), mirroring the C2 pattern. Awaiting
+Round III re-verify.
+
+---
+
+## C3 (#7C, U|SWP rounding direction favors the swap taker) — **STABLE: FIXED & PROVEN. WEIGHTED: ACCEPTED KNOWN LIMITATION.**
+
+**Owner direction:** verify in REPL first (same standard as C1); once real, apply the fix; when the first
+fix attempt proved ineffective, investigate deeper for the true root cause rather than re-guess; once the
+true root cause turned out to be a Pact-language limitation ("we can't modify math, we gotta work with
+what Pact gives us"), accept and document the residual that genuinely can't be fixed, and confirm directly
+whether any of this threatens pool solvency.
+
+**Reproduction (before any fix):** built a zero-fee round-trip probe in
+`REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl` (new `SWP|TX 017`) calling `UC_ComputeY`/`UC_ComputeWP`
+directly against two already-issued pools (`S|DLK|OURO|DWK`, `W|DLK|OURO|DWK`), bypassing fees entirely to
+isolate the math. Confirmed live: stable pool netted +6.3e-15 DLK on a 100.0 round trip; weighted pool
+netted +1.8e-12 DLK on a 9999.0 round trip (found only after probing several smaller amounts — 100.0,
+137.777, 333.333333, 1.0, 0.0001, 271.828182845904523536 — which all round-tripped exactly clean first,
+so the reproduction amount was picked because it's what actually triggered the bias, not to dramatize it).
+
+**First fix attempt — WRONG, and I said so rather than claim success:** moved the `floor`/`ceiling` from
+wrapping the intermediate solved-balance term to wrapping the final answer (matching the textbook "round
+the pool's favor at the last step" AMM convention). Reran the same reproduction block: **byte-for-byte
+identical numbers, same failures.** Traced why: `o-prec`/`i-prec` for the test tokens (DLK, OURO) are both
+24 — the same as the internal working precision (`prec:integer 24`) used throughout the Newton iteration —
+so moving the *outer* rounding boundary was a mathematical no-op; there was no truncation boundary left at
+that point to move.
+
+**Deeper investigation — the real root cause:** built a Python high-precision replica of the exact
+floor/fold sequence to isolate where the divergence actually entered. It showed **zero** bias with internal
+flooring replicated faithfully — meaning the bug wasn't in the repeated `floor(...,24)` truncations either,
+contradicting my own working hypothesis. Instrumented `UC_ComputeD` directly in Pact and diffed against the
+Python replica digit-by-digit: they diverged starting around the 17th significant digit — far too large a
+gap for a 24-decimal floor artifact. Isolated it to Pact's `^` operator with a direct empirical test:
+```
+d = 2549.996147035166093620040554
+(^ d 4.0)                        = 42282250700760.0859375
+d*d*d*d (manual multiplication)  = 42282250700760.099021482473331191153317335329175719323256875718459007868358138754818195565982177117931551671056
+diff: pow - manual = -0.013083982473331191153317335329175719323256875718459007868358138754818195565982177117931551671056
+```
+**Pact's `^` silently computes decimal exponentiation via IEEE-754 double precision internally** — not
+exact/arbitrary-precision like `+`/`-`/`*`/`/` genuinely are on Pact decimals (verified `/` carries 255+
+digits). A ~0.013 absolute error on a single exponentiation, confirmed as the true source of the bias —
+not the floor/ceiling placement, and not the internal iteration's own truncation.
+
+**Fix — stable pool only, `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact`:** added `UC_IntPow`
+(exact repeated-multiplication power for non-negative integer exponents) and replaced every whole-number
+`^` usage in `UC_DNext` (`n^n`, `D^(n+1)`) and `UC_YNext` (`n^n`, `D^(n+1)`, `Y^2` → `Y*Y`) with it. This
+fully covers `UC_ComputeY` (direct) and, transitively, `UC_ComputeInverseY`/`UC_ZNext` (inverse — they
+share `UC_ComputeD`/`UC_YNext`, confirmed rather than assumed by testing the inverse direction directly).
+Left the original outer floor→ceiling reordering from the first attempt in place (harmless, still correct
+in principle for lower-precision tokens where it *would* matter).
+
+**Verification (stable pool):** same `SWP|TX 017` block, both directions:
+```
+STABLE          100.0 DLK -> 100.000000000000000000000000 OURO -> 100.000000000000000000000000 DLK
+STABLE INVERSE  needs 100.000000000000000000000000 DLK in to get 100.000000000000000000000000 OURO out
+```
+Exact to 24 decimal places, zero bias, both directions. `Expect: success` on both assertions.
+
+**Weighted pool — NOT fixed, and can't be the same way.** Its bias comes from `x^weight` (e.g. `x^0.3`) —
+a genuinely fractional exponent. `UC_IntPow`'s exact-multiplication trick only works for whole-number
+exponents; there's no equivalent trick for a true fraction. Closing this fully would require writing a
+from-scratch high-precision fractional power routine in Pact (Newton's method / power series) — real
+numerical-computing work, non-trivial gas cost, real risk of introducing new bugs in something this
+delicate, for a residual that (see below) poses no meaningful risk. **Owner decision: decline that work,
+accept the residual as a known, bounded, documented language-level limitation.**
+
+**Is this a solvency risk? No — verified, not just asserted:**
+- Categorically different from C2 (which was a single-swap, *unbounded* failure — output could exceed the
+  pool's entire balance of a token in one shot, a real solvency threat, already fixed separately). C3's
+  residual is a *relative* floating-point precision limit (~1e-16, float64's native epsilon) multiplied by
+  the *magnitude* of the numbers in the computation — for any realistic pool size, a fraction of a token,
+  not a fraction of the pool.
+- The measured 1.8e-12 bias required a 24-decimal-precision token specifically to be *visible* at all —
+  real tokens are virtually never configured at 24 decimals (6/8/12/18 is typical); at realistic
+  precisions the final settlement-rounding would swallow a bias this small entirely, most of the time.
+- No accounting desync: the same computed value backs both the actual transfer and the tracked-reserve
+  update — internally consistent, not a ledger-vs-custody mismatch.
+- Repetition economics don't favor an attacker: extracting anything meaningful would need an astronomical
+  number of round trips, each costing real gas, almost certainly exceeding whatever value was extracted.
+
+**Documentation:** added a `KNOWN, ACCEPTED LIMITATION` block comment directly above `UC_ComputeWP` in
+`12_U_SWP.pact` explaining the mechanism, why it can't be fixed the same way as the stable-pool case, and
+the risk assessment, so a future reader doesn't mistake this for an unaddressed bug. Converted the
+weighted-pool assertion in `SWP|TX 017` from a hard "must not profit" check (which would fail forever, now
+that this is an accepted limitation, not an open bug) into a **regression bound** — passes now, but would
+still catch a future change that made the bias grow beyond generous headroom over float64's own epsilon.
+
+**Status:** Stable pool: FIXED ✅ AND PROVEN ✅ (both directions). Weighted pool: **ACCEPTED KNOWN
+LIMITATION** — confirmed bounded, confirmed non-solvency-threatening, confirmed not fixable without a
+disproportionate rewrite; closed as a documented tradeoff, not left as an open action item. Full
+diff/rationale: `ROUND-02-FIXES.md` Fix #3. Awaiting Round III re-verify (stable-pool portion only).
+
+---
+
+## C7 (#8C, SWP `C_ModifyWeights` no length check / dead precision check / no bound) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner direction:** per-weight floor of at least 0.1, no negative values, enforce precision, and a
+length-parity check — plus a specific ask to check `U|CT` for any additional validation logic attached to
+`CT_FEE_PRECISION` before designing the fix.
+
+**Investigated `U|CT` as directed:** it's a pure constants module — `CT_FEE_PRECISION` (`01_U_CT.pact:48`)
+is a bare `() 4`, nothing else bundled with it. No hidden extra check being missed there. But looking
+further surfaced two more useful things:
+- The **correct** working version of this exact idiom already exists in the codebase:
+  `06_U_INT.pact`'s `UEV_UniformList` puts `enforce` **inside** the `map` lambda (so each element's
+  failure aborts immediately) — `SWP|S>WEIGHTS`'s original precision check used `=` (a comparison,
+  producing a bool) instead of `enforce`, then discarded the `[bool]` result entirely. That's the actual
+  bug: wrong idiom, not a missing helper. `08_U_DALOS.pact:432-449`'s `UEV_Fee` confirms the same correct
+  pattern for a single value.
+- The **exact same bug** — same discarded-map idiom, same `CT_FEE_PRECISION` constant — is duplicated in
+  `16_SWPI.pact:1257-1263`, `UEV_Issue` (pool issuance time). Already tracked separately as **H5**, still
+  pending its own verdict; flagging the connection here, not fixing it now — it's its own finding in the
+  queue with its own context (issuance-time `UEV_Issue` also lacks a per-weight bound, matching **C4**,
+  separately pending).
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`, `SWP|S>WEIGHTS`:** added length-parity via the existing
+`ref-U|INT::UEV_UniformList` helper (mirroring the sibling `SWP|S>UPDATE-SUPPLIES` cap exactly); rewrote
+the precision map to put a real `enforce` inside the lambda (matching `UEV_UniformList`'s working idiom),
+combining the precision check with a `>= 0.1` per-weight floor (which also rules out negative weights) via
+`(fold (and) true [...])`, per the repo's own 2-condition combining convention.
+
+**Reproduction and verification, both proven live — `REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl`,
+new `SWP|TX 018 - C7 Reproduction: Weight-Modification Guards`** (canonical default-loaded suite, real
+pool `W|DLK|OURO|DWK`, real owner signature):
+1. **Adversarial proof the reproduction is real:** `git stash`'d only `15_SWP.pact` back to the pre-fix
+   code, reran `Z.repl` — all four attack cases succeeded when they should have failed:
+   `FAILURE: ... length mismatch ... expected failure, got result` (same wording for the sub-0.1 weight,
+   the negative weight, and the imprecise-weight cases). Confirmed each hole was real, not assumed.
+2. Restored the fix (`git stash pop`), reran — all four now correctly abort:
+   `Expect failure: Success: C7 fix — length mismatch (2 weights on a 3-token pool) is rejected` (and the
+   same for the other three).
+3. **A legitimate reweight still works** — `[0.4, 0.4, 0.2]` (correct length, all `>= 0.1`, sums to 1.0,
+   4-decimal precision) succeeds and is reflected live: `pool1 weights now: [0.4, 0.4, 0.2]`.
+4. Full `Z.repl` pipeline: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Not addressed (deliberately out of scope for this fix, per the original finding's own framing):** a
+time-lock/gradual-weight-change mechanism for the Balancer-style instant-reweight value-extraction vector
+(item 4 in the original finding) is a design decision, not a validation bug, and would force a
+`SwapperV3`→`V4` interface bump cascading to `TalosStageOne_ClientThreeV3`. Left for the owner to decide
+separately if wanted.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — all three requested guards (length parity, per-weight `>= 0.1`
+floor, real precision enforcement) verified to reject the exact holes they close and verified not to
+reject legitimate reweights. `H5`'s duplicate of the discarded-map bug (in `UEV_Issue`) remains open,
+tracked separately. Awaiting Round III re-verify.
+
+---
+
+## C8 (#9C, SWP `C_UpdateAmplifier` no bound-check on the new amplifier value) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner direction:** owner explicitly delegated the concrete bound values — "I never knew what I should
+use" — asking for a recommended, evidence-backed floor and ceiling rather than an arbitrary number.
+
+**Ceiling chosen empirically, not from folklore:** built a REPL probe sweeping `A` from 1.0 to 1,000,000
+on a balanced pool (clean, round-trip stayed exact throughout) and, more tellingly, on a skewed pool
+(`[100, 5000, 5000]`, 4000-unit trade) where the fixed 11-iteration Newton solver's convergence quality is
+actually stressed:
+
+| A | round-trip delta |
+|---|---|
+| 85.0 (this codebase's own test value) | ~3.3e-13 |
+| 1000.0 | ~4.6e-8 |
+| 5000.0 | ~1.1e-7 |
+| 100,000+ | ~1.4e-7 (plateaus) |
+
+Degradation is real and measurable past the low hundreds (ties directly to **H1**, the separately-tracked,
+still-open "fixed iteration count, no convergence check" finding), though it plateaus rather than exploding.
+**Recommended and applied: floor `>= 1.0`** (matches `UEV_Issue`'s own creation-time floor,
+`16_SWPI.pact:1267`) **and ceiling `<= 2000.0`** — covers realistic real-world stable-pool amplifier ranges
+with margin to spare below where this implementation's convergence quality starts visibly degrading. A
+single range enforce also excludes `-1.0`/`0.0`/negatives with no separate sentinel check needed.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`, `SWP|S>UPDATE-AMPLIFIER`:** added
+`(enforce (and (>= new-amplifier 1.0) (<= new-amplifier 2000.0)) ...)` alongside the pre-existing
+`current-amp > 0.0` check. No interface change.
+
+**Reproduction/verification — `REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl`, new `SWP|TX 019 - C8
+Reproduction: Amplifier-Update Guards`:**
+- Live demonstration: `new-amplifier = 0.0` succeeded pre-fix (`FAILURE: ... expected failure, got
+  result`) — confirmed the vulnerability directly, not just from reading the code.
+- **A real testing lesson surfaced along the way, worth recording:** the first draft of this test chained
+  four `expect-failure` attempts against the *same* pool with no reset between them. Against the pre-fix
+  code, the first bad value (`0.0`) actually succeeds and bricks `current-amp` to `0.0` — which then makes
+  every *later* case "look rejected" for the wrong reason (the cap's own pre-existing `current-amp > 0.0`
+  check), not because any bound on `new-amplifier` was doing anything. Worse: it also discovered that once
+  bricked, **no further `C_UpdateAmplifier` call can ever succeed again** (even a "reset" attempt trips
+  the same pre-existing check) — a stronger, more permanent form of the original finding's "bricks every
+  swap" scenario than originally stated. Fixed the test to reset to a known-good baseline (`85.0`) before
+  each isolated case, so every case is independently meaningful under both pre- and post-fix code.
+- Post-fix: all four cases correctly rejected (`Expect failure: Success`), and a legitimate update
+  (`150.0`, within `[1.0, 2000.0]`) still succeeds and is reflected live.
+- Did **not** additionally chase four fully-isolated pre-fix empirical proofs (one per distinct pool) —
+  direct inspection of the pre-fix `enforce` shows it only ever references `current-amp`, never
+  `new-amplifier`, so all four bad values are provably the same unconditional-accept code path, not four
+  independent things requiring four separate demonstrations. One clean live proof (`0.0`) plus that code
+  read is sufficient; manufacturing more scripts past that point would be process for its own sake.
+- Full `Z.repl`: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — floor/ceiling both evidence-backed (issuance precedent + REPL
+convergence data, not guessed), reproduction proven live, a genuine test-isolation bug caught and fixed
+along the way (and left as a durable lesson in the test's own comments). Awaiting Round III re-verify.
+
+---
+
+## C9 (#10C, SWP/MTX-SWP pools issued via defpact never registered in `SWP|LP`) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner context:** confirmed directly — `UR_GetLpSwpair`/`SWP|LP` was added later and the standalone
+`XE_AddLPTracker` call was never wired into the `MTX-SWP` defpact path when it was added. Owner also
+explained *why* the multi-step path exists at all: it was gas-limit-driven (~150k gas/tx historically),
+and StoaChain's actual live limit is ~2,000,000 gas/tx — comfortably enough for even a 7-pool-token
+issuance in one transaction today. The multi-step mechanism is kept for historical continuity and as a
+worked example, not because it's still gas-required. Directed to fix the bug and document this context.
+
+**Verified against current source before touching anything:** `XE_AddLPTracker` appears exactly once in
+the whole codebase (`16_SWPI.pact:1430`, `SWPI::C_Issue`) and zero times in `20_MTX-SWP.pact`. Confirmed
+`MTX|C_Issue`'s step 3 (`866-897`) calls `ref-SWP::XE_Issue` (`887`) identically to `SWPI::C_Issue`, but
+never calls the tracker. Also confirmed `MTX-SWP` *does* correctly call `XE_MultiPathTracer` (routing-graph
+registration, `893`) — this bug is scoped exactly to the one missing `SWP|LP` insert, not a broader
+"MTX-SWP forgets bookkeeping" pattern.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`, `XE_Issue`:** folded the `SWP|LP` insert directly into
+`XE_Issue` (both `token-lp` and `swpair` are already in scope there), so every issuance path gets it "for
+free." Removed the now-redundant standalone call from `16_SWPI.pact::C_Issue` (would otherwise double-
+insert and abort on the second call). Matches the finding's own recommended fix direction exactly.
+
+**Reproduction and verification — real pool, not synthetic — `REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-
+Only.repl`, new `SWP|TX 020 - C9 Reproduction: MTX-SWP Issuance Registers SWP|LP`:** used `pool7`
+(`S|BUSD|TUSD|USDT|USDC|USDD|AUSD|CUSD`), which is issued in this exact suite through the real `MTX-SWP`
+defpact (`TX 012a/b/c`, `0|2 → 1|2 → 2|2`) — not a hand-built repro case.
+1. **Adversarial proof:** surgically reverted only the one new `XE_AddLPTracker` line inside `XE_Issue`
+   (left the C7/C8 fixes in the same file untouched, to avoid their own tests' cascading-state issues from
+   masking this one — see C8's entry for why that matters). Reran `Z.repl`: `UR_GetLpSwpair` on pool7's
+   real LP token id (`S|BUSD-TUSD-USDT-USDC-USDD-AUSD-CUSD|LP-98c486052a51`) threw
+   (`FAILURE: ... evaluation of actual failed with error message`) — confirmed the missing-row hard-abort
+   live, against a pool that was actually issued through the buggy path in this same run.
+2. Restored the fix, reran: `Expect: success` — `UR_GetLpSwpair` now resolves pool7's LP token back to
+   its swpair correctly.
+3. Full `Z.repl`: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Documentation (per owner's request):** added a block comment directly above `(module MTX-SWP GOV` in
+`20_MTX-SWP.pact` recording the gas-limit history (150k historical vs. ~2M live), that the multi-step split
+is no longer gas-required, why it's still kept (continuity + worked example), and the C9 connection (why
+the bug slipped through — two issuance paths, one bookkeeping step, only one caller remembered it). Also
+captured as a dated memory note
+(`OuronetInformational/memories/2026-08-17-mtx-swp-multi-step-no-longer-gas-required.md`) with the durable
+rule generalized: when two-or-more call paths need the same follow-up bookkeeping step, fold it into the
+shared function they both already call, rather than leaving it a standalone call each caller must remember.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — reproduced against a real, live-issued pool (not synthetic),
+adversarially proven, historical context captured in-source and in memory for future sessions. Awaiting
+Round III re-verify.
+
+---
+
+## H9 (#14H, SWPU `XI_Swap` reentrancy ordering window) — **REFUTED**
+
+**Owner's challenge, in two parts.** First: asked for a plain-English explanation plus a real REPL proof
+before accepting or rejecting — explicitly skeptical that "a swap can be triggered while another is
+pending," on the grounds that Pact transactions are atomic. Second, after the proof came back: pushed
+further on the *mechanism* — argued that in Pact, "the only things that can execute are those the module
+admin wrote down," so no third party can ever make a module's code "turn around and call someone else,"
+and that this is precisely why Pact doesn't have Solidity-style reentrancy at all.
+
+**Research + isolated proof (not just code reading) before any verdict:**
+- Traced the actual smart-account mechanism: the account's own `guard` field is protocol-locked to plain
+  keyset guards (`UEV_EnforceGuardProtocol guard true`, `01_DALOS.pact:596`, rejects `u:`/`c:`/`m:`/`p:`).
+  But the separate `governor` field is NOT locked the same way — `C_RotateGovernor`'s cap requires the
+  *opposite* (`UEV_EnforceGuardProtocol governor false`, `:602`), i.e. a `u:` user-guard wrapping arbitrary
+  code is installable as governor.
+- `CAP_EnforceAccountOwnership` → `UEV_SmartAccOwn` (`01_DALOS.pact:924-943`) does
+  `(enforce-one … [(enforce-guard account-guard) (enforce-guard sovereign-guard) (enforce-guard governor)])`
+  — reached from the debit path (`05_DPTF.pact:777`, inside `XB_DebitTrueFungible`). So a rotated
+  governor's arbitrary callback genuinely is invoked, synchronously, during `XI_Swap`'s input debit — the
+  reachability half of the finding is real, not hypothetical.
+- **Built a minimal, isolated Pact 5 REPL reproduction** (mirroring the exact `enforce-one`/`enforce-guard`
+  structure, not the full DALOS/SWP machinery — same methodology as C13's refutation): a `victim` module
+  calls `(enforce-one "auth" [(enforce-guard real-guard) (enforce-guard malicious-guard)])`, where
+  `malicious-guard` wraps an `attacker` module function that attempts a real table `insert`. Ran it two
+  ways:
+  1. Bare attempt: `Error during database operation: Operation disallowed in read-only or sys-only mode`,
+     thrown exactly at the `insert`, propagating up through the guard call and killing the whole
+     transaction.
+  2. Attempt wrapped in `try` (to see if the attacker could swallow the error and let their own
+     transaction limp forward anyway): **same error, same abort** — this specific violation is not
+     `try`-catchable, unlike an ordinary `enforce` failure.
+
+**Verdict: REFUTED.** A reentrant "second swap" needs to write (transfer tokens, update reserves) to do
+any damage; that write is categorically blocked from this exact execution context, and even attempting it
+takes down the whole transaction rather than failing quietly. No partial, narrow, or degraded exploit
+survives.
+
+**Correcting the reasoning, not just the conclusion (important for future audits):** the owner's
+conclusion was right, but "the code can never turn around and call someone else unless it's written down"
+overstates it as "callbacks are impossible in Pact." They're not — `create-user-guard`/`enforce-guard` is
+a real, deliberate Pact primitive that lets a module check a guard **without knowing in advance what code
+is behind it**, and the codebase's own smart-account `governor` rotation feature depends on exactly this.
+The isolated proof confirms the callback genuinely executes (the `insert` line is reached and evaluated —
+it's the write, specifically, that's rejected). What actually makes this safe is a narrower, more precise
+rule: **code invoked to satisfy a guard/`enforce` condition runs read-only, unconditionally, not
+`try`-catchably.** That's a deliberate VM-level sandbox around a real callback capability, not an absence
+of callbacks — the same shape of callback that causes reentrancy bugs in other smart-contract languages
+(e.g. Solidity fallback functions during a token transfer) exists in Pact too; it's just sandboxed at
+exactly the moment it would otherwise matter. Folding the precise version of this into
+`OuronetInformational/pact5/SEMANTICS.md`'s footguns section and a dated memory note, so the durable
+takeaway is "guard-evaluation callbacks are read-only-sandboxed," not the broader (and not quite accurate)
+"Pact has no callbacks."
+
+**Status:** REFUTED, proven both empirically (isolated Pact 5 reproduction, not just code reading) and
+mechanistically (traced to the specific VM rule responsible, not a vague "Pact is safe" appeal).
+
+---
+
+## H10 (#15H, MTX-SWP/Talos Global Administrative Pause not honored on `defpact` continuation steps) — **DESIGN, closed**
+
+**Owner's position:** GAP is meant, by design, to gate only Step 0 of a multi-step flow. Once Step 0 has
+passed (which could only happen with GAP off), the continuation steps are "logically" the same operation
+already authorized, and should complete regardless of GAP's later state — that's how it was implemented
+throughout the codebase, not an MTX-SWP-specific oversight.
+
+**Verified before accepting, not taken at face value:**
+- **Consistency claim — confirmed true.** Checked every multi-step `defpact` in the codebase, not just
+  MTX-SWP's 4: AQP's `MTX-AQP` has 2 more (`MTX|2|C_Inject`, `MTX|2|C_SweepRevokeAnchor`,
+  `06_MTX-AQP.pact`). All 6, without exception, follow the identical pattern — GAP enforced only in the
+  Talos wrapper that summons Step 0, never re-checked in later steps, which run via bare `continue-pact`.
+  This is genuinely the architecture, not a gap specific to this module.
+- **"Same transaction" (literal) — checked and found inaccurate.** Pact's own execution model
+  (`pact5/SEMANTICS.md`, `REFERENCE.md`) confirms Step 0 and each `continue-pact` are separate,
+  independently-signed, independently-timed transactions (own `publicMeta`, own signatures), linked only
+  by shared pact-id and enforced step ordering — not one transaction in any sense Pact's runtime
+  recognizes.
+- **No documented design note found** stating the step-0-only behavior was a deliberate choice anywhere in
+  `CONTEXT.md`/`StoicSyntax.md`/`ARCHITECTURE/`/module `@doc`s — it's implicit in the uniform
+  architecture, not asserted anywhere in writing (this entry is now that documentation).
+- **No TTL/expiry exists** between steps for any of these `defpact`s (confirmed — matches the already-
+  separately-tracked **L68**) — a pact can sit half-finished indefinitely; nothing bounds how long after
+  Step 0 a continuation can run.
+
+**Owner clarified, on the "same transaction" point:** meant *logically* one transaction (one user-
+authorized operation, mechanically split across steps for historical gas reasons), not literally one
+blockchain transaction — always understood they're physically separate.
+
+**What I flagged before closing:** "logically one operation" is a fully coherent premise, but it only
+functions as a *safety* argument if the split pieces are guaranteed to complete close together in time —
+otherwise a pact could be opened while GAP is off, sit dormant indefinitely, and be continued specifically
+during a later pause (e.g. an active-incident pause), completing an operation the pause was meant to halt.
+That residual exposure isn't closed by the design premise alone — it's closed by **L68**'s TTL fix (once
+pacts expire if not completed within a bounded window, "logically one operation" becomes true in practice,
+not just in intent, and no per-step GAP re-check is needed). Recommended linking the two rather than
+treating H10 as fully independent.
+
+**Owner's final call:** close H10 as correct by design, notwithstanding the L68 linkage.
+
+**Status:** DESIGN — closed. Step-0-only GAP gating is confirmed intentional and consistently applied
+across all 6 of the codebase's `defpact` flows (not an MTX-SWP-specific bug). The residual time-window
+exposure this depends on is explicitly **not** independently closed by this verdict — it rides on **L68**
+(no TTL/expiry) being fixed separately; until then the pause's own enforce message ("no client Functions
+can be executed") is technically overstated for however long an unbounded in-flight pact could sit. No
+code changed for H10 itself.
+
+---
+
+## H12 (#16H, SWP `SWP|S>UPDATE-SUPPLIES` accepts non-positive new reserve values) — **CONFIRMED, FIXED**
+
+**Owner direction:** harden defensively regardless of current reachability — "just in case."
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`, `SWP|S>UPDATE-SUPPLIES`:** the old code only validated
+a new supply value when it was already `> 0.0` (calling `DPTF::UEV_Amount`); for `<= 0.0` it silently
+returned `true`, no check at all. Added an unconditional `(enforce (>= val 0.0) ...)` inside the same `map`
+lambda — real-enforce-inside-the-lambda, matching the working `UEV_UniformList`/C7 idiom, not the original
+dead-fallthrough one — on top of the pre-existing positive-value precision check.
+
+**Attempted a live adversarial reproduction, and the attempt itself turned out to be informative, not
+just a formality:** tried calling `XE_UpdateSupplies` directly from REPL top-level code with a genuinely
+negative delta. Hit a real wall, not a test-authoring mistake:
+- First attempt failed for an unrelated reason (`"None of the guards passed"` from `UEV_IMC`) — traced to
+  `XE_UpdateSupplies`'s IMC policy check, which requires one of a fixed list of **peer-module**
+  capabilities already be in scope (`SWP.SECURE`, `SWPI/SWPL/SWPLC/SWPU/MTX-SWP`'s own `P|*|CALLER` caps,
+  or Talos's `P|TS`/`P|TALOS-SUMMONER`) — confirmed by reading `SWP::P|UR_IMP`'s live contents directly.
+- Tried acquiring `SWP.SECURE` (and even `SWP.GOV`) directly from bare top-level code with the admin
+  keyset used throughout this REPL suite: both attempts hit
+  `"Module admin necessary for operation but has not been acquired: ouronet-ns.SWP"` — the same Pact 5
+  foreign-module-admin rule already confirmed for C13/H9. `SECURE` is itself `(defcap SECURE () true)` —
+  identical shape to C13's `P|SWPLC|CALLER` — and is equally unforgeable from outside the module.
+- **Conclusion: there is genuinely no way to reach `XE_UpdateSupplies` from outside the trusted
+  peer-module graph.** Every real caller in the codebase (`SWPU`, `SWPL`, `SWPLC`) reaches it from
+  *inside* one of those already-granted peer capabilities. This is stronger evidence for "not reachable
+  today" than the original finding's own framing (`PLAUSIBLE reachability`) — I actively tried to break
+  in from outside and hit a real, confirmed wall, not just failed to find a path.
+- **Worth recording as a connection to C2:** the most plausible *legitimate* route that could have driven
+  a negative `new-supplies[idx]` was an oversized swap whose output exceeded the pool's reserve — exactly
+  **C2**'s bug (now fixed earlier this round). Before the C2 fix, `UC_ComputeY` could return an output
+  larger than the pool's balance, which would have flowed straight into `XE_UpdateSupplies` via the
+  legitimate `SWPU::XI_Swap` → `XE_UpdateSupplies` path with a genuinely negative resulting balance for
+  the output token. Fixing C2 already incidentally closed off the main practical route into H12 too — this
+  fix is now closing what was already a secondary layer, not the primary exposure.
+
+**Verification performed (regression, not adversarial — the adversarial angle isn't constructible as
+established above):**
+1. Default suite (`Z.repl`, issuance-only path): exit 0, 0 `FAILURE`, `Load successful`.
+2. Temporarily switched to the full `[6.2]_DPTF.repl` + `[6.3]_SWP.repl` suite — real swap execution,
+   real `XE_UpdateSupplies` calls through the legitimate `SWPU` path with real (always-positive, since C2
+   is fixed) values: exit 0, 0 `FAILURE`, `Load successful`. Toggle reverted afterward (diff confirmed
+   clean).
+
+**Status:** FIXED — code-level correctness verified by direct review (matches the already-proven C7
+idiom exactly) and by full-suite regression (no legitimate call path broke). No permanent new REPL test
+added, since a genuine adversarial reproduction against this specific defcap isn't constructible from
+outside the trusted peer-module graph — attempted and confirmed blocked, not simply not attempted.
+
+---
+
+## H11 (#17H, SWPLC `can-add` gates both deposits and removals) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner's position:** the combined switch was intentional — designed as a single "pause liquidity
+provisioning" lever. The open question was whether that was still the right call, deferred pending
+research on industry practice.
+
+**Research before deciding, not guessed:** sent a research pass on how production AMMs handle this exact
+question. Findings, all primary-sourced:
+- **Uniswap** (V2/V3): core pools have no pause mechanism at all — not directly comparable, but the
+  baseline "gold standard" has zero admin power over liquidity ops.
+- **Curve**: `kill_me` blocks `add_liquidity` and priced exits (`remove_liquidity_imbalance`,
+  `remove_liquidity_one_coin`), but the plain, pro-rata `remove_liquidity` has **no kill check at all** —
+  structurally exempt, not just policy.
+- **Balancer**: pause blocks everything, but a separate Recovery Mode exit **becomes permissionless
+  specifically while paused** — Balancer's own stated rationale: "so that funds can never be locked by
+  governance action."
+- **Security-audit consensus**: Trail of Bits' maturity criteria require privileged actors not be able to
+  "trap funds in the protocol"; ConsenSys Diligence's circuit-breaker guidance frames emergency pause as
+  "the only action now active is a withdrawal." Real incidents (Multichain froze withdrawals before
+  losing $126M+; Solend's community reversed an emergency-powers vote within a day) show this is a
+  reputational/trust red line, not just a theoretical concern.
+- **Verdict, converged on independently by both production AMMs that actually solved this:** pause new
+  deposits freely; existing LPs' proportional exit must never be blockable by the same switch.
+
+**Owner's decision, after reviewing the research:** agreed — `can-add` may legitimately pause new
+deposits, but must never be able to strand existing LPs' own principal; that would not be fair to users
+who already own LP. Directed: ungate removal from the switch entirely.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/18_SWPLC.pact`, `UEV_RemoveLiquidity`:** removed the `can-add`
+read/enforce entirely. Removal now depends only on genuine validity checks (LP amount format, not
+exceeding actual outstanding supply) — never on the pool owner's add-liquidity switch. Matches the Curve
+model (structural exemption, not a conditional policy check).
+
+**Reproduction and verification, against the real production call chain — `REPL/Stage_01/[6.2+3]_DPTF-
+SWP_Issuance-Only.repl`, new `SWP|TX 022 - H11 Reproduction: can-add Never Blocks Removal`:** real pool
+(pool1, `W|DLK|OURO|DWK`), real Talos entrypoints (`TS01-C3::SWP|C_ToggleAddLiquidity`/
+`C_AddLiquidity`/`C_RemoveLiquidity`), real patron LP balance (10,000,000.0 from genesis issuance).
+1. **Adversarial proof:** surgically reverted only the `can-add` check inside `UEV_RemoveLiquidity`
+   (matches the by-now-established isolate-the-single-change pattern), reran `Z.repl` — the real
+   `TS01-C3::SWP|C_RemoveLiquidity` call for patron's own legitimately-owned 100,000 LP threw
+   `"Liquidity Adding and Removal isn't enabled on pool W|DLK-98c486052a51|OURO-98c486052a51|DWK-
+   98c486052a51"` — the exact old error message, from the real call chain (`TS01-C3` →
+   `SWPLC::C_RemoveLiquidity` → `SWPLC|C>REMOVE_LQ` → `UEV_RemoveLiquidity`), not a synthetic repro.
+2. Restored the fix, reran: `can-add=false` still correctly blocks a *new* deposit (`Expect failure:
+   Success`), and the *same* removal that failed above now succeeds — patron's LP goes from
+   `10000000.0` to `9900000.0` (the 1% removed), live, through the real call chain. Toggle restored to
+   `true` afterward so nothing downstream is perturbed.
+3. Full `Z.repl`: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — verified against the real production entrypoints and a real LP
+balance, not a synthetic construction; both the "still blocks new deposits" and "no longer blocks
+removal" halves confirmed live, pre- and post-fix. Interface unchanged — `UEV_RemoveLiquidity`'s
+signature is the same, only its body shrank; no `SwapperLiquidityClientV1` version bump needed (the
+originally-considered `can-add`/`can-remove` split wasn't necessary once the decision was "always allow
+removal" rather than "add an independently-toggleable removal gate"). Awaiting Round III re-verify.
+
+---
+
+## H6 (#18H, SWP `A_DefinePrimordialPool` reads `primality` but never enforces it) — **CONFIRMED, FIXED**
+
+**Owner clarified what `primality` actually is** (I'd only inferred "eligibility flag" from code, not the
+full intent): set once, permanently, at pool issuance (the `p:bool` param); means a pool is exempt from
+low-liquidity gates and can never be autonomously disabled. Also clarified two structural facts I hadn't
+verified: no one can issue a duplicate pool sharing the same token set, and non-OURO/non-LKDA issuance
+requires genuine token ownership — meaning the practical risk is low, "already done correctly on
+mainnet," but still worth fixing. Directed: just add the boolean to the enforce fold.
+
+**Verified the structural claims directly, not accepted on description alone:**
+- Searched the whole codebase for `primality`/`UR_Primality`: **zero other read sites** anywhere besides
+  this one cap and the issuance-time write — the low-liquidity-gate-exemption/never-autonomously-disabled
+  semantics the owner described are the *intended* meaning, not something currently wired up elsewhere to
+  cross-check against.
+- Confirmed the REPL fixture's own primordial pool (`pool1`) really was issued with `p=true`, so the fix
+  wouldn't break existing designation.
+- **Confirmed the uniqueness claim empirically, and it's stronger than either of us assumed:** tried
+  constructing a live adversarial "lookalike" pool (same OURO/WKDA/LKDA tokens, different order, p=false)
+  to prove the pre-fix hole live. Hit `"Pool already exists for given Tokens!"` from
+  `SWP::UEV_New`/`UEV_CheckAgainstMass` (`15_SWP.pact:1058-1122`) — traced the check: it compares token
+  **sets** via pure `contains`-based membership (`UEV_CheckAgainst`), not positional/string equality, so
+  it's completely order-independent. Once the real 3-token pool exists, **no second pool sharing that
+  token set can ever be issued, in any order, with any weights.** The only theoretical exposure was a
+  one-time bootstrap-race window (front-running the very first OURO|WKDA|LKDA issuance) — already closed
+  on mainnet since the real pool was issued first, matching the owner's own risk assessment exactly, now
+  with a concrete mechanism behind it rather than just an assertion.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`, `SWP|C>DEFINE-PRIMORDIAL-POOL`:** added `primality` to
+the existing `fold (and)` list: `[iz-weigthed has-ouro has-wkda has-lkda iz-three primality]`. One
+boolean, matching the pattern already used correctly elsewhere in this cap. No interface change.
+
+**Verification — `REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl`, new `SWP|TX 023 - H6 Reproduction:
+Primality Gate on Primordial-Pool Designation`:** since a live adversarial reproduction against the
+current, populated pool set is structurally impossible (established above), verification is regression-
+only: confirmed the real, `primality=true` pool can still be (re-)designated with the new check in place.
+Full `Z.repl`: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED — one-line fix, code-level correctness plus regression confirmed. Full adversarial
+reproduction against a live pool isn't constructible (mass-uniqueness prevents the prerequisite state from
+ever existing), same honest-about-the-limit pattern as H12; the attempt itself surfaced and documented a
+real, useful structural guarantee (`UEV_CheckAgainstMass`) that wasn't explicitly verified before. Awaiting
+Round III re-verify.
+
+---
+
+## C6 (#13C, SWPT graph node-envelope narrower than live edge-set) — **CONFIRMED, FIXED, PROVEN** — combined with H4 (#19H)
+
+Presented alongside H4 (#19H) because both live in the exact same call chain (`SWPI::URC_Hopper` →
+`SWPT::URC_ComputeGraphPath`/`URC_MakeGraph` → `URC_TokenNeighbours`/`URC_Edges`) and a correct fix for
+one is structurally entangled with the other. Owner directed the design after three corrections during
+discussion: (1) SWPT/SWP deploy order only matters for fresh REPL loading, not for upgrading already-live
+mainnet modules — no need to treat it as a hard blocker; (2) no artificial gas-budgeted max-hop constant —
+the pool architecture's principal-anchoring already provides a real, natural hop bound; (3) no bounded
+retry loop in `URC_Hopper` — Pact is Turing-incomplete, "how many retries are enough" is unknowable in
+general. Owner's own proposed direction: filter to active (`can-swap=true`) pools up front, once, and
+route over that filtered set in a single BFS pass.
+
+**What the fix actually required — deeper than the first attempt.** Filtering the top-level `swpairs`
+argument fed into `URC_ComputeGraphPath`/`UC_MakeGraphNodes` closes the *node*-envelope side. But
+`URC_TokenNeighbours`/`URC_TokenSwpairs` (and, downstream, `URC_Edges`/`SWPI::URC_BestEdge`) don't take
+that argument at all — they read the live `SWPT|Tracer` table directly, entirely bypassing whatever
+universe the caller asked for. This was caught by testing, not by static review: the first pass compiled
+and passed the existing suite, but crashed for real (`Array index out of bounds`) the moment an actual
+adversarial scenario (disabled parallel pool) was constructed — see H4's entry below for that half, and
+the full mechanism trace.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact`, `UC_MakeGraphNodes`:** dropped the old ≤1-hop
+filter (`UC_FilterOne swpairs input-id` / `output-id`); nodes are now built from every token appearing
+across the *entire* passed-down `swpairs` list. `input-id`/`output-id` stay in the signature, unused —
+zero interface change. This makes the node envelope equal to "every token reachable in whatever universe
+the caller specified," which is exactly what BFS's edge-derivation needs to match.
+
+**Reproduced live, adversarially, isolated from every other change in the same files:** built a genuine
+4-hop chain with previously-unpooled tokens (`S|OURO|AG`, `S|AG|AL`, `S|AL|AU`, `S|AU|BI`, `S|BI|CO` —
+`[6.2+3]…repl` `SWP|TX 024a-e`/`025`), then temporarily reverted *only* this one function back to the old
+≤1-hop filter (nothing else touched). Result: the bug surfaces even earlier and more severely than the
+original finding predicted — pool issuance itself breaks, because `UEV_Issue`'s DLK-connectivity check
+(which also routes through the graph) can no longer see `AU` (3 hops deep):
+```
+No connection to DLK detected for AU-98c486052a51. Create a W or P Pool first with it!
+```
+Restored the fix, re-ran: issuance succeeds, and `SWP|TX 026` confirms the full 5-node chain
+`[AG, AL, AU, BI, CO]` is discovered intact via `URC_HopperActive`, 4 real edges, no `BAR` sentinel
+anywhere in the result.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see combined write-up and full diff in `ROUND-02-FIXES.md` Fix #10
+(covers this, H4, and H2 together — one connected fix, adversarially proven for each). Awaiting Round III
+re-verify.
+
+---
+
+## H4 (#19H, SWPT routing never filters disabled pools, no fallback) — **CONFIRMED, FIXED, PROVEN** — combined with C6 (#13C)
+
+**What actually closes this turned out to need two layers, not one — found by testing, not assumed.**
+Layer 1 (filter which pools are even candidates): new `SWP::URC_ActiveSwpairs` (filters `URC_Swpairs()` to
+`can-swap=true`), and a new `SWPI::URC_HopperActive` entrypoint that routes only over that filtered set.
+`SWPI::URC_Hopper` itself is **left unfiltered** and kept for internal issuance-time pricing
+(`URC_WorthDWK`, `UEV_Issue`'s DLK-connectivity check) — those calls happen *before* a pool (or its
+neighbors) may even be swap-enabled yet, and reverting them to active-only during Layer-1 development
+immediately broke real issuance transactions with an empty-swpairs crash inside
+`UC_PoolTokensFromPairs`. `SWPU`'s four real execution/quote call sites (`SWPU|X>SMART-SWAP`,
+`UDC_SpawnSmartSwapSlippageBounds`, `XI_SmartSwapRouter`, `XI_Pumpdate`) were switched to
+`URC_HopperActive`.
+
+**Layer 1 alone was not enough — adversarial testing caught it.** Built a shortcut pool `S|AG|CO` (1 hop)
+parallel to the 4-hop chain from C6/#13C's fix, enabled it, then disabled it and asked
+`URC_HopperActive(AG, CO, …)` to route. With only Layer 1 in place, `URC_BestEdgeFiltered` correctly
+found zero active edges directly between `AG`/`CO` — but BFS had *already* treated them as adjacent nodes
+in the discovered path, because `URC_MakeGraph`'s node/link check only verified "is this token a valid
+node somewhere" (true — `CO` has other active pools), not "does an active edge exist *between this
+specific pair*." Crashed with `Array index out of bounds` inside `URCX_BestEdgeOf`. **Layer 2:**
+`URC_MakeGraph`'s link computation now requires a genuine `URC_EdgesActive` match between each node and
+candidate neighbor, not just neighbor-token membership in the node set — this subsumes the membership
+check (a real edge implies both endpoints are valid nodes) and closes both problems with one condition.
+New `SwapTracerV1`-additive `URC_EdgesActive`, and `SwapperIssueV3`-additive `URC_BestEdgeFiltered`
+(shares its selection core with the existing `URC_BestEdge` via new internal `URCX_BestEdgeOf`).
+
+**Reproduced live, adversarially:** with the shortcut active, temporarily reverted `URC_HopperActive`
+to route over the *unfiltered* full swpair set (simulating "no fix at all"). Disabled the shortcut,
+queried `AG->CO`: routing **still picked the disabled shortcut** —
+`edges: ["S|AG-98c486052a51|CO-98c486052a51"]`, `nodes: [AG, CO]` — the exact H4 failure scenario,
+reproduced against real pool state, not asserted. Restored the fix, re-ran: routing correctly falls back
+to the active 4-hop chain, the disabled shortcut never appears in the result (`SWP|TX 028`).
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #10 for the full diff and all three
+adversarial proofs (this, C6/#13C, and H2/#20H — closed as a byproduct, see its own entry below).
+Awaiting Round III re-verify.
+
+---
+
+## H2 (#20H, `URC_ComputeGraphPath` crashes instead of returning a clean no-path result) — **CONFIRMED, FIXED, PROVEN** — closed as a byproduct of C6/H4
+
+Not originally scheduled for this turn (findings are presented in ranked order, and #20H comes after
+#19H) — folded in explicitly rather than deferred, because the C6/H4 fix makes "no active path exists"
+a normal, expected outcome for the first time (previously #13C's corruption bug masked how often this
+line would actually be hit). Leaving `(at 0 fp)` bare while rewriting everything around it would have
+just traded one crash for another under a newly-legitimate trigger. Flagged this explicitly before fixing
+rather than silently bundling it in.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`, `URC_ComputeGraphPath`:**
+```diff
+-                    (at 0 fp)
++                    (if (> (length fp) 0) (at 0 fp) [BAR])
+```
+
+**Reproduced live, adversarially — and the first attempt at a repro scenario was wrong, caught by
+testing.** First scenario (disable every pool touching `AG`/`CO` including `S|OURO|AG`) made `AG` a fully
+isolated node — `URC_AllGraphPaths` returns `[[BAR]]` (the "nothing at all" sentinel) which short-circuits
+*before* reaching the `(at 0 fp)` line at all, so reverting the guard didn't crash. Real reproduction needs
+BFS to find *some* chains that never reach `output` specifically: left `S|OURO|AG` active (so `AG` stays
+richly connected to the wider live graph through OURO's many other pools) and disabled only the pools that
+could ever reach `CO`. With the guard reverted, this crashes exactly as predicted:
+```
+Array index out of bounds. Length (0), Index (0)
+  at (at 0 fp)  — 14_SWPT.pact:324
+```
+Restored the guard, re-ran: `URC_HopperActive(AG, CO, …)` returns the clean empty-Hopper sentinel
+(`nodes: []`), no crash (`SWP|TX 029`).
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #10. Awaiting Round III re-verify.
+
+---

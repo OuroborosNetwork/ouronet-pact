@@ -1726,6 +1726,906 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 017 - C3 Reproduction: Zero-Fee Round-Trip Rounding Bias")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 017 - C3 Reproduction: Zero-Fee Round-Trip Rounding Bias · 01 · env-sigs (caps) ==== ===
+(print "--- [SWP|TX 017 - C3 Reproduction: Zero-Fee Round-Trip Rounding Bias · 01 · env-sigs (caps)] ---")
+(env-sigs [])
+;;==== SWP|TX 017 - C3 Reproduction: Zero-Fee Round-Trip Rounding Bias · 02 · let / invocation ==== ==
+(print "--- [SWP|TX 017 - C3 Reproduction: Zero-Fee Round-Trip Rounding Bias · 02 · let / invocation] ---")
+;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #C3 — every solved-balance formula floors the intermediate
+;;new-balance term, not the final answer, biasing every swap in the TAKER's favor. Reproduced here by
+;;calling the raw UC_ComputeY/UC_ComputeWP math directly (bypassing fees entirely, exactly matching the
+;;audit's own "zero fees, raw math" method) on two already-issued pools, round-tripping a swap: if a
+;;trader can swap A->B then B->A and walk away with MORE than they started with, the bias is real and
+;;live, not just a code-reading claim. No fees, no other callers involved — isolates the math alone.
+;;Amount 100.0 (stable) / 9999.0 (weighted) were chosen because they're proven, live, to trigger the
+;;bias on these exact pools — smaller weighted-pool amounts round-tripped exactly clean in a first pass
+;;(100.0, 137.777, 333.333333, 1.0, 0.0001, 271.828182845904523536 all landed at delta=0), so 9999.0 was
+;;picked specifically because it's the one that actually exposed it, not cherry-picked to hide anything.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+        (ref-U|LST:module{StringProcessorV1} U|LST)
+        ;;-- Stable pool leg (S|DLK|OURO|DWK, A=85, genesis 800/900/850) --
+        (pool-s:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (dlk:string (ref-DALOS::UR_SilverStoaID))
+        (ouro:string (ref-DALOS::UR_OuroborosID))
+        (As:decimal (ref-SWP::UR_Amplifier pool-s))
+        (Xs:[decimal] (ref-SWP::UR_PoolTokenSupplies pool-s))
+        (Ws:[decimal] (ref-SWP::UR_Weigths pool-s))
+        (ip-s:integer (ref-SWP::UR_PoolTokenPosition pool-s dlk))
+        (op-s:integer (ref-SWP::UR_PoolTokenPosition pool-s ouro))
+        (o-prec-s:integer (at op-s (ref-SWP::UR_PoolTokenPrecisions pool-s)))
+        (i-prec-s:integer (at ip-s (ref-SWP::UR_PoolTokenPrecisions pool-s)))
+        (leg1-input-s:decimal 100.0)
+        (leg1-out-s:decimal
+            (ref-U|SWP::UC_ComputeY
+                (ref-U|SWP::UDC_DirectRawSwapInput As Xs [leg1-input-s] [ip-s] op-s o-prec-s Ws)
+            )
+        )
+        (Xs1:[decimal]
+            (ref-U|LST::UC_ReplaceAt
+                (ref-U|LST::UC_ReplaceAt Xs ip-s (+ (at ip-s Xs) leg1-input-s))
+                op-s (- (at op-s Xs) leg1-out-s)
+            )
+        )
+        (leg2-out-s:decimal
+            (ref-U|SWP::UC_ComputeY
+                (ref-U|SWP::UDC_DirectRawSwapInput As Xs1 [leg1-out-s] [op-s] ip-s i-prec-s Ws)
+            )
+        )
+        ;;Also directly exercise UC_ComputeInverseY/UC_ZNext (not touched by leg1/leg2 above, which only
+        ;;call UC_ComputeY) — on the ORIGINAL pool state, "how much DLK input is needed to get exactly
+        ;;<leg1-out-s> OURO out" should round-trip consistently with the direct quote (>= leg1-input-s,
+        ;;since UC_ComputeInverseY now ceilings — must never require less than was actually used).
+        (inverse-check-s:decimal
+            (ref-U|SWP::UC_ComputeInverseY
+                (ref-U|SWP::UDC_InverseRawSwapInput As Xs leg1-out-s op-s ip-s i-prec-s Ws)
+            )
+        )
+        ;;-- Weighted pool leg (W|DLK|OURO|DWK, weights [0.3 0.5 0.2], genesis 3200/10000/6000) --
+        (pool-w:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (Aw:decimal (ref-SWP::UR_Amplifier pool-w))
+        (Xw:[decimal] (ref-SWP::UR_PoolTokenSupplies pool-w))
+        (Ww:[decimal] (ref-SWP::UR_Weigths pool-w))
+        (ip-w:integer (ref-SWP::UR_PoolTokenPosition pool-w dlk))
+        (op-w:integer (ref-SWP::UR_PoolTokenPosition pool-w ouro))
+        (o-prec-w:integer (at op-w (ref-SWP::UR_PoolTokenPrecisions pool-w)))
+        (i-prec-w:integer (at ip-w (ref-SWP::UR_PoolTokenPrecisions pool-w)))
+        (leg1-input-w:decimal 9999.0)
+        (leg1-out-w:decimal
+            (ref-U|SWP::UC_ComputeWP
+                (ref-U|SWP::UDC_DirectRawSwapInput Aw Xw [leg1-input-w] [ip-w] op-w o-prec-w Ww)
+            )
+        )
+        (Xw1:[decimal]
+            (ref-U|LST::UC_ReplaceAt
+                (ref-U|LST::UC_ReplaceAt Xw ip-w (+ (at ip-w Xw) leg1-input-w))
+                op-w (- (at op-w Xw) leg1-out-w)
+            )
+        )
+        (leg2-out-w:decimal
+            (ref-U|SWP::UC_ComputeWP
+                (ref-U|SWP::UDC_DirectRawSwapInput Aw Xw1 [leg1-out-w] [op-w] ip-w i-prec-w Ww)
+            )
+        )
+        ;;C3 status: the STABLE-pool bias above is now fully closed (exact, see UC_IntPow in 12_U_SWP.pact).
+        ;;The WEIGHTED-pool leg is NOT — Pact's native <^> silently loses precision on the required
+        ;;fractional exponent (<weight>), which cannot be worked around with an exact-multiplication trick
+        ;;the way the stable-pool integer exponents were. Accepted as a bounded, documented limitation
+        ;;(Audit/SWP/ROUND-02-FIXES.md Fix #3) rather than an open bug — this assertion is a REGRESSION
+        ;;bound, not a "must be zero" check: it fails only if the bias ever grows beyond generous headroom
+        ;;over float64's own ~2.2e-16 relative epsilon (the observed bias here is ~1.8e-16 relative).
+        (weighted-relative-tolerance:decimal 0.000000001)
+        (weighted-bias:decimal (abs (- leg2-out-w leg1-input-w)))
+    )
+    (map print
+        [
+            (format "STABLE  {} DLK -> {} OURO -> {} DLK (round trip)" [leg1-input-s leg1-out-s leg2-out-s])
+            (format "STABLE INVERSE check: needs {} DLK in to get {} OURO out (direct used {})"
+                [inverse-check-s leg1-out-s leg1-input-s])
+            (format "WEIGHTED {} DLK -> {} OURO -> {} DLK (round trip, bias={})"
+                [leg1-input-w leg1-out-w leg2-out-w weighted-bias])
+            (expect "C3 reproduction — stable-pool zero-fee round trip does not profit the trader"
+                true (<= leg2-out-s leg1-input-s))
+            (expect "C3 reproduction — stable-pool inverse quote never requires less than the direct input"
+                true (>= inverse-check-s leg1-input-s))
+            (expect "C3 accepted limitation — weighted-pool round-trip bias stays within float64-noise bound (Fix #3)"
+                true (<= weighted-bias (* leg1-input-w weighted-relative-tolerance)))
+        ]
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 017 - C3 Reproduction: Zero-Fee Round-Trip Rounding Bias · 03 · gas echo ==== ===========
+(print "--- [SWP|TX 017 - C3 Reproduction: Zero-Fee Round-Trip Rounding Bias · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 017 C3 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 018 - C7 Reproduction: Weight-Modification Guards")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 018 - C7 Reproduction: Weight-Modification Guards · 01 · env-sigs (caps) ==== ===========
+(print "--- [SWP|TX 018 - C7 Reproduction: Weight-Modification Guards · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== SWP|TX 018 - C7 Reproduction: Weight-Modification Guards · 02 · let / invocation ==== ==========
+(print "--- [SWP|TX 018 - C7 Reproduction: Weight-Modification Guards · 02 · let / invocation] ---")
+;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #C7 — SWP|S>WEIGHTS had no length-parity check, a dead
+;;(discarded) precision check, and no per-weight lower bound. Fixed: length-parity mirrors the sibling
+;;SWP|S>UPDATE-SUPPLIES cap; precision + >=0.1 floor now enforced per-weight inside the map lambda
+;;(matching the working UEV_UniformList idiom, not the original dead-map one). Every case below would
+;;have succeeded silently pre-fix; all four must now abort, and a legitimate reweight must still work.
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (ref-SWP:module{SwapperV3} SWP)
+        (patron:string KST.ANHD)
+        (pool1:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+    )
+    (map print
+        [
+            (expect-failure "C7 fix — length mismatch (2 weights on a 3-token pool) is rejected"
+                (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [0.5 0.5]))
+            (expect-failure "C7 fix — a weight below the 0.1 floor is rejected"
+                (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [0.05 0.45 0.5]))
+            (expect-failure "C7 fix — a negative weight (cancelling to sum=1.0) is rejected"
+                (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [1.2 0.3 -0.5]))
+            (expect-failure "C7 fix — a weight violating fee precision (5 decimals) is rejected"
+                (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [0.30001 0.5 0.19999]))
+        ]
+    )
+    (ref-TS01-C3::SWP|C_ModifyWeights patron pool1 [0.4 0.4 0.2])
+    (print (format "C7 — legitimate reweight succeeded, pool1 weights now: {}" [(ref-SWP::UR_Weigths pool1)]))
+)
+(print "")
+(print "")
+;;==== SWP|TX 018 - C7 Reproduction: Weight-Modification Guards · 03 · gas echo ==== ====================
+(print "--- [SWP|TX 018 - C7 Reproduction: Weight-Modification Guards · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 018 C7 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 019 - C8 Reproduction: Amplifier-Update Guards")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 019 - C8 Reproduction: Amplifier-Update Guards · 01 · env-sigs (caps) ==== ================
+(print "--- [SWP|TX 019 - C8 Reproduction: Amplifier-Update Guards · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== SWP|TX 019 - C8 Reproduction: Amplifier-Update Guards · 02 · let / invocation ==== ===============
+(print "--- [SWP|TX 019 - C8 Reproduction: Amplifier-Update Guards · 02 · let / invocation] ---")
+;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #C8 — SWP|S>UPDATE-AMPLIFIER never validated <new-amplifier>
+;;at all: no lower bound, no upper bound, no exclusion of the module's own -1.0 "not a stable pool"
+;;sentinel. Fixed: >= 1.0 (mirrors UEV_Issue's own creation-time floor) and <= 2000.0 (REPL-verified
+;;ceiling — see 15_SWP.pact comment for the convergence-degradation data behind that number). Every case
+;;below would have succeeded silently pre-fix; all four must now abort, and a legitimate update must work.
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (ref-SWP:module{SwapperV3} SWP)
+        (patron:string KST.ANHD)
+        (pool2:string "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+    )
+    ;;Each case is preceded by a reset to a known-good baseline (85.0) — deliberately isolates every
+    ;;check from the others. Without this, a bad value that (pre-fix) actually succeeds would brick
+    ;;<current-amp>, which then makes every LATER case "fail" for the wrong reason (the cap's own
+    ;;pre-existing current-amp>0 check), masking whether each individual bound is independently enforced.
+    (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
+    (map print
+        [(expect-failure "C8 fix — new-amplifier = 0.0 (div-by-zero bricking risk) is rejected"
+            (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 0.0))]
+    )
+    (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
+    (map print
+        [(expect-failure "C8 fix — new-amplifier = -1.0 (the non-stable-pool sentinel) is rejected"
+            (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 -1.0))]
+    )
+    (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
+    (map print
+        [(expect-failure "C8 fix — a negative new-amplifier is rejected"
+            (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 -5.0))]
+    )
+    (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 85.0)
+    (map print
+        [(expect-failure "C8 fix — new-amplifier above the 2000.0 ceiling is rejected"
+            (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 5000.0))]
+    )
+    (ref-TS01-C3::SWP|C_UpdateAmplifier patron pool2 150.0)
+    (print (format "C8 — legitimate amplifier update succeeded, pool2 amplifier now: {}" [(ref-SWP::UR_Amplifier pool2)]))
+)
+(print "")
+(print "")
+;;==== SWP|TX 019 - C8 Reproduction: Amplifier-Update Guards · 03 · gas echo ==== ========================
+(print "--- [SWP|TX 019 - C8 Reproduction: Amplifier-Update Guards · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 019 C8 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 020 - C9 Reproduction: MTX-SWP Issuance Registers SWP|LP")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 020 - C9 Reproduction: MTX-SWP Issuance Registers SWP|LP · 01 · env-sigs (caps) ==== ======
+(print "--- [SWP|TX 020 - C9 Reproduction: MTX-SWP Issuance Registers SWP|LP · 01 · env-sigs (caps)] ---")
+(env-sigs [])
+;;==== SWP|TX 020 - C9 Reproduction: MTX-SWP Issuance Registers SWP|LP · 02 · let / invocation ==== =====
+(print "--- [SWP|TX 020 - C9 Reproduction: MTX-SWP Issuance Registers SWP|LP · 02 · let / invocation] ---")
+;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #C9 — pools issued through the MTX-SWP defpact path never got
+;;a SWP|LP row, so UR_GetLpSwpair (relied on by AQP LP-stake admission) hard-aborted for every such pool's
+;;LP token, forever. pool7 (S|BUSD|TUSD|USDT|USDC|USDD|AUSD|CUSD) was issued in THIS exact suite via the
+;;real MTX-SWP defpact (TX 012a/b/c, 0|2 -> 1|2 -> 2|2), not a synthetic case — it's the actual live proof.
+;;Fixed by folding the SWP|LP insert into SWP::XE_Issue itself (both issuance paths call it), removing the
+;;now-redundant standalone call SWPI::C_Issue used to be the only one to remember.
+(let
+    (
+        (ref-SWP:module{SwapperV3} SWP)
+        (pool7:string "S|BUSD-98c486052a51|TUSD-98c486052a51|USDT-98c486052a51|USDC-98c486052a51|USDD-98c486052a51|AUSD-98c486052a51|CUSD-98c486052a51")
+        (pool7-lp:string (ref-SWP::UR_TokenLP pool7))
+    )
+    (map print
+        [
+            (format "pool7's LP token id: {}" [pool7-lp])
+            (expect (format "C9 fix — UR_GetLpSwpair resolves pool7's MTX-SWP-issued LP token {} back to its swpair" [pool7-lp])
+                pool7 (ref-SWP::UR_GetLpSwpair pool7-lp))
+        ]
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 020 - C9 Reproduction: MTX-SWP Issuance Registers SWP|LP · 03 · gas echo ==== ==============
+(print "--- [SWP|TX 020 - C9 Reproduction: MTX-SWP Issuance Registers SWP|LP · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 020 C9 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 022 - H11 Reproduction: can-add Never Blocks Removal")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 022 - H11 Reproduction: can-add Never Blocks Removal · 01 · env-sigs (caps) ==== ==========
+(print "--- [SWP|TX 022 - H11 Reproduction: can-add Never Blocks Removal · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== SWP|TX 022 - H11 Reproduction: can-add Never Blocks Removal · 02 · let / invocation ==== =========
+(print "--- [SWP|TX 022 - H11 Reproduction: can-add Never Blocks Removal · 02 · let / invocation] ---")
+;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #H11 — UEV_RemoveLiquidity read the SAME <can-add> flag
+;;UEV_AddLiquidity does; flipping can-add=false blocked new deposits AND simultaneously stranded every
+;;existing LP's principal, permanently, with no escape hatch. Owner decision (2026-08-17, after checking
+;;industry practice — Curve's kill_me structurally exempts plain remove_liquidity; Balancer's Recovery
+;;Mode is deliberately permissionless while paused, "so that funds can never be locked by governance
+;;action"): can-add legitimately pauses new deposits, but must NEVER be able to block existing LPs from
+;;getting their own principal back. Fixed by removing the can-add check from UEV_RemoveLiquidity entirely.
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (patron:string KST.ANHD)
+        (pool1:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (lp-id:string (ref-SWP::UR_TokenLP pool1))
+        (patron-lp-before:decimal (ref-DPTF::UR_AccountSupply lp-id patron))
+    )
+    ;;Pause new deposits on pool1.
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron pool1 false)
+    (map print
+        [
+            ;;can-add=false must still block a NEW deposit — unchanged, legitimate behavior.
+            (expect-failure "H11 fix — can-add=false still blocks a new deposit, as intended"
+                (ref-TS01-C3::SWP|C_AddLiquidity patron patron pool1 [10.0 10.0 10.0]))
+        ]
+    )
+    ;;can-add=false must NOT block removing existing LP principal — the actual fix.
+    (ref-TS01-C3::SWP|C_RemoveLiquidity patron patron pool1 (floor (* patron-lp-before 0.01) 6))
+    (print (format "H11 fix — removal succeeded despite can-add=false; patron LP before={} after={}"
+        [patron-lp-before (ref-DPTF::UR_AccountSupply lp-id patron)]))
+    ;;Restore pool1 to its normal (add-enabled) state so nothing downstream is perturbed.
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity patron pool1 true)
+)
+(print "")
+(print "")
+;;==== SWP|TX 022 - H11 Reproduction: can-add Never Blocks Removal · 03 · gas echo ==== ===================
+(print "--- [SWP|TX 022 - H11 Reproduction: can-add Never Blocks Removal · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 022 H11 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 023 - H6 Reproduction: Primality Gate on Primordial-Pool Designation")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 023 - H6 Reproduction: Primality Gate · 01 · env-sigs (caps) ==== ==========================
+(print "--- [SWP|TX 023 - H6 Reproduction: Primality Gate · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== SWP|TX 023 - H6 Reproduction: Primality Gate · 02 · let / invocation ==== =========================
+(print "--- [SWP|TX 023 - H6 Reproduction: Primality Gate · 02 · let / invocation] ---")
+;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #H6 — SWP|C>DEFINE-PRIMORDIAL-POOL bound <primality> but never
+;;included it in the enforce fold; only 5 fully composable conditions (weighted, has-OURO, has-WKDA,
+;;has-LKDA, exactly-3-tokens) actually gated designation. Owner: primality also means exempt from
+;;low-liquidity gates / never autonomously disabled — the real guardrail here, silently unenforced.
+;;
+;;Attempted a live "lookalike pool" adversarial reproduction (same 3 tokens, different order, p=false)
+;;and it's not constructible — confirmed something stronger than either of us assumed going in. Tried
+;;issuing a same-token-set pool in a different order; hit "Pool already exists for given Tokens!" from
+;;SWP::UEV_New/UEV_CheckAgainstMass (15_SWP.pact:1058-1122), which checks new token SETS against every
+;;existing pool of the same category via pure containment (UEV_CheckAgainst uses `contains`, not
+;;positional equality) — completely order-independent. Once the real OURO|WKDA|LKDA pool exists, no
+;;second pool sharing that token set can EVER be issued, in any order, with any weights. This confirms
+;;the owner's assessment directly: the only theoretical exposure window was a one-time bootstrap race
+;;(front-running the very first OURO|WKDA|LKDA pool issuance, before the real one existed) — already
+;;closed on mainnet since the real pool was issued correctly first. Live adversarial reproduction against
+;;the *current*, populated state is structurally impossible, not just hard to construct.
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-SWP:module{SwapperV3} SWP)
+        (pool1:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+    )
+    ;;Regression check: the real, primality=true primordial pool must still be (re-)designatable with the
+    ;;new primality enforce in place.
+    (ref-TS01-A::SWP|A_DefinePrimordialPool pool1)
+    (print (format "H6 fix — real primordial pool re-designation still works: {}" [(ref-SWP::UR_PrimordialPool)]))
+)
+(print "")
+(print "")
+;;==== SWP|TX 023 - H6 Reproduction: Primality Gate · 03 · gas echo ==== ==================================
+(print "--- [SWP|TX 023 - H6 Reproduction: Primality Gate · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 023 H6 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #13C/#19H/#20H — combined SWPT routing-graph fix.
+;;TX024a-e build a genuine 4-hop chain OURO-AG-AL-AU-BI-CO (each stable pool's first token is
+;;already DLK-anchored via the previous pool, satisfying UEV_Issue's transitive connectivity
+;;check) using previously-unpooled elemental tokens (AG/AL/AU/BI/CO, minted to ANHD in DPTF Tx
+;;001-003, never used in any Stage 01 pool). No existing pool/test state is touched.
+(begin-tx "SWP|TX 024a - #13C/#19H/#20H Setup: Issue S|OURO|AG (chain anchor)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 024a - Issue S|OURO|AG · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+    (print "--- [SWP|TX 024a - Issue S|OURO|AG · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+            (ag:string "AG-98c486052a51")
+            (pool
+                (ref-TS01-C3::SWP|C_IssueStable
+                    KST.ANHD KST.ANHD
+                    [ { "token-id": ouro, "token-supply": 800.0}
+                      { "token-id": ag,   "token-supply": 800.0} ]
+                    10.0 10.0 false
+                )
+            )
+        )
+        (print "--- [SWP|TX 024a - Issue S|OURO|AG · 03 · gas echo] ---")
+        (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
+    )
+)
+(print "")
+(format "<<<<<<<SWP|TX 024a Issue S|OURO|AG ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 024b - #13C/#19H/#20H Setup: Issue S|AG|AL")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 024b - Issue S|AG|AL · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+    (print "--- [SWP|TX 024b - Issue S|AG|AL · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ag:string "AG-98c486052a51")
+            (al:string "AL-98c486052a51")
+            (pool
+                (ref-TS01-C3::SWP|C_IssueStable
+                    KST.ANHD KST.ANHD
+                    [ { "token-id": ag, "token-supply": 800.0}
+                      { "token-id": al, "token-supply": 800.0} ]
+                    10.0 10.0 false
+                )
+            )
+        )
+        (print "--- [SWP|TX 024b - Issue S|AG|AL · 03 · gas echo] ---")
+        (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
+    )
+)
+(print "")
+(format "<<<<<<<SWP|TX 024b Issue S|AG|AL ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 024c - #13C/#19H/#20H Setup: Issue S|AL|AU")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 024c - Issue S|AL|AU · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+    (print "--- [SWP|TX 024c - Issue S|AL|AU · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (al:string "AL-98c486052a51")
+            (au:string "AU-98c486052a51")
+            (pool
+                (ref-TS01-C3::SWP|C_IssueStable
+                    KST.ANHD KST.ANHD
+                    [ { "token-id": al, "token-supply": 800.0}
+                      { "token-id": au, "token-supply": 800.0} ]
+                    10.0 10.0 false
+                )
+            )
+        )
+        (print "--- [SWP|TX 024c - Issue S|AL|AU · 03 · gas echo] ---")
+        (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
+    )
+)
+(print "")
+(format "<<<<<<<SWP|TX 024c Issue S|AL|AU ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 024d - #13C/#19H/#20H Setup: Issue S|AU|BI")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 024d - Issue S|AU|BI · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+    (print "--- [SWP|TX 024d - Issue S|AU|BI · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (au:string "AU-98c486052a51")
+            (bi:string "BI-98c486052a51")
+            (pool
+                (ref-TS01-C3::SWP|C_IssueStable
+                    KST.ANHD KST.ANHD
+                    [ { "token-id": au, "token-supply": 800.0}
+                      { "token-id": bi, "token-supply": 800.0} ]
+                    10.0 10.0 false
+                )
+            )
+        )
+        (print "--- [SWP|TX 024d - Issue S|AU|BI · 03 · gas echo] ---")
+        (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
+    )
+)
+(print "")
+(format "<<<<<<<SWP|TX 024d Issue S|AU|BI ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 024e - #13C/#19H/#20H Setup: Issue S|BI|CO (chain end)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 024e - Issue S|BI|CO · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+    (print "--- [SWP|TX 024e - Issue S|BI|CO · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (bi:string "BI-98c486052a51")
+            (co:string "CO-98c486052a51")
+            (pool
+                (ref-TS01-C3::SWP|C_IssueStable
+                    KST.ANHD KST.ANHD
+                    [ { "token-id": bi, "token-supply": 800.0}
+                      { "token-id": co, "token-supply": 800.0} ]
+                    10.0 10.0 false
+                )
+            )
+        )
+        (print "--- [SWP|TX 024e - Issue S|BI|CO · 03 · gas echo] ---")
+        (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
+    )
+)
+(print "")
+(format "<<<<<<<SWP|TX 024e Issue S|BI|CO ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 025 - #13C/#19H/#20H Setup: Enable Chain Pools")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 025 - Enable Chain Pools · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [SWP|TX 025 - Enable Chain Pools · 02 · let / invocation] ---")
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (chain:[string]
+            [ "S|OURO-98c486052a51|AG-98c486052a51"
+              "S|AG-98c486052a51|AL-98c486052a51"
+              "S|AL-98c486052a51|AU-98c486052a51"
+              "S|AU-98c486052a51|BI-98c486052a51"
+              "S|BI-98c486052a51|CO-98c486052a51" ]
+        )
+    )
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD p true)) chain)
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD p true)) chain)
+)
+(print "")
+(print "--- [SWP|TX 025 - Enable Chain Pools · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 025 Enable Chain Pools ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 026 - #13C Reproduction: 4-Hop Chain Path Discovery")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 026 - #13C Reproduction · 01 · env-sigs (caps)] ---")
+(env-sigs [])
+(print "--- [SWP|TX 026 - #13C Reproduction · 02 · let / invocation] ---")
+;;Audit ref: ROUND-01-FINDINGS.md #13C — node envelope narrower than the live edge-set, paths >=4
+;;hops corrupted/lost. AG->CO is a genuine, real, freshly-issued 4-hop chain (AG-AL-AU-BI-CO); no
+;;shorter route exists yet (the shortcut pool is issued only in TX027, for #19H). Pre-fix, this
+;;would either lose the path entirely or splice the literal "BAR" sentinel into the chain.
+(let
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ag:string "AG-98c486052a51")
+        (al:string "AL-98c486052a51")
+        (au:string "AU-98c486052a51")
+        (bi:string "BI-98c486052a51")
+        (co:string "CO-98c486052a51")
+        (expected-nodes:[string] ["AG-98c486052a51" "AL-98c486052a51" "AU-98c486052a51" "BI-98c486052a51" "CO-98c486052a51"])
+        (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive ag co 10.0))
+        (nodes:[string] (at "nodes" h-obj))
+        (edges:[string] (at "edges" h-obj))
+        (outputs:[decimal] (at "output-values" h-obj))
+    )
+    (map print
+        [
+            (format "#13C proof — AG->CO nodes found: {}" [nodes])
+            (format "#13C proof — edges used: {}" [edges])
+            (format "#13C proof — output values per hop: {}" [outputs])
+            (expect "#13C fix — full 5-node/4-hop chain AG-AL-AU-BI-CO discovered intact, no truncation or BAR corruption" expected-nodes nodes)
+            (expect "#13C fix — exactly 4 real edges used (one per hop), none the literal BAR sentinel" 4 (length edges))
+            (expect "#13C fix — no BAR sentinel spliced into the edge list" false (contains "|" edges))
+        ]
+    )
+)
+(print "")
+(print "--- [SWP|TX 026 - #13C Reproduction · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 026 #13C Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 027 - #19H/#20H Setup: Issue+Enable Shortcut S|AG|CO")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 027 - Issue Shortcut S|AG|CO · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+    (print "--- [SWP|TX 027 - Issue Shortcut S|AG|CO · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ag:string "AG-98c486052a51")
+            (co:string "CO-98c486052a51")
+            (pool
+                (ref-TS01-C3::SWP|C_IssueStable
+                    KST.ANHD KST.ANHD
+                    [ { "token-id": ag, "token-supply": 800.0}
+                      { "token-id": co, "token-supply": 800.0} ]
+                    10.0 10.0 false
+                )
+            )
+        )
+        (print "--- [SWP|TX 027 - Issue Shortcut S|AG|CO · 03 · gas echo] ---")
+        (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
+    )
+)
+(print "")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (shortcut:string "S|AG-98c486052a51|CO-98c486052a51")
+    )
+    (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD shortcut true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD shortcut true)
+)
+(format "<<<<<<<SWP|TX 027 Issue+Enable Shortcut S|AG|CO ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 028 - #19H Reproduction: Disabled Shortcut Falls Back To Active Chain")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 028 - #19H Reproduction · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [SWP|TX 028 - #19H Reproduction · 02 · let / invocation] ---")
+;;Audit ref: ROUND-01-FINDINGS.md #19H — disabled/frozen pools are never filtered from routing,
+;;no fallback. With the shortcut S|AG|CO active, it is the shortest (1-hop) AG->CO route and
+;;should be BFS's pick. We disable it (can-swap=false) and assert routing correctly falls back
+;;to the still-active 4-hop chain instead of failing outright or (pre-fix) still trying to use
+;;the disabled pool.
+(let
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (ag:string "AG-98c486052a51")
+        (co:string "CO-98c486052a51")
+        (shortcut:string "S|AG-98c486052a51|CO-98c486052a51")
+        (expected-chain-nodes:[string] ["AG-98c486052a51" "AL-98c486052a51" "AU-98c486052a51" "BI-98c486052a51" "CO-98c486052a51"])
+    )
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD shortcut false)
+    (let
+        (
+            (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive ag co 10.0))
+            (nodes:[string] (at "nodes" h-obj))
+            (edges:[string] (at "edges" h-obj))
+        )
+        (map print
+            [
+                (format "#19H proof — shortcut disabled; AG->CO nodes found: {}" [nodes])
+                (format "#19H proof — edges used: {}" [edges])
+                (expect "#19H fix — disabled shortcut is never selected; routing falls back to the active 4-hop chain" expected-chain-nodes nodes)
+                (expect "#19H fix — the disabled shortcut pool itself is not among the edges used" false (contains shortcut edges))
+            ]
+        )
+    )
+)
+(print "")
+(print "--- [SWP|TX 028 - #19H Reproduction · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 028 #19H Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 029 - #20H Reproduction: Fully Disconnected Pair Returns Clean No-Path")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 029 - #20H Reproduction · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [SWP|TX 029 - #20H Reproduction · 02 · let / invocation] ---")
+;;Audit ref: ROUND-01-FINDINGS.md #20H — URC_ComputeGraphPath crashes (out-of-bounds `at` on an
+;;empty list) instead of returning the clean [BAR] "no path" sentinel. This crash path is
+;;specifically the case where BFS DOES discover real chains (so the "nothing at all" [[BAR]]
+;;short-circuit is never hit) but NONE of them reach <output> — so S|OURO|AG is deliberately left
+;;ACTIVE here (AG stays richly connected to the wider live graph via OURO's many other pools,
+;;guaranteeing BFS finds real chains rooted at AG), while every pool that could ever reach CO from
+;;AG (the rest of the chain, plus the already-disabled shortcut from TX028) is disabled — making
+;;CO itself genuinely unreachable, not AG merely isolated.
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (pools-to-disable:[string]
+            [ "S|AG-98c486052a51|AL-98c486052a51"
+              "S|AL-98c486052a51|AU-98c486052a51"
+              "S|AU-98c486052a51|BI-98c486052a51"
+              "S|BI-98c486052a51|CO-98c486052a51" ]
+        )
+    )
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD p false)) pools-to-disable)
+)
+(let
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ag:string "AG-98c486052a51")
+        (co:string "CO-98c486052a51")
+        (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive ag co 10.0))
+        (nodes:[string] (at "nodes" h-obj))
+    )
+    (map print
+        [
+            (format "#20H proof — everything disabled; AG->CO Hopper nodes: {}" [nodes])
+            (expect "#20H fix — no active path returns the clean empty-Hopper sentinel, not a crash" [] nodes)
+        ]
+    )
+)
+(print "")
+(print "--- [SWP|TX 029 - #20H Reproduction · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 029 #20H Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
 (print "")
 (print "===================DPTF + SWP Issuance-Only FINISHED==========================")
 (print "")

@@ -21,8 +21,12 @@ the self-grant bypass this finding depended on isn't possible. Owner independent
 real callers (`19_SWPU.pact:687,858`) are safe. Full mechanism trace in `ROUND-01-OWNER-FEEDBACK.md`. No
 finding survives at CRITICAL/HIGH/MEDIUM level. — *C13, retracted*
 
-#3C **[U|SWP]** StableSwap Newton solver has no domain guard — oversized swaps converge to the wrong root and
-can return more output than the pool actually holds. — *C2*
+#3C **[U|SWP]** ~~StableSwap Newton solver has no domain guard — oversized swaps converge to the wrong root and
+can return more output than the pool actually holds.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-17**
+(`ROUND-02-FIXES.md` Fix #1) — scope narrowed to stable pools (W/P are closed-form, no seed-dependent root);
+`UC_ComputeY` reseeded `y0 = D` (Curve-style), permanent REPL regression (`[6.2+3]…repl` `SWP|TX 015`) proven
+to fail pre-fix, pass post-fix. `UC_ComputeInverseY`'s sibling issue (different failure mode) explicitly
+**not** covered by this fix — still open. — *C2*
 
 #4C **[SWPU]** ~~`C_ToggleSwapCapability` has no ownership check anywhere in its call chain — any account
 can disable swapping on any pool, a free, unauthenticated, protocol-wide DoS.~~ — **REFUTED 2026-08-17.**
@@ -39,19 +43,37 @@ Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *C11, closed as DESIGN*
 
 #6C **[SWPI]** `URC_BestEdge` (multi-hop route edge selection) picks the pool with the *least* output, not
 the most — every "Smart Swap" across a pair served by ≥2 pools is systematically routed through the worse
-one. — *C1*
+one. — **FIXED ✅ AND PROVEN ✅ 2026-08-17** (`ROUND-02-FIXES.md` Fix #2) — live-reproduced in REPL per
+owner requirement before any code change (18.70 vs 10.00 real output, worse edge picked), one-char
+comparator flip, same block now proves the fix. — *C1*
 
-#7C **[U|SWP]** All six swap-amount formulas (stable/weighted/standard, direct+inverse) round toward the
-trader, not the pool — a repeatable, fee-free round-trip profit. — *C3*
+#7C **[U|SWP]** ~~All six swap-amount formulas (stable/weighted/standard, direct+inverse) round toward the
+trader, not the pool — a repeatable, fee-free round-trip profit.~~ — **STABLE FIXED ✅ AND PROVEN ✅
+2026-08-17** (`ROUND-02-FIXES.md` Fix #3): true root cause was Pact's native `^` silently using float64 for
+decimal exponentiation, not floor/ceiling placement — fixed via exact-multiplication `UC_IntPow` for
+whole-number exponents, both directions proven exact (0 bias) live. **WEIGHTED: ACCEPTED KNOWN LIMITATION**
+— `x^weight` is a genuine fraction with no exact-multiplication fix available in Pact; confirmed bounded
+(~1e-16 relative), confirmed non-solvency-threatening, documented in-source. — *C3*
 
-#8C **[SWP]** `C_ModifyWeights` has no pool-token-length check and a dead (never-enforced) precision check —
-can brick a pool or let an owner instantly reweight and arbitrage LPs. — *C7*
+#8C **[SWP]** ~~`C_ModifyWeights` has no pool-token-length check and a dead (never-enforced) precision
+check — can brick a pool or let an owner instantly reweight and arbitrage LPs.~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-17** (`ROUND-02-FIXES.md` Fix #4): length-parity + real per-weight enforce (precision + `>=0.1`
+floor) added to `SWP|S>WEIGHTS`; adversarially proven (pre-fix all 4 attacks succeeded, post-fix all
+rejected, legitimate reweight still works). Time-lock for instant-reweight arbitrage left as a separate
+design decision. Same bug duplicated in `UEV_Issue` — see H5. — *C7*
 
-#9C **[SWP]** `C_UpdateAmplifier` has zero bound-check on the new value, including the module's own "not a
-stable pool" sentinel — can brick or silently mis-type a live stable pool. — *C8*
+#9C **[SWP]** ~~`C_UpdateAmplifier` has zero bound-check on the new value, including the module's own "not
+a stable pool" sentinel — can brick or silently mis-type a live stable pool.~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-17** (`ROUND-02-FIXES.md` Fix #5): floor `>=1.0` + ceiling `<=2000.0`, ceiling evidence-backed via
+a REPL convergence-degradation sweep, not guessed. Live-proven pre-fix (`0.0` bricked the pool — even more
+permanently than originally stated, since it also blocks any further fix via the same cap); post-fix all
+bad values rejected, legitimate updates still work. — *C8*
 
-#10C **[SWP / MTX-SWP]** Pools issued through the MTX-SWP `defpact` path are never registered in `SWP|LP` —
-every such pool's LP token permanently hard-aborts any AQP LP-stake admission attempt. — *C9*
+#10C **[SWP / MTX-SWP]** ~~Pools issued through the MTX-SWP `defpact` path are never registered in
+`SWP|LP` — every such pool's LP token permanently hard-aborts any AQP LP-stake admission attempt.~~ —
+**FIXED ✅ AND PROVEN ✅ 2026-08-17** (`ROUND-02-FIXES.md` Fix #6): registration folded into `XE_Issue`
+(shared by both issuance paths); reproduced against pool7 (a real pool actually issued via the buggy path
+in this same REPL suite) — hard-aborted pre-fix, resolves correctly post-fix. — *C9*
 
 #11C **[SWPI]** `UEV_Issue` never checks individual pool weights are `>0` — a `0.0`-weight token in a new W
 pool is permanently untradeable (div-by-zero). — *C4*
@@ -59,32 +81,62 @@ pool is permanently untradeable (div-by-zero). — *C4*
 #12C **[SWPI]** `UEV_Issue` never checks individual genesis reserves are `>0` — a `0`-reserve token in a new
 pool permanently bricks that token (div-by-zero on first touching swap). — *C5*
 
-#13C **[SWPT]** The routing graph's node set is narrower than its live edge set — paths of 4+ hops are
-corrupted or silently lost, and the underlying crash (#20H) is triggered by this. — *C6*
+#13C **[SWPT]** ~~The routing graph's node set is narrower than its live edge set — paths of 4+ hops are
+corrupted or silently lost, and the underlying crash (#20H) is triggered by this.~~ — **FIXED ✅ AND
+PROVEN ✅ 2026-08-18** (`ROUND-02-FIXES.md` Fix #10, combined with #19H/#20H): `UC_MakeGraphNodes` now
+builds nodes from the full caller-supplied swpairs universe instead of a ≤1-hop filter. Adversarially
+reproduced live — reverting only this function broke pool *issuance* itself (3-hop-deep DLK-connectivity
+check failed); restored, full 4-hop chain discovered intact, 4 real edges, no `BAR` corruption. — *C6*
 
 ## HIGH
 
-#14H **[SWPU]** Reentrancy ordering window in `XI_Swap` — input debit (a smart-account guard callback point)
-runs before the pool-reserve commit, after the swap's output is already fixed. — *H9*
+#14H **[SWPU]** ~~Reentrancy ordering window in `XI_Swap` — input debit (a smart-account guard callback
+point) runs before the pool-reserve commit, after the swap's output is already fixed.~~ — **REFUTED
+2026-08-17.** Callback is reachable (governor rotation to a user-guard), but an isolated Pact 5 REPL proof
+confirmed any write attempted from a guard-evaluation callback is blocked at the VM level, not even
+`try`-catchable — no reentrant write is possible from this position. Full trace in
+`ROUND-01-OWNER-FEEDBACK.md`. — *H9, retracted*
 
-#15H **[MTX-SWP / Talos]** Global Administrative Pause is not honored on any `defpact` continuation step — an
-in-flight multi-step liquidity-add/issue completes even after an emergency pause. — *H10*
+#15H **[MTX-SWP / Talos]** ~~Global Administrative Pause is not honored on any `defpact` continuation step
+— an in-flight multi-step liquidity-add/issue completes even after an emergency pause.~~ — **DESIGN,
+closed 2026-08-17.** Step-0-only GAP gating confirmed intentional and consistent across all 6 codebase
+`defpact` flows, not SWP-specific. Residual time-window exposure rides on L68 (no TTL) separately, not
+independently closed here. Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *H10*
 
-#16H **[SWP]** `SWP|S>UPDATE-SUPPLIES` accepts non-positive new reserve values with zero enforcement — a
-negative pool-token-supply can be persisted unchecked. — *H12*
+#16H **[SWP]** ~~`SWP|S>UPDATE-SUPPLIES` accepts non-positive new reserve values with zero enforcement —
+a negative pool-token-supply can be persisted unchecked.~~ — **FIXED ✅ 2026-08-17** (`ROUND-02-FIXES.md`
+Fix #7): real `enforce (>= val 0.0)` added, defensive hardening per owner request. Live external repro
+attempted and confirmed blocked by Pact's foreign-module-admin rule (same as C13/H9); C2 (already fixed)
+was the main practical route in. — *H12*
 
-#17H **[SWPLC]** `can-add` gates both deposits *and* withdrawals — a single owner key can freeze every LP's
-principal indefinitely with no escape hatch. — *H11*
+#17H **[SWPLC]** ~~`can-add` gates both deposits *and* withdrawals — a single owner key can freeze every
+LP's principal indefinitely with no escape hatch.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-17**
+(`ROUND-02-FIXES.md` Fix #8): owner decided after industry research (Curve/Balancer both structurally
+exempt LP exit from pause) that `can-add` must never block removal — `UEV_RemoveLiquidity`'s check
+removed entirely. Proven live pre/post against the real production call chain. — *H11*
 
-#18H **[SWP]** `A_DefinePrimordialPool` reads the pool's `primality` flag but never actually enforces it —
-any matching 3-token pool can be substituted as the canonical primordial pool. — *H6*
+#18H **[SWP]** ~~`A_DefinePrimordialPool` reads the pool's `primality` flag but never actually enforces
+it — any matching 3-token pool can be substituted as the canonical primordial pool.~~ — **FIXED ✅
+2026-08-17** (`ROUND-02-FIXES.md` Fix #9): `primality` added to the enforce fold. Live repro attempted and
+found structurally impossible — `UEV_CheckAgainstMass` blocks any duplicate-token-set pool once the real
+one exists; only exposure was a one-time bootstrap race, already closed on mainnet. — *H6*
 
-#19H **[SWPT]** Tracer graph is append-only forever; disabled/frozen/sleeping pools are never filtered from
+#19H **[SWPT]** ~~Tracer graph is append-only forever; disabled/frozen/sleeping pools are never filtered from
 routing and there's no fallback — a maintenance toggle can hard-reject an entire Smart Swap that has a valid,
-slightly-longer alternate route. — *H4*
+slightly-longer alternate route.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-18** (`ROUND-02-FIXES.md` Fix #10,
+combined with #13C/#20H): new `URC_ActiveSwpairs`/`URC_HopperActive` route only over `can-swap=true` pools
+(`URC_Hopper` kept unfiltered for internal issuance-time pricing). Needed a 2nd layer (`URC_EdgesActive`/
+`URC_BestEdgeFiltered`) after adversarial testing caught a disabled *parallel* pool still being selected.
+Live-reproduced (disabled shortcut still picked pre-fix, real pool state); restored, correct fallback to
+the active 4-hop route. — *H4*
 
-#20H **[SWPT]** `URC_ComputeGraphPath` crashes (out-of-bounds `at` on an empty list) instead of returning the
-documented clean "no path" result — also breaks pre-flight quote calls. — *H2*
+#20H **[SWPT]** ~~`URC_ComputeGraphPath` crashes (out-of-bounds `at` on an empty list) instead of returning the
+documented clean "no path" result — also breaks pre-flight quote calls.~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-18** (`ROUND-02-FIXES.md` Fix #10): pulled forward and fixed alongside #13C/#19H (flagged
+explicitly, not silently bundled), since their fix makes "no active path" a normal outcome for the first
+time. `(at 0 fp)` guarded. First repro scenario was wrong (hit the pre-existing `[[BAR]]` short-circuit
+instead of the crash line) — corrected and reproduced the real `Array index out of bounds` crash live;
+restored, clean empty result. — *H2*
 
 #21H **[SWPT]** Removing a principal token permanently orphans every Tracer entry filed under it — no resync
 path exists anywhere in the module. — *H3*

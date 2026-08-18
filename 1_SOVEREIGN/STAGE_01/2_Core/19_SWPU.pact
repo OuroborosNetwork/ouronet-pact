@@ -304,7 +304,7 @@
                 (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 (all-pool-tokens:[string] (ref-SWP::URC_AllPoolTokens))
-                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper input-id output-id input-amount))
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
                 (edges:[string] (at "edges" h-obj))
                 (nodes:[string] (at "nodes" h-obj))
             )
@@ -387,7 +387,7 @@
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
-                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper input-id output-id input-amount))
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
                 (ovs:[decimal] (at "output-values" h-obj))
                 (expected:decimal (at 0 (take -1 ovs)))
                 (o-prec:integer (ref-DPTF::UR_Decimals output-id))
@@ -559,7 +559,7 @@
         (let
             (
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
-                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper input-id output-id input-amount))
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
                 (nodes:[string] (at "nodes" h-obj))
                 (edges:[string] (at "edges" h-obj))
                 (ovs:[decimal] (at "output-values" h-obj))
@@ -953,7 +953,7 @@
                     (
                         (ref-SWPI:module{SwapperIssueV3} SWPI)
                         ;;
-                        (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper id lkda amount))
+                        (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive id lkda amount))
                         (path-to-lkda:[string] (at "nodes" h-obj))
                         (edges:[string] (at "edges" h-obj))
                         (ovs:[decimal] (at "output-values" h-obj))

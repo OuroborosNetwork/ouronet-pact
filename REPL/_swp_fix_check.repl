@@ -1,0 +1,16 @@
+;; SCRATCH — not part of the canonical suite. Validates #13C/#19H/#20H combined
+;; fix without the pre-existing, unrelated [6.5]_DPOF.repl breakage (confirmed
+;; via git-stash on a clean checkout — not caused by this session's SWP changes).
+;; Mirrors Stage01_Tester.repl up through the SWP issuance-only suite, then stops.
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+(load "Stage_01/[5.2]_Dispenser+.repl")
+(load "Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl")
+(print "=== _swp_fix_check.repl reached end cleanly ===")

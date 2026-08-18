@@ -21,6 +21,20 @@
     ;;
 )
 ;;
+;;HISTORICAL NOTE (owner, 2026-08-17, during SWP audit #C9): this module's whole reason to exist is
+;;gas-limit-driven multi-step (defpact) issuance/liquidity flows, split across steps to stay under a
+;;150k-gas-per-transaction ceiling that applied when this was written. StoaChain's actual live limit is
+;;~2,000,000 gas per transaction (see OuronetInformational/pact5/SEMANTICS.md's gas table) — comfortably
+;;enough headroom for even a 7-pool-token issuance to complete in a SINGLE transaction today. The
+;;multi-step mechanism is therefore no longer technically required for gas reasons; it's kept live for
+;;historical continuity (real pools — e.g. pool7 in the SWP audit's own REPL fixtures — were already
+;;issued through it) and as a worked defpact/multi-step example elsewhere in the codebase. Any new
+;;single-issuance flow does NOT need to be split into steps purely for gas headroom; that constraint no
+;;longer applies. (This context is exactly what let #C9 slip through undetected for as long as it did:
+;;SWPI::C_Issue, the single-tx path, remembered to call XE_AddLPTracker; this defpact path's own XE_Issue
+;;call — added later, per the owner — never got the same follow-up wired in. Fixed by folding the
+;;registration into XE_Issue itself, in 1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact, so every issuance path
+;;gets it "for free" and this class of per-caller-remembers-it gap can't recur here.)
 (module MTX-SWP GOV
     ;;
     (implements OuronetPolicyV1)
