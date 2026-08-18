@@ -639,3 +639,116 @@
 (commit-tx)
 (print "=== END TX-FVT-OF-NNS =======================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-FVT-OF-DRAIN - vacate-v2 OF fast-drain: nonce back + score UNTOUCHED + not finalized")
+(print "")
+(print "=== TX-FVT-OF-DRAIN — v2 CC_BatchDrainOrtoFungible: return nonce + preserve rewards, NO score delta ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; DEDICATED class-2 OF pool (so the drain's freeze is isolated from OfStakePool, which [6.2.5] reuses). Stake
+;; ANHD's MVST nonce into it, then FAST-DRAIN: the nonce returns, nns/unn go back to pre-stake (settled on the
+;; last-drain), the OF score is NOT decremented (v1 vacate would zero it), and the pool stays FROZEN (drain never
+;; finalizes). SKIP if the owner holds no MVST nonce.
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (beneficiary-id:string KST.ANHD)
+        (dpof-id:string "MVST-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "OfDrainScore")
+        (fvt-name:string "OfDrainVault")
+        (pool-name:string "OfDrainPool")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (owned:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    (if (= (length owned) 0)
+        (print "SKIP TX-FVT-OF-DRAIN: owner holds no MVST nonce")
+        (let
+            (
+                (nonce:integer (at 0 owned))
+                (setup:string
+                    (let ((z:integer 0))
+                        (env-sigs
+                            [
+                                { "key": "PK_AncientHodler", "caps": [] }
+                                { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+                                  "caps":
+                                    [
+                                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                                        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                                    ]
+                                }
+                            ]
+                        )
+                        (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron owner-id score-name 12 1.0 1.0)
+                        (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
+                        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+                        (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+                        "dedicated OF pool ready"
+                    )
+                )
+                (nns0:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                (unn0:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
+                (x:string
+                    (let ((z:integer 0))
+                        (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+                        (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce])
+                    )
+                )
+            )
+            (let
+                (
+                    (base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))
+                    (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                    (unn1:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
+                    (y:string (ref-TS02-C3::AQP-POOL|CC_BatchDrainOrtoFungible patron pool-id dpof-id [owner-id] [beneficiary-id] [[nonce]]))
+                )
+                (let
+                    (
+                        (owned-post:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
+                        (nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                        (unn2:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
+                        (base-post:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))
+                        (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
+                        (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+                    )
+                    (map print
+                        [
+                            (format "<(OF nns 0/1/2 · unn 0/1/2)> => {} {} {} · {} {} {}" [nns0 nns1 nns2 unn0 unn1 unn2])
+                            (format "<(OF base pre/post)> => {} / {}" [base-pre base-post])
+                            (expect (format "<<TX-FVT-OF-DRAIN>> nns +1 on stake got={}" [nns1]) (+ nns0 1) nns1)
+                            (expect (format "<<TX-FVT-OF-DRAIN>> nonce returned to owner (drained) got={}" [(contains nonce owned-post)]) true (contains nonce owned-post))
+                            (expect (format "<<TX-FVT-OF-DRAIN>> nns back to pre-stake got={}" [nns2]) nns0 nns2)
+                            (expect (format "<<TX-FVT-OF-DRAIN §4>> unn back to pre-stake (settled on drain) got={}" [unn2]) unn0 unn2)
+                            (expect (format "<<TX-FVT-OF-DRAIN §5>> OF score UNTOUCHED by drain got={}" [base-post]) base-pre base-post)
+                            (expect (format "<<TX-FVT-OF-DRAIN §8>> pool FROZEN (drain does not finalize) got={}" [vip]) true vip)
+                            (expect (format "<<TX-FVT-OF-DRAIN §8>> stake DISABLED (awaiting nuke) got={}" [stake-enabled]) false stake-enabled)
+                        ]
+                    )
+                )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-FVT-OF-DRAIN =====================================================")
+(print "")
