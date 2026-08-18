@@ -1019,3 +1019,35 @@ separate work performed or needed.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #11. Awaiting Round III re-verify.
 
 ---
+
+## C5 (#12C, genesis issuance never validates every pool-token's initial reserve is non-zero) — **REFUTED**
+
+**Owner pushback:** a 0-amount transfer can't happen — issuance requires moving a non-zero amount of
+every pool token, and that's already gated the same way an ordinary transfer is.
+
+**First response was wrong — traced one layer too shallow, corrected on the second pass.** Initially
+traced `SWPI::C_Issue` → `TFT::C_MultiTransfer` → its own guarding defcap, `DPTF|C>MULTI-TRANSFER`
+(`09_TFT.pact:319-369`): that defcap only checks list-uniqueness, length-parity, dispo-locker,
+receiver-ownership, transferability, and per-token pause/freeze/move-role state — no amount check
+anywhere in it, and `UEV_MoveRoleCheck` (called inside it) doesn't even take `amount` as a parameter.
+Concluded from that alone that no amount validation existed on this path. Wrong — stopped before the
+actual debit.
+
+**Second pass, deeper:** `C_MultiTransfer`'s fold calls `XB_DebitTrueFungible` once per token
+(`05_DPTF.pact:2566`), and *that* function composes its **own**, separate capability:
+`DPTF|C>DEBIT` (`05_DPTF.pact:742`) — whose very first line is `(UEV_Amount id amount)`. `UEV_Amount`
+(`05_DPTF.pact:1380`) enforces both decimal-precision conformance and `(> amount 0.0)` — the exact same
+gate an ordinary single transfer goes through, just reached one defcap deeper than the first trace went.
+Confirmed this call is unconditional (not gated by `wipe-mode` or anything else), confirmed
+`SWPI::C_Issue` calls `C_MultiTransfer` for genesis liquidity **unconditionally** — `p` only skips the
+separate spawn-limit *worth* check, never the actual fund transfer — and confirmed the MTX-SWP defpact
+issuance path (`20_MTX-SWP.pact:904`) calls the identical `TFT::C_MultiTransfer` for the same purpose.
+Since the whole issuance transaction is atomic, a `0.0` (or negative, or precision-violating) reserve on
+*any* pool token aborts the entire issuance before any pool ever reaches a committed state with it — on
+both issuance paths, regardless of `p`.
+
+**Status:** REFUTED — the finding's core claim (no path validates individual token reserves are
+non-zero) is false; every pool-token's genesis reserve is validated on every issuance path, via the
+mandatory funding transfer's own capability chain, not via `UEV_Issue` itself. No fix needed. — *C5*
+
+---

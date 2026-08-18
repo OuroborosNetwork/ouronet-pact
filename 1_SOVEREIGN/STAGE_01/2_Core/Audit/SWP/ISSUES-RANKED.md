@@ -82,8 +82,12 @@ pool is permanently untradeable (div-by-zero).~~ — **FIXED ✅ AND PROVEN ✅ 
 but a sub-floor `0.05` weight sailed through and issued a real, live, badly-conditioned pool — the sharper
 half of the bug. Also closes H5/#23H's duplicate instance in the same function. — *C4*
 
-#12C **[SWPI]** `UEV_Issue` never checks individual genesis reserves are `>0` — a `0`-reserve token in a new
-pool permanently bricks that token (div-by-zero on first touching swap). — *C5*
+#12C **[SWPI]** ~~`UEV_Issue` never checks individual genesis reserves are `>0` — a `0`-reserve token in a new
+pool permanently bricks that token (div-by-zero on first touching swap).~~ — **REFUTED 2026-08-18.**
+Genesis reserves are validated on every issuance path via the mandatory funding transfer itself
+(`TFT::C_MultiTransfer` → `XB_DebitTrueFungible` → `DPTF|C>DEBIT`, whose first line is `UEV_Amount`,
+enforcing `>0.0` + precision), unconditionally, on both the single-tx and MTX-SWP defpact paths — just
+not inside `UEV_Issue` itself. Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *C5, retracted*
 
 #13C **[SWPT]** ~~The routing graph's node set is narrower than its live edge set — paths of 4+ hops are
 corrupted or silently lost, and the underlying crash (#20H) is triggered by this.~~ — **FIXED ✅ AND
