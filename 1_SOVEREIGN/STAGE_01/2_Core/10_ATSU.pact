@@ -625,6 +625,13 @@
     )
     (defun C_WithdrawRoyalties:object{IgnisCollectorV1.OutputCumulator}
         (ats:string target:string)
+        @doc "Fix (audit finding #33N): C_MultiTransfer debits every leg unconditionally - a \
+            \ reward-token with a zero accrued royalty (routine whenever a pool has more than \
+            \ one registered RT and royalty hasn't accrued evenly across all of them) hit \
+            \ DPTF's UEV_Amount (amount > 0.0) enforce and crashed the whole withdrawal. Now \
+            \ filters to only the reward-token/royalty legs with a real (> 0.0) balance before \
+            \ handing off to C_MultiTransfer - the RUR-reset loop below still zeroes every RT's \
+            \ bucket, zero or not, so no accounting is skipped, only the doomed zero-amount leg."
         (UEV_IMC)
         (with-capability (ATSU|C>WITHDRAW-ROYALTIES ats target)
             (let
@@ -633,6 +640,12 @@
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
                     (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
                     (royalties:[decimal] (ref-ATS::UR_RewardTokenRUR ats 3))
+                    (nonzero-idx:[integer]
+                        (filter
+                            (lambda (index:integer) (> (at index royalties) 0.0))
+                            (enumerate 0 (- (length reward-tokens) 1))
+                        )
+                    )
                 )
                 ;;1]Set Royalties Values back to 0.0 for all RTs
                 (map
@@ -642,8 +655,14 @@
                     )
                     (enumerate 0 (- (length reward-tokens) 1))
                 )
-                ;;2]Withdraw Royalties to Target
-                (ref-TFT::C_MultiTransfer reward-tokens ATS|SC_NAME target royalties true)
+                ;;2]Withdraw Royalties to Target - only the reward-tokens with a nonzero balance
+                (ref-TFT::C_MultiTransfer
+                    (map (lambda (index:integer) (at index reward-tokens)) nonzero-idx)
+                    ATS|SC_NAME
+                    target
+                    (map (lambda (index:integer) (at index royalties)) nonzero-idx)
+                    true
+                )
             )
         )
     )

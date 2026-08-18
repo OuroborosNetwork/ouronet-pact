@@ -291,6 +291,52 @@ happens to have something already cullable right now. Not fixed live; just not y
 `ROUND-02-FIXES.md` Fix #12. Pythia access method documented for future use:
 `OuronetInformational/pythia-dirty-read-access.md`.
 
+## #26L, #28L, #31L — batch verdicts (2026-08-18, new worktree)
+
+**#26L — `C_KickStart`'s `rt-amounts` position-trust — NOT A BUG.** Owner: "leave as is, as it can't go
+wrong, it's fixed by input." KickStart is owner-only; a wrong order only misconfigures the caller's own
+pool. Closed, no code change.
+
+**#28L — dead StoicTagIndex functions — KEPT, not closed as NOT A BUG.** Owner: "leave them." Confirmed
+genuinely unused (live StoicTag uses different DALOS functions), but the owner chose to keep them anyway
+rather than remove. Recorded as a deliberate keep, not a "no defect" verdict - the underlying dead-code
+observation still stands, just not acted on.
+
+**#31L — Talos naming asymmetry (`ATS|C_SetHotRecoveryFee` vs `C_SetHotRecoveryFees`) — LEFT AS-IS.**
+Owner initially said "fix but pay attention to Interface version bump as we are on mainet with these
+modules." Investigated before touching anything: the function is declared in the `TalosStageOne_ClientTwoV1`
+interface, which is directly consumed by two live slave modules (`2_SLAVE/Stage_01/01_AOZ+.pact` - which
+calls this exact function by its current name - and `02_DSP+.pact`). A safe rename would require cutting a
+new `TalosStageOne_ClientTwoV2` interface, updating `03_TS01-C2.pact` to implement it, updating both slave
+modules' interface references (and `01_AOZ+.pact`'s call site), and coordinating a real redeploy - not a
+same-file edit. Presented this scope to the owner, who decided: "let's let the naming sit as is." No code
+change; may be revisited as part of the planned module rehaul, where a broader interface-version pass is
+already expected.
+
+## #22L — permanent test-coverage sweep, and #33N surfaced by it (2026-08-18)
+
+Owner asked "Tell me first what is #22 about" before green-lighting anything — explained plainly: 12 of
+ATS/ATSU's owner-facing config functions (branding, hibernation fees, hot-recovery fees, KickStart,
+Repurpose, Reverse, WithdrawRoyalties, DirectRecovery, and the two admin-only functions) had never once
+been called from any REPL test in the repo, which is exactly how #5C and #9H/#10M shipped and sat
+undetected for as long as they did. Owner: "Yes let's add permanent testing to repl for them."
+
+Built all 12 functions' worth of canonical, assertion-backed coverage into `[6.6]_ATS.repl` (detailed in
+`ROUND-02-FIXES.md` Fix #15). While proving `C_WithdrawRoyalties` specifically, hit a **real crash**, not a
+test-setup mistake: `TFT::C_MultiTransfer` debits every leg of a multi-token transfer unconditionally, so
+withdrawing royalties on a pool with more than one reward token crashes the instant any one of them has a
+`0.0` accrued balance — the normal case, not an edge case. Presented the exact stack trace and location to
+the owner before touching any code (per the standing no-fix-without-authorization rule), along with two
+open questions: fix now vs. log-and-defer, and whether to number it as a new finding.
+
+**Owner's verdict:** "Royalties always gather in reward tokens and if there are many multi transfer must
+be used when withdrawing. So if I haven't account for that, it needs fixing." — clear authorization to fix
+immediately, confirming the intended design (multi-transfer IS supposed to be the withdrawal mechanism for
+a multi-reward-token pool) so the fix is a `C_MultiTransfer`-input filter, not a change to that design.
+
+**Verdict: CONFIRMED, FIXED.** Recorded as `#33N` (new-appended, second item in that section) since it
+wasn't part of the original 31-item list. Full detail + proof: `ROUND-02-FIXES.md` Fix #16.
+
 ## Numbering after this correction
 
 Findings renumber sequentially with C1 removed; former C2-C5 become C1-C4, H1-H4 stay H1-H4 (unaffected),

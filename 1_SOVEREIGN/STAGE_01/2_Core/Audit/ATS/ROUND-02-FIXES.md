@@ -2,6 +2,147 @@
 
 One entry per fix, applied sequentially, owner green-lit before landing. Diff summary + why.
 
+## Fix #16 — N2 (#33N): `C_WithdrawRoyalties` crashes whenever a pool's reward tokens have uneven
+royalty accrual
+
+**Discovered while proving Fix #15 below** — not a pre-existing catalogued finding, surfaced live while
+building the `WithdrawRoyalties` REPL proof against `ps` (a real, 3-reward-token pool).
+
+**What it was:** `C_WithdrawRoyalties` (`10_ATSU.pact`) reads the full per-reward-token royalty vector
+(`ref-ATS::UR_RewardTokenRUR ats 3`) and hands it, unfiltered, straight to `TFT::C_MultiTransfer`. That
+function debits **every** leg unconditionally (`XB_DebitTrueFungible` per index, no zero-amount skip),
+which hits `DPTF.UEV_Amount`'s `(> amount 0.0)` enforce and reverts the whole call the moment any one
+reward-token's accrued royalty is `0.0` — the routine case for any pool with more than one registered
+reward token where royalty hasn't accrued evenly across all of them (near-certain in practice; users
+rarely Coil every registered RT in lockstep). Reproduced directly: set a royalty rate on `ps`, Coiled only
+one of its three registered reward tokens, called `C_WithdrawRoyalties` — hard crash, stack trace bottoming
+out in `DPTF.UEV_Amount` via `TFT.C_MultiTransfer` via `ATSU.C_WithdrawRoyalties`.
+
+**Owner-confirmed root cause and fix direction:** "Royalties always gather in reward tokens and if there
+are many multi transfer must be used when withdrawing. So if I haven't account for that, it needs fixing."
+
+**Fix:** `C_WithdrawRoyalties` now computes `nonzero-idx` — the subset of reward-token indices whose
+royalty balance is strictly `> 0.0` (`filter`/`lambda` over `(enumerate 0 (- (length reward-tokens) 1))`,
+the same idiom already used elsewhere in this codebase, e.g. `08_ATS.pact:2880-2881`) — and maps both the
+reward-token list and the royalty-amount list down to that subset before calling `C_MultiTransfer`. The
+existing "set royalty values back to 0.0 for all RTs" loop above is left untouched and still iterates
+every reward token regardless of amount, so no accounting bucket is skipped — only the doomed zero-amount
+transfer leg is no longer attempted.
+
+**Verification:** proven end-to-end via the real Talos path (`REPL/Stage_01/[6.6]_ATS.repl`,
+"WithdrawRoyalties Proof"): `ATS|C_UpdateRoyalty` sets a nonzero rate on `ps`, `ATS|C_Coil` deposits into
+exactly one of `ps`'s three registered reward tokens (the other two stay at their `0.0` default), the
+accrued royalty sum is asserted nonzero, `ATS|C_WithdrawRoyalties` is called (previously crashed here —
+now succeeds), and all three reward tokens' royalty buckets are asserted reset to `0.0` afterward. Full
+`Stage01_Tester.repl` pipeline (Stage00 sandboxes -> Stage01, `[6.6]_ATS.repl` included) reloads clean,
+0 failures.
+
+**Status:** FIXED ✅ AND PROVEN ✅.
+
+## Fix #15 — L4 (#22L): permanent REPL test coverage for the 12 previously-uncovered ATS/ATSU config
+functions
+
+**What it was:** `ATS|C_ToggleUpgrade`, `ATS|C_SetHibernationFees`, `ATS|C_AddHotRBT`,
+`ATS|C_HOT-RBT|UpdatePendingBranding`, `ATS|C_HOT-RBT|UpgradeBranding`, `ATS|C_SetHotRecoveryFee`,
+`ATS|C_HotRecovery`, `ATS|C_HOT-RBT|Repurpose`, `ATS|C_Reverse`, `ATS|A_RemoveSecondary`,
+`ATS|A_KickStart`, `ATS|C_WithdrawRoyalties`, and `ATS|C_DirectRecovery` had zero REPL coverage anywhere
+in the repo (confirmed by direct grep before starting) — the exact gap #22L/L4 flagged, and the root cause
+several other findings in this round (#5C, #10M/#9H) shipped unnoticed for as long as they did.
+
+**Fix (test-only, no production-code change in this entry — see Fix #16 above for the one production fix
+this work surfaced):** nine new canonical `;;==== TX · mm · slug ====` transaction groups appended to
+`REPL/Stage_01/[6.6]_ATS.repl`, each with real before/after `expect`/`expect-failure` assertions:
+
+- **ToggleUpgrade Proof 1|2, 2|2** — owner switches `can-upgrade` off, `C_Control` now rejects with the
+  exact enforce message; switches it back on, `C_Control` succeeds again.
+- **SetHibernationFees Proof** — sets `(peak, decay)` to a fresh valid pair, asserts both persisted
+  (regression guard for #9H/#10M, which made this call fail unconditionally before those fixes).
+- **Fresh Test Pool Setup 1|3, 2|3, 3|3** — issues a brand-new, self-contained ATS pair plus fresh
+  zero-supply DPOF (Hot-RBT candidate) and DPTF (Cold-RBT candidate) tokens, all owned by `aoz`. Needed
+  because every one of the file's existing pairs (including `ps`) already has a Hot-RBT registered and a
+  positive index by this point in the file — `AddHotRBT`/`A_KickStart` specifically require pool state
+  (`no Hot-RBT yet` / `index = -1.0`, "never fueled") that a living pool no longer has. Reusing `ps`'s own
+  Cold-RBT token (PDKOSON) for the fresh pair was tried first and found to silently break the `-1.0`
+  sentinel too — `URC_PairRBTSupply` reads the reused token's **global** DPTF supply, already nonzero from
+  `ps`'s own activity, not a per-pair count — hence the dedicated fresh DPTF token.
+- **AddHotRBT Proof** — registers the fresh DPOF token as the fresh pair's Hot-RBT; asserts the sentinel
+  `"|"` before, the real token id after.
+- **A_KickStart Proof** — admin-path KickStart on the still-virgin (`index = -1.0`) fresh pair; asserts
+  the index afterward. Also the first real regression proof that the `P|A_Define` fix (registering ATS/ATSU
+  as permitted callers in `01_TS01-A.pact` — previously missing, "None of the guards passed" on every call)
+  actually works end to end.
+- **A_RemoveSecondary Proof 1|2, 2|2** — adds a secondary reward token to the fresh pair and Fuels it
+  (needs the pool's now-positive index from KickStart above — `X_RemoveSecondary` buys back the pool-level
+  RUR sum via a real transfer, which itself needed a nonzero balance to exist, another small crash caught
+  and worked around by fueling first rather than testing a same-day fix for it), then administratively
+  removes it via the same `P|A_Define`-gated admin path.
+- **SetHotRecoveryFee and HotRecovery Proof** — `ps`'s Hot Recovery is toggled off (the fee-setter's
+  capability chain requires it off), the fee/decay params are changed and asserted, Hot Recovery is
+  restored, then a real Hot-RBT nonce is minted (nonce 3) and asserted.
+- **HOT-RBT Branding Proof 1|2, 2|2** — updates pending branding on `ps`'s Hot-RBT token (DDKOSON) and
+  asserts it; pays the real KDA "blue" fee to upgrade it from Gray to Blue and asserts the flag and the
+  promoted branding data.
+- **HOT-RBT Repurpose Proof** — the direct #22L-triggered bug fix's own regression proof: seizes the
+  still-live nonce 3 minted above and reassigns an equivalent-value replacement (nonce 4) to `emma`,
+  asserting the seized nonce is wiped, the replacement exists with the same supply, is held by `emma`, and
+  carries forward the original mint-time metadata.
+- **Reverse (Recover) Proof** — mints one more Hot-RBT nonce (nonce 5), then reverses it back into an
+  equivalent Cold-RBT (PDKOSON) position; asserts the nonce is burned and the Cold-RBT balance grew by
+  exactly its supply.
+- **WithdrawRoyalties Proof** — see Fix #16 above (this proof is what surfaced #33N).
+- **DirectRecovery Proof** — switches Direct Recovery on for `ps` (never toggled elsewhere in this file),
+  burns a Cold-RBT amount, and asserts both the Cold-RBT balance shrank by exactly that amount and the
+  released reward tokens sum to the pool's real index-derived value (not a flat 1:1 — `ps`'s index has
+  moved well off its genesis `1.0` from all the prior activity in this file).
+
+Also uncommented `(load "Stage_01/[6.5]_DPOF.repl")` and `(load "Stage_01/[6.6]_ATS.repl")` in
+`Stage01_Tester.repl` — found still disabled in this worktree despite being part of the originally-planned
+fix cycle (the same class of silent, mid-session data loss documented in the Claudstermind handoff; this
+particular 2-line edit apparently didn't survive the worktree transition even though `[6.6]_ATS.repl`
+itself did).
+
+**Verification:** every new section built and run incrementally (`pact` invoked after each addition, not
+batched), catching several precondition mistakes early (see the "Fresh Test Pool Setup" and
+"A_RemoveSecondary" notes above) rather than discovering them in one large opaque failure. Final
+verification: full `Stage01_Tester.repl` pipeline (`Stage00_Sanboxes.repl` -> `Stage01_Tester.repl`,
+`[6.5]_DPOF.repl`/`[6.6]_ATS.repl` now included by default) reloads clean, 0 failures, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅.
+
+## Fix #14 — L11 (#29L): dead `defcap P|ATS` in `05_TS01-P.pact` removed
+
+**Documentation catch-up (2026-08-18):** this fix was applied to code earlier in the session (right
+alongside Fix #10/L1's dead-capability removal, same reasoning) but its own `ROUND-02-FIXES.md` entry and
+`ISSUES-RANKED.md`/`README.md` status ticks were never written - caught while re-auditing the tally in a
+fresh worktree. Verified the code fix is genuinely present and correct before back-filling this entry.
+
+**What it was:** `defcap P|ATS ()` in `3_Talos/05_TS01-P.pact` - confirmed via repo-wide grep never
+`compose-capability`'d or `require-capability`'d anywhere, genuinely dead code. Its name also shadowed the
+real, actively-used `P|ATS|CALLER` machinery elsewhere in the Talos stack - a landmine for anyone skimming
+by name.
+
+**Fix:** the unused `defcap` block deleted entirely. No other code referenced it, so no other change needed.
+
+**Verification:** full-suite reload clean at the time it was applied; re-confirmed now (zero matches for
+`defcap P|ATS ()` in the current file).
+
+**Status:** FIXED ✅ AND PROVEN ✅.
+
+## Fix #13 — L9 (#27L): `UC_UnlockPrice` `@doc` copy-paste ("ATS" → "DPTF") corrected
+
+**Documentation catch-up (2026-08-18):** same situation as Fix #14 above - applied to code earlier in the
+session, write-up never landed. Verified the code fix is genuinely present before back-filling this entry.
+
+**What it was:** `1_Utilities/10_U_DPTF.pact`'s `UC_UnlockPrice` `@doc` said "Computes ATS unlock price" -
+a copy-paste artifact from `U_ATS`'s own `UC_UnlockPrice`. The code itself was already a correct shared-core
+wrapper (`ref-U|DEC::UC_UnlockPrice unlocks true`), not a duplicate-logic bug - purely a misleading doc string.
+
+**Fix:** reworded to "Computes DPTF unlock price", with a note explaining the original copy-paste origin.
+
+**Verification:** doc-only change; full-suite reload clean at the time, re-confirmed now.
+
+**Status:** FIXED ✅ AND PROVEN ✅.
+
 ## Fix #12 — N1 (#32N): `URC_MultiCull` type mismatch — soft-failure fix, message added
 
 **Process note (own the mistake):** a first pass at this fix was applied **without owner authorization** —

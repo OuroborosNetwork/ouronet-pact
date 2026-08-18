@@ -2611,3 +2611,1045 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;; ================================================================================================
+;; #22L test-coverage sweep — permanent proofs for the 12 ATS/ATSU config-surface functions that had
+;; zero REPL coverage before this session (see Audit/ATS/HANDOFF-SESSION-RESUME.md §4-5). Each group
+;; below targets exactly one (or one closely-related pair of) Talos client function(s), with explicit
+;; before/after assertions rather than relying on "it didn't crash".
+;; ================================================================================================
+(begin-tx "ToggleUpgrade Proof 1|2")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== ToggleUpgrade Proof 1|2 · 01 · env-sigs (caps) ==== ========================================
+(print "--- [ToggleUpgrade Proof 1|2 · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== ToggleUpgrade Proof 1|2 · 02 · let / invocation ==== =======================================
+(print "--- [ToggleUpgrade Proof 1|2 · 02 · let / invocation — switch OFF, C_Control must now fail] ---")
+;; #21L / L3 regression: can-upgrade previously had no setter at all. ATS|C_ToggleUpgrade
+;; (audit fix, 08_ATS.pact ATS|C>TOGGLE-UPGRADE / XI_ToggleUpgrade) gates ATS|C_Control via
+;; UEV_CanUpgradeON — flipping it off must make C_Control fail with the "properties cannot be
+;; upgraded" enforce, and flipping it back on (Proof 2|2) must let C_Control succeed again.
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps false)
+    (map print
+        [
+            (expect "can-upgrade is now false" false (ref-ATS::UR_CanUpgrade ps))
+            (expect-failure (format "{} properties cannot be upgraded" [ps])
+                (ref-TS01-C2::ATS|C_Control aoz ps false false false)
+            )
+        ]
+    )
+)
+
+(print "")
+(print "")
+;;==== ToggleUpgrade Proof 1|2 · 03 · gas echo ==== ================================================
+(print "--- [ToggleUpgrade Proof 1|2 · 03 · gas echo] ---")
+(format "<<<<<<<ToggleUpgrade Proof 1|2 {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "ToggleUpgrade Proof 2|2")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== ToggleUpgrade Proof 2|2 · 01 · env-sigs (caps) ==== ========================================
+(print "--- [ToggleUpgrade Proof 2|2 · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== ToggleUpgrade Proof 2|2 · 02 · let / invocation ==== =======================================
+(print "--- [ToggleUpgrade Proof 2|2 · 02 · let / invocation — switch back ON, C_Control succeeds] ---")
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_ToggleUpgrade aoz ps true)
+    (ref-TS01-C2::ATS|C_Control aoz ps false false false)
+    (map print
+        [
+            (expect "can-upgrade is now true" true (ref-ATS::UR_CanUpgrade ps))
+        ]
+    )
+)
+
+(print "")
+(print "")
+;;==== ToggleUpgrade Proof 2|2 · 03 · gas echo ==== ================================================
+(print "--- [ToggleUpgrade Proof 2|2 · 03 · gas echo] ---")
+(format "<<<<<<<ToggleUpgrade Proof 2|2 {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SetHibernationFees Proof")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== SetHibernationFees Proof · 01 · env-sigs (caps) ==== =======================================
+(print "--- [SetHibernationFees Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== SetHibernationFees Proof · 02 · let / invocation ==== ======================================
+(print "--- [SetHibernationFees Proof · 02 · let / invocation] ---")
+;; #9H/#10M regression: UEV_HibernationFees (09_U_ATS.pact) used to fail unconditionally on every
+;; input (stray `(= () 0.0)` 7th predicate, always false). Proves the full ATS|C_SetHibernationFees
+;; capability chain (ATS|S>SET-HIBERNATION-FEES -> ref-U|ATS::UEV_HibernationFees) now accepts a
+;; valid (peak, decay) pair and persists it.
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (peak-before:decimal (ref-ATS::UR_PeakHibernatePromile ps))
+        (decay-before:decimal (ref-ATS::UR_HibernateDecay ps))
+    )
+    (ref-TS01-C2::ATS|C_SetHibernationFees aoz ps 160.0 0.01)
+    (map print
+        [
+            (format "peak-hibernate-promile was {}, decay was {}" [peak-before decay-before])
+            (expect "peak-hibernate-promile updated to 160.0" 160.0 (ref-ATS::UR_PeakHibernatePromile ps))
+            (expect "hibernate-decay updated to 0.01" 0.01 (ref-ATS::UR_HibernateDecay ps))
+        ]
+    )
+)
+
+(print "")
+(print "")
+;;==== SetHibernationFees Proof · 03 · gas echo ==== ===============================================
+(print "--- [SetHibernationFees Proof · 03 · gas echo] ---")
+(format "<<<<<<<SetHibernationFees Proof {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;; ================================================================================================
+;; Fresh, self-contained ATS-Pair — AddHotRBT, AddSecondary/A_RemoveSecondary and A_KickStart all
+;; require pool state (no Hot-RBT registered yet / a removable secondary / index = -1.0 "never
+;; fueled") that the living "PlebeicStrength" pool (ps) no longer has after the rest of this file's
+;; sections. A brand-new pair, issued and used only in this block, sidesteps that entanglement
+;; entirely. Reuses the already-owned-by-aoz PKOSON/PDKOSON tokens as RT/RBT (no exclusivity
+;; constraint on token reuse across pairs — only CAP_Owner and RT != RBT are enforced at issue time).
+;; ================================================================================================
+(begin-tx "Fresh Test Pool Setup 1|3 - Issue Hot-RBT Candidate Token")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== Fresh Test Pool Setup 1|3 · 01 · env-sigs (caps) ==== ======================================
+(print "--- [Fresh Test Pool Setup 1|3 · 01 · env-sigs (caps)] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (aoz:string KST.AOZT)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices aoz (ref-DALOS::UR_UsagePrice "dpmf"))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AOZ", "caps": [] }
+            { "key": "95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+;;==== Fresh Test Pool Setup 1|3 · 02 · let / invocation ==== =====================================
+    (print "--- [Fresh Test Pool Setup 1|3 · 02 · let / invocation] ---")
+    (ref-TS01-C1::DPOF|C_Issue
+        aoz
+        aoz
+        ["TestHotRbtCandidate"]
+        ["THRBT"]
+        [24]    ;;precision
+        [true]  ;;can change owner
+        [true]  ;;can upgrade
+        [true]  ;;can can-add-special-role
+        [false] ;;can-freeze
+        [false] ;;can-wipe
+        [true]  ;;can-pause
+        [true]  ;;can-transfer-nft-create-role
+    )
+)
+
+(print "")
+(print "")
+;;==== Fresh Test Pool Setup 1|3 · 03 · gas echo ==== ==============================================
+(print "--- [Fresh Test Pool Setup 1|3 · 03 · gas echo] ---")
+(format "<<<<<<<Fresh Test Pool Setup 1|3 {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "Fresh Test Pool Setup 2|3 - Issue Cold-RBT Candidate Token")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== Fresh Test Pool Setup 2|3 · 01 · env-sigs (caps) ==== ======================================
+(print "--- [Fresh Test Pool Setup 2|3 · 01 · env-sigs (caps)] ---")
+;; TestKickPair must NOT reuse PDKOSON (ps's own cold-RBT) — URC_PairRBTSupply reads the reused
+;; token's GLOBAL DPTF supply, which is already nonzero from ps's activity throughout this file, so
+;; URC_Index would never read back the -1.0 "never fueled" sentinel A_KickStart requires. A fresh,
+;; zero-supply DPTF token keeps TestKickPair's RBT-supply genuinely at 0.0 until KickStart mints it.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (aoz:string KST.AOZT)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices aoz (ref-DALOS::UR_UsagePrice "dptf"))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AOZ", "caps": [] }
+            { "key": "95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+;;==== Fresh Test Pool Setup 2|3 · 02 · let / invocation ==== =====================================
+    (print "--- [Fresh Test Pool Setup 2|3 · 02 · let / invocation] ---")
+    (ref-TS01-C1::DPTF|C_Issue
+        aoz
+        aoz
+        ["TestKickPairColdRbt"]
+        ["TKRBT"]
+        [24]    ;;precision
+        [true]  ;;can change owner
+        [true]  ;;can upgrade
+        [true]  ;;can can-add-special-role
+        [false] ;;can-freeze
+        [false] ;;can-wipe
+        [true]  ;;can-pause
+    )
+)
+
+(print "")
+(print "")
+;;==== Fresh Test Pool Setup 2|3 · 03 · gas echo ==== ==============================================
+(print "--- [Fresh Test Pool Setup 2|3 · 03 · gas echo] ---")
+(format "<<<<<<<Fresh Test Pool Setup 2|3 {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "Fresh Test Pool Setup 3|3 - Issue ATS Pair")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== Fresh Test Pool Setup 3|3 · 01 · env-sigs (caps) ==== ======================================
+(print "--- [Fresh Test Pool Setup 3|3 · 01 · env-sigs (caps)] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (aoz:string KST.AOZT)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices aoz (ref-DALOS::UR_UsagePrice "ats"))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AOZ", "caps": [] }
+            { "key": "95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+;;==== Fresh Test Pool Setup 3|3 · 02 · let / invocation ==== =====================================
+    (print "--- [Fresh Test Pool Setup 3|3 · 02 · let / invocation] ---")
+    (let
+        (
+            (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+            (aoz:string KST.AOZT)
+            (p-k:string "PKOSON-98c486052a51")
+            (tkrbt:string "TKRBT-98c486052a51")
+        )
+        (ref-TS01-C2::ATS|C_Issue
+            aoz
+            aoz
+            ["TestKickPair"]
+            [24]
+            [p-k]
+            [false]
+            [tkrbt]
+            [true]
+        )
+    )
+)
+
+(print "")
+(print "")
+;;==== Fresh Test Pool Setup 3|3 · 03 · gas echo ==== ==============================================
+(print "--- [Fresh Test Pool Setup 3|3 · 03 · gas echo] ---")
+(format "<<<<<<<Fresh Test Pool Setup 3|3 {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "AddHotRBT Proof")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== AddHotRBT Proof · 01 · env-sigs (caps) ==== =================================================
+(print "--- [AddHotRBT Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== AddHotRBT Proof · 02 · let / invocation ==== ================================================
+(print "--- [AddHotRBT Proof · 02 · let / invocation] ---")
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (aoz:string KST.AOZT)
+        (tkp:string "TestKickPair-98c486052a51")
+        (thrbt:string "THRBT-98c486052a51")
+    )
+    (map print
+        [
+            (expect "no Hot-RBT registered yet (sentinel \"|\")" "|" (ref-ATS::UR_HotRewardBearingToken tkp))
+        ]
+    )
+    (ref-TS01-C2::ATS|C_AddHotRBT aoz tkp thrbt)
+    (map print
+        [
+            (expect "THRBT is now the registered Hot-RBT for TestKickPair" thrbt (ref-ATS::UR_HotRewardBearingToken tkp))
+        ]
+    )
+)
+
+(print "")
+(print "")
+;;==== AddHotRBT Proof · 03 · gas echo ==== =========================================================
+(print "--- [AddHotRBT Proof · 03 · gas echo] ---")
+(format "<<<<<<<AddHotRBT Proof {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "A_KickStart Proof")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== A_KickStart Proof · 01 · env-sigs (caps) ==== ===============================================
+(print "--- [A_KickStart Proof · 01 · env-sigs (caps)] ---")
+;; ATS|A_RemoveSecondary / ATS|A_KickStart regression proof — the P|A_Define fix (01_TS01-A.pact):
+;; ATS and ATSU were never registered as permitted callers there (ATS was even bound - ref-P|ATS -
+;; but never used), so this admin path used to fail unconditionally inside ATSU's own UEV_IMC with
+;; "None of the guards passed", regardless of who signed. "DemiourgosSithMasters" (keys-any over
+;; PK_AncientHodler / PK_Florean) is the keyset behind both the Talos-level P|ADMINISTRATIVE-SUMMONER
+;; gate and ATSU's own GOV|ATSU_ADMIN gate — PK_AncientHodler alone satisfies both. Also exercises
+;; the #11M / M2 fix's shared floor/ceiling machinery (UC_KickStartIndex, ATSU|C>X_KICKSTART): the
+;; admin path has no upper ceiling (unlike the owner-facing ATS|C_KickStart's 100.0 cap), only the
+;; shared >= 0.1 floor. TestKickPair was issued fresh and never fueled/coiled, so its index is
+;; still the -1.0 "un-kickstarted" sentinel — exactly the precondition ATSU|C>X_KICKSTART requires.
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;==== A_KickStart Proof · 02 · let / invocation ==== ==============================================
+(print "--- [A_KickStart Proof · 02 · let / invocation] ---")
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (aoz:string KST.AOZT)
+        (tkp:string "TestKickPair-98c486052a51")
+    )
+    (map print
+        [
+            (expect "TestKickPair index is -1.0 before KickStart (never fueled)" -1.0 (ref-ATS::URC_Index tkp))
+        ]
+    )
+    (ref-TS01-A::ATS|A_KickStart aoz aoz tkp [1000.0] 1000.0)
+    (map print
+        [
+            (expect "TestKickPair index is 1.0 after KickStart (1000.0 RT / 1000.0 RBT)" 1.0 (ref-ATS::URC_Index tkp))
+        ]
+    )
+)
+
+(print "")
+(print "")
+;;==== A_KickStart Proof · 03 · gas echo ==== ========================================================
+(print "--- [A_KickStart Proof · 03 · gas echo] ---")
+(format "<<<<<<<A_KickStart Proof {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "A_RemoveSecondary Proof 1|2 - AddSecondary and Fuel")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== A_RemoveSecondary Proof 1|2 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [A_RemoveSecondary Proof 1|2 · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== A_RemoveSecondary Proof 1|2 · 02 · let / invocation ==== ===================================
+(print "--- [A_RemoveSecondary Proof 1|2 · 02 · let / invocation] ---")
+;; X_RemoveSecondary (10_ATSU.pact) buys back the pool-level resident/unbonding/royalty (RUR 1/2/3)
+;; sum for the removed RT via a TFT transfer — a zero remove-sum hits DPTF's own UEV_Amount
+;; (amount > 0.0) enforce. A freshly-AddSecondary'd RT starts at a zero RUR sum, so it must be
+;; Fueled (which needs TestKickPair's now-positive index from the KickStart above) before it can be
+;; administratively removed below.
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (aoz:string KST.AOZT)
+        (tkp:string "TestKickPair-98c486052a51")
+        (e-k:string "EKOSON-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_AddSecondary aoz tkp e-k false)
+    (map print
+        [
+            (expect "EKOSON is now a registered RT for TestKickPair" true (contains e-k (ref-ATS::UR_RewardTokenList tkp)))
+        ]
+    )
+    (ref-TS01-C2::ATS|C_Fuel aoz aoz tkp e-k 50.0)
+    (map print
+        [
+            (expect "EKOSON resident RUR is now nonzero (fueled)" true (> (at 1 (ref-ATS::UR_RewardTokenRUR tkp 1)) 0.0))
+        ]
+    )
+)
+
+(print "")
+(print "")
+;;==== A_RemoveSecondary Proof 1|2 · 03 · gas echo ==== =============================================
+(print "--- [A_RemoveSecondary Proof 1|2 · 03 · gas echo] ---")
+(format "<<<<<<<A_RemoveSecondary Proof 1|2 {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "A_RemoveSecondary Proof 2|2 - Administrative Remove")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== A_RemoveSecondary Proof 2|2 · 01 · env-sigs (caps) ==== ====================================
+(print "--- [A_RemoveSecondary Proof 2|2 · 01 · env-sigs (caps)] ---")
+;; Same admin-gate regression as A_KickStart above (P|A_Define fix).
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;==== A_RemoveSecondary Proof 2|2 · 02 · let / invocation ==== ===================================
+(print "--- [A_RemoveSecondary Proof 2|2 · 02 · let / invocation] ---")
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (aoz:string KST.AOZT)
+        (tkp:string "TestKickPair-98c486052a51")
+        (e-k:string "EKOSON-98c486052a51")
+    )
+    (ref-TS01-A::ATS|A_RemoveSecondary aoz aoz tkp e-k [aoz])
+    (map print
+        [
+            (expect "EKOSON is no longer a registered RT for TestKickPair" false (contains e-k (ref-ATS::UR_RewardTokenList tkp)))
+        ]
+    )
+)
+
+(print "")
+(print "")
+;;==== A_RemoveSecondary Proof 2|2 · 03 · gas echo ==== =============================================
+(print "--- [A_RemoveSecondary Proof 2|2 · 03 · gas echo] ---")
+(format "<<<<<<<A_RemoveSecondary Proof 2|2 {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SetHotRecoveryFee and HotRecovery Proof")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== SetHotRecoveryFee and HotRecovery Proof · 01 · env-sigs (caps) ==== ========================
+(print "--- [SetHotRecoveryFee and HotRecovery Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== SetHotRecoveryFee and HotRecovery Proof · 02 · let / invocation ==== =======================
+(print "--- [SetHotRecoveryFee and HotRecovery Proof · 02 · let / invocation] ---")
+;; ATS|C>SET_HOT_FEES composes ATS|C>CONTROL-HOT-RECOVERY, which requires Hot Recovery to
+;; currently be OFF (mirrors AOZ's own C_SetupKosonicATS: AddHotRBT + SetHotRecoveryFee both
+;; happen before Hot Recovery is ever switched on for a pair). ps has had Hot Recovery switched ON
+;; since the "Hybrid Cull" sections earlier in this file, so it's toggled off, reconfigured, and
+;; toggled back on here — leaving ps's ambient state exactly as the rest of the file left it.
+;; #31L confirmation: the Talos wrapper is the SINGULAR ATS|C_SetHotRecoveryFee (not "...Fees").
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (dd-k:string "DDKOSON-98c486052a51")
+        (promile-before:decimal (ref-ATS::UR_HotRecoveryStartingFeePromile ps))
+        (decay-before:integer (ref-ATS::UR_HotRecoveryDecayPeriod ps))
+        (nonces-before:integer (ref-DPOF::UR_NoncesUsed dd-k))
+    )
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps false)
+    (ref-TS01-C2::ATS|C_SetHotRecoveryFee aoz ps 500.0 30)
+    (map print
+        [
+            (format "h-promile was {}, h-decay was {}" [promile-before decay-before])
+            (expect "h-promile updated to 500.0" 500.0 (ref-ATS::UR_HotRecoveryStartingFeePromile ps))
+            (expect "h-decay updated to 30" 30 (ref-ATS::UR_HotRecoveryDecayPeriod ps))
+        ]
+    )
+    (ref-TS01-C2::ATS|C_SwitchHotRecovery aoz ps true)
+    (ref-TS01-C2::ATS|C_HotRecovery aoz aoz ps 25.0)
+    (map print
+        [
+            (expect "DDKOSON minted exactly one new nonce (nonce 3)" (+ nonces-before 1) (ref-DPOF::UR_NoncesUsed dd-k))
+            (expect "nonce 3 exists with positive supply" true (> (ref-DPOF::UR_NonceSupply dd-k 3) 0.0))
+        ]
+    )
+)
+
+(print "")
+(print "")
+;;==== SetHotRecoveryFee and HotRecovery Proof · 03 · gas echo ==== ================================
+(print "--- [SetHotRecoveryFee and HotRecovery Proof · 03 · gas echo] ---")
+(format "<<<<<<<SetHotRecoveryFee and HotRecovery Proof {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "HOT-RBT Branding Proof 1|2 - UpdatePendingBranding")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== HOT-RBT Branding Proof 1|2 · 01 · env-sigs (caps) ==== =====================================
+(print "--- [HOT-RBT Branding Proof 1|2 · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== HOT-RBT Branding Proof 1|2 · 02 · let / invocation ==== ====================================
+(print "--- [HOT-RBT Branding Proof 1|2 · 02 · let / invocation] ---")
+;; #5C / C5 regression context: ATS|C>HOT-RBT-UPDATE-BRD / ATS|C>HOT-RBT-UPGRADE-BRD resolve the
+;; owning ats-pair from the hot-rbt token (ref-DPOF::UR_RewardBearingToken) and enforce CAP_Owner on
+;; THAT pair before composing ATS|GOV — proven here via a real owner-signed call succeeding.
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-BRD:module{BrandingV1} BRD)
+        (aoz:string KST.AOZT)
+        (dd-k:string "DDKOSON-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_HOT-RBT|UpdatePendingBranding
+        aoz
+        dd-k
+        "https://example.com/thrbt-logo.png"
+        "Denarius Debilis Hot-RBT test branding"
+        "https://example.com/thrbt"
+        [{"social-media-name": "Twitter", "social-media-link": "https://x.com/thrbt"}]
+    )
+    (map print
+        [
+            (expect "pending logo updated" "https://example.com/thrbt-logo.png" (ref-BRD::UR_Logo dd-k true))
+            (expect "pending description updated" "Denarius Debilis Hot-RBT test branding" (ref-BRD::UR_Description dd-k true))
+            (expect "pending website updated" "https://example.com/thrbt" (ref-BRD::UR_Website dd-k true))
+        ]
+    )
+)
+
+(print "")
+(print "")
+;;==== HOT-RBT Branding Proof 1|2 · 03 · gas echo ==== ===============================================
+(print "--- [HOT-RBT Branding Proof 1|2 · 03 · gas echo] ---")
+(format "<<<<<<<HOT-RBT Branding Proof 1|2 {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "HOT-RBT Branding Proof 2|2 - UpgradeBranding")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== HOT-RBT Branding Proof 2|2 · 01 · env-sigs (caps) ==== =====================================
+(print "--- [HOT-RBT Branding Proof 2|2 · 01 · env-sigs (caps)] ---")
+;; C_HOT-RBT|UpgradeBranding -> DPOF::C_UpgradeBranding -> IGNIS::KDA|C_CollectWT -> real coin.TRANSFER
+;; (price key "blue", same URC_SplitKDAPrices 4-way split / 4-target pattern as every other raw-KDA
+;; payment in this file), followed by TS01-A::XB_DynamicFuelKDA.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (aoz:string KST.AOZT)
+        (months:integer 1)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices aoz (* (dec months) (ref-DALOS::UR_UsagePrice "blue")))
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AOZ", "caps": [] }
+            { "key": "95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+;;==== HOT-RBT Branding Proof 2|2 · 02 · let / invocation ==== ====================================
+    (print "--- [HOT-RBT Branding Proof 2|2 · 02 · let / invocation] ---")
+    (let
+        (
+            (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+            (ref-BRD:module{BrandingV1} BRD)
+            (dd-k:string "DDKOSON-98c486052a51")
+            (flag-before:integer (ref-BRD::UR_Flag dd-k false))
+        )
+        (ref-TS01-C2::ATS|C_HOT-RBT|UpgradeBranding aoz dd-k months)
+        (map print
+            [
+                (format "flag was {} (3 = Gray) before upgrade" [flag-before])
+                (expect "live flag is now 1 (Blue)" 1 (ref-BRD::UR_Flag dd-k false))
+                (expect "live branding promoted from pending on Gray->Blue upgrade"
+                    "Denarius Debilis Hot-RBT test branding"
+                    (ref-BRD::UR_Description dd-k false)
+                )
+            ]
+        )
+    )
+)
+
+(print "")
+(print "")
+;;==== HOT-RBT Branding Proof 2|2 · 03 · gas echo ==== ===============================================
+(print "--- [HOT-RBT Branding Proof 2|2 · 03 · gas echo] ---")
+(format "<<<<<<<HOT-RBT Branding Proof 2|2 {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "HOT-RBT Repurpose Proof")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== HOT-RBT Repurpose Proof · 01 · env-sigs (caps) ==== =========================================
+(print "--- [HOT-RBT Repurpose Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== HOT-RBT Repurpose Proof · 02 · let / invocation ==== ========================================
+(print "--- [HOT-RBT Repurpose Proof · 02 · let / invocation] ---")
+;; #22L core fix regression: C_HOT-RBT|Repurpose (08_ATS.pact) used to call
+;; (ref-DPOF::UR_NonceMetaData) with zero arguments where it requires (id nonce) — an unconditional
+;; crash on every call, never caught for lack of test coverage. This seizes nonce 3 (minted to aoz
+;; in the SetHotRecoveryFee/HotRecovery proof above, still unredeemed) and reassigns an
+;; equivalent-value replacement — a freshly-minted nonce carrying the SAME original mint-time
+;; metadata — to emma. nonces-used was 3 going in, so the replacement is nonce 4.
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (aoz:string KST.AOZT)
+        (emma:string KST.EMMA)
+        (dd-k:string "DDKOSON-98c486052a51")
+        (nonce-3-supply:decimal (ref-DPOF::UR_NonceSupply dd-k 3))
+        (nonce-3-mint-time:time (at "mint-time" (at 0 (ref-DPOF::UR_NonceMetaData dd-k 3))))
+    )
+    (ref-TS01-C2::ATS|C_HOT-RBT|Repurpose aoz dd-k 3 emma)
+    (map print
+        [
+            (expect "nonce 3 wiped — DPOF supply now the not-exists sentinel" -1.0 (ref-DPOF::UR_NonceSupply dd-k 3))
+            (expect "nonce 4 (the replacement) exists with the same supply nonce 3 had"
+                nonce-3-supply
+                (ref-DPOF::UR_NonceSupply dd-k 4)
+            )
+            (expect "nonce 4 is held by emma (the repurpose-to account)" emma (ref-DPOF::UR_NonceHolder dd-k 4))
+            (expect "nonce 4 carries forward nonce 3's original mint-time"
+                nonce-3-mint-time
+                (at "mint-time" (at 0 (ref-DPOF::UR_NonceMetaData dd-k 4)))
+            )
+        ]
+    )
+)
+
+(print "")
+(print "")
+;;==== HOT-RBT Repurpose Proof · 03 · gas echo ==== =================================================
+(print "--- [HOT-RBT Repurpose Proof · 03 · gas echo] ---")
+(format "<<<<<<<HOT-RBT Repurpose Proof {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "Reverse (Recover) Proof")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== Reverse (Recover) Proof · 01 · env-sigs (caps) ==== =========================================
+(print "--- [Reverse (Recover) Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== Reverse (Recover) Proof · 02 · let / invocation ==== ========================================
+(print "--- [Reverse (Recover) Proof · 02 · let / invocation] ---")
+;; ATS|C_Reverse (Talos, 03_TS01-C2.pact) forwards to ATSU's own C_Recover (10_ATSU.pact) — converts
+;; a still-live Hot-RBT nonce back into an equivalent Cold-RBT position: burns the nonce, mints the
+;; matching amount of the pair's cold-RBT (PDKOSON) straight to the recoverer. Mints a fresh nonce
+;; (nonce 5 — nonces-used was 4 after the Repurpose proof's own internal mint) specifically for this,
+;; separate from nonce 4 (now emma's, from Repurpose) and the already-redeemed nonces 1/2.
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (aoz:string KST.AOZT)
+        (dd-k:string "DDKOSON-98c486052a51")
+        (pd-k:string "PDKOSON-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_HotRecovery aoz aoz "PlebeicStrength-98c486052a51" 15.0)
+    (let
+        (
+            (nonce-5-supply:decimal (ref-DPOF::UR_NonceSupply dd-k 5))
+            (pd-k-before:decimal (ref-DPTF::UR_AccountSupply pd-k aoz))
+        )
+        (map print
+            [
+                (expect "nonce 5 was minted to aoz" aoz (ref-DPOF::UR_NonceHolder dd-k 5))
+            ]
+        )
+        (ref-TS01-C2::ATS|C_Reverse aoz aoz dd-k 5)
+        (map print
+            [
+                (expect "nonce 5 burned — DPOF supply now the not-exists sentinel" -1.0 (ref-DPOF::UR_NonceSupply dd-k 5))
+                (expect "aoz's PDKOSON (cold-RBT) balance grew by exactly nonce 5's supply"
+                    (+ pd-k-before nonce-5-supply)
+                    (ref-DPTF::UR_AccountSupply pd-k aoz)
+                )
+            ]
+        )
+    )
+)
+
+(print "")
+(print "")
+;;==== Reverse (Recover) Proof · 03 · gas echo ==== =================================================
+(print "--- [Reverse (Recover) Proof · 03 · gas echo] ---")
+(format "<<<<<<<Reverse (Recover) Proof {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "WithdrawRoyalties Proof")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== WithdrawRoyalties Proof · 01 · env-sigs (caps) ==== =========================================
+(print "--- [WithdrawRoyalties Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== WithdrawRoyalties Proof · 02 · let / invocation ==== ========================================
+(print "--- [WithdrawRoyalties Proof · 02 · let / invocation] ---")
+;; ATSU|C>WITHDRAW-ROYALTIES enforces a nonzero accrued sum (RUR bucket 3) before it will run, so a
+;; royalty rate is set and a Coil is performed first (URCX_RBT-Amount charges royalty-fee out of
+;; every Coil deposit once ATS|C_UpdateRoyalty has set a nonzero royalty-promile) to actually accrue
+;; something to withdraw.
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (aoz:string KST.AOZT)
+        (emma:string KST.EMMA)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (p-k:string "PKOSON-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 15.0)
+    (ref-TS01-C2::ATS|C_Coil aoz aoz ps p-k 200.0)
+    (let
+        (
+            (royalty-sum-before:decimal (fold (+) 0.0 (ref-ATS::UR_RewardTokenRUR ps 3)))
+        )
+        (map print
+            [
+                (format "accrued royalty sum before withdrawal: {}" [royalty-sum-before])
+                (expect "royalty accrued from the Coil above (nonzero)" true (> royalty-sum-before 0.0))
+            ]
+        )
+        (ref-TS01-C2::ATS|C_WithdrawRoyalties aoz ps emma)
+        (map print
+            [
+                (expect "all royalty buckets reset to 0.0 after withdrawal"
+                    0.0
+                    (fold (+) 0.0 (ref-ATS::UR_RewardTokenRUR ps 3))
+                )
+            ]
+        )
+    )
+)
+
+(print "")
+(print "")
+;;==== WithdrawRoyalties Proof · 03 · gas echo ==== =================================================
+(print "--- [WithdrawRoyalties Proof · 03 · gas echo] ---")
+(format "<<<<<<<WithdrawRoyalties Proof {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "DirectRecovery Proof")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== DirectRecovery Proof · 01 · env-sigs (caps) ==== =============================================
+(print "--- [DirectRecovery Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== DirectRecovery Proof · 02 · let / invocation ==== ============================================
+(print "--- [DirectRecovery Proof · 02 · let / invocation] ---")
+;; ATS|C>DIRECT_RECOVERY requires Direct Recovery to be switched ON first (never toggled for ps
+;; elsewhere in this file — only for KoriID, in [4.0]_Sovereign-Executor.repl). ps's direct-recovery
+;; fee (d-promile) was never set, so it's still the 0.0 default — the fee-free branch of
+;; C_DirectRecovery burns <ra> of the cold-RBT and releases the equivalent value in reward tokens
+;; (via the pool's current index, URC_RTSplitAmounts — NOT a flat 1:1, since ps's index has moved
+;; well off its 1.0 genesis value from all the Coil/Cull/fee activity earlier in this file), split
+;; proportionally across ps's reward-token list.
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (pd-k:string "PDKOSON-98c486052a51")
+    )
+    (ref-TS01-C2::ATS|C_SwitchDirectRecovery aoz ps true)
+    (let
+        (
+            (rt-lst:[string] (ref-ATS::UR_RewardTokenList ps))
+            (pd-k-before:decimal (ref-DPTF::UR_AccountSupply pd-k aoz))
+            (ra:decimal 10.0)
+            (expected-release-sum:decimal (fold (+) 0.0 (ref-ATS::URC_RTSplitAmounts ps 10.0)))
+        )
+        (let
+            (
+                (rt-before:[decimal] (map (lambda (id:string) (ref-DPTF::UR_AccountSupply id aoz)) rt-lst))
+            )
+            (ref-TS01-C2::ATS|C_DirectRecovery aoz aoz ps ra)
+            (let
+                (
+                    (rt-after:[decimal] (map (lambda (id:string) (ref-DPTF::UR_AccountSupply id aoz)) rt-lst))
+                    (rt-delta-sum:decimal
+                        (fold (+) 0.0 (zip (-) rt-after rt-before))
+                    )
+                )
+                (map print
+                    [
+                        (format "ra={}, pool index-derived expected release={}" [ra expected-release-sum])
+                        (expect "aoz's PDKOSON (cold-RBT) balance shrank by exactly ra"
+                            (- pd-k-before ra)
+                            (ref-DPTF::UR_AccountSupply pd-k aoz)
+                        )
+                        (expect "released reward-tokens sum to the index-derived expected value (zero direct-recovery fee)"
+                            expected-release-sum
+                            rt-delta-sum
+                        )
+                    ]
+                )
+            )
+        )
+    )
+)
+
+(print "")
+(print "")
+;;==== DirectRecovery Proof · 03 · gas echo ==== =====================================================
+(print "--- [DirectRecovery Proof · 03 · gas echo] ---")
+(format "<<<<<<<DirectRecovery Proof {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
