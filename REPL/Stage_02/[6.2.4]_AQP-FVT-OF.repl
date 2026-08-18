@@ -609,19 +609,25 @@
             (
                 (nonce:integer (at 0 owned))
                 (nns0:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                (unn0:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
                 (x:string (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce]))
             )
             (let
                 (
                     (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                    (unn1:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
                     (y:string (ref-TS02-C3::AQP-POOL|C_UnstakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce]))
                 )
-                (let ((nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id)))
+                (let ((nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+                      (unn2:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id)))
                     (map print
                         [
                             (format "<(nns 0/1/2 · nonce)> => {} {} {} · {}" [nns0 nns1 nns2 nonce])
+                            (format "<(unn 0/1/2 · ANHD)> => {} {} {}" [unn0 unn1 unn2])
                             (expect (format "<<TX-FVT-OF-NNS #FP1>> OF stake -> nns +1 got={}" [nns1]) (+ nns0 1) nns1)
                             (expect (format "<<TX-FVT-OF-NNS #FP1>> OF unstake (whole nonce) -> nns -1 (back to {}) got={}" [nns0 nns2]) nns0 nns2)
+                            (expect (format "<<TX-FVT-OF-NNS §4 unn>> OF stake -> unn +1 got={}" [unn1]) (+ unn0 1) unn1)
+                            (expect (format "<<TX-FVT-OF-NNS §4 unn>> OF unstake -> unn -1 (back to {}) got={}" [unn0 unn2]) unn0 unn2)
                         ]
                     )
                 )

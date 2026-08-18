@@ -1057,6 +1057,15 @@
             )
         )
     )
+    (defun WU_Pool|Occupancy:string
+        (pool-id:string beneficiary-id:string delta:integer)
+        @doc "Vacate-v2: advance BOTH occupancy counters in lockstep on a tracker 0<->occupied transition — the \
+            \ pool nns (#FP1) and the (pool, beneficiary) unn (§4). Both share the nns=-1 LP guard internally, so \
+            \ this is a no-op on amount pools. The single call every tracker slot writer makes on a transition."
+        (require-capability (SECURE))
+        (WU_Pool|Nns pool-id delta)
+        (WU_User|Unn pool-id beneficiary-id delta)
+    )
     (defun WU7_Pool|ScoreSlots:string
         (pool-id:string
             score-primary:string
@@ -2956,8 +2965,8 @@
                         (UDC_AQP|SemiFungibleTracker new-bal pool-id collectable-id owner-id beneficiary-id nonce)
                     )
                     ;; #FP1: pool nns occupancy — +1 when this position goes empty->occupied, -1 on last-amount removal
-                    (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Nns pool-id 1)
-                        (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Nns pool-id -1) "no nns transition"))
+                    (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id 1)
+                        (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition"))
                 )
                 (let
                     (
@@ -2968,8 +2977,8 @@
                         (UDC_AQP|NonFungibleTracker new-bal pool-id collectable-id owner-id beneficiary-id nonce)
                     )
                     ;; #FP1: pool nns occupancy — +1 when this position goes empty->occupied, -1 on last-amount removal
-                    (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Nns pool-id 1)
-                        (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Nns pool-id -1) "no nns transition"))
+                    (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id 1)
+                        (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition"))
                 )
             )
             (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
@@ -3075,8 +3084,8 @@
             )
             ;; #FP1 universal nns: TF leg occupancy — +1 empty->occupied, -1 occupied->empty (last amount out).
             ;; No-op on LP pools (class 0, nns=-1) via the WU_Pool|Nns guard. Covers TF stake AND unstake.
-            (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Nns pool-id 1)
-                (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Nns pool-id -1) "no nns transition"))
+            (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id 1)
+                (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition"))
             (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
         )
     )
@@ -3094,7 +3103,7 @@
                 (UDC_AQP|TrueFungibleTracker 0.0 pool-id dptf-id owner-id beneficiary-id)
             )
             ;; #FP1 universal nns: zeroing an OCCUPIED leg is an occupied->empty transition (-1). No-op on LP.
-            (if (> bal 0.0) (WU_Pool|Nns pool-id -1) "no nns transition")
+            (if (> bal 0.0) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition")
             (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
         )
     )
@@ -3141,8 +3150,8 @@
                 (UDC_AQP|OrtoFungibleTracker new-bal pool-id dpof-id owner-id beneficiary-id nonce)
             )
             ;; #FP1: pool nns occupancy — OF moves the whole nonce, so every move is a full 0<->occupied transition
-            (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Nns pool-id 1)
-                (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Nns pool-id -1) "no nns transition"))
+            (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id 1)
+                (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Occupancy pool-id beneficiary-id -1) "no nns transition"))
             (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
         )
     )
