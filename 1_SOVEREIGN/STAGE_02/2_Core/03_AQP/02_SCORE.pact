@@ -1655,19 +1655,34 @@
     ;;
     ;; [2] SCR|T|UserScore  (SCR|UserSchema)  Key = <Ouronet-Account> | <Pool-ID> | <Score-ID>
     (defun UR_U-SCR|UserScore:object{SCR|UserSchema} (ouronet-account:string pool-id:string score-id:string)
-        @doc "Reads full user score row from SCR|T|UserScore; absent rows read as zero weights via UDC default."
-        (with-default-read SCR|T|UserScore (UCk_UserScore ouronet-account pool-id score-id)
-            (UDC_SCR|UserSchema 0.0 0.0 0.0 0.0 0.0 0 ouronet-account pool-id score-id)
-            {"base-score"        := b
-            ,"boosted-score"    := bb
-            ,"deb-score"        := d
-            ,"base-deb-score"   := bd
-            ,"boosted-deb-score" := bbd
-            ,"stamped-generation" := g
-            ,"ouronet-account"  := oa
-            ,"pool-id"          := pid
-            ,"score-id"         := sid}
-            (UDC_SCR|UserSchema b bb d bd bbd g oa pid sid)
+        @doc "Reads the EFFECTIVE full user score row from SCR|T|UserScore. Vacate-v2 §5 lazy invalidation: if \
+            \ the row's stamped-generation is behind the score's current vacate-generation (a fast-vacate has \
+            \ nuked this score since the row was written), the VALUE fields read as 0 (stale) while IDENTITY \
+            \ (account/pool/score) is preserved; a fresh stake re-stamps the row live. Absent rows read as \
+            \ zero via the UDC default. NOTE: honours vacate-generation via a second point read (SCR|T|Score) \
+            \ — the read+select is deliberate; kept UR-named as an extended staleness-default of the with- \
+            \ default-read. While no pool has been fast-vacated, stamped==current everywhere so this is inert."
+        ;; 1] the score's current generation (safe default 0 when the score row is somehow absent)
+        (let
+            ((score-gen:integer
+                (with-default-read SCR|T|Score score-id
+                    {"vacate-generation" : 0} {"vacate-generation" := vg} vg)))
+            (with-default-read SCR|T|UserScore (UCk_UserScore ouronet-account pool-id score-id)
+                ;; absent row: fresh zero stamped at the current generation (never stale)
+                (UDC_SCR|UserSchema 0.0 0.0 0.0 0.0 0.0 score-gen ouronet-account pool-id score-id)
+                {"base-score"        := b
+                ,"boosted-score"    := bb
+                ,"deb-score"        := d
+                ,"base-deb-score"   := bd
+                ,"boosted-deb-score" := bbd
+                ,"stamped-generation" := g
+                ,"ouronet-account"  := oa
+                ,"pool-id"          := pid
+                ,"score-id"         := sid}
+                ;; 2] stale (row-gen < score-gen) -> zeroed values, identity preserved, re-stamped to current gen
+                (if (< g score-gen)
+                    (UDC_SCR|UserSchema 0.0 0.0 0.0 0.0 0.0 score-gen oa pid sid)
+                    (UDC_SCR|UserSchema b bb d bd bbd g oa pid sid)))
         )
     )
     (defun UR_U-SCR|UserScoreBaseScore:decimal (ouronet-account:string pool-id:string score-id:string)
