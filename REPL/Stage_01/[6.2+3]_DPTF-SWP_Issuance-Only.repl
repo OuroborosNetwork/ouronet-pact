@@ -2753,6 +2753,272 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 032 - Principal Cap Reproduction: Add 5 More (2 -> 7)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 032 - Principal Cap · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [SWP|TX 032 - Principal Cap · 02 · let / invocation] ---")
+;;Audit ref: owner direction — cap principals at 7 (mirrors the existing 2-7 pool-token bound
+;;UEV_Issue already enforces). Starting count is 2 (OURO, SilverStoa, registered at genesis).
+;;Adds 5 previously-unused elemental tokens to reach exactly 7.
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-SWP:module{SwapperV3} SWP)
+        (new-principals:[string]
+            [ "PD-98c486052a51" "OS-98c486052a51" "IR-98c486052a51" "PT-98c486052a51" "HG-98c486052a51" ]
+        )
+    )
+    (map (lambda (p:string) (ref-TS01-A::SWP|A_UpdatePrincipal p true)) new-principals)
+    (print (format "Principal cap proof — count after adding 5: {}" [(length (ref-SWP::UR_Principals))]))
+)
+(print "")
+(print "--- [SWP|TX 032 - Principal Cap · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032 Principal Cap ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 033 - Principal Cap + Standalone-Removal Reproduction")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 033 - Principal Cap/Removal Reproduction · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [SWP|TX 033 - Principal Cap/Removal Reproduction · 02 · let / invocation] ---")
+;;Audit ref: #21H design — 7 is a hard cap (8th add rejected); standalone removal is permanently
+;;disabled (only SWP|A_RotatePrincipal may retire a principal).
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (eighth:string "RE-98c486052a51")
+        (existing:string "PD-98c486052a51")
+    )
+    (map print
+        [
+            (expect-failure
+                "Principal cap fix — an 8th principal is rejected (7 maximum already defined)"
+                (ref-TS01-A::SWP|A_UpdatePrincipal eighth true)
+            )
+            (expect-failure
+                "#21H design — standalone removal (add-or-remove=false) is unconditionally rejected"
+                (ref-TS01-A::SWP|A_UpdatePrincipal existing false)
+            )
+        ]
+    )
+)
+(print "")
+(print "--- [SWP|TX 033 - Principal Cap/Removal Reproduction · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 033 Principal Cap/Removal Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 034 - Rotation Setup: Issue P|HG|TE (HG anchored while still principal)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 034 - Issue P|HG|TE · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+    (print "--- [SWP|TX 034 - Issue P|HG|TE · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (hg:string "HG-98c486052a51")
+            (te:string "TE-98c486052a51")
+            (pool
+                ;;p=true (admin path): HG is a brand-new principal with zero existing
+                ;;routes, so URC_WorthDWK can't price it yet (chicken-and-egg) — the
+                ;;p=false spawn-limit worth check is irrelevant to what this test is
+                ;;actually proving, so skip it via the admin path.
+                (ref-TS01-C3::SWP|C_IssueStandard
+                    KST.ANHD KST.ANHD
+                    [ { "token-id": hg, "token-supply": 500.0}
+                      { "token-id": te, "token-supply": 500.0} ]
+                    10.0 true
+                )
+            )
+        )
+        (print "--- [SWP|TX 034 - Issue P|HG|TE · 03 · gas echo] ---")
+        (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
+    )
+)
+(print "")
+(format "<<<<<<<SWP|TX 034 Issue P|HG|TE ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
+(begin-tx "SWP|TX 035 - A_RotatePrincipal Reproduction: HG -> TI")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 035 - Rotate Principal Reproduction · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [SWP|TX 035 - Rotate Principal Reproduction · 02 · let / invocation] ---")
+;;Audit ref: #21H — proves rotation is safe end-to-end. HG anchors the real, already-issued
+;;P|HG|TE pool from TX034. Rotating HG -> TI must: (1) leave the principal count unchanged at 7,
+;;(2) leave P|HG|TE's routing completely intact (SWPT's graph is principal-agnostic, #21H's fix —
+;;rotation touches SWP|Properties only, never SWPT), (3) block any NEW pool from anchoring to HG
+;;(no longer a principal), (4) allow a NEW pool to anchor to TI (the new principal). Also checks
+;;the 3 rotate-specific rejections: rotating a non-principal, rotating into an already-existing
+;;principal, and rotating a principal into itself.
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (hg:string "HG-98c486052a51")
+        (te:string "TE-98c486052a51")
+        (ti:string "TI-98c486052a51")
+        (ouro:string "OURO-98c486052a51")
+        (before-count:integer (length (ref-SWP::UR_Principals)))
+        (route-before:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper hg te 5.0))
+    )
+    (map print
+        [
+            (expect-failure "Rotate fix — rotating a non-principal is rejected" (ref-TS01-A::SWP|A_RotatePrincipal "PT-98c486052a51_typo" ti))
+            (expect-failure "Rotate fix — rotating into an already-existing principal is rejected" (ref-TS01-A::SWP|A_RotatePrincipal hg ouro))
+            (expect-failure "Rotate fix — rotating a principal into itself is rejected" (ref-TS01-A::SWP|A_RotatePrincipal hg hg))
+        ]
+    )
+    (ref-TS01-A::SWP|A_RotatePrincipal hg ti)
+    (let
+        (
+            (after-principals:[string] (ref-SWP::UR_Principals))
+            (route-after:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper hg te 5.0))
+        )
+        (map print
+            [
+                (format "#21H rotate proof — principals after rotation: {}" [after-principals])
+                (format "#21H rotate proof — HG->TE route before: {}" [(at "nodes" route-before)])
+                (format "#21H rotate proof — HG->TE route after:  {}" [(at "nodes" route-after)])
+                (expect "Rotate fix — principal count unchanged (still 7)" before-count (length after-principals))
+                (expect "Rotate fix — HG removed from principals" false (contains hg after-principals))
+                (expect "Rotate fix — TI added to principals" true (contains ti after-principals))
+                (expect "Rotate fix — HG->TE route is genuinely non-empty before rotation (proves this is a real check, not a trivial []=[] pass)" true (> (length (at "nodes" route-before)) 0))
+                (expect "#21H fix — HG->TE routing completely unaffected by the rotation (SWPT is principal-agnostic)" route-before route-after)
+            ]
+        )
+    )
+)
+(print "")
+(print "--- [SWP|TX 035 - Rotate Principal Reproduction · 03 · new-pool anchoring shifted] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (hg:string "HG-98c486052a51")
+            (ga:string "GA-98c486052a51")
+        )
+        (map print
+            [
+                (expect-failure
+                    "Rotate fix — a NEW pool can no longer anchor to HG (retired as principal)"
+                    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD [ { "token-id": hg, "token-supply": 500.0} { "token-id": ga, "token-supply": 500.0} ] 10.0 false)
+                )
+            ]
+        )
+    )
+)
+(print "")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ti:string "TI-98c486052a51")
+            (ga:string "GA-98c486052a51")
+            (pool
+                ;;p=true — TI is a brand-new principal (as of this same TX's rotation),
+                ;;same chicken-and-egg reasoning as the P|HG|TE setup above.
+                (ref-TS01-C3::SWP|C_IssueStandard
+                    KST.ANHD KST.ANHD
+                    [ { "token-id": ti, "token-supply": 500.0}
+                      { "token-id": ga, "token-supply": 500.0} ]
+                    10.0 true
+                )
+            )
+        )
+        (print (format "Rotate fix — a NEW pool anchors to TI (the new principal) successfully: {}" [pool]))
+    )
+)
+(print "")
+(print "--- [SWP|TX 035 - Rotate Principal Reproduction · 04 · gas echo] ---")
+(format "<<<<<<<SWP|TX 035 Rotate Principal Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
 (print "")
 (print "===================DPTF + SWP Issuance-Only FINISHED==========================")
 (print "")

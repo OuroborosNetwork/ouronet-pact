@@ -1124,3 +1124,40 @@ this finding, since the underlying fragility is gone, but still wanted for opera
 **not yet built**; that's the natural next turn if still desired. Awaiting Round III re-verify.
 
 ---
+
+## H3/#21H follow-up — "replace-only, capped at 7" policy layer — **BUILT AND PROVEN**
+
+The policy layer flagged as "not yet built" above, now landed. Owner direction: cap principals at 7
+(mirrors `UEV_Issue`'s existing 2–7 pool-token bound); standalone removal stays permanently disabled
+(`SWP|C>PRINCIPAL` already unconditionally rejects `add-or-remove=false`, from #21H's own fix); the only
+way to retire a principal is a new atomic rotate.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:**
+- `SWP|C>PRINCIPAL` defcap: added `(enforce (< current-count 7) ...)` on the add path, plus a
+  not-already-present guard (`A_UpdatePrincipal` had no such check before — calling it twice for the
+  same token would have silently duplicated it in the list; closed as in-scope hardening while already
+  touching this exact validation).
+- `A_UpdatePrincipal`'s body simplified — the remove branch is unreachable now that the defcap
+  unconditionally rejects `add-or-remove=false`; removed rather than left as misleading dead code.
+- New `SWP|C>ROTATE-PRINCIPAL` defcap + `A_RotatePrincipal(old, new)`: atomic, count-preserving
+  replacement — `old` must currently be a principal, `new` must not already be one, they must differ.
+  Both additive to `SwapperV3`'s interface, no version bump needed.
+- `1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact`: new `SWP|A_RotatePrincipal` wrapper, mirroring the
+  existing `SWP|A_UpdatePrincipal` pattern, additive to `TalosStageOne_AdminV1`.
+
+**Adversarially proven, live — `SWP|TX 032-035` in `[6.2+3]…repl`:**
+- Added 5 principals to reach the cap of 7 (2 → 7); an 8th (`RE`) correctly rejected; standalone removal
+  (`add-or-remove=false`) correctly rejected — both reverted (removed the whole guard block) and
+  reconfirmed both unexpectedly succeed pre-fix, restored, reconfirmed both rejected post-fix.
+- Rotate-specific rejections proven: rotating a non-principal, rotating into an already-existing
+  principal, rotating a principal into itself.
+- **The real end-to-end proof:** issued a genuine pool (`P|HG|TE`) anchored to a freshly-added principal
+  (`HG`), confirmed the route between them is real and non-empty (not a trivial `[]`), rotated `HG → TI`,
+  and confirmed the *exact same route* is byte-identical after rotation — proving #21H's principal-agnostic
+  `SWPT` storage genuinely makes rotation harmless to existing routing, not just in theory. Also confirmed
+  a *new* pool can no longer anchor to the retired `HG` (fails the existing `iz-principal` issuance check)
+  but *can* anchor to the new principal `TI`. Full suite: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #13. Awaiting Round III re-verify.
+
+---

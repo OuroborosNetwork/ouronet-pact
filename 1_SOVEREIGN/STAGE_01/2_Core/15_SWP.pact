@@ -86,6 +86,7 @@
     ;;
     ;;
     (defun A_UpdatePrincipal (principal:string add-or-remove:bool))
+    (defun A_RotatePrincipal (old:string new:string))
     (defun A_UpdateLimit (limit:decimal spawn:bool))
     (defun A_UpdateLiquidBoost (new-boost-variable:bool))
     (defun A_DefinePrimordialPool (primordial-pool:string))
@@ -527,17 +528,39 @@
         )
     )
     (defcap SWP|C>PRINCIPAL (principal:string add-or-remove:bool)
+        @doc "#21H design decision: standalone principal removal is permanently \
+            \ disabled — a principal can only be added (while under the 7 maximum) \
+            \ or retired via A_RotatePrincipal, never bare-removed. <add-or-remove> \
+            \ stays in the signature for interface stability but must always be \
+            \ <true>; passing <false> always aborts."
+        @event
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (current:[string] (UR_Principals))
+                (current-count:integer (if (= current [BAR]) 0 (length current)))
+            )
+            (ref-DPTF::UEV_id principal)
+            (enforce add-or-remove "Standalone principal removal is disabled — use A_RotatePrincipal to retire a principal")
+            (enforce (not (contains principal current)) (format "{} is already a principal" [principal]))
+            (enforce (< current-count 7) (format "Cannot add principal — {} of 7 maximum already defined" [current-count]))
+            (compose-capability (GOV|SWP_ADMIN))
+        )
+    )
+    (defcap SWP|C>ROTATE-PRINCIPAL (old:string new:string)
+        @doc "Validates an atomic principal replacement: <old> must currently be a \
+            \ principal, <new> must not already be one, and they must differ. \
+            \ Count-preserving — never interacts with the 7-principal cap."
         @event
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (current:[string] (UR_Principals))
             )
-            (ref-DPTF::UEV_id principal)
-            (if (not add-or-remove)
-                (ref-U|LST::UEV_StringPresence principal (UR_Principals))
-                true
-            )
+            (ref-DPTF::UEV_id new)
+            (ref-U|LST::UEV_StringPresence old current)
+            (enforce (fold (and) true [(!= old new) (not (contains new current))]) (format "Cannot rotate {} into {} — already a principal, or rotating into itself" [old new]))
             (compose-capability (GOV|SWP_ADMIN))
         )
     )
@@ -1158,6 +1181,10 @@
     ;;
     ;;{F5}
     (defun A_UpdatePrincipal (principal:string add-or-remove:bool)
+        @doc "Adds <principal> to the principal list, while under the 7 maximum. \
+            \ <add-or-remove> must always be <true> — SWP|C>PRINCIPAL rejects \
+            \ <false> unconditionally; standalone removal is disabled (#21H design \
+            \ decision). To retire a principal, use A_RotatePrincipal instead."
         (UEV_IMC)
         (let
             (
@@ -1166,28 +1193,37 @@
             (with-read SWP|Properties SWP|INFO
                 { "principals" := pp }
                 (with-capability (SWP|C>PRINCIPAL principal add-or-remove)
-                    (if add-or-remove
-                        (if (= pp [BAR])
-                            (update SWP|Properties SWP|INFO
-                                {"principals" : [principal]}
-                            )
-                            (update SWP|Properties SWP|INFO
-                                {"principals" : (ref-U|LST::UC_AppL pp principal)}
-                            )
+                    (if (= pp [BAR])
+                        (update SWP|Properties SWP|INFO
+                            {"principals" : [principal]}
                         )
-                        (if (= 1 (length pp))
-                            (update SWP|Properties SWP|INFO
-                                {"principals" : [BAR]}
-                            )
-                            (let
-                                (
-                                    (pp-position:integer (at 0 (ref-U|LST::UC_Search (UR_Principals) principal)))
-                                )
-                                (update SWP|Properties SWP|INFO
-                                    {"principals" : (ref-U|LST::UC_RemoveItem pp (at pp-position pp))}
-                                )
-                            )
+                        (update SWP|Properties SWP|INFO
+                            {"principals" : (ref-U|LST::UC_AppL pp principal)}
                         )
+                    )
+                )
+            )
+        )
+    )
+    (defun A_RotatePrincipal (old:string new:string)
+        @doc "Atomically replaces principal <old> with <new> — the only supported \
+            \ way to retire a principal (#21H design decision; standalone removal \
+            \ via A_UpdatePrincipal is disabled). Count-preserving, so this never \
+            \ interacts with the 7-principal cap. Safe with respect to SWPT's \
+            \ routing graph (#21H fix) — SWPT's storage is principal-agnostic, so \
+            \ rotating a principal never orphans anything there; the only effect is \
+            \ on future SWPI::UEV_Issue principal-anchoring validation."
+        (UEV_IMC)
+        (with-read SWP|Properties SWP|INFO
+            { "principals" := pp }
+            (with-capability (SWP|C>ROTATE-PRINCIPAL old new)
+                (let
+                    (
+                        (ref-U|LST:module{StringProcessorV1} U|LST)
+                        (pos:integer (at 0 (ref-U|LST::UC_Search pp old)))
+                    )
+                    (update SWP|Properties SWP|INFO
+                        {"principals" : (ref-U|LST::UC_ReplaceAt pp pos new)}
                     )
                 )
             )

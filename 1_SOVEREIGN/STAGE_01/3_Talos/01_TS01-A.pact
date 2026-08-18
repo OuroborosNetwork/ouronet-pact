@@ -41,6 +41,7 @@
     ;;
     ;;SWP Functions
     (defun SWP|A_UpdatePrincipal (principal:string add-or-remove:bool))
+    (defun SWP|A_RotatePrincipal (old:string new:string))
     (defun SWP|A_UpdateLimit (limit:decimal spawn:bool))
     (defun SWP|A_UpdateLiquidBoost (new-boost-variable:bool))
     (defun SWP|A_DefinePrimordialPool (primordial-pool:string))
@@ -489,15 +490,33 @@
     )
     ;;  [SWP_Administrator]
     (defun SWP|A_UpdatePrincipal (principal:string add-or-remove:bool)
-        @doc "Updates the principal Token List. \
-        \ A principal is a token that must exist once in every W or P Swpiar, on the first position \
-        \ Also, the S Pools, must have at least one Token dtied directly to a principal Token"
+        @doc "Adds <principal> to the principal Token List, while under the 7 \
+        \ maximum. A principal is a token that must exist once in every W or P \
+        \ Swpiar, on the first position. Also, the S Pools, must have at least one \
+        \ Token dtied directly to a principal Token. <add-or-remove> must always be \
+        \ <true> — standalone removal is disabled (#21H design decision); use \
+        \ SWP|A_RotatePrincipal to retire a principal instead."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
                     (ref-SWP:module{SwapperV3} SWP)
                 )
                 (ref-SWP::A_UpdatePrincipal principal add-or-remove)
+            )
+        )
+    )
+    (defun SWP|A_RotatePrincipal (old:string new:string)
+        @doc "Atomically replaces principal <old> with <new> — the only supported \
+        \ way to retire a principal. Count-preserving, never interacts with the 7 \
+        \ maximum. Safe with respect to SWPT's routing graph (#21H fix): SWPT's \
+        \ storage is principal-agnostic, so this never orphans anything there — the \
+        \ only effect is on future pool-issuance principal-anchoring validation."
+        (with-capability (P|ADMINISTRATIVE-SUMMONER)
+            (let
+                (
+                    (ref-SWP:module{SwapperV3} SWP)
+                )
+                (ref-SWP::A_RotatePrincipal old new)
             )
         )
     )

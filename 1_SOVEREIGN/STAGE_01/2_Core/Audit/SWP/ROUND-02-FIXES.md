@@ -788,3 +788,31 @@ verified via full grep before starting that no other module's *interface* refere
 `SWP::A_UpdatePrincipal` is not yet built — no longer required to close #21H (orphaning is now
 structurally impossible regardless of remove vs. replace), but still wanted for operational discipline.
 Awaiting Round III re-verify.
+
+---
+
+## Fix #13 — H3/#21H follow-up: cap principals at 7, add `A_RotatePrincipal`
+
+**Owner direction:** cap at 7 (mirrors `UEV_Issue`'s existing 2–7 pool-token bound); standalone removal
+stays permanently disabled; add an atomic rotate as the only way to retire a principal.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:**
+- `SWP|C>PRINCIPAL`: added the 7-cap enforce on the add path, plus a not-already-present guard
+  (`A_UpdatePrincipal` previously had no duplicate-add protection at all — closed as in-scope hardening).
+- `A_UpdatePrincipal`: dead remove-branch code removed (unreachable since the defcap already
+  unconditionally rejects `add-or-remove=false`).
+- New `SWP|C>ROTATE-PRINCIPAL` + `A_RotatePrincipal(old, new)`: atomic, count-preserving replacement.
+  Both additive to `SwapperV3` — no version bump.
+- `1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact`: new `SWP|A_RotatePrincipal` Talos wrapper, additive to
+  `TalosStageOne_AdminV1`.
+
+**Adversarially proven, live — `SWP|TX 032-035`:** cap and standalone-removal guards reverted (whole
+guard block removed) and reconfirmed both unexpectedly succeed pre-fix — an 8th principal added, a
+standalone removal completed — restored, reconfirmed both correctly rejected. Rotate's three rejection
+cases proven (non-principal, already-existing target, self-rotation). End-to-end proof: issued a real
+pool (`P|HG|TE`) anchored to a freshly-added principal, confirmed a genuinely non-empty route, rotated
+`HG → TI`, confirmed the identical route survives byte-for-byte — proving #21H's principal-agnostic
+storage makes rotation harmless in practice, not just on paper. Confirmed a new pool can no longer anchor
+to the retired principal but can anchor to the new one. Full suite: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
