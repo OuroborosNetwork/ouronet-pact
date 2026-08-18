@@ -208,3 +208,35 @@ per-user finalize cost.
 1–4) after #FP1 — TF included. The genuinely new writes are the generation-stamp on score rows, the
 `unn`/settled marks, and the bulk-zero nuke. v2 is mostly **new drain + finalize entrypoints on top of
 existing primitives.**
+
+## 12. Phase 2 — gas calibration (SHIPPED `d38ec10`) + a cost-model correction
+
+A benchmark (`TX-NF-BENCH` model-0, `TX-NF-BENCH-M1` model-1 KBN) measured the real per-position and
+per-beneficiary costs, and it **corrects §1/§10's optimistic model**:
+
+- The **per-beneficiary settle (~67-85k) dominates**; the per-position marginal is only ~4k (bare/model-0)
+  to ~10k (trait-rich/model-1). The trait cost (~5.5k/nonce for KBN) is **metadata + anchor work that BOTH
+  v1 and v2 pay** — not the score-delta.
+- **v1 vacate and v2 drain differ by only ~600 gas/nonce** (the `ApplyStakeDelta` write v2 drops). So the
+  "v2 is the 20× speedup" framing was **wrong**: v2's gas edge is ~7-14%. v2's real value is architectural
+  (commit-forward, deferred O(scores) finalize, lazy nuke), not gas.
+- **The actual win is the cap model.** The old flat caps (24/33/29/30) were sized for the worst case (1
+  position/beneficiary), throttling *concentrated* batches ~5×. The 1500-TF-staker "→17 tx" and any
+  spread-pool row in §10's table were over-claims — a spread pool pays the ~76k settle per position in v1
+  AND v2, so it stays ~19/tx regardless.
+
+**Beneficiary-aware cap (both v1 vacate + v2 drain, since their gap is negligible):**
+`est = unique_beneficiaries × PER_BEN(90k) + positions × PER_POS(12k) ≤ BUDGET(2M)`, replacing the flat
+check inside `URC_TfOwnerArraysGasOk` / `URC_BatchOwnerArraysGasOk` (both entrypoint families share them).
+Coefficients are conservative upper bounds covering trait-rich model-1 NFTs.
+
+**Capacity now (2M ceiling):**
+| pool shape | positions/tx | vs old flat |
+|---|---|---|
+| **concentrated** (few beneficiaries, many positions each — e.g. 13k NFTs from 1 owner) | **~159** | ~5.3× (was ~30) |
+| **spread** (1 position per beneficiary — e.g. 1500 distinct TF stakers) | **~19** | ~unchanged (settle-bound) |
+
+So the honest picture: **v2 is worth keeping for its architecture, but the transaction-count win comes from
+the beneficiary-aware cap and accrues to v1 vacate equally.** TF/OF are cheaper (no metadata) and could get
+higher per-kind caps with dedicated measurement; the shared `PER_POS=12k` is a safe floor. Both v1 and v2
+are retained pending a later decision on whether to consolidate.
