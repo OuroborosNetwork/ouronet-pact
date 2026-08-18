@@ -24,6 +24,10 @@
         (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun CC_BatchDrainTrueFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
+    (defun CC_BatchDrainOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
+    (defun CC_BatchDrainCollectable:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun XB_VacateTrueFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
     (defun XB_VacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpof-id:string))
     (defun XB_VacateSemiFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpsf-id:string))
@@ -1929,6 +1933,62 @@
                 (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts))
         )
     )
+    (defun CC_BatchDrainOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+        )
+        @doc "Vacate-v2 FAST-DRAIN OF batch: return each owner's DPOF nonces + preserve each fully-drained \
+            \ beneficiary's rewards, but does NOT touch scores and does NOT finalize. Amounts resolved from the \
+            \ live tracker (whole-nonce). Same validation + owner gate as CC_BatchVacateOrtoFungible \
+            \ (VCT|C>LEGS-ORTO-FUNGIBLE-VACATE, finalize=false), EnsureVacateBegun (freeze if first), then \
+            \ XI_DrainOrtoFungibleBatch. Pool stays FROZEN until C_FinalizeVacate nukes scores once nns==0. \
+            \ Commit-forward; v1 CC_BatchVacateOrtoFungible remains the abortable/score-delta path."
+        (UEV_IMC)
+        (let
+            (
+                (of-amounts:[[decimal]]
+                    (URC_ResolveOfDecimalAmountsFromTracker pool-id dpof-id owner-ids beneficiary-ids nonces-array)
+                )
+            )
+            (with-capability
+                (VCT|C>LEGS-ORTO-FUNGIBLE-VACATE
+                    pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts false
+                )
+                (XI_EnsureVacateBegun pool-id)
+                (XI_DrainOrtoFungibleBatch pool-id dpof-id owner-ids beneficiary-ids nonces-array of-amounts)
+            )
+        )
+    )
+    (defun CC_BatchDrainCollectable:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            collectable-id:string
+            son:bool
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+        @doc "Vacate-v2 FAST-DRAIN collectable (SF son=true / NF son=false) batch: return each owner's nonces + \
+            \ preserve each fully-drained beneficiary's rewards, but does NOT touch scores and does NOT finalize. \
+            \ Same validation + owner gate as CC_BatchVacateCollectables (VCT|C>LEGS-COLLECTABLE-VACATE, \
+            \ finalize=false), EnsureVacateBegun (freeze if first), then XI_DrainCollectableBatch. Pool stays \
+            \ FROZEN until C_FinalizeVacate nukes scores once nns==0. Commit-forward; v1 CC_BatchVacateCollectables \
+            \ remains the abortable/score-delta path."
+        (UEV_IMC)
+        (with-capability
+            (VCT|C>LEGS-COLLECTABLE-VACATE
+                pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array false
+            )
+            (XI_EnsureVacateBegun pool-id)
+            (XI_DrainCollectableBatch
+                pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array)
+        )
+    )
     (defun CC_BatchVacateCollectables:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
@@ -2698,6 +2758,191 @@
                     (XI_1|VacateCollectableUnwindBatch
                         pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array
                     )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [bulk-oc unwind-oc] [])
+        )
+    )
+    ;; ══ Vacate-v2 FAST-DRAIN batch internals (OF + collectable) — score-free mirrors of the vacate batches ══
+    (defun XI_1|DrainOrtoFungibleUnwindBatch:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            nonce-amounts-array:[[decimal]]
+        )
+        @doc "Vacate-v2 OF DRAIN unwind (no score delta). Phase A per leg: XE_OrtoFungiblePoolTracker(dir=false) \
+            \ clears the tracker rows (nns--/unn-- per whole nonce). Phase B — unn now reflects the drain: settle \
+            \ ONCE each beneficiary whose unn hit 0 (XI_2|SettleBeneficiaryRewardsOnly). OF has NO rollup and NO \
+            \ anchor refresh. NO ApplyStakeDelta — the per-user score stays live for the finalize generation bump. \
+            \ Nested lets force the tracker side effects before the unn==0 gate is read."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (L:integer (length owner-ids))
+                (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
+            )
+            (let
+                (
+                    (tracker-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                        (map
+                            (lambda (idx:integer)
+                                (ref-AQP::XE_OrtoFungiblePoolTracker
+                                    pool-id (at idx owner-ids) (at idx beneficiary-ids)
+                                    dpof-id (at idx nonces-array) (at idx nonce-amounts-array) false)
+                            )
+                            (enumerate 0 (- L 1))
+                        )
+                    )
+                )
+                (let
+                    (
+                        (settle-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                            (map
+                                (lambda (beneficiary-id:string)
+                                    (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0)
+                                        (XI_2|SettleBeneficiaryRewardsOnly pool-id beneficiary-id)
+                                        (UC_EmptyOc)
+                                    )
+                                )
+                                unique-beneficiaries
+                            )
+                        )
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ tracker-ocs settle-ocs) [])
+                )
+            )
+        )
+    )
+    (defun XI_DrainOrtoFungibleBatch:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            dpof-id:string
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            nonce-amounts-array:[[decimal]]
+        )
+        @doc "Vacate-v2 OF DRAIN batch (require P|VCT|RECIPE): bulk-transfer each owner's DPOF nonces back out of \
+            \ the pool SC, then the drain unwind (tracker-clear + settle-once). NO score delta, NO finalize."
+        (require-capability (P|VCT|RECIPE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV2} DPOF)
+                ;;
+                (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPOF::C_BulkTransfer dpof-id nonces-array AQP|SC_NAME owner-ids true)
+                )
+                (unwind-oc:object{IgnisCollectorV1.OutputCumulator}
+                    (XI_1|DrainOrtoFungibleUnwindBatch
+                        pool-id dpof-id owner-ids beneficiary-ids nonces-array nonce-amounts-array)
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [bulk-oc unwind-oc] [])
+        )
+    )
+    (defun XI_1|DrainCollectableUnwindBatch:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            collectable-id:string
+            son:bool
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+        @doc "Vacate-v2 collectable (SF/NF) DRAIN unwind (no score delta). Phase A per leg: clear the tracker \
+            \ (XE_CollectablePoolTracker dir=false -> nns--/unn--) + decrement the beneficiary rollup + refresh \
+            \ anchors (per-nonce, delta-based, so per leg). Phase B — unn now reflects the drain: settle ONCE each \
+            \ beneficiary whose unn hit 0. NO ApplyStakeDelta. The anchor refresh does NOT write the per-user deb \
+            \ (verified), so running it in phase A before the last-drain Bank is safe. Nested lets order the \
+            \ tracker side effects before the unn==0 gate."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (L:integer (length owner-ids))
+                (unique-beneficiaries:[string] (UC_VacateUniqueBeneficiaries beneficiary-ids))
+            )
+            (let
+                (
+                    (tracker-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                        (map
+                            (lambda (idx:integer)
+                                (let
+                                    (
+                                        (ns:[integer] (at idx nonces-array))
+                                        (ams:[integer] (at idx amounts-array))
+                                    )
+                                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                        [
+                                            (ref-AQP::XE_CollectablePoolTracker
+                                                pool-id (at idx owner-ids) (at idx beneficiary-ids)
+                                                collectable-id son ns ams false)
+                                            (ref-AQP::XE_CollectableBeneficiaryRollup
+                                                pool-id (at idx owner-ids) (at idx beneficiary-ids)
+                                                collectable-id son ns ams false)
+                                            (ref-FVT::XE_RefreshCollectableStakeAnchors
+                                                (at idx beneficiary-ids) collectable-id son ns ams false)
+                                        ]
+                                        []
+                                    )
+                                )
+                            )
+                            (enumerate 0 (- L 1))
+                        )
+                    )
+                )
+                (let
+                    (
+                        (settle-ocs:[object{IgnisCollectorV1.OutputCumulator}]
+                            (map
+                                (lambda (beneficiary-id:string)
+                                    (if (= (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id) 0)
+                                        (XI_2|SettleBeneficiaryRewardsOnly pool-id beneficiary-id)
+                                        (UC_EmptyOc)
+                                    )
+                                )
+                                unique-beneficiaries
+                            )
+                        )
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators (+ tracker-ocs settle-ocs) [])
+                )
+            )
+        )
+    )
+    (defun XI_DrainCollectableBatch:object{IgnisCollectorV1.OutputCumulator}
+        (
+            pool-id:string
+            collectable-id:string
+            son:bool
+            owner-ids:[string]
+            beneficiary-ids:[string]
+            nonces-array:[[integer]]
+            amounts-array:[[integer]]
+        )
+        @doc "Vacate-v2 collectable DRAIN batch (require P|VCT|RECIPE): bulk-transfer each owner's nonces/amounts \
+            \ back out of the pool SC, then the drain unwind (tracker-clear + rollup + anchor refresh + settle- \
+            \ once). NO score delta, NO finalize."
+        (require-capability (P|VCT|RECIPE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
+                ;;
+                (bulk-oc:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPDC-T::C_BulkTransfer
+                        collectable-id son nonces-array amounts-array AQP|SC_NAME owner-ids true)
+                )
+                (unwind-oc:object{IgnisCollectorV1.OutputCumulator}
+                    (XI_1|DrainCollectableUnwindBatch
+                        pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array)
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [bulk-oc unwind-oc] [])

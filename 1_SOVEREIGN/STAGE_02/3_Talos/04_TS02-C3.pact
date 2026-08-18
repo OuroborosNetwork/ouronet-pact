@@ -165,6 +165,10 @@
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun AQP-POOL|CC_BatchDrainTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
+    (defun AQP-POOL|CC_BatchDrainOrtoFungible:string
+        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
+    (defun AQP-POOL|CC_BatchDrainCollectable:string
+        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string pool-id:string))
     (defun AQP-POOL|XB_VacateOrtoFungible:string (patron:string pool-id:string dpof-id:string))
     (defun AQP-POOL|XB_VacateSemiFungible:string (patron:string pool-id:string dpsf-id:string))
@@ -1327,6 +1331,44 @@
                     (ref-VCT::CC_BatchDrainTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
                 (format "Fast-drained {} TF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
                     [(length owner-ids) pool-id dptf-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CC_BatchDrainOrtoFungible:string
+        (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
+        @doc "Vacate-v2 FAST-DRAIN — one OF batch that returns nonces + preserves rewards WITHOUT touching scores \
+            \ and WITHOUT finalizing. Amounts resolved on-chain from the tracker. First batch freezes the pool + \
+            \ its FVTs; it stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced \
+            \ in VCT; IGNIS on patron. Commit-forward — CC_BatchVacateOrtoFungible is the abortable path."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::CC_BatchDrainOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+                (format "Fast-drained {} OF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
+                    [(length owner-ids) pool-id dpof-id])
+            )
+        )
+    )
+    (defun AQP-POOL|CC_BatchDrainCollectable:string
+        (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
+        @doc "Vacate-v2 FAST-DRAIN — one DPSF (son=true) / DPNF (son=false) batch that returns nonces + preserves \
+            \ rewards WITHOUT touching scores and WITHOUT finalizing. First batch freezes the pool + its FVTs; it \
+            \ stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced in VCT; \
+            \ IGNIS on patron. Commit-forward — CC_BatchVacateCollectables is the abortable path."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-VCT::CC_BatchDrainCollectable pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
+                (format "Fast-drained {} collectable leg(s) on Pool {} (asset {}, son {}) — scores untouched, awaiting finalize."
+                    [(length owner-ids) pool-id collectable-id son])
             )
         )
     )
