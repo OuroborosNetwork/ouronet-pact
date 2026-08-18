@@ -1991,38 +1991,48 @@
 (print "=== TX-VCT-GASBOUND — #FP2: vacate slice caps enforced (= max accepted, > max REJECTED) ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;; #FP2 Gap 1 (backstop): the vacate caps fold URC_TfOwnerArraysGasOk / URC_BatchOwnerArraysGasOk to reject any
-;; batch exceeding the per-tx slice cap (VACATE-GAS-MAX-*). Pure array checks -> tested directly at the boundary,
-;; reading the ACTUAL constants so a calibration change is caught. These caps are conservative placeholders: the
-;; UI sizes real vacate slices to them (simulate + construct) and the chain enforces them as a hard ceiling.
+;; Vacate-v2 Phase 2 (beneficiary-aware backstop): URC_TfOwnerArraysGasOk / URC_BatchOwnerArraysGasOk reject any
+;; batch whose est = unique-bens × PER-BEN + positions × PER-POS exceeds VACATE-GAS-BUDGET (2M). Tested at BOTH
+;; boundaries — CONCENTRATED (1 beneficiary, many positions) and SPREAD (1 position per beneficiary) — reading
+;; the ACTUAL constants so a coefficient change is caught. Applies to BOTH v1 vacate and v2 drain (shared cap).
 (let
     (
         (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-        (tf:integer AQP-VCT.VACATE-GAS-MAX-TF)
-        (of:integer AQP-VCT.VACATE-GAS-MAX-OF)
-        (sf:integer AQP-VCT.VACATE-GAS-MAX-DPSF)
-        (nf:integer AQP-VCT.VACATE-GAS-MAX-DPNF)
+        (budget:integer AQP-VCT.VACATE-GAS-BUDGET)
+        (per-ben:integer AQP-VCT.VACATE-GAS-PER-BEN)
+        (per-pos:integer AQP-VCT.VACATE-GAS-PER-POS)
     )
-    (map print
-        [
-            (format "<(gas-max TF/OF/SF/NF)> => {} {} {} {}" [tf of sf nf])
-            ;; TF — caps the LEG count
-            (expect (format "<<TX-VCT-GASBOUND TF>> {} legs (= max) accepted" [tf]) true (ref-VCT::URC_TfOwnerArraysGasOk (make-list tf "o") (make-list tf "b") (make-list tf 1.0)))
-            (expect (format "<<TX-VCT-GASBOUND TF>> {} legs (> max) REJECTED" [(+ tf 1)]) false (ref-VCT::URC_TfOwnerArraysGasOk (make-list (+ tf 1) "o") (make-list (+ tf 1) "b") (make-list (+ tf 1) 1.0)))
-            (expect "<<TX-VCT-GASBOUND TF>> owner/ben length mismatch REJECTED" false (ref-VCT::URC_TfOwnerArraysGasOk (make-list tf "o") (make-list (- tf 1) "b") (make-list tf 1.0)))
-            (expect "<<TX-VCT-GASBOUND TF>> empty batch REJECTED" false (ref-VCT::URC_TfOwnerArraysGasOk [] [] []))
-            ;; OF / SF / NF — cap the TOTAL nonce count across owner rows
-            (expect (format "<<TX-VCT-GASBOUND OF>> {} nonces (= max) accepted" [of]) true (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 of)] of))
-            (expect (format "<<TX-VCT-GASBOUND OF>> {} nonces (> max) REJECTED" [(+ of 1)]) false (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 (+ of 1))] of))
-            (expect (format "<<TX-VCT-GASBOUND SF>> {} nonces (= max) accepted" [sf]) true (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 sf)] sf))
-            (expect (format "<<TX-VCT-GASBOUND SF>> {} nonces (> max) REJECTED" [(+ sf 1)]) false (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 (+ sf 1))] sf))
-            (expect (format "<<TX-VCT-GASBOUND NF>> {} nonces (= max) accepted" [nf]) true (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 nf)] nf))
-            (expect (format "<<TX-VCT-GASBOUND NF>> {} nonces (> max) REJECTED" [(+ nf 1)]) false (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 (+ nf 1))] nf))
-            ;; batch shape validations + total-not-rows semantics
-            (expect "<<TX-VCT-GASBOUND Batch>> owner/ben length mismatch REJECTED" false (ref-VCT::URC_BatchOwnerArraysGasOk ["o" "o2"] ["b"] [[1] [2]] of))
-            (expect "<<TX-VCT-GASBOUND Batch>> zero nonces REJECTED" false (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [[]] of))
-            (expect (format "<<TX-VCT-GASBOUND Batch>> total {}>max across 2 rows REJECTED (caps TOTAL not rows)" [(+ of 1)]) false (ref-VCT::URC_BatchOwnerArraysGasOk ["o" "o2"] ["b" "b2"] [(enumerate 1 of) [1]] of))
-        ]
+    (let
+        (
+            (conc:integer (/ (- budget per-ben) per-pos))        ;; 1 beneficiary, N positions -> ~159
+            (spread:integer (/ budget (+ per-ben per-pos)))      ;; N beneficiaries, 1 position each -> ~19
+        )
+        (let
+            (
+                (spread-bens:[string] (map (lambda (i:integer) (format "b{}" [i])) (enumerate 1 spread)))
+                (spread-bens+1:[string] (map (lambda (i:integer) (format "b{}" [i])) (enumerate 1 (+ spread 1))))
+            )
+            (map print
+                [
+                    (format "<(budget/per-ben/per-pos -> conc-max/spread-max)> => {}/{}/{} -> {}/{}" [budget per-ben per-pos conc spread])
+                    ;; ── CONCENTRATED (1 beneficiary): TF legs and batch nonces both cap at ~159 ──
+                    (expect (format "<<TX-VCT-GASBOUND TF-conc>> {} legs, 1 ben (= max) accepted" [conc]) true (ref-VCT::URC_TfOwnerArraysGasOk (make-list conc "o") (make-list conc "b") (make-list conc 1.0)))
+                    (expect (format "<<TX-VCT-GASBOUND TF-conc>> {} legs, 1 ben (> max) REJECTED" [(+ conc 1)]) false (ref-VCT::URC_TfOwnerArraysGasOk (make-list (+ conc 1) "o") (make-list (+ conc 1) "b") (make-list (+ conc 1) 1.0)))
+                    (expect (format "<<TX-VCT-GASBOUND Batch-conc>> {} nonces, 1 ben (= max) accepted" [conc]) true (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 conc)] 0))
+                    (expect (format "<<TX-VCT-GASBOUND Batch-conc>> {} nonces, 1 ben (> max) REJECTED" [(+ conc 1)]) false (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [(enumerate 1 (+ conc 1))] 0))
+                    ;; ── SPREAD (1 position per distinct beneficiary): caps at ~19 (settle dominates) ──
+                    (expect (format "<<TX-VCT-GASBOUND TF-spread>> {} legs, {} distinct bens (= max) accepted" [spread spread]) true (ref-VCT::URC_TfOwnerArraysGasOk (make-list spread "o") spread-bens (make-list spread 1.0)))
+                    (expect (format "<<TX-VCT-GASBOUND TF-spread>> {} legs, {} distinct bens (> max) REJECTED" [(+ spread 1) (+ spread 1)]) false (ref-VCT::URC_TfOwnerArraysGasOk (make-list (+ spread 1) "o") spread-bens+1 (make-list (+ spread 1) 1.0)))
+                    (expect (format "<<TX-VCT-GASBOUND Batch-spread>> {} bens x1 nonce (= max) accepted" [spread]) true (ref-VCT::URC_BatchOwnerArraysGasOk (make-list spread "o") spread-bens (make-list spread [1]) 0))
+                    (expect (format "<<TX-VCT-GASBOUND Batch-spread>> {} bens x1 nonce (> max) REJECTED" [(+ spread 1)]) false (ref-VCT::URC_BatchOwnerArraysGasOk (make-list (+ spread 1) "o") spread-bens+1 (make-list (+ spread 1) [1]) 0))
+                    ;; ── shape validations ──
+                    (expect "<<TX-VCT-GASBOUND TF>> owner/ben length mismatch REJECTED" false (ref-VCT::URC_TfOwnerArraysGasOk (make-list 2 "o") (make-list 1 "b") (make-list 2 1.0)))
+                    (expect "<<TX-VCT-GASBOUND TF>> empty batch REJECTED" false (ref-VCT::URC_TfOwnerArraysGasOk [] [] []))
+                    (expect "<<TX-VCT-GASBOUND Batch>> owner/ben length mismatch REJECTED" false (ref-VCT::URC_BatchOwnerArraysGasOk ["o" "o2"] ["b"] [[1] [2]] 0))
+                    (expect "<<TX-VCT-GASBOUND Batch>> zero nonces REJECTED" false (ref-VCT::URC_BatchOwnerArraysGasOk ["o"] ["b"] [[]] 0))
+                ]
+            )
+        )
     )
 )
 (env-sigs [])

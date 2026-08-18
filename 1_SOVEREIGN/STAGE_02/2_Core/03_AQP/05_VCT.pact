@@ -277,10 +277,19 @@
     (defconst VACATE-MAX-NONCES 64)
     (defconst VACATE-FULL-MAX-LEGS 128)
     (defconst VACATE-FULL-MAX-NONCES 512)
-    (defconst VACATE-GAS-MAX-TF 24)
-    (defconst VACATE-GAS-MAX-OF 33)
+    (defconst VACATE-GAS-MAX-TF 24)     ;; legacy flat caps — superseded by the beneficiary-aware model below,
+    (defconst VACATE-GAS-MAX-OF 33)     ;; kept for UC_ComputeMinSliceCount / slice-plan references.
     (defconst VACATE-GAS-MAX-DPSF 29)
     (defconst VACATE-GAS-MAX-DPNF 30)
+    ;; Vacate-v2 Phase 2 — beneficiary-aware gas model (measured; applies to BOTH v1 vacate and v2 drain).
+    ;; A batch's cost is dominated by the per-beneficiary settle (~67-85k), with a much smaller per-position
+    ;; marginal (~4k bare / ~10k trait-rich). So: est = unique-bens × PER-BEN + positions × PER-POS ≤ BUDGET.
+    ;; Concentrated batches (few beneficiaries, many positions) now fit ~159 vs the old flat ~30; spread
+    ;; batches (1 position per beneficiary) stay ~19 (≈ the old flat cap). Coefficients are conservative
+    ;; upper bounds covering trait-rich model-1 NFTs (measured worst-case marginal ~9.9k/nonce).
+    (defconst VACATE-GAS-BUDGET 2000000)
+    (defconst VACATE-GAS-PER-BEN 90000)
+    (defconst VACATE-GAS-PER-POS 12000)
 
     ;;<==========>
     ;;CAPABILITIES
@@ -802,31 +811,40 @@
     ;; [URC]
     (defun URC_TfOwnerArraysGasOk:bool
         (owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
-        @doc "TF chunk gas check: owner-count is in (0, VACATE-GAS-MAX-TF] and the beneficiary / amount arrays \
-            \ are the same length as the owner array."
+        @doc "TF chunk gas check (vacate-v2 Phase 2, beneficiary-aware): shape valid AND the estimated cost \
+            \ unique-beneficiaries × VACATE-GAS-PER-BEN + legs × VACATE-GAS-PER-POS is within VACATE-GAS-BUDGET. \
+            \ The settle is per-beneficiary and dominates, so concentrated batches (few beneficiaries, many legs) \
+            \ fit ~159 vs the old flat 24; spread (1 leg per beneficiary) stays ~19. Applies to both v1 vacate \
+            \ and v2 drain (shared cap)."
         (let
             (
                 (l:integer (length owner-ids))
+                (bens:integer (length (distinct beneficiary-ids)))
             )
             (fold
                 (and)
                 true
                 [
                     (> l 0)
-                    (<= l VACATE-GAS-MAX-TF)
                     (= l (length beneficiary-ids))
                     (= l (length amounts))
+                    (<= (+ (* bens VACATE-GAS-PER-BEN) (* l VACATE-GAS-PER-POS)) VACATE-GAS-BUDGET)
                 ]
             )
         )
     )
     (defun URC_BatchOwnerArraysGasOk:bool
         (owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] gas-max:integer)
-        @doc "OF/DPSF/DPNF chunk gas: gas-max caps total nonces across rows, not owner row count."
+        @doc "OF/DPSF/DPNF chunk gas (vacate-v2 Phase 2, beneficiary-aware): shape valid AND unique-beneficiaries \
+            \ × VACATE-GAS-PER-BEN + total-nonces × VACATE-GAS-PER-POS within VACATE-GAS-BUDGET. The legacy \
+            \ gas-max param is retained for call-site stability but no longer used (the settle-per-beneficiary + \
+            \ marginal-per-nonce model replaces the flat per-kind cap). Concentrated batches fit ~159 nonces vs \
+            \ the old flat ~30; spread stays ~19. Applies to both v1 vacate and v2 drain."
         (let
             (
                 (l:integer (length owner-ids))
                 (nonce-total:integer (UC_BatchNonceTotal nonces-array))
+                (bens:integer (length (distinct beneficiary-ids)))
             )
             (fold
                 (and)
@@ -834,9 +852,9 @@
                 [
                     (> l 0)
                     (> nonce-total 0)
-                    (<= nonce-total gas-max)
                     (= l (length beneficiary-ids))
                     (= l (length nonces-array))
+                    (<= (+ (* bens VACATE-GAS-PER-BEN) (* nonce-total VACATE-GAS-PER-POS)) VACATE-GAS-BUDGET)
                 ]
             )
         )

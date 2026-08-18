@@ -573,5 +573,235 @@
 (commit-tx)
 (print "=== END TX-FVT-NF-DRAIN =====================================================")
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;; ── Vacate-v2 gas benchmark: CONCENTRATED NF (1 beneficiary, N nonces) — v1 vacate vs v2 drain, N=1 vs N=6.
+;; Isolates the per-nonce MARGINAL for each version (settle runs once, so the slope over N is pure marginal).
+;; DHB is model-0 (ghost score 0), so this measures the FLOOR marginal (transfer+tracker+rollup+anchor per
+;; nonce, + v1's cheap model-0 delta). NfBench{V,D}{1,6}. Pool-owner keyset PK_Lumy signed through.
+(begin-tx "TX-NF-BENCH - vacate-v2 gas benchmark: concentrated NF v1-vacate vs v2-drain (N=1,6 nonces)")
+(print "")
+(print "=== TX-NF-BENCH — concentrated NF (1 ben) per-nonce marginal: v1 CC_BatchVacate vs v2 CC_BatchDrain ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (ben:string KST.ANHD)
+        (source:string KST.EMMA)
+        (dpnf-id:string "DHB-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 8.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    ;; issuance sigs (ANHD + Emma source + Lumy pool-owner + gas station)
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Emma", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî" 200.0)
+                ]
+            }
+        ]
+    )
+    ;; one measurement per config: issue pool + mint N ghost nonces + stake all to ben + measure vacate|drain gas
+    (let
+        (
+            (gas:[integer]
+                (map
+                    (lambda (cfg:object)
+                        (let*
+                            (
+                                (pool:string (at "pool" cfg))
+                                (n:integer (at "n" cfg))
+                                (drain:bool (at "drain" cfg))
+                                (sc:string (format "{}Score" [pool]))
+                                (pool-id:string (ref-U|DALOS::UDC_Makeid pool))
+                                (amts:[integer] (make-list n 1))
+                            )
+                            (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id sc 6 0)
+                            (ref-TS02-C3::AQP-POOL|C_Issue patron pool dpnf-id 4)
+                            (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id (ref-U|DALOS::UDC_Makeid sc))
+                            (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron (ref-U|DALOS::UDC_Makeid (format "{}Fvt" [pool])) patron (ref-U|DALOS::UDC_Makeid sc) ouro-id)
+                            (ref-TS02-C2::DPNF|C_Create patron dpnf-id (NfSyncProbe.UC_DpnfNonceRows n))
+                            (let ((minted:[integer] (take (- n) (ref-DPDC::URD_AccountNonces source dpnf-id false))))
+                                (ref-TS02-C2::DPNF|C_TransferNonces patron dpnf-id source owner-id minted amts false)
+                                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id ben dpnf-id minted)
+                                (let ((g0:integer (env-gas)))
+                                    (if drain
+                                        (ref-TS02-C3::AQP-POOL|CC_BatchDrainCollectable patron pool-id dpnf-id false [owner-id] [ben] [minted] [amts])
+                                        (ref-TS02-C3::AQP-POOL|CC_BatchVacateCollectables patron pool-id dpnf-id false [owner-id] [ben] [minted] [amts]))
+                                    (- (env-gas) g0)
+                                )
+                            )
+                        )
+                    )
+                    [
+                        {"pool": "NfBenchV1", "n": 1, "drain": false}
+                        {"pool": "NfBenchV6", "n": 6, "drain": false}
+                        {"pool": "NfBenchD1", "n": 1, "drain": true}
+                        {"pool": "NfBenchD6", "n": 6, "drain": true}
+                    ]
+                )
+            )
+        )
+        (let
+            (
+                (gV1:integer (at 0 gas))
+                (gV6:integer (at 1 gas))
+                (gD1:integer (at 2 gas))
+                (gD6:integer (at 3 gas))
+            )
+            (map print
+                [
+                    (format "<<NF-BENCH>> VACATE(v1): 1-nonce={} 6-nonce={} per-nonce-marginal={}" [gV1 gV6 (/ (- gV6 gV1) 5)])
+                    (format "<<NF-BENCH>> DRAIN (v2): 1-nonce={} 6-nonce={} per-nonce-marginal={}" [gD1 gD6 (/ (- gD6 gD1) 5)])
+                    (format "<<NF-BENCH>> per-beneficiary intercept (1-nonce): v1={} v2={}" [gV1 gD1])
+                    (format "<<NF-BENCH>> per-nonce marginal saving v1->v2={}" [(- (/ (- gV6 gV1) 5) (/ (- gD6 gD1) 5))])
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-NF-BENCH =========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;; ── Model-1 (trait scoring) marginal: KBN, 1 beneficiary, N=6 nonces, v1 vacate vs v2 drain. v1's per-nonce
+;; ApplyStakeDelta does per-nonce trait scoring (the M1 point-read path), which v2 DROPS. Compare to the DHB
+;; model-0 N=6 above (vacate 95310 / drain 88563) to see how much model-1 inflates v1 (and that v2 is flat).
+(begin-tx "TX-NF-BENCH-M1 - model-1 KBN trait-scoring marginal: v1 vacate vs v2 drain (N=6)")
+(print "")
+(print "=== TX-NF-BENCH-M1 — model-1 (KBN trait scoring) N=6: v1 CC_BatchVacate vs v2 CC_BatchDrain ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 100000000)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (ben:string KST.ANHD)
+        (kbn-id:string "KBN-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (source:string KST.EMMA)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (anhd-kbn:[integer] (ref-DPDC::URD_AccountNonces owner-id kbn-id false))
+        (emma-kbn:[integer] (ref-DPDC::URD_AccountNonces source kbn-id false))
+        (split-smart:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart")))
+        )
+    )
+    (print (format "<(KBN ownership)> ANHD={} EMMA={}" [(length anhd-kbn) (length emma-kbn)]))
+    (if (< (+ (length anhd-kbn) (length emma-kbn)) 12)
+        (print (format "SKIP TX-NF-BENCH-M1: only {} KBN across ANHD/EMMA (<12)" [(+ (length anhd-kbn) (length emma-kbn))]))
+        (let
+            (
+                ;; move 12 KBN from EMMA to ANHD so ANHD can stake them (source-mint pattern)
+                (to-move:[integer] (take 12 emma-kbn))
+            )
+            (env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+            (ref-TS02-C2::DPNF|C_TransferNonces patron kbn-id source owner-id to-move (make-list 12 1) false)
+            (let
+                (
+                    (owned:[integer] (ref-DPDC::URD_AccountNonces owner-id kbn-id false))
+                )
+            (let
+                (
+                    (vac-nonces:[integer] (take 6 owned))
+                    (drn-nonces:[integer] (take 6 (drop 6 owned)))
+                )
+            (env-sigs
+                [
+                    { "key": "PK_AncientHodler", "caps": [] }
+                    { "key": "PK_Lumy", "caps": [] }
+                    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+                      "caps":
+                        [
+                            (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                            (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                            (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                            (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart))
+                        ]
+                    }
+                ]
+            )
+            (let
+                (
+                    (gas:[integer]
+                        (map
+                            (lambda (cfg:object)
+                                (let*
+                                    (
+                                        (pool:string (at "pool" cfg))
+                                        (drain:bool (at "drain" cfg))
+                                        (ns:[integer] (at "nonces" cfg))
+                                        (sc:string (format "{}Score" [pool]))
+                                        (pool-id:string (ref-U|DALOS::UDC_Makeid pool))
+                                        (score-id:string (ref-U|DALOS::UDC_Makeid sc))
+                                        (amts:[integer] (make-list 6 1))
+                                    )
+                                    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScore patron owner-id sc 6 1)
+                                    (ref-TS02-C3::AQP-SCR|C_IssueNonFungibleScoreDefinition patron score-id kbn-id
+                                        ["Rarity" "Rarity" "Background"] ["Common" "Legendary" "Movie Set"] [50.0 9999.0 10.0])
+                                    (ref-TS02-C3::AQP-POOL|C_Issue patron pool kbn-id 4)
+                                    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+                                    (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron (ref-U|DALOS::UDC_Makeid (format "{}Fvt" [pool])) patron score-id ouro-id)
+                                    (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id ben kbn-id ns)
+                                    (let ((g0:integer (env-gas)))
+                                        (if drain
+                                            (ref-TS02-C3::AQP-POOL|CC_BatchDrainCollectable patron pool-id kbn-id false [owner-id] [ben] [ns] [amts])
+                                            (ref-TS02-C3::AQP-POOL|CC_BatchVacateCollectables patron pool-id kbn-id false [owner-id] [ben] [ns] [amts]))
+                                        (- (env-gas) g0)
+                                    )
+                                )
+                            )
+                            [
+                                {"pool": "KbnBenchV6", "drain": false, "nonces": vac-nonces}
+                                {"pool": "KbnBenchD6", "drain": true, "nonces": drn-nonces}
+                            ]
+                        )
+                    )
+                )
+                (map print
+                    [
+                        (format "<<NF-BENCH-M1>> model-1 KBN N=6: VACATE(v1)={} DRAIN(v2)={}" [(at 0 gas) (at 1 gas)])
+                        (format "<<NF-BENCH-M1>> vs model-0 DHB N=6 (vac 95310 / drn 88563): v1 trait-inflation={} v2-delta={}"
+                            [(- (at 0 gas) 95310) (- (at 1 gas) 88563)])
+                    ]
+                )
+            )
+        )
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-NF-BENCH-M1 ======================================================")
+(print "")
 (print "=== END FILE [6.2.4]_AQP-FVT-NF.repl ========================================")
 (print "")
