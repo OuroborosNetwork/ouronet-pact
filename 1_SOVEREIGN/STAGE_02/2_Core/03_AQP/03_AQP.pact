@@ -11,6 +11,7 @@
     (defun UCk_BenDpnfNonceTotal:string (beneficiary-id:string dpnf-id:string nonce:integer))
     (defun UCk_BenDpsfAnkMeta:string (beneficiary-id:string dpsf-id:string))
     (defun UCk_BenDpnfAnkMeta:string (beneficiary-id:string dpnf-id:string))
+    (defun UCk_UserOccupancy:string (pool-id:string beneficiary-id:string))
     ;;
     ;;  [UR] AQP|Schema (AQP|T|Pool)
     (defun URH_AQP|AllPoolIds:[string] ())
@@ -26,6 +27,7 @@
     (defun UR_AQP|PoolAqpId:string (pool-id:string))
     (defun UR_AQP|PoolStakeEnabled:bool (pool-id:string))
     (defun UR_AQP|PoolNns:integer (pool-id:string))
+    (defun UR_AQP|UserUnn:integer (pool-id:string beneficiary-id:string))
     (defun UR_AQP|PoolSweepInProgress:bool (pool-id:string))
     (defun UR_AQP|PoolVacateSession:object (pool-id:string))
     (defun URH_AQP|ActiveDptfTrackerRows:[object] (pool-id:string dptf-id:string))
@@ -473,6 +475,20 @@
         dpnf-id:string                                                  ;;[.]
     )
     ;;
+    ;; [13] AQP|T|UserOccupancy
+    (defschema AQP|UserOccupancy
+        @doc "Vacate-v2 §4: per (pool, beneficiary) occupancy — the count of this beneficiary's OCCUPIED \
+            \ tracker positions in the pool (nonce rows for class 2/3/4; the single TF leg contributes 1 for \
+            \ class 1). Maintained alongside the pool nns on every tracker 0<->occupied transition (stake / \
+            \ unstake / vacate-drain). The fast-vacate drain settles a beneficiary exactly once, the moment \
+            \ this hits 0 (their last position drained). Point-readable so the drain never scans tracker keys."
+        unn:integer                                                     ;;[M] User-Nonces-in-pool: occupied tracker positions for this beneficiary
+        ;;
+        ;;Select Keys
+        pool-id:string                                                  ;;[.] Pool
+        beneficiary-id:string                                           ;;[.] Beneficiary (SCORE / reward recipient)
+    )
+    ;;
     ;;{2}
     (deftable AQP|T|Pool:{AQP|Schema})                                  ;;1] Key = <Pool-ID>
     (deftable AQP|T|DPTFTracker:{AQP|TrueFungibleTracker})              ;;2] Key = <Pool-ID> | <DPTF-ID> | <Owner-ID> | <Beneficiary-ID>
@@ -484,6 +500,7 @@
     (deftable AQP|T|BenDpnfNonceTotal:{AQP|BenDpnfNonceTotal})          ;;10] Key = <Beneficiary-ID> | <DPNF-ID> | <Nonce>
     (deftable AQP|T|BenDpsfAnkMeta:{AQP|BenDpsfAnkMeta})                ;;11] Key = <Beneficiary-ID> | <DPSF-ID>
     (deftable AQP|T|BenDpnfAnkMeta:{AQP|BenDpnfAnkMeta})                ;;12] Key = <Beneficiary-ID> | <DPNF-ID>
+    (deftable AQP|T|UserOccupancy:{AQP|UserOccupancy})                  ;;13] Key = <Pool-ID> | <Beneficiary-ID>
     ;;{3}
     (defun CT_Bar:string
         ()
@@ -801,6 +818,10 @@
         @doc "Composite key for AQP|T|BenDpnfAnkMeta: beneficiary-id | dpnf-id."
         (concat [beneficiary-id BAR dpnf-id])
     )
+    (defun UCk_UserOccupancy:string (pool-id:string beneficiary-id:string)
+        @doc "Composite key for AQP|T|UserOccupancy: pool-id | beneficiary-id."
+        (concat [pool-id BAR beneficiary-id])
+    )
     ;;
     ;;{F3}  [UDC]
     ;; Default tracker and attribution rows for UR with-default-read.
@@ -882,6 +903,13 @@
         ,"active-nonce-count"   : active-nonce-count
         ,"beneficiary-id"       : beneficiary-id
         ,"dpnf-id"              : dpnf-id}
+    )
+    (defun UDC_AQP|UserOccupancy:object{AQP|UserOccupancy}
+        (unn:integer pool-id:string beneficiary-id:string)
+        @doc "Vacate-v2 §4: default per (pool, beneficiary) occupancy row (unn = 0 when absent)."
+        {"unn"                  : unn
+        ,"pool-id"              : pool-id
+        ,"beneficiary-id"       : beneficiary-id}
     )
     (defun UDC_AQP|Schema:object{AQP|Schema}
         (aqp-class:integer asset-id:string aqp-id:string)
@@ -1011,6 +1039,21 @@
             (if (= cur -1)
                 "nns N/A (amount pool)"
                 (update AQP|T|Pool pool-id {"nns" : (+ cur delta)})
+            )
+        )
+    )
+    (defun WU_User|Unn:string
+        (pool-id:string beneficiary-id:string delta:integer)
+        @doc "Vacate-v2 §4: add <delta> to the (pool, beneficiary) occupancy counter, in lockstep with the \
+            \ pool nns. Defensive no-op on amount pools (pool nns=-1, i.e. LP) — the tracker slot writers call \
+            \ this only on a 0<->occupied transition for occupancy-tracked pools (class 1/2/3/4)."
+        (require-capability (SECURE))
+        (if (= (at "nns" (read AQP|T|Pool pool-id ["nns"])) -1)
+            "unn N/A (amount pool)"
+            (with-default-read AQP|T|UserOccupancy (UCk_UserOccupancy pool-id beneficiary-id)
+                {"unn" : 0} {"unn" := cur}
+                (write AQP|T|UserOccupancy (UCk_UserOccupancy pool-id beneficiary-id)
+                    (UDC_AQP|UserOccupancy (+ cur delta) pool-id beneficiary-id))
             )
         )
     )
@@ -1254,6 +1297,13 @@
         @doc "#FP1: reads the pool nns occupancy counter — -1 for amount pools (class 0/1); for nonce pools \
             \ (class 2/3/4) the number of occupied nonce positions (0 = tracker empty, the finalize oracle)."
         (at "nns" (read AQP|T|Pool pool-id ["nns"]))
+    )
+    (defun UR_AQP|UserUnn:integer (pool-id:string beneficiary-id:string)
+        @doc "Vacate-v2 §4: reads the (pool, beneficiary) occupancy counter — occupied tracker positions for \
+            \ this beneficiary (0 when absent). The fast-vacate drain settles a beneficiary the moment this \
+            \ decrements to 0 (their last position drained)."
+        (with-default-read AQP|T|UserOccupancy (UCk_UserOccupancy pool-id beneficiary-id)
+            {"unn" : 0} {"unn" := u} u)
     )
     (defun UR_AQP|PoolVacateInProgress:bool (pool-id:string)
         @doc "Point read: true while an AQP-VCT vacate session is active on this pool (audit H2 / fix #5)."
@@ -3170,3 +3220,4 @@
 (create-table AQP|T|BenDpnfNonceTotal)
 (create-table AQP|T|BenDpsfAnkMeta)
 (create-table AQP|T|BenDpnfAnkMeta)
+(create-table AQP|T|UserOccupancy)
