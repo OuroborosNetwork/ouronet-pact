@@ -156,6 +156,7 @@
     (defun AQP-POOL|C_AbortVacate:string
         (patron:string pool-id:string)
     )
+    (defun AQP-POOL|C_FinalizeVacate:string (patron:string pool-id:string))
     (defun AQP-POOL|CC_FullVacate:string (patron:string pool-id:string))
     (defun AQP-POOL|CC_BatchVacateTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
@@ -1279,6 +1280,23 @@
                 (format "Successfully aborted vacate-in-progress on Pool {} (stake remains disabled)."
                     [pool-id]
                 )
+            )
+        )
+    )
+    (defun AQP-POOL|C_FinalizeVacate:string
+        (patron:string pool-id:string)
+        @doc "Vacate-v2 FINALIZE (nuke) — after a pool has been fully drained via AQP-POOL|CC_BatchDrain*, this \
+            \ bulk-zeroes every employed score + bumps their vacate-generation (lazily invalidating all per-user \
+            \ rows), then clears vacate-in-progress, re-enables stake, and unfreezes the pool's FVTs. Pool-owner + \
+            \ nns==0 gated in VCT; IGNIS on patron. The commit-forward terminal step of a v2 drain campaign."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron (ref-VCT::C_FinalizeVacate pool-id))
+                (format "Successfully finalized vacate on Pool {} — scores nuked, stake re-enabled." [pool-id])
             )
         )
     )

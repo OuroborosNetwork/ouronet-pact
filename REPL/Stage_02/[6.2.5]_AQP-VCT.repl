@@ -1899,6 +1899,93 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "TX-VCT-FINALIZE - vacate-v2 nuke: drained pool -> scores lazily 0 + re-enabled + re-stake fresh")
+(print "")
+(print "=== TX-VCT-FINALIZE — v2 C_FinalizeVacate: bump generation + bulk-zero aggregates on the drained pool ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; DrainVacPool was fully drained by TX-VCT-DRAIN (nns=0) but left FROZEN with scores UNTOUCHED (base 20). The
+;; finalize nukes: it bumps each employed score's vacate-generation (so every per-user row reads 0 — stale) and
+;; bulk-zeroes the aggregate totals, then re-enables the pool. A fresh re-stake then reads live again (gen reset).
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-id:string KST.ANHD)
+        (ben-a:string KST.ANHD)
+        (ben-b:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (amt:decimal 20.0)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DrainVacPool"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "DrainVacScore"))
+    )
+    (print "--- [TX-VCT-FINALIZE · 01 · pre-finalize snapshot (drained, frozen, scores untouched)] ---")
+    (let
+        (
+            (base-a-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore ben-a pool-id score-id))
+            (base-b-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore ben-b pool-id score-id))
+            (agg-pre:decimal (ref-SCR::UR_SCR|ScoreTotalBaseScore score-id))
+            (gen-pre:integer (ref-SCR::UR_SCR|ScoreVacateGeneration score-id))
+            (nns-pre:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+        )
+        (print "--- [TX-VCT-FINALIZE · 02 · C_FinalizeVacate (the nuke)] ---")
+        (ref-TS02-C3::AQP-POOL|C_FinalizeVacate patron pool-id)
+        (let
+            (
+                ;; per-user rows are now STALE (row-gen < score-gen) -> read as 0 lazily, WITHOUT any per-user write
+                (base-a-post:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore ben-a pool-id score-id))
+                (base-b-post:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore ben-b pool-id score-id))
+                (agg-post:decimal (ref-SCR::UR_SCR|ScoreTotalBaseScore score-id))
+                (gen-post:integer (ref-SCR::UR_SCR|ScoreVacateGeneration score-id))
+                (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
+                (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
+            )
+            (map print
+                [
+                    (format "<(base A/B pre->post · agg pre->post · gen pre->post)> => {}/{}->{}/{} · {}->{} · {}->{}"
+                        [base-a-pre base-b-pre base-a-post base-b-post agg-pre agg-post gen-pre gen-post])
+                    ;; drain left scores untouched (20); finalize's generation bump makes them read 0 lazily
+                    (expect (format "<<TX-VCT-FINALIZE>> pre: ANHD score still 20 (drain left it) got={}" [base-a-pre]) amt base-a-pre)
+                    (expect (format "<<TX-VCT-FINALIZE §5>> post: ANHD per-user score reads 0 (stale via generation) got={}" [base-a-post]) 0.0 base-a-post)
+                    (expect (format "<<TX-VCT-FINALIZE §5>> post: EMMA per-user score reads 0 (stale) got={}" [base-b-post]) 0.0 base-b-post)
+                    (expect (format "<<TX-VCT-FINALIZE §5>> aggregate total-base bulk-zeroed got={}" [agg-post]) 0.0 agg-post)
+                    (expect (format "<<TX-VCT-FINALIZE §5>> score vacate-generation bumped +1 got={}" [gen-post]) (+ gen-pre 1) gen-post)
+                    (expect (format "<<TX-VCT-FINALIZE §8>> vacate-in-progress CLEARED got={}" [vip]) false vip)
+                    (expect (format "<<TX-VCT-FINALIZE §8>> stake RE-ENABLED got={}" [stake-enabled]) true stake-enabled)
+                    (expect (format "<<TX-VCT-FINALIZE>> pool nns still 0 (empty) got={}" [nns-pre]) 0 nns-pre)
+                ]
+            )
+        )
+        (print "--- [TX-VCT-FINALIZE · 03 · re-stake proves the pool is reusable + generation reset] ---")
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id ben-a ouro-id amt)
+        (let
+            (
+                ;; the re-stake rewrites ANHD's row at the CURRENT generation -> reads live (fresh 20) again
+                (base-a-fresh:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore ben-a pool-id score-id))
+                (nns-fresh:integer (ref-AQP::UR_AQP|PoolNns pool-id))
+            )
+            (map print
+                [
+                    (expect (format "<<TX-VCT-FINALIZE §5>> re-stake reads LIVE again (fresh 20, gen reset) got={}" [base-a-fresh]) amt base-a-fresh)
+                    (expect (format "<<TX-VCT-FINALIZE>> re-stake re-occupies the pool (nns 1) got={}" [nns-fresh]) 1 nns-fresh)
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-VCT-FINALIZE =====================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "TX-VCT-GASBOUND - #FP2 Gap 1: vacate gas-max backstop (URC_*GasOk boundaries)")
 (print "")
 (print "=== TX-VCT-GASBOUND — #FP2: vacate slice caps enforced (= max accepted, > max REJECTED) ==")

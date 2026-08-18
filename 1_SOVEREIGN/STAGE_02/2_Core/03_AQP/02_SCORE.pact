@@ -131,6 +131,7 @@
         (pool-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool employed-ids:[string] native-leg:bool)
     )
     (defun XE_RefreshUserScoreDeb:string (ouronet-account:string pool-id:string score-id:string))
+    (defun XE_NukeScoreForVacate:string (score-id:string))
     (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool employed-ids:[string])
     )
@@ -1003,6 +1004,13 @@
             \ Composes SECURE."
         (compose-capability (SECURE))
     )
+    (defcap SCR|XE>NUKE-SCORE-FOR-VACATE (score-id:string)
+        @doc "Forward (AQP-VCT finalize): vacate-v2 §5 nuke of one employed score — bulk-zero the aggregate totals \
+            \ + nzs and bump vacate-generation (lazily invalidating every per-user row). Only reached from \
+            \ C_FinalizeVacate, which is pool-owner gated and requires nns==0 (the pool is verified empty and \
+            \ every beneficiary already settled during the drain). Composes SECURE."
+        (compose-capability (SECURE))
+    )
     (defcap SCR|XE>UPDATE-STAKE-DPOF
         (
             ouronet-account:string
@@ -1418,6 +1426,22 @@
             )
             (update SCR|T|Score score-id {"nzs-count": new-nzs})
         )
+    )
+    (defun WU_Score|Nuke:string
+        (score-id:string)
+        @doc "Vacate-v2 §5 finalize nuke: bulk-zero the score's aggregate totals (base/boosted/deb + M3 splits) \
+            \ and nzs-count, and bump vacate-generation (+1). The generation bump lazily invalidates EVERY \
+            \ per-user SCR|T|UserScore row for this score (they read as 0 until re-stake). One update; only the \
+            \ finalize reaches this, gated pool-side on nns==0."
+        (require-capability (SECURE))
+        (update SCR|T|Score score-id
+            {"total-base-score"         : 0.0
+            ,"total-boosted-score"      : 0.0
+            ,"total-deb-score"          : 0.0
+            ,"total-base-deb-score"     : 0.0
+            ,"total-boosted-deb-score"  : 0.0
+            ,"nzs-count"                : 0
+            ,"vacate-generation"        : (+ (at "vacate-generation" (read SCR|T|Score score-id ["vacate-generation"])) 1)})
     )
     ;; WU_Score|Triplet — not used at issue; set via WU2_Score|TripletMembership at C_IssueTriplet only.
     ;; WU_Score|TripletId — mutates via WU2_Score|TripletMembership.
@@ -3325,6 +3349,16 @@
                 (XI_2|ApplySingularUserScoreDelta ouronet-account pool-id score-id 0.0))
             "score deb already fresh — no refresh"
         )
+    )
+    (defun XE_NukeScoreForVacate:string
+        (score-id:string)
+        @doc "Forward (AQP-VCT): vacate-v2 §5 finalize nuke of ONE employed score — bulk-zero the aggregates + \
+            \ nzs and bump vacate-generation (lazily invalidating all per-user rows). The CALLER (C_FinalizeVacate) \
+            \ has settled every beneficiary's rewards during the drain and verified nns==0 (pool empty), so there \
+            \ is nothing left to preserve. UEV_IMC + SCR|XE>NUKE-SCORE-FOR-VACATE."
+        (UEV_IMC)
+        (with-capability (SCR|XE>NUKE-SCORE-FOR-VACATE score-id)
+            (WU_Score|Nuke score-id))
     )
     (defun XE_ApplyOrtoFungibleStakeDelta:object{IgnisCollectorV1.OutputCumulator}
         (

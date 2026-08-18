@@ -33,6 +33,7 @@
     (defun XB_VacateSemiFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpsf-id:string))
     (defun XB_VacateNonFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpnf-id:string))
     (defun C_AbortVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
+    (defun C_FinalizeVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
 )
 
 ;; =============================================================================
@@ -449,6 +450,20 @@
         @doc "Clear vacate-in-progress on pool; stake stays disabled."
         @event
         (CAP_VctVacatePoolOwner pool-id)
+        (compose-capability (SECURE))
+    )
+    (defcap VCT|C>FINALIZE-VACATE (pool-id:string)
+        @doc "Vacate-v2 finalize (nuke) master cap. All validation here, not in the body: the tx sender must own \
+            \ the pool (CAP_VctVacatePoolOwner), a vacate must be in progress, AND the pool must be fully drained \
+            \ (URC_PoolFullyVacated — nns==0, so every position is out and every beneficiary was already settled \
+            \ during the drain). Composes SECURE for the pool re-enable + FVT unfreeze; the per-score nuke goes \
+            \ through SCORE's own IMC-gated XE_NukeScoreForVacate."
+        @event
+        (CAP_VctVacatePoolOwner pool-id)
+        (let ((ref-AQP:module{AcquisitionPoolsV1} AQP-POOL))
+            (enforce (ref-AQP::UR_AQP|PoolVacateInProgress pool-id) "Finalize: no vacate in progress on this pool")
+            (enforce (URC_PoolFullyVacated pool-id) "Finalize: pool not fully drained (nns != 0)")
+        )
         (compose-capability (SECURE))
     )
     (defcap VCT|C>VACATE (pool-id:string)
@@ -2029,6 +2044,34 @@
         (with-capability (VCT|C>ABORT-VACATE-POOL pool-id)
             (XI_ClearVacateInProgress pool-id)
             (UC_EmptyOc)
+        )
+    )
+    (defun C_FinalizeVacate:object{IgnisCollectorV1.OutputCumulator}
+        (pool-id:string)
+        @doc "Vacate-v2 FINALIZE (the nuke) — commit-forward terminal step of a v2 campaign. After the pool has \
+            \ been fully drained (nns==0) via CC_BatchDrain*, bulk-zero every employed score's aggregates + bump \
+            \ their vacate-generation (lazily invalidating all per-user rows — the drained beneficiaries were \
+            \ already settled during the drain), then clear vacate-in-progress, RE-ENABLE stake, and unfreeze the \
+            \ pool's FVTs. Pool-owner + nns==0 gated (in the cap). v1 CC_BatchVacate* auto-finalizes instead."
+        (UEV_IMC)
+        (with-capability (VCT|C>FINALIZE-VACATE pool-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                ;; 1] nuke each employed score: bulk-zero aggregates + bump vacate-generation (≤7 point writes)
+                (map
+                    (lambda (score-id:string) (ref-SCR::XE_NukeScoreForVacate score-id))
+                    (ref-AQP::URC_PoolActiveScoreIds pool-id)
+                )
+                ;; 2] finalize the pool: clear vacate-in-progress, re-enable stake, unfreeze the pool's FVTs
+                (ref-AQP::XE_SetVacateJobState pool-id false)
+                (ref-AQP::XB_SetPoolStakeEnabled pool-id true)
+                (XI_SetPoolFvtsVacateFrozen pool-id false)
+                (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+            )
         )
     )
 
