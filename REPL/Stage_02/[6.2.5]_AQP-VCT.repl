@@ -1634,6 +1634,9 @@
                 (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
                 (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
                 (remaining:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
+                ;; #FP1 universal nns: TF pools are now occupancy-tracked (class 1, default 0). After draining
+                ;; 1 of 3 legs, nns must equal the 2 remaining legs — this is what gates the finalize below.
+                (pool-nns:integer (ref-AQP::UR_AQP|PoolNns pool-id))
             )
             (map print
                 [
@@ -1643,6 +1646,7 @@
                     (expect (format "<<TX-VCT-RESUME-A>> campaign FROZEN (vacate-in-progress) got={}" [vip]) true vip)
                     (expect (format "<<TX-VCT-RESUME-A>> stake DISABLED mid-campaign got={}" [stake-enabled]) false stake-enabled)
                     (expect (format "<<TX-VCT-RESUME-A>> 2 legs remain (not finalized) got={}" [remaining]) 2 remaining)
+                    (expect (format "<<TX-VCT-RESUME-A #FP1>> TF nns = remaining legs (occupancy tracked) got={}" [pool-nns]) 2 pool-nns)
                 ]
             )
         )
@@ -1741,6 +1745,9 @@
             (vip:bool (ref-VCT::UR_VacateInProgress pool-id))
             (stake-enabled:bool (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
             (remaining:integer (at "leg-count" (ref-VCT::URH_VacateTfInventory pool-id ouro-id)))
+            ;; #FP1 universal nns: the last-leg drain (ZeroDptfTrackerSlot) decremented nns to 0 — that IS the
+            ;; finalize gate. URC_PoolFullyVacated (nns==0) is what auto-finalized this TF pool.
+            (pool-nns:integer (ref-AQP::UR_AQP|PoolNns pool-id))
         )
         (map print
             [
@@ -1748,6 +1755,7 @@
                 (expect (format "<<TX-VCT-RESUME-C>> pool fully vacated — 0 legs got={}" [remaining]) 0 remaining)
                 (expect (format "<<TX-VCT-RESUME-C>> campaign AUTO-FINALIZED (vacate-in-progress cleared) got={}" [vip]) false vip)
                 (expect (format "<<TX-VCT-RESUME-C>> stake RE-ENABLED on finalize got={}" [stake-enabled]) true stake-enabled)
+                (expect (format "<<TX-VCT-RESUME-C #FP1>> TF nns = 0 (occupancy empty → finalize gate) got={}" [pool-nns]) 0 pool-nns)
             ]
         )
     )

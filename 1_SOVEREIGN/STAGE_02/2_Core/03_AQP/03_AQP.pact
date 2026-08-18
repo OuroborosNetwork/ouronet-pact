@@ -885,8 +885,9 @@
     )
     (defun UDC_AQP|Schema:object{AQP|Schema}
         (aqp-class:integer asset-id:string aqp-id:string)
-        @doc "Default new pool row: all seven score slots BAR; aqp-id equals pool-id (table key). #FP1: nns \
-            \ starts -1 for amount-based pools (class 0/1, N/A) and 0 for nonce-based pools (class 2/3/4)."
+        @doc "Default new pool row: all seven score slots BAR; aqp-id equals pool-id (table key). #FP1 universal \
+            \ nns: starts -1 only for LP pools (class 0, complex multi-leg — still nzs-based finalize) and 0 for \
+            \ occupancy-tracked pools (class 1 TF legs, 2/3/4 OF/SF/NF nonce positions)."
         {"aqp-class"            : aqp-class
         ,"asset-id"             : asset-id
         ,"score-primary"        : BAR
@@ -899,7 +900,7 @@
         ,"stake-enabled"        : true
         ,"vacate-in-progress"   : false
         ,"sweep-in-progress"    : false
-        ,"nns"                  : (if (< aqp-class 2) -1 0)
+        ,"nns"                  : (if (< aqp-class 1) -1 0)
         ,"aqp-id"               : aqp-id}
     )
     (defun UDC_AQP|SchemaWithScoreSlots:object{AQP|Schema}
@@ -3022,20 +3023,28 @@
             (WW_DPTFTracker pool-id dptf-id owner-id beneficiary-id
                 (UDC_AQP|TrueFungibleTracker new-bal pool-id dptf-id owner-id beneficiary-id)
             )
+            ;; #FP1 universal nns: TF leg occupancy — +1 empty->occupied, -1 occupied->empty (last amount out).
+            ;; No-op on LP pools (class 0, nns=-1) via the WU_Pool|Nns guard. Covers TF stake AND unstake.
+            (if (and (= bal 0.0) (> new-bal 0.0)) (WU_Pool|Nns pool-id 1)
+                (if (and (> bal 0.0) (= new-bal 0.0)) (WU_Pool|Nns pool-id -1) "no nns transition"))
             (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
         )
     )
     (defun XI_1|ZeroDptfTrackerSlot:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string)
-        @doc "Vacate V3: write AQP|T|DPTFTracker balance=0 without balance read."
+        @doc "Vacate: write AQP|T|DPTFTracker balance=0. #FP1: reads the pre-balance so the pool nns occupancy \
+            \ counter can record the occupied->empty transition (the old 'no read' shortcut yields to correct nns)."
         ;; SECURE: granted by WW_DPTFTracker (underlying W_).
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (bal:decimal (UR_AQP|DPTFTrackerBalance pool-id dptf-id owner-id beneficiary-id))
             )
             (WW_DPTFTracker pool-id dptf-id owner-id beneficiary-id
                 (UDC_AQP|TrueFungibleTracker 0.0 pool-id dptf-id owner-id beneficiary-id)
             )
+            ;; #FP1 universal nns: zeroing an OCCUPIED leg is an occupied->empty transition (-1). No-op on LP.
+            (if (> bal 0.0) (WU_Pool|Nns pool-id -1) "no nns transition")
             (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
         )
     )
