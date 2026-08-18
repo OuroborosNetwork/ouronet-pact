@@ -172,6 +172,7 @@
     (defun C_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} (atspair:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
     (defun C_SetColdRecoveryDuration:object{IgnisCollectorV1.OutputCumulator} (atspair:string soft-or-hard:bool base:integer growth:integer))
     (defun C_ToggleElite:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
+    (defun C_ToggleUpgrade:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
     (defun C_SwitchColdRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
         ;;
     (defun C_AddHotRBT:object{IgnisCollectorV1.OutputCumulator} (atspair:string hot-rbt:string))
@@ -334,7 +335,11 @@
     (defschema ATS|PropertiesSchemaV3
         id:string                       ;[x] Added in V3
         owner-konto:string
-        can-upgrade:bool                ;[x] Added in V2
+        can-upgrade:bool                ;[x] Added in V2. Gates C_Control (can-change-owner/
+                                         ;    syphoning/hibernate) via UEV_CanUpgradeON - false
+                                         ;    blocks C_Control entirely until set back to true.
+                                         ;    Fix (audit finding #21L / L3): now settable via
+                                         ;    C_ToggleUpgrade (was permanently true, no setter).
         can-change-owner:bool
         syphoning:bool
         hibernate:bool                  ;[x] Added in V2
@@ -497,9 +502,6 @@
         (UEV_DirectRecoveryState atspair (not toggle))
     )
     ;;{C3}
-    (defcap ATS|F>OWNER (atspair:string)
-        (CAP_Owner atspair)
-    )
     ;;{C4}
     ;; Core (unevented) — StoicSyntax §14.7 layered-composition pattern: shared body, distinct leaf
     ;; events. Was two @event caps with the identical body pasted twice; refactored alongside the
@@ -683,6 +685,14 @@
         )
         (UEV_EliteState atspair (not toggle))
         (compose-capability (ATS|C>CONTROL-COLD-RECOVERY atspair))
+    )
+    (defcap ATS|C>TOGGLE_UPGRADE (atspair:string toggle:bool)
+        @doc "Fix (audit finding #21L / L3): can-upgrade previously had no setter at all - \
+            \ this is the first one. Gates C_Control (can-change-owner/syphoning/hibernate) \
+            \ via UEV_CanUpgradeON; turning this off blocks C_Control entirely until it's \
+            \ turned back on."
+        @event
+        (CAP_Owner atspair)
     )
     (defcap ATS|C>CONTROL-COLD-RECOVERY (atspair:string)
         (UEV_ColdRecoveryState atspair false)
@@ -1647,6 +1657,8 @@
         )
     )
     (defun UEV_CanUpgradeON (atspair:string)
+        @doc "Gates ATS|S>CONTROL (C_Control: can-change-owner/syphoning/hibernate). \
+            \ can-upgrade is settable via C_ToggleUpgrade (audit finding #21L / L3)."
         (let
             (
                 (x:bool (UR_CanUpgrade atspair))
@@ -1878,8 +1890,14 @@
             )
         )
     )
-    (defun C_HOT-RBT|Repurpose:object{IgnisCollectorV1.OutputCumulator} 
+    (defun C_HOT-RBT|Repurpose:object{IgnisCollectorV1.OutputCumulator}
         (hot-rbt:string nonce:integer repurpose-to:string)
+        @doc "Fix (audit finding #22L test-coverage sweep): UR_NonceMetaData was called \
+            \ with zero arguments where it requires (id nonce) - an unconditional crash, \
+            \ never caught because this function had zero test coverage before now. \
+            \ Fetches the ORIGINAL nonce's own metadata, so the replacement mint carries \
+            \ forward the same mint-time (and any other metadata-derived math stays \
+            \ correct) rather than fabricating fresh metadata for a seized position."
         (UEV_IMC)
         (with-capability (ATS|C>REPURPOSE-HOT-RBT hot-rbt)
             (let
@@ -1889,7 +1907,7 @@
                     ;;
                     (nonce-holder:string (ref-DPOF::UR_NonceHolder hot-rbt nonce))
                     (nonce-supply:decimal (ref-DPOF::UR_NonceSupply hot-rbt nonce))
-                    (nonce-meta-data-chain:[object] (ref-DPOF::UR_NonceMetaData))
+                    (nonce-meta-data-chain:[object] (ref-DPOF::UR_NonceMetaData hot-rbt nonce))
                     (nonces-used:integer (ref-DPOF::UR_NoncesUsed hot-rbt))
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
@@ -2109,6 +2127,22 @@
             )
             (with-capability (ATS|C>TOGGLE_ELITE atspair toggle)
                 (XI_ToggleElite atspair toggle)
+                (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
+            )
+        )
+    )
+    (defun C_ToggleUpgrade:object{IgnisCollectorV1.OutputCumulator}
+        (atspair:string toggle:bool)
+        @doc "Fix (audit finding #21L / L3): sets can-upgrade, which was previously \
+            \ permanently true with no setter. Gates C_Control (can-change-owner/ \
+            \ syphoning/hibernate) - false blocks C_Control entirely until true again."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (with-capability (ATS|C>TOGGLE_UPGRADE atspair toggle)
+                (XI_ToggleUpgrade atspair toggle)
                 (ref-IGNIS::UDC_SmallCumulator (UR_OwnerKonto atspair))
             )
         )
@@ -2458,6 +2492,12 @@
         (require-capability (ATS|C>TOGGLE_ELITE atspair toggle))
         (update ATS|Pairs atspair
             { "c-elite-mode" : toggle}
+        )
+    )
+    (defun XI_ToggleUpgrade (atspair:string toggle:bool)
+        (require-capability (ATS|C>TOGGLE_UPGRADE atspair toggle))
+        (update ATS|Pairs atspair
+            { "can-upgrade" : toggle}
         )
     )
     (defun XI_SwitchColdRecovery (atspair:string toggle:bool)

@@ -458,7 +458,19 @@ when confirming the H1 fix; still open if wanted, not assumed.
 **Owner verdict:** PARTIALLY FIXED — lock-gate applied (2026-08-17, via H1). Delta-cap / notice-window
 question still open, not yet asked separately.
 
-## H3 · ATSU — `URC_RBT`'s `abs()` masks the `-1.0` uninitialized-index sentinel; `Coil`/`Curl` bypass `KickStart` `[CONFIRMED]`
+## H3 · ATSU — `URC_RBT`'s `abs()` masks the `-1.0` uninitialized-index sentinel; `Coil`/`Curl` bypass `KickStart` `[Scenario 1 REFUTED, Scenario 2 still open — see correction]`
+
+> **CORRECTION (owner, 2026-08-17) — Scenario 1 is not a bug.** Bare `Coil` on a virgin (`index = -1.0`)
+> pool is the **intended** bootstrap path, not a hole: "coil should be callable on a 0 index pool... say a
+> pool is empty, you coil 25 RT and receive 25 RBT, which means in this case the index is 1.0. Coiling
+> further preserves the index, only fueling moves the index up. Fueling doesn't work on -1 index pools" —
+> matches the code exactly (`ATSU|C>FUEL` requires `index >= 0.1`, correctly excluding `-1.0`; `Coil`
+> mints proportionally via `URC_RBT`, which preserves whatever the current ratio is). `KickStart` and bare
+> `Coil` are two **alternative, mutually-exclusive** ways to initialize a pool — once either happens, the
+> pool is no longer virgin, so the *other* path naturally stops being available. `KickStart` becoming
+> uncallable after a bare `Coil` is expected behavior (like "initialize once, via either path"), not a
+> DoS. **Do not add an "enforce not virgin" gate to `Coil`/`Curl` — that would break the intended bare-
+> bootstrap flow.** Scenario 2 (below) is a separate question, not yet answered.
 
 **Location:** `08_ATS.pact:1097-1111` (`URC_Index`, returns sentinel `-1.0` for a never-kickstarted, zero-
 RBT-supply pool), `08_ATS.pact:1138-1153` (`URC_RBT`, `(index:decimal (abs (URC_Index atspair)))` at
@@ -477,25 +489,43 @@ supply becomes nonzero; `URC_Index` no longer returns `-1.0` — ever again for 
 `C_KickStart` call now fails permanently at `(enforce (= index -1.0) ...)`. The owner-gated bootstrap path,
 including the multi-token `rt-amounts` seeding it offered, is dead for the pair's lifetime.
 
-**Failure scenario 2 (silent zero-mint donation, general case):** neither `C_Coil` nor `C_Curl` enforces
-`c-rbt-amount > 0.0`. Whenever the pool's index is large relative to a depositor's `amount` (e.g. after
-heavy `C_Fuel` donations), `URC_RBT`'s `floor` can legitimately round `c-rbt-amount` to `0.0` for a real,
+**Failure scenario 2 — REFUTED (owner, 2026-08-17), not silent, not a donation.** Original claim: neither
+`C_Coil` nor `C_Curl` enforces `c-rbt-amount > 0.0`. Whenever the pool's index is large relative to a
+depositor's `amount`, `URC_RBT`'s `floor` can legitimately round `c-rbt-amount` to `0.0` for a real,
 positive deposit — the RT is still transferred in and credited to the resident bucket, but
+
+> **Correction:** owner pointed out transferring/minting `0` is already gated by the transfer/mint
+> operation itself — verified this precisely rather than taking it on faith. Traced the exact chain:
+> `C_Coil`'s `ico2` calls `ref-DPTF::C_Mint c-rbt ATS|SC_NAME c-rbt-amount false`
+> (`10_ATSU.pact:686`) → `DPTF|C>MINT` → composes `DPTF|C>CREDIT` (`05_DPTF.pact:786-789`) → first
+> statement is `(UEV_Amount id amount)`, which enforces `(> amount 0.0)` ("... is not a Valid Transaction
+> amount", `05_DPTF.pact:1388-1391`). If `c-rbt-amount` floors to `0.0`, this enforce fails and the
+> **entire transaction reverts** — including `ico1`'s earlier RT-in transfer, since Pact transactions are
+> atomic (an uncaught failure anywhere rolls back everything in that transaction, regardless of
+> evaluation order within the `let`). There is no window where RT is transferred in but no RBT comes
+> back — the depositor's tx just fails cleanly with a clear error, they can resubmit with a larger
+> amount. **Nothing to fix here — the existing DPTF-level guard already covers this.** (Same correction
+> likely applies to **M2**'s "silent donation" framing below — re-examine when reached, don't assume yet.)
+
+Original text, superseded by the correction above, kept for the record: neither `C_Coil` nor `C_Curl`
+enforces `c-rbt-amount > 0.0` locally. Whenever the pool's index is large relative to a depositor's
+`amount`, `URC_RBT`'s `floor` can legitimately round `c-rbt-amount` to `0.0` for a real, positive
+deposit — the RT is still transferred in and credited to the resident bucket, but
 `DPTF::C_Mint c-rbt ATS|SC_NAME 0.0 false` mints nothing back. The depositor's funds silently become a
 donation to existing RBT holders — no warning, no minimum-mint floor, no revert.
 
 **Corroboration:** `REPL/Stage_01/[6.6]_ATS.repl` never calls `C_KickStart` (zero occurrences); the
-reference suite bootstraps its test pair via a bare `C_Coil` call (line ~150), i.e. it already exercises
-exactly the "genesis via bare Coil" path described here, without ever attempting `C_KickStart` afterward —
-so the lockout consequence was never observable in-suite.
+reference suite bootstraps its test pair via a bare `C_Coil` call (line ~150) — confirmed by the owner to
+be the intended path, not an accidental gap in the test suite.
 
-**Fix direction:** in `ATSU|C>COIL`/`C>CURL`, `enforce (!= (ref-ATS::URC_Index ats) -1.0)` (require an
-explicit kickstart-or-prior-coil state rather than relying on `abs()` to paper over the sentinel), or
-formally decide bare-Coil bootstrap is intended and replace `C_KickStart`'s `-1.0` gate with a state flag
-that survives it. Separately, add `(enforce (> c-rbt-amount 0.0) ...)` in `C_Coil`/`C_Curl` to close the
-general zero-mint donation path (this also closes M2 below).
+**Fix direction:** ~~both scenarios~~ **RETRACTED, both.** Scenario 1 — bare-Coil bootstrap is intended,
+do not gate `Coil`/`Curl` on the index being non-virgin. Scenario 2 — `DPTF|C>CREDIT`'s existing
+`UEV_Amount` guard already rejects a `0.0` mint with a full transaction revert; no additional guard
+needed. **H3 requires no code change of any kind.**
 
-**Owner verdict:** _pending_
+**Owner verdict:** NOT A BUG, both scenarios, confirmed 2026-08-17. Scenario 1: bare-Coil bootstrap is
+intended design. Scenario 2: refuted after tracing the actual mint validation chain — DPTF already
+reverts a zero-amount mint atomically, there is no silent-donation window. H3 fully closed.
 
 ## H4 · U_ATS — `UEV_ColdDurationParameters` soft branch calls `enforce` with 3 arguments `[CONFIRMED]`
 
@@ -555,7 +585,17 @@ in the fix.
 
 **Owner verdict:** _pending_
 
-## M2 · ATSU — `C_KickStart` has no sanity bound on `rt-amounts : rbt-request-amount` ratio `[CONFIRMED]`
+## M2 · ATSU — `C_KickStart` has no sanity bound on `rt-amounts : rbt-request-amount` ratio `[NEEDS RE-EXAMINATION — see H3's correction]`
+
+> **Flag (not yet resolved):** H3's Scenario 2 (below in this doc) made the same "silent zero-mint
+> donation" claim this finding relies on, and it was refuted — `DPTF|C>CREDIT`'s `UEV_Amount` guard
+> already reverts a `0.0`-amount mint atomically (`05_DPTF.pact:786-789`/`:1388-1391`), so a depositor
+> whose `URC_RBT` floors to `0.0` gets a clean tx failure, not a silent donation. This finding's own
+> "Concrete numbers" example below needs re-checking against that same guard before treating it as
+> confirmed — do this when M2 comes up in the queue, don't assume it's also refuted without re-verifying
+> against *this specific* call path (`C_KickStart` sets the ratio directly rather than going through
+> `URC_RBT`'s own floor, so the mechanism isn't identical — check whether the same guard actually applies
+> to a subsequent depositor's `Coil` here too before concluding either way).
 
 **Location:** `ATSU|C>KICKSTART` (`10_ATSU.pact:234-252`); `C_KickStart` (`:601-645`). Relates to H3.
 

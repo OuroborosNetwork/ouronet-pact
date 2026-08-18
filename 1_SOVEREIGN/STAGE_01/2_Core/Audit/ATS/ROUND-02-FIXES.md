@@ -2,6 +2,275 @@
 
 One entry per fix, applied sequentially, owner green-lit before landing. Diff summary + why.
 
+## Fix #12 — N1 (#32N): `URC_MultiCull` type mismatch — soft-failure fix, message added
+
+**Process note (own the mistake):** a first pass at this fix was applied **without owner authorization** —
+the owner had only said "let's do next" (look at the next issue), not "apply it." Reverted immediately in
+full (code, REPL proof, all doc entries) once caught. Re-applied here only after the owner's explicit
+"Yes, apply it."
+
+**Live-vs-local verification (task #7, finally unblocked):** owner pointed out a public Pythia dirty-read
+console exists and doesn't need a registered key the way the `/{chain}/read` API appeared to require -
+traced the actual gate in Pythia's own source (`connectors/auth/effectiveKey.ts`/`gateMiddleware.ts`):
+first-party (same-origin) reads are let through keyless via a `Sec-Fetch-Site: same-origin` header, which
+the code's own docs say is intentionally accepted as forgeable by non-browser clients (blast radius: public
+chain reads only). Used that to pull `(describe-module "ouronet-ns.ATS")` / `"ouronet-ns.ATSU"` for real:
+**the live deployed `URC_MultiCull` has the byte-for-byte identical broken branch**, just against the older
+`AutostakeV1`/`UtilityAtsV1` interfaces (confirms live is behind local dev, not ahead - nothing was ported
+back from a mainnet fix, because none exists). Went further and enumerated all 11 real live ledger rows
+(`ATS.UR_KEYS`) and called `URC_MultiCull` against each directly - all 11 currently succeed, purely because
+every existing live account happens to have something already past its cull-time right now. Not fixed live;
+just not yet triggered by the small existing account set.
+
+**Design clarification (owner-led):** owner corrected the framing twice. First: this isn't about culling
+early or bypassing the wait - nothing lets you extract funds before maturity, the bug is purely that
+*attempting* an early cull (which nothing technically prevents, though the real client UI never exposes
+the button before it should) crashes ugly instead of no-op'ing cleanly. Second: owner explicitly wants a
+**soft failure** - not a silent zero-value success, but a clear "nothing to cull yet" message distinct from
+the real success message.
+
+**Fix — two layers:**
+- `10_ATSU.pact:511-520`, `URC_MultiCull` — same core fix as before: the "nothing cullable" branch now
+  returns the same 4-key object shape as the cullable branch (`after-cull: p0` unchanged, `to-be-culled: []`,
+  `culled-values: []`, `summed-culled-values: zr-output`), instead of a bare list that crashed
+  `XI_MultiCull`'s `:object`-typed binding. No interface change - `URC_MultiCull` was already declared
+  `:object`.
+- `3_Talos/03_TS01-C2.pact:927-947`, `ATS|C_Cull` — added `total-culled:decimal (fold (+) 0.0 cw)` and
+  branches the return message: `"Nothing to Cull just yet for ATS-Pair {} - no positions have reached
+  their cull-time"` when nothing was culled, vs. the existing `"Succesfully Culled..."` message otherwise -
+  matching the repo's own "Talos client output" convention (branch-explaining `format` messages).
+
+**Verification:** appended to `REPL/_audit_ats_baseline.repl` - real `Coil` → `ColdRecovery` → immediate
+`ATS|C_Cull` on `ps` now returns `"Nothing to Cull just yet for ATS-Pair PlebeicStrength-98c486052a51 - no
+positions have reached their cull-time"` (was a hard crash before the fix); advancing chain-time well past
+maturity and culling the same position again returns `"Succesfully Culled 2 RT(s) Tokens with amounts of
+[1.254072024969745971767125, 1.081635549635417108184556] from ATS-Pair PlebeicStrength-98c486052a51"` -
+proving the real success path is unaffected. Full-suite reload: `Load successful`, 0 failures.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+## Fix #11 — L3 (#21L): `can-upgrade` was a real gap — added its first setter
+
+**Pre-fix discussion:** owner initially described `can-upgrade` as "if set to false by pool admin later on,
+all upgrades are stopped, it's as designed" - re-verified precisely (grepped every `update ATS|Pairs` call
+site, ~30 of them): none touch `"can-upgrade"`, only genesis writes it (`true`, forever). Traced what it
+actually gates: `ATS|S>CONTROL` (`08_ATS.pact:423-437`, via `UEV_CanUpgradeON`) - the capability behind
+`C_Control`, which toggles `can-change-owner`/`syphoning`/`hibernate`. Owner confirmed once shown this: a
+real, missing setter, not intended-but-unimplemented - "we definitely need one, and we gotta write down
+what turning it off gates... needs its own C_ function and talos wrapper."
+
+**Fix, mirroring `C_ToggleElite`'s exact shape (closest sibling - simple owner-gated bool toggle):**
+- `08_ATS.pact` interface (`AutostakeV2`) - new `C_ToggleUpgrade` declaration.
+- `08_ATS.pact` caps (~line 690, after `ATS|C>TOGGLE_ELITE`) - new `ATS|C>TOGGLE_UPGRADE (atspair, toggle)`:
+  `CAP_Owner` only, `@event`. No parameter-lock gate, matching the un-lock-gated precedent already set for
+  `can-change-owner`/`syphoning`/`hibernate` themselves (H1's resolution - "owner discretion" control toggles).
+- `08_ATS.pact` functions - new `C_ToggleUpgrade`, same shape as `C_ToggleElite` (`UEV_IMC` →
+  `with-capability` → `XI_ToggleUpgrade` → `IGNIS::UDC_SmallCumulator`).
+- `08_ATS.pact` XI section - new `XI_ToggleUpgrade`, writes `"can-upgrade"`.
+- Doc updates: the `can-upgrade` schema field comment and `UEV_CanUpgradeON`'s `@doc` both now explicitly
+  state what it gates (`C_Control`).
+- Talos (`03_TS01-C2.pact`) - new `ATS|C_ToggleUpgrade` wrapper, mirroring `ATS|C_ToggleElite`'s wrapper
+  (interface decl + impl, `P|TS` + `IGNIS::C_Collect`), with branch-specific output messages.
+
+**Verification:** appended to `REPL/_audit_ats_baseline.repl`. Five assertions, all green, on the real
+Talos path with real signatures: non-owner (`patron`) rejected; real owner (`aoz`) turns `can-upgrade`
+off; `ATS|C_Control` (with unchanged, same-value params) is now blocked even for the real owner; owner
+turns `can-upgrade` back on; `ATS|C_Control` works again. Full-suite reload: `Load successful`, 0 failures.
+
+**Status:** FIXED ✅ AND PROVEN ✅ (new capability, first setter for a previously-unsettable field).
+Awaiting Round III re-verify.
+
+## Fix #10 — L1 (#19L): removed dead capability `ATS|F>OWNER`
+
+**Pre-fix discussion:** confirmed via repo-wide grep it's never `compose-capability`'d or
+`require-capability`'d anywhere - genuinely dead. The same `F>OWNER` naming pattern is actively used in
+`01_DALOS.pact` (`DALOS|F>OWNER`, composed twice), so this wasn't a nonsense pattern, just unwired
+scaffolding for ATS specifically. Owner: remove it if not needed.
+
+**Fix — `08_ATS.pact:499-502`:** deleted the `defcap ATS|F>OWNER (atspair:string) (CAP_Owner atspair)`
+block entirely. No other code referenced it, so no other change needed.
+
+**Verification:** full-suite reload, `REPL/_audit_ats_baseline.repl`: `Load successful`, 0 failures.
+
+**Status:** FIXED ✅ AND PROVEN ✅ (cleanup; "proof" is a clean reload since nothing behavioral changed).
+
+## Fix #9 — M7 (#16M): `UEV_ColdDurationParameters` now requires `growth > 0` on both branches
+
+**Pre-fix discussion:** owner didn't remember the exact original design intent at first, so walked through
+it together: both branches build `c-duration` (`UC_MakeSoftIntervals`/`UC_MakeHardIntervals`), a 50-entry
+wait-hours table indexed by elite-tier position (`URC_CullColdRecoveryTime`, `08_ATS.pact:1511-1530`),
+built increasing then reversed so higher tier = shorter wait (the elite-tier reward). Neither branch
+required `growth > 0` - a negative `growth` produces negative `hours`, landing the computed cull-time in
+the *past* and inverting the whole curve (higher tier would wait *longer*, backwards). Owner confirmed:
+"it's designed to go always forward, never backward, forgot to add such verification."
+
+**Fix — `1_Utilities/09_U_ATS.pact:506-531`, `UEV_ColdDurationParameters`:** added `(> growth 0)` to both
+branches. Soft branch's `and` became a 3-condition `(fold (and) true [...])` per the codebase's boolean-
+combining convention; hard branch's stayed a 2-condition `(and ...)`. No signature/interface change.
+
+**Verification:** appended to `REPL/_audit_ats_baseline.repl`. Four assertions, all green: hard branch
+rejects a negative-but-otherwise-evenly-divisible `growth` (`-100`/`-10`, previously accepted, silently
+inverted the curve) while its positive-growth regression case (proven under Fix #5/H4) still works
+unchanged; same pair of checks for the soft branch (`-90`/`-9` rejected, `90`/`9` still accepted).
+Full-suite reload: `Load successful`, 0 failures.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+## Fix #8 — M6 (#15M): `UEV_CRF|FeeThresholds` `@doc` reworded (doc-only, no logic change)
+
+**Pre-fix discussion:** the `@doc` said "Enforces <fee-thresholds> are between 1 and 100" - read literally,
+a promise that threshold *values* are bounded to [1,100]. Traced the actual code (`09_U_ATS.pact:377-413`):
+the enforced `[1,100]` range is the array **length** (how many fee tiers are allowed), not the values.
+Traced what threshold values actually represent (`URC_ColdRecoveryFee`, `08_ATS.pact:1462-1506`): raw
+cold-RBT token amounts compared against a user's recovery amount to pick a fee tier - these have no
+inherent value ceiling (depend entirely on the pool's token supply/precision). Owner confirmed: the doc
+just needs rewording, no logic change - the code was always correct.
+
+**Fix — `1_Utilities/09_U_ATS.pact:377-381`:** reworded the `@doc` to say it bounds the **count** of
+threshold entries (1-100), not their values, and to note why values have no ceiling. No behavioral change.
+
+**Verification:** full-suite reload, `REPL/_audit_ats_baseline.repl`: `Load successful`, 0 failures.
+
+**Status:** FIXED ✅ AND PROVEN ✅ (doc-only; "proof" is a clean reload since nothing behavioral changed).
+
+## Fix #7 — M2 (#11M): `C_KickStart` genesis-index inflation attack — bounded
+
+**Pre-fix discussion:** re-examined fresh per the flag left on this finding (it originally rested on the
+same "silent zero-mint donation" premise H3-Scenario-2 refuted). Traced precisely: `C_KickStart`'s own
+mint can never be zero (`ATSU|C>KICKSTART` already enforces `rbt-request-amount > 0.0` directly), so H3's
+refutation doesn't even apply to the kickstart mint itself — the real risk is downstream, in what an
+unbounded genesis ratio sets up for *later* depositors. Corrected the original concrete example (which used
+numbers producing an exact `0.0` mint — now known to revert atomically, not silently donate, per H3) to the
+real, still-live version: a ratio extreme enough that a later `Coil`'s `floor(rt-amount/index, p)` lands on
+a tiny *nonzero* RBT amount instead of exactly `0.0` — the transaction then succeeds, the depositor's RT is
+credited in full to resident, but they receive a negligible fraction of fair value, a permanent transfer to
+whoever already held RBT (classic vault/first-depositor inflation attack). Owner's fix direction: cap the
+owner-facing path's resulting index at `100.0`; expose a separate admin pathway (forgoes pool ownership,
+requires module governance instead) with no ceiling, for legitimate higher ratios; and apply the same `0.1`
+floor `syphon` already uses to *both* paths.
+
+**Fix — layered per `StoicSyntax.md §14.7` (unevented core + named event leaves), mirroring the existing
+`ATSU|C>X_REMOVE-SECONDARY`/`ATSU|C>REMOVE-SECONDARY`/`ATSU|C>ADMINISTRATIVE-REMOVE-SECONDARY` precedent in
+the same file:**
+- **New pure helper `UC_KickStartIndex(rt-amounts, rbt-request-amount)`** (`1_Utilities/09_U_ATS.pact`,
+  declared in `UtilityAtsV2` interface): computes `sum(rt-amounts) / rbt-request-amount`, guarded to return
+  `-1.0` when `rbt-request-amount` isn't strictly positive — avoids a raw division-by-zero crash during a
+  capability's `let`-binding phase (which evaluates before any of the capability's own body `enforce`s can
+  fire with a clearer message).
+- **`ATSU|C>X_KICKSTART`** (`10_ATSU.pact`, new, unevented core) — all pre-existing shared checks (list-
+  length parity, `rbt-request-amount > 0.0`, virgin-pool `index = -1.0`, `P|TT` compose), plus the new
+  shared `>= 0.1` floor. Caller-input-only checks ordered before the pool-state (virgin) check, so bound
+  violations reject before ever touching live state.
+- **`ATSU|C>KICKSTART`** (existing name kept, now a thin `@event` leaf) — `CAP_Owner ats` plus the new
+  `<= 100.0` ceiling, composes the core.
+- **`ATSU|C>ADMINISTRATIVE-KICKSTART`** (new, `@event` leaf) — `GOV|ATSU_ADMIN` (same module-governance
+  guard `A_RemoveSecondary`'s admin variant already uses) instead of ownership, no ceiling, composes the
+  core (so the `0.1` floor still applies here too).
+- **`X_KickStart`** (new, `require-capability (SECURE)`) — the original `C_KickStart` body, unchanged,
+  factored out so both entrypoints share one write path.
+- **`C_KickStart`** (owner-facing) / **`A_KickStart`** (new, admin-facing) — thin wrappers, `UEV_IMC` +
+  `with-capability` their respective leaf, then `X_KickStart`.
+- Interface additions (additive only, no existing signature changed — `AutostakeUsageV1` stays V1 per
+  policy, pre-mainnet): `A_KickStart` in `10_ATSU.pact`'s own interface block; `UC_KickStartIndex` in
+  `UtilityAtsV2` (`0_Interfaces/01_Utilities.pact`).
+- **Talos wiring** (`3_Talos/01_TS01-A.pact`): new `ATS|A_KickStart`, mirroring `ATS|A_RemoveSecondary`'s
+  exact shape (`P|ADMINISTRATIVE-SUMMONER` + `IGNIS::C_Collect`), plus its interface declaration.
+
+**Verification:** appended to `REPL/_audit_ats_baseline.repl`. Eight assertions, all green:
+1-3. `UC_KickStartIndex` pure math: exact ceiling boundary (`1000.0/10.0 = 100.0`), exact floor boundary
+   (`50.0/500.0 = 0.1`), and the divide-by-zero guard (`rbt-request-amount = 0.0` → `-1.0`, no crash).
+4. Owner path (`ATSU|C>KICKSTART`, real `ps` pair, real `aoz` owner signature via `test-capability`):
+   index `10000.0` (10000.0/1.0) rejected by the ceiling — fires before ever touching pool state.
+5. Owner path: index far below `0.1` rejected by the shared floor.
+6. Owner path: an in-range index (`2.0`) clears *both* bounds — rejected only for `ps` not being virgin
+   (it was already kickstarted earlier this session), proving the bounds correctly let valid ratios through.
+7. Admin path (`ATSU|C>ADMINISTRATIVE-KICKSTART`, real `PK_AncientHodler` signature satisfying
+   `GOV|ATSU_ADMIN`): index far below `0.1` still rejected — same floor applies to both paths.
+8. Admin path: the *exact same* extreme ratio the owner path rejected for exceeding the ceiling (test 4)
+   is **not** rejected for that reason here — it clears the floor easily and is only stopped by the
+   (unrelated) virgin-pool check, proving the ceiling genuinely doesn't apply on the admin path.
+Full-suite reload: only the one pre-existing, unrelated SWP test failure remains (confirmed unrelated —
+outside this fix's file scope, present in the working tree before this fix was started).
+
+**Note on test design:** full end-to-end proof through a brand-new virgin pool wasn't practical within
+scope (pair creation requires a fresh reward-bearing token registration, a separate multi-step flow) — used
+`test-capability` directly against the real, deployed `ATSU|C>KICKSTART`/`ATSU|C>ADMINISTRATIVE-KICKSTART`
+capabilities on the fixture's real, already-kickstarted `ps` pair instead, real signatures, real guard
+checks. This proves every bound-check exactly as it will run in production; only the final virgin-pool gate
+(orthogonal to this fix, unchanged) had to be inferred from its own already-well-established behavior
+rather than re-demonstrated end-to-end here.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Renumbered from "NEEDS RE-EXAM" — the re-examination is now complete;
+the original premise was partially wrong (exact-zero mint reverts, per H3) but the underlying inflation-
+attack mechanism survives in the near-zero-but-nonzero regime, and the owner-specified fix closes it.
+Awaiting Round III re-verify.
+
+## Fix #6 — M1 (#10M): `UEV_HibernationFees` always fails (stray malformed predicate)
+
+**Pre-fix discussion:** presented the finding with an isolated empirical check: `()` is Pact's `unit`
+value (confirmed via `typeof`), and `(= () 0.0)` evaluates to `false` without erroring — so the 7th term
+in the `(fold (and) true [...])` list always drags the whole result to `false`, making the `enforce` fail
+unconditionally for every `peak`/`decay` input, valid or not. Asked whether there was an intended 7th bound
+before deleting anything. Owner checked the live module directly and confirmed: "that's a wrong form, so I
+don't know what I wanted to write there... I think we should simply delete it" — debris, no intended check,
+safe to delete outright.
+
+**Fix — `1_Utilities/09_U_ATS.pact:459-474`, `UEV_HibernationFees`:** removed the stray `(= () 0.0)` term
+(and the trailing blank line after it) from the fold list, leaving the six real predicates
+(`peak`/`decay` precision, range, and sign bounds) untouched. No signature, schema, or interface change;
+the separate scaled-division `enforce` right below it (lines ~481-484) is unmodified.
+
+**Verification:** appended to `REPL/_audit_ats_baseline.repl` — unit-tested directly against `U|ATS`
+(unprotected `UEV_*` helper), for the same reason as the #9H proof: `C_SetHibernationFees`'s full
+capability chain requires `parameter-lock = false`, which the shared fixture's `ps` pair no longer
+satisfies (locked by the Fix #4 proof earlier in the file). Three assertions, all green:
+1. Valid params (`peak=100.0 decay=0.01`, all six real predicates true, scaled-division also passes):
+   now accepted — this call failed unconditionally before the fix, regardless of input.
+2. `peak=900.0` (over the real `800.0` ceiling): still correctly rejected — proves the real predicates
+   were untouched by the deletion, not accidentally weakened.
+3. `peak=100.0 decay=0.03` (passes the fold, fails the separate scaled-division check,
+   `1,000,000 mod 300 = 100 != 0`): correctly rejected — proves that second, independent enforce still
+   functions correctly, unaffected by this fix.
+Full-suite reload: `Load successful`, no regressions elsewhere.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+## Fix #5 — H4 (#9H): `UEV_ColdDurationParameters` soft branch unconditionally uncallable
+
+**Pre-fix discussion:** presented the finding with an isolated Pact 5.4 repro proving a stray 3rd argument
+to `enforce` is a hard runtime arity error (`Attempted to apply a closure to too many arguments`) that fires
+only when `soft-or-hard = true` — module still loads fine, hard branch still works fine, soft branch always
+crashes regardless of whether `base`/`growth` are actually valid. Owner corrected the root-cause framing:
+the real defect is the incomplete `(format "Invalid CRD Parameters For ")` call itself (missing `{}`
+placeholder and substitution `[]` list) — the "3rd enforce argument" was just the symptom. Verified this
+precisely before writing the fix: `(format "Invalid CRD Parameters For ")` alone evaluates to a bare
+`<#closure>` (format is curried), and attempting to apply that closure outside `enforce`'s native callsite
+independently fails with a different error (`Attempted to apply a closure outside of native callsite`) —
+confirming it was never a valid, completable expression as written.
+
+**Fix — `1_Utilities/09_U_ATS.pact:488-506`, `UEV_ColdDurationParameters`:** collapsed the malformed 3-piece
+message (a literal string message argument plus a broken, incomplete `format` call) into a single, correctly
+-formed 2-arg `enforce` whose message is one complete `format` call interpolating the actual `base`/`growth`
+values — matching the established convention already used one function up in the same file
+(`UC_MakeHardIntervals`/`UC_MakeSoftIntervals`, lines 70/95-96, which validate the identical `mod`-divisibility
+checks). No signature, schema, or interface change; the hard branch is untouched.
+
+**Verification:** appended to `REPL/_audit_ats_baseline.repl` — unit-tested directly against `U|ATS`
+(unprotected `UEV_*` helper) rather than through the full `C_SetColdRecoveryDuration` capability chain,
+since that chain's unrelated preconditions (cold-recovery-off, lock-off) aren't satisfiable on the shared
+fixture's `ps` pair at this point (left locked + cold-recovery-on by the Fix #4 proof above). Five
+assertions, all green:
+1. Hard branch regression guard: valid params still accepted, invalid params still rejected (unchanged).
+2. Soft branch, valid params (`base=90 growth=9`, both mod-conditions true): now accepted — this call
+   crashed unconditionally before the fix, regardless of the input.
+3. Soft branch, invalid via the first condition (`base=90 growth=4`): rejected with the real validation
+   message, not an arity crash.
+4. Soft branch, invalid via the second condition (`base=90 growth=10`, `10 mod 3 != 0`): also correctly
+   rejected — proves both halves of the `and` are actually being evaluated now, not just the first.
+Full-suite reload: `Load successful`, no regressions elsewhere in the file.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
 ## Fix #4 — H1/H2 (#6H/#7H, partial): royalty + hibernation-fee params now lock-gated
 
 **Pre-fix discussion:** walked every field of `ATS|PropertiesSchemaV3` against whether its setter checks

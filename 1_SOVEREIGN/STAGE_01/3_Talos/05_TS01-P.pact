@@ -45,16 +45,6 @@
     (deftable P|T:{OuronetPolicyV1.P|S})
     (deftable P|MT:{OuronetPolicyV1.P|MS})
     ;;{P3}
-    (defcap P|ATS ()
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (master:string "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
-            )
-            (ref-DALOS::CAP_EnforceAccountOwnership master)
-            (compose-capability (P|TS))
-        )
-    )
     (defcap P|TS ()
         (let
             (

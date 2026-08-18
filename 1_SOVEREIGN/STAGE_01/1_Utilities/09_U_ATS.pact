@@ -65,6 +65,20 @@
             )
         )
     )
+    (defun UC_KickStartIndex:decimal (rt-amounts:[decimal] rbt-request-amount:decimal)
+        @doc "Pure compute (audit finding #11M / M2): the index a KickStart with these \
+            \ inputs would produce (sum(rt-amounts) / rbt-request-amount). Returns -1.0 \
+            \ if rbt-request-amount is not strictly positive, so callers can bound-check \
+            \ the result without a raw division-by-zero crash before their own \
+            \ (> rbt-request-amount 0.0) enforce gets a chance to fire with a clearer \
+            \ message - -1.0 trivially fails a >= floor and trivially passes a <= \
+            \ ceiling, deferring to that later, better-worded rejection either way."
+        (if
+            (> rbt-request-amount 0.0)
+            (/ (fold (+) 0.0 rt-amounts) rbt-request-amount)
+            -1.0
+        )
+    )
     (defun UC_MakeHardIntervals:[integer] (start:integer growth:integer)
         @doc "Creates a Soft Interval List"
         (enforce (= (mod start growth) 0) (format "{} must be divisible by {} and it is not" [start growth]))
@@ -457,6 +471,10 @@
         )
     )
     (defun UEV_HibernationFees (peak:decimal decay:decimal)
+        @doc "Fix (audit finding #10M / M1): removed a stray, malformed 7th predicate \
+            \ (`(= () 0.0)` - comparing Pact's unit value against 0.0, always false) that \
+            \ made this enforce fail unconditionally for every input. Owner confirmed \
+            \ (2026-08-17) there was no intended 7th bound - simple debris, deleted."
         (enforce
             (fold (and) true
                 [
@@ -466,8 +484,6 @@
                     (= (floor decay 4) decay)
                     (> decay 0.0)
                     (< decay 1.0)
-                    (= () 0.0)
-
                 ]
             )
             "Invalid Hibernation Fees"
@@ -478,7 +494,7 @@
                 (scaled-a:integer (floor (* peak scale)))
                 (scaled-b:integer (floor (* decay scale)))
             )
-            (enforce 
+            (enforce
                 (= (mod scaled-a scaled-b ) 0)
                 "Invalid Hibernation Fees via Scaled Division"
             )
@@ -486,17 +502,32 @@
     )
     ;;
     (defun UEV_ColdDurationParameters (soft-or-hard:bool base:integer growth:integer)
+        @doc "Fix (audit finding #9H / H4): the soft branch's enforce carried a stray \
+            \ 3rd argument built from an incomplete `format` call (no {} placeholder, \
+            \ no substitution list) - a hard arity error that made the soft-duration \
+            \ path unconditionally uncallable. Collapsed to a single, correctly-formed \
+            \ 2-arg enforce, matching the UC_MakeSoftIntervals convention above. Fix \
+            \ (audit finding #16M / M7): neither branch required growth > 0. The \
+            \ duration table these parameters build (UC_MakeSoftIntervals / \
+            \ UC_MakeHardIntervals) is designed to always decrease wait-time as elite \
+            \ tier increases, never the reverse; a negative growth silently inverted \
+            \ that curve, so added an explicit floor to both branches."
         (if soft-or-hard
             (enforce
-                (and
-                    (= (mod base growth) 0)
-                    (= (mod growth 3) 0)
+                (fold (and) true
+                    [
+                        (> growth 0)
+                        (= (mod base growth) 0)
+                        (= (mod growth 3) 0)
+                    ]
                 )
-                "Invalid Soft Cold Recovery Duration Parameters"
-                (format "Invalid CRD Parameters For ")
+                (format "Invalid Soft Cold Recovery Duration Parameters: Base {} Growth {}" [base growth])
             )
             (enforce
-                (= (mod base growth) 0)
+                (and
+                    (> growth 0)
+                    (= (mod base growth) 0)
+                )
                 "Invalid Hard Cold Recovery Duration Parameters"
             )
         )

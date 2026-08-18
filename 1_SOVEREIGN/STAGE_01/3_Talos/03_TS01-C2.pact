@@ -28,6 +28,7 @@
     (defun ATS|C_SetColdRecoveryFees (patron:string ats:string fee-positions:integer fee-thresholds:[decimal] fee-array:[[decimal]]))
     (defun ATS|C_SetColdRecoveryDuration (patron:string ats:string soft-or-hard:bool base:integer growth:integer))
     (defun ATS|C_ToggleElite (patron:string ats:string toggle:bool))
+    (defun ATS|C_ToggleUpgrade (patron:string ats:string toggle:bool))
     (defun ATS|C_SwitchColdRecovery (patron:string ats:string toggle:bool))
         ;;
     (defun ATS|C_AddHotRBT (patron:string ats:string hot-rbt:string))
@@ -526,6 +527,26 @@
             )
         )
     )
+    (defun ATS|C_ToggleUpgrade (patron:string ats:string toggle:bool)
+        @doc "Sets can-upgrade for an ATS-Pair (audit finding #21L / L3). Gates C_Control \
+            \ (can-change-owner/syphoning/hibernate) - false blocks C_Control entirely \
+            \ until set back to true."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-ATS:module{AutostakeV2} ATS)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-ATS::C_ToggleUpgrade ats toggle)
+                )
+                (if toggle
+                    (format "Succesfully allowed further Property Upgrades (can-upgrade) for ATS-Pair {}" [ats])
+                    (format "Succesfully blocked further Property Upgrades (can-upgrade) for ATS-Pair {} - C_Control is now disabled until this is turned back on" [ats])
+                )
+            )
+        )
+    )
     (defun ATS|C_SwitchColdRecovery (patron:string ats:string toggle:bool)
         @doc "Switches on or off Cold Recovery"
         (with-capability (P|TS)
@@ -904,7 +925,10 @@
         )
     )
     (defun ATS|C_Cull (patron:string culler:string ats:string)
-        @doc "Culls an ATSPair, extracting RTs that are cullable"
+        @doc "Culls an ATSPair, extracting RTs that are cullable. Fix (audit finding \
+            \ #32N / N1): reports a distinct 'nothing to cull yet' message when nothing \
+            \ was actually culled, instead of always claiming success - the underlying \
+            \ crash-vs-graceful-empty-result fix lives in ATSU.URC_MultiCull."
         (with-capability (P|TS)
             (let
                 (
@@ -915,9 +939,13 @@
                     )
                     (cw:[decimal] (at "output" ico))
                     (how-many-tokens:integer (length cw))
+                    (total-culled:decimal (fold (+) 0.0 cw))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (format "Succesfully Culled {} RT(s) Tokens with amounts of {} from ATS-Pair {}" [how-many-tokens cw ats])
+                (if (= total-culled 0.0)
+                    (format "Nothing to Cull just yet for ATS-Pair {} - no positions have reached their cull-time" [ats])
+                    (format "Succesfully Culled {} RT(s) Tokens with amounts of {} from ATS-Pair {}" [how-many-tokens cw ats])
+                )
             )
         )
     )

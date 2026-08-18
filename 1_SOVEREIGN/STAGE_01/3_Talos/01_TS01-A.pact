@@ -130,6 +130,14 @@
         )
     )
     (defun P|A_Define ()
+        @doc "Fix (audit finding #22L test-coverage sweep): ATS and ATSU were never \
+            \ registered as permitted callers here (ATS was even bound - ref-P|ATS - \
+            \ but never used), so any TS01-A admin function routing into either module \
+            \ (e.g. ATS|A_RemoveSecondary, ATS|A_KickStart) always failed UEV_IMC's \
+            \ whitelist check - unconditionally, regardless of caller/key. Never caught \
+            \ because those functions had zero test coverage. Every other Talos module's \
+            \ own P|A_Define already registers into both ATS and ATSU; this just matches \
+            \ that existing pattern."
         (let
             (
                 (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
@@ -138,6 +146,7 @@
                 (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
                 (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
                 (ref-P|ATS:module{OuronetPolicyV1} ATS)
+                (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
                 (ref-P|LIQUID:module{OuronetPolicyV1} LIQUID)
                 (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
                 (ref-P|SWP:module{OuronetPolicyV1} SWP)
@@ -152,6 +161,8 @@
             (ref-P|BRD::P|A_AddIMP mg)
             (ref-P|DPTF::P|A_AddIMP mg)
             (ref-P|DPOF::P|A_AddIMP mg)
+            (ref-P|ATS::P|A_AddIMP mg)
+            (ref-P|ATSU::P|A_AddIMP mg)
             (ref-P|LIQUID::P|A_AddIMP mg)
             (ref-P|ORBR::P|A_AddIMP mg)
             (ref-P|SWP::P|A_AddIMP mg)

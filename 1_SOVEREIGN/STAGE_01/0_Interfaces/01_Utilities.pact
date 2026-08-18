@@ -294,6 +294,7 @@
     ;;
     (defun UC_IzCullable:bool (input:object{Awo}))
     (defun UC_IzUnstakeObjectValid:bool (input:object{Awo}))
+    (defun UC_KickStartIndex:decimal (rt-amounts:[decimal] rbt-request-amount:decimal))
     (defun UC_MakeHardIntervals:[integer] (start:integer growth:integer))
     (defun UC_MakeSoftIntervals:[integer] (start:integer growth:integer))
     (defun UC_MultiReshapeUnstakeObject:[object{Awo}] (input:[object{Awo}] remove-position:integer))

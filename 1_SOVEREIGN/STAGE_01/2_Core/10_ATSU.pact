@@ -19,6 +19,9 @@
     (defun A_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator}
         (remover:string ats:string reward-token:string accounts-with-ats-data:[string])
     )
+    (defun A_KickStart:object{IgnisCollectorV1.OutputCumulator}
+        (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+    )
     ;;
     ;;  [C]
     ;;
@@ -232,21 +235,58 @@
     )
     ;;
     (defcap ATSU|C>KICKSTART (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        @doc "Fix (audit finding #11M / M2): bounds the resulting KickStart index to \
+            \ <= 100.0 on the owner-facing path, closing the unbounded genesis-ratio \
+            \ inflation-attack surface against depositors who coil in after this pair \
+            \ is kickstarted. Owners needing a higher ratio use A_KickStart, gated by \
+            \ module governance instead of pool ownership. Layered per StoicSyntax \
+            \ §14.7: thin event leaf, shared validation lives in ATSU|C>X_KICKSTART."
         @event
+        (let
+            (
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (would-be-index:decimal (ref-U|ATS::UC_KickStartIndex rt-amounts rbt-request-amount))
+            )
+            (ref-ATS::CAP_Owner ats)
+            (enforce (<= would-be-index 100.0) "KickStart index cannot exceed 100.0 via the owner path - use A_KickStart via module governance for a higher ratio")
+            (compose-capability (ATSU|C>X_KICKSTART kickstarter ats rt-amounts rbt-request-amount))
+        )
+    )
+    (defcap ATSU|C>ADMINISTRATIVE-KICKSTART (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        @doc "Administrative KickStart variant (audit finding #11M / M2, owner- \
+            \ specified fix direction): forgoes pool ownership in favor of module \
+            \ governance (GOV|ATSU_ADMIN), with no upper bound on the resulting index \
+            \ (still subject to the same 0.1 floor as the owner path, via the shared \
+            \ ATSU|C>X_KICKSTART core) - for legitimate ratios above the owner path's \
+            \ 100.0 ceiling."
+        @event
+        (compose-capability (GOV|ATSU_ADMIN))
+        (compose-capability (ATSU|C>X_KICKSTART kickstarter ats rt-amounts rbt-request-amount))
+    )
+    (defcap ATSU|C>X_KICKSTART (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        @doc "Unevented core - shared validation for both ATSU|C>KICKSTART (owner) and \
+            \ ATSU|C>ADMINISTRATIVE-KICKSTART (module governance). Fix (audit finding \
+            \ #11M / M2): adds a shared >= 0.1 floor on the resulting index, same value \
+            \ as syphon's own floor, on top of the pre-existing checks."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-ATS:module{AutostakeV2} ATS)
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (index:decimal (ref-ATS::URC_Index ats))
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
                 (l1:integer (length rt-amounts))
                 (l2:integer (length rt-lst))
+                (would-be-index:decimal (ref-U|ATS::UC_KickStartIndex rt-amounts rbt-request-amount))
             )
-            (ref-ATS::CAP_Owner ats)
             (ref-DALOS::UEV_EnforceAccountType kickstarter false)
-            (enforce (= index -1.0) "Kickstarting can only be done on ATS-Pairs with -1 Index")
+            ;; Caller-input-only checks first (independent of live pool state), pool-state
+            ;; checks last - lets bound violations be rejected before ever touching state.
             (enforce (= l1 l2) "RT-Amounts list does not correspond with the Number of the ATS-Pair Reward Tokens")
             (enforce (> rbt-request-amount 0.0) "RBT Request Amount must be greater than zero!")
+            (enforce (>= would-be-index 0.1) "KickStart index must be at least 0.1")
+            (enforce (= index -1.0) "Kickstarting can only be done on ATS-Pairs with -1 Index")
             (compose-capability (P|TT))
         )
     )
@@ -596,49 +636,70 @@
             )
         )
     )
-    (defun C_KickStart:object{IgnisCollectorV1.OutputCumulator}
+    (defun X_KickStart:object{IgnisCollectorV1.OutputCumulator}
         (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
-        (UEV_IMC)
-        (with-capability (ATSU|C>KICKSTART kickstarter ats rt-amounts rbt-request-amount)
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-ATS:module{AutostakeV2} ATS)
-                    (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    ;;
-                    (rbt-id:string (ref-ATS::UR_ColdRewardBearingToken ats))
-                    (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
-                    ;;
-                    (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
-                        (fold
-                            (lambda
-                                (acc:[object{IgnisCollectorV1.OutputCumulator}] idx:integer)
-                                (do
-                                    (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 true (at idx rt-amounts))
-                                    (ref-U|LST::UC_AppL acc 
-                                        (ref-TFT::C_Transfer (at idx rt-lst) kickstarter ATS|SC_NAME (at idx rt-amounts) true)
-                                    )
+        @doc "Shared write path for both the owner (C_KickStart) and administrative \
+            \ (A_KickStart) entrypoints (audit finding #11M / M2 fix). All bound and \
+            \ authorization checks live in the composed capability chain \
+            \ (ATSU|C>X_KICKSTART plus each leaf) - nothing here enforces."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
+                (rbt-id:string (ref-ATS::UR_ColdRewardBearingToken ats))
+                (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
+                ;;
+                (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
+                    (fold
+                        (lambda
+                            (acc:[object{IgnisCollectorV1.OutputCumulator}] idx:integer)
+                            (do
+                                (ref-ATS::XE_UpdateRUR ats (at idx rt-lst) 1 true (at idx rt-amounts))
+                                (ref-U|LST::UC_AppL acc
+                                    (ref-TFT::C_Transfer (at idx rt-lst) kickstarter ATS|SC_NAME (at idx rt-amounts) true)
                                 )
                             )
-                            []
-                            (enumerate 0 (- (length rt-lst) 1))
                         )
+                        []
+                        (enumerate 0 (- (length rt-lst) 1))
                     )
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])      
-                    )
-                    (ico2:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DPTF::C_Mint rbt-id ATS|SC_NAME rbt-request-amount false)
-                    )
-                    (ico3:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-TFT::C_Transfer rbt-id ATS|SC_NAME kickstarter rbt-request-amount true)
-                    )
-                    (index:decimal (ref-ATS::URC_Index ats))
                 )
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [index])  
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+                )
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPTF::C_Mint rbt-id ATS|SC_NAME rbt-request-amount false)
+                )
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::C_Transfer rbt-id ATS|SC_NAME kickstarter rbt-request-amount true)
+                )
+                (index:decimal (ref-ATS::URC_Index ats))
             )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [index])
+        )
+    )
+    (defun C_KickStart:object{IgnisCollectorV1.OutputCumulator}
+        (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        @doc "Owner-facing variant. Fix (audit finding #11M / M2): resulting index now \
+            \ bounded to [0.1, 100.0] via ATSU|C>KICKSTART / ATSU|C>X_KICKSTART."
+        (UEV_IMC)
+        (with-capability (ATSU|C>KICKSTART kickstarter ats rt-amounts rbt-request-amount)
+            (X_KickStart kickstarter ats rt-amounts rbt-request-amount)
+        )
+    )
+    (defun A_KickStart:object{IgnisCollectorV1.OutputCumulator}
+        (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        @doc "Administrative variant (audit finding #11M / M2): forgoes pool ownership \
+            \ for module governance (GOV|ATSU_ADMIN); resulting index is only bound by \
+            \ the shared 0.1 floor, no ceiling - for legitimate ratios above 100.0."
+        (UEV_IMC)
+        (with-capability (ATSU|C>ADMINISTRATIVE-KICKSTART kickstarter ats rt-amounts rbt-request-amount)
+            (X_KickStart kickstarter ats rt-amounts rbt-request-amount)
         )
     )
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator}

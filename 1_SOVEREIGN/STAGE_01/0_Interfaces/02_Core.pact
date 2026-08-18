@@ -587,6 +587,7 @@
     (defun URC_LiquidityFee:decimal (swpair:string))
     (defun URC_AllPoolTokens:[string] ())
     (defun URC_Swpairs:[string] ())
+    (defun URC_ActiveSwpairs:[string] ())
     (defun URC_LpComposer:[string] (pool-tokens:[object{PoolTokens}] weights:[decimal] amp:decimal))
     ;;
     (defun URD_OwnedSwapPairs:[string] (account:string))
