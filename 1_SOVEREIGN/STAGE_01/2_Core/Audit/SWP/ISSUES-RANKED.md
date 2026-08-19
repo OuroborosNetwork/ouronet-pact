@@ -203,8 +203,12 @@ adequate guard for reserves/weights/fees, not an oversight that happens to miss 
 time-window exposure explicitly rides on **L68** (no TTL) — same linkage as H10. Full trace in
 `ROUND-01-OWNER-FEEDBACK.md`. — *M10*
 
-#29M **[SWPL]** Draining a pool's LP supply to exactly zero re-triggers genesis-ratio pricing regardless of
-any dust left in tracked reserves. — *M8*
+#29M **[SWPL]** ~~Draining a pool's LP supply to exactly zero re-triggers genesis-ratio pricing regardless
+of any dust left in tracked reserves.~~ — **REFUTED (owner, 2026-08-19).** "If dust is left, it hasn't
+been drained to zero." `URC_CustomLpBreakAmounts`'s full-drain special case returns the literal current
+reserves (not a floored ratio) whenever the removed amount equals the entire LP supply — the only way
+supply can reach exactly `0.0`. Reserves and LP supply are proven to hit zero together, by construction —
+the finding describes a state the code cannot produce. Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *M8*
 
 #30M **[SWP]** `C_ChangeOwnership` is one-phase/unilateral — a fat-fingered destination account permanently
 strips the true owner of all admin levers. — *M6*

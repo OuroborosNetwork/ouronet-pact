@@ -1464,3 +1464,30 @@ by this verdict — it rides on **L68** (no TTL/expiry) being fixed separately, 
 changed for M10 itself.
 
 ---
+
+## M8 (#29M, full-drain-to-zero re-triggers genesis-ratio pricing regardless of dust left in tracked reserves) — **REFUTED**
+
+**Owner pushback:** "if dust is left in tracked reserves, it means it hasn't been drained to zero, now
+does it?" — pointing out the finding describes a self-contradictory state.
+
+**Traced and confirmed the owner's point exactly:** the genesis-branch trigger itself is real —
+`URC_LD` (`17_SWPL.pact:864-876`) does treat `current-lp-supply == 0.0` as "first depositor," pricing
+against `UR_PoolGenesisSupplies`/the fixed `10000000.0` baseline instead of `UR_PoolTokenSupplies`. But
+the "dust could remain when that happens" half is false. `URC_CustomLpBreakAmounts`
+(`17_SWPL.pact:1494-1524`, the function computing a removal's payout) has an explicit special case:
+`(if (= input-lp-amount swpair-lp-supply) swpair-pool-token-supplies ...)` — when the amount being
+removed equals the *entire current LP supply*, it returns the literal current reserves, not a floored
+ratio. Since LP is fungible, any removal that brings supply to exactly `0.0` is necessarily a removal of
+the entire outstanding supply at that moment (nothing partial can zero out the last unit) — so that
+removal always hits the exact-return branch, never the floored one. Confirmed this flows straight to the
+write: `C_RemoveLiquidity` (`18_SWPLC.pact:833-876`) computes `pt-new-amounts = pt-current-amounts -
+pt-output-amounts`; on a full drain these are equal, so `pt-new-amounts` is exactly `[0.0, 0.0, ...]` —
+no flooring involved. Also checked every other `XE_UpdateSupplies` caller in the codebase (swap
+execution, asymmetric/frozen/sleeping liquidity additions) — none decrease supply toward zero; the only
+LP-burning removal path is the one just shown to be dust-free on a full drain.
+
+**Status:** REFUTED — the finding's premise (LP supply exactly zero *and* reserves holding dust) is a
+state the code structurally cannot produce: the two quantities are proven to hit zero together, by
+construction, in the same write. No fix needed. — *M8*
+
+---
