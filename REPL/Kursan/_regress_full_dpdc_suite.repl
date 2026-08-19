@@ -1,0 +1,11 @@
+;; Scratch regression check for the DPDC-C C1 fix — full [6.1]_DPDC.repl suite (Sets/Fragments/Equity/Wipe),
+;; which the default Z.repl AQP-FAST pipeline skips.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+(load "../Stage_02/[6.1]_DPDC.repl")

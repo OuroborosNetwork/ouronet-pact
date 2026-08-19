@@ -887,6 +887,7 @@
                     )
                 )
             )
+            (enforce (>= amount 0) "Amount cannot be negative")
             (if (= current-supply 0)
                 (enforce cod "Cannot Debit 0 Amounts!")
                 true
