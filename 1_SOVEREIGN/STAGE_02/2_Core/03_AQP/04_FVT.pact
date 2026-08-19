@@ -135,6 +135,8 @@
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
     (defun CC_SweepRevokeAnchor:string (patron:string anchor-id:string))
+    (defun CC_SweepBegin:string (patron:string anchor-id:string))
+    (defun CC_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
     (defun URH_FvtStalePresentUsers:[string] (fvt-id:string))
     (defun XE_FvtFixUserChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])
@@ -478,6 +480,19 @@
             \ employed-score FVTs; cleared by VCT finalize. Read via UR_FVT|VacateFrozen (with-default-read false)."
         frozen:bool
     )
+    (defschema FVT|SweepProgress
+        @doc "Key = <Anchor-ID>. Cursor for the paginated defun+gate re-score sweep (CC_SweepBegin → \
+            \ CC_SweepRecomputeChunk*), the scalable twin of the fixed 2-step MTX|2|C_SweepRevokeAnchor defpact. \
+            \ `total` = the recompute-set size captured at BEGIN (sweep-in-progress freeze holds URH_FvtPresentUsers \
+            \ fixed across the batch's separate txs); `offset` = holders recomputed so far over the GLOBAL flattened \
+            \ present set (present users concatenated across the boost-class's score-ids in order); `active` = a \
+            \ sweep is open. The finalizing chunk (win-hi reaches total) unfreezes every affected pool + clears \
+            \ active — completeness is ENFORCED (pools cannot unfreeze until offset reaches total). Read via \
+            \ UR_FVT|SweepProgress / UR_FVT|SweepActive (with-default-read inactive)."
+        total:integer
+        offset:integer
+        active:bool
+    )
     ;;
     ;;{2}
     (deftable FVT|T:{FVT|Schema})                               ;; Key = <FVT-ID>
@@ -491,8 +506,20 @@
     (deftable FVT|T|UserPresence:{FVT|UserPresence})           ;; Key = <FVT-ID> | <Ouronet-ID>
     (deftable FVT|T|ForcedFixCount:{FVT|ForcedFixCount})        ;; Key = <FVT-ID> | <DPTF-ID> | <User-ID>
     (deftable FVT|T|VacateFreeze:{FVT|VacateFreeze})            ;; Key = <FVT-ID>
+    (deftable FVT|T|SweepProgress:{FVT|SweepProgress})          ;; Key = <Anchor-ID>
     ;;{3}
     (defconst CT_FVT_RPS_PREC 48)
+    ;; --- Re-score sweep CC-batch gas backstop (loose ceiling + UI seed, mirrors the vacate cap philosophy) ---
+    (defconst SWEEP-CHUNK-GAS-BUDGET 2000000
+        "Nominal per-tx gas envelope the sweep CC-batch chunk cap is sized against (backstop, not the optimizer).")
+    (defconst SWEEP-GAS-PER-HOLDER 20000
+        "GENEROUS per-holder backstop for the re-score recompute (settle across every reward stream + ANK \
+       \ aggregate refold + deb refresh + mirror resync). NOT the optimizer: the UI sizes real chunks by \
+       \ simulating (/local) against the true model-dependent gas, and the node gas meter is the real \
+       \ enforcement (an oversized chunk aborts atomically — submitter's gas, offset unchanged, retry smaller). \
+       \ Calibrate against the [6.2.x] sweep gas probe; keep it above the measured worst case so it never throttles.")
+    (defconst SWEEP-CHUNK-MAX (/ SWEEP-CHUNK-GAS-BUDGET SWEEP-GAS-PER-HOLDER)
+        "~100 holders/chunk — the UI's optimistic seed + a coarse safety ceiling; refined by simulation.")
     ;; M3 #12 2e — IGNIS charged per inject-forced deb-fix, at the user's next collect (non-discountable). Governance
     ;; param (placeholder); set ≥ the IGNIS cost of self-fixing one score so self-fixing is always cheaper. ~10 IGNIS.
     (defconst CT_FORCED_FIX_RATE:decimal 10.0)
@@ -716,6 +743,20 @@
             \ every affected pool and the one-shot swept-revoke of the anchor. Composes P|SECURE-CALLER so FVT's \
             \ SECURE guard is satisfied for the cross-module XE calls into AQP-POOL (freeze) and AQP-ANK (revoke); \
             \ the anchor owner (= anchored-asset owner) is enforced inside ANK|XE>SWEEP-REVOKE."
+        (compose-capability (P|SECURE-CALLER))
+    )
+    (defcap FVT|C>SWEEP-DRAIN (patron:string anchor-id:string chunk:integer)
+        @doc "Protects a paginated re-score sweep CHUNK (CC_SweepRecomputeChunk). The sweep was authorized + the \
+            \ anchor swept-revoked at CC_SweepBegin (owner enforced in ANK|XE>SWEEP-REVOKE); a chunk only COMPLETES \
+            \ the already-committed recompute under the freeze, so it re-checks the cursor is ACTIVE (honest \
+            \ completion — re-enforcing owner per chunk is unnecessary; premature unfreeze is impossible because \
+            \ the body unfreezes only when offset reaches total). `chunk` is bounded by the loose gas backstop \
+            \ SWEEP-CHUNK-MAX — the UI sizes the real chunk by simulation, the node gas meter is the real \
+            \ enforcement. Composes P|SECURE-CALLER for the intra-module recompute + cross-module XE calls."
+        @event
+        (enforce (UR_FVT|SweepActive anchor-id) "No active sweep for this anchor")
+        (enforce (and (> chunk 0) (<= chunk SWEEP-CHUNK-MAX))
+            "Sweep chunk out of range — the UI sizes it by simulation, the gas meter is the real ceiling")
         (compose-capability (P|SECURE-CALLER))
     )
     ;;{C3}
@@ -1175,6 +1216,12 @@
         (require-capability (SECURE))
         (write FVT|T|VacateFreeze fvt-id {"frozen": frozen})
     )
+    (defun WU_FvtSweepProgress:string (anchor-id:string total:integer offset:integer active:bool)
+        @doc "Upsert the paginated re-score sweep cursor on FVT|T|SweepProgress (write = upsert; reader defaults \
+            \ to an inactive empty cursor). SECURE."
+        (require-capability (SECURE))
+        (write FVT|T|SweepProgress anchor-id {"total": total, "offset": offset, "active": active})
+    )
     (defun WU_Fvt|Mosaic:string
         (fvt-id:string mosaic:bool)
         @doc "Update mosaic on FVT|T (C_SetMosaic only when no member links)."
@@ -1433,6 +1480,20 @@
             {"frozen":= frozen}
             frozen
         )
+    )
+    (defun UR_FVT|SweepProgress:object{FVT|SweepProgress} (anchor-id:string)
+        @doc "The paginated re-score sweep cursor for anchor-id; defaults to an inactive empty cursor when no \
+            \ sweep is open. Module-only (returns a module schema)."
+        (with-default-read FVT|T|SweepProgress anchor-id
+            {"total": 0, "offset": 0, "active": false}
+            {"total" := t, "offset" := o, "active" := a}
+            {"total": t, "offset": o, "active": a}
+        )
+    )
+    (defun UR_FVT|SweepActive:bool (anchor-id:string)
+        @doc "True while a paginated re-score sweep is open for anchor-id (gates CC_SweepRecomputeChunk; blocks a \
+            \ double CC_SweepBegin)."
+        (at "active" (UR_FVT|SweepProgress anchor-id))
     )
     (defun UR_FVT|CommonDenominator:string (fvt-id:string)
         @doc "Reads common-denominator from FVT row."
@@ -3207,6 +3268,96 @@
             )
         )
     )
+    (defun CC_SweepBegin:string
+        (patron:string anchor-id:string)
+        @doc "OPEN a paginated defun+gate re-score sweep — the scalable twin of CC_SweepRevokeAnchor (single-tx) \
+            \ and MTX|2|C_SweepRevokeAnchor (fixed 2-step defpact). Mirrors steps 1-2 of the single-tx: FREEZE every \
+            \ affected pool then swept-revoke the anchor globally (skips the #9 score-link lock), then records the \
+            \ frozen recompute-set size in an offset-0 cursor. Recompute is deferred to repeated CC_SweepRecomputeChunk \
+            \ calls under the held freeze; the finalizing chunk unfreezes. Use this + chunking when the holder set \
+            \ exceeds one tx; for small sets prefer the single-tx CC_SweepRevokeAnchor. Owner-initiated (the anchor \
+            \ owner signs; CAP_Owner enforced inside ANK|XE>SWEEP-REVOKE). UEV_IMC + FVT|C>SWEEP-REVOKE."
+        (UEV_IMC)
+        (with-capability (FVT|C>SWEEP-REVOKE patron anchor-id)
+            (enforce (not (UR_FVT|SweepActive anchor-id)) "A sweep is already in progress for this anchor")
+            (let
+                (
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    ;;
+                    (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
+                )
+                (let
+                    (
+                        (score-ids:[string] (ref-ANK::UR_BC|ScoreLinks boost-class-id))
+                    )
+                    ;; 1. FREEZE every affected pool (stake + collect blocked) — idempotent per shared pool
+                    (map (lambda (sid:string) (ref-AQP::XE_SetSweepInProgress (ref-SCR::UR_SCR|ScoreAqpoolLink sid) true)) score-ids)
+                    ;; 2. REVOKE the anchor globally (swept — keeps scores linked; the paged recompute un-stales everyone)
+                    (ref-ANK::XE_SweepRevokeAnchor anchor-id)
+                    ;; 3. OPEN the cursor at offset 0 over the now-frozen recompute set
+                    (let
+                        (
+                            (total:integer (URC_FvtSweepTotalPresent score-ids))
+                        )
+                        (WU_FvtSweepProgress anchor-id total 0 true)
+                        (format "Sweep begun for anchor {} (BoostClass {}): swept-revoked; {} holder(s) to recompute across {} score(s) — page via CC_SweepRecomputeChunk." [anchor-id boost-class-id total (length score-ids)]))
+                )
+            )
+        )
+    )
+    (defun CC_SweepRecomputeChunk:string
+        (patron:string anchor-id:string chunk:integer)
+        @doc "PAGE a paginated re-score sweep: recompute the next `chunk` holders over the GLOBAL flattened present \
+            \ set [offset, min(offset+chunk, total)), advancing the cursor. When the window reaches `total` the set \
+            \ is exhausted, so this chunk also UNFREEZES every affected pool and closes the cursor (completeness is \
+            \ ENFORCED — pools cannot unfreeze until offset reaches total). Idempotent recompute funnels through the \
+            \ SAME XI_FvtSweepRecomputeChunk as the single-tx and defpact paths. `chunk` is the UI's simulated slice \
+            \ size (bounded by the loose SWEEP-CHUNK-MAX backstop). UEV_IMC + FVT|C>SWEEP-DRAIN (active-gated)."
+        (UEV_IMC)
+        (with-capability (FVT|C>SWEEP-DRAIN patron anchor-id chunk)
+            (let
+                (
+                    (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+                    ;;
+                    (cursor:object{FVT|SweepProgress} (UR_FVT|SweepProgress anchor-id))
+                    (boost-class-id:string (ref-ANK::UR_ANK|BoostClassId anchor-id))
+                )
+                (let
+                    (
+                        (total:integer (at "total" cursor))
+                        (offset:integer (at "offset" cursor))
+                        (score-ids:[string] (ref-ANK::UR_BC|ScoreLinks boost-class-id))
+                    )
+                    (let
+                        (
+                            (win-hi:integer (if (< (+ offset chunk) total) (+ offset chunk) total))
+                        )
+                        ;; recompute the window [offset, win-hi) over the frozen global flattened present set
+                        (let
+                            (
+                                (n:integer (XI_FvtSweepRecomputeWindow score-ids boost-class-id offset win-hi))
+                            )
+                            (if (>= win-hi total)
+                                ;; FINAL chunk — recompute set exhausted: unfreeze every affected pool + close the cursor
+                                (do
+                                    (map (lambda (sid:string) (ref-AQP::XE_SetSweepInProgress (ref-SCR::UR_SCR|ScoreAqpoolLink sid) false)) score-ids)
+                                    (WU_FvtSweepProgress anchor-id total total false)
+                                    (format "Sweep chunk [{}→{}): recomputed {} holder(s) — set exhausted, anchor {} retired, {} pool(s) unfrozen." [offset win-hi n anchor-id (length score-ids)]))
+                                ;; MORE remain — advance the cursor, freeze stays held
+                                (do
+                                    (WU_FvtSweepProgress anchor-id total win-hi true)
+                                    (format "Sweep chunk [{}→{}): recomputed {} holder(s) of {} — {} remain, continue paging." [offset win-hi n total (- total win-hi)]))
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
     (defun C_Collect:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collect reward DPTF — phases 0 → 5 — see canonical collect map above. UrStoa ≡ C_URV|Collect."
@@ -4370,6 +4521,21 @@
             \ URC_FvtUserHasStaleMember. `take N` of this list gives a defpact step's fix chunk."
         (filter (lambda (u:string) (URC_FvtUserHasStaleMember fvt-id u)) (URH_FvtPresentUsers fvt-id))
     )
+    (defun URC_FvtSweepTotalPresent:integer (score-ids:[string])
+        @doc "Total present holders across every FVT member employing the swept boost-class = the paginated \
+            \ recompute-set size for CC_SweepBegin. Read-only; sweep-in-progress keeps URH_FvtPresentUsers fixed \
+            \ across the CC-batch's txs. FVT-local twin of MTX-AQP::URC_SweepTotalPresent (the defpact's copy) — \
+            \ both fold the SAME URH_FvtPresentUsers, so they agree by construction."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+            )
+            (fold (+) 0
+                (map
+                    (lambda (sid:string) (length (URH_FvtPresentUsers (ref-SCR::UR_SCR|ScoreFvtLink sid))))
+                    score-ids))
+        )
+    )
     ;; --- Shared deb-staleness FIX (M3 #12 — used by CC_Inject AND collect PHASE 6 backstop) ---
     (defun XI_FixUserMemberDeb:object{IgnisCollectorV1.OutputCumulator}
         (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string)
@@ -4624,6 +4790,51 @@
                 (XI_SweepRecomputeUserMember u fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id swept-boost-class-id))
             users)
         (UC_EmptyOc)
+    )
+    (defun XI_FvtSweepRecomputeWindow:integer
+        (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
+        @doc "Recompute holders whose GLOBAL flattened index — present users concatenated across score-ids in \
+            \ order — falls in [win-lo, win-hi). Per score, slice its present users to the window overlap and run \
+            \ one XI_FvtSweepRecomputeChunk. sweep-in-progress makes URH_FvtPresentUsers order deterministic across \
+            \ the CC-batch's txs, so (drop offset) pages without re-processing. Returns holders recomputed. The \
+            \ intra-module (require SECURE) twin of MTX-AQP::XI_SweepRecomputeWindow (which forwards the SAME \
+            \ per-member work via XE_FvtSweepRecomputeChunk) — both funnel through XI_FvtSweepRecomputeChunk, so \
+            \ the defun+gate and defpact paths recompute identically. require SECURE."
+        (require-capability (SECURE))
+        (at "processed"
+            (fold
+                (lambda (acc:object sid:string)
+                    (let
+                        (
+                            (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                            (seen-before:integer (at "seen" acc))
+                            (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
+                            (member:string
+                                (if (ref-SCR::UR_SCR|ScoreTriplet sid) (ref-SCR::UR_SCR|ScoreTripletId sid) sid))
+                        )
+                        (let
+                            (
+                                (users:[string] (URH_FvtPresentUsers fvt))
+                            )
+                            (let
+                                (
+                                    (seen-after:integer (+ seen-before (length users)))
+                                    (lo:integer (if (> win-lo seen-before) win-lo seen-before))
+                                )
+                                (let
+                                    (
+                                        (hi:integer (if (< win-hi seen-after) win-hi seen-after))
+                                    )
+                                    (if (> hi lo)
+                                        (let
+                                            (
+                                                (slice:[string] (take (- hi lo) (drop (- lo seen-before) users)))
+                                            )
+                                            (XI_FvtSweepRecomputeChunk fvt member boost-class-id slice)
+                                            {"seen": seen-after, "processed": (+ (at "processed" acc) (length slice))})
+                                        {"seen": seen-after, "processed": (at "processed" acc)}))))))
+                {"seen": 0, "processed": 0}
+                score-ids))
     )
     (defun XE_FvtSweepRecomputeChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string score-entity-id:string swept-boost-class-id:string users:[string])
@@ -5110,3 +5321,4 @@
 (create-table FVT|T|UserPresence)                               ;; Key = <FVT-ID> | <Ouronet-ID>
 (create-table FVT|T|ForcedFixCount)                             ;; Key = <FVT-ID> | <DPTF-ID> | <User-ID>
 (create-table FVT|T|VacateFreeze)                               ;; Key = <FVT-ID>
+(create-table FVT|T|SweepProgress)                              ;; Key = <Anchor-ID>

@@ -229,6 +229,12 @@
     (defun AQP-FVT|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
     )
+    (defun AQP-FVT|CC_SweepBegin:string
+        (patron:string anchor-id:string)
+    )
+    (defun AQP-FVT|CC_SweepRecomputeChunk:string
+        (patron:string anchor-id:string chunk:integer)
+    )
     (defun AQP-FVT|C_Collect:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
@@ -1818,6 +1824,42 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (let ((r:string (ref-FVT::CC_SweepRevokeAnchor patron anchor-id)))
+                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    r
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|CC_SweepBegin:string
+        (patron:string anchor-id:string)
+        @doc "OPEN a paginated (defun+gate) re-score sweep — the scalable twin of AQP-FVT|CC_SweepRevokeAnchor for \
+            \ holder sets exceeding one tx: freezes the affected pools + swept-revokes the anchor, then defers the \
+            \ recompute to AQP-FVT|CC_SweepRecomputeChunk calls under the held freeze. Owner-initiated. Lives in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                )
+                (let ((r:string (ref-FVT::CC_SweepBegin patron anchor-id)))
+                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    r
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|CC_SweepRecomputeChunk:string
+        (patron:string anchor-id:string chunk:integer)
+        @doc "PAGE an open re-score sweep: recompute the next `chunk` holders over the frozen global present set, \
+            \ advancing the cursor; the finalizing chunk (set exhausted) unfreezes the affected pools. `chunk` is \
+            \ the UI's simulated slice size (bounded by AQP-FVT's loose SWEEP-CHUNK-MAX backstop). Lives in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                )
+                (let ((r:string (ref-FVT::CC_SweepRecomputeChunk patron anchor-id chunk)))
                     (ref-TS01-A::XB_DynamicFuelKDA)
                     r
                 )
