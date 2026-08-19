@@ -1554,3 +1554,40 @@ full-suite file). Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load 
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #18. Awaiting Round III re-verify.
 
 ---
+
+## M11 (#32M, permissioned pool issuance charges IGNIS+KDA before the admin gate that can reject it) — **DESIGN, accepted — and confirmed non-live**
+
+**Owner:** by design — Step 2 charges first, deliberately, so that once fees are collected there's an
+incentive to see the pact through; if collection were the *last* step instead, a patron could walk
+through every earlier step for free and simply decline to pay at the end. Also: pool issuance now fits in
+a single transaction — the multi-step `MTX|C_Issue` defpact is kept only for historical, observational,
+and learning purposes, not as a live path.
+
+**Verified both halves, not accepted at face value:**
+- **The incentive-ordering rationale** is a real, coherent pattern already documented in this exact file
+  for the sibling `20_MTX-SWP.pact` defpacts — a `HISTORICAL NOTE` (owner, 2026-08-17, during #C9) already
+  in the module's own source states the whole module exists only because of an obsolete ~150k-gas ceiling
+  (StoaChain's actual live limit is ~2,000,000 gas — comfortably enough for even a 7-token issuance in one
+  transaction today), and is "kept live for historical continuity ... and as a worked defpact/multi-step
+  example," not as the intended production path.
+- **"Should now fit in a single tx" — confirmed true and already the live path.** `SWPI::C_Issue`
+  (`16_SWPI.pact:1488-1492`) is the real single-transaction issuance path, and it correctly orders its own
+  `p`-gate: `SWPI|C>ISSUE`'s defcap (`:236-244`) checks `GOV|SWPI_ADMIN` *inside the defcap*, which Pact
+  evaluates before the `with-capability` body (fee collection) ever runs — admin approval is required
+  before any fee is charged, exactly the ordering M11 asks for. So the correctly-ordered path already
+  exists and is what's actually used.
+- **"Historical/observational purposes, not live" — independently confirmed, not just asserted.**
+  Grepped the entire codebase: `MTX|C_Issue` (and every other `MTX-SWP` defpact — `AddLiquidity`,
+  `AddFrozenLiquidity`, `AddSleepingLiquidity`) has **zero** references anywhere in `3_Talos/` or
+  `0_Interfaces/`, and zero references in any REPL test outside `20_MTX-SWP.pact` itself. Per this
+  codebase's own architecture ("Talos is the only supported client path... the Ouronet gas station pays
+  execution only for paths defined in Talos"), this defpact is not reachable through any gas-sponsored
+  client flow at all — reaching it would require a raw, unsponsored direct module call bypassing Talos
+  entirely, not a realistic exposure for a normal user.
+
+**Status:** DESIGN, accepted — the fee-before-gate ordering is a deliberate anti-abandonment incentive
+pattern for defpact-style flows, and (independently, stronger than a residual-risk caveat) the specific
+defpact this finding is about has no live client path at all — confirmed unreachable through the
+supported architecture, not merely mitigated. No fix needed, no code changed. — *M11*
+
+---

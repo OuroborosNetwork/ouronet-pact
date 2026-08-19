@@ -223,8 +223,12 @@ owner-only and irreversible by design — irreversibility was already correct, o
 missing. `CAP_Owner swpair` added to both defcaps. Adversarially proven: non-owner rejected with zero
 state mutation, true owner succeeds, reverted the fix and reproduced the exact unauthorized flip. — *M7*
 
-#32M **[MTX-SWP]** Permissioned pool issuance charges IGNIS+KDA fees *before* the admin gate that can reject
-the request — a non-refundable sunk cost if the admin never signs off. — *M11*
+#32M **[MTX-SWP]** ~~Permissioned pool issuance charges IGNIS+KDA fees *before* the admin gate that can
+reject the request — a non-refundable sunk cost if the admin never signs off.~~ — **DESIGN, accepted and
+confirmed non-live (owner, 2026-08-19).** Fee-before-gate is a deliberate anti-abandonment incentive for
+defpact flows. Independently confirmed `MTX|C_Issue` has zero Talos wiring anywhere in the codebase —
+unreachable through the only supported client path. The real, live single-tx path (`SWPI::C_Issue`)
+already gates correctly, before charging. Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *M11*
 
 #33M **[MTX-SWP]** Explicit rollback costs strictly more than silently abandoning an open `defpact`, and no
 pact has a TTL/expiry. — *M12*
