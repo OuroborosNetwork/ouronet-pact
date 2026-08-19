@@ -223,4 +223,144 @@
 (env-sigs [])
 (commit-tx)
 (print "")
+;;
+;; ============================================================================
+;; TX-AQP-A05a — GAS BASELINE: stake a bunny that conforms to a SINGLE anchor
+;; (Common rarity + Elk0nite Eyes → only the Elk0nite UnityBooster anchor). The
+;; NF-stake anchor sync scans EVERY live KBN anchor regardless, so this is the
+;; reference cost to compare the multi-anchor stake (A05b) against.
+;; ============================================================================
+(begin-tx "TX-AQP-A05a - single-anchor KBN bunny stake (gas baseline)")
+(print "")
+(print "=== TX-AQP-A05a — GAS baseline: stake a bunny matching ONE anchor ===========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner:string KST.EMMA)
+        (beneficiary:string KST.EMMA)
+        (kbn-id:string "KBN-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
+        ;; Common + Elk0nite-Eyes ⇒ conforms to ONLY the Elk0nite anchor (not Legendary, not a snake Background)
+        (single-nonces:[integer]
+            (filter
+                (lambda (n:integer)
+                    (and (= 1 (ref-ANK::URC_ConformNonces kbn-id [n] "Eyes" "Elk0nite Unity Glasses"))
+                         (= 1 (ref-ANK::URC_ConformNonces kbn-id [n] "Rarity" "Common"))))
+                (ref-DPDC::URD_AccountNonces owner kbn-id false)))
+    )
+    (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] } { "key": "PK_Lumy", "caps": [] } ])
+    (if (> (length single-nonces) 0)
+        (let ((n:integer (at 0 single-nonces)))
+            (env-gas 0)
+            (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [n])
+            (print (format "<(A05a SINGLE-anchor stake nonce={} · GAS)> => {}" [n (env-gas)])))
+        (print "SKIP TX-AQP-A05a: EMMA owns no unstaked Common Elk0nite bunny"))
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; TX-AQP-A05b — MULTI-ANCHOR FAN-OUT: stake ONE "Legendary Elite-Auryn Rain" bunny.
+;; A single NFT conforming to FIVE anchors across FOUR boost-classes:
+;;   EliteAurynRain        (Background="Elite-Auryn Rain") → GoldenSnakePower  200
+;;   LegendarySnakeTokenRain (Rarity="Legendary")          → GoldenSnakePower  400
+;;   LegendaryUnityBooster (Rarity="Legendary")            → UnityBooster     1000
+;;   LegendaryStoaBooster  (Rarity="Legendary")            → StoaBooster      3500
+;;   LegendaryVestaBooster (Rarity="Legendary")            → VestaBooster     3500
+;; Proves the fan-out (XE_ResyncNonFungibleUserAnchorValues maps ALL anchors +
+;; recomputes DISTINCT affected boost-classes): every per-user promile lights up,
+;; every touched boost-class aggregates, and the SAME-CLASS case (2 anchors on
+;; GoldenSnakePower) sums correctly. Also measures gas vs the single-anchor baseline.
+;; ============================================================================
+(begin-tx "TX-AQP-A05b - multi-anchor fan-out: one Legendary Elite-Auryn Rain bunny -> 5 anchors / 4 boost-classes")
+(print "")
+(print "=== TX-AQP-A05b — MULTI-ANCHOR fan-out from a single NFT stake ==============")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 150000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner:string KST.EMMA)
+        (beneficiary:string KST.EMMA)
+        (kbn-id:string "KBN-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
+        ;; anchor + boost-class ids
+        (elite-auryn:string        (ref-U|DALOS::UDC_Makeid "EliteAurynRain"))
+        (legendary-snake:string    (ref-U|DALOS::UDC_Makeid "LegendarySnakeTokenRain"))
+        (legendary-unity:string    (ref-U|DALOS::UDC_Makeid "LegendaryUnityBooster"))
+        (legendary-stoa:string     (ref-U|DALOS::UDC_Makeid "LegendaryStoaBooster"))
+        (legendary-vesta:string    (ref-U|DALOS::UDC_Makeid "LegendaryVestaBooster"))
+        (golden-bc:string          (ref-U|DALOS::UDC_Makeid "GoldenSnakePower"))
+        (unity-bc:string           (ref-U|DALOS::UDC_Makeid "UnityBooster"))
+        (stoa-bc:string            (ref-U|DALOS::UDC_Makeid "StoaBooster"))
+        (vesta-bc:string           (ref-U|DALOS::UDC_Makeid "VestaBooster"))
+        ;; a nonce that CONFORMS to BOTH Rarity=Legendary AND Background=Elite-Auryn Rain (⇒ all 5 anchors)
+        (multi-nonces:[integer]
+            (filter
+                (lambda (n:integer)
+                    (and (= 1 (ref-ANK::URC_ConformNonces kbn-id [n] "Rarity" "Legendary"))
+                         (= 1 (ref-ANK::URC_ConformNonces kbn-id [n] "Background" "Elite-Auryn Rain"))))
+                (ref-DPDC::URD_AccountNonces owner kbn-id false)))
+    )
+    (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] } { "key": "PK_Lumy", "caps": [] } ])
+    (print (format "<(EMMA Legendary-Elite-Auryn conforming nonces)> => \"{}\"" [multi-nonces]))
+    (if (> (length multi-nonces) 0)
+        (let ((n:integer (at 0 multi-nonces)))
+            ;; stake the multi-trait bunny (measure gas around JUST the stake)
+            (env-gas 0)
+            (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [n])
+            (let
+                (
+                    (g-multi:integer (env-gas))
+                    (p-elite:decimal    (ref-ANK::UR_ANK-U|Promile owner elite-auryn))
+                    (p-lsnake:decimal   (ref-ANK::UR_ANK-U|Promile owner legendary-snake))
+                    (p-lunity:decimal   (ref-ANK::UR_ANK-U|Promile owner legendary-unity))
+                    (p-lstoa:decimal    (ref-ANK::UR_ANK-U|Promile owner legendary-stoa))
+                    (p-lvesta:decimal   (ref-ANK::UR_ANK-U|Promile owner legendary-vesta))
+                    (agg-golden:decimal (ref-ANK::UR_UB|AggregatePromile owner golden-bc))
+                    (agg-unity:decimal  (ref-ANK::UR_UB|AggregatePromile owner unity-bc))
+                    (agg-stoa:decimal   (ref-ANK::UR_UB|AggregatePromile owner stoa-bc))
+                    (agg-vesta:decimal  (ref-ANK::UR_UB|AggregatePromile owner vesta-bc))
+                )
+                (map print
+                    [
+                        (format "<(A05b MULTI-anchor stake nonce={} · GAS)> => {}" [n g-multi])
+                        (format "<(per-anchor promile)> EliteAuryn={} LSnake={} LUnity={} LStoa={} LVesta={}" [p-elite p-lsnake p-lunity p-lstoa p-lvesta])
+                        (format "<(boost-class aggregate)> Golden={} Unity={} Stoa={} Vesta={}" [agg-golden agg-unity agg-stoa agg-vesta])
+                        ;; (a) ALL FIVE anchors got a per-user promile from the single stake
+                        (expect (format "<<TX-AQP-A05b>> EliteAurynRain promile>0 got={}" [p-elite]) true (> p-elite 0.0))
+                        (expect (format "<<TX-AQP-A05b>> LegendarySnakeTokenRain promile>0 got={}" [p-lsnake]) true (> p-lsnake 0.0))
+                        (expect (format "<<TX-AQP-A05b>> LegendaryUnityBooster promile>0 got={}" [p-lunity]) true (> p-lunity 0.0))
+                        (expect (format "<<TX-AQP-A05b>> LegendaryStoaBooster promile>0 got={}" [p-lstoa]) true (> p-lstoa 0.0))
+                        (expect (format "<<TX-AQP-A05b>> LegendaryVestaBooster promile>0 got={}" [p-lvesta]) true (> p-lvesta 0.0))
+                        ;; (b) ALL FOUR distinct boost-classes were recomputed to a non-zero aggregate
+                        (expect (format "<<TX-AQP-A05b>> GoldenSnakePower aggregate>0 got={}" [agg-golden]) true (> agg-golden 0.0))
+                        (expect (format "<<TX-AQP-A05b>> UnityBooster aggregate>0 got={}" [agg-unity]) true (> agg-unity 0.0))
+                        (expect (format "<<TX-AQP-A05b>> StoaBooster aggregate>0 got={}" [agg-stoa]) true (> agg-stoa 0.0))
+                        (expect (format "<<TX-AQP-A05b>> VestaBooster aggregate>0 got={}" [agg-vesta]) true (> agg-vesta 0.0))
+                        ;; (c) SAME-CLASS SUM: GoldenSnakePower carries TWO anchors (EliteAurynRain + LegendarySnakeTokenRain);
+                        ;;     its aggregate must equal the sum of those two per-user promiles (the dedup+sum in RecomputeAffectedBoostAggregates)
+                        (expect (format "<<TX-AQP-A05b>> GoldenSnakePower aggregate == EliteAuryn + LegendarySnake ({} == {}+{})" [agg-golden p-elite p-lsnake])
+                            (+ p-elite p-lsnake) agg-golden)
+                    ]
+                )
+            )
+        )
+        (print "SKIP TX-AQP-A05b: EMMA owns no unstaked Legendary Elite-Auryn Rain bunny")
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
 (print "=== END [6.4]_AQP-EXHAUSTIVE-ANK-LP.repl ====================================")
