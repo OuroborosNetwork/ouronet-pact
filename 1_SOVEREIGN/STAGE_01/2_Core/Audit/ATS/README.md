@@ -70,6 +70,7 @@ document only — no code was changed** (per instruction, matching the AQP audit
 | L13 | LOW | Talos | `ATS\|C_SetHotRecoveryFee` (singular, Talos) vs `C_SetHotRecoveryFees` (plural, core) — cosmetic naming asymmetry | CONFIRMED | **LEFT AS-IS ✅** — owner decided 2026-08-18 after being shown the real scope (new interface version + 2 live slave-module consumers to update + coordinated redeploy). Not worth it for a cosmetic asymmetry. No code change. |
 | N2 | HIGH | ATSU | `C_WithdrawRoyalties` hands its full per-RT royalty vector straight to `TFT::C_MultiTransfer`, which debits every leg unconditionally — any zero-amount leg (routine whenever a pool has >1 registered RT and royalty hasn't accrued evenly across all of them) hits `DPTF.UEV_Amount`'s `(> amount 0.0)` enforce and crashes the whole withdrawal | CONFIRMED, reproduced | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #16)** — discovered 2026-08-18 while building the L4/#22L `WithdrawRoyalties` proof (real crash, not a test-authoring mistake — reproduced against `ps`, a live 3-RT pool). Owner confirmed: "Royalties always gather in reward tokens and if there are many multi transfer must be used when withdrawing... it needs fixing." `C_WithdrawRoyalties` now filters to only the reward-token/royalty legs with a real (`> 0.0`) balance before calling `C_MultiTransfer` — the RUR-reset loop still zeroes every RT's bucket regardless, so no accounting is skipped, only the doomed zero-amount transfer leg. Proven end-to-end: royalty accrues on one RT only (others zero), withdrawal now succeeds, all buckets reset to 0.0. |
 | N3 | HIGH | Talos | `P|A_Define` (`01_TS01-A.pact`) — the Talos admin module's own permitted-caller registration function — never registered its guard into `ATS` or `ATSU` (`ATS` was even bound via `ref-P|ATS` but never used; `ATSU` wasn't bound at all), while every other Talos module's own `P|A_Define` registers into both | CONFIRMED, reproduced | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #17)** — net effect: `ATS\|A_RemoveSecondary` / `ATS\|A_KickStart` (real admin entrypoints) were completely unreachable via their real Talos path, unconditionally, regardless of signer — failed inside `UEV_IMC`'s whitelist check before any key-authorization logic ran. Found and fixed 2026-08-17 while building `#22L`'s original scratch proof, but never logged as its own numbered finding until the owner asked for it to be expanded and approved logging it separately 2026-08-18 ("yes do that"). Added the two missing `P\|A_AddIMP` calls (+ the missing `ref-P\|ATSU` binding), matching every other Talos module's pattern. Proven via the real Talos admin path — `#22L`/Fix #15's `A_KickStart`/`A_RemoveSecondary` REPL proofs only pass because this fix is in place. |
+| N4 | — | Interfaces | This audit added 5 new public functions across 5 interfaces with no version bump (`UC_KickStartIndex`/`UtilityAtsV2`, `A_KickStart`/`AutostakeUsageV1`, `C_ToggleUpgrade`/`AutostakeV2`, `ATS\|C_ToggleUpgrade`/`TalosStageOne_ClientTwoV1`, `ATS\|A_KickStart`/`TalosStageOne_AdminV1`) | CONFIRMED, deployment prerequisite | **ONGOING, not a code bug** — Pythia cross-check: `UtilityAtsV2`, `AutostakeUsageV1`, AND `AutostakeV2` are **all three** already live on mainnet under those exact names (deployed `U\|ATS` implements `UtilityAtsV2` verbatim; deployed `ATSU` implements `AutostakeUsageV1`, its only-ever version; deployed `ATS` implements `AutostakeV2` — **correction 2026-08-19**: this was originally reported as still on the older `AutostakeV1` based on a stale prior-session note; a fresh direct check confirms it's actually already on `V2`) — this audit silently added a function to each of the three. None can be redeployed as-is under the same name; each needs a real version bump (`V2->V3`, `V1->V2`, `V2->V3` respectively) plus the full consumer cascade before it can go live again. The two Talos interface additions weren't directly Pythia-checked — flag as likely-also-live, verify before deploy. **Separately observed, unverified**: live `ATSU.X_RemoveSecondary` types its `ATS` reference as `module{AutostakeV1}`, but live `ATS` no longer implements `AutostakeV1` at all — if Pact enforces `implements` conformance at call time (believed but not empirically tested via a real mainnet call), this function may currently be unable to execute on mainnet at all, independent of C2's own bug. Owner directive 2026-08-19: keep interfaces at their current version for now, don't bump/refactor yet — deferred to the same planned post-audit rehaul as L2/L10/L12 (the whole codebase, once ATS + SWP + other in-flight audits are merged), but tracked as a **hard prerequisite for redeploying `UtilityAtsV2`/`AutostakeUsageV1`/`AutostakeV2`**, not merely a style item. No code change now. |
 
 ## Cross-cutting note — beyond ATS scope (downgraded after C1's correction)
 
@@ -92,19 +93,41 @@ intentionally-forgeable-by-non-browser-clients design in Pythia's own source). F
 `OuronetInformational/pythia-dirty-read-access.md`.
 
 **First real diff performed** (triggered by reconciling `#32N`/N1): pulled `describe-module` for
-`ouronet-ns.ATS` and `ouronet-ns.ATSU` live. Confirmed the live deployed code is on the older
-`AutostakeV1`/`UtilityAtsV1` interfaces (local dev has moved on to `V2`) — live is **behind** local, not
-ahead, so nothing was ever "ported back" from a mainnet fix that doesn't exist. `URC_MultiCull`'s broken
-branch (N1) is present byte-for-byte in the live module too, confirmed via both a source diff and a live
-call against all 11 real existing ledger rows (`ATS.UR_KEYS`) - none currently trigger it, purely because
-every existing live account happens to have something already cullable right now.
+`ouronet-ns.ATS` and `ouronet-ns.ATSU` live. `URC_MultiCull`'s broken branch (N1) is present byte-for-byte
+in the live `ATSU` module, confirmed via both a source diff and a live call against all 11 real existing
+ledger rows (`ATS.UR_KEYS`) - none currently trigger it, purely because every existing live account happens
+to have something already cullable right now.
 
-**Still not done:** a full systematic diff of `U_ATS`/`U_DPTF` (utility modules) against local, and a
-complete pass re-checking every other FIXED/NOT-A-BUG verdict above against the live `V1`-interface code
-(several fixes assumed the local `V2` shape - e.g. the `#6H`/H1 parameter-lock fields, `#11M` KickStart
-bounds, `#21L` `can-upgrade` setter - none of these exist on the currently-deployed `V1` code either, since
-they were added during this session's local-only work). Not yet done; flag before treating any fix as
-"deployed-equivalent" — everything landed this round exists only in local source until a real redeploy.
+**Correction, 2026-08-19:** this section originally claimed live `ATS`/`ATSU` were on the older
+`AutostakeV1`/`UtilityAtsV1` interfaces. That was wrong on re-check with a fresh, direct `describe-module`
+call (not relying on the earlier note): live `ATS` implements `AutostakeV2` (`interfaces:
+['OuronetPolicyV1', 'BrandingUsagePrimaryV1', 'AutostakeV2', 'AutostakeComputerV1']`), and live `U|ATS`
+implements `UtilityAtsV2` (confirmed separately during task #7, see below) - **not** V1 for either. Live
+`ATSU` genuinely is on `AutostakeUsageV1` (its only-ever version, so this part was never wrong). Despite
+being on the same interface *version* as local for `ATS`/`U|ATS`, the deployed *content* is still the
+pre-fix code throughout - confirmed directly for `ATSU.X_RemoveSecondary` (still sums only
+`resident-sum + unbound-sum`, no royalty migration, and still takes a caller-supplied account list rather
+than deriving it on-chain - the exact C2(b)/C2(c) gaps this round's fix closed) and for the three functions
+listed in the "Still not done" paragraph below. Live is behind local on *content*, not necessarily on
+interface *version* - the two are independent, and this section previously conflated them.
+
+**Separately observed, unverified:** live `ATSU.X_RemoveSecondary` types its `ATS` reference as
+`module{AutostakeV1}` - but live `ATS` no longer implements `AutostakeV1` at all (per the corrected check
+above, only `V2`). If Pact enforces `implements` conformance on a typed module reference at call time
+(believed to be the case; not empirically tested via an actual live call, which would be a real mutating
+mainnet transaction), this would mean `X_RemoveSecondary` currently cannot execute on mainnet at all,
+independent of and in addition to C2's own accounting bug. Flagged for awareness in `ISSUES-RANKED.md`
+`#35N`; not further investigated pending owner direction.
+
+**Still not done:** a full systematic diff of `U_DPTF` against local (see task #7 - `U_ATS`/`U_DPTF` were
+diffed 2026-08-18, `U_ATS` found live-on-`V2` matching local's interface version, `U_DPTF` live-on-`V1`
+matching local), and a complete pass re-checking every other FIXED/NOT-A-BUG verdict above against the live
+*content* (several fixes assume behavior that doesn't exist live yet even where the interface *version*
+now matches - e.g. the `#6H`/H1 parameter-lock fields, `#11M` KickStart bounds, `#21L` `can-upgrade`
+setter - confirmed absent from live `ATS`'s actual code, since they were added during this round's
+local-only work, same as C2 above). Not yet done in full; flag before treating any fix as
+"deployed-equivalent" — everything landed this round exists only in local source until a real redeploy,
+and per `#35N`, that redeploy will also need version bumps for 3 of the 5 interfaces this round touched.
 
 ## Method (Round I)
 

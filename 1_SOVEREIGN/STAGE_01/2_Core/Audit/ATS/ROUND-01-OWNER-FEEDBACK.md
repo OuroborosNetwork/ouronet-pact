@@ -277,6 +277,14 @@ behind local dev, not ahead). Went further: enumerated all 11 real live ledger r
 `URC_MultiCull` directly against each - all 11 currently succeed, purely because every existing account
 happens to have something already cullable right now. Not fixed live; just not yet triggered.
 
+> **Correction, 2026-08-19 (owner-prompted, see `#35N` below):** the "`AutostakeV1`/`UtilityAtsV1`" part
+> of the note above was wrong - a fresh, direct re-check of live `ouronet-ns.ATS` confirms it actually
+> implements `AutostakeV2`. `ATSU` genuinely is on `AutostakeUsageV1` (its only-ever version, so that half
+> was never wrong). The `URC_MultiCull` content finding itself is unaffected by this - the broken branch
+> is still confirmed present live, this only corrects which interface *version* the module is on. Kept in
+> place rather than rewritten, per this file's living-but-evidenced-correction discipline; see `#35N`
+> for the full, corrected interface-version picture across all modules this audit touched.
+
 **Design clarification (owner-led, corrected my framing twice):**
 1. "You can't cull immediately after a cold recovery, you need to wait for the time to pass. So what are
    you talking about?" - clarified: the bug isn't about extracting funds early, it's that *attempting* an
@@ -398,6 +406,56 @@ recognizable OFF values" — i.e. keep `UEV_Fee`'s existing `{-1.0, 0.0} ∪ [1.
 the active range's ceiling to `500.0`.
 
 **Verdict: CONFIRMED, FIXED.** Full detail + proof: `ROUND-02-FIXES.md` Fix #18. `#7H`/H2 fully closed.
+
+## #35N — interface version debt from this audit's own fixes (2026-08-19)
+
+While preparing the final audit report, owner asked directly: "did we bump interface versioning within
+this audit? If we did we gotta document as interface bump inserted... OR we keep the same version, and
+note an interface bump is needed... if stuff has been modified in the modules and interface and we kept
+them at their version, it does work locally, but wont work on mainnet where an interface bump is
+required." Verified precisely rather than assuming: grepped every interface declaration touched across
+every commit in this audit's fix cycle, confirmed none were renamed/version-bumped (all still `V1`/`V2`
+under their original names), and identified exactly 5 new public functions added across 5 interfaces
+(`UC_KickStartIndex`/`UtilityAtsV2`, `A_KickStart`/`AutostakeUsageV1`, `C_ToggleUpgrade`/`AutostakeV2`,
+`ATS|C_ToggleUpgrade`/`TalosStageOne_ClientTwoV1`, `ATS|A_KickStart`/`TalosStageOne_AdminV1`).
+
+Cross-referenced each against this session's and the earlier session's Pythia live-deployment checks:
+`UtilityAtsV2` and `AutostakeUsageV1` are both confirmed already deployed on mainnet under those exact
+names (`U|ATS` implements `UtilityAtsV2` live; `ATSU` implements `AutostakeUsageV1` live, its only-ever
+version) — a function was added to each without a version bump, which cannot be redeployed as-is.
+`AutostakeV2` was initially reported as NOT yet live (deployed `ATS` believed still on the older
+`AutostakeV1`, based on a stale prior-session note), so its addition was initially assessed as safe without
+a bump. The two Talos interface additions weren't directly Pythia-checked this audit; flagged as
+likely-also-live (given they route to confirmed-live core modules) rather than assumed safe.
+
+**Owner's verdict:** "We keep current interface version intact, noting an interface bump is required.
+That's the behaviour we need to use." — confirmed this is exactly the intended policy: don't perform the
+bump/refactor now (same deferral as the broader StoicSyntax rehaul), but document precisely which
+interfaces will need one before deployment, so it's a tracked, known prerequisite rather than a surprise
+discovered at deploy time.
+
+**Correction (owner-prompted, 2026-08-19):** owner immediately pushed back on the `AutostakeV2`-is-safe
+claim: "of course AutostakeV2 is live on mainnet, what are you talking about, that's the reason it is not
+a V1, but a V2 (2 being more than 1, means it had to be updated once)." Rather than defend the prior
+note, re-checked directly: a fresh `describe-module` call against live `ouronet-ns.ATS`, right then,
+confirmed the owner was correct — live `ATS` implements `AutostakeV2` (`interfaces: ['OuronetPolicyV1',
+'BrandingUsagePrimaryV1', 'AutostakeV2', 'AutostakeComputerV1']`), not `AutostakeV1`. The earlier note (from
+a prior session, `README.md`'s "Live vs local" section) was simply wrong. **All three core-module
+interfaces this round touched are confirmed already live** — `AutostakeV2`'s addition needs the same
+V2 -> V3 bump treatment as the other two, not an exemption. While re-checking, owner also asked directly
+whether C2 (the reward-token remove/re-add fix, the audit's top-priority finding) was actually solved and
+proven — confirmed yes, fully fixed and proven in this repository, and separately confirmed via the live
+`ATSU.X_RemoveSecondary` pull that the fix is genuinely not yet deployed (live code still sums only
+resident+unbonding with no royalty migration, and still trusts a caller-supplied account list) — consistent
+with every other "fixed locally, not yet redeployed" item in this round, not a gap in the fix itself. Also
+surfaced, while pulling that same live function: it types its `ATS` reference as `module{AutostakeV1}`,
+but live `ATS` no longer implements `AutostakeV1` at all — a possible independent live-execution problem,
+flagged but not investigated further (would require an actual mainnet call to confirm either way).
+
+**Verdict: CONFIRMED, deferred (not a code bug).** Recorded as `#35N`, corrected in place. Unlike the
+pure-style deferred items (`#20L`/`#30L`), this one is flagged as a **hard prerequisite** specifically for
+redeploying `UtilityAtsV2`, `AutostakeUsageV1`, or `AutostakeV2` — not optional cleanup. No code change
+now.
 
 ## Numbering after this correction
 
