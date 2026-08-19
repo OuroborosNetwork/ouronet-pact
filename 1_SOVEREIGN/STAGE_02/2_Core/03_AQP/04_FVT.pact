@@ -138,6 +138,9 @@
     (defun CC_SweepBegin:string (patron:string anchor-id:string))
     (defun CC_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
     (defun UR_FVT|SweepActive:bool (anchor-id:string))
+    (defun C_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string fvt-ids:[string]))
+    (defun URC_FvtUserHasStaleMember:bool (fvt-id:string user-id:string))
+    (defun URC_FvtUserStaleMemberCount:integer (fvt-id:string user-id:string))
     (defun URH_FvtStalePresentUsers:[string] (fvt-id:string))
     (defun XE_FvtFixUserChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])
@@ -545,6 +548,7 @@
     (defconst GAS|SET-COMMON-DENOMINATOR                        500.0)
     (defconst GAS|INJECT                                        500.0)
     (defconst GAS|COLLECT                                       500.0)
+    (defconst GAS|UNSTALE                                       500.0)
     (defconst CT_REWARD_KIND_PLAIN                              "PLAIN")
     (defconst CT_REWARD_KIND_MULTIPLET_BASE                     "MULTIPLET_BASE")
     (defconst CT_SCORE_ENTITY_SCORE                             1)
@@ -758,6 +762,19 @@
         (enforce (UR_FVT|SweepActive anchor-id) "No active sweep for this anchor")
         (enforce (and (> chunk 0) (<= chunk SWEEP-CHUNK-MAX))
             "Sweep chunk out of range — the UI sizes it by simulation, the gas meter is the real ceiling")
+        (compose-capability (P|SECURE-CALLER))
+    )
+    (defcap FVT|C>UNSTALE-MY-SCORES (patron:string)
+        @doc "User SELF-SERVICE deb-unstale (C_UnstaleMyScores): the caller refreshes THEIR OWN stale scores \
+            \ across the listed FVTs — settle pending at the old deb, refresh the score deb to the live Elite-DEB, \
+            \ resync the FVT total-deb mirror — NON-penalized (contrast the inject's forced fix, which bills the \
+            \ 2e penalty; self-service is deliberately the cheaper path so users proactively unstale). Auth = \
+            \ account ownership of `patron`: you may only unstale your OWN scores, and refreshing your deb to the \
+            \ live value is always safe (no fund movement — pending is banked, not paid). Composes P|SECURE-CALLER \
+            \ for the intra-module fix + the cross-module XE_RefreshUserScoreDeb into AQP-SCORE."
+        @event
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS))
+            (ref-DALOS::CAP_EnforceAccountOwnership patron))
         (compose-capability (P|SECURE-CALLER))
     )
     ;;{C3}
@@ -3355,6 +3372,36 @@
                             )
                         )
                     )
+                )
+            )
+        )
+    )
+    (defun C_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-ids:[string])
+        @doc "User SELF-SERVICE deb-unstale: the caller refreshes THEIR OWN stale scores across `fvt-ids` — per \
+            \ FVT, XI_FixUserFvtDeb settles the caller's pending at the OLD deb, refreshes each score deb to the \
+            \ live Elite-DEB, and resyncs the FVT total-deb mirror. NON-penalized (self-service is the cheap path; \
+            \ only inject-forced fixes bill the 2e penalty). Each member already fresh (or a true triplet) no-ops, \
+            \ so passing a whole FVT only touches its stale members. Single-tx and bounded (a user's own FVT set is \
+            \ small — no pagination needed). The UI finds the list via URC_FvtUserHasStaleMember per FVT the user \
+            \ stakes. No fund movement (pending is banked, not paid). UEV_IMC + FVT|C>UNSTALE-MY-SCORES (owner)."
+        (UEV_IMC)
+        (with-capability (FVT|C>UNSTALE-MY-SCORES patron)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [
+                        ;; fix ALL the caller's stale members across the listed FVTs (each fresh member no-ops)
+                        (do
+                            (map (lambda (fvt-id:string) (XI_FixUserFvtDeb patron fvt-id)) fvt-ids)
+                            (UC_EmptyOc))
+                        ;; GAS — the user pays for their own refresh
+                        (ref-IGNIS::UDC_ConstructOutputCumulator GAS|UNSTALE patron trigger [(format "{}" [(length fvt-ids)])])
+                    ]
+                    []
                 )
             )
         )

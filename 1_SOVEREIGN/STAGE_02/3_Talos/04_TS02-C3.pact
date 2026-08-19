@@ -235,6 +235,9 @@
     (defun AQP-FVT|CC_SweepRecomputeChunk:string
         (patron:string anchor-id:string chunk:integer)
     )
+    (defun AQP-FVT|C_UnstaleMyScores:string
+        (patron:string fvt-ids:[string])
+    )
     (defun AQP-FVT|C_Collect:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
@@ -1863,6 +1866,27 @@
                     (ref-TS01-A::XB_DynamicFuelKDA)
                     r
                 )
+            )
+        )
+    )
+    (defun AQP-FVT|C_UnstaleMyScores:string
+        (patron:string fvt-ids:[string])
+        @doc "User self-service deb-unstale: the caller refreshes THEIR OWN stale scores across the listed FVTs \
+            \ (non-penalized — the cheap alternative to being force-fixed by an inject), then collects IGNIS on \
+            \ patron. The UI finds the FVT list via AQP-FVT.URC_FvtUserHasStaleMember per FVT the user stakes. \
+            \ Lives in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_UnstaleMyScores patron fvt-ids)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Refreshed your stale scores across {} FVT(s)." [(length fvt-ids)])
             )
         )
     )

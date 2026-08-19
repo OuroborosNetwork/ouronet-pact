@@ -1,0 +1,133 @@
+;; ============================================================================
+;; REPL/Stage_02/[6.2.8b]_AQP-UNSTALE.repl — user self-service deb-unstale (#FP4.2).
+;;
+;; Legend: <(...)>  live call echo   ·   <<TX-UNSTALE*>>  assertion tag.
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (C_UnstaleMyScores +
+;;         FVT|C>UNSTALE-MY-SCORES + GAS|UNSTALE), 3_Talos/04_TS02-C3.pact
+;;         (AQP-FVT|C_UnstaleMyScores). REPL tests: deb-staleness-sweep-cc.repl.
+;;
+;; WHAT THIS PROVES — the UI-facing self-service unstale: ANHD moves his own Elite-DEB
+;; DOWN (staleness on his SubsidiaryTreasury/SubsidiaryWonderCoach deb-score), then calls
+;; C_UnstaleMyScores([SubsidiaryTreasury]) to refresh it himself. Same fix outcome as a
+;; collect/inject (stored deb -> live, mirror resynced by Δdeb = conservation), but:
+;;   (a) auth is the caller's OWN account ownership (CAP_EnforceAccountOwnership), and
+;;   (b) it is NON-penalized — the 2e forced-fix count stays 0 (self-service is the cheap
+;;       path; only inject-FORCED fixes bill the penalty).
+;; Uses the SubsidiaryTreasury deb fixture — independent of the SnakePower sweep in [6.2.8].
+;; ============================================================================
+(begin-tx "TX-UNSTALE01 - move ANHD Elite-DEB DOWN (transfer EliteAuryn away) => staleness")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TX-UNSTALE01 · 01 · create fresh staleness on ANHD's treasury score] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (ea-id:string (ref-DALOS::UR_EliteAurynID))
+        (deb-pre:decimal (ref-DALOS::UR_Elite-DEB anhd))
+        (stored-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+        (ffc-pre:integer (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+        (ea-bal:decimal (ref-DPTF::UR_AccountSupply ea-id anhd))
+    )
+    (map print
+        [
+            (format "<(UNSTALE01 pre: elite-deb / stored-deb / forced-fix-count)> => {} / {} / {}" [deb-pre stored-pre ffc-pre])
+            (expect "<<TX-UNSTALE01>> pre: score is FRESH (not stale)" false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd pool-id score-id))
+            (expect "<<TX-UNSTALE01>> pre: no forced-fix penalty recorded" 0 ffc-pre)
+        ]
+    )
+    ;; drop ANHD's EliteAuryn to ~1% of holdings → live Elite-DEB falls a tier ⇒ stored deb now stale
+    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (let
+        (
+            (deb-post:decimal (ref-DALOS::UR_Elite-DEB anhd))
+            (stored-still:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+        )
+        (map print
+            [
+                (format "<(UNSTALE01 post-move: elite-deb {} -> {})>" [deb-pre deb-post])
+                (expect (format "<<TX-UNSTALE01>> live Elite-DEB dropped got={} pre={}" [deb-post deb-pre]) true (< deb-post deb-pre))
+                (expect "<<TX-UNSTALE01>> score now STALE (stored deb != live)" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd pool-id score-id))
+                (expect (format "<<TX-UNSTALE01>> stored deb UNCHANGED by the move got={} pre={}" [stored-still stored-pre]) stored-pre stored-still)
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| The staleness is committed. ANHD now self-services the refresh — no collect/inject,
+;;|| no owner/admin — just his own account ownership, and it must NOT bill the 2e penalty.
+;;
+(begin-tx "TX-UNSTALE02 - ANHD self-unstales via C_UnstaleMyScores (non-penalized)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TX-UNSTALE02 · 01 · C_UnstaleMyScores refreshes ANHD's own stale scores] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (deb-live:decimal (ref-DALOS::UR_Elite-DEB anhd))
+        (stored-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+        (mirror-pre:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
+    )
+    (map print
+        [
+            (format "<(UNSTALE02 pre-fix: live-deb / stored-deb / mirror)> => {} / {} / {}" [deb-live stored-pre mirror-pre])
+            (expect "<<TX-UNSTALE02>> pre-fix: score STILL stale across tx boundary" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd pool-id score-id))
+        ]
+    )
+    ;; THE SELF-SERVICE UNSTALE — ANHD refreshes his own stale scores in SubsidiaryTreasury.
+    (print (format "<(UNSTALE02 AQP-FVT|C_UnstaleMyScores anhd [SubsidiaryTreasury])> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|C_UnstaleMyScores anhd [fvt-id])]))
+    (let
+        (
+            (stored-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
+            (mirror-post:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
+            (ffc-post:integer (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+        )
+        (map print
+            [
+                (format "<(UNSTALE02 post: stored-deb {} -> {} · mirror {} -> {})>" [stored-pre stored-post mirror-pre mirror-post])
+                (format "<(UNSTALE02 Δmirror vs Δstored)> => {} vs {}" [(- mirror-post mirror-pre) (- stored-post stored-pre)])
+                ;; (a) staleness cleared
+                (expect "<<TX-UNSTALE02>> post: score FRESH again" false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd pool-id score-id))
+                ;; (b) stored deb-score moved to the live (dropped) value
+                (expect (format "<<TX-UNSTALE02>> stored deb-score refreshed DOWN got={} pre={}" [stored-post stored-pre]) true (< stored-post stored-pre))
+                ;; (c) CONSERVATION (whole-FVT): the mirror dropped by AT LEAST the tracked member's Δ — a
+                ;;     whole-FVT unstale refreshes EVERY stale member ANHD holds in this treasury, so Δmirror
+                ;;     is the SUM of all refreshed members' Δ (here the tracked SubsidiaryWonderCoach + a sibling
+                ;;     stale member) ⇒ Δmirror <= Δstored_tracked (more negative). This is the value of the
+                ;;     self-service unstale over a per-score collect: one call fixes all your stale scores.
+                (expect (format "<<TX-UNSTALE02>> mirror resynced by >= tracked Δdeb (whole-FVT): Δmirror={} Δstored_tracked={}" [(- mirror-post mirror-pre) (- stored-post stored-pre)])
+                    true (<= (- mirror-post mirror-pre) (- stored-post stored-pre)))
+                ;; (d) NON-PENALIZED — self-service does NOT bill the 2e forced-fix count (contrast an inject)
+                (expect "<<TX-UNSTALE02>> self-unstale is NON-penalized (forced-fix count stays 0)" 0 ffc-post)
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== [6.2.8b]_AQP-UNSTALE END — user self-service refresh, non-penalized ===")
