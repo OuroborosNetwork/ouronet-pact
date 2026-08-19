@@ -1356,3 +1356,70 @@ Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #16. Awaiting Round III re-verify.
 
 ---
+
+## M13 (#27M, `SmartSwapNoSlippage` recomputes touched pools via a fresh post-swap BFS) — **CONFIRMED, FIXED, PROVEN**
+
+**Original finding:** `SWP|C_SmartSwapNoSlippage` (`04_TS01-C3.pact`) independently re-ran `URC_Hopper`
+*after* the swap had already mutated reserves, and used that fresh result to decide which pools get
+`XE_UpdateStoaValue` calls — instead of using `(at 3 out)`, the swap's own actually-traversed edge list,
+which `SWP|C_SmartSwapWithSlippage` already used correctly. If the post-swap reserve shift changed which
+route BFS would now pick, genuinely-touched pools could miss their StoaValue refresh (stale until an
+unrelated later op) and/or untouched pools could get a spurious update. Flagged as self-healing, not a
+fund-loss bug — no accounting corruption, no funds at risk.
+
+**Re-verified against live source before any fix:** confirmed `WithSlippage` (`04_TS01-C3.pact:777-816`)
+computed a `path-edges` binding via `URC_Hopper` that was never actually used — its refresh loop already
+correctly used `(at 3 out)` — pure dead code/wasted gas. `NoSlippage` (`:818-859`) computed the same
+binding and *did* feed it into the refresh loop via `(distinct path-edges)` — the live bug. Also found,
+new since this session's #21H/#19H redesign: both call sites were the *only two places left in the
+entire codebase* still calling the unfiltered `URC_Hopper` — every live execution/quote call site in
+`19_SWPU.pact` already correctly uses `URC_HopperActive`.
+
+**Owner question:** "it needs to use hopperactive" — correct instinct that these were the last unfiltered
+stragglers, but confirmed with the owner that swapping to `URC_HopperActive` would not actually close the
+finding: the bug isn't (only) wrong-universe filtering, it's *timing* — a second, independent BFS query
+run against reserves the swap itself just mutated. A correctly-filtered active-only BFS could still pick
+a different route than what was actually swapped. Agreed fix: eliminate the second query entirely and use
+the swap's own recorded execution data instead of any `Hopper` variant.
+
+**Fix — `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`, both Smart Swap functions:** deleted the
+`path-edges`/`URC_Hopper` binding from both `SmartSwapWithSlippage` (dead-code cleanup, zero behavior
+change) and `SmartSwapNoSlippage` (the live fix — its refresh loop now uses `(at 3 out)`, matching
+`WithSlippage`'s already-correct pattern). `(at 3 out)` is `distinct-edges`, built in `XI_SmartSwap`
+(`19_SWPU.pact:625-628`) from the exact `edges` list `XI_SmartSwapCore` iterates hop-by-hop to execute
+the real swaps — cannot diverge from what was actually swapped, by construction.
+
+**Owner direction on proof rigor:** asked for Option B specifically — force the old code to demonstrably
+pick the wrong pool, then prove the new code picks correctly in the identical scenario, via purpose-built
+new pools with engineered reserves rather than relying on the correctness-by-construction argument alone.
+
+**Adversarially proven, live — new `SWP|TX 016b`-`016g` in `[6.3]_SWP.repl`:** issued two brand-new,
+fully isolated pools sharing the same token pair (`OURO` — already a principal, satisfies the
+first-token-must-be-a-principal anchoring rule — and a fresh test token `TSTY`, touched nowhere else in
+the suite): `P|OURO|TSTY` (constant-product, reserves 1000/2000 — better rate) and `W|OURO|TSTY`
+(equal-weighted `[0.5 0.5]` — mathematically identical constant-product math, different prefix so both
+register as genuine parallel BFS edges) with reserves 1000/1500 — worse rate. Sized a 1500-OURO swap so
+BFS picks `P|OURO|TSTY` pre-swap (feeless quote 1200 vs 900) but the swap's own price impact collapses
+`P`'s rate below `W`'s for the identical amount post-swap (300 vs 900) — a guaranteed, deterministic
+flip, not a hoped-for one.
+
+Ran with the fix reverted (temporarily, surgically, in-place — not via `git stash`) first: real swap
+executed 1500 OURO → 1193.59 TSTY through `P|OURO|TSTY` (confirmed via the swap's own "via 1 Swaps over 1
+Pools" result text). Old code's post-swap recompute picked `W|OURO|TSTY` instead — exact bug reproduced:
+`P|OURO|TSTY`'s cached StoaValue stayed at `0.0` (stale — the pool that was *actually* swapped never got
+refreshed) while `W|OURO|TSTY`'s cached value was spuriously bumped to `2544.17...` (its true value)
+despite never being touched by the swap.
+
+Restored the fix, reran: `P|OURO|TSTY`'s cached value correctly became `5130.80...`, exactly matching a
+fresh recompute; `W|OURO|TSTY`'s cached value correctly stayed at `0.0`, untouched. Five `expect`
+assertions lock this in (swap actually executed; actually-swapped pool's cache matches fresh recompute;
+that cache genuinely moved off its default, not a vacuous pass; untouched pool's cache stays at its
+default; that pool's true value is genuinely nonzero, so "stayed at default" is a meaningful assertion,
+not a coincidence) — all 5 pass. Full dedicated-suite load (`[6.2]`/`[6.3]`, full execution path): exit
+0, 0 `FAILURE`. Default issuance-only regression: exit 0, 0 `FAILURE` (new transactions live only in the
+full-suite file, zero interference). Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`,
+`Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #17. Awaiting Round III re-verify.
+
+---

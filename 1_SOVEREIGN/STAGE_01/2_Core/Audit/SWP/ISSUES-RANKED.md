@@ -187,8 +187,13 @@ zero counter-examples, floor-only everywhere). Upper bound commented out (not de
 fails at execution despite parsing fine) — only surfaced via full swap-execution testing. Adversarially
 proven live. — *M9*
 
-#27M **[Talos]** `SmartSwapNoSlippage` recomputes which pools to refresh via a fresh post-swap BFS instead of
-using the swap's own traversed-edge list — can update the wrong pools' cached Stoa value. — *M13*
+#27M **[Talos]** ~~`SmartSwapNoSlippage` recomputes which pools to refresh via a fresh post-swap BFS instead
+of using the swap's own traversed-edge list — can update the wrong pools' cached Stoa value.~~ —
+**FIXED ✅ AND PROVEN ✅ 2026-08-19** (`ROUND-02-FIXES.md` Fix #17). Both `SmartSwap*` functions now use
+`(at 3 out)`, the swap's own recorded `distinct-edges`, instead of a second post-swap `URC_Hopper` query.
+Owner asked for forced reproduction (Option B) — issued two brand-new parallel pools with engineered
+reserves guaranteeing a pre/post-swap BFS flip; reverted the fix and reproduced the exact bug (stale
+actually-swapped pool, spuriously-updated untouched pool), restored, reconfirmed correct. — *M13*
 
 #28M **[MTX-SWP]** `kda-pid` price is snapshotted at defpact Step 0 and reused unchanged at Step 1 with no
 re-validation or time bound — stale-price fee/tax mispricing. — *M10*

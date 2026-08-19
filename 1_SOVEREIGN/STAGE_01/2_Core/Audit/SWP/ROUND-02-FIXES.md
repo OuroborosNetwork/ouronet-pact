@@ -915,3 +915,40 @@ and reconfirmed the exact pre-fix rejection (`"...out of Slippage bounds min of 
 `Z.repl`: exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #17 — M13 (#27M): SmartSwap post-swap pool-refresh set now uses the swap's own traversed edges
+
+**Owner direction:** demonstrate Option B specifically — force the old code to visibly pick the wrong
+pool, then prove the new code picks correctly in the identical scenario, rather than relying on the
+correctness-by-construction argument alone. Suggested issuing new pools with engineered amounts to make
+the scenario deterministic.
+
+**Fix — `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`, both Smart Swap functions:**
+- `SWP|C_SmartSwapNoSlippage`: deleted the post-swap `path-edges`/`URC_Hopper` recompute; its refresh
+  loop now iterates `(at 3 out)` — the swap's own recorded `distinct-edges` — matching
+  `SmartSwapWithSlippage`'s already-correct pattern.
+- `SWP|C_SmartSwapWithSlippage`: deleted the same `path-edges`/`URC_Hopper` binding, confirmed dead
+  (its loop already used `(at 3 out)`) — pure gas cleanup, zero behavior change.
+
+**Adversarially proven, live — new `SWP|TX 016b`-`016g` in `[6.3]_SWP.repl`:** issued two brand-new,
+fully isolated parallel pools — `P|OURO|TSTY` (constant-product, 1000/2000 reserves) and `W|OURO|TSTY`
+(equal-weighted `[0.5 0.5]`, mathematically identical math, 1000/1500 reserves) — sized so a 1500-OURO
+swap deterministically flips BFS's best-edge pick: `P` wins pre-swap (feeless 1200 vs 900), but the
+swap's own price impact drops `P` below `Q` for the identical amount post-swap (300 vs 900).
+
+Reverted the fix (temporarily, in-place): real swap executed through `P|OURO|TSTY` (1500 OURO → 1193.59
+TSTY), but the old code's post-swap recompute picked `W|OURO|TSTY` instead — reproduced exactly:
+`P|OURO|TSTY`'s cached StoaValue stayed stale at `0.0` (the actually-swapped pool never refreshed) while
+`W|OURO|TSTY`'s cache was spuriously bumped to `2544.17...` despite never being touched.
+
+Restored the fix: `P|OURO|TSTY`'s cache correctly became `5130.80...` (exact match to a fresh recompute);
+`W|OURO|TSTY`'s cache correctly stayed at `0.0`. Five `expect` assertions pin this down (swap actually
+executed; actually-swapped pool's cache matches fresh; that cache genuinely moved, not a vacuous pass;
+untouched pool's cache stays put; that pool's true value is genuinely nonzero) — all 5 pass. Full
+`[6.2]`/`[6.3]` suite (real execution path): exit 0, 0 `FAILURE`. Default issuance-only regression: exit
+0, 0 `FAILURE` (zero interference — new transactions live only in the full-suite file). Full `Z.repl`
+(Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

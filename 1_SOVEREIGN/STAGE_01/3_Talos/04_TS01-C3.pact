@@ -802,7 +802,10 @@
                         )
                     )
                     (out:list (at "output" ico))
-                    (path-edges:[string] (at "edges" (ref-SWPI::URC_Hopper input-id output-id input-amount)))
+                    ;;#27M/M13 fix: removed the dead `path-edges` binding that used to
+                    ;;shadow-recompute this via a fresh `URC_Hopper` BFS call (unused here —
+                    ;;this loop already correctly used <at 3 out>, the swap's own recorded
+                    ;;`distinct-edges`). Pure gas cleanup, no behavior change.
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (map
@@ -844,14 +847,21 @@
                         )
                     )
                     (out:list (at "output" ico))
-                    (path-edges:[string] (at "edges" (ref-SWPI::URC_Hopper input-id output-id input-amount)))
+                    ;;#27M/M13 fix: was a post-swap `URC_Hopper` BFS recompute (`path-edges`)
+                    ;;used to pick which pools get refreshed below — wrong, because it re-runs
+                    ;;BFS against reserves the swap itself just mutated, so it can pick a
+                    ;;different route than the one actually swapped (missed/stale refreshes,
+                    ;;or spurious refreshes of untouched pools). Fixed to use <at 3 out>, the
+                    ;;`distinct-edges` list XI_SmartSwap already recorded as the real traversed
+                    ;;pools (19_SWPU.pact XI_SmartSwap) — matches SmartSwapWithSlippage's
+                    ;;(already-correct) pattern above.
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (map
                     (lambda (sp:string)
                         (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValue sp)))
                     )
-                    (distinct path-edges)
+                    (at 3 out)
                 )
                 (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
             )

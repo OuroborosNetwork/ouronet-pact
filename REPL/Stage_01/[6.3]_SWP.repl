@@ -1433,6 +1433,417 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(print "=======================#27M/M13 Adversarial Proof=================================")
+(begin-tx "SWP|TX 016b - Issue TSTY Test Token (#27M Proof)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 01 · let / invocation ==== ===============
+(print "--- [SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 01 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (ref-DALOS::UR_UsagePrice "dptf")
+            )
+        )
+    )
+;;==== SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 02 · env-sigs (caps) ==== =================
+(print "--- [SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+            (issued-ids:[string]
+                (ref-TS01-C1::DPTF|C_Issue
+                    patron
+                    patron
+                    ["TestTokenY"]
+                    ["TSTY"]
+                    (make-list 1 24)
+                    (make-list 1 true)
+                    (make-list 1 true)
+                    (make-list 1 true)
+                    (make-list 1 false)
+                    (make-list 1 false)
+                    (make-list 1 true)
+                )
+            )
+        )
+        issued-ids
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 03 · gas echo ==== ========================
+(print "--- [SWP|TX 016b - Issue TSTY Test Token (#27M Proof) · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 016b Issue TSTY ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 01 · env-sigs (caps) ==== =================
+(print "--- [SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;==== SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 02 · let / invocation ==== ================
+(print "--- [SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 02 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+    )
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTY-98c486052a51" patron 100000.0 true)
+    (format "AH has {} TSTY" [(ref-DPTF::UR_AccountSupply "TSTY-98c486052a51" KST.ANHD)])
+)
+(print "")
+(print "")
+;;==== SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 03 · gas echo ==== ========================
+(print "--- [SWP|TX 016c - Mint TSTY to KST.ANHD (#27M Proof) · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 016c Mint TSTY ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 016d - Issue P|OURO|TSTY Pool (#27M Proof)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 016d - Issue P|OURO|TSTY Pool (#27M Proof) · 01 · let / invocation ==== ===============
+(print "--- [SWP|TX 016d - Issue P|OURO|TSTY Pool (#27M Proof) · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+;;==== SWP|TX 016d - Issue P|OURO|TSTY Pool (#27M Proof) · 02 · env-sigs (caps) ==== =================
+(print "--- [SWP|TX 016d - Issue P|OURO|TSTY Pool (#27M Proof) · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (pool
+                (ref-TS01-C3::SWP|C_IssueStandard
+                    KST.ANHD
+                    KST.ANHD
+                    [
+                        { "token-id":  "OURO-98c486052a51", "token-supply": 1000.0}
+                        { "token-id":  "TSTY-98c486052a51", "token-supply": 2000.0}
+                    ]
+                    25.0
+                    false
+                )
+            )
+        )
+        (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 016d - Issue P|OURO|TSTY Pool (#27M Proof) · 03 · gas echo ==== ========================
+(print "--- [SWP|TX 016d - Issue P|OURO|TSTY Pool (#27M Proof) · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 016d Issue P|OURO|TSTY ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 016e - Issue W|OURO|TSTY Parallel Pool (#27M Proof)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 016e - Issue W|OURO|TSTY Parallel Pool (#27M Proof) · 01 · let / invocation ==== ======
+(print "--- [SWP|TX 016e - Issue W|OURO|TSTY Parallel Pool (#27M Proof) · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+;;==== SWP|TX 016e - Issue W|OURO|TSTY Parallel Pool (#27M Proof) · 02 · env-sigs (caps) ==== ========
+(print "--- [SWP|TX 016e - Issue W|OURO|TSTY Parallel Pool (#27M Proof) · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (pool
+                (ref-TS01-C3::SWP|C_IssueWeighted
+                    KST.ANHD
+                    KST.ANHD
+                    [
+                        { "token-id":  "OURO-98c486052a51", "token-supply": 1000.0}
+                        { "token-id":  "TSTY-98c486052a51", "token-supply": 1500.0}
+                    ]
+                    25.0
+                    [0.5 0.5]
+                    false
+                )
+            )
+        )
+        (format "<<<<<<<Issue Data is {} >>>>>>>" [pool])
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 016e - Issue W|OURO|TSTY Parallel Pool (#27M Proof) · 03 · gas echo ==== ================
+(print "--- [SWP|TX 016e - Issue W|OURO|TSTY Parallel Pool (#27M Proof) · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 016e Issue W|OURO|TSTY ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 016f - Enable Swap on #27M Proof Pools")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 016f - Enable Swap on #27M Proof Pools · 01 · env-sigs (caps) ==== =====================
+(print "--- [SWP|TX 016f - Enable Swap on #27M Proof Pools · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;==== SWP|TX 016f - Enable Swap on #27M Proof Pools · 02 · let / invocation ==== ====================
+(print "--- [SWP|TX 016f - Enable Swap on #27M Proof Pools · 02 · let / invocation] ---")
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (poolP:string "P|OURO-98c486052a51|TSTY-98c486052a51")
+        (poolQ:string "W|OURO-98c486052a51|TSTY-98c486052a51")
+    )
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD poolP true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD poolQ true)
+)
+(print "")
+(print "")
+;;==== SWP|TX 016f - Enable Swap on #27M Proof Pools · 03 · gas echo ==== ============================
+(print "--- [SWP|TX 016f - Enable Swap on #27M Proof Pools · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 016f Enable Swap ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 016g - #27M/M13 Adversarial Proof Swap")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 01 · env-sigs (caps) ==== =====================
+(print "--- [SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;==== SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 02 · let / invocation ==== ====================
+(print "--- [SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 02 · let / invocation] ---")
+(let
+    (
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (poolP:string "P|OURO-98c486052a51|TSTY-98c486052a51")
+        (poolQ:string "W|OURO-98c486052a51|TSTY-98c486052a51")
+        (cached-P-before:decimal (ref-SWP::UR_StoaValue poolP))
+        (cached-Q-before:decimal (ref-SWP::UR_StoaValue poolQ))
+        (swap-result:string
+            (ref-TS01-C3::SWP|C_SmartSwapNoSlippage
+                KST.ANHD
+                KST.ANHD
+                "OURO-98c486052a51"
+                1500.0
+                "TSTY-98c486052a51"
+            )
+        )
+        (cached-P-after:decimal (ref-SWP::UR_StoaValue poolP))
+        (cached-Q-after:decimal (ref-SWP::UR_StoaValue poolQ))
+        (fresh-P-after:decimal (at 0 (ref-SWPI::URC_PoolValue poolP)))
+        (fresh-Q-after:decimal (at 0 (ref-SWPI::URC_PoolValue poolQ)))
+    )
+    (map print
+        [
+            (format "Swap result: {}" [swap-result])
+            (format "poolP (actually swapped)   cached-before={} cached-after={} fresh-after={}" [cached-P-before cached-P-after fresh-P-after])
+            (format "poolQ (never touched)      cached-before={} cached-after={} fresh-after={}" [cached-Q-before cached-Q-after fresh-Q-after])
+            ;;#27M/M13 adversarial proof: poolP/poolQ are two brand-new isolated pools
+            ;;(P|OURO|TSTY constant-product, W|OURO|TSTY equal-weighted — same math,
+            ;;different prefix so both register as parallel edges) sized so BFS picks
+            ;;poolP pre-swap (better rate) but poolQ post-swap (poolP's rate collapses
+            ;;from the swap itself). Reverting the fix (temporarily, adversarially)
+            ;;reproduced the exact bug: poolP stayed cached at 0.0 (never refreshed,
+            ;;stale) while poolQ was spuriously bumped to its fresh value despite never
+            ;;being swapped. These assertions pin the FIXED behavior.
+            (expect
+                "Smart swap actually executed (not the slippage-rejection branch)"
+                true
+                (contains "Succesfully smart-swapped" swap-result)
+            )
+            (expect
+                "poolP (the pool ACTUALLY swapped) must be refreshed — cached value \
+                \ must match a fresh recompute, not stay at its pre-swap default"
+                fresh-P-after
+                cached-P-after
+            )
+            (expect
+                "poolP's cache must have actually moved off its pre-swap default \
+                \ (guards against a vacuous pass if fresh-P-after happened to be 0.0)"
+                true
+                (!= cached-P-after cached-P-before)
+            )
+            (expect
+                "poolQ (never swapped) must NOT receive a spurious refresh — cached \
+                \ value stays at its pre-swap default"
+                cached-Q-before
+                cached-Q-after
+            )
+            (expect
+                "poolQ's true value is genuinely nonzero and differs from its cached \
+                \ default (guards against a vacuous pass if Q's real value were 0.0)"
+                true
+                (!= fresh-Q-after cached-Q-after)
+            )
+        ]
+    )
+    ""
+)
+(print "")
+(print "")
+;;==== SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 03 · gas echo ==== =============================
+(print "--- [SWP|TX 016g - #27M/M13 Adversarial Proof Swap · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 016g #27M Proof Swap ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 016 - 4x Swaps")
 (namespace "ouronet-ns")
