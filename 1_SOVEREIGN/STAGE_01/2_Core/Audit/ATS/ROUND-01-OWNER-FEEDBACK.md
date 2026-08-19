@@ -277,6 +277,14 @@ behind local dev, not ahead). Went further: enumerated all 11 real live ledger r
 `URC_MultiCull` directly against each - all 11 currently succeed, purely because every existing account
 happens to have something already cullable right now. Not fixed live; just not yet triggered.
 
+> **Correction, 2026-08-19 (owner-prompted, see `#35N` below):** the "`AutostakeV1`/`UtilityAtsV1`" part
+> of the note above was wrong - a fresh, direct re-check of live `ouronet-ns.ATS` confirms it actually
+> implements `AutostakeV2`. `ATSU` genuinely is on `AutostakeUsageV1` (its only-ever version, so that half
+> was never wrong). The `URC_MultiCull` content finding itself is unaffected by this - the broken branch
+> is still confirmed present live, this only corrects which interface *version* the module is on. Kept in
+> place rather than rewritten, per this file's living-but-evidenced-correction discipline; see `#35N`
+> for the full, corrected interface-version picture across all modules this audit touched.
+
 **Design clarification (owner-led, corrected my framing twice):**
 1. "You can't cull immediately after a cold recovery, you need to wait for the time to pass. So what are
    you talking about?" - clarified: the bug isn't about extracting funds early, it's that *attempting* an
@@ -290,6 +298,164 @@ happens to have something already cullable right now. Not fixed live; just not y
 **Verdict: CONFIRMED, FIXED** (re-applied only after explicit "Yes, apply it"). Full detail + proof:
 `ROUND-02-FIXES.md` Fix #12. Pythia access method documented for future use:
 `OuronetInformational/pythia-dirty-read-access.md`.
+
+## #26L, #28L, #31L — batch verdicts (2026-08-18, new worktree)
+
+**#26L — `C_KickStart`'s `rt-amounts` position-trust — NOT A BUG.** Owner: "leave as is, as it can't go
+wrong, it's fixed by input." KickStart is owner-only; a wrong order only misconfigures the caller's own
+pool. Closed, no code change.
+
+**#28L — dead StoicTagIndex functions — KEPT, not closed as NOT A BUG.** Owner: "leave them." Confirmed
+genuinely unused (live StoicTag uses different DALOS functions), but the owner chose to keep them anyway
+rather than remove. Recorded as a deliberate keep, not a "no defect" verdict - the underlying dead-code
+observation still stands, just not acted on.
+
+**#31L — Talos naming asymmetry (`ATS|C_SetHotRecoveryFee` vs `C_SetHotRecoveryFees`) — LEFT AS-IS.**
+Owner initially said "fix but pay attention to Interface version bump as we are on mainet with these
+modules." Investigated before touching anything: the function is declared in the `TalosStageOne_ClientTwoV1`
+interface, which is directly consumed by two live slave modules (`2_SLAVE/Stage_01/01_AOZ+.pact` - which
+calls this exact function by its current name - and `02_DSP+.pact`). A safe rename would require cutting a
+new `TalosStageOne_ClientTwoV2` interface, updating `03_TS01-C2.pact` to implement it, updating both slave
+modules' interface references (and `01_AOZ+.pact`'s call site), and coordinating a real redeploy - not a
+same-file edit. Presented this scope to the owner, who decided: "let's let the naming sit as is." No code
+change; may be revisited as part of the planned module rehaul, where a broader interface-version pass is
+already expected.
+
+## #22L — permanent test-coverage sweep, and #33N surfaced by it (2026-08-18)
+
+Owner asked "Tell me first what is #22 about" before green-lighting anything — explained plainly: 12 of
+ATS/ATSU's owner-facing config functions (branding, hibernation fees, hot-recovery fees, KickStart,
+Repurpose, Reverse, WithdrawRoyalties, DirectRecovery, and the two admin-only functions) had never once
+been called from any REPL test in the repo, which is exactly how #5C and #9H/#10M shipped and sat
+undetected for as long as they did. Owner: "Yes let's add permanent testing to repl for them."
+
+Built all 12 functions' worth of canonical, assertion-backed coverage into `[6.6]_ATS.repl` (detailed in
+`ROUND-02-FIXES.md` Fix #15). While proving `C_WithdrawRoyalties` specifically, hit a **real crash**, not a
+test-setup mistake: `TFT::C_MultiTransfer` debits every leg of a multi-token transfer unconditionally, so
+withdrawing royalties on a pool with more than one reward token crashes the instant any one of them has a
+`0.0` accrued balance — the normal case, not an edge case. Presented the exact stack trace and location to
+the owner before touching any code (per the standing no-fix-without-authorization rule), along with two
+open questions: fix now vs. log-and-defer, and whether to number it as a new finding.
+
+**Owner's verdict:** "Royalties always gather in reward tokens and if there are many multi transfer must
+be used when withdrawing. So if I haven't account for that, it needs fixing." — clear authorization to fix
+immediately, confirming the intended design (multi-transfer IS supposed to be the withdrawal mechanism for
+a multi-reward-token pool) so the fix is a `C_MultiTransfer`-input filter, not a change to that design.
+
+**Verdict: CONFIRMED, FIXED.** Recorded as `#33N` (new-appended, second item in that section) since it
+wasn't part of the original 31-item list. Full detail + proof: `ROUND-02-FIXES.md` Fix #16.
+
+## #30L (originally L12) — ATSU defcap body-order — KEPT, deferred (2026-08-18)
+
+Owner asked for the finding to be expanded beyond the one-line summary before ruling on it ("I don't
+follow what #30 actually is, can you expand?"). Walked through the actual code: four `ATSU` master
+defcaps (`ATSU|C>FUEL`, `C>COIL`, `C>CURL`, `C>SYPHON`) call out to `ATS` (`ref-ATS::UEV_RewardTokenExistance`
+/ `ref-ATS::CAP_Owner`) *before* their own local `enforce`s, inverting `StoicSyntax.md §9.2`'s strict body
+order (local enforce -> bare ref -> home helpers -> compose). Confirmed harmless in practice — every
+statement in a defcap body runs top-to-bottom to first failure regardless of order, so no bad input is let
+through either way; the only effects are which error message a caller sees when multiple conditions are
+violated simultaneously, and a hair of extra gas on a call that was doomed to fail anyway.
+
+**Owner's verdict:** "This is okay to be left as is for now, once audits are over we're going to do a
+rehaul sweep of all modules to the new variant of stoic syntax, so it will be fixed in that pass." Same
+deferral pattern already used for `#20L` (`UR_P-KEYS`/`UR_KEYS`).
+
+**Verdict: CONFIRMED, KEPT (not fixed now).** No code change. Tracked as ONGOING, not NOT-A-BUG, since the
+convention violation is real — just deliberately deferred to the planned post-audit rehaul.
+
+## #34N — `P|A_Define` missing ATS/ATSU registration — logged as its own finding (2026-08-18)
+
+The `HANDOFF-SESSION-RESUME.md` handoff flagged this as unfinished business: the `P|A_Define` fix
+(`01_TS01-A.pact` never registering `ATS`/`ATSU` as permitted Talos-admin callers, making
+`ATS|A_RemoveSecondary`/`ATS|A_KickStart` unconditionally unreachable) was already applied and proven in
+the prior session, but never given its own finding ID — it only existed as a parenthetical inside `#22L`'s
+write-up. Owner asked for it to be expanded before ruling on whether it deserved separate treatment ("What
+is point 1?"). Walked through what `P|A_Define` does, exactly what was missing (`ATS` bound but unused,
+`ATSU` not bound at all — every other Talos module registers into both), and the concrete consequence
+(both admin functions dead on arrival regardless of caller/key) — and argued it's the same class of
+situation as `#5C`/`#9H`/`#10M`: a real bug that testing happened to reveal, not "part of" the test-
+coverage finding itself.
+
+**Owner's verdict:** "yes do that" — approved logging it as its own numbered finding.
+
+**Verdict: CONFIRMED, FIXED.** Recorded as `#34N` (new-appended, third item in that section). Full detail
++ proof: `ROUND-02-FIXES.md` Fix #17.
+
+## #7H / H2 — royalty ceiling, finalized (2026-08-18)
+
+Owner asked for the finding expanded before deciding ("what's its problem, to finalize it already") —
+walked through the exact location (`ATS|S>ROYALTY`, `08_ATS.pact:473`, and the shared `UEV_Fee` bound in
+`08_U_DALOS.pact`), what's wrong (single-call instant jump to 99.9%), what's already fixed (`#6H`'s lock
+gate), and framed the two remaining options from the original finding: a per-tx delta cap, or a notice/
+timelock window — also noting the parallel to `#4C` (syphon), which was ruled intentional owner-discretion
+for a similarly-shaped concern.
+
+Owner rejected the delta-cap idea on their own, correctly: "per transaction cap cant be made, because you
+can run the same function of increasing to multiple times one after another on a single transaction" — a
+real, valid objection (Pact has no single-call-per-tx limiter; a delta cap on one call means nothing if the
+setter can just be called N times in the same tx to reach the same total). Asked instead: "isnt there a
+ceiling on what royalty amount can be set? we should set it at a maximum of 500.0 promile and minimum of
+1.0 with whatever precision it is (i think 4), not other enforcements."
+
+Confirmed before touching code: the existing bound (`UEV_Fee`, `08_U_DALOS.pact`) is *shared* with an
+unrelated `05_DPTF.pact` fee check, so tightening it directly would have out-of-scope blast radius; and
+that `0.0` (royalty's default/off state) needs to stay valid. Owner's answer: "yes 0 means its off
+presumably... we should allow from 1.0 to 500.0 promile, negative values shouldn't be allowed. but we can
+allow -1 and 0 as an off means, if the validate fee allows it, we just only need to code the -1 and 0 as
+recognizable OFF values" — i.e. keep `UEV_Fee`'s existing `{-1.0, 0.0} ∪ [1.0, 999.0]` shape, just narrow
+the active range's ceiling to `500.0`.
+
+**Verdict: CONFIRMED, FIXED.** Full detail + proof: `ROUND-02-FIXES.md` Fix #18. `#7H`/H2 fully closed.
+
+## #35N — interface version debt from this audit's own fixes (2026-08-19)
+
+While preparing the final audit report, owner asked directly: "did we bump interface versioning within
+this audit? If we did we gotta document as interface bump inserted... OR we keep the same version, and
+note an interface bump is needed... if stuff has been modified in the modules and interface and we kept
+them at their version, it does work locally, but wont work on mainnet where an interface bump is
+required." Verified precisely rather than assuming: grepped every interface declaration touched across
+every commit in this audit's fix cycle, confirmed none were renamed/version-bumped (all still `V1`/`V2`
+under their original names), and identified exactly 5 new public functions added across 5 interfaces
+(`UC_KickStartIndex`/`UtilityAtsV2`, `A_KickStart`/`AutostakeUsageV1`, `C_ToggleUpgrade`/`AutostakeV2`,
+`ATS|C_ToggleUpgrade`/`TalosStageOne_ClientTwoV1`, `ATS|A_KickStart`/`TalosStageOne_AdminV1`).
+
+Cross-referenced each against this session's and the earlier session's Pythia live-deployment checks:
+`UtilityAtsV2` and `AutostakeUsageV1` are both confirmed already deployed on mainnet under those exact
+names (`U|ATS` implements `UtilityAtsV2` live; `ATSU` implements `AutostakeUsageV1` live, its only-ever
+version) — a function was added to each without a version bump, which cannot be redeployed as-is.
+`AutostakeV2` was initially reported as NOT yet live (deployed `ATS` believed still on the older
+`AutostakeV1`, based on a stale prior-session note), so its addition was initially assessed as safe without
+a bump. The two Talos interface additions weren't directly Pythia-checked this audit; flagged as
+likely-also-live (given they route to confirmed-live core modules) rather than assumed safe.
+
+**Owner's verdict:** "We keep current interface version intact, noting an interface bump is required.
+That's the behaviour we need to use." — confirmed this is exactly the intended policy: don't perform the
+bump/refactor now (same deferral as the broader StoicSyntax rehaul), but document precisely which
+interfaces will need one before deployment, so it's a tracked, known prerequisite rather than a surprise
+discovered at deploy time.
+
+**Correction (owner-prompted, 2026-08-19):** owner immediately pushed back on the `AutostakeV2`-is-safe
+claim: "of course AutostakeV2 is live on mainnet, what are you talking about, that's the reason it is not
+a V1, but a V2 (2 being more than 1, means it had to be updated once)." Rather than defend the prior
+note, re-checked directly: a fresh `describe-module` call against live `ouronet-ns.ATS`, right then,
+confirmed the owner was correct — live `ATS` implements `AutostakeV2` (`interfaces: ['OuronetPolicyV1',
+'BrandingUsagePrimaryV1', 'AutostakeV2', 'AutostakeComputerV1']`), not `AutostakeV1`. The earlier note (from
+a prior session, `README.md`'s "Live vs local" section) was simply wrong. **All three core-module
+interfaces this round touched are confirmed already live** — `AutostakeV2`'s addition needs the same
+V2 -> V3 bump treatment as the other two, not an exemption. While re-checking, owner also asked directly
+whether C2 (the reward-token remove/re-add fix, the audit's top-priority finding) was actually solved and
+proven — confirmed yes, fully fixed and proven in this repository, and separately confirmed via the live
+`ATSU.X_RemoveSecondary` pull that the fix is genuinely not yet deployed (live code still sums only
+resident+unbonding with no royalty migration, and still trusts a caller-supplied account list) — consistent
+with every other "fixed locally, not yet redeployed" item in this round, not a gap in the fix itself. Also
+surfaced, while pulling that same live function: it types its `ATS` reference as `module{AutostakeV1}`,
+but live `ATS` no longer implements `AutostakeV1` at all — a possible independent live-execution problem,
+flagged but not investigated further (would require an actual mainnet call to confirm either way).
+
+**Verdict: CONFIRMED, deferred (not a code bug).** Recorded as `#35N`, corrected in place. Unlike the
+pure-style deferred items (`#20L`/`#30L`), this one is flagged as a **hard prerequisite** specifically for
+redeploying `UtilityAtsV2`, `AutostakeUsageV1`, or `AutostakeV2` — not optional cleanup. No code change
+now.
 
 ## Numbering after this correction
 

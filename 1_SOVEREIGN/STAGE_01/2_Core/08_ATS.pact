@@ -470,6 +470,14 @@
     ;; Fix (audit finding #6H / H1, owner-confirmed 2026-08-17): royalty-promile was added later (V2)
     ;; and never got the parameter-lock gate. Added here. (syphon stays intentionally un-gated — #4C —
     ;; it's designed to fluctuate; do not add a lock check there.)
+    ;; Fix (audit finding #7H / H2, owner-confirmed 2026-08-18): shared UEV_Fee (U_DALOS) allows up to
+    ;; 999.0 promile (99.9%) - deliberately left untouched here since it's shared with DPTF's own fee
+    ;; validation (05_DPTF.pact), outside this audit's scope. A per-tx delta cap was considered and
+    ;; explicitly rejected by the owner (trivially bypassable by calling C_UpdateRoyalty repeatedly
+    ;; within the same transaction). Instead, a royalty-specific ceiling: 500.0 promile (50%) max,
+    ;; layered on top of UEV_Fee's existing {-1.0, 0.0} off-sentinels / [1.0, 999.0] active-range /
+    ;; 4-decimal-precision check - -1.0 and 0.0 both still mean "off" and are always <= 500.0, so this
+    ;; single enforce correctly narrows only the active [1.0, 999.0] range down to [1.0, 500.0].
     (defcap ATS|S>ROYALTY (atspair:string royalty:decimal)
         @event
         (let
@@ -478,6 +486,7 @@
             )
             (UEV_ParameterLockState atspair false)
             (ref-U|DALOS::UEV_Fee royalty)
+            (enforce (<= royalty 500.0) "Royalty cannot exceed 500.0 promile (50%)")
             (CAP_Owner atspair)
         )
     )
