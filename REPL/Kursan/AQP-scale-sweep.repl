@@ -1,0 +1,383 @@
+;;
+;; REPL/Kursan/AQP-scale-sweep.repl — ANCHOR SWEEP at large population (50 holders).
+;; Proves the sweep CC-batch (CC_SweepBegin + CC_SweepRecomputeChunk) over 50 present
+;; holders: revoke an anchor, recompute all 50 in rounds under 2M, freeze holds between
+;; rounds, cursor closes. Reuses VCTGAS synth accounts.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/AQP-scale-sweep.repl  —  50-holder anchor sweep + gas")
+(print "================================================================")
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+(begin-tx "SCALE-SWP-BOOT - KBN slave")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../2_SLAVE/Stage_02/02_KBunnies.pact")
+(commit-tx)
+(begin-tx "SCALE-SWP-BOOT - AQP-BOOT")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../2_SLAVE/Stage_02/04_AQP-BOOT.pact")
+(commit-tx)
+(begin-tx "SCALE-SWP-BOOT - Step0")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print (format "<(Step0)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
+(commit-tx)
+(load "../Stage_02/[6.2.6]_AQP-VCT-GAS-BASE.repl")
+(print "")
+;;
+;; ============================================================================
+;; SCALE-SWP-01 — anchor on OURO + boost-linked score + 50 synth stakers (each gains promile)
+;; ============================================================================
+(begin-tx "SCALE-SWP-01 - anchor + boost-linked score + 50 synth stakers")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-SWP-01 · anchor + boost-linked score + stake 50] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpScore"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpFvt"))
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
+        (boost-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpBoost"))
+    )
+    ;; 1. anchor on OURO (promile 500 / reference 1000) — acnoi=true creates the boost-class
+    (ref-TS02-C3::AQP-ANK|C_IssueTrueFungibleAnchor patron "ScaleSwpAnchor" ouro-id true "ScaleSwpBoost" 3 500.0 1000.0)
+    ;; 2. pool + score, LINK the score to the boost-class WHILE EMPTY, then vault + enable
+    (ref-TS02-C3::AQP-POOL|C_Issue patron "ScaleSwpPool" ouro-id 1)
+    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "ScaleSwpScore" 12 1.0)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-SCR|C_CreateScoreBoostClassLink patron score-id boost-id)
+    (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ;; 3. stake 50 synth (2 OURO each) → each gains proportional promile (2/1000 * 500 = 1.0)
+    (VCTGAS.XI_TfStakeOnly patron pool-id ouro-id 50 2.0)
+    (let
+        (
+            (probe-user:string (VCTGAS.UC_SynthAccount 1))
+        )
+        (map print
+            [
+                (format "<(SWP-01 · anchor state / boost-class / synth-1 promile)> => {} / {} / {}"
+                    [(ref-ANK::UR_ANK|State anchor-id) boost-id (ref-ANK::UR_UB|AggregatePromile probe-user boost-id)])
+                (expect "<<SCALE-SWP-01>> anchor ACTIVE" true (ref-ANK::UR_ANK|State anchor-id))
+                (expect "<<SCALE-SWP-01>> synth-1 gained boost promile from staking anchored OURO" true (> (ref-ANK::UR_UB|AggregatePromile probe-user boost-id) 0.0))
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; SCALE-SWP-BEGIN — revoke the anchor: freeze pools + swept-revoke + open cursor (total=50).
+;; Recompute is DEFERRED (synth promiles unchanged here).
+;; ============================================================================
+(begin-tx "SCALE-SWP-BEGIN - CC_SweepBegin (revoke + freeze + open cursor)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-SWP-BEGIN · CC_SweepBegin] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
+        (boost-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpBoost"))
+        (probe-user:string (VCTGAS.UC_SynthAccount 1))
+    )
+    (env-gas 0)
+    (ref-TS02-C3::AQP-FVT|CC_SweepBegin patron anchor-id)
+    (let
+        (
+            (g:integer (env-gas))
+            (total:integer (at "total" (AQP-FVT.UR_FVT|SweepProgress anchor-id)))
+        )
+        (map print
+            [
+                (format "<<SCALE-SWP-BEGIN>> gas={} total-to-recompute={} active={} anchor-revoked={} pool-frozen={} synth1-promile-still={}"
+                    [g total (AQP-FVT.UR_FVT|SweepActive anchor-id) (not (ref-ANK::UR_ANK|State anchor-id)) (ref-AQP::UR_AQP|PoolSweepInProgress pool-id) (ref-ANK::UR_UB|AggregatePromile probe-user boost-id)])
+                (expect "<<SCALE-SWP-BEGIN>> cursor active" true (AQP-FVT.UR_FVT|SweepActive anchor-id))
+                (expect "<<SCALE-SWP-BEGIN>> 50 holders to recompute" 50 total)
+                (expect "<<SCALE-SWP-BEGIN>> anchor swept-revoked" false (ref-ANK::UR_ANK|State anchor-id))
+                (expect "<<SCALE-SWP-BEGIN>> pool FROZEN" true (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
+                (expect "<<SCALE-SWP-BEGIN>> recompute DEFERRED (promile still >0)" true (> (ref-ANK::UR_UB|AggregatePromile probe-user boost-id) 0.0))
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(begin-tx "SCALE-SWP-R1 - CC_SweepRecomputeChunk 15")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-SWP-R1 · recompute chunk 15] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
+    )
+    (env-gas 0)
+    (ref-TS02-C3::AQP-FVT|CC_SweepRecomputeChunk patron anchor-id 15)
+    (let
+        (
+            (g:integer (env-gas))
+            (offset:integer (at "offset" (AQP-FVT.UR_FVT|SweepProgress anchor-id)))
+            (active:bool (AQP-FVT.UR_FVT|SweepActive anchor-id))
+            (frozen:bool (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
+        )
+        (map print
+            [
+                (format "<<SCALE-SWP-R1>> gas={} offset={} remaining={} active={} pool-frozen={} fits-2M={}" [g offset (- 50 offset) active frozen (<= g 2000000)])
+                (expect (format "<<SCALE-SWP-R1>> round fits 2M gas={}" [g]) true (<= g 2000000))
+                (expect (format "<<SCALE-SWP-R1>> cursor active={}" [active]) true active)
+                (expect (format "<<SCALE-SWP-R1>> pool frozen={}" [frozen]) true frozen)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(begin-tx "SCALE-SWP-R2 - CC_SweepRecomputeChunk 15")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-SWP-R2 · recompute chunk 15] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
+    )
+    (env-gas 0)
+    (ref-TS02-C3::AQP-FVT|CC_SweepRecomputeChunk patron anchor-id 15)
+    (let
+        (
+            (g:integer (env-gas))
+            (offset:integer (at "offset" (AQP-FVT.UR_FVT|SweepProgress anchor-id)))
+            (active:bool (AQP-FVT.UR_FVT|SweepActive anchor-id))
+            (frozen:bool (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
+        )
+        (map print
+            [
+                (format "<<SCALE-SWP-R2>> gas={} offset={} remaining={} active={} pool-frozen={} fits-2M={}" [g offset (- 50 offset) active frozen (<= g 2000000)])
+                (expect (format "<<SCALE-SWP-R2>> round fits 2M gas={}" [g]) true (<= g 2000000))
+                (expect (format "<<SCALE-SWP-R2>> cursor active={}" [active]) true active)
+                (expect (format "<<SCALE-SWP-R2>> pool frozen={}" [frozen]) true frozen)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(begin-tx "SCALE-SWP-R3 - CC_SweepRecomputeChunk 15")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-SWP-R3 · recompute chunk 15] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
+    )
+    (env-gas 0)
+    (ref-TS02-C3::AQP-FVT|CC_SweepRecomputeChunk patron anchor-id 15)
+    (let
+        (
+            (g:integer (env-gas))
+            (offset:integer (at "offset" (AQP-FVT.UR_FVT|SweepProgress anchor-id)))
+            (active:bool (AQP-FVT.UR_FVT|SweepActive anchor-id))
+            (frozen:bool (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
+        )
+        (map print
+            [
+                (format "<<SCALE-SWP-R3>> gas={} offset={} remaining={} active={} pool-frozen={} fits-2M={}" [g offset (- 50 offset) active frozen (<= g 2000000)])
+                (expect (format "<<SCALE-SWP-R3>> round fits 2M gas={}" [g]) true (<= g 2000000))
+                (expect (format "<<SCALE-SWP-R3>> cursor active={}" [active]) true active)
+                (expect (format "<<SCALE-SWP-R3>> pool frozen={}" [frozen]) true frozen)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(begin-tx "SCALE-SWP-R4 - CC_SweepRecomputeChunk 15")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-SWP-R4 · recompute chunk 15] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
+    )
+    (env-gas 0)
+    (ref-TS02-C3::AQP-FVT|CC_SweepRecomputeChunk patron anchor-id 15)
+    (let
+        (
+            (g:integer (env-gas))
+            (offset:integer (at "offset" (AQP-FVT.UR_FVT|SweepProgress anchor-id)))
+            (active:bool (AQP-FVT.UR_FVT|SweepActive anchor-id))
+            (frozen:bool (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
+        )
+        (map print
+            [
+                (format "<<SCALE-SWP-R4>> gas={} offset={} remaining={} active={} pool-frozen={} fits-2M={}" [g offset (- 50 offset) active frozen (<= g 2000000)])
+                (expect (format "<<SCALE-SWP-R4>> round fits 2M gas={}" [g]) true (<= g 2000000))
+                (expect (format "<<SCALE-SWP-R4>> cursor active={}" [active]) false active)
+                (expect (format "<<SCALE-SWP-R4>> pool frozen={}" [frozen]) false frozen)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;; SCALE-SWP-DONE — after the final chunk: cursor closed, pool unfrozen, promiles recomputed to 0.
+(begin-tx "SCALE-SWP-DONE - end-state check")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpAnchor"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
+        (boost-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpBoost"))
+    )
+    (map print
+        [
+            (format "<<SCALE-SWP-DONE>> active={} pool-frozen={} synth1-promile={} synth50-promile={}"
+                [(AQP-FVT.UR_FVT|SweepActive anchor-id) (ref-AQP::UR_AQP|PoolSweepInProgress pool-id)
+                 (ref-ANK::UR_UB|AggregatePromile (VCTGAS.UC_SynthAccount 1) boost-id) (ref-ANK::UR_UB|AggregatePromile (VCTGAS.UC_SynthAccount 50) boost-id)])
+            (expect "<<SCALE-SWP-DONE>> cursor CLOSED" false (AQP-FVT.UR_FVT|SweepActive anchor-id))
+            (expect "<<SCALE-SWP-DONE>> pool UNFROZEN" false (ref-AQP::UR_AQP|PoolSweepInProgress pool-id))
+            (expect "<<SCALE-SWP-DONE>> synth-1 promile recomputed to 0 (anchor gone)" 0.0 (ref-ANK::UR_UB|AggregatePromile (VCTGAS.UC_SynthAccount 1) boost-id))
+            (expect "<<SCALE-SWP-DONE>> synth-50 promile recomputed to 0" 0.0 (ref-ANK::UR_UB|AggregatePromile (VCTGAS.UC_SynthAccount 50) boost-id))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+(print "=== END AQP-scale-sweep.repl — 50-holder anchor sweep paginated + gas ===")
