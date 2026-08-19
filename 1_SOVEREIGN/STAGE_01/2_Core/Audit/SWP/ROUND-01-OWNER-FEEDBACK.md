@@ -1423,3 +1423,44 @@ full-suite file, zero interference). Full `Z.repl` (Stage 1 + Stage 2): exit 0, 
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #17. Awaiting Round III re-verify.
 
 ---
+
+## M10 (#28M, `kda-pid` snapshotted at defpact Step 0, reused unchanged at Step 1) — **DESIGN, closed**
+
+**Owner's position:** the same price must be used throughout, because the whole multi-step flow is one
+single logical event even though it's split into multiple `defpact` steps — using a different price
+partway through would make the fee/tax math internally inconsistent. Intentional.
+
+**Verified before accepting:** confirmed `PoolState` (`17_SWPL.pact:84-93`, `{A, F, X, W, LP, FT, FTP}`)
+has no price field by design — the drift-detection check (`(enforce (= prev-pool-state
+current-pool-state) ...)`) genuinely cannot and is not meant to cover `kda-pid`; it exists specifically
+to catch AMM-side drift (reserves/weights/fees), a different and separately-protected class of staleness.
+Confirmed `kda-pid` is real, price-load-bearing input (not cosmetic): `URC|KDA-PID_CLAD` feeds it into
+`URC|KDA-PID_TokenToIgnis` to derive `deficit-ignis-tax`/`special-ignis-tax`/`lqboost-ignis-tax`
+(`17_SWPL.pact:576-605`), computed once at Step 0 and never revisited at Step 1.
+
+**Owner added:** the defpact already has a pool-drift detection mechanism — if pool state changes between
+steps, Step 1 cannot finalize (rolls back). Correct and confirmed (the `step-with-rollback` `enforce`
+above) — but this protects the AMM-reserve/weight/fee axis specifically because `PoolState` was scoped to
+cover exactly that; it doesn't extend to `kda-pid` because `kda-pid` isn't part of `PoolState` at all, by
+the same design choice being confirmed here.
+
+**Same caveat flagged as H10 (#15H) — identical shape, same underlying gap:** "one logical event, fixed
+price throughout" is a coherent premise, but it only holds in *practice* — not just intent — if Step 0 and
+Step 1 execute close together in time. There is no TTL/expiry on these `defpact`s (confirmed — same gap
+already tracked as **L68**), and the patron alone controls *when* Step 1 executes. An unbounded gap turns
+"locked initiation price" into a free option: open Step 0, wait until `kda-pid` drifts to a point that
+makes the tax cheaper, then finalize. That is a different exposure than "should price be allowed to
+change mid-operation," and isn't closed by the one-event design premise alone — it rides on **L68**'s TTL
+fix the same way H10's residual exposure does.
+
+**Owner's final call:** close M10 as correct by design, notwithstanding the L68 linkage (identical
+resolution to H10).
+
+**Status:** DESIGN — closed. Fixed-price-across-steps is confirmed intentional; the AMM-side
+drift-detection mechanism (`PoolState` equality check) is confirmed to be a deliberately different,
+already-adequate guard for a different axis (reserves/weights/fees), not an oversight that happens to
+miss price. The residual time-window exposure this depends on is explicitly **not** independently closed
+by this verdict — it rides on **L68** (no TTL/expiry) being fixed separately, same as H10. No code
+changed for M10 itself.
+
+---

@@ -195,8 +195,13 @@ Owner asked for forced reproduction (Option B) — issued two brand-new parallel
 reserves guaranteeing a pre/post-swap BFS flip; reverted the fix and reproduced the exact bug (stale
 actually-swapped pool, spuriously-updated untouched pool), restored, reconfirmed correct. — *M13*
 
-#28M **[MTX-SWP]** `kda-pid` price is snapshotted at defpact Step 0 and reused unchanged at Step 1 with no
-re-validation or time bound — stale-price fee/tax mispricing. — *M10*
+#28M **[MTX-SWP]** ~~`kda-pid` price is snapshotted at defpact Step 0 and reused unchanged at Step 1 with no
+re-validation or time bound — stale-price fee/tax mispricing.~~ — **DESIGN, confirmed intentional
+2026-08-19.** Fixed price across one logical multi-step event is correct (re-pricing mid-flow would be
+internally inconsistent); `PoolState`'s drift-detection check is a deliberately different, already-
+adequate guard for reserves/weights/fees, not an oversight that happens to miss price. Residual
+time-window exposure explicitly rides on **L68** (no TTL) — same linkage as H10. Full trace in
+`ROUND-01-OWNER-FEEDBACK.md`. — *M10*
 
 #29M **[SWPL]** Draining a pool's LP supply to exactly zero re-triggers genesis-ratio pricing regardless of
 any dust left in tracked reserves. — *M8*
