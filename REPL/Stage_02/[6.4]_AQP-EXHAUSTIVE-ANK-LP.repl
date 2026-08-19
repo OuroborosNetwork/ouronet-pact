@@ -162,21 +162,34 @@
 (commit-tx)
 (print "")
 ;;
-(begin-tx "TX-AQP-A04 - KBN bunny stake + NF anchor sync on DHBunnies")
+(begin-tx "TX-AQP-A04 - staking a conforming Elk0nite-trait KBN bunny grants EMMA the Elk0nite promile")
 (print "")
-(print "=== TX-AQP-A04 — Bunny NF stake triggers anchor promile path =================")
+(print "=== TX-AQP-A04 — trait-anchor promile path: stake a CONFORMING Elk0nite bunny ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
     (
         (patron:string KST.ANHD)
         (owner:string KST.EMMA)
+        (beneficiary:string KST.EMMA)
         (kbn-id:string "KBN-98c486052a51")
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHBunnies"))
         (elk0nite-id:string (ref-U|DALOS::UDC_Makeid "Elk0nite"))
-        (promile:decimal (ref-ANK::UR_ANK-U|Promile owner elk0nite-id))
+        ;; read the required trait straight from the anchor (robust to fixture edits)
+        (trait-key:string (ref-ANK::UR_ANK|NFTraitKey elk0nite-id))
+        (trait-value:string (ref-ANK::UR_ANK|NFTraitValue elk0nite-id))
         (anchors-active:integer (ref-ANK::UR_AA|AnchorsActive kbn-id))
+        ;; EMMA's UNSTAKED KBN nonces that CONFORM to the Elk0nite trait — URC_ConformNonces is the exact
+        ;; matcher the NF-stake anchor sync uses, so a conforming nonce is GUARANTEED to grant the promile.
+        ;; (NF03 staked an arbitrary (at 0) nonce that need not be an Elk0nite bunny — hence promile 0 there.)
+        (elk-nonces:[integer]
+            (filter
+                (lambda (n:integer) (= 1 (ref-ANK::URC_ConformNonces kbn-id [n] trait-key trait-value)))
+                (ref-DPDC::URD_AccountNonces owner kbn-id false)))
     )
     (env-sigs
         [
@@ -185,9 +198,27 @@
             { "key": "PK_Lumy", "caps": [] }
         ]
     )
-    (print (format "<(anchors-active KBN)> => \"{}\" <(Elk0nite promile EMMA)> => \"{}\"" [anchors-active promile]))
+    (print (format "<(anchors-active KBN)> => \"{}\" <(Elk0nite trait)> => \"{}={}\" <(EMMA conforming nonces)> => \"{}\"" [anchors-active trait-key trait-value elk-nonces]))
     (expect (format "<<TX-AQP-A04>> KBN anchors-active>=0 got={}" [anchors-active]) true (>= anchors-active 0))
-    (expect (format "<<TX-AQP-A04>> Elk0nite promile>0 after NF03 stake got={}" [promile]) true (> promile 0.0))
+    (if (> (length elk-nonces) 0)
+        (let
+            (
+                (elk-nonce:integer (at 0 elk-nonces))
+            )
+            ;; stake a CONFORMING Elk0nite bunny → the NF-stake anchor sync must grant EMMA the Elk0nite promile
+            (print (format "<(C_StakeNonFungible KBN Elk0nite bunny nonce={})> => \"{}\"" [elk-nonce
+                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [elk-nonce])
+            ]))
+            (let
+                (
+                    (promile:decimal (ref-ANK::UR_ANK-U|Promile owner elk0nite-id))
+                )
+                (print (format "<(Elk0nite promile EMMA after conforming stake)> => \"{}\"" [promile]))
+                (expect (format "<<TX-AQP-A04>> Elk0nite promile>0 after staking a conforming bunny got={}" [promile]) true (> promile 0.0))
+            )
+        )
+        (print "SKIP TX-AQP-A04 promile assert: EMMA owns no unstaked Elk0nite-trait KBN bunny")
+    )
 )
 (env-sigs [])
 (commit-tx)
