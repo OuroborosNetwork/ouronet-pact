@@ -179,8 +179,13 @@ in `ROUND-01-OWNER-FEEDBACK.md`. — *H8*
 
 ## MEDIUM
 
-#26M **[SWPU]** Slippage bound is symmetric (min *and* max) — a swap can revert just because the price moved
-*favorably* beyond tolerance. — *M9*
+#26M **[SWPU]** ~~Slippage bound is symmetric (min *and* max) — a swap can revert just because the price
+moved *favorably* beyond tolerance.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-19** (`ROUND-02-FIXES.md`
+Fix #16). Researched industry standard first (Uniswap V2/V3, Curve, Balancer, SushiSwap, PancakeSwap —
+zero counter-examples, floor-only everywhere). Upper bound commented out (not deleted) at both
+`UC_SlippageMinMax` consumer sites. Caught a real Pact 5 runtime bug along the way (single-arg `and`
+fails at execution despite parsing fine) — only surfaced via full swap-execution testing. Adversarially
+proven live. — *M9*
 
 #27M **[Talos]** `SmartSwapNoSlippage` recomputes which pools to refresh via a fresh post-swap BFS instead of
 using the swap's own traversed-edge list — can update the wrong pools' cached Stoa value. — *M13*

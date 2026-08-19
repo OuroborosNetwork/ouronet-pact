@@ -882,3 +882,36 @@ difference = 0.0`). Reverted `UC_ComputeD` alone back to 6 iterations and reconf
 convergence. Full suite: exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #16 — M9 (#26M): slippage upper bound commented out (not deleted), floor-only for exact-input swaps
+
+**Owner direction:** wanted to confirm industry standard before deciding. Researched 5 protocols in
+parallel (Uniswap V2/V3, Curve, Balancer, SushiSwap, PancakeSwap) plus a precedent search — zero
+counter-examples anywhere for a symmetric bound on exact-input swaps; every one is floor-only, and
+"positive slippage" (beating the quote) is industry-treated as value to capture, never grounds to revert.
+Direction: comment out the max check, don't delete it, be careful not to disturb the floor.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact`, both consumers of `UC_SlippageMinMax`** (confirmed
+via full-codebase grep these are the only two — `UC_SlippageMinMax` itself untouched):
+- `XI_SmartSwapRouter`: `(and (>= feeless-final min) (<= feeless-final max))` → `(<= feeless-final max)`
+  commented out with the industry-research rationale and exact restore instructions.
+- `XI|KDA-PID_Swap`: same shape, `max-toa` in place of `feeless-final`.
+
+**Real Pact 5 bug caught by testing with actual swap execution, not just load:** first attempt kept the
+`and` wrapper around the single remaining condition — `(and (>= feeless-final min))` parses and loads
+fine, but fails at runtime ("Expected Pact Value, got closure or table reference") the instant a real swap
+executes through it. Only surfaced by running the full `Z.repl` pipeline (Stage 1 + Stage 2) for real swap
+execution — the issuance-only suite never exercises this code path at all. Fixed by dropping the
+now-redundant `and` entirely; a single condition is a plain `if`, matching this codebase's own convention.
+
+**Adversarially proven, live — new `SWP|TX 037`, run against the full `Z.repl` pipeline:** constructed a
+slippage object with `expected-output-amount` deliberately understated to 80% of the real swap output and
+a tight 1% tolerance, guaranteeing the real output clears the floor but blows through the old ceiling.
+Post-fix: swap succeeds (`38.89` output vs. the old `~32.19` ceiling). Reverted the `XI|KDA-PID_Swap` site
+and reconfirmed the exact pre-fix rejection (`"...out of Slippage bounds min of 31.55 - max of
+32.19..."`, matching the real `39.84` output exceeding that max); restored, reconfirmed success. Full
+`Z.repl`: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

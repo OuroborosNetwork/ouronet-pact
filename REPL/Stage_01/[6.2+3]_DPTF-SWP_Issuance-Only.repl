@@ -3077,6 +3077,80 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 037 - #26M Reproduction: Favorable-Price Swap No Longer Reverts")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 037 - #26M Reproduction · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [SWP|TX 037 - #26M Reproduction · 02 · let / invocation] ---")
+;;Audit ref: ROUND-01-FINDINGS.md #26M (M9) — the slippage bound was symmetric (min AND max)
+;;instead of a pure floor. Industry research (Uniswap V2/V3, Curve, Balancer, SushiSwap,
+;;PancakeSwap — zero counter-examples) confirmed every major AMM enforces a floor only on
+;;exact-input swaps; "positive slippage" (better than quoted) is treated as value to capture or
+;;pass through, never as grounds to revert. Owner direction: comment out the upper bound (don't
+;;delete it), keep the min-floor fully live. This constructs a slippage object with a
+;;deliberately-understated <expected-output-amount> (80% of the real swap output) and a tight 1%
+;;tolerance, guaranteeing the real output exceeds <max> — pre-fix this would have reverted purely
+;;for delivering a BETTER price than quoted; post-fix it must succeed, since only the floor is
+;;checked.
+(let
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWPU:module{SwapperUsageV2} SWPU)
+        (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (swpair:string "P|OURO-98c486052a51|PKOSON-98c486052a51")
+        (ouro:string "OURO-98c486052a51")
+        (pkoson:string "PKOSON-98c486052a51")
+        (input-amount:decimal 10.0)
+    )
+    (let
+        (
+            (dsid:object{UtilitySwpV1.DirectSwapInputData} (ref-U|SWP::UDC_DirectSwapInputData [ouro] [input-amount] pkoson))
+            (real-output:decimal (ref-SWPI::URC_Swap swpair dsid false))
+            (o-prec:integer (ref-DPTF::UR_Decimals pkoson))
+        )
+        (let
+            (
+                ;;Deliberately understated — real-output will land ~25% above this, guaranteeing
+                ;;it exceeds max = fake-expected*1.01 while trivially clearing
+                ;;min = fake-expected*0.99.
+                (fake-expected:decimal (floor (* real-output 0.8) o-prec))
+                (slippage-bounds:object{SwapperUsageV2.Slippage}
+                    (ref-SWPU::UDC_Slippage fake-expected o-prec 1.0)
+                )
+            )
+            (let
+                (
+                    (result:string
+                        (ref-TS01-C3::SWP|C_SingleSwapWithSlippage
+                            KST.ANHD KST.ANHD swpair ouro input-amount pkoson slippage-bounds
+                        )
+                    )
+                )
+                (map print
+                    [
+                        (format "#26M proof — real swap output: {}, fake quoted expected (80%): {}, tolerance: 1%%" [real-output fake-expected])
+                        (format "#26M proof — swap result: {}" [result])
+                        (expect "#26M fix — swap delivering MORE than quoted succeeds, not rejected as 'out of Slippage bounds'" true (contains "Succesfully swapped" result))
+                        (expect "#26M fix — the old max-bound rejection message must not appear" false (contains "out of Slippage bounds" result))
+                    ]
+                )
+            )
+        )
+    )
+)
+(print "")
+(print "--- [SWP|TX 037 - #26M Reproduction · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 037 #26M Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
 (print "")
 (print "===================DPTF + SWP Issuance-Only FINISHED==========================")
 (print "")

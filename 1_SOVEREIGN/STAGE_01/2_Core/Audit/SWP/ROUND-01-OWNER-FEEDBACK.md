@@ -1293,3 +1293,66 @@ dilution in native-share terms.
 **Status:** DESIGN, confirmed intentional — no fix needed, no code changed.
 
 ---
+
+## M9 (#26M, slippage bound is symmetric — min and max — not a pure floor) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner pushback:** "I thought slippage was supposed to protect both ways — what is the industry
+standard?" Genuine, substantive question — needed real research, not a restatement of the finding's own
+claim.
+
+**Researched properly before answering — 5 parallel, independently-sourced threads, zero
+counter-examples:**
+- Uniswap V2 (`swapExactTokensForTokens`): `amountOut >= amountOutMin` — floor only, confirmed directly
+  from `UniswapV2Router02.sol`/`UniswapV2Pair.sol` source, no ceiling anywhere in the swap path.
+- Uniswap V3 (`exactInputSingle`/`exactInput`): `amountOut >= amountOutMinimum` — floor only, confirmed
+  from `SwapRouter.sol`. `sqrtPriceLimitX96` is a price-impact limiter (can cause a *partial fill*), not
+  an output ceiling — explicitly distinguished via Uniswap's own docs.
+- Exact-output swaps (V2/V3): the mirror case — `amountIn <= amountInMax`/`amountInMaximum` — ceiling
+  only, confirmed from source. No minimum-input bound exists anywhere; overpaying is capped, underpaying
+  is impossible to check (the router computes the minimal input itself).
+- Curve, Balancer V2, SushiSwap, PancakeSwap: same floor-only pattern confirmed directly from source in
+  every case (`min_dy`, `limit`, `amountOutMin`) — zero counter-examples across five independently-checked
+  protocols.
+- Precedent search for "is a ceiling ever deliberate": none found. Stronger — the industry has a name for
+  this exact scenario, "positive slippage," and treats it as value to capture or pass through: 1inch/
+  KyberSwap retain it as disclosed revenue (trade still executes), ParaSwap Delta only fees the excess
+  (trade still executes), CoW Protocol and UniswapX are explicitly architected to *maximize* trader
+  surplus. No audit (Trail of Bits, OpenZeppelin, Consensys Diligence, Cyfrin, Sherlock, Code4rena) flags
+  a missing ceiling as a vulnerability — the recurring finding in all of them is a missing *floor*.
+
+**Verdict:** symmetric bounds around expected output, for an exact-input swap, has no legitimate
+precedent anywhere checked — it's specifically the reverse of how every major AMM works, not an
+alternate valid convention.
+
+**Owner direction:** don't drop the upper-bound code, comment it out with a clear local explanation, and
+be careful not to disturb the floor check while doing it.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact`, two call sites** (`XI_SmartSwapRouter` and
+`XI|KDA-PID_Swap` — confirmed via full-codebase grep these are the *only* two consumers of
+`UC_SlippageMinMax`'s output; `UC_SlippageMinMax` itself untouched, both `min` and `max` are still
+computed and returned since `max` is still used in the error-message text): the `(<= ... max)` half of
+each `(and ...)` check commented out, not deleted, with a full explanation of the industry research and
+exact instructions for reverting if ever needed.
+
+**A real Pact 5 bug caught by testing with actual swap execution, not just load:** first attempt left the
+`and` wrapper in place with only one live argument — `(and (>= feeless-final min))`. This parses and
+loads fine but fails at *runtime* ("Expected Pact Value, got closure or table reference") the moment a
+real swap executes through it — confirmed via the full `Z.repl` pipeline (Stage 1 + Stage 2), not the
+issuance-only suite, since this code path only runs during actual swap execution. Pact 5's `and` doesn't
+accept a single argument at runtime despite parsing correctly. Fixed by dropping the now-redundant `and`
+wrapper entirely — with only one live condition, a plain `if` is both correct and matches this codebase's
+own "1 condition → plain check" convention.
+
+**Adversarially proven, live — new `SWP|TX 037` in `[6.2+3]…repl`, executed against the full `Z.repl`
+pipeline for real swap execution (issuance-only suite doesn't exercise this code path):** constructed a
+slippage object with a deliberately-understated `expected-output-amount` (80% of the real swap output)
+and a tight 1% tolerance — guaranteeing the real output exceeds the old `max` bound while trivially
+clearing the floor. Post-fix: swap succeeds (`38.89` output, well above the `~32.19` old ceiling).
+Reverted the fix at the `XI|KDA-PID_Swap` site and reconfirmed the exact pre-fix behavior — the swap gets
+soft-rejected (not a hard abort; the response embeds `"...out of Slippage bounds min of 31.55 - max of
+32.19..."`, precisely matching real output `39.84` exceeding that `max`). Restored, reconfirmed success.
+Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #16. Awaiting Round III re-verify.
+
+---

@@ -575,7 +575,20 @@
                             (format "Smart Swap Expected Output of {} out of Slippage bounds min of {} - max of {}" [feeless-final min max])
                         )
                     )
-                    (if (and (>= feeless-final min) (<= feeless-final max))
+                    ;;#26M/M9 fix: upper bound commented out, not deleted (and the `and` wrapper
+                    ;;removed with it — Pact 5's `and` doesn't accept a single argument at
+                    ;;runtime, confirmed the hard way via a real swap-execution test, not just
+                    ;;load). Rejecting a swap for delivering MORE than quoted ("positive
+                    ;;slippage") isn't how any major AMM works — checked Uniswap V2/V3, Curve,
+                    ;;Balancer, SushiSwap, PancakeSwap: every one enforces a floor only on
+                    ;;exact-input swaps, never a ceiling; several (CoW Protocol, UniswapX) are
+                    ;;explicitly built to maximize/pass through favorable execution instead. To
+                    ;;re-enable, restore `(and (>= feeless-final min) (<= feeless-final max))` —
+                    ;;the `>= min` check below must never be touched, it's the real protection
+                    ;;this whole check exists for.
+                    (if
+                        (>= feeless-final min)
+                        ;;(<= feeless-final max)
                         (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid)
                         {"cumulator-chain"   :
                             [
@@ -790,11 +803,35 @@
                                     )
                                 )
                             )
+                            ;;#26M/M9 fix: upper bound commented out, not deleted (and the `and`
+                            ;;wrapper removed with it — Pact 5's `and` doesn't accept a single
+                            ;;argument at runtime, confirmed the hard way via a real
+                            ;;swap-execution test, not just load). Rejecting a swap for
+                            ;;delivering MORE than quoted ("positive slippage") isn't how any
+                            ;;major AMM works — checked Uniswap V2/V3, Curve, Balancer,
+                            ;;SushiSwap, PancakeSwap: every one enforces a floor only on
+                            ;;exact-input swaps, never a ceiling; several (CoW Protocol,
+                            ;;UniswapX) are explicitly built to maximize/pass through favorable
+                            ;;execution instead. To re-enable, restore
+                            ;;`(and (>= max-toa min) (<= max-toa max))` — the `>= min` check
+                            ;;below must never be touched, it's the real protection this whole
+                            ;;check exists for.
+                            ;;#26M/M9 fix: upper bound commented out, not deleted (and the `and`
+                            ;;wrapper removed with it — Pact 5's `and` doesn't accept a single
+                            ;;argument at runtime, confirmed the hard way via a real
+                            ;;swap-execution test, not just load). Rejecting a swap for
+                            ;;delivering MORE than quoted ("positive slippage") isn't how any
+                            ;;major AMM works — checked Uniswap V2/V3, Curve, Balancer,
+                            ;;SushiSwap, PancakeSwap: every one enforces a floor only on
+                            ;;exact-input swaps, never a ceiling; several (CoW Protocol,
+                            ;;UniswapX) are explicitly built to maximize/pass through favorable
+                            ;;execution instead. To re-enable, restore
+                            ;;`(and (>= max-toa min) (<= max-toa max))` — the `>= min` check
+                            ;;below must never be touched, it's the real protection this whole
+                            ;;check exists for.
                             (if
-                                (and
-                                    (>= max-toa min)
-                                    (<= max-toa max)
-                                )
+                                (>= max-toa min)
+                                ;;(<= max-toa max)
                                 (XI_Swap account swpair dsid)
                                 {"cumulator-chain"      :
                                     [
