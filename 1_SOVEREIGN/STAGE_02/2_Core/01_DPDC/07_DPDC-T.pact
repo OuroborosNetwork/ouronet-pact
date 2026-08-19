@@ -515,7 +515,6 @@
                             (amount:integer (at idx amounts))
                             (nonce-supply:integer (ref-DPDC::UR_NonceSupply id son nonce))
                         )
-                        (enforce (> amount 0) "Transfer amount must be a positive, non-zero integer")
                         (if (and (not son) (> nonce 0))
                             (enforce (= amount 1) "When transfering Native NFT Nonces, their amount must be 1")
                             true

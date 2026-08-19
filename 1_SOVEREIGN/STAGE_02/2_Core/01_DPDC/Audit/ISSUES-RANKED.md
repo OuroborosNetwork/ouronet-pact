@@ -16,10 +16,13 @@ in `ROUND-01-FINDINGS.md`.
 credit/debit direction, letting an attacker mint arbitrary supply into their own account while corrupting
 the counterparty's balance negative.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-19** (`ROUND-02-FIXES.md` Fix #1)
 — live-reproduced pre-fix (real signed transfer, sender balance +50 from a -50 "debit", receiver driven to
--50); `UEV_AmountsForTransfer` (DPDC-T) + `CreditOrDebitDPDC` (DPDC-C, the universal write chokepoint for
-all 11 peer modules) now floor `amount`; post-fix the exact exploit call is rejected, a control legit
-transfer still works, full `Z.repl` green. Also closes DPDC-F's **C3** (same root cause) and the
-negative-value half of DPDC-S's **C8** (still OPEN for its own explicit gate). — *DPDC-C·C1*
+-50). Fixed at a **single chokepoint**: new `DPDC-C::UEV_Amount` (a proper `UEV_*` validator, not a bare
+`enforce`), called from `CreditOrDebitDPDC` — the sole write path for every SFT/fragment credit+debit
+across all 11 peer modules, list-form calls included for free (they `map` over the same single-value
+function). `DPDC-T` needed no change. Post-fix: the exploit, submitted as a real uncaught transaction,
+throws before `commit-tx` and nothing it attempted persists; a control legit transfer still works; full
+`Z.repl` green. Also closes DPDC-F's **C3** (same root cause) and the negative-value half of DPDC-S's
+**C8** (still OPEN for its own explicit gate). — *DPDC-C·C1*
 
 #2C **[DPDC-T]** `C_IgnisRoyaltyCollector` debits the `patron` parameter's IGNIS balance with **no**
 ownership/authorization check anywhere in the call chain (`IGNIS|C>DEBIT` never calls

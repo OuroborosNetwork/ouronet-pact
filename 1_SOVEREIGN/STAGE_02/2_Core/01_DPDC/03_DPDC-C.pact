@@ -429,6 +429,12 @@
             split-nonces
         )
     )
+    (defun UEV_Amount (amount:integer)
+        @doc "Floor for every SFT/fragment credit or debit quantity. Zero is legal (nonce-creation \
+            \ genesis supply, e.g. EQUITY's zero-initial-supply tier nonces) — negative is never legal, \
+            \ it inverts the credit/debit direction in CreditOrDebitDPDC. See DPDC Audit #1C."
+        (enforce (>= amount 0) "Amount cannot be negative")
+    )
     ;;{F3}  [UDC]
     ;;{F4}  [CAP]
     ;;
@@ -887,7 +893,7 @@
                     )
                 )
             )
-            (enforce (>= amount 0) "Amount cannot be negative")
+            (UEV_Amount amount)
             (if (= current-supply 0)
                 (enforce cod "Cannot Debit 0 Amounts!")
                 true
