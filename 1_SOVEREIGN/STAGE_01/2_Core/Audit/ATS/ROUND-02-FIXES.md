@@ -2,6 +2,93 @@
 
 One entry per fix, applied sequentially, owner green-lit before landing. Diff summary + why.
 
+## Fix #18 — H2 (#7H, finalized): royalty ceiling lowered from 999.0 to 500.0 promile
+
+**What it was:** `#6H`/Fix #4 already gated `ATS|S>ROYALTY` behind `UEV_ParameterLockState atspair false`,
+but left the other half of the original `H2` finding open: the shared `U|DALOS::UEV_Fee` validator
+(`08_U_DALOS.pact:432`) allows royalty anywhere in `[1.0, 999.0]` promile (up to 99.9%), settable in a
+single call with no other protection — a pool owner could redirect up to 99.9% of a pool's future yield to
+themselves instantly.
+
+**Owner's fix direction, in two parts:**
+1. **Rejected a per-transaction delta cap outright**, correctly: "cant be made, because you can run the
+   same function of increasing to multiple times one after another on a single transaction" — a cap on how
+   much a single *call* can move the value is trivially bypassed by calling the setter repeatedly inside
+   one transaction (Pact has no built-in single-call-per-tx restriction).
+2. **Asked for a hard ceiling instead:** "we should set it at a maximum of 500.0 promile and minimum of
+   1.0 with whatever precision it is (i think 4), not other enforcements" — confirmed `CT_FEE_PRECISION`
+   is indeed `4` (`01_U_CT.pact:48`). Then confirmed both `-1.0` and `0.0` should remain valid "off" values
+   ("we can allow -1 and 0 as an off means, if the validate fee allows it").
+
+**Fix:** `U|DALOS::UEV_Fee` was deliberately left untouched — it's shared with an unrelated `05_DPTF.pact`
+fee check, outside this audit's scope; tightening it there would change DPTF's bound too. Instead,
+`ATS|S>ROYALTY` (`08_ATS.pact:473`) gained one royalty-specific enforce, layered on top of the existing
+shared check (same layering pattern as `#11M`'s KickStart index bound):
+
+```pact
+(ref-U|DALOS::UEV_Fee royalty)
+(enforce (<= royalty 500.0) "Royalty cannot exceed 500.0 promile (50%)")
+```
+
+Because `UEV_Fee` already restricts royalty to `{-1.0, 0.0} ∪ [1.0, 999.0]` (4-decimal precision), and both
+off-sentinels (`-1.0`, `0.0`) are always `<= 500.0`, this single extra `<=` check correctly narrows only the
+active `[1.0, 999.0]` range down to `[1.0, 500.0]` without needing to special-case the off-sentinels at all.
+
+**Side discovery while writing the proof (not a bug, just previously unseen code):** `UR_Royalty`
+(`08_ATS.pact:870-873`) already normalizes a stored `-1.0` back to `0.0` on read — pre-existing behavior,
+unrelated to this fix. `-1.0` and `0.0` were already indistinguishable "off" states from any reader's
+perspective before this change; the fix doesn't alter that.
+
+**Verification:** proven via the real Talos path (`REPL/Stage_01/[6.6]_ATS.repl`, "Royalty Ceiling Proof"):
+`999.0` (the old ceiling) rejected, `500.0001` (just over the new ceiling) rejected, `500.0` (exactly at
+the new ceiling) accepted, `-1.0` and `0.0` both still work as off (confirmed via `UR_Royalty` reading back
+`0.0` for both). Full `Stage01_Tester.repl` pipeline reloads clean, 0 failures.
+
+**Status:** FIXED ✅ AND PROVEN ✅. `#7H`/H2 is now fully closed — nothing left pending.
+
+## Fix #17 — N3 (#34N): `P|A_Define` never registered `ATS`/`ATSU` as permitted Talos-admin callers
+
+**Documentation catch-up (2026-08-18):** the code fix itself was applied 2026-08-17, in the prior session,
+while building `#22L`'s original scratch proof (`_cov_draft.repl`) — but it was never logged as its own
+numbered finding, only referenced in passing inside `#22L`'s narrative. Owner asked for the finding to be
+expanded before deciding whether it deserved its own entry ("What is point 1?"), then approved logging it
+separately: "yes do that." Verified the code fix is genuinely present and correct before back-filling this
+entry.
+
+**What it was:** `P|A_Define` (`3_Talos/01_TS01-A.pact`) is the function every Talos module runs once, at
+deploy/init time, to register itself as a *permitted caller* into every core module its admin-path
+functions need to reach — one `(ref-P|<MODULE>::P|A_AddIMP mg)` call per module, where `mg` is a capability
+guard built from `P|TS`. Every core module's `UEV_IMC` checks this whitelist before letting any admin call
+through, independent of and prior to whatever key/signature check follows.
+
+`TS01-A`'s own `P|A_Define` registered into `DALOS`, `IGNIS`, `BRD`, `DPTF`, `DPOF`, `LIQUID`, `OUROBOROS`,
+and `SWP` — but **not** `ATS` or `ATSU`. `ATS` was even bound as a local variable (`ref-P|ATS`) and then
+simply never used in the body — a half-finished registration, not a typo or an oversight elsewhere. Every
+*other* Talos module's own `P|A_Define` registers into both `ATS` and `ATSU`; this was the one exception.
+
+**Concrete consequence:** `ATS|A_RemoveSecondary` and `ATS|A_KickStart` — real admin entrypoints, not
+test-only scaffolding — were **completely unreachable** via their real Talos admin path, unconditionally,
+regardless of caller or key. Both failed inside `UEV_IMC`'s whitelist check with "None of the guards
+passed" before the admin's own key-authorization logic (`P|ADMINISTRATIVE-SUMMONER` / `GOV|ATSU_ADMIN`)
+ever got a chance to matter. This sat unnoticed precisely because those two functions had zero test
+coverage — the same root cause as `#22L`/L4 — but the bug itself (two admin functions dead on arrival,
+independent of who's calling) is a distinct, structural finding, not merely "part of" the coverage gap
+that happened to surface it — the same precedent as `#5C` and `#9H`/`#10M`, both bugs testing revealed but
+that still got their own finding IDs.
+
+**Fix:** added the two missing lines — `(ref-P|ATS::P|A_AddIMP mg)` and `(ref-P|ATSU::P|A_AddIMP mg)` —
+plus the missing `(ref-P|ATSU:module{OuronetPolicyV1} ATSU)` binding (`ATS` was already bound, just
+unused), matching the exact pattern every other Talos module's own `P|A_Define` already uses for every
+other core module it needs to reach.
+
+**Verification:** proven via the real Talos admin path, not in isolation — the `#22L`/Fix #15
+`A_KickStart Proof` and `A_RemoveSecondary Proof 1|2`/`2|2` sections in `REPL/Stage_01/[6.6]_ATS.repl`
+only pass *because* this fix is in place; before it, both crashed unconditionally inside `UEV_IMC`
+regardless of which key signed. Full `Stage01_Tester.repl` pipeline reload clean at the time the code fix
+was applied, re-confirmed now.
+
+**Status:** FIXED ✅ AND PROVEN ✅.
+
 ## Fix #16 — N2 (#33N): `C_WithdrawRoyalties` crashes whenever a pool's reward tokens have uneven
 royalty accrual
 

@@ -337,6 +337,68 @@ a multi-reward-token pool) so the fix is a `C_MultiTransfer`-input filter, not a
 **Verdict: CONFIRMED, FIXED.** Recorded as `#33N` (new-appended, second item in that section) since it
 wasn't part of the original 31-item list. Full detail + proof: `ROUND-02-FIXES.md` Fix #16.
 
+## #30L (originally L12) — ATSU defcap body-order — KEPT, deferred (2026-08-18)
+
+Owner asked for the finding to be expanded beyond the one-line summary before ruling on it ("I don't
+follow what #30 actually is, can you expand?"). Walked through the actual code: four `ATSU` master
+defcaps (`ATSU|C>FUEL`, `C>COIL`, `C>CURL`, `C>SYPHON`) call out to `ATS` (`ref-ATS::UEV_RewardTokenExistance`
+/ `ref-ATS::CAP_Owner`) *before* their own local `enforce`s, inverting `StoicSyntax.md §9.2`'s strict body
+order (local enforce -> bare ref -> home helpers -> compose). Confirmed harmless in practice — every
+statement in a defcap body runs top-to-bottom to first failure regardless of order, so no bad input is let
+through either way; the only effects are which error message a caller sees when multiple conditions are
+violated simultaneously, and a hair of extra gas on a call that was doomed to fail anyway.
+
+**Owner's verdict:** "This is okay to be left as is for now, once audits are over we're going to do a
+rehaul sweep of all modules to the new variant of stoic syntax, so it will be fixed in that pass." Same
+deferral pattern already used for `#20L` (`UR_P-KEYS`/`UR_KEYS`).
+
+**Verdict: CONFIRMED, KEPT (not fixed now).** No code change. Tracked as ONGOING, not NOT-A-BUG, since the
+convention violation is real — just deliberately deferred to the planned post-audit rehaul.
+
+## #34N — `P|A_Define` missing ATS/ATSU registration — logged as its own finding (2026-08-18)
+
+The `HANDOFF-SESSION-RESUME.md` handoff flagged this as unfinished business: the `P|A_Define` fix
+(`01_TS01-A.pact` never registering `ATS`/`ATSU` as permitted Talos-admin callers, making
+`ATS|A_RemoveSecondary`/`ATS|A_KickStart` unconditionally unreachable) was already applied and proven in
+the prior session, but never given its own finding ID — it only existed as a parenthetical inside `#22L`'s
+write-up. Owner asked for it to be expanded before ruling on whether it deserved separate treatment ("What
+is point 1?"). Walked through what `P|A_Define` does, exactly what was missing (`ATS` bound but unused,
+`ATSU` not bound at all — every other Talos module registers into both), and the concrete consequence
+(both admin functions dead on arrival regardless of caller/key) — and argued it's the same class of
+situation as `#5C`/`#9H`/`#10M`: a real bug that testing happened to reveal, not "part of" the test-
+coverage finding itself.
+
+**Owner's verdict:** "yes do that" — approved logging it as its own numbered finding.
+
+**Verdict: CONFIRMED, FIXED.** Recorded as `#34N` (new-appended, third item in that section). Full detail
++ proof: `ROUND-02-FIXES.md` Fix #17.
+
+## #7H / H2 — royalty ceiling, finalized (2026-08-18)
+
+Owner asked for the finding expanded before deciding ("what's its problem, to finalize it already") —
+walked through the exact location (`ATS|S>ROYALTY`, `08_ATS.pact:473`, and the shared `UEV_Fee` bound in
+`08_U_DALOS.pact`), what's wrong (single-call instant jump to 99.9%), what's already fixed (`#6H`'s lock
+gate), and framed the two remaining options from the original finding: a per-tx delta cap, or a notice/
+timelock window — also noting the parallel to `#4C` (syphon), which was ruled intentional owner-discretion
+for a similarly-shaped concern.
+
+Owner rejected the delta-cap idea on their own, correctly: "per transaction cap cant be made, because you
+can run the same function of increasing to multiple times one after another on a single transaction" — a
+real, valid objection (Pact has no single-call-per-tx limiter; a delta cap on one call means nothing if the
+setter can just be called N times in the same tx to reach the same total). Asked instead: "isnt there a
+ceiling on what royalty amount can be set? we should set it at a maximum of 500.0 promile and minimum of
+1.0 with whatever precision it is (i think 4), not other enforcements."
+
+Confirmed before touching code: the existing bound (`UEV_Fee`, `08_U_DALOS.pact`) is *shared* with an
+unrelated `05_DPTF.pact` fee check, so tightening it directly would have out-of-scope blast radius; and
+that `0.0` (royalty's default/off state) needs to stay valid. Owner's answer: "yes 0 means its off
+presumably... we should allow from 1.0 to 500.0 promile, negative values shouldn't be allowed. but we can
+allow -1 and 0 as an off means, if the validate fee allows it, we just only need to code the -1 and 0 as
+recognizable OFF values" — i.e. keep `UEV_Fee`'s existing `{-1.0, 0.0} ∪ [1.0, 999.0]` shape, just narrow
+the active range's ceiling to `500.0`.
+
+**Verdict: CONFIRMED, FIXED.** Full detail + proof: `ROUND-02-FIXES.md` Fix #18. `#7H`/H2 fully closed.
+
 ## Numbering after this correction
 
 Findings renumber sequentially with C1 removed; former C2-C5 become C1-C4, H1-H4 stay H1-H4 (unaffected),

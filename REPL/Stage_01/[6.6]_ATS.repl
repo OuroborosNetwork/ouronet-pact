@@ -3653,3 +3653,72 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "Royalty Ceiling Proof")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== Royalty Ceiling Proof · 01 · env-sigs (caps) ==== ===========================================
+(print "--- [Royalty Ceiling Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AOZ", "caps": [] }
+    ]
+)
+;;==== Royalty Ceiling Proof · 02 · let / invocation ==== ==========================================
+(print "--- [Royalty Ceiling Proof · 02 · let / invocation] ---")
+;; #7H / H2 fix: royalty is now capped at 500.0 promile (50%), layered on top of the shared
+;; U|DALOS::UEV_Fee check (which still permits up to 999.0). -1.0 and 0.0 both remain valid "off"
+;; sentinels (always <= 500.0, unaffected by the new ceiling); only the [1.0, 999.0] active range
+;; narrows to [1.0, 500.0].
+(let
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-ATS:module{AutostakeV2} ATS)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+    )
+    (map print
+        [
+            (expect-failure "royalty above the new 500.0 ceiling (999.0, the old ceiling) is rejected"
+                (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 999.0)
+            )
+            (expect-failure "royalty just above the new ceiling (500.0001) is rejected"
+                (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 500.0001)
+            )
+        ]
+    )
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 500.0)
+    (map print
+        [
+            (expect "royalty exactly at the new 500.0 ceiling is accepted" 500.0 (ref-ATS::UR_Royalty ps))
+        ]
+    )
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps -1.0)
+    (map print
+        [
+            ;; UR_Royalty (08_ATS.pact:870-873) already normalizes a stored -1.0 to read back as
+            ;; 0.0 - pre-existing behavior, unrelated to the ceiling fix - so -1.0 and 0.0 are
+            ;; already indistinguishable "off" states from the reader's perspective.
+            (expect "-1.0 remains a valid \"off\" sentinel (reads back normalized to 0.0), unaffected by the ceiling" 0.0 (ref-ATS::UR_Royalty ps))
+        ]
+    )
+    (ref-TS01-C2::ATS|C_UpdateRoyalty aoz ps 0.0)
+    (map print
+        [
+            (expect "0.0 remains a valid \"off\" sentinel, unaffected by the ceiling" 0.0 (ref-ATS::UR_Royalty ps))
+        ]
+    )
+)
+
+(print "")
+(print "")
+;;==== Royalty Ceiling Proof · 03 · gas echo ==== ===================================================
+(print "--- [Royalty Ceiling Proof · 03 · gas echo] ---")
+(format "<<<<<<<Royalty Ceiling Proof {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
