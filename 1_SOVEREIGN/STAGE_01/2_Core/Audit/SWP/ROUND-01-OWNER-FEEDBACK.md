@@ -1202,3 +1202,27 @@ rejected. Full suite: exit 0, 0 `FAILURE`, `Load successful`.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #14. Awaiting Round III re-verify.
 
 ---
+
+## H7 (#22H, two unreconciled asymmetric-deficit pricing models stack in Standard mode) — **DESIGN, confirmed intentional**
+
+**Owner:** by design — both charges are intended to stack, and they only ever apply to the asymmetric
+portion of a deposit, not the whole thing.
+
+**Verified before accepting, not taken on description alone.** Confirmed `SWP|C_AddLiquidity` (Standard
+mode) does call `URC|KDA-PID_CLAD` with both `asymmetric-collection=true` and `gaseous-collection=true`
+(`18_SWPLC.pact:556`), and that both `gaseous-ignis-fee` and `deficit-ignis-tax`/`special-ignis-tax`/
+`lqboost-ignis-tax` do get charged together in the same transaction (`17_SWPL.pact`, `s-ico1` at
+663-668 concatenates `ico-gaseous` alongside `ico1`, which carries the VSE-based tax sum) — the
+finding's core mechanical claim holds. What determines whether that's a bug is intent, which only the
+owner can confirm: closing as DESIGN.
+
+**Confirmed the specific scoping claim, not just the general one:** both mechanisms live entirely inside
+the `iz-asymmetric` branch (`17_SWPL.pact:524`) and are computed exclusively from asymmetric-specific
+quantities — `gaseous-ignis-fee` from `asymmetric-lp-fee-amount`/`asymmetric-deviation`, the VSE taxes
+from `URC_AsymmetricTax`'s output. Neither mechanism ever reads or taxes the balanced portion of a mixed
+deposit. So the two charges are two distinct levies stacked on the same asymmetric base, not the same
+deficit billed twice under two names.
+
+**Status:** DESIGN, confirmed intentional — no fix needed, no code changed.
+
+---

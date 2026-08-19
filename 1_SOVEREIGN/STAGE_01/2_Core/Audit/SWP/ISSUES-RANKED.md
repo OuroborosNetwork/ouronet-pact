@@ -153,8 +153,11 @@ token-adjacency (`SWPT|Graph`); nothing is keyed by principal identity anymore, 
 structurally impossible. Migration utility `SWPI::A_RebuildGraph` added and proven idempotent; every
 prior #13C/#19H/#20H/#11C proof re-confirmed byte-identical post-redesign. — *H3*
 
-#22H **[SWPL]** Two independent, unreconciled asymmetric-deficit pricing models both fire for Standard-mode
-liquidity adds — possible double-charging honest depositors. — *H7*
+#22H **[SWPL]** ~~Two independent, unreconciled asymmetric-deficit pricing models both fire for Standard-mode
+liquidity adds — possible double-charging honest depositors.~~ — **DESIGN, confirmed intentional
+2026-08-19.** Both charges are meant to stack; verified both are scoped exclusively to the asymmetric
+portion of a deposit (never the balanced portion) — two distinct levies, not the same deficit billed
+twice. Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *H7*
 
 #23H **[SWPI]** ~~Weight-precision validation in `UEV_Issue` is computed and then discarded — dead code that
 looks like a check but performs none.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-18** (`ROUND-02-FIXES.md`
