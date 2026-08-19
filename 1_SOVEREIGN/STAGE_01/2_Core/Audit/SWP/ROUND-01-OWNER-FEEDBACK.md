@@ -1515,3 +1515,42 @@ mitigation isn't waiting on a separate fix to be complete.
 **Status:** DESIGN, confirmed non-issue — no fix needed, no code changed. — *M6*
 
 ---
+
+## M7 (#31M, `C_EnableFrozenLP`/`C_EnableSleepingLP` have no pool-owner authorization) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner:** Sleeping LP and Frozen LP must only be triggerable by the pool owner, and once triggered it can
+never be undone — that's the intended design. If it isn't so, it has to get fixed.
+
+**Verified before fixing:** confirmed the irreversibility half was already correctly implemented — the
+only writes to `frozen-lp`/`sleeping-lp` in `15_SWP.pact` set them to `true` (inside `XI_EnableFrozenLP`/
+`XI_EnableSleepingLP`); the only `false` anywhere is the genesis default at issuance. No code path ever
+flips either back off. Confirmed the owner-authorization half was genuinely missing, exactly as the
+original finding described: `SWP|C>ENABLE-FROZEN`/`SWP|C>ENABLE-SLEEPING` (`15_SWP.pact:603-612`)
+composed only `P|GOVERNING-CALLER` (a protocol-routing check — any legitimate Talos caller, not
+owner-specific) — unlike the module's other ownership-gated levers (`SWP|S>RT_OWN`, `SWP|S>RT_CAN-CHANGE`),
+neither called `CAP_Owner swpair`. Also confirmed real downstream consequence: `SWPLC.pact`'s
+`UEV_AddDormantLiquidity`/`UEV_AddChilledLiquidity` gate the sleeping/frozen liquidity-addition paths
+directly on these flags, so an unauthorized flip is a real, actionable griefing vector, not cosmetic.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`, both defcaps:** added `(CAP_Owner swpair)` to
+`SWP|C>ENABLE-FROZEN` and `SWP|C>ENABLE-SLEEPING`, matching the module's own established pattern for
+every other per-pool admin lever.
+
+**Adversarially proven, live — new `SWP|TX 032a`/`032b` in `[6.3]_SWP.repl`:** used `pool5`
+(`P|OURO|BUSD`, owned by `KST.ANHD`, untouched by the existing `SWP|TX 032`). With only a non-owner
+(`KST.EMMA`) signing, attempted both `SWP|C_EnableFrozenLP`/`SWP|C_EnableSleepingLP` — both correctly
+rejected, and (the decisive check) `UR_IzFrozenLP`/`UR_IzSleepingLP` both still read `false` — no state
+mutation slipped through. With the true owner (`KST.ANHD`) signing, the identical calls succeed and both
+flags read `true`.
+
+Reverted the fix (temporarily, in-place): re-ran with the non-owner signer — the state-mutation checks
+failed exactly as expected (`expected: false, received: true`) — `XI_EnableFrozenLP`/`XI_EnableSleepingLP`
+write unconditionally before anything else in the call, so removing `CAP_Owner` lets the flag flip happen
+regardless of who's calling; exact reproduction of the described vulnerability. Restored the fix, reran:
+all assertions pass again. Full `[6.2]`/`[6.3]` suite (real execution path): exit 0, 0 `FAILURE`. Default
+issuance-only regression: exit 0, 0 `FAILURE` (zero interference — new transactions live only in the
+full-suite file). Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #18. Awaiting Round III re-verify.
+
+---

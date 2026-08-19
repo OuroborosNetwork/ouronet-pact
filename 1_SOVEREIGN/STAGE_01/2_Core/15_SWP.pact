@@ -602,12 +602,21 @@
     )
     (defcap SWP|C>ENABLE-FROZEN (swpair:string)
         @event
+        ;;#31M/M7 fix: was missing CAP_Owner — any caller routed through
+        ;;P|GOVERNING-CALLER could permanently enable Frozen LP on any pool,
+        ;;not just their own. Only the pool's own owner may trigger this
+        ;;(and it's irreversible by design — no XI ever writes it back to
+        ;;false).
         (UEV_FrozenLP swpair false)
+        (CAP_Owner swpair)
         (compose-capability (P|GOVERNING-CALLER))
     )
     (defcap SWP|C>ENABLE-SLEEPING (swpair:string)
         @event
+        ;;#31M/M7 fix: same as SWP|C>ENABLE-FROZEN above — owner-only,
+        ;;irreversible.
         (UEV_SleepingLP swpair false)
+        (CAP_Owner swpair)
         (compose-capability (P|GOVERNING-CALLER))
     )
     (defcap SWP|C>DEFINE-PRIMORDIAL-POOL (primordial-pool:string)

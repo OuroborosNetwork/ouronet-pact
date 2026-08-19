@@ -3083,6 +3083,150 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 01 · let / invocation ==== ==============
+(print "--- [SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 01 · let / invocation] ---")
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (ref-SWP:module{SwapperV3} SWP)
+        ;;pool5 — owned by KST.ANHD, untouched by SWP|TX 032, neither flag enabled yet.
+        (pool5:string "P|OURO-98c486052a51|BUSD-98c486052a51")
+    )
+;;==== SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 02 · env-sigs (caps) ==== ================
+(print "--- [SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 02 · env-sigs (caps)] ---")
+    ;;Non-owner (Emma) alone — no PK_AncientHodler signature — attempts to trigger
+    ;;irreversible Frozen/Sleeping LP on a pool she does not own.
+    (env-sigs
+        [
+            { "key": "PK_Emma", "caps": [] }
+        ]
+    )
+    (map print
+        [
+            (expect-failure
+                "Non-owner cannot enable Frozen LP on someone else's pool (#31M/M7 fix)"
+                (ref-TS01-C3::SWP|C_EnableFrozenLP KST.EMMA pool5)
+            )
+            (expect-failure
+                "Non-owner cannot enable Sleeping LP on someone else's pool (#31M/M7 fix)"
+                (ref-TS01-C3::SWP|C_EnableSleepingLP KST.EMMA pool5)
+            )
+            (expect
+                "Frozen LP must still read false — the rejected non-owner call must not have mutated state"
+                false
+                (ref-SWP::UR_IzFrozenLP pool5)
+            )
+            (expect
+                "Sleeping LP must still read false — the rejected non-owner call must not have mutated state"
+                false
+                (ref-SWP::UR_IzSleepingLP pool5)
+            )
+        ]
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 03 · gas echo ==== =======================
+(print "--- [SWP|TX 032a - #31M/M7 Owner-Auth Adversarial Proof · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032a #31M Proof ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 032b - #31M/M7 True Owner Still Works")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032b - #31M/M7 True Owner Still Works · 01 · let / invocation ==== =====================
+(print "--- [SWP|TX 032b - #31M/M7 True Owner Still Works · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (ref-SWP:module{SwapperV3} SWP)
+        (pool5:string "P|OURO-98c486052a51|BUSD-98c486052a51")
+        (dptf:decimal (ref-DALOS::UR_UsagePrice "dptf"))
+        (dpmf:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (fold (+) 0.0 [dptf dptf dpmf dpmf])
+            )
+        )
+    )
+;;==== SWP|TX 032b - #31M/M7 True Owner Still Works · 02 · env-sigs (caps) ==== ======================
+(print "--- [SWP|TX 032b - #31M/M7 True Owner Still Works · 02 · env-sigs (caps)] ---")
+    ;;The actual owner (KST.ANHD) signs this time — same pool5, same operation, must succeed.
+    ;;Both enable-calls trigger a fresh VST frozen/sleeping link creation for pool5's LP
+    ;;token (KDA-fee-charging), hence the coin.TRANSFER caps, mirroring SWP|TX 032's pattern.
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (ref-TS01-C3::SWP|C_EnableFrozenLP KST.ANHD pool5)
+    (ref-TS01-C3::SWP|C_EnableSleepingLP KST.ANHD pool5)
+    (map print
+        [
+            (expect
+                "True owner's SWP|C_EnableFrozenLP call succeeds and sticks"
+                true
+                (ref-SWP::UR_IzFrozenLP pool5)
+            )
+            (expect
+                "True owner's SWP|C_EnableSleepingLP call succeeds and sticks"
+                true
+                (ref-SWP::UR_IzSleepingLP pool5)
+            )
+        ]
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 032b - #31M/M7 True Owner Still Works · 03 · gas echo ==== =============================
+(print "--- [SWP|TX 032b - #31M/M7 True Owner Still Works · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032b #31M Owner Proof ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 033 - Add Frozen & Sleeping Liquidity")
 (namespace "ouronet-ns")

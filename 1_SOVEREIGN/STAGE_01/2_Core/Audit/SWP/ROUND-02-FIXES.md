@@ -952,3 +952,26 @@ untouched pool's cache stays put; that pool's true value is genuinely nonzero) �
 (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #18 — M7 (#31M): `C_EnableFrozenLP`/`C_EnableSleepingLP` now require pool-owner authorization
+
+**Owner direction:** Sleeping/Frozen LP must only be triggerable by the pool owner, and it's irreversible
+by design — if the code didn't enforce owner-only, it needs to be fixed.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** added `(CAP_Owner swpair)` to both
+`SWP|C>ENABLE-FROZEN` and `SWP|C>ENABLE-SLEEPING`, matching the module's own established pattern for
+every other per-pool admin lever (`SWP|S>RT_OWN`, `SWP|S>RT_CAN-CHANGE`). Confirmed the irreversibility
+half was already correct (no code path ever writes either flag back to `false`) — only the
+authorization gate was missing.
+
+**Adversarially proven, live — new `SWP|TX 032a`/`032b` in `[6.3]_SWP.repl`:** a non-owner signer
+(`KST.EMMA`) attempting `SWP|C_EnableFrozenLP`/`SWP|C_EnableSleepingLP` on a pool owned by `KST.ANHD` is
+rejected, and — the decisive check — the flags genuinely stay `false` (no partial mutation). The true
+owner's identical calls succeed. Reverted the fix in-place: the flags flip to `true` even under the
+non-owner signer, reproducing the exact vulnerability (`XI_Enable*` writes unconditionally before any
+other check). Restored, reconfirmed clean. Full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only
+regression: exit 0, 0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

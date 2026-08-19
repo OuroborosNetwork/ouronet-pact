@@ -217,7 +217,11 @@ pre-sign — a genuine (client-side) confirmation step. On-chain mechanics confi
 mitigation fully answers the specific threat, consistent with every other one-shot transfer in this
 codebase. Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *M6*
 
-#31M **[SWP]** `C_EnableFrozenLP`/`C_EnableSleepingLP` have no pool-owner authorization at all. — *M7*
+#31M **[SWP]** ~~`C_EnableFrozenLP`/`C_EnableSleepingLP` have no pool-owner authorization at all.~~ —
+**FIXED ✅ AND PROVEN ✅ 2026-08-19** (`ROUND-02-FIXES.md` Fix #18). Owner: Sleeping/Frozen LP must be
+owner-only and irreversible by design — irreversibility was already correct, only the owner gate was
+missing. `CAP_Owner swpair` added to both defcaps. Adversarially proven: non-owner rejected with zero
+state mutation, true owner succeeds, reverted the fix and reproduced the exact unauthorized flip. — *M7*
 
 #32M **[MTX-SWP]** Permissioned pool issuance charges IGNIS+KDA fees *before* the admin gate that can reject
 the request — a non-refundable sunk cost if the admin never signs off. — *M11*
