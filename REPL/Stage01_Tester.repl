@@ -52,8 +52,12 @@
 ;(load "Stage_01/[6.3]_SWP.repl")
 (load "Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl")
     ;(load "Stage_01/[6.4]_Admin.repl")
-(load "Stage_01/[6.5]_DPOF.repl")
-(load "Stage_01/[6.6]_ATS.repl")
+;; #12a GUARD — keep [6.5]_DPOF + [6.6]_ATS COMMENTED here: the AQP Stage-2 path self-loads
+;; [6.5]_DPOF via [6.2.4]_AQP-FVT-OF, so loading it here too RE-ISSUES MVST -> duplicate-insert
+;; abort in AQP-comprehensive / AQP-core-vct. ATS tests run via their own driver _audit_ats_baseline.repl
+;; (Stage-1-only, no double-load). (The 'ats' merge briefly uncommented these and broke the AQP suites.)
+;(load "Stage_01/[6.5]_DPOF.repl")
+;(load "Stage_01/[6.6]_ATS.repl")
 ;(load "Stage_01/[6.7]_VST.repl")
 ;(load "Stage_01/[6.8]_Dispenser.repl")
 ;;FULL> CODEX scenario suite — skip for AQP-fast (Z.repl default)
