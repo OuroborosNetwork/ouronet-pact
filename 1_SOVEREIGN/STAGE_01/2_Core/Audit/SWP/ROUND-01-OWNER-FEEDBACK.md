@@ -1277,3 +1277,19 @@ reconfirmed exact convergence. Full suite: exit 0, 0 `FAILURE`, `Load successful
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #15. Awaiting Round III re-verify.
 
 ---
+
+## H8 (#25H, asymmetric-deficit compensation not returned to the diluted pool's own LP holders) — **DESIGN, confirmed intentional**
+
+**Owner:** by design — closing as a non-issue.
+
+**Verified before presenting.** Traced `XE|KDA-PID_AddLiqudity` (`17_SWPL.pact:1743-1867`) end to end:
+all collected deficit/special/lqboost IGNIS goes to `SWP|SC_NAME` (general treasury), special-fee-target
+accounts, or the *primordial* pool's own reserves (Liquid Boost) — never back into the specific swpair
+being diluted. This is the surviving, narrowed half of #1C (refuted earlier this round): the deficit is
+genuinely priced and charged (refuting #1C's "unpriced extraction" framing), it's just that the payment
+compensates the protocol/ecosystem generally, not the specific pool's own LP holders who bore the
+dilution in native-share terms.
+
+**Status:** DESIGN, confirmed intentional — no fix needed, no code changed.
+
+---

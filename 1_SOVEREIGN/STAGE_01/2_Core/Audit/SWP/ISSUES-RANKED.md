@@ -172,10 +172,10 @@ silently under-converges on heavily skewed pools.~~ — **FIXED ✅ AND PROVEN �
 (Turing-incomplete) — bumped all three to a fixed 12 iterations; measured gas cost +64 flat per stable
 swap. Adversarially reverted `UC_ComputeD` alone, reconfirmed the exact gap reproduces; restored. — *H1*
 
-#25H **[SWPL]** Asymmetric-deficit tax compensation is never returned to the specific pool's own diluted LP
-holders — confirmed routed to the shared `SWP|SC_NAME` vault instead (real IGNIS transfer, traced 2026-08-16
-while re-verifying #1C/C10). Design question for the owner: is protocol-wide value capture instead of
-per-pool LP protection intentional? — *H8*
+#25H **[SWPL]** ~~Asymmetric-deficit tax compensation is never returned to the specific pool's own diluted LP
+holders — confirmed routed to the shared `SWP|SC_NAME` vault instead.~~ — **DESIGN, confirmed intentional
+2026-08-19.** Protocol-wide value capture, not per-pool LP protection, is the intended model. Full trace
+in `ROUND-01-OWNER-FEEDBACK.md`. — *H8*
 
 ## MEDIUM
 
