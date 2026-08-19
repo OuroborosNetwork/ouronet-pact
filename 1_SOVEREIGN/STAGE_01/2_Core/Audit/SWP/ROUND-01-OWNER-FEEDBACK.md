@@ -1591,3 +1591,21 @@ defpact this finding is about has no live client path at all — confirmed unrea
 supported architecture, not merely mitigated. No fix needed, no code changed. — *M11*
 
 ---
+
+## M12 (#33M, explicit rollback costs strictly more than silent abandonment, no TTL on open pacts) — **DESIGN, accepted**
+
+**Owner:** it's how it was designed. Leave as is.
+
+**Presented with the direct connection to M11 already established:** this finding is entirely scoped to
+the same four `20_MTX-SWP.pact` `step-with-rollback` blocks (`C_Issue`, `C_AddLiquidity`,
+`C_AddFrozenLiquidity`, `C_AddSleepingLiquidity`) already confirmed, while closing M11, to have zero
+Talos wiring anywhere in the codebase — unreachable through the only supported client/gas-station path,
+consistent with the module's own `HISTORICAL NOTE` (kept for historical/observational/learning purposes
+only). Confirmed the flat `100.0` IGNIS rollback-penalty pattern is accurate as described (all 4
+`step-with-rollback` blocks charge it), and no TTL exists anywhere (same gap as **L68**).
+
+**Status:** DESIGN, accepted — owner confirmed intentional. Same non-live basis as M11 applies (no live
+client path exists for this module), but the owner's call here is on the design itself, not contingent on
+reachability. No fix needed, no code changed. — *M12*
+
+---

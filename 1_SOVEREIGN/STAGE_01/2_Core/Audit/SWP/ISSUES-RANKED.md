@@ -230,8 +230,10 @@ defpact flows. Independently confirmed `MTX|C_Issue` has zero Talos wiring anywh
 unreachable through the only supported client path. The real, live single-tx path (`SWPI::C_Issue`)
 already gates correctly, before charging. Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *M11*
 
-#33M **[MTX-SWP]** Explicit rollback costs strictly more than silently abandoning an open `defpact`, and no
-pact has a TTL/expiry. — *M12*
+#33M **[MTX-SWP]** ~~Explicit rollback costs strictly more than silently abandoning an open `defpact`, and
+no pact has a TTL/expiry.~~ — **DESIGN, accepted (owner, 2026-08-19).** "It's how it was designed, leave
+as is." Same non-live `MTX-SWP` module already confirmed for M11 (zero Talos wiring). Full trace in
+`ROUND-01-OWNER-FEEDBACK.md`. — *M12*
 
 #34M **[U|SWP / SWPT]** BFS keeps only one chain per node and routing does zero amount-out/liquidity
 comparison across candidate paths — "Smart Swap" is pure hop-count routing. — *M2*
