@@ -1,0 +1,348 @@
+;;
+;; REPL/Kursan/AQP-scale-inject.repl — ENFORCED-FRESH INJECT at large population.
+;; 50 synth staked in a deb-based vault, all made STALE (Elite-DEB raised AFTER staking),
+;; then CC_InjectFixChunk pages the fix + CC_InjectFinalize injects. Reuses VCTGAS synth.
+;;
+;; FINDING (gas MEASUREMENT, not a fits-2M gate): the inject is the HEAVIEST of the three
+;; CC-batches. Each fix round re-scans URH_FvtStalePresentUsers (O(present-users) filter,
+;; ~2.07M fixed) + ~126k/user fix — so a fix round is ~3.96M at 50 present users and does
+;; NOT fit 2M regardless of chunk size (the per-round scan dominates). The finalize's
+;; zero-stale gate scan is ~2.1M. Contrast the sweep (cursor over a pre-counted set, no
+;; per-round re-scan, ~44k/holder) and vacate (O(1) finalize). This is a real scaling
+;; observation: the inject's re-scan-each-round design is the bottleneck; a cursor (like the
+;; sweep's) would remove the O(present-users) per-round cost. Functional correctness holds.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/AQP-scale-inject.repl  —  50-user inject fix batch + gas")
+(print "================================================================")
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+(begin-tx "SCALE-INJ-BOOT - KBN slave")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../2_SLAVE/Stage_02/02_KBunnies.pact")
+(commit-tx)
+(begin-tx "SCALE-INJ-BOOT - AQP-BOOT")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../../2_SLAVE/Stage_02/04_AQP-BOOT.pact")
+(commit-tx)
+(begin-tx "SCALE-INJ-BOOT - Step0")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print (format "<(Step0)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
+(commit-tx)
+(load "../Stage_02/[6.2.6]_AQP-VCT-GAS-BASE.repl")
+(print "")
+;;
+;; ============================================================================
+;; SCALE-INJ-01 — deb vault + 50 synth staked at Elite-DEB=1.0, then GIVE each EliteAuryn
+;; (Elite-DEB rises above the stored basis) => all 50 go STALE.
+;; ============================================================================
+(begin-tx "SCALE-INJ-01 - deb vault + 50 synth stakers + stale via Elite-DEB rise")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-INJ-01 · deb vault + stake 50 + stale] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (elite-id:string "ELITEAURYN-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjPool"))
+        (score-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjScore"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
+    )
+    ;; deb-based (class-1) vault + score + enable
+    (ref-TS02-C3::AQP-POOL|C_Issue patron "ScaleInjPool" ouro-id 1)
+    (ref-TS02-C3::AQP-SCR|C_IssueTrueFungibleScore patron patron "ScaleInjScore" 12 1.0)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    ;; ENABLE deb-boost while the score is empty — required for the score's deb to track Elite-DEB (go stale)
+    (ref-TS02-C3::AQP-SCR|C_EnableDebBoost patron score-id)
+    (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
+    ;; stake 50 synth (2 OURO each) at Elite-DEB=1.0 → deb stored on the 1.0 basis
+    (VCTGAS.XI_TfStakeOnly patron pool-id ouro-id 50 2.0)
+    ;; mint EliteAuryn to patron, then GIVE 100000 to each synth → Elite-DEB rises → stored deb stale
+    (ref-TS01-C1::DPTF|C_Mint patron elite-id patron 10000000.0 true)
+    (map (lambda (i:integer) (ref-TS01-C1::DPTF|C_Transfer patron elite-id patron (VCTGAS.UC_SynthAccount i) 100000.0 true)) (enumerate 1 50))
+    (let
+        (
+            (u1:string (VCTGAS.UC_SynthAccount 1))
+        )
+        (map print
+            [
+                (format "<(INJ-01 · synth-1 Elite-DEB / stale? / present-stale-count)> => {} / {} / {}"
+                    [(ref-DALOS::UR_Elite-DEB u1) (ref-SCR::URC_U-SCR|UserScoreDebStale u1 pool-id score-id) (length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])
+                (expect "<<SCALE-INJ-01>> synth-1 Elite-DEB rose above 1.0" true (> (ref-DALOS::UR_Elite-DEB u1) 1.0))
+                (expect "<<SCALE-INJ-01>> synth-1 score now STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale u1 pool-id score-id))
+                (expect "<<SCALE-INJ-01>> all 50 present users STALE" 50 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; SCALE-INJ-FIX — page the deb-fix over the shrinking stale set (CC_InjectFixChunk 15/round).
+;; ============================================================================
+(begin-tx "SCALE-INJ-R1 - CC_InjectFixChunk 15")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-INJ-R1 · fix chunk 15] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
+    )
+    (env-gas 0)
+    (ref-TS02-C3::AQP-FVT|CC_InjectFixChunk patron fvt-id ouro-id 15)
+    (let
+        (
+            (g:integer (env-gas))
+            (remain:integer (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+        )
+        (map print
+            [
+                (format "<<SCALE-INJ-R1>> gas={} stale-remaining={} fits-2M={}" [g remain (<= g 2000000)])
+                (expect (format "<<SCALE-INJ-R1>> stale-remaining={}" [remain]) 35 remain)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(begin-tx "SCALE-INJ-R2 - CC_InjectFixChunk 15")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-INJ-R2 · fix chunk 15] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
+    )
+    (env-gas 0)
+    (ref-TS02-C3::AQP-FVT|CC_InjectFixChunk patron fvt-id ouro-id 15)
+    (let
+        (
+            (g:integer (env-gas))
+            (remain:integer (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+        )
+        (map print
+            [
+                (format "<<SCALE-INJ-R2>> gas={} stale-remaining={} fits-2M={}" [g remain (<= g 2000000)])
+                (expect (format "<<SCALE-INJ-R2>> stale-remaining={}" [remain]) 20 remain)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(begin-tx "SCALE-INJ-R3 - CC_InjectFixChunk 15")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-INJ-R3 · fix chunk 15] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
+    )
+    (env-gas 0)
+    (ref-TS02-C3::AQP-FVT|CC_InjectFixChunk patron fvt-id ouro-id 15)
+    (let
+        (
+            (g:integer (env-gas))
+            (remain:integer (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+        )
+        (map print
+            [
+                (format "<<SCALE-INJ-R3>> gas={} stale-remaining={} fits-2M={}" [g remain (<= g 2000000)])
+                (expect (format "<<SCALE-INJ-R3>> stale-remaining={}" [remain]) 5 remain)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(begin-tx "SCALE-INJ-R4 - CC_InjectFixChunk 15")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-INJ-R4 · fix chunk 15] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
+    )
+    (env-gas 0)
+    (ref-TS02-C3::AQP-FVT|CC_InjectFixChunk patron fvt-id ouro-id 15)
+    (let
+        (
+            (g:integer (env-gas))
+            (remain:integer (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+        )
+        (map print
+            [
+                (format "<<SCALE-INJ-R4>> gas={} stale-remaining={} fits-2M={}" [g remain (<= g 2000000)])
+                (expect (format "<<SCALE-INJ-R4>> stale-remaining={}" [remain]) 0 remain)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;; SCALE-INJ-FINALIZE — 0 stale remain: the enforced-fresh gate passes; inject on the fresh divisor.
+(begin-tx "SCALE-INJ-FINALIZE - CC_InjectFinalize (inject 10 OURO on the fresh divisor)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+          "caps":
+            [
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0)
+            ]
+        }
+    ]
+)
+(print "--- [SCALE-INJ-FINALIZE · CC_InjectFinalize] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
+        (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouro-id))
+    )
+    (expect "<<SCALE-INJ-FINALIZE>> pre: zero stale (gate may proceed)" 0 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+    (env-gas 0)
+    (ref-TS02-C3::AQP-FVT|CC_InjectFinalize patron fvt-id ouro-id 10.0)
+    (let
+        (
+            (g:integer (env-gas))
+            (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id ouro-id))
+        )
+        (map print
+            [
+                (format "<<SCALE-INJ-FINALIZE>> gas={} G {}->{} fits-2M={}" [g g-pre g-post (<= g 2000000)])
+                (expect (format "<<SCALE-INJ-FINALIZE>> finalize advanced G on the fresh divisor {}->{}" [g-pre g-post]) true (> g-post g-pre))
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== END AQP-scale-inject.repl — 50-user enforced-fresh inject fix batch + gas ===")
