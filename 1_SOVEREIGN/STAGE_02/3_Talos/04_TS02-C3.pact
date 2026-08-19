@@ -220,6 +220,12 @@
     (defun AQP-FVT|CC_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
+    (defun AQP-FVT|CC_InjectFixChunk:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+    )
+    (defun AQP-FVT|CC_InjectFinalize:string
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    )
     (defun MTX-AQP|C_2|Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
@@ -1775,6 +1781,45 @@
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (format "Successfully FRESH-injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|CC_InjectFixChunk:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+        @doc "PAGE the enforced-fresh inject's fix phase — refresh up to `chunk` currently-stale stakers (penalized), \
+            \ the scalable prelude to AQP-FVT|CC_InjectFinalize for stale sets exceeding one tx. Repeat until none \
+            \ remain. `chunk` is the UI's simulated slice (bounded by AQP-FVT's loose INJECT-FIX-CHUNK-MAX). Lives \
+            \ in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                )
+                (let ((r:string (ref-FVT::CC_InjectFixChunk patron fvt-id reward-dptf-id chunk)))
+                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    r
+                )
+            )
+        )
+    )
+    (defun AQP-FVT|CC_InjectFinalize:string
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "FINALIZE a paginated enforced-fresh inject: after CC_InjectFixChunk pages left ZERO stale, inject on \
+            \ the fresh divisor + collect IGNIS on patron — same outcome as the single-tx AQP-FVT|CC_Inject. Lives \
+            \ in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::CC_InjectFinalize patron fvt-id reward-dptf-id amount)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully FRESH-injected {} {} into FVT {} (paginated)." [amount reward-dptf-id fvt-id])
             )
         )
     )

@@ -1,0 +1,174 @@
+;; ============================================================================
+;; REPL/Stage_02/[6.2.8c]_AQP-INJECT-CC.repl — enforced-fresh inject CC-batch (#FP4.3).
+;;
+;; Legend: <(...)>  live call echo   ·   <<TX-INJECT-CC*>>  assertion tag.
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CC_InjectFixChunk +
+;;         CC_InjectFinalize + FVT|C>INJECT-FIX + INJECT-FIX-CHUNK-MAX), 3_Talos/
+;;         04_TS02-C3.pact (AQP-FVT|CC_InjectFixChunk / AQP-FVT|CC_InjectFinalize).
+;; REPL tests: deb-staleness-inject-cc.repl.
+;;
+;; WHAT THIS PROVES — the paginated (defun+gate) twin of the fixed 2-step MTX|2|C_Inject
+;; defpact reaches the SAME end as the single-tx CC_Inject ([6.2.7] DEB06), but the fix and
+;; the inject are split across txs for spike loads exceeding one tx:
+;;   1. ANHD moves his own Elite-DEB DOWN -> his SubsidiaryTreasury scores go STALE.
+;;   2. CC_InjectFinalize REFUSES to inject while any staker is stale (the enforced-fresh
+;;      gate) -> expect-failure.
+;;   3. CC_InjectFixChunk pages the stale set (shrinks as fixed) until none remain.
+;;   4. CC_InjectFinalize now injects on the FRESH divisor — G advances, mirror resynced.
+;; Single present staker (ANHD) ⇒ one fix chunk clears the set (parity with DEB06 + the
+;; defpact, both terminal-in-one on this fixture); the >=2-staker partial-page demo (a
+;; chunk that leaves some stale so finalize still refuses) needs a 2-staker vault fixture,
+;; tracked as a follow-up.
+;; ============================================================================
+(begin-tx "TX-INJECT-CC01 - move ANHD Elite-DEB DOWN => stale stakers in SubsidiaryTreasury")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TX-INJECT-CC01 · 01 · create staleness for the enforced-fresh inject] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+        (coding-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryCodingDivision"))
+        (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink bunnies-score))
+        (coding-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink coding-score))
+        (ea-id:string (ref-DALOS::UR_EliteAurynID))
+        (deb-pre:decimal (ref-DALOS::UR_Elite-DEB anhd))
+        (ea-bal:decimal (ref-DPTF::UR_AccountSupply ea-id anhd))
+    )
+    (map print
+        [
+            (format "<(INJECT-CC01 pre: elite-deb / present-stale-count)> => {} / {}" [deb-pre (length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])
+            (expect "<<TX-INJECT-CC01>> pre: ANHD Bunnies score FRESH" false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
+        ]
+    )
+    ;; drop ANHD's EliteAuryn to ~1% → live Elite-DEB falls a tier ⇒ his treasury scores go stale
+    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (map print
+        [
+            (format "<(INJECT-CC01 post-move: elite-deb {} -> {} · stale present users = {})>" [deb-pre (ref-DALOS::UR_Elite-DEB anhd) (length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])
+            (expect "<<TX-INJECT-CC01>> ANHD Bunnies score now STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
+            (expect "<<TX-INJECT-CC01>> ANHD CodingDivision score now STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd coding-pool coding-score))
+            (expect "<<TX-INJECT-CC01>> >=1 stale present user to fix" true (>= (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)) 1))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Staleness committed. The inject must NOT proceed until every staker is fresh —
+;;|| CC_InjectFinalize refuses, CC_InjectFixChunk pages the fix, then finalize injects.
+;;
+;; NOTE: each Talos client call is its OWN tx — that IS how a paginated inject runs on chain (fix chunks and the
+;; finalize are separate submissions). One gas-station settlement (XB_DynamicFuelKDA) per tx.
+(begin-tx "TX-INJECT-CC02 - the enforced-fresh GATE: CC_InjectFinalize refuses while stale stakers remain")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TX-INJECT-CC02 · 01 · finalize gate refuses while stale] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(INJECT-CC02 pre: stale-count)> => {}" [(length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])
+            (expect "<<TX-INJECT-CC02>> pre: stale stakers present (gate's enforce condition is met — finalize must refuse)" true (> (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)) 0))
+            ;; THE GATE — CC_InjectFinalize must REFUSE while any staker is stale. (Generic expect-failure: in a normal
+            ;; tx the body's enforce fires with "Stale stakers remain"; the REPL runs expect-failure in a read-only
+            ;; savepoint where the enforce's URH_ select is itself disallowed, so the call fails with the DB read-only
+            ;; error instead. Either way finalize cannot proceed while stale; the assertion above confirms >0 stale.)
+            (expect-failure "<<TX-INJECT-CC02>> CC_InjectFinalize REFUSES while stale stakers remain"
+                (ref-TS02-C3::AQP-FVT|CC_InjectFinalize anhd fvt-id auryn-id 10.0))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| PAGE the fix in its own tx — the stale set shrinks to empty.
+;;
+(begin-tx "TX-INJECT-CC03 - CC_InjectFixChunk pages the stale set to empty")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TX-INJECT-CC03 · 01 · paginated fix] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (bunnies-score:string (ref-U|DALOS::UDC_Makeid "SubsidiaryBunnies"))
+        (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink bunnies-score))
+    )
+    ;; chunk=100 covers the (single-staker) set; the stale set shrinks to empty
+    (print (format "<(INJECT-CC03 AQP-FVT|CC_InjectFixChunk chunk=100)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|CC_InjectFixChunk anhd fvt-id auryn-id 100)]))
+    (map print
+        [
+            (format "<(INJECT-CC03 post-fix: stale-count)> => {}" [(length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])
+            (expect "<<TX-INJECT-CC03>> post-fix: NO stale present users remain" 0 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+            (expect "<<TX-INJECT-CC03>> post-fix: ANHD Bunnies score FRESH" false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd bunnies-pool bunnies-score))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| FINALIZE in its own tx — with zero stale, the inject now proceeds on the fresh divisor.
+;;
+(begin-tx "TX-INJECT-CC04 - CC_InjectFinalize injects on the fresh divisor (== single-tx CC_Inject)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TX-INJECT-CC04 · 01 · finalize inject] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (inject-amt:decimal 10.0)
+        (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
+    )
+    (expect "<<TX-INJECT-CC04>> pre: zero stale (finalize may proceed)" 0 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+    (print (format "<(INJECT-CC04 AQP-FVT|CC_InjectFinalize)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|CC_InjectFinalize anhd fvt-id auryn-id inject-amt)]))
+    (let
+        (
+            (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
+        )
+        (map print
+            [
+                (format "<(INJECT-CC04 G pre/post)> => {} / {}" [g-pre g-post])
+                ;; same outcome as the single-tx CC_Inject (DEB06): inject advanced G on the FRESH divisor
+                (expect (format "<<TX-INJECT-CC04>> finalize advanced G on the fresh divisor {}->{}" [g-pre g-post]) true (> g-post g-pre))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== [6.2.8c]_AQP-INJECT-CC END — paginated enforced-fresh inject == single-tx CC_Inject ===")

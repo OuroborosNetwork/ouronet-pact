@@ -134,6 +134,12 @@
     (defun CC_Inject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
+    (defun CC_InjectFixChunk:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+    )
+    (defun CC_InjectFinalize:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+    )
     (defun CC_SweepRevokeAnchor:string (patron:string anchor-id:string))
     (defun CC_SweepBegin:string (patron:string anchor-id:string))
     (defun CC_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
@@ -524,6 +530,16 @@
        \ Calibrate against the [6.2.x] sweep gas probe; keep it above the measured worst case so it never throttles.")
     (defconst SWEEP-CHUNK-MAX (/ SWEEP-CHUNK-GAS-BUDGET SWEEP-GAS-PER-HOLDER)
         "~100 holders/chunk — the UI's optimistic seed + a coarse safety ceiling; refined by simulation.")
+    ;; --- Enforced-fresh inject CC-batch fix backstop (loose ceiling + UI seed; same philosophy) ---
+    (defconst INJECT-FIX-CHUNK-GAS-BUDGET 2000000
+        "Nominal per-tx gas envelope the inject-fix chunk cap is sized against (backstop, not the optimizer).")
+    (defconst INJECT-FIX-GAS-PER-USER 20000
+        "GENEROUS per-stale-user backstop for the enforced-fresh deb-fix (settle across every reward stream + \
+       \ deb refresh + mirror resync). NOT the optimizer — the UI sizes real chunks by simulating (/local) and \
+       \ the node gas meter is the real ceiling; an oversized chunk aborts atomically (retry smaller). Calibrate \
+       \ against a gas probe; keep it above the measured worst case so it never throttles.")
+    (defconst INJECT-FIX-CHUNK-MAX (/ INJECT-FIX-CHUNK-GAS-BUDGET INJECT-FIX-GAS-PER-USER)
+        "~100 stale users/chunk — the UI's optimistic seed + a coarse safety ceiling; refined by simulation.")
     ;; M3 #12 2e — IGNIS charged per inject-forced deb-fix, at the user's next collect (non-discountable). Governance
     ;; param (placeholder); set ≥ the IGNIS cost of self-fixing one score so self-fixing is always cheaper. ~10 IGNIS.
     (defconst CT_FORCED_FIX_RATE:decimal 10.0)
@@ -720,6 +736,23 @@
         (UEV_InjectContext patron fvt-id reward-dptf-id amount)
         (compose-capability (P|SECURE-CALLER))
         (compose-capability (P|FVT|REMOTE-GOV))
+    )
+    (defcap FVT|C>INJECT-FIX (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+        @doc "Protects a paginated enforced-fresh inject FIX chunk (CC_InjectFixChunk) — the scalable prelude to \
+            \ CC_InjectFinalize, for stale sets exceeding one tx. Validates the SAME reward context as an inject \
+            \ (not vacate-frozen, reward link row exists + enabled) minus the amount, so a fix pass is always tied \
+            \ to a real reward link (the fix force-refreshes stale stakers + records the 2e penalty, exactly as \
+            \ the MTX|2|C_Inject defpact does). `chunk` is bounded by the loose INJECT-FIX-CHUNK-MAX backstop (the \
+            \ UI sizes it by simulation; the node gas meter is the real ceiling). Composes P|SECURE-CALLER for the \
+            \ intra-module fix + the cross-module XE_RefreshUserScoreDeb into AQP-SCORE. `patron` retained for \
+            \ symmetry / the event."
+        @event
+        (enforce (not (UR_FVT|VacateFrozen fvt-id)) "FVT is frozen: a pool it serves is mid-vacate")
+        (enforce (and (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id))
+            "Reward link row must exist and be enabled for a fix pass")
+        (enforce (and (> chunk 0) (<= chunk INJECT-FIX-CHUNK-MAX))
+            "Inject-fix chunk out of range — the UI sizes it by simulation, the gas meter is the real ceiling")
+        (compose-capability (P|SECURE-CALLER))
     )
     (defcap FVT|C>SWEEP-REVOKE (patron:string anchor-id:string)
         @doc "Protects the single-tx re-score sweep (CC_SweepRevokeAnchor). Composes P|SECURE-CALLER so SECURE is \
@@ -3240,6 +3273,60 @@
                     ]
                     []
                 )
+            )
+        )
+    )
+    (defun CC_InjectFixChunk:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+        @doc "PAGE the enforced-fresh inject's FIX phase — the scalable prelude to CC_InjectFinalize, the defun+gate \
+            \ twin of the fixed 2-step MTX|2|C_Inject defpact, for stale sets exceeding one tx. Fixes up to `chunk` \
+            \ CURRENTLY-stale present users (settle at old deb + refresh to live + resync mirror, recording the 2e \
+            \ forced-fix count — same penalized fix as the single-tx CC_Inject and the defpact). No cursor: the \
+            \ stale set SHRINKS as it is fixed (fixed users read fresh, so they drop out of URH_FvtStalePresentUsers) \
+            \ — repeat until none remain, then CC_InjectFinalize. UEV_IMC + FVT|C>INJECT-FIX (reward context + chunk \
+            \ bound). Between-tx staleness from external Elite-DEB moves is re-caught by the next scan; finalize \
+            \ enforces zero-stale at inject."
+        (UEV_IMC)
+        (with-capability (FVT|C>INJECT-FIX patron fvt-id reward-dptf-id chunk)
+            (let
+                (
+                    (stale:[string] (URH_FvtStalePresentUsers fvt-id))
+                )
+                (let
+                    (
+                        (batch:[string] (take chunk stale))
+                    )
+                    ;; force-refresh this chunk of stale stakers (penalized); fixed users drop out of the stale set
+                    (map (lambda (u:string) (XI_FixUserFvtDebPenalized fvt-id reward-dptf-id u)) batch)
+                    (let
+                        (
+                            (remaining:integer (- (length stale) (length batch)))
+                        )
+                        (format "Inject-fix: fixed {} of {} stale staker(s) — {} remain{}." [(length batch) (length stale) remaining (if (= remaining 0) " (ready to CC_InjectFinalize)" ", keep paging")]))
+                )
+            )
+        )
+    )
+    (defun CC_InjectFinalize:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "FINALIZE a paginated enforced-fresh inject: enforce that NO stale present user remains (the prior \
+            \ CC_InjectFixChunk pages made the divisor live), then inject on the fresh divisor via the shared \
+            \ XI_FvtInjectCore — identical outcome to the single-tx CC_Inject and the MTX|2|C_Inject defpact terminal \
+            \ step. The zero-stale gate is the enforced-fresh guarantee at the moment of inject (a heavy scan, so it \
+            \ lives in the body, not the defcap). UEV_IMC + FVT|C>INJECT (same auth as any inject)."
+        (UEV_IMC)
+        (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
+            ;; enforced-fresh gate: refuse to inject while any present staker is stale (page CC_InjectFixChunk first).
+            ;; The URH_ scan (select) MUST be computed in a let, NOT inside the enforce — Pact evaluates an enforce
+            ;; predicate in read-only/sys-only mode, where select is disallowed. Fires before XI_FvtInjectCore's
+            ;; custody transfer, so an aborted finalize moves no funds.
+            (let
+                (
+                    (stale-remaining:integer (length (URH_FvtStalePresentUsers fvt-id)))
+                )
+                (enforce (= 0 stale-remaining)
+                    "Stale stakers remain — page CC_InjectFixChunk until none remain before finalizing (or use single-tx CC_Inject)")
+                (XI_FvtInjectCore patron fvt-id reward-dptf-id amount)
             )
         )
     )
