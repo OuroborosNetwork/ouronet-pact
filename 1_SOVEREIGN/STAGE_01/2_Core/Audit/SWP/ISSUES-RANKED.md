@@ -210,8 +210,12 @@ reserves (not a floored ratio) whenever the removed amount equals the entire LP 
 supply can reach exactly `0.0`. Reserves and LP supply are proven to hit zero together, by construction —
 the finding describes a state the code cannot produce. Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *M8*
 
-#30M **[SWP]** `C_ChangeOwnership` is one-phase/unilateral — a fat-fingered destination account permanently
-strips the true owner of all admin levers. — *M6*
+#30M **[SWP]** ~~`C_ChangeOwnership` is one-phase/unilateral — a fat-fingered destination account
+permanently strips the true owner of all admin levers.~~ — **DESIGN, non-issue (owner, 2026-08-19).**
+Real-world addresses are copy-pasted/Stoic-tagged, not hand-typed, and the UI previews the destination
+pre-sign — a genuine (client-side) confirmation step. On-chain mechanics confirmed accurate, but the
+mitigation fully answers the specific threat, consistent with every other one-shot transfer in this
+codebase. Full trace in `ROUND-01-OWNER-FEEDBACK.md`. — *M6*
 
 #31M **[SWP]** `C_EnableFrozenLP`/`C_EnableSleepingLP` have no pool-owner authorization at all. — *M7*
 

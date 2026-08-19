@@ -1491,3 +1491,27 @@ state the code structurally cannot produce: the two quantities are proven to hit
 construction, in the same write. No fix needed. — *M8*
 
 ---
+
+## M6 (#30M, `C_ChangeOwnership` is one-phase/unilateral — no propose→accept step) — **DESIGN, non-issue**
+
+**Owner:** not the intended attack surface this reads as — account addresses in practice are copy-pasted
+or referenced via Stoic tags in the UI, not hand-typed, so the realistic typo risk this finding worries
+about is far lower than the on-chain code alone suggests. The UI also previews the transaction (including
+the destination) before the user signs, giving a real confirmation step — just implemented client-side
+rather than as a second on-chain transaction.
+
+**Assessed, not just accepted at face value:** the on-chain mechanics traced in the original presentation
+are accurate — `C_ChangeOwnership` (`15_SWP.pact:1360-1372`) writes the new owner immediately on the
+current owner's signature alone, `UEV_EnforceAccountExists` only checks the account exists, and there's
+no on-chain propose/accept split. But the owner's mitigation is a genuine, complete answer to the
+specific threat modeled (fat-fingered destination), not a partial one: copy-paste plus a pre-sign preview
+addresses exactly the failure mode the finding describes, the same way it does for every other irreversible
+single-step transfer already in this codebase (e.g. an ordinary `TFT::C_Transfer` to a wrong address is
+equally unrecoverable and isn't held to a different standard) — singling out `C_ChangeOwnership` for
+two-phase hardening while every other transfer stays one-shot would be an inconsistent bar, not a
+principled one. No comparable residual/linked gap (unlike H10/M10's L68 dependency) — the UI-level
+mitigation isn't waiting on a separate fix to be complete.
+
+**Status:** DESIGN, confirmed non-issue — no fix needed, no code changed. — *M6*
+
+---
