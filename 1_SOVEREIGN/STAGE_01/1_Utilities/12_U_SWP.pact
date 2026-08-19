@@ -83,11 +83,15 @@
                                     (prev-y:decimal (at idx y-values))
                                     (y-value:decimal (UC_YNext prev-y A D n S-Prime P-Prime))
                                 )
-                                (ref-U|LST::UC_AppL y-values y-value)               
+                                (ref-U|LST::UC_AppL y-values y-value)
                             )
                         )
                         [y0]
-                        (enumerate 0 10)
+                        ;;#24H fix: 11 -> 12 iterations, for uniformity with UC_ComputeD's bumped
+                        ;;count (owner direction) — measured fully converged at 11 already (proven
+                        ;;via a 255-iteration reference at 1000x reserve skew), so this is pure
+                        ;;margin, not a measured shortfall like UC_ComputeD's was.
+                        (enumerate 0 11)
                     )
                 )
             )
@@ -135,11 +139,12 @@
                                     (prev-y:decimal (at idx y-values))
                                     (y-value:decimal (UC_ZNext prev-y A D n S-Prime P-Prime))
                                 )
-                                (ref-U|LST::UC_AppL y-values y-value)               
+                                (ref-U|LST::UC_AppL y-values y-value)
                             )
                         )
                         [y0]
-                        (enumerate 0 10)
+                        ;;#24H fix: 11 -> 12 iterations, mirroring UC_ComputeY (see its comment).
+                        (enumerate 0 11)
                     )
                 )
             )
@@ -215,7 +220,17 @@
     )
     (defun UC_ComputeD:decimal (A:decimal X:[decimal])
         @doc "Computes D Parameter given an amplifier <A> and a value of Pool Tokens \
-        \ Uses <UC_DNext> for aproximation over 5 fixed iterations"
+        \ Uses <UC_DNext> for aproximation over 12 fixed iterations. \
+        \ #24H fix: was 6 (docstring claimed 5, itself a doc/code mismatch) — measured \
+        \ directly against a 255-iteration reference at 1000x reserve skew \
+        \ (X=[500000,500,500], A=85, a legally reachable pool state): 6 iterations left \
+        \ D off by 0.0078 absolute, while the same computation is already fully \
+        \ converged (bit-identical to 255 iterations) by iteration 10. Pact has no \
+        \ dynamic-length loop / early-exit-on-convergence construct (Turing-incomplete — \
+        \ the iteration count must be a fixed number decided in advance, not runtime- \
+        \ dependent), so the fix is a plain static bump, not an adaptive break: 12 \
+        \ gives 2 iterations of margin past the measured convergence point, for a small, \
+        \ fixed, uniform gas cost on every call regardless of pool state."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -232,7 +247,7 @@
                             )
                         )
                         [(fold (+) 0.0 X)]
-                        (enumerate 0 5)
+                        (enumerate 0 11)
                     )
                 )
             )

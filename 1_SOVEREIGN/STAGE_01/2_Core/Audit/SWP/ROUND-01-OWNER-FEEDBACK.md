@@ -1226,3 +1226,54 @@ deficit billed twice under two names.
 **Status:** DESIGN, confirmed intentional — no fix needed, no code changed.
 
 ---
+
+## H1 (#24H, `UC_ComputeD`/`UC_ComputeY` fixed iteration count, no convergence check) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner pushback, correctly:** "math is either correct or it isn't" — and separately, direct experience
+that more iterations past the chosen count showed negligible improvement. Both needed a real answer, not
+a restatement of the audit doc's own unverified claim.
+
+**Measured directly against the real functions, not the finding's own number taken on faith.** Built a
+scratch REPL calling `U|SWP::UC_ComputeD`/`UC_DNext` at the exact skew the finding cites
+(`X=[500000,500,500]`, `A=85`) and compared the coded 6-iteration result against manually-folded
+references at 10, 20, 50, 100, and 255 iterations. Result: **the finding's number is exactly right** —
+6 iterations leaves `D` off by `0.0078` absolute from the converged value — **and** the computation is
+already fully converged, bit-identical to the 255-iteration reference, by iteration 10. Ran the same
+check for `UC_ComputeY`/`UC_ComputeInverseY` (11 coded iterations): already fully converged at 11,
+byte-identical to 255 — confirms the owner's own testing was correct for these two.
+
+**So the precise answer to "is the math correct":** the Newton formula itself (`UC_DNext`/`UC_YNext`/
+`UC_ZNext`) is correct in all three cases — it converges to the right root. What was wrong was
+specifically `UC_ComputeD`'s fixed step count, measured 4 iterations short of where its own math
+actually settles at a legally-reachable skew. Not "the math is broken" — one specific hardcoded number
+was measured wrong, with the exact gap shown.
+
+**First proposed a "convergence-break" (early-exit once `|Dₙ₊₁-Dₙ| ≤ epsilon`) — owner correctly rejected
+it as the same category error already made once this session for `URC_Hopper`'s retry-loop proposal:**
+Pact is Turing-incomplete — there is no dynamic-length loop or early-exit-from-`fold` on a runtime
+condition. Every loop's length must be a fixed number decided in advance. Withdrew it; the only real
+option is a plain, static iteration-count bump.
+
+**Owner direction:** bump to 12 uniformly — `UC_ComputeD` (6→12, closes the measured gap with 2
+iterations of margin) **and** `UC_ComputeY`/`UC_ComputeInverseY` (11→12, pure margin, no measured
+shortfall) — before deciding, wanted the exact gas cost. Measured directly (`env-gas`, isolated per
+function): `UC_ComputeD` 58→116 gas (+58), `UC_ComputeY`'s fold 73→79 gas (+6), `UC_ComputeInverseY`'s
+fold ≈79(est)→82 gas (+6). A stable swap calls `UC_ComputeD` once plus one of `UC_ComputeY`/
+`UC_ComputeInverseY` once, so total added cost per swap is a flat **+64 gas**, fixed, every call,
+independent of pool state — nowhere near what an unbounded/255-iteration approach would have cost.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact`:** `UC_ComputeD` `(enumerate 0 5)` →
+`(enumerate 0 11)` (6→12 iterations); `UC_ComputeY`/`UC_ComputeInverseY` `(enumerate 0 10)` →
+`(enumerate 0 11)` each (11→12 iterations). `UC_ComputeD`'s docstring corrected (was already wrong,
+claiming "5 fixed iterations" when the code ran 6 — now accurately documents 12, the measured
+convergence point, and why no dynamic loop is possible).
+
+**Adversarially proven, live — new `SWP|TX 036` in `[6.2+3]…repl`:** asserts `UC_ComputeD` at the exact
+skew that exposed the gap now matches a 100-iteration reference exactly. Reverted `UC_ComputeD` alone
+back to 6 iterations and reconfirmed the identical `0.0078` gap reproduces precisely
+(`0.007789943067608829898242`, matching the original measurement to the last digit); restored,
+reconfirmed exact convergence. Full suite: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #15. Awaiting Round III re-verify.
+
+---

@@ -3027,6 +3027,56 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 036 - #24H Reproduction: UC_ComputeD Newton Convergence")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 036 - #24H Reproduction · 01 · env-sigs (caps)] ---")
+(env-sigs [])
+(print "--- [SWP|TX 036 - #24H Reproduction · 02 · let / invocation] ---")
+;;Audit ref: ROUND-01-FINDINGS.md #24H (H1) — UC_ComputeD used a fixed 6-iteration Newton loop
+;;with no convergence check. Direct measurement (not the audit doc's own claim taken on faith)
+;;against a 255-iteration reference at 1000x reserve skew (X=[500000,500,500], A=85, a legally
+;;reachable pool state) showed 6 iterations left D off by 0.0078 absolute, while the same
+;;computation is already fully converged (bit-identical to 255 iterations) by iteration 10.
+;;Owner direction: Pact has no dynamic-length/early-exit loop (Turing-incomplete), so the fix is
+;;a plain fixed bump to 12 (2 iterations of margin past the measured convergence point) across
+;;UC_ComputeD AND UC_ComputeY/UC_ComputeInverseY (the latter two were already fully converged at
+;;11, bumped anyway for uniformity). Measured gas cost of the change: UC_ComputeD +58 gas,
+;;UC_ComputeY/InverseY +6 gas each — a fixed, tiny, swap-state-independent increment.
+(let
+    (
+        (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+        (A:decimal 85.0)
+        (X:[decimal] [500000.0 500.0 500.0])
+        (seed:decimal (fold (+) 0.0 X))
+        (d-12:decimal (ref-U|SWP::UC_ComputeD A X))
+        (d-converged:decimal
+            (fold
+                (lambda (d:decimal i:integer) (ref-U|SWP::UC_DNext d A X))
+                seed
+                (enumerate 0 99)
+            )
+        )
+    )
+    (map print
+        [
+            (format "#24H proof — D after 12 iterations (as coded): {}" [d-12])
+            (format "#24H proof — D after 100 iterations (converged reference): {}" [d-converged])
+            (format "#24H proof — abs difference: {}" [(abs (- d-12 d-converged))])
+            (expect "#24H fix — 12 iterations reaches the same converged D as 100 iterations, at the exact skew that exposed the old 6-iteration gap" d-converged d-12)
+        ]
+    )
+)
+(print "")
+(print "--- [SWP|TX 036 - #24H Reproduction · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 036 #24H Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
 (print "")
 (print "===================DPTF + SWP Issuance-Only FINISHED==========================")
 (print "")

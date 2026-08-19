@@ -842,3 +842,43 @@ unexpectedly succeeds pre-fix; restored, reconfirmed rejected. Full suite: exit 
 `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #15 — H1 (#24H): `UC_ComputeD`/`UC_ComputeY`/`UC_ComputeInverseY` iteration count bumped to 12
+
+**Owner direction:** measure first, don't trust the audit doc's number or memory of prior testing.
+Measured `UC_ComputeD` (6 iter, as coded) against manual references at 10/20/50/100/255 iterations, at
+the finding's own skew (`X=[500000,500,500]`, `A=85`): confirmed exactly — `0.0078` absolute error at 6
+iterations, fully converged (bit-identical) by iteration 10. Same check on `UC_ComputeY`/
+`UC_ComputeInverseY` (11 iter): already fully converged at 11 — no shortfall found there.
+
+A "convergence-break" (early-exit once `|Dₙ₊₁-Dₙ| ≤ epsilon`) was proposed and correctly rejected —
+Pact has no dynamic-length loop; every iteration count must be fixed in advance. Owner direction instead:
+bump all three to 12 uniformly (2 iterations of margin past `UC_ComputeD`'s measured convergence point;
+pure margin for the other two), after confirming gas cost.
+
+**Gas measured directly (`env-gas`, isolated per function), not estimated:**
+- `UC_ComputeD`: 58 → 116 gas (+58, iterations roughly doubled 6→12).
+- `UC_ComputeY`'s fold: 73 → 79 gas (+6, one extra iteration).
+- `UC_ComputeInverseY`'s fold: → 82 gas (+6, same shape).
+- Total added cost per stable swap: **flat +64 gas** (one `UC_ComputeD` call + one `UC_ComputeY`/
+  `UC_ComputeInverseY` call), fixed regardless of pool state.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact`:**
+```diff
+ UC_ComputeD:       (enumerate 0 5)  -> (enumerate 0 11)  ;; 6 -> 12 iterations
+ UC_ComputeY:        (enumerate 0 10) -> (enumerate 0 11)  ;; 11 -> 12 iterations
+ UC_ComputeInverseY: (enumerate 0 10) -> (enumerate 0 11)  ;; 11 -> 12 iterations
+```
+`UC_ComputeD`'s docstring corrected — previously claimed "5 fixed iterations" while the code ran 6 (a
+pre-existing doc/code mismatch); now documents 12, the measured convergence point, and explains why no
+adaptive/dynamic loop is possible in Pact.
+
+**Adversarially proven, live — new `SWP|TX 036` in `[6.2+3]_DPTF-SWP_Issuance-Only.repl`:** asserts
+`UC_ComputeD` at the exact skew that exposed the gap matches a 100-iteration reference exactly (`abs
+difference = 0.0`). Reverted `UC_ComputeD` alone back to 6 iterations and reconfirmed the identical
+`0.0078` gap reproduces to the last digit (`0.007789943067608829898242`); restored, reconfirmed exact
+convergence. Full suite: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

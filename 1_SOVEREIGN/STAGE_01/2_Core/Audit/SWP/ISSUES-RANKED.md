@@ -164,8 +164,13 @@ looks like a check but performs none.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-1
 Fix #11): closed as a byproduct of #11C — this finding's exact location *is* the map #11C's fix wraps in
 a real `enforce`. Logged same turn per README's hard rule rather than left showing stale `_pending_`. — *H5*
 
-#24H **[U|SWP]** `UC_ComputeD`/`UC_ComputeY` use a fixed iteration count with no convergence check — silently
-under-converges on heavily skewed pools. — *H1*
+#24H **[U|SWP]** ~~`UC_ComputeD`/`UC_ComputeY` use a fixed iteration count with no convergence check —
+silently under-converges on heavily skewed pools.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-19**
+(`ROUND-02-FIXES.md` Fix #15). Measured directly (not the finding's own claim taken on faith):
+`UC_ComputeD` (6 iter) really was 0.0078 short at 1000x skew, fully converged by iteration 10;
+`UC_ComputeY`/`InverseY` (11 iter) already fully converged. Pact can't do a dynamic convergence-break
+(Turing-incomplete) — bumped all three to a fixed 12 iterations; measured gas cost +64 flat per stable
+swap. Adversarially reverted `UC_ComputeD` alone, reconfirmed the exact gap reproduces; restored. — *H1*
 
 #25H **[SWPL]** Asymmetric-deficit tax compensation is never returned to the specific pool's own diluted LP
 holders — confirmed routed to the shared `SWP|SC_NAME` vault instead (real IGNIS transfer, traced 2026-08-16
