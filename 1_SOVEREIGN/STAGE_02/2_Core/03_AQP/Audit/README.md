@@ -17,6 +17,28 @@ correct** — for every path, "if X and Y and Z happen, the outcome is P, and P 
 Round files are **append-only / immutable once closed**. Only this README's tracker is edited in
 place. Module `.pact` source changes **only** during a Fixes round, one fix at a time.
 
+## Post-audit hardening — defun+gate scaling + #FP5 green-run (2026-08-19)
+
+Follow-on to the H4/M3 work: every fixed-step defpact now has a **scalable defun+gate twin** (the
+single-tx path + the defpact stay as comparison oracles), plus a user-facing self-heal. All on `main`.
+
+| Work | Surface (AQP-FVT + Talos TS02-C3) | Proof |
+|------|-----------------------------------|-------|
+| **Sweep CC-batch** (H4 scaling) | `CC_SweepBegin` + `CC_SweepRecomputeChunk` + `FVT\|SweepProgress` cursor; loose `SWEEP-CHUNK-MAX` backstop | `[6.2.8]` via `deb-staleness-sweep-cc.repl` — same end-state as the `SWEEP01` defpact (agg 100→0, lane 20→0); freeze+cursor survive the tx boundary |
+| **Inject CC-batch** (M3 2d scaling) | `CC_InjectFixChunk` (pages the shrinking stale set) + `CC_InjectFinalize` (zero-stale gate → inject) | `[6.2.8c]` via `deb-staleness-inject-cc.repl` — gate refuses while stale, then injects on the fresh divisor (G advances), == single-tx `CC_Inject` |
+| **Self-service unstale** (M3) | `C_UnstaleMyScores(patron, fvt-ids)` — refresh your OWN stale scores, **non-penalized** (only inject-forced fixes bill the 2e); detectors `URC_FvtUserHasStaleMember`/`StaleMemberCount` on the interface | `[6.2.8b]` — stale→fresh, mirror resynced, forced-fix count stays 0 |
+
+**#FP5 comprehensive green-run** — `bash REPL/run-aqp-audit.sh` = **ALL GREEN** (6 suites: comprehensive,
+core-vct, deb-staleness-proof, sweep-cc, inject-cc, triplet-collect-golden). Surfaced + fixed:
+- the ATS-merge **MVST double-load** regression (restored the #12a guard in `Stage01_Tester`; ATS tests run via `_audit_ats_baseline.repl`);
+- a **coincidental test** (`A04`): asserted an arbitrary-nonce stake landed an Elk0nite bunny — made deterministic (filter by `URC_ConformNonces`, stake a conforming nonce);
+- added **`A05` multi-anchor coverage**: one "Legendary Elite-Auryn Rain" NFT → 5 anchors across 4 boost-classes; proves the fan-out + the same-class sum (`GoldenSnakePower == EliteAurynRain + LegendarySnakeTokenRain = 600`).
+
+**Findings worth keeping:**
+- **NF-stake cost = O(anchors defined on the collectable), flat per stake** — `XE_ResyncNonFungibleUserAnchorValues` scans *every* live anchor + recomputes all `distinct` boost-classes regardless of how many the NFT matches. Measured: 5-anchor stake **92552** vs single-anchor **92486** gas (Δ 66, 0.07%). The gas lever is *how many anchors a collectable defines*, not how many a given NFT hits.
+- Gotcha: **`select` is disallowed inside an `enforce` predicate** (read-only/sys-only mode) — compute the scan in a `let`, enforce on the value (bit `CC_InjectFinalize`).
+- Gotcha: the **MVST double-load** trap — `Stage01_Tester` must NOT load `[6.5]_DPOF`/`[6.6]_ATS` (the AQP Stage-2 path self-loads `[6.5]` via `[6.2.4]_AQP-FVT-OF`).
+
 ## Status legend
 `OPEN` awaiting verdict · `CONFIRMED` bug to fix · `DESIGN` confirmed, needs a design decision first ·
 `DOC-FIX` code right, doc wrong · `CONVENTION` not a bug → becomes a StoicSyntax rule/refactor ·

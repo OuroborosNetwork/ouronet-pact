@@ -149,6 +149,26 @@ The re-scan-before-inject catches anyone who re-staled mid-operation.
 - **Idempotency:** tie the inject to a `reward-injection-id` / an `injected` flag so a retry after a
   partial/abandoned sweep cannot double-inject. Fixes are naturally idempotent (refreshing a fresh score = no-op).
 
+### 2.5.1 Scaling + self-heal — SHIPPED 2026-08-19 (#FP4.2/#FP4.3)
+
+Two follow-ons built on top of the single-tx `CC_Inject` + the `MTX|2|C_Inject` defpact (both kept as
+comparison oracles):
+
+- **Inject CC-batch (defun+gate)** — the scalable twin of the fixed 2-step defpact, for stale sets exceeding
+  one tx. No cursor needed (unlike the sweep): the stale set *shrinks* as it is fixed, so
+  **`CC_InjectFixChunk(patron, fvt, reward-dptf, chunk)`** force-refreshes up to `chunk` currently-stale users
+  (penalized, same 2e as the defpact) — repeat until `URH_FvtStalePresentUsers` is empty — then
+  **`CC_InjectFinalize(patron, fvt, reward-dptf, amount)`** enforces zero-stale and injects on the fresh
+  divisor via the shared `XI_FvtInjectCore` (identical outcome to `CC_Inject`). Loose `INJECT-FIX-CHUNK-MAX`
+  backstop. Each Talos call is its own tx (real pagination = one gas-station settlement per tx). Talos:
+  `AQP-FVT|CC_InjectFixChunk` / `AQP-FVT|CC_InjectFinalize`.
+- **User self-service unstale** — **`C_UnstaleMyScores(patron, fvt-ids)`**: the caller refreshes THEIR OWN
+  stale scores across the listed FVTs (settle at old deb → refresh to live → resync mirror), auth =
+  `CAP_EnforceAccountOwnership(patron)`. **NON-penalized** — only inject-*forced* fixes bill the 2e count, so
+  self-service is deliberately the cheap path (an incentive to self-heal proactively). The UI finds the FVT
+  list via the now-interface-exposed `URC_FvtUserHasStaleMember` / `URC_FvtUserStaleMemberCount`. Single-tx,
+  bounded (a user's own FVT set is small — no pagination). Talos: `AQP-FVT|C_UnstaleMyScores`.
+
 ### 2.6 Accepted residuals / limits (explicit)
 - **Bounded, never zero:** staleness bounded to one settle/inject cycle (≈ a day). The un-checkpointed span pays
   at the stored deb (honest holders keep their real/high deb — **never nuked to 1.0×**; the error direction is a
@@ -165,6 +185,10 @@ The re-scan-before-inject catches anyone who re-staled mid-operation.
 - **Verify:** `yield`/`resume` object semantics, and whether an abandoned (un-continued) pact-id is harmless for
   the next day's fresh-id inject. Also model a **stuck-pact** recovery (a half-run inject is worse than a failed
   single-tx inject; keep steps near-unfailable — pure math + point-writes, no revertable external calls).
+- **CONFIRMED (2026-08-19, #FP4.3):** a `select` (e.g. the `URH_FvtStalePresentUsers` zero-stale scan) is
+  **disallowed inside an `enforce` predicate** — Pact evaluates an enforce condition in read-only/sys-only mode,
+  where `select` aborts with *"Operation disallowed in read-only or sys-only mode."* Compute the scan in a `let`
+  first, then `enforce` on the resulting value. `CC_InjectFinalize` does exactly this.
 
 --------------------------------------------------------------------------------
 ## 2.8 — Inject architecture & naming (owner-specified 2026-08-14)

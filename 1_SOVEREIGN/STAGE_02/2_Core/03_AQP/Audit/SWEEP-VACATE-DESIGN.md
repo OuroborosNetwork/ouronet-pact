@@ -120,6 +120,27 @@ Add `boost-class → [score-ids]` (append on link in `SCR::XI_CreateBoostClassLi
 score *definitions* (few), not stakers. This replaces the coarse count with an enumerable set; the existing
 `BoostClassLinkCount` can be derived from it (or kept alongside as the O(1) lock gate).
 
+### 4e. Scaling — sweep CC-batch (defun+gate) ✅ SHIPPED 2026-08-19 (#FP4.1)
+
+The paginated **`MTX|2|C_SweepRevokeAnchor` defpact** (step 5's `take N`) is capped at `2×N_SWEEP` holders — a
+fixed-step wall (same reason vacate dropped its defpact, §5.1). The scalable path is a **defun+gate twin** in
+`AQP-FVT`, mirroring the vacate-v2 drain shape (`VACATE-V2-DESIGN.md`):
+
+- **`CC_SweepBegin(patron, anchor-id)`** — the bracket: freeze every affected pool + swept-revoke the anchor
+  (the reverse index survives the revoke, so nothing needs persisting), then open a **`FVT|SweepProgress`
+  cursor** `{total, offset, active}` over the frozen recompute set. Recompute is *deferred*.
+- **`CC_SweepRecomputeChunk(patron, anchor-id, chunk)`** — pages `[offset, min(offset+chunk, total))` over the
+  global-flattened present set via `XI_FvtSweepRecomputeWindow` (a FVT-local twin of the defpact's
+  `XI_SweepRecomputeWindow` — both funnel through the SAME `XI_FvtSweepRecomputeChunk` leaf, so the two paths
+  recompute identically). **Self-finalizing**: the chunk that reaches `total` unfreezes + closes the cursor;
+  completeness is ENFORCED (pools cannot unfreeze until `offset == total`). `chunk` is bounded by a loose
+  `SWEEP-CHUNK-MAX` backstop (the UI simulates the true optimum; the node gas meter is the real ceiling).
+- The single-tx `CC_SweepRevokeAnchor` (§D1) and the 2-step defpact are **kept as comparison oracles** — the
+  cursor + freeze are *committed state* (the defun+gate's edge over the defpact's in-memory `yield`), so a
+  batch survives arbitrary tx boundaries. Talos: `AQP-FVT|CC_SweepBegin` / `AQP-FVT|CC_SweepRecomputeChunk`.
+- **Follow-up:** the ≥2-holder partial-page demo (a chunk leaving some stale so the pool stays frozen) needs a
+  2-holder LP fixture; `SWEEP-CHUNK-MAX`'s per-holder coefficient is a generous placeholder pending a gas probe.
+
 ## 5. Consumer 3 — vacate rehaul  [REVISED 2026-08-16 — parallel-safe model, owner-approved]
 
 > Supersedes the earlier "1 core + 2 defpact variants" plan. The defpact is **dropped** (see 5.1). The rehaul is now:
