@@ -1,0 +1,48 @@
+;;
+;; REPL/deb-staleness-sweep-cc.repl — sibling of deb-staleness-proof.repl for the
+;; sweep CC-batch (defun+gate) equivalence proof. Loads the IDENTICAL fixture chain
+;; (through [6.4]_AQP-EXHAUSTIVE-COLLECT.repl, which stands up the SnakePower triplet +
+;; ANHD's AurynRain/Silver stake in OuroLpFarm), then retires the AurynRain anchor via
+;; the paginated CC-batch instead of the 2-step defpact.
+;;
+;; WHY A SEPARATE DRIVER: the sweep RETIRES AurynRain destructively. deb-staleness-proof.repl
+;; retires it via the defpact ([6.2.7] SWEEP01); this driver retires the SAME anchor via the
+;; CC-batch ([6.2.8]) in its OWN pact process (fresh AurynRain). Both assert the same
+;; end-state — a true apples-to-apples defpact-vs-defun+gate equivalence on one fixture.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/deb-staleness-sweep-cc.repl  —  sweep CC-batch equivalence")
+(print "================================================================")
+(load "Stage00_Sanboxes.repl")
+(load "Stage01_Tester.repl")
+(load "Stage_02/[0.1]_Interfaces.repl")
+(load "Stage_02/[2.1]_DpdcCore.repl")
+(load "Stage_02/[2.2]_DemiPad.repl")
+(load "Stage_02/[2.3]_EarningPools.repl")
+(load "Stage_02/[3]_Talos.repl")
+(load "Stage_02/[4.0]_Sovereign-Executor.repl")
+(load "Stage_02/[5.2]_PopulateBloodshed.repl")
+(load "Stage_02/[5.1]_PopulateNosferatu.repl")
+(load "Stage_02/[5.4]_PopulateBunnies.repl")
+(begin-tx "TX-AQP-BOOT - AQP-BOOT module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+(load "../2_SLAVE/Stage_02/04_AQP-BOOT.pact")
+(commit-tx)
+(begin-tx "TX-AQP-BOOT - AQP-BOOT Step0 IMC + vault governor")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print (format "<(AQP-BOOT|C_Step0_WireImcAndGovernor)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
+(commit-tx)
+(load "Stage_02/[6.2.1]_AQP-ANK.repl")
+(load "Stage_02/[6.2.2]_AQP-SCORE.repl")
+(load "Stage_02/[6.2.3]_AQP-POOL.repl")
+(load "Stage_02/[6.2.9]_AQP-BOOT-FULL.repl")
+(load "Stage_02/[6.4]_AQP-EXHAUSTIVE-PREP.repl")
+(load "Stage_02/[6.4]_AQP-EXHAUSTIVE-BOOT-POOLS.repl")
+(load "Stage_02/[6.4]_AQP-EXHAUSTIVE-RPS.repl")
+(load "Stage_02/[6.4]_AQP-EXHAUSTIVE-COLLECT.repl")
+(load "Stage_02/[6.2.8]_AQP-SWEEP-CC.repl")

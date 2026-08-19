@@ -1,0 +1,166 @@
+;; ============================================================================
+;; REPL/Stage_02/[6.2.8]_AQP-SWEEP-CC.repl — sweep CC-batch (defun+gate) equivalence.
+;;
+;; Legend: <(...)>  live call echo   ·   <<TX-SWEEP-CC*>>  assertion tag.
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact
+;;         (CC_SweepBegin / CC_SweepRecomputeChunk / FVT|SweepProgress cursor)
+;;         3_Talos/04_TS02-C3.pact (AQP-FVT|CC_SweepBegin / AQP-FVT|CC_SweepRecomputeChunk)
+;; REPL tests: run via deb-staleness-sweep-cc.repl (identical fixture chain to
+;;             deb-staleness-proof.repl, but this file instead of [6.2.7]).
+;;
+;; WHAT THIS PROVES — the paginated defun+gate sweep retires the SAME employed
+;; anchor (AurynRain / SilverSnakePower / ANHD in OuroLpFarm) as the 2-step defpact
+;; MTX|2|C_SweepRevokeAnchor (proven in [6.2.7] SWEEP01), reaching the SAME end-state
+;; (aggregate-promile DROPPED, triplet lane refolded DOWN, pool unfrozen) — but across
+;; SEPARATE txs, so the sweep-in-progress freeze + the FVT|SweepProgress cursor persist
+;; as COMMITTED state (contrast the defpact's in-memory yield/resume). Because both
+;; paths funnel through the SAME XI_FvtSweepRecomputeChunk leaf, this is a true
+;; apples-to-apples equivalence on the identical fixture.
+;;
+;; NOTE: retires the AurynRain anchor — this file and [6.2.7] must run in SEPARATE pact
+;; processes (each gets a fresh AurynRain). deb-staleness-sweep-cc.repl loads this;
+;; deb-staleness-proof.repl loads [6.2.7]. Single present holder (ANHD) ⇒ one chunk is
+;; terminal (parity with SWEEP01, itself single-holder-terminal); the ≥2-holder
+;; partial-page demo needs a 2-holder LP fixture — tracked as a follow-up.
+;; ============================================================================
+(begin-tx "TX-SWEEP-CC01 - CC_SweepBegin: freeze + swept-revoke + open cursor (recompute DEFERRED)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+(print "--- [TX-SWEEP-CC01 · 01 · CC_SweepBegin opens the paginated sweep] ---")
+(let
+    (
+        (lumy:string KST.LUMY)
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
+        (silver-class:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+        (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+        (ouro-pool:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
+    )
+    (let
+        (
+            (agg-pre:decimal (ref-ANK::UR_UB|AggregatePromile anhd silver-class))
+            (frozen-pre:bool (ref-AQP::UR_AQP|PoolSweepInProgress ouro-pool))
+            (active-pre:bool (ref-FVT::UR_FVT|SweepActive anchor-id))
+            (state-pre:bool (ref-ANK::UR_ANK|State anchor-id))
+        )
+        (map print
+            [
+                (format "<(CC01 pre: agg-promile / pool frozen / cursor active / anchor active)> => {} / {} / {} / {}" [agg-pre frozen-pre active-pre state-pre])
+                (expect "<<TX-SWEEP-CC01>> pre: ANHD has silver-class aggregate-promile (AurynRain employed)" true (> agg-pre 0.0))
+                (expect "<<TX-SWEEP-CC01>> pre: pool NOT sweep-frozen" false frozen-pre)
+                (expect "<<TX-SWEEP-CC01>> pre: no sweep cursor open" false active-pre)
+                (expect "<<TX-SWEEP-CC01>> pre: anchor ACTIVE" true state-pre)
+            ]
+        )
+        ;; THE BEGIN — the anchor owner (LUMY = KBN asset owner) opens the paginated sweep: freeze + swept-revoke.
+        (print (format "<(CC01 AQP-FVT|CC_SweepBegin)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_SweepBegin lumy anchor-id)]))
+        (let
+            (
+                (agg-mid:decimal (ref-ANK::UR_UB|AggregatePromile anhd silver-class))
+                (frozen-mid:bool (ref-AQP::UR_AQP|PoolSweepInProgress ouro-pool))
+                (active-mid:bool (ref-FVT::UR_FVT|SweepActive anchor-id))
+                (state-mid:bool (ref-ANK::UR_ANK|State anchor-id))
+            )
+            (map print
+                [
+                    (format "<(CC01 post-begin: agg / frozen / active / anchor)> => {} / {} / {} / {}" [agg-mid frozen-mid active-mid state-mid])
+                    ;; (a) bracket: pool FROZEN + anchor swept-REVOKED
+                    (expect "<<TX-SWEEP-CC01>> pool FROZEN after begin" true frozen-mid)
+                    (expect "<<TX-SWEEP-CC01>> anchor swept-REVOKED after begin" false state-mid)
+                    ;; (b) cursor OPEN (active) — recompute deferred to the chunk
+                    (expect "<<TX-SWEEP-CC01>> sweep cursor ACTIVE after begin" true active-mid)
+                    ;; (c) recompute DEFERRED — aggregate UNCHANGED at begin (dropped only when the chunk recomputes)
+                    (expect (format "<<TX-SWEEP-CC01>> aggregate UNCHANGED at begin (recompute deferred) {}=={}" [agg-pre agg-mid]) agg-pre agg-mid)
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| The freeze + cursor are now COMMITTED state — they survive this tx boundary
+;;|| (the defun+gate's edge over the defpact's in-memory yield). The chunk below is
+;;|| a SEPARATE tx that reads them back and completes the recompute.
+;;
+(begin-tx "TX-SWEEP-CC02 - CC_SweepRecomputeChunk: page recompute to exhaustion, unfreeze, close cursor")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+(print "--- [TX-SWEEP-CC02 · 01 · CC_SweepRecomputeChunk finalizes (chunk=10 >= total=1)] ---")
+(let
+    (
+        (lumy:string KST.LUMY)
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (anchor-id:string (ref-U|DALOS::UDC_Makeid "AurynRain"))
+        (silver-class:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+        (silver-score:string (ref-U|DALOS::UDC_Makeid "SilverSnakePower"))
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+        (ouro-pool:string (ref-U|DALOS::UDC_Makeid "DHOuroLp"))
+        (triplet-id:string (ref-SCR::UR_SCR|ScoreTripletId silver-score))
+    )
+    (let
+        (
+            (agg-pre:decimal (ref-ANK::UR_UB|AggregatePromile anhd silver-class))
+            (lane-pre:decimal (ref-FVT::UR_FVT-SEL|TotalLaneWeight farm-id triplet-id))
+            (links-pre:[string] (ref-ANK::UR_BC|ScoreLinks silver-class))
+            (frozen-pre:bool (ref-AQP::UR_AQP|PoolSweepInProgress ouro-pool))
+            (active-pre:bool (ref-FVT::UR_FVT|SweepActive anchor-id))
+        )
+        (map print
+            [
+                (format "<(CC02 pre-chunk: agg / lane / links / frozen / active)> => {} / {} / {} / {} / {}" [agg-pre lane-pre links-pre frozen-pre active-pre])
+                ;; cursor + freeze SURVIVED the tx boundary (committed state)
+                (expect "<<TX-SWEEP-CC02>> cursor STILL active across tx boundary (committed)" true active-pre)
+                (expect "<<TX-SWEEP-CC02>> pool STILL frozen across tx boundary (committed)" true frozen-pre)
+                (expect "<<TX-SWEEP-CC02>> pre-chunk aggregate still un-recomputed" true (> agg-pre 0.0))
+            ]
+        )
+        ;; THE CHUNK — chunk=10 covers the single present holder ⇒ terminal: recompute + unfreeze + close cursor.
+        (print (format "<(CC02 AQP-FVT|CC_SweepRecomputeChunk chunk=10)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_SweepRecomputeChunk lumy anchor-id 10)]))
+        (let
+            (
+                (agg-post:decimal (ref-ANK::UR_UB|AggregatePromile anhd silver-class))
+                (lane-post:decimal (ref-FVT::UR_FVT-SEL|TotalLaneWeight farm-id triplet-id))
+                (links-post:[string] (ref-ANK::UR_BC|ScoreLinks silver-class))
+                (frozen-post:bool (ref-AQP::UR_AQP|PoolSweepInProgress ouro-pool))
+                (active-post:bool (ref-FVT::UR_FVT|SweepActive anchor-id))
+                (state-post:bool (ref-ANK::UR_ANK|State anchor-id))
+            )
+            (map print
+                [
+                    (format "<(CC02 post: agg / lane / links / frozen / active / anchor)> => {} / {} / {} / {} / {} / {}" [agg-post lane-post links-post frozen-post active-post state-post])
+                    ;; (a) SAME end-state as SWEEP01: aggregate-promile DROPPED
+                    (expect (format "<<TX-SWEEP-CC02>> aggregate-promile DROPPED {}->{}" [agg-pre agg-post]) true (< agg-post agg-pre))
+                    ;; (b) triplet lanes refolded DOWN
+                    (expect (format "<<TX-SWEEP-CC02>> total-lane-weight refolded DOWN {}->{}" [lane-pre lane-post]) true (< lane-post lane-pre))
+                    ;; (c) reverse-index UNCHANGED (revoke does not unlink scores)
+                    (expect "<<TX-SWEEP-CC02>> reverse-index set UNCHANGED by anchor revoke" links-pre links-post)
+                    ;; (d) pool UNFROZEN — completeness reached (offset == total)
+                    (expect "<<TX-SWEEP-CC02>> pool UNFROZEN after final chunk" false frozen-post)
+                    ;; (e) cursor CLOSED
+                    (expect "<<TX-SWEEP-CC02>> sweep cursor CLOSED after final chunk" false active-post)
+                    ;; (f) anchor STAYS retired
+                    (expect "<<TX-SWEEP-CC02>> anchor STAYS retired" false state-post)
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== [6.2.8]_AQP-SWEEP-CC END — CC-batch reaches the SWEEP01 defpact end-state ===")

@@ -137,6 +137,7 @@
     (defun CC_SweepRevokeAnchor:string (patron:string anchor-id:string))
     (defun CC_SweepBegin:string (patron:string anchor-id:string))
     (defun CC_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
+    (defun UR_FVT|SweepActive:bool (anchor-id:string))
     (defun URH_FvtStalePresentUsers:[string] (fvt-id:string))
     (defun XE_FvtFixUserChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])

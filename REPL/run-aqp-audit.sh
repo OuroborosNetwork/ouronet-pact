@@ -24,6 +24,7 @@ SUITES=(
   "AQP-comprehensive.repl|functional + full AQP-BOOT mainnet-sim + RPS/collect/DPNF/ANK-LP/triplet-diag/FVT-admin + [6.3] golden paths"
   "AQP-core-vct.repl|core [6.2.1-4] ANK/SCORE/POOL/FVT stake+unstake+inject+collect + [6.2.5] VCT vacate (all asset kinds)"
   "deb-staleness-proof.repl|deb-staleness conservation (M3 #12) + CC_Inject + MTX|2|C_Inject & MTX|2|C_SweepRevokeAnchor defpacts + sweep"
+  "deb-staleness-sweep-cc.repl|sweep CC-batch (defun+gate) equivalence — CC_SweepBegin/CC_SweepRecomputeChunk retire AurynRain to the SWEEP01 defpact end-state"
   "triplet-collect-golden.repl|farm multiplet triplet collect fairness + dual-stream vacate"
 )
 
