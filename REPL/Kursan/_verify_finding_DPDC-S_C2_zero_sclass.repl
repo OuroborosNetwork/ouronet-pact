@@ -1,0 +1,52 @@
+;; Verification for DPDC Audit finding #6C (DPDC-S · C2): composite set-class definitions with
+;; allowed-sclass=0 pass validation, letting Make succeed and permanently stranding the constituent at
+;; Break (row not found for the reserved sentinel class 0).
+;; Fix: UEV_CompositeSetDefinition now rejects any allowed-sclass <= 0 at definition time.
+;;
+;; Control case needs no setup here: the "Wonder Coach" collection (DHWC-98c486052a51) already has 3 real
+;; primordial set-classes (1,2,3) and a real composite set-class 4 referencing them, defined at genesis in
+;; REPL/Stage_02/[4.0]_Sovereign-Executor.repl — already loaded, and `pact Z.repl` already confirmed this
+;; legit composite definition still succeeds post-fix (full pipeline green). This probe only needs to add
+;; the exploit case: does the SAME real collection (scu=4, so the old "max<=scu" check alone would have
+;; accepted 0<=4 trivially) now reject a NEW composite set-class with allowed-sclass=0?
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-C6 - baseline read on the real, genesis-defined Wonder Coach collection")
+(namespace "ouronet-ns")
+(let ((ref-DPDC:module{DpdcV1} DPDC) (id:string "DHWC-98c486052a51"))
+    (print (format "set-classes-used (should be 4: Bronze/Silver/Golden primordial + Movie composite) = {}"
+        [(ref-DPDC::UR_SetClassesUsed id true)]))
+)
+(commit-tx)
+
+;;|| NEXT >
+;; The exploit attempt: define a NEW composite set-class with allowed-sclass=0, against a collection that
+;; already has real set-classes 1-4 (old "max<=scu" check alone would have trivially accepted 0<=4).
+;; Submitted as its own real, uncaught transaction. EXPECTED: hard rejection at the new check.
+(begin-tx "PROBE-C6 - exploit: define a composite set-class with allowed-sclass=0")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHWC-98c486052a51")
+        (ind:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "BadSet" "bar" (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_ZeroURI|Type) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (ref-TS02-C1::DPSF|C_DefineCompositeSet KST.ANHD id "BadSet" 1.0 [(ref-DPDC-UDC::C 0)] ind)
+)
+(commit-tx)

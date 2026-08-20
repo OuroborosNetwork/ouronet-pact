@@ -137,3 +137,19 @@ legitimate path requires) rejected at the same line. Ordinary burn on a real acc
 (10,000 → 9,950). Full `Z.repl` pipeline green. The "compounding" respawn risk from the original finding
 needed no separate fix — it was entirely downstream of the collateral being destroyed in the first place,
 which can no longer happen.
+
+## #6C · DPDC-S · C2 — composite set-class `allowed-sclass=0` permanently strands the constituent
+
+**Verdict: CONFIRMED, FIXED (2026-08-20).** `UEV_CompositeSetDefinition` only bounded the *maximum* class
+referenced in a definition, never that each individual position is `> 0`. Set-class `0` is the reserved
+"not part of any set" sentinel — a position naming it is satisfied trivially by any ordinary native nonce
+at Make time, but Break can never look up a set-class-0 row (none is ever inserted), permanently stranding
+the constituent.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #4)** — one enforce, `08_DPDC-S.pact:586-589`, folding
+`allowed-sclass > 0` across every position in the definition (this file's own convention for combining N
+boolean checks). No sibling per-element validator existed to reuse (Primordial's analog only checks list
+size). Live-proven against a real collection genesis already gave 4 real set-classes to — the exploit
+(`allowed-sclass=0`) is hard-rejected exactly at the new line even though the *old* check alone would have
+trivially accepted it (`0 <= 4`); the legit case needed no new setup since genesis's own composite set
+definition already exercises the success path, confirmed by the full `Z.repl` pass.

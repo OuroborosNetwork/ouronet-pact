@@ -584,6 +584,10 @@
                 (max:integer (ref-U|INT::UC_MaxInteger (distinct set-classes-used-in-set-definition)))
                 (scu:integer (ref-DPDC::UR_SetClassesUsed id son))
             )
+            (enforce
+                (fold (and) true (map (lambda (sc:integer) (> sc 0)) set-classes-used-in-set-definition))
+                "Invalid Set-Definition: allowed-sclass must be greater than 0 for every position (0 is reserved)"
+            )
             (enforce (<= max scu) "Invalid Set-Definition for a Composite Set with non existent Set-Classes")
         )
     )

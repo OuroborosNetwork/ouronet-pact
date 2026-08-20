@@ -252,3 +252,37 @@ precondition can never occur, so there's nothing left for a respawn to reattach 
 stale. Closing the front door closes the back door that depended on it.
 
 **Interface implication:** none — internal to the defcap body, no signature change.
+**Interface implication:** none — internal to the defcap body, no signature change.
+
+## Fix #4 — DPDC-S · C2 (composite set-class with `allowed-sclass=0` permanently strands the constituent)
+
+**Owner-approved 2026-08-20.** Owner asked for confirmation it's a quick fix that doesn't break anything
+before greenlighting.
+
+**Root cause:** `UEV_CompositeSetDefinition` (`08_DPDC-S.pact:569-589`) only bounded the *maximum* class
+referenced across a definition (`max <= scu`) — it never checked each individual position is `> 0`.
+Set-class `0` is the codebase's reserved "not part of any set" sentinel; a position naming it is satisfied
+trivially by any ordinary native nonce at Make time, but Break can never look it up (no set-class-0 row
+ever exists), permanently stranding the constituent.
+
+**Fix — one enforce, `08_DPDC-S.pact:586-589`, mirroring this file's own convention for combining N
+boolean checks:**
+```pact
+(enforce
+    (fold (and) true (map (lambda (sc:integer) (> sc 0)) set-classes-used-in-set-definition))
+    "Invalid Set-Definition: allowed-sclass must be greater than 0 for every position (0 is reserved)"
+)
+```
+No existing sibling per-element validator to reuse (the Primordial-set analog only checks list *size*, not
+value bounds), so this is a direct, minimal addition rather than a refactor.
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC-S_C2_zero_sclass.repl`):** the legit case needed no new
+setup — genesis (`REPL/Stage_02/[4.0]_Sovereign-Executor.repl`) already defines three real primordial
+set-classes (Bronze/Silver/Golden, classes 1-3) and a real composite set-class referencing them (Movie,
+class 4) on the "Wonder Coach" collection (`DHWC-98c486052a51`); `pact Z.repl`'s full pass already proves
+that legitimate definition still succeeds post-fix. This probe added only the exploit case: against that
+same real collection (`set-classes-used=4`, confirmed live — so the *old* check alone would have trivially
+accepted `0 <= 4`), a new composite set-class naming `allowed-sclass=0` is now hard-rejected, submitted as
+a real uncaught transaction, landing exactly on the new line (`08_DPDC-S.pact:587`).
+
+**Interface implication:** none — internal validation only, no signature change.

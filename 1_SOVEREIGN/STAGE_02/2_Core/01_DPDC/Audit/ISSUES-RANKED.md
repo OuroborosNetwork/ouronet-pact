@@ -71,10 +71,14 @@ escrow account; both live-proven rejected at the identical line, ordinary burn o
 works, `Z.repl` green. The respawn "compounding" risk needed no separate fix — it was downstream of the
 collateral being destroyed, which can no longer happen. — *DPDC-MNG·C1*
 
-#6C **[DPDC-S]** Composite/Hybrid SFT set-class definitions with `allowed-sclass = 0` (the codebase's
+#6C **[DPDC-S]** ~~Composite/Hybrid SFT set-class definitions with `allowed-sclass = 0` (the codebase's
 reserved "not part of any set" sentinel) pass definition validation — Make then legitimately transfers a
 real constituent nonce into `dpdc` custody, but Break can **never** succeed (`read` on a nonexistent
-set-class-0 row aborts every time), permanently stranding real user value. — *DPDC-S·C2*
+set-class-0 row aborts every time), permanently stranding real user value.~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-20** (`ROUND-02-FIXES.md` Fix #4) — `UEV_CompositeSetDefinition` now folds `allowed-sclass > 0`
+across every position; live-rejected against a real collection with 4 real, pre-existing set-classes
+(where the old max-only check would have trivially passed `0<=4`), legit definitions already proven by
+genesis + full `Z.repl` pass. — *DPDC-S·C2*
 
 #7C **[DPDC-S]** `C_UpdateSetMultiplier` cannot ever succeed — a copy-paste `let` type-annotation bug
 (`current-multiplier:string` binding a `:decimal` return) crashes the function unconditionally on every
