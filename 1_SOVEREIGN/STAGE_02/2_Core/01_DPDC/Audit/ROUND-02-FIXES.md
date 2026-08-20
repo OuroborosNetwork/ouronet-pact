@@ -185,5 +185,28 @@ already turns gas on via `REPL/Stage_01/[4.0]_Sovereign-Executor.repl`):
 
 **Interface implication:** none — internal to the defcap body, no signature change.
 
+**Regression sweep (owner-requested — "are you sure this doesn't break anything else?"):** `IGNIS|C>DEBIT`
+composing the new check is DPDC-T's own module-private capability with exactly one caller anywhere in the
+codebase (`IGNIS|C>ROYALTY`); a same-named capability exists in Stage 1's `02_IGNIS.pact` but Pact
+capabilities are module-scoped, so that's a coincidentally-named, entirely separate capability, unaffected
+by this edit. Enumerated every real call site of `C_IgnisRoyaltyCollector` in the repo (7 total, across
+`TS02-C1.pact`/`TS02-C2.pact`: `DPSF|C_TransferNonce(s)`, `DPNF|C_TransferNonce(s)`,
+`DPDC|C_MultiTransfer`, `DPDC|C_BulkTransfer`, `DPSF|C_MorphEquity`) — all share the same shape (`patron`/
+`sender`|`account` as separate parameters) and every real usage found in the repo's own fixtures binds
+them to the same account; no sponsored/third-party-pays design exists anywhere. Checked whether the
+system's "gas station" (`DALOS::GAS_PAYER`) could be a legitimate sponsor path — it only allow-lists which
+call shapes get their Kadena network fee subsidized; it doesn't touch signatures or exempt anything from
+in-function ownership checks, different layer entirely, no conflict. Live-tested `DPSF|C_MorphEquity`
+(not exercised by the default `Z.repl` run) against the real `E|DH-98c486052a51` equity collection,
+patron=account=real owner — succeeded cleanly, no rejection
+(`REPL/Kursan/_verify_fix2_no_regression_morphequity.repl`).
+
+**Known gap, not closed:** `DPDC|C_MultiTransfer` and `DPDC|C_BulkTransfer` were confirmed by source
+inspection only (their one real test usage in `[6.1]_DPDC.repl` passes `patron` and `sender` as the
+identical variable, same shape as everything else verified live) — not by a live run, because that call
+sits later in `[6.1]_DPDC.repl`, which hard-crashes earlier in the same file on the pre-existing, unrelated
+bug already logged under Fix #1 (confirmed via `git stash` to exist independent of this or any other change
+made this round). Logged as a follow-up rather than chased further this round.
+
 **Backlog note:** the fact that no existing test ever exercises real IGNIS gas collection is itself worth a
 follow-up test-coverage item — logged, not fixed here.
