@@ -235,8 +235,12 @@ no pact has a TTL/expiry.~~ — **DESIGN, accepted (owner, 2026-08-19).** "It's 
 as is." Same non-live `MTX-SWP` module already confirmed for M11 (zero Talos wiring). Full trace in
 `ROUND-01-OWNER-FEEDBACK.md`. — *M12*
 
-#34M **[U|SWP / SWPT]** BFS keeps only one chain per node and routing does zero amount-out/liquidity
-comparison across candidate paths — "Smart Swap" is pure hop-count routing. — *M2*
+#34M **[U|SWP / SWPT]** ~~BFS keeps only one chain per node and routing does zero amount-out/liquidity
+comparison across candidate paths — "Smart Swap" is pure hop-count routing.~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-20** (`ROUND-02-FIXES.md` Fix #19). New `SWPT::URC_ComputeAlternateRoutes` finds up to 3
+edge-disjoint candidate routes (fixed cap — no dynamic loops in Pact); `SWPI::URCX_Hopper` now picks the
+highest-payout candidate. Adversarially proven: a diamond-topology swap delivers 4906 TSTZ fixed vs. 1990
+TSTZ reverted (~2.5x worse) via the same swap. — *M2*
 
 #35M **[SWPI]** Stable-pool swap math silently drops all but the first input position despite the schema
 supporting multiple. — *M1*

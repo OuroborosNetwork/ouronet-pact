@@ -975,3 +975,35 @@ other check). Restored, reconfirmed clean. Full `[6.2]`/`[6.3]` suite: exit 0, 0
 regression: exit 0, 0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #19 — M2 (#34M): Smart Swap now compares up to 3 candidate routes by actual payout, not just discovery order
+
+**Owner direction:** was sure a cheapest-route mechanism existed; once shown precisely that it only
+covers picking the best pool *within* a hop, not comparing whole routes, asked for a fix proven in REPL.
+
+**Fix:**
+- `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` — new `URC_ComputeAlternateRoutes` (additive to
+  `SwapTracerV2`): finds up to 3 edge-disjoint candidate routes by re-running `URC_ComputeGraphPath` with
+  each previously-found route's edges excluded, forcing genuinely different routes. Fixed cap of 3 (Pact
+  has no dynamic-length/convergence loops). New helpers `URC_RouteEdges`/`UC_ExcludeEdges` support it.
+- `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact` — `URCX_Hopper` split into `URCX_HopperForNodes` (the
+  existing per-hop best-edge computation, now taking an already-known node path) and a new outer
+  `URCX_Hopper` that computes every candidate route's Hopper object and picks the highest-output one via
+  new `UC_BestHopper`. `URC_Hopper`/`URC_HopperActive`'s public signatures unchanged.
+- Defensive guard added in `URC_ComputeAlternateRoutes`: an exhausted (empty) candidate universe
+  short-circuits to `[BAR]` instead of calling `URC_ComputeGraphPath`, whose downstream graph-building
+  crashes on an empty list (M3, a separate tracked finding) rather than returning cleanly — this fix's own
+  exclusion-based retries are the first caller able to legitimately produce that empty-universe case.
+
+**Adversarially proven, live — new `SWP|TX 032c`-`032g` in `[6.3]_SWP.repl`:** diamond topology
+`OURO -> {TSTC, TSTD} -> TSTZ`, TSTC-side issued first (worse route, discovered first by BFS): thin
+second hop `TSTC/TSTZ` (2000/2000) vs. deep second hop `TSTD/TSTZ` (200000/200000). A 10,000-OURO swap
+delivers **4906.02 TSTZ** with the fix in place. Reverted the fix (single-first-found-route restored):
+the identical swap delivers only **1989.96 TSTZ** — a genuine ~2.5x worse outcome, confirming the old code
+takes the bad route. Restored, reconfirmed 4906.02. Three `expect` assertions pin this down. Full
+`[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only regression: exit 0, 0 `FAILURE`. Full `Z.repl`
+(Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

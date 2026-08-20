@@ -1609,3 +1609,69 @@ client path exists for this module), but the owner's call here is on the design 
 reachability. No fix needed, no code changed. — *M12*
 
 ---
+
+## M2 (#34M, BFS keeps only one chain per node; routing does zero cross-route value comparison) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner's first reaction:** it was supposed to find the cheapest route, and there must be a value-computation
+mechanism somewhere — asked for a re-check before accepting the finding.
+
+**Re-checked, not just re-asserted:** traced every function touching route selection. Confirmed a real
+value-comparison mechanism genuinely exists — `URCX_BestEdgeOf` (already fixed earlier this session as
+#C1) picks the higher-output pool among *parallel* edges connecting the same two adjacent tokens. But
+that's the only value comparison in the whole path. `SWPT::URC_ComputeGraphPath` → `URC_AllGraphPaths` →
+`U|BFS::UC_BFS` marks every node globally `visited` the first time it's reached, so only the
+first-discovered *route* (which sequence of intermediate tokens) survives — `URC_AllGraphPaths` doesn't
+return all paths despite its name, and `URC_ComputeGraphPath` (its only caller) just takes the one chain
+BFS kept. Confirmed via grep this is the *only* caller — no other function ever sees the fuller candidate
+set to compare.
+
+**Explained the distinction plainly:** step 2 (which pool, given two adjacent tokens) is chosen by value.
+Step 1 (which tokens to route through at all) is chosen by BFS discovery order, never by value — so
+"always pick the best" was true for step 2 but not actually happening for step 1. Owner accepted this once
+walked through concretely (a diamond topology where a route with a great first hop but a thin, easily-
+overwhelmed second hop can lose to a route with a mediocre first hop but a deep second hop — greedy
+per-hop maximization doesn't guarantee the best whole-route outcome).
+
+**Owner's direction once convinced:** fix it, and prove the fix in the REPL.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` + `16_SWPI.pact`:** added
+`SWPT::URC_ComputeAlternateRoutes` (additive to the `SwapTracerV2` interface) — finds up to 3 edge-disjoint
+candidate routes by re-running `URC_ComputeGraphPath` with each previously-found route's edges excluded
+from the universe, forcing genuinely different routes rather than re-discovering the same route with a
+different (already-optimal) parallel pool. Fixed cap of 3 — Pact has no dynamic-length/convergence loops,
+so the count has to be a number decided in advance, same constraint hit earlier this session for the
+Newton-iteration count and the connectivity retry logic. `SWPI::URCX_Hopper` was split into
+`URCX_HopperForNodes` (the existing per-hop best-edge computation, now taking an already-known node path)
+and a new outer `URCX_Hopper` that computes the Hopper object for every candidate route and returns the
+one with the highest final output via a new `UC_BestHopper`. `URC_Hopper`/`URC_HopperActive`'s public
+signatures are unchanged.
+
+**A real bug the fix's own testing surfaced, fixed defensively rather than taken on as new scope:** the
+first load attempt crashed — `URC_MakeGraphNodes`/`UC_PoolTokensFromPairs` throws an out-of-bounds error
+on an empty `swpairs` list instead of cleanly returning no-route (this is the separately-tracked M3
+finding, not yet reviewed in this pass). The single-route old code never triggered it because it only ever
+called the pathfinder once, with the full non-empty universe; this fix's exclusion-based retries are the
+first caller able to legitimately exhaust the universe down to empty (a single-pool universe, after that
+pool's route is excluded). Rather than take on M3's broader fix as scope creep here, guarded
+`URC_ComputeAlternateRoutes`'s three calls locally — an empty `swpairsN` short-circuits to `[BAR]` instead
+of ever reaching the crashing path.
+
+**Adversarially proven, live — new `SWP|TX 032c`-`032g` in `[6.3]_SWP.repl`:** built a genuine diamond
+topology, `OURO -> {TSTC, TSTD} -> TSTZ`, issuing the TSTC-side pools first (so BFS's first-discovered
+route is the worse one): `OURO/TSTC` (5000/10000) into a thin `TSTC/TSTZ` (2000/2000, Stable — TSTC isn't
+a principal, so this leg needed Stable's DLK-connectivity escape hatch instead of a W/P pool) versus
+`OURO/TSTD` (5000/7500) into a deep `TSTD/TSTZ` (200000/200000, Stable). A 10,000-OURO smart swap:
+
+Reverted the fix (temporarily, in-place — single-first-found-route behavior restored): the exact same
+swap delivered only **1989.96 TSTZ**, confirming it took the worse (thin-second-hop) route. Restored the
+fix: the same swap delivered **4906.02 TSTZ** — a genuine ~2.5x improvement, confirming it now takes the
+better (deep-second-hop) route despite the worse one being discovered first. Three `expect` assertions
+pin this down (swap actually executed; genuinely routed through 2 pools; delivered materially more than
+half the fixed-code amount, ruling out the worse route) — all pass with the fix in place, and the
+threshold-crossing assertion specifically fails when reverted. Full `[6.2]`/`[6.3]` suite (real execution
+path): exit 0, 0 `FAILURE`. Default issuance-only regression: exit 0, 0 `FAILURE`. Full `Z.repl` (Stage 1 +
+Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #19. Awaiting Round III re-verify.
+
+---

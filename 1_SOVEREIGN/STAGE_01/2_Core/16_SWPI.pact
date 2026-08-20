@@ -819,23 +819,19 @@
         )
     )
     ;;
-    (defun URCX_Hopper:object{SwapperIssueV3.Hopper}
-        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal swpairs:[string])
-        @doc "Shared Hopper-computation core for <URC_Hopper>/<URC_HopperActive> — \
-            \ identical in every respect except which <swpairs> universe routing \
-            \ is allowed to consider. Internal only, not on <SwapperIssueV3>. \
-            \ Computes: \
-            \ 1] The trace between <hopper-input-id> and <hopper-output-id>, the <nodes> \
-            \ 2] The hops between them, the <edges> as the cheapest available edge from all available \
-            \ 3] The best <output> values using said best <edges>, given the <hopper-input-amount>"
+    (defun URCX_HopperForNodes:object{SwapperIssueV3.Hopper}
+        (nodes:[string] hopper-input-amount:decimal swpairs:[string])
+        @doc "Computes the Hopper object (best per-hop edge + accumulated output) for \
+            \ an ALREADY-KNOWN <nodes> path. Split out of <URCX_Hopper> (#34M/M2 fix) \
+            \ so the identical per-hop best-edge computation can be run once per \
+            \ candidate route in <URCX_Hopper>'s best-of-K comparison, not just the \
+            \ single first-found route. Computes: \
+            \ 1] The hops along <nodes>, the <edges> as the cheapest available edge from all available \
+            \ 2] The best <output> values using said best <edges>, given the <hopper-input-amount>"
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                ;;#21H: SWPT no longer needs a principal list at all — the Tracer's
-                ;;storage is principal-agnostic (SwapTracerV2).
-                (ref-SWPT:module{SwapTracerV2} SWPT)
-                (nodes:[string] (ref-SWPT::URC_ComputeGraphPath hopper-input-id hopper-output-id swpairs))
             )
             (if (!= nodes [BAR])
                 (let
@@ -884,6 +880,64 @@
                     (at 0 fl)
                 )
                 (at 0 EMPTY_HOPPER)
+            )
+        )
+    )
+    (defun UC_BestHopper:object{SwapperIssueV3.Hopper} (candidates:[object{SwapperIssueV3.Hopper}])
+        @doc "Picks the candidate Hopper with the highest final output value. \
+            \ <candidates> must be non-empty (caller's responsibility — <URCX_Hopper> \
+            \ only calls this once it has confirmed at least one route was found)."
+        (if (<= (length candidates) 1)
+            (at 0 candidates)
+            (fold
+                (lambda
+                    (best:object{SwapperIssueV3.Hopper} idx:integer)
+                    (let
+                        (
+                            (candidate:object{SwapperIssueV3.Hopper} (at idx candidates))
+                            (best-final:decimal (at 0 (take -1 (at "output-values" best))))
+                            (candidate-final:decimal (at 0 (take -1 (at "output-values" candidate))))
+                        )
+                        (if (> candidate-final best-final) candidate best)
+                    )
+                )
+                (at 0 candidates)
+                (enumerate 1 (- (length candidates) 1))
+            )
+        )
+    )
+    (defun URCX_Hopper:object{SwapperIssueV3.Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal swpairs:[string])
+        @doc "Shared Hopper-computation core for <URC_Hopper>/<URC_HopperActive> — \
+            \ identical in every respect except which <swpairs> universe routing \
+            \ is allowed to consider. Internal only, not on <SwapperIssueV3>. \
+            \ #34M/M2 fix: computes up to 3 edge-disjoint candidate routes via \
+            \ <SWPT::URC_ComputeAlternateRoutes> (previously just the single \
+            \ first-found route) and returns whichever candidate's final output is \
+            \ highest, via <UC_BestHopper> — routing is now chosen by actual payout, \
+            \ not by which route BFS happened to discover first."
+        (let
+            (
+                ;;#21H: SWPT no longer needs a principal list at all — the Tracer's
+                ;;storage is principal-agnostic (SwapTracerV2).
+                (ref-SWPT:module{SwapTracerV2} SWPT)
+                (routes:[[string]]
+                    (ref-SWPT::URC_ComputeAlternateRoutes hopper-input-id hopper-output-id swpairs)
+                )
+            )
+            (if (= (length routes) 0)
+                (at 0 EMPTY_HOPPER)
+                (let
+                    (
+                        (candidates:[object{SwapperIssueV3.Hopper}]
+                            (map
+                                (lambda (nodes:[string]) (URCX_HopperForNodes nodes hopper-input-amount swpairs))
+                                routes
+                            )
+                        )
+                    )
+                    (UC_BestHopper candidates)
+                )
             )
         )
     )

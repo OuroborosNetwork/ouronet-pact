@@ -3227,6 +3227,347 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(print "=======================#34M/M2 Adversarial Proof=================================")
+(begin-tx "SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 01 · let / invocation ==== =====
+(print "--- [SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 01 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (* (ref-DALOS::UR_UsagePrice "dptf") 3.0)
+            )
+        )
+    )
+;;==== SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 02 · env-sigs (caps) ==== =======
+(print "--- [SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+            (issued-ids:[string]
+                (ref-TS01-C1::DPTF|C_Issue
+                    patron
+                    patron
+                    ["TestTokenC" "TestTokenD" "TestTokenZ"]
+                    ["TSTC" "TSTD" "TSTZ"]
+                    (make-list 3 24)
+                    (make-list 3 true)
+                    (make-list 3 true)
+                    (make-list 3 true)
+                    (make-list 3 false)
+                    (make-list 3 false)
+                    (make-list 3 true)
+                )
+            )
+        )
+        issued-ids
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 03 · gas echo ==== ===============
+(print "--- [SWP|TX 032c - Issue TSTC/TSTD/TSTZ Test Tokens (#34M Proof) · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032c Issue TSTC/TSTD/TSTZ ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 01 · env-sigs (caps) ==== =========
+(print "--- [SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;==== SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 02 · let / invocation ==== ========
+(print "--- [SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 02 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+    )
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTC-98c486052a51" patron 1000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTD-98c486052a51" patron 1000000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTZ-98c486052a51" patron 1000000.0 true)
+    (format "AH has {} TSTC / {} TSTD / {} TSTZ" [
+        (ref-DPTF::UR_AccountSupply "TSTC-98c486052a51" KST.ANHD)
+        (ref-DPTF::UR_AccountSupply "TSTD-98c486052a51" KST.ANHD)
+        (ref-DPTF::UR_AccountSupply "TSTZ-98c486052a51" KST.ANHD)
+    ])
+)
+(print "")
+(print "")
+;;==== SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 03 · gas echo ==== =================
+(print "--- [SWP|TX 032d - Mint TSTC/TSTD/TSTZ to KST.ANHD (#34M Proof) · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032d Mint TSTC/TSTD/TSTZ ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 032e - Issue Diamond-Topology Pools A-C-Z / A-D-Z (#34M Proof)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032e - Issue Diamond-Topology Pools (#34M Proof) · 01 · let / invocation ==== ===========
+(print "--- [SWP|TX 032e - Issue Diamond-Topology Pools (#34M Proof) · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (* (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp")) 4.0)
+            )
+        )
+    )
+;;==== SWP|TX 032e - Issue Diamond-Topology Pools (#34M Proof) · 02 · env-sigs (caps) ==== ============
+(print "--- [SWP|TX 032e - Issue Diamond-Topology Pools (#34M Proof) · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    ;;Diamond topology: OURO -> {TSTC, TSTD} -> TSTZ, sized for a 10,000-OURO
+    ;;test swap. Route via C looks fine on the FIRST hop (5000/10000) but
+    ;;bottlenecks badly on the SECOND hop (2000/2000 — thin enough that the
+    ;;~6667 TSTC hop-1 delivers is 3x the pool's own reserve). Route via D looks
+    ;;only mediocre on the first hop (5000/7500) but the second hop is very deep
+    ;;(200000/200000) — barely any price impact even for a large hop. Issued in
+    ;;this exact order (C-side pools first) so BFS's first-discovered route is
+    ;;the WORSE one — proving #34M/M2 needs the best-of-K comparison to find D.
+    ;;(CB/DB reserves sized generously above SWP's 1000.0 DWK spawn-limit floor —
+    ;;measured via a scratch diagnostic that TSTC's own DWK-worth rises very
+    ;;slowly/asymptotically with reserve size, so a naive small thin pool like
+    ;;500/500 undershoots it.)
+    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD
+        [
+            { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
+            { "token-id": "TSTC-98c486052a51", "token-supply": 10000.0}
+        ]
+        25.0 false
+    )
+    ;;Neither TSTC nor TSTZ is a principal, so this can't be a W/P pool (first
+    ;;token must be a principal) — must be Stable; TSTC is already transitively
+    ;;DLK-connected via the OURO|TSTC pool just issued above, satisfying Stable's
+    ;;own no-principal-tokens escape hatch (first token needs a DLK route via
+    ;;existing pools, not to literally be a principal).
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+        [
+            { "token-id": "TSTC-98c486052a51", "token-supply": 2000.0}
+            { "token-id": "TSTZ-98c486052a51", "token-supply": 2000.0}
+        ]
+        25.0 10.0 false
+    )
+    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD
+        [
+            { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
+            { "token-id": "TSTD-98c486052a51", "token-supply": 7500.0}
+        ]
+        25.0 false
+    )
+    ;;Same reasoning as the TSTC|TSTZ pool above.
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+        [
+            { "token-id": "TSTD-98c486052a51", "token-supply": 200000.0}
+            { "token-id": "TSTZ-98c486052a51", "token-supply": 200000.0}
+        ]
+        25.0 10.0 false
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 032e - Issue Diamond-Topology Pools (#34M Proof) · 03 · gas echo ==== ====================
+(print "--- [SWP|TX 032e - Issue Diamond-Topology Pools (#34M Proof) · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032e Issue Diamond Pools ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 01 · env-sigs (caps) ==== ===
+(print "--- [SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;==== SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 02 · let / invocation ==== ==
+(print "--- [SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 02 · let / invocation] ---")
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+    )
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTC-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTC-98c486052a51|TSTZ-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTD-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTD-98c486052a51|TSTZ-98c486052a51" true)
+)
+(print "")
+(print "")
+;;==== SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 03 · gas echo ==== ==========
+(print "--- [SWP|TX 032f - Enable Swap on Diamond-Topology Pools (#34M Proof) · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032f Enable Swap ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 032g - #34M/M2 Adversarial Proof Swap")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 01 · env-sigs (caps) ==== =======================
+(print "--- [SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;==== SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 02 · let / invocation ==== ======================
+(print "--- [SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 02 · let / invocation] ---")
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (tstz-before:decimal (ref-DPTF::UR_AccountSupply "TSTZ-98c486052a51" KST.ANHD))
+        (swap-result:string
+            (ref-TS01-C3::SWP|C_SmartSwapNoSlippage
+                KST.ANHD
+                KST.ANHD
+                "OURO-98c486052a51"
+                10000.0
+                "TSTZ-98c486052a51"
+            )
+        )
+        (tstz-after:decimal (ref-DPTF::UR_AccountSupply "TSTZ-98c486052a51" KST.ANHD))
+        (tstz-received:decimal (- tstz-after tstz-before))
+    )
+    (map print
+        [
+            (format "Swap result: {}" [swap-result])
+            (format "TSTZ received: {}" [tstz-received])
+            ;;#34M/M2 fix: the route through TSTD (deep second-hop pool) must pay
+            ;;out far more than the route through TSTC (thin second-hop pool),
+            ;;even though TSTC's route is the one BFS discovers first (issued
+            ;;first, so it's the first neighbour explored).
+            (expect
+                "Smart swap actually executed (not a routing failure)"
+                true
+                (contains "Succesfully smart-swapped" swap-result)
+            )
+            (expect
+                "Routed through 2 pools (a real 2-hop swap happened)"
+                true
+                (contains "via 2 Swaps" swap-result)
+            )
+            (expect
+                "Took the BETTER route (via deep-liquidity TSTD, measured ~4906 \
+                \ TSTZ) — NOT the worse route BFS finds first (via thin TSTC, \
+                \ which would land far lower, well under half this)"
+                true
+                (> tstz-received 3000.0)
+            )
+        ]
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 03 · gas echo ==== ==============================
+(print "--- [SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032g #34M Proof ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 033 - Add Frozen & Sleeping Liquidity")
 (namespace "ouronet-ns")

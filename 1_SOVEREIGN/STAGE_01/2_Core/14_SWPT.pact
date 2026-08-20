@@ -32,6 +32,10 @@
     (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string]))
     (defun URC_AllGraphPaths:[[string]] (input:string output:string swpairs:[string]))
     (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string]))
+    ;;#34M/M2 fix: additive — finds up to 3 edge-disjoint candidate routes instead
+    ;;of just the single first-found one; see the defun's own @doc for the full
+    ;;rationale.
+    (defun URC_ComputeAlternateRoutes:[[string]] (input:string output:string swpairs:[string]))
 
     (defun XE_UpdateGraph (swpair:string))
 )
@@ -177,6 +181,14 @@
             )
         )
     )
+    (defun UC_ExcludeEdges:[string] (swpairs:[string] exclude:[string])
+        @doc "Removes every entry of <exclude> from <swpairs> — pure list-difference. \
+            \ Used to build a reduced routing universe for #34M/M2's best-of-K \
+            \ alternate-route search: each retry excludes the edges of every route \
+            \ already found, forcing a genuinely different one instead of \
+            \ rediscovering the same route."
+        (filter (lambda (s:string) (not (contains s exclude))) swpairs)
+    )
     ;;{F0}  [UR]
     (defun UR_Graph:[object{SwapTracerV2.NeighbourEdge}] (token:string)
         (with-default-read SWPT|Graph token
@@ -268,6 +280,79 @@
                 (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFS graph input))
             )
             (at "chains" bfs-obj)
+        )
+    )
+    (defun URC_RouteEdges:[string] (nodes:[string] swpairs:[string])
+        @doc "For a <nodes> path (as returned by <URC_ComputeGraphPath>), returns the \
+            \ union of every swpair actually usable to traverse it within <swpairs>'s \
+            \ universe — one <URC_EdgesActive> lookup per hop. Used to build the \
+            \ exclusion set for #34M/M2's best-of-K route comparison."
+        (if (or (= nodes [BAR]) (< (length nodes) 2))
+            []
+            (fold
+                (lambda
+                    (acc:[string] idx:integer)
+                    (+ acc (URC_EdgesActive (at idx nodes) (at (+ idx 1) nodes) swpairs))
+                )
+                []
+                (enumerate 0 (- (length nodes) 2))
+            )
+        )
+    )
+    (defun URC_ComputeAlternateRoutes:[[string]] (input:string output:string swpairs:[string])
+        @doc "#34M/M2 fix: <URC_ComputeGraphPath> alone only ever returns the single \
+            \ first-discovered route — BFS's global once-per-node visited marking \
+            \ means an equally valid alternate route (e.g. a diamond A->{B,C}->D \
+            \ graph) is silently lost, and nothing ever compared candidate routes by \
+            \ value anyway. This finds up to 3 edge-disjoint candidate routes by \
+            \ re-running <URC_ComputeGraphPath> with each previously-found route's \
+            \ edges excluded from the universe, forcing genuinely different routes \
+            \ rather than the same route with a different parallel pool (that choice \
+            \ is already optimal per-hop via <URC_BestEdgeFiltered>/<URC_BestEdgeOf>'s \
+            \ own argmax, so re-exploring it would be wasted work). \
+            \ Fixed cap of 3 attempts — Pact has no dynamic-length/convergence loops, \
+            \ so the count must be a number decided in advance, not a runtime \
+            \ condition; measured sufficient against this codebase's actual pool \
+            \ topology (see the SWP audit's adversarial REPL proof for #34M/M2). \
+            \ An exhausted-universe guard (empty <swpairsN>) short-circuits to [BAR] \
+            \ instead of calling <URC_ComputeGraphPath> — that function's own \
+            \ downstream graph-building (M3, a separate tracked finding) crashes \
+            \ rather than cleanly returning no-route on an empty list, and this is \
+            \ the first caller able to legitimately produce one (a fully-excluded, \
+            \ single-pool universe after route1/route2 already claimed it). \
+            \ Returns only the routes genuinely found (drops [BAR] no-route results), \
+            \ so the result can have 0-3 entries; the caller picks the best by value."
+        (let*
+            (
+                (route1:[string]
+                    (if (= swpairs []) [BAR] (URC_ComputeGraphPath input output swpairs))
+                )
+                (swpairs2:[string]
+                    (if (= route1 [BAR])
+                        swpairs
+                        (UC_ExcludeEdges swpairs (URC_RouteEdges route1 swpairs))
+                    )
+                )
+                (route2:[string]
+                    (if (or (= route1 [BAR]) (= swpairs2 []))
+                        [BAR]
+                        (URC_ComputeGraphPath input output swpairs2)
+                    )
+                )
+                (swpairs3:[string]
+                    (if (= route2 [BAR])
+                        swpairs2
+                        (UC_ExcludeEdges swpairs2 (URC_RouteEdges route2 swpairs2))
+                    )
+                )
+                (route3:[string]
+                    (if (or (= route2 [BAR]) (= swpairs3 []))
+                        [BAR]
+                        (URC_ComputeGraphPath input output swpairs3)
+                    )
+                )
+            )
+            (filter (lambda (r:[string]) (!= r [BAR])) [route1 route2 route3])
         )
     )
     (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string])
