@@ -97,7 +97,7 @@ free. Don't build it.
 Every future turn on this project should name the tag(s) it's working on (e.g. "building
 P1.2"). Update the checkboxes here as items land.
 
-### P0 — Groundwork / open decisions (resolve before or during P1, not silently assumed)
+### P0 — Groundwork / open decisions / foundational validation (resolve before or during P1)
 - [ ] **P0.1** Confirm Kadena's actual `/local` (dirty-read) resource/gas ceiling — chain-level
       property, not in this repo; research externally or ask the owner directly.
 - [ ] **P0.2** Decide an absolute hard safety ceiling on `max-attempts` (e.g. 1000) enforced
@@ -107,13 +107,28 @@ P1.2"). Update the checkboxes here as items land.
       principal" as an actual code check (in `A_UpdatePrincipal`/`A_RotatePrincipal`), or leave
       as a governance convention only. Not required for correctness of this feature (point 5,
       original doc) — purely a connectivity-maximizing choice, owner's call.
+- [x] **P0.4** Max path depth decided by owner (2026-08-20): **hard cap of 7 tokens / 6 hops
+      per candidate route** ("the sexy number 7," matching the existing 2-7-tokens-per-pool
+      convention). Still needs an enforcement *design*: ideally baked into the BFS/graph-walk
+      itself (bound the traversal depth directly, cheaper) rather than only as a post-discovery
+      filter (wasteful — would still pay to explore and discard depth-8+ candidates). Land this
+      as part of building P1.1.
+- [ ] **P0.5** **Worst-case single-swap EXECUTION gas measurement — do this first, no new code
+      needed.** Distinct from search cost: this measures actually *performing* a real 6-hop
+      SmartSwap where every one of the 6 pools along the way is maximally complex (7 tokens
+      each, 7 special fee targets each) — the absolute worst case the P0.4 depth cap allows.
+      Build this topology, run a real swap through it via the *already-shipped* SmartSwap
+      machinery, measure `(env-gas)`. This validates the single biggest assumption the whole
+      P3 execution path depends on — that a maximal-complexity discovered route can actually be
+      executed in one transaction at all — before investing further. If it doesn't fit under
+      ~2,000,000 gas, that changes the calculus for P3 significantly; better to know now.
 
 ### P1 — Core search primitives, hand-verified on a small topology
 - [ ] **P1.1** `SWPT::URC_ComputeAllRoutes(input, output, swpairs, max-attempts)` — generalize
       `URC_ComputeAlternateRoutes`'s 3 hardcoded sequential `let*` attempts into a real `fold`
       over `(enumerate 0 (- max-attempts 1))`, threading `(routes-found, remaining-universe)`
       as accumulator, same early-exit-once-empty short-circuit already proven in #34bM's fix.
-      Respects P0.2's ceiling.
+      Respects P0.2's ceiling AND P0.4's 6-hop depth cap (design per P0.4).
 - [ ] **P1.2** Add `URC_ComputeAllRoutes` to the `SwapTracerV2` interface (additive, no version
       bump — pre-mainnet policy).
 - [ ] **P1.3** `SWPI::URC_HopperExhaustive(input, output, amount, swpairs, max-attempts)` —
@@ -148,9 +163,13 @@ P1.2"). Update the checkboxes here as items land.
       `XI_SmartSwapCore` safely aborts on a malformed/incoherent caller-supplied route (e.g. a
       `nodes`/`edges` pair that doesn't actually connect, or references a non-existent swpair)
       rather than silently misbehaving.
-- [ ] **P3.2** Design + build the new client entrypoint (e.g. `SWP|C_SmartSwapExplicitRoute`)
-      that accepts a caller-supplied `nodes`/`edges` route directly, skipping internal BFS/
-      best-of-K entirely.
+- [ ] **P3.2** Design + build the new client entrypoint (e.g. `SWP|C_SmartSwapExplicitRoute`) —
+      "modularize SmartSwap to take a direct path as input." Accepts a caller-supplied
+      `nodes`/`edges` route directly, skipping internal BFS/best-of-K entirely. **Dual purpose,
+      same entrypoint:** (a) the UI feeds in whatever P1.3's dirty-read search discovered as
+      best, or (b) a user manually hand-picks their own preferred pools/route in the UI and
+      feeds that in instead — the on-chain function doesn't need to know or care which case
+      it is, it just validates (P3.1) and executes with the same slippage floor either way.
 - [ ] **P3.3** Slippage protection — reuse the existing `UC_SlippageMinMax`/floor-only pattern
       (Fix #16), not a new mechanism.
 - [ ] **P3.4** IGNIS billing wiring, matching the existing `SmartSwapWithSlippage` pattern.
@@ -172,6 +191,18 @@ P1.2"). Update the checkboxes here as items land.
 - [ ] **P5.2** Update `README.md` tracker, `ISSUES-RANKED.md` cross-reference (M2/#34M entry),
       `ROUND-01-OWNER-FEEDBACK.md`.
 - [ ] **P5.3** Update this HANDOFF doc's status line and checkboxes as work lands.
+- [ ] **P5.5** **Architecture doc:** write up exactly how the finished mechanism works end to
+      end — the two-call shape (P1.1 alone for a cheap probe, or P1.3 for probe+pick-best in
+      one call), why it's a dirty-read/local call and not a committed transaction, how the
+      discovered route then gets fed into P3.2's execute-only entrypoint, and why that's safe
+      even if the route goes stale between discovery and execution (slippage floor, not trust).
+- [ ] **P5.6** **UI integration guide:** how a UI is supposed to call P1.1/P1.3, what
+      `max-attempts` means and how to choose it, and — important, owner-flagged — that search
+      time/cost is **not constant**: it grows as the total number of pools in the protocol
+      grows, since each attempt re-walks the graph (real measured numbers from P2.3 go here
+      once collected, not estimates). Also documents the manual-path-selection UI feature from
+      P3.2(b): how to let a user browse/pick their own pools for a swap instead of using the
+      auto-discovered route, and feed that selection into the same execute-only entrypoint.
 - [ ] **P5.4** Commit.
 
 ## Do not lose these facts across a context reset
