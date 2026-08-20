@@ -968,7 +968,13 @@
     (defun XI_RawLiquidPump:object{IgnisCollectorV1.OutputCumulator} 
         (id:string amount:decimal)
         @doc "Operation that pumps LiquidIndex, returns the Pump Increment in the output object \
-            \ Can be used for a Pool Token that already exists in the SWP|SC_NAME"
+            \ Can be used for a Pool Token that already exists in the SWP|SC_NAME. \
+            \ P0.6 fix (SWP exhaustive-path-search HANDOFF doc): routes via \
+            \ <SWPI::URC_HopperActiveShortest> (single shortest BFS route), not \
+            \ <URC_HopperActive> (best-of-3 alternate-route search) — this fires once \
+            \ per SmartSwap hop, so the best-of-3 search's cost was being multiplied \
+            \ by hop-count x 3 to price a residual fee slice that only needs *a* \
+            \ valid route to DLK, not the optimal one."
         (require-capability (SECURE))
         (let
             (
@@ -982,15 +988,15 @@
                 (lqi:decimal (ref-ATS::URC_Index liquidindex))
             )
             (if (= id lkda)
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                    [(ref-DPTF::C_Burn lkda SWP|SC_NAME amount)] 
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [(ref-DPTF::C_Burn lkda SWP|SC_NAME amount)]
                     [(- (ref-ATS::URC_Index liquidindex) lqi)]
                 )
                 (let
                     (
                         (ref-SWPI:module{SwapperIssueV3} SWPI)
                         ;;
-                        (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive id lkda amount))
+                        (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActiveShortest id lkda amount))
                         (path-to-lkda:[string] (at "nodes" h-obj))
                         (edges:[string] (at "edges" h-obj))
                         (ovs:[decimal] (at "output-values" h-obj))

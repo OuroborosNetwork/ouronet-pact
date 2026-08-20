@@ -62,6 +62,7 @@
         ;;
     (defun URC_Hopper:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
     (defun URC_HopperActive:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
+    (defun URC_HopperActiveShortest:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
     (defun URC_BestEdge:string (ia:decimal i:string o:string))
     (defun URC_BestEdgeFiltered:string (ia:decimal i:string o:string swpairs:[string]))
         ;;
@@ -968,6 +969,31 @@
                 (ref-SWP:module{SwapperV3} SWP)
             )
             (URCX_Hopper hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_ActiveSwpairs))
+        )
+    )
+    (defun URC_HopperActiveShortest:object{SwapperIssueV3.Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal)
+        @doc "Lightweight Hopper routing over <can-swap>=true pools only — a single \
+            \ shortest BFS route (<SWPT::URC_ComputeGraphPath>), never the best-of-3 \
+            \ alternate-route search <URC_HopperActive> runs (P0.6, SWP exhaustive- \
+            \ path-search HANDOFF doc). Built for <SWPU::XI_RawLiquidPump>'s Liquid \
+            \ Boost pump: that call only needs *a* valid route to DLK to price a \
+            \ small residual fee slice for burning, not the *optimal* one — but it \
+            \ fires once per SmartSwap hop, so routing it through the same up-to-3x \
+            \ alternate-route search real swap execution uses multiplies cost by \
+            \ hop-count x 3 for no pricing benefit worth the gas. Do not use this for \
+            \ any live user-facing quote/execution path — those must keep using \
+            \ <URC_HopperActive> so users still get the best available route."
+        (let
+            (
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPT:module{SwapTracerV2} SWPT)
+                (swpairs:[string] (ref-SWP::URC_ActiveSwpairs))
+                (nodes:[string]
+                    (ref-SWPT::URC_ComputeGraphPath hopper-input-id hopper-output-id swpairs)
+                )
+            )
+            (URCX_HopperForNodes nodes hopper-input-amount swpairs)
         )
     )
     (defun URCX_BestEdgeOf:string (ia:decimal i:string o:string edges:[string])
