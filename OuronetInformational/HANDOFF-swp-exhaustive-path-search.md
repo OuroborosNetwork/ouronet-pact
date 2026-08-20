@@ -1,7 +1,7 @@
 # Handoff: SWP exhaustive on-chain cheapest-path search (SmartSwap Phase 2)
 
-**Status:** PLANNING — not started. No code written yet. This document is the plan; work begins
-next session.
+**Status:** IN PROGRESS. P0.5 done (worst-case execution gas measured at 1,694,006 — fits under
+the ceiling). P1 (core search primitives) not started yet.
 
 **To:** whoever picks up SWP audit follow-up work next.
 **From:** 2026-08-20 SWP audit session (#34M/M2 follow-up discussion).
@@ -130,15 +130,28 @@ P1.2"). Update the checkboxes here as items land.
       itself (bound the traversal depth directly, cheaper) rather than only as a post-discovery
       filter (wasteful — would still pay to explore and discard depth-8+ candidates). Land this
       as part of building P1.1.
-- [ ] **P0.5** **Worst-case single-swap EXECUTION gas measurement — do this first, no new code
-      needed.** Distinct from search cost: this measures actually *performing* a real 6-hop
-      SmartSwap where every one of the 6 pools along the way is maximally complex (7 tokens
-      each, 7 special fee targets each) — the absolute worst case the P0.4 depth cap allows.
-      Build this topology, run a real swap through it via the *already-shipped* SmartSwap
-      machinery, measure `(env-gas)`. This validates the single biggest assumption the whole
-      P3 execution path depends on — that a maximal-complexity discovered route can actually be
-      executed in one transaction at all — before investing further. If it doesn't fit under
-      ~2,000,000 gas, that changes the calculus for P3 significantly; better to know now.
+- [x] **P0.5 — DONE, 2026-08-20. Result: 1,694,006 gas. Fits under the ~2,000,000 ceiling,
+      ~15% headroom to spare.** Built a real 7-token/6-hop chain (`W1→W2→...→W7`, `W1`/`W4`/
+      `W7` registered as real principals at the start/middle/end so every pool's anchoring
+      requirement is satisfied by tokens already on the route, no accidental shortcut), every
+      one of the 6 pools maximally sized (7 members: the 2 route tokens + 5 unique per-pool
+      filler tokens, never shared across pools — sharing them would itself create a hub
+      shortcut, caught before building), each with 7 special fee targets configured, issued
+      via the `p=true` permissioned bypass (brand-new principals have no prior trading history
+      to price against the spawn-limit check; the anchoring rule itself still applies
+      regardless of `p`). One extra wrinkle found and fixed along the way: `URC_PoolValue`
+      prices a pool using only its *first* token's DWK worth
+      (`URC_WorthDWK`→`URC_Hopper(token, DWK, ...)`, a real reachability search), and
+      `SWP|C_ToggleSwapCapability` requires that worth clear an inactive-limit floor — the
+      isolated chain had zero path to DWK on its own, so one small throwaway `{OURO, W1}`
+      pool (never swap-enabled, invisible to the active-filtered route search, only visible to
+      the unfiltered worth check) was added to give the whole transitively-connected chain
+      real priceable worth without touching the route itself. Real swap executed
+      "via 6 Swaps over 6 Pools" (confirmed no shortcut taken), `SWP|TX 032l`-`032q` in
+      `[6.3]_SWP.repl`, kept as a permanent regression. Full `[6.2]`/`[6.3]` suite, issuance-only
+      regression, and `Z.repl` (Stage 1 + Stage 2) all exit 0, 0 `FAILURE` afterward.
+      **Conclusion: the biggest assumption behind P3 holds — go ahead with the rest of the
+      roadmap.**
 
 ### P1 — Core search primitives, hand-verified on a small topology
 - [ ] **P1.1** `SWPT::URC_ComputeAllRoutes(input, output, swpairs, max-attempts)` — generalize
