@@ -100,9 +100,26 @@ P1.2"). Update the checkboxes here as items land.
 ### P0 — Groundwork / open decisions / foundational validation (resolve before or during P1)
 - [ ] **P0.1** Confirm Kadena's actual `/local` (dirty-read) resource/gas ceiling — chain-level
       property, not in this repo; research externally or ask the owner directly.
-- [ ] **P0.2** Decide an absolute hard safety ceiling on `max-attempts` (e.g. 1000) enforced
-      inside `URC_ComputeAllRoutes` regardless of what a caller requests — a UI bug or bad
-      actor shouldn't be able to request an unbounded search against a node's `/local` endpoint.
+- [x] **P0.2** Settled (2026-08-20): `max-attempts` escalation is a plain caller-side retry —
+      try 1000; if the result hit exactly 1000 with no natural exhaustion (meaning there may be
+      more), retry with 2000; then 3000; flat `+1000` steps, no doubling (dropped — the
+      short-circuit already makes a fresh 1000-attempt search cheap when the real count is
+      low, which is the expected common case, so a more complex growth curve isn't worth it).
+      A genuine **outer hard stop** still exists above this escalation — placeholder value
+      **50,000**, proposed as a backstop default, not researched/considered — owner may
+      override. `URC_ComputeAllRoutes` enforces this outer stop regardless of requested
+      `max-attempts`.
+      **On-chain path-count caching (proposed, then evaluated and dropped):** would have
+      needed a table keyed by canonicalized `TokenA-BAR-TokenB` storing last-known path count,
+      to skip straight to a good starting `max-attempts` instead of 1000. Rejected for now:
+      (a) dirty-read/`/local` execution is non-consensus, so the cache could never be written
+      *during* the free searches themselves — only as a side effect of the real committed
+      execute-route transaction (P3.2), adding real complexity to that path; (b) the
+      short-circuit already makes a fresh 1000-attempt search cheap for the expected common
+      case (path count well under 1000); (c) caching only pays for itself if path counts
+      routinely exceed 1000, which is unconfirmed — P2 will show this empirically. Revisit only
+      if P2's real numbers justify it; it's a pure add-on, not a foundational decision, so
+      nothing else here needs to change to add it later.
 - [ ] **P0.3** Decide: enforce "new principals must connect to an existing primordial
       principal" as an actual code check (in `A_UpdatePrincipal`/`A_RotatePrincipal`), or leave
       as a governance convention only. Not required for correctness of this feature (point 5,
@@ -144,11 +161,25 @@ P1.2"). Update the checkboxes here as items land.
       (e.g. EKOSON→cVST) before running anything, so there's an independent expected answer.
 - [ ] **P1.7** Run P1.1 against P1.5's topology, confirm actual output matches P1.6 by hand.
 - [ ] **P1.8** Run P1.3, confirm it picks the genuinely-best candidate by real computed output.
+- [ ] **P1.9** Explicit edge-case requirement (owner-flagged): the whole mechanism must also
+      work correctly when only a single pool exists in the entire universe — 1 route found (or
+      0, if the pair isn't connected), no crash, no special-casing needed by the caller. Add
+      this as its own small test case, don't just assume the multi-hop topology test covers it.
 
 ### P2 — Realistic-scale empirical measurement (the actual go/no-go checkpoint)
 - [ ] **P2.1** Build a 50-100 pool REPL topology: principal spokes, 2-hop leaves, AND several
       deliberate bridge-style pools (the specific mechanism — any-position
-      `contains-principals` — identified as the real path-count-explosion risk).
+      `contains-principals` — identified as the real path-count-explosion risk). To test at
+      *varying* scales without rebuilding separate topologies each time: `URC_ComputeAllRoutes`
+      already takes `swpairs` as a plain parameter (same as the existing
+      `URC_ComputeAlternateRoutes`) — build the topology once, then pass different *subsets* of
+      the full pool-id list (e.g. `(take 20 all-pool-ids)` vs `(take 80 all-pool-ids)`) for
+      different-scale test runs. No toggle, no table manipulation, no new mechanism — just the
+      function called the way it's meant to be (considered and rejected two other approaches
+      for this before landing here: a mainnet-shippable "hide this pool" toggle meant to be
+      commented out before deploy, rejected as exactly the kind of thing that gets forgotten
+      and ships; and direct REPL-side table manipulation, rejected as unnecessary once realized
+      the existing parameter already does this).
 - [ ] **P2.2** Run P1.1 against several A→B pairs in P2.1's topology, record actual candidate
       route counts found.
 - [ ] **P2.3** Measure real gas cost via `(env-gas)` for varying `max-attempts` (e.g. 10, 25,
