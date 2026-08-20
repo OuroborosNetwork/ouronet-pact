@@ -3264,8 +3264,11 @@
                         ;;===>PHASE 0 (CC)=== SCAN the FVT's STALE present users + FIX every stale member (recording
                         ;; the 2e forced-fix count per user) → fresh divisor. Atomic: fixing the whole scanned set ⟹
                         ;; ZERO stale afterward (scan-cut, no re-scan).
-                        (do
-                            (map (lambda (u:string) (XI_FixUserFvtDebPenalized fvt-id reward-dptf-id u)) (URH_FvtStalePresentUsers fvt-id))
+                        (let
+                            (
+                                (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+                            )
+                            (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members)) (URH_FvtStalePresentUsers fvt-id))
                             (UC_EmptyOc)
                         )
                         ;;===>PHASE 1-3=== inject on the now-FRESH divisor (shared core, also driven by the defpact)
@@ -4635,26 +4638,45 @@
                     (ref-SCR::URC_U-SCR|UserScoreDebStale user-id (ref-SCR::UR_SCR|ScoreAqpoolLink score-entity-id) score-entity-id)))
         )
     )
-    (defun URC_FvtUserHasStaleMember:bool (fvt-id:string user-id:string)
-        @doc "True iff the user has ≥1 deb-stale member in the FVT. HEAVY (folds over the FVT's enabled members)."
+    (defun URC_FvtUserHasStaleMemberIn:bool (fvt-id:string user-id:string members:[string])
+        @doc "True iff the user has ≥1 deb-stale member among the PRE-COMPUTED `members` (the FVT's enabled \
+            \ score-entity-ids — user-INVARIANT). Lets a bulk scan compute the member list ONCE and reuse it for \
+            \ every present user, instead of re-scanning FVT|T|ScoreEntityLink per user (the accidental \
+            \ O(users × member-table) blow-up). Per-member work is point reads only."
         (fold (or) false
             (map
                 (lambda (m:string) (URC_FvtMemberDebNeedsFix fvt-id user-id (UR_FVT-SEL|ScoreEntityType fvt-id m) m))
-                (URH_FvtEnabledScoreEntityIdsForFvt fvt-id)))
+                members))
     )
-    (defun URC_FvtUserStaleMemberCount:integer (fvt-id:string user-id:string)
-        @doc "Count of the user's deb-stale members in the FVT = the number of fixes an enforced inject will force \
-            \ for this user (the 2e forced-fix increment). HEAVY (folds over the FVT's enabled members)."
+    (defun URC_FvtUserHasStaleMember:bool (fvt-id:string user-id:string)
+        @doc "True iff the user has ≥1 deb-stale member in the FVT. Single-user convenience (does one member \
+            \ scan); BULK callers must use URC_FvtUserHasStaleMemberIn with a hoisted member list."
+        (URC_FvtUserHasStaleMemberIn fvt-id user-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+    )
+    (defun URC_FvtUserStaleMemberCountIn:integer (fvt-id:string user-id:string members:[string])
+        @doc "Count of the user's deb-stale members among the PRE-COMPUTED `members` — the 2e forced-fix \
+            \ increment. Hoisted-member twin of URC_FvtUserStaleMemberCount (no per-user member re-scan)."
         (fold (+) 0
             (map
                 (lambda (m:string) (if (URC_FvtMemberDebNeedsFix fvt-id user-id (UR_FVT-SEL|ScoreEntityType fvt-id m) m) 1 0))
-                (URH_FvtEnabledScoreEntityIdsForFvt fvt-id)))
+                members))
+    )
+    (defun URC_FvtUserStaleMemberCount:integer (fvt-id:string user-id:string)
+        @doc "Count of the user's deb-stale members in the FVT (the 2e forced-fix increment). Single-user \
+            \ convenience (one member scan); bulk callers use URC_FvtUserStaleMemberCountIn."
+        (URC_FvtUserStaleMemberCountIn fvt-id user-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
     )
     (defun URH_FvtStalePresentUsers:[string] (fvt-id:string)
         @doc "HEAVY sweep scan (M3 #12): the FVT's present users who have ≥1 deb-stale member — the exact set that \
-            \ CC_Inject / the MTX|n|C_Inject defpact must fix before injecting. Filters URH_FvtPresentUsers by \
-            \ URC_FvtUserHasStaleMember. `take N` of this list gives a defpact step's fix chunk."
-        (filter (lambda (u:string) (URC_FvtUserHasStaleMember fvt-id u)) (URH_FvtPresentUsers fvt-id))
+            \ CC_Inject / the MTX|n|C_Inject defpact / CC_InjectFixChunk must fix before injecting. Computes the \
+            \ FVT's enabled members ONCE and reuses it across every present user (was O(users × ScoreEntityLink \
+            \ scan) — the per-user re-scan a 50-user scale probe measured at ~2M gas; now O(scan + users))."
+        (let
+            (
+                (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+            )
+            (filter (lambda (u:string) (URC_FvtUserHasStaleMemberIn fvt-id u members)) (URH_FvtPresentUsers fvt-id))
+        )
     )
     (defun URC_FvtSweepTotalPresent:integer (score-ids:[string])
         @doc "Total present holders across every FVT member employing the swept boost-class = the paginated \
@@ -4783,16 +4805,24 @@
             (UC_EmptyOc)
         )
     )
-    (defun XI_FixUserFvtDeb:object{IgnisCollectorV1.OutputCumulator}
-        (user-id:string fvt-id:string)
-        @doc "Fix ALL of a user's stale deb-based members in the FVT — one XI_FixUserMemberDeb per enabled member \
-            \ (each no-ops internally when fresh or a true triplet). Enumerates the FVT's members (bounded)."
+    (defun XI_FixUserFvtDebIn:object{IgnisCollectorV1.OutputCumulator}
+        (user-id:string fvt-id:string members:[string])
+        @doc "Fix the user's stale deb-based members among PRE-COMPUTED `members` — one XI_FixUserMemberDeb per \
+            \ member (each no-ops internally when fresh or a true triplet). Hoisted-member twin of XI_FixUserFvtDeb \
+            \ so a chunk fix scans FVT|T|ScoreEntityLink ONCE, not once per user. require SECURE."
         (require-capability (SECURE))
         (map
             (lambda (member-id:string)
                 (XI_FixUserMemberDeb user-id fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id member-id) member-id))
-            (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+            members)
         (UC_EmptyOc)
+    )
+    (defun XI_FixUserFvtDeb:object{IgnisCollectorV1.OutputCumulator}
+        (user-id:string fvt-id:string)
+        @doc "Fix ALL of a user's stale deb-based members in the FVT. Single-user convenience (one member scan); \
+            \ bulk callers use XI_FixUserFvtDebIn with a hoisted member list."
+        (require-capability (SECURE))
+        (XI_FixUserFvtDebIn user-id fvt-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
     )
     (defun XI_FixUserFvtDebPenalized:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string user-id:string)
@@ -4801,11 +4831,19 @@
             \ The user pays that × RATE non-discountable IGNIS at his next collect of this lane. Self-fixing at \
             \ collect (PHASE 6) uses plain XI_FixUserFvtDeb and is NOT penalized. require SECURE."
         (require-capability (SECURE))
+        (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id user-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+    )
+    (defun XI_FixUserFvtDebPenalizedIn:object{IgnisCollectorV1.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string user-id:string members:[string])
+        @doc "Hoisted-member twin of XI_FixUserFvtDebPenalized: count + fix the user's stale members among \
+            \ PRE-COMPUTED `members` (both the 2e count and the fix reuse the ONE member list — no per-user \
+            \ FVT|T|ScoreEntityLink re-scan). require SECURE."
+        (require-capability (SECURE))
         (let
             (
-                (n:integer (URC_FvtUserStaleMemberCount fvt-id user-id))
+                (n:integer (URC_FvtUserStaleMemberCountIn fvt-id user-id members))
             )
-            (XI_FixUserFvtDeb user-id fvt-id)
+            (XI_FixUserFvtDebIn user-id fvt-id members)
             (WU_FvtForcedFixCount|Add fvt-id reward-dptf-id user-id n)
             (UC_EmptyOc)
         )
@@ -4891,10 +4929,15 @@
         @doc "Forward (MTX-AQP defpact step): FIX a chunk of stale stakers in the FVT (settle + refresh + \
             \ mirror-resync per user; each fresh member no-ops), recording the 2e forced-fix count per user on \
             \ `reward-dptf-id` (the injected lane). NO fund movement. Caller passes `take N` of \
-            \ URH_FvtStalePresentUsers. UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
+            \ URH_FvtStalePresentUsers. Computes the FVT's enabled members ONCE and reuses it across the chunk (no \
+            \ per-user FVT|T|ScoreEntityLink re-scan). UEV_IMC + FVT|XE>SWEEP-FIX (composes SECURE)."
         (UEV_IMC)
         (with-capability (FVT|XE>SWEEP-FIX fvt-id)
-            (map (lambda (u:string) (XI_FixUserFvtDebPenalized fvt-id reward-dptf-id u)) users)
+            (let
+                (
+                    (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+                )
+                (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members)) users))
             (UC_EmptyOc)
         )
     )

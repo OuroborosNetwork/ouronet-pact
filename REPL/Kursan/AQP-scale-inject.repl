@@ -3,14 +3,11 @@
 ;; 50 synth staked in a deb-based vault, all made STALE (Elite-DEB raised AFTER staking),
 ;; then CC_InjectFixChunk pages the fix + CC_InjectFinalize injects. Reuses VCTGAS synth.
 ;;
-;; FINDING (gas MEASUREMENT, not a fits-2M gate): the inject is the HEAVIEST of the three
-;; CC-batches. Each fix round re-scans URH_FvtStalePresentUsers (O(present-users) filter,
-;; ~2.07M fixed) + ~126k/user fix — so a fix round is ~3.96M at 50 present users and does
-;; NOT fit 2M regardless of chunk size (the per-round scan dominates). The finalize's
-;; zero-stale gate scan is ~2.1M. Contrast the sweep (cursor over a pre-counted set, no
-;; per-round re-scan, ~44k/holder) and vacate (O(1) finalize). This is a real scaling
-;; observation: the inject's re-scan-each-round design is the bottleneck; a cursor (like the
-;; sweep's) would remove the O(present-users) per-round cost. Functional correctness holds.
+;; This test FOUND a quadratic scan and DROVE its fix. Originally each fix round cost
+;; ~3.96M gas (over 2M) + finalize ~2.1M — because URH_FvtStalePresentUsers re-scanned
+;; FVT|T|ScoreEntityLink ONCE PER USER (O(users x member-table)). Hoisting that scan
+;; (compute enabled members once, reuse across users) collapsed it: fix round 3.96M ->
+;; ~1.40M (fits 2M), finalize 2.1M -> 146k (14x). Numbers below are POST-fix.
 ;;
 (print "")
 (print "================================================================")
@@ -154,6 +151,7 @@
         (map print
             [
                 (format "<<SCALE-INJ-R1>> gas={} stale-remaining={} fits-2M={}" [g remain (<= g 2000000)])
+                (expect (format "<<SCALE-INJ-R1>> round fits 2M gas={}" [g]) true (<= g 2000000))
                 (expect (format "<<SCALE-INJ-R1>> stale-remaining={}" [remain]) 35 remain)
             ]
         )
@@ -199,6 +197,7 @@
         (map print
             [
                 (format "<<SCALE-INJ-R2>> gas={} stale-remaining={} fits-2M={}" [g remain (<= g 2000000)])
+                (expect (format "<<SCALE-INJ-R2>> round fits 2M gas={}" [g]) true (<= g 2000000))
                 (expect (format "<<SCALE-INJ-R2>> stale-remaining={}" [remain]) 20 remain)
             ]
         )
@@ -244,6 +243,7 @@
         (map print
             [
                 (format "<<SCALE-INJ-R3>> gas={} stale-remaining={} fits-2M={}" [g remain (<= g 2000000)])
+                (expect (format "<<SCALE-INJ-R3>> round fits 2M gas={}" [g]) true (<= g 2000000))
                 (expect (format "<<SCALE-INJ-R3>> stale-remaining={}" [remain]) 5 remain)
             ]
         )
@@ -289,6 +289,7 @@
         (map print
             [
                 (format "<<SCALE-INJ-R4>> gas={} stale-remaining={} fits-2M={}" [g remain (<= g 2000000)])
+                (expect (format "<<SCALE-INJ-R4>> round fits 2M gas={}" [g]) true (<= g 2000000))
                 (expect (format "<<SCALE-INJ-R4>> stale-remaining={}" [remain]) 0 remain)
             ]
         )
@@ -337,6 +338,7 @@
         (map print
             [
                 (format "<<SCALE-INJ-FINALIZE>> gas={} G {}->{} fits-2M={}" [g g-pre g-post (<= g 2000000)])
+                (expect (format "<<SCALE-INJ-FINALIZE>> finalize fits 2M gas={}" [g]) true (<= g 2000000))
                 (expect (format "<<SCALE-INJ-FINALIZE>> finalize advanced G on the fresh divisor {}->{}" [g-pre g-post]) true (> g-post g-pre))
             ]
         )
