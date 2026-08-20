@@ -1,10 +1,14 @@
 # Handoff: SWP exhaustive on-chain cheapest-path search (SmartSwap Phase 2)
 
-**Status:** IN PROGRESS. P0.5 done, but found a real problem: worst-case execution gas is
-1,694,006 with Liquid Boost off (fits) but 3,039,431 with it on (does NOT fit under the
-~2,000,000 ceiling) — needs owner input on how much this matters before P1 proceeds with full
-confidence. Also surfaced a separate, unfixed crash bug in `XI_RawLiquidPump`. P1 (core search
-primitives) not started yet.
+**Status:** IN PROGRESS. P0.5 done. Owner confirmed (2026-08-20) `SWP::UR_LiquidBoost` is meant
+to be **always on** in production, so the 3,039,431-gas worst-case figure (not the 1,694,006
+off figure) is the real, relevant number — it exceeds the ~2,000,000 ceiling by 1M+, with only
+~300k gas of stated headroom to close the rest of the gap. This is now **P0.6**, a new blocking
+open problem, root-caused but not yet fixed or re-measured. Also still open: a separate,
+unfixed crash bug in `XI_RawLiquidPump` (found alongside P0.5, not yet formally numbered in
+`ISSUES-RANKED.md`). P1 (core search primitives) not started — P0.6 should resolve first, since
+P3 (execute the discovered route) inherits this same execution-gas ceiling regardless of how
+the route was found.
 
 **To:** whoever picks up SWP audit follow-up work next.
 **From:** 2026-08-20 SWP audit session (#34M/M2 follow-up discussion).
@@ -175,9 +179,64 @@ P1.2"). Update the checkboxes here as items land.
       it doesn't leak into any later test. Full `[6.2]`/`[6.3]` suite, issuance-only regression,
       and `Z.repl` (Stage 1 + Stage 2) all exit 0, 0 `FAILURE` afterward.
       **Conclusion: the worst case does NOT reliably fit in one transaction once Liquid Boost
-      is on. Whether that's an acceptable, rare edge case or a real constraint on P3 depends on
-      how often Liquid Boost is actually meant to be enabled in practice — owner input needed
-      before this can be called resolved.**
+      is on. Owner confirmed (2026-08-20) Liquid Boost is meant to be always on in production —
+      so this is not an edge case, it's the real number. Promoted to `P0.6` below.**
+
+- [ ] **P0.6 — NEW, opened 2026-08-20. Make worst-case execution fit under ~2,000,000 gas with
+      Liquid Boost always on. Root-caused, not yet fixed or re-measured. Blocks P3 (any
+      discovered route still has to execute inside this same ceiling), so resolve before
+      investing further in P1's search primitives.**
+      **Root cause, more specific than P0.5's writeup:** `XI_RawLiquidPump` (`19_SWPU.pact`)
+      routes its DLK-conversion quote through `SWPI::URC_HopperActive` → `URCX_Hopper`, which
+      is the **same best-of-3 alternate-route search** Fix #19 built for real swap routing
+      (`SWPT::URC_ComputeAlternateRoutes`, up to 3 full `URC_ComputeGraphPath` BFS searches,
+      each followed by a full `URCX_HopperForNodes` best-edge-per-hop pass, compared via
+      `UC_BestHopper`). Liquid Boost fires this **once per hop** (`XI_LiquidIndexPump`, called
+      from `XI_SmartSwapCore`'s per-hop fold whenever `o-id-liquid != 0.0`, which is every hop
+      while the global toggle is on) — so a 6-hop SmartSwap can trigger **up to 18** full
+      alternate-route searches (6 hops × up to 3 candidates each) purely for pricing a small
+      residual fee slice into DLK, on top of the **one** alternate-route search the main swap
+      routing itself already paid for. This 6×(up to 3x) multiplier, not a single BFS per hop,
+      is almost certainly the dominant driver of the ~1.3M gas gap between the boost-off and
+      boost-on measurements — **not yet confirmed by direct profiling, only by reading the call
+      graph; profile before committing to a fix** (matches the session's own rule: measure,
+      don't just derive).
+      **Candidate fix directions (not decided, not started — owner input wanted on which to
+      pursue, and in what order):**
+      1. **Cheap, low-risk, try first: give the boost pump a lighter routing call than
+         `URC_HopperActive`.** Boost's job is just "convert this fee slice to DLK and burn it
+         to pump an index" — it doesn't need the *optimal* route the way a real user swap does,
+         it needs *a* valid route. A new `SWPI` entrypoint (e.g. `URC_HopperActiveShortest`)
+         that calls `SWPT::URC_ComputeGraphPath` directly (single shortest path, no
+         alternate-route comparison) and feeds it straight to `URCX_HopperForNodes`, skipping
+         `URC_ComputeAlternateRoutes`/`UC_BestHopper` entirely, would cut the up-to-3x-per-hop
+         multiplier down to 1x — plausibly enough alone, plausibly not, needs re-measurement.
+         Trade-off: the DLK value credited per pump would use a possibly-worse-priced route
+         than today, at these small fee-slice amounts probably immaterial, but it's a real
+         behavior change worth the owner's sign-off, not something to decide unilaterally.
+      2. **Deeper, matches the owner's "carry values and scan once" instinct: precompute a
+         single route/value table before `XI_SmartSwapCore`'s hop-fold starts, instead of
+         searching fresh per hop.** A one-time reverse/multi-source search seeded from `lkda`
+         (DLK) outward, producing a "best next-hop toward DLK" table for every node reached
+         within the relevant radius, threaded through the fold as extra state; each hop's boost
+         computation becomes an O(path-length) table walk instead of a fresh O(graph) BFS. This
+         is the only direction that makes boost's *marginal* per-hop cost roughly fixed instead
+         of scaling with hop count × pool-graph size — closer to the owner's "somehow not scale
+         with pool complexity" ask — but it's a real architectural change spanning
+         `XI_SmartSwapCore`'s fold signature, `XI_LiquidIndexPump`/`XI_RawLiquidPump`'s
+         signatures, and probably a new `SWPT`/`SWPI` primitive to build the table itself. Only
+         worth building if direction 1 alone doesn't close the gap — re-measure after 1 before
+         starting this.
+      3. **Not recommended, listed for completeness: reduce how often boost fires (e.g. only on
+         the swap's final hop) instead of making each firing cheaper.** Rejected as a first
+         move — it changes what Liquid Boost economically does (less value diverted to the
+         index over a multi-hop swap than today), a tokenomics decision, not a gas-engineering
+         one; only worth considering if 1 and 2 together still don't close the gap.
+      **Suggested next step, not yet taken:** instrument `[6.3]_SWP.repl`'s `SWP|TX 032q` with
+      `env-gas` checkpoints around the boost-on/boost-off swap calls (and, if easy, around one
+      isolated `XI_RawLiquidPump` call) to confirm the "up to 18 searches" theory with real
+      numbers before writing any fix code — same measure-first discipline as the rest of this
+      effort.
 
 ### P1 — Core search primitives, hand-verified on a small topology
 - [ ] **P1.1** `SWPT::URC_ComputeAllRoutes(input, output, swpairs, max-attempts)` — generalize
