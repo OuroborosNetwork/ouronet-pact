@@ -3267,8 +3267,9 @@
                         (let
                             (
                                 (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+                                (reward-rows:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
                             )
-                            (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members)) (URH_FvtStalePresentUsers fvt-id))
+                            (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) (URH_FvtStalePresentUsers fvt-id))
                             (UC_EmptyOc)
                         )
                         ;;===>PHASE 1-3=== inject on the now-FRESH divisor (shared core, also driven by the defpact)
@@ -3298,9 +3299,12 @@
                 (let
                     (
                         (batch:[string] (take chunk stale))
+                        ;; hoist the FVT-invariant member + reward-row lists ONCE for the whole chunk (no per-user re-scan)
+                        (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+                        (reward-rows:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
                     )
                     ;; force-refresh this chunk of stale stakers (penalized); fixed users drop out of the stale set
-                    (map (lambda (u:string) (XI_FixUserFvtDebPenalized fvt-id reward-dptf-id u)) batch)
+                    (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) batch)
                     (let
                         (
                             (remaining:integer (- (length stale) (length batch)))
@@ -4696,7 +4700,15 @@
     ;; --- Shared deb-staleness FIX (M3 #12 — used by CC_Inject AND collect PHASE 6 backstop) ---
     (defun XI_FixUserMemberDeb:object{IgnisCollectorV1.OutputCumulator}
         (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string)
-        @doc "FIX one (user, member): iff the member is deb-based (singular or NON-true triplet) AND stale for this \
+        @doc "Single-member convenience: scans the FVT's reward rows once, then delegates to XI_FixUserMemberDebIn."
+        (require-capability (SECURE))
+        (XI_FixUserMemberDebIn user-id fvt-id score-entity-type score-entity-id (URH_FVT-RG|EnabledRewardRows fvt-id))
+    )
+    (defun XI_FixUserMemberDebIn:object{IgnisCollectorV1.OutputCumulator}
+        (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string reward-rows:[string])
+        @doc "FIX one (user, member) settling over PRE-COMPUTED `reward-rows` (the FVT's enabled reward-dptf ids — \
+            \ batch-invariant), so a chunk fix scans FVT|T|RPS|Global ONCE, not per (user × member). \
+            \ Iff the member is deb-based (singular or NON-true triplet) AND stale for this \
             \ user — (1) SETTLE the user's pending at the OLD deb across ALL of the FVT's enabled reward-dptfs and \
             \ advance each last-rps to its current index (settle-before-weight-change MUST cover every stream, \
             \ because the deb-score is shared across streams); (2) refresh the SCORE deb-score(s) to the live \
@@ -4731,7 +4743,7 @@
                                 (XI_2|BankUserTier1Pending user-id member-pool fvt-id score-entity-type score-entity-id rdptf)
                                 (WU_RpsUser|LastRps user-id fvt-id score-entity-id rdptf
                                     (URC_FvtTier1IndexRps fvt-id score-entity-id rdptf))))
-                        (URH_FVT-RG|EnabledRewardRows fvt-id))
+                        reward-rows)
                     ;; 2. refresh the SCORE deb-score(s) to live (each triplet leg at its OWN pool)
                     (if triplet
                         (map
@@ -4747,7 +4759,15 @@
     )
     (defun XI_SweepRecomputeUserMember:object{IgnisCollectorV1.OutputCumulator}
         (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string swept-boost-class-id:string)
-        @doc "Re-score sweep per-holder recompute for one (user, member) after an anchor in `swept-boost-class-id` \
+        @doc "Single-holder convenience: scans the FVT's reward rows once, then delegates to XI_SweepRecomputeUserMemberIn."
+        (require-capability (SECURE))
+        (XI_SweepRecomputeUserMemberIn user-id fvt-id score-entity-type score-entity-id swept-boost-class-id (URH_FVT-RG|EnabledRewardRows fvt-id))
+    )
+    (defun XI_SweepRecomputeUserMemberIn:object{IgnisCollectorV1.OutputCumulator}
+        (user-id:string fvt-id:string score-entity-type:integer score-entity-id:string swept-boost-class-id:string reward-rows:[string])
+        @doc "Re-score sweep per-holder recompute settling over PRE-COMPUTED `reward-rows` (batch-invariant) — a \
+            \ sweep chunk scans FVT|T|RPS|Global once, not per holder. \
+            \ [orig] for one (user, member) after an anchor in `swept-boost-class-id` \
             \ was removed/re-priced GLOBALLY. Order matters: (1) SETTLE every reward stream at the OLD weight + \
             \ advance last-rps (banks pending before any weight change); then dispatch — TRUE triplet (deb- \
             \ independent) → (2t) refold the Level-1 lanes at the live promile; deb-based (singular / non-true \
@@ -4774,7 +4794,7 @@
                         (XI_2|BankUserTier1Pending user-id member-pool fvt-id score-entity-type score-entity-id rdptf)
                         (WU_RpsUser|LastRps user-id fvt-id score-entity-id rdptf
                             (URC_FvtTier1IndexRps fvt-id score-entity-id rdptf))))
-                (URH_FVT-RG|EnabledRewardRows fvt-id))
+                reward-rows)
             ;; 2. refold the holder's aggregate-promile for the swept class — BOTH paths need it: the deb path picks
             ;;    it up via the score deb-recompute, AND the TRUE-triplet lanes read UR_UB|AggregatePromile directly
             ;;    (URC_ComputeTripletLanes). The DEEPER recompute the deb-fix omits — must precede the dispatch.
@@ -4806,14 +4826,14 @@
         )
     )
     (defun XI_FixUserFvtDebIn:object{IgnisCollectorV1.OutputCumulator}
-        (user-id:string fvt-id:string members:[string])
-        @doc "Fix the user's stale deb-based members among PRE-COMPUTED `members` — one XI_FixUserMemberDeb per \
-            \ member (each no-ops internally when fresh or a true triplet). Hoisted-member twin of XI_FixUserFvtDeb \
-            \ so a chunk fix scans FVT|T|ScoreEntityLink ONCE, not once per user. require SECURE."
+        (user-id:string fvt-id:string members:[string] reward-rows:[string])
+        @doc "Fix the user's stale deb-based members among PRE-COMPUTED `members`, settling over PRE-COMPUTED \
+            \ `reward-rows` — both batch-invariant, so a chunk fix scans FVT|T|ScoreEntityLink AND FVT|T|RPS|Global \
+            \ ONCE, not once per user/member. require SECURE."
         (require-capability (SECURE))
         (map
             (lambda (member-id:string)
-                (XI_FixUserMemberDeb user-id fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id member-id) member-id))
+                (XI_FixUserMemberDebIn user-id fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id member-id) member-id reward-rows))
             members)
         (UC_EmptyOc)
     )
@@ -4822,7 +4842,7 @@
         @doc "Fix ALL of a user's stale deb-based members in the FVT. Single-user convenience (one member scan); \
             \ bulk callers use XI_FixUserFvtDebIn with a hoisted member list."
         (require-capability (SECURE))
-        (XI_FixUserFvtDebIn user-id fvt-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+        (XI_FixUserFvtDebIn user-id fvt-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id) (URH_FVT-RG|EnabledRewardRows fvt-id))
     )
     (defun XI_FixUserFvtDebPenalized:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string user-id:string)
@@ -4831,19 +4851,19 @@
             \ The user pays that × RATE non-discountable IGNIS at his next collect of this lane. Self-fixing at \
             \ collect (PHASE 6) uses plain XI_FixUserFvtDeb and is NOT penalized. require SECURE."
         (require-capability (SECURE))
-        (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id user-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+        (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id user-id (URH_FvtEnabledScoreEntityIdsForFvt fvt-id) (URH_FVT-RG|EnabledRewardRows fvt-id))
     )
     (defun XI_FixUserFvtDebPenalizedIn:object{IgnisCollectorV1.OutputCumulator}
-        (fvt-id:string reward-dptf-id:string user-id:string members:[string])
-        @doc "Hoisted-member twin of XI_FixUserFvtDebPenalized: count + fix the user's stale members among \
-            \ PRE-COMPUTED `members` (both the 2e count and the fix reuse the ONE member list — no per-user \
-            \ FVT|T|ScoreEntityLink re-scan). require SECURE."
+        (fvt-id:string reward-dptf-id:string user-id:string members:[string] reward-rows:[string])
+        @doc "Hoisted twin of XI_FixUserFvtDebPenalized: count + fix the user's stale members among PRE-COMPUTED \
+            \ `members`, settling over PRE-COMPUTED `reward-rows` (count + fix + settle all reuse the ONE member \
+            \ list AND ONE reward-rows list — no per-user re-scan). require SECURE."
         (require-capability (SECURE))
         (let
             (
                 (n:integer (URC_FvtUserStaleMemberCountIn fvt-id user-id members))
             )
-            (XI_FixUserFvtDebIn user-id fvt-id members)
+            (XI_FixUserFvtDebIn user-id fvt-id members reward-rows)
             (WU_FvtForcedFixCount|Add fvt-id reward-dptf-id user-id n)
             (UC_EmptyOc)
         )
@@ -4936,8 +4956,9 @@
             (let
                 (
                     (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+                    (reward-rows:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
                 )
-                (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members)) users))
+                (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) users))
             (UC_EmptyOc)
         )
     )
@@ -4963,10 +4984,14 @@
             \ NO fund movement, NO 2e penalty (owner sweep, D4). require SECURE. Shared by the intra-module client \
             \ CC_SweepRevokeAnchor and the cross-module wrapper XE_FvtSweepRecomputeChunk."
         (require-capability (SECURE))
-        (map
-            (lambda (u:string)
-                (XI_SweepRecomputeUserMember u fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id swept-boost-class-id))
-            users)
+        (let
+            (
+                (reward-rows:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
+            )
+            (map
+                (lambda (u:string)
+                    (XI_SweepRecomputeUserMemberIn u fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id swept-boost-class-id reward-rows))
+                users))
         (UC_EmptyOc)
     )
     (defun XI_FvtSweepRecomputeWindow:integer

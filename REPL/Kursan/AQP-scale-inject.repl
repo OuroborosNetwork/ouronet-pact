@@ -6,8 +6,8 @@
 ;; This test FOUND a quadratic scan and DROVE its fix. Originally each fix round cost
 ;; ~3.96M gas (over 2M) + finalize ~2.1M — because URH_FvtStalePresentUsers re-scanned
 ;; FVT|T|ScoreEntityLink ONCE PER USER (O(users x member-table)). Hoisting that scan
-;; (compute enabled members once, reuse across users) collapsed it: fix round 3.96M ->
-;; ~1.40M (fits 2M), finalize 2.1M -> 146k (14x). Numbers below are POST-fix.
+;; (hoist BOTH the enabled-members list AND the reward-rows list out of the per-user loop)
+;; collapsed it: fix round 3.96M -> 277k (14x), finalize 2.1M -> 146k (14x). POST-fix numbers below.
 ;;
 (print "")
 (print "================================================================")
