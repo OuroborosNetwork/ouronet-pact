@@ -4264,6 +4264,19 @@
         ]
         25.0 false
     )
+    ;;#P0.5 correction: this anchor DOES need to be swap-enabled after all — not
+    ;;for the main W1->W7 route search (that stays forced through the intended
+    ;;6-hop chain regardless, since nothing else ever connects to W7), but
+    ;;because XI_RawLiquidPump's own internal Liquid-Boost bookkeeping searches
+    ;;URC_HopperActive(hop-token, DLK, amount) per hop when Liquid Boost is on,
+    ;;and that search is active-filtered — an inactive anchor is invisible to it
+    ;;and the search comes back empty. Discovered a real, separate bug this way:
+    ;;XI_RawLiquidPump indexes into that result unguarded ((at 0 (take -1 ovs)))
+    ;;instead of handling the empty case, so an inactive/missing DLK route
+    ;;crashes instead of failing cleanly. Worth its own tracked finding — not
+    ;;fixing it here, just routing around it to keep this specific pool
+    ;;genuinely DLK-reachable so the swap can execute at all.
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
 )
 (print "")
 (print "")
@@ -4343,6 +4356,19 @@
 )
 ;;==== SWP|TX 032q - P0.5 Worst-Case Gas Measurement · 02 · let / invocation ==== ========================
 (print "--- [SWP|TX 032q - P0.5 Worst-Case Gas Measurement · 02 · let / invocation] ---")
+;;Liquid Boost is a GLOBAL toggle (SWP::UR_LiquidBoost) — when on, every pool's
+;;"boost" fee component equals its lp-fee (UDC_PoolFees: boost-fee = (if lb
+;;lp-fee 0.0)) instead of 0.0, which makes XI_LiquidIndexPump fire on every hop.
+;;Confirmed via diagnostic it defaults to false this deep into the pipeline, so
+;;the true worst case must explicitly turn it on for this measurement — and back
+;;off immediately after, since it's global and would otherwise silently change
+;;every fee computation for the rest of this file's later transactions.
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+    )
+    (ref-TS01-A::SWP|A_UpdateLiquidBoost true)
+)
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
@@ -4358,7 +4384,7 @@
     )
     (map print
         [
-            (format "P0.5 worst-case swap result: {}" [swap-result])
+            (format "P0.5 worst-case swap result (Liquid Boost ON): {}" [swap-result])
             (expect
                 "Smart swap actually executed the full 6-hop route (not a shorter shortcut)"
                 true
@@ -4371,9 +4397,16 @@
 (print "")
 ;;==== SWP|TX 032q - P0.5 Worst-Case Gas Measurement · 03 · gas echo ==== ================================
 (print "--- [SWP|TX 032q - P0.5 Worst-Case Gas Measurement · 03 · gas echo] ---")
-(print (format "<<<<<<<SWP|TX 032q P0.5 WORST-CASE 6-HOP SMARTSWAP ==> {} KDA GAS>>>>>>>" [(env-gas)]))
+(print (format "<<<<<<<SWP|TX 032q P0.5 WORST-CASE 6-HOP SMARTSWAP (Liquid Boost ON) ==> {} KDA GAS>>>>>>>" [(env-gas)]))
 (print "")
 (print "")
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+    )
+    ;;Restore — must not leak into the rest of the file's later transactions.
+    (ref-TS01-A::SWP|A_UpdateLiquidBoost false)
+)
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)

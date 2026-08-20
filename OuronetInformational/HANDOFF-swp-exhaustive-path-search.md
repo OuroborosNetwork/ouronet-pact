@@ -1,7 +1,10 @@
 # Handoff: SWP exhaustive on-chain cheapest-path search (SmartSwap Phase 2)
 
-**Status:** IN PROGRESS. P0.5 done (worst-case execution gas measured at 1,694,006 — fits under
-the ceiling). P1 (core search primitives) not started yet.
+**Status:** IN PROGRESS. P0.5 done, but found a real problem: worst-case execution gas is
+1,694,006 with Liquid Boost off (fits) but 3,039,431 with it on (does NOT fit under the
+~2,000,000 ceiling) — needs owner input on how much this matters before P1 proceeds with full
+confidence. Also surfaced a separate, unfixed crash bug in `XI_RawLiquidPump`. P1 (core search
+primitives) not started yet.
 
 **To:** whoever picks up SWP audit follow-up work next.
 **From:** 2026-08-20 SWP audit session (#34M/M2 follow-up discussion).
@@ -130,28 +133,51 @@ P1.2"). Update the checkboxes here as items land.
       itself (bound the traversal depth directly, cheaper) rather than only as a post-discovery
       filter (wasteful — would still pay to explore and discard depth-8+ candidates). Land this
       as part of building P1.1.
-- [x] **P0.5 — DONE, 2026-08-20. Result: 1,694,006 gas. Fits under the ~2,000,000 ceiling,
-      ~15% headroom to spare.** Built a real 7-token/6-hop chain (`W1→W2→...→W7`, `W1`/`W4`/
-      `W7` registered as real principals at the start/middle/end so every pool's anchoring
-      requirement is satisfied by tokens already on the route, no accidental shortcut), every
-      one of the 6 pools maximally sized (7 members: the 2 route tokens + 5 unique per-pool
-      filler tokens, never shared across pools — sharing them would itself create a hub
-      shortcut, caught before building), each with 7 special fee targets configured, issued
-      via the `p=true` permissioned bypass (brand-new principals have no prior trading history
-      to price against the spawn-limit check; the anchoring rule itself still applies
-      regardless of `p`). One extra wrinkle found and fixed along the way: `URC_PoolValue`
-      prices a pool using only its *first* token's DWK worth
-      (`URC_WorthDWK`→`URC_Hopper(token, DWK, ...)`, a real reachability search), and
-      `SWP|C_ToggleSwapCapability` requires that worth clear an inactive-limit floor — the
-      isolated chain had zero path to DWK on its own, so one small throwaway `{OURO, W1}`
-      pool (never swap-enabled, invisible to the active-filtered route search, only visible to
-      the unfiltered worth check) was added to give the whole transitively-connected chain
-      real priceable worth without touching the route itself. Real swap executed
-      "via 6 Swaps over 6 Pools" (confirmed no shortcut taken), `SWP|TX 032l`-`032q` in
-      `[6.3]_SWP.repl`, kept as a permanent regression. Full `[6.2]`/`[6.3]` suite, issuance-only
-      regression, and `Z.repl` (Stage 1 + Stage 2) all exit 0, 0 `FAILURE` afterward.
-      **Conclusion: the biggest assumption behind P3 holds — go ahead with the rest of the
-      roadmap.**
+- [x] **P0.5 — DONE, 2026-08-20. Two numbers, not one — the second one is the real problem.**
+      Built a real 7-token/6-hop chain (`W1→W2→...→W7`, `W1`/`W4`/`W7` registered as real
+      principals at the start/middle/end so every pool's anchoring requirement is satisfied by
+      tokens already on the route, no accidental shortcut), every one of the 6 pools maximally
+      sized (7 members: the 2 route tokens + 5 unique per-pool filler tokens, never shared
+      across pools — sharing them would itself create a hub shortcut, caught before building),
+      each with 7 special fee targets configured, issued via the `p=true` permissioned bypass
+      (brand-new principals have no prior trading history to price against the spawn-limit
+      check; the anchoring rule itself still applies regardless of `p`). One wrinkle found and
+      fixed along the way: `URC_PoolValue` prices a pool using only its *first* token's DWK
+      worth (`URC_WorthDWK`→`URC_Hopper(token, DWK, ...)`, a real reachability search), and
+      `SWP|C_ToggleSwapCapability` requires that worth clear an inactive-limit floor — fixed
+      with one small throwaway `{OURO, W1}` pool giving the whole transitively-connected chain
+      real priceable worth without touching the route itself.
+      - **With `SWP::UR_LiquidBoost` off (the pipeline's default at that point, confirmed via
+        diagnostic, not assumed): 1,694,006 gas.** Fits under ~2,000,000, ~15% headroom.
+      - **With Liquid Boost explicitly turned on (owner-flagged: this was missing from the
+        first measurement and matters): 3,039,431 gas — exceeds the ~2,000,000 ceiling by
+        over 1,000,000 gas.** `UDC_PoolFees` (`17_SWPL.pact`) sets `boost-fee = (if
+        UR_LiquidBoost lp-fee 0.0)` — a *global* toggle, not per-pool — so when it's on, every
+        hop of a SmartSwap fires `XI_LiquidIndexPump`/`XI_RawLiquidPump`, each of which runs
+        its *own* full `URC_HopperActive(hop-token, DLK, amount)` search plus a real DPTF burn.
+        6 hops × a real BFS search each is where the extra ~1.3M gas comes from. This cost also
+        scales with *total active pool count in the whole protocol* (same reason plain BFS
+        search cost does) — as the real system grows, this gap only widens, it doesn't stay
+        fixed at 1.3M forever.
+      - **A real, separate bug found while measuring this, not fixed here:**
+        `XI_RawLiquidPump` (`19_SWPU.pact:993-997`) does
+        `(final-boost-output:decimal (at 0 (take -1 ovs)))` on the `URC_HopperActive` search
+        result with no empty-check — if a hop's token has no *active* route to DLK (exactly
+        what happened here before the anchor pool was activated), this crashes
+        ("Array index out of bounds") instead of failing cleanly or skipping the boost. Same
+        *class* of bug as the M3 finding (unguarded indexing into a search result that can
+        legitimately come back empty), not yet reviewed in this audit pass — worth its own
+        tracked finding, not addressed here since fixing it wasn't this task's job, only
+        working around it (activating the anchor pool) to get the measurement to complete.
+      Real swap executed "via 6 Swaps over 6 Pools" in both cases (confirmed no shortcut taken
+      either way). `SWP|TX 032l`-`032q` in `[6.3]_SWP.repl`, kept as a permanent regression —
+      the Liquid-Boost-on measurement toggles it on and back off within the same transaction so
+      it doesn't leak into any later test. Full `[6.2]`/`[6.3]` suite, issuance-only regression,
+      and `Z.repl` (Stage 1 + Stage 2) all exit 0, 0 `FAILURE` afterward.
+      **Conclusion: the worst case does NOT reliably fit in one transaction once Liquid Boost
+      is on. Whether that's an acceptable, rare edge case or a real constraint on P3 depends on
+      how often Liquid Boost is actually meant to be enabled in practice — owner input needed
+      before this can be called resolved.**
 
 ### P1 — Core search primitives, hand-verified on a small topology
 - [ ] **P1.1** `SWPT::URC_ComputeAllRoutes(input, output, swpairs, max-attempts)` — generalize
