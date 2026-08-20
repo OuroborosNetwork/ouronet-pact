@@ -80,36 +80,99 @@ slippage-protected transaction. This is "on-chain mechanics doing what others do
 except the search queries live canonical chain state directly instead of a separately-
 maintained off-chain index that can go stale.
 
-## Phased plan
+## Correction (2026-08-20, later same session): the "same-pool-detour" pruning rule is NOT needed
 
-**Phase 1 — build the exhaustive+pruned search in isolation, verify by hand.**
-Extend `SWPT::URC_ComputeAlternateRoutes`'s exclusion-based approach to run until
-exhaustion (not capped at 3), and add the same-pool-detour pruning rule (point 4 above).
-Test against a small, fully hand-computable topology — the owner's own worked example
-(`W|SSTOA-OURO-WSTOA`, `P|SSTOA-VST`, `S|VST-mVST-cVST`, `P|OURO-AKOSON`,
-`S|AKOSON-PKOSON-EKOSON`) is a good candidate: known correct answer, easy to verify the
-search finds the right candidate set and prunes what it should.
+Point 4 above proposed a pruning rule for candidates that reuse the same originating pool
+across 2+ hops. Verified `SWPT::XI_UpdateGraphForSwpair` directly: a k-token pool's issuance
+does a full `i × j` double loop registering an edge for **every** pair of its tokens — a
+complete clique, not a chain. Combined with `U|BFS::UC_BFS` always finding the *shortest*
+path to any node, this means BFS can never route `A→Y→W` through the same pool for both legs
+when that pool already offers a direct `A→W` edge — it would find the direct edge first, at a
+shorter distance. A single discovered route structurally cannot reuse the same pool twice.
+No separate pruning mechanism needed for this — it falls out of BFS + the clique property for
+free. Don't build it.
 
-**Phase 2 — build a realistic 50-100 pool topology, measure for real.**
-Deliberately include principal spokes, leaves, AND several bridge-style pools (the exact
-mechanism identified in point 2 as the real risk for path-count explosion — this is the part
-that needs empirical data, not more theory). Run the Phase 1 search against it via dirty-read
-and measure: actual candidate route count found, actual total gas across all search
-attempts, wall-clock/practicality. This is the go/no-go checkpoint.
+## Full roadmap (granular, checkable, referenced by tag going forward)
 
-**Phase 3 — decide based on Phase 2's numbers.**
-If candidate count and cost are tractable: proceed to Phase 4. If not: figure out what
-additional constraint is needed (this doc doesn't presume an answer — could be limiting
-bridge-pool fan-out, could be something else; decide from real data, not speculation).
+Every future turn on this project should name the tag(s) it's working on (e.g. "building
+P1.2"). Update the checkboxes here as items land.
 
-**Phase 4 — build the caller-supplied-route SmartSwap entrypoint.**
-A new client function that accepts an explicit route (nodes/edges) instead of computing its
-own — the execution machinery underneath (`XI_SmartSwap`/`XI_SmartSwapCore`) already accepts
-nodes/edges directly, so this is a smaller lift than the search itself. Protected by the same
-slippage floor as the existing `SmartSwapWithSlippage`. Wire into Talos, adversarially prove
-end-to-end with a real REPL scenario (mirroring #34M/#34bM's proof methodology — revert the
-fix, show the naive/old path wins, restore, show the new one wins), log to the SWP audit
-trail (`ROUND-02-FIXES.md` next `Fix #`).
+### P0 — Groundwork / open decisions (resolve before or during P1, not silently assumed)
+- [ ] **P0.1** Confirm Kadena's actual `/local` (dirty-read) resource/gas ceiling — chain-level
+      property, not in this repo; research externally or ask the owner directly.
+- [ ] **P0.2** Decide an absolute hard safety ceiling on `max-attempts` (e.g. 1000) enforced
+      inside `URC_ComputeAllRoutes` regardless of what a caller requests — a UI bug or bad
+      actor shouldn't be able to request an unbounded search against a node's `/local` endpoint.
+- [ ] **P0.3** Decide: enforce "new principals must connect to an existing primordial
+      principal" as an actual code check (in `A_UpdatePrincipal`/`A_RotatePrincipal`), or leave
+      as a governance convention only. Not required for correctness of this feature (point 5,
+      original doc) — purely a connectivity-maximizing choice, owner's call.
+
+### P1 — Core search primitives, hand-verified on a small topology
+- [ ] **P1.1** `SWPT::URC_ComputeAllRoutes(input, output, swpairs, max-attempts)` — generalize
+      `URC_ComputeAlternateRoutes`'s 3 hardcoded sequential `let*` attempts into a real `fold`
+      over `(enumerate 0 (- max-attempts 1))`, threading `(routes-found, remaining-universe)`
+      as accumulator, same early-exit-once-empty short-circuit already proven in #34bM's fix.
+      Respects P0.2's ceiling.
+- [ ] **P1.2** Add `URC_ComputeAllRoutes` to the `SwapTracerV2` interface (additive, no version
+      bump — pre-mainnet policy).
+- [ ] **P1.3** `SWPI::URC_HopperExhaustive(input, output, amount, swpairs, max-attempts)` —
+      mirrors existing `URCX_Hopper`, calls P1.1 instead of the K=3-capped
+      `URC_ComputeAlternateRoutes`; reuses the *already-shipped* `URCX_HopperForNodes` (per-
+      candidate value) and `UC_BestHopper` (pick best) unchanged — no new value-computation
+      logic needed.
+- [ ] **P1.4** Add `URC_HopperExhaustive` to the `SwapperIssueV3` interface (additive).
+- [ ] **P1.5** Build the owner's small hand-computable topology in a scratch REPL fixture:
+      `W|SSTOA-OURO-WSTOA`, `P|SSTOA-VST`, `S|VST-mVST-cVST`, `P|OURO-AKOSON`,
+      `S|AKOSON-PKOSON-EKOSON`.
+- [ ] **P1.6** Hand-compute the expected route set/count for a chosen A→B pair in that topology
+      (e.g. EKOSON→cVST) before running anything, so there's an independent expected answer.
+- [ ] **P1.7** Run P1.1 against P1.5's topology, confirm actual output matches P1.6 by hand.
+- [ ] **P1.8** Run P1.3, confirm it picks the genuinely-best candidate by real computed output.
+
+### P2 — Realistic-scale empirical measurement (the actual go/no-go checkpoint)
+- [ ] **P2.1** Build a 50-100 pool REPL topology: principal spokes, 2-hop leaves, AND several
+      deliberate bridge-style pools (the specific mechanism — any-position
+      `contains-principals` — identified as the real path-count-explosion risk).
+- [ ] **P2.2** Run P1.1 against several A→B pairs in P2.1's topology, record actual candidate
+      route counts found.
+- [ ] **P2.3** Measure real gas cost via `(env-gas)` for varying `max-attempts` (e.g. 10, 25,
+      50, 100) at this scale — extends the per-attempt gas numbers already measured for #34M
+      (single search ≈23,764 gas; ≈28,000 marginal per additional K) to confirm they still hold
+      at realistic density, not just the sparse topology they were measured against.
+- [ ] **P2.4** Go/no-go decision, from P2.2/P2.3's real numbers: tractable as-is, or does
+      something need to change first? Decide from data, not more speculation.
+
+### P3 — Caller-supplied-route execution path (contingent on P2.4 = go)
+- [ ] **P3.1** Verify precisely (trace the code, don't assume) that `XI_SmartSwap`/
+      `XI_SmartSwapCore` safely aborts on a malformed/incoherent caller-supplied route (e.g. a
+      `nodes`/`edges` pair that doesn't actually connect, or references a non-existent swpair)
+      rather than silently misbehaving.
+- [ ] **P3.2** Design + build the new client entrypoint (e.g. `SWP|C_SmartSwapExplicitRoute`)
+      that accepts a caller-supplied `nodes`/`edges` route directly, skipping internal BFS/
+      best-of-K entirely.
+- [ ] **P3.3** Slippage protection — reuse the existing `UC_SlippageMinMax`/floor-only pattern
+      (Fix #16), not a new mechanism.
+- [ ] **P3.4** IGNIS billing wiring, matching the existing `SmartSwapWithSlippage` pattern.
+- [ ] **P3.5** Wire into Talos (`04_TS01-C3.pact`), matching the existing SmartSwap variants'
+      shape.
+
+### P4 — Adversarial proof + full regression
+- [ ] **P4.1** REPL proof: construct a scenario with 4+ genuinely distinct routes where the
+      *best* one is not among the first 3 BFS would find — prove the exhaustive path (P1.3)
+      finds it and the existing best-of-3 (Fix #19) doesn't, on the same topology.
+- [ ] **P4.2** Adversarial revert/restore cycle for whatever code changes land, per this
+      session's established discipline.
+- [ ] **P4.3** Full regression: issuance-only suite, full `[6.2]`/`[6.3]` suite, `Z.repl`
+      (Stage 1 + Stage 2) — all exit 0, 0 `FAILURE`.
+
+### P5 — Audit trail + docs
+- [ ] **P5.1** Log as a new tracked `Fix #` in `ROUND-02-FIXES.md` (this is additive new
+      capability, not a bug fix against a numbered finding — frame accordingly).
+- [ ] **P5.2** Update `README.md` tracker, `ISSUES-RANKED.md` cross-reference (M2/#34M entry),
+      `ROUND-01-OWNER-FEEDBACK.md`.
+- [ ] **P5.3** Update this HANDOFF doc's status line and checkboxes as work lands.
+- [ ] **P5.4** Commit.
 
 ## Do not lose these facts across a context reset
 
