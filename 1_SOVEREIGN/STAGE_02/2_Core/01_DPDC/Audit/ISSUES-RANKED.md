@@ -80,10 +80,14 @@ across every position; live-rejected against a real collection with 4 real, pre-
 (where the old max-only check would have trivially passed `0<=4`), legit definitions already proven by
 genesis + full `Z.repl` pass. — *DPDC-S·C2*
 
-#7C **[DPDC-S]** `C_UpdateSetMultiplier` cannot ever succeed — a copy-paste `let` type-annotation bug
+#7C **[DPDC-S]** ~~`C_UpdateSetMultiplier` cannot ever succeed — a copy-paste `let` type-annotation bug
 (`current-multiplier:string` binding a `:decimal` return) crashes the function unconditionally on every
 call, reproduced live against `pact 5.4`. The entire multiplier-update feature is dead on arrival (feature
-DoS, not a fund-loss bug, but total and silent — the module deploys fine). — *DPDC-S·C1*
+DoS, not a fund-loss bug, but total and silent — the module deploys fine).~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-20** (`ROUND-02-FIXES.md` Fix #5) — one-word type fix. **Confirmed live on mainnet too** via a
+keyless Pythia dirty-read against the real deployed `ouronet-ns.DPDC-S` (byte-identical bug) — this
+feature has never worked in production, not just locally. Live-proven now succeeds against a real
+genesis set-class, `Z.repl` green. — *DPDC-S·C1*
 
 #8C **[DPDC-S / DPDC-C]** `how-many-sets` is never bounded to a positive value anywhere on the
 `C_MakeSemiFungibleSet`/`C_BreakSemiFungibleSet` path, and the one downstream gate that could theoretically

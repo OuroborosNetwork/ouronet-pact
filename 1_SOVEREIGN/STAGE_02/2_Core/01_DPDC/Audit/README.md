@@ -83,7 +83,7 @@ one at a time in `ISSUES-RANKED.md` order and this table is updated in place as 
 | C4 | CRIT | DPDC-F | `C_RepurposeCollectableFragments` — no consent/freeze/wipe gate | **REFUTED (design-intentional) 2026-08-20** — this is a deliberate admin account-recovery tool (stolen/deceased-account flow), correctly gated on `CAP_Owner` (collection admin only) via `wipe-mode=true`, balance still checked, `@event`-logged. No freeze/`can-wipe` precondition wanted — intentional, less friction for a rare, already admin-gated flow. Broader "does this look abusive" trust-model question + a possible future Heir System captured in `HEIR-SYSTEM-PONDERING.md`, not blocking |
 | C5 | CRIT | DPDC-MNG | Burn/wipe orphans fragment collateral held in `dpdc` escrow | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #3)** — one check in the shared `DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES` chokepoint blocks `account = dpdc` for both burn (no freeze needed) and wipe (frozen+can-wipe); both live-proven rejected at the same line, ordinary burn still works, Z.repl green |
 | C6 | CRIT | DPDC-S | Composite set `allowed-sclass=0` — Make succeeds, Break permanently fails | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #4)** — `UEV_CompositeSetDefinition` now rejects any `allowed-sclass <= 0`; live-proven rejected against a real collection with 4 real set-classes already defined (old check alone would've trivially passed), legit definitions already proven by genesis + Z.repl green |
-| C7 | CRIT | DPDC-S | `C_UpdateSetMultiplier` — `let` type bug crashes every call | OPEN |
+| C7 | CRIT | DPDC-S | `C_UpdateSetMultiplier` — `let` type bug crashes every call | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #5)** — one-word type fix; confirmed **live on mainnet too** via Pythia dirty-read (byte-identical bug, hash `Qslr8IXA...`) — feature has never worked in production; live-proven now succeeds against a real genesis set-class, Z.repl green |
 | C8 | CRIT | DPDC-S/DPDC-C | `how-many-sets` unbounded (entry-point gap; terminal impact unconfirmed) | OPEN |
 | H1 | HIGH | DPDC | Talos SFT branding-update arity bug — feature 100% broken | OPEN |
 | H2 | HIGH | DPDC-I | NFT issuance billed at SFT price — 20% silent revenue shortfall | OPEN |
@@ -101,6 +101,19 @@ one at a time in `ISSUES-RANKED.md` order and this table is updated in place as 
 | H14 | HIGH | EQUITY | Zero REPL/test coverage for the entire financial-instrument module | OPEN |
 | M1-M16 | MED | various | See `ISSUES-RANKED.md` #23M-#38M | OPEN |
 | L1-L17 | LOW | various | See `ISSUES-RANKED.md` #39L-#55L (+1 unnumbered doc-only note) | OPEN |
+
+## Live-vs-local (Pythia) status
+
+Unlike the SWP audit (blocked on this at the time), a **keyless** dirty-read path against real StoaChain
+state was found and verified working 2026-08-18 (`OuronetInformational/pythia-dirty-read-access.md`) —
+`Sec-Fetch-Site: same-origin`, no `x-pythia-key` needed. One confirmed comparison so far, done in the
+course of Fix #5 (`ROUND-02-FIXES.md`): `ouronet-ns.DPDC-S` is live-deployed (hash
+`Qslr8IXA10HEYsiHPnjvvCy4hYNIh3bfPQvD7w5QEoU`, interfaces `OuronetPolicyV1`/`DpdcSetsV1`), and the
+`C_UpdateSetMultiplier` type bug (#7C) is byte-identical on-chain — confirming that finding was a real,
+live-production bug, not a local-only regression, and that the feature has never worked in production.
+Full describe-module diffs for the other 10 DPDC modules against local `V1` sources have not been run yet
+— worth doing as a sweep once Round I triage is further along, the same way the SWP auditor's live-check
+surfaced real repo↔mainnet interface-version drift (`ATS`/`ATSU` on older `V1`/`V2` interfaces than local).
 
 ## Method (Round I)
 

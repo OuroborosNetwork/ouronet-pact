@@ -286,3 +286,41 @@ accepted `0 <= 4`), a new composite set-class naming `allowed-sclass=0` is now h
 a real uncaught transaction, landing exactly on the new line (`08_DPDC-S.pact:587`).
 
 **Interface implication:** none — internal validation only, no signature change.
+
+## Fix #5 — DPDC-S · C1 (`C_UpdateSetMultiplier` crashes unconditionally — copy-paste type bug)
+
+**Owner-approved 2026-08-20**, plus a live-chain check the owner specifically asked for: is this bug also
+on the deployed mainnet module (which would mean no REPL test ever caught it there either)?
+
+**Confirmed live, not just local.** Real dirty-read against the actual deployed contract via Pythia
+(`OuronetInformational/pythia-dirty-read-access.md`, keyless path):
+```bash
+curl -s -X POST https://pythia.ancientholdings.eu/stoachain/read \
+  -H "Content-Type: application/json" -H "Sec-Fetch-Site: same-origin" \
+  -d '{"chainId": 0, "code": "(describe-module \"ouronet-ns.DPDC-S\")"}'
+```
+Live module hash `Qslr8IXA10HEYsiHPnjvvCy4hYNIh3bfPQvD7w5QEoU`, `DPDC-S|C>MULTIPLIER` byte-identical to the
+pre-fix local source: `(current-multiplier:string (UR_SetMultiplier id son set-class))`. **This confirms
+`C_UpdateSetMultiplier` has never worked on mainnet since it was deployed** — not a local-only bug, and
+exactly why no REPL test ever caught it either: the feature has been silently dead in production the whole
+time, so nothing (local or live) has ever exercised a successful call.
+
+**Root cause:** `08_DPDC-S.pact:310` — `UR_SetMultiplier` returns `:decimal`; the `let` binding reading it
+was annotated `:string`. Pact enforces `let` type annotations at runtime, so the binding throws the moment
+it's evaluated, before any of the function's real logic runs. Copy-paste artifact from the sibling
+`DPDC-S|C>RENAME` cap directly above it, which has the identical shape and is correctly typed (`UR_SetName`
+really does return `:string`) — the annotation on this one line was never updated after cloning.
+
+**Fix — one word:**
+```pact
+-(current-multiplier:string (UR_SetMultiplier id son set-class))
++(current-multiplier:decimal (UR_SetMultiplier id son set-class))
+```
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC-S_C1_update_multiplier.repl`):** against a real,
+genesis-defined set-class (Wonder Coach, Bronze = set-class 1, multiplier `1.0`) —
+`C_UpdateSetMultiplier` now succeeds (`1.0 → 1.5`, persisted, read back correctly); the "must differ from
+current" guard (which depends on `current-multiplier` being a real decimal to compare against) now also
+works correctly, rejecting a same-value re-update. Full `pact Z.repl` pipeline green.
+
+**Interface implication:** none — internal to the defcap body.

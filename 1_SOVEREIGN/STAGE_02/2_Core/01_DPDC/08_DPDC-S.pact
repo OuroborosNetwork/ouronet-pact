@@ -307,7 +307,7 @@
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
-                (current-multiplier:string (UR_SetMultiplier id son set-class))
+                (current-multiplier:decimal (UR_SetMultiplier id son set-class))
             )
             ;;Multiplier Precision Check, maximum 3 Precision for Set Multiplier
             (enforce

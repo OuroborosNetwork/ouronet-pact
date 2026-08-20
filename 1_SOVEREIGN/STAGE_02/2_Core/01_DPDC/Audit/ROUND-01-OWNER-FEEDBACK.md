@@ -153,3 +153,28 @@ size). Live-proven against a real collection genesis already gave 4 real set-cla
 (`allowed-sclass=0`) is hard-rejected exactly at the new line even though the *old* check alone would have
 trivially accepted it (`0 <= 4`); the legit case needed no new setup since genesis's own composite set
 definition already exercises the success path, confirmed by the full `Z.repl` pass.
+
+## #7C · DPDC-S · C1 — `C_UpdateSetMultiplier` crashes unconditionally, type bug
+
+**Verdict: CONFIRMED, FIXED (2026-08-20).** `08_DPDC-S.pact:310` bound `UR_SetMultiplier`'s `:decimal`
+return into a `:string`-annotated `let` variable — copy-pasted from the sibling `RENAME` cap (correctly
+`:string` there) with the annotation never updated. Pact enforces `let` type annotations at runtime, so
+the binding throws before any real logic runs — an unconditional crash on every call, any arguments.
+
+**Live-chain check, owner-requested:** is this also on the deployed mainnet module? Confirmed yes — a real
+dirty-read via Pythia's keyless path (`OuronetInformational/pythia-dirty-read-access.md`) against
+`ouronet-ns.DPDC-S` (live hash `Qslr8IXA10HEYsiHPnjvvCy4hYNIh3bfPQvD7w5QEoU`) shows the identical broken
+line. **`C_UpdateSetMultiplier` has never worked in production** — which is also exactly why no REPL test,
+local or otherwise, ever caught it: the feature has been silently dead the whole time, so nothing has ever
+exercised a successful call to notice its absence.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #5)** — one word, `current-multiplier:string` →
+`current-multiplier:decimal`. Live-proven against a real genesis set-class (Wonder Coach, Bronze):
+succeeds now (`1.0 → 1.5`, persisted correctly), and the "must differ from current" guard — which depends
+on this same variable — now also works correctly. Full `Z.repl` pipeline green.
+
+**Owner's broader question, not yet actioned:** given zero REPL coverage is why this (and several other
+Round I findings — DPDC-S Make/Break, DPDC-MNG's Wipe family, EQUITY, the gas-collection-off blind spot)
+went uncaught, should a comprehensive DPDC REPL test suite be built once Round I triage finishes? Agreed
+this is worth doing — tracked as a planned follow-up, not started this round. See chat for the standing
+proposal; to be scheduled once the CRITICAL/HIGH list is clear.
