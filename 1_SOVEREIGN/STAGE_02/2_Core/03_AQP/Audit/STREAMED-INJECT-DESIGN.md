@@ -108,6 +108,13 @@ stream's start ≤ the shared checkpoint — the per-stream releasable is then `
 
 ## 3. The drip — `XI_ReleaseStream(fvt-id, dptf-id)`
 
+> **NB — the block below is illustrative PSEUDOCODE, not Pact.** The `for … in`, `+=`, `min(…)`, and imperative
+> mutation are only to convey the algorithm. The real implementation is idiomatic Pact/StoicSyntax: the position
+> walk is a `fold` (or a recursive `XI_` helper) accumulating functionally — no mutable loop; reads via `with-read`
+> / `UR_*`; writes via `WU_*` under `require-capability`; `now` = `(at "block-time" (chain-data))`, elapsed =
+> `(diff-time now last)`; distribution via the existing `UC_ComputeInjectGainedRps` / `XI_1|FarmSplitInject`. All
+> pseudocode in this doc (§4, §5) is the same — spec, not source.
+
 The checkpoint. Guarded so **non-streamed lanes pay ~nothing** (single read → return).
 
 ```
