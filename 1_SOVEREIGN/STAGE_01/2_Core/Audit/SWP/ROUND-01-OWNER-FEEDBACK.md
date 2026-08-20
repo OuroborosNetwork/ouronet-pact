@@ -1674,6 +1674,13 @@ Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #19. Awaiting Round III re-verify.
 
+**Phase 2 follow-up (planning, not started):** post-fix discussion (same session) established that
+best-of-3 is a bounded heuristic, not a guarantee of the *actual* cheapest route — owner's real intent is
+genuine exhaustive on-chain path search. Full phased plan, the depth-vs-path-count distinction, the
+same-pool-detour pruning rule, and the concrete counter-example proving "shortest ≠ cheapest" are captured
+in `OuronetInformational/HANDOFF-swp-exhaustive-path-search.md`. Fix #19 stays live as the production
+default/fallback regardless of how/whether Phase 2 proceeds.
+
 ---
 
 ## #34bM (`UEV_Issue`'s Stable-pool anchoring check — direct vs. transitive connectivity) — **CONFIRMED, FIXED, PROVEN**
