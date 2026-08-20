@@ -522,24 +522,28 @@
     ;; --- Re-score sweep CC-batch gas backstop (loose ceiling + UI seed, mirrors the vacate cap philosophy) ---
     (defconst SWEEP-CHUNK-GAS-BUDGET 2000000
         "Nominal per-tx gas envelope the sweep CC-batch chunk cap is sized against (backstop, not the optimizer).")
-    (defconst SWEEP-GAS-PER-HOLDER 20000
-        "GENEROUS per-holder backstop for the re-score recompute (settle across every reward stream + ANK \
-       \ aggregate refold + deb refresh + mirror resync). NOT the optimizer: the UI sizes real chunks by \
-       \ simulating (/local) against the true model-dependent gas, and the node gas meter is the real \
-       \ enforcement (an oversized chunk aborts atomically — submitter's gas, offset unchanged, retry smaller). \
-       \ Calibrate against the [6.2.x] sweep gas probe; keep it above the measured worst case so it never throttles.")
+    (defconst SWEEP-GAS-PER-HOLDER 2000
+        "Per-holder backstop for the re-score recompute (settle across every reward stream + ANK aggregate \
+       \ refold + deb refresh + mirror resync). MEASURED (REPL/Kursan/AQP-scale-sweep.repl, final hoisted \
+       \ code): gas(n) = 81,040 + 1,684*n on a single-score/single-stream FVT → ~1,139 holders fit 2M. Set to \
+       \ 2,000 (slope + ~19% margin) → SWEEP-CHUNK-MAX = 1,000 (1,000 holders = 1.77M, headroom). NOT the \
+       \ optimizer: the UI sizes real chunks by simulating (/local) against the true model-dependent gas (richer \
+       \ FVTs settle across more streams → higher per-holder → simulate lower), and the node gas meter is the \
+       \ real enforcement (an oversized chunk aborts atomically — submitter's gas, offset unchanged, retry smaller).")
     (defconst SWEEP-CHUNK-MAX (/ SWEEP-CHUNK-GAS-BUDGET SWEEP-GAS-PER-HOLDER)
-        "~100 holders/chunk — the UI's optimistic seed + a coarse safety ceiling; refined by simulation.")
+        "1,000 holders/chunk — the UI's optimistic seed + a coarse safety ceiling; refined by simulation.")
     ;; --- Enforced-fresh inject CC-batch fix backstop (loose ceiling + UI seed; same philosophy) ---
     (defconst INJECT-FIX-CHUNK-GAS-BUDGET 2000000
         "Nominal per-tx gas envelope the inject-fix chunk cap is sized against (backstop, not the optimizer).")
-    (defconst INJECT-FIX-GAS-PER-USER 20000
-        "GENEROUS per-stale-user backstop for the enforced-fresh deb-fix (settle across every reward stream + \
-       \ deb refresh + mirror resync). NOT the optimizer — the UI sizes real chunks by simulating (/local) and \
-       \ the node gas meter is the real ceiling; an oversized chunk aborts atomically (retry smaller). Calibrate \
-       \ against a gas probe; keep it above the measured worst case so it never throttles.")
+    (defconst INJECT-FIX-GAS-PER-USER 6500
+        "Per-stale-user backstop for the enforced-fresh deb-fix (settle across every reward stream + deb refresh \
+       \ + mirror resync). MEASURED (REPL/Kursan/AQP-scale-inject.repl, final hoisted code): gas(n) = 199,096 + \
+       \ 5,189*n on a single-score/single-stream FVT → ~347 users fit 2M. Set to 6,500 (slope + ~25% margin) → \
+       \ INJECT-FIX-CHUNK-MAX = 307 (307 users = 1.79M, headroom). NOT the optimizer — the UI sizes real chunks \
+       \ by simulating (/local) and the node gas meter is the real ceiling; an oversized chunk aborts atomically \
+       \ (retry smaller). Richer FVTs → higher fixed + per-user → simulate lower.")
     (defconst INJECT-FIX-CHUNK-MAX (/ INJECT-FIX-CHUNK-GAS-BUDGET INJECT-FIX-GAS-PER-USER)
-        "~100 stale users/chunk — the UI's optimistic seed + a coarse safety ceiling; refined by simulation.")
+        "307 stale users/chunk — the UI's optimistic seed + a coarse safety ceiling; refined by simulation.")
     ;; M3 #12 2e — IGNIS charged per inject-forced deb-fix, at the user's next collect (non-discountable). Governance
     ;; param (placeholder); set ≥ the IGNIS cost of self-fixing one score so self-fixing is always cheaper. ~10 IGNIS.
     (defconst CT_FORCED_FIX_RATE:decimal 10.0)

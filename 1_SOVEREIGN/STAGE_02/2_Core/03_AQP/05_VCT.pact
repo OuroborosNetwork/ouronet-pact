@@ -294,6 +294,10 @@
     (defconst VACATE-GAS-BUDGET 2000000)
     (defconst VACATE-GAS-PER-BEN 75000)
     (defconst VACATE-GAS-PER-POS 4000)
+    ;; MEASURED (REPL/Kursan/AQP-scale-vacate.repl, TF drain, 50 distinct-beneficiary legs — the SPREAD case):
+    ;; gas(n) = 24,620 + 54,290*n → ~36 legs fit 2M. Per-distinct-ben leg = 54,290 < the model's 79,000
+    ;; (PER-BEN 75k + PER-POS 4k), so the 2-D model OVER-estimates → a safe, conservative backstop (it rejects
+    ;; at ~25 spread vs the true ~36; PER-BEN 75k also covers the ~85k trait-rich settle a bare TF leg doesn't hit).
 
     ;;<==========>
     ;;CAPABILITIES
