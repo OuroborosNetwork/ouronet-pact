@@ -36,10 +36,16 @@ anyway (`07_DPDC-T.pact:305`) so the debit doesn't depend on that external invar
 live-proven: a real owner still collects a genuine 500.0 IGNIS royalty; an attacker naming someone else's
 account as patron is hard-rejected at the new line, keyset failure. — *DPDC-T·C1*
 
-#3C **[DPDC-F]** `amount` is never validated `>0` anywhere in the Make/Merge/Repurpose fragmentation call
+#3C **[DPDC-F]** ~~`amount` is never validated `>0` anywhere in the Make/Merge/Repurpose fragmentation call
 chain (same root gap as #1C, reached via a different entrypoint) — a negative `amount` to
 `C_MakeFragments`/`C_MergeFragments` inverts debit/credit direction, minting a free unit of the source
-nonce for the caller while driving the protocol's own `dpdc` escrow ledger negative. — *DPDC-F·C2*
+nonce for the caller while driving the protocol's own `dpdc` escrow ledger negative.~~ — **ALREADY CLOSED
+BY FIX #1, LIVE-PROVEN 2026-08-20** — `C_MakeFragments`/`C_MergeFragments` route their constituent leg
+through `DPDC-T::C_Transfer` → the identical `CreditOrDebitDPDC`/`UEV_Amount` chokepoint Fix #1 hardened;
+no new code needed. Full stack trace confirms the exact rejection point
+(`DPSF|C_MakeFragments → DPDC-F::C_MakeFragments → DPDC-T::C_Transfer → ... → CreditOrDebitDPDC →
+UEV_Amount`, `03_DPDC-C.pact:436`); legit fragmentation (100 units → 100,000 fragment units, the 1000×
+ratio) still works. — *DPDC-F·C2*
 
 #4C **[DPDC-F]** `C_RepurposeCollectableFragments` has no `CAP_Owner`, no
 `CAP_EnforceAccountOwnership repurpose-from`, no freeze check, no `can-wipe` check — any collection-owner

@@ -112,6 +112,11 @@ pending its own explicit `(enforce (> how-many-sets 0) ...)` at the `DPDC-S|C>MA
 a clearer, earlier error message — this fix closes the exploit itself but doesn't add the higher-layer
 validation that finding separately recommends for defense-in-depth.
 
+**DPDC-F/C2 closure independently verified, 2026-08-20** (owner: "prove it's closed, then close it") —
+see the #3C entry in `ROUND-01-OWNER-FEEDBACK.md` for the live reproduction
+(`REPL/Kursan/_verify_finding_DPDC-F_C2_negative_amount.repl`). No code change; this note just upgrades
+the bonus-closure claim above from "should close it" to "confirmed closes it, full stack trace on file."
+
 ## Fix #2 — DPDC-T · C1 (`C_IgnisRoyaltyCollector` has no ownership check of its own) — REFUTED, hardened anyway
 
 **Owner-approved 2026-08-20**, after the finding was re-examined and downgraded from CRITICAL to REFUTED

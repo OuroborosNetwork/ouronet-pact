@@ -73,3 +73,23 @@ a real owner (Emma) still collects a genuine, real 500.0 IGNIS royalty on a legi
 attacker naming Emma as patron without controlling her account is hard-rejected exactly at the new line
 (`Keyset failure (keys-all): [PK_Emma...]`), submitted as a real uncaught transaction. Full `Z.repl`
 pipeline green.
+
+## #3C · DPDC-F · C2 — unsigned `amount` in Make/Merge Fragments
+
+**Verdict: CONFIRMED, ALREADY CLOSED BY FIX #1 (2026-08-20)** — flagged in Round I as the identical root
+defect as #1C, reached through `C_MakeFragments`/`C_MergeFragments` instead of a plain transfer, and noted
+as a likely "bonus closure" of Fix #1 when that fix landed. Never independently live-tested by name until
+requested this round: "prove it's closed, then close it."
+
+Live-reproduced `DPSF|C_MakeFragments` with a negative amount, submitted as a real uncaught transaction.
+Full stack trace confirms the exact mechanism predicted — `C_MakeFragments` routes its constituent debit
+through `DPDC-T::C_Transfer` exactly like an ordinary transfer, landing on the identical chokepoint:
+```
+DPSF|C_MakeFragments → DPDC-F::C_MakeFragments → DPDC-T::C_Transfer → XI_TransferNonces
+  → XE_DebitSFT-Nonce → ... → CreditOrDebitDPDC → UEV_Amount   ← rejected here
+03_DPDC-C.pact:436 — "Amount cannot be negative"
+```
+Control case (legit fragmentation, positive amount) still works correctly: 100 units of a native nonce
+converted to 100,000 fragment units (the 1000× ratio), balance zeroed exactly as expected. No new code
+change — **no Fix #3 exists because there was nothing left to fix.** Closed on the strength of Fix #1's
+own proof, now independently verified rather than assumed.
