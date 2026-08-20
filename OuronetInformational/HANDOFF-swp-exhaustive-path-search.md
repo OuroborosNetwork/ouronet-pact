@@ -6,9 +6,14 @@ headroom.** Two shipped changes got there: direction 1 (`SWPI::URC_HopperActiveS
 single-shortest-path routing instead of best-of-3 for the boost pump) then direction 5
 (carry the boost value forward hop-by-hop along the swap's own already-selected edges,
 `XI_SmartSwapCore`'s fold, only price-and-burn once on the last hop — the owner's own design
-from a discussion round, see P0.6's writeup below for the full trace). Also still open: a
-separate, unfixed crash bug in `XI_RawLiquidPump` (found alongside P0.5, not yet formally
-numbered in `ISSUES-RANKED.md`). P1 (core search primitives) not started — next up.
+from a discussion round, see P0.6's writeup below for the full trace). **Caveat found right
+after shipping, 2026-08-21: the fix makes boost cost hop-count-independent, not
+pool-complexity-independent — measured 9-pairs-vs-22-pairs shows the remaining single search's
+gas growing super-linearly with total active pool count (~gas ∝ n^1.42 on a 2-point fit), which
+would eat the thin ~37k headroom well before "large" scale. Not re-fixed yet — real numbers
+needed from a P2-scale topology before deciding whether more work is needed here.** Also still
+open: a separate, unfixed crash bug in `XI_RawLiquidPump` (found alongside P0.5, not yet
+formally numbered in `ISSUES-RANKED.md`). P1 (core search primitives) not started — next up.
 
 **To:** whoever picks up SWP audit follow-up work next.
 **From:** 2026-08-20 SWP audit session (#34M/M2 follow-up discussion).
@@ -270,10 +275,43 @@ P1.2"). Update the checkboxes here as items land.
          change. Full `[6.2]`+`[6.3]` suite (temporarily switched on, then reverted to the
          checked-in issuance-only default) and default `Z.repl` regression both exit 0,
          0 `FAILURE`, before and after.
-         **Headroom is thin (~37k, under 2%).** Growing pool/token count, deeper routes beyond
-         the current 7-token/6-hop cap, or added per-hop overhead elsewhere in the fold could
-         erode this again — worth remeasuring `SWP|TX 032q` (and the boost-off baseline)
-         whenever something changes upstream of it, not treating this as permanently settled.
+         **Old-vs-new DLK-burn total, measured directly (2026-08-21):** surgically reverted
+         `19_SWPU.pact` to its pre-P0.6 state (commit `0feda9f`), re-ran `SWP|TX 032q` with the
+         same diagnostic print, restored. Old model (independent per-hop best-of-3 search):
+         **0.309547343688240083859530 DLK.** New model (direction 5, carried forward):
+         **0.309547469126880789399107 DLK.** Difference: ~0.000000125 DLK, ~0.00004% —
+         negligible **in this specific test topology**, but that's an artifact of how P0.5's
+         topology was deliberately built (each intermediate token W2–W6 has *no* route to DLK
+         except through the linear W1→W7 chain itself, by construction — so "each token's best
+         individual route" and "follow the swap's own route" happen to be the same route here).
+         In a topology where an intermediate hop token has a genuinely better *direct* route to
+         DLK bypassing the rest of the swap's path, the two models would diverge by more than
+         this — not measured, flagged honestly rather than assumed negligible in general.
+         **Pool-count scaling — measured 2026-08-21, and this is a real concern, not just a
+         theoretical one.** Isolated `SWPI::URC_HopperActiveShortest` to a single call (fresh
+         `env-gas 0` immediately before) at two real points in the pipeline: at 9 active
+         swpairs, one search = **42,998 gas**; at 22 active swpairs (`SWP|TX 032q`'s point),
+         one search = **153,420 gas**. That's pool count growing 2.44x but gas growing 3.57x —
+         **super-linear**, not proportional. Fit crudely to a power law from just these two
+         points (`gas ≈ C·n^1.42`): extrapolating (not measured, wide error bars on a 2-point
+         fit) suggests ~50 active pairs could cost somewhere around ~500k for this ONE search
+         alone, and ~100 pairs somewhere around ~1.3M+ — either would blow well past the
+         current ~37k headroom for the *whole transaction*, not just this one search. **This
+         means the current ~1,963,025 figure is not a stable, permanent number — it will
+         degrade as the protocol's total pool count grows, and the current fix alone does not
+         make Liquid Boost's cost pool-complexity-independent, only hop-count-independent.**
+         This raises the priority of P2's planned 50-100-pool empirical sweep — it's no longer
+         just validating the exhaustive-search feature's search cost, it now also needs to
+         answer whether P0.6 holds at realistic future scale, or whether a genuinely
+         pool-complexity-independent approach (e.g. the cached/stored DWK-price-per-token idea
+         raised during the P0.6 discussion, still undesigned) becomes necessary. Not yet acted
+         on — real P2-scale topology needed for a trustworthy number, this is 2 data points,
+         not a curve fit.
+         **Headroom is thin (~37k, under 2%) even before accounting for the above.** Deeper
+         routes beyond the current 7-token/6-hop cap, or added per-hop overhead elsewhere in
+         the fold, would erode it further — worth remeasuring `SWP|TX 032q` (and the boost-off
+         baseline) whenever something changes upstream of it, not treating this as permanently
+         settled.
          **Known, deliberately accepted minor inefficiency:** if an *intermediate* hop's own
          output token happens to be `lkda` itself, today's design would burn it immediately at
          that hop (1:1, no search needed); this design carries it past that point and only
