@@ -1,0 +1,33 @@
+;; Same finding (#8C), the other half: does how-many-sets = 0 do anything harmful? Fix #1's floor is
+;; >=0 (deliberately, for EQUITY's zero-supply tier-nonce creation), so 0 is NOT rejected by UEV_Amount.
+;; Question: is "Make 0 sets" a genuine no-op, or does it move/create real value?
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-C8-ZERO - Make 0 sets against the real Bronze set-class")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHWC-98c486052a51")
+        (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+    )
+    (print (format "BEFORE anhd nonce1 (constituent) = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
+    (print (format "BEFORE anhd BRONZE SET nonce = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true (ref-DPDC-S::UR_NonceOfSet id 1))]))
+    (print (format "MAKE 0 SETS RESULT = {}"
+        [(ref-TS02-C1::DPSF|C_Make KST.ANHD KST.ANHD id [1 2 3 4 5 6 7 8 9 10] 1 0)]))
+    (print (format "AFTER anhd nonce1 (constituent) = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
+    (print (format "AFTER anhd BRONZE SET nonce = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true (ref-DPDC-S::UR_NonceOfSet id 1))]))
+    (print (format "AFTER dpdc escrow nonce1 = {}" [(ref-DPDC::UR_AccountNonceSupply dpdc id true 1)]))
+)
+(commit-tx)

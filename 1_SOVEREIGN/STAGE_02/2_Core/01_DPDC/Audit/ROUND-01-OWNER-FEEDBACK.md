@@ -178,3 +178,21 @@ Round I findings — DPDC-S Make/Break, DPDC-MNG's Wipe family, EQUITY, the gas-
 went uncaught, should a comprehensive DPDC REPL test suite be built once Round I triage finishes? Agreed
 this is worth doing — tracked as a planned follow-up, not started this round. See chat for the standing
 proposal; to be scheduled once the CRITICAL/HIGH list is clear.
+
+## #8C · DPDC-S/DPDC-C · C3 — `how-many-sets` unbounded
+
+**Verdict: CONFIRMED, ALREADY CLOSED, LIVE-VERIFIED (2026-08-21).** Round I flagged this as PLAUSIBLE (entry
+gap confirmed, terminal impact not re-derived). First pass at presenting it reasoned "probably already
+closed by Fix #1" without checking — owner correctly pushed back: "have you checked... if it indeed works,
+we have a problem."
+
+Checked both halves live, real uncaught transactions against the real Bronze primordial set-class:
+- Negative `how-many-sets=-1`: hard-rejected, full stack trace lands on `UEV_Amount` inside
+  `CreditOrDebitDPDC` (`03_DPDC-C.pact:436`) — the exact Fix #1 chokepoint, reached via the mint leg
+  (`XB_CreditSFT-Nonce`) before ever touching the constituent debit.
+- Zero `how-many-sets=0`: not rejected (Fix #1's floor is deliberately `>=0`), but confirmed harmless —
+  real constituent balance unchanged, only effect is two new empty bookkeeping rows. Genuine no-op.
+
+**No code change — nothing left to fix.** Same outcome as #3C: the concern was real when raised, and is
+now independently verified closed rather than assumed closed. All 8 Round I CRITICALs are now resolved
+(5 fixed, 3 closed via Fix #1's shared chokepoint with no additional code).

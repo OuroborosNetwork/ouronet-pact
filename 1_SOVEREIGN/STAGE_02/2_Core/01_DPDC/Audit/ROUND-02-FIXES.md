@@ -324,3 +324,27 @@ current" guard (which depends on `current-multiplier` being a real decimal to co
 works correctly, rejecting a same-value re-update. Full `pact Z.repl` pipeline green.
 
 **Interface implication:** none — internal to the defcap body.
+
+## DPDC-S/DPDC-C · C3 (#8C) closure — no new code, both halves live-verified
+
+**2026-08-21.** Owner pushed back on the Round I "probably already closed" framing and asked for it to be
+checked directly, not assumed — same discipline as #3C. Checked both halves of `how-many-sets`, live,
+against the real "Bronze" primordial set-class on the Wonder Coach collection:
+
+- **Negative (`-1`):** `DPSF|C_Make` with `how-many-sets=-1`, submitted as a real uncaught transaction.
+  Full stack trace: `DPSF|C_Make → DPDC-S::C_MakeSemiFungibleSet → XB_CreditSFT-Nonce (the mint leg)
+  → ... → CreditOrDebitDPDC → UEV_Amount`, rejected at `03_DPDC-C.pact:436` — the identical chokepoint
+  Fix #1 hardened. Confirmed closed.
+  (`REPL/Kursan/_verify_finding_DPDC-S_C3_negative_how_many_sets.repl`)
+- **Zero (`0`):** Fix #1's floor is deliberately `>=0`, not `>0` (see Fix #1's EQUITY zero-supply
+  rationale), so this is *not* rejected — checked whether it does anything harmful instead. It doesn't:
+  `DPSF|C_Make ... 0` succeeds, ANHD's real constituent balance (1,000 units) is completely unchanged, and
+  the only effect is two new `0`-supply bookkeeping rows (the set-nonce itself, and the escrow slot) that
+  didn't exist before. No value created, moved, or destroyed — a genuine no-op, just a wasted transaction.
+  (`REPL/Kursan/_verify_finding_DPDC-S_C3_zero_how_many_sets.repl`)
+
+**No code change.** Both concerns raised in the original finding are live-confirmed non-issues — the
+negative case via Fix #1's shared chokepoint, the zero case by direct proof it moves nothing. The Round I
+fix direction's suggestion (an explicit `(enforce (> how-many-sets 0) ...)` at the `DPDC-S|C>MAKE`/`C>BREAK`
+cap layer) remains available as a pure UX nicety — a clearer, earlier error message instead of the current
+generic one from three call-frames deeper — but is no longer a security requirement.

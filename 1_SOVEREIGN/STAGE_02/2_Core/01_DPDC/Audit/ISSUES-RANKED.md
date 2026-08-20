@@ -89,11 +89,14 @@ keyless Pythia dirty-read against the real deployed `ouronet-ns.DPDC-S` (byte-id
 feature has never worked in production, not just locally. Live-proven now succeeds against a real
 genesis set-class, `Z.repl` green. — *DPDC-S·C1*
 
-#8C **[DPDC-S / DPDC-C]** `how-many-sets` is never bounded to a positive value anywhere on the
+#8C **[DPDC-S / DPDC-C]** ~~`how-many-sets` is never bounded to a positive value anywhere on the
 `C_MakeSemiFungibleSet`/`C_BreakSemiFungibleSet` path, and the one downstream gate that could theoretically
-catch it (`UEV_NonceQuantityInclusion`) is trivially satisfied by any negative amount — entry-point gap
-CONFIRMED, terminal mint/destroy arithmetic not independently re-derived in this pass (flag for Round III
-closure). — *DPDC-S·C3*
+catch it (`UEV_NonceQuantityInclusion`) is trivially satisfied by any negative amount.~~ — **ALREADY CLOSED
+BY FIX #1, LIVE-VERIFIED 2026-08-21** — checked both halves for real rather than assumed: negative
+(`-1`) hard-rejected, full stack trace lands on `UEV_Amount` inside `CreditOrDebitDPDC`
+(`03_DPDC-C.pact:436`) via the mint leg, the identical Fix #1 chokepoint; zero (`0`) confirmed harmless —
+real constituent balance unchanged, only two empty bookkeeping rows created, a genuine no-op. No code
+change. — *DPDC-S·C3*
 
 ## HIGH
 

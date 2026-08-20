@@ -1,0 +1,48 @@
+;; Verification for DPDC Audit finding #8C (DPDC-S/DPDC-C · C3): "how-many-sets is never bounded to a
+;; positive value anywhere on the C_MakeSemiFungibleSet/C_BreakSemiFungibleSet path."
+;; Question under test, live, not reasoned about: does a NEGATIVE how-many-sets actually work today
+;; (post-Fix-#1), or was it already closed as a side effect of DPDC-C::CreditOrDebitDPDC's UEV_Amount?
+;; Uses the real, genesis-defined "Bronze" primordial set (Wonder Coach collection, set-class 1,
+;; constituent nonces 1-10) so this is a real set-class, not a synthetic one.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-C8 - baseline reads on the real Wonder Coach Bronze set (class 1, nonces 1-10)")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+        (id:string "DHWC-98c486052a51")
+    )
+    (print (format "anhd nonce1 (constituent) supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
+    (print (format "anhd BRONZE SET nonce supply (the set-nonce itself) = {}"
+        [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true (ref-DPDC-S::UR_NonceOfSet id 1))]))
+    (print (format "dpdc escrow nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply (ref-DPDC::GOV|DPDC|SC_NAME) id true 1)]))
+)
+(commit-tx)
+
+;;|| NEXT >
+;; The exploit attempt: Make -1 Bronze sets. Submitted as its own real, uncaught transaction (no
+;; expect-failure — matching how an attacker would actually submit it). If Fix #1's chokepoint already
+;; covers this, this should hard-abort before commit-tx, same as every other negative-amount probe this
+;; round. If it DOESN'T abort, that's a live, unfixed problem — the mint leg would credit ANHD's own
+;; balance while decrementing the constituent debit (or vice versa), and we'll see it in the next tx's reads.
+(begin-tx "PROBE-C8 - exploit: Make -1 sets, submitted as a real uncaught transaction")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHWC-98c486052a51")
+    )
+    (ref-TS02-C1::DPSF|C_Make KST.ANHD KST.ANHD id [1 2 3 4 5 6 7 8 9 10] 1 -1)
+)
+(commit-tx)
