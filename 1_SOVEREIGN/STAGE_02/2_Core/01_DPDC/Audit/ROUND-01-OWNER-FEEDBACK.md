@@ -93,3 +93,29 @@ Control case (legit fragmentation, positive amount) still works correctly: 100 u
 converted to 100,000 fragment units (the 1000× ratio), balance zeroed exactly as expected. No new code
 change — **no Fix #3 exists because there was nothing left to fix.** Closed on the strength of Fix #1's
 own proof, now independently verified rather than assumed.
+
+## #4C · DPDC-F · C1 — `C_RepurposeCollectableFragments` "no consent" gap
+
+**Verdict: REFUTED, design-intentional (2026-08-20)** — the original framing ("no consent check on
+`repurpose-from`") missed *what actually gates this instead*. Re-read `DPDC-C|C>SINGLE-DEBIT`:
+`wipe-mode=true` (which `C_RepurposeCollectableFragments` always sets) swaps the check from
+`CAP_EnforceAccountOwnership account` to `ref-DPDC::CAP_Owner id son` — the caller must own the
+*collection*, not the source account. `UEV_NonceQuantityInclusion` (balance sufficiency) still runs either
+way, and the cap is `@event`-tagged (on-chain audit trail).
+
+Owner: this is a deliberate account-recovery tool. Real flow — an account is stolen or its holder dies,
+they (or their heirs) contact the collection admin off-chain, admin verifies and repurposes the holdings
+to a new account. No freeze/`can-wipe` precondition wanted — confirmed intentional, on purpose, less
+friction for an already admin-gated, rare flow.
+
+**Broader discussion, not a verdict on a bug** — owner named unprompted: this pattern (owner has complete
+dominion — freeze/wipe/unfreeze/remint/burn/repurpose) exists for every token in this system, not just
+fragments; every holder implicitly trusts the issuer to be fair. Considered and dead-ended: a
+holder-initiated "request repurpose" on-chain event so admin only acts on registered requests — defeats
+its own purpose, since a genuinely lost/compromised account can't sign a request either. Landed on: a
+future **Heir System** — advance heir designation (signed while still in control) + inactivity-triggered
+succession, removing admin discretion from the succession case specifically. Captured in
+`HEIR-SYSTEM-PONDERING.md` as an explicit non-decision, not scheduled work — a placeholder for whenever
+that's taken up, not part of this audit's fix list.
+
+**No code change.** #4C closes as REFUTED; the design conversation continues in the pondering doc.

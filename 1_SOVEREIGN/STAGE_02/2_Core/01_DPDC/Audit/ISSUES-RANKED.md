@@ -47,11 +47,18 @@ no new code needed. Full stack trace confirms the exact rejection point
 UEV_Amount`, `03_DPDC-C.pact:436`); legit fragmentation (100 units → 100,000 fragment units, the 1000×
 ratio) still works. — *DPDC-F·C2*
 
-#4C **[DPDC-F]** `C_RepurposeCollectableFragments` has no `CAP_Owner`, no
+#4C **[DPDC-F]** ~~`C_RepurposeCollectableFragments` has no `CAP_Owner`, no
 `CAP_EnforceAccountOwnership repurpose-from`, no freeze check, no `can-wipe` check — any collection-owner
 account can move any other holder's fragment balance without consent by hard-coding `wipe-mode=true` on the
-underlying debit, bypassing the compliance gates the legitimate wipe path requires. Live-reproducible shape
-already present, unasserted, in `[6.1]_DPDC.repl` TX015. — *DPDC-F·C1*
+underlying debit, bypassing the compliance gates the legitimate wipe path requires.~~ — **REFUTED
+(design-intentional) 2026-08-20** — re-read the actual gate: `wipe-mode=true` requires `CAP_Owner`
+(collection-admin-only), not `repurpose-from`'s consent, by design — this is a deliberate account-recovery
+tool (stolen/deceased-account flow, admin verifies off-chain then acts), balance sufficiency still
+enforced, `@event`-logged. No freeze/`can-wipe` precondition wanted, intentionally. Broader trust-model
+question ("token owner has complete dominion, holders trust the issuer to be fair") and a possible future
+Heir System (advance heir designation + inactivity-triggered succession, removing admin discretion from
+the succession case) captured in `HEIR-SYSTEM-PONDERING.md` — not a bug, not blocking, a future direction.
+— *DPDC-F·C1*
 
 #5C **[DPDC-MNG]** Burn/wipe has zero fragmentation-awareness: nothing stops a collection owner from
 freezing and wiping the protocol's own `dpdc` escrow account's collateral, permanently orphaning every
