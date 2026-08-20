@@ -26,7 +26,7 @@ injects cumulated IGNIS gas over 24h — "gas earned by validators like a real c
   direct/instant injects until a stream finishes and frees a slot. Finished streams are pruned → free their slot.
 - **D6 — Storage = keyed side table** `FVT|T|RPS|Stream` (position 1..49) + a `stream-count` on the Global row.
   **Compacted** (occupied is always positions 1..count) — no `occupied`/`available` flags needed. UI renders as 7×7.
-- **D7 — Duration bounds:** `0` = instant (unchanged path); else `60s ≤ duration ≤ 365d` (31,536,000s).
+- **D7 — Duration bounds:** `0` = instant (unchanged path); else `1h ≤ duration ≤ 365d` (3,600 … 31,536,000s).
 - **D8 — Min-rate guard (anti-degeneracy, stream-only):** `amount / duration ≥ STREAM_MIN_UPS × 10^(−decimals)`,
   `STREAM_MIN_UPS = 10,000,000` (10M smallest token-units per second). Precision-normalized ⇒ uniform across tokens.
   Instant inject gets **no new limit** (keeps existing `amount > 0`).
@@ -35,11 +35,14 @@ injects cumulated IGNIS gas over 24h — "gas earned by validators like a real c
   `amount − released`) guarantees per-stream conservation; sub-token crumbs stay conserved to the last claimant
   exactly as today (proven by `[6.4]_AQP-TRIPLET-COLLECT` CL04 / `[6.2.4]_AQP-FVT` FVT-09).
 - **D10 — Enforced-fresh gate stays at inject** (`CC_Inject` Phase-0 stale-fix runs before a streamed inject too).
-- **D11 — Talos exposes both** a *direct* (instant) and a *delayed* (streamed) inject wrapper. Include a public
-  `poke` drip so the automation can materialize accrual on a quiet pool. Add `URC_LiveClaimable` for real-time UI.
+- **D11 — Talos exposes both** a *direct* (instant) and a *delayed* (streamed) inject wrapper. Add
+  `URC_LiveClaimable` for real-time UI. **No public `poke`** — the UI reader is a live *projection* (derives vested
+  value from the clock, not stored state), so it never goes stale; the stored accumulator self-heals on the next
+  interaction, and pools drip constantly from normal traffic. A poke would only help an external consumer of the raw
+  stored accumulator, of which there are none. Dropped as dead weight.
 
-**Open for owner in review:** (a) keep the 60s min-duration or allow any `duration > 0`? (b) include the public
-`poke` entrypoint? Neither blocks the build.
+**Owner review:** D7 min-duration = **1h** (owner, 2026-08-20); public poke **dropped** (owner, 2026-08-20). Both
+resolved — nothing blocks the build.
 
 ---
 
@@ -97,7 +100,7 @@ stream's start ≤ the shared checkpoint — the per-stream releasable is then `
 ```
 (defconst STREAM_MIN_UPS       10000000)    ;; min smallest-token-units/sec for a stream (anti-degeneracy floor)
 (defconst STREAM_MAX_DURATION  31536000)    ;; 365 days, in seconds
-(defconst STREAM_MIN_DURATION  60)          ;; 60s (D7; owner may relax to any >0)
+(defconst STREAM_MIN_DURATION  3600)        ;; 1 hour (D7)
 (defconst STREAM_MAX_LANES     49)          ;; hard ceiling (7×7); the per-account cap is ≤ this
 ```
 
@@ -183,14 +186,16 @@ live streams: drip first, distribute immediately, **no slot consumed**.
 
 ---
 
-## 6. Reads (UI) + optional poke
+## 6. Reads (UI)
 
 - `URC_LiveClaimable(user, fvt, score, dptf)` — read-only; computes the effective index *as if dripped to now*
-  (`index + projected releasable / S`) so the UI shows accrual ticking with no tx. Purely computational.
+  (`index + projected releasable / S`) so the UI shows accrual ticking with no tx. Purely computational — it derives
+  the vested value from the clock, not stored state, so it never goes stale even on a long-idle stream.
 - `URC_StreamStatus(fvt, dptf)` — `{active-count, total-rate, earliest-finish, unreleased}` for the 7×7 UI.
-- `C_PokeStream(fvt, dptf)` *(optional, D11)* — public entry that just calls `XI_ReleaseStream`, letting the daily
-  automation (or anyone) materialize accrual on an idle pool. No auth beyond existence; it can only *advance* state
-  that would advance anyway.
+
+*(No public `poke` — dropped per D11. Lazy drip + this projecting reader fully cover correctness and display; a
+long-idle stream catches up exactly in one O(1)/O(members) drip on the next interaction, cost independent of elapsed
+time.)*
 
 ---
 
@@ -238,8 +243,8 @@ readers that return module schemas stay module-only (interface object-return rul
 2. `URC_MaxStreamLanes` + `UEV_StreamParams`.
 3. `XI_ReleaseStream` — vault branch first (prove drip + compaction + flush on a treasury), then the farm branch.
 4. Wire the drip into inject (instant vs add-stream), then stake/unstake/collect/deb-fix/sweep.
-5. `URC_LiveClaimable` + `URC_StreamStatus` (+ optional `C_PokeStream`).
-6. Talos direct + delayed wrappers (+ poke); thread `duration` through.
+5. `URC_LiveClaimable` + `URC_StreamStatus`.
+6. Talos direct + delayed wrappers; thread `duration` through.
 7. Tests 1→10; then a gas pass on the streamed farm drip.
 
 ---
