@@ -119,3 +119,21 @@ succession, removing admin discretion from the succession case specifically. Cap
 that's taken up, not part of this audit's fix list.
 
 **No code change.** #4C closes as REFUTED; the design conversation continues in the pondering doc.
+
+## #5C · DPDC-MNG · C1 — burn/wipe can destroy `dpdc`'s escrowed fragment collateral
+
+**Verdict: CONFIRMED, FIXED (2026-08-20).** Owner proposed making `dpdc` immune to freeze+wipe. Checked
+before implementing: `DPDC-MNG-C>WIPE-SFT`/`WIPE-NFT` do require `frozen=true`, so freeze-immunity alone
+would have closed wipe — but `BURN-SFT`/`BURN-NFT` never check freeze at all, only the burn role, so
+freeze-immunity alone would have left burn fully open (e.g. via an accidental/malicious role grant on
+`dpdc`, no freeze involved anywhere). Both already compose the same shared capability,
+`DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES` — one check there (`account != GOV|DPDC|SC_NAME`) closes both,
+permanently, regardless of role/freeze state, rather than two separate patches.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #3)** — one line, `06_DPDC-MNG.pact:304`. Live-proven both
+halves: burning `dpdc`'s escrowed collateral (with the burn role granted directly, no freeze anywhere in
+the chain) rejected at the new line; wiping it (frozen + `can-wipe` enabled — the real preconditions the
+legitimate path requires) rejected at the same line. Ordinary burn on a real account still works
+(10,000 → 9,950). Full `Z.repl` pipeline green. The "compounding" respawn risk from the original finding
+needed no separate fix — it was entirely downstream of the collateral being destroyed in the first place,
+which can no longer happen.

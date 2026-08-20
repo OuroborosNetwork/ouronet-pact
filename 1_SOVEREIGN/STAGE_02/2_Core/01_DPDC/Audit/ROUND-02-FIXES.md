@@ -215,3 +215,40 @@ made this round). Logged as a follow-up rather than chased further this round.
 
 **Backlog note:** the fact that no existing test ever exercises real IGNIS gas collection is itself worth a
 follow-up test-coverage item — logged, not fixed here.
+
+## Fix #3 — DPDC-MNG · C1 (burn/wipe can destroy the `dpdc` escrow account's fragment collateral)
+
+**Owner-approved 2026-08-20.** Owner proposed making the `dpdc` escrow account immune to freeze+wipe;
+checked the actual preconditions before implementing and found that alone wouldn't fully close it —
+`DPDC-MNG|C>WIPE-SFT`/`WIPE-NFT` genuinely require `frozen=true` first, so freeze-immunity *would* have
+made wipe unreachable, but `DPDC-MNG|C>BURN-SFT`/`BURN-NFT` never check freeze at all — only the burn
+*role*. Freeze-immunity alone would have left burn (via an accidental or malicious role grant on `dpdc`)
+completely open. Both burn and wipe already compose the same shared capability before touching anything —
+`DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES` — so one check there, rather than two separate patches, closes both
+paths permanently regardless of role grants or freeze state.
+
+**Fix — one line, `06_DPDC-MNG.pact:304`, inside `DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES`:**
+```pact
+(enforce (= l1 l2) "Invalid Nonces and Amount for Class Zero Nonce Removal")
+(enforce (!= account (ref-DPDC::GOV|DPDC|SC_NAME)) "Not allowed for the DPDC system account")
+```
+
+**Post-fix proof, both halves:**
+- `REPL/Kursan/_verify_finding_DPDC-MNG_C1_escrow_immunity.repl`: fragmented a real nonce (100 units
+  escrowed at `dpdc`), granted `dpdc` the burn role directly (simulating an accidental/malicious role
+  grant — no freeze involved anywhere), then attempted to burn `dpdc`'s escrowed collateral as a real
+  uncaught transaction. Hard-rejected at the new line. Control case (ordinary burn on ANHD's own balance,
+  10,000 → 9,950) still works correctly.
+- `REPL/Kursan/_verify_finding_DPDC-MNG_C1_wipe_half.repl`: fragmented a nonce, enabled `can-wipe` on the
+  collection, froze `dpdc` — the two real preconditions the legitimate wipe path requires — then attempted
+  to wipe `dpdc`'s escrowed collateral. Rejected at the exact same line, confirming one check closes both
+  the freeze-gated wipe path and the freeze-independent burn path.
+- `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
+
+**Why nothing else was needed:** the "compounding half" of the original finding (a stale-fragmented nonce
+later respawned and reclaimed by pre-wipe fragment holders) was entirely downstream of the escrow
+collateral being destroyed in the first place — with `dpdc` now immune to burn/wipe outright, that
+precondition can never occur, so there's nothing left for a respawn to reattach to that could ever go
+stale. Closing the front door closes the back door that depended on it.
+
+**Interface implication:** none — internal to the defcap body, no signature change.

@@ -60,11 +60,16 @@ Heir System (advance heir designation + inactivity-triggered succession, removin
 the succession case) captured in `HEIR-SYSTEM-PONDERING.md` — not a bug, not blocking, a future direction.
 — *DPDC-F·C1*
 
-#5C **[DPDC-MNG]** Burn/wipe has zero fragmentation-awareness: nothing stops a collection owner from
+#5C **[DPDC-MNG]** ~~Burn/wipe has zero fragmentation-awareness: nothing stops a collection owner from
 freezing and wiping the protocol's own `dpdc` escrow account's collateral, permanently orphaning every
 outstanding fragment (`-N`) claim against it; `C_RespawnNFT` can later re-attach the same nonce-data to
 `dpdc` again, letting stale pre-burn fragment holders redeem/claim an asset they have no legitimate claim
-to. — *DPDC-MNG·C1*
+to.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-20** (`ROUND-02-FIXES.md` Fix #3) — one check
+(`account != GOV|DPDC|SC_NAME`) in the shared `DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES` chokepoint blocks both
+burn (never freeze-gated — only the burn role) and wipe (frozen+`can-wipe`-gated) from ever touching the
+escrow account; both live-proven rejected at the identical line, ordinary burn on a real account still
+works, `Z.repl` green. The respawn "compounding" risk needed no separate fix — it was downstream of the
+collateral being destroyed, which can no longer happen. — *DPDC-MNG·C1*
 
 #6C **[DPDC-S]** Composite/Hybrid SFT set-class definitions with `allowed-sclass = 0` (the codebase's
 reserved "not part of any set" sentinel) pass definition validation — Make then legitimately transfers a

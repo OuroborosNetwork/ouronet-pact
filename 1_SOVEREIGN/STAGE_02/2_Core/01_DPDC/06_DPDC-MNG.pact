@@ -301,6 +301,7 @@
                 (l2:integer (length amounts))
             )
             (enforce (= l1 l2) "Invalid Nonces and Amount for Class Zero Nonce Removal")
+            (enforce (!= account (ref-DPDC::GOV|DPDC|SC_NAME)) "Not allowed for the DPDC system account")
             (map
                 (lambda
                     (idx:integer)
