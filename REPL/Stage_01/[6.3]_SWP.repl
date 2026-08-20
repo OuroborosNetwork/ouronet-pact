@@ -4369,8 +4369,20 @@
     )
     (ref-TS01-A::SWP|A_UpdateLiquidBoost true)
 )
-(let
+;;P0.6 direction 5: XI_SmartSwapCore now carries the Liquid Boost cut forward
+;;hop-by-hop (SWPI::URC_Swap over each hop's own already-selected edge, no
+;;search) and only prices-and-burns once, on the LAST hop — this intentionally
+;;produces a DIFFERENT total DLK burn than the old per-hop-independent-search
+;;design (it follows the swap's own route, not each hop's individually-best
+;;route to DLK). Printing the actual DLK burned here so that shift is visible,
+;;not silent — SWP|SC_NAME's own DLK balance is what C_Burn debits.
+(let*
     (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (lkda:string (ref-DALOS::UR_SilverStoaID))
+        (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))
+        (dlk-before:decimal (ref-DPTF::UR_AccountSupply lkda swp-sc))
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
         (swap-result:string
             (ref-TS01-C3::SWP|C_SmartSwapNoSlippage
@@ -4381,6 +4393,7 @@
                 "W7-98c486052a51"
             )
         )
+        (dlk-after:decimal (ref-DPTF::UR_AccountSupply lkda swp-sc))
     )
     (map print
         [
@@ -4390,6 +4403,7 @@
                 true
                 (contains "via 6 Swaps" swap-result)
             )
+            (format "P0.6 direction 5 — DLK burned by this swap's single end-of-route Liquid Boost pump: {}" [(- dlk-before dlk-after)])
         ]
     )
 )

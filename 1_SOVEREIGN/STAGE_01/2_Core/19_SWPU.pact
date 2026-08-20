@@ -652,8 +652,20 @@
     (defun XI_SmartSwapCore:list
         (account:string input-amount:decimal ico-input:object{IgnisCollectorV1.OutputCumulator} nodes:[string] edges:[string])
         @doc "Iterates over all hops of a Smart Swap path. For each hop: computes fee-aware swap, fuels LP, \
-            \ updates pool supplies, pays special targets, runs liquid pump (Option B). \
-            \ Returns [final-netto all-icos-list]."
+            \ updates pool supplies, pays special targets, carries the Liquid Boost slice forward. \
+            \ P0.6 direction 5 (SWP exhaustive-path-search HANDOFF doc): the Liquid Boost cut is no \
+            \ longer priced-and-burned on every hop (6 independent full-graph searches on a 6-hop \
+            \ route). Instead each hop converts the running carried amount into its own output token \
+            \ via <SWPI::URC_Swap> over the SAME <swpair> edge the hop's real swap already used (raw, \
+            \ fee-free curve math, no search), adds this hop's own boost cut, and passes the total \
+            \ forward. Only the LAST hop actually prices-and-burns, via <XI_LiquidIndexPump>, against \
+            \ the single accumulated total — one graph search per SmartSwap instead of one per hop. \
+            \ This intentionally does NOT reproduce the old per-hop totals (it follows the swap's own \
+            \ route instead of each hop's individually-best route to DLK) — acceptable since this is \
+            \ internal index-pump accounting, not user-facing swap output. \
+            \ Returns [final-netto all-icos-list ...] — callers (<XI_SmartSwap>) only read indices \
+            \ 0/1; the fold's own accumulator carries a 3rd element (running carried-boost) that has \
+            \ already been fully consumed by the last hop by the time the fold finishes."
         (require-capability (SECURE))
         (let
             (
@@ -672,6 +684,7 @@
                         (
                             (current-input:decimal (at 0 acc))
                             (acc-icos:[object{IgnisCollectorV1.OutputCumulator}] (at 1 acc))
+                            (carried-boost-in:decimal (at 2 acc))
                             (i-id:string (at idx nodes))
                             (o-id:string (at (+ idx 1) nodes))
                             (swpair:string (at idx edges))
@@ -704,6 +717,22 @@
                             (dra-o:[decimal] (ref-SWPI::URC_DirectRefillAmounts swpair [o-id] [(fold (+) 0.0 [o-id-special o-id-liquid o-id-netto])]))
                             (remaining:[decimal] (zip (-) (zip (-) dra lp-fuel) dra-o))
                             (new-balances:[decimal] (zip (+) pt-amounts-after-fuel remaining))
+                            ;;P0.6 direction 5: roll the running carried Liquid Boost amount
+                            ;;(denominated in <i-id>, this hop's input token) forward into
+                            ;;<o-id> terms over this SAME <swpair> edge, via raw fee-free
+                            ;;curve math — no search, the edge is already known. Skipped when
+                            ;;nothing has been carried yet (first hop, or Liquid Boost off).
+                            (converted-carry:decimal
+                                (if (= carried-boost-in 0.0)
+                                    0.0
+                                    (ref-SWPI::URC_Swap
+                                        swpair
+                                        (ref-U|SWP::UDC_DirectSwapInputData [i-id] [carried-boost-in] o-id)
+                                        false
+                                    )
+                                )
+                            )
+                            (carried-boost-out:decimal (+ converted-carry o-id-liquid))
                             (ico-special:object{IgnisCollectorV1.OutputCumulator}
                                 (if (!= o-id-special 0.0)
                                     (let*
@@ -758,16 +787,21 @@
                                 [
                                     ico-fuel
                                     ico-special
-                                    (if (!= o-id-liquid 0.0)
-                                        (XI_LiquidIndexPump o-id o-id-liquid)
+                                    ;;P0.6 direction 5: only the LAST hop actually prices-and-
+                                    ;;burns, against the full accumulated <carried-boost-out> —
+                                    ;;every earlier hop just carries it forward (above), no
+                                    ;;search fired.
+                                    (if (and iz-last (!= carried-boost-out 0.0))
+                                        (XI_LiquidIndexPump o-id carried-boost-out)
                                         EOC
                                     )
                                 ]
                             )
+                            carried-boost-out
                         ]
                     )
                 )
-                [input-amount [ico-input]]
+                [input-amount [ico-input] 0.0]
                 (enumerate 0 (- le 1))
             )
         )

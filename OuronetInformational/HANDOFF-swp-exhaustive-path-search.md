@@ -1,16 +1,14 @@
 # Handoff: SWP exhaustive on-chain cheapest-path search (SmartSwap Phase 2)
 
-**Status:** IN PROGRESS. P0.5 done. P0.6 opened (Liquid Boost confirmed always-on, so the
-3,039,431-gas worst-case figure is the real number, 1M+ over the ~2,000,000 ceiling).
-P0.6 direction 1 (`SWPI::URC_HopperActiveShortest`, single-shortest-path routing for the
-Liquid Boost pump instead of best-of-3) shipped and re-measured 2026-08-20: 2,759,838 gas —
-real but small saving (-279,593), still 759,838 over ceiling. Direction 2 (reuse
-`SWPT::URC_AllGraphPaths` computed once from `lkda`, reversed per-hop lookups instead of 6
-independent full-graph scans) designed and written up, not yet built. Also still open: a
+**Status:** IN PROGRESS. P0.5 done. **P0.6 done (2026-08-21): worst-case 6-hop execution with
+Liquid Boost always-on now fits under ~2,000,000 gas — 1,963,025 gas (was 3,039,431), ~37k
+headroom.** Two shipped changes got there: direction 1 (`SWPI::URC_HopperActiveShortest`,
+single-shortest-path routing instead of best-of-3 for the boost pump) then direction 5
+(carry the boost value forward hop-by-hop along the swap's own already-selected edges,
+`XI_SmartSwapCore`'s fold, only price-and-burn once on the last hop — the owner's own design
+from a discussion round, see P0.6's writeup below for the full trace). Also still open: a
 separate, unfixed crash bug in `XI_RawLiquidPump` (found alongside P0.5, not yet formally
-numbered in `ISSUES-RANKED.md`). P1 (core search primitives) not started — P0.6 blocks P3
-regardless (execution inherits this same ceiling no matter how the route was found); whether
-to fully close P0.6 before starting P1 is an open sequencing question for the owner.
+numbered in `ISSUES-RANKED.md`). P1 (core search primitives) not started — next up.
 
 **To:** whoever picks up SWP audit follow-up work next.
 **From:** 2026-08-20 SWP audit session (#34M/M2 follow-up discussion).
@@ -184,10 +182,9 @@ P1.2"). Update the checkboxes here as items land.
       is on. Owner confirmed (2026-08-20) Liquid Boost is meant to be always on in production —
       so this is not an edge case, it's the real number. Promoted to `P0.6` below.**
 
-- [ ] **P0.6 — NEW, opened 2026-08-20. Make worst-case execution fit under ~2,000,000 gas with
-      Liquid Boost always on. Direction 1 shipped and re-measured — real, but not enough alone.
-      Blocks P3 (any discovered route still has to execute inside this same ceiling), so
-      resolve before investing further in P1's search primitives.**
+- [x] **P0.6 — DONE, 2026-08-21. Worst-case execution now fits under ~2,000,000 gas with
+      Liquid Boost always on: 1,963,025 gas (was 3,039,431). Blocked P3 (any discovered route
+      still has to execute inside this same ceiling) — resolved before P1 starts.**
       **Root cause, more specific than P0.5's writeup:** `XI_RawLiquidPump` (`19_SWPU.pact`)
       routes its DLK-conversion quote through `SWPI::URC_HopperActive` → `URCX_Hopper`, which
       is the **same best-of-3 alternate-route search** Fix #19 built for real swap routing
@@ -224,38 +221,66 @@ P1.2"). Update the checkboxes here as items land.
          in the first place. The real cost is the **one** full-graph BFS scan each hop still
          pays for regardless — 6 independent hops × ~177k gas/hop ≈ the ~1.06M that's still
          there. That's the number direction 2 has to attack.
-      2. **Concrete design found, not yet built — matches the owner's "carry values and scan
-         once" instinct.** Read `U|BFS::UC_BFS` directly: it already computes shortest paths
-         from a source to **every** reachable node in a single pass — `SWPT::URC_AllGraphPaths`
-         (which `URC_ComputeGraphPath` calls) returns that *entire* multi-target `chains` list
-         and only *then* filters it down to one target; the `output` parameter isn't even used
-         inside `URC_AllGraphPaths` itself. This means a **single**
-         `URC_AllGraphPaths(lkda, _, swpairs)` call, run once per SmartSwap (only when Liquid
-         Boost is on), already contains the shortest path from `lkda` to every one of the 6
-         hop-tokens — each just needs picking out (same filter-by-last-node logic
-         `URC_ComputeGraphPath` already has, reusable) and **reversing** (`XI_UpdateGraphForSwpair`
-         confirmed: edges are registered symmetrically, full `i×j` including both orderings, so
-         graph traversal is bidirectional — a reversed lkda→X path is a valid X→lkda path).
-         The base no-boost swap (1,694,006 gas) already pays for exactly one full-graph BFS for
-         its own routing; adding one more (from `lkda`) plus 6 cheap O(path-length) lookups
-         should cost far less than the ~1.06M six independent scans cost today — plausibly
-         enough to clear the ceiling, but this is an **estimate**, not yet built or measured.
-         Real architectural change spanning: a new `SWPT` primitive (or reuse of
-         `URC_AllGraphPaths` + a new small extract-and-reverse helper), `XI_SmartSwapCore`'s
-         fold signature (thread the precomputed table through), and
-         `XI_LiquidIndexPump`/`XI_RawLiquidPump`'s signatures (accept the table instead of
-         searching). Not started — owner sign-off wanted before building, per the standing
-         "roadmap before code" rule.
+      2. **Considered (a reverse-BFS-from-`lkda`, precomputed once and threaded through the
+         fold) — superseded by direction 5 before being built, since 5 needs no extra graph
+         search at all, not even one.** Left here for the record: `U|BFS::UC_BFS` computes
+         shortest paths from a source to every reachable node in one pass, so a single
+         `URC_AllGraphPaths(lkda, _, swpairs)` call would have contained the path to every hop
+         token, reversed. Real and would likely have worked, but direction 5 (below) is cheaper
+         and far less invasive, so this was never implemented.
       3. **Not recommended, listed for completeness: reduce how often boost fires (e.g. only on
-         the swap's final hop) instead of making each firing cheaper.** Rejected as a first
-         move — it changes what Liquid Boost economically does (less value diverted to the
-         index over a multi-hop swap than today), a tokenomics decision, not a gas-engineering
-         one; only worth considering if 1 and 2 together still don't close the gap.
-      **Next step, proposed, awaiting owner go-ahead:** build direction 2 (the once-per-swap
-      `URC_AllGraphPaths`-from-`lkda` reuse), re-measure `SWP|TX 032q` with Liquid Boost on,
-      confirm against the ~2,000,000 ceiling. Sequencing question (resolve P0.6 fully before
-      starting P1, vs. move to P1 now and leave P0.6 partially fixed) is the owner's call —
-      not yet settled as of this writeup.
+         the swap's final hop) instead of making each firing cheaper.** Would have changed what
+         Liquid Boost economically does (less value diverted to the index over a multi-hop swap
+         than today) as a side effect of a gas fix. Superseded by direction 5, which achieves
+         "fires once" *without* changing the total value diverted — see below.
+      5. **DONE, 2026-08-21 — shipped, closes P0.6. Owner's own design, from the "round of
+         discussion" requested before building anything further:** carry the boost value
+         forward hop-by-hop along the swap's *own* route instead of pricing each hop's own
+         token independently. Traced the token flow first (owner asked whether the boost cut is
+         physically set aside or virtual — neither exactly: `XI_Swap`'s `dra-o` accounting
+         *does* remove it from the pool's tracked reserves, real economic effect, but no
+         `TFT` transfer ever moves it anywhere — it's un-attributed float sitting in
+         `SWP|SC_NAME`'s real balance; the Hopper route search that prices it is a pure quote,
+         never actually executed; only the final `DPTF::C_Burn` is a real, destructive
+         operation). Since the routing was already just a quote, there was no reason it needed
+         a live graph search *per hop* at all.
+         **Mechanism, built in `XI_SmartSwapCore` (`19_SWPU.pact`):** the fold's accumulator
+         gained a 3rd element, the running carried-boost amount. Each hop converts the
+         carried-in amount (denominated in that hop's own input token) into its own output
+         token via `SWPI::URC_Swap` over the *same* `swpair` edge the hop's real swap already
+         executed through (raw, fee-free curve math — the identical primitive `URCX_HopperForNodes`
+         already uses for its own quoting, so no new kind of computation, and no search: the
+         edge is already known, sitting in scope) — then adds that hop's own `o-id-liquid` cut,
+         and passes the total forward. Only the **last** hop (`iz-last`, a flag the fold already
+         had for special-fee-target settlement timing) actually calls `XI_LiquidIndexPump`,
+         against the single fully-accumulated total. `XI_LiquidIndexPump`/`XI_RawLiquidPump`
+         needed **zero** changes — genuinely generic `(id, amount)` already. One graph search
+         per SmartSwap (via direction 1's `URC_HopperActiveShortest`, on the last hop only)
+         instead of one per hop.
+         **Measured (`SWP|TX 032q`, same worst-case 6-hop/maximal-pool topology, Liquid Boost
+         on): 1,963,025 gas — under the ~2,000,000 ceiling, ~37k headroom.** (2,759,838 →
+         1,963,025 direction-5 saving alone: 796,813 gas. Full chain from the original
+         unoptimized figure: 3,039,431 → 1,963,025, a 1,076,406-gas reduction.) Confirmed the
+         swap still executes the real full 6-hop route (`"via 6 Swaps"`, no shortcut). Added a
+         diagnostic print of the actual DLK burned by the single end-of-route pump (reads
+         `SWP|SC_NAME`'s DLK balance before/after via `DPTF::UR_AccountSupply`) so the total —
+         which, as expected going in, does **not** match the old per-hop-independent-search
+         total (this design follows the swap's own route rather than each hop's individually-
+         best route to DLK) — is visible in the regression output, not a silent behavior
+         change. Full `[6.2]`+`[6.3]` suite (temporarily switched on, then reverted to the
+         checked-in issuance-only default) and default `Z.repl` regression both exit 0,
+         0 `FAILURE`, before and after.
+         **Headroom is thin (~37k, under 2%).** Growing pool/token count, deeper routes beyond
+         the current 7-token/6-hop cap, or added per-hop overhead elsewhere in the fold could
+         erode this again — worth remeasuring `SWP|TX 032q` (and the boost-off baseline)
+         whenever something changes upstream of it, not treating this as permanently settled.
+         **Known, deliberately accepted minor inefficiency:** if an *intermediate* hop's own
+         output token happens to be `lkda` itself, today's design would burn it immediately at
+         that hop (1:1, no search needed); this design carries it past that point and only
+         settles at the swap's actual final hop, paying for one extra unnecessary raw-swap leg
+         in that specific case. Not fixed — rare in practice (the worst-case topology that
+         actually needs this fix is the deep, DLK-avoiding kind), and not a correctness issue,
+         just a small missed optimization.
 
 ### P1 — Core search primitives, hand-verified on a small topology
 - [ ] **P1.1** `SWPT::URC_ComputeAllRoutes(input, output, swpairs, max-attempts)` — generalize
