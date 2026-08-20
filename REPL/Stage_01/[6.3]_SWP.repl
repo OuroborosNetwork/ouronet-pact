@@ -3568,6 +3568,293 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(print "=======================#34bM Adversarial Proof=================================")
+(begin-tx "SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 01 · let / invocation ==== ====
+(print "--- [SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 01 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (* (ref-DALOS::UR_UsagePrice "dptf") 3.0)
+            )
+        )
+    )
+;;==== SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 02 · env-sigs (caps) ==== ======
+(print "--- [SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+            (issued-ids:[string]
+                (ref-TS01-C1::DPTF|C_Issue
+                    patron
+                    patron
+                    ["TestTokenN" "TestTokenM" "TestTokenQ"]
+                    ["TSTN" "TSTM" "TSTQ"]
+                    (make-list 3 24)
+                    (make-list 3 true)
+                    (make-list 3 true)
+                    (make-list 3 true)
+                    (make-list 3 false)
+                    (make-list 3 false)
+                    (make-list 3 true)
+                )
+            )
+        )
+        issued-ids
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 03 · gas echo ==== ===============
+(print "--- [SWP|TX 032h - Issue TSTN/TSTM/TSTQ Test Tokens (#34bM Proof) · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032h Issue TSTN/TSTM/TSTQ ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 01 · env-sigs (caps) ==== ========
+(print "--- [SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;==== SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 02 · let / invocation ==== =======
+(print "--- [SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 02 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+    )
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTN-98c486052a51" patron 10000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTM-98c486052a51" patron 10000.0 true)
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTQ-98c486052a51" patron 10000.0 true)
+)
+(print "")
+(print "")
+;;==== SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 03 · gas echo ==== =================
+(print "--- [SWP|TX 032i - Mint TSTN/TSTM/TSTQ to KST.ANHD (#34bM Proof) · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032i Mint TSTN/TSTM/TSTQ ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 032j - #34bM Adversarial Proof: Direct-Anchor-Only Chain Rejection")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032j - #34bM Adversarial Proof · 01 · let / invocation ==== =============================
+(print "--- [SWP|TX 032j - #34bM Adversarial Proof · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (* (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp")) 2.0)
+            )
+        )
+    )
+;;==== SWP|TX 032j - #34bM Adversarial Proof · 02 · env-sigs (caps) ==== ==============================
+(print "--- [SWP|TX 032j - #34bM Adversarial Proof · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    ;;Pool AN: OURO (principal, first) + TSTN — valid W/P anchoring. TSTN is now
+    ;;genuinely DIRECTLY pooled with a principal.
+    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD
+        [
+            { "token-id": "OURO-98c486052a51", "token-supply": 800.0}
+            { "token-id": "TSTN-98c486052a51", "token-supply": 800.0}
+        ]
+        25.0 false
+    )
+    ;;Pool NM: TSTN (first) + TSTM — Stable. TSTN is directly principal-adjacent
+    ;;(via pool AN just above), so this passes under both old and new logic —
+    ;;this is the legitimate "S|AG|AL" case. TSTM's ONLY connection after this
+    ;;is to TSTN (not itself a principal, just principal-adjacent).
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+        [
+            { "token-id": "TSTN-98c486052a51", "token-supply": 800.0}
+            { "token-id": "TSTM-98c486052a51", "token-supply": 800.0}
+        ]
+        10.0 10.0 false
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 032j - #34bM Adversarial Proof · 03 · gas echo ==== =====================================
+(print "--- [SWP|TX 032j - #34bM Adversarial Proof · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032j #34bM Setup ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 032k - #34bM Adversarial Proof: S|TSTM|TSTQ Must Be Rejected")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032k - #34bM Adversarial Proof (2-hop rejection) · 01 · let / invocation ==== ============
+(print "--- [SWP|TX 032k - #34bM Adversarial Proof (2-hop rejection) · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+;;==== SWP|TX 032k - #34bM Adversarial Proof (2-hop rejection) · 02 · env-sigs (caps) ==== =============
+(print "--- [SWP|TX 032k - #34bM Adversarial Proof (2-hop rejection) · 02 · env-sigs (caps)] ---")
+    ;;Full coin.TRANSFER caps granted here (unlike an earlier attempt at this
+    ;;same test) — so the ONLY possible failure is the anchoring enforce itself,
+    ;;not a confounding missing-fee-capability error masking the real result.
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    ;;TSTM is 2 hops from a principal (TSTM -> TSTN -> OURO), never directly
+    ;;pooled with one. #34bM fix: must be REJECTED — the owner's design is
+    ;;direct-adjacency only, not transitive/multi-hop BFS reachability.
+    (map print
+        [
+            (expect-failure
+                "S|TSTM|TSTQ rejected — TSTM is only transitively (2-hop), not \
+                \ directly, connected to a principal (#34bM fix)"
+                (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+                    [
+                        { "token-id": "TSTM-98c486052a51", "token-supply": 800.0}
+                        { "token-id": "TSTQ-98c486052a51", "token-supply": 800.0}
+                    ]
+                    10.0 10.0 false
+                )
+            )
+        ]
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 032k - #34bM Adversarial Proof (2-hop rejection) · 03 · gas echo ==== =====================
+(print "--- [SWP|TX 032k - #34bM Adversarial Proof (2-hop rejection) · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 032k #34bM Proof ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 033 - Add Frozen & Sleeping Liquidity")
 (namespace "ouronet-ns")

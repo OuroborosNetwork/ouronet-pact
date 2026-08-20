@@ -1675,3 +1675,56 @@ Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #19. Awaiting Round III re-verify.
 
 ---
+
+## #34bM (`UEV_Issue`'s Stable-pool anchoring check — direct vs. transitive connectivity) — **CONFIRMED, FIXED, PROVEN**
+
+**Origin:** not from the original Round I sweep — surfaced organically while discussing #34M/M2's fix.
+While explaining why on-chain exhaustive path search is unsafe (unbounded worst-case route count), traced
+whether the pool-issuance anchoring rules structurally bound path count/length. They don't (a concrete
+fan-out counter-example was walked through and accepted) — but during that discussion the owner stated
+the *actual* intended design for Stable-pool anchoring precisely: "S may also have their first token a
+principal, or if the first token is not a principal, it should exist in a pool where a principal exists,"
+with the added constraint that "the token that is the one tied directly to a principal must be on the
+first position." Checked this against the live `UEV_Issue` code and found it didn't match.
+
+**Verified precisely, not assumed:** `UEV_Issue`'s Stable-pool branch (`16_SWPI.pact:1408-1421` at the
+time) called `URC_Hopper(first-pool-token, dlk, 1.0)` — the same full multi-hop BFS pathfinder rebuilt for
+#34M — targeting `DLK` specifically. Two independent deviations from the owner's stated design: (1) it
+allowed *any* hop count via BFS, not direct (one-hop) adjacency only; (2) it checked connectivity to one
+hardcoded token (DLK) rather than the *current* full principal list (`UR_Principals()`, up to 7 since the
+cap/rotate work). Owner: "if this is not true, then this is another bug we need to fix" — assigned a
+number (#34bM) and asked for the fix now, matching the stated design exactly.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`:** replaced the DLK-targeted `URC_Hopper` BFS call with
+a direct-neighbour check: `SWPT::URC_TokenNeighbours(first-pool-token)` (one hop, every existing pool
+regardless of active status, by design — matches how the issuance-time check has always needed to work
+before pools go live) filtered against the full `principals` list. Confirmed this also correctly enforces
+the "must be on the first position" requirement, since only `first-pool-token`'s neighbours are ever
+checked — a principal-adjacent token elsewhere in the pool's token list does not satisfy the rule, exactly
+as specified.
+
+**A significant discovery while proving it:** the fix broke a pre-existing test fixture —
+`[6.2+3]_DPTF-SWP_Issuance-Only.repl`'s `AG→AL→AU→BI→CO` chain (`SWP|TX 024b`-`024e`), built specifically
+to test #13C/#19H/#20H's multi-hop BFS pathfinding (deep chain discovery, shortcut preference, disabled-
+pool fallback, clean no-path failure). That chain had been relying on exactly the bug being fixed here —
+each link was only ever transitively reachable to DLK, never directly principal-adjacent. Scoped this
+precisely (one background investigation) before touching anything: confirmed it's the *only* fixture in
+either test file affected (every other Stable pool in the suite, including #34M's own diamond-topology
+pools, already anchors directly). Fixed by giving `AL`/`AU`/`BI` each a throwaway direct-`OURO` pool
+(new `SWP|TX 024a2`) — deliberately never toggled swap-enabled, so `URC_HopperActive`-based BFS assertions
+in `TX 026`-`029` never see them and the AG→AL→AU→BI→CO topology those tests exercise is unchanged. This
+satisfies the anchoring rule *genuinely* (each link really is now directly principal-adjacent), not as a
+workaround.
+
+**Adversarially proven, live — new `SWP|TX 032h`-`032k` in `[6.3]_SWP.repl`:** built `TSTN` (directly
+pooled with `OURO`), `TSTM` (pooled only with `TSTN` — 2 hops from any principal, never direct). Attempted
+`S|TSTM|TSTQ` (Stable, `TSTM` first): correctly rejected with the fix in place. Reverted the fix
+in-place: the identical call *succeeds* — `"expected failure, got result"` — exact reproduction of the
+old bug's false-accept. Restored, reconfirmed rejection. Full `[6.2]`/`[6.3]` suite (real execution path):
+exit 0, 0 `FAILURE`. Default issuance-only regression (including the repaired `AG→AL→AU→BI→CO` chain and
+all of #13C/#19H/#20H's assertions passing unchanged): exit 0, 0 `FAILURE`. Full `Z.repl` (Stage 1 +
+Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #20. Awaiting Round III re-verify.
+
+---

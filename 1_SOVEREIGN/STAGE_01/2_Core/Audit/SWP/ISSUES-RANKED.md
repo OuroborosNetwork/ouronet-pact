@@ -242,6 +242,21 @@ edge-disjoint candidate routes (fixed cap — no dynamic loops in Pact); `SWPI::
 highest-payout candidate. Adversarially proven: a diamond-topology swap delivers 4906 TSTZ fixed vs. 1990
 TSTZ reverted (~2.5x worse) via the same swap. — *M2*
 
+#34bM **[SWPI]** ~~Discovered during #34M follow-up discussion, not from the original Round I sweep.
+`UEV_Issue`'s Stable-pool anchoring check (`16_SWPI.pact:1409-1421`) is supposed to require the first
+token be *directly* pooled with a principal (owner's stated original design: "S may also have their
+first token a principal, or if the first token is not a principal, it should exist in a pool where a
+principal exists"). As coded it does neither correctly: it runs a full multi-hop `URC_Hopper` BFS search
+(any hop count, not direct-only) targeting `DLK` specifically (not "any current principal" from
+`UR_Principals()`). Two independent deviations from stated intent.~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-20** (`ROUND-02-FIXES.md` Fix #20). Check rewritten to test the first token's *direct* neighbours
+(`SWPT::URC_TokenNeighbours`, one hop) against the *full* current principal list, not a hardcoded DLK
+target via multi-hop BFS. Adversarially proven: a token 2 hops from a principal (never directly pooled
+with one) is now correctly rejected; the fix reproduced the old bug's false-accept on revert. Also fixed
+a pre-existing test fixture (`[6.2+3]...repl`'s AG→AL→AU→BI→CO chain) that had been relying on the bug to
+construct itself — given each link its own throwaway, never-activated direct-OURO anchor pool so the
+#13C/#19H/#20H BFS-chain assertions it feeds stay byte-for-byte unchanged. — *owner-assigned, off-cycle*
+
 #35M **[SWPI]** Stable-pool swap math silently drops all but the first input position despite the schema
 supporting multiple. — *M1*
 

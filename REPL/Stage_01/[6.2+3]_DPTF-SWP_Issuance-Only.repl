@@ -2192,6 +2192,75 @@
 (env-sigs [])
 (commit-tx)
 ;;|| NEXT >
+(begin-tx "SWP|TX 024a2 - #34bM Setup: Throwaway direct-OURO anchor pools for AL/AU/BI")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;#34bM fix: UEV_Issue's Stable-pool anchoring check now requires the FIRST
+;;token be genuinely, DIRECTLY pooled with a Principal (one hop) — not
+;;transitively reachable via a chain of non-Principal tokens (that was the bug
+;;this whole 4-hop chain used to rely on to get built at all). AL/AU/BI each
+;;need to be the first token of their own next chain-link pool below
+;;(S|AL|AU, S|AU|BI, S|BI|CO), so each needs a genuine direct-OURO pool first —
+;;issued here, deliberately never toggled swap-enabled (SWP|TX 025 below only
+;;enables the 5 real chain pools by exact id), so URC_HopperActive-based BFS
+;;assertions in TX 026-029 never see these and the AG->AL->AU->BI->CO chain
+;;topology they test stays byte-for-byte unchanged.
+(print "--- [SWP|TX 024a2 - Throwaway Anchors · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (* (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp")) 3.0)
+            )
+        )
+    )
+    (print "--- [SWP|TX 024a2 - Throwaway Anchors · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ouro:string (ref-DALOS::UR_OuroborosID))
+        )
+        (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+            [ { "token-id": ouro, "token-supply": 800.0}
+              { "token-id": "AL-98c486052a51", "token-supply": 800.0} ]
+            10.0 10.0 false
+        )
+        (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+            [ { "token-id": ouro, "token-supply": 800.0}
+              { "token-id": "AU-98c486052a51", "token-supply": 800.0} ]
+            10.0 10.0 false
+        )
+        (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+            [ { "token-id": ouro, "token-supply": 800.0}
+              { "token-id": "BI-98c486052a51", "token-supply": 800.0} ]
+            10.0 10.0 false
+        )
+        (print "--- [SWP|TX 024a2 - Throwaway Anchors · 03 · gas echo] ---")
+        "throwaway anchor pools issued (never activated)"
+    )
+)
+(print "")
+(format "<<<<<<<SWP|TX 024a2 Throwaway Anchors ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;|| NEXT >
 (begin-tx "SWP|TX 024b - #13C/#19H/#20H Setup: Issue S|AG|AL")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

@@ -1405,18 +1405,27 @@
                 (enforce iz-principal "1st Token is not a Principal")
                 true
             )
-            ;;If a Stable Pool is to be created and none of its Tokens are Principal Tokens,
-            ;;  its first Token must have a connection to DLK present via existing pools.
+            ;;#34bM fix: was checking multi-hop BFS connectivity to DLK specifically
+            ;;(SWPT::URC_Hopper, unbounded hop count, one hardcoded target token) —
+            ;;owner's actual design: if a Stable Pool's first Token isn't itself a
+            ;;Principal, it must be DIRECTLY pooled (one hop, an existing pool) with
+            ;;ANY current Principal — not transitively connected through a chain of
+            ;;non-Principal tokens, and not specifically DLK. Fixed to check the
+            ;;first Token's direct neighbours (SWPT::URC_TokenNeighbours, one hop,
+            ;;every existing pool regardless of type) against the full current
+            ;;<principals> list.
             (if (and (> amp 0.0) (not contains-principals))
                 (let
                     (
-                        (ref-DALOS:module{OuronetDalosV1} DALOS)
-                        (dlk:string (ref-DALOS::UR_SilverStoaID))
-                        (h-obj:object{SwapperIssueV3.Hopper} (URC_Hopper first-pool-token dlk 1.0))
+                        (ref-SWPT:module{SwapTracerV2} SWPT)
+                        (neighbours:[string] (ref-SWPT::URC_TokenNeighbours first-pool-token))
+                        (has-principal-neighbour:bool
+                            (> (length (filter (lambda (n:string) (contains n principals)) neighbours)) 0)
+                        )
                     )
                     (enforce
-                        (!= h-obj (at 0 EMPTY_HOPPER))
-                        (format "No connection to DLK detected for {}. Create a W or P Pool first with it!" [first-pool-token])
+                        has-principal-neighbour
+                        (format "{} is not directly pooled with any Principal token" [first-pool-token])
                     )
                 )
                 true

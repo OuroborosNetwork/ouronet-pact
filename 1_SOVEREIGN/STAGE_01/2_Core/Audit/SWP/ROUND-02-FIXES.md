@@ -1007,3 +1007,37 @@ takes the bad route. Restored, reconfirmed 4906.02. Three `expect` assertions pi
 (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #20 — #34bM: `UEV_Issue`'s Stable-pool anchoring check now requires direct principal adjacency
+
+**Owner direction:** discovered off-cycle, during #34M follow-up discussion. Stated design precisely: a
+Stable pool's first token must either be a principal itself, or be directly pooled (one hop, in an
+existing pool) with one — not transitively reachable through a chain of non-principal tokens — and that
+directly-anchored token must be in the pool's first position specifically.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`:** replaced a full multi-hop `URC_Hopper` BFS search
+targeting `DLK` specifically with a direct-neighbour check — `SWPT::URC_TokenNeighbours(first-pool-token)`
+(one hop, unfiltered by active status) against the *full* current `UR_Principals()` list. Fixes both
+deviations from stated design at once: hop-count (direct-only, not transitive) and target (any current
+principal, not one hardcoded token).
+
+**A pre-existing test fixture broke and was repaired, not worked around:**
+`[6.2+3]_DPTF-SWP_Issuance-Only.repl`'s `AG→AL→AU→BI→CO` chain (built for #13C/#19H/#20H's multi-hop BFS
+tests) had been relying on the exact bug being fixed here to construct itself. Scoped precisely (via a
+background investigation) before touching it: the *only* fixture in either test file affected. Fixed by
+giving `AL`/`AU`/`BI` each a throwaway, never-swap-enabled direct-`OURO` pool (`SWP|TX 024a2`) — genuinely
+satisfies the corrected rule (each link really is now directly principal-adjacent) without the BFS tests
+(which query `URC_HopperActive`, active-only) ever seeing the throwaway pools, so the chain topology those
+tests exercise is byte-for-byte unchanged.
+
+**Adversarially proven, live — new `SWP|TX 032h`-`032k` in `[6.3]_SWP.repl`:** `TSTN` directly pooled with
+`OURO`; `TSTM` pooled only with `TSTN` (2 hops from any principal, never direct). `S|TSTM|TSTQ` (`TSTM`
+first) is correctly rejected with the fix active. Reverted in-place: the identical call succeeds
+(`"expected failure, got result"`) — exact reproduction of the old false-accept. Restored, reconfirmed
+rejection. Full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only regression (including the
+repaired chain and all #13C/#19H/#20H assertions passing unchanged): exit 0, 0 `FAILURE`. Full `Z.repl`
+(Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
