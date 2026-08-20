@@ -78,7 +78,7 @@ one at a time in `ISSUES-RANKED.md` order and this table is updated in place as 
 | ID | Sev | Module | Short | Status |
 |----|-----|--------|-------|--------|
 | C1 | CRIT | DPDC-C | Unsigned `amount` on Credit/Debit → mint supply from nothing | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #1)** — live-reproduced pre-fix; single-chokepoint fix (new `DPDC-C::UEV_Amount`, called from `CreditOrDebitDPDC`, the sole write path for every SFT/fragment credit+debit across all 11 peer modules); post-fix exploit rejected as a real uncaught tx (nothing commits) + legit transfer still works + Z.repl green |
-| C2 | CRIT | DPDC-T | `C_IgnisRoyaltyCollector` — no auth check, drains any smart-account patron | OPEN |
+| C2 | CRIT | DPDC-T | `C_IgnisRoyaltyCollector` — no auth check, drains any smart-account patron | **REFUTED, HARDENED ANYWAY (`ROUND-02-FIXES.md` Fix #2)** — "any smart account" shape was never reachable (`IGNIS|C>DEBIT` already rejects smart-account patrons); narrowed to standard accounts, then shown royalty-nonzero and ownership-check-skipped can never coincide (same toggle gates both); owner requested a local `CAP_EnforceAccountOwnership` anyway so the debit doesn't depend on that external invariant — live-proven: legit patron still collects a real 500.0 IGNIS royalty, illegitimate patron hard-rejected at the new line |
 | C3 | CRIT | DPDC-F | Unsigned `amount` on Make/Merge → inverted credit/debit | OPEN |
 | C4 | CRIT | DPDC-F | `C_RepurposeCollectableFragments` — no consent/freeze/wipe gate | OPEN |
 | C5 | CRIT | DPDC-MNG | Burn/wipe orphans fragment collateral held in `dpdc` escrow | OPEN |

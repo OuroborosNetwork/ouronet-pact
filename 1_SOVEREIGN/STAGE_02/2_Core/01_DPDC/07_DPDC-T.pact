@@ -303,6 +303,7 @@
             (enforce (<= ta read-gas) "Insufficient IGNIS for Debiting")
             (ref-DALOS::UEV_EnforceAccountExists sender)
             (ref-DALOS::UEV_EnforceAccountType sender false)
+            (ref-DALOS::CAP_EnforceAccountOwnership sender)
             (compose-capability (P|DPDC-T|CALLER))
         )
     )

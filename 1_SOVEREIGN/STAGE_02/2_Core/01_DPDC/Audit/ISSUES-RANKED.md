@@ -24,12 +24,17 @@ throws before `commit-tx` and nothing it attempted persists; a control legit tra
 `Z.repl` green. Also closes DPDC-F's **C3** (same root cause) and the negative-value half of DPDC-S's
 **C8** (still OPEN for its own explicit gate). — *DPDC-C·C1*
 
-#2C **[DPDC-T]** `C_IgnisRoyaltyCollector` debits the `patron` parameter's IGNIS balance with **no**
-ownership/authorization check anywhere in the call chain (`IGNIS|C>DEBIT` never calls
-`CAP_EnforceAccountOwnership`); reachable via Talos's public `DPNF|C_TransferNonce`, which doesn't require
-`patron == signer`. Any account can name an arbitrary smart-account `patron` holding IGNIS and drain their
-balance to a collectable's creator, repeatably, at zero cost — direct third-party fund theft, no consent,
-no signature. — *DPDC-T·C1*
+#2C **[DPDC-T]** ~~`C_IgnisRoyaltyCollector` debits the `patron` parameter's IGNIS balance with no
+ownership/authorization check anywhere in the call chain; any account can name an arbitrary smart-account
+`patron` holding IGNIS and drain their balance to a collectable's creator.~~ — **REFUTED 2026-08-20,
+HARDENED ANYWAY** (`ROUND-02-FIXES.md` Fix #2) — the "any smart account" shape was never reachable
+(`IGNIS|C>DEBIT` already rejects smart-account patrons via `UEV_EnforceAccountType`); narrowed to standard
+accounts, then shown `C_IgnisRoyaltyCollector`'s own royalty-bypass and `C_Collect`'s fee-ownership-check
+key off the *identical* toggle, so "royalty is nonzero" and "ownership check gets skipped" can never both
+be true — no reachable drain. Owner requested `CAP_EnforceAccountOwnership` added to `IGNIS|C>DEBIT`
+anyway (`07_DPDC-T.pact:305`) so the debit doesn't depend on that external invariant holding forever —
+live-proven: a real owner still collects a genuine 500.0 IGNIS royalty; an attacker naming someone else's
+account as patron is hard-rejected at the new line, keyset failure. — *DPDC-T·C1*
 
 #3C **[DPDC-F]** `amount` is never validated `>0` anywhere in the Make/Merge/Repurpose fragmentation call
 chain (same root gap as #1C, reached via a different entrypoint) — a negative `amount` to
