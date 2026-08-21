@@ -664,8 +664,17 @@
             \ route instead of each hop's individually-best route to DLK) — acceptable since this is \
             \ internal index-pump accounting, not user-facing swap output. \
             \ Returns [final-netto all-icos-list ...] — callers (<XI_SmartSwap>) only read indices \
-            \ 0/1; the fold's own accumulator carries a 3rd element (running carried-boost) that has \
-            \ already been fully consumed by the last hop by the time the fold finishes."
+            \ 0/1; the fold's own accumulator carries further elements (running carried-boost, and \
+            \ the batched special-fee-target lists below) that have already been fully consumed by \
+            \ the last hop by the time the fold finishes. \
+            \ Special-fee-target batching (owner's design, 2026-08-21, P0.6-adjacent — same \
+            \ HANDOFF doc; rebuilt after the original worst-case test was found to never have \
+            \ exercised this path at all, since <fee-special> defaulted to 0.0): every hop still \
+            \ emits its own <SWPU|S>FEED-SPECIAL-TARGETS> event (the per-hop audit trail is \
+            \ unchanged), but only the LAST hop pays it — every earlier hop's targets/amounts are \
+            \ appended to a running list instead, and the whole batch is paid in ONE combined \
+            \ multi-token <TFT::C_MultiBulkTransfer> fired on the last hop, alongside (not instead \
+            \ of) that hop's own unchanged netto+targets payout."
         (require-capability (SECURE))
         (let
             (
@@ -685,6 +694,9 @@
                             (current-input:decimal (at 0 acc))
                             (acc-icos:[object{IgnisCollectorV1.OutputCumulator}] (at 1 acc))
                             (carried-boost-in:decimal (at 2 acc))
+                            (sp-id-lst-in:[string] (at 3 acc))
+                            (sp-receiver-arr-in:[[string]] (at 4 acc))
+                            (sp-amount-arr-in:[[decimal]] (at 5 acc))
                             (i-id:string (at idx nodes))
                             (o-id:string (at (+ idx 1) nodes))
                             (swpair:string (at idx edges))
@@ -733,8 +745,15 @@
                                 )
                             )
                             (carried-boost-out:decimal (+ converted-carry o-id-liquid))
-                            (ico-special:object{IgnisCollectorV1.OutputCumulator}
-                                (if (!= o-id-special 0.0)
+                            ;;Special-fee-target batching: on every NON-last hop, still emit the
+                            ;;SAME <SWPU|S>FEED-SPECIAL-TARGETS> event as before (unchanged
+                            ;;per-hop audit trail) but don't pay yet — append <o-id>/its
+                            ;;filtered targets+amounts to the running batch instead. [[] []]
+                            ;;(no-op, nothing appended) whenever this hop has no special cut, or
+                            ;;is the last hop (whose own targets stay handled by <ico-special>
+                            ;;below, unchanged).
+                            (sp-hop-targets:list
+                                (if (and (!= o-id-special 0.0) (not iz-last))
                                     (let*
                                         (
                                             (o-prec:integer (at output-position X-prec))
@@ -744,10 +763,55 @@
                                             (fsft:list (UC_FilterSelfFromTargets account special-fee-targets target-amounts))
                                             (f-targets:[string] (at 0 fsft))
                                             (f-amounts:[decimal] (at 1 fsft))
-                                            (retained:decimal (at 2 fsft))
-                                            (adjusted-netto:decimal (+ o-id-netto retained))
                                         )
-                                        (if iz-last
+                                        (with-capability (SWPU|S>FEED-SPECIAL-TARGETS o-id o-id-special f-targets target-proportions f-amounts)
+                                            [f-targets f-amounts]
+                                        )
+                                    )
+                                    [[] []]
+                                )
+                            )
+                            (hop-f-targets:[string] (at 0 sp-hop-targets))
+                            (hop-f-amounts:[decimal] (at 1 sp-hop-targets))
+                            (sp-id-lst-out:[string]
+                                (if (!= (length hop-f-targets) 0) (+ sp-id-lst-in [o-id]) sp-id-lst-in)
+                            )
+                            (sp-receiver-arr-out:[[string]]
+                                (if (!= (length hop-f-targets) 0) (+ sp-receiver-arr-in [hop-f-targets]) sp-receiver-arr-in)
+                            )
+                            (sp-amount-arr-out:[[decimal]]
+                                (if (!= (length hop-f-targets) 0) (+ sp-amount-arr-in [hop-f-amounts]) sp-amount-arr-in)
+                            )
+                            ;;Flush: fires ONLY on the last hop, ONE combined multi-token
+                            ;;transfer covering every earlier hop's batched targets — the
+                            ;;whole reason for the accumulator above. <sp-id-lst-in> (not
+                            ;;-out) is correct here: this hop's own targets, if any, are
+                            ;;handled separately by <ico-special> below, never appended.
+                            (sp-flush:object{IgnisCollectorV1.OutputCumulator}
+                                (if (and iz-last (!= (length sp-id-lst-in) 0))
+                                    (ref-TFT::C_MultiBulkTransfer sp-id-lst-in SWP|SC_NAME sp-receiver-arr-in sp-amount-arr-in)
+                                    EOC
+                                )
+                            )
+                            ;;<ico-special> now only ever pays THIS hop's own targets+netto,
+                            ;;and only on the last hop — unchanged from the pre-batching logic
+                            ;;for that one case. Every non-last hop's targets are handled above
+                            ;;instead (event now, payment deferred to <sp-flush>).
+                            (ico-special:object{IgnisCollectorV1.OutputCumulator}
+                                (if iz-last
+                                    (if (!= o-id-special 0.0)
+                                        (let*
+                                            (
+                                                (o-prec:integer (at output-position X-prec))
+                                                (special-fee-targets:[string] (ref-SWP::UR_SpecialFeeTargets swpair))
+                                                (target-proportions:[decimal] (ref-SWP::UR_SpecialFeeTargetsProportions swpair))
+                                                (target-amounts:[decimal] (ref-U|SWP::UC_SpecialFeeOutputs target-proportions o-id-special o-prec))
+                                                (fsft:list (UC_FilterSelfFromTargets account special-fee-targets target-amounts))
+                                                (f-targets:[string] (at 0 fsft))
+                                                (f-amounts:[decimal] (at 1 fsft))
+                                                (retained:decimal (at 2 fsft))
+                                                (adjusted-netto:decimal (+ o-id-netto retained))
+                                            )
                                             (with-capability (SWPU|S>FEED-SPECIAL-TARGETS o-id o-id-special f-targets target-proportions f-amounts)
                                                 (if (!= (length f-targets) 0)
                                                     (ref-TFT::C_MultiBulkTransfer
@@ -759,23 +823,10 @@
                                                     (ref-TFT::C_Transfer o-id SWP|SC_NAME account adjusted-netto true)
                                                 )
                                             )
-                                            (with-capability (SWPU|S>FEED-SPECIAL-TARGETS o-id o-id-special f-targets target-proportions f-amounts)
-                                                (if (!= (length f-targets) 0)
-                                                    (ref-TFT::C_MultiBulkTransfer
-                                                        [o-id]
-                                                        SWP|SC_NAME
-                                                        [f-targets]
-                                                        [f-amounts]
-                                                    )
-                                                    EOC
-                                                )
-                                            )
                                         )
-                                    )
-                                    (if iz-last
                                         (ref-TFT::C_Transfer o-id SWP|SC_NAME account o-id-netto true)
-                                        EOC
                                     )
+                                    EOC
                                 )
                             )
                         )
@@ -786,6 +837,7 @@
                                 acc-icos
                                 [
                                     ico-fuel
+                                    sp-flush
                                     ico-special
                                     ;;P0.6 direction 5: only the LAST hop actually prices-and-
                                     ;;burns, against the full accumulated <carried-boost-out> —
@@ -798,10 +850,13 @@
                                 ]
                             )
                             carried-boost-out
+                            sp-id-lst-out
+                            sp-receiver-arr-out
+                            sp-amount-arr-out
                         ]
                     )
                 )
-                [input-amount [ico-input] 0.0]
+                [input-amount [ico-input] 0.0 [] [] []]
                 (enumerate 0 (- le 1))
             )
         )

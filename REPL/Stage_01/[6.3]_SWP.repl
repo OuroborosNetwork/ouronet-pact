@@ -4328,6 +4328,14 @@
         )
     )
     (map (lambda (p:string) (ref-TS01-C3::SWP|C_UpdateSpecialFeeTargets KST.ANHD p spt)) pools)
+    ;;P0.6 correction, 2026-08-21: configuring targets alone (above) does NOT activate
+    ;;the special-fee rate itself — <fee-special> defaults to 0.0 at issuance and stays
+    ;;there unless explicitly set, meaning every prior worst-case measurement in this
+    ;;file never actually exercised the special-fee-target <C_MultiBulkTransfer> path at
+    ;;all (o-id-special was 0.0 on every hop). Set to 10.0 here, mirroring <lp-fee>
+    ;;(matches how Liquid Boost already mirrors <lp-fee> when its own toggle is on), so
+    ;;this "worst case" test actually stresses the path it claims to.
+    (map (lambda (p:string) (ref-TS01-C3::SWP|C_UpdateFee KST.ANHD p 10.0 false)) pools)
     (map (lambda (p:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD p true)) pools)
 )
 (print "")
