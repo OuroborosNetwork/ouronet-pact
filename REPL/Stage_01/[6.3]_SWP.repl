@@ -5146,6 +5146,148 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z8 - #34 Phase 10 Adversarial Malformed-Bundle Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;#34 Phase 10: proves the bundle-based path's validation model actually rejects
+;;malformed/adversarial input, not just in theory. Two categories, per the
+;;architecture doc's §2 split:
+;;1) swap-route (funds-moving) — any structural/endpoint/depth-cap/active violation
+;;   must abort the WHOLE transaction, cleanly, before any state changes
+;;   (SWPU|X>SMART-SWAP-EXPLICIT-ROUTE's defcap enforces run before the body).
+;;2) boost-path/stoa-paths (pricing-only) — malformed data must degrade gracefully
+;;   instead: the swap still succeeds, the bad path is simply never used/priced,
+;;   never a crash, never a corrupted state.
+;;==== SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 02 · swap-route rejections ====
+(print "--- [SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 02 · swap-route rejections] ---")
+(let*
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (input-id "W1-98c486052a51")
+        (output-id "W7-98c486052a51")
+        (stub-boost {"nodes" : [], "edges" : [], "is-new" : false})
+        (wrong-endpoint-bundle
+            {"swap-route" :
+                {"nodes" : ["W1-98c486052a51" "W2-98c486052a51"]
+                ,"edges" : ["S|W1-98c486052a51|W2-98c486052a51|W1A-98c486052a51|W1B-98c486052a51|W1C-98c486052a51|W1D-98c486052a51|W1E-98c486052a51"]}
+            ,"boost-path" : stub-boost
+            ,"stoa-paths" : []}
+        )
+        (depth-cap-bundle
+            {"swap-route" :
+                {"nodes" : [input-id "FAKE1" "FAKE2" "FAKE3" "FAKE4" "FAKE5" "FAKE6" output-id]
+                ,"edges" : ["e1" "e2" "e3" "e4" "e5" "e6" "e7"]}
+            ,"boost-path" : stub-boost
+            ,"stoa-paths" : []}
+        )
+        (fabricated-edge-bundle
+            {"swap-route" :
+                {"nodes" : [input-id output-id]
+                ,"edges" : ["TotallyMadeUpSwpairThatIsNotReal"]}
+            ,"boost-path" : stub-boost
+            ,"stoa-paths" : []}
+        )
+        (inactive-edge-bundle
+            {"swap-route" :
+                {"nodes" : ["W1-98c486052a51" "OURO-98c486052a51"]
+                ,"edges" : ["P|OURO-98c486052a51|W1-98c486052a51"]}
+            ,"boost-path" : stub-boost
+            ,"stoa-paths" : []}
+        )
+    )
+    (map print
+        [
+            (expect-failure
+                "Adversarial: swap-route claiming input-id but ending at a different (real, connected) token is rejected"
+                (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id wrong-endpoint-bundle)
+            )
+            (expect-failure
+                "Adversarial: swap-route exceeding the P0.4 depth cap (8 nodes) is rejected"
+                (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id depth-cap-bundle)
+            )
+            (expect-failure
+                "Adversarial: swap-route with a fabricated, non-existent pool as its edge is rejected"
+                (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id fabricated-edge-bundle)
+            )
+        ]
+    )
+    ;;Inactive-edge case needs the pool actually toggled off first (a genuinely real,
+    ;;structurally-connected, but can-swap=false pool) — same revert/restore pattern
+    ;;as SWP|TX 032z5.
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" false)
+    (print
+        (expect-failure
+            "Adversarial: swap-route over a real, connected, but can-swap=false pool is rejected"
+            (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 1.0 "OURO-98c486052a51" inactive-edge-bundle)
+        )
+    )
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
+)
+;;==== SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 03 · pricing-path graceful degrade ====
+(print "--- [SWP|TX 032z8 - Adversarial Malformed-Bundle Proof · 03 · pricing-path graceful degrade] ---")
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (input-id "W1-98c486052a51")
+        (output-id "OURO-98c486052a51")
+        (route-h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id 1.0))
+        (real-route {"nodes" : (at "nodes" route-h), "edges" : (at "edges" route-h)})
+        ;;Fabricated boost-path: disconnected, non-existent nodes/edges, claimed
+        ;;is-new=true. URC_ValidatePathActive will reject it (fails to connect at
+        ;;all) -- XI_RawLiquidPump must degrade to "no boost pumped this round",
+        ;;never crash, never abort the swap itself.
+        (fabricated-boost {"nodes" : ["FakeBoostA" "FakeBoostB"], "edges" : ["NotARealBoostPool"], "is-new" : true})
+        ;;Fabricated stoa-path: a real pool's real first-token, paired with garbage
+        ;;nodes/edges that don't actually connect it to DWK. URC_PoolStoaValueFromPath
+        ;;must return its -1.0 skip-sentinel for this one entry -- URC_ComputeStoaValueResults
+        ;;must simply omit it from the results, never crash, never corrupt other pools' pricing.
+        (real-first-token:string (at 0 (ref-SWP::UR_PoolTokens (at 0 (at "edges" route-h)))))
+        (fabricated-stoa-paths
+            [{"first-token" : real-first-token
+             ,"path" : {"nodes" : ["FakeStoaA" "FakeStoaB"], "edges" : ["NotARealStoaPool"], "is-new" : true}}]
+        )
+        (bundle-bad-boost {"swap-route" : real-route, "boost-path" : fabricated-boost, "stoa-paths" : []})
+        (bundle-bad-stoa {"swap-route" : real-route, "boost-path" : {"nodes" : [], "edges" : [], "is-new" : false}, "stoa-paths" : fabricated-stoa-paths})
+        ;;Bound here (not inline in the assertion list below) so each call's actual
+        ;;result gets a real check, not a placebo true==true — if either call had
+        ;;thrown (crashed) instead of degrading gracefully, this whole transaction
+        ;;would already be dead by the time the assertions below run.
+        (result-bad-boost:string (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id bundle-bad-boost))
+        (result-bad-stoa:string (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 1.0 output-id bundle-bad-stoa))
+    )
+    (map print
+        [
+            (format "Adversarial fabricated-boost-path swap result: {}" [result-bad-boost])
+            (expect
+                "Adversarial: swap with a fabricated boost-path still succeeds (boost gracefully skipped, no crash)"
+                true
+                (contains "Succesfully smart-swapped" result-bad-boost)
+            )
+            (format "Adversarial fabricated-stoa-path swap result: {}" [result-bad-stoa])
+            (expect
+                "Adversarial: swap with a fabricated stoa-path entry still succeeds (that pool's pricing gracefully skipped, no crash)"
+                true
+                (contains "Succesfully smart-swapped" result-bad-stoa)
+            )
+        ]
+    )
+)
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "SWP|TX 033 - Add Frozen & Sleeping Liquidity")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

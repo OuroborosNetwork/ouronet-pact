@@ -197,10 +197,30 @@ detailed below at the same depth, to be expanded when their turn comes.
       (real function names/signatures, real measured gas numbers), not the speculative P3.x
       design. Registered in `OuronetInformational/INDEX.md`'s Handoffs table (which was also
       missing a link to *this* doc — added both while touching that table).
-- [ ] **Phase 10 — Testing, adversarial proof, regression.** Real measured old-vs-new gas
+- [x] **Phase 10 — Testing, adversarial proof, regression.** Real measured old-vs-new gas
       comparison (the actual number the owner asked for — "how much does outsourcing dirty
       reads bring us" — report once measured, not estimated); adversarial malformed-bundle
       proof; full regression (issuance-only, full `[6.2]`/`[6.3]`, `Z.repl`).
+      **Done, 2026-08-21.** Gas comparison already measured/reported in Phase 8
+      (7,145,298 vs 397,043, 18x). New this phase: `SWP|TX 032z8` (permanent,
+      `[6.3]_SWP.repl`) — 6 real adversarial assertions against the actual bundle-based
+      entrypoint (not synthetic unit tests of the validation helpers in isolation):
+      **swap-route (funds-moving, must abort the whole tx)** — wrong-endpoint route
+      (real, connected, but ends at the wrong token) rejected; depth-cap violation
+      (8 nodes) rejected; fabricated non-existent pool as an edge rejected; a real,
+      structurally-connected but `can-swap=false` pool rejected — all via
+      `expect-failure`, all confirmed cleanly rejected at the
+      `SWPU|X>SMART-SWAP-EXPLICIT-ROUTE` defcap layer, before any state changes.
+      **boost-path/stoa-paths (pricing-only, must degrade gracefully)** — a fabricated,
+      disconnected boost-path and a fabricated stoa-path entry (for a REAL pool's real
+      first-token) each submitted alongside an otherwise-real, valid swap; both
+      confirmed the swap still completes successfully (`"Succesfully smart-swapped"`,
+      checked against the actual returned string, not a placebo assertion) — the bad
+      path component is simply never used, never a crash, never a partial/corrupted
+      write. Full `Z.repl` (Stage 1+2) + issuance-only regression both 0 `FAILURE`.
+      **13-phase master plan is now fully done through Phase 10.** Remaining:
+      Phase 11 (genuine exhaustive route discovery), Phase 12 (realistic-scale
+      validation of that search), Phase 13 (final audit-trail/doc cleanup).
 - [ ] **Phase 11 — The original #34 ask: genuine exhaustive route discovery.** Build
       `SWPT::URC_ComputeAllRoutes` (real parameterized fold over `max-attempts`, not a fixed
       best-of-3) — this is what actually finds the *true* cheapest path, not an approximation.
