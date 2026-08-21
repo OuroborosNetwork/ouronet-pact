@@ -4872,6 +4872,58 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z5 - #34 XI_RawLiquidPump Crash-Bug Fix Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z5 - XI_RawLiquidPump Crash-Bug Fix Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 032z5 - XI_RawLiquidPump Crash-Bug Fix Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;#34 (P0.5 finding, fixed in Phase 8): the OURO|W1 anchor pool is the ONLY thing
+;;giving W1..W7 an ACTIVE route to DLK at all. Disabling it puts every hop's
+;;boost-pump search back into the exact "no active route found" state that used to
+;;crash XI_RawLiquidPump with an out-of-bounds error (worked around, not fixed, when
+;;first found during P0.5 — activating the anchor made the crash go away without
+;;actually fixing the underlying unguarded index). Disabling it here proves the fix
+;;directly: this swap must complete without crashing, boost simply doesn't get
+;;pumped for hops with no active route.
+;;==== SWP|TX 032z5 - XI_RawLiquidPump Crash-Bug Fix Proof · 02 · let / invocation ====
+(print "--- [SWP|TX 032z5 - XI_RawLiquidPump Crash-Bug Fix Proof · 02 · let / invocation] ---")
+(let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3))
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" false)
+)
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let*
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (swap-result:string
+            (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51")
+        )
+    )
+    (map print
+        [
+            (format "#34 crash-bug fix proof — swap with NO active boost route completed (did not crash): {}" [swap-result])
+            (expect
+                "Swap still executed the real full 6-hop route despite the disabled anchor (route itself is unaffected, only boost pricing was)"
+                true
+                (contains "via 6 Swaps" swap-result)
+            )
+        ]
+    )
+)
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3))
+    ;;Restore — must not leak into any later transaction in this file.
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|W1-98c486052a51" true)
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "SWP|TX 033 - Add Frozen & Sleeping Liquidity")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

@@ -1134,6 +1134,17 @@ this effort started (P0.2's discussion).
   as of 2026-08-21, pending only the open questions in P3.10 before code starts. P1's own
   exhaustive-route-discovery work still matters (it's what fills `swap-route` in P3.2's bundle)
   but is no longer the part expected to move the gas-ceiling needle by itself.
-- **`XI_RawLiquidPump`'s crash bug (unguarded index into a possibly-empty search result,
-  flagged during P0.5) gets fixed as a natural side effect of P3.5.3**, not a separate task —
-  don't lose track of it as "still open" once P3 lands; verify it's actually closed then.
+- **`XI_RawLiquidPump`'s crash bug — FIXED 2026-08-21, ahead of Phase 8, at the owner's
+  explicit request ("fix the bugs and do next step").** Turned out to be **two** bugs, not
+  one: `XI_RawLiquidPump`'s own `(at 0 (take -1 ovs))` on a possibly-empty search result
+  (flagged during P0.5), *and* its caller `XI_LiquidIndexPump`'s own unguarded
+  `(at 0 (at "output" ico))`, which only surfaced once the first crash was fixed and
+  execution could actually reach the second one. Both adversarially proven: reverted each fix
+  individually (surgical `Edit`, not `git stash` — caught and corrected a stash slip
+  mid-session), confirmed the exact `Array index out of bounds. Length (0), Index (0)` crash
+  reproduces at each site in turn, restored both, reconfirmed clean. Permanent regression:
+  `SWP|TX 032z5` in `[6.3]_SWP.repl` — disables the `OURO|W1` anchor pool (the P0.5-era
+  workaround that was masking this the whole time, not fixing it), runs a real Liquid-Boost
+  swap, confirms it completes without crashing (boost simply isn't pumped for the affected
+  hop). `XI_Pumpdate` itself needed no fix — already defensively length-checked. Full
+  regression clean, 0 `FAILURE`, before and after both fixes.

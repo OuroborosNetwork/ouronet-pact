@@ -1129,12 +1129,26 @@
                     (XI_RawLiquidPump id amount)
                 )
                 (raw-liquid-pump-data:list (at "output" ico))
-                (increment:decimal (at 0 raw-liquid-pump-data))
             )
-            (with-capability (SWPU|S>LIQUID-BOOST id amount increment)
-                (XI_Pumpdate raw-liquid-pump-data)
+            ;;Bug fix, #34 (found while fixing XI_RawLiquidPump's own crash — that fix
+            ;;makes it legitimately return EOC, whose "output" is [], when <id> has no
+            ;;active route to DLK; this caller's own unguarded (at 0 ...) into that
+            ;;empty list would then crash the same way, just one level up). Nothing to
+            ;;pump/report when there's nothing there — skip the event+pumpdate, return
+            ;;<ico> (EOC) as-is. XI_Pumpdate already tolerates non-5-length input safely
+            ;;(its own length check), this guard just avoids indexing before reaching it.
+            (if (= (length raw-liquid-pump-data) 0)
+                ico
+                (let
+                    (
+                        (increment:decimal (at 0 raw-liquid-pump-data))
+                    )
+                    (with-capability (SWPU|S>LIQUID-BOOST id amount increment)
+                        (XI_Pumpdate raw-liquid-pump-data)
+                    )
+                    ico
+                )
             )
-            ico
         )
     )
     (defun XI_RawLiquidPump:object{IgnisCollectorV1.OutputCumulator} 
@@ -1172,14 +1186,31 @@
                         (path-to-lkda:[string] (at "nodes" h-obj))
                         (edges:[string] (at "edges" h-obj))
                         (ovs:[decimal] (at "output-values" h-obj))
-                        (final-boost-output:decimal (at 0 (take -1 ovs)))
-                        (ico:object{IgnisCollectorV1.OutputCumulator}
-                            (ref-DPTF::C_Burn lkda SWP|SC_NAME final-boost-output)
-                        )
                     )
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                        [ico] 
-                        [(- (ref-ATS::URC_Index liquidindex) lqi) path-to-lkda edges ovs amount]
+                    ;;Bug fix, #34 (SWP exhaustive-path-search HANDOFF doc, flagged during
+                    ;;P0.5, fixed now): <ovs> is legitimately empty whenever <id> has no
+                    ;;*active* route to DLK at all (EMPTY_HOPPER's own output-values is
+                    ;;[]) — the original `(at 0 (take -1 ovs))` crashed with an
+                    ;;out-of-bounds error in that case instead of failing cleanly. A
+                    ;;token with no route to DLK simply doesn't get its boost pumped this
+                    ;;time (EOC, no burn) — not a corruption, not a lost swap, the rest of
+                    ;;the transaction is unaffected. Adversarially proven (SWP|TX 032z5):
+                    ;;reverted this fix, confirmed the exact "Array index out of bounds.
+                    ;;Length (0), Index (0)" crash reproduces, restored.
+                    (if (= (length ovs) 0)
+                        EOC
+                        (let
+                            (
+                                (final-boost-output:decimal (at 0 (take -1 ovs)))
+                                (ico:object{IgnisCollectorV1.OutputCumulator}
+                                    (ref-DPTF::C_Burn lkda SWP|SC_NAME final-boost-output)
+                                )
+                            )
+                            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                [ico]
+                                [(- (ref-ATS::URC_Index liquidindex) lqi) path-to-lkda edges ovs amount]
+                            )
+                        )
                     )
                 )
             )
