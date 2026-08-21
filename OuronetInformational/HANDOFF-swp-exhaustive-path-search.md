@@ -80,12 +80,23 @@ detailed below at the same depth, to be expanded when their turn comes.
       accepted) and adversarial cases (fabricated/unrelated edges rejected, depth-cap
       violations rejected, overwrite attempts rejected). Full `[6.2]`+`[6.3]`+`Z.repl`
       (Stage 1+2) and default issuance-only regression both exit 0, 0 `FAILURE`.
-- [ ] **Phase 8 — New SmartSwap entrypoint.** New bundle-based `XI_SmartSwapCore` variant;
+- [~] **Phase 8 — New SmartSwap entrypoint.** New bundle-based `XI_SmartSwapCore` variant;
       `SWP|C_SmartSwapExplicitRoute` in Talos, **built alongside, not replacing,** the existing
       self-searching variants, for real A/B gas comparison; dumb-writer stoa-value updater
       (Talos maps over pre-computed results instead of calling `URC_PoolValue` itself); fixes
       the long-standing `XI_RawLiquidPump` crash bug as a natural side effect (same sentinel-
       handling the new design needs anyway); slippage + IGNIS billing wiring.
+      **Stage A done, 2026-08-21 (`5774a79`):** mechanical rename only — `C_SmartSwap` (SWPU) →
+      `CC_SmartSwap`, `SWP|C_SmartSwapWithSlippage`/`NoSlippage` (Talos) →
+      `SWP|CC_SmartSwapWithSlippage`/`NoSlippage`, all internal calls + all 9 REPL call sites
+      (incl. the new `SWP|TX 032z5`) updated. Zero behavior change, full `Z.repl` (Stage 1+2) +
+      issuance-only regression both 0 `FAILURE`. `XI_RawLiquidPump`'s crash bug was pulled
+      forward and fixed separately, ahead of this phase (`6d23233`) — see the "Do not lose
+      these facts" entry below; P3.5.3 is therefore already satisfied for that specific bug,
+      though the new `XI_SmartSwapCore` still needs its own malformed-bundle fallback proof.
+      **Stage B — not started:** the actual new-logic build (`XI_SmartSwapCore`, the new
+      `C_SmartSwap` at SWPU, `SWP|C_SmartSwapExplicitRoute` at Talos, the dumb-writer stoa-value
+      updater, slippage/IGNIS wiring) per P3.2-P3.6 below.
 - [ ] **Phase 9 — Off-chain/UI orchestration + docs.** Spec for how a client constructs the
       bundle via dirty reads (P3.7); architecture doc (what P5.5 originally covered, now scoped
       to the whole redesign, not just the search primitives).
