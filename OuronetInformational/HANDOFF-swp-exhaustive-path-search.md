@@ -284,13 +284,39 @@ P1.2"). Update the checkboxes here as items land.
       grows, because the anchoring rule requires new pools to attach to one.** This is not a
       one-off edge case or an unlikely adversarial construction — it is the *default, required*
       shape of organic growth under the current anchoring design.
+      **Decomposition, 2026-08-21 — owner asked "why, is it just the boost search?" Checked
+      directly rather than assume yes.** Isolated all three live-search sources at the 102-pool
+      checkpoint:
+      - Main SmartSwap routing search (best-of-3, `URC_HopperActive`, `W1→W7`, runs once at
+        the very start of every SmartSwap): **739,917 gas.**
+      - Liquid Boost's own final search (single-shortest, `URC_HopperActiveShortest`,
+        `W7→DLK`, runs once on the last hop, post-direction-5): **515,879 gas.**
+      - **`XE_UpdateStoaValue`'s post-swap step (Talos, `TS01-C3.pact`) — previously
+        unidentified in this whole P0.6 investigation.** Calls `SWPI::URC_PoolValue` once for
+        *every distinct pool actually traversed* (up to 6 for this route), and
+        `URC_PoolValue` → `URC_WorthDWK` → `URC_Hopper` — the **unfiltered, still-best-of-3**
+        variant (never touched by direction 1's `URC_HopperActiveShortest` fix, which only
+        optimized `URC_HopperActive`'s callers). Measured all 6 individually: 698,451 / 691,912
+        / 673,080 / 673,080 / 668,309 / 662,141 gas — **sum: 4,066,973 gas, 56.9% of the total
+        7,145,276.**
+      **This is the actual dominant driver — bigger than the main routing search and the
+      boost search combined (1,255,796) by more than 3x.** Answering the owner's question
+      directly: no, it is not "just" the boost search — the boost search is real but not even
+      the largest single contributor. The three sources sum to 5,322,769 of the 7,145,276
+      total (~1.82M still unaccounted for, likely smaller real per-hop costs — fuel, table
+      writes, transfers — that weren't individually isolated; not chased further, the picture
+      is already clear enough to act on). **`XE_UpdateStoaValue` was never previously discussed
+      or targeted by any P0.6 fix — it is a genuinely new, load-bearing finding, not a
+      refinement of something already known.**
       **Conclusion: none of P0.6's fixes so far (direction 1, direction 5, special-fee-target
       batching) are sufficient at realistic future scale — none of them address the underlying
-      mechanism (per-hop or even once-per-swap live graph search through an ever-growing hub).
-      A structurally different approach is needed, not further incremental optimization of the
-      current search-based design.** This is very likely what motivated the owner's own
-      separate proposed solution — see the top status line; that idea should now be evaluated
-      as the primary path forward, not as an optional extra.
+      mechanism (per-hop, once-per-swap, *and post-swap-per-pool* live graph searches through
+      an ever-growing hub). A structurally different approach is needed, not further
+      incremental optimization of the current search-based design — and any such redesign must
+      account for `XE_UpdateStoaValue`'s cost explicitly, since it's now known to be the
+      largest single piece of the problem, not an afterthought.** This is very likely what
+      motivated the owner's own separate proposed solution — see the top status line; that
+      idea should now be evaluated as the primary path forward, not as an optional extra.
 
       ---
       *(Below is the now-superseded "DONE" writeup from earlier the same day, kept for the
