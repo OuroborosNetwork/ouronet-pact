@@ -1,25 +1,29 @@
 # Handoff: SWP exhaustive on-chain cheapest-path search (SmartSwap Phase 2)
 
-**Status:** IN PROGRESS. P0.5 done. **P0.6 done (2026-08-21): worst-case 6-hop execution with
-Liquid Boost always-on now fits under ~2,000,000 gas — 1,963,025 gas (was 3,039,431), ~37k
-headroom.** Two shipped changes got there: direction 1 (`SWPI::URC_HopperActiveShortest`,
-single-shortest-path routing instead of best-of-3 for the boost pump) then direction 5
-(carry the boost value forward hop-by-hop along the swap's own already-selected edges,
-`XI_SmartSwapCore`'s fold, only price-and-burn once on the last hop — the owner's own design
-from a discussion round, see P0.6's writeup below for the full trace). Two follow-up
-optimizations were tried and evaluated after shipping: special-fee-target payout batching
-(built, measured 114 gas *worse*, reverted) and a suspected `URC_EdgesActive` O(n) `contains`-
-scan fix for what looked like super-linear pool-count scaling (disproven by direct
-micro-benchmark before building — `contains` costs are negligible at realistic sizes). A
-properly controlled follow-up measurement (same source token, only unrelated background pool
-count varying) then showed the original "super-linear with pool count" claim itself was
-**confounded** (the 9-vs-22-pairs comparison used two different source tokens) — the real,
-controlled result is **sub-linear** growth with pool count (2.75x pools → 1.54x gas), with gas
-tracking discovered chain (path) count almost exactly linearly instead. **No further fix
-needed or built here based on current evidence** — full trace and numbers in P0.6's writeup
-below. Also still open: a separate, unfixed crash bug in `XI_RawLiquidPump` (found alongside
-P0.5, not yet formally numbered in `ISSUES-RANKED.md`). P1 (core search primitives) not
-started — next up, pending the owner's own proposed solution (not yet shared).
+**Status:** IN PROGRESS. P0.5 done. **P0.6 REOPENED, 2026-08-21 — was wrongly marked done.**
+Direction 1 + direction 5 (single-shortest-path boost routing, then carrying the boost value
+forward hop-by-hop so only the last hop searches) shipped and genuinely got the Liquid-Boost-
+only worst case from 3,039,431 to 1,963,025 gas — real, still stands. But that figure turned
+out to be measured against an **incomplete** worst-case test: `SWP|TX 032p` configured
+special-fee-target accounts without ever activating the special-fee rate itself
+(`fee-special` defaulted to 0.0), so the expensive `C_MultiBulkTransfer(7 targets)` payout
+path had never once actually executed in any measurement taken during this whole effort —
+confirmed only after the owner directly challenged the "it's all cheap" conclusion from a
+special-target re-check. Isolated the real cost properly: one 7-target `C_MultiBulkTransfer`
+= 38,125 gas; as 7 separate 1-target calls = 110,658 gas — the owner's original 20-30k/call
+estimate was right. With the test corrected to actually exercise this path, the real
+worst-case is **2,148,758 gas (148,758 over ceiling) unbatched, 2,130,472 gas (130,472 over
+ceiling) after rebuilding and keeping the special-fee-target batching fix** (real, positive,
+18,286 gas saved, not nearly enough alone). **Net: P0.6 is not resolved — 130,472 more gas
+needs to be found.** Separately, the earlier "super-linear pool-count scaling" claim (from a
+9-vs-22-pairs comparison) was also found to be confounded (two different source tokens, not a
+controlled test) and was withdrawn after a proper controlled re-measurement showed sub-linear
+scaling instead — see the dated entries below for the full, chronological trace of what was
+claimed, disproven, and corrected. Also still open: a separate, unfixed crash bug in
+`XI_RawLiquidPump` (found alongside P0.5, not yet formally numbered in `ISSUES-RANKED.md`).
+P1 (core search primitives) not started. Owner has a separate proposed solution not yet
+evaluated — likely the next step once P0.6's remaining gap is addressed or explicitly
+deferred.
 
 **To:** whoever picks up SWP audit follow-up work next.
 **From:** 2026-08-20 SWP audit session (#34M/M2 follow-up discussion).
@@ -193,9 +197,58 @@ P1.2"). Update the checkboxes here as items land.
       is on. Owner confirmed (2026-08-20) Liquid Boost is meant to be always on in production —
       so this is not an edge case, it's the real number. Promoted to `P0.6` below.**
 
-- [x] **P0.6 — DONE, 2026-08-21. Worst-case execution now fits under ~2,000,000 gas with
-      Liquid Boost always on: 1,963,025 gas (was 3,039,431). Blocked P3 (any discovered route
-      still has to execute inside this same ceiling) — resolved before P1 starts.**
+- [ ] **P0.6 — REOPENED, 2026-08-21. Was marked DONE, wrongly — the "1,963,025 gas, fits"
+      figure was measured against an incomplete worst case that never exercised the
+      special-fee-target payout path at all. Real corrected worst case: 2,130,472 gas —
+      130,472 OVER the ~2,000,000 ceiling, even after batching. Still open, bigger than
+      previously understood. Blocks P3 and P1 until resolved.**
+      **How this was found:** owner pushed back hard on the earlier claim that special-fee-
+      target transfers are cheap ("that's a multitransfer send function, at least 20k-30k gas
+      ... are you sure you're looking at the right place?"), and separately asked to double-
+      check the reverted batching finding. Checked `SWP::UR_FeeSP`/`UR_FeeLP` directly on the
+      real `SWP|TX 032q` pools: `lp-fee = 10.0`, `special-fee = 0.0`. `SWP|TX 032p` configures
+      special-fee-target *accounts* (`C_UpdateSpecialFeeTargets`) but never activates the
+      special-fee *rate* itself — it defaults to 0.0 at issuance and stays there unless
+      explicitly set via `C_UpdateFee`. **Every worst-case gas measurement taken in this whole
+      P0.6 effort, including the "DONE" 1,963,025 figure, had `o-id-special == 0.0` on every
+      hop — the expensive `C_MultiBulkTransfer(7 targets)` path had never once actually
+      executed.** The owner's gas estimate was correct; the "it's all cheap" conclusion from
+      the first re-check was an artifact of testing an unexercised code path, not a real
+      measurement of the thing in question.
+      **Isolated the real transfer cost properly this time** (`acquire-module-admin` +
+      `with-capability(SWPU.P|SWPU|CALLER)` to legally call the protected `C_*` function, real
+      `KST.*` target accounts, real token balances): one `C_MultiBulkTransfer` call, 7 targets
+      = **38,125 gas**. The same 7 payouts as 7 separate 1-target calls = **110,658 gas**.
+      Confirms the owner's estimate and confirms real batching headroom exists — just not
+      where the first (buggy-test) measurement said it didn't.
+      **Fixed `SWP|TX 032p`** to also call `SWP|C_UpdateFee(pool, 10.0, false)` on all 6 pools
+      (mirrors `lp-fee`, matching how Liquid Boost already mirrors `lp-fee` when its own toggle
+      is on) — this worst-case test now actually stresses the path it claims to.
+      **Re-measured `SWP|TX 032q` with the corrected fee config: 2,148,758 gas — 148,758 OVER
+      the ceiling, independent of any pool-count-scaling question.** This is a materially
+      bigger and more urgent problem than anything previously closed under P0.6.
+      **Rebuilt special-fee-target batching** in `XI_SmartSwapCore` (same design as the earlier
+      reverted attempt — carry non-last hops' targets/amounts forward, one combined multi-token
+      `C_MultiBulkTransfer` on the last hop, per-hop `SWPU|S>FEED-SPECIAL-TARGETS` event
+      unchanged) — this time with real work to remove. **Re-measured: 2,130,472 gas — saves
+      18,286 gas over the corrected unbatched baseline, kept (real, positive, correctness-
+      preserving), but far short of closing the gap. Still 130,472 gas over the ceiling.**
+      Smaller savings than the isolated 1-token benchmark suggested (72,533 gas potential) —
+      likely because the real batched call spans multiple *tokens* (up to 5, one per non-last
+      hop), not multiple targets of one token like the isolated benchmark tested; multi-token
+      consolidation apparently doesn't save as much per-entry as multi-target-same-token
+      consolidation. Not independently re-isolated — flagged as the next thing to check if
+      more savings are needed here specifically.
+      Full `[6.2]`+`[6.3]` suite and default `Z.repl` regression both exit 0, 0 `FAILURE`,
+      before and after both changes.
+      **Not resolved. 130,472 more gas needs to be found before P0.6 can be called done again.
+      Owner has a separate proposed solution not yet evaluated — see status line at top.**
+
+      ---
+      *(Below is the now-superseded "DONE" writeup from earlier the same day, kept for the
+      record — its P0.5-topology-only worst-case figures were real measurements, just of an
+      incomplete scenario. Superseded by the reopened analysis above.)*
+
       **Root cause, more specific than P0.5's writeup:** `XI_RawLiquidPump` (`19_SWPU.pact`)
       routes its DLK-conversion quote through `SWPI::URC_HopperActive` → `URCX_Hopper`, which
       is the **same best-of-3 alternate-route search** Fix #19 built for real swap routing
