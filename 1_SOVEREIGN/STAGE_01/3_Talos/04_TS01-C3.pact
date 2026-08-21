@@ -4,9 +4,12 @@
 (interface TalosStageOne_ClientThreeV3
     @doc "Exposes Ouronet Stage One Third Batch of Client Functions \
         \ Modules: SWP are included in the Second Batch\
-        \ V2: Added Smart Swap entry points - SWP|C_SmartSwapWithSlippage and SWP|C_SmartSwapNoSlippage \
+        \ V2: Added Smart Swap entry points - SWP|CC_SmartSwapWithSlippage and SWP|CC_SmartSwapNoSlippage \
         \ for multi-hop token swaps across the entire pool base using BFS path tracing. \
-        \ V3: Issue and fee-target surfaces use SwapperV3.PoolTokens / SwapperV3.FeeSplit (interface bump per versioning rule)."
+        \ V3: Issue and fee-target surfaces use SwapperV3.PoolTokens / SwapperV3.FeeSplit (interface bump per versioning rule). \
+        \ #34 Phase 8: SWP|C_SmartSwap{With,No}Slippage renamed to SWP|CC_SmartSwap{With,No}Slippage \
+        \ (self-searching BFS variant); SWP|C_SmartSwap{With,No}Slippage is reserved for the \
+        \ bundle-based, dirty-read-injected variant."
     ;;
     ;;SWP (Swap-Pair) Functions
     (defun SWP|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
@@ -38,8 +41,8 @@
     (defun SWP|C_AddSleepingLiquidity:string (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
     (defun SWP|C_RemoveLiquidity (patron:string account:string swpair:string lp-amount:decimal))
     ;;Smart Swap
-    (defun SWP|C_SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
-    (defun SWP|C_SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))
+    (defun SWP|CC_SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun SWP|CC_SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))
     ;;Swap
     (defun SWP|C_SingleSwapWithSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
     (defun SWP|C_SingleSwapNoSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
@@ -774,7 +777,7 @@
             )
         )
     )
-    (defun SWP|C_SmartSwapWithSlippage
+    (defun SWP|CC_SmartSwapWithSlippage
         (
             patron:string
             account:string
@@ -784,7 +787,8 @@
             slippage-bounds:object{SwapperUsageV2.Slippage}
         )
         @doc "Executes a Smart Swap from <input-id> to <output-id> with slippage protection. \
-            \ Path is traced automatically via BFS across all pool bases."
+            \ Path is traced automatically via BFS across all pool bases. \
+            \ #34 Phase 8: renamed from SWP|C_SmartSwapWithSlippage."
         (with-capability (P|TS)
             (let
                 (
@@ -796,7 +800,7 @@
                     (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPU::C_SmartSwap
+                        (ref-SWPU::CC_SmartSwap
                             account input-id input-amount output-id
                             slippage kda-pid slippage-bounds
                         )
@@ -818,7 +822,7 @@
             )
         )
     )
-    (defun SWP|C_SmartSwapNoSlippage
+    (defun SWP|CC_SmartSwapNoSlippage
         (
             patron:string
             account:string
@@ -827,7 +831,8 @@
             output-id:string
         )
         @doc "Executes a Smart Swap from <input-id> to <output-id> without slippage protection. \
-            \ Path is traced automatically via BFS across all pool bases."
+            \ Path is traced automatically via BFS across all pool bases. \
+            \ #34 Phase 8: renamed from SWP|C_SmartSwapNoSlippage."
         (with-capability (P|TS)
             (let
                 (
@@ -841,7 +846,7 @@
                         (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0)
                     )
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPU::C_SmartSwap
+                        (ref-SWPU::CC_SmartSwap
                             account input-id input-amount output-id
                             -1.0 kda-pid slippage-bounds
                         )

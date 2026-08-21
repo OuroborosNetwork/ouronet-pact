@@ -6,7 +6,8 @@
     @doc "Exposes Adding|Removing Liquidty and Swapping Functions of the SWP Module \
     \    V2: Added the already existing <UDC_SpawnSlippageBounds> to the interface \
     \    V2: Smart Swap slippage quote using fee-less multi-hop path tracing via <UDC_SpawnSmartSwapSlippageBounds> \
-    \    V2: Smart Swap Multi-hop swap across the entire pool base using BFS path tracing with per-hop liquid pump via <C_SmartSwap>"
+    \    V2: Smart Swap Multi-hop swap across the entire pool base using BFS path tracing with per-hop liquid pump via <CC_SmartSwap> \
+    \    (#34 Phase 8: renamed from <C_SmartSwap> — self-searching variant; <C_SmartSwap> is reserved for the bundle-based, dirty-read-injected path)"
     ;;
     ;;
     ;;  SCHEMAS
@@ -84,7 +85,7 @@
     ;;
     ;;
     (defun C_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
-    (defun C_SmartSwap:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal kda-pid:decimal slippage-bounds:object{Slippage}))
+    (defun CC_SmartSwap:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal kda-pid:decimal slippage-bounds:object{Slippage}))
     (defun C_Swap:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal kda-pid:decimal slippage-bounds:object{Slippage}))
 )
 ;;
@@ -563,12 +564,15 @@
             )
         )
     )
-    (defun C_SmartSwap:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_SmartSwap:object{IgnisCollectorV1.OutputCumulator}
         (account:string input-id:string input-amount:decimal output-id:string slippage:decimal kda-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage})
         @doc "Executes a Smart Swap from <input-id> to <output-id> across multiple pools using BFS path tracing. \
             \ Each hop executes a full swap with fees (LP, special, boost via Option B). \
             \ When slippage != -1.0, slippage-bounds must be the pre-computed object from UDC_SpawnSmartSwapSlippageBounds. \
-            \ When slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0)."
+            \ When slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0). \
+            \ #34 Phase 8: renamed from C_SmartSwap — this is the self-searching (BFS in-transaction) \
+            \ variant, kept for comparison/fallback. The bundle-based, dirty-read-injected variant \
+            \ takes the freed C_SmartSwap name."
         (UEV_IMC)
         (if (!= slippage -1.0)
             (with-capability (SWPU|C>SMART-SWAP-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds)

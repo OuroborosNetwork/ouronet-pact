@@ -1403,7 +1403,7 @@
         (ref-SWPU:module{SwapperUsageV2} SWPU)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
     )
-    (ref-TS01-C3::SWP|C_SmartSwapWithSlippage
+    (ref-TS01-C3::SWP|CC_SmartSwapWithSlippage
         KST.ANHD
         KST.AOZT
         "AKOSON-98c486052a51"
@@ -1771,7 +1771,7 @@
         (cached-P-before:decimal (ref-SWP::UR_StoaValue poolP))
         (cached-Q-before:decimal (ref-SWP::UR_StoaValue poolQ))
         (swap-result:string
-            (ref-TS01-C3::SWP|C_SmartSwapNoSlippage
+            (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage
                 KST.ANHD
                 KST.ANHD
                 "OURO-98c486052a51"
@@ -3515,7 +3515,7 @@
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
         (tstz-before:decimal (ref-DPTF::UR_AccountSupply "TSTZ-98c486052a51" KST.ANHD))
         (swap-result:string
-            (ref-TS01-C3::SWP|C_SmartSwapNoSlippage
+            (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage
                 KST.ANHD
                 KST.ANHD
                 "OURO-98c486052a51"
@@ -4393,7 +4393,7 @@
         (dlk-before:decimal (ref-DPTF::UR_AccountSupply lkda swp-sc))
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
         (swap-result:string
-            (ref-TS01-C3::SWP|C_SmartSwapNoSlippage
+            (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage
                 KST.ANHD
                 KST.ANHD
                 "W1-98c486052a51"
@@ -4603,7 +4603,7 @@
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3))
-    (print (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+    (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032u P2-SCALE CHECKPOINT ==> {} KDA GAS>>>>>>>" [(env-gas)]))
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
@@ -4638,7 +4638,7 @@
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3))
-    (print (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+    (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032w P2-SCALE CHECKPOINT ==> {} KDA GAS>>>>>>>" [(env-gas)]))
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
@@ -4673,7 +4673,7 @@
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3))
-    (print (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+    (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032y P2-SCALE CHECKPOINT ==> {} KDA GAS>>>>>>>" [(env-gas)]))
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
@@ -4708,7 +4708,7 @@
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
 (env-gas 0)
 (let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3))
-    (print (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+    (print (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
 )
 (print (format "<<<<<<<SWP|TX 032z2 P2-SCALE CHECKPOINT ==> {} KDA GAS>>>>>>>" [(env-gas)]))
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
@@ -4900,7 +4900,7 @@
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
         (swap-result:string
-            (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51")
+            (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51")
         )
     )
     (map print
