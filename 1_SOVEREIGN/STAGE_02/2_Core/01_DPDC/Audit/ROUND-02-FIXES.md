@@ -380,3 +380,39 @@ no other caller of either capability exists anywhere in the codebase (capabiliti
 
 **Interface implication:** none — capability signatures aren't part of the versioned interface, matching
 the original Round I finding's own assessment.
+
+## Fix #7 — DPDC · H1 (Talos SFT branding-update arity bug — feature 100% broken)
+
+**Owner-approved 2026-08-21.**
+
+**Root cause:** `01_TS02-C1.pact:339-351`'s `DPSF|C_UpdatePendingBranding`
+called the real `DPDC::C_UpdatePendingBranding` (6 params: `entity-id son logo description website
+social`) with **7** positional args — a stray leading `patron`, almost certainly copy-pasted from the
+neighboring `C_UpgradeBranding` wrapper, which genuinely does take `patron` first. The NFT sibling,
+`DPNF|C_UpdatePendingBranding` (`02_TS02-C2.pact`), calls the same underlying function correctly with 6
+args — confirming this was specifically an SFT-side copy-paste slip, not a defect in the real function.
+
+**Fix — one word removed, `01_TS02-C1.pact:346`:**
+```pact
+-(ref-DPDC::C_UpdatePendingBranding patron entity-id true logo description website social)
++(ref-DPDC::C_UpdatePendingBranding entity-id true logo description website social)
+```
+
+**Secondary question resolved empirically, not just fixed and hoped:** the finding also flagged that
+`ref-DPDC` is typed `module{DpdcV1}` while `C_UpdatePendingBranding` is declared on the separate
+`BrandingUsageTertiaryV1` interface — unclear whether that cross-module call would even resolve. Traced
+the real function body and found it delegates to a *third* module, `ref-BRD:module{BrandingV1} BRD`
+(Stage 1's dedicated Branding module — `04_BRD.pact`) via `XE_UpdatePendingBranding`. Live-tested rather
+than assumed: the call resolves and executes cleanly, no retyping needed anywhere.
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC_H1_branding_update.repl`):**
+- SFT: `DPSF|C_UpdatePendingBranding` against the real `DHOC-98c486052a51` collection — succeeds (never
+  did before, on any input), pending logo `| → https://example.com/logo.png`, pending description set
+  correctly too, both read back from the real `BRD` module storage.
+- NFT (control, already-correct sibling): `DPNF|C_UpdatePendingBranding` against the real
+  `DHN-98c486052a51` collection (owned by a different account, `LUMY`, than the SFT test — caught and
+  corrected a wrong-signer mistake in the probe itself along the way) — still succeeds, pending logo set
+  correctly.
+- `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
+
+**Interface implication:** none — caller-side argument-count bug in Talos, not a DPDC interface defect.

@@ -345,7 +345,7 @@
                     (ref-DPDC:module{DpdcV1} DPDC)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-DPDC::C_UpdatePendingBranding patron entity-id true logo description website social)
+                    (ref-DPDC::C_UpdatePendingBranding entity-id true logo description website social)
                 )
             )
         )

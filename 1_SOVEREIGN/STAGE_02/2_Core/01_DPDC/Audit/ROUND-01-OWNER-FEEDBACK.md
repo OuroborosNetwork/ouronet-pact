@@ -212,3 +212,17 @@ conservation (`1000 → 997 → 1000`). This is the true final closure of #8C �
 identified both halves as *already blocked from doing harm*, but the owner's follow-up correctly identified
 that "doesn't cause harm" and "should be allowed to run" are different questions, and the answer to the
 second one was no.
+
+## #9H · DPDC · H1 — Talos SFT branding-update arity bug
+
+**Verdict: CONFIRMED, FIXED (2026-08-21).** `DPSF|C_UpdatePendingBranding` passed 7 args to DPDC's
+6-parameter `C_UpdatePendingBranding` — a stray leading `patron` copy-pasted from the neighboring
+`C_UpgradeBranding` wrapper. 100% failure rate on every call, any input, for a paid (400 IGNIS) feature.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #7)** — dropped the stray argument. Also resolved, live
+rather than assumed, the secondary question the finding raised (does the cross-module call even resolve
+when `ref-DPDC` is typed `module{DpdcV1}` but the function is declared on the separate
+`BrandingUsageTertiaryV1` interface, which itself delegates to a *third* module, `BRD`) — it does, no
+retyping needed anywhere. Live-proven: SFT branding update now succeeds and persists correctly (pending
+logo/description both set and read back from real `BRD` storage); NFT sibling (already correct, used as
+control) still works. Full `Z.repl` pipeline green.

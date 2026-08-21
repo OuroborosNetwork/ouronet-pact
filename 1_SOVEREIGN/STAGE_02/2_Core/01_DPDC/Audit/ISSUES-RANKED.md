@@ -102,10 +102,13 @@ conservation (`1000 → 997 → 1000`). — *DPDC-S·C3*
 
 ## HIGH
 
-#9H **[DPDC]** Talos's `DPSF|C_UpdatePendingBranding` passes 7 positional args to DPDC's 6-parameter
+#9H **[DPDC]** ~~Talos's `DPSF|C_UpdatePendingBranding` passes 7 positional args to DPDC's 6-parameter
 `C_UpdatePendingBranding` (a stray leading `patron`, copy-pasted from the neighboring `C_UpgradeBranding`
 pattern) — every SFT branding-update call hard-aborts, 100% of the time, for a paid (400 IGNIS) feature
-that's never been exercised by any test. — *DPDC·H1*
+that's never been exercised by any test.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-21** (`ROUND-02-FIXES.md`
+Fix #7) — stray argument dropped; also resolved live whether the cross-module/cross-interface call even
+resolves (it does, no retyping needed). SFT update now succeeds and persists correctly, NFT sibling
+control still works. — *DPDC·H1*
 
 #10H **[DPDC-I]** NFT issuance is always billed at the cheaper SFT KDA price — the `if son` branch in
 `C_IssueDigitalCollection`'s cost computation queries the same `"dpsf"` price key on both sides, contradicting
