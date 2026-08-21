@@ -7342,4 +7342,167 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 053 - #34 Phase 12 Realistic-Scale Exhaustive Search Measurement (Permanent)")
+(namespace "ouronet-ns")
+;;env-gaslimit raised — same REPL-testing-safety-valve reasoning as SWP|TX 052.
+;;URC_ComputeAllRoutes is dirty-read-only in production, never on a paid path; what's
+;;measured here is real computational cost/candidate-count, not a paid-gas budget.
+(env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+;;==== SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;#34 Phase 12: measures URC_ComputeAllRoutes' own real cost/candidate-count at
+;;50-100-pool scale (P2.1-P2.4 from the old roadmap) — reuses the ALREADY-BUILT
+;;P2-scale topology (80 OURO-anchored noise pools, SWP|TX 032r-032z2) via explicit
+;;swpairs subsets, per P2.1's own design (no toggle, no table manipulation, just
+;;the function's own swpairs parameter called with varying-size lists). Two
+;;complementary real routes, both already-proven topology from this same file:
+;;Part A — W1->W7 (a single-route linear chain, no alternate paths exist at all)
+;;isolates the effect of BACKGROUND pool count alone, holding route count fixed at
+;;1. Part B — OURO->TSTZ (the 4-route diamond built for Phase 11) isolates the
+;;effect of max-attempts against a route count that genuinely varies (1 up to the
+;;true total of 4), showing the early-exit short-circuit at work.
+;;==== SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 02 · Part A: scale ====
+(print "--- [SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 02 · Part A: scale] ---")
+(let
+    (
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (core-w-chain:[string]
+            [
+                "S|W1-98c486052a51|W2-98c486052a51|W1A-98c486052a51|W1B-98c486052a51|W1C-98c486052a51|W1D-98c486052a51|W1E-98c486052a51"
+                "S|W2-98c486052a51|W3-98c486052a51|W2A-98c486052a51|W2B-98c486052a51|W2C-98c486052a51|W2D-98c486052a51|W2E-98c486052a51"
+                "S|W4-98c486052a51|W3-98c486052a51|W3A-98c486052a51|W3B-98c486052a51|W3C-98c486052a51|W3D-98c486052a51|W3E-98c486052a51"
+                "S|W4-98c486052a51|W5-98c486052a51|W4A-98c486052a51|W4B-98c486052a51|W4C-98c486052a51|W4D-98c486052a51|W4E-98c486052a51"
+                "S|W5-98c486052a51|W6-98c486052a51|W5A-98c486052a51|W5B-98c486052a51|W5C-98c486052a51|W5D-98c486052a51|W5E-98c486052a51"
+                "S|W7-98c486052a51|W6-98c486052a51|W6A-98c486052a51|W6B-98c486052a51|W6C-98c486052a51|W6D-98c486052a51|W6E-98c486052a51"
+            ]
+        )
+        (noise-pools:[string]
+            (map (lambda (i:integer) (format "P|OURO-98c486052a51|N2{}-98c486052a51" [i])) (enumerate 1 80))
+        )
+    )
+    (print "=== Part A: W1->W7 (single-route chain), varying BACKGROUND pool count, max-attempts=25 fixed ===")
+    (env-gas 0)
+    (let
+        (
+            (subset-0:[string] (+ core-w-chain (take 0 noise-pools)))
+            (routes-0:[[string]] (ref-SWPT::URC_ComputeAllRoutes "W1-98c486052a51" "W7-98c486052a51" (+ core-w-chain (take 0 noise-pools)) 25))
+        )
+        (print (format "  noise=0   total-swpairs={} routes-found={} gas={}" [(length subset-0) (length routes-0) (env-gas)]))
+    )
+    (env-gas 0)
+    (let
+        (
+            (subset-20:[string] (+ core-w-chain (take 20 noise-pools)))
+            (routes-20:[[string]] (ref-SWPT::URC_ComputeAllRoutes "W1-98c486052a51" "W7-98c486052a51" (+ core-w-chain (take 20 noise-pools)) 25))
+        )
+        (print (format "  noise=20  total-swpairs={} routes-found={} gas={}" [(length subset-20) (length routes-20) (env-gas)]))
+    )
+    (env-gas 0)
+    (let
+        (
+            (subset-40:[string] (+ core-w-chain (take 40 noise-pools)))
+            (routes-40:[[string]] (ref-SWPT::URC_ComputeAllRoutes "W1-98c486052a51" "W7-98c486052a51" (+ core-w-chain (take 40 noise-pools)) 25))
+        )
+        (print (format "  noise=40  total-swpairs={} routes-found={} gas={}" [(length subset-40) (length routes-40) (env-gas)]))
+    )
+    (env-gas 0)
+    (let
+        (
+            (subset-60:[string] (+ core-w-chain (take 60 noise-pools)))
+            (routes-60:[[string]] (ref-SWPT::URC_ComputeAllRoutes "W1-98c486052a51" "W7-98c486052a51" (+ core-w-chain (take 60 noise-pools)) 25))
+        )
+        (print (format "  noise=60  total-swpairs={} routes-found={} gas={}" [(length subset-60) (length routes-60) (env-gas)]))
+    )
+    (env-gas 0)
+    (let
+        (
+            (subset-80:[string] (+ core-w-chain (take 80 noise-pools)))
+            (routes-80:[[string]] (ref-SWPT::URC_ComputeAllRoutes "W1-98c486052a51" "W7-98c486052a51" (+ core-w-chain (take 80 noise-pools)) 25))
+        )
+        (print (format "  noise=80  total-swpairs={} routes-found={} gas={}" [(length subset-80) (length routes-80) (env-gas)]))
+        (map print
+            [
+                (expect
+                    "Part A sanity: route count stays exactly 1 regardless of background noise (single-route chain, no alternate paths exist)"
+                    1
+                    (length routes-80)
+                )
+            ]
+        )
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 03 · Part B: max-attempts ====
+(print "--- [SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 03 · Part B: max-attempts] ---")
+(let
+    (
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (ref-SWP:module{SwapperV3} SWP)
+        (active-swpairs:[string] (ref-SWP::URC_ActiveSwpairs))
+    )
+    (print "=== Part B: OURO->TSTZ (4-route diamond), varying max-attempts, full active universe ===")
+    (env-gas 0)
+    (let
+        (
+            (routes-2:[[string]] (ref-SWPT::URC_ComputeAllRoutes "OURO-98c486052a51" "TSTZ-98c486052a51" active-swpairs 2))
+        )
+        (print (format "  max-attempts=2   routes-found={} gas={}" [(length routes-2) (env-gas)]))
+    )
+    (env-gas 0)
+    (let
+        (
+            (routes-4:[[string]] (ref-SWPT::URC_ComputeAllRoutes "OURO-98c486052a51" "TSTZ-98c486052a51" active-swpairs 4))
+        )
+        (print (format "  max-attempts=4   routes-found={} gas={}" [(length routes-4) (env-gas)]))
+    )
+    (env-gas 0)
+    (let
+        (
+            (routes-6:[[string]] (ref-SWPT::URC_ComputeAllRoutes "OURO-98c486052a51" "TSTZ-98c486052a51" active-swpairs 6))
+        )
+        (print (format "  max-attempts=6   routes-found={} gas={}" [(length routes-6) (env-gas)]))
+    )
+    (env-gas 0)
+    (let
+        (
+            (routes-10:[[string]] (ref-SWPT::URC_ComputeAllRoutes "OURO-98c486052a51" "TSTZ-98c486052a51" active-swpairs 10))
+        )
+        (print (format "  max-attempts=10  routes-found={} gas={}" [(length routes-10) (env-gas)]))
+    )
+    (env-gas 0)
+    (let
+        (
+            (routes-25:[[string]] (ref-SWPT::URC_ComputeAllRoutes "OURO-98c486052a51" "TSTZ-98c486052a51" active-swpairs 25))
+        )
+        (print (format "  max-attempts=25  routes-found={} gas={}" [(length routes-25) (env-gas)]))
+        (map print
+            [
+                (expect
+                    "Part B sanity: max-attempts=25 naturally exhausts at the true total of 4 routes (early-exit, not artificially capped)"
+                    4
+                    (length routes-25)
+                )
+            ]
+        )
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 04 · gas echo ====
+(print "--- [SWP|TX 053 - Realistic-Scale Exhaustive Search Measurement · 04 · gas echo] ---")
+(format "<<<<<<<SWP|TX 053 #34 Phase 12 Realistic-Scale Measurement ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")

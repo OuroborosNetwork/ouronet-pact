@@ -279,10 +279,60 @@ detailed below at the same depth, to be expanded when their turn comes.
       downstream — not by chasing gas-limit bumps through every affected transaction.
       Permanent regression: `SWP|TX 049`-`052` in `[6.3]_SWP.repl`. Full `Z.repl` (Stage
       1+2) + issuance-only regression both 0 `FAILURE`.
-- [ ] **Phase 12 — Realistic-scale validation of the exhaustive search.** Measure
+- [x] **Phase 12 — Realistic-scale validation of the exhaustive search.** Measure
       `URC_ComputeAllRoutes`'s own cost/candidate-count at 50-100-pool scale via dirty read
       (was `P2` in the old roadmap below) — confirms the *whole* pipeline (exhaustive discovery
       + Phase 8's cheap injection) end to end, with real numbers, not estimates.
+      **Done, 2026-08-21.** Real measurement (`SWP|TX 053`, `[6.3]_SWP.repl`), reusing the
+      already-built P2-scale topology (80 `OURO`-anchored noise pools) via explicit `swpairs`
+      subsets per P2.1's own design — no new topology, no toggle, no table manipulation.
+      **Part A — `W1->W7` (single-route linear chain, no alternate paths exist), varying
+      BACKGROUND pool count, `max-attempts=25` fixed:**
+      | total swpairs | routes found | gas |
+      |---|---|---|
+      | 6 (baseline, no noise) | 1 | 55,540 |
+      | 26 (+20 noise) | 1 | 311,671 |
+      | 46 (+40 noise) | 1 | 323,423 |
+      | 66 (+60 noise) | 1 | 337,148 |
+      | 86 (+80 noise) | 1 | 352,846 |
+      Route count correctly stays exactly 1 throughout (confirmed via `expect`) — the noise
+      pools aren't connected to the W-chain at all, so they can never produce a spurious
+      route. The FIRST increment (0→20 noise) costs far more (+256,131 gas) than every
+      subsequent one (+11,752, then +13,725, then +15,698 for each further +20 pools) —
+      overall growth is markedly **sub-linear once past that first jump**: an ~14x increase
+      in swpairs (6→86) costs only ~6.4x more gas (55,540→352,846), not 14x. Not
+      independently root-caused (likely fixed graph-construction overhead paid once,
+      amortized across the rest) — flagged as a real, reproducible shape, not chased further
+      since it doesn't change the go/no-go conclusion below.
+      **Part B — `OURO->TSTZ` (the real 4-route diamond from Phase 11), varying
+      `max-attempts`, full active universe (~104 pools):**
+      | max-attempts | routes found | gas |
+      |---|---|---|
+      | 2 | 2 | 860,707 |
+      | 4 | 4 | 1,702,519 |
+      | 6 | 4 | 2,111,083 |
+      | 10 | 4 | 2,111,085 |
+      | 25 | 4 | 2,111,089 |
+      Confirms the early-exit short-circuit working exactly as designed: once the true total
+      (4 routes) is found, every additional requested attempt costs almost nothing more
+      (2,111,083 → 2,111,085 → 2,111,089 for `max-attempts` 6→10→25 — effectively flat) —
+      a caller can safely over-request `max-attempts` without a meaningful cost penalty,
+      confirming P0.2's flat-`+1000`-escalation design is cheap to retry, not something a
+      client needs to tune precisely.
+      **Go/no-go (P2.4), decided from this data, not speculation:** tractable as a
+      dirty-read-only operation. The largest single measurement here (~2.1M gas-equivalent
+      for a real 4-route diamond at full ~104-pool scale) is real computational cost, but —
+      unlike every other measurement in this whole #34 effort — `URC_ComputeAllRoutes` is
+      **never** on a paid transaction path, so this number never competes against the
+      ~2,000,000 real Stoa gas ceiling the rest of this effort was built around; it only
+      matters for `/local` dirty-read latency/responsiveness, which `P0.1` (Kadena's actual
+      `/local` resource ceiling, still genuinely unresearched) would need to answer
+      precisely. No code change recommended from this data alone — the mechanism (Phase 11)
+      is correct and its cost profile is sub-linear/well-bounded at realistic scale; if
+      `/local` latency does eventually prove to be a problem in practice, the sub-linear
+      shape found here suggests the fix would be tuning `max-attempts`/topology-scoping
+      choices at the call site, not a redesign of `URC_ComputeAllRoutes` itself.
+      Full `Z.repl` (Stage 1+2) + issuance-only regression both 0 `FAILURE`.
 - [ ] **Phase 13 — Final audit trail + docs.** Update `ROUND-02-FIXES.md`, `README.md`,
       `ISSUES-RANKED.md`, `ROUND-01-OWNER-FEEDBACK.md` to reflect #34's full, 13-phase
       resolution; final "what was added/modified/where" summary per the owner's standing
