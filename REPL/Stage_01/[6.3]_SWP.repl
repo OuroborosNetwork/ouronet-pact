@@ -4950,6 +4950,7 @@
     (
         (ref-SWPI:module{SwapperIssueV3} SWPI)
         (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPT:module{SwapTracerV2} SWPT)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
         (dwk:string (ref-DALOS::UR_WrappedStoaID))
@@ -4978,8 +4979,12 @@
                         (
                             (h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper ft dwk 1.0))
                         )
+                        ;;is-new=true: this IS genuinely the first time this exact test
+                        ;;runs, so these ARE genuinely fresh discoveries — exercises the
+                        ;;real cache self-warming write path (XI_RegisterBundlePaths),
+                        ;;not just its "nothing to do" branch.
                         {"first-token" : ft
-                        ,"path" : {"nodes" : (at "nodes" h), "edges" : (at "edges" h), "is-new" : false}}
+                        ,"path" : {"nodes" : (at "nodes" h), "edges" : (at "edges" h), "is-new" : true}}
                     )
                 )
                 first-tokens
@@ -4987,9 +4992,10 @@
         )
         (bundle
             {"swap-route" : {"nodes" : route-nodes, "edges" : route-edges}
-            ,"boost-path" : {"nodes" : (at "nodes" boost-h), "edges" : (at "edges" boost-h), "is-new" : false}
+            ,"boost-path" : {"nodes" : (at "nodes" boost-h), "edges" : (at "edges" boost-h), "is-new" : true}
             ,"stoa-paths" : stoa-paths}
         )
+        (verify-first-token:string (at 0 first-tokens))
     )
     ;;Gas reset happens HERE, after bundle construction — only the real paid
     ;;transaction below is measured, exactly matching 032z2's own measurement shape
@@ -5012,9 +5018,128 @@
             ]
         )
     )
+    ;;Cache self-warming verification: reads back via the same reversed-lookup path
+    ;;any real caller would use.
+    ;;
+    ;;boost-path (output-id=W7 -> DLK) is deliberately expected NOT to register here
+    ;;— in THIS topology, the shortest active route from W7 back through the W-chain
+    ;;to the OURO anchor and on to DLK is genuinely 8 hops (9 nodes) —
+    ;;URC_HopperActiveShortest itself has no depth-cap restriction (it just returns
+    ;;whatever BFS finds), but URC_ValidatePathActive DOES enforce the P0.4 depth cap
+    ;;(7 nodes/6 hops) on every bundle-supplied path — correctly rejecting this one,
+    ;;same graceful "no boost pumped, no crash" degrade as a genuine no-route-found
+    ;;case (confirmed: the swap above still completed normally). SWP|TX 032z7 below
+    ;;proves the positive case (a genuinely-eligible, in-depth-cap path DOES get
+    ;;registered) using a short 1-hop boost target instead.
+    (map print
+        [
+            (expect
+                (format "Cache self-warming: boost-path {}->{} correctly NOT registered (natural route exceeds the P0.4 depth cap)" [output-id dlk])
+                false
+                (!= (at "nodes" (ref-SWPT::URC_ReadPathCache output-id dlk)) [SWPT.BAR])
+            )
+            (expect
+                (format "Cache self-warming: stoa-path {}->{} was registered by the swap" [verify-first-token dwk])
+                true
+                (!= (at "nodes" (ref-SWPT::URC_ReadPathCache verify-first-token dwk)) [SWPT.BAR])
+            )
+        ]
+    )
 )
 (print (format "<<<<<<<SWP|TX 032z6 #34 PHASE 8 BUNDLE-BASED SMARTSWAP (Liquid Boost ON, ~102 active pools) ==> {} KDA GAS>>>>>>>" [(env-gas)]))
 (print "Compare directly against SWP|TX 032z2's recorded SWP|CC_SmartSwapNoSlippage gas at the same ~102-active-pool state — this is the real 'how much does outsourcing dirty reads save us' number.")
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z7 - #34 Phase 8 Boost-Path Cache Registration Proof (Short Path) (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z7 - Boost-Path Cache Registration Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 032z7 - Boost-Path Cache Registration Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;#34 Phase 8: SWP|TX 032z6 correctly proved boost-path registration is SKIPPED when
+;;the natural route exceeds the depth cap (W7->DLK, 8 hops in that topology). This
+;;transaction proves the POSITIVE case — a genuinely in-depth-cap boost target DOES
+;;get registered — via a short W1->OURO swap (1 hop, the P|OURO|W1 anchor pool)
+;;whose boost-path target (OURO->DLK) is itself just 1 hop (the
+;;S|DLK|OURO|DWK stable pool), well within the P0.4 cap.
+;;==== SWP|TX 032z7 - Boost-Path Cache Registration Proof · 02 · dirty-read bundle + call ====
+(print "--- [SWP|TX 032z7 - Boost-Path Cache Registration Proof · 02 · dirty-read bundle + call] ---")
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (dwk:string (ref-DALOS::UR_WrappedStoaID))
+        (dlk:string (ref-DALOS::UR_SilverStoaID))
+        (input-id "W1-98c486052a51")
+        (output-id "OURO-98c486052a51")
+        (route-h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id 5.0))
+        (route-nodes:[string] (at "nodes" route-h))
+        (route-edges:[string] (at "edges" route-h))
+        (boost-h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActiveShortest output-id dlk 1.0))
+        (distinct-pools:[string] (distinct route-edges))
+        (first-tokens:[string] (distinct (map (lambda (sp:string) (at 0 (ref-SWP::UR_PoolTokens sp))) distinct-pools)))
+        (stoa-paths:list
+            (map
+                (lambda (ft:string)
+                    (let
+                        (
+                            (h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper ft dwk 1.0))
+                        )
+                        {"first-token" : ft
+                        ,"path" : {"nodes" : (at "nodes" h), "edges" : (at "edges" h), "is-new" : true}}
+                    )
+                )
+                first-tokens
+            )
+        )
+        (bundle
+            {"swap-route" : {"nodes" : route-nodes, "edges" : route-edges}
+            ,"boost-path" : {"nodes" : (at "nodes" boost-h), "edges" : (at "edges" boost-h), "is-new" : true}
+            ,"stoa-paths" : stoa-paths}
+        )
+    )
+    (expect
+        "Sanity: boost-h's route from OURO to DLK is genuinely within the depth cap (<= 7 nodes)"
+        true
+        (<= (length (at "nodes" boost-h)) 7)
+    )
+    (let
+        (
+            (swap-result:string
+                (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 5.0 output-id bundle)
+            )
+        )
+        (map print
+            [
+                (format "#34 Phase 8 short boost-path swap result: {}" [swap-result])
+                (expect
+                    "Short swap actually executed (1 Swap over 1 Pool)"
+                    true
+                    (contains "via 1 Swaps" swap-result)
+                )
+            ]
+        )
+    )
+    (print
+        (expect
+            (format "Cache self-warming: boost-path {}->{} WAS registered (genuinely in-depth-cap)" [output-id dlk])
+            true
+            (!= (at "nodes" (ref-SWPT::URC_ReadPathCache output-id dlk)) [SWPT.BAR])
+        )
+    )
+)
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
 (env-sigs [])
 (commit-tx)

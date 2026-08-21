@@ -80,7 +80,7 @@ detailed below at the same depth, to be expanded when their turn comes.
       accepted) and adversarial cases (fabricated/unrelated edges rejected, depth-cap
       violations rejected, overwrite attempts rejected). Full `[6.2]`+`[6.3]`+`Z.repl`
       (Stage 1+2) and default issuance-only regression both exit 0, 0 `FAILURE`.
-- [~] **Phase 8 — New SmartSwap entrypoint.** New bundle-based `XI_SmartSwapCore` variant;
+- [x] **Phase 8 — New SmartSwap entrypoint.** New bundle-based `XI_SmartSwapCore` variant;
       `SWP|C_SmartSwapExplicitRoute` in Talos, **built alongside, not replacing,** the existing
       self-searching variants, for real A/B gas comparison; dumb-writer stoa-value updater
       (Talos maps over pre-computed results instead of calling `URC_PoolValue` itself); fixes
@@ -140,17 +140,54 @@ detailed below at the same depth, to be expanded when their turn comes.
       signature gained the `boost-path` parameter — caught immediately via a real
       full-suite regression failure (`SWP|TX 046 - Empy Emma of GAS`), fixed by passing
       `NO_PATH` (search internally, unchanged behavior) at that call site.
-      **What's left of Stage B:** cache self-warming (registering a bundle's
-      `is-new=true` paths into `SWPT|PathCache` after a validated real use) is
-      deliberately NOT wired yet — needs its own verification that a cross-module
-      `(with-capability (SWPT.SECURE) (SWPT.XI_RegisterPath ...))` call from SWPU
-      actually satisfies SWPT's `SECURE` cap in production (its body is unconditionally
-      `true`, so this is expected to work, but wasn't empirically proven this pass —
-      don't assume, verify before building it). Tracked as an explicit next increment,
-      not silently dropped. `P3.5.3`'s malformed-bundle fallback proof (adversarial:
-      disconnected route, inactive edge, fabricated path) is also still open — the
+      **Cache self-warming — done, 2026-08-21 (uncommitted at write time).** The
+      cross-module capability question flagged above was investigated (not assumed)
+      via a dedicated codebase-wide search: **zero precedent anywhere in this codebase
+      for a caller-side `(with-capability (OtherModule.Cap ...) ...)` grant across a
+      module boundary**, and this codebase's own `Audit/ATS/ROUND-01-FINDINGS.md`
+      empirically proves that pattern is a real vulnerability class (any caller can
+      grant a `true`-bodied cap, not just the intended one) — `SWPT.SECURE` is exactly
+      `(defcap SECURE () true)`. Built the correct fix instead: `SWPT::XE_RegisterPath`
+      (`14_SWPT.pact`), a forward-module writer mirroring the already-established
+      `XE_UpdateGraph` pattern exactly (`UEV_IMC` gate + internal `SECURE`
+      composition) — `SWPU` calls `ref-SWPT::XE_RegisterPath`, never touching
+      `SWPT.SECURE` itself. `SWPU::XI_RegisterBundlePaths` (`19_SWPU.pact`) registers
+      `boost-path`/each `stoa-paths` entry only when genuinely `is-new=true`,
+      re-validated from scratch (never trusting the flag), and — for `stoa-paths` —
+      only for first-tokens genuinely among the swap's own `distinct-edges` (never
+      blindly every entry a caller stuffed into the bundle). Wired into `C_SmartSwap`
+      via a new `XI_SmartSwapAndRegister` helper — **had to be restructured once**:
+      the first attempt called the registration function from the outer `let*`, after
+      the `with-capability` block had already returned, and hit a real
+      `require-capability: not granted` error at full-regression time (Pact capability
+      grants scope to their own dynamic call extent, not the rest of the transaction —
+      confirmed the hard way, not assumed); fixed by moving the whole post-search body
+      inside the `with-capability` block as a nested `SECURE`-requiring call.
+      **A second real finding surfaced while building the permanent regression
+      proof:** the first attempt asserted boost-path registration always succeeds, but
+      in the P2-scale topology the natural W7->DLK route is genuinely **8 hops**
+      (9 nodes) — `URC_HopperActiveShortest` itself has no depth-cap restriction (just
+      returns whatever BFS finds), but `URC_ValidatePathActive` correctly enforces the
+      P0.4 cap (7 nodes/6 hops) on every bundle-supplied path and rejects it, same
+      graceful "no boost pumped, no crash" degrade as a genuine no-route-found case —
+      this is the depth-cap safety mechanism working exactly as designed, not a bug;
+      the test's assertion was wrong, not the code. Fixed `SWP|TX 032z6`'s assertion
+      to correctly expect the skip, and added `SWP|TX 032z7` (a short 1-hop
+      `W1->OURO` swap, boost target `OURO->DLK` = 1 hop, well within the cap) proving
+      the positive case — registration genuinely succeeds when eligible. Both
+      permanent regressions confirmed via visible `"Expect: success"` lines (not just
+      "did not crash" — `expect` only self-prints on FAILURE, an unprinted passing
+      `expect` is silent, so all three assertions were explicitly wrapped in `print`/
+      `map print` per this codebase's own documented convention). Full `Z.repl`
+      (Stage 1+2) + issuance-only regression both 0 `FAILURE` throughout. Gas impact
+      of the added registration writes: 385,749 -> 397,043 (+11,294, the real cost of
+      the actual first-time cache-warming inserts) — still an 18x reduction vs the
+      7,145,298 self-searching baseline, still safely under the ~2,000,000 ceiling.
+      **Phase 8 is now fully done** except `P3.5.3`'s adversarial malformed-bundle
+      fallback proof (disconnected route, inactive edge, fabricated path — the
       defcap-layer `enforce`s give strong reason to expect clean rejection, but this
-      hasn't been adversarially proven with a real revert-reproduce test yet.
+      hasn't been adversarially proven with a real revert-reproduce test yet), which
+      is Phase 10's explicit scope, not blocking Phase 9.
 - [ ] **Phase 9 — Off-chain/UI orchestration + docs.** Spec for how a client constructs the
       bundle via dirty reads (P3.7); architecture doc (what P5.5 originally covered, now scoped
       to the whole redesign, not just the search primitives).

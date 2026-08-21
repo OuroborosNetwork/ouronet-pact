@@ -827,37 +827,60 @@
             \ the P3.4 dumb-writer's precomputed [{pool, stoa-value}, ...] list — Talos \
             \ maps it straight into XE_UpdateStoaValue with no URC_PoolValue re-derivation \
             \ at all, for every pool this call actually priced. \
-            \ Cache self-warming (registering a bundle's is-new=true paths into \
-            \ SWPT|PathCache after a validated real use) is NOT wired yet — deliberately \
-            \ scoped out of this pass (needs its own cross-module SWPT.SECURE composition \
-            \ check before landing) and tracked as an explicit HANDOFF follow-up, not \
-            \ silently dropped."
+            \ Cache self-warming: after a real execution, XI_RegisterBundlePaths \
+            \ registers whichever of <boost-path>/<stoa-paths> are genuinely new, valid, \
+            \ and actually used this round — via SWPT::XE_RegisterPath (the proper \
+            \ forward-module writer), never a caller-side grant of SWPT's own SECURE \
+            \ cap directly (see XE_RegisterPath's own doc for why that would be unsafe — \
+            \ confirmed against this codebase's own ATS audit findings before landing). \
+            \ Runs INSIDE the with-capability block below via XI_SmartSwapAndRegister — \
+            \ a granted capability's scope is its own dynamic extent, not the rest of \
+            \ the transaction (confirmed the hard way: 'require-capability: not granted' \
+            \ when this was first tried as a separate call after the with-capability \
+            \ block had already returned)."
         (UEV_IMC)
+        (if (!= slippage -1.0)
+            (with-capability
+                (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds bundle)
+                (XI_SmartSwapAndRegister account input-id input-amount output-id slippage kda-pid slippage-bounds bundle)
+            )
+            (with-capability
+                (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE account input-id input-amount output-id slippage bundle)
+                (XI_SmartSwapAndRegister account input-id input-amount output-id slippage kda-pid slippage-bounds bundle)
+            )
+        )
+    )
+    (defun XI_SmartSwapAndRegister:list
+        (
+            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            kda-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+        )
+        @doc "#34 Phase 8: C_SmartSwap's body, factored out so it runs entirely INSIDE \
+            \ the caller's with-capability block (required for XI_RegisterBundlePaths' \
+            \ own require-capability (SECURE) to see a granted capability — see \
+            \ C_SmartSwap's doc for why this had to be restructured this way)."
+        (require-capability (SECURE))
         (let*
             (
                 (ico:object{IgnisCollectorV1.OutputCumulator}
-                    (if (!= slippage -1.0)
-                        (with-capability
-                            (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds bundle)
-                            (XI_SmartSwapExplicitRoute account input-id input-amount output-id slippage kda-pid slippage-bounds bundle)
-                        )
-                        (with-capability
-                            (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE account input-id input-amount output-id slippage bundle)
-                            (XI_SmartSwapExplicitRoute account input-id input-amount output-id slippage kda-pid slippage-bounds bundle)
-                        )
-                    )
+                    (XI_SmartSwapExplicitRoute account input-id input-amount output-id slippage kda-pid slippage-bounds bundle)
                 )
                 (out:list (at "output" ico))
                 ;;A slippage-exceeded soft-fail (matching CC_SmartSwap's own established
                 ;;shape) returns a 1-element <output> ([exceed-message]) instead of the
                 ;;successful [final-netto hops pools distinct-edges] 4-element shape — no
-                ;;swap happened, so there's nothing to price, <stoa-results> is [].
+                ;;swap happened, so there's nothing to price or register, <stoa-results>
+                ;;is [] and no registration call fires.
                 (stoa-results:list
                     (if (= (length out) 4)
                         (URC_ComputeStoaValueResults (at 3 out) (at "stoa-paths" bundle))
                         []
                     )
                 )
+            )
+            (if (= (length out) 4)
+                (XI_RegisterBundlePaths output-id (at 3 out) bundle)
+                "no registration — swap did not execute"
             )
             [ico stoa-results]
         )
@@ -1016,6 +1039,80 @@
                     )
                 )
                 (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid (at "boost-path" bundle))
+            )
+        )
+    )
+    (defun XI_RegisterBundlePaths (output-id:string distinct-edges:[string] bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+        @doc "#34 Phase 8: cache self-warming — registers a bundle's <boost-path> and \
+            \ each <stoa-paths> entry into SWPT|PathCache, ONLY when (a) the bundle \
+            \ claims <is-new>=true AND (b) re-validated here from scratch (never trusting \
+            \ the caller's claim — P3.1) AND (c), for stoa-paths, the first-token was \
+            \ genuinely among THIS swap's own touched pools (URC_DedupFirstTokens of the \
+            \ real <distinct-edges>, never blindly every entry a caller stuffed into the \
+            \ bundle — matches P3.1's 'writes only as a side-effect of a real, validated, \
+            \ USED path' rule, not just 'a real, validated path'). Registers via \
+            \ SWPT::XE_RegisterPath (the forward-module writer, UEV_IMC + internal \
+            \ SECURE composition) — never a caller-side grant of SWPT's own SECURE cap \
+            \ directly (see XE_RegisterPath's own doc for why that would be unsafe). \
+            \ XI_RegisterPath's own first-write-wins self-check makes every call here \
+            \ safe to no-op on if another caller already won the race for the same pair."
+        (require-capability (SECURE))
+        (let*
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-SWPT:module{SwapTracerV2} SWPT)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (lkda:string (ref-DALOS::UR_SilverStoaID))
+                (dwk:string (ref-DALOS::UR_WrappedStoaID))
+                (boost-path:object{CachedPathOrMiss} (at "boost-path" bundle))
+                (boost-nodes:[string] (at "nodes" boost-path))
+                (boost-edges:[string] (at "edges" boost-path))
+                (boost-le:integer (length boost-nodes))
+                (boost-eligible:bool
+                    (if (or (not (at "is-new" boost-path)) (= boost-nodes [BAR]))
+                        false
+                        (fold (and) true
+                            [
+                                (ref-SWPI::URC_ValidatePathActive boost-nodes boost-edges)
+                                (= (at 0 boost-nodes) output-id)
+                                (= (at (- boost-le 1) boost-nodes) lkda)
+                            ]
+                        )
+                    )
+                )
+            )
+            (if boost-eligible
+                (ref-SWPT::XE_RegisterPath output-id lkda boost-nodes boost-edges)
+                "boost-path not registered (not new, invalid, or sentinel)"
+            )
+            (map
+                (lambda (ft:string)
+                    (let*
+                        (
+                            (path:object{CachedPathOrMiss} (UC_FindStoaPath (at "stoa-paths" bundle) ft))
+                            (nodes:[string] (at "nodes" path))
+                            (edges:[string] (at "edges" path))
+                            (le:integer (length nodes))
+                            (eligible:bool
+                                (if (or (not (at "is-new" path)) (= nodes [BAR]))
+                                    false
+                                    (fold (and) true
+                                        [
+                                            (ref-SWPT::URC_ValidatePathStructure nodes edges)
+                                            (= (at 0 nodes) ft)
+                                            (= (at (- le 1) nodes) dwk)
+                                        ]
+                                    )
+                                )
+                            )
+                        )
+                        (if eligible
+                            (ref-SWPT::XE_RegisterPath ft dwk nodes edges)
+                            "stoa-path not registered (not new, invalid, or sentinel)"
+                        )
+                    )
+                )
+                (URC_DedupFirstTokens distinct-edges)
             )
         )
     )

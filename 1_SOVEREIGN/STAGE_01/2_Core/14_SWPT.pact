@@ -60,6 +60,13 @@
     (defun URC_EdgeConnects:bool (i-id:string o-id:string swpair:string))
     (defun URC_ValidatePathStructure:bool (nodes:[string] edges:[string]))
     (defun XI_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string]))
+    ;;#34 Phase 8: forward-module entrypoint for XI_RegisterPath — mirrors XE_UpdateGraph
+    ;;exactly (UEV_IMC gate + internal SECURE composition). Cross-module callers (SWPU)
+    ;;must go through this, never grant SWPT.SECURE directly themselves — SECURE's body
+    ;;is unconditionally true, so a caller-side `(with-capability (SWPT.SECURE) ...)`
+    ;;would grant it to literally anyone, not just legitimate Ouronet modules (confirmed
+    ;;against this exact class of issue in this codebase's own ATS audit findings).
+    (defun XE_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string]))
 
     (defun XE_UpdateGraph (swpair:string))
 )
@@ -595,6 +602,20 @@
                 "already cached, no-op"
                 (insert SWPT|PathCache key-fwd {"nodes": nodes, "edges": edges})
             )
+        )
+    )
+    (defun XE_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string])
+        @doc "#34 Phase 8: forward-module entrypoint for XI_RegisterPath, mirroring \
+            \ XE_UpdateGraph exactly — UEV_IMC gate, then internal SECURE composition. \
+            \ Cross-module callers (SWPU::C_SmartSwap, once wired) go through THIS, never \
+            \ a caller-side (with-capability (SWPT.SECURE) ...) directly — SECURE's own \
+            \ body is unconditionally true, so a direct outside grant would hand it to \
+            \ any caller at all, not just legitimate Ouronet modules (this exact class of \
+            \ issue is already documented, empirically, in this codebase's own ATS audit \
+            \ findings)."
+        (UEV_IMC)
+        (with-capability (SECURE)
+            (XI_RegisterPath token-a token-b nodes edges)
         )
     )
     ;;
