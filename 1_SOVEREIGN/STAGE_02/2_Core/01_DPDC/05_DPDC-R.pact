@@ -134,7 +134,13 @@
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
             )
-            (ref-DPDC::UEV_CanFreezeON id son)
+            ;; DPDC Audit #13H: <can-freeze> gates new freezes only — unfreeze is a release valve and
+            ;; must stay available even after <can-freeze> has been renounced, or an already-frozen
+            ;; account (combined with <can-upgrade=false>) would be bricked with no recovery path.
+            (if frozen
+                (ref-DPDC::UEV_CanFreezeON id son)
+                true
+            )
             (ref-DPDC::UEV_AccountFreezeState id son account (not frozen))
             (ref-DPDC::CAP_Owner id son)
             (compose-capability (P|DPDC-R|CALLER))

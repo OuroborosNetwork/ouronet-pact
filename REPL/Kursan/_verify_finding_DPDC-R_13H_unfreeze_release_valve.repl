@@ -1,0 +1,77 @@
+;; Verification for DPDC Audit finding #13H (DPDC-R): DPDC|C>FRZ-ACC gated BOTH freeze and unfreeze on
+;; the collection's <can-freeze> flag. Once <can-freeze> is renounced (set false), any account frozen
+;; before that point could never be unfrozen again -- combined with <can-upgrade=false> this would
+;; permanently brick the account with no recovery path. Owner: "unfreeze should be like a release valve,
+;; regardless of can-freeze." Fix: <can-freeze> now gates freezing only; unfreeze is unconditional.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-13H - freeze an account, renounce can-freeze, prove unfreeze still works")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (owner:string KST.ANHD)
+        (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpnf-price))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+)
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (owner:string KST.ANHD)
+        (creator:string KST.ANHD)
+        (lumy:string KST.LUMY)
+    )
+    (print (format "ISSUE RESULT = {}"
+        [(ref-TS02-C2::DPNF|C_Issue owner owner creator "FreezeValveProbeNFT" "FVPN"
+            true true true true true true true true)]))
+    (let ((id:string "FVPN-98c486052a51"))
+        ;; 1] can-freeze=true initially: freeze Lumy's account for this collection.
+        (print (format "FREEZE (can-freeze=true) RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_ToggleFreezeAccount owner id lumy true)]))
+        (print (format "Lumy frozen? {}" [(ref-DPDC::UR_CA|R-Frozen id false lumy)]))
+        ;; 2] Renounce can-freeze (keep can-upgrade=true here only so this same probe tx can still call
+        ;;    C_Control again for the regression check below -- the real brick scenario also needs
+        ;;    can-upgrade=false, but that's an orthogonal compounding factor, not required to prove #13H).
+        (print (format "RENOUNCE can-freeze RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_Control owner id true true true true true false true true)]))
+        ;; 3] #13H fix proof: unfreeze Lumy MUST still succeed even though can-freeze is now false.
+        (print (format "<<13H-1>> UNFREEZE after can-freeze=false RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_ToggleFreezeAccount owner id lumy false)]))
+        (print (format "Lumy frozen after unfreeze? {}" [(ref-DPDC::UR_CA|R-Frozen id false lumy)]))
+        ;; 4] Regression: freezing (the other direction) must STILL be blocked while can-freeze=false --
+        ;;    confirms the fix is correctly scoped to unfreeze only, not a blanket bypass.
+        (print (expect-failure "<<13H-2>> freezing a NEW account is still rejected while can-freeze=false"
+            (ref-TS02-C2::DPNF|C_ToggleFreezeAccount owner id creator true)))
+        ""
+    )
+)
+(commit-tx)

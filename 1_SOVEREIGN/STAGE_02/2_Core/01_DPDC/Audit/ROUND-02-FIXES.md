@@ -629,3 +629,38 @@ primordial (class-0) nonce, not a Set instance. Wired into:
 `DpdcNonceV1`; no existing signature changed.
 
 **#12Hc closed.** No further open items from this investigation chain (#12H → #12Hb → #12Hc).
+
+## Fix #12 — DPDC-R · H1 (#13H) — unfreeze gated on `can-freeze`, bricking already-frozen accounts
+
+**Owner-approved 2026-08-21.** Owner: "unfreeze should be like a release valve, regardless of can-freeze."
+
+**Root cause:** `05_DPDC-R.pact:131-141` — `DPDC|C>FRZ-ACC (id son account frozen)` called
+`(ref-DPDC::UEV_CanFreezeON id son)` unconditionally, for both directions (`frozen=true` = freeze,
+`frozen=false` = unfreeze — confirmed via `XI_ToggleFreezeAccount`'s write, `XE_U|Frozen id son account
+toggle`). Once a collection renounces `can-freeze` (sets it `false`), any account frozen *before* that point
+can never be unfrozen again — combined with `can-upgrade=false` (also renounceable), permanently bricked
+with no recovery path. Confirmed `UEV_CanFreezeON` has exactly one call site in `DPDC-R` (this one).
+
+**Fix — one location, direction-gated:**
+```pact
+-(ref-DPDC::UEV_CanFreezeON id son)
++(if frozen
++    (ref-DPDC::UEV_CanFreezeON id son)
++    true
++)
+```
+`can-freeze` now gates new freezes only; unfreeze is unconditional.
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC-R_13H_unfreeze_release_valve.repl`):** froze a real
+account (`KST.LUMY`) on a fresh NFT collection while `can-freeze=true`, renounced `can-freeze` via
+`DPNF|C_Control`, then:
+- `<<13H-1>>` unfroze Lumy — `Write succeeded`, confirmed `frozen? false` — release valve works even with
+  `can-freeze=false`.
+- `<<13H-2>>` attempted to freeze a *different* account while still `can-freeze=false` — correctly
+  rejected, confirming the fix is scoped to unfreeze only, not a blanket bypass of the flag.
+- **Pre-fix confirmation via `git stash`:** ran the identical script against unfixed source — hard-fails
+  exactly at the unfreeze step (right after the `RENOUNCE can-freeze` line), proving the brick was real
+  before this fix, not assumed.
+- `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
+
+**Interface implication:** none — internal to `DPDC|C>FRZ-ACC`'s body, no signature change.

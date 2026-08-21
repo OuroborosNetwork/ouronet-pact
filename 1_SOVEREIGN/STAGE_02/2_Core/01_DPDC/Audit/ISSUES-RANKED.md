@@ -163,11 +163,15 @@ NFT Set instance's own data. Live-proven: a real Primordial Set instance's direc
 Set-Class template stays editable, an ordinary primordial nonce stays editable, an SFT Set's shared nonce
 stays editable — Z.repl green. — *DPDC-N·H4c*
 
-#13H **[DPDC-R]** `DPDC|C>FRZ-ACC` gates **both** freeze and unfreeze on the collection's `can-freeze`
+#13H **[DPDC-R]** ~~`DPDC|C>FRZ-ACC` gates **both** freeze and unfreeze on the collection's `can-freeze`
 switch (every sibling role toggle only gates the granting/"on" direction) — combined with `can-upgrade=false`
 (both flippable in one ordinary `C_Control` call), this permanently bricks a frozen account with no recovery
-path, reachable via an honest owner's routine "lock in settings" misconfiguration, not just malice. —
-*DPDC-R·H1*
+path, reachable via an honest owner's routine "lock in settings" misconfiguration, not just malice.~~ —
+**FIXED ✅ AND PROVEN ✅ 2026-08-21** (`ROUND-02-FIXES.md` Fix #12) — `can-freeze` now gates the freeze
+direction only ("unfreeze should be like a release valve, regardless of can-freeze" — owner); unfreeze
+unconditional. Live-proven: real account frozen, `can-freeze` renounced, unfreeze still succeeds while
+freezing a different account stays correctly rejected; `git stash` confirmed the pre-fix brick was real,
+not assumed. Z.repl green. — *DPDC-R·H1*
 
 #14H **[DPDC-MNG]** Pause never gates a single mutating entrypoint in this module (`C_AddQuantity`,
 `C_BurnSFT`/`NFT`, all `Wipe*`, `C_RespawnNFT`) — only `DPDC-T`'s transfers actually check

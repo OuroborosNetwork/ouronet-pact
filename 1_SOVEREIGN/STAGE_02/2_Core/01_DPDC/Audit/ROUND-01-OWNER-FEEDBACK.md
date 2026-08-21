@@ -333,3 +333,16 @@ stays editable (regression-clean), and an equivalent SFT Set's one shared nonce 
 
 **Investigation chain closed:** #12H (REFUTED) → #12Hb (FIXED, Fix #10) → #12Hc (FIXED, Fix #11). No further
 open items.
+
+## #13H · DPDC-R · H1 — unfreeze gated on `can-freeze`, brick risk
+
+**Verdict: CONFIRMED, FIXED (2026-08-21).** Owner: "unfreeze should be like a release valve, regardless of
+can-freeze" — confirming the design intent Round I inferred was correct: `can-freeze` should only ever gate
+new freezes, never the ability to release an account that's already frozen.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #12)** — `DPDC|C>FRZ-ACC`'s single call to
+`UEV_CanFreezeON` now only runs on the freeze direction (`frozen=true`); unfreeze (`frozen=false`) is
+unconditional. Live-proven: froze a real account, renounced `can-freeze`, unfroze it anyway (`Write
+succeeded`) — while freezing a *different* account in the same now-`can-freeze=false` state was still
+correctly rejected, confirming the fix didn't over-broaden into a blanket bypass. Confirmed via `git stash`
+that the pre-fix script genuinely hard-fails at the unfreeze step. Full `Z.repl` green.
