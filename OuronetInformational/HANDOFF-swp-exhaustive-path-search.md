@@ -350,6 +350,27 @@ P1.2"). Update the checkboxes here as items land.
       this without a different mechanism (e.g. avoiding the list-growth pattern) — the call-count
       reduction alone is not where the gas is.
 
+      **Double-checked, 2026-08-21, at the owner's explicit request ("are you sure we can't do
+      any improvements here? check again").** Isolated every individual moving part with direct
+      micro-benchmarks (`acquire-module-admin` + real `with-capability` calls against
+      `SWPU|S>FEED-SPECIAL-TARGETS`, 7-target payload matching the real config) instead of just
+      trusting the net before/after number:
+      - ONE `with-capability(FEED-SPECIAL-TARGETS, 7 targets)` call: **4 gas.**
+      - SIX such calls in a row (today's real per-hop pattern): **22 gas total.**
+      - Growing a 6-element nested list via `(+ acc [x])` six times (the batching attempt's
+        accumulator pattern): **8 gas total.**
+      All three are single-digit-to-tens of gas — negligible next to even the ~37k headroom,
+      let alone the ~150k a single graph search costs. This confirms precisely *why* the
+      reverted batching attempt netted -114 gas rather than a saving: none of the "expensive-
+      looking" per-hop machinery (capability composition, event emission, list growth) is
+      actually expensive in Pact's real gas model — the extra bindings/branches the batching
+      code added cost about as much as the calls it removed. **Re-confirmed: there is no
+      meaningful improvement available in the special-fee-target payout path.** The entire
+      per-hop cost budget here is small enough that no restructuring of it — batching,
+      deduping repeat targets across hops, or otherwise — would move the needle. This is now
+      based on isolated component measurement, not just a single net comparison, so it should
+      be considered a settled answer, not just a repeat of the earlier finding.
+
       **Investigated and disproven, 2026-08-21 — the `URC_EdgesActive` `contains`-scan theory
       from the earlier pool-count-scaling writeup does NOT hold up.** That writeup claimed
       `URC_EdgesActive`'s `(contains swpair whitelist)` — an O(n) list scan repeated inside
