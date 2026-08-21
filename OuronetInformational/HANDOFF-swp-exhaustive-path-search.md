@@ -29,9 +29,24 @@ graph-search design itself doesn't hold up, not just this or that call site.** F
 chronological trace (what was claimed, disproven, corrected, and finally the real-topology
 result) is in the dated entries below. Also still open: a separate, unfixed crash bug in
 `XI_RawLiquidPump` (found alongside P0.5, not yet formally numbered in `ISSUES-RANKED.md`).
-P1 (core search primitives) not started. **Owner has a separate proposed solution, not yet
-shared/evaluated — given the P2-scale result, this is now very likely the primary path
-forward, not an optional extra.**
+P1 (core search primitives) not started as its own workstream — its output (route discovery)
+is still needed, but as an input to P3 below, not as the primary fix.
+
+**Current plan, as of 2026-08-21, fully written down: `### P3 — SmartSwap redesign: dirty-read
+path injection`** (scroll down). Push all path discovery off-chain via dirty reads; the real
+transaction receives a bundle (swap route + boost's B→DLK path + deduped per-pool stoa-value
+paths), validates structurally, executes, and only writes a shared any-token-to-any-token path
+cache table when something was genuinely new. This single design targets all three cost
+sources at once — the main routing search (10.4% of the 102-pool total), Liquid Boost's search
+(7.2%), and `XE_UpdateStoaValue`'s six per-pool searches (**56.9%, the actual dominant cost,
+not Liquid Boost** — found only because the owner asked "is it just the boost search?" and it
+was checked, not assumed). Full schemas (path-cache table, bundle object, output-results
+list), module placement respecting deploy order, security/abuse mitigations, an off-chain/UI
+orchestration spec, and a testing plan are all written out in P3.0-P3.10. **Not yet built.**
+P3.10 lists explicit open questions (table-key canonicalization, whether to include the
+pool-count fast-path in v1, exact `OutputCumulator` extension mechanism) that need resolving
+before or during implementation — everything else in P3 is settled enough to start coding
+against once those are answered.
 
 **To:** whoever picks up SWP audit follow-up work next.
 **From:** 2026-08-20 SWP audit session (#34M/M2 follow-up discussion).
@@ -605,23 +620,252 @@ P1.2"). Update the checkboxes here as items land.
 - [ ] **P2.4** Go/no-go decision, from P2.2/P2.3's real numbers: tractable as-is, or does
       something need to change first? Decide from data, not more speculation.
 
-### P3 — Caller-supplied-route execution path (contingent on P2.4 = go)
-- [ ] **P3.1** Verify precisely (trace the code, don't assume) that `XI_SmartSwap`/
-      `XI_SmartSwapCore` safely aborts on a malformed/incoherent caller-supplied route (e.g. a
-      `nodes`/`edges` pair that doesn't actually connect, or references a non-existent swpair)
-      rather than silently misbehaving.
-- [ ] **P3.2** Design + build the new client entrypoint (e.g. `SWP|C_SmartSwapExplicitRoute`) —
-      "modularize SmartSwap to take a direct path as input." Accepts a caller-supplied
-      `nodes`/`edges` route directly, skipping internal BFS/best-of-K entirely. **Dual purpose,
-      same entrypoint:** (a) the UI feeds in whatever P1.3's dirty-read search discovered as
-      best, or (b) a user manually hand-picks their own preferred pools/route in the UI and
-      feeds that in instead — the on-chain function doesn't need to know or care which case
-      it is, it just validates (P3.1) and executes with the same slippage floor either way.
-- [ ] **P3.3** Slippage protection — reuse the existing `UC_SlippageMinMax`/floor-only pattern
-      (Fix #16), not a new mechanism.
-- [ ] **P3.4** IGNIS billing wiring, matching the existing `SmartSwapWithSlippage` pattern.
-- [ ] **P3.5** Wire into Talos (`04_TS01-C3.pact`), matching the existing SmartSwap variants'
-      shape.
+### P3 — SmartSwap redesign: dirty-read path injection (full design, 2026-08-21)
+
+**This section supersedes and massively expands the original P3.2 scope.** What started as
+"accept a caller-supplied route" grew, over the course of the P0.6 investigation and a long
+owner discussion, into a redesign covering all three identified live-search cost sources at
+once (main routing search 10.4%, Liquid Boost search 7.2%, `XE_UpdateStoaValue`'s six searches
+56.9% — see P0.6's writeup above for the real numbers this is responding to). **Written down in
+full before any code gets touched, per the owner's explicit instruction.** Anything marked
+"proposed" below is a concrete-enough-to-implement starting point, not a final, unchallengeable
+spec — flagged separately from things that are genuinely settled.
+
+**Core principle, settled:** the real (paid) transaction never performs a live graph search,
+under any circumstance — not even on a cache miss. All discovery happens off-chain, in
+dirty-read/`/local` mode (free). The on-chain function's only jobs are: validate what it was
+given is structurally legitimate, execute, and — only when told to — persist a newly-discovered
+path so future callers don't have to rediscover it. This is what actually bounds the worst
+case, not just the average case; caching alone (discover-and-write inside the real tx on a
+miss) would still leave a first-ever-combination transaction paying full search cost.
+
+#### P3.0 — Two independent kinds of path need, not one generic cache
+
+- **A→B (the swap's own route).** Amount-sensitive — the truly cheapest route can change with
+  trade size because of AMM slippage curves. Must be freshly discovered by the exhaustive-
+  search work (P1/P2) every time, via dirty read. **Not cacheable** the way the other two are.
+- **X→DLK, for any token X (Liquid Boost's burn valuation, and `XE_UpdateStoaValue`'s per-pool
+  first-token pricing).** Amount-agnostic — boost/stoa-value pricing never needed the *optimal*
+  route (established back in direction 1/5), only *a* valid, currently-walkable one. **This is
+  the cacheable one**, and it's the same underlying "is there a path from X to Y" primitive in
+  both consumers — one shared table serves both, not two separate mechanisms.
+
+#### P3.1 — The shared path-cache table (owner's design, generalized from token→DLK to
+      any-token-to-any-token during discussion — better, since it's not just reusable beyond
+      boost/stoa-value, and the primordial-pool example shows some entries are trivially
+      permanent: if `OURO`/`SSTOA`/`WSTOA` share one pool, that 1-hop entry can never be beaten
+      by anything longer, no re-verification of "is this still shortest" ever needed again)
+
+**Schema, proposed:**
+```
+(deftable SWPT|PathCache:{PathCacheRow})
+(defschema PathCacheRow
+    nodes:[string]              ;; the cached route, token-id sequence, e.g. [B, X, Y, DLK]
+    edges:[string]              ;; the swpair used for each hop, parallel to nodes
+    registered-at-pool-count:integer  ;; cheap staleness pre-filter, see below — optional
+)
+```
+Row key: canonicalized token pair, e.g. `(+ (+ token-a "|") token-b)` — canonicalization
+direction (which token goes first) still open, see P3.10.
+
+**Lives in `SWPT`** (`14_SWPT.pact`) — the existing home for graph/tracer concerns
+(`URC_Edges`, `URC_ComputeGraphPath`, `URC_AllGraphPaths`, `URC_ComputeAlternateRoutes` already
+live here). Table read/write functions here don't need anything from `SWP` (deployed after
+SWPT) for the "exists-only" mode — pure graph-structure concerns. The "active-required" mode
+(needs `SWP::UR_CanSwap`) has to live downstream in `SWPI` (deployed after `SWP`), wrapping
+SWPT's structural check with an extra active-check pass — same deploy-order constraint already
+hit once this session (`URC_EdgesActive`'s whitelist check couldn't live in SWPT either, for
+the identical reason).
+
+**Lookup, settled:** check `A→B` first; if no entry, check `B→A` and derive by reversal before
+concluding "no cached path exists" (graph is confirmed bidirectional —
+`XI_UpdateGraphForSwpair`'s symmetric `i×j` registration, verified earlier this session) — this
+roughly halves what ever needs storing.
+
+**Write policy, settled:**
+- **First-write-wins, no overwrites, ever.** Trades "cache self-improves if a shorter path is
+  found later" for "nobody can grief a good entry by overwriting it with a worse one." Free
+  trade given optimality was never required for this use case (only validity).
+- **Writes only ever happen as an internal side-effect of a real transaction that has already
+  validated and used the path.** No standalone public "register a path" entrypoint, ever — this
+  is the main abuse-resistance mechanism. A submitted path that doesn't pass structural
+  validation (below) simply can't be written, full stop.
+- Table growth (many distinct pairs) is real but self-limiting — the writer pays real gas for
+  their own write, and entries are demand-driven off actual swaps, not a free combinatorial
+  blow-up. Worth a line in the eventual architecture doc (P5.5), not a design blocker.
+
+**Validation on every read, settled — even a cache "hit" always re-validates, nothing is ever
+trusted blindly:**
+1. **Structural connectivity**: for every consecutive `(nodes[i], nodes[i+1])`, confirm
+   `edges[i]` is a real, registered swpair that actually connects that exact pair — not just
+   "some active pool exists somewhere." Prevents a submitted bundle from containing genuinely-
+   active-but-unrelated edges that don't form a real connected path.
+2. **Active-or-exists**, mode-dependent (see P3.0's split and the "active vs exists" point
+   below): for the A→B execution route, every edge must be `can-swap=true`; for X→DLK pricing
+   paths, edges only need to structurally exist (mirrors `URC_Hopper` vs `URC_HopperActive`'s
+   existing split — reuse it, don't invent a third mode).
+This makes a bad-but-structurally-valid entry self-limiting rather than a lasting problem: if a
+pool along a cached path later gets disabled, the next reader's cheap validation catches it and
+falls back to a fresh dirty-read trace — no proactive invalidation logic needed anywhere.
+
+**Optional fast-path, not required for correctness:** `registered-at-pool-count` lets a reader
+skip straight past full per-edge validation when the global active-pool count hasn't moved
+since registration — cheap (one counter read vs N edge reads), but *not* airtight on its own
+(count can stay identical while a different pool got disabled and another enabled), so it can
+only ever be a pre-filter *in addition to*, never a replacement for, per-edge validation
+whenever the counter has moved. Barely matters for 1-hop entries (checking 1 counter isn't
+meaningfully cheaper than checking the 1 edge it would gate). **Open: include in v1, or defer?**
+(P3.10)
+
+#### P3.2 — The bundle input object (proposed schema, needs confirmation before coding)
+
+```
+(defschema SmartSwapPathBundle
+    swap-route:object{Hopper}          ;; A->B, from P1/P2's exhaustive dirty-read search
+    boost-path:object{CachedPathOrMiss}  ;; B->DLK (B = swap's LAST token, matches direction 5)
+    stoa-paths:[object{TokenPathPair}]  ;; deduped {first-token, path-to-DLK-or-miss} — ONE
+                                         ;; entry per DISTINCT first-token among touched pools,
+                                         ;; not one per pool
+)
+(defschema CachedPathOrMiss
+    nodes:[string]      ;; [BAR] sentinel if genuinely no path exists anywhere
+    edges:[string]
+    is-new:bool         ;; true = cache miss, this was freshly traced off-chain, please
+                         ;; register it after use; false = cache hit, already known, don't
+                         ;; write anything
+)
+(defschema TokenPathPair
+    first-token:string
+    path:object{CachedPathOrMiss}
+)
+```
+The `is-new` flag is the "sentinel object" mechanism from the owner's own framing: when nothing
+needs writing (cache hit), the bundle still carries the path (needed to execute/price with),
+just tagged so the real transaction knows to skip the write step entirely.
+
+#### P3.3 — Dedup for stoa-value pricing (owner's core insight this round, confirmed with real
+      evidence — see P0.6's decomposition: pool3 and pool4 in the P2-scale topology both have
+      first-token `W4` and cost an *identical* 673,080 gas each, proving today's per-pool loop
+      redundantly retraces the same path)
+
+The off-chain dirty-read layer is responsible for building `stoa-paths` already deduped by
+first-token (a UI doing 6 lookups for a 6-hop route should recognize 2 of them share a first
+token and only trace once) — but the on-chain side should **not blindly trust that dedup
+happened correctly**; the new `XI_SmartSwapCore` variant (or a helper it calls) still needs to
+map `distinct-edges → first-token → (index into stoa-paths)` itself and tolerate a bundle that
+wasn't perfectly deduped (worst case, it just does redundant *cheap* lookups against an
+already-supplied path — no correctness risk, only a missed optimization if the caller's own
+dedup was sloppy). Must still work correctly in the worst case (6-7 genuinely distinct first
+tokens, no dedup benefit available at all) — dedup is a bonus, not something the function can
+assume.
+
+#### P3.4 — Output side: `XI_SmartSwapCore`/`XI_SmartSwap` must report pool-value results, not
+      just gas/netto
+
+Today's `OutputCumulator` chain only carries `[final-netto, hops, pools, distinct-edges]`
+upward to Talos, which then *redoes* the expensive work itself (`URC_PoolValue` per pool) —
+this is the actual design flaw underlying `XE_UpdateStoaValue`'s cost, independent of whether
+individual searches are optimized. The new execution path must instead compute each distinct
+pool's stoa-value **using the already-validated `stoa-paths` bundle data** (cheap — walk the
+supplied path with live `URC_Swap` math, same pattern as direction 5's carry-forward, no
+search) and emit `[{pool: string, stoa-value: decimal}, ...]` as part of what it returns. Talos
+then becomes a dumb writer: `(map (lambda (pv) (ref-SWP::XE_UpdateStoaValue (at "pool" pv) (at
+"stoa-value" pv))) results-list)` — no `URC_PoolValue` call at the Talos level at all, ever,
+for this new path. Exact mechanism for extending `OutputCumulator` itself vs. returning a
+parallel value alongside it — still open, see P3.10.
+
+#### P3.5 — The new client entrypoint
+
+- [ ] **P3.5.1** Name: **`SWP|C_SmartSwapExplicitRoute`** (reusing the name already chosen when
+      P3.2 was first scoped, before this session's discussion expanded it — no new prefix
+      invented; considered and rejected a fresh `CC_`-style prefix since prefixes in this repo
+      describe *capability*, not *cost*, and this repo's prefix set is closed/documented).
+      Accepts the `SmartSwapPathBundle` (P3.2) as input instead of computing anything itself.
+- [ ] **P3.5.2** **Built alongside, not replacing, the existing `SWP|C_SmartSwapNoSlippage`/
+      `WithSlippage`** — those stay exactly as they are, self-searching, for direct A/B
+      comparison. Decide later (real numbers in hand) whether the new path fully replaces the
+      old one or they coexist long-term.
+- [ ] **P3.5.3** Verify precisely (trace the code, don't assume) that the new
+      `XI_SmartSwapCore` variant safely aborts / falls back cleanly on a malformed or
+      incoherent bundle (route that doesn't connect, non-existent swpair, stale/inactive edge)
+      rather than silently misbehaving. This is also where the long-standing, still-unfixed
+      `XI_RawLiquidPump` crash bug (unguarded index into a possibly-empty search result) gets
+      naturally fixed as a side effect — the new design already needs a clean "no valid path"
+      sentinel path (`[BAR]`/`is-new` handling), so handling it gracefully here isn't extra
+      scope, it's the same work.
+- [ ] **P3.5.4** Slippage protection — reuse the existing `UC_SlippageMinMax`/floor-only
+      pattern (Fix #16), not a new mechanism.
+- [ ] **P3.5.5** IGNIS billing wiring, matching the existing `SmartSwapWithSlippage` pattern —
+      needs to also account for whatever gas the new cache-write step costs when `is-new=true`.
+- [ ] **P3.5.6** Wire into Talos (`04_TS01-C3.pact`), including the new dumb-writer stoa-value
+      updater from P3.4 (replaces the `map URC_PoolValue` loop for this path only — the old
+      SmartSwap variants' Talos wrappers stay unchanged, still doing the expensive version, for
+      comparison per P3.5.2).
+
+#### P3.6 — Module placement summary (deploy order: `SWPT(14)→SWP(15)→SWPI(16)→SWPL(17)→
+      SWPLC(18)→SWPU(19)→MTX-SWP(20)`, Talos after all Core)
+- `SWPT` — the path-cache table itself; "exists-only" structural validation; the reversed-
+  lookup read helper; the first-write-wins registration writer (all pure graph-structure,
+  needs nothing from `SWP`).
+- `SWPI` (or `SWPU`) — the "active-required" validation wrapper (structural check from SWPT +
+  `SWP::UR_CanSwap` per edge, same reason `URC_EdgesActive` couldn't live in SWPT either).
+- `SWPU` — the new `XI_SmartSwapCore` bundle-based variant, the dedup-tolerant stoa-pricing
+  step, the results-list emission.
+- Talos (`TS01-C3` or similar) — `SWP|C_SmartSwapExplicitRoute`, and the dumb-writer
+  stoa-value updater consuming the results list.
+
+#### P3.7 — Off-chain/UI orchestration (what a caller must do before calling
+      `SWP|C_SmartSwapExplicitRoute`)
+1. Dirty-read the exhaustive-search mechanism (P1/P2) for `A→B` → `swap-route`.
+2. Dirty-read the path-cache table for `B→DLK` (`B` = the route's last token): hit → use as-is,
+   `is-new=false`; miss (both directions) → dirty-read a fresh trace, `is-new=true`.
+3. For each **distinct** pool the discovered `swap-route` will actually traverse, resolve its
+   first token, dedupe, and repeat step 2's cache-check per unique first-token.
+4. Assemble `SmartSwapPathBundle`, submit as the real (paid) transaction's input.
+This whole sequence costs the caller nothing (all dirty reads) except node/wallet-side latency
+— exactly the "hammering and polling, shown live to the user" UX already anticipated back when
+this effort started (P0.2's discussion).
+
+#### P3.8 — Security/abuse summary (answers the owner's explicit "how do we make sure this
+      can't be abused" question)
+- No standalone public write entrypoint — writes only as a validated side-effect of real use.
+- First-write-wins — no griefing via overwrite.
+- Every read re-validates structurally, every time, even cache hits — bad entries are
+  self-healing (next reader's cheap check catches and re-traces), never a lasting corruption.
+- Structural connectivity check (not just "edge is active somewhere") prevents fabricated,
+  disconnected paths from ever being accepted for use or registration.
+- Storage/spam is economically self-limiting (writer pays their own gas).
+- **Not claimed:** that the table guarantees genuinely-shortest paths as an enforced invariant
+  — it guarantees *valid*, and *tends toward* short because an off-chain dirty-read search has
+  no gas constraint pushing it toward laziness. Enforcing provable shortest-ness on-chain would
+  require exactly the expensive computation this whole redesign exists to avoid. Said
+  explicitly so nobody later assumes a stronger guarantee than what's actually built.
+
+#### P3.9 — Testing/comparison plan
+- [ ] Build both old (self-searching) and new (bundle-based) SmartSwap variants live
+      side-by-side in the same REPL topology (reuse the existing P0.5/P2-scale pools —
+      `[6.3]_SWP.repl`'s permanent fixtures already cover 22 and 102-active-pool states).
+- [ ] Measure real gas: old vs new, at both 22 and 102 pools, cache-cold vs cache-warm for the
+      new path. This is the actual "how much does outsourcing dirty reads save us" number the
+      owner asked for — report it once measured, don't estimate it in advance.
+- [ ] Adversarial proof: malformed bundle (disconnected route, inactive edge, fabricated path)
+      is rejected/falls back safely, doesn't corrupt state or crash.
+- [ ] Full regression: issuance-only, full `[6.2]`/`[6.3]`, `Z.repl` — 0 `FAILURE` before and
+      after, per this session's standing discipline.
+
+#### P3.10 — Open questions, explicitly not yet decided (owner input wanted before or during
+      build, not resolved unilaterally)
+- Table key canonicalization: fixed ordering (e.g. lexicographically-smaller-token-first) vs.
+  whichever direction happens to get registered first, relying purely on the reversal-lookup at
+  read time. Leaning toward the latter (simpler, no extra canonicalization logic needed) but
+  not decided.
+- `registered-at-pool-count` fast-path: include in v1, or defer as a later optimization once
+  the core mechanism is proven?
+- Exact mechanism for extending `OutputCumulator` to carry the P3.4 results list — a new field
+  on the existing schema, or a second parallel return value threaded alongside it? Needs
+  checking against `IgnisCollectorV1`'s existing shape before deciding.
+- Whether `SWP|C_SmartSwapExplicitRoute` eventually fully replaces the self-searching variants
+  or the two coexist long-term (deliberately deferred to post-measurement, per P3.5.2).
 
 ### P4 — Adversarial proof + full regression
 - [ ] **P4.1** REPL proof: construct a scenario with 4+ genuinely distinct routes where the
@@ -664,3 +908,21 @@ P1.2"). Update the checkboxes here as items land.
 - Real gas numbers already exist for the base search primitives (point 5) — reuse them
   rather than re-measuring from scratch; only Phase 2's *aggregate* cost at 50-100 pools is
   genuinely new data to collect.
+- **P0.6's fixes (direction 1, direction 5, special-fee-target batching) are real and stay
+  shipped, but they are not sufficient at realistic scale — confirmed with a real 22-102-pool
+  topology, not a synthetic one.** Don't re-derive this; the numbers are in P0.6's writeup.
+- **The dominant cost at scale is `XE_UpdateStoaValue`, not Liquid Boost** — 56.9% of the
+  102-pool total (4,066,973 of 7,145,276 gas), more than 3x the main routing search and boost
+  search combined. This was undiscovered until the owner explicitly asked "is it just the
+  boost search?" and it was checked rather than assumed. Any fix that only targets Liquid Boost
+  is solving the smaller part of the problem.
+- **P3 (below) is now the primary path forward, not P1's exhaustive-search work.** The owner's
+  own design — push all path discovery off-chain via dirty reads, inject results as input,
+  cache amount-agnostic paths (not values) in a shared table, validate structurally on every
+  use — covers all three cost sources at once and has a fully written-down design (P3.0-P3.10)
+  as of 2026-08-21, pending only the open questions in P3.10 before code starts. P1's own
+  exhaustive-route-discovery work still matters (it's what fills `swap-route` in P3.2's bundle)
+  but is no longer the part expected to move the gas-ceiling needle by itself.
+- **`XI_RawLiquidPump`'s crash bug (unguarded index into a possibly-empty search result,
+  flagged during P0.5) gets fixed as a natural side effect of P3.5.3**, not a separate task —
+  don't lose track of it as "still open" once P3 lands; verify it's actually closed then.
