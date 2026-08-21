@@ -188,9 +188,15 @@ detailed below at the same depth, to be expanded when their turn comes.
       defcap-layer `enforce`s give strong reason to expect clean rejection, but this
       hasn't been adversarially proven with a real revert-reproduce test yet), which
       is Phase 10's explicit scope, not blocking Phase 9.
-- [ ] **Phase 9 — Off-chain/UI orchestration + docs.** Spec for how a client constructs the
+- [x] **Phase 9 — Off-chain/UI orchestration + docs.** Spec for how a client constructs the
       bundle via dirty reads (P3.7); architecture doc (what P5.5 originally covered, now scoped
       to the whole redesign, not just the search primitives).
+      **Done, 2026-08-21:** [`HANDOFF-swp-smartswap-bundle-architecture.md`](HANDOFF-swp-smartswap-bundle-architecture.md)
+      — the finished-mechanism write-up (§1-3, §6-7) plus the exact client orchestration
+      sequence (§4) and entrypoint reference (§5), written against the ACTUAL Phase 8 build
+      (real function names/signatures, real measured gas numbers), not the speculative P3.x
+      design. Registered in `OuronetInformational/INDEX.md`'s Handoffs table (which was also
+      missing a link to *this* doc — added both while touching that table).
 - [ ] **Phase 10 — Testing, adversarial proof, regression.** Real measured old-vs-new gas
       comparison (the actual number the owner asked for — "how much does outsourcing dirty
       reads bring us" — report once measured, not estimated); adversarial malformed-bundle
