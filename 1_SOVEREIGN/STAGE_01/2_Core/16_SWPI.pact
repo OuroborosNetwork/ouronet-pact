@@ -63,6 +63,17 @@
     (defun URC_Hopper:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
     (defun URC_HopperActive:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
     (defun URC_HopperActiveShortest:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
+    ;;#34 Phase 11 — the original #34 ask: genuine exhaustive route discovery. Mirrors
+    ;;URCX_Hopper (the shared internal core URC_Hopper/URC_HopperActive both wrap) but
+    ;;calls SWPT::URC_ComputeAllRoutes instead of the K=3-capped
+    ;;URC_ComputeAlternateRoutes, and — unlike the hidden-universe URC_Hopper/
+    ;;URC_HopperActive public wrappers — exposes <swpairs>/<max-attempts> directly, so
+    ;;an off-chain caller can choose the routing universe (active-only, full, or any
+    ;;subset for Phase 12's varying-scale measurement) and search depth explicitly.
+    ;;Meant for off-chain dirty-read use only (see the defun's own @doc).
+    (defun URC_HopperExhaustive:object{Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal swpairs:[string] max-attempts:integer)
+    )
     ;;#34 Phase 7: active-required path validation — wraps SWPT's exists-only structural
     ;;check with an extra can-swap pass. Lives here, not in SWPT, because SWPT deploys
     ;;before SWP and can't reach SWP::UR_CanSwap directly (same reason URC_EdgesActive's
@@ -1008,6 +1019,51 @@
                 (ref-SWPT:module{SwapTracerV2} SWPT)
                 (routes:[[string]]
                     (ref-SWPT::URC_ComputeAlternateRoutes hopper-input-id hopper-output-id swpairs)
+                )
+            )
+            (if (= (length routes) 0)
+                (at 0 EMPTY_HOPPER)
+                (let
+                    (
+                        (candidates:[object{SwapperIssueV3.Hopper}]
+                            (map
+                                (lambda (nodes:[string]) (URCX_HopperForNodes nodes hopper-input-amount swpairs))
+                                routes
+                            )
+                        )
+                    )
+                    (UC_BestHopper candidates)
+                )
+            )
+        )
+    )
+    (defun URC_HopperExhaustive:object{SwapperIssueV3.Hopper}
+        (
+            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
+            swpairs:[string] max-attempts:integer
+        )
+        @doc "#34 Phase 11 — the original #34 ask: genuine exhaustive route discovery, \
+            \ not URCX_Hopper's fixed best-of-3 approximation. Identical shape to \
+            \ URCX_Hopper (route-then-price-then-pick-best) but sources candidate \
+            \ node-paths from SWPT::URC_ComputeAllRoutes (a real parameterized search \
+            \ up to <max-attempts>, P0.2's flat +1000 caller-side escalation pattern \
+            \ and P0.2/P0.4's outer-hard-stop/depth-cap already enforced inside that \
+            \ function) instead of the K=3-capped URC_ComputeAlternateRoutes. Reuses \
+            \ URCX_HopperForNodes (per-candidate feeless value) and UC_BestHopper (pick \
+            \ the genuinely highest-output candidate, P1.8's requirement — never by hop \
+            \ count as a proxy for cost) completely unchanged; no new value-computation \
+            \ logic needed, same division of labor URCX_Hopper already established. \
+            \ Exposes <swpairs> directly (unlike the hidden-universe URC_Hopper/ \
+            \ URC_HopperActive public wrappers) so a caller picks the routing universe \
+            \ explicitly — active-only for real swap discovery, or any subset for \
+            \ Phase 12's varying-scale measurement (P2.1). Off-chain dirty-read use \
+            \ only — never call this from a paid transaction, that defeats the entire \
+            \ point of the #34/#34M redesign."
+        (let
+            (
+                (ref-SWPT:module{SwapTracerV2} SWPT)
+                (routes:[[string]]
+                    (ref-SWPT::URC_ComputeAllRoutes hopper-input-id hopper-output-id swpairs max-attempts)
                 )
             )
             (if (= (length routes) 0)

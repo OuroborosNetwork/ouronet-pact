@@ -6977,4 +6977,369 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 049 - #34 Phase 11 Issue + Mint TSTE/TSTF Test Tokens (4-Route Proof)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;#34 Phase 11: mirrors SWP|TX 032c/032d's exact pattern (TSTC/TSTD/TSTZ) — pool
+;;issuance (SWP|C_IssueStandard/C_IssueStable) does NOT auto-create the underlying
+;;DPTF tokens; they must already exist (missed this the first time, caught via a
+;;real "No value found in table ... DPTF|PropertiesTable for key: TSTE-..." error
+;;at full-regression time, not assumed).
+;;==== SWP|TX 049 - Issue + Mint TSTE/TSTF · 01 · let / invocation ====
+(print "--- [SWP|TX 049 - Issue + Mint TSTE/TSTF · 01 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (* (ref-DALOS::UR_UsagePrice "dptf") 2.0)
+            )
+        )
+    )
+;;==== SWP|TX 049 - Issue + Mint TSTE/TSTF · 02 · env-sigs (caps) ====
+(print "--- [SWP|TX 049 - Issue + Mint TSTE/TSTF · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+            (issued-ids:[string]
+                (ref-TS01-C1::DPTF|C_Issue
+                    patron
+                    patron
+                    ["TestTokenE" "TestTokenF"]
+                    ["TSTE" "TSTF"]
+                    (make-list 2 24)
+                    (make-list 2 true)
+                    (make-list 2 true)
+                    (make-list 2 true)
+                    (make-list 2 false)
+                    (make-list 2 false)
+                    (make-list 2 true)
+                )
+            )
+        )
+        issued-ids
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 049 - Issue + Mint TSTE/TSTF · 03 · mint ====
+(print "--- [SWP|TX 049 - Issue + Mint TSTE/TSTF · 03 · mint] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+    )
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTE-98c486052a51" patron 1000000.0 true)
+    ;;TSTF's own first hop needs 9000.0 — mint generously above that.
+    (ref-TS01-C1::DPTF|C_Mint patron "TSTF-98c486052a51" patron 5000000.0 true)
+    ;;TSTZ already exists (032c/032d) — re-minting it hit DPTF's per-account mint-role
+    ;;permission model (its origin mint was one-time-only, and the follow-up mint
+    ;;role for this account isn't separately enabled here) — rather than chase that
+    ;;permission chain, TSTF-TSTZ's pool below is sized within TSTZ's EXISTING
+    ;;balance instead (printed here for visibility, sized against it in the next tx).
+    (print (format "TSTZ balance available for the new TSTF-TSTZ pool: {}" [(ref-DPTF::UR_AccountSupply "TSTZ-98c486052a51" patron)]))
+    (format "AH has {} TSTE / {} TSTF / {} TSTZ" [
+        (ref-DPTF::UR_AccountSupply "TSTE-98c486052a51" KST.ANHD)
+        (ref-DPTF::UR_AccountSupply "TSTF-98c486052a51" KST.ANHD)
+        (ref-DPTF::UR_AccountSupply "TSTZ-98c486052a51" KST.ANHD)
+    ])
+)
+(print "")
+(print "")
+;;==== SWP|TX 049 - Issue + Mint TSTE/TSTF · 04 · gas echo ====
+(print "--- [SWP|TX 049 - Issue + Mint TSTE/TSTF · 04 · gas echo] ---")
+(format "<<<<<<<SWP|TX 049 Issue + Mint TSTE/TSTF ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 050 - #34 Phase 11 Issue TSTE/TSTF Diamond-Extension Pools (4-Route Proof)")
+(namespace "ouronet-ns")
+;;env-gaslimit raised well above the usual 10,000,000 — by this point in the file the
+;;graph is huge (P2-scale topology, 102+ active pools), so OURO-anchored issuance's own
+;;worth-check searches cost much more than early in the file (same scaling finding as
+;;P0.6's P2-scale probe). This setup transaction's own cost isn't what's being measured.
+(env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+;;==== SWP|TX 050 - Issue TSTE/TSTF Diamond-Extension Pools · 01 · let / invocation ====
+(print "--- [SWP|TX 050 - Issue TSTE/TSTF Diamond-Extension Pools · 01 · let / invocation] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (* (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp")) 4.0)
+            )
+        )
+    )
+;;==== SWP|TX 050 - Issue TSTE/TSTF Diamond-Extension Pools · 02 · env-sigs (caps) ====
+(print "--- [SWP|TX 050 - Issue TSTE/TSTF Diamond-Extension Pools · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    ;;#34 Phase 11 / P4.1: extends the existing OURO->{TSTC,TSTD}->TSTZ diamond
+    ;;(032e/032f) with 2 MORE parallel routes, TSTE (deliberately WORSE than both
+    ;;C and D — thinner second hop than C's 2000/2000) and TSTF (deliberately
+    ;;BETTER than all three — 10x deeper second hop than D's 200000/200000).
+    ;;Issued in this order (C, D already existed; E then F here) so BFS discovers
+    ;;C/D/E as the FIRST three chains reaching TSTZ, and F only as the fourth —
+    ;;URC_ComputeAlternateRoutes' fixed best-of-3 structurally cannot see F at
+    ;;all, proving the exhaustive search (URC_ComputeAllRoutes, max-attempts>=4)
+    ;;finds a genuinely better route the old approximation provably misses (P4.1,
+    ;;still open from Phase 4, closed here as part of Phase 11's own proof).
+    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD
+        [
+            { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
+            { "token-id": "TSTE-98c486052a51", "token-supply": 6000.0}
+        ]
+        25.0 false
+    )
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+        [
+            { "token-id": "TSTE-98c486052a51", "token-supply": 800.0}
+            { "token-id": "TSTZ-98c486052a51", "token-supply": 800.0}
+        ]
+        25.0 10.0 false
+    )
+    ;;First-hop ratio raised to 5000/40000 (was 9000) — empirically measured (not
+    ;;hand-guessed) via a diagnostic isolating each candidate route: the CURRENT
+    ;;live state (after many intervening transactions since 032e) has C, not D, as
+    ;;the actual best-of-3 winner (195.16 for a 100 OURO test, vs D's 16.66 and
+    ;;E's 116.81) — the original 032e-era "D beats C" narrative no longer holds by
+    ;;this point in the file. F must beat 195.16, not D's now-tiny figure.
+    (ref-TS01-C3::SWP|C_IssueStandard KST.ANHD KST.ANHD
+        [
+            { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
+            { "token-id": "TSTF-98c486052a51", "token-supply": 40000.0}
+        ]
+        25.0 false
+    )
+    ;;TSTZ's existing (pre-minted) balance for this patron is ~802,906 by this point
+    ;;in the file — 700,000.0 stays safely within that while still being generously
+    ;;deep (minimal second-hop price impact).
+    (ref-TS01-C3::SWP|C_IssueStable KST.ANHD KST.ANHD
+        [
+            { "token-id": "TSTF-98c486052a51", "token-supply": 700000.0}
+            { "token-id": "TSTZ-98c486052a51", "token-supply": 700000.0}
+        ]
+        25.0 10.0 false
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 050 - Issue TSTE/TSTF Diamond-Extension Pools · 03 · gas echo ====
+(print "--- [SWP|TX 050 - Issue TSTE/TSTF Diamond-Extension Pools · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 050 Issue TSTE/TSTF Pools ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 051 - #34 Phase 11 Enable Swap on TSTE/TSTF Pools")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+    )
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTE-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTE-98c486052a51|TSTZ-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "P|OURO-98c486052a51|TSTF-98c486052a51" true)
+    (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD "S|TSTF-98c486052a51|TSTZ-98c486052a51" true)
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 052 - #34 Phase 11 Genuine Exhaustive Route Discovery Proof (Permanent)")
+(namespace "ouronet-ns")
+;;env-gaslimit raised — URC_ComputeAllRoutes/URC_HopperExhaustive walk the FULL
+;;active-swpairs universe (100+ pools by this point) up to max-attempts times each;
+;;this is a dirty-read-only function (never called on a paid path in production), so
+;;its real cost here is purely a REPL-testing safety-valve concern, not the thing
+;;being measured.
+(env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+;;==== SWP|TX 052 - Exhaustive Route Discovery Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 052 - Exhaustive Route Discovery Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;#34 Phase 11 (the original #34 ask) — hand-verified proof against a known
+;;topology (P1.5-P1.9's requirement), on the OURO->{TSTC,TSTD,TSTE,TSTF}->TSTZ
+;;4-route diamond built above. Hand-computed expectation: exactly 4 distinct
+;;2-hop routes exist for OURO->TSTZ in this topology (no other connection to the
+;;dedicated TSTZ test token exists anywhere else in the whole active universe);
+;;URC_ComputeAlternateRoutes' fixed cap can only ever see the first 3 (C, D, E —
+;;TSTF was issued last); URC_ComputeAllRoutes with max-attempts>=4 sees all 4.
+;;Closes P4.1 (still open since Phase 4): a real scenario where the true-best
+;;route is provably outside best-of-3's reach, and the exhaustive search finds
+;;it while the old approximation structurally cannot.
+;;==== SWP|TX 052 - Exhaustive Route Discovery Proof · 02 · let / invocation ====
+(print "--- [SWP|TX 052 - Exhaustive Route Discovery Proof · 02 · let / invocation] ---")
+(let*
+    (
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ouro "OURO-98c486052a51")
+        (tstz "TSTZ-98c486052a51")
+        (tstc "TSTC-98c486052a51")
+        (active-swpairs:[string] (ref-SWP::URC_ActiveSwpairs))
+        (best-of-3-routes:[[string]] (ref-SWPT::URC_ComputeAlternateRoutes ouro tstz active-swpairs))
+        (exhaustive-routes:[[string]] (ref-SWPT::URC_ComputeAllRoutes ouro tstz active-swpairs 10))
+        (best-of-3-has-f:bool (fold (or) false (map (lambda (r:[string]) (contains "TSTF-98c486052a51" r)) best-of-3-routes)))
+        (exhaustive-has-f:bool (fold (or) false (map (lambda (r:[string]) (contains "TSTF-98c486052a51" r)) exhaustive-routes)))
+        (active-hopper:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive ouro tstz 100.0))
+        (exhaustive-hopper:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperExhaustive ouro tstz 100.0 active-swpairs 10))
+        (active-final:decimal (at 0 (take -1 (at "output-values" active-hopper))))
+        (exhaustive-final:decimal (at 0 (take -1 (at "output-values" exhaustive-hopper))))
+        ;;DIAGNOSTIC: isolate each candidate route's own computed value by
+        ;;restricting the search universe to just that route's 2 pools.
+        (c-only:[string] ["P|OURO-98c486052a51|TSTC-98c486052a51" "S|TSTC-98c486052a51|TSTZ-98c486052a51"])
+        (d-only:[string] ["P|OURO-98c486052a51|TSTD-98c486052a51" "S|TSTD-98c486052a51|TSTZ-98c486052a51"])
+        (e-only:[string] ["P|OURO-98c486052a51|TSTE-98c486052a51" "S|TSTE-98c486052a51|TSTZ-98c486052a51"])
+        (f-only:[string] ["P|OURO-98c486052a51|TSTF-98c486052a51" "S|TSTF-98c486052a51|TSTZ-98c486052a51"])
+        (c-hopper:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperExhaustive ouro tstz 100.0 c-only 10))
+        (d-hopper:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperExhaustive ouro tstz 100.0 d-only 10))
+        (e-hopper:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperExhaustive ouro tstz 100.0 e-only 10))
+        (f-hopper:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperExhaustive ouro tstz 100.0 f-only 10))
+        ;;P1.9 edge case: a single-pool universe must work correctly with no
+        ;;special-casing needed by the caller — 1 route when connected, 0 when not.
+        (single-pool-universe:[string] ["P|OURO-98c486052a51|TSTC-98c486052a51"])
+        (single-pool-connected:[[string]] (ref-SWPT::URC_ComputeAllRoutes ouro tstc single-pool-universe 10))
+        (single-pool-disconnected:[[string]] (ref-SWPT::URC_ComputeAllRoutes ouro tstz single-pool-universe 10))
+    )
+    (map print
+        [
+            (format "DIAGNOSTIC C-only final output: {}" [(at 0 (take -1 (at "output-values" c-hopper)))])
+            (format "DIAGNOSTIC D-only final output: {}" [(at 0 (take -1 (at "output-values" d-hopper)))])
+            (format "DIAGNOSTIC E-only final output: {}" [(at 0 (take -1 (at "output-values" e-hopper)))])
+            (format "DIAGNOSTIC F-only final output: {}" [(at 0 (take -1 (at "output-values" f-hopper)))])
+            (format "best-of-3 routes found: {}" [best-of-3-routes])
+            (format "exhaustive routes found: {}" [exhaustive-routes])
+            (format "URC_HopperActive (best-of-3) final output for 100 OURO: {}" [active-final])
+            (format "URC_HopperExhaustive (all 4) final output for 100 OURO: {}" [exhaustive-final])
+            (expect
+                "Hand-computed expectation: exactly 3 routes found by best-of-3 (fixed cap)"
+                3
+                (length best-of-3-routes)
+            )
+            (expect
+                "Hand-computed expectation: exactly 4 routes found by exhaustive search (max-attempts=10, naturally exhausted at 4)"
+                4
+                (length exhaustive-routes)
+            )
+            (expect
+                "best-of-3 structurally CANNOT see the TSTF route (issued 4th, outside its fixed cap)"
+                false
+                best-of-3-has-f
+            )
+            (expect
+                "Exhaustive search DOES find the TSTF route"
+                true
+                exhaustive-has-f
+            )
+            (expect
+                "P4.1: exhaustive search finds a genuinely better route than best-of-3 on the identical topology/amount — the true redesign value, not an approximation"
+                true
+                (> exhaustive-final active-final)
+            )
+            (expect
+                "P1.9: single-pool universe, connected pair — exactly 1 route, no crash, no special-casing"
+                1
+                (length single-pool-connected)
+            )
+            (expect
+                "P1.9: single-pool universe, disconnected pair — exactly 0 routes, no crash"
+                0
+                (length single-pool-disconnected)
+            )
+        ]
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 052 - Exhaustive Route Discovery Proof · 03 · gas echo ====
+(print "--- [SWP|TX 052 - Exhaustive Route Discovery Proof · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 052 #34 Phase 11 Exhaustive Discovery Proof ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")

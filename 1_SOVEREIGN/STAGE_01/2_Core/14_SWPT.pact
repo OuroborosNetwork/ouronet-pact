@@ -51,6 +51,10 @@
     ;;of just the single first-found one; see the defun's own @doc for the full
     ;;rationale.
     (defun URC_ComputeAlternateRoutes:[[string]] (input:string output:string swpairs:[string]))
+    ;;#34 Phase 11 (the original #34 ask): generalizes URC_ComputeAlternateRoutes' fixed
+    ;;3-attempt cap into a real parameterized search — see the defun's own @doc for the
+    ;;full mechanics (early-exit, depth-cap filter, outer hard stop).
+    (defun URC_ComputeAllRoutes:[[string]] (input:string output:string swpairs:[string] max-attempts:integer))
 
     ;;#34 Phase 7: dirty-read path-cache core functions — exists-only (structural) side.
     ;;The active-required wrapper (adds SWP::UR_CanSwap per edge) lives in SWPI instead,
@@ -177,6 +181,16 @@
     ;;{3}
     (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                   (CT_Bar))
+    ;;#34 Phase 11: P0.4's depth cap (7 tokens / 6 hops, "the sexy number 7") — same
+    ;;value URC_ValidatePathStructure already enforces on submitted bundles, reused
+    ;;here as a post-discovery filter in URC_ComputeAllRoutes (see that function's own
+    ;;doc for why post-filter, not baked into U|BFS's traversal itself).
+    (defconst MAX_ROUTE_NODES        7)
+    ;;#34 Phase 11: P0.2's genuine outer hard stop on max-attempts, independent of
+    ;;whatever a caller requests — placeholder value, not researched/considered,
+    ;;owner may override. URC_ComputeAllRoutes clamps to this regardless of the
+    ;;caller's own max-attempts argument.
+    (defconst MAX_ATTEMPTS_HARD_CAP  50000)
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -395,6 +409,104 @@
                 )
             )
             (filter (lambda (r:[string]) (!= r [BAR])) [route1 route2 route3])
+        )
+    )
+    (defun URC_ComputeAllRoutes:[[string]]
+        (input:string output:string swpairs:[string] max-attempts:integer)
+        @doc "#34 Phase 11 — the original #34 ask: genuine exhaustive route discovery, \
+            \ not the fixed best-of-3 approximation URC_ComputeAlternateRoutes settled \
+            \ for. Generalizes that function's hardcoded 3-attempt let* chain into a \
+            \ real fold over up to <max-attempts> attempts, same edge-exclusion-per-\
+            \ found-route mechanism (URC_RouteEdges + UC_ExcludeEdges), same \
+            \ early-exit-once-empty short-circuit already proven correct in that \
+            \ function. Meant to be called via off-chain dirty read only (P3 — this is \
+            \ what fills a SmartSwapPathBundle's swap-route component before \
+            \ submission), never on the paid execution path; the whole point of the \
+            \ #34/#34M redesign is to remove exactly this kind of search from paid \
+            \ transactions. \
+            \ P0.2's max-attempts escalation (try 1000, then 2000, then 3000... flat \
+            \ +1000 steps, no doubling) is a CALLER-side retry pattern — this function \
+            \ takes a fixed <max-attempts> and does exactly that many attempts (or \
+            \ fewer, via early-exit), it does not escalate itself. A caller who gets \
+            \ back exactly <max-attempts> routes with no natural exhaustion should \
+            \ retry with a larger <max-attempts>; fewer than requested means the \
+            \ search is genuinely exhausted (every route already found). \
+            \ P0.2's outer hard stop (MAX_ATTEMPTS_HARD_CAP) is enforced here \
+            \ regardless of what the caller requests — a caller cannot force an \
+            \ unbounded search by passing an enormous <max-attempts>. \
+            \ P0.4's depth cap (MAX_ROUTE_NODES, 7 tokens / 6 hops) is enforced as a \
+            \ POST-DISCOVERY filter here, not baked into <U|BFS>'s own traversal — a \
+            \ deliberate, documented deviation from P0.4's stated preference \
+            \ ('ideally baked into the BFS/graph-walk itself... rather than only as a \
+            \ post-discovery filter, wasteful'). Reasoning: baking a depth bound into \
+            \ <U|BFS> would mean modifying a SHARED lower-layer utility module with \
+            \ callers beyond this one feature, a broader and riskier change than this \
+            \ phase's scope justifies; the 'wasteful — pay to explore and discard' \
+            \ downside the preference is guarding against does not actually apply here, \
+            \ since this function is dirty-read-only (free off-chain compute, never \
+            \ paid gas) — the efficiency concern the baked-in preference exists for is \
+            \ moot in this function's real deployment context. An over-cap route still \
+            \ has its edges excluded from the remaining search universe before the next \
+            \ attempt (without this, the deterministic BFS would just rediscover the \
+            \ exact same over-cap route every remaining attempt, wasting the whole \
+            \ budget making zero progress) — only whether it's ADDED to the returned \
+            \ results is filtered. \
+            \ Reuses the already-shipped URCX_HopperForNodes/UC_BestHopper unchanged \
+            \ for picking the best candidate by actual computed output value (P1.8's \
+            \ requirement) — that value-computation logic lives in SWPI (16_SWPI.pact), \
+            \ not here; this function only discovers node-path candidates, same \
+            \ division of labor URC_ComputeAlternateRoutes already established."
+        (let
+            (
+                (capped-attempts:integer (if (> max-attempts MAX_ATTEMPTS_HARD_CAP) MAX_ATTEMPTS_HARD_CAP max-attempts))
+            )
+            (if (or (= swpairs []) (<= capped-attempts 0))
+                []
+                (at 0
+                    (fold
+                        (lambda
+                            (acc:list idx:integer)
+                            ;;acc = [routes-found:[[string]] remaining-universe:[string] stopped:bool]
+                            (if (at 2 acc)
+                                acc
+                                (let*
+                                    (
+                                        (remaining:[string] (at 1 acc))
+                                        (route:[string]
+                                            (if (= remaining [])
+                                                [BAR]
+                                                (URC_ComputeGraphPath input output remaining)
+                                            )
+                                        )
+                                    )
+                                    (if (= route [BAR])
+                                        ;;Genuinely exhausted — no route findable in the
+                                        ;;remaining universe. Stop; every further attempt
+                                        ;;would find the identical nothing.
+                                        [(at 0 acc) remaining true]
+                                        (let*
+                                            (
+                                                (route-edges:[string] (URC_RouteEdges route remaining))
+                                                (new-remaining:[string] (UC_ExcludeEdges remaining route-edges))
+                                                (within-depth-cap:bool (<= (length route) MAX_ROUTE_NODES))
+                                                (new-routes:[[string]]
+                                                    (if within-depth-cap
+                                                        (+ (at 0 acc) [route])
+                                                        (at 0 acc)
+                                                    )
+                                                )
+                                            )
+                                            [new-routes new-remaining false]
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                        [[] swpairs false]
+                        (enumerate 0 (- capped-attempts 1))
+                    )
+                )
+            )
         )
     )
     (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string])

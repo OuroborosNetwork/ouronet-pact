@@ -221,7 +221,7 @@ detailed below at the same depth, to be expanded when their turn comes.
       **13-phase master plan is now fully done through Phase 10.** Remaining:
       Phase 11 (genuine exhaustive route discovery), Phase 12 (realistic-scale
       validation of that search), Phase 13 (final audit-trail/doc cleanup).
-- [ ] **Phase 11 — The original #34 ask: genuine exhaustive route discovery.** Build
+- [x] **Phase 11 — The original #34 ask: genuine exhaustive route discovery.** Build
       `SWPT::URC_ComputeAllRoutes` (real parameterized fold over `max-attempts`, not a fixed
       best-of-3) — this is what actually finds the *true* cheapest path, not an approximation.
       Run via dirty read, feeds Phase 8's bundle's `swap-route` component. Depth-cap (7-token/
@@ -234,6 +234,51 @@ detailed below at the same depth, to be expanded when their turn comes.
       1000-attempt search hits exactly 1000 with no natural exhaustion (no doubling), and the
       winning route chosen by actual computed output value, never by hop count as a proxy for
       cost.
+      **Done, 2026-08-21.** Built `SWPT::URC_ComputeAllRoutes(input, output, swpairs,
+      max-attempts)` (`14_SWPT.pact`) — a real `fold` over `(enumerate 0 (- capped-attempts
+      1))`, same edge-exclusion-per-found-route mechanism as `URC_ComputeAlternateRoutes`,
+      same early-exit-once-empty short-circuit. `MAX_ATTEMPTS_HARD_CAP` (50,000, P0.2's
+      placeholder) clamps regardless of caller request; the flat-`+1000` escalation is
+      confirmed CALLER-side, not internal to this function (a caller who gets back exactly
+      `max-attempts` routes with no natural exhaustion should retry larger, per P0.2). Depth
+      cap (`MAX_ROUTE_NODES = 7`) is enforced as a **post-discovery filter, a deliberate,
+      documented deviation** from P0.4's stated preference for baking it into `U|BFS`'s own
+      traversal — reasoning: `U|BFS` is a shared lower-layer utility with callers beyond this
+      feature, a broader/riskier change than this phase justifies; the "wasteful — pay to
+      explore and discard" downside the baked-in preference guards against doesn't actually
+      apply, since this function is dirty-read-only (free off-chain compute, never paid gas)
+      in its real deployment context. An over-cap route still has its edges excluded before
+      the next attempt (without this, deterministic BFS would just rediscover the same
+      over-cap route every remaining attempt, wasting the whole budget). Built
+      `SWPI::URC_HopperExhaustive(input, output, amount, swpairs, max-attempts)`
+      (`16_SWPI.pact`) mirroring `URCX_Hopper`'s shape exactly, reusing the already-shipped
+      `URCX_HopperForNodes`/`UC_BestHopper` completely unchanged (no new value-computation
+      logic needed) — `swpairs` exposed directly (not hidden like the `URC_Hopper`/
+      `URC_HopperActive` public wrappers), matching P1.3's own original spec, so a caller
+      picks active-only (real discovery) or any subset (Phase 12's varying-scale testing)
+      explicitly. **Hand-verified proof (P1.5-P1.9, closes the still-open P4.1 from Phase
+      4):** extended the existing `OURO->{TSTC,TSTD}->TSTZ` diamond (032e/032f) with 2 more
+      parallel routes (`TSTE`, deliberately weak; `TSTF`, deliberately strong, issued last) —
+      hand-computed expectation of exactly 4 total routes, confirmed exactly matching;
+      `URC_ComputeAlternateRoutes`' fixed cap structurally cannot see the 4th (`TSTF`),
+      confirmed via `expect`; `URC_ComputeAllRoutes` with `max-attempts>=4` finds all 4,
+      confirmed. **The actual P4.1 numbers, measured empirically (not hand-guessed — a first
+      sizing attempt was wrong, caught by isolating each candidate route's own computed
+      value via a diagnostic before asserting anything):** for a 100 OURO test amount, C =
+      195.16, D = 16.66, E = 116.81, F = 784.27 — `URC_HopperActive` (best-of-3, sees only
+      C/D/E) picks 195.16; `URC_HopperExhaustive` (sees all 4) picks F's 784.27 — a real,
+      measured case where the true-best route is provably outside best-of-3's reach and the
+      exhaustive search finds it. Also proved P1.9's edge case (single-pool universe: exactly
+      1 route when connected, exactly 0 when not, no crash, no special-casing needed).
+      **A real side effect caught while building this:** issuing 2 more OURO-anchored pools
+      this late in the file (P2-scale topology already active, ~102 pools) increased OURO's
+      own graph degree enough to blow an unrelated *later* test's (`SWP|TX 033`,
+      `C_AddFrozenLiquidity`) hardcoded gas limit — caught via a real full-regression
+      failure, not assumed away. Fixed by moving the whole Phase 11 block (`SWP|TX 049-052`)
+      to the true end of the file, after every other test, so it cannot affect anything
+      downstream — not by chasing gas-limit bumps through every affected transaction.
+      Permanent regression: `SWP|TX 049`-`052` in `[6.3]_SWP.repl`. Full `Z.repl` (Stage
+      1+2) + issuance-only regression both 0 `FAILURE`.
 - [ ] **Phase 12 — Realistic-scale validation of the exhaustive search.** Measure
       `URC_ComputeAllRoutes`'s own cost/candidate-count at 50-100-pool scale via dirty read
       (was `P2` in the old roadmap below) — confirms the *whole* pipeline (exhaustive discovery
