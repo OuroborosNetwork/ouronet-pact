@@ -6,14 +6,20 @@ headroom.** Two shipped changes got there: direction 1 (`SWPI::URC_HopperActiveS
 single-shortest-path routing instead of best-of-3 for the boost pump) then direction 5
 (carry the boost value forward hop-by-hop along the swap's own already-selected edges,
 `XI_SmartSwapCore`'s fold, only price-and-burn once on the last hop — the owner's own design
-from a discussion round, see P0.6's writeup below for the full trace). **Caveat found right
-after shipping, 2026-08-21: the fix makes boost cost hop-count-independent, not
-pool-complexity-independent — measured 9-pairs-vs-22-pairs shows the remaining single search's
-gas growing super-linearly with total active pool count (~gas ∝ n^1.42 on a 2-point fit), which
-would eat the thin ~37k headroom well before "large" scale. Not re-fixed yet — real numbers
-needed from a P2-scale topology before deciding whether more work is needed here.** Also still
-open: a separate, unfixed crash bug in `XI_RawLiquidPump` (found alongside P0.5, not yet
-formally numbered in `ISSUES-RANKED.md`). P1 (core search primitives) not started — next up.
+from a discussion round, see P0.6's writeup below for the full trace). Two follow-up
+optimizations were tried and evaluated after shipping: special-fee-target payout batching
+(built, measured 114 gas *worse*, reverted) and a suspected `URC_EdgesActive` O(n) `contains`-
+scan fix for what looked like super-linear pool-count scaling (disproven by direct
+micro-benchmark before building — `contains` costs are negligible at realistic sizes). A
+properly controlled follow-up measurement (same source token, only unrelated background pool
+count varying) then showed the original "super-linear with pool count" claim itself was
+**confounded** (the 9-vs-22-pairs comparison used two different source tokens) — the real,
+controlled result is **sub-linear** growth with pool count (2.75x pools → 1.54x gas), with gas
+tracking discovered chain (path) count almost exactly linearly instead. **No further fix
+needed or built here based on current evidence** — full trace and numbers in P0.6's writeup
+below. Also still open: a separate, unfixed crash bug in `XI_RawLiquidPump` (found alongside
+P0.5, not yet formally numbered in `ISSUES-RANKED.md`). P1 (core search primitives) not
+started — next up, pending the owner's own proposed solution (not yet shared).
 
 **To:** whoever picks up SWP audit follow-up work next.
 **From:** 2026-08-20 SWP audit session (#34M/M2 follow-up discussion).
@@ -369,8 +375,38 @@ P1.2"). Update the checkboxes here as items land.
       though (different source tokens, different local topology) — real next step is an
       apples-to-apples measurement (same source token, only pool count varying) before
       committing to a fix aimed at `UC_BFS`'s chain-tracking (`UCX_GetChains`/`UDCX_AddChains`)
-      as the real driver. **Not built. Owner has a different proposed solution to evaluate
-      first (2026-08-21) — this investigation paused here pending that.**
+      as the real driver.
+
+      **Corrected, 2026-08-21 — ran the controlled comparison, and the "quadratic pool-count
+      scaling" conclusion itself does NOT survive it. The original 9-vs-22-pairs measurement
+      was confounded (different source tokens, `AKOSON` vs `W7`, each with its own inherent
+      local branching), not a clean pool-count scaling test.** Built one: fixed `W7` as the
+      source throughout, fixed the 8 pools genuinely needed for `W7→lkda` reachability (the 6
+      `W1`-`W7` chain pools + the `OURO`-`W1` anchor + one `OURO`-`DLK` connector) as a constant
+      "core," then varied only how many *unrelated* "noise" pools (AKOSON/EUR/USD/PKOSON/etc.,
+      nothing to do with the route) were also present in the search universe:
+      - core only (8 pools): 39 chains, 61,251 gas
+      - core + 5 noise (13 pools): 43 chains, 65,881 gas
+      - core + 10 noise (18 pools): 52 chains, 80,688 gas
+      - core + all 14 noise (22 pools): 60 chains, 94,423 gas
+      Pool count grew 2.75x (8→22) but gas grew only **1.54x** (61,251→94,423) — sub-linear,
+      not super-linear, once source token is held constant. And the gas-per-chain ratio is
+      remarkably stable across all four points (1,571 / 1,532 / 1,552 / 1,574 gas per chain) —
+      **gas cost tracks chain count almost exactly linearly; chain count itself grows
+      sub-linearly with unrelated background pool count.** The earlier "up to ~1.3M at 100
+      pools" extrapolation was built on the confounded, wrong premise and should be discarded.
+      **Revised understanding:** there is no demonstrated quadratic blow-up from total protocol
+      pool count. What actually drives a search's cost is how many distinct paths (`chains`)
+      BFS enumerates near the *specific* source/route being searched — driven by local
+      branching (how richly-connected the pools immediately around that route are), not by how
+      many unrelated pools exist elsewhere in the protocol. This is a real, still-worth-watching
+      sensitivity (a popular token surrounded by many densely-interconnected large pools could
+      still generate a lot of chains), but it is a fundamentally different, more bounded concern
+      than "cost blows up as the whole protocol grows" — and does not currently justify building
+      a dedicated fix. **No fix built or needed here based on current evidence.** If this needs
+      revisiting, the right lever (per the gas-per-chain finding) would be reducing chain
+      *enumeration* itself (e.g. an early-exit/shortest-only BFS variant), not anything to do
+      with `URC_EdgesActive`'s whitelist check.
 
 ### P1 — Core search primitives, hand-verified on a small topology
 - [ ] **P1.1** `SWPT::URC_ComputeAllRoutes(input, output, swpairs, max-attempts)` — generalize
