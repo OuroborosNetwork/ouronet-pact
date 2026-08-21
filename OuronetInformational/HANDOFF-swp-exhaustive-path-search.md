@@ -94,9 +94,63 @@ detailed below at the same depth, to be expanded when their turn comes.
       forward and fixed separately, ahead of this phase (`6d23233`) — see the "Do not lose
       these facts" entry below; P3.5.3 is therefore already satisfied for that specific bug,
       though the new `XI_SmartSwapCore` still needs its own malformed-bundle fallback proof.
-      **Stage B — not started:** the actual new-logic build (`XI_SmartSwapCore`, the new
-      `C_SmartSwap` at SWPU, `SWP|C_SmartSwapExplicitRoute` at Talos, the dumb-writer stoa-value
-      updater, slippage/IGNIS wiring) per P3.2-P3.6 below.
+      **Stage B — core execution path done, 2026-08-21 (uncommitted at write time):**
+      the actual new-logic build. Real measured result, same ~102-active-pool P2-scale
+      worst-case topology, same `W1->W7` 6-hop swap, Liquid Boost ON — **`SWP|TX 032z2`
+      (self-searching `CC_SmartSwap`): 7,145,297 gas. `SWP|TX 032z6` (bundle-based
+      `C_SmartSwap`, new, same swap): 385,749 gas — an 18.5x reduction, safely under the
+      ~2,000,000 gas ceiling.** This is the real "how much does outsourcing dirty reads
+      bring us" number the owner asked for — measured, not estimated. Both swaps
+      confirmed to execute the identical real 6-hop/6-pool route (`"via 6 Swaps over 6
+      Pools"`), not a shortcut or fallback. Full `Z.repl` (Stage 1+2) + issuance-only
+      regression both 0 `FAILURE` throughout.
+      **What was built:** `SwapperIssueV3::URC_HopperForKnownRoute` (16_SWPI.pact —
+      feeless-quote computation over a CALLER-SUPPLIED route, no re-selection, unlike
+      the self-searching `URCX_HopperForNodes`); `boost-path` threaded as a new
+      parameter through `XI_SmartSwapCore`/`XI_LiquidIndexPump`/`XI_RawLiquidPump`
+      (19_SWPU.pact), gated by a `NO_PATH` sentinel (`[BAR]`-nodes, reusing the same
+      representation `URC_ReadPathCache` already uses for "nothing to give you, compute
+      it yourself") so the self-searching `CC_SmartSwap` chain is byte-for-byte
+      unchanged in behavior; `SWPU::URC_PoolStoaValueFromPath`/
+      `URC_ComputeStoaValueResults` (the P3.4 dumb-writer's actual value computation,
+      reproducing `URC_PoolValue`'s exact per-pool-type formula but sourcing
+      `first-worth` from the bundle instead of a fresh `URC_WorthDWK` search — graceful
+      `-1.0` skip-sentinel on any pool whose first-token has no usable bundle path, never
+      a crash or an aborted swap); `SWPU::XI_SmartSwapExplicitRoute` + `SWPU::C_SmartSwap`
+      (mirrors `XI_SmartSwapRouter`/`CC_SmartSwap`, sourcing the route from
+      `bundle.swap-route` instead of `URC_HopperActive`, returning `[ico, stoa-results]`
+      — a wider container per P3.10, not a schema change); new
+      `SWPU|X>SMART-SWAP-EXPLICIT-ROUTE` defcap family (validates the bundle's route via
+      ONE `SWPI::URC_ValidatePathActive` call — no full-graph BFS at the defcap layer at
+      all, the actual mechanism behind the 18.5x number); Talos
+      `SWP|C_SmartSwapWithSlippage`/`SWP|C_SmartSwapNoSlippage`
+      (04_TS01-C3.pact) with the real dumb-writer (`map` straight into
+      `XE_UpdateStoaValue`, zero `URC_PoolValue` calls). New permanent regression:
+      `SWP|TX 032z6` in `[6.3]_SWP.repl` — builds a real bundle via the exact dirty-read
+      calls an off-chain client would make (gas-unmeasured, matching production), then
+      measures only the real submitted transaction, directly comparable to `032z2`.
+      **Two real bugs caught and fixed while building this:** (1) doc-comment
+      inconsistency — `CachedPathOrMiss`/`TokenPathPair`'s Phase 6 doc claimed both
+      `boost-path` and `stoa-paths` target DLK; tracing `URC_PoolValue`'s actual
+      implementation showed `stoa-paths` targets DWK (`UR_WrappedStoaID`) — a genuinely
+      different token than `boost-path`'s DLK (`UR_SilverStoaID`) target — caught and
+      fixed in the schema docs before anything was built against the wrong assumption.
+      (2) a second, previously-missed `XI_LiquidIndexPump` call site inside `XI_Swap`
+      (the plain/direct-swap path, unrelated to SmartSwap) broke when the function's
+      signature gained the `boost-path` parameter — caught immediately via a real
+      full-suite regression failure (`SWP|TX 046 - Empy Emma of GAS`), fixed by passing
+      `NO_PATH` (search internally, unchanged behavior) at that call site.
+      **What's left of Stage B:** cache self-warming (registering a bundle's
+      `is-new=true` paths into `SWPT|PathCache` after a validated real use) is
+      deliberately NOT wired yet — needs its own verification that a cross-module
+      `(with-capability (SWPT.SECURE) (SWPT.XI_RegisterPath ...))` call from SWPU
+      actually satisfies SWPT's `SECURE` cap in production (its body is unconditionally
+      `true`, so this is expected to work, but wasn't empirically proven this pass —
+      don't assume, verify before building it). Tracked as an explicit next increment,
+      not silently dropped. `P3.5.3`'s malformed-bundle fallback proof (adversarial:
+      disconnected route, inactive edge, fabricated path) is also still open — the
+      defcap-layer `enforce`s give strong reason to expect clean rejection, but this
+      hasn't been adversarially proven with a real revert-reproduce test yet.
 - [ ] **Phase 9 — Off-chain/UI orchestration + docs.** Spec for how a client constructs the
       bundle via dirty reads (P3.7); architecture doc (what P5.5 originally covered, now scoped
       to the whole redesign, not just the search primitives).

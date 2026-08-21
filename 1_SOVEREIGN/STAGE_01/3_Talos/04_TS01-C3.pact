@@ -43,6 +43,16 @@
     ;;Smart Swap
     (defun SWP|CC_SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
     (defun SWP|CC_SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))
+    ;;#34 Phase 8: bundle-based, dirty-read-injected Smart Swap — built alongside, not
+    ;;replacing, SWP|CC_SmartSwap{With,No}Slippage above, for direct gas comparison.
+    (defun SWP|C_SmartSwapWithSlippage
+        (patron:string account:string input-id:string input-amount:decimal output-id:string
+         slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+    )
+    (defun SWP|C_SmartSwapNoSlippage
+        (patron:string account:string input-id:string input-amount:decimal output-id:string
+         bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+    )
     ;;Swap
     (defun SWP|C_SingleSwapWithSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
     (defun SWP|C_SingleSwapNoSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
@@ -869,6 +879,99 @@
                     (at 3 out)
                 )
                 (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+            )
+        )
+    )
+    (defun SWP|C_SmartSwapWithSlippage
+        (
+            patron:string
+            account:string
+            input-id:string
+            input-amount:decimal
+            output-id:string
+            slippage-bounds:object{SwapperUsageV2.Slippage}
+            bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+        )
+        @doc "#34 Phase 8: bundle-based Smart Swap with slippage protection — the route, \
+            \ boost-path and stoa-paths are all supplied by <bundle> (assembled \
+            \ client-side via dirty reads, HANDOFF doc P3.7), zero internal searching. \
+            \ P3.4's dumb-writer: <stoa-results> (precomputed by \
+            \ SWPU::URC_ComputeStoaValueResults inside SWPU::C_SmartSwap) is mapped \
+            \ straight into XE_UpdateStoaValue below — no URC_PoolValue re-derivation \
+            \ at the Talos layer at all, unlike SWP|CC_SmartSwapWithSlippage above."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (slippage:decimal (at "slippage-percent" slippage-bounds))
+                    (result:list
+                        (ref-SWPU::C_SmartSwap
+                            account input-id input-amount output-id
+                            slippage kda-pid slippage-bounds bundle
+                        )
+                    )
+                    (ico:object{IgnisCollectorV1.OutputCumulator} (at 0 result))
+                    (stoa-results:list (at 1 result))
+                    (out:list (at "output" ico))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (map
+                    (lambda (pv:object) (ref-SWP::XE_UpdateStoaValue (at "pool" pv) (at "stoa-value" pv)))
+                    stoa-results
+                )
+                (if (= (length out) 4)
+                    (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+                    (format "Smart Swap not executed: {}" [(at 0 out)])
+                )
+            )
+        )
+    )
+    (defun SWP|C_SmartSwapNoSlippage
+        (
+            patron:string
+            account:string
+            input-id:string
+            input-amount:decimal
+            output-id:string
+            bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+        )
+        @doc "#34 Phase 8: bundle-based Smart Swap without slippage protection. Unlike \
+            \ SWP|CC_SmartSwapNoSlippage above, the dummy slippage-bounds object is built \
+            \ via SWPU::UDC_Slippage directly (not UDC_SpawnSmartSwapSlippageBounds, \
+            \ which itself performs a live URC_HopperActive search — defeating the whole \
+            \ point of the bundle-based path)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (slippage-bounds:object{SwapperUsageV2.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
+                    (result:list
+                        (ref-SWPU::C_SmartSwap
+                            account input-id input-amount output-id
+                            -1.0 kda-pid slippage-bounds bundle
+                        )
+                    )
+                    (ico:object{IgnisCollectorV1.OutputCumulator} (at 0 result))
+                    (stoa-results:list (at 1 result))
+                    (out:list (at "output" ico))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (map
+                    (lambda (pv:object) (ref-SWP::XE_UpdateStoaValue (at "pool" pv) (at "stoa-value" pv)))
+                    stoa-results
+                )
+                (if (= (length out) 4)
+                    (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+                    (format "Smart Swap not executed: {}" [(at 0 out)])
+                )
             )
         )
     )

@@ -4924,6 +4924,103 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z6 - #34 Phase 8 Bundle-Based SmartSwap Proof + Gas Comparison (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z6 - Bundle-Based SmartSwap Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 032z6 - Bundle-Based SmartSwap Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;#34 Phase 8: proves the bundle-based SWP|C_SmartSwapNoSlippage end to end at the
+;;SAME ~102-active-pool P2-scale worst-case state SWP|TX 032z2 measured
+;;SWP|CC_SmartSwapNoSlippage (self-searching) at — direct, apples-to-apples gas
+;;comparison against that already-recorded number, not an estimate. Bundle
+;;construction below (URC_HopperActive/URC_HopperActiveShortest/URC_Hopper calls)
+;;simulates exactly what an off-chain client would do via free /local dirty reads —
+;;deliberately done BEFORE the gas reset, so none of it counts against the measured
+;;total, matching production reality where only the real submitted transaction costs
+;;anything.
+;;==== SWP|TX 032z6 - Bundle-Based SmartSwap Proof · 02 · dirty-read bundle + measured call ====
+(print "--- [SWP|TX 032z6 - Bundle-Based SmartSwap Proof · 02 · dirty-read bundle + measured call] ---")
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (dwk:string (ref-DALOS::UR_WrappedStoaID))
+        (dlk:string (ref-DALOS::UR_SilverStoaID))
+        (input-id "W1-98c486052a51")
+        (output-id "W7-98c486052a51")
+        ;;1) swap-route: A->B, freshly discovered off-chain (P3.0: never cached,
+        ;;amount-sensitive) — the real, best-of-3 active-only search, same one
+        ;;SWP|CC_SmartSwapNoSlippage itself runs internally at 032z2.
+        (route-h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id 10.0))
+        (route-nodes:[string] (at "nodes" route-h))
+        (route-edges:[string] (at "edges" route-h))
+        ;;2) boost-path: output-id -> DLK, amount-agnostic (P3.0) — any positive
+        ;;discovery amount works, the real transaction recomputes the actual carried
+        ;;value fresh via URC_HopperForKnownRoute over these exact nodes/edges.
+        (boost-h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActiveShortest output-id dlk 1.0))
+        ;;3) stoa-paths: one deduped entry per DISTINCT first-token among the route's
+        ;;own distinct pools, each first-token -> DWK, exists-only universe (matching
+        ;;URC_WorthDWK's own unfiltered URC_Hopper call, not URC_HopperActive).
+        (distinct-pools:[string] (distinct route-edges))
+        (first-tokens:[string] (distinct (map (lambda (sp:string) (at 0 (ref-SWP::UR_PoolTokens sp))) distinct-pools)))
+        (stoa-paths:list
+            (map
+                (lambda (ft:string)
+                    (let
+                        (
+                            (h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper ft dwk 1.0))
+                        )
+                        {"first-token" : ft
+                        ,"path" : {"nodes" : (at "nodes" h), "edges" : (at "edges" h), "is-new" : false}}
+                    )
+                )
+                first-tokens
+            )
+        )
+        (bundle
+            {"swap-route" : {"nodes" : route-nodes, "edges" : route-edges}
+            ,"boost-path" : {"nodes" : (at "nodes" boost-h), "edges" : (at "edges" boost-h), "is-new" : false}
+            ,"stoa-paths" : stoa-paths}
+        )
+    )
+    ;;Gas reset happens HERE, after bundle construction — only the real paid
+    ;;transaction below is measured, exactly matching 032z2's own measurement shape
+    ;;((env-gas 0) immediately before the Talos call).
+    (env-gas 0)
+    (let
+        (
+            (swap-result:string
+                (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD input-id 10.0 output-id bundle)
+            )
+        )
+        (map print
+            [
+                (format "#34 Phase 8 bundle-based swap result (Liquid Boost ON, ~102 active pools): {}" [swap-result])
+                (expect
+                    "Bundle-based swap actually executed the full 6-hop route (not a shorter shortcut, not a fallback)"
+                    true
+                    (contains "via 6 Swaps" swap-result)
+                )
+            ]
+        )
+    )
+)
+(print (format "<<<<<<<SWP|TX 032z6 #34 PHASE 8 BUNDLE-BASED SMARTSWAP (Liquid Boost ON, ~102 active pools) ==> {} KDA GAS>>>>>>>" [(env-gas)]))
+(print "Compare directly against SWP|TX 032z2's recorded SWP|CC_SmartSwapNoSlippage gas at the same ~102-active-pool state — this is the real 'how much does outsourcing dirty reads save us' number.")
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "SWP|TX 033 - Add Frozen & Sleeping Liquidity")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

@@ -33,15 +33,22 @@
         edges:[string]
     )
     (defschema CachedPathOrMiss
-        @doc "An amount-agnostic X->DLK path (P3.0) — used for both Liquid Boost's burn \
-            \ valuation and stoa-value pricing, the two cacheable cases. <nodes>=[BAR] is \
-            \ the sentinel for 'genuinely no path exists anywhere' (handled gracefully, \
-            \ not a crash — this is also what finally closes the long-standing \
-            \ XI_RawLiquidPump crash bug, Phase 8). <is-new>=true means this was freshly \
-            \ traced off-chain and should be registered after use; false means it came \
-            \ from the shared cache already. <is-new> is a hint only — the write path \
-            \ (Phase 7) must independently verify before writing, never trust this flag \
-            \ as the write authority (owner's final-check catch, 2026-08-21)."
+        @doc "An amount-agnostic X->target path (P3.0) — reused for two DIFFERENT cacheable \
+            \ pricing targets, NOT the same token (caught 2026-08-21, before Phase 8 built \
+            \ against this, while tracing URC_PoolValue's real implementation): \
+            \ <boost-path> targets DLK (DALOS::UR_SilverStoaID — matches XI_RawLiquidPump's \
+            \ existing URC_HopperActiveShortest id->lkda call); each <stoa-paths> entry \
+            \ targets DWK (DALOS::UR_WrappedStoaID — matches URC_PoolValue's own \
+            \ URC_WorthDWK first-token->dwk call, per its own \"Outputs the Pool Value in \
+            \ DWK\" doc). Same schema shape, different destination token per field — callers \
+            \ must supply/validate the correct one for each. <nodes>=[BAR] is the sentinel \
+            \ for 'genuinely no path exists anywhere' (handled gracefully, not a crash — \
+            \ this is also what finally closes the long-standing XI_RawLiquidPump crash \
+            \ bug, Phase 8). <is-new>=true means this was freshly traced off-chain and \
+            \ should be registered after use; false means it came from the shared cache \
+            \ already. <is-new> is a hint only — the write path (Phase 7) must \
+            \ independently verify before writing, never trust this flag as the write \
+            \ authority (owner's final-check catch, 2026-08-21)."
         nodes:[string]
         edges:[string]
         is-new:bool
@@ -50,14 +57,17 @@
         @doc "One deduped entry in a bundle's <stoa-paths> list — one per DISTINCT first \
             \ token among all pools a swap actually touches, not one per pool (#34 Phase \
             \ 5 found today's per-pool loop redundantly re-traces identical paths when \
-            \ pools share a first token)."
+            \ pools share a first token). <path> targets DWK, matching URC_PoolValue's \
+            \ own URC_WorthDWK target — NOT DLK (see CachedPathOrMiss's doc)."
         first-token:string
         path:object{CachedPathOrMiss}
     )
     (defschema SmartSwapPathBundle
         @doc "The full dirty-read-discovered input to the bundle-based SmartSwap entrypoint \
             \ (Phase 8, C_ prefix) — replaces all internal on-chain searching. Assembled \
-            \ entirely client-side per P3.7's orchestration sequence."
+            \ entirely client-side per P3.7's orchestration sequence. <boost-path> targets \
+            \ DLK, <stoa-paths> entries target DWK — different destination tokens, see \
+            \ CachedPathOrMiss's doc."
         swap-route:object{SwapRoute}
         boost-path:object{CachedPathOrMiss}
         stoa-paths:[object{TokenPathPair}]
@@ -86,6 +96,16 @@
     ;;
     (defun C_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
     (defun CC_SmartSwap:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal kda-pid:decimal slippage-bounds:object{Slippage}))
+    ;;#34 Phase 8: the bundle-based, dirty-read-injected SmartSwap — performs zero
+    ;;internal searching (route, boost-path and stoa-paths are all supplied by the
+    ;;caller, per SmartSwapPathBundle), built alongside CC_SmartSwap for direct gas
+    ;;comparison, not replacing it.
+    (defun C_SmartSwap:list
+        (
+            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            kda-pid:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}
+        )
+    )
     (defun C_Swap:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal kda-pid:decimal slippage-bounds:object{Slippage}))
 )
 ;;
@@ -221,6 +241,14 @@
     (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2)))
     (defconst BAR                   (CT_Bar))
     (defconst EOC                   (CT_EmptyCumulator))
+    ;;#34 Phase 8: sentinel CachedPathOrMiss meaning "no bundle-supplied boost-path was
+    ;;given, search for one internally" — passed by the self-searching CC_SmartSwap path
+    ;;down through XI_SmartSwapCore/XI_LiquidIndexPump/XI_RawLiquidPump, which fall back
+    ;;to their original SWPI::URC_HopperActiveShortest search whenever they see this
+    ;;exact sentinel. Reuses the SAME [BAR] representation URC_ReadPathCache already uses
+    ;;for "no cached path exists" — semantically the same case ("I have nothing for you,
+    ;;compute it yourself"), not overloading the meaning.
+    (defconst NO_PATH               {"nodes" : [BAR], "edges" : [], "is-new" : false})
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -379,6 +407,53 @@
             (compose-capability (SECURE))
         )
     )
+    ;;#34 Phase 8: bundle-based SmartSwap caps — mirror SWPU|C>SMART-SWAP-WITH/NO-SLIPPAGE
+    ;;+ SWPU|X>SMART-SWAP exactly, except validation runs against the bundle's own
+    ;;swap-route instead of a fresh SWPI::URC_HopperActive search. This is the actual
+    ;;gas win this whole redesign exists for: no full-graph BFS at the defcap layer.
+    (defcap SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE
+        (
+            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+        )
+        @event
+        (compose-capability (SWPU|X>SMART-SWAP-EXPLICIT-ROUTE account input-id input-amount output-id bundle))
+    )
+    (defcap SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE
+        (
+            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+        )
+        @event
+        (compose-capability (SWPU|X>SMART-SWAP-EXPLICIT-ROUTE account input-id input-amount output-id bundle))
+    )
+    (defcap SWPU|X>SMART-SWAP-EXPLICIT-ROUTE
+        (account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+        @doc "All authorization/validation for the bundle-based path lives here, per this \
+            \ codebase's client-defcap convention — XI_SmartSwapExplicitRoute below does \
+            \ writes only, no enforce. Validates the SUPPLIED swap-route (structural \
+            \ connectivity + active-required + depth-cap, all in ONE cheap \
+            \ SWPI::URC_ValidatePathActive call — no full-graph search), and that it \
+            \ actually starts/ends at <input-id>/<output-id> — a structurally-valid but \
+            \ wrong-pair route must never be silently accepted."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (nodes:[string] (at "nodes" (at "swap-route" bundle)))
+                (edges:[string] (at "edges" (at "swap-route" bundle)))
+                (le:integer (length nodes))
+            )
+            (enforce (!= input-id output-id) "Input and Output tokens must differ")
+            (enforce (!= le 0) (format "No path supplied between {} and {}" [input-id output-id]))
+            (enforce (= (at 0 nodes) input-id) "swap-route in bundle does not start at input-id")
+            (enforce (= (at (- le 1) nodes) output-id) "swap-route in bundle does not end at output-id")
+            (enforce (ref-SWPI::URC_ValidatePathActive nodes edges) "swap-route in bundle is not a valid, fully active path")
+            (ref-DPTF::UEV_Amount input-id input-amount)
+            (compose-capability (P|DT))
+            (compose-capability (SECURE))
+        )
+    )
     ;;
     ;;<=======>
     ;;FUNCTIONS
@@ -454,6 +529,154 @@
                 (ref-SWP:module{SwapperV3} SWP)
             )
             (distinct (map (lambda (sp:string) (at 0 (ref-SWP::UR_PoolTokens sp))) distinct-edges))
+        )
+    )
+    (defun URC_PoolStoaValueFromPath:decimal (swpair:string stoa-paths:[object{TokenPathPair}])
+        @doc "#34 Phase 8 — the 'dumb-writer' replacement for URC_PoolValue's own \
+            \ URC_WorthDWK(first-token, first-token-supply) call. Reproduces \
+            \ URC_PoolValue's EXACT pool-worth formula (same current-lp-supply/genesis \
+            \ branch, same per-pool-type math), but sources <first-worth> from the \
+            \ bundle's <stoa-paths> instead of a fresh first-token->DWK search — that \
+            \ search is the actual redundant cost this whole helper exists to remove \
+            \ (P0.6: 56.9% of the 102-pool worst-case total, more than 3x routing+boost \
+            \ combined). Target is DWK (DALOS::UR_WrappedStoaID), matching \
+            \ URC_PoolValue's own doc ('Outputs the Pool Value in DWK') — NOT DLK (see \
+            \ CachedPathOrMiss's doc, caught 2026-08-21 before this was built). \
+            \ Returns -1.0 (impossible pool-worth, easy sentinel) when the bundle didn't \
+            \ supply a usable path for this pool's first token — same graceful-degrade \
+            \ principle as the rest of Phase 8: a bad/missing entry just means this ONE \
+            \ pool's stoa-value doesn't get refreshed this round, never a crash or an \
+            \ aborted swap. Every path is re-validated here regardless of the bundle's \
+            \ own <is-new> claim (P3.1: even a cache hit always re-validates) — \
+            \ exists-only (SWPT::URC_ValidatePathStructure), matching URC_WorthDWK's own \
+            \ URC_Hopper (unfiltered universe, not URC_HopperActive) — pricing paths were \
+            \ never required to route over can-swap=true pools only."
+        (let*
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPT:module{SwapTracerV2} SWPT)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (dwk:string (ref-DALOS::UR_WrappedStoaID))
+                (dlk:string (ref-DALOS::UR_SilverStoaID))
+                (current-lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
+                (pool-token-supplies:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_PoolGenesisSupplies swpair)
+                        (ref-SWP::UR_PoolTokenSupplies swpair)
+                    )
+                )
+                (w:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_GenesisWeigths swpair)
+                        (ref-SWP::UR_Weigths swpair)
+                    )
+                )
+                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                (how-many:integer (length pool-tokens))
+                (first-token:string (at 0 pool-tokens))
+                (first-token-supply:decimal (at 0 pool-token-supplies))
+                (first-token-precision:integer (ref-DPTF::UR_Decimals first-token))
+                (first-weigth:decimal (at 0 w))
+                ;;Same dwk/dlk short-circuits URC_WorthDWK already has — no path tracing
+                ;;needed or possible for these two (dlk<->dwk is a fixed protocol-level
+                ;;ATS liquid-index conversion, not a swap-pool route).
+                (first-worth:decimal
+                    (if (= first-token dwk)
+                        first-token-supply
+                        (if (= first-token dlk)
+                            (let
+                                (
+                                    (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk))
+                                    (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
+                                    (index-value:decimal (ref-ATS::URC_Index kdaliquindex))
+                                    (dlk-prec:integer (ref-DPTF::UR_Decimals dlk))
+                                )
+                                (floor (* first-token-supply index-value) dlk-prec)
+                            )
+                            (let*
+                                (
+                                    (path:object{CachedPathOrMiss} (UC_FindStoaPath stoa-paths first-token))
+                                    (nodes:[string] (at "nodes" path))
+                                    (edges:[string] (at "edges" path))
+                                    (le:integer (length nodes))
+                                    (is-valid:bool
+                                        (if (= nodes [BAR])
+                                            false
+                                            (and
+                                                (ref-SWPT::URC_ValidatePathStructure nodes edges)
+                                                (and
+                                                    (= (at 0 nodes) first-token)
+                                                    (= (at (- le 1) nodes) dwk)
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                                (if (not is-valid)
+                                    -1.0
+                                    (let*
+                                        (
+                                            (h-obj:object{SwapperIssueV3.Hopper}
+                                                (ref-SWPI::URC_HopperForKnownRoute nodes edges first-token-supply)
+                                            )
+                                            (ovs:[decimal] (at "output-values" h-obj))
+                                        )
+                                        (if (= (length ovs) 0)
+                                            first-token-supply
+                                            (at 0 (take -1 ovs))
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+            (if (= first-worth -1.0)
+                -1.0
+                (if (or (= pool-type "S") (= pool-type "P"))
+                    (floor (* (dec how-many) first-worth) first-token-precision)
+                    (floor (/ first-worth first-weigth) first-token-precision)
+                )
+            )
+        )
+    )
+    (defun URC_ComputeStoaValueResults:list
+        (distinct-edges:[string] stoa-paths:[object{TokenPathPair}])
+        @doc "#34 Phase 8 (P3.3/P3.4) — emits [{pool, stoa-value}, ...] for every pool in \
+            \ <distinct-edges> the bundle could actually price (skips any pool whose \
+            \ first-token has no valid <stoa-paths> entry — URC_PoolStoaValueFromPath's \
+            \ -1.0 sentinel — rather than fail the whole swap over one unpriceable pool). \
+            \ Does NOT assume <distinct-edges> or <stoa-paths> were perfectly deduped by \
+            \ the caller (P3.3: worst case, redundant but harmless per-pool lookups \
+            \ against an already-supplied path — no correctness risk, only a missed \
+            \ optimization if the caller's own dedup was sloppy)."
+        (if (= (length distinct-edges) 0)
+            []
+            (let
+                (
+                    (results:[decimal] (map (lambda (sp:string) (URC_PoolStoaValueFromPath sp stoa-paths)) distinct-edges))
+                )
+                (fold
+                    (lambda (acc:list idx:integer)
+                        (if (= (at idx results) -1.0)
+                            acc
+                            (+ acc [{"pool" : (at idx distinct-edges), "stoa-value" : (at idx results)}])
+                        )
+                    )
+                    []
+                    ;;#20H-style guard: (enumerate 0 -1) is [0 -1], not empty, in Pact 5 —
+                    ;;the outer 0-length branch above already keeps this fold from ever
+                    ;;seeing that case, but guarding the enumerate bound directly too
+                    ;;(matches this codebase's established convention) costs nothing.
+                    (enumerate 0 (- (length distinct-edges) 1))
+                )
+            )
         )
     )
     ;;{F2}  [UEV]
@@ -583,6 +806,62 @@
             )
         )
     )
+    (defun C_SmartSwap:list
+        (
+            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            kda-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+        )
+        @doc "#34 Phase 8 — the bundle-based, dirty-read-injected SmartSwap: performs \
+            \ ZERO internal searching. <bundle> (SmartSwapPathBundle) is assembled \
+            \ entirely client-side per the exhaustive-path-search HANDOFF doc's P3.7 \
+            \ orchestration sequence — swap-route (A->B), boost-path (B->DLK) and \
+            \ stoa-paths (each distinct pool's first-token->DWK) are all dirty-read \
+            \ off-chain before this transaction is ever submitted. Built ALONGSIDE, not \
+            \ replacing, CC_SmartSwap (the original self-searching variant) for direct \
+            \ A/B gas comparison (P3.5.2) — same slippage/no-slippage split, same \
+            \ IGNIS-billing shape at the Talos layer. \
+            \ Returns [ico stoa-results] — a WIDER container, not a schema change to the \
+            \ shared IgnisCollectorV1.OutputCumulator (P3.10, settled 2026-08-21): <ico> \
+            \ carries the same [final-netto hops pools distinct-edges] output shape \
+            \ CC_SmartSwap already does (for like-for-like comparison), <stoa-results> is \
+            \ the P3.4 dumb-writer's precomputed [{pool, stoa-value}, ...] list — Talos \
+            \ maps it straight into XE_UpdateStoaValue with no URC_PoolValue re-derivation \
+            \ at all, for every pool this call actually priced. \
+            \ Cache self-warming (registering a bundle's is-new=true paths into \
+            \ SWPT|PathCache after a validated real use) is NOT wired yet — deliberately \
+            \ scoped out of this pass (needs its own cross-module SWPT.SECURE composition \
+            \ check before landing) and tracked as an explicit HANDOFF follow-up, not \
+            \ silently dropped."
+        (UEV_IMC)
+        (let*
+            (
+                (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (if (!= slippage -1.0)
+                        (with-capability
+                            (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds bundle)
+                            (XI_SmartSwapExplicitRoute account input-id input-amount output-id slippage kda-pid slippage-bounds bundle)
+                        )
+                        (with-capability
+                            (SWPU|C>SMART-SWAP-EXPLICIT-ROUTE-NO-SLIPPAGE account input-id input-amount output-id slippage bundle)
+                            (XI_SmartSwapExplicitRoute account input-id input-amount output-id slippage kda-pid slippage-bounds bundle)
+                        )
+                    )
+                )
+                (out:list (at "output" ico))
+                ;;A slippage-exceeded soft-fail (matching CC_SmartSwap's own established
+                ;;shape) returns a 1-element <output> ([exceed-message]) instead of the
+                ;;successful [final-netto hops pools distinct-edges] 4-element shape — no
+                ;;swap happened, so there's nothing to price, <stoa-results> is [].
+                (stoa-results:list
+                    (if (= (length out) 4)
+                        (URC_ComputeStoaValueResults (at 3 out) (at "stoa-paths" bundle))
+                        []
+                    )
+                )
+            )
+            [ico stoa-results]
+        )
+    )
     (defun C_Swap:object{IgnisCollectorV1.OutputCumulator}
         (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal kda-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage})
         @doc "Execute swap. When slippage != -1.0, slippage-bounds must be the pre-computed slippage object from quote time (e.g. UDC_SlippageObject); when slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0)."
@@ -676,7 +955,7 @@
                     (if
                         (>= feeless-final min)
                         ;;(<= feeless-final max)
-                        (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid)
+                        (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid NO_PATH)
                         {"cumulator-chain"   :
                             [
                                 {"ignis"        : 0.0
@@ -685,14 +964,73 @@
                         ,"output"            : [exceed-message]}
                     )
                 )
-                (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid)
+                (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid NO_PATH)
+            )
+        )
+    )
+    (defun XI_SmartSwapExplicitRoute:object{IgnisCollectorV1.OutputCumulator}
+        (
+            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            kda-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+        )
+        @doc "#34 Phase 8 — the bundle-based counterpart to XI_SmartSwapRouter: zero \
+            \ internal searching. The route (structural connectivity, active-required, \
+            \ depth-cap, correct endpoints) is already fully validated by the calling \
+            \ defcap (SWPU|X>SMART-SWAP-EXPLICIT-ROUTE) before this function ever runs — \
+            \ matching this codebase's client-defcap-does-all-validation convention, this \
+            \ XI_* does no enforce of its own. The feeless quote for the slippage floor \
+            \ check is computed via URC_HopperForKnownRoute over the bundle's EXACT \
+            \ edges (not a re-derived 'best' edge — see that function's own doc for why \
+            \ this matters for keeping the quote and real execution consistent)."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (nodes:[string] (at "nodes" (at "swap-route" bundle)))
+                (edges:[string] (at "edges" (at "swap-route" bundle)))
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperForKnownRoute nodes edges input-amount))
+                (ovs:[decimal] (at "output-values" h-obj))
+                (feeless-final:decimal (at 0 (take -1 ovs)))
+            )
+            (if (!= slippage -1.0)
+                (let
+                    (
+                        (min-max:[decimal] (UC_SlippageMinMax slippage-bounds))
+                        (min:decimal (at 0 min-max))
+                        (max:decimal (at 1 min-max))
+                        (exceed-message:string
+                            (format "Smart Swap Expected Output of {} out of Slippage bounds min of {} - max of {}" [feeless-final min max])
+                        )
+                    )
+                    ;;Same floor-only policy as XI_SmartSwapRouter (#26M/M9) — see that
+                    ;;function's own comment for the full rationale, unchanged here.
+                    (if
+                        (>= feeless-final min)
+                        (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid (at "boost-path" bundle))
+                        {"cumulator-chain"   :
+                            [
+                                {"ignis"        : 0.0
+                                ,"interactor"   : BAR}
+                            ]
+                        ,"output"            : [exceed-message]}
+                    )
+                )
+                (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid (at "boost-path" bundle))
             )
         )
     )
     (defun XI_SmartSwap:object{IgnisCollectorV1.OutputCumulator}
-        (account:string input-id:string input-amount:decimal output-id:string nodes:[string] edges:[string] kda-pid:decimal)
+        (
+            account:string input-id:string input-amount:decimal output-id:string
+            nodes:[string] edges:[string] kda-pid:decimal boost-path:object{SwapperUsageV2.CachedPathOrMiss}
+        )
         @doc "Executes the multi-hop Smart Swap. Transfers input from user, delegates hop iteration \
-            \ to XI_SmartSwapCore, handles kda-pid OURO price update, and returns final OutputCumulator."
+            \ to XI_SmartSwapCore, handles kda-pid OURO price update, and returns final OutputCumulator. \
+            \ #34 Phase 8: <boost-path> passthrough to XI_SmartSwapCore — NO_PATH sentinel from the \
+            \ self-searching XI_SmartSwapRouter caller above, or a real bundle-supplied path from the \
+            \ new dirty-read-injected XI_SmartSwapExplicitRoute caller. Shared unchanged by both — \
+            \ nothing in this function searches for anything itself, so nothing here needed to change \
+            \ beyond accepting and forwarding the one new parameter."
         (require-capability (SECURE))
         (let*
             (
@@ -704,7 +1042,7 @@
                     (ref-TFT::C_Transfer input-id account SWP|SC_NAME input-amount true)
                 )
                 (hop-result:list
-                    (XI_SmartSwapCore account input-amount ico-input nodes edges)
+                    (XI_SmartSwapCore account input-amount ico-input nodes edges boost-path)
                 )
                 (final-netto:decimal (at 0 hop-result))
                 (all-icos:[object{IgnisCollectorV1.OutputCumulator}] (at 1 hop-result))
@@ -737,8 +1075,17 @@
         )
     )
     (defun XI_SmartSwapCore:list
-        (account:string input-amount:decimal ico-input:object{IgnisCollectorV1.OutputCumulator} nodes:[string] edges:[string])
-        @doc "Iterates over all hops of a Smart Swap path. For each hop: computes fee-aware swap, fuels LP, \
+        (
+            account:string input-amount:decimal ico-input:object{IgnisCollectorV1.OutputCumulator}
+            nodes:[string] edges:[string] boost-path:object{SwapperUsageV2.CachedPathOrMiss}
+        )
+        @doc "#34 Phase 8: <boost-path> — NO_PATH sentinel (self-searching caller, \
+            \ XI_LiquidIndexPump searches internally as before) or a real bundle-supplied \
+            \ id->DLK path (new dirty-read-injected caller) — passed through unchanged to \
+            \ whichever XI_LiquidIndexPump call the last hop below fires (closure-captured \
+            \ from this outer let, not threaded through the fold's own accumulator, since \
+            \ it's a constant for the whole call, not something that varies per hop). \
+            \ Iterates over all hops of a Smart Swap path. For each hop: computes fee-aware swap, fuels LP, \
             \ updates pool supplies, pays special targets, carries the Liquid Boost slice forward. \
             \ P0.6 direction 5 (SWP exhaustive-path-search HANDOFF doc): the Liquid Boost cut is no \
             \ longer priced-and-burned on every hop (6 independent full-graph searches on a 6-hop \
@@ -931,7 +1278,7 @@
                                     ;;every earlier hop just carries it forward (above), no
                                     ;;search fired.
                                     (if (and iz-last (!= carried-boost-out 0.0))
-                                        (XI_LiquidIndexPump o-id carried-boost-out)
+                                        (XI_LiquidIndexPump o-id carried-boost-out boost-path)
                                         EOC
                                     )
                                 ]
@@ -1116,7 +1463,11 @@
                 [
                     ico1 ico2 ico3
                     (if (!= o-id-liquid 0.0)
-                        (XI_LiquidIndexPump output-id o-id-liquid)
+                        ;;#34 Phase 8: direct C_Swap has no bundle to source a boost-path
+                        ;;from (that's a SmartSwap-only concept) — always the NO_PATH
+                        ;;sentinel here, meaning "search internally", exactly matching
+                        ;;this call's own pre-Phase-8 behavior unchanged.
+                        (XI_LiquidIndexPump output-id o-id-liquid NO_PATH)
                         EOC
                     )
                 ] 
@@ -1125,12 +1476,15 @@
         )
     )
     (defun XI_LiquidIndexPump:object{IgnisCollectorV1.OutputCumulator}
-        (id:string amount:decimal)
+        (id:string amount:decimal boost-path:object{SwapperUsageV2.CachedPathOrMiss})
+        @doc "#34 Phase 8: <boost-path> passthrough — NO_PATH sentinel from the \
+            \ self-searching caller, or a real bundle-supplied path from the new \
+            \ dirty-read-injected caller. See XI_RawLiquidPump's doc for validation."
         (require-capability (SECURE))
         (let
             (
                 (ico:object{IgnisCollectorV1.OutputCumulator}
-                    (XI_RawLiquidPump id amount)
+                    (XI_RawLiquidPump id amount boost-path)
                 )
                 (raw-liquid-pump-data:list (at "output" ico))
             )
@@ -1155,8 +1509,8 @@
             )
         )
     )
-    (defun XI_RawLiquidPump:object{IgnisCollectorV1.OutputCumulator} 
-        (id:string amount:decimal)
+    (defun XI_RawLiquidPump:object{IgnisCollectorV1.OutputCumulator}
+        (id:string amount:decimal boost-path:object{SwapperUsageV2.CachedPathOrMiss})
         @doc "Operation that pumps LiquidIndex, returns the Pump Increment in the output object \
             \ Can be used for a Pool Token that already exists in the SWP|SC_NAME. \
             \ P0.6 fix (SWP exhaustive-path-search HANDOFF doc): routes via \
@@ -1164,7 +1518,14 @@
             \ <URC_HopperActive> (best-of-3 alternate-route search) — this fires once \
             \ per SmartSwap hop, so the best-of-3 search's cost was being multiplied \
             \ by hop-count x 3 to price a residual fee slice that only needs *a* \
-            \ valid route to DLK, not the optimal one."
+            \ valid route to DLK, not the optimal one. \
+            \ #34 Phase 8: <boost-path> is NO_PATH (the [BAR]-nodes sentinel) for the \
+            \ self-searching CC_SmartSwap caller (searches internally, as above) or a \
+            \ real bundle-supplied id->DLK path for the new dirty-read-injected caller \
+            \ (validated here — active-required, same standard <URC_HopperActiveShortest> \
+            \ already enforced — before being trusted; an invalid or malformed supplied \
+            \ path degrades to 'no boost pumped this time', same graceful EOC fallback \
+            \ as a genuine no-route-found case, never a crash or an aborted swap)."
         (require-capability (SECURE))
         (let
             (
@@ -1185,8 +1546,41 @@
                 (let
                     (
                         (ref-SWPI:module{SwapperIssueV3} SWPI)
-                        ;;
-                        (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActiveShortest id lkda amount))
+                        (is-sentinel:bool (= (at "nodes" boost-path) [BAR]))
+                        ;;#34 Phase 8: a bundle-supplied path is never trusted blindly —
+                        ;;re-validated active-required (structural connectivity + every
+                        ;;edge can-swap=true) every single use, matching P3.1's "even a
+                        ;;cache hit always re-validates" rule and this call's own
+                        ;;pre-existing active-required standard. Also enforces the
+                        ;;endpoints actually match this call's own <id>/<lkda> — a
+                        ;;structurally-valid-but-wrong-pair path (e.g. leftover from a
+                        ;;different hop) must never be silently accepted.
+                        (is-valid-supplied:bool
+                            (if is-sentinel
+                                false
+                                (and
+                                    (ref-SWPI::URC_ValidatePathActive (at "nodes" boost-path) (at "edges" boost-path))
+                                    (and
+                                        (= (at 0 (at "nodes" boost-path)) id)
+                                        (= (at (- (length (at "nodes" boost-path)) 1) (at "nodes" boost-path)) lkda)
+                                    )
+                                )
+                            )
+                        )
+                        (h-obj:object{SwapperIssueV3.Hopper}
+                            (if is-sentinel
+                                (ref-SWPI::URC_HopperActiveShortest id lkda amount)
+                                (if is-valid-supplied
+                                    (ref-SWPI::URC_HopperForKnownRoute (at "nodes" boost-path) (at "edges" boost-path) amount)
+                                    ;;Invalid/malformed supplied path — degrade to the
+                                    ;;same empty-output-values shape a genuine
+                                    ;;no-route-found search returns, so the existing
+                                    ;;<(= (length ovs) 0)> EOC fallback below handles it
+                                    ;;with zero new branching.
+                                    {"nodes" : [], "edges" : [], "output-values" : []}
+                                )
+                            )
+                        )
                         (path-to-lkda:[string] (at "nodes" h-obj))
                         (edges:[string] (at "edges" h-obj))
                         (ovs:[decimal] (at "output-values" h-obj))
@@ -1200,7 +1594,10 @@
                     ;;time (EOC, no burn) — not a corruption, not a lost swap, the rest of
                     ;;the transaction is unaffected. Adversarially proven (SWP|TX 032z5):
                     ;;reverted this fix, confirmed the exact "Array index out of bounds.
-                    ;;Length (0), Index (0)" crash reproduces, restored.
+                    ;;Length (0), Index (0)" crash reproduces, restored. Phase 8: the same
+                    ;;empty-<ovs> fallback now also covers an invalid bundle-supplied path
+                    ;;(<is-valid-supplied>=false) — identical safe degrade, no new branch
+                    ;;needed.
                     (if (= (length ovs) 0)
                         EOC
                         (let

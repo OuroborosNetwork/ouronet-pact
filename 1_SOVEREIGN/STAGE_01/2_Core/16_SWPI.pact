@@ -68,6 +68,16 @@
     ;;before SWP and can't reach SWP::UR_CanSwap directly (same reason URC_EdgesActive's
     ;;own whitelist check couldn't live there either).
     (defun URC_ValidatePathActive:bool (nodes:[string] edges:[string]))
+    ;;#34 Phase 8: computes a Hopper (feeless output-values) for an ALREADY-CHOSEN
+    ;;nodes+edges route (a dirty-read-injected bundle's swap-route or a pricing path),
+    ;;walking the EXACT supplied edges — unlike URCX_HopperForNodes (used by the
+    ;;self-searching URC_Hopper/URC_HopperActive), this never re-selects a "best" edge
+    ;;per hop, since the real execution will use these exact edges regardless. Caller's
+    ;;responsibility to validate nodes/edges first (URC_ValidatePathStructure/Active) —
+    ;;this function only computes, it does not validate.
+    (defun URC_HopperForKnownRoute:object{Hopper}
+        (nodes:[string] edges:[string] hopper-input-amount:decimal)
+    )
     (defun URC_BestEdge:string (ia:decimal i:string o:string))
     (defun URC_BestEdgeFiltered:string (ia:decimal i:string o:string swpairs:[string]))
         ;;
@@ -887,6 +897,75 @@
                 )
                 (at 0 EMPTY_HOPPER)
             )
+        )
+    )
+    (defun URC_HopperForKnownRoute:object{SwapperIssueV3.Hopper}
+        (nodes:[string] edges:[string] hopper-input-amount:decimal)
+        @doc "#34 Phase 8: like URCX_HopperForNodes, computes the feeless per-hop output \
+            \ chain for a KNOWN path — but walks the caller-supplied <edges> directly \
+            \ instead of re-deriving a 'best' edge per hop via URC_BestEdgeFiltered. \
+            \ This matters: a dirty-read-injected bundle's swap-route is what real \
+            \ execution (XI_SmartSwapCore) will actually walk, hop for hop — the feeless \
+            \ quote used for the slippage floor check must be computed against those SAME \
+            \ edges, not a possibly-different 'best' edge a live re-derivation might pick \
+            \ when parallel pools exist between the same two tokens (that mismatch could \
+            \ silently let a worse real execution slip past a floor check computed on a \
+            \ better hypothetical route). Also reused for pricing paths (boost-path, \
+            \ stoa-paths) where the caller-chosen edges are likewise the ones that matter, \
+            \ not a re-optimized alternative. Caller validates nodes/edges beforehand — \
+            \ this function trusts its input and only computes."
+        (if (!= nodes [BAR])
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                    (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                    (le:integer (length edges))
+                )
+                (if (= le 0)
+                    (UDC_Hopper nodes [] [])
+                    (let
+                        (
+                            (fl:[object{SwapperIssueV3.Hopper}]
+                                (fold
+                                    (lambda
+                                        (acc:[object{SwapperIssueV3.Hopper}] idx:integer)
+                                        (ref-U|LST::UC_ReplaceAt
+                                            acc
+                                            0
+                                            (let
+                                                (
+                                                    (input:decimal
+                                                        (if (= idx 0)
+                                                            hopper-input-amount
+                                                            (at 0 (take -1 (at "output-values" (at 0 acc))))
+                                                        )
+                                                    )
+                                                    (i-id:string (at idx nodes))
+                                                    (o-id:string (at (+ idx 1) nodes))
+                                                    (swpair:string (at idx edges))
+                                                    (dsid:object{UtilitySwpV1.DirectSwapInputData}
+                                                        (ref-U|SWP::UDC_DirectSwapInputData [i-id] [input] o-id)
+                                                    )
+                                                    (output:decimal (URC_Swap swpair dsid false))
+                                                )
+                                                (UDC_Hopper
+                                                    nodes
+                                                    (ref-U|LST::UC_AppL (at "edges" (at 0 acc)) swpair)
+                                                    (ref-U|LST::UC_AppL (at "output-values" (at 0 acc)) output)
+                                                )
+                                            )
+                                        )
+                                    )
+                                    [(UDC_Hopper nodes [] [])]
+                                    (enumerate 0 (- le 1))
+                                )
+                            )
+                        )
+                        (at 0 fl)
+                    )
+                )
+            )
+            (at 0 EMPTY_HOPPER)
         )
     )
     (defun UC_BestHopper:object{SwapperIssueV3.Hopper} (candidates:[object{SwapperIssueV3.Hopper}])
