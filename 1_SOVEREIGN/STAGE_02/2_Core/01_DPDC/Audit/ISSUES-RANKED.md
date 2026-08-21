@@ -91,12 +91,14 @@ genesis set-class, `Z.repl` green. — *DPDC-S·C1*
 
 #8C **[DPDC-S / DPDC-C]** ~~`how-many-sets` is never bounded to a positive value anywhere on the
 `C_MakeSemiFungibleSet`/`C_BreakSemiFungibleSet` path, and the one downstream gate that could theoretically
-catch it (`UEV_NonceQuantityInclusion`) is trivially satisfied by any negative amount.~~ — **ALREADY CLOSED
-BY FIX #1, LIVE-VERIFIED 2026-08-21** — checked both halves for real rather than assumed: negative
-(`-1`) hard-rejected, full stack trace lands on `UEV_Amount` inside `CreditOrDebitDPDC`
-(`03_DPDC-C.pact:436`) via the mint leg, the identical Fix #1 chokepoint; zero (`0`) confirmed harmless —
-real constituent balance unchanged, only two empty bookkeeping rows created, a genuine no-op. No code
-change. — *DPDC-S·C3*
+catch it (`UEV_NonceQuantityInclusion`) is trivially satisfied by any negative amount.~~ — **FIXED ✅ AND
+PROVEN ✅ 2026-08-21** (`ROUND-02-FIXES.md` Fix #6) — negative was already blocked by Fix #1's shared
+chokepoint (live-confirmed, full stack trace via the mint leg to `UEV_Amount`); zero was *not* blocked and
+initially closed as "harmless no-op," but owner correctly overruled that — an operation claiming to make/
+break sets shouldn't silently succeed while doing nothing, same reasoning as rejecting zero-amount
+transfers elsewhere. `how-many-sets > 0` now enforced directly at `DPDC-S|C>MAKE`/`C>BREAK`; both negative
+and zero rejected earlier/clearer at the new gate; real Make 3 → Break 3 round trip proven with exact
+conservation (`1000 → 997 → 1000`). — *DPDC-S·C3*
 
 ## HIGH
 

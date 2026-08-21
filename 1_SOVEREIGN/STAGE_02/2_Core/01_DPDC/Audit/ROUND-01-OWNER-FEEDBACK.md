@@ -196,3 +196,19 @@ Checked both halves live, real uncaught transactions against the real Bronze pri
 **No code change — nothing left to fix.** Same outcome as #3C: the concern was real when raised, and is
 now independently verified closed rather than assumed closed. All 8 Round I CRITICALs are now resolved
 (5 fixed, 3 closed via Fix #1's shared chokepoint with no additional code).
+
+## #8C correction — `how-many-sets = 0` must be rejected, not accepted as a no-op
+
+**2026-08-21.** Owner overruled the "no code, zero is harmless" close above: an operation that claims to
+*make* or *break* sets should never silently succeed while moving nothing — same category as rejecting
+zero-amount transfers, already done elsewhere. A harmless no-op is still a bug if the function claims to
+have done something it didn't.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #6)** — `how-many-sets` added as an explicit parameter to
+`DPDC-S|C>MAKE`/`C>BREAK` with `(enforce (> how-many-sets 0) ...)`, closing exactly the gap the original
+Round I fix direction named. Both negative and zero now rejected earlier and more clearly, directly at
+DPDC-S's own gate. New control proves a real Make 3 → Break 3 round trip still works with exact
+conservation (`1000 → 997 → 1000`). This is the true final closure of #8C — the earlier verdict correctly
+identified both halves as *already blocked from doing harm*, but the owner's follow-up correctly identified
+that "doesn't cause harm" and "should be allowed to run" are different questions, and the answer to the
+second one was no.

@@ -348,3 +348,35 @@ negative case via Fix #1's shared chokepoint, the zero case by direct proof it m
 fix direction's suggestion (an explicit `(enforce (> how-many-sets 0) ...)` at the `DPDC-S|C>MAKE`/`C>BREAK`
 cap layer) remains available as a pure UX nicety — a clearer, earlier error message instead of the current
 generic one from three call-frames deeper — but is no longer a security requirement.
+
+## Fix #6 — DPDC-S/DPDC-C · C3 (#8C), corrected: `how-many-sets = 0` must be rejected, not silently no-op
+
+**Owner-approved 2026-08-21**, overruling the earlier "no code change, zero is harmless" close. Owner's
+point: "make zero sets" completing successfully is the same category of nonsense as "transfer zero units"
+completing successfully — which was already rejected outright for ordinary transfers (`DPDC-T`'s own
+`amount > 0` reasoning). An operation that claims to *do* something should never silently succeed while
+doing nothing; that's not a harmless no-op, it's a degenerate input that should be refused.
+
+**Fix:** added `how-many-sets:integer` as an explicit parameter to `DPDC-S|C>MAKE`/`C>BREAK` (previously
+neither cap even looked at it — this was the original Round I fix direction, not a new idea), with
+`(enforce (> how-many-sets 0) "How-Many-Sets must be a positive, non-zero integer")` in both. Both SFT
+call sites (`C_MakeSemiFungibleSet`/`C_BreakSemiFungibleSet`) now pass their real `how-many-sets`
+parameter through to the cap; both NFT call sites (`C_MakeNonFungibleSet`/`C_BreakNonFungibleSet`, which
+never had this concept — NFT sets are structurally always exactly one) now pass a literal `1`. Confirmed
+no other caller of either capability exists anywhere in the codebase (capabilities are module-private).
+
+**Post-fix proof:**
+- Re-ran the existing negative (`-1`) and zero (`0`) probes
+  (`REPL/Kursan/_verify_finding_DPDC-S_C3_{negative,zero}_how_many_sets.repl`) — both now rejected
+  *earlier and more clearly* than before, directly at `08_DPDC-S.pact:201`
+  (`"How-Many-Sets must be a positive, non-zero integer"`), rather than negative alone reaching
+  `UEV_Amount` three call-frames deeper.
+- New control (`REPL/Kursan/_verify_finding_DPDC-S_C3_legit_make_break.repl`): a real Make 3 → Break 3
+  round trip on the Bronze set-class. Constituent nonce1: `1000 → 997 (Make) → 1000 (Break)` — exact
+  conservation, back to the original value. Set-nonce balance: `0 → 3 (Make) → 0 (Break)`. `pact Z.repl`
+  full pipeline confirmed still green, though note genesis never actually calls `C_Make*Set` at all (only
+  defines set-classes) — this control test is the only real coverage of the positive-value path either
+  way, local or live.
+
+**Interface implication:** none — capability signatures aren't part of the versioned interface, matching
+the original Round I finding's own assessment.

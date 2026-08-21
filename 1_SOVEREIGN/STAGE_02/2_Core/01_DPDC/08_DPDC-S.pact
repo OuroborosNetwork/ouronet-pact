@@ -191,19 +191,20 @@
     ;;{C2}
     ;;{C3}
     ;;{C4}
-    (defcap DPDC-S|C>MAKE (id:string son:bool nonces:[integer] set-class:integer)
+    (defcap DPDC-S|C>MAKE (id:string son:bool nonces:[integer] set-class:integer how-many-sets:integer)
         @event
         (let
             (
                 (iz-active:bool (UR_IzSetActive id son set-class))
             )
             (enforce iz-active (format "Set-Class {} is not active for Set Composition" [set-class]))
+            (enforce (> how-many-sets 0) "How-Many-Sets must be a positive, non-zero integer")
             (UEV_NoncesForSetClass id son nonces set-class)
             (compose-capability (P|DPDC-S|CALLER))
             (compose-capability (P|DPDC-S|REMOTE-GOV))
         )
     )
-    (defcap DPDC-S|C>BREAK (id:string son:bool nonce:integer)
+    (defcap DPDC-S|C>BREAK (id:string son:bool nonce:integer how-many-sets:integer)
         @event
         (let
             (
@@ -212,6 +213,7 @@
             )
             ;;Nonces of Inactive Sets can still be broken down.
             (enforce (!= nonce-class 0) "Only Class Non-0 Nonces can be broken Down")
+            (enforce (> how-many-sets 0) "How-Many-Sets must be a positive, non-zero integer")
             (compose-capability (P|DPDC-S|CALLER))
             (compose-capability (P|DPDC-S|REMOTE-GOV))
         )
@@ -734,8 +736,8 @@
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool true)
             )
-            (with-capability (DPDC-S|C>MAKE id son nonces set-class)
-                ;;1]SFT Set Nonce is already created with the Set Definition, 
+            (with-capability (DPDC-S|C>MAKE id son nonces set-class how-many-sets)
+                ;;1]SFT Set Nonce is already created with the Set Definition,
                 ;;it only needs a quantity of <how-many-sets> to be added to target <account>
                 (ref-DPDC-C::XB_CreditSFT-Nonce account id (UR_NonceOfSet id set-class) how-many-sets)
                 ;;2]Transfer <nonces> to <dpdc> last to return the cumulator.
@@ -755,14 +757,14 @@
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool true)
             )
-            (with-capability (DPDC-S|C>BREAK id son nonce)
+            (with-capability (DPDC-S|C>BREAK id son nonce how-many-sets)
                 (let
                     (
                         (ico1:object{IgnisCollectorV1.OutputCumulator}
                             ;;1]Transfer the SFT Sets from <account> to <dpdc>
                             (ref-DPDC-T::C_Transfer [id] [son] account dpdc [[nonce]] [[how-many-sets]] true)
                         )
-                        (constituents:[integer] 
+                        (constituents:[integer]
                             (URC_SemiFungibleConstituents id (ref-DPDC::UR_NonceClass id son nonce))
                         )
                         (ico2:object{IgnisCollectorV1.OutputCumulator}
@@ -790,7 +792,7 @@
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool false)
             )
-            (with-capability (DPDC-S|C>MAKE id son nonces set-class)
+            (with-capability (DPDC-S|C>MAKE id son nonces set-class 1)
                 (let
                     (
                         (ico1:object{IgnisCollectorV1.OutputCumulator}
@@ -839,7 +841,7 @@
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool false)
             )
-            (with-capability (DPDC-S|C>BREAK id son nonce)
+            (with-capability (DPDC-S|C>BREAK id son nonce 1)
                 (let
                     (
                         (ico1:object{IgnisCollectorV1.OutputCumulator}
