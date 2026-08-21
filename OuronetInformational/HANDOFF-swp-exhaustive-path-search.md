@@ -14,16 +14,24 @@ special-target re-check. Isolated the real cost properly: one 7-target `C_MultiB
 estimate was right. With the test corrected to actually exercise this path, the real
 worst-case is **2,148,758 gas (148,758 over ceiling) unbatched, 2,130,472 gas (130,472 over
 ceiling) after rebuilding and keeping the special-fee-target batching fix** (real, positive,
-18,286 gas saved, not nearly enough alone). **Net: P0.6 is not resolved — 130,472 more gas
-needs to be found.** Separately, the earlier "super-linear pool-count scaling" claim (from a
-9-vs-22-pairs comparison) was also found to be confounded (two different source tokens, not a
-controlled test) and was withdrawn after a proper controlled re-measurement showed sub-linear
-scaling instead — see the dated entries below for the full, chronological trace of what was
-claimed, disproven, and corrected. Also still open: a separate, unfixed crash bug in
+18,286 gas saved, not nearly enough alone). Separately, the earlier "super-linear pool-count
+scaling" claim (from a 9-vs-22-pairs comparison) was found to be confounded (two different
+source tokens, not a controlled test) and was withdrawn after a proper controlled
+re-measurement showed sub-linear scaling instead — but that was superseded almost immediately
+by a **much more severe, real (not synthetic) finding**: built an actual 22→102-active-pool
+topology (80 new `OURO`-anchored pools) and re-measured the real worst case at each step —
+**6,076,821 gas at 42 pools; 7,145,276 gas at 102 pools. Every checkpoint blows the ceiling,
+up to 3.5x over.** Root mechanism confirmed, not just observed: every new pool must anchor to
+a principal (structural requirement), `OURO` sits directly on the Liquid Boost search path, so
+any organic protocol growth inflates the exact hub node that search has to traverse. **This
+means none of P0.6's fixes so far are sufficient at realistic scale — the underlying live-
+graph-search design itself doesn't hold up, not just this or that call site.** Full
+chronological trace (what was claimed, disproven, corrected, and finally the real-topology
+result) is in the dated entries below. Also still open: a separate, unfixed crash bug in
 `XI_RawLiquidPump` (found alongside P0.5, not yet formally numbered in `ISSUES-RANKED.md`).
-P1 (core search primitives) not started. Owner has a separate proposed solution not yet
-evaluated — likely the next step once P0.6's remaining gap is addressed or explicitly
-deferred.
+P1 (core search primitives) not started. **Owner has a separate proposed solution, not yet
+shared/evaluated — given the P2-scale result, this is now very likely the primary path
+forward, not an optional extra.**
 
 **To:** whoever picks up SWP audit follow-up work next.
 **From:** 2026-08-20 SWP audit session (#34M/M2 follow-up discussion).
@@ -243,6 +251,46 @@ P1.2"). Update the checkboxes here as items land.
       before and after both changes.
       **Not resolved. 130,472 more gas needs to be found before P0.6 can be called done again.
       Owner has a separate proposed solution not yet evaluated — see status line at top.**
+
+      **P2-scale probe, 2026-08-21 — the single most severe finding of this entire effort.**
+      Owner asked to build a real (not synthetic) 50-100-active-pool topology and re-measure.
+      Built it: 80 new `OURO`-anchored 2-token noise pools (`SWP|TX 032r`-`032z2` in
+      `[6.3]_SWP.repl`, permanent), activated in 4 batches of 20, re-measuring the real
+      corrected worst case (Liquid Boost + real special-fee rate, batched) at each step:
+      | active swpairs | gas | Δ gas from prior checkpoint | Δ gas / added pool |
+      |---|---|---|---|
+      | 22 (baseline) | 2,130,472 | — | — |
+      | 42 | 6,076,821 | +3,946,349 | ~197,317 |
+      | 62 | 6,327,258 | +250,437 | ~12,522 |
+      | 82 | 6,677,807 | +350,549 | ~17,527 |
+      | 102 | 7,145,276 | +467,469 | ~23,373 |
+      **Every single checkpoint blows the ~2,000,000 ceiling, most of them catastrophically —
+      by 3.5x at just 42 active pools.** 0 `FAILURE` throughout (this is purely a gas problem,
+      not a correctness one — the swap still executes correctly, it just costs far more than a
+      real transaction could ever pay for).
+      **Why the jump is front-loaded, not uniform (confirmed by mechanism, not just the
+      numbers):** the new noise pools all anchor to `OURO` (required — `W`/`P` pools must have
+      a principal as their first token, and `OURO` is the natural, near-universal choice any
+      real protocol growth would keep using). `OURO` also sits directly on the Liquid Boost
+      pump's own DLK-search path (the full `W7→W6→…→W1→OURO→DLK` chain the last hop's
+      `URC_HopperActiveShortest` call must traverse). Every noise pool added therefore
+      increases `OURO`'s own node-degree in the graph that search walks through — this is a
+      fundamentally different, much more direct effect than the earlier controlled experiment's
+      "unrelated background pool count" test (which used a much smaller, pre-existing 14-pool
+      noise set not concentrated on a path-critical hub). **The real lesson: cost isn't driven
+      by total protocol pool count in a generic, uniform sense — it's driven by the degree of
+      whichever hub node the search has to pass through, and any principal token (`OURO`
+      included) is structurally guaranteed to become exactly that kind of hub as the protocol
+      grows, because the anchoring rule requires new pools to attach to one.** This is not a
+      one-off edge case or an unlikely adversarial construction — it is the *default, required*
+      shape of organic growth under the current anchoring design.
+      **Conclusion: none of P0.6's fixes so far (direction 1, direction 5, special-fee-target
+      batching) are sufficient at realistic future scale — none of them address the underlying
+      mechanism (per-hop or even once-per-swap live graph search through an ever-growing hub).
+      A structurally different approach is needed, not further incremental optimization of the
+      current search-based design.** This is very likely what motivated the owner's own
+      separate proposed solution — see the top status line; that idea should now be evaluated
+      as the primary path forward, not as an optional extra.
 
       ---
       *(Below is the now-superseded "DONE" writeup from earlier the same day, kept for the
