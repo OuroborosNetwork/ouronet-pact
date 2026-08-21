@@ -301,3 +301,35 @@ both creation and every update entrypoint: every oversized/invalid input rejecte
 input accepted (`Write succeeded`), Fix #9's own probe re-verified still working once updated off the now-
 forbidden all-zero asset-type sentinel. Full `Z.repl` green — confirmed no real genesis/scenario anywhere in
 the pipeline relied on the all-zero pattern.
+
+## #12Hc · DPDC-N · new — minted NFT Set instance's own data (incl. `composition`) directly editable
+
+**Verdict: CONFIRMED, FIXED (2026-08-21).** Found while scoping #12Hb. Worked out the full model together
+before any code was written — owner walked through what a "set class" vs. a "set nonce" actually means
+(NFTs are individually unique, so different combinations of constituents produce genuinely different
+instances, each needing its own `composition` record; SFTs are fungible, so every possible combination
+produces an identical result, which is why an SFT set-class has exactly one shared nonce instead). Three
+distinct pieces got disambiguated in the discussion:
+1. The Set-Class *recipe* (what must be combined) — verified live: already permanently immutable, no update
+   path exists at all, stricter than "locked while in use." Owner confirmed intentional (wrong recipe = 
+   disable that set-class, define a new one).
+2. The Set-Class *metadata template* — owner asked directly whether editing it after instances already
+   exist retroactively changes those instances ("i cant remember this"). Traced the actual read path
+   (`UR_NativeNonceData` is a flat table read, no live reference to the template) to answer definitively:
+   no, template edits only shape future mints. Confirmed this should stay freely editable, as-is.
+3. Each individual minted instance's own stored data — this is what `C_BreakNonFungibleSet` actually
+   trusts, and it was directly editable via `DPDC-N::C_UpdateNonces`/the per-field update family by
+   targeting the instance's nonce ID — the real gap, scoped to NFT only after owner explained the
+   SFT/NFT structural difference above (confirmed live: SFT set-class nonces are never re-derived per Make
+   and their Break path reads the immutable recipe, not any mutable field — nothing to protect there).
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #11)** — new `DPDC-N::UEV_NotSetInstance`, wired into
+`DPDC-N|C>DATA` (the shared capability all 7 per-field update entrypoints compose through) and
+`DPDC-N|C>SET-DATA` (the whole-object `C_UpdateNonces` path). Live-proven: a real Primordial NFT Set made
+from 2 real constituent nonces — direct edits to the spawned instance rejected (name + meta-data both),
+the Set-Class template stays editable (`Write succeeded`), an ordinary never-set-involved primordial nonce
+stays editable (regression-clean), and an equivalent SFT Set's one shared nonce stays fully editable
+(confirmed unaffected, exactly as scoped). Full `Z.repl` green.
+
+**Investigation chain closed:** #12H (REFUTED) → #12Hb (FIXED, Fix #10) → #12Hc (FIXED, Fix #11). No further
+open items.

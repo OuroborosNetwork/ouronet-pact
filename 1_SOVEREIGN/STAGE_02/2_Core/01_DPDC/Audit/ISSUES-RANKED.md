@@ -151,12 +151,17 @@ Pact cannot enumerate an untyped object's keys, confirmed live); `asset-type` �
 chars/link. 13-check live proof covering both creation and every update entrypoint (reject + accept +
 boundary), Z.repl green. — *DPDC-C/DPDC-N·H4b*
 
-#12Hc **[DPDC-N]** Found while scoping #12Hb: `meta-data.composition` — the module's own auto-derived record
+#12Hc **[DPDC-N]** ~~Found while scoping #12Hb: `meta-data.composition` — the module's own auto-derived record
 of which real nonces are locked in escrow to back a composite NFT set (set by `C_MakeNonFungibleSet`, read
 back by `C_BreakNonFungibleSet` to know what to return) — can currently be overwritten to arbitrary values
 via `DPDC-N::C_UpdateNonces`'s whole-object replace path, completely decoupled from what's actually held in
-the `dpdc` escrow account. A correctness/integrity gap, not a content-length question — owner verdict
-pending. — *DPDC-N·H4c*
+the `dpdc` escrow account. A correctness/integrity gap, not a content-length question.~~ — **FIXED ✅ AND
+PROVEN ✅ 2026-08-21** (`ROUND-02-FIXES.md` Fix #11) — new `DPDC-N::UEV_NotSetInstance` (NFT-only; SFT Sets
+have exactly one shared nonce, never re-derived per Make, so nothing there needs protecting) wired into the
+shared `DPDC-N|C>DATA` and `DPDC-N|C>SET-DATA` chokepoints, blocking any direct edit to an already-minted
+NFT Set instance's own data. Live-proven: a real Primordial Set instance's direct edits rejected, its
+Set-Class template stays editable, an ordinary primordial nonce stays editable, an SFT Set's shared nonce
+stays editable — Z.repl green. — *DPDC-N·H4c*
 
 #13H **[DPDC-R]** `DPDC|C>FRZ-ACC` gates **both** freeze and unfreeze on the collection's `can-freeze`
 switch (every sibling role toggle only gates the granting/"on" direction) — combined with `can-upgrade=false`

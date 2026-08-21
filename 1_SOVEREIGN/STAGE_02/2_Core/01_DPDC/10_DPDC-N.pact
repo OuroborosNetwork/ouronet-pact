@@ -148,6 +148,7 @@
                     (do
                         (ref-DPDC-C::UEV_NonceDataForCreation (at idx new-nonces-data))
                         (UEV_NonceDataUpdater id son account (at idx nosc) nos nost)
+                        (UEV_NotSetInstance id son (at idx nosc) nost)     ;; DPDC Audit #12Hc
                     )
                 )
                 (enumerate 0 (- l1 1))
@@ -260,6 +261,7 @@
                 (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
             )
             (UEV_NonceDataUpdater id son account nosc nos nost)
+            (UEV_NotSetInstance id son nosc nost)     ;; DPDC Audit #12Hc
             (ref-DALOS::CAP_EnforceAccountOwnership account)
             (compose-capability (P|SECURE-CALLER))
         )
@@ -319,6 +321,28 @@
                     true
                 )
             )
+        )
+    )
+    (defun UEV_NotSetInstance (id:string son:bool nosc:integer nost:bool)
+        @doc "Blocks direct edits to an already-minted NFT Set instance's own NonceData. NFT Set \
+            \ instances are individually unique combinations — each Make can combine different \
+            \ constituent nonces, so each instance carries its own composition record that must \
+            \ stay fixed once minted; only the Set-Class definition/template (the <nost=false> \
+            \ Sets path) may be touched afterward. SFT Sets are unaffected: an SFT set-class has \
+            \ exactly one shared nonce, never re-derived per Make, so its data legitimately stays \
+            \ editable. See DPDC Audit #12Hc."
+        (if (and nost (not son))
+            (let
+                (
+                    (ref-DPDC:module{DpdcV1} DPDC)
+                )
+                (enforce
+                    (= (ref-DPDC::UR_NonceClass id son nosc) 0)
+                    "NFT Set instance nonces cannot have their data directly modified — edit the \
+                        \ Set-Class definition instead"
+                )
+            )
+            true
         )
     )
     (defun UEV_RoleNftRecreateON (id:string son:bool account:string)

@@ -575,3 +575,57 @@ list, read by `URC_NonFungibleConstituents`/`C_BreakNonFungibleSet`) to decide w
 found it can currently be overwritten to arbitrary values via `DPDC-N::C_UpdateNonces`'s whole-object
 replace path — decoupled from what's actually held in `dpdc` escrow. That's a correctness/integrity gap,
 not a content-length question, logged separately as #12Hc, owner verdict pending.
+
+## Fix #11 — DPDC-N · #12Hc — a minted NFT Set instance's own data (including `composition`) was directly editable
+
+**Owner-approved 2026-08-21.** Worked out the exact model together before writing any code — three separate
+things needed disambiguating first:
+
+1. **The Set-Class recipe** (`primordial-set-definition`/`composite-set-definition` — which nonces/classes
+   are allowed to combine) — checked live: no function anywhere ever updates it after `XI_PrimordialSet`/
+   `XI_CompositeSet`/`XI_HybridSet` first define it. Already permanently immutable, stricter than needed.
+   No change. (Owner confirmed this is intentional: a wrong recipe means disabling that set-class and
+   defining a new one, not editing the old one.)
+2. **The Set-Class metadata template** (`DPDC|Set.nonce-data` — royalty/name/description/asset-type/uri,
+   editable via `DPNF|C_UpdateSetNonce*`/`nost=false`) — confirmed via code trace it only shapes *future*
+   mints (`C_MakeNonFungibleSet` copies it once into `spawned-nd` at Make time; nothing re-reads the
+   template afterward for an existing instance — `UR_NativeNonceData` is a flat table read, no live
+   reference back to the template). Owner asked to confirm this directly ("is it automatically captured on
+   existing set nonces?") — no. Stays freely editable; explicitly not what needed locking.
+3. **Each individual minted instance's own stored data** — this is what `C_BreakNonFungibleSet` actually
+   reads (`URC_NonFungibleConstituents` → `UR_NativeNonceData`), and it was reachable and overwritable via
+   `DPDC-N::C_UpdateNonces`/the per-field `C_Update*` family (Nonce path, `nost=true`) by targeting the
+   instance's nonce ID directly — this is the real gap.
+
+**NFT-only scope, confirmed with the owner:** NFT Set instances are individually unique (different
+combinations of constituent nonces produce different instances, so each needs its own `composition`
+record) — SFT Sets are not: a set-class has exactly **one** shared nonce, created once at Define time,
+never re-derived per Make (`C_MakeSemiFungibleSet` only credits balance onto the existing nonce), and
+`C_BreakSemiFungibleSet` reads constituents from the immutable recipe via `URC_SemiFungibleConstituents`,
+never from a mutable per-instance field. Locking SFT set-nonce edits would remove the only way to ever
+adjust an SFT set's data, for zero security benefit. Scoped the fix to `son=false` only.
+
+**Fix — one shared validator, two call sites (the same pattern `UEV_Royalty`/`UEV_IgnisRoyalty`/#12Hb's
+validators already use):** new `DPDC-N::UEV_NotSetInstance (id son nosc nost)` — when `nost=true` (Nonce
+path) and `son=false` (NFT), enforces `(= (UR_NonceClass id son nosc) 0)`, i.e. the target must be a
+primordial (class-0) nonce, not a Set instance. Wired into:
+1. `DPDC-N|C>DATA` (`10_DPDC-N.pact:255`) — the shared capability every per-field update composes through
+   (`SET-ROYALTY`/`SET-IGNIS-ROYALTY`/`SET-NAME`/`SET-DESCRIPTION`/`SET-SCORE`/`SET-META-DATA`/`SET-URI`).
+2. `DPDC-N|C>SET-DATA` (`10_DPDC-N.pact:131`) — the whole-object `C_UpdateNonces` path, checked per index
+   inside its existing `map`/`lambda`.
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC-N_12Hc_set_instance_lock.repl`):**
+- NFT: defined a real Primordial Set (2 positions, each with 2 allowed alternatives — `N([1,3])`/`N([2,4])`
+  — Pact's own `> 1 allowed element` requirement caught an earlier single-choice attempt), made an instance
+  from nonces 1+2 (spawned nonce 6, `nonce-class = 1`). `C_UpdateNonceName`/`C_UpdateNonceMetaData` on
+  nonce 6 directly: both rejected. `C_UpdateSetNonceName` on the Set-Class (1) template: `Write succeeded`
+  — stays editable. `C_UpdateNonceName` on an ordinary, never-set-involved primordial nonce (5): `Write
+  succeeded` — regression-clean, the block is scoped exactly to Set instances, not primordial nonces.
+- SFT: defined and made a Primordial Set the same way; `C_UpdateNonceName` directly on the SFT set-class's
+  one shared nonce: `Write succeeded` — confirmed unaffected, exactly as scoped.
+- `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
+
+**Interface implication:** none — `UEV_NotSetInstance` is internal to `DPDC-N`, not exported via
+`DpdcNonceV1`; no existing signature changed.
+
+**#12Hc closed.** No further open items from this investigation chain (#12H → #12Hb → #12Hc).
