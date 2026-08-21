@@ -1,5 +1,88 @@
 # Handoff: SWP exhaustive on-chain cheapest-path search (SmartSwap Phase 2)
 
+## #34 — Master phase list (consolidated, 2026-08-21)
+
+Everything in this document — the original best-of-3 approximation fix, the worst-case gas
+crisis it led to discovering, and the dirty-read infrastructure now designed to fix that
+crisis — is, at the owner's direction, one single issue: **#34** (`ISSUES-RANKED.md`/`M2`).
+Fix #19 closed the *approximation* problem (best-of-3 instead of first-found) but was never
+the full resolution the owner originally wanted (a genuinely exhaustive cheapest-path search);
+everything below is the complete path from where Fix #19 left off to that original goal,
+**13 phases, 5 done, 8 remaining.** Detailed design for each phase lives in the sections below
+this list (old `P0.x` numbering for phases 1-5, `P3.x` for phases 6-10 — kept as-is rather than
+renumbered, to avoid breaking existing cross-references); phases 11-13 are new, not yet
+detailed below at the same depth, to be expanded when their turn comes.
+
+- [x] **Phase 1 — Approximate fix: best-of-3 routing.** Fix #19 (`SWPT::URC_ComputeAlternateRoutes`,
+      up to 3 edge-disjoint candidates, `SWPI::URCX_Hopper` picks the best by payout) + Fix #20/
+      #34bM (Stable-pool anchoring requires direct principal adjacency). Shipped, adversarially
+      proven, **stays live as the production default through every later phase** — nothing here
+      removes it, later phases add alongside it.
+- [x] **Phase 2 — Worst-case execution-gas discovery.** P0.5: built a real 6-hop/maximal-pool
+      topology and found Liquid Boost alone pushes worst-case gas over the 2,000,000 ceiling —
+      a problem unrelated to routing *quality*, purely about whether *any* route can execute.
+- [x] **Phase 3 — First-round Liquid Boost gas fixes.** Direction 1 (`SWPI::URC_HopperActiveShortest`,
+      single-shortest routing for the boost pump instead of best-of-3) + direction 5 (carry the
+      boost value forward hop-by-hop, one search per swap instead of one per hop). Cut the
+      Liquid-Boost-only worst case 3,039,431 → 1,963,025 gas.
+- [x] **Phase 4 — Uncovering the real worst case.** Owner directly challenged the "special-fee
+      transfers are cheap" claim; checked and found the worst-case test's special-fee *rate*
+      had always been 0.0 — the expensive `C_MultiBulkTransfer(7 targets)` path had never once
+      actually executed in any measurement. Fixed the test, found the real worst case blows the
+      ceiling by 148,758 gas even with Phase 3's fixes. Rebuilt special-fee-target batching
+      (real savings this time, 18,286 gas, confirmed with isolated component measurement) —
+      still 130,472 gas over ceiling.
+- [x] **Phase 5 — Real-scale topology proof.** Built a real (not synthetic) 22→102-active-pool
+      topology. Worst-case gas balloons to 6-7 million — 3.5x over ceiling at just 42 pools.
+      Decomposed the cost on request ("is it just the boost search?"): main routing search
+      10.4%, Liquid Boost search 7.2%, **`XE_UpdateStoaValue`'s six per-pool searches 56.9% —
+      previously unknown, now confirmed the dominant driver, bigger than the other two
+      combined.**
+- [ ] **Phase 6 — Dirty-read infrastructure: schemas + module placement.** Path-cache table
+      (lives in `SWPT`), bundle input object, output-results mechanism. Resolve the open
+      questions still listed in P3.10 (table-key canonicalization, whether the pool-count
+      fast-path ships in v1, exact `OutputCumulator` extension mechanism) before/while building.
+- [ ] **Phase 7 — Dirty-read infrastructure: core functions.** Structural + active/exists-mode
+      validation (`SWPT` for exists-only, `SWPI` wrapping it with `SWP::UR_CanSwap` for
+      active-required), reversed-lookup read helper, first-write-wins registration writer,
+      dedup logic for stoa-value pricing (validated with real evidence — two pools sharing a
+      first token cost an identical 673,080 gas each in the Phase 5 topology).
+- [ ] **Phase 8 — New SmartSwap entrypoint.** New bundle-based `XI_SmartSwapCore` variant;
+      `SWP|C_SmartSwapExplicitRoute` in Talos, **built alongside, not replacing,** the existing
+      self-searching variants, for real A/B gas comparison; dumb-writer stoa-value updater
+      (Talos maps over pre-computed results instead of calling `URC_PoolValue` itself); fixes
+      the long-standing `XI_RawLiquidPump` crash bug as a natural side effect (same sentinel-
+      handling the new design needs anyway); slippage + IGNIS billing wiring.
+- [ ] **Phase 9 — Off-chain/UI orchestration + docs.** Spec for how a client constructs the
+      bundle via dirty reads (P3.7); architecture doc (what P5.5 originally covered, now scoped
+      to the whole redesign, not just the search primitives).
+- [ ] **Phase 10 — Testing, adversarial proof, regression.** Real measured old-vs-new gas
+      comparison (the actual number the owner asked for — "how much does outsourcing dirty
+      reads bring us" — report once measured, not estimated); adversarial malformed-bundle
+      proof; full regression (issuance-only, full `[6.2]`/`[6.3]`, `Z.repl`).
+- [ ] **Phase 11 — The original #34 ask: genuine exhaustive route discovery.** Build
+      `SWPT::URC_ComputeAllRoutes` (real parameterized fold over `max-attempts`, not a fixed
+      best-of-3) — this is what actually finds the *true* cheapest path, not an approximation.
+      Run via dirty read, feeds Phase 8's bundle's `swap-route` component. Depth-cap (7-token/
+      6-hop) enforcement baked into the search itself. Hand-verified small-topology proof
+      against the owner's own worked examples (was `P1` in the old roadmap below).
+- [ ] **Phase 12 — Realistic-scale validation of the exhaustive search.** Measure
+      `URC_ComputeAllRoutes`'s own cost/candidate-count at 50-100-pool scale via dirty read
+      (was `P2` in the old roadmap below) — confirms the *whole* pipeline (exhaustive discovery
+      + Phase 8's cheap injection) end to end, with real numbers, not estimates.
+- [ ] **Phase 13 — Final audit trail + docs.** Update `ROUND-02-FIXES.md`, `README.md`,
+      `ISSUES-RANKED.md`, `ROUND-01-OWNER-FEEDBACK.md` to reflect #34's full, 13-phase
+      resolution; final "what was added/modified/where" summary per the owner's standing
+      requirement from early in this effort, verified in REPL.
+
+**Sequencing note:** phases 6-10 (the gas-ceiling infrastructure) are more urgent than 11-12
+(the original routing-quality ask) — the protocol can't safely operate at scale without 6-10
+regardless of routing quality, whereas 11-12 is the originally-requested improvement layered on
+top once the foundation exists. Phase 8's new entrypoint can ship using Phase 1's existing
+best-of-3 search to fill `swap-route` initially, and get upgraded to Phase 11's genuinely
+exhaustive search later — 6-10 and 11-12 are not hard-blocked on each other, just naturally
+sequenced by urgency.
+
 **Status:** IN PROGRESS. P0.5 done. **P0.6 REOPENED, 2026-08-21 — was wrongly marked done.**
 Direction 1 + direction 5 (single-shortest-path boost routing, then carrying the boost value
 forward hop-by-hop so only the last hop searches) shipped and genuinely got the Liquid-Boost-

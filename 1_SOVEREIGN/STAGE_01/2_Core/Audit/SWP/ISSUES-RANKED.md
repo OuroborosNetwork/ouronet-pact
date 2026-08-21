@@ -235,12 +235,21 @@ no pact has a TTL/expiry.~~ — **DESIGN, accepted (owner, 2026-08-19).** "It's 
 as is." Same non-live `MTX-SWP` module already confirmed for M11 (zero Talos wiring). Full trace in
 `ROUND-01-OWNER-FEEDBACK.md`. — *M12*
 
-#34M **[U|SWP / SWPT]** ~~BFS keeps only one chain per node and routing does zero amount-out/liquidity
-comparison across candidate paths — "Smart Swap" is pure hop-count routing.~~ — **FIXED ✅ AND PROVEN ✅
-2026-08-20** (`ROUND-02-FIXES.md` Fix #19). New `SWPT::URC_ComputeAlternateRoutes` finds up to 3
-edge-disjoint candidate routes (fixed cap — no dynamic loops in Pact); `SWPI::URCX_Hopper` now picks the
-highest-payout candidate. Adversarially proven: a diamond-topology swap delivers 4906 TSTZ fixed vs. 1990
-TSTZ reverted (~2.5x worse) via the same swap. — *M2*
+#34M **[U|SWP / SWPT / SWPI / SWPU / Talos]** ~~BFS keeps only one chain per node and routing does zero
+amount-out/liquidity comparison across candidate paths — "Smart Swap" is pure hop-count routing.~~ —
+**Phase 1 FIXED ✅ AND PROVEN ✅ 2026-08-20** (`ROUND-02-FIXES.md` Fix #19). New
+`SWPT::URC_ComputeAlternateRoutes` finds up to 3 edge-disjoint candidate routes (fixed cap — no dynamic
+loops in Pact); `SWPI::URCX_Hopper` now picks the highest-payout candidate. Adversarially proven: a
+diamond-topology swap delivers 4906 TSTZ fixed vs. 1990 TSTZ reverted (~2.5x worse) via the same swap.
+**2026-08-21, owner consolidated ALL SmartSwap routing + execution-gas work under this single issue
+(#34) as one 13-phase plan — Phase 1 above is phase 1 of 13, 5/13 done as of this update.** Phases 2-5
+discovered and partially fixed a *separate, more severe* problem found while building Phase 1's
+follow-up: real worst-case execution gas at realistic pool-count scale reaches 6-7 million gas against
+the ~2,000,000 ceiling, dominated (56.9%) by a previously-unknown cost source (`XE_UpdateStoaValue`'s
+post-swap per-pool re-pricing), not by Liquid Boost as first assumed. Phases 6-13 (not started, fully
+designed) are a dirty-read path-injection redesign that closes the gas-ceiling problem *and* delivers
+the originally-requested genuine exhaustive cheapest-path search. Full phase list, design, and running
+status: `OuronetInformational/HANDOFF-swp-exhaustive-path-search.md`. — *M2*
 
 #34bM **[SWPI]** ~~Discovered during #34M follow-up discussion, not from the original Round I sweep.
 `UEV_Issue`'s Stable-pool anchoring check (`16_SWPI.pact:1409-1421`) is supposed to require the first
