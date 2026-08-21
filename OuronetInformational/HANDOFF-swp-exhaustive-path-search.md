@@ -8,10 +8,34 @@ crisis — is, at the owner's direction, one single issue: **#34** (`ISSUES-RANK
 Fix #19 closed the *approximation* problem (best-of-3 instead of first-found) but was never
 the full resolution the owner originally wanted (a genuinely exhaustive cheapest-path search);
 everything below is the complete path from where Fix #19 left off to that original goal,
-**13 phases, 5 done, 8 remaining.** Detailed design for each phase lives in the sections below
-this list (old `P0.x` numbering for phases 1-5, `P3.x` for phases 6-10 — kept as-is rather than
-renumbered, to avoid breaking existing cross-references); phases 11-13 are new, not yet
-detailed below at the same depth, to be expanded when their turn comes.
+**13 phases, all 13 done as of 2026-08-22.** Detailed design for each phase lives in the sections
+below this list (old `P0.x` numbering for phases 1-5, `P3.x` for phases 6-10 — kept as-is rather
+than renumbered, to avoid breaking existing cross-references).
+
+**Final summary — what was added/modified/where (Phase 13, per the owner's standing requirement),
+verified via full `Z.repl`/issuance-only regression at every step, not just at the end:**
+
+| File | What changed |
+|---|---|
+| `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` | `SWPT\|PathCache` table + `PathCacheRow` (interface); `URC_ReadPathCache`/`URC_EdgeConnects`/`URC_ValidatePathStructure`/`XI_RegisterPath`/`XE_RegisterPath` (shared path cache, structural validation, first-write-wins registration + its proper cross-module writer); `URC_ComputeAllRoutes` + `MAX_ATTEMPTS_HARD_CAP`/`MAX_ROUTE_NODES` (genuine exhaustive route discovery, Phase 11). |
+| `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact` | `;;Key = <...>` deftable-key comments added (StoicSyntax §19.5 sweep, no behavior change). |
+| `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact` | `URC_ValidatePathActive` (active-required wrapper); `URC_HopperForKnownRoute` (feeless quote over a caller-supplied route's exact edges); `URC_HopperExhaustive` (Phase 11, mirrors `URCX_Hopper`, sources candidates from `URC_ComputeAllRoutes`); `;;Key` comments. |
+| `1_SOVEREIGN/STAGE_01/2_Core/{17_SWPL,18_SWPLC,20_MTX-SWP}.pact` | `;;Key = <...>` deftable-key comments only, no behavior change. |
+| `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact` | `SmartSwapPathBundle`/`SwapRoute`/`CachedPathOrMiss`/`TokenPathPair` schemas; self-searching entrypoints renamed `CC_SmartSwap` (zero behavior change); new bundle-based `C_SmartSwap`/`XI_SmartSwapExplicitRoute`/`XI_SmartSwapAndRegister` + the `SWPU\|X>SMART-SWAP-EXPLICIT-ROUTE` defcap family; `boost-path` threaded through `XI_SmartSwapCore`/`XI_LiquidIndexPump`/`XI_RawLiquidPump` via a `NO_PATH` sentinel; **`XI_RawLiquidPump`'s two-bug crash fix** (unguarded index into a possibly-empty search result, in both the function and its caller); `URC_PoolStoaValueFromPath`/`URC_ComputeStoaValueResults`/`URC_DedupFirstTokens`/`UC_FindStoaPath` (dumb-writer pricing); `XI_RegisterBundlePaths` (cache self-warming); `;;Key` comments. |
+| `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact` | Self-searching wrappers renamed `SWP\|CC_SmartSwap{With,No}Slippage`; new bundle-based `SWP\|C_SmartSwap{With,No}Slippage` with the dumb-writer stoa-value updater (`map` straight into `XE_UpdateStoaValue`, no `URC_PoolValue` re-derivation); `;;Key` comments. |
+| `REPL/Stage_01/[6.3]_SWP.repl` | Permanent regression, ~1,100 new lines: `SWP\|TX 032c`-`032z2` (Fix #19/#34bM proofs + the P2-scale 102-pool worst-case topology), `032z3`-`032z5` (Phase 7 core functions, write-safety, `XI_RawLiquidPump` crash-bug proofs), `032z6`-`032z8` (bundle-based SmartSwap + cache self-warming + adversarial malformed-bundle proofs), `049`-`052` (Phase 11 exhaustive-search proof, 4-route diamond extension), `053` (Phase 12 realistic-scale measurement). |
+| `OuronetInformational/HANDOFF-swp-exhaustive-path-search.md` | This document — the full 13-phase plan, every design decision, every real measurement. |
+| `OuronetInformational/HANDOFF-swp-smartswap-bundle-architecture.md` | New — finished-mechanism write-up + client/UI dirty-read orchestration guide (Phase 9), written against the real built code. |
+| `OuronetInformational/StoicSyntax.md` | New §19.5 (R6): every `deftable` must carry a `;;Key = <...>` comment — formalized from the pre-existing AQP convention (owner reminder), version 1.7.0 → 1.8.0. |
+| `OuronetInformational/INDEX.md` | Registered both `HANDOFF-swp-*.md` docs in the Handoffs table (the exhaustive-path-search one was previously unlisted). |
+| `1_SOVEREIGN/STAGE_01/2_Core/Audit/SWP/{README,ISSUES-RANKED,ROUND-01-OWNER-FEEDBACK,ROUND-02-FIXES}.md` | Phase 13 itself — closed out the M2/#34 status rows, added `ROUND-02-FIXES.md` Fix #21 (Phases 6-13 summary, matching the established fix-entry template). |
+| `OuronetInformational/memories/2026-08-22-stoicsyntax-refactor-will-require-a-docs-sync-pass.md` | New — flags that this whole audit trail + both HANDOFF docs reference pre-refactor names and will need a doc-sync pass once the planned project-wide StoicSyntax refactor lands. |
+
+**The headline numbers, for anyone who only reads this table:** `CC_SmartSwap` (self-searching)
+7,145,298 gas → `C_SmartSwap` (bundle-based) 397,043 gas on the identical worst-case swap — an
+**18.5x reduction**, safely under the real ~2,000,000 ceiling. Exhaustive search proven to find a
+route best-of-3 structurally cannot (195.16 vs. 784.27 on a real 4-route topology). Full `Z.repl`
+(Stage 1+2) and issuance-only regression both 0 `FAILURE` throughout every phase.
 
 - [x] **Phase 1 — Approximate fix: best-of-3 routing.** Fix #19 (`SWPT::URC_ComputeAlternateRoutes`,
       up to 3 edge-disjoint candidates, `SWPI::URCX_Hopper` picks the best by payout) + Fix #20/
@@ -333,10 +357,23 @@ detailed below at the same depth, to be expanded when their turn comes.
       shape found here suggests the fix would be tuning `max-attempts`/topology-scoping
       choices at the call site, not a redesign of `URC_ComputeAllRoutes` itself.
       Full `Z.repl` (Stage 1+2) + issuance-only regression both 0 `FAILURE`.
-- [ ] **Phase 13 — Final audit trail + docs.** Update `ROUND-02-FIXES.md`, `README.md`,
+- [x] **Phase 13 — Final audit trail + docs.** Update `ROUND-02-FIXES.md`, `README.md`,
       `ISSUES-RANKED.md`, `ROUND-01-OWNER-FEEDBACK.md` to reflect #34's full, 13-phase
       resolution; final "what was added/modified/where" summary per the owner's standing
       requirement from early in this effort, verified in REPL.
+      **Done, 2026-08-22.** All four `Audit/SWP/` tracking docs updated: `ROUND-02-FIXES.md`
+      got a new `Fix #21` entry (Phases 6-13, matching the established fix-entry template);
+      `README.md`'s M2/#34 status row and living-index both closed out to
+      `FIXED ✅ AND PROVEN ✅ 13/13`; `ISSUES-RANKED.md`'s #34M entry and
+      `ROUND-01-OWNER-FEEDBACK.md`'s "Phase 2 follow-up" paragraph both updated with the real
+      final numbers and cross-links to both `HANDOFF-swp-*.md` docs. The
+      "what was added/modified/where" summary lives at the top of this document (right after
+      this phase list's intro). Also flagged and written down separately (not part of this
+      phase's own scope, but caught while doing it): the owner's stated plan is audit-everything
+      first, StoicSyntax-refactor-everything second — meaning every name in this whole audit
+      trail is pre-refactor and will need its own doc-sync pass once that refactor lands, see
+      `OuronetInformational/memories/2026-08-22-stoicsyntax-refactor-will-require-a-docs-sync-pass.md`.
+      Pure documentation — no `.pact`/`.repl` changes this phase, no regression needed.
 
 **Sequencing note:** phases 6-10 (the gas-ceiling infrastructure) are more urgent than 11-12
 (the original routing-quality ask) — the protocol can't safely operate at scale without 6-10
@@ -386,7 +423,10 @@ worst-case gas, cold and warm separately; compare directly against `CC_`'s alrea
 numbers (1,963,025 at 22-pool baseline, up to 7,145,276 at 102 pools) for the actual "how much
 does this buy us" answer — measured, never estimated in advance.
 
-**Status:** IN PROGRESS. P0.5 done. **P0.6 REOPENED, 2026-08-21 — was wrongly marked done.**
+**Status:** SUPERSEDED by the master phase list at the top of this document — all 13 phases done,
+2026-08-22. This status line and the historical narrative below it are kept for the record (how
+P0.6 was found, reopened, and led to the P3 redesign); they were accurate as of when written, not
+updated retroactively. P0.5 done. **P0.6 REOPENED, 2026-08-21 — was wrongly marked done.**
 Direction 1 + direction 5 (single-shortest-path boost routing, then carrying the boost value
 forward hop-by-hop so only the last hop searches) shipped and genuinely got the Liquid-Boost-
 only worst case from 3,039,431 to 1,963,025 gas — real, still stands. But that figure turned

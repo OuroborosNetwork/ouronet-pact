@@ -1041,3 +1041,108 @@ repaired chain and all #13C/#19H/#20H assertions passing unchanged): exit 0, 0 `
 (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #21 — M2 / #34 (master issue, Phases 6-13): dirty-read path-injection redesign — closes the
+      real gas-ceiling crisis Fix #19 uncovered, and delivers the originally-requested exhaustive search
+
+**Owner direction:** Fix #19's own worst-case measurement (Phase 2-5, P0.5/P0.6 in the HANDOFF doc)
+found that real worst-case `CC_SmartSwap` execution — with Liquid Boost, a supposedly-always-on
+production feature — costs **6-7 million gas at realistic scale (~100 active pools) against the real
+~2,000,000 Stoa ceiling**, growing worse as the protocol's pool count grows (new pools must anchor to
+principal tokens, which become search hubs). Owner directed the whole thing — best-of-3's own
+limitations, the gas-ceiling crisis, and the fix — be consolidated into this one issue, executed
+phase-by-phase with explicit go-ahead at each step, full REPL verification (not load-testing — real
+pass/fail assertions) at every stage, adversarial revert-and-reproduce proof for every fix. Full
+13-phase plan, every design decision, every dead end: `OuronetInformational/HANDOFF-swp-exhaustive-path-search.md`.
+Finished-mechanism write-up + client orchestration guide: `OuronetInformational/HANDOFF-swp-smartswap-bundle-architecture.md`.
+
+**The redesign (Phases 6-10, the dirty-read bundle mechanism) — push all path discovery off-chain:**
+- `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` — `SWPT|PathCache` table (+ `PathCacheRow` on the
+  `SwapTracerV2` interface) — a shared, amount-agnostic X→target path cache. `URC_ReadPathCache`
+  (reversed-lookup read, checks both key directions before concluding a miss), `URC_EdgeConnects` /
+  `URC_ValidatePathStructure` (exists-only structural + depth-cap validation, re-run on every read —
+  even cache hits — never trusted blindly), `XI_RegisterPath` (first-write-wins, self-verifying,
+  checks both directions before writing regardless of caller claims) + its proper cross-module
+  forward-writer `XE_RegisterPath` (mirrors the established `XE_UpdateGraph` pattern — a caller-side
+  grant of `SWPT.SECURE` directly was investigated and rejected: this codebase's own
+  `Audit/ATS/ROUND-01-FINDINGS.md` proves that pattern is unsafe for a `true`-bodied capability).
+- `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact` — `URC_ValidatePathActive` (wraps SWPT's structural
+  check with the active-required `can-swap` pass); `URC_HopperForKnownRoute` (feeless quote over a
+  caller-supplied route's *exact* edges, not a re-derived "best" edge — keeps the slippage floor
+  check consistent with what real execution will actually walk).
+- `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact` — `SmartSwapPathBundle`/`SwapRoute`/`CachedPathOrMiss`/
+  `TokenPathPair` schemas; existing self-searching entrypoints renamed `CC_SmartSwap` /
+  `SWP|CC_SmartSwap{With,No}Slippage` (zero behavior change, kept as the fallback/comparison
+  baseline); new bundle-based `SWPU::C_SmartSwap` + `XI_SmartSwapExplicitRoute` +
+  `SWPU|X>SMART-SWAP-EXPLICIT-ROUTE` defcap (validates the whole bundle's route via **one** cheap
+  `URC_ValidatePathActive` call — no full-graph search at the defcap layer at all, the actual
+  mechanism behind the gas reduction); `boost-path` threaded through `XI_SmartSwapCore` /
+  `XI_LiquidIndexPump` / `XI_RawLiquidPump` via a `NO_PATH` sentinel so the self-searching chain is
+  behaviorally untouched; `URC_PoolStoaValueFromPath` / `URC_ComputeStoaValueResults` (the "dumb
+  writer" pricing computation, reproducing `URC_PoolValue`'s exact formula from bundle data instead
+  of a fresh search); `XI_RegisterBundlePaths` (cache self-warming, re-validates every path from
+  scratch, never trusts the bundle's `is-new` claim).
+- `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact` — `SWP|C_SmartSwapWithSlippage` /
+  `SWP|C_SmartSwapNoSlippage` (the bundle-based Talos entrypoints) with the real dumb-writer (`map`
+  straight into `XE_UpdateStoaValue`, **zero** `URC_PoolValue` calls at the Talos layer for this
+  path — the mechanism that removes what Phase 2-5 found was 56.9% of the old total cost).
+- **Two real bugs fixed as a natural byproduct, both with adversarial revert-reproduce proof:**
+  `XI_RawLiquidPump`'s long-standing crash (unguarded index into a possibly-empty search result —
+  actually *two* bugs, the second in its caller `XI_LiquidIndexPump`, only surfacing once the first
+  was fixed and execution could reach it); a doc-comment inconsistency in the bundle schemas caught
+  *before* code was built against it (`stoa-paths` targets DWK, not DLK like `boost-path` — traced
+  `URC_PoolValue`'s real implementation rather than assuming).
+
+**The exhaustive search itself (Phases 11-12, the originally-requested "genuine cheapest path"):**
+- `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` — `URC_ComputeAllRoutes(input, output, swpairs,
+  max-attempts)`: a real `fold` over up to `max-attempts` (not this issue's own Fix #19's fixed
+  cap-of-3), same edge-exclusion-per-found-route mechanism, `MAX_ATTEMPTS_HARD_CAP` (50,000)
+  clamping regardless of caller request, depth cap (`MAX_ROUTE_NODES = 7`) enforced as a documented
+  post-discovery filter (not baked into the shared `U|BFS` utility — a deliberate scope decision,
+  since this function is dirty-read-only and the efficiency concern that preference exists for
+  doesn't apply here).
+- `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact` — `URC_HopperExhaustive`, mirroring `URCX_Hopper`'s
+  shape, reusing `URCX_HopperForNodes`/`UC_BestHopper` (this same Fix #19's own machinery)
+  completely unchanged.
+
+**Adversarially proven, live — permanent regression across `[6.3]_SWP.repl`:**
+- **Gas, the headline number:** same worst-case swap, same ~102-active-pool topology —
+  `CC_SmartSwap` (self-searching): **7,145,298 gas**. `C_SmartSwap` (bundle-based): **385,749 gas,
+  397,043 including cache-warming writes — an 18.5x reduction**, safely under the real ceiling.
+  Both confirmed executing the identical real 6-hop/6-pool route, not a shortcut (`SWP|TX 032z2` /
+  `032z6`).
+- **Malformed-bundle adversarial proof (`SWP|TX 032z8`):** wrong-endpoint route, depth-cap
+  violation, fabricated non-existent pool, and a real-but-`can-swap=false` pool — all four correctly
+  abort the whole transaction (`expect-failure`) before any state changes. A fabricated boost-path
+  and a fabricated stoa-path entry — both correctly degrade gracefully instead (swap still
+  completes, checked against the actual returned string, not a placebo assertion).
+- **Cache self-warming (`SWP|TX 032z6`/`032z7`):** a genuinely-new path gets registered and reads
+  back correctly (reversed-lookup); a natural depth-cap rejection (the P2-scale topology's real
+  `W7→DLK` route is genuinely 8 hops) correctly skips registration — caught as a real finding, not
+  assumed, and confirmed to be the depth-cap safety mechanism working as designed, not a bug.
+- **Exhaustive search, closing P4.1 (open since the original Round I sweep) — `SWP|TX 049`-`052`:**
+  extended the Fix #19 diamond topology with 2 more routes (issued last, so best-of-3 structurally
+  cannot see the 4th). Measured empirically (a first sizing attempt was wrong, caught by isolating
+  each candidate route's own value before asserting anything): for a 100 OURO test, best-of-3 picks
+  195.16, the exhaustive search finds and picks 784.27 — a real case where the true-best route is
+  provably outside best-of-3's own reach. Also proves the single-pool-universe edge case (exactly 1
+  route when connected, exactly 0 when not, no crash).
+- **Realistic-scale measurement (`SWP|TX 053`):** `URC_ComputeAllRoutes`'s own cost/candidate-count
+  at full ~104-pool scale — sub-linear growth with background pool count; the early-exit
+  short-circuit confirmed working (extra `max-attempts` beyond natural exhaustion cost almost
+  nothing more). Go/no-go: tractable — this function is dirty-read-only, so none of these numbers
+  ever compete against the real paid-gas ceiling.
+- Full `[6.2]`+`[6.3]` suite, default issuance-only regression, and full `Z.repl` (Stage 1 + Stage
+  2) all exit 0, 0 `FAILURE` — reconfirmed after every phase, not just at the end.
+
+**Not yet built, explicitly scoped out and tracked, not silently dropped:** exhaustive-search route
+discovery still needs to actually feed `swap-route` for a real client (currently `CC_SmartSwap`'s
+`URC_HopperActive` best-of-3 remains the *production default* discovery mechanism; `C_SmartSwap`'s
+bundle can be filled by either). Cache self-warming and the new bundle-based path coexist with the
+`CC_`-renamed originals deliberately — whether `CC_` is ever fully retired is an explicit open
+decision, not made here.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — all 13 phases of the consolidated plan complete, 2026-08-22.
+Awaiting Round III re-verify.

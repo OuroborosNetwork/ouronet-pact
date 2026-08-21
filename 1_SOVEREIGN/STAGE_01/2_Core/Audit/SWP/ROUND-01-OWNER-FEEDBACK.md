@@ -1674,12 +1674,23 @@ Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #19. Awaiting Round III re-verify.
 
-**Phase 2 follow-up (planning, not started):** post-fix discussion (same session) established that
-best-of-3 is a bounded heuristic, not a guarantee of the *actual* cheapest route — owner's real intent is
-genuine exhaustive on-chain path search. Full phased plan, the depth-vs-path-count distinction, the
-same-pool-detour pruning rule, and the concrete counter-example proving "shortest ≠ cheapest" are captured
-in `OuronetInformational/HANDOFF-swp-exhaustive-path-search.md`. Fix #19 stays live as the production
-default/fallback regardless of how/whether Phase 2 proceeds.
+**Phase 2-13 follow-up — FIXED ✅ AND PROVEN ✅, 2026-08-22 (`ROUND-02-FIXES.md` Fix #21):** post-fix
+discussion (same session) established that best-of-3 is a bounded heuristic, not a guarantee of the
+*actual* cheapest route — owner's real intent is genuine exhaustive on-chain path search. That
+discussion also surfaced a separate, more severe worst-case execution-gas crisis (real worst case at
+realistic scale reached 6-7 million gas against the ~2,000,000 ceiling) which got consolidated into
+this same issue as one 13-phase plan. All 13 phases are now complete: a dirty-read path-injection
+redesign (new bundle-based `SWPU::C_SmartSwap`, measured 7,145,298 → 397,043 gas on the identical
+worst-case swap, an 18.5x reduction) closes the gas crisis, and a genuine exhaustive route search
+(`SWPT::URC_ComputeAllRoutes`/`SWPI::URC_HopperExhaustive`) delivers the originally-requested
+cheapest-path search, proven to find routes best-of-3 structurally cannot. Full phased plan, every
+design decision, the depth-vs-path-count distinction, the same-pool-detour pruning rule, the concrete
+counter-example proving "shortest ≠ cheapest," and every real measurement:
+`OuronetInformational/HANDOFF-swp-exhaustive-path-search.md`. Finished-mechanism write-up + client
+orchestration guide: `OuronetInformational/HANDOFF-swp-smartswap-bundle-architecture.md`. Fix #19
+(`CC_SmartSwap`, the renamed self-searching variant) stays live as the production fallback alongside
+the new bundle-based path — whether it's ever fully retired is an explicit open decision, not made
+here.
 
 ---
 

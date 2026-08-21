@@ -242,14 +242,21 @@ amount-out/liquidity comparison across candidate paths — "Smart Swap" is pure 
 loops in Pact); `SWPI::URCX_Hopper` now picks the highest-payout candidate. Adversarially proven: a
 diamond-topology swap delivers 4906 TSTZ fixed vs. 1990 TSTZ reverted (~2.5x worse) via the same swap.
 **2026-08-21, owner consolidated ALL SmartSwap routing + execution-gas work under this single issue
-(#34) as one 13-phase plan — Phase 1 above is phase 1 of 13, 5/13 done as of this update.** Phases 2-5
-discovered and partially fixed a *separate, more severe* problem found while building Phase 1's
-follow-up: real worst-case execution gas at realistic pool-count scale reaches 6-7 million gas against
-the ~2,000,000 ceiling, dominated (56.9%) by a previously-unknown cost source (`XE_UpdateStoaValue`'s
-post-swap per-pool re-pricing), not by Liquid Boost as first assumed. Phases 6-13 (not started, fully
-designed) are a dirty-read path-injection redesign that closes the gas-ceiling problem *and* delivers
-the originally-requested genuine exhaustive cheapest-path search. Full phase list, design, and running
-status: `OuronetInformational/HANDOFF-swp-exhaustive-path-search.md`. — *M2*
+(#34) as one 13-phase plan.** Phases 2-5 discovered a *separate, more severe* problem found while
+building Phase 1's follow-up: real worst-case execution gas at realistic pool-count scale reached 6-7
+million gas against the ~2,000,000 ceiling, dominated (56.9%) by a previously-unknown cost source
+(`XE_UpdateStoaValue`'s post-swap per-pool re-pricing), not by Liquid Boost as first assumed. **All 13
+phases FIXED ✅ AND PROVEN ✅, 2026-08-22 (`ROUND-02-FIXES.md` Fix #21):** Phases 6-10 built a
+dirty-read path-injection redesign (new bundle-based `SWPU::C_SmartSwap`, cache self-warming,
+adversarial malformed-bundle proof) — measured **7,145,298 → 397,043 gas on the identical worst-case
+swap, an 18.5x reduction**, safely under the ceiling; the old self-searching path stays live, renamed
+`CC_SmartSwap`, as the fallback. Phases 11-12 built the originally-requested genuine exhaustive
+cheapest-path search (`SWPT::URC_ComputeAllRoutes`/`SWPI::URC_HopperExhaustive`), proved on a real
+4-route topology that it finds a route best-of-3 structurally cannot (195.16 vs. 784.27), and measured
+its own realistic-scale cost (sub-linear; dirty-read-only, so never competes against the paid ceiling).
+Full phase list, design, and every measurement: `OuronetInformational/HANDOFF-swp-exhaustive-path-search.md`.
+Finished-mechanism write-up + client orchestration guide: `OuronetInformational/HANDOFF-swp-smartswap-bundle-architecture.md`.
+— *M2*
 
 #34bM **[SWPI]** ~~Discovered during #34M follow-up discussion, not from the original Round I sweep.
 `UEV_Issue`'s Stable-pool anchoring check (`16_SWPI.pact:1409-1421`) is supposed to require the first
