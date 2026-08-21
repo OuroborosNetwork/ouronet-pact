@@ -1,0 +1,61 @@
+;; Verification for DPDC Audit finding #10H (DPDC-I · H1): "NFT issuance is always billed at the cheaper
+;; SFT KDA price." Measures the REAL coin balance delta on a fresh NFT collection issuance, rather than
+;; relying on signed-capability success/failure (signed caps are only an upper bound, so genesis's own
+;; generous signing masks this bug — exactly why it was never caught).
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-H1 - issue a FRESH NFT collection, measure real KDA/coin balance delta")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (issuing-account:string KST.ANHD)
+        (kda-account:string (ref-DALOS::UR_AccountKadena issuing-account))
+        (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
+        (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
+        ;; sign generously at the (correct, higher) dpnf-based split so the tx succeeds regardless of
+        ;; which price the bug actually charges -- we're measuring the real delta, not probing the cap.
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices issuing-account dpnf-price))
+    )
+    (print (format "dpsf price = {} / dpnf price = {}" [dpsf-price dpnf-price]))
+    (print (format "BEFORE coin balance = {}" [(coin.get-balance kda-account)]))
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        )
+        (print (format "ISSUE RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_Issue issuing-account issuing-account issuing-account
+                "FreshProbeNFTCollection" "FPNC"
+                true true true true true true true true)]))
+    )
+    (print (format "AFTER coin balance = {}" [(coin.get-balance kda-account)]))
+    (print (format "expected delta if charged at dpsf (BUG) price = {}" [dpsf-price]))
+    (print (format "expected delta if charged at dpnf (CORRECT) price = {}" [dpnf-price]))
+)
+(commit-tx)

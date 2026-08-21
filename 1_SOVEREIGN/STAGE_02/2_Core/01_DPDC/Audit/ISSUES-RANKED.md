@@ -110,10 +110,13 @@ Fix #7) — stray argument dropped; also resolved live whether the cross-module/
 resolves (it does, no retyping needed). SFT update now succeeds and persists correctly, NFT sibling
 control still works. — *DPDC·H1*
 
-#10H **[DPDC-I]** NFT issuance is always billed at the cheaper SFT KDA price — the `if son` branch in
+#10H **[DPDC-I]** ~~NFT issuance is always billed at the cheaper SFT KDA price — the `if son` branch in
 `C_IssueDigitalCollection`'s cost computation queries the same `"dpsf"` price key on both sides, contradicting
 the 400/500 KDA split explicitly documented at the Talos layer; a guaranteed, silent 20% revenue shortfall on
-every NFT collection ever issued. — *DPDC-I·H1*
+every NFT collection ever issued.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-21** (`ROUND-02-FIXES.md` Fix #8) —
+one-word price-key fix (`"dpsf"` → `"dpnf"`); since genesis's own signed caps are too generous to catch this
+via pass/fail, measured the real `coin` balance delta instead: `0.306` pre-fix → `0.3825` post-fix, exactly
+`×1.25`, exactly `0.5/0.4` — mathematically exact confirmation, not just "went up." — *DPDC-I·H1*
 
 #11H **[DPDC-I]** NFT genesis issuance with owner==creator (the most common issuance shape) writes
 `role-modify-royalties`/`role-exemption`/`role-modify-creator = false` into the `Account` table (the table

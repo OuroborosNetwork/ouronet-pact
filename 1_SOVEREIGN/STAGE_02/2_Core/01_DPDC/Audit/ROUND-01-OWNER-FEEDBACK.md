@@ -226,3 +226,17 @@ when `ref-DPDC` is typed `module{DpdcV1}` but the function is declared on the se
 retyping needed anywhere. Live-proven: SFT branding update now succeeds and persists correctly (pending
 logo/description both set and read back from real `BRD` storage); NFT sibling (already correct, used as
 control) still works. Full `Z.repl` pipeline green.
+
+## #10H · DPDC-I · H1 — NFT issuance billed at the SFT price
+
+**Verdict: CONFIRMED, FIXED (2026-08-21).** Owner asked directly whether this had actually been verified
+before agreeing to fix it — it hadn't; Round I's trace was a static source read only. Re-confirmed the bug
+is real by reading the current source (`04_DPDC-I.pact:188-193`, both branches of `if son` query the
+identical `"dpsf"` price key) before touching anything.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #8)** — one word, `"dpsf"` → `"dpnf"` in the NFT branch.
+Genesis's own signed `coin.TRANSFER` capabilities are already generous (computed from the correct `dpnf`
+price), so a signed-cap pass/fail test can't discriminate this bug — measured the real `coin` balance delta
+on a freshly-issued NFT collection instead. Pre-fix: real charge `0.306` KDA. Post-fix: `0.3825` KDA —
+exactly `0.306 × 1.25`, and `1.25` is exactly `0.5/0.4`, the precise `dpnf`/`dpsf` ratio. Not just "went
+up" — mathematically exact confirmation the fix changed only the intended input. Full `Z.repl` green.

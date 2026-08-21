@@ -188,7 +188,7 @@
                     (kda-cost:decimal
                         (if son
                             (ref-DALOS::UR_UsagePrice "dpsf")
-                            (ref-DALOS::UR_UsagePrice "dpsf")
+                            (ref-DALOS::UR_UsagePrice "dpnf")
                         )
                     )
                     (id:string

@@ -416,3 +416,36 @@ than assumed: the call resolves and executes cleanly, no retyping needed anywher
 - `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
 
 **Interface implication:** none — caller-side argument-count bug in Talos, not a DPDC interface defect.
+
+## Fix #8 — DPDC-I · H1 (NFT issuance billed at the cheaper SFT KDA price)
+
+**Owner-approved 2026-08-21.** Round I's trace was a static source read only, never reproduced running —
+owner asked directly whether it had actually been verified before agreeing to fix it.
+
+**Root cause:** `04_DPDC-I.pact:188-193` — `C_IssueDigitalCollection`'s KDA cost computation:
+```pact
+(kda-cost:decimal (if son (ref-DALOS::UR_UsagePrice "dpsf") (ref-DALOS::UR_UsagePrice "dpsf")))
+```
+Both branches of the `if son` query the identical `"dpsf"` price key — the `if` is dead code. Genesis
+price table: `"dpsf"=0.4`, `"dpnf"=0.5`.
+
+**Fix — one word:**
+```pact
+-(kda-cost:decimal (if son (ref-DALOS::UR_UsagePrice "dpsf") (ref-DALOS::UR_UsagePrice "dpsf")))
++(kda-cost:decimal (if son (ref-DALOS::UR_UsagePrice "dpsf") (ref-DALOS::UR_UsagePrice "dpnf")))
+```
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC-I_H1_nft_kda_price.repl`):** genesis's own NFT
+issuances already sign `coin.TRANSFER` capabilities generously (computed from the *correct* `dpnf` price),
+so a signed-cap pass/fail test can't discriminate the bug — a capability is only an upper bound, and the
+under-collection is silently absorbed, exactly why no existing test ever caught this. Measured the real
+`coin` balance delta instead, on a freshly-issued NFT collection (never issued before, to avoid
+double-issuance interference):
+- **Pre-fix:** real charge = `0.306` KDA (some constant account-level discount is layered on top of the
+  0.4 base — irrelevant to the bug itself, since it's applied uniformly).
+- **Post-fix:** real charge = `0.3825` KDA — exactly `0.306 × 1.25`, and `1.25` is exactly `0.5 / 0.4`,
+  the precise `dpnf`/`dpsf` price ratio. Not merely "higher" — mathematically exact confirmation the fix
+  changed the base price input and nothing else.
+- `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
+
+**Interface implication:** none — internal to `C_IssueDigitalCollection`'s body.
