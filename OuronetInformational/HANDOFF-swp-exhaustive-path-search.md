@@ -344,6 +344,34 @@ P1.2"). Update the checkboxes here as items land.
       this without a different mechanism (e.g. avoiding the list-growth pattern) — the call-count
       reduction alone is not where the gas is.
 
+      **Investigated and disproven, 2026-08-21 — the `URC_EdgesActive` `contains`-scan theory
+      from the earlier pool-count-scaling writeup does NOT hold up.** That writeup claimed
+      `URC_EdgesActive`'s `(contains swpair whitelist)` — an O(n) list scan repeated inside
+      `URC_MakeGraph`'s node/neighbour loops — was "almost certainly the dominant driver" of the
+      measured super-linear scaling (9→22 pairs: 2.44x pool growth, 3.57x gas growth). Verified
+      directly with a standalone Pact 5 gas micro-benchmark (`contains` on plain string lists,
+      isolated from the rest of the module): n=50 → 6 gas, n=200 → 23 gas, n=800 → 89 gas.
+      Confirms `contains` genuinely is O(n) (roughly linear, as expected) — but the *absolute*
+      cost is tiny even at n=800, nowhere near enough to explain a 110,422-gas jump between two
+      *much smaller* real universes (n=9, n=22). Filtering 5 candidates against an 800-entry
+      whitelist cost only 4 gas. **This theory was real reasoning from reading the code, but
+      wrong on the numbers — flagged and NOT built, rather than shipping a fix that wouldn't
+      have helped** (would also have needed real architectural work: SWPT deploys before SWP in
+      this codebase's deploy order, so `URC_EdgesActive` structurally cannot call
+      `SWP::UR_CanSwap` directly — any real fix needed the whitelist reshaped by the *caller*
+      instead, which is moot now that the theory itself didn't survive measurement).
+      **Follow-up data point, not yet conclusive:** measured `SWPT::URC_AllGraphPaths`'s own
+      returned chain (path) count at the same two scale points — 9 active pairs (from
+      `AKOSON`) → 19 chains; 22 active pairs (from `W7`) → 60 chains. Chain count grew 3.16x
+      against 2.44x pool growth — closer to the 3.57x gas growth than raw pool count is, and
+      consistent with the earlier #34M-adjacent concern about single richly-connected pools
+      generating disproportionately many internal paths. Not a clean, controlled comparison
+      though (different source tokens, different local topology) — real next step is an
+      apples-to-apples measurement (same source token, only pool count varying) before
+      committing to a fix aimed at `UC_BFS`'s chain-tracking (`UCX_GetChains`/`UDCX_AddChains`)
+      as the real driver. **Not built. Owner has a different proposed solution to evaluate
+      first (2026-08-21) — this investigation paused here pending that.**
+
 ### P1 — Core search primitives, hand-verified on a small topology
 - [ ] **P1.1** `SWPT::URC_ComputeAllRoutes(input, output, swpairs, max-attempts)` — generalize
       `URC_ComputeAlternateRoutes`'s 3 hardcoded sequential `let*` attempts into a real `fold`
