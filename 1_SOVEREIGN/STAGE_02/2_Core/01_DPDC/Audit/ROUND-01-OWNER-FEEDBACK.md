@@ -240,3 +240,20 @@ price), so a signed-cap pass/fail test can't discriminate this bug — measured 
 on a freshly-issued NFT collection instead. Pre-fix: real charge `0.306` KDA. Post-fix: `0.3825` KDA —
 exactly `0.306 × 1.25`, and `1.25` is exactly `0.5/0.4`, the precise `dpnf`/`dpsf` ratio. Not just "went
 up" — mathematically exact confirmation the fix changed only the intended input. Full `Z.repl` green.
+
+## #11H · DPDC-I · H2 — solo NFT owner==creator locked out of role-exemption/modify-creator/modify-royalties
+
+**Verdict: CONFIRMED, FIXED (2026-08-21).** In the NFT issuance branch where `owner-account ==
+creator-account` (a solo creator, no separate patron), `C_IssueDigitalCollection`'s final
+`XB_DeployAccountNFT` call wrote `role-exemption`, `role-modify-creator`, and `role-modify-royalties` as
+`false` into the `Account` table — the table actually consulted at call time — even though `VerumRoles`
+claimed the owner had them. Owner confirmed this reads as a plain copy-paste slip (three flags that should
+have mirrored the SFT sibling branch, which already writes `true` for the equivalent roles) and asked for
+the fix → live proof → documentation sequence, same as every other finding.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #9)** — flipped the three flags `false` → `true` in the
+NFT `owner==creator` branch. Live proof: issued a fresh solo NFT collection
+(`SCPN-98c486052a51`, owner==creator==`KST.ANHD`), minted a real nonce, and called
+`TS02-C2::DPNF|C_UpdateNonceRoyalty` as the solo owner — `Write succeeded`, royalty read back as `50.0`.
+Before the fix this would have been rejected outright regardless of what `VerumRoles` claimed, since
+`Account` is the table the role-gate actually reads. Full `Z.repl` pipeline green, no regressions.

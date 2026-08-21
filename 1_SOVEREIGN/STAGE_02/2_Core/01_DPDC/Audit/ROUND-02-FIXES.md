@@ -449,3 +449,50 @@ double-issuance interference):
 - `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
 
 **Interface implication:** none — internal to `C_IssueDigitalCollection`'s body.
+
+## Fix #9 — DPDC-I · H2 (solo NFT owner==creator locked out of role-exemption/modify-creator/modify-royalties)
+
+**Owner-approved 2026-08-21.** Owner confirmed this was a one-word-per-flag fix — `false` written where `true`
+was intended — and asked for the same fix → verify-live → document sequence as every prior finding.
+
+**Root cause:** `04_DPDC-I.pact` — in `C_IssueDigitalCollection`'s NFT branch, when `owner-account ==
+creator-account` (the solo-creator case), the final `XB_DeployAccountNFT owner-account id ...` call wrote
+`role-exemption`, `role-modify-creator`, and `role-modify-royalties` as `false` into the `Account` table —
+the table that actually gates those operations (the `VerumRoles` record claimed the owner had them, but
+`Account` is what's checked at call time). A solo creator could never exempt itself from role-caps, change
+its own creator address, or set a royalty on its own mint. The parallel SFT branch already wrote `true` for
+the equivalent flags — this was an NFT-branch-only oversight.
+
+**Fix — three flags, `false` → `true`, matching the already-correct SFT sibling:**
+```pact
+ (ref-DPDC::XB_DeployAccountNFT owner-account id
+     false   ;;frozen
+-    false   ;;role-exemption
++    true    ;;role-exemption
+     true    ;;role-nft-burn
+     true    ;;role-nft-create
+     true    ;;role-nft-recreate
+     true    ;;role-nft-update
+-    false   ;;role-modify-creator
++    true    ;;role-modify-creator
+-    false   ;;role-modify-royalties
++    true    ;;role-modify-royalties
+     true    ;;role-set-new-uri
+     false   ;;role-transfer
+ )
+```
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC-I_H2_nft_owner_creator_roles.repl`):** issued a fresh
+solo NFT collection (`SCPN-98c486052a51`, owner==creator==`KST.ANHD`, never issued before), minted a real
+nonce, then called `TS02-C2::DPNF|C_UpdateNonceRoyalty` on it as the solo owner:
+- Confirmed the role write directly: `role-modify-royalties on owner BEFORE would-be-check: true`.
+- `SET ROYALTY RESULT = Write succeeded`, and reading it back: `royalty after set = 50.0`. Before the fix
+  this call would have been rejected — role was `false` in the `Account` table regardless of what
+  `VerumRoles` claimed.
+- Note on the underlying call shape: `DPNF|C_UpdateNonceRoyalty`'s `nos:bool` argument must be `true`
+  ("native", i.e. not a fragmented/split nonce) for a plain never-fragmented mint — `false` routes into
+  `DPDC-F::UEV_Fragmentation`, which requires the nonce to already be fragmented and is unrelated to this
+  bug; that's a probe-construction detail, not part of the fix.
+- `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
+
+**Interface implication:** none — internal to `C_IssueDigitalCollection`'s NFT branch.

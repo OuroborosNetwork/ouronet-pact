@@ -279,13 +279,13 @@
                         )
                         (ref-DPDC::XB_DeployAccountNFT owner-account id
                             false   ;;frozen
-                            false   ;;role-exemption
+                            true    ;;role-exemption
                             true    ;;role-nft-burn
                             true    ;;role-nft-create
                             true    ;;role-nft-recreate
                             true    ;;role-nft-update
-                            false   ;;role-modify-creator
-                            false   ;;role-modify-royalties
+                            true    ;;role-modify-creator
+                            true    ;;role-modify-royalties
                             true    ;;role-set-new-uri
                             false   ;;role-transfer
                         )

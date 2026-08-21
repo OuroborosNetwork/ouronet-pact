@@ -118,11 +118,14 @@ one-word price-key fix (`"dpsf"` → `"dpnf"`); since genesis's own signed caps 
 via pass/fail, measured the real `coin` balance delta instead: `0.306` pre-fix → `0.3825` post-fix, exactly
 `×1.25`, exactly `0.5/0.4` — mathematically exact confirmation, not just "went up." — *DPDC-I·H1*
 
-#11H **[DPDC-I]** NFT genesis issuance with owner==creator (the most common issuance shape) writes
+#11H **[DPDC-I]** ~~NFT genesis issuance with owner==creator (the most common issuance shape) writes
 `role-modify-royalties`/`role-exemption`/`role-modify-creator = false` into the `Account` table (the table
 that actually gates those operations) while the parallel `VerumRoles` write claims the owner has them — a
 solo NFT creator cannot set royalties on their own mints until they notice and self-correct with an extra
-paid transaction. — *DPDC-I·H2*
+paid transaction.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-21** (`ROUND-02-FIXES.md` Fix #9) — flipped the
+three flags `false` → `true` in the NFT owner==creator branch, matching the already-correct SFT sibling.
+Live-proven: solo owner==creator NFT collection, fresh nonce, `DPNF|C_UpdateNonceRoyalty` now succeeds
+(`Write succeeded`, read back `50.0`) where it would have been rejected before. — *DPDC-I·H2*
 
 #12H **[DPDC]** The shared `XE_*` write-forwarding surface for Properties/Nonces/AccountSupplies performs
 zero value-level validation — `UEV_IMC` only authenticates the calling module, not the value being written
