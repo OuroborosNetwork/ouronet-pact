@@ -346,3 +346,11 @@ unconditional. Live-proven: froze a real account, renounced `can-freeze`, unfroz
 succeeded`) — while freezing a *different* account in the same now-`can-freeze=false` state was still
 correctly rejected, confirming the fix didn't over-broaden into a blanket bypass. Confirmed via `git stash`
 that the pre-fix script genuinely hard-fails at the unfreeze step. Full `Z.repl` green.
+
+## #14H · DPDC-MNG · H1 — pause doesn't gate mint/burn/wipe/respawn
+
+**Verdict: REFUTED, design-intentional (2026-08-21).** Owner: pause is meant to halt transfers only, not
+administrative supply operations — this architecture is drawn from MultiversX's token design, where pause
+functions the same way (a trading halt, not a full freeze). Verified the implementation matches that intent
+before closing: `DPDC-T` correctly enforces `UEV_PauseState id son false` on both real transfer call sites;
+`DPDC-MNG`'s mint/burn/wipe/respawn functions correctly never check it. No code change needed.

@@ -173,10 +173,15 @@ unconditional. Live-proven: real account frozen, `can-freeze` renounced, unfreez
 freezing a different account stays correctly rejected; `git stash` confirmed the pre-fix brick was real,
 not assumed. Z.repl green. — *DPDC-R·H1*
 
-#14H **[DPDC-MNG]** Pause never gates a single mutating entrypoint in this module (`C_AddQuantity`,
+#14H **[DPDC-MNG]** ~~Pause never gates a single mutating entrypoint in this module (`C_AddQuantity`,
 `C_BurnSFT`/`NFT`, all `Wipe*`, `C_RespawnNFT`) — only `DPDC-T`'s transfers actually check
 `UEV_PauseState`. An owner pausing a collection during an incident (e.g. a compromised Add-Quantity-role
-account) does not stop that account from continuing to mint/burn/wipe. — *DPDC-MNG·H1*
+account) does not stop that account from continuing to mint/burn/wipe.~~ — **REFUTED (design-intentional)
+2026-08-21** — owner: pause is meant to halt transfers only, not administrative supply operations, matching
+the same semantics as the MultiversX token architecture this design is drawn from. Verified `DPDC-T`
+correctly enforces `UEV_PauseState id son false` on both real transfer call sites; `DPDC-MNG`'s
+mint/burn/wipe/respawn functions are correctly left ungated, exactly as intended. No code change needed. —
+*DPDC-MNG·H1*
 
 #15H **[DPDC-S]** Set-class `score-multiplier` has no bound and no live-supply guard — once #7C is fixed,
 an owner can retroactively re-price every outstanding member of a set-class instantly and unboundedly (same
