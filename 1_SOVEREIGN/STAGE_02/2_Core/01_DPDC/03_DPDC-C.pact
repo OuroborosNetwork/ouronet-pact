@@ -395,6 +395,14 @@
             (enforce (!= empty-data-dc ind) "Incorrect Fragmentation Data")
             (ref-DPDC::UEV_Royalty royalty)     ;; Royalty can be set at -1.0 enabling Volumetric Royalty Fee.
             (ref-DPDC::UEV_IgnisRoyalty ignis)
+            ;; DPDC Audit #12Hb — bound the previously-unvalidated free-text/metadata fields.
+            (ref-DPDC::UEV_Name (at "name" ind))
+            (ref-DPDC::UEV_Description (at "description" ind))
+            (ref-DPDC::UEV_MetaDataBag (at "meta-data" (at "meta-data" ind)))
+            (ref-DPDC::UEV_AssetType (at "asset-type" ind))
+            (ref-DPDC::UEV_UriData (at "uri-primary" ind))
+            (ref-DPDC::UEV_UriData (at "uri-secondary" ind))
+            (ref-DPDC::UEV_UriData (at "uri-tertiary" ind))
         )
     )
     ;;

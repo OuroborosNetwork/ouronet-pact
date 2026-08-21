@@ -127,12 +127,36 @@ three flags `false` → `true` in the NFT owner==creator branch, matching the al
 Live-proven: solo owner==creator NFT collection, fresh nonce, `DPNF|C_UpdateNonceRoyalty` now succeeds
 (`Write succeeded`, read back `50.0`) where it would have been rejected before. — *DPDC-I·H2*
 
-#12H **[DPDC]** The shared `XE_*` write-forwarding surface for Properties/Nonces/AccountSupplies performs
+#12H **[DPDC]** ~~The shared `XE_*` write-forwarding surface for Properties/Nonces/AccountSupplies performs
 zero value-level validation — `UEV_IMC` only authenticates the calling module, not the value being written
 (no monotonicity check on `nonces-used`, no non-negativity check on `XE_W|Supply`'s absolute value); every
 conservation invariant for the shared core used by all 10 sibling modules rests entirely on caller
 discipline outside this file. Corroborated by a live "computed but never enforced" dead-validation instance
-in `DPDC-T`'s own transfer-amount check. — *DPDC·H2*
+in `DPDC-T`'s own transfer-amount check.~~ — **REFUTED (verified live) 2026-08-21** — every real call site
+traced (`DPDC-C` debit, `DPDC-MNG` burn/wipe, `DPDC-S` set-class creation, `DPDC-I` genesis specs) either
+self-derives the value (`current+1`, never attacker input) or is pre-validated by the calling defcap before
+the write runs (e.g. `UEV_NonceQuantityInclusion` gates `XE_W|Supply`). No code change needed. — *DPDC·H2*
+
+#12Hb **[DPDC-C/DPDC-N]** ~~Found while verifying #12H, not part of its original scope: `DpdcUdcV1.DPDC|NonceData`'s
+free-text fields — `name`, `description`, `meta-data.meta-data`, `asset-type`, `uri-primary`/`-secondary`/
+`-tertiary` — had zero content validation anywhere, at creation (`DPDC-C::UEV_NonceDataForCreation` only
+checked `royalty`/`ignis`) or at update (each `DPDC-N::C_Update*` wrote raw caller input unchecked). Traced
+real consumers first: `meta-data.meta-data` is a live NFT trait bag read by AQP-ANK/AQP-SCORE for reward
+scoring, not decorative.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-21** (`ROUND-02-FIXES.md` Fix #10) — 5 new
+shared validators (`UEV_Name`/`Description`/`MetaDataBag`/`AssetType`/`UriData`) added once in `02_DPDC.pact`
+next to `UEV_Royalty`/`UEV_IgnisRoyalty`, wired into the creation chokepoint (`UEV_NonceDataForCreation`,
+which also covers the whole-object update path) and each DPDC-N per-field update defcap. Caps: `name` ≤256
+chars; `description` ≤1024 words/≤256 chars-per-word; `meta-data.meta-data` ≤8192 chars serialized (coarse —
+Pact cannot enumerate an untyped object's keys, confirmed live); `asset-type` ≥1-of-7 flags; `uri-*` ≤2048
+chars/link. 13-check live proof covering both creation and every update entrypoint (reject + accept +
+boundary), Z.repl green. — *DPDC-C/DPDC-N·H4b*
+
+#12Hc **[DPDC-N]** Found while scoping #12Hb: `meta-data.composition` — the module's own auto-derived record
+of which real nonces are locked in escrow to back a composite NFT set (set by `C_MakeNonFungibleSet`, read
+back by `C_BreakNonFungibleSet` to know what to return) — can currently be overwritten to arbitrary values
+via `DPDC-N::C_UpdateNonces`'s whole-object replace path, completely decoupled from what's actually held in
+the `dpdc` escrow account. A correctness/integrity gap, not a content-length question — owner verdict
+pending. — *DPDC-N·H4c*
 
 #13H **[DPDC-R]** `DPDC|C>FRZ-ACC` gates **both** freeze and unfreeze on the collection's `can-freeze`
 switch (every sibling role toggle only gates the granting/"on" direction) — combined with `can-upgrade=false`

@@ -58,7 +58,9 @@
             [(ref-TS02-C2::DPNF|C_Create owner id
                 [(ref-DPDC-UDC::UDC_NonceData
                     0.0 0.0 "Solo Probe NFT #1" "bar" (ref-DPDC-UDC::UDC_NoMetaData)
-                    (ref-DPDC-UDC::UDC_ZeroURI|Type) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                    ;; DPDC Audit #12Hb: at least one real asset-type flag + matching link required now.
+                    (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                    (ref-DPDC-UDC::UDC_URI|Data "ipfs://bafySoloProbe/primary.png" "" "" "" "" "" "")
                     (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
                 )]
             )]))

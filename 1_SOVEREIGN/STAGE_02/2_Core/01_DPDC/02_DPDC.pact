@@ -112,6 +112,11 @@
     (defun UEV_AccountSetUriState (id:string son:bool account:string state:bool))
     (defun UEV_Royalty (royalty:decimal))
     (defun UEV_IgnisRoyalty (royalty:decimal))
+    (defun UEV_Name (name:string))
+    (defun UEV_Description (description:string))
+    (defun UEV_MetaDataBag (meta-data:object))
+    (defun UEV_AssetType (asset-type:object{DpdcUdcV1.URI|Type}))
+    (defun UEV_UriData (u:object{DpdcUdcV1.URI|Data}))
     (defun UEV_NftNonceExistance (id:string nonce:integer existance:bool))
     (defun UEV_NonceQuantityInclusion (account:string id:string son:bool nonce:integer amount:integer))
     (defun UEV_NonceQuantityInclusionMapper (account:string id:string son:bool nonces:[integer] amounts:[integer]))
@@ -925,6 +930,80 @@
                 (= (floor royalty ignis-pr) royalty)
                 (format "The Ignis input amount of {} is not conform with its precision" [royalty])
             )
+        )
+    )
+    (defun UEV_Name (name:string)
+        @doc "Bounds a nonce's free-text name. See DPDC Audit #12Hb."
+        (enforce
+            (<= (length name) 256)
+            (format "Nonce name cannot exceed 256 characters (got {})" [(length name)])
+        )
+    )
+    (defun UEV_Description (description:string)
+        @doc "Bounds a nonce's free-text description: max 1024 words, max 256 characters per \
+            \ word. See DPDC Audit #12Hb."
+        (let*
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (words:[string]
+                    (if (= (length description) 0)
+                        []
+                        (ref-U|LST::UC_SplitString " " description)
+                    )
+                )
+                (word-count:integer (length words))
+            )
+            (enforce
+                (<= word-count 1024)
+                (format "Nonce description cannot exceed 1024 words (got {})" [word-count])
+            )
+            (enforce
+                (fold (and) true (map (lambda (w:string) (<= (length w) 256)) words))
+                "Every word in a nonce description must be 256 characters or fewer"
+            )
+        )
+    )
+    (defun UEV_MetaDataBag (meta-data:object)
+        @doc "Coarse anti-bloat ceiling on the free-form NFT trait bag consumed by AQP-ANK/AQP-SCORE \
+            \ for trait scoring — total serialized size, since Pact cannot enumerate an untyped \
+            \ object's keys for a precise per-key/per-value check. See DPDC Audit #12Hb."
+        (enforce
+            (<= (length (format "{}" [meta-data])) 8192)
+            "Nonce meta-data is too large (8192 character serialized ceiling)"
+        )
+    )
+    (defun UEV_AssetType (asset-type:object{DpdcUdcV1.URI|Type})
+        @doc "At least one of the 7 asset-type flags must be set; any combination up to all 7 \
+            \ simultaneously is valid. See DPDC Audit #12Hb."
+        (enforce
+            (fold (or) false
+                [
+                    (at "image" asset-type)    (at "audio" asset-type)
+                    (at "video" asset-type)    (at "document" asset-type)
+                    (at "archive" asset-type)  (at "model" asset-type)
+                    (at "exotic" asset-type)
+                ]
+            )
+            "At least one asset-type flag must be set"
+        )
+    )
+    (defun UEV_UriData (u:object{DpdcUdcV1.URI|Data})
+        @doc "Bounds every link string in a URI|Data bundle (uri-primary/secondary/tertiary each \
+            \ carry one — primary/high-res/thumbnail tiers of the same element) to 2048 characters — \
+            \ generous for any real link/CID, blocks raw payloads hiding in a link field. \
+            \ See DPDC Audit #12Hb."
+        (enforce
+            (fold (and) true
+                (map (lambda (l:string) (<= (length l) 2048))
+                    [
+                        (at "image" u)    (at "audio" u)
+                        (at "video" u)    (at "document" u)
+                        (at "archive" u)  (at "model" u)
+                        (at "exotic" u)
+                    ]
+                )
+            )
+            "A URI link string exceeds the 2048 character limit"
         )
     )
     (defun UEV_NftNonceExistance (id:string nonce:integer existance:bool)

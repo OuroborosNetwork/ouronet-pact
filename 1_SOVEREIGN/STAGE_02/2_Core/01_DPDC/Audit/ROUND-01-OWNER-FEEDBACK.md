@@ -257,3 +257,47 @@ NFT `owner==creator` branch. Live proof: issued a fresh solo NFT collection
 `TS02-C2::DPNF|C_UpdateNonceRoyalty` as the solo owner — `Write succeeded`, royalty read back as `50.0`.
 Before the fix this would have been rejected outright regardless of what `VerumRoles` claimed, since
 `Account` is the table the role-gate actually reads. Full `Z.repl` pipeline green, no regressions.
+
+## #12H · DPDC · H4 — shared `XE_*` write surface "zero value-level validation"
+
+**Verdict: REFUTED (verified live, 2026-08-21).** Owner asked to actually check every real call site before
+accepting the claim, rather than take Round I's static trace at face value. Traced `DPDC-C`'s debit path,
+`DPDC-MNG`'s burn/wipe, `DPDC-S`'s set-class creation, and `DPDC-I`'s genesis specs: every value reaching
+`XE_*` is either self-derived (`current + 1`, never attacker input) or pre-validated by the calling defcap
+before `require-capability` allows the write (e.g. `UEV_NonceQuantityInclusion` blocks over-debiting before
+`XE_W|Supply` runs). The intended architecture — checks live in the defcap, `XE_*` is write-only — holds in
+every path actually traced, not just in theory. Closed as refuted, no code change needed.
+
+## #12Hb · DPDC-C/DPDC-N · new — nonce name/description/meta-data/asset-type/uri fields had zero content
+validation, anywhere, ever
+
+**Verdict: CONFIRMED, FIXED (2026-08-21).** Found while verifying #12H, not part of its original scope —
+`DpdcUdcV1.DPDC|NonceData`'s free-text fields (`name`, `description`, `meta-data.meta-data`, `asset-type`,
+the three `uri-*` link bundles) had no length/content check at creation or update, ever. Owner confirmed
+these were deliberately left open (arbitrary-size metadata wanted) but agreed unbounded free text is a real
+storage-bloat/griefing vector once flagged. Before settling limits, traced actual consumers rather than
+guessing: `meta-data.meta-data` is a real NFT trait bag consumed by AQP-ANK/AQP-SCORE for reward scoring,
+not decorative; `composition` (inside the same nested object) turned out to be a different, non-free-text
+field entirely — the module's own auto-derived record of which real nonces are locked in a composite NFT
+set, later found to have its own separate integrity gap, logged as #12Hc. Also surfaced a genuine Pact-level
+constraint before proposing a design: `(keys someObject)` throws a type error in this Pact version — there's
+no way to enumerate an untyped object's keys — confirmed live, which is why `meta-data.meta-data` got a
+coarse total-size ceiling instead of the originally-envisioned precise per-key/per-value cap.
+
+Owner set `name` (≤256 chars) and `description` (≤1024 words, ≤256 chars/word) directly; the rest
+(`meta-data.meta-data` ≤8192 chars serialized, `asset-type` ≥1-of-7 flags, `uri-*` ≤2048 chars/link) were
+worked out jointly after the consumer trace and the Pact constraint above. Owner also clarified the
+primary/secondary/tertiary URI design intent mid-discussion (three quality tiers of the *same* asset —
+normal/high-res/thumbnail — not three independent asset sets), which confirmed the 7-type capacity concern
+raised along the way was a non-issue: each `uri-*` slot already carries all 7 typed sub-fields on its own.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #10)** — five new validators
+(`UEV_Name`/`UEV_Description`/`UEV_MetaDataBag`/`UEV_AssetType`/`UEV_UriData`) added once in `02_DPDC.pact`
+next to the existing `UEV_Royalty`/`UEV_IgnisRoyalty`, wired into `DPDC-C::UEV_NonceDataForCreation`
+(creation + whole-object update, since `C_UpdateNonces` already reuses that function) and each DPDC-N
+per-field defcap (`SET-NAME`/`SET-DESCRIPTION`/`SET-META-DATA`/`SET-URI`) for the per-field update paths —
+same shared-chokepoint pattern the royalty/ignis fields already used. Live-proven with 13 checks covering
+both creation and every update entrypoint: every oversized/invalid input rejected, every boundary/legit
+input accepted (`Write succeeded`), Fix #9's own probe re-verified still working once updated off the now-
+forbidden all-zero asset-type sentinel. Full `Z.repl` green — confirmed no real genesis/scenario anywhere in
+the pipeline relied on the all-zero pattern.

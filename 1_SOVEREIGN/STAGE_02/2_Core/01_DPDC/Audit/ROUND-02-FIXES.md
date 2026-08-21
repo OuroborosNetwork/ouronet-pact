@@ -496,3 +496,82 @@ nonce, then called `TS02-C2::DPNF|C_UpdateNonceRoyalty` on it as the solo owner:
 - `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
 
 **Interface implication:** none — internal to `C_IssueDigitalCollection`'s NFT branch.
+
+## Fix #10 — DPDC · #12H (REFUTED/verified) + #12Hb (new) — nonce free-text/metadata fields had zero content validation
+
+**Owner-approved 2026-08-21.** Round I's `DPDC · H2` claimed the shared `XE_*` write-forwarding surface
+performs "zero value-level validation." Investigating that claim live, before accepting or rejecting it,
+found two different things:
+
+**#12H itself — REFUTED.** Every real call site (`DPDC-C` credit/debit, `DPDC-MNG` burn/wipe,
+`DPDC-S` set-class creation, `DPDC-I` genesis specs) either self-derives the value it writes
+(`nonces-used`/`set-class` are always `current + 1`, never attacker input) or is pre-validated by the
+calling defcap before `require-capability` even lets the write run (e.g. `DPDC-C|C>SINGLE-DEBIT`'s defcap
+calls `UEV_NonceQuantityInclusion`, enforcing `amount <= current-supply`, *before* `XE_W|Supply` is ever
+reached). The architecture's own rule — checks live in the defcap, `XE_*` is write-only — holds in every
+traced path, not just in theory.
+
+**#12Hb — CONFIRMED, new finding, found while verifying #12H.** `DpdcUdcV1.DPDC|NonceData`'s free-text
+fields — `name`, `description`, the nested trait bag `meta-data.meta-data`, `asset-type`, and the three
+`uri-primary`/`-secondary`/`-tertiary` link bundles — had **no content validation anywhere**, at creation
+(`DPDC-C::UEV_NonceDataForCreation` only checked `royalty`/`ignis`) or at update
+(`DPDC-N`'s per-field `C_Update*` entrypoints wrote raw caller input with no check at all). Traced actual
+consumers before assuming severity: `meta-data.meta-data` is not decorative — AQP-ANK/AQP-SCORE read it as
+a real `key -> string value` trait bag for reward scoring (`01_ANK.pact:459,989`, `02_SCORE.pact:2113,2701`),
+and AQP's own scoring-definition validator already assumes trait values are `2-256` chars
+(`02_SCORE.pact:2729`) — a mismatch nothing enforced on the write side. Owner confirmed the fields were
+deliberately left open by design (arbitrary-size metadata was wanted) but agreed unbounded free text is a
+real storage-bloat/griefing vector worth capping. Owner set two caps directly (`name` ≤256 chars;
+`description` ≤1024 words, ≤256 chars/word); the rest (`meta-data.meta-data`, `asset-type`, `uri-*`) were
+worked out jointly after tracing real consumers and an actual Pact-level constraint (no builtin can
+enumerate an untyped object's keys — confirmed live: `(keys {"a":1})` throws `Type error: ... object` —
+so `meta-data.meta-data` gets a coarse total-serialized-size ceiling instead of a precise per-key check).
+
+**Where the enforcement lives — single validator per field, called from every path that touches it:**
+new validators `UEV_Name`/`UEV_Description`/`UEV_MetaDataBag`/`UEV_AssetType`/`UEV_UriData` added once in
+`02_DPDC.pact`, right next to the existing `UEV_Royalty`/`UEV_IgnisRoyalty` (same shared-root pattern), each
+wired into exactly two call sites:
+1. `DPDC-C::UEV_NonceDataForCreation` (`03_DPDC-C.pact:382`) — covers both creation *and* whole-object
+   update, since `DPDC-N::C_UpdateNonces`'s defcap already reuses this same function for its per-index
+   `new-nonces-data`.
+2. The matching `DPDC-N` per-field defcap — `SET-NAME`/`SET-DESCRIPTION`/`SET-META-DATA`/`SET-URI`
+   (`10_DPDC-N.pact:184-243`) — mirrors how `SET-ROYALTY`/`SET-IGNIS-ROYALTY` already call
+   `UEV_Royalty`/`UEV_IgnisRoyalty` today; each defcap gained the value as a new parameter so it can be
+   validated *before* `compose-capability` allows the write.
+
+**Caps implemented:**
+| Field | Cap |
+|---|---|
+| `name` | ≤ 256 chars |
+| `description` | ≤ 1024 words, ≤ 256 chars/word (via existing `U|LST::UC_SplitString " " description`) |
+| `meta-data.meta-data` | ≤ 8192 chars total serialized size (`(length (format "{}" [meta-data]))`) — coarse ceiling, not per-key, per the Pact object-key-enumeration constraint above |
+| `asset-type` | at least 1 of the 7 flags must be `true`; any combination up to all 7 is valid |
+| `uri-primary`/`-secondary`/`-tertiary` (21 strings total) | ≤ 2048 chars each, no content restriction |
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC_12Hb_metadata_caps.repl`):** issued a fresh NFT
+collection (`MCPN-98c486052a51`) and ran 13 checks covering both the creation path and every per-field
+update path:
+- Rejected: 257-char name, all-false asset-type, 2049-char URI string (all 3 at **creation**); 257-char
+  name, a single 257-char description word, an 8200-char meta-data value, all-false asset-type, and a
+  2049-char URI string (all 5 at **update**, via `C_UpdateNonceName`/`Description`/`MetaData`/`URI`).
+- Accepted: creation at the exact boundary (name=256 chars, uri=2048 chars); legit updates for name
+  (256 chars), description ("a short legit description"), meta-data (`{"rarity":"legendary"}`), and URI
+  (two real asset types with real IPFS links) — all returned `Write succeeded`.
+- Also re-ran `_verify_finding_DPDC-I_H2_nft_owner_creator_roles.repl` (Fix #9's probe), which originally
+  used the all-zero `UDC_ZeroURI|Type`/`UDC_ZeroURI|Data` sentinel for its test nonce — now correctly
+  rejected by the new `asset-type` cap; updated the probe to a real asset-type + IPFS link and confirmed
+  Fix #9's own proof (`Write succeeded`, `royalty after set = 50.0`) still holds together with this fix.
+- `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions; confirmed no genesis/scenario REPL
+  anywhere in the loaded pipeline relies on the now-forbidden all-zero `asset-type` pattern (grepped, none
+  found) — every real collection already sets at least one real media flag.
+
+**Interface implication:** new `UEV_Name`/`UEV_Description`/`UEV_MetaDataBag`/`UEV_AssetType`/`UEV_UriData`
+functions added to `DpdcV1` (additive, no existing signature changed); `DPDC-N|C>SET-NAME`/`SET-DESCRIPTION`/
+`SET-META-DATA`/`SET-URI` defcap parameter lists grew (internal to `DPDC-N`, not part of any interface) —
+stays on current V1 per repo's pre-mainnet policy.
+
+**Deferred, not part of this fix — #12Hc:** while tracing `meta-data.composition` (the NFT-Set constituent
+list, read by `URC_NonFungibleConstituents`/`C_BreakNonFungibleSet`) to decide whether it needed a cap too,
+found it can currently be overwritten to arbitrary values via `DPDC-N::C_UpdateNonces`'s whole-object
+replace path — decoupled from what's actually held in `dpdc` escrow. That's a correctness/integrity gap,
+not a content-length question, logged separately as #12Hc, owner verdict pending.
