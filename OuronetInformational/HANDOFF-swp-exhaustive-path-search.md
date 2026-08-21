@@ -320,6 +320,30 @@ P1.2"). Update the checkboxes here as items land.
          actually needs this fix is the deep, DLK-avoiding kind), and not a correctness issue,
          just a small missed optimization.
 
+      **Tried and reverted, 2026-08-21 — special-fee-target payout batching, does NOT help.**
+      Owner's follow-up idea: carry each non-last hop's special-fee-target
+      targets/amounts forward instead of paying immediately (`ico-special`'s non-last branch),
+      flush everything in ONE combined multi-token `TFT::C_MultiBulkTransfer` on the last hop
+      — same shape as direction 5, applied to a different per-hop cost. Built it (extended the
+      fold's accumulator with 3 more elements: running `sp-id-lst`/`sp-receiver-arr`/
+      `sp-amount-arr`; kept firing `SWPU|S>FEED-SPECIAL-TARGETS`'s event on every hop, unchanged
+      audit trail; only the underlying transfer moved to a single end-of-route call), measured
+      against the same `SWP|TX 032q` topology (all 6 pools configured with 7 special-fee-targets
+      each, so every hop has a nonzero cut to batch): **1,966,113 gas — 114 gas WORSE than the
+      1,965,999 pre-batching baseline, reproduced identically on a second run (Pact's gas model
+      is deterministic).** Correctness unaffected (0 `FAILURE` across the full suite — same
+      recipients, same amounts, just fewer calls). Reverted rather than kept, since it achieved
+      the opposite of its purpose while adding real code complexity (3 extra accumulator
+      elements, a second special-fee-target code path to maintain).
+      **Why it didn't work, best understanding:** unlike the boost fix (which removed an
+      O(graph-size) full search, 5 times over), this only ever removed fixed per-call overhead
+      (`UEV_IMC`, capability composition) — apparently smaller in Pact's actual gas model than
+      the cost of growing 3 accumulator lists via `+` (list concatenation) once per hop. The
+      lesson: **removing redundant expensive work (searches) pays off; removing redundant cheap
+      work (small transfer calls) can cost more in bookkeeping than it saves.** Don't re-attempt
+      this without a different mechanism (e.g. avoiding the list-growth pattern) — the call-count
+      reduction alone is not where the gas is.
+
 ### P1 — Core search primitives, hand-verified on a small topology
 - [ ] **P1.1** `SWPT::URC_ComputeAllRoutes(input, output, swpairs, max-attempts)` — generalize
       `URC_ComputeAlternateRoutes`'s 3 hardcoded sequential `let*` attempts into a real `fold`
