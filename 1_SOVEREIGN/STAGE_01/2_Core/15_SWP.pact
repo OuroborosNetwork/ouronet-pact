@@ -150,8 +150,8 @@
     ;;
     ;;{P1}
     ;;{P2}
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P3}
     (defcap P|SWP|CALLER ()
         true

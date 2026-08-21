@@ -90,8 +90,8 @@
     ;;POLICY
     ;;{P1}
     ;;{P2}
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P3}
     (defcap P|SWPT|CALLER ()
         true
@@ -172,8 +172,8 @@
         neighbours:[object{SwapTracerV2.NeighbourEdge}]
     )
     ;;{2}
-    (deftable SWPT|Graph:{SWPT|GraphSchema})
-    (deftable SWPT|PathCache:{SwapTracerV2.PathCacheRow})
+    (deftable SWPT|Graph:{SWPT|GraphSchema})                    ;;Key = <token>
+    (deftable SWPT|PathCache:{SwapTracerV2.PathCacheRow})       ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
     ;;{3}
     (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                   (CT_Bar))
