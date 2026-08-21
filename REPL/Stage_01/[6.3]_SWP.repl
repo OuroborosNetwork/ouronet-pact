@@ -4436,6 +4436,287 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+;;================================================================================
+;;  P2-SCALE PROBE — real 50-100 active-swpair topology, combined-worst-case
+;;  measurement (Liquid Boost ON + real special-fee rate ON, per the P0.6
+;;  reopened findings). Not synthetic/subset tricks — real tokens, real pools,
+;;  real activation. Built 2026-08-21 at the owner's explicit request.
+;;================================================================================
+(begin-tx "SWP|TX 032r - Issue 80 P2-Scale Noise Tokens")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (n 80)
+        (names:[string] (map (lambda (i:integer) (format "P2Noise{}" [i])) (enumerate 1 n)))
+        (symbols:[string] (map (lambda (i:integer) (format "N2{}" [i])) (enumerate 1 n)))
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (* (ref-DALOS::UR_UsagePrice "dptf") 80.0)
+            )
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+            (issued-ids:[string]
+                (ref-TS01-C1::DPTF|C_Issue
+                    patron patron names symbols
+                    (make-list n 24)
+                    (make-list n true)
+                    (make-list n true)
+                    (make-list n true)
+                    (make-list n false)
+                    (make-list n false)
+                    (make-list n true)
+                )
+            )
+        )
+        (print (format "SWP|TX 032r: issued {} P2-scale noise tokens" [(length issued-ids)]))
+    )
+)
+(print (format "<<<<<<<SWP|TX 032r ==> {} KDA GAS>>>>>>>" [(env-gas)]))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032s - Mint + Issue 80 P2-Scale Noise Pools (OURO-anchored)")
+(namespace "ouronet-ns")
+;;env-gaslimit is a REPL-testing safety valve only, not a real StoaChain constraint —
+;;raised generously here since this SETUP transaction's own cost isn't what's being
+;;measured (only SWP|TX 032q's real worst-case swap is). Bulk-issuing many pools in
+;;one map makes each pool's own worth-check search cost more as the graph grows.
+(env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (n 80)
+        (tok-ids:[string] (map (lambda (i:integer) (format "N2{}-98c486052a51" [i])) (enumerate 1 n)))
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (* (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp")) 80.0)
+            )
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let*
+        (
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+            (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        )
+        (map (lambda (t:string) (ref-TS01-C1::DPTF|C_Mint patron t patron 1000.0 true)) tok-ids)
+        ;;permissioned=true (skips the issuance-time worth/spawn-limit search only —
+        ;;irrelevant for these noise pools; SWP|C_ToggleSwapCapability's own worth
+        ;;check below is unconditional regardless and still runs).
+        (map
+            (lambda (t:string)
+                (ref-TS01-C3::SWP|C_IssueStandard patron patron
+                    [
+                        { "token-id": "OURO-98c486052a51", "token-supply": 1000.0}
+                        { "token-id": t, "token-supply": 1000.0}
+                    ]
+                    25.0 true
+                )
+            )
+            tok-ids
+        )
+        ;;First batch: activate the first 20 (baseline 22 -> ~42 active).
+        (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) (take 20 tok-ids))
+    )
+)
+(print (format "<<<<<<<SWP|TX 032s ==> {} KDA GAS>>>>>>>" [(env-gas)]))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032u - P2-Scale Checkpoint @ ~42 active pools")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let ((ref-SWP:module{SwapperV3} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(env-gas 0)
+(let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3))
+    (print (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+)
+(print (format "<<<<<<<SWP|TX 032u P2-SCALE CHECKPOINT ==> {} KDA GAS>>>>>>>" [(env-gas)]))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032v - Activate Next 20 P2-Scale Noise Pools (-> ~62 active)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (tok-ids:[string] (map (lambda (i:integer) (format "N2{}-98c486052a51" [i])) (enumerate 21 40)))
+    )
+    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
+)
+(print (format "<<<<<<<SWP|TX 032v ==> {} KDA GAS>>>>>>>" [(env-gas)]))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032w - P2-Scale Checkpoint @ ~62 active pools")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let ((ref-SWP:module{SwapperV3} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(env-gas 0)
+(let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3))
+    (print (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+)
+(print (format "<<<<<<<SWP|TX 032w P2-SCALE CHECKPOINT ==> {} KDA GAS>>>>>>>" [(env-gas)]))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032x - Activate Next 20 P2-Scale Noise Pools (-> ~82 active)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (tok-ids:[string] (map (lambda (i:integer) (format "N2{}-98c486052a51" [i])) (enumerate 41 60)))
+    )
+    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
+)
+(print (format "<<<<<<<SWP|TX 032x ==> {} KDA GAS>>>>>>>" [(env-gas)]))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032y - P2-Scale Checkpoint @ ~82 active pools")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let ((ref-SWP:module{SwapperV3} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(env-gas 0)
+(let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3))
+    (print (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+)
+(print (format "<<<<<<<SWP|TX 032y P2-SCALE CHECKPOINT ==> {} KDA GAS>>>>>>>" [(env-gas)]))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z - Activate Last 20 P2-Scale Noise Pools (-> ~102 active)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 2000000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (tok-ids:[string] (map (lambda (i:integer) (format "N2{}-98c486052a51" [i])) (enumerate 61 80)))
+    )
+    (map (lambda (t:string) (ref-TS01-C3::SWP|C_ToggleSwapCapability patron (format "P|OURO-98c486052a51|{}" [t]) true)) tok-ids)
+)
+(print (format "<<<<<<<SWP|TX 032z ==> {} KDA GAS>>>>>>>" [(env-gas)]))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z2 - P2-Scale Checkpoint @ ~102 active pools")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let ((ref-SWP:module{SwapperV3} SWP)) (print (format "P2-scale checkpoint: active swpairs = {}" [(length (ref-SWP::URC_ActiveSwpairs))])))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost true))
+(env-gas 0)
+(let ((ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3))
+    (print (ref-TS01-C3::SWP|C_SmartSwapNoSlippage KST.ANHD KST.ANHD "W1-98c486052a51" 10.0 "W7-98c486052a51"))
+)
+(print (format "<<<<<<<SWP|TX 032z2 P2-SCALE CHECKPOINT ==> {} KDA GAS>>>>>>>" [(env-gas)]))
+(let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "SWP|TX 033 - Add Frozen & Sleeping Liquidity")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
