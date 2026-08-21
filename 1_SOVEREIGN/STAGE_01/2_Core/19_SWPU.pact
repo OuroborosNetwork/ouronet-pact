@@ -16,6 +16,51 @@
         output-precision:integer
         slippage-percent:decimal
     )
+    ;;#34 Phase 6 — dirty-read path-injection bundle schemas. Not used by any function on
+    ;;this interface yet (that's Phase 8) — declared now so Phase 7/8 build against a
+    ;;settled shape instead of improvising one mid-implementation.
+    (defschema SwapRoute
+        @doc "The swap's own A->B route (nodes incl. both endpoints, edges one shorter). \
+            \ Deliberately NOT the same shape as <CachedPathOrMiss> below — this is never \
+            \ cached (P3.0: amount-sensitive, must be freshly discovered every time by \
+            \ the exhaustive search, Phase 11), so there is no <is-new> concept for it. \
+            \ Carries no value/output data either — the real transaction always computes \
+            \ actual hop outputs fresh from live reserves, exactly as it does today; \
+            \ off-chain-estimated outputs are only ever used to pick the best candidate \
+            \ route before submission, never trusted for real execution numbers."
+        nodes:[string]
+        edges:[string]
+    )
+    (defschema CachedPathOrMiss
+        @doc "An amount-agnostic X->DLK path (P3.0) — used for both Liquid Boost's burn \
+            \ valuation and stoa-value pricing, the two cacheable cases. <nodes>=[BAR] is \
+            \ the sentinel for 'genuinely no path exists anywhere' (handled gracefully, \
+            \ not a crash — this is also what finally closes the long-standing \
+            \ XI_RawLiquidPump crash bug, Phase 8). <is-new>=true means this was freshly \
+            \ traced off-chain and should be registered after use; false means it came \
+            \ from the shared cache already. <is-new> is a hint only — the write path \
+            \ (Phase 7) must independently verify before writing, never trust this flag \
+            \ as the write authority (owner's final-check catch, 2026-08-21)."
+        nodes:[string]
+        edges:[string]
+        is-new:bool
+    )
+    (defschema TokenPathPair
+        @doc "One deduped entry in a bundle's <stoa-paths> list — one per DISTINCT first \
+            \ token among all pools a swap actually touches, not one per pool (#34 Phase \
+            \ 5 found today's per-pool loop redundantly re-traces identical paths when \
+            \ pools share a first token)."
+        first-token:string
+        path:object{CachedPathOrMiss}
+    )
+    (defschema SmartSwapPathBundle
+        @doc "The full dirty-read-discovered input to the bundle-based SmartSwap entrypoint \
+            \ (Phase 8, C_ prefix) — replaces all internal on-chain searching. Assembled \
+            \ entirely client-side per P3.7's orchestration sequence."
+        swap-route:object{SwapRoute}
+        boost-path:object{CachedPathOrMiss}
+        stoa-paths:[object{TokenPathPair}]
+    )
     ;;
     ;;
     ;;  [UC] Functions

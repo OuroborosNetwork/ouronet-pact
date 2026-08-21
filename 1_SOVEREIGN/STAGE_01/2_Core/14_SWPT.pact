@@ -140,8 +140,22 @@
     (defschema SWPT|GraphSchema
         neighbours:[object{SwapTracerV2.NeighbourEdge}]
     )
+    (defschema PathCacheRow
+        @doc "#34 Phase 6: a cached, first-write-wins route between two tokens, keyed by \
+            \ <token-a>|<token-b> in whichever direction was first registered — no \
+            \ canonicalization, readers check both directions and reverse on a miss in \
+            \ one of them (Phase 7's read helper). Stores only the route STRUCTURE, \
+            \ never a computed value — every real use re-derives the current value from \
+            \ live reserves, so a stale-but-structurally-valid entry can only ever point \
+            \ at the wrong-but-still-real edges, which per-edge validation on every read \
+            \ (Phase 7) catches and falls back from. Same <nodes>/<edges> shape as \
+            \ <URC_ComputeGraphPath>'s own return (both endpoints included in <nodes>)."
+        nodes:[string]
+        edges:[string]
+    )
     ;;{2}
     (deftable SWPT|Graph:{SWPT|GraphSchema})
+    (deftable SWPT|PathCache:{PathCacheRow})
     ;;{3}
     (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                   (CT_Bar))

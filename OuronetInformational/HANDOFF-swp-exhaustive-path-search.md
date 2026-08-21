@@ -38,10 +38,11 @@ detailed below at the same depth, to be expanded when their turn comes.
       10.4%, Liquid Boost search 7.2%, **`XE_UpdateStoaValue`'s six per-pool searches 56.9% —
       previously unknown, now confirmed the dominant driver, bigger than the other two
       combined.**
-- [ ] **Phase 6 — Dirty-read infrastructure: schemas + module placement.** Path-cache table
-      (lives in `SWPT`), bundle input object, output-results mechanism. Resolve the open
-      questions still listed in P3.10 (table-key canonicalization, whether the pool-count
-      fast-path ships in v1, exact `OutputCumulator` extension mechanism) before/while building.
+- [x] **Phase 6 — Dirty-read infrastructure: schemas + module placement. DONE 2026-08-21.**
+      `SWPT|PathCache`/`PathCacheRow` built in `SWPT`; `SwapRoute`/`CachedPathOrMiss`/
+      `TokenPathPair`/`SmartSwapPathBundle` built in `SWPU`'s `SwapperUsageV2` interface. All
+      P3.10 open questions resolved (canonicalization, pool-count fast-path, output mechanism —
+      see P3.10 below for the settled answers). Full regression clean, 0 `FAILURE`.
 - [ ] **Phase 7 — Dirty-read infrastructure: core functions.** Structural + active/exists-mode
       validation (`SWPT` for exists-only, `SWPI` wrapping it with `SWP::UR_CanSwap` for
       active-required), reversed-lookup read helper, first-write-wins registration writer,
@@ -1005,19 +1006,45 @@ this effort started (P0.2's discussion).
 - [ ] Full regression: issuance-only, full `[6.2]`/`[6.3]`, `Z.repl` — 0 `FAILURE` before and
       after, per this session's standing discipline.
 
-#### P3.10 — Open questions, explicitly not yet decided (owner input wanted before or during
-      build, not resolved unilaterally)
-- Table key canonicalization: fixed ordering (e.g. lexicographically-smaller-token-first) vs.
-  whichever direction happens to get registered first, relying purely on the reversal-lookup at
-  read time. Leaning toward the latter (simpler, no extra canonicalization logic needed) but
-  not decided.
-- `registered-at-pool-count` fast-path: include in v1, or defer as a later optimization once
-  the core mechanism is proven?
-- Exact mechanism for extending `OutputCumulator` to carry the P3.4 results list — a new field
-  on the existing schema, or a second parallel return value threaded alongside it? Needs
-  checking against `IgnisCollectorV1`'s existing shape before deciding.
-- Whether `SWP|C_SmartSwapExplicitRoute` eventually fully replaces the self-searching variants
-  or the two coexist long-term (deliberately deferred to post-measurement, per P3.5.2).
+#### P3.10 — Open questions — **resolved 2026-08-21 while building Phase 6** (schemas +
+      module placement), except the last one, which stays deliberately deferred
+- [x] **Table key canonicalization: settled — insertion-order, reversal-lookup at read time,
+      no canonicalization function.** `SWPT|PathCache` rows are keyed by whichever
+      `token-a|token-b` direction was first registered; Phase 7's read helper checks the
+      queried direction first, then the reverse, deriving via list-reverse on a miss in one
+      direction. Simpler, no extra logic needed, matches what this doc was already leaning
+      toward.
+- [x] **`registered-at-pool-count` fast-path: deferred, not in v1.** `PathCacheRow` (built,
+      `14_SWPT.pact`) is just `nodes:[string]`/`edges:[string]` — no pool-count field. Per-edge
+      validation (Phase 7) is the sole, sufficient correctness mechanism; the fast-path was
+      always optional, and adding it later is a pure additive schema change if real
+      measurement ever justifies it, not something that needed deciding now.
+- [x] **`OutputCumulator` extension: settled — don't touch `IgnisCollectorV1`'s shared schema
+      at all.** `XI_SmartSwapCore` already returns a plain `:list` today (not a strict
+      `IgnisCollectorV1` schema), so Phase 8's bundle-based variant will just return a *wider*
+      list (existing elements + the stoa-value results), matching the pattern already used in
+      this exact function rather than touching a schema used pervasively across the whole
+      codebase.
+- [ ] **Still deliberately deferred, not a Phase 6 concern:** whether the new `C_`-prefixed
+      entrypoint eventually fully replaces the `CC_`-renamed self-searching variants, or the
+      two coexist long-term — post-measurement decision, per P3.5.2.
+
+**Schemas built, Phase 6 (partially) done, 2026-08-21:**
+- `SWPT|PathCache:{PathCacheRow}` + `PathCacheRow` (`14_SWPT.pact`) — the shared path cache.
+- `SwapRoute`, `CachedPathOrMiss`, `TokenPathPair`, `SmartSwapPathBundle` (`19_SWPU.pact`,
+  `SwapperUsageV2` interface) — the bundle input shape. **Design refinement made while
+  building, not in the original P3.2 sketch:** `swap-route` does NOT reuse `SwapperIssueV3.Hopper`
+  (which carries an `output-values` field) — it gets its own minimal `nodes`/`edges`-only
+  schema, since the real transaction always computes actual hop outputs fresh from live
+  reserves regardless of what an off-chain estimate said, and A→B has no `is-new`/cache concept
+  at all (P3.0: not cacheable), unlike the two `CachedPathOrMiss`-shaped components.
+- Load-tested clean: default (issuance-only) and full `[6.2]`+`[6.3]`+`Z.repl` (Stage 1+2)
+  regression both exit 0, 0 `FAILURE`. Gas at the existing `SWP|TX 032q` worst-case checkpoint
+  unchanged within noise (2,130,472 → 2,130,501, +29 gas, consistent with a pure schema
+  addition with zero behavioral change — nothing yet reads or writes these new declarations).
+- **What's left of Phase 6:** none — schemas + module placement + all open questions are
+  settled. Phase 7 (core functions: validation, reversed-lookup read, first-write-wins write,
+  dedup) is next.
 
 ### P4 — Adversarial proof + full regression
 - [ ] **P4.1** REPL proof: construct a scenario with 4+ genuinely distinct routes where the
