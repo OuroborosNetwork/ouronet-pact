@@ -43,11 +43,43 @@ detailed below at the same depth, to be expanded when their turn comes.
       `TokenPathPair`/`SmartSwapPathBundle` built in `SWPU`'s `SwapperUsageV2` interface. All
       P3.10 open questions resolved (canonicalization, pool-count fast-path, output mechanism —
       see P3.10 below for the settled answers). Full regression clean, 0 `FAILURE`.
-- [ ] **Phase 7 — Dirty-read infrastructure: core functions.** Structural + active/exists-mode
-      validation (`SWPT` for exists-only, `SWPI` wrapping it with `SWP::UR_CanSwap` for
-      active-required), reversed-lookup read helper, first-write-wins registration writer,
-      dedup logic for stoa-value pricing (validated with real evidence — two pools sharing a
-      first token cost an identical 673,080 gas each in the Phase 5 topology).
+- [x] **Phase 7 — Dirty-read infrastructure: core functions. DONE 2026-08-21.** Built and
+      *genuinely verified* (real assertions against the live worst-case topology, not just
+      load-success):
+      - `SWPT::URC_ReadPathCache`/`UR_PathCacheRaw` — reversed-lookup read, `[BAR]` sentinel
+        on a genuine miss in both directions.
+      - `SWPT::URC_ValidatePathStructure` — exists-only structural check (real edge, correctly
+        connects the claimed node pair — not just "active somewhere") + the P0.4 depth cap
+        (7 tokens/6 hops), both enforced directly, not assumed. `[BAR]` explicitly rejected,
+        not treated as a trivial path; a genuine 0-hop path (single node, no edges) correctly
+        returns `true` without hitting the empty-edges `(enumerate 0 -1)` crash risk found
+        while building (Pact 5: `(enumerate 0 -1)` is `[0 -1]`, NOT empty — guarded explicitly).
+      - `SWPI::URC_ValidatePathActive` — wraps the above with `SWP::UR_CanSwap` per edge, for
+        the A→B execution-route case.
+      - `SWPT::XI_RegisterPath` — first-write-wins, **self-verifying** (checks both directions
+        for an existing row before writing, never trusts a caller's `is-new` claim — the
+        owner's final-check catch, adversarially proven: a real registration followed by two
+        deliberate overwrite attempts with bogus data, one per direction, both correctly
+        no-op, original data confirmed intact afterward).
+      - `SWPU::URC_DedupFirstTokens`/`UC_FindStoaPath` — dedup + lookup for stoa-value pricing;
+        proven against the real 6-pool W-chain topology that 2 pools sharing a first token
+        (`W4`) collapse to 5 distinct entries, not 6, matching the exact real-evidence case
+        from Phase 5 (both cost an identical 673,080 gas to price independently today).
+      **Real bug found and fixed while building, not just a syntax slip:** Pact 5's `or` is
+      strictly binary, not variadic — `(or a b c)` throws `Attempted to apply a closure to too
+      many arguments` at runtime (loads fine, fails only when called), the exact same class of
+      gotcha as the earlier #26M/M9 single-arg-`and` bug this session already found once.
+      Fixed using this codebase's own documented pattern for 3+ conditions:
+      `(fold (or) false [a b c])`. Also found and fixed: `PathCacheRow` had to be declared on
+      the `SwapTracerV2` *interface* (like `NeighbourEdge` already is), not the module — a
+      module-level schema can't be referenced by that module's own interface function
+      signatures, since interfaces load before module schemas exist (same rule as this
+      codebase's documented "Interface object-return rule").
+      **10 + 6 real assertions, all passing** — `SWP|TX 032z3`/`032z4` in `[6.3]_SWP.repl`,
+      kept as permanent regression (not scratch), covering both correctness (valid paths
+      accepted) and adversarial cases (fabricated/unrelated edges rejected, depth-cap
+      violations rejected, overwrite attempts rejected). Full `[6.2]`+`[6.3]`+`Z.repl`
+      (Stage 1+2) and default issuance-only regression both exit 0, 0 `FAILURE`.
 - [ ] **Phase 8 — New SmartSwap entrypoint.** New bundle-based `XI_SmartSwapCore` variant;
       `SWP|C_SmartSwapExplicitRoute` in Talos, **built alongside, not replacing,** the existing
       self-searching variants, for real A/B gas comparison; dumb-writer stoa-value updater

@@ -63,6 +63,11 @@
     (defun URC_Hopper:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
     (defun URC_HopperActive:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
     (defun URC_HopperActiveShortest:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
+    ;;#34 Phase 7: active-required path validation — wraps SWPT's exists-only structural
+    ;;check with an extra can-swap pass. Lives here, not in SWPT, because SWPT deploys
+    ;;before SWP and can't reach SWP::UR_CanSwap directly (same reason URC_EdgesActive's
+    ;;own whitelist check couldn't live there either).
+    (defun URC_ValidatePathActive:bool (nodes:[string] edges:[string]))
     (defun URC_BestEdge:string (ia:decimal i:string o:string))
     (defun URC_BestEdgeFiltered:string (ia:decimal i:string o:string swpairs:[string]))
         ;;
@@ -994,6 +999,30 @@
                 )
             )
             (URCX_HopperForNodes nodes hopper-input-amount swpairs)
+        )
+    )
+    (defun URC_ValidatePathActive:bool (nodes:[string] edges:[string])
+        @doc "#34 Phase 7: active-required validation for the A->B execution route — \
+            \ SWPT's exists-only structural check (real edges, correctly connected, \
+            \ within the depth cap) PLUS every edge must be <can-swap>=true, since this \
+            \ route is actually walked with real user funds, unlike the boost/stoa-value \
+            \ pricing paths (SWPT::URC_ValidatePathStructure alone, exists-only, is \
+            \ sufficient for those — see the P3.0 split in the exhaustive-path-search \
+            \ HANDOFF doc)."
+        (let ((ref-SWPT:module{SwapTracerV2} SWPT))
+            (if (not (ref-SWPT::URC_ValidatePathStructure nodes edges))
+                false
+                (if (= (length edges) 0)
+                    true
+                    (let ((ref-SWP:module{SwapperV3} SWP))
+                        (fold
+                            (lambda (acc:bool e:string) (and acc (ref-SWP::UR_CanSwap e)))
+                            true
+                            edges
+                        )
+                    )
+                )
+            )
         )
     )
     (defun URCX_BestEdgeOf:string (ia:decimal i:string o:string edges:[string])

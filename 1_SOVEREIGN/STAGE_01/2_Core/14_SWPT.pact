@@ -24,6 +24,21 @@
         token:string
         swpairs:[string]
     )
+    (defschema PathCacheRow
+        @doc "#34 Phase 6/7: a cached, first-write-wins route between two tokens, keyed \
+            \ by <token-a>|<token-b> in whichever direction was first registered — no \
+            \ canonicalization, readers check both directions and reverse on a miss in \
+            \ one of them. Stores only the route STRUCTURE, never a computed value — \
+            \ every real use re-derives the current value from live reserves, so a \
+            \ stale-but-structurally-valid entry can only ever point at the wrong-but- \
+            \ still-real edges, which per-edge validation on every read catches and \
+            \ falls back from. Same <nodes>/<edges> shape as <URC_ComputeGraphPath>'s \
+            \ own return (both endpoints included in <nodes>). Declared on this \
+            \ interface, not the module, since interface function signatures below \
+            \ reference it and interfaces load before module schemas exist."
+        nodes:[string]
+        edges:[string]
+    )
 
     (defun UR_Graph:[object{NeighbourEdge}] (token:string))
     (defun URC_TokenNeighbours:[string] (token:string))
@@ -36,6 +51,15 @@
     ;;of just the single first-found one; see the defun's own @doc for the full
     ;;rationale.
     (defun URC_ComputeAlternateRoutes:[[string]] (input:string output:string swpairs:[string]))
+
+    ;;#34 Phase 7: dirty-read path-cache core functions — exists-only (structural) side.
+    ;;The active-required wrapper (adds SWP::UR_CanSwap per edge) lives in SWPI instead,
+    ;;same reason URC_EdgesActive's own whitelist check couldn't live here either — SWPT
+    ;;deploys before SWP, can't reach it.
+    (defun URC_ReadPathCache:object{PathCacheRow} (token-a:string token-b:string))
+    (defun URC_EdgeConnects:bool (i-id:string o-id:string swpair:string))
+    (defun URC_ValidatePathStructure:bool (nodes:[string] edges:[string]))
+    (defun XI_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string]))
 
     (defun XE_UpdateGraph (swpair:string))
 )
@@ -140,22 +164,9 @@
     (defschema SWPT|GraphSchema
         neighbours:[object{SwapTracerV2.NeighbourEdge}]
     )
-    (defschema PathCacheRow
-        @doc "#34 Phase 6: a cached, first-write-wins route between two tokens, keyed by \
-            \ <token-a>|<token-b> in whichever direction was first registered — no \
-            \ canonicalization, readers check both directions and reverse on a miss in \
-            \ one of them (Phase 7's read helper). Stores only the route STRUCTURE, \
-            \ never a computed value — every real use re-derives the current value from \
-            \ live reserves, so a stale-but-structurally-valid entry can only ever point \
-            \ at the wrong-but-still-real edges, which per-edge validation on every read \
-            \ (Phase 7) catches and falls back from. Same <nodes>/<edges> shape as \
-            \ <URC_ComputeGraphPath>'s own return (both endpoints included in <nodes>)."
-        nodes:[string]
-        edges:[string]
-    )
     ;;{2}
     (deftable SWPT|Graph:{SWPT|GraphSchema})
-    (deftable SWPT|PathCache:{PathCacheRow})
+    (deftable SWPT|PathCache:{SwapTracerV2.PathCacheRow})
     ;;{3}
     (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                   (CT_Bar))
@@ -209,6 +220,16 @@
             {"neighbours" : []}
             {"neighbours" := n}
             n
+        )
+    )
+    (defun UR_PathCacheRaw:object{SwapTracerV2.PathCacheRow} (key:string)
+        @doc "#34 Phase 7: raw keyed read against SWPT|PathCache, [BAR]-sentinel default \
+            \ for a missing row. Internal — callers go through <URC_ReadPathCache> for the \
+            \ reversed-lookup logic, never this directly."
+        (with-default-read SWPT|PathCache key
+            {"nodes" : [BAR], "edges" : []}
+            {"nodes" := n, "edges" := e}
+            {"nodes" : n, "edges" : e}
         )
     )
     ;;{F1}  [URC]
@@ -404,6 +425,88 @@
             )
         )
     )
+    ;;#34 Phase 7: dirty-read path-cache core functions.
+    (defun URC_ReadPathCache:object{SwapTracerV2.PathCacheRow} (token-a:string token-b:string)
+        @doc "Reversed-lookup read: checks <token-a>|<token-b> first, then \
+            \ <token-b>|<token-a> reversed (the graph is confirmed bidirectional — \
+            \ XI_UpdateGraphForSwpair's symmetric i×j registration), before concluding \
+            \ no cached path exists. Returns {nodes:[BAR], edges:[]} on a genuine miss \
+            \ in both directions — never a crash, always a clean sentinel. No trust \
+            \ implied: every caller still runs <URC_ValidatePathStructure> (or SWPI's \
+            \ active-required wrapper) on whatever this returns before using it — a hit \
+            \ here is not itself proof of current validity, only of prior registration."
+        (let*
+            (
+                (key-fwd:string (+ (+ token-a "|") token-b))
+                (row-fwd:object{SwapTracerV2.PathCacheRow} (UR_PathCacheRaw key-fwd))
+            )
+            (if (!= (at "nodes" row-fwd) [BAR])
+                row-fwd
+                (let*
+                    (
+                        (key-rev:string (+ (+ token-b "|") token-a))
+                        (row-rev:object{SwapTracerV2.PathCacheRow} (UR_PathCacheRaw key-rev))
+                    )
+                    (if (!= (at "nodes" row-rev) [BAR])
+                        {
+                            "nodes" : (reverse (at "nodes" row-rev)),
+                            "edges" : (reverse (at "edges" row-rev))
+                        }
+                        {"nodes" : [BAR], "edges" : []}
+                    )
+                )
+            )
+        )
+    )
+    (defun URC_EdgeConnects:bool (i-id:string o-id:string swpair:string)
+        @doc "Structural legitimacy check for ONE claimed hop: is <swpair> a real, \
+            \ registered edge that actually connects <i-id> to <o-id> — not just some \
+            \ active pool that happens to exist somewhere. Prevents a submitted bundle \
+            \ from containing genuinely-real-but-unrelated edges that don't actually \
+            \ form a connected path."
+        (contains swpair (URC_Edges i-id o-id))
+    )
+    (defun URC_ValidatePathStructure:bool (nodes:[string] edges:[string])
+        @doc "Exists-only structural validation (P3.1): every claimed hop genuinely \
+            \ connects its claimed node pair, and the whole path respects the P0.4 depth \
+            \ cap (7 tokens / 6 hops) — checked here directly rather than assumed of the \
+            \ off-chain search that produced it, since a malformed or adversarial bundle \
+            \ could otherwise submit a structurally-valid-per-hop but far-too-long route. \
+            \ [BAR] (the 'no path found' sentinel) is explicitly rejected, not treated as \
+            \ a trivial 1-node path. Does NOT check can-swap — SWPI wraps this with that \
+            \ additional check for the active-required (real execution) case; this \
+            \ module can't reach SWP to check it directly (deploy order)."
+        (if (= nodes [BAR])
+            false
+            (if
+                ;;Pact 5's <or> is strictly binary, not variadic — 3+ conditions need
+                ;;fold, per this codebase's own documented convention (same class of
+                ;;gotcha as the #26M/M9 single-arg <and> bug found earlier this session).
+                (fold (or) false
+                    [
+                        (> (length nodes) 7)
+                        (> (length edges) 6)
+                        (!= (length edges) (- (length nodes) 1))
+                    ]
+                )
+                false
+                ;;#20H-style guard: (enumerate 0 -1) is [0 -1], NOT empty, in Pact 5 — a
+                ;;0-hop path (single-node, edges=[]) would otherwise crash on an
+                ;;out-of-bounds <at>. Explicit empty-edges short-circuit avoids it.
+                (if (= (length edges) 0)
+                    true
+                    (fold
+                        (lambda
+                            (acc:bool idx:integer)
+                            (and acc (URC_EdgeConnects (at idx nodes) (at (+ idx 1) nodes) (at idx edges)))
+                        )
+                        true
+                        (enumerate 0 (- (length edges) 1))
+                    )
+                )
+            )
+        )
+    )
     ;;{F7}  [X]
     (defun XE_UpdateGraph (swpair:string)
         @doc "Records <swpair> in the adjacency graph: every token in <swpair> gets \
@@ -470,9 +573,34 @@
             (write SWPT|Graph from {"neighbours": new-neighbours})
         )
     )
+    (defun XI_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string])
+        @doc "#34 Phase 7: first-write-wins registration into SWPT|PathCache. \
+            \ Self-verifying (owner's final-check catch, 2026-08-21) — checks whether a \
+            \ row already exists in EITHER direction before writing, rather than trusting \
+            \ a caller's is-new claim as the write authority. No-ops safely if either \
+            \ direction is already registered, guaranteeing no overwrite is ever possible \
+            \ regardless of what the caller believed. Structural validation is the \
+            \ CALLER's responsibility (URC_ValidatePathStructure/SWPI's active-required \
+            \ wrapper) — this function only handles the write-safety half, matching this \
+            \ codebase's XI_* convention of writes-only, no enforce/validation here."
+        (require-capability (SECURE))
+        (let*
+            (
+                (key-fwd:string (+ (+ token-a "|") token-b))
+                (key-rev:string (+ (+ token-b "|") token-a))
+                (already-fwd:bool (!= (at "nodes" (UR_PathCacheRaw key-fwd)) [BAR]))
+                (already-rev:bool (!= (at "nodes" (UR_PathCacheRaw key-rev)) [BAR]))
+            )
+            (if (or already-fwd already-rev)
+                "already cached, no-op"
+                (insert SWPT|PathCache key-fwd {"nodes": nodes, "edges": edges})
+            )
+        )
+    )
     ;;
 )
 
 (create-table P|T)
 (create-table P|MT)
 (create-table SWPT|Graph)
+(create-table SWPT|PathCache)

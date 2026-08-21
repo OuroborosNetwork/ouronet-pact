@@ -66,6 +66,10 @@
     ;;  [UC] Functions
     ;;
     (defun UC_SlippageMinMax:[decimal] (input:object{Slippage}))
+    ;;#34 Phase 7: dedup + lookup helpers for the bundle's <stoa-paths>, built ahead of
+    ;;Phase 8's actual wiring so that phase builds against a settled, tested shape.
+    (defun URC_DedupFirstTokens:[string] (distinct-edges:[string]))
+    (defun UC_FindStoaPath:object{CachedPathOrMiss} (stoa-paths:[object{TokenPathPair}] first-token:string))
     ;;
     ;;
     ;;  [UDC] Functions
@@ -415,8 +419,42 @@
             )
         )
     )
+    (defun UC_FindStoaPath:object{CachedPathOrMiss} (stoa-paths:[object{TokenPathPair}] first-token:string)
+        @doc "#34 Phase 7: linear search of a bundle's (already deduped, at most 6-7 \
+            \ entries) <stoa-paths> for the entry matching <first-token>. Returns the \
+            \ [BAR]-sentinel shape (is-new=false — nothing to register for a lookup \
+            \ miss, that's a bundle-construction error, not a fresh discovery) if the \
+            \ bundle didn't include an entry for this token at all — Phase 8's caller \
+            \ must treat that the same as any other invalid/missing path, not silently \
+            \ skip stoa-value pricing for that pool."
+        (let*
+            (
+                (matches:[object{TokenPathPair}]
+                    (filter (lambda (tp:object{TokenPathPair}) (= (at "first-token" tp) first-token)) stoa-paths)
+                )
+            )
+            (if (= (length matches) 0)
+                {"nodes": [BAR], "edges": [], "is-new": false}
+                (at "path" (at 0 matches))
+            )
+        )
+    )
     ;;{F0}  [UR]
     ;;{F1}  [URC]
+    (defun URC_DedupFirstTokens:[string] (distinct-edges:[string])
+        @doc "#34 Phase 7 (validated with real evidence, P0.6/Phase 5): given the swap's \
+            \ own <distinct-edges> (the pools actually traversed), returns the DEDUPED \
+            \ list of their first tokens — one entry per distinct first token, not one \
+            \ per pool. Two pools sharing a first token (confirmed real in the P2-scale \
+            \ topology: two W-chain pools both first=W4, identical 673,080 gas each to \
+            \ price independently) collapse to a single lookup here."
+        (let
+            (
+                (ref-SWP:module{SwapperV3} SWP)
+            )
+            (distinct (map (lambda (sp:string) (at 0 (ref-SWP::UR_PoolTokens sp))) distinct-edges))
+        )
+    )
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]
     (defun UDC_SpawnSmartSwapSlippageBounds:object{SwapperUsageV2.Slippage}

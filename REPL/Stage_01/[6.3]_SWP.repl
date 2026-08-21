@@ -4714,6 +4714,161 @@
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
 (env-sigs [])
 (commit-tx)
+(begin-tx "SWP|TX 032z3 - #34 Phase 7 Core Function Verification (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z3 - #34 Phase 7 Core Function Verification · 01 · let / invocation ====
+(print "--- [SWP|TX 032z3 - #34 Phase 7 Core Function Verification · 01 · let / invocation] ---")
+(let*
+    (
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWPU:module{SwapperUsageV2} SWPU)
+        (w-chain-pools:[string]
+            [
+                "S|W1-98c486052a51|W2-98c486052a51|W1A-98c486052a51|W1B-98c486052a51|W1C-98c486052a51|W1D-98c486052a51|W1E-98c486052a51"
+                "S|W2-98c486052a51|W3-98c486052a51|W2A-98c486052a51|W2B-98c486052a51|W2C-98c486052a51|W2D-98c486052a51|W2E-98c486052a51"
+                "S|W4-98c486052a51|W3-98c486052a51|W3A-98c486052a51|W3B-98c486052a51|W3C-98c486052a51|W3D-98c486052a51|W3E-98c486052a51"
+                "S|W4-98c486052a51|W5-98c486052a51|W4A-98c486052a51|W4B-98c486052a51|W4C-98c486052a51|W4D-98c486052a51|W4E-98c486052a51"
+                "S|W5-98c486052a51|W6-98c486052a51|W5A-98c486052a51|W5B-98c486052a51|W5C-98c486052a51|W5D-98c486052a51|W5E-98c486052a51"
+                "S|W7-98c486052a51|W6-98c486052a51|W6A-98c486052a51|W6B-98c486052a51|W6C-98c486052a51|W6D-98c486052a51|W6E-98c486052a51"
+            ]
+        )
+        (w1 "W1-98c486052a51")
+        (w2 "W2-98c486052a51")
+        (w7 "W7-98c486052a51")
+        (real-pool "S|W1-98c486052a51|W2-98c486052a51|W1A-98c486052a51|W1B-98c486052a51|W1C-98c486052a51|W1D-98c486052a51|W1E-98c486052a51")
+        (fake-pool "S|W4-98c486052a51|W3-98c486052a51|W3A-98c486052a51|W3B-98c486052a51|W3C-98c486052a51|W3D-98c486052a51|W3E-98c486052a51")
+    )
+    ;; 1) Cache miss (nothing ever registered for this pair) -> [BAR] sentinel, not a crash.
+    (map print
+        [
+            (expect "URC_ReadPathCache: genuine miss returns [BAR] sentinel"
+                [SWPT.BAR]
+                (at "nodes" (ref-SWPT::URC_ReadPathCache "TotallyUnregisteredTokenA" "TotallyUnregisteredTokenB"))
+            )
+            ;; 2) Structural validation: a REAL adjacent pair via the REAL pool that connects them -> true.
+            (expect "URC_ValidatePathStructure: real 1-hop path via the real connecting pool = true"
+                true
+                (ref-SWPT::URC_ValidatePathStructure [w1 w2] [real-pool])
+            )
+            ;; 3) Structural validation: real pool, but claimed to connect the WRONG pair -> false
+            ;;    (edge is real and active, but doesn't actually connect w1->w7 — must catch this,
+            ;;    not just check "is this swpair active somewhere").
+            (expect "URC_ValidatePathStructure: real edge, wrong claimed pair = false"
+                false
+                (ref-SWPT::URC_ValidatePathStructure [w1 w7] [real-pool])
+            )
+            ;; 4) Structural validation: a real pool that has NOTHING to do with the claimed nodes at all.
+            (expect "URC_ValidatePathStructure: real-but-unrelated edge = false"
+                false
+                (ref-SWPT::URC_ValidatePathStructure [w1 w2] [fake-pool])
+            )
+            ;; 5) [BAR] sentinel itself must be rejected, not treated as a trivial 1-node path.
+            (expect "URC_ValidatePathStructure: [BAR] sentinel = false, not a crash"
+                false
+                (ref-SWPT::URC_ValidatePathStructure [SWPT.BAR] [])
+            )
+            ;; 6) A genuine 0-hop path (single node, no edges) must be valid, not crash the
+            ;;    (enumerate 0 -1) edge case.
+            (expect "URC_ValidatePathStructure: genuine 0-hop single-node path = true, no crash"
+                true
+                (ref-SWPT::URC_ValidatePathStructure [w1] [])
+            )
+            ;; 7) Depth cap: a path claiming 8 tokens (over the 7-token/6-hop P0.4 cap) is
+            ;;    rejected structurally, independent of whether the edges are otherwise real.
+            (expect "URC_ValidatePathStructure: over depth cap (8 nodes) = false"
+                false
+                (ref-SWPT::URC_ValidatePathStructure
+                    ["A" "B" "C" "D" "E" "F" "G" "H"]
+                    [real-pool real-pool real-pool real-pool real-pool real-pool real-pool]
+                )
+            )
+            ;; 8) SWPI's active-required wrapper: same real 1-hop path, pool is genuinely
+            ;;    can-swap=true (part of the live worst-case topology) -> true.
+            (expect "URC_ValidatePathActive: real active 1-hop path = true"
+                true
+                (ref-SWPI::URC_ValidatePathActive [w1 w2] [real-pool])
+            )
+            ;; 9) Dedup: 6 W-chain pools, two of which (pool3/pool4) share first-token W4 —
+            ;;    must collapse to 5 distinct entries, not 6 (real evidence from P0.6/Phase 5:
+            ;;    both cost an identical 673,080 gas to price independently today).
+            (expect "URC_DedupFirstTokens: 6 pools sharing one first-token dedupe to 5"
+                5
+                (length (ref-SWPU::URC_DedupFirstTokens w-chain-pools))
+            )
+            ;; 10) UC_FindStoaPath: lookup miss on an empty bundle -> [BAR] sentinel, not a crash.
+            (expect "UC_FindStoaPath: lookup miss on empty bundle = [BAR] sentinel"
+                [SWPU.BAR]
+                (at "nodes" (ref-SWPU::UC_FindStoaPath [] "SomeToken"))
+            )
+        ]
+    )
+)
+(commit-tx)
+(begin-tx "SWP|TX 032z4 - #34 Phase 7 XI_RegisterPath Write-Safety Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z4 - #34 Phase 7 Write-Safety Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 032z4 - #34 Phase 7 Write-Safety Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_Florence", "caps": [] }
+    ]
+)
+(acquire-module-admin ouronet-ns.SWPT)
+;;==== SWP|TX 032z4 - #34 Phase 7 Write-Safety Proof · 02 · let / invocation ====
+(print "--- [SWP|TX 032z4 - #34 Phase 7 Write-Safety Proof · 02 · let / invocation] ---")
+(with-capability (SWPT.SECURE)
+    (let*
+        (
+            (ref-SWPT:module{SwapTracerV2} SWPT)
+            (real-pool "S|W1-98c486052a51|W2-98c486052a51|W1A-98c486052a51|W1B-98c486052a51|W1C-98c486052a51|W1D-98c486052a51|W1E-98c486052a51")
+            (bogus-pool "TotallyMadeUpSwpairThatIsNotReal")
+        )
+        (map print
+            [
+                ;; First registration for a never-before-seen pair -> succeeds (real insert).
+                (expect "XI_RegisterPath: first registration for a new pair succeeds"
+                    "Write succeeded"
+                    (SWPT.XI_RegisterPath "RegTestTokenA" "RegTestTokenB" ["RegTestTokenA" "W1-98c486052a51" "RegTestTokenB"] [real-pool real-pool])
+                )
+                ;; Confirm it's actually readable now, same direction.
+                (expect "XI_RegisterPath: registered entry is readable afterward"
+                    ["RegTestTokenA" "W1-98c486052a51" "RegTestTokenB"]
+                    (at "nodes" (ref-SWPT::URC_ReadPathCache "RegTestTokenA" "RegTestTokenB"))
+                )
+                ;; Confirm it's ALSO readable via the reverse-lookup, correctly reversed.
+                (expect "XI_RegisterPath: registered entry readable+reversed via the other direction"
+                    ["RegTestTokenB" "W1-98c486052a51" "RegTestTokenA"]
+                    (at "nodes" (ref-SWPT::URC_ReadPathCache "RegTestTokenB" "RegTestTokenA"))
+                )
+                ;; Second registration attempt for the SAME (forward) pair, with DELIBERATELY
+                ;; DIFFERENT (bogus) data -- must no-op, never overwrite (first-write-wins,
+                ;; self-verifying — the owner's final-check catch, not trusting a caller's
+                ;; is-new claim as the write authority).
+                (expect "XI_RegisterPath: re-registration attempt on an already-cached forward pair no-ops"
+                    "already cached, no-op"
+                    (SWPT.XI_RegisterPath "RegTestTokenA" "RegTestTokenB" ["bogus"] [bogus-pool])
+                )
+                ;; Same no-op check, attempted via the REVERSE direction this time -- must
+                ;; ALSO be caught (first-write-wins checks BOTH directions before writing).
+                (expect "XI_RegisterPath: re-registration attempt via the reverse direction ALSO no-ops"
+                    "already cached, no-op"
+                    (SWPT.XI_RegisterPath "RegTestTokenB" "RegTestTokenA" ["bogus"] [bogus-pool])
+                )
+                ;; Confirm the ORIGINAL data survived both attempted overwrites untouched.
+                (expect "XI_RegisterPath: original data survives both overwrite attempts"
+                    ["RegTestTokenA" "W1-98c486052a51" "RegTestTokenB"]
+                    (at "nodes" (ref-SWPT::URC_ReadPathCache "RegTestTokenA" "RegTestTokenB"))
+                )
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
