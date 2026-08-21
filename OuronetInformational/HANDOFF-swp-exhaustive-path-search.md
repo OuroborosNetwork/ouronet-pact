@@ -65,7 +65,14 @@ detailed below at the same depth, to be expanded when their turn comes.
       best-of-3) — this is what actually finds the *true* cheapest path, not an approximation.
       Run via dirty read, feeds Phase 8's bundle's `swap-route` component. Depth-cap (7-token/
       6-hop) enforcement baked into the search itself. Hand-verified small-topology proof
-      against the owner's own worked examples (was `P1` in the old roadmap below).
+      against the owner's own worked examples (was `P1` in the old roadmap below). **Reaffirmed
+      2026-08-21 (owner's final-check pass) — the specific mechanics already settled back in
+      the pre-P0.6 `P0.2`/`P1.1` sections below still stand and must carry forward unchanged
+      into this phase, not get re-derived from scratch when it's actually built:** active-only
+      filtered (never the unfiltered `URC_Hopper` universe), flat `+1000` escalation when a
+      1000-attempt search hits exactly 1000 with no natural exhaustion (no doubling), and the
+      winning route chosen by actual computed output value, never by hop count as a proxy for
+      cost.
 - [ ] **Phase 12 — Realistic-scale validation of the exhaustive search.** Measure
       `URC_ComputeAllRoutes`'s own cost/candidate-count at 50-100-pool scale via dirty read
       (was `P2` in the old roadmap below) — confirms the *whole* pipeline (exhaustive discovery
@@ -82,6 +89,46 @@ top once the foundation exists. Phase 8's new entrypoint can ship using Phase 1'
 best-of-3 search to fill `swap-route` initially, and get upgraded to Phase 11's genuinely
 exhaustive search later — 6-10 and 11-12 are not hard-blocked on each other, just naturally
 sequenced by urgency.
+
+### Definition of done — what exists once all 13 phases are complete (written down 2026-08-21,
+      before any of phases 6-13 were started, per the owner's request to confirm the end state
+      first)
+
+**On-chain, new:** the `SWPT|PathCache` table; structural + active/exists validation
+(re-validated on every read, including cache hits, per P3.1); a self-verifying write function
+(checks-before-writes, doesn't blindly trust a caller's "is-new" claim); the bundle-based
+`XI_SmartSwapCore`/`C_` variant that performs **zero internal searching** — only unpack,
+validate (including the depth cap, not just connectivity), execute with the same live AMM math
+hops already use today, and conditionally write; the Talos-level `C_` entrypoint; a dumb-writer
+stoa-value updater that maps over pre-computed results instead of calling `URC_PoolValue`;
+`XI_RawLiquidPump`'s crash bug fixed as a byproduct; and (phase 11) `SWPT::URC_ComputeAllRoutes`,
+genuinely exhaustive route discovery replacing best-of-3 as what feeds the bundle's route.
+
+**On-chain, unchanged:** the existing self-searching entrypoints, renamed `CC_`, kept alive
+specifically for real A/B gas comparison against the new `C_` path.
+
+**Off-chain/client, new:** the dirty-read orchestration sequence — exhaustive route search
+(active-filtered, escalating attempts, best-by-value) for `A→B`; cache-table lookups
+(exists-only mode, reversal-checked) for `B→DLK` and every distinct touched pool's
+first-token→DLK; dedup before assembly; bundle construction with correct `is-new` tagging per
+component.
+
+**Explicitly NOT free:** `C_` is dramatically cheaper than `CC_`, not zero-cost — validation,
+execution, and any needed cache writes are still real on-chain work. Two distinct worst cases
+need measuring, not one: cache-cold (first-ever use, everything freshly traced off-chain and
+written) and cache-warm (everything already cached, pure validate-and-execute).
+
+**Correctness expectation, stated up front so it isn't a surprise at measurement time:** given
+the same underlying route, `CC_` and `C_` should produce identical user-facing swap output
+(netto) — hop execution math doesn't change based on how the route was found. Liquid Boost's
+burn amount and `stoa-value` figures may legitimately differ between the two, same class of
+divergence direction 5 already introduced and accepted (internal bookkeeping, not user funds).
+
+**Testing, once built:** simulate the off-chain dirty-read side in REPL too (not billed in
+reality, but real numbers here inform the eventual UI/latency guide); measure `C_`'s real
+worst-case gas, cold and warm separately; compare directly against `CC_`'s already-known real
+numbers (1,963,025 at 22-pool baseline, up to 7,145,276 at 102 pools) for the actual "how much
+does this buy us" answer — measured, never estimated in advance.
 
 **Status:** IN PROGRESS. P0.5 done. **P0.6 REOPENED, 2026-08-21 — was wrongly marked done.**
 Direction 1 + direction 5 (single-shortest-path boost routing, then carrying the boost value
@@ -776,6 +823,17 @@ roughly halves what ever needs storing.
 - Table growth (many distinct pairs) is real but self-limiting — the writer pays real gas for
   their own write, and entries are demand-driven off actual swaps, not a free combinatorial
   blow-up. Worth a line in the eventual architecture doc (P5.5), not a design blocker.
+- **Added 2026-08-21, owner's final-check catch: the write function must not blindly trust the
+  bundle's `is-new` flag as the authority for whether to write.** `is-new` is a cheap *hint*
+  (lets the caller skip redundant validation work upstream when they already know it's cached),
+  not a security boundary. The write function itself must check, at write time, whether a row
+  already exists for that key and no-op safely if so — otherwise either (a) a caller could
+  falsely claim `is-new=false` on a genuinely new path to dodge write-gas, at the cost of the
+  shared cache never warming for that pair (wasteful, not dangerous), or (b) two callers
+  simultaneously discovering the same new path and both claiming `is-new=true` could risk
+  violating first-write-wins if the write path isn't itself idempotent. Concretely: use a
+  read-before-write (or an insert that fails safe / a with-default-read pattern) inside the
+  registration function, never a bare `insert`/`write` gated purely on the caller's claim.
 
 **Validation on every read, settled — even a cache "hit" always re-validates, nothing is ever
 trusted blindly:**
@@ -787,6 +845,13 @@ trusted blindly:**
    below): for the A→B execution route, every edge must be `can-swap=true`; for X→DLK pricing
    paths, edges only need to structurally exist (mirrors `URC_Hopper` vs `URC_HopperActive`'s
    existing split — reuse it, don't invent a third mode).
+3. **Added 2026-08-21, owner's final-check catch: depth-cap enforcement (7 tokens / 6 hops,
+   P0.4) must be a real on-chain check on every submitted route, not just an assumed property
+   of how the off-chain search behaves.** The off-chain search stays bounded by the cap for its
+   own efficiency, but a malformed or adversarial bundle could otherwise hand in a route far
+   longer than intended — structurally valid hop-by-hop, still expensive to execute regardless.
+   Reject (or fall back) on any supplied path exceeding the cap, same validation pass as
+   points 1/2, not a separate mechanism.
 This makes a bad-but-structurally-valid entry self-limiting rather than a lasting problem: if a
 pool along a cached path later gets disabled, the next reader's cheap validation catches it and
 falls back to a fresh dirty-read trace — no proactive invalidation logic needed anywhere.
@@ -859,15 +924,19 @@ parallel value alongside it — still open, see P3.10.
 
 #### P3.5 — The new client entrypoint
 
-- [ ] **P3.5.1** Name: **`SWP|C_SmartSwapExplicitRoute`** (reusing the name already chosen when
-      P3.2 was first scoped, before this session's discussion expanded it — no new prefix
-      invented; considered and rejected a fresh `CC_`-style prefix since prefixes in this repo
-      describe *capability*, not *cost*, and this repo's prefix set is closed/documented).
-      Accepts the `SmartSwapPathBundle` (P3.2) as input instead of computing anything itself.
-- [ ] **P3.5.2** **Built alongside, not replacing, the existing `SWP|C_SmartSwapNoSlippage`/
-      `WithSlippage`** — those stay exactly as they are, self-searching, for direct A/B
-      comparison. Decide later (real numbers in hand) whether the new path fully replaces the
-      old one or they coexist long-term.
+- [ ] **P3.5.1** Naming, **settled by the owner 2026-08-21, overriding this doc's earlier
+      lean-away-from-a-new-prefix recommendation:** existing self-searching entrypoints
+      (`SmartSwapNoSlippage`/`WithSlippage`, at both the Talos and `SWPU` layers) get renamed
+      with a **`CC_`** prefix, left otherwise untouched. The new bundle-based entrypoint takes
+      the **`C_`** prefix — it performs zero dirty reads itself (all discovery happens
+      client-side before it's ever called), so `C_` marks it as the new "normal"/preferred
+      path, `CC_` marks the old one as the expensive fallback kept for comparison. Exact final
+      names (e.g. `SWP|C_SmartSwap` vs `SWP|CC_SmartSwapNoSlippage`) to be finalized when P3.5
+      is actually built — this note fixes the *scheme*, not the literal strings yet.
+- [ ] **P3.5.2** **Built alongside, not replacing, the existing (now `CC_`-prefixed)
+      `SmartSwapNoSlippage`/`WithSlippage`** — those stay exactly as they are, self-searching,
+      for direct A/B comparison. Decide later (real numbers in hand) whether the new path fully
+      replaces the old one or they coexist long-term.
 - [ ] **P3.5.3** Verify precisely (trace the code, don't assume) that the new
       `XI_SmartSwapCore` variant safely aborts / falls back cleanly on a malformed or
       incoherent bundle (route that doesn't connect, non-existent swpair, stale/inactive edge)
