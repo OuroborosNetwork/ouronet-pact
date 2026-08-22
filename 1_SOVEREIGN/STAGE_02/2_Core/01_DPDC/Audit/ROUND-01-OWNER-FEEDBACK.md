@@ -410,3 +410,15 @@ granted the transfer role to an account other than the sender, transferred from 
 role-holding receiver — under the intended sender-OR-receiver semantics this must succeed, and does
 post-fix (`Successfully transfered...`); the identical script hard-fails at that exact call pre-fix
 (`git stash`-confirmed), proving the bug was real. Full `Z.repl` green.
+
+## #17H · DPDC-T · H2 — `C_RepurposeCollectable` skips frozen/transfer-role gates
+
+**Verdict: REFUTED, design-intentional (2026-08-22).** Owner: "repurpose must bypass everything." Checked
+the actual code first — confirmed it's not a transfer, it's `XE_Debit*-Nonce(..., wipe-mode=true)` then
+`XB_Credit*-Nonce(...)` on the *same* nonce (same metadata, new holder), matching the owner's description.
+`wipe-mode=true` is a shared authorization-gate-swap primitive (owner-only vs. account-owner), not the
+actual DPDC-MNG Wipe feature — confirmed and the owner agreed "wipe-like mechanic" is the precise framing,
+not a real Wipe. Owner initially wanted the source account left frozen afterward (a liability), but on
+reflection rejected it: doing so would route through the real freeze path, which still requires
+`can-freeze=true` (#13H) — making the escape hatch's success conditional on a flag it's specifically meant
+to route around. No code change; consistent with #4C's identical closure for the fragment sibling.

@@ -209,9 +209,15 @@ DPOF's pattern (`sender`→`receiver`). Live-proven: role-less sender → role-h
 correctly succeeds; `git stash` confirms the identical script hard-failed at that exact call pre-fix.
 Z.repl green. — *DPDC-T·H1*
 
-#17H **[DPDC-T]** `C_RepurposeCollectable` skips the frozen-account and transfer-role gates that
+#17H **[DPDC-T]** ~~`C_RepurposeCollectable` skips the frozen-account and transfer-role gates that
 `C_Transfer` enforces on both sender and receiver — an admin freeze intended to halt movement of a suspect
-account's holdings can be silently bypassed via repurpose instead of transfer. — *DPDC-T·H2*
+account's holdings can be silently bypassed via repurpose instead of transfer.~~ — **REFUTED
+(design-intentional) 2026-08-22** — same treatment as #4C's fragment sibling: a deliberate admin
+account-recovery bypass, correctly gated on `CAP_Owner` via a wipe-mode-style authorization swap (not the
+actual DPDC-MNG Wipe feature — just its shared owner-override debit primitive, reused directly). Owner
+considered and explicitly rejected freezing the source account afterward, since that would route through
+the real freeze path and become conditional on `can-freeze=true` (#13H) — defeating the point of an
+always-available escape hatch. No code change. — *DPDC-T·H2*
 
 #18H **[DPDC-C]** Native NFT Credit never checks the target nonce isn't already held by someone else — the
 "single canonical holder" invariant is preserved today only by every current caller's discipline (always
