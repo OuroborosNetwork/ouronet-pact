@@ -1,0 +1,165 @@
+;; Verification for DPDC Audit finding #19H (DPDC-UDC/DPDC-S): UR_N|Score (the "cooked" score reader that
+;; applies the Set-Class multiplier and the 1/1000 fragment split) failed to clamp the DPDC -1.0 "unscored"
+;; sentinel in 3 of its 4 arithmetic branches -- only the plain class-0/native branch checked it correctly.
+;; Fragment branches never checked at all; the set-member/native branch compared against the wrong literal
+;; (-1000.0 instead of -1.0), a copy-paste leftover, so it only worked by coincidence when multiplier=1000.
+;; Fix: the sentinel is now checked exactly once, on the raw untouched score, before any multiply/divide.
+;;
+;; This probe exercises all 4 branches with an unscored nonce (must all read back 0.0), plus one real,
+;; non-sentinel score to confirm ordinary multiplier/fragment math still works correctly.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+;;====================================================================================================
+;; TX-1: Branch A/B -- plain class-0 NFT nonce
+;;====================================================================================================
+(begin-tx "PROBE-19H-NFT - UR_N|Score sentinel clamp, class-0 branches (A/B)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (owner:string KST.ANHD)
+        (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpnf-price))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+)
+(let
+    (
+        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (owner:string KST.ANHD)
+        (creator:string KST.ANHD)
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "n" "d" (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_URI|Data "ipfs://a" "" "" "" "" "" "")
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (print (format "ISSUE NFT = {}"
+        [(ref-TS02-C2::DPNF|C_Issue owner owner creator "ScoreSentinelNFT" "SSNF"
+            true true true true true true true true)]))
+    (let ((nid:string "SSNF-98c486052a51"))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner nid [nd])]))
+        (print (format "<<19H-1>> Branch B (class-0, native) unscored -> {}"
+            [(ref-DPDC-S::UR_N|Score nid false 1)]))
+        (print (format "<<19H-2>> Branch A (class-0, fragment) unscored -> {}"
+            [(ref-DPDC-S::UR_N|Score nid false -1)]))
+        ;; Sanity: a real score still comes back correctly through both class-0 branches.
+        (print (format "SET real score 40.0 = {}"
+            [(ref-TS02-C2::DPNF|C_UpdateNonceScore owner nid owner 1 true 40.0)]))
+        (print (format "<<19H-3>> Branch B real score (40.0) -> {}"
+            [(ref-DPDC-S::UR_N|Score nid false 1)]))
+        (print (format "<<19H-4>> Branch A real score, fragment (40.0/1000) -> {}"
+            [(ref-DPDC-S::UR_N|Score nid false -1)]))
+    )
+    ""
+)
+(commit-tx)
+
+;;====================================================================================================
+;; TX-2: Branch C/D -- SFT Set-member nonce (SFT sets share one persistent nonce, freely editable, so we
+;; can force it back to the -1.0 sentinel to test the composite branches directly)
+;;====================================================================================================
+(begin-tx "PROBE-19H-SFT - UR_N|Score sentinel clamp, Set-member branches (C/D)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (owner:string KST.ANHD)
+        (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpsf-price))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+)
+(let
+    (
+        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (creator:string KST.ANHD)
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "n" "d" (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_URI|Data "ipfs://a" "" "" "" "" "" "")
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (print (format "ISSUE SFT = {}"
+        [(ref-TS02-C1::DPSF|C_Issue owner owner creator "ScoreSentinelSFT" "SSSF"
+            true true true true true true true true)]))
+    (let ((sid:string "SSSF-98c486052a51"))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C1::DPSF|C_Create owner sid [5] [nd])]))
+        (print (format "CREATE 2 = {}" [(ref-TS02-C1::DPSF|C_Create owner sid [5] [nd])]))
+        ;; Define with nd (UDC_NoMetaData -> raw score = -1.0 sentinel) and multiplier 2.5.
+        (print (format "DEFINE = {}"
+            [(ref-TS02-C1::DPSF|C_DefinePrimordialSet owner sid "PairSet" 2.5
+                [(ref-DPDC-UDC::N [1]) (ref-DPDC-UDC::N [2])] nd)]))
+        (let ((set-nonce:integer (ref-DPDC-S::UR_NonceOfSet sid 1)))
+            (print (format "set-nonce = {}" [set-nonce]))
+            (print (format "<<19H-5>> Branch D (Set-member, native) unscored -> {}"
+                [(ref-DPDC-S::UR_N|Score sid true set-nonce)]))
+            (print (format "<<19H-6>> Branch C (Set-member, fragment) unscored -> {}"
+                [(ref-DPDC-S::UR_N|Score sid true (- 0 set-nonce))]))
+            ;; Sanity: a real score is still correctly multiplied (40.0 * 2.5 = 100.0) and fragment-divided
+            ;; (100.0 / 1000 = 0.1).
+            (print (format "SET real score 40.0 on set-nonce = {}"
+                [(ref-TS02-C1::DPSF|C_UpdateNonceScore owner sid owner set-nonce true 40.0)]))
+            (print (format "<<19H-7>> Branch D real score (40.0 x 2.5 = 100.0) -> {}"
+                [(ref-DPDC-S::UR_N|Score sid true set-nonce)]))
+            (print (format "<<19H-8>> Branch C real score, fragment (100.0/1000 = 0.1) -> {}"
+                [(ref-DPDC-S::UR_N|Score sid true (- 0 set-nonce))]))
+        )
+    )
+    ""
+)
+(commit-tx)

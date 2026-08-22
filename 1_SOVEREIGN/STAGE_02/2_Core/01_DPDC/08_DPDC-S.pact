@@ -359,29 +359,33 @@
     ;;
     ;;Score Read for Nonce
     (defun UR_N|Score:decimal (id:string son:bool nonce:integer)
+        @doc "Cooked score reader: applies the Set-Class multiplier (for Set-member nonces) and the \
+            \ 1/1000 fragment split (for negative/fragment nonces) to a nonce's raw stored score. \
+            \ DPDC Audit #19H: the -1.0 <unscored> sentinel is now checked once, on the untouched raw \
+            \ value, before any multiply/divide — the previous per-branch checks either omitted the \
+            \ check entirely (fragment arms) or compared against the wrong constant (-1000.0 instead \
+            \ of -1.0, a copy-paste leftover), letting the sentinel leak through as a real negative \
+            \ score in 3 of the 4 branches."
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
                 (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
                 (raw-nonce-score:decimal (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NativeNonceData id son (abs nonce))))
             )
-            (if (= nonce-class 0)
-                (if (< nonce 0)
-                    (/ raw-nonce-score 1000.0)
-                    (if (= raw-nonce-score -1.0)
-                        0.0
+            (if (= raw-nonce-score -1.0)
+                0.0
+                (if (= nonce-class 0)
+                    (if (< nonce 0)
+                        (/ raw-nonce-score 1000.0)
                         raw-nonce-score
                     )
-                )
-                (let
-                    (
-                        (multiplier:decimal (UR_SetMultiplier id son nonce-class))
-                        (multiplied-score:decimal (* raw-nonce-score multiplier))
-                    )
-                    (if (< nonce 0)
-                        (/ multiplied-score 1000.0)
-                        (if (= multiplied-score -1000.0)
-                            0.0
+                    (let
+                        (
+                            (multiplier:decimal (UR_SetMultiplier id son nonce-class))
+                            (multiplied-score:decimal (* raw-nonce-score multiplier))
+                        )
+                        (if (< nonce 0)
+                            (/ multiplied-score 1000.0)
                             multiplied-score
                         )
                     )

@@ -233,11 +233,16 @@ holder possible); `DPDC-MNG::C_RespawnNFT` (explicitly enforces `UEV_NftNonceExi
 current holder is `BAR`, before crediting). All three correctly gate at their own layer today. Owner
 decided to leave the primitive itself unchanged — no code change. — *DPDC-C·H1*
 
-#19H **[DPDC-UDC / DPDC-S]** `UR_N|Score` (the public "cooked" score reader on `DpdcSetsV1`) fails to
+#19H **[DPDC-UDC / DPDC-S]** ~~`UR_N|Score` (the public "cooked" score reader on `DpdcSetsV1`) fails to
 clamp the DPDC `-1.0` "unscored" sentinel in 3 of its 4 arithmetic branches — a composite-class or any
 fragment nonce created without explicit metadata reads a real negative score instead of the documented
 "unscored = 0," and a sibling audit (AQP) has already committed a false "already fixed" assumption about
-this exact function to its own audit trail. — *DPDC-UDC/DPDC-S·H1*
+this exact function to its own audit trail.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-22** (`ROUND-02-FIXES.md`
+Fix #17) — sentinel check centralized once, at function entry, on the raw untouched score, closing all 3
+broken branches at once (no per-branch patching, no risk of a fifth copy-paste mistake). 8-check live proof
+(NFT class-0 + SFT Set-member, unscored + real-score, native + fragment) — all unscored cases now `0.0`;
+`git stash` confirms the exact pre-fix bug shape (`-0.001`/`-2.5`/`-0.0025`). Z.repl green. —
+*DPDC-UDC/DPDC-S·H1*
 
 #20H **[DPDC-N]** `C_UpdateNonceIgnisRoyalty` has no upper bound at all — `UEV_IgnisRoyalty` only checks
 decimal precision, unlike its sibling `UEV_Royalty` (capped `[1,999]` promile via the shared `UEV_Fee`); a

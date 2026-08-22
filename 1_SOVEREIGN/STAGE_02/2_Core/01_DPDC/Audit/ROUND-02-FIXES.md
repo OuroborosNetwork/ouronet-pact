@@ -833,3 +833,40 @@ properties (precision + magnitude) checked in the same place.
 within the new, narrower range.
 
 **Interface implication:** none.
+
+## Fix #17 — DPDC-UDC/DPDC-S · H1 (#19H) — `UR_N|Score` leaks the `-1.0` unscored sentinel in 3 of 4 branches
+
+**Owner-approved 2026-08-22.** Owner: an unscored nonce's raw `-1.0` must always read back as `0.0`, in
+every shape (plain vs. Set-member, whole vs. fragment) — this must be fixed across the board.
+
+**Root cause:** `08_DPDC-S.pact:361-390` (`UR_N|Score`) — 4 branches (class-0 × native/fragment, Set-member
+× native/fragment), only the class-0/native branch checked `raw-nonce-score = -1.0` before returning it.
+The other three either never checked at all (fragment arms — multiplied/divided the sentinel directly,
+`-1.0 / 1000.0 = -0.001`) or checked against the wrong literal (`-1000.0` instead of `-1.0`, a copy-paste
+leftover of the `1000.0` divisor two lines below — only accidentally correct when `multiplier = 1000.0`).
+
+**Fix — centralize the check once, at function entry, on the untouched raw value:**
+```pact
+-(if (= nonce-class 0)
+-    (if (< nonce 0) (/ raw-nonce-score 1000.0) (if (= raw-nonce-score -1.0) 0.0 raw-nonce-score))
+-    (let (...) (if (< nonce 0) (/ multiplied-score 1000.0) (if (= multiplied-score -1000.0) 0.0 multiplied-score))))
++(if (= raw-nonce-score -1.0)
++    0.0
++    (if (= nonce-class 0)
++        (if (< nonce 0) (/ raw-nonce-score 1000.0) raw-nonce-score)
++        (let (...) (if (< nonce 0) (/ multiplied-score 1000.0) multiplied-score))))
+```
+Checking the sentinel on the raw value before any multiply/divide is both simpler and correct for every
+branch at once — no per-branch patching, no risk of a fifth copy-paste mistake.
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC-S_19H_score_sentinel.repl`):** 8 checks across both
+NFT (class-0) and SFT (Set-member — SFT sets share one persistent, freely-editable nonce, letting the
+Set-member branches be tested directly) collections:
+- All 4 branches, unscored: `0.0` in every case (`<<19H-1/2/5/6>>`).
+- All 4 branches, a real score (`40.0`, multiplier `2.5`): native `40.0`/`100.0`, fragment `0.04`/`0.1` —
+  ordinary math unaffected (`<<19H-3/4/7/8>>`).
+- **Pre-fix (`git stash`):** identical script — Branch A `-0.001`, Branch D `-2.5`, Branch C `-0.0025`,
+  Branch B already correct at `0.0` — confirms the exact 3-of-4 pattern the finding described, not assumed.
+- `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
+
+**Interface implication:** none — `UR_N|Score`'s `DpdcSetsV1` signature is unchanged.

@@ -443,3 +443,18 @@ silently reduce every member's score below its raw value, which was never the in
 **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #16)** — `UEV_ScoreMultiplier`'s magnitude check tightened
 from `(0, 100]` to `[1.0, 100.0]`. Live-proven: `0.5` now correctly rejected (previously legal), `1.0`
 (the new floor) correctly accepted, all prior checks still pass. Full `Z.repl` green.
+
+## #19H · DPDC-UDC/DPDC-S · H1 — `UR_N|Score` leaks the `-1.0` unscored sentinel in 3 of 4 branches
+
+**Verdict: CONFIRMED, FIXED (2026-08-22).** Owner: an unscored nonce must always read back as score `0.0`,
+across the board, in every branch. Discussing this also clarified two related, already-actioned points:
+(1) `UR_N|Score` genuinely is designed to apply the Set-Class multiplier — confirmed it's the only function
+in the codebase that does, though (as established under #15H) nothing currently calls it; (2) surfaced the
+[1.0,100.0] multiplier-floor tightening (Fix #16, logged separately) and the need to warn the AQP handoff
+against double-applying the multiplier if it ever wires in this cooked reader.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #17)** — centralized the sentinel check once, at the top,
+on the raw untouched score, closing all 3 broken branches at once (no per-branch patching). Live-proven
+across 8 checks (NFT class-0 + SFT Set-member, unscored + real-score, native + fragment) — all unscored
+cases now `0.0`; pre-fix (`git stash`) confirms the exact bug shape: Branch A `-0.001`, Branch D `-2.5`,
+Branch C `-0.0025`. Full `Z.repl` green.
