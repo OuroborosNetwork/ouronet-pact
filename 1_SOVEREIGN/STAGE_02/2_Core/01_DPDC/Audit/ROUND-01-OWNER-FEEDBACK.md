@@ -377,3 +377,20 @@ unvalidated) and Update (previously precision-only). Live-proven with 9 checks: 
 attempts rejected, boundary (100.0) and ordinary (2.5) accepted; both bad-multiplier Update attempts
 rejected, legit update (50.0) accepted. Full `Z.repl` green, including Bloodshed's real 1.1x genesis
 multiplier still passing cleanly.
+
+## #15H follow-up · DPDC-S · H1 — `score-multiplier` made immutable after Define
+
+Owner asked directly whether the multiplier is stable after being set — answer: no, `C_UpdateSetMultiplier`
+could be called any number of times, at any point (before or after instances exist), within the Fix #13
+bound. Owner: "I want it immutable similar to how the combining nonces are immutable" — same treatment
+already confirmed correct for the Set-Class recipe: no update path at all, ever; a wrong value means
+disabling that Set-Class and defining a new one. Confirmed the cap (100x) therefore only needs enforcing at
+Define time now, since Update no longer exists.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #14)** — removed `C_UpdateSetMultiplier` entirely:
+`DPDC-S|C>MULTIPLIER`, `XI_Multiplier`, `XI_U|SetMultiplier`, and both Talos wrappers
+(`DPNF`/`DPSF|C_UpdateSetMultiplier`) gone. The Fix #13 bound survives, now enforced only at Define. Checked
+first that nothing in the canonical genesis/REPL suite legitimately called the update function — none did;
+only two Kursan scratch probes did, both updated (one now proves immutability directly by reading the value
+back with no update call available; the other's now-dead Update-path block commented out with an
+explanatory note, kept as a historical record of Fix #5). Full `Z.repl` green.

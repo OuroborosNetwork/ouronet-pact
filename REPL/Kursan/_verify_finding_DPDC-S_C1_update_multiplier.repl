@@ -1,7 +1,13 @@
-;; Verification for DPDC Audit finding #7C (DPDC-S · C1): C_UpdateSetMultiplier crashes unconditionally
+;; Verification for DPDC Audit finding #7C (DPDC-S · C1): C_UpdateSetMultiplier crashed unconditionally
 ;; on every call — a `let` type-annotation bug (current-multiplier bound :string against a :decimal
-;; return). Fix: annotation corrected to :decimal. This probe proves the function actually works now,
-;; against a real, genesis-defined set-class (Wonder Coach, Bronze = set-class 1, multiplier 1.0).
+;; return). Fixed at the time by correcting the annotation to :decimal, proven below against a real,
+;; genesis-defined set-class (Wonder Coach, Bronze = set-class 1, multiplier 1.0).
+;;
+;; SUPERSEDED by DPDC Audit #15H (2026-08-22): C_UpdateSetMultiplier (DPDC-S, plus the DPNF/DPSF Talos
+;; wrappers, DPDC-S|C>MULTIPLIER, XI_Multiplier, XI_U|SetMultiplier) was removed entirely — score-multiplier
+;; is now immutable after Define, same as the Set-Class recipe, so it can never go stale. The Update-path
+;; proof below (second tx) documents what #7C fixed at the time but no longer reflects live code; kept for
+;; the audit trail, not runnable as-is post-#15H. The baseline read (first tx) still works.
 (load "../Stage00_Sanboxes.repl")
 (load "../Stage01_Tester.repl")
 (load "../Stage_02/[0.1]_Interfaces.repl")
@@ -18,25 +24,28 @@
 )
 (commit-tx)
 
-(begin-tx "PROBE-C7 - C_UpdateSetMultiplier on a real set-class, must now succeed")
-(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(namespace "ouronet-ns")
-(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-(let
-    (
-        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
-        (id:string "DHWC-98c486052a51")
-    )
-    (print (format "UPDATE RESULT = {}"
-        [(ref-TS02-C1::DPSF|C_UpdateSetMultiplier KST.ANHD id 1 1.5)]))
-    (print (format "AFTER multiplier = {}" [(ref-DPDC-S::UR_SetMultiplier id true 1)]))
-    ;; control: "must differ from current" check should still correctly reject a same-value update
-    (print
-        (expect-failure
-            "same-value update correctly rejected (current-multiplier now readable as decimal)"
-            (ref-TS02-C1::DPSF|C_UpdateSetMultiplier KST.ANHD id 1 1.5)
-        )
-    )
-)
-(commit-tx)
+;; ORIGINAL #7C UPDATE-PATH PROOF (historical record only — DPSF|C_UpdateSetMultiplier no longer exists
+;; as of #15H; this block is commented out so the file still loads cleanly end-to-end):
+;;
+;; (begin-tx "PROBE-C7 - C_UpdateSetMultiplier on a real set-class, must now succeed")
+;; (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; (namespace "ouronet-ns")
+;; (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; (let
+;;     (
+;;         (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+;;         (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+;;         (id:string "DHWC-98c486052a51")
+;;     )
+;;     (print (format "UPDATE RESULT = {}"
+;;         [(ref-TS02-C1::DPSF|C_UpdateSetMultiplier KST.ANHD id 1 1.5)]))
+;;     (print (format "AFTER multiplier = {}" [(ref-DPDC-S::UR_SetMultiplier id true 1)]))
+;;     ;; control: "must differ from current" check should still correctly reject a same-value update
+;;     (print
+;;         (expect-failure
+;;             "same-value update correctly rejected (current-multiplier now readable as decimal)"
+;;             (ref-TS02-C1::DPSF|C_UpdateSetMultiplier KST.ANHD id 1 1.5)
+;;         )
+;;     )
+;; )
+;; (commit-tx)

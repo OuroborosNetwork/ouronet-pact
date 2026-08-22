@@ -72,7 +72,9 @@
     )
     (defun C_ToggleSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer toggle:bool))
     (defun C_RenameSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer new-name:string))
-    (defun C_UpdateSetMultiplier:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer new-multiplier:decimal))
+    ;; C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is now immutable after Define,
+    ;; matching the Set-Class recipe's own immutability. A wrong multiplier means disabling that
+    ;; Set-Class and defining a new one, same recovery path as a wrong recipe.
     ;;
     (defun XB_U|NonceOrSplitData (id:string son:bool set-class:integer nos:bool nd:object{DpdcUdcV1.DPDC|NonceData}))
 )
@@ -307,25 +309,7 @@
             (compose-capability (SECURE))
         )
     )
-    (defcap DPDC-S|C>MULTIPLIER (id:string son:bool set-class:integer new-multiplier:decimal)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (current-multiplier:decimal (UR_SetMultiplier id son set-class))
-            )
-            ;;Precision + magnitude bound, shared with Define — DPDC Audit #15H.
-            (UEV_ScoreMultiplier new-multiplier)
-            (enforce
-                (!= new-multiplier current-multiplier)
-                (format "The Set Multiplier of <{}> must be different from the current Set Multiplier of <{}> for operation" [new-multiplier current-multiplier])
-            )
-            (UEV_SetActiveState id son set-class true)
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (SECURE))
-        )
-    )
-
+    ;; DPDC-S|C>MULTIPLIER removed — DPDC Audit #15H: score-multiplier is immutable after Define.
     ;;
     ;;<=======>
     ;;FUNCTIONS
@@ -1024,19 +1008,7 @@
             )
         )
     )
-    (defun C_UpdateSetMultiplier:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer new-multiplier:decimal)
-        (UEV_IMC)
-        (with-capability (DPDC-S|C>MULTIPLIER id son set-class new-multiplier)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC:module{DpdcV1} DPDC)
-                )
-                (XI_Multiplier id son set-class new-multiplier)
-                (ref-IGNIS::UDC_SmallestCumulator (ref-DPDC::UR_CreatorKonto id son))
-            )
-        )
-    )
+    ;; C_UpdateSetMultiplier removed — DPDC Audit #15H.
     ;;{F7}  [X]
     (defun XI_PrimordialSet:integer
         (
@@ -1172,10 +1144,7 @@
         (require-capability (DPDC-S|C>RENAME id son set-class new-name))
         (XI_U|SetName id son set-class new-name)
     )
-    (defun XI_Multiplier (id:string son:bool set-class:integer new-multiplier:decimal)
-        (require-capability (DPDC-S|C>MULTIPLIER id son set-class new-multiplier))
-        (XI_U|SetMultiplier id son set-class new-multiplier)
-    )
+    ;; XI_Multiplier removed — DPDC Audit #15H.
     ;;
     ;; [<SetsTable> Writings] [3]
     (defun XI_I|CollectionSet (id:string son:bool set-class:integer set:object{DpdcUdcV1.DPDC|Set})
@@ -1213,13 +1182,7 @@
             (update DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"set-name" : new-name})
         )
     )
-    (defun XI_U|SetMultiplier (id:string son:bool set-class:integer new-multiplier:decimal)
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"set-score-multiplier" : new-multiplier})
-            (update DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"set-score-multiplier" : new-multiplier})
-        )
-    )
+    ;; XI_U|SetMultiplier removed — DPDC Audit #15H: score-multiplier is write-once, at Define.
 )
 
 (create-table P|T)

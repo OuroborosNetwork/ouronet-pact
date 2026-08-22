@@ -193,7 +193,11 @@ boundary (100.0) and ordinary values accepted, Z.repl green (Bloodshed's real 1.
 passes). Investigated first whether the multiplier is even consumed anywhere live — `UR_N|Score` (the only
 function that applies it) has zero callers, and Make-time score computation (`URC_NoncesSummedScore`)
 doesn't use it either; handed off a separate brief to check whether AQP staking/scoring is meant to apply
-it, tracked independently, not blocking this bound-only fix. — *DPDC-S·H1*
+it, tracked independently, not blocking this bound-only fix. **Follow-up (2026-08-22, Fix #14):** owner
+asked whether the multiplier is stable afterwards, then requested full immutability, matching the Set-Class
+recipe — `C_UpdateSetMultiplier` and its capability/`XI_*`/Talos wrappers removed entirely; the multiplier
+is now write-once, at Define, forever after. Live-proven (value persists with no update path able to touch
+it), Z.repl green. — *DPDC-S·H1*
 
 #16H **[DPDC-T]** `UEV_TransferRoles` computes the receiver's transfer-role membership from `sender` twice
 (a copy-paste variable-naming bug) — the documented sender-OR-receiver-authorized semantics for

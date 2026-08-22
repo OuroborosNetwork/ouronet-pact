@@ -325,6 +325,12 @@ works correctly, rejecting a same-value re-update. Full `pact Z.repl` pipeline g
 
 **Interface implication:** none — internal to the defcap body.
 
+**SUPERSEDED by Fix #14 (2026-08-22, DPDC Audit #15H immutability follow-up):** `C_UpdateSetMultiplier`
+(along with `DPDC-S|C>MULTIPLIER`, `XI_Multiplier`, `XI_U|SetMultiplier`, and the `DPNF`/`DPSF` Talos
+wrappers) was removed entirely — the owner decided `score-multiplier` should be immutable after Define,
+same as the Set-Class recipe, so it can never go stale. This fix (making the update function actually work)
+is preserved here for the audit trail, but the function it fixed no longer exists in the live module.
+
 ## DPDC-S/DPDC-C · C3 (#8C) closure — no new code, both halves live-verified
 
 **2026-08-21.** Owner pushed back on the Round I "probably already closed" framing and asked for it to be
@@ -721,3 +727,47 @@ multiplier, not on an unrelated set-definition error):
 **Interface implication:** `DPDC-S|C>DEFINE-PRIMORDIAL`/`DEFINE-COMPOSITE`/`DEFINE-HYBRID` are internal
 capabilities, not part of `DpdcSetsV1` — no interface signature changed; `UEV_ScoreMultiplier` is a new
 internal (non-interface) function.
+
+**SUPERSEDED (partially) by Fix #14 (2026-08-22):** the Update-side bound described above (`DPDC-S|C>MULTIPLIER`
+now calling `UEV_ScoreMultiplier`) was removed along with the rest of the Update path — `score-multiplier`
+is now immutable after Define. `UEV_ScoreMultiplier` itself survives, now called only at Define time.
+
+## Fix #14 — DPDC-S · H1 (#15H follow-up) — `score-multiplier` made immutable after Define
+
+**Owner-approved 2026-08-22.** Owner: "I want it immutable similar to how the combining nonces are
+immutable" — i.e. the same treatment already confirmed correct for the Set-Class recipe
+(`primordial-set-definition`/`composite-set-definition`, #12Hc discussion): no update path at all, ever: if
+a value turns out wrong, disable that Set-Class and define a new one. Direct follow-up question asked and
+answered first — "is the multiplier stable afterwards?" — no, `C_UpdateSetMultiplier` could be called any
+number of times, at any point, within the Fix #13 bound; nothing locked it once instances existed.
+
+**Fix — remove the entire Update path, not just tighten it further:**
+- `DPDC-S::C_UpdateSetMultiplier` (function + its `DpdcSetsV1` interface declaration) — removed.
+- `DPDC-S|C>MULTIPLIER` (capability) — removed.
+- `DPDC-S::XI_Multiplier` / `XI_U|SetMultiplier` (XI wrapper + low-level table write) — removed.
+- `DPNF|C_UpdateSetMultiplier` (`02_TS02-C2.pact`) / `DPSF|C_UpdateSetMultiplier` (`01_TS02-C1.pact`) —
+  removed, interface declarations and implementations both.
+- The Fix #13 bound (`UEV_ScoreMultiplier`, `(0,100]` + 3-decimal precision) survives unchanged, now
+  enforced only at Define time (Primordial/Composite/Hybrid) — the only place the multiplier is ever set.
+- `UR_SetMultiplier` (the reader) is untouched — the value stays fully readable, just never rewritable.
+
+Checked first that nothing legitimate breaks: grepped the entire canonical genesis/REPL suite for real
+callers of `C_UpdateSetMultiplier` — none found; only two `REPL/Kursan/` scratch probes exercised it (this
+fix's own Fix #13 proof, and Fix #5's original type-bug proof), both updated to match (see below). Also
+worth noting: Fix #5's `C_UpdateSetMultiplier` type-bug fix (the very first fix landed in this whole audit)
+made the function work *at all* for the first time — it had never successfully executed even once on
+mainnet before that. Nobody was relying on it working, since it never had.
+
+**Post-fix proof:** `REPL/Kursan/_verify_finding_DPDC-S_15H_multiplier_bound.repl` updated — replaced the
+now-nonexistent Update-path checks (`<<15H-7/8/9>>`) with a direct immutability read: defined a fresh
+set-class at `2.5x`, then read `UR_SetMultiplier` back with no update call in between (there is no update
+call left to make) — confirmed `2.5` persists with zero code path able to change it.
+`REPL/Kursan/_verify_finding_DPDC-S_C1_update_multiplier.repl` (Fix #5's original proof) — its baseline read
+(`UR_SetMultiplier`) still works; its Update-path block is now commented out with a note explaining why,
+so the file still loads cleanly end-to-end as a historical record.
+`cd REPL && pact Z.repl` — clean, `Load successful`, no regressions from removing the function/capability.
+
+**Interface implication:** `C_UpdateSetMultiplier` removed from `DpdcSetsV1` (interface shrink);
+`DPNF|C_UpdateSetMultiplier`/`DPSF|C_UpdateSetMultiplier` removed from the Talos client interfaces. Per
+repo policy, V1 stays freely editable pre-mainnet-adjustment — no version bump; matches how Fix #5 itself
+already edited this same function's body in place with no version bump.

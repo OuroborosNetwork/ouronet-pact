@@ -101,7 +101,7 @@
     )
     (defun DPSF|C_ToggleSet (patron:string id:string set-class:integer toggle:bool))
     (defun DPSF|C_RenameSet (patron:string id:string set-class:integer new-name:string))
-    (defun DPSF|C_UpdateSetMultiplier (patron:string id:string set-class:integer new-multiplier:decimal))
+    ;; DPSF|C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is immutable after Define.
     ;;
     (defun DPSF|C_UpdateSetNonce                (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}))
     (defun DPSF|C_UpdateSetNonces               (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}]))
@@ -1068,21 +1068,7 @@
             )
         )
     )
-    (defun DPSF|C_UpdateSetMultiplier (patron:string id:string set-class:integer new-multiplier:decimal)
-        @doc "Updates an SFT Set Multiplier"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-                )
-                (ref-IGNIS::C_Collect patron
-                    (ref-DPDC-S::C_UpdateSetMultiplier id true set-class new-multiplier)
-                )
-                (format "SFT {} Set Score Multiplier {} succesfuly updated to <{}>" [id set-class new-multiplier])
-            )
-        )
-    )
+    ;; DPSF|C_UpdateSetMultiplier removed — DPDC Audit #15H.
     ;;
     (defun DPSF|C_UpdateSetNonce 
         (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData})
