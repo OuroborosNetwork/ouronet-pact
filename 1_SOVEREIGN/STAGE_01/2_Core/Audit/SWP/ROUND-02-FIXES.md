@@ -1146,3 +1146,51 @@ decision, not made here.
 
 **Status:** FIXED ✅ AND PROVEN ✅ — all 13 phases of the consolidated plan complete, 2026-08-22.
 Awaiting Round III re-verify.
+
+---
+
+## Fix #22 — M5 (#36M): `SWPI::C_Issue` and `MTX-SWP::MTX|C_Issue` now share one write-sequence chokepoint
+
+**Owner direction:** use a single shared core for the write sequence, called from both `C_Issue` and
+`MTX|C_Issue`. Multi-step issuance (`MTX|C_Issue`) is now considered historical/observational —
+single-tx issuance is always safely under the real ~2,000,000 gas ceiling (per this same session's #34
+gas work) — but the historical path stays live and must call the same shared core, not its own copy.
+
+**Feasibility confirmed before building:** a `defpact` `step` is ordinary Pact code — it can freely call
+cross-module functions, including other `UEV_IMC`-gated `XE_*` entrypoints, exactly like non-defpact
+code. Proven by pre-existing code already in `MTX|C_Issue`'s own Step 3 (`ref-DPTF::XE_IssueLP`,
+`ref-SWP::XE_Issue`, `ref-BRD::XE_Issue`, `ref-SWPT::XE_UpdateGraph` — all cross-module, all already
+working, all unmodified by this fix) before any new call was added.
+
+**Fix:**
+- `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact` — new `XE_IssueWrite` (forward-module entrypoint, added
+  to the `SwapperIssueV3` interface): the ONE write sequence (mint LP token, register the pool,
+  transfer pool tokens in, mint genesis LP supply, transfer LP out, register the swap-tracer graph
+  edge). Returns `[swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out]` — a wider list,
+  not an `OutputCumulator` (this codebase's `XE_*` convention: the forward module's own `C_` composes
+  IGNIS, not this function) — so `C_Issue` can still aggregate every sub-call's own cumulator into its
+  single billed response exactly as before, while `MTX|C_Issue`'s Step 3 (already billed separately, in
+  its own Step 2) takes just `swpair`/`token-lp` and ignores the rest. New `SWPI|XE>ISSUE-WRITE` local
+  cap (no checks beyond `UEV_IMC` — real validation already ran in whichever caller's own defcap/Step 1
+  got here first). New named constant `GENESIS_LP_SUPPLY` (`10000000.0`) replaces the bare literal that
+  was independently duplicated in both callers' own write sequences. `C_Issue` itself rewritten to
+  delegate to `XE_IssueWrite` instead of inlining the sequence.
+- `1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact` — `MTX|C_Issue`'s Step 3 rewritten to call
+  `ref-SWPI::XE_IssueWrite` instead of independently reimplementing the sequence.
+- `1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact`, `P|A_Define` — genuine pre-existing gap found and
+  fixed while wiring the new cross-module call: `UEV_IMC` (the gate `XE_IssueWrite` opens with) checks
+  a per-module "Implementing Module Policy" allow-list that each *caller* must register itself onto —
+  MTX-SWP's own `P|A_Define` already registered itself on BRD/DPTF/DPOF/TFT/OUROBOROS/VST/SWPT/SWP/SWPL
+  (which is why the pre-existing `ref-SWPT::XE_UpdateGraph` call from the same Step 3 already worked)
+  but had never registered itself on SWPI, because MTX-SWP had never before needed to call a
+  `UEV_IMC`-gated function on SWPI directly. Added `(ref-P|SWPI::P|A_AddIMP mg)`, matching the existing
+  pattern for every other module MTX-SWP already registers with.
+
+**Adversarially proven, live:** full `[6.2]`+`[6.3]` suite (real execution path, exercises
+`MTX|C_Issue`'s defpact issuance via the pre-existing `SWP|TX 012b`/`012c` "Issue Stable 7xUSD via
+defpact" test): before the `P|A_Define` fix, failed hard at load with `UEV_IMC`'s "None of the guards
+passed" (`02_U_G.pact:57`) — a genuine cross-module authorization gap, not a REPL assertion failure.
+After adding the missing registration: exit 0, 0 `FAILURE`. Default issuance-only regression: exit 0,
+0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

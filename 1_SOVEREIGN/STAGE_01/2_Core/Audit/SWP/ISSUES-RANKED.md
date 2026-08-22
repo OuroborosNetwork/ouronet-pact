@@ -281,8 +281,17 @@ Traced every real call path: `URC_Swap` and `UC_BareboneSwap` both independently
 direction's schema is single-input by design (`input-position:integer`, not a list) across every pool
 type, not a stable-specific gap. No live bug. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *M1*
 
-#36M **[SWPI / MTX-SWP]** `C_Issue` and `MTX|C_Issue` duplicate the entire write-side issuance sequence
-(including a duplicated hardcoded genesis-mint constant) instead of sharing one chokepoint. — *M5*
+#36M **[SWPI / MTX-SWP]** ~~`C_Issue` and `MTX|C_Issue` duplicate the entire write-side issuance sequence
+(including a duplicated hardcoded genesis-mint constant) instead of sharing one chokepoint.~~ — **FIXED ✅
+AND PROVEN ✅ 2026-08-22** (`ROUND-02-FIXES.md` Fix #22). Owner: use a singular shared core, called by
+both. New `SWPI::XE_IssueWrite` holds the one write sequence; `SWPI::C_Issue` and
+`MTX-SWP::MTX|C_Issue`'s Step 3 both call it instead of independently reimplementing it. Duplicated
+`10000000.0` genesis-mint literal replaced by a single named `GENESIS_LP_SUPPLY`. Genuine pre-existing
+gap found and fixed while wiring the new call: MTX-SWP's own `P|A_Define` had never registered MTX-SWP
+as an approved IMC caller on SWPI (only on BRD/DPTF/DPOF/TFT/OUROBOROS/VST/SWPT/SWP/SWPL) — added
+`(ref-P|SWPI::P|A_AddIMP mg)`. Adversarially proven: full regression failed hard at `UEV_IMC` before the
+registration fix, passed clean (exit 0, 0 `FAILURE`) after. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *M5*
 
 #37M **[U|SWP]** Several helpers crash on an empty-list input (`enumerate 0 -1`) instead of returning `[]`.
 — *M3*

@@ -125,7 +125,21 @@
     ;;  []C] Functions
     ;;
     ;;
-    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))    
+    (defun C_Issue:object{IgnisCollectorV1.OutputCumulator} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    ;;
+    ;;
+    ;;  [X] Functions
+    ;;
+    ;;#36M/M5 fix: forward-module entrypoint for the shared pool-issuance write
+    ;;sequence — SWPI's own C_Issue and MTX-SWP::MTX|C_Issue's Step 3 both call this
+    ;;instead of each independently reimplementing the same mint/transfer/tracker
+    ;;writes. Returns [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out]
+    ;;— a wider list, not an IgnisCollectorV1.OutputCumulator (matches this codebase's
+    ;;XE_* convention: the forward module's own C_ composes IGNIS, not this function) —
+    ;;so C_Issue can still aggregate every sub-call's own cumulator into its single
+    ;;billed response exactly as before, while MTX|C_Issue (which already bills
+    ;;separately in its own Step 2) can just take swpair/token-lp and ignore the rest.
+    (defun XE_IssueWrite:list (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
 )
 ;;
 (module SWPI GOV
@@ -250,6 +264,11 @@
     )
     (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                   (CT_Bar))
+    ;;#36M/M5 fix: named, single source of truth for the genesis LP mint amount —
+    ;;was a bare 10000000.0 literal duplicated independently in both C_Issue and
+    ;;MTX|C_Issue's own write sequences; now lives once, inside the shared
+    ;;XE_IssueWrite both call.
+    (defconst GENESIS_LP_SUPPLY     10000000.0)
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -268,6 +287,16 @@
             (compose-capability (GOV|SWPI_ADMIN))
             true
         )
+    )
+    ;;#36M/M5 fix: local cap for XE_IssueWrite (forward-module entrypoint) — no
+    ;;checks of its own beyond UEV_IMC in the defun itself. Real validation
+    ;;(UEV_Issue) already ran in whichever caller's own defcap got here first
+    ;;(SWPI|C>ISSUE for C_Issue, or MTX-SWP's own Step 1) — this function only
+    ;;performs the already-validated writes, matching the XE_* contract of no
+    ;;enforce/UEV_* beyond UEV_IMC.
+    (defcap SWPI|XE>ISSUE-WRITE (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @event
+        true
     )
     ;;
     ;;<=======>
@@ -1740,61 +1769,96 @@
     ;;{F6}  [C]
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
-        @doc "Issues a new SWPair (Liquidty Pool)"
+        @doc "Issues a new SWPair (Liquidty Pool). \
+            \ #36M/M5 fix: the write sequence itself (mint/transfer/tracker) now lives in \
+            \ the shared XE_IssueWrite — MTX-SWP::MTX|C_Issue's own Step 3 calls the same \
+            \ function instead of independently reimplementing it. This function still \
+            \ owns all of ITS OWN IGNIS billing/aggregation (MTX|C_Issue bills separately, \
+            \ in its own Step 2, before Step 3 ever runs)."
         (UEV_IMC)
         (with-capability (SWPI|C>ISSUE account pool-tokens fee-lp weights amp p)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
+                    (kda-dptf-cost:decimal (ref-DALOS::UR_UsagePrice "dptf"))
+                    (kda-swp-cost:decimal (ref-DALOS::UR_UsagePrice "swp"))
+                    (kda-costs:decimal (+ kda-dptf-cost kda-swp-cost))
+                    (gas-swp-cost:decimal (ref-DALOS::UR_UsagePrice "ignis|swp-issue"))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                    (write-result:list (XE_IssueWrite account pool-tokens fee-lp weights amp p))
+                    (swpair:string (at 0 write-result))
+                    (token-lp:string (at 1 write-result))
+                    (ico1:object{IgnisCollectorV1.OutputCumulator} (at 2 write-result))
+                    (ico2:object{IgnisCollectorV1.OutputCumulator} (at 3 write-result))
+                    (ico3:object{IgnisCollectorV1.OutputCumulator} (at 4 write-result))
+                    (ico4:object{IgnisCollectorV1.OutputCumulator} (at 5 write-result))
+                    (ico5:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
+                    )
+                )
+                (ref-IGNIS::KDA|C_Collect patron kda-costs)
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])
+            )
+        )
+    )
+    ;;{F7}  [X]
+    (defun XE_IssueWrite:list
+        (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @doc "#36M/M5 fix: forward-module entrypoint holding the ONE shared pool-issuance \
+            \ write sequence — mint the LP token, register the pool, transfer pool tokens \
+            \ in, mint genesis LP supply, transfer LP out to the account, register the \
+            \ swap-tracer graph edge. Both SWPI::C_Issue (this module) and \
+            \ MTX-SWP::MTX|C_Issue's Step 3 (a different module, reached via a \
+            \ module{SwapperIssueV3} ref) call this instead of each independently \
+            \ reimplementing it. \
+            \ Returns [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out] — \
+            \ a wider list, not an IgnisCollectorV1.OutputCumulator (this codebase's XE_* \
+            \ convention: the forward module's own C_ composes IGNIS, not this function). \
+            \ C_Issue aggregates all four sub-cumulators into its own single billed \
+            \ response; MTX|C_Issue's Step 3 only needs swpair/token-lp (it already billed \
+            \ separately, in its own Step 2, before Step 3 ever runs) and ignores the rest."
+        (UEV_IMC)
+        (with-capability (SWPI|XE>ISSUE-WRITE account pool-tokens fee-lp weights amp p)
+            (let
+                (
                     (ref-BRD:module{BrandingV1} BRD)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
                     ;;#21H: SWPT no longer needs a principal list.
                     (ref-SWPT:module{SwapTracerV2} SWPT)
                     (ref-SWP:module{SwapperV3} SWP)
-                    ;;
-                    (kda-dptf-cost:decimal (ref-DALOS::UR_UsagePrice "dptf"))
-                    (kda-swp-cost:decimal (ref-DALOS::UR_UsagePrice "swp"))
-                    (kda-costs:decimal (+ kda-dptf-cost kda-swp-cost))
-                    (gas-swp-cost:decimal (ref-DALOS::UR_UsagePrice "ignis|swp-issue"))
                     (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
                     (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
                     (lp-name-ticker:[string] (ref-SWP::URC_LpComposer pool-tokens weights amp))
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ico-lp:object{IgnisCollectorV1.OutputCumulator}
                         (ref-DPTF::XE_IssueLP (at 0 lp-name-ticker) (at 1 lp-name-ticker))
                     )
-                    (token-lp:string (at 0 (at "output" ico1)))
+                    (token-lp:string (at 0 (at "output" ico-lp)))
                     (swpair:string (ref-SWP::XE_Issue account pool-tokens token-lp fee-lp weights amp p))
                 )
                 (ref-BRD::XE_Issue swpair)
                 (let
                     (
-                        (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                        (ico2:object{IgnisCollectorV1.OutputCumulator}
+                        (ico-transfer-in:object{IgnisCollectorV1.OutputCumulator}
                             (ref-TFT::C_MultiTransfer pool-token-ids account SWP|SC_NAME pool-token-amounts true)
                         )
-                        (ico3:object{IgnisCollectorV1.OutputCumulator}
-                            (ref-DPTF::C_Mint token-lp SWP|SC_NAME 10000000.0 true)
+                        (ico-mint:object{IgnisCollectorV1.OutputCumulator}
+                            (ref-DPTF::C_Mint token-lp SWP|SC_NAME GENESIS_LP_SUPPLY true)
                         )
-                        (ico4:object{IgnisCollectorV1.OutputCumulator}
-                            (ref-TFT::C_Transfer token-lp SWP|SC_NAME account 10000000.0 true)
-                        )
-                        (ico5:object{IgnisCollectorV1.OutputCumulator}
-                            (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
+                        (ico-transfer-out:object{IgnisCollectorV1.OutputCumulator}
+                            (ref-TFT::C_Transfer token-lp SWP|SC_NAME account GENESIS_LP_SUPPLY true)
                         )
                     )
-                    ;;C9 fix: SWP|LP registration moved into SWP::XE_Issue itself (called just above via
-                    ;;<swpair>'s own binding), so it's no longer a standalone call every issuance path has
-                    ;;to remember separately — this call site used to be the only one that remembered it.
+                    ;;C9 fix (preserved): SWP|LP registration lives inside SWP::XE_Issue
+                    ;;itself (called above via <swpair>'s own binding) — not a standalone
+                    ;;call either caller needs to remember separately.
                     (ref-SWPT::XE_UpdateGraph swpair)
-                    (ref-IGNIS::KDA|C_Collect patron kda-costs)
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])
+                    [swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out]
                 )
             )
         )
     )
-    ;;{F7}  [X]
     ;;
 )
 
