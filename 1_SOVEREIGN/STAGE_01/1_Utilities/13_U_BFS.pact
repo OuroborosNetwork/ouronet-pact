@@ -163,21 +163,29 @@
         )
     )
     (defun UCX_GraphNodes:[string] (graph:[object{BreadthFirstSearchV1.GraphNode}])
-        @doc "Outputs a string list representing the nodes of a graph"
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-            )
-            (fold
-                (lambda
-                    (acc:[string] idx:integer)
-                    (ref-U|LST::UC_AppL
-                        acc
-                        (at "node" (at idx graph))
-                    )
+        @doc "Outputs a string list representing the nodes of a graph. \
+            \ #37M/M3 fix: empty <graph> short-circuits to [] instead of the \
+            \ <enumerate 0 -1> / <at 0 []> crash — this is the real root cause \
+            \ of UC_BFS's own empty-graph crash (UC_BFS never indexes <graph> \
+            \ directly itself; it only ever reaches it through this function \
+            \ via UCX_GraphNodeLinks)."
+        (if (= 0 (length graph))
+            []
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
                 )
-                []
-                (enumerate 0 (- (length graph) 1))
+                (fold
+                    (lambda
+                        (acc:[string] idx:integer)
+                        (ref-U|LST::UC_AppL
+                            acc
+                            (at "node" (at idx graph))
+                        )
+                    )
+                    []
+                    (enumerate 0 (- (length graph) 1))
+                )
             )
         )
     )

@@ -1194,3 +1194,53 @@ After adding the missing registration: exit 0, 0 `FAILURE`. Default issuance-onl
 0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #23 — M3 (#37M): unguarded `enumerate 0 -1` crash fixed at its 5 real root-cause sites
+
+**Owner direction:** pushed back on the finding first — didn't believe unused/broken functions were
+really in the codebase, suspected a botched refactor rename. Once shown the grep proving no rename (zero
+callers anywhere, under any name) and the real live-reachable path, directed: fix it without breaking
+functionality.
+
+**Mechanism correction found while re-verifying:** `enumerate 0 -1` doesn't itself error (returns
+`[0, -1]`, confirmed against the real binary) — the crash is the subsequent `(at 0 emptyList)` inside the
+enclosing `fold`. Same practical effect, different exact cause than the finding stated.
+
+**Reachability confirmed, not assumed:** 4 of the 7 originally-named functions
+(`UC_AreOnPools`/`UC_FilterOne`/`UC_FilterTwo`/`UC_IzOnPools`) have zero callers anywhere in the repo —
+dead code, no current risk. The other 3 (`UC_PoolTokensFromPairs`, `UC_MakeGraphNodes`, `U|BFS::UC_BFS`)
+share one root cause and ARE reachable — from the live, gas-sponsored `CC_SmartSwap` entrypoint, whenever
+`SWP::URC_Swpairs()` is `[]` (the real window before the first pool is ever issued). This same session's
+own #34 work already hit this crash once for real and patched two call sites locally, explicitly
+deferring the general fix as this exact finding. Tracing the full chain (not stopping at the named
+functions) found a 5th, previously-unflagged site sharing the identical pattern:
+`SWPT::URC_MakeGraph` (`14_SWPT.pact:512`) — fixing only the named functions would have just relocated
+the crash one hop deeper.
+
+**Fix:**
+- `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact` — `(if (= 0 (length swpairs)) [] (fold ...))` guard
+  added to `UC_AreOnPools`, `UC_IzOnPools`, `UC_PoolTokensFromPairs` (the 3 actual root-cause sites in
+  this file).
+- `1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact` — same guard added to `UCX_GraphNodes` (the true root
+  of `UC_BFS`'s own empty-graph crash — `UC_BFS` never indexes `graph` directly itself, only through this
+  function).
+- `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` — same guard added to `URC_MakeGraph` (the newly-found 5th
+  site, on its own `nodes` list).
+- Every other function named in the finding (`UC_FilterOne`/`Two`, `UC_MakeGraphNodes`, `UC_BFS`,
+  `UC_UniqueTokens`) is a thin pass-through over one of these five and becomes safe automatically —
+  confirmed by tracing the full chain to `URC_ComputeGraphPath`'s existing `[BAR]` "no path" sentinel
+  (the same clean-failure convention already established by the #20H fix), reached cleanly instead of
+  crashing. Zero behavior change for any non-empty input.
+
+**Adversarially proven, live — new `SWP|TX 003b` in `[6.3]_SWP.repl`**, placed in the genuine
+pre-first-pool-issuance window (after TX 001-003, before TX 004's first pool issuance):
+`SWP::URC_Swpairs()` confirmed genuinely `[]` at that point; `URC_AllPoolTokens()` and
+`SWPT::URC_ComputeGraphPath "OURO" "DLK" []` both now return clean results instead of crashing. Reverted
+the fix (`git stash` on just the 3 source files, proof TX left in place): full suite failed hard at load
+with the exact predicted `Array index out of bounds` in `UC_PoolTokensFromPairs`. Restored, reconfirmed
+clean. Full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only regression: exit 0, 0 `FAILURE`.
+Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

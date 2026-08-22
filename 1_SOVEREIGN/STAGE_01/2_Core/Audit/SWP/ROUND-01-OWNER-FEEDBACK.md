@@ -1832,3 +1832,71 @@ exit 0, 0 `FAILURE`, `Load successful`.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #22. Awaiting Round III re-verify.
 
 ---
+
+## M3 (#37M, U|SWP — unguarded `enumerate 0 -1` crashes instead of returning `[]` on empty-list inputs) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner's first reaction:** pushed back on the finding's premise rather than accepting it — "why the hell
+were they constructed like this? ... i dont remember on writing broken code. i remember those functions
+being valid the way they are written," and specifically questioned whether the four named functions with
+no callers anywhere (`UC_AreOnPools`/`UC_FilterOne`/`UC_FilterTwo`/`UC_IzOnPools`) were really unused, or
+whether a refactor had botched a rename and they're actually called under a different name.
+
+**Checked the "botched rename" theory directly, not just re-asserted the earlier claim:** grepped the
+entire repo (`.pact`/`.repl`, every directory) for the exact function names and for any bare fragment
+(`FilterOne`/`FilterTwo`/`AreOnPools`/`IzOnPools`) that could catch a differently-prefixed alias. Zero
+hits anywhere outside `12_U_SWP.pact` itself and its own interface declaration
+(`0_Interfaces/01_Utilities.pact`). Not a naming collision — these four are genuinely declared on the
+module's public interface (so a future slave module *could* call them) but nothing live in Core, Talos,
+or any Slave module ever does today. Read their bodies: they're coherent, correctly-written "filter a
+swpairs list to those touching a given token" utilities — not malformed, not a sign of a botched edit,
+just never wired into a caller.
+
+**Also corrected an imprecision in the original finding's own wording while re-verifying the mechanism:**
+`enumerate 0 -1` does not itself error — checked directly against the real Pact binary, it returns
+`[0, -1]`. The actual crash is one step later, when the enclosing `fold`/`map` does `(at 0 someList)` on
+that first index against an empty list, throwing "Array index out of bounds." Same practical effect, but
+the root cause is the `at`-indexing, not `enumerate`.
+
+**Traced every real caller of all seven originally-named functions before proposing a fix, and found the
+finding's own function list was incomplete:** three of the seven (`UC_PoolTokensFromPairs`,
+`UC_MakeGraphNodes`, `U|BFS::UC_BFS`) share one root cause and ARE genuinely reachable — from
+`SWPU|X>SMART-SWAP`'s defcap (the live, gas-sponsored `CC_SmartSwap`/Talos `SWP|CC_SmartSwap*` entrypoint)
+via `SWP::URC_AllPoolTokens`, whenever `URC_Swpairs()` is `[]` — a real, achievable state: the window
+before the very first pool is ever issued. No REPL test exercised that window (every existing test
+creates pools first), so it had never been caught — until this same session's own #34 work incidentally
+hit it for real and patched two call sites locally (`SWPT::URC_ComputeAlternateRoutes`/
+`URC_ComputeAllRoutes`) while explicitly flagging the general fix as "M3, a separate tracked finding,"
+deferred as scope creep at the time. Tracing the chain further (not stopping at the named functions)
+found a fifth, previously-unflagged site sharing the identical pattern directly downstream:
+`SWPT::URC_MakeGraph` (`14_SWPT.pact:512`) indexes its own `nodes` list the same unguarded way — fixing
+only the named functions would have just relocated the crash one hop deeper instead of eliminating it.
+
+**Owner's direction once shown the real reachable path:** fix it without breaking functionality.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact` + `13_U_BFS.pact` + `2_Core/14_SWPT.pact`:**
+added a minimal `(if (= 0 (length X)) [] (fold ...))` guard at the 5 actual root-cause sites —
+`UC_AreOnPools`, `UC_IzOnPools`, `UC_PoolTokensFromPairs` (all `12_U_SWP.pact`), `UCX_GraphNodes`
+(`13_U_BFS.pact` — the true root of `UC_BFS`'s own empty-graph crash, since `UC_BFS` never indexes
+`graph` directly itself), and `URC_MakeGraph` (`14_SWPT.pact`, the newly-found fifth site). Every other
+function named in the finding (`UC_FilterOne`/`Two`, `UC_MakeGraphNodes`, `UC_BFS`, `UC_UniqueTokens`) is
+a thin pass-through over one of these five and becomes safe automatically once its dependency returns
+`[]` cleanly — confirmed by tracing the full chain end-to-end (an empty `swpairs` now flows all the way
+through to `URC_ComputeGraphPath`'s existing `[BAR]` "no path" sentinel, the same clean-failure
+convention already established by the #20H fix, instead of crashing). Zero behavior change for any
+non-empty input — the guard only intercepts the length-zero case.
+
+**Adversarially proven, live — new `SWP|TX 003b` in `[6.3]_SWP.repl`,** placed in the genuine
+pre-first-pool-issuance window (after TX 001-003 wrap/coil/move tokens, before TX 004 issues the first
+pool): `SWP::URC_Swpairs()` confirmed genuinely `[]` at that point (not simulated), then
+`SWP::URC_AllPoolTokens()` and `SWPT::URC_ComputeGraphPath "OURO" "DLK" []` both now return clean results
+(`[]` and `[BAR]`) instead of crashing. Reverted the fix (temporarily, via `git stash` on just the 3
+source files, REPL test left in place): full suite failed hard at load — `Array index out of bounds` in
+`UC_PoolTokensFromPairs`, called from `UC_UniqueTokens`, called from `URC_AllPoolTokens`, called from the
+new test — an exact reproduction, not a soft assertion failure. Restored, reconfirmed clean. Full
+`[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only regression (unaffected — the new TX only lives
+in the full-suite file): exit 0, 0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`,
+`Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #23. Awaiting Round III re-verify. — *M3*
+
+---

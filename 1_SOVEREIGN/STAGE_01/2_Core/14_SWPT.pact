@@ -517,30 +517,38 @@
             \ it to THIS node is outside <swpairs> (e.g. disabled). Requiring a real \
             \ <URC_EdgesActive> match subsumes plain node-membership (a real active edge \
             \ implies both endpoints are already valid nodes) and closes both problems \
-            \ with one condition."
+            \ with one condition. \
+            \ #37M/M3 fix: <nodes> can genuinely be [] (e.g. <swpairs> is [] \
+            \ before the first pool is ever issued) — previously unguarded here, \
+            \ a case not named by the original finding but sharing its exact \
+            \ <enumerate 0 -1> / <at 0 []> root cause, directly downstream of \
+            \ <UC_MakeGraphNodes>. Short-circuits to [] instead of crashing."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
             )
-            (fold
-                (lambda
-                    (acc:[object{BreadthFirstSearchV1.GraphNode}] idx:integer)
-                    (ref-U|LST::UC_AppL
-                        acc
-                        {
-                            "node": (at idx nodes),
-                            "links":
-                                (filter
-                                    (lambda (n:string) (!= (URC_EdgesActive (at idx nodes) n swpairs) []))
-                                    (URC_TokenNeighbours (at idx nodes))
-                                )
-                        }
-                    )
-                )
+            (if (= 0 (length nodes))
                 []
-                (enumerate 0 (- (length nodes) 1))
+                (fold
+                    (lambda
+                        (acc:[object{BreadthFirstSearchV1.GraphNode}] idx:integer)
+                        (ref-U|LST::UC_AppL
+                            acc
+                            {
+                                "node": (at idx nodes),
+                                "links":
+                                    (filter
+                                        (lambda (n:string) (!= (URC_EdgesActive (at idx nodes) n swpairs) []))
+                                        (URC_TokenNeighbours (at idx nodes))
+                                    )
+                            }
+                        )
+                    )
+                    []
+                    (enumerate 0 (- (length nodes) 1))
+                )
             )
         )
     )

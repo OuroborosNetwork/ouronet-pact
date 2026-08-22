@@ -612,27 +612,32 @@
     )
     ;;
     (defun UC_AreOnPools:[bool] (id1:string id2:string swpairs:[string])
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-            )
-            (fold
-                (lambda
-                    (acc:[bool] idx:integer)
-                    (ref-U|LST::UC_AppL
-                        acc
-                        (let*
-                            (
-                                (pool-tokens:[string] (UC_TokensFromSwpairString (at idx swpairs)))
-                                (iz-id1:bool (contains id1 pool-tokens))
-                                (iz-id2:bool (contains id2 pool-tokens))
+        ;;#37M/M3 fix: empty <swpairs> short-circuits to [] instead of the
+        ;;<enumerate 0 -1> / <at 0 []> "Array index out of bounds" crash.
+        (if (= 0 (length swpairs))
+            []
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                )
+                (fold
+                    (lambda
+                        (acc:[bool] idx:integer)
+                        (ref-U|LST::UC_AppL
+                            acc
+                            (let*
+                                (
+                                    (pool-tokens:[string] (UC_TokensFromSwpairString (at idx swpairs)))
+                                    (iz-id1:bool (contains id1 pool-tokens))
+                                    (iz-id2:bool (contains id2 pool-tokens))
+                                )
+                                (and iz-id1 iz-id2)
                             )
-                            (and iz-id1 iz-id2)
                         )
                     )
+                    []
+                    (enumerate 0 (- (length swpairs) 1))
                 )
-                []
-                (enumerate 0 (- (length swpairs) 1))
             )
         )
     )
@@ -662,20 +667,25 @@
         (contains id (UC_TokensFromSwpairString swpair))
     )
     (defun UC_IzOnPools:[bool] (id:string swpairs:[string])
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-            )
-            (fold
-                (lambda
-                    (acc:[bool] idx:integer)
-                    (ref-U|LST::UC_AppL
-                        acc
-                        (UC_IzOnPool id (at idx swpairs))
-                    )
+        ;;#37M/M3 fix: empty <swpairs> short-circuits to [] instead of the
+        ;;<enumerate 0 -1> / <at 0 []> "Array index out of bounds" crash.
+        (if (= 0 (length swpairs))
+            []
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
                 )
-                []
-                (enumerate 0 (- (length swpairs) 1))
+                (fold
+                    (lambda
+                        (acc:[bool] idx:integer)
+                        (ref-U|LST::UC_AppL
+                            acc
+                            (UC_IzOnPool id (at idx swpairs))
+                        )
+                    )
+                    []
+                    (enumerate 0 (- (length swpairs) 1))
+                )
             )
         )
     )
@@ -706,20 +716,28 @@
         )
     )
     (defun UC_PoolTokensFromPairs:[[string]] (swpairs:[string])
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-            )
-            (fold
-                (lambda
-                    (acc:[[string]] idx:integer)
-                    (ref-U|LST::UC_AppL
-                        acc
-                        (UC_TokensFromSwpairString (at idx swpairs))
-                    )
+        ;;#37M/M3 fix: empty <swpairs> short-circuits to [] instead of the
+        ;;<enumerate 0 -1> / <at 0 []> "Array index out of bounds" crash. Real,
+        ;;live path: SWPU|X>SMART-SWAP's defcap calls this (via UC_UniqueTokens
+        ;;-> URC_AllPoolTokens) unconditionally, and <swpairs> is genuinely []
+        ;;before the first pool is ever issued.
+        (if (= 0 (length swpairs))
+            []
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
                 )
-                []
-                (enumerate 0 (- (length swpairs) 1))
+                (fold
+                    (lambda
+                        (acc:[[string]] idx:integer)
+                        (ref-U|LST::UC_AppL
+                            acc
+                            (UC_TokensFromSwpairString (at idx swpairs))
+                        )
+                    )
+                    []
+                    (enumerate 0 (- (length swpairs) 1))
+                )
             )
         )
     )

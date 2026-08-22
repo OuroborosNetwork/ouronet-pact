@@ -229,6 +229,48 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "SWP|TX 003b - #37M/M3 proof: empty-pool-state calls no longer crash")
+(namespace "ouronet-ns")
+;;==== SWP|TX 003b - #37M/M3 proof · 01 · genuine empty-pool-state calls ====
+(print "--- [SWP|TX 003b - #37M/M3 proof · 01 · genuine empty-pool-state calls] ---")
+;;No SWP pool has been issued yet at this point (TX 001-003 only wrap/coil/move
+;;tokens) — URC_Swpairs() is genuinely [] here, the real precondition M3/#37
+;;flagged. Before the fix, URC_AllPoolTokens/URC_ComputeGraphPath crashed hard
+;;with an opaque "Array index out of bounds" instead of returning a clean
+;;empty/[BAR] result.
+(let
+    (
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (real-swpairs:[string] (ref-SWP::URC_Swpairs))
+        (all-tokens:[string] (ref-SWP::URC_AllPoolTokens))
+        (graph-path:[string] (ref-SWPT::URC_ComputeGraphPath "OURO" "DLK" []))
+    )
+    (map print
+        [
+            (expect "#37M/M3: URC_Swpairs is genuinely [] before the first pool is ever issued"
+                []
+                real-swpairs
+            )
+            (expect "#37M/M3: URC_AllPoolTokens on empty pool state returns [], not a crash"
+                []
+                all-tokens
+            )
+            (expect "#37M/M3: URC_ComputeGraphPath on empty swpairs returns the clean [BAR] no-path sentinel, not a crash"
+                [SWPT.BAR]
+                graph-path
+            )
+        ]
+    )
+)
+(print "")
+(print "")
+(print "===^^^===")
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 04 - Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

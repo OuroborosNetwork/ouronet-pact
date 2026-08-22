@@ -293,8 +293,19 @@ as an approved IMC caller on SWPI (only on BRD/DPTF/DPOF/TFT/OUROBOROS/VST/SWPT/
 registration fix, passed clean (exit 0, 0 `FAILURE`) after. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`. — *M5*
 
-#37M **[U|SWP]** Several helpers crash on an empty-list input (`enumerate 0 -1`) instead of returning `[]`.
-— *M3*
+#37M **[U|SWP / U|BFS / SWPT]** ~~Several helpers crash on an empty-list input (`enumerate 0 -1`) instead
+of returning `[]`.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-22** (`ROUND-02-FIXES.md` Fix #23). Owner initially
+pushed back, suspecting a botched refactor rename on the 4 seemingly-unused named functions — grepped the
+whole repo, confirmed zero callers anywhere under any name, not a rename. Traced real reachability: 4 of
+7 named functions are genuinely dead code (no live callers at all); `UC_PoolTokensFromPairs`/
+`UC_MakeGraphNodes`/`UC_BFS` share one root cause reachable from the live `CC_SmartSwap` entrypoint
+whenever no pool has ever been issued yet (`SWP::URC_Swpairs()` genuinely `[]`); found a previously-
+unflagged 5th site (`SWPT::URC_MakeGraph`) sharing the same pattern by tracing the chain further than the
+original finding did — fixing only the named functions would have just relocated the crash one hop
+deeper. `(if (= 0 (length X)) [] ...)` guard added at the 5 real root-cause sites; every other named
+function is a thin pass-through that becomes safe automatically. Adversarially proven: new `SWP|TX 003b`
+in the genuine pre-first-pool window, reverted the fix (`git stash`) and reproduced the exact predicted
+`Array index out of bounds` crash. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *M3*
 
 #38M **[SWPT]** BFS graph-node lookup is a linear scan on every pop (O(V²) in practice) with no explicit
 gas/size cap. — *M4*
