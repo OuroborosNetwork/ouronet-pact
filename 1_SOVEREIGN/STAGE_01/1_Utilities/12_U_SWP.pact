@@ -475,20 +475,27 @@
         )
     )
     (defun UC_LpID:[string] (token-names:[string] token-tickers:[string] weights:[decimal] amp:decimal)
-        @doc "Creates a LP Id from input sources"
+        @doc "Creates a LP Id from input sources. \
+            \ #40L fix: dropped the cross-module UEV_UniformList length-parity enforce \
+            \ that used to live here — a UC_* purity violation (UC_* may not enforce, \
+            \ even transitively via another module's UEV_*). Confirmed dead defense, \
+            \ not load-bearing: the only real caller (SWP::URC_LpComposer) builds both \
+            \ <token-names> and <token-tickers> from the exact same source list via the \
+            \ exact same enumerate range, so they can never actually differ in length. \
+            \ Residual, not pursued: UC_LpID is declared on the public UtilitySwpV1 \
+            \ interface, so a hypothetical future caller passing mismatched-length \
+            \ lists would hit a plain out-of-bounds crash inside the folds below \
+            \ instead of a clean enforce message — same class of residual risk as M1's \
+            \ own write-up, not a live path today."
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|INT:module{OuronetIntegersV1} U|INT)
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (prefix:string (UC_Prefix weights amp))
                 (l1:integer (length token-names))
-                (l2:integer (length token-tickers))
-                (lengths:[integer] [l1 l2])
                 (minus:string "-")
                 (caron:string "^")
             )
-            (ref-U|INT::UEV_UniformList lengths)
             (let
                 (
                     (lp-name-elements:[string]

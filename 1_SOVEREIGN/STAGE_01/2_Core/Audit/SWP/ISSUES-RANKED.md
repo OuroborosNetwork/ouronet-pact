@@ -331,7 +331,12 @@ writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *M14*
 
 ## LOW (discipline / hygiene)
 
-#40L **[U|SWP]** `UC_LpID` calls a cross-module `UEV_*` directly from inside a nominally pure `UC_*` function.
+#40L **[U|SWP]** ~~`UC_LpID` calls a cross-module `UEV_*` directly from inside a nominally pure `UC_*`
+function.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-23** (`ROUND-02-FIXES.md` Fix #26). Traced the only real
+caller (`SWP::URC_LpComposer`): both lists passed in are structurally guaranteed identical length (built
+from the same source via the same `enumerate` range), so the cross-module `UEV_UniformList` enforce could
+never actually fail — dead defense, not load-bearing. Removed it, restoring `UC_*` purity. Full regression
+clean before/after. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L40*
 
 #41L **[U|SWP]** The module's `UC_*` surface transitively inherits `enforce` from `U|LST` helpers — purity
 contract not fully honored end-to-end.

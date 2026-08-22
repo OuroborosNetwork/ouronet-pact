@@ -1316,3 +1316,25 @@ choice. After the fix: full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance
 additive/documentation — no live code path touched, zero functional risk by construction.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #26 — L40 (#40L): `UC_LpID` purity restored, dead length-parity enforce removed
+
+**Owner direction:** go through the LOW bundle one by one; tag what a later StoicSyntax rename sweep will
+close on its own, resolve the rest individually now. Starting with L40.
+
+**Confirmed load-bearing status before touching code:** `UC_LpID` (`12_U_SWP.pact`) called
+`U|INT::UEV_UniformList` (confirmed a real `enforce`) directly, breaking `UC_*` purity. Traced the only
+real caller (`SWP::URC_LpComposer`): both lists it passes in are derived from the same source via the
+same `enumerate` range, structurally guaranteed identical length — the check could never actually fail.
+
+**Fix:** removed the `UEV_UniformList` call and its now-unused bindings from `UC_LpID`. Residual, not
+pursued: a hypothetical future caller of this public-interface function with mismatched-length lists
+would hit a plain out-of-bounds crash instead of a clean enforce — same class of accepted residual risk
+as M1.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite, issuance-only regression, and full `Z.repl` all exit
+0 / 0 `FAILURE` — confirming the removed check was never reachable, exactly as predicted.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

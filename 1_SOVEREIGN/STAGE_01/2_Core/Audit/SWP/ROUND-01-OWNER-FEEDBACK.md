@@ -1994,3 +1994,32 @@ restored names, zero functional risk by construction.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #25. Awaiting Round III re-verify. — *M14*
 
 ---
+
+## L40 (#40L, U|SWP — `UC_LpID` calls a cross-module `UEV_*` from inside a nominally pure `UC_*`) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner direction:** go through the LOW bundle one by one; a later StoicSyntax rename sweep will close
+some of these on its own — tag those, and resolve the rest individually now. Starting with L40.
+
+**Confirmed the violation, then checked whether it was load-bearing before touching anything:** `UC_LpID`
+(`12_U_SWP.pact:477`) called `U|INT::UEV_UniformList` — a real, enforce-carrying validation, confirmed by
+reading its body — directly from inside a `UC_*`, breaking the "no `enforce`, even transitively" purity
+contract. Traced the only real caller in the entire codebase: `SWP::URC_LpComposer` builds both
+`token-names` and `token-tickers` from the exact same source list (`pool-token-ids`) via the exact same
+`enumerate 0 (- l 1)` range — the two lists are structurally guaranteed identical length, every time. The
+check could never actually fail on any live call path; not a naming-only issue, a genuine dead-defense
+case like several already-refuted findings this session.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact`:** removed the `UEV_UniformList` call and its
+now-unused bindings (`ref-U|INT`, `l2`, `lengths`) from `UC_LpID`, restoring `UC_*` purity. Residual, not
+pursued: `UC_LpID` is declared on the public `UtilitySwpV1` interface, so a hypothetical future caller
+passing mismatched-length lists would hit a plain out-of-bounds crash inside the folds instead of a clean
+enforce message — same class of residual risk already accepted in M1's own write-up, not a live path
+today.
+
+**Adversarially proven, live:** full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only regression:
+exit 0, 0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful` — matching
+the prediction that this check was never reachable, since removing it changed nothing observable.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #26. Awaiting Round III re-verify. — *L40*
+
+---
