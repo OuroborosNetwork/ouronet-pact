@@ -199,10 +199,15 @@ recipe — `C_UpdateSetMultiplier` and its capability/`XI_*`/Talos wrappers remo
 is now write-once, at Define, forever after. Live-proven (value persists with no update path able to touch
 it), Z.repl green. — *DPDC-S·H1*
 
-#16H **[DPDC-T]** `UEV_TransferRoles` computes the receiver's transfer-role membership from `sender` twice
+#16H **[DPDC-T]** ~~`UEV_TransferRoles` computes the receiver's transfer-role membership from `sender` twice
 (a copy-paste variable-naming bug) — the documented sender-OR-receiver-authorized semantics for
 role-restricted collectables silently degrades to sender-only, on the highest-traffic path in the module
-(every transfer leg). — *DPDC-T·H1*
+(every transfer leg).~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-22** (`ROUND-02-FIXES.md` Fix #15) — checked
+DPTF/DPOF's transfer-role pattern first (per owner direction); DPOF's `UEV_MoveRoleCheck` already does this
+correctly (sender/receiver each read their own role), DPTF doesn't enforce it at all. One-line fix matching
+DPOF's pattern (`sender`→`receiver`). Live-proven: role-less sender → role-holding receiver transfer now
+correctly succeeds; `git stash` confirms the identical script hard-failed at that exact call pre-fix.
+Z.repl green. — *DPDC-T·H1*
 
 #17H **[DPDC-T]** `C_RepurposeCollectable` skips the frozen-account and transfer-role gates that
 `C_Transfer` enforces on both sender and receiver — an admin freeze intended to halt movement of a suspect

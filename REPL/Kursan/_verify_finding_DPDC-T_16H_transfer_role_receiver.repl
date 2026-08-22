@@ -1,0 +1,81 @@
+;; Verification for DPDC Audit finding #16H (DPDC-T): UEV_TransferRoles computed the receiver's transfer-
+;; role membership from <sender> a second time (copy-paste), instead of <receiver> -- the intended
+;; sender-OR-receiver semantics (matching the correct sibling pattern in DPOF::UEV_MoveRoleCheck) silently
+;; degraded to sender-only. Concretely: if the sender lacks the transfer role but the receiver HOLDS it,
+;; the transfer should be allowed (receiver satisfies the OR) -- pre-fix it was wrongly rejected, because
+;; the "receiver" check secretly re-tested the sender (who also lacks it).
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-16H - sender lacks transfer-role, receiver holds it -> transfer must be ALLOWED")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (owner:string KST.ANHD)
+        (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpnf-price))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "PK_Lumy", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+)
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (owner:string KST.ANHD)
+        (creator:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "n" "d" (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_URI|Data "ipfs://a" "" "" "" "" "" "")
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (print (format "ISSUE RESULT = {}"
+        [(ref-TS02-C2::DPNF|C_Issue owner owner creator "TransferRoleProbeNFT" "TRPN"
+            true true true true true true true true)]))
+    (let ((id:string "TRPN-98c486052a51"))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner id [nd])]))
+        ;; Activate role-restricted transfers by granting the transfer role to Lumy ONLY -- owner/sender
+        ;; (ANHD) never gets it. Once >=1 account holds the role, URC_TransferRoleChecker's
+        ;; "are-transfer-roles-active" gate flips on and every transfer must satisfy sender-OR-receiver.
+        (print (format "GRANT transfer-role to Lumy RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_ToggleTransferRole owner id lumy true)]))
+        (print (format "ANHD has transfer-role? {}" [(ref-DPDC::UR_CA|R-Transfer id false owner)]))
+        (print (format "Lumy has transfer-role? {}" [(ref-DPDC::UR_CA|R-Transfer id false lumy)]))
+        ;; #16H proof: ANHD (sender, no role) -> Lumy (receiver, HAS role) must be ALLOWED.
+        (print (format "<<16H-1>> Transfer ANHD(no role)->Lumy(has role) RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_TransferNonce owner id owner lumy 1 1 false)]))
+        ""
+    )
+)
+(commit-tx)

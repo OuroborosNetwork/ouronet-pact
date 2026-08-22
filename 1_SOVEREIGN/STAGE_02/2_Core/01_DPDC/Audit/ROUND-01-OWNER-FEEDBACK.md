@@ -394,3 +394,19 @@ first that nothing in the canonical genesis/REPL suite legitimately called the u
 only two Kursan scratch probes did, both updated (one now proves immutability directly by reading the value
 back with no update call available; the other's now-dead Update-path block commented out with an
 explanatory note, kept as a historical record of Fix #5). Full `Z.repl` green.
+
+## #16H · DPDC-T · H1 — `UEV_TransferRoles` receiver check silently re-tested sender
+
+**Verdict: CONFIRMED, FIXED (2026-08-22).** Owner directed checking DPTF/DPOF's transfer-role pattern
+first, fix DPDC-T to match. Found DPOF's `UEV_MoveRoleCheck` (`06_DPOF.pact:1595-1631`) already implements
+this correctly — sender and receiver each read their own role via `UR_R-Transfer`, combined with
+`enforce-one`; DPTF appears not to enforce `r-transfer` in its transfer path at all, so DPOF was the real
+reference. DPDC-T's `URC_TransferRoleChecker` (the "is the feature active" gate) was already correct and
+even improved on DPOF's version (an escrow-account exemption) — the bug was isolated to one line in
+`UEV_TransferRoles`, where the receiver-side binding read `sender` a second time instead of `receiver`.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #15)** — one-line fix, `sender` → `receiver`. Live-proven:
+granted the transfer role to an account other than the sender, transferred from the role-less sender to the
+role-holding receiver — under the intended sender-OR-receiver semantics this must succeed, and does
+post-fix (`Successfully transfered...`); the identical script hard-fails at that exact call pre-fix
+(`git stash`-confirmed), proving the bug was real. Full `Z.repl` green.

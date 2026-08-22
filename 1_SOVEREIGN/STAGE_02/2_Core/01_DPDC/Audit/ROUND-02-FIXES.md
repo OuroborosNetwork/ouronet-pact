@@ -771,3 +771,41 @@ so the file still loads cleanly end-to-end as a historical record.
 `DPNF|C_UpdateSetMultiplier`/`DPSF|C_UpdateSetMultiplier` removed from the Talos client interfaces. Per
 repo policy, V1 stays freely editable pre-mainnet-adjustment — no version bump; matches how Fix #5 itself
 already edited this same function's body in place with no version bump.
+
+## Fix #15 — DPDC-T · H1 (#16H) — `UEV_TransferRoles` receiver check silently re-tested sender
+
+**Owner-approved 2026-08-22.** Owner: check how DPTF/DPOF do transfer-role checks, fix DPDC-T to match.
+
+**Reference pattern found in DPOF (`1_SOVEREIGN/STAGE_01/2_Core/06_DPOF.pact:1595-1631`,
+`UEV_MoveRoleCheck`):**
+```pact
+(sender-transfer-role:bool (UR_R-Transfer id sender))
+(receiver-transfer-role:bool (UR_R-Transfer id receiver))
+(enforce-one ... [(enforce sender-transfer-role ...) (enforce receiver-transfer-role ...)])
+```
+Correctly parameterized — each side reads its own account. Also gated behind an "are transfer roles even
+active" flag (if nobody holds the role, the feature is inactive and transfers proceed unconditionally).
+DPTF was checked too but doesn't appear to enforce `r-transfer` anywhere in its transfer path at all (no
+reader consumes it) — DPOF is the real reference implementation here.
+
+**Root cause:** `07_DPDC-T.pact:478-488` (`UEV_TransferRoles`) — `s` correctly read `UR_CA|R-Transfer id son
+sender`, but `r` also read `... sender` (copy-paste), never `receiver`. `URC_TransferRoleChecker` (the
+"is the feature active" gate, `trc`) was already correct and even had a DPDC-specific improvement DPOF
+doesn't need (an escrow-account exemption) — the bug was isolated to this one line.
+
+**Fix — one line:**
+```pact
+-(r:bool (ref-DPDC::UR_CA|R-Transfer id son sender))
++(r:bool (ref-DPDC::UR_CA|R-Transfer id son receiver))
+```
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC-T_16H_transfer_role_receiver.repl`):** granted the
+transfer role to `KST.LUMY` only (owner/sender `KST.ANHD` never gets it, activating the role-restriction
+gate via `>=1` holder), then transferred a real nonce from ANHD (no role) to Lumy (has role) — under the
+intended sender-OR-receiver semantics this must succeed, since the receiver satisfies it:
+- **Post-fix:** `Successfully transfered NFT ...` — correct.
+- **Pre-fix (`git stash`):** the identical script hard-fails exactly at the transfer call — confirms the
+  bug was real (wrongly rejected a receiver-authorized transfer), not assumed.
+- `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
+
+**Interface implication:** none — internal to `UEV_TransferRoles`'s body, no signature change.
