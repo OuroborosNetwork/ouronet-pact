@@ -2040,10 +2040,14 @@
     )
     (defun URCx_DpnfModelZeroDpdcNativeRawWeight:decimal
         (dpnf-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "NFT score model 0 only: sum_i amount_i × UR_N|RawScore(UR_NonceData(dpnf-id, false, nonce_i)) from DPDC."
+        @doc "NFT score model 0 only: sum_i amount_i × full nonce score. Uses DPDC-S UR_N|Score — the CANONICAL \
+            \ full score of a nonce, which already applies the Set-class score-multiplier (set nonces, DPDC #15H), \
+            \ the -1.0 unscored sentinel, and the fragment (/1000) scaling for negative nonces. Floored at 0 (L7 \
+            \ #19) as a backstop so an unscored/negative result never contributes negative stake weight. (A set \
+            \ nonce staked to a model-1/-1 score is unaffected — those never read the native score.)"
         (let
             (
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
                 ;;
                 (l1:integer (length nonces))
             )
@@ -2053,11 +2057,11 @@
                         (
                             (n:integer (at idx nonces))
                             (q:integer (at idx nonce-amounts))
-                            (raw-unit-score:decimal (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NonceData dpnf-id false n)))
-                            ;; L7 #19: -1.0 is the DPDC "unscored" sentinel (= 0 score). Treat it — and any negative
-                            ;; native score — as 0 so an unscored nonce contributes 0, never a negative stake weight.
-                            ;; (Authoring negatives is also forbidden at DPDC UEV_Score + the SCR def validators.)
-                            (unit-score:decimal (if (< raw-unit-score 0.0) 0.0 raw-unit-score))
+                            ;; DPDC #15H: UR_N|Score is the FULL score (raw × set-class multiplier, + sentinel +
+                            ;; fragment /1000), so a Set nonce is scored with its multiplier applied. L7 #19 floor:
+                            ;; clamp to 0 so an unscored/negative result never yields negative stake weight.
+                            (full-unit-score:decimal (ref-DPDC-S::UR_N|Score dpnf-id false n))
+                            (unit-score:decimal (if (< full-unit-score 0.0) 0.0 full-unit-score))
                         )
                         (+ acc (* (dec q) unit-score))
                     )
