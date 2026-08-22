@@ -142,50 +142,31 @@
         )
     )
     (defun UCX_GraphNodeLinks:[string] (graph:[object{BreadthFirstSearchV1.GraphNode}] node:string)
-        @doc "Scans a Graph for a Node, outputing its links"
+        @doc "Scans a Graph for a Node, outputing its links. \
+            \ #38M/M4 fix: single-pass <filter> directly over <graph>, matching by \
+            \ the \"node\" field, replacing the old rebuild-the-whole-name-list \
+            \ (UCX_GraphNodes) + linear search (UC_Search) + re-index-by-position \
+            \ chain — that old path did two full O(V) passes plus a reindex per \
+            \ call; this does one. Same O(V) cost per lookup either way (Pact has \
+            \ no O(1) hash-index over a plain list argument, so a full BFS \
+            \ traversal stays O(V^2) overall), but roughly halves the constant \
+            \ factor, measured live (see ROUND-02-FIXES.md Fix #24). Tie-break \
+            \ preserved exactly: first matching entry by original <graph> order, \
+            \ same as the old UC_Search-based lookup. <filter> is empty-list-safe \
+            \ by construction, so the #37M/M3-style length guard isn't needed \
+            \ here. UCX_GraphNodes (its only caller) removed as dead code."
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                (nodes:[string] (UCX_GraphNodes graph))
-                (sl:[integer] (ref-U|LST::UC_Search nodes node))
-                (search-result-size:integer (length sl))
+                (matches:[object{BreadthFirstSearchV1.GraphNode}]
+                    (filter
+                        (lambda (gn:object{BreadthFirstSearchV1.GraphNode}) (= (at "node" gn) node))
+                        graph
+                    )
+                )
             )
-            (if (= search-result-size 0)
+            (if (= 0 (length matches))
                 [BAR]
-                (let
-                    (
-                        (pos:integer (at 0 sl))
-                        (graph-node:object{BreadthFirstSearchV1.GraphNode} (at pos graph))
-                    )
-                    (at "links" graph-node)
-                )
-            )
-        )
-    )
-    (defun UCX_GraphNodes:[string] (graph:[object{BreadthFirstSearchV1.GraphNode}])
-        @doc "Outputs a string list representing the nodes of a graph. \
-            \ #37M/M3 fix: empty <graph> short-circuits to [] instead of the \
-            \ <enumerate 0 -1> / <at 0 []> crash — this is the real root cause \
-            \ of UC_BFS's own empty-graph crash (UC_BFS never indexes <graph> \
-            \ directly itself; it only ever reaches it through this function \
-            \ via UCX_GraphNodeLinks)."
-        (if (= 0 (length graph))
-            []
-            (let
-                (
-                    (ref-U|LST:module{StringProcessorV1} U|LST)
-                )
-                (fold
-                    (lambda
-                        (acc:[string] idx:integer)
-                        (ref-U|LST::UC_AppL
-                            acc
-                            (at "node" (at idx graph))
-                        )
-                    )
-                    []
-                    (enumerate 0 (- (length graph) 1))
-                )
+                (at "links" (at 0 matches))
             )
         )
     )

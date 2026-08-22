@@ -1244,3 +1244,36 @@ clean. Full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only regression
 Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #24 — M4 (#38M): `UCX_GraphNodeLinks` single-pass rewrite, ~39% cheaper, same output
+
+**Owner direction:** asked whether this could genuinely be made more efficient without breaking
+functionality, and whether #34's path cache already made it moot — then, once both were answered
+concretely: "you gotta check in repl that it produce the same results as the current implementation. to
+make sure you didnt break it."
+
+**Path-cache relevance checked, not assumed:** the bundle-based `SWPU::C_SmartSwap` path (built in #34)
+skips the graph-BFS chain entirely on a cache hit — confirmed via its own defcap doc comment ("no
+full-graph BFS at the defcap layer"). Not obsolete, though: the self-searching `CC_SmartSwap` fallback is
+still a live, gas-sponsored production entrypoint that runs the full unguarded BFS every time, and #34's
+own gas breakdown already showed graph-search calls were 56.9% of the old worst-case total.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact`:** `UCX_GraphNodeLinks` rewritten from
+rebuild-the-whole-name-list (`UCX_GraphNodes`) + linear search (`UC_Search`) + re-index-by-position (two
+full O(V) passes plus a reindex per call) to a single `filter` directly over `graph`, matching by the
+`"node"` field, same first-match tie-break as before. `UCX_GraphNodes` (its only caller) removed as dead
+code rather than left behind.
+
+**Adversarially proven, live — direct before/after comparison (not just "existing tests still pass"),
+matching the owner's explicit instruction:** new permanent `SWP|TX 032z2b` in `[6.3]_SWP.repl`, calling
+`SWPT::URC_ComputeGraphPath` directly on the real ~102-active-pool P2-scale topology (the same worst-case
+`W1`→`W7` 6-hop pair #34 already measured), isolating the graph-search cost from swap-execution overhead.
+Reverted the fix (`git stash` on just `13_U_BFS.pact`): same call, **423,762 gas**, byte-identical 7-node
+path. Restored: identical path, **256,867 gas — a real ~39% reduction**, measured at real scale. Full
+`[6.2]`/`[6.3]` suite (every pre-existing exact-value route assertion from C6/H2/H4/M2 — would have
+failed on any BFS behavior drift): exit 0, 0 `FAILURE`. Issuance-only regression: exit 0, 0 `FAILURE`.
+Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

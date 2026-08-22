@@ -307,8 +307,15 @@ function is a thin pass-through that becomes safe automatically. Adversarially p
 in the genuine pre-first-pool window, reverted the fix (`git stash`) and reproduced the exact predicted
 `Array index out of bounds` crash. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *M3*
 
-#38M **[SWPT]** BFS graph-node lookup is a linear scan on every pop (O(V²) in practice) with no explicit
-gas/size cap. — *M4*
+#38M **[SWPT]** ~~BFS graph-node lookup is a linear scan on every pop (O(V²) in practice) with no explicit
+gas/size cap.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-22** (`ROUND-02-FIXES.md` Fix #24). Owner: prove in REPL
+it produces the same results before calling it done. Confirmed #34's path cache skips this cost entirely
+on a cache hit, but the still-live `CC_SmartSwap` self-searching fallback runs it every time.
+`UCX_GraphNodeLinks` rewritten from rebuild-list+search+reindex (two O(V) passes + a reindex per call) to
+a single `filter` pass; `UCX_GraphNodes` (now unused) removed as dead code. Adversarially proven: direct
+before/after comparison on the real ~102-active-pool topology — byte-identical 7-hop route both times,
+gas 423,762 → 256,867 (~39% cheaper), not a toy topology. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *M4*
 
 #39M **[Talos / interfaces]** `ClientThreeV2`/`ClientPactsV2` were overwritten in place instead of archived,
 unlike the sibling `ClientFour` interfaces in the same file — an audit-trail gap, not a live bug. — *M14*

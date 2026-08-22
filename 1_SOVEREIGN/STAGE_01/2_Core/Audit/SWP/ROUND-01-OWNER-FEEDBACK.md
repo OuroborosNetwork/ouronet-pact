@@ -1900,3 +1900,47 @@ in the full-suite file): exit 0, 0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2):
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #23. Awaiting Round III re-verify. — *M3*
 
 ---
+
+## M4 (#38M, SWPT — `UCX_GraphNodeLinks` linear-scans the whole node list on every BFS pop) — **CONFIRMED, FIXED, PROVEN**
+
+**Owner's questions before authorizing:** could this actually be made more efficient, would that risk
+breaking existing functionality, and does the path-cache mechanism built during #34 (`SWPT|PathCache`,
+`URC_ReadPathCache`) already make this moot? Directed: if you think you can optimize it, prove in the
+REPL it produces the same results as the current implementation before calling it done.
+
+**Answered all three before touching code:**
+- **Path-cache relevance, checked not assumed:** traced the bundle-based `SWPU::C_SmartSwap` path built
+  in #34 — its defcap does one cheap `SWPI::URC_ValidatePathActive` structural check instead of a full
+  graph search ("no full-graph BFS at the defcap layer," per its own doc comment); on a cache hit, M4's
+  cost genuinely doesn't fire at all anymore. But the self-searching `CC_SmartSwap` fallback — kept
+  deliberately live as the production fallback — still runs the full unguarded BFS every time, and #34's
+  own gas breakdown already showed graph-search calls (`XE_UpdateStoaValue`'s six per-pool searches
+  alone) were 56.9% of the old worst-case total. Not obsolete, still a real live cost on a real path.
+- **Root cause, re-confirmed:** `UCX_GraphNodeLinks` rebuilds the *entire* node-name list from `graph` on
+  every call (`UCX_GraphNodes`, a full O(V) pass) just to linear-search it, then re-indexes back into
+  `graph` by position — two full passes plus a reindex, per lookup, per BFS pop.
+- **Can it be made faster without changing behavior:** yes — Pact has no O(1) hash-index over a plain
+  list argument, so the asymptotic cost per lookup can't drop below O(V) without restructuring the graph
+  representation entirely (out of scope here), but a single-pass `filter` directly over `graph` (matching
+  the `"node"` field, same first-match tie-break as the old `UC_Search`-based lookup) removes the wasted
+  rebuild pass — same correctness contract, meaningfully cheaper in practice.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact`:** `UCX_GraphNodeLinks` rewritten to a single
+`filter` over `graph`, taking the first match's `"links"` field (or `[BAR]` on no match — same sentinel
+as before). `UCX_GraphNodes` (its only caller) removed as dead code, not left behind as clutter.
+
+**Adversarially proven, live — direct before/after comparison, not just "existing tests still pass,"
+per the owner's own instruction:** new permanent `SWP|TX 032z2b` in `[6.3]_SWP.repl`, calling
+`SWPT::URC_ComputeGraphPath` directly on the real ~102-active-pool P2-scale topology (the same worst-case
+`W1`→`W7` 6-hop pair #34 already measured), isolating just the graph-search cost from swap-execution
+overhead. Reverted the fix (`git stash` on just `13_U_BFS.pact`, proof TX left in place) and re-ran: same
+call returned the byte-identical 7-node path (`[W1, W2, W3, W4, W5, W6, W7]`) at **423,762 gas**. Restored
+the fix, re-ran: identical path, **256,867 gas — a real ~39% reduction** on this isolated call, at real
+scale, not a toy topology. Full `[6.2]`/`[6.3]` suite (every pre-existing exact-value route assertion
+from C6/H2/H4/M2's own fixes, which would have failed on any BFS behavior drift): exit 0, 0 `FAILURE`.
+Issuance-only regression: exit 0, 0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`,
+`Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #24. Awaiting Round III re-verify. — *M4*
+
+---

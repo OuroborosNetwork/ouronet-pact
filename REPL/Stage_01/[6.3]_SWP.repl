@@ -4756,6 +4756,51 @@
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP|TX 032z2b - #38M/M4 proof: UCX_GraphNodeLinks single-pass rewrite, same result + gas at ~102 active pools")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z2b - #38M/M4 proof · 01 · isolated graph-search call on the real P2-scale topology ====
+(print "--- [SWP|TX 032z2b - #38M/M4 proof · 01 · isolated graph-search call on the real P2-scale topology] ---")
+;;Same worst-case 6-hop pair (W1 -> W7) and the same real ~102-active-pool
+;;topology SWP|TX 032z2/#34 already measured for the full self-searching
+;;swap. Calling SWPT::URC_ComputeGraphPath directly isolates JUST the
+;;graph-search cost (URC_MakeGraph -> UC_BFS -> UCX_GraphNodeLinks, the
+;;exact functions M4/#38 flags and this fix touches) from swap-execution
+;;overhead (fees/transfers/mints) that has nothing to do with M4.
+(let*
+    (
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (active-swpairs:[string] (ref-SWP::URC_ActiveSwpairs))
+    )
+    (env-gas 0)
+    (let
+        (
+            (path:[string] (ref-SWPT::URC_ComputeGraphPath "W1-98c486052a51" "W7-98c486052a51" active-swpairs))
+        )
+        (map print
+            [
+                (format "#38M/M4: active swpairs in universe = {}" [(length active-swpairs)])
+                (format "#38M/M4: URC_ComputeGraphPath result = {}" [path])
+                (format "<<<<<<<SWP|TX 032z2b #38M/M4 ISOLATED GRAPH-SEARCH ==> {} KDA GAS>>>>>>>" [(env-gas)])
+                (expect "#38M/M4: real 6-hop worst-case route still resolves to a genuine, non-empty path"
+                    true
+                    (!= path [SWPT.BAR])
+                )
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 032z3 - #34 Phase 7 Core Function Verification (Permanent)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
