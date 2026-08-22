@@ -197,7 +197,10 @@ it, tracked independently, not blocking this bound-only fix. **Follow-up (2026-0
 asked whether the multiplier is stable afterwards, then requested full immutability, matching the Set-Class
 recipe — `C_UpdateSetMultiplier` and its capability/`XI_*`/Talos wrappers removed entirely; the multiplier
 is now write-once, at Define, forever after. Live-proven (value persists with no update path able to touch
-it), Z.repl green. — *DPDC-S·H1*
+it), Z.repl green. **Follow-up 2 (2026-08-22, Fix #16):** surfaced while discussing #19H — the multiplier
+is meant to boost a score, never quietly shrink it below the raw value; lower bound tightened from `(0,100]`
+to `[1.0,100.0]`. Live-proven: `0.5` now correctly rejected (previously legal), `1.0` (new floor) accepted.
+Z.repl green. — *DPDC-S·H1*
 
 #16H **[DPDC-T]** ~~`UEV_TransferRoles` computes the receiver's transfer-role membership from `sender` twice
 (a copy-paste variable-naming bug) — the documented sender-OR-receiver-authorized semantics for

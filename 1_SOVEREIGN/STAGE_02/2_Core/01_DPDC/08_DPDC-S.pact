@@ -615,18 +615,19 @@
     )
     (defun UEV_ScoreMultiplier (new-multiplier:decimal)
         @doc "Bounds a Set-Class score-multiplier: max 3 decimals precision (unchanged from the \
-            \ original Update-time check), and a new (0, 100] magnitude range — a positive, \
-            \ non-zero multiplier no greater than 100x — to prevent an unbounded, instantly-\
-            \ retroactive re-pricing of every outstanding member of the Set-Class. Shared by both \
-            \ Define (Primordial/Composite/Hybrid) and Update, closing the gap where Define never \
-            \ validated this field at all. See DPDC Audit #15H."
+            \ original Update-time check), and a [1.0, 100.0] magnitude range — a multiplier can \
+            \ boost a score (up to 100x) or leave it unchanged (1.0, the neutral no-op value), but \
+            \ never reduce it below the raw score — to prevent an unbounded, instantly-retroactive \
+            \ re-pricing of every outstanding member of the Set-Class. Enforced only at Define \
+            \ (Primordial/Composite/Hybrid) — score-multiplier is immutable thereafter, see #15H \
+            \ follow-up (Fix #14). See DPDC Audit #15H."
         (enforce
             (= (floor new-multiplier 3) new-multiplier)
             (format "Input Set-Multiplier of {} is not conform with its designed precision of only 3 decimals" [new-multiplier])
         )
         (enforce
-            (and (> new-multiplier 0.0) (<= new-multiplier 100.0))
-            (format "Set-Multiplier of {} must be greater than 0 and no more than 100x" [new-multiplier])
+            (and (>= new-multiplier 1.0) (<= new-multiplier 100.0))
+            (format "Set-Multiplier of {} must be between 1.0 and 100.0 inclusive" [new-multiplier])
         )
     )
     ;;

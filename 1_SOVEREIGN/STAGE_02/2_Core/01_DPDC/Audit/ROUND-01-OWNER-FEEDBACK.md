@@ -433,3 +433,13 @@ validates current holdership — before crediting receiver, atomically in one ca
 `UEV_NftNonceExistance ... false`, i.e. current holder is `BAR`, before crediting). All three correctly gate
 today. Owner decided to leave the primitive unchanged — no code change, matches the caller-discipline model
 already confirmed correct for DPDC-T.
+
+## #15H follow-up 2 · DPDC-S · H1 — `score-multiplier` lower bound tightened to 1.0
+
+Surfaced while discussing #19H's sentinel bug: the multiplier is meant to boost a score, never quietly
+shrink it. Owner: at Define, legal range is `1.0` to `100.0`, not `(0, 100]` — a value like `0.5` would
+silently reduce every member's score below its raw value, which was never the intent.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #16)** — `UEV_ScoreMultiplier`'s magnitude check tightened
+from `(0, 100]` to `[1.0, 100.0]`. Live-proven: `0.5` now correctly rejected (previously legal), `1.0`
+(the new floor) correctly accepted, all prior checks still pass. Full `Z.repl` green.

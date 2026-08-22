@@ -809,3 +809,27 @@ intended sender-OR-receiver semantics this must succeed, since the receiver sati
 - `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
 
 **Interface implication:** none — internal to `UEV_TransferRoles`'s body, no signature change.
+
+## Fix #16 — DPDC-S · H1 (#15H follow-up 2) — `score-multiplier` lower bound tightened to 1.0
+
+**Owner-approved 2026-08-22.** Surfaced while working through #19H (`UR_N|Score`'s sentinel bug): the
+multiplier is meant to boost a nonce's score, never quietly reduce it. Owner: at Define, the multiplier
+must be `1.0` to `100.0`, not `(0, 100]` — a value below `1.0` would silently shrink the raw score, which
+was never the intent.
+
+**Fix — one comparison operator, same shared validator:**
+```pact
+-(and (> new-multiplier 0.0) (<= new-multiplier 100.0))
++(and (>= new-multiplier 1.0) (<= new-multiplier 100.0))
+```
+`UEV_ScoreMultiplier` (added in Fix #13, now Define-only per Fix #14) — no new call sites, same two
+properties (precision + magnitude) checked in the same place.
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC-S_15H_multiplier_bound.repl`, extended):** added
+`<<15H-4b>>` (`0.5` — below the new floor, previously legal under `(0,100]`, now correctly rejected) and
+`<<15H-5b>>` (`1.0` — the new floor, the neutral no-op multiplier, correctly accepted). All prior checks
+(`100.001`/`0.0`/`-1.0`/`1.2345` rejected; `100.0`/`2.5` accepted; immutability read) still pass unchanged.
+`cd REPL && pact Z.repl` — clean, `Load successful`, Bloodshed's real `1.1x` genesis multiplier still well
+within the new, narrower range.
+
+**Interface implication:** none.
