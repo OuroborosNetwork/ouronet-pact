@@ -18,10 +18,14 @@
     (defun UR_CSD:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}] (id:string son:bool set-class:integer))
     (defun UR_SetNonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool set-class:integer))
     (defun UR_SetSplitData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool set-class:integer))
-    (defun UR_N|Score:decimal (id:string son:bool nonce:integer))
     ;;
     ;;  [URC]
     ;;
+    ;; URC_N|Score renamed from UR_N|Score — DPDC Audit #19H follow-up: it reads UR_NonceClass/
+    ;; UR_N|RawScore/UR_SetMultiplier and derives a computed "cooked" value from them (sentinel
+    ;; check, multiply, fragment-divide), which is the URC_* ("read + derive") contract, not a
+    ;; plain UR_* table read. Zero callers anywhere, so the rename touches no call site.
+    (defun URC_N|Score:decimal (id:string son:bool nonce:integer))
     (defun URC_PrimordialOrComposite:[bool] (id:string son:bool set-class:integer))
     (defun URC_NoncesSummedScore:decimal (id:string son:bool nonces:[integer]))
     (defun URC_SemiFungibleConstituents:[integer] (id:string set-class:integer))
@@ -356,9 +360,11 @@
     (defun UR_SetSplitData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool set-class:integer)
         (at "split-data" (UR_Set id son set-class))
     )
-    ;;
-    ;;Score Read for Nonce
-    (defun UR_N|Score:decimal (id:string son:bool nonce:integer)
+    ;;{F1}  [URC]
+    ;;Score Read for Nonce — renamed from UR_N|Score, DPDC Audit #19H follow-up: reads
+    ;;UR_NonceClass/UR_N|RawScore/UR_SetMultiplier and derives a computed value from them
+    ;;(sentinel check, multiply, fragment-divide) — the URC_* contract, not a plain UR_* read.
+    (defun URC_N|Score:decimal (id:string son:bool nonce:integer)
         @doc "Cooked score reader: applies the Set-Class multiplier (for Set-member nonces) and the \
             \ 1/1000 fragment split (for negative/fragment nonces) to a nonce's raw stored score. \
             \ DPDC Audit #19H: the -1.0 <unscored> sentinel is now checked once, on the untouched raw \
@@ -393,7 +399,6 @@
             )
         )
     )
-    ;;{F1}  [URC]
     ;:Requires rethinking
     (defun URC_PrimordialOrComposite:[bool] (id:string son:bool set-class:integer)
         (UEV_SetClass id son set-class)

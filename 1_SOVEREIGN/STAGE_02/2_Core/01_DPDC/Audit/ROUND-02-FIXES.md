@@ -870,3 +870,25 @@ Set-member branches be tested directly) collections:
 - `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
 
 **Interface implication:** none — `UR_N|Score`'s `DpdcSetsV1` signature is unchanged.
+
+## Fix #18 — DPDC-S · H1 (#19H follow-up) — `UR_N|Score` renamed to `URC_N|Score` (prefix-contract violation)
+
+**Owner-approved 2026-08-23.** Surfaced while closing #19H: "prefix is the contract" (the same principle
+behind #1C's `UEV_Amount` placement) — `UR_*` is a table read; this function reads `UR_NonceClass`,
+`UR_N|RawScore`, and (conditionally) `UR_SetMultiplier`, then *derives* a computed value from them
+(sentinel check, multiply, fragment-divide). That's the `URC_*` ("read + derive") contract by definition,
+not `UR_*`. Owner: rename it — the upcoming full redeploy will bump interfaces across the board anyway.
+
+**Fix:** `UR_N|Score` → `URC_N|Score`, in both the `DpdcSetsV1` interface declaration and the
+implementation — moved from the module's `[UR]` section into `[URC]` (now the first function there,
+immediately after the `;;{F1} [URC]` marker) to match its new prefix. Zero callers anywhere in the
+codebase (confirmed during #19H itself), so the rename touches no call site — purely the declaration +
+implementation + the probe script that exercises it.
+
+**Post-fix proof:** `REPL/Kursan/_verify_finding_DPDC-S_19H_score_sentinel.repl` updated (`UR_N|Score` →
+`URC_N|Score` throughout) — all 8 checks from Fix #17 still pass unchanged under the new name.
+`cd REPL && pact Z.repl` — clean, `Load successful`.
+
+**Interface implication:** `DpdcSetsV1` — a function is renamed (not just added/removed). Per repo policy,
+V1 stays freely editable pre-mainnet-adjustment; owner explicitly noted the upcoming full redeploy will
+bump interfaces across the board regardless, so this rename doesn't need special handling now.

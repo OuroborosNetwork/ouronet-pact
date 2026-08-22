@@ -458,3 +458,13 @@ on the raw untouched score, closing all 3 broken branches at once (no per-branch
 across 8 checks (NFT class-0 + SFT Set-member, unscored + real-score, native + fragment) — all unscored
 cases now `0.0`; pre-fix (`git stash`) confirms the exact bug shape: Branch A `-0.001`, Branch D `-2.5`,
 Branch C `-0.0025`. Full `Z.repl` green.
+
+## #19H follow-up · DPDC-S · H1 — `UR_N|Score` renamed to `URC_N|Score`
+
+Owner: by the prefix contract itself ("prefix is the contract"), this function reads several things and
+derives a computed value from them — that's `URC_*` ("read + derive"), not a plain `UR_*` table read.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #18)** — renamed in the `DpdcSetsV1` interface and
+implementation, moved into the module's `[URC]` section. Zero callers anywhere meant no call site needed
+updating. Live-proven: the full #19H probe suite (8 checks) still passes unchanged under the new name.
+Z.repl green.

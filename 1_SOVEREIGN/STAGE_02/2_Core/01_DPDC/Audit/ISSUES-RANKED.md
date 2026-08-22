@@ -241,7 +241,11 @@ this exact function to its own audit trail.~~ — **FIXED ✅ AND PROVEN ✅ 202
 Fix #17) — sentinel check centralized once, at function entry, on the raw untouched score, closing all 3
 broken branches at once (no per-branch patching, no risk of a fifth copy-paste mistake). 8-check live proof
 (NFT class-0 + SFT Set-member, unscored + real-score, native + fragment) — all unscored cases now `0.0`;
-`git stash` confirms the exact pre-fix bug shape (`-0.001`/`-2.5`/`-0.0025`). Z.repl green. —
+`git stash` confirms the exact pre-fix bug shape (`-0.001`/`-2.5`/`-0.0025`). Z.repl green. **Follow-up
+(2026-08-23, Fix #18):** renamed `UR_N|Score`→`URC_N|Score` — "prefix is the contract": it reads
+`UR_NonceClass`/`UR_N|RawScore`/`UR_SetMultiplier` then derives a computed value, the `URC_*` contract, not
+a plain `UR_*` read. Zero callers anywhere, so no call site needed updating; moved into the module's
+`[URC]` section. Live-proven: the full #19H probe suite still passes under the new name. Z.repl green. —
 *DPDC-UDC/DPDC-S·H1*
 
 #20H **[DPDC-N]** `C_UpdateNonceIgnisRoyalty` has no upper bound at all — `UEV_IgnisRoyalty` only checks

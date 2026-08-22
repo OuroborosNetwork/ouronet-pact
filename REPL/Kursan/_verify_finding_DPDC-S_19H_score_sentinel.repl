@@ -1,4 +1,4 @@
-;; Verification for DPDC Audit finding #19H (DPDC-UDC/DPDC-S): UR_N|Score (the "cooked" score reader that
+;; Verification for DPDC Audit finding #19H (DPDC-UDC/DPDC-S): URC_N|Score (the "cooked" score reader that
 ;; applies the Set-Class multiplier and the 1/1000 fragment split) failed to clamp the DPDC -1.0 "unscored"
 ;; sentinel in 3 of its 4 arithmetic branches -- only the plain class-0/native branch checked it correctly.
 ;; Fragment branches never checked at all; the set-member/native branch compared against the wrong literal
@@ -19,7 +19,7 @@
 ;;====================================================================================================
 ;; TX-1: Branch A/B -- plain class-0 NFT nonce
 ;;====================================================================================================
-(begin-tx "PROBE-19H-NFT - UR_N|Score sentinel clamp, class-0 branches (A/B)")
+(begin-tx "PROBE-19H-NFT - URC_N|Score sentinel clamp, class-0 branches (A/B)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (let
@@ -70,16 +70,16 @@
     (let ((nid:string "SSNF-98c486052a51"))
         (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner nid [nd])]))
         (print (format "<<19H-1>> Branch B (class-0, native) unscored -> {}"
-            [(ref-DPDC-S::UR_N|Score nid false 1)]))
+            [(ref-DPDC-S::URC_N|Score nid false 1)]))
         (print (format "<<19H-2>> Branch A (class-0, fragment) unscored -> {}"
-            [(ref-DPDC-S::UR_N|Score nid false -1)]))
+            [(ref-DPDC-S::URC_N|Score nid false -1)]))
         ;; Sanity: a real score still comes back correctly through both class-0 branches.
         (print (format "SET real score 40.0 = {}"
             [(ref-TS02-C2::DPNF|C_UpdateNonceScore owner nid owner 1 true 40.0)]))
         (print (format "<<19H-3>> Branch B real score (40.0) -> {}"
-            [(ref-DPDC-S::UR_N|Score nid false 1)]))
+            [(ref-DPDC-S::URC_N|Score nid false 1)]))
         (print (format "<<19H-4>> Branch A real score, fragment (40.0/1000) -> {}"
-            [(ref-DPDC-S::UR_N|Score nid false -1)]))
+            [(ref-DPDC-S::URC_N|Score nid false -1)]))
     )
     ""
 )
@@ -89,7 +89,7 @@
 ;; TX-2: Branch C/D -- SFT Set-member nonce (SFT sets share one persistent nonce, freely editable, so we
 ;; can force it back to the -1.0 sentinel to test the composite branches directly)
 ;;====================================================================================================
-(begin-tx "PROBE-19H-SFT - UR_N|Score sentinel clamp, Set-member branches (C/D)")
+(begin-tx "PROBE-19H-SFT - URC_N|Score sentinel clamp, Set-member branches (C/D)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (let
@@ -147,17 +147,17 @@
         (let ((set-nonce:integer (ref-DPDC-S::UR_NonceOfSet sid 1)))
             (print (format "set-nonce = {}" [set-nonce]))
             (print (format "<<19H-5>> Branch D (Set-member, native) unscored -> {}"
-                [(ref-DPDC-S::UR_N|Score sid true set-nonce)]))
+                [(ref-DPDC-S::URC_N|Score sid true set-nonce)]))
             (print (format "<<19H-6>> Branch C (Set-member, fragment) unscored -> {}"
-                [(ref-DPDC-S::UR_N|Score sid true (- 0 set-nonce))]))
+                [(ref-DPDC-S::URC_N|Score sid true (- 0 set-nonce))]))
             ;; Sanity: a real score is still correctly multiplied (40.0 * 2.5 = 100.0) and fragment-divided
             ;; (100.0 / 1000 = 0.1).
             (print (format "SET real score 40.0 on set-nonce = {}"
                 [(ref-TS02-C1::DPSF|C_UpdateNonceScore owner sid owner set-nonce true 40.0)]))
             (print (format "<<19H-7>> Branch D real score (40.0 x 2.5 = 100.0) -> {}"
-                [(ref-DPDC-S::UR_N|Score sid true set-nonce)]))
+                [(ref-DPDC-S::URC_N|Score sid true set-nonce)]))
             (print (format "<<19H-8>> Branch C real score, fragment (100.0/1000 = 0.1) -> {}"
-                [(ref-DPDC-S::UR_N|Score sid true (- 0 set-nonce))]))
+                [(ref-DPDC-S::URC_N|Score sid true (- 0 set-nonce))]))
         )
     )
     ""
