@@ -468,3 +468,21 @@ derives a computed value from them — that's `URC_*` ("read + derive"), not a p
 implementation, moved into the module's `[URC]` section. Zero callers anywhere meant no call site needed
 updating. Live-proven: the full #19H probe suite (8 checks) still passes unchanged under the new name.
 Z.repl green.
+
+## #20H · DPDC-N · H1 — `C_UpdateNonceIgnisRoyalty` has no upper bound at all
+
+**Verdict: REFUTED, design-intentional (2026-08-23).** Proposed capping at 500.0 IGNIS ($5.00), matching
+ATS's own fix for the identical bug class on `UEV_Fee`. Owner rejected: this is a flat per-unit royalty on
+potentially very high-value NFTs — there's no principled magnitude ceiling any more than there's a ceiling
+on what an estate could be worth. A $10M NFT could legitimately warrant a $10K movement royalty. Left to
+the collection owner's discretion; the existing precision-only check in `UEV_IgnisRoyalty` stays as the
+only validation. No code change. (Separately noted, not part of this decision: the compounding-with-amount
+effect and the lack of a transfer-time snapshot/max-price guard remain tracked under `M1`.)
+
+## #21H · DPDC-S · H2 — `score-multiplier` unvalidated at Define, checked at Update
+
+**Verdict: ALREADY CLOSED by #15H's fix chain (2026-08-23).** This is the exact same underlying gap #15H's
+fixes already closed: Fix #13 added precision + magnitude validation to all three Define capabilities
+(previously zero validation there), Fix #14 removed the Update capability entirely (so "checked only at
+Update, not Define" is now moot — Update doesn't exist), Fix #16 tightened the floor to `[1.0,100.0]`. No
+separate action needed.

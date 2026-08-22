@@ -248,15 +248,22 @@ a plain `UR_*` read. Zero callers anywhere, so no call site needed updating; mov
 `[URC]` section. Live-proven: the full #19H probe suite still passes under the new name. Z.repl green. —
 *DPDC-UDC/DPDC-S·H1*
 
-#20H **[DPDC-N]** `C_UpdateNonceIgnisRoyalty` has no upper bound at all — `UEV_IgnisRoyalty` only checks
+#20H **[DPDC-N]** ~~`C_UpdateNonceIgnisRoyalty` has no upper bound at all — `UEV_IgnisRoyalty` only checks
 decimal precision, unlike its sibling `UEV_Royalty` (capped `[1,999]` promile via the shared `UEV_Fee`); a
 `role-modify-royalties` delegate can set an arbitrarily large flat per-unit IGNIS charge, economically
 freezing the nonce or silently overcharging a buyer — the same bug class the ATS audit already found and
-fixed on a sibling validator, but worse here (no bound at all vs. ATS's 999-promile ceiling). — *DPDC-N·H1*
+fixed on a sibling validator, but worse here (no bound at all vs. ATS's 999-promile ceiling).~~ — **REFUTED
+(design-intentional) 2026-08-23** — owner: there's no principled magnitude ceiling here, same as there's no
+ceiling on what an estate could be worth — a $10M NFT could legitimately warrant a $10K movement royalty.
+Left to the collection owner's discretion; precision-only check stays, no magnitude bound added. No code
+change. — *DPDC-N·H1*
 
-#21H **[DPDC-S]** `score-multiplier` is completely unvalidated at Define time (no precision, no sign check)
+#21H **[DPDC-S]** ~~`score-multiplier` is completely unvalidated at Define time (no precision, no sign check)
 while the identical field is precision-checked at Update time — a set-class can be created with a
-non-3-decimal or negative multiplier baked in for the rest of its life. — *DPDC-S·H2*
+non-3-decimal or negative multiplier baked in for the rest of its life.~~ — **ALREADY CLOSED by #15H's fix
+chain, 2026-08-23** — Fix #13 added exactly this Define-time validation (precision + magnitude), Fix #14
+removed the Update path entirely, Fix #16 tightened the floor to `[1.0,100.0]`. No separate action needed. —
+*DPDC-S·H2*
 
 #22H **[EQUITY]** The entire financial-instrument module (shareholder package shares — dilution-sensitive
 by construction) has zero REPL/test coverage anywhere in the repository; every conservation claim in this
