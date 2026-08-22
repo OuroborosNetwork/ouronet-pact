@@ -183,9 +183,17 @@ correctly enforces `UEV_PauseState id son false` on both real transfer call site
 mint/burn/wipe/respawn functions are correctly left ungated, exactly as intended. No code change needed. —
 *DPDC-MNG·H1*
 
-#15H **[DPDC-S]** Set-class `score-multiplier` has no bound and no live-supply guard — once #7C is fixed,
+#15H **[DPDC-S]** ~~Set-class `score-multiplier` has no bound and no live-supply guard — once #7C is fixed,
 an owner can retroactively re-price every outstanding member of a set-class instantly and unboundedly (same
-shape as the SWP audit's `C_ModifyWeights` finding), with zero time-lock. — *DPDC-S·H1*
+shape as the SWP audit's `C_ModifyWeights` finding), with zero time-lock.~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-22** (`ROUND-02-FIXES.md` Fix #13) — new shared `UEV_ScoreMultiplier` ((0,100] + 3-decimal
+precision) wired into Define (Primordial/Composite/Hybrid, previously zero validation) and Update
+(previously precision-only). 9-check live proof: all bad multipliers rejected at both Define and Update,
+boundary (100.0) and ordinary values accepted, Z.repl green (Bloodshed's real 1.1x genesis multiplier still
+passes). Investigated first whether the multiplier is even consumed anywhere live — `UR_N|Score` (the only
+function that applies it) has zero callers, and Make-time score computation (`URC_NoncesSummedScore`)
+doesn't use it either; handed off a separate brief to check whether AQP staking/scoring is meant to apply
+it, tracked independently, not blocking this bound-only fix. — *DPDC-S·H1*
 
 #16H **[DPDC-T]** `UEV_TransferRoles` computes the receiver's transfer-role membership from `sender` twice
 (a copy-paste variable-naming bug) — the documented sender-OR-receiver-authorized semantics for

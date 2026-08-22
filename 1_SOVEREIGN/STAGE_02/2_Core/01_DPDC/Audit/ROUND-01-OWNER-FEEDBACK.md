@@ -354,3 +354,26 @@ administrative supply operations — this architecture is drawn from MultiversX'
 functions the same way (a trading halt, not a full freeze). Verified the implementation matches that intent
 before closing: `DPDC-T` correctly enforces `UEV_PauseState id son false` on both real transfer call sites;
 `DPDC-MNG`'s mint/burn/wipe/respawn functions correctly never check it. No code change needed.
+
+## #15H · DPDC-S · H1 — `score-multiplier` unbounded at Define, unbounded magnitude at Update
+
+**Verdict: CONFIRMED, FIXED (2026-08-21/22).** Before treating this as a simple "add a bound" fix, traced
+who actually consumes the multiplier — found `UR_N|Score` (the only function that applies it) has zero
+callers anywhere, and `URC_NoncesSummedScore` (Make-time set score computation) sums raw constituent
+scores with no multiplier applied at all. Owner: the multiplier is *meant* to apply "when a nonce is staked
+to a pool where a score is attached... using the raw score of the nonce" — i.e. in AQP, not necessarily in
+DPDC-S's own Make-time math. Attempted a live mainnet check of real Bloodshed set-classes via Pythia to see
+whether deployed scores reflect the multiplier — inconclusive, since local REPL genesis identities are
+synthetic and collection IDs are block-derived, not matchable by guessing; left open pending the real
+mainnet ID/owner. Wrote a separate investigation handoff for an AQP-focused review of whether/where the
+multiplier should be wired into staking-time scoring — not yet answered, tracked independently.
+
+Owner decision, independent of the AQP question: cap the multiplier at **100x** now, closing the original
+finding (no bound existed anywhere) regardless of where the multiplier ultimately gets consumed.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #13)** — new shared `DPDC-S::UEV_ScoreMultiplier`
+((0,100] + 3-decimal precision) wired into both Define (Primordial/Composite/Hybrid, previously completely
+unvalidated) and Update (previously precision-only). Live-proven with 9 checks: all 4 bad-multiplier Define
+attempts rejected, boundary (100.0) and ordinary (2.5) accepted; both bad-multiplier Update attempts
+rejected, legit update (50.0) accepted. Full `Z.repl` green, including Bloodshed's real 1.1x genesis
+multiplier still passing cleanly.

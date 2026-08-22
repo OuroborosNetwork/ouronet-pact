@@ -664,3 +664,60 @@ account (`KST.LUMY`) on a fresh NFT collection while `can-freeze=true`, renounce
 - `cd REPL && pact Z.repl` — clean, `Load successful`, no regressions.
 
 **Interface implication:** none — internal to `DPDC|C>FRZ-ACC`'s body, no signature change.
+
+## Fix #13 — DPDC-S · H1 (#15H) — `score-multiplier` unbounded at Define, unbounded magnitude at Update
+
+**Owner-approved 2026-08-21/22.** Owner: cap the multiplier at 100x.
+
+**Investigation detour first (per owner's own questions, before touching code):**
+- Traced who actually consumes the multiplier before deciding this was purely a "needs a bound" fix.
+  Found `DPDC-S::UR_N|Score` — the only function anywhere that multiplies a nonce's raw score by
+  `UR_SetMultiplier` — has **zero callers** in the whole loaded codebase. And `URC_NoncesSummedScore`
+  (the function that bakes a score into a newly-Made set instance) sums constituent raw scores with no
+  multiplier applied at all. AQP-SCORE reads `UR_N|RawScore` directly, bypassing both.
+- Live-checked mainnet Bloodshed (real deployed `2_SLAVE/Stage_02/1_Bloodshed` set-classes, one with a
+  live 1.1x multiplier) via Pythia to see whether real on-chain scores reflect it — inconclusive from
+  this side: the local REPL genesis's collection ID/owner are synthetic sandbox fixtures, not the real
+  mainnet identity, and collection IDs are block-hash-derived (DPDC-I·M1), so guessing the real ID failed
+  as expected. Owner to supply the real ID/owner if this angle is worth finishing.
+- Wrote and handed off a separate investigation brief to an AQP-focused reviewer: is the multiplier meant
+  to be applied when a nonce is staked into an AQP pool and scored there, and if so, is it actually wired
+  up anywhere in AQP-ANK/AQP-SCORE/AQP-POOL/AQP-FVT? **Not yet answered — tracked separately, this fix
+  does not depend on or block that answer.**
+- Owner decision, independent of the above: cap the multiplier at 100x now regardless of where it ends up
+  being consumed (DPDC-S's own Make-time computation, and/or AQP's staking-time scoring, once wired) —
+  this closes the original #15H finding (no bound anywhere) on its own terms.
+
+**Root cause:** `08_DPDC-S.pact` — `DPDC-S|C>DEFINE-PRIMORDIAL`/`DEFINE-COMPOSITE`/`DEFINE-HYBRID` never
+took `score-multiplier` as a parameter at all, so Define-time had **zero** validation on it. At Update
+time, `DPDC-S|C>MULTIPLIER` only checked 3-decimal precision — no magnitude bound, positive or negative.
+
+**Fix — one shared validator, wired into both Define and Update (same pattern as every prior
+shared-chokepoint fix this round):**
+```pact
+(defun UEV_ScoreMultiplier (new-multiplier:decimal)
+    (enforce (= (floor new-multiplier 3) new-multiplier) "...3 decimals...")
+    (enforce (and (> new-multiplier 0.0) (<= new-multiplier 100.0)) "...greater than 0 and no more than 100x...")
+)
+```
+- `DPDC-S|C>DEFINE-PRIMORDIAL`/`DEFINE-COMPOSITE`/`DEFINE-HYBRID` gained `score-multiplier:decimal` as a
+  new capability parameter, validated via `UEV_ScoreMultiplier` — all 6 call sites (`with-capability` in
+  `C_DefinePrimordialSet`/`CompositeSet`/`HybridSet`, `require-capability` in
+  `XI_PrimordialSet`/`CompositeSet`/`HybridSet`) updated to thread it through.
+- `DPDC-S|C>MULTIPLIER`'s inline precision-only check replaced with a call to the same
+  `UEV_ScoreMultiplier`; the pre-existing "must differ from current value" business rule is unrelated and
+  left untouched.
+
+**Post-fix proof (`REPL/Kursan/_verify_finding_DPDC-S_15H_multiplier_bound.repl`):** 9 checks on a fresh
+NFT collection with 4 real primordial nonces (so every Define fails/succeeds specifically on the
+multiplier, not on an unrelated set-definition error):
+- Define rejected: `100.001` (>100x), `0.0`, `-1.0`, `1.2345` (4-decimal precision) — all 4.
+- Define accepted: exactly `100.0` (boundary) and `2.5` (ordinary) — both `Write succeeded`-equivalent.
+- Update rejected: `250.0` (>100x), `-5.0` — both.
+- Update accepted: `50.0` — succeeds normally.
+- `cd REPL && pact Z.repl` — clean, `Load successful`, including Bloodshed's real genesis multipliers
+  (e.g. `1.1`) still passing cleanly (well within the new bound).
+
+**Interface implication:** `DPDC-S|C>DEFINE-PRIMORDIAL`/`DEFINE-COMPOSITE`/`DEFINE-HYBRID` are internal
+capabilities, not part of `DpdcSetsV1` — no interface signature changed; `UEV_ScoreMultiplier` is a new
+internal (non-interface) function.

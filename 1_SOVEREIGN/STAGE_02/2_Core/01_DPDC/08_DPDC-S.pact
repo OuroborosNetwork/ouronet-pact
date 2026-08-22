@@ -218,29 +218,31 @@
             (compose-capability (P|DPDC-S|REMOTE-GOV))
         )
     )
-    (defcap DPDC-S|C>DEFINE-PRIMORDIAL 
+    (defcap DPDC-S|C>DEFINE-PRIMORDIAL
         (
-            id:string son:bool
+            id:string son:bool score-multiplier:decimal
             set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
         @event
         (UEV_PrimordialSetDefinition id son set-definition)
+        (UEV_ScoreMultiplier score-multiplier)     ;; DPDC Audit #15H
         (compose-capability (DPDC-S|CX>DEFINE id son ind))
     )
-    (defcap DPDC-S|C>DEFINE-COMPOSITE 
+    (defcap DPDC-S|C>DEFINE-COMPOSITE
         (
-            id:string son:bool
+            id:string son:bool score-multiplier:decimal
             set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
         @event
         (UEV_CompositeSetDefinition id son set-definition)
+        (UEV_ScoreMultiplier score-multiplier)     ;; DPDC Audit #15H
         (compose-capability (DPDC-S|CX>DEFINE id son ind))
     )
-    (defcap DPDC-S|C>DEFINE-HYBRID 
+    (defcap DPDC-S|C>DEFINE-HYBRID
         (
-            id:string son:bool
+            id:string son:bool score-multiplier:decimal
             primordial-sd:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
             composite-sd:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
@@ -248,6 +250,7 @@
         @event
         (UEV_PrimordialSetDefinition id son primordial-sd)
         (UEV_CompositeSetDefinition id son composite-sd)
+        (UEV_ScoreMultiplier score-multiplier)     ;; DPDC Audit #15H
         (compose-capability (DPDC-S|CX>DEFINE id son ind))
     )
     (defcap DPDC-S|CX>DEFINE (id:string son:bool ind:object{DpdcUdcV1.DPDC|NonceData})
@@ -311,13 +314,10 @@
                 (ref-DPDC:module{DpdcV1} DPDC)
                 (current-multiplier:decimal (UR_SetMultiplier id son set-class))
             )
-            ;;Multiplier Precision Check, maximum 3 Precision for Set Multiplier
+            ;;Precision + magnitude bound, shared with Define — DPDC Audit #15H.
+            (UEV_ScoreMultiplier new-multiplier)
             (enforce
-                (= (floor new-multiplier 3) new-multiplier)
-                (format "Input Set-Multiplier of {} is not conform with its designed precision of only 3 decimals" [new-multiplier])
-            )
-            (enforce 
-                (!= new-multiplier current-multiplier) 
+                (!= new-multiplier current-multiplier)
                 (format "The Set Multiplier of <{}> must be different from the current Set Multiplier of <{}> for operation" [new-multiplier current-multiplier])
             )
             (UEV_SetActiveState id son set-class true)
@@ -629,6 +629,22 @@
             (enforce (= x state) (format "Set Class {} of {} ID {} must be set to {} for operation" [set-class (if son "SFT" "NFT") id state]))
         )
     )
+    (defun UEV_ScoreMultiplier (new-multiplier:decimal)
+        @doc "Bounds a Set-Class score-multiplier: max 3 decimals precision (unchanged from the \
+            \ original Update-time check), and a new (0, 100] magnitude range — a positive, \
+            \ non-zero multiplier no greater than 100x — to prevent an unbounded, instantly-\
+            \ retroactive re-pricing of every outstanding member of the Set-Class. Shared by both \
+            \ Define (Primordial/Composite/Hybrid) and Update, closing the gap where Define never \
+            \ validated this field at all. See DPDC Audit #15H."
+        (enforce
+            (= (floor new-multiplier 3) new-multiplier)
+            (format "Input Set-Multiplier of {} is not conform with its designed precision of only 3 decimals" [new-multiplier])
+        )
+        (enforce
+            (and (> new-multiplier 0.0) (<= new-multiplier 100.0))
+            (format "Set-Multiplier of {} must be greater than 0 and no more than 100x" [new-multiplier])
+        )
+    )
     ;;
     (defun UEV_NoncesForSetClass (id:string son:bool nonces:[integer] set-class:integer)
         (let
@@ -871,7 +887,7 @@
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
         (UEV_IMC)
-        (with-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son set-definition ind)
+        (with-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son score-multiplier set-definition ind)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -903,7 +919,7 @@
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
         (UEV_IMC)
-        (with-capability (DPDC-S|C>DEFINE-COMPOSITE id son set-definition ind)
+        (with-capability (DPDC-S|C>DEFINE-COMPOSITE id son score-multiplier set-definition ind)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -936,7 +952,7 @@
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
         (UEV_IMC)
-        (with-capability (DPDC-S|C>DEFINE-HYBRID id son primordial-sd composite-sd ind)
+        (with-capability (DPDC-S|C>DEFINE-HYBRID id son score-multiplier primordial-sd composite-sd ind)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1028,7 +1044,7 @@
             set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
-        (require-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son set-definition ind))
+        (require-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son score-multiplier set-definition ind))
         (let
             (
                 (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
@@ -1068,7 +1084,7 @@
             set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
-        (require-capability (DPDC-S|C>DEFINE-COMPOSITE id son set-definition ind))
+        (require-capability (DPDC-S|C>DEFINE-COMPOSITE id son score-multiplier set-definition ind))
         (let
             (
                 (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
@@ -1109,7 +1125,7 @@
             composite-sd:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
-        (require-capability (DPDC-S|C>DEFINE-HYBRID id son primordial-sd composite-sd ind))
+        (require-capability (DPDC-S|C>DEFINE-HYBRID id son score-multiplier primordial-sd composite-sd ind))
         (let
             (
                 (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
