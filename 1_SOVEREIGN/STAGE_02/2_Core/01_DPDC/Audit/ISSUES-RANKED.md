@@ -219,10 +219,16 @@ considered and explicitly rejected freezing the source account afterward, since 
 the real freeze path and become conditional on `can-freeze=true` (#13H) — defeating the point of an
 always-available escape hatch. No code change. — *DPDC-T·H2*
 
-#18H **[DPDC-C]** Native NFT Credit never checks the target nonce isn't already held by someone else — the
+#18H **[DPDC-C]** ~~Native NFT Credit never checks the target nonce isn't already held by someone else — the
 "single canonical holder" invariant is preserved today only by every current caller's discipline (always
 debit-before-credit), not by the ledger primitive itself; one future IMC-registered caller with different
-ordering creates a duplicate-token/phantom-balance state. — *DPDC-C·H1*
+ordering creates a duplicate-token/phantom-balance state.~~ — **REFUTED (verified live) 2026-08-22** — owner
+confirmed the design intent: credit trusts its caller to have already fed correct data. Checked all 3 real
+callers of the raw credit primitive: `DPDC-T::C_Transfer` (every variant debits sender, validating current
+holdership, before crediting receiver, atomically); `DPDC-C::C_CreateNewNonce` (brand-new nonce, no prior
+holder possible); `DPDC-MNG::C_RespawnNFT` (explicitly enforces `UEV_NftNonceExistance ... false`, i.e.
+current holder is `BAR`, before crediting). All three correctly gate at their own layer today. Owner
+decided to leave the primitive itself unchanged — no code change. — *DPDC-C·H1*
 
 #19H **[DPDC-UDC / DPDC-S]** `UR_N|Score` (the public "cooked" score reader on `DpdcSetsV1`) fails to
 clamp the DPDC `-1.0` "unscored" sentinel in 3 of its 4 arithmetic branches — a composite-class or any

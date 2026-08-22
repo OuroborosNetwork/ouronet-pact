@@ -422,3 +422,14 @@ not a real Wipe. Owner initially wanted the source account left frozen afterward
 reflection rejected it: doing so would route through the real freeze path, which still requires
 `can-freeze=true` (#13H) — making the escape hatch's success conditional on a flag it's specifically meant
 to route around. No code change; consistent with #4C's identical closure for the fragment sibling.
+
+## #18H · DPDC-C · H1 — Native NFT Credit never checks target isn't already held
+
+**Verdict: REFUTED, verified live (2026-08-22).** Owner: NFT ownership lives on a holder field, moved by
+setting it on transfer; by the time credit runs, it's already fed correct data by design. Checked all 3
+real callers of the raw credit primitive: `DPDC-T::C_Transfer` (every variant debits sender — which
+validates current holdership — before crediting receiver, atomically in one call); `DPDC-C::C_CreateNewNonce`
+(brand-new nonce, no prior holder possible); `DPDC-MNG::C_RespawnNFT` (explicitly enforces
+`UEV_NftNonceExistance ... false`, i.e. current holder is `BAR`, before crediting). All three correctly gate
+today. Owner decided to leave the primitive unchanged — no code change, matches the caller-discipline model
+already confirmed correct for DPDC-T.
