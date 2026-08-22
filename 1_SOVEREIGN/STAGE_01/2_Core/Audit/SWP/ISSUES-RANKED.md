@@ -317,8 +317,17 @@ before/after comparison on the real ~102-active-pool topology — byte-identical
 gas 423,762 → 256,867 (~39% cheaper), not a toy topology. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`. — *M4*
 
-#39M **[Talos / interfaces]** `ClientThreeV2`/`ClientPactsV2` were overwritten in place instead of archived,
-unlike the sibling `ClientFour` interfaces in the same file — an audit-trail gap, not a live bug. — *M14*
+#39M **[Talos / interfaces]** ~~`ClientThreeV2`/`ClientPactsV2` were overwritten in place instead of
+archived, unlike the sibling `ClientFour` interfaces in the same file — an audit-trail gap, not a live
+bug.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-23** (`ROUND-02-FIXES.md` Fix #25). Owner: fix it —
+historical-purposes convention, keep old interfaces and just add the next V number. Reconstructed both
+interfaces' full pre-overwrite text from git history (commit `df2d72e`). First placement attempt (central
+registry, matching the finding literally) genuinely failed to load — the finding's premise was outdated
+(live V3 had since moved to deploy-with-module files) and V2's Smart Swap functions need a module-owned
+type not resolvable that early in the pipeline. Relocated to `04_TS01-C3.pact`/`05_TS01-P.pact` alongside
+their live V3 siblings — confirmed the codebase already intended this exact pattern (`ClientFourV6`'s own
+comment describes it, just never carried out until now). Purely additive, zero functional risk. Full
+writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *M14*
 
 ## LOW (discipline / hygiene)
 

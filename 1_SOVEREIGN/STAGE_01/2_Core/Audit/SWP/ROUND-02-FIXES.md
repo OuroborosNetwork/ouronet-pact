@@ -1277,3 +1277,42 @@ failed on any BFS behavior drift): exit 0, 0 `FAILURE`. Issuance-only regression
 Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #25 — M14 (#39M): `ClientThreeV2`/`ClientPactsV2` reconstructed and archived from git history
+
+**Owner direction:** fix it — historical-purposes convention is to keep old interfaces around and add
+the next V number for what's live, since the codebase deploys anew across all modules/interfaces anyway.
+
+**Reconstruction:** identified the overwriting commit (`df2d72e`) and pulled both interfaces' full
+pre-overwrite text from its parent commit — exact, not re-derived.
+
+**Placement required investigation, not a literal copy-paste of the old finding:** the finding's original
+premise (both interfaces belonging in the central `0_Interfaces/03_Talos.pact` registry) is now outdated
+— the live `ClientThreeV3`/`ClientPactsV3` moved to their own deploy-with-module files since the finding
+was filed. First attempt (central registry, matching the old finding literally) failed to load for real:
+`ClientThreeV2`'s Smart Swap functions type against `SwapperUsageV2.Slippage`, a module-owned interface
+not yet deployed at the registry's early load point. Checked for a working precedent first —
+`06_TS01-C4.pact`'s own comment describes the identical situation for `ClientFourV6` (module-owned
+`PythiaLedgerV2` dependency) but the actual archived interface was never written, just the comment. Not a
+copy-able example, but confirmation the intended pattern (frozen alongside the deploy-with-module file,
+not the central registry, when a module-owned dependency exists) was already this codebase's own stated
+intent.
+
+**Fix:**
+- `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact` — `TalosStageOne_ClientThreeV2` (frozen, full original
+  text) added ahead of the live `ClientThreeV3`.
+- `1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact` — `TalosStageOne_ClientPactsV2` (frozen, full original
+  text) added ahead of the live `ClientPactsV3`, kept with its always-paired sibling rather than split
+  across files.
+- `1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact` — header comment updated to point to the new
+  locations and explain why, matching the existing `ClientFourV6` cross-reference style.
+
+**Adversarially proven, live:** the first placement attempt genuinely failed to load (`Module
+SwapperUsageV2 has no such member: Slippage`) — confirming the relocation was necessary, not a style
+choice. After the fix: full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only regression: exit 0,
+0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`. Purely
+additive/documentation — no live code path touched, zero functional risk by construction.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
