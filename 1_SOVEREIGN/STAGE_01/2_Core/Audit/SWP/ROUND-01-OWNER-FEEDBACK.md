@@ -1746,3 +1746,43 @@ Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #20. Awaiting Round III re-verify.
 
 ---
+
+## M1 (#35M, `UC_ComputeY`/`UC_ComputeInverseY` silently drop all but the first input position on stable
+      swaps) — **REFUTED**
+
+**Owner:** "stable swap pool can only do swap from one single token to another." — the finding's premise
+(a stable-pool swap with more than one simultaneous input token) is not a real, intended use case at
+all; single-input is the contract, not an accidental gap.
+
+**Traced every real call path before presenting, confirmed the owner's point exactly:** `UC_ComputeY`
+(`1_Utilities/12_U_SWP.pact:46`) does read only `(at 0 (at "input-amounts" drsi))` — unlike
+`UC_ComputeWP`/`UC_ComputeEP`, which correctly fold the whole `input-amounts` list via `UC_AddSupply`.
+But every actual caller independently enforces `length(input-amounts) == 1` for pool-type `"S"` *before*
+`UC_ComputeY` is ever reached:
+- `URC_Swap` (`16_SWPI.pact:704`, the general dispatcher behind every `C_Swap`/`XI_Swap` client
+  entrypoint): `(enforce (= l1 1) "Only a single Input can be used in Stable Swap")`.
+- `UC_BareboneSwap` (`16_SWPI.pact:554`, the SmartSwap per-hop math): the **identical** enforce,
+  independently.
+Both gates predate `UC_ComputeY`'s own call — a multi-input stable swap is rejected at the door on both
+paths, every time. The Inverse direction (`UC_ComputeInverseY`) doesn't even have a list to drop from:
+its schema field is `input-position:integer` (singular), same as `UC_ComputeInverseWP` — the Inverse
+direction is single-input **by design** across every pool type (solving for one unknown input given one
+target output is well-posed; multiple simultaneous unknown inputs summing to one output isn't, without
+more constraints). Confirmed with the owner: single-input is the actual product contract for stable
+pools, not a limitation the forward-direction enforce works around.
+
+**Residual, noted but not fixed here:** `UC_ComputeY`/`UC_ComputeInverseY` are `UC_*` (pure compute, no
+capability gate) and have no self-defense of their own — both existing enforces live in their *callers*,
+not inside the functions. Today's call graph is fully guarded; a hypothetical future caller constructing
+a `DirectRawSwapInput` and calling `UC_ComputeY` directly, bypassing both `URC_Swap` and
+`UC_BareboneSwap`, would silently reproduce the exact behavior the finding describes. Flagged, not
+pursued as a fix — the finding is refuted on its own terms (no live, reachable bug exists), and adding a
+third redundant enforce inside a `UC_*` pure-compute function would itself be a StoicSyntax violation
+(`UC_*` may not `enforce`) requiring it to become `URC_*`/`UEV_*`, a bigger change than this residual
+risk justifies without a live path found.
+
+**Status:** REFUTED — the finding's premise (a stable swap with more than one input) is not a real
+product scenario; the code's actual contract (single-input only, doubly enforced on every real call
+path) matches owner-confirmed intended design. No fix needed. — *M1*
+
+---

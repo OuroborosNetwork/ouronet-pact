@@ -273,8 +273,13 @@ a pre-existing test fixture (`[6.2+3]...repl`'s AG→AL→AU→BI→CO chain) th
 construct itself — given each link its own throwaway, never-activated direct-OURO anchor pool so the
 #13C/#19H/#20H BFS-chain assertions it feeds stay byte-for-byte unchanged. — *owner-assigned, off-cycle*
 
-#35M **[SWPI]** Stable-pool swap math silently drops all but the first input position despite the schema
-supporting multiple. — *M1*
+#35M **[SWPI]** ~~Stable-pool swap math silently drops all but the first input position despite the schema
+supporting multiple.~~ — **REFUTED 2026-08-22.** Owner: "stable swap pool can only do swap from one single
+token to another" — the finding's premise (a multi-input stable swap) is not a real product scenario.
+Traced every real call path: `URC_Swap` and `UC_BareboneSwap` both independently enforce
+`length(input-amounts) == 1` for pool-type `"S"` before `UC_ComputeY` is ever reached; the Inverse
+direction's schema is single-input by design (`input-position:integer`, not a list) across every pool
+type, not a stable-specific gap. No live bug. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *M1*
 
 #36M **[SWPI / MTX-SWP]** `C_Issue` and `MTX|C_Issue` duplicate the entire write-side issuance sequence
 (including a duplicated hardcoded genesis-mint constant) instead of sharing one chokepoint. — *M5*
