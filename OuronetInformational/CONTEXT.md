@@ -79,6 +79,30 @@ Repository layout mirrors this: **`1_SOVEREIGN/`** and **`2_SLAVE/`**, each with
 
 Sovereign code follows a fixed **layout and naming system**: Stage‑1 **utilities** (`U|CT`, `U|G`, `U|LST`, …), **core** modules with **policy tables** up front, capability bands **C1–C4**, then **unprotected** helpers (**UC**, **UR**, **URC**, **UEV**, **UDC**, **CAP**) and **protected** entrypoints (**A_** admin, **C_** client, **X**/XI/XE/XB). Because of deploy size limits, modules depend on **earlier** deploys and use **interface-heavy** APIs (version bumps cascade refactors). **Talos** modules are the only intended place to chain **A_**/**C_** for users, enforce **IGNIS** gas collection after **C_** paths, and match **gas-station** payout rules. Full detail: **`OuronetInformational/ouronet/MODULE_ARCHITECTURE.md`** (including **Client flows**: **`XI`/`XE`/`XB`** = **`insert`/`update`/`write`** only — no trailing **`true`**, no **`OutputCumulator`**; **`C_`** builds IGNIS **`UDC_*`**; **combining booleans in one `enforce`**: 1 → plain; 2 → **`(and p q)`**; 3+ → **`fold (and) true [...]`**); sample layout: **`0_Sample/C0s>>01|01_ModuleSample.pact`**. For **greenfield features**, that doc also defines the workflow: schema → client API intent → **`UR_*`** (grouped like schemas, ordered like schema keys) → implement each **`C_`** path with caps and **`X_*`**, adding **`URC`**/**`UEV`** as needed per path.
 
+### Why Stage 1 has separate Utility modules, and why Stage 2 doesn't
+
+- **Stage 1's Utility layer (`U|CT`, `U|G`, `U|LST`, `U|INT`, `U|SWP`, `U|BFS`, `U|DALOS`, `U|DPTF`, `U|ATS`,
+  …) exists because of Kadena's ~150k gas/deploy-size cap.** Core modules couldn't hold all their own
+  `UC_*` compute functions inline and stay under that limit, so compute got split out into standalone
+  Utility modules deployed separately.
+- **Two distinct kinds of content live there, both legitimately:**
+  - **Fully generic compute**, usable by any module regardless of domain — `U|LST` (string processing),
+    `U|INT` (integer/array processing), `U|G` (guard computation), `U|CT` (shared constants), `U|BFS`
+    (breadth-first search).
+  - **Module-family-tied compute** — not fully generic, but too much for the individual modules in one
+    family to each hold their own copy, so it's centralized once per family. `U|SWP` is the example: it
+    holds compute used across the whole SWP module family (`SWP`, `SWPI`, `SWPT`, `SWPL`, `SWPU`,
+    `MTX-SWP`), not because the logic is domain-generic, but because splitting it further would exceed
+    the deploy-size budget per module.
+- **Stage 2 dropped this pattern entirely.** Stage 2 deploys on StoaChain under a **~2,000,000 gas**
+  ceiling (see `MODULE_ARCHITECTURE.md` / the SWP audit's own #34 handoff docs for the real measured
+  numbers), which removes the deploy-size pressure that motivated Stage 1's Utility layer. Stage 2 never
+  created an equivalent module (no `U|DPDC`, no `U|AQP`, etc.) — every Stage 2 module keeps its own
+  `UC_*` compute functions inline, since Stage 2 modules are smaller anyway and there's ample headroom
+  under the higher cap. **Do not propose splitting Stage 2 `UC_*` functions into a new Utility module** —
+  that would be reintroducing a pattern the project deliberately moved away from once the size pressure
+  that justified it went away.
+
 ### DPMF historical note
 
 - `DPMF` is the original **Meta Fungible** module kept for historical/migration context.
