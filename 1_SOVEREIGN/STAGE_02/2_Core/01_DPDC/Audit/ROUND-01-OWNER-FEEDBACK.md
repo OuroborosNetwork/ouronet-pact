@@ -572,3 +572,22 @@ an unfinished-feature accident or a stray "Volumetric Royalty Fee" reference lef
 at the schema field, the reader (`UR_N|Royalty`), and the write entrypoint
 (`C_UpdateNonceRoyalty`), explaining the field is a confirmed-intentional forward-looking hook, contrasted
 with its actively-consumed sibling `ignis`/`UR_N|IgnisRoyalty`. No behavior change. Z.repl green.
+
+## #27M · DPDC-F · M5 — Make+merge round trip and repurpose-without-consent untested
+
+**Verdict: CONFIRMED, FIXED (2026-08-23).** Owner initially believed this was already covered ("I think I
+did test it somewhere ... I think all the functions work as intended"), same shape as the #22H/EQUITY
+discussion. Re-verified the only prior DPDC-F test is in the disabled `REPL/Stage_02/[6.1]_DPDC.repl`
+(commented out of the active pipeline, and crashes before reaching DPDC-F even loaded standalone), so
+there was zero *reachable* coverage. Owner: "no, you are right, we have to unblock ... yes, add the tests
+into the DPDC test flow properly, before we close this issue."
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #24)** — new canonical suite
+`REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl`, wired into `Stage02_Tester.repl`'s active load chain (same
+pattern as the EQUITY suite from #22H). Covers both scenarios named in the finding: (1) a real Make→Merge
+round trip with exact-conservation assertions at every step, and (2) a real repurpose-without-consent
+negative path, tracing the actual authorization chain down to `DPDC-C|C>SINGLE-DEBIT`'s `wipe-mode=true`
+branch (`CAP_Owner`, collection-owner-only) — proven both directly (non-owner signer rejected) and via an
+isolation control (same call, billing `patron` set to the real owner, but still only signed by the
+non-owner key — still rejected, confirming the gate tracks the tx signer against the owner-konto guard,
+not the `patron` argument). Full `Z.repl` green, all 12 new assertions pass.

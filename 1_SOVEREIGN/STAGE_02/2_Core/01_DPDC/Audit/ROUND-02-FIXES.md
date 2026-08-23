@@ -1083,3 +1083,52 @@ would reasonably look to understand this field, cross-referencing each other and
 interface schema and function docs, no behavior/type change possible to regress.
 
 **Interface implication:** none — comments only, no signature or schema shape change.
+
+## Fix #24 — DPDC-F · M5 (#27M) — new canonical REPL suite for Make/Merge + Repurpose-without-consent
+
+**Owner-approved 2026-08-23.** Owner initially believed EQUITY-style coverage already existed for
+DPDC-F ("I think I did test it somewhere ... I think all the functions work as intended"), same shape
+as the #22H discussion. Re-confirmed the only prior DPDC-F test lives in
+`REPL/Stage_02/[6.1]_DPDC.repl`, which is commented out of `Stage02_Tester.repl` and, even loaded
+standalone, crashes before reaching its DPDC-F section (pre-existing, logged during Fix #1) — so there
+was no reachable coverage anywhere in the active pipeline. Owner: "no, you are right, we have to unblock
+[this] ... yes, add the tests into the DPDC test flow properly."
+
+**What the finding asked for, and what this closes:**
+1. A real Make → Merge round trip with exact-conservation assertions (an NFT/SFT's native units and its
+   1000-per-unit fragments must net to zero drift across a full round trip).
+2. A real `C_RepurposeCollectableFragments`-without-consent negative path: `DPDC-F|C>REPURPOSE`'s own
+   defcap only checks `length fragment-nonces = length fragment-amounts` — it does **not** check who is
+   allowed to move the fragments. Traced the real gate down through
+   `C_RepurposeCollectableFragments` → `XE_DebitSFT-FragmentNonce ... wipe-mode=true` →
+   `DPDC-C|C>SINGLE-DEBIT`'s `(if wipe-mode (ref-DPDC::CAP_Owner id son) (ref-DALOS::CAP_EnforceAccountOwnership account))`
+   branch (`03_DPDC-C.pact:321-330`) — repurpose always passes `wipe-mode=true`, so the actual authority
+   check is "does the transaction's signer control the **collection owner-konto**", not "does the signer
+   control `repurpose-from`". This is the same mechanism already understood from #4C.
+
+**New file:** `REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl` (canonical layout, mirrors
+`[6.1.1]_EQUITY.repl`/`[6.2.1]_AQP-ANK.repl`), 3 transactions:
+- `TX-FRAG-001` — Issue a fresh SFT collection + `DPSF|C_Create` a fragmentable nonce (1000 native units,
+  owner=creator=ANHD). 1 `expect`.
+- `TX-FRAG-002` — ANHD enables fragmentation on nonce 1, transfers 100 native units to LUMY; LUMY (a mere
+  holder, not the collection owner) self-fragments her own 100 units into 100,000 fragment units
+  (`DPSF|C_MakeFragments`), then merges them straight back (`DPSF|C_MergeFragments`). 5 `expect`s prove
+  exact conservation at every step: native 100 → 0 → (100,000 fragments) → 0 → native 100 again.
+- `TX-FRAG-003` — LUMY re-fragments her restored 100 units. EMMA (a non-owner, non-holder third party)
+  attempts `DPSF|C_RepurposeFragments` to move LUMY's fragments to herself — `expect-failure`. A second
+  isolation-control call keeps `patron` set to the real owner-konto (the correct IGNIS billing account)
+  but still signs only with EMMA's key — also `expect-failure`, proving the rejection tracks **who signed
+  the transaction** against the owner-konto guard, not the `patron` argument. A final assertion confirms
+  LUMY's balance is untouched by both rejected attempts. Then ANHD (the real owner) makes the identical
+  call and it succeeds, draining LUMY's fragments to 0 and crediting EMMA the full 100,000 — `expect`s on
+  both balances.
+
+**Wired into the active pipeline:** `REPL/Stage02_Tester.repl` — one new line,
+`(load "Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl")`, right after the EQUITY suite load.
+
+**Proof:** built and iterated in a Kursan scratch probe first (deleted once ported to the canonical file).
+`cd REPL && pact Z.repl` — clean, `Load successful`. All 12 `expect`/`expect-failure` assertions in the
+new file print `"Expect: success ..."` / `"Expect failure: Success: ..."` in the full-pipeline run — none
+silently skipped, no regressions elsewhere in the ~3000-line log.
+
+**Interface implication:** none — new REPL test file only, no `.pact` source changed.

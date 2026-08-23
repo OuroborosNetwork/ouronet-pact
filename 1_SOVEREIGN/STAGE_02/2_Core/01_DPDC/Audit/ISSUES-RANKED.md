@@ -325,9 +325,15 @@ forward-looking hook for the upcoming Escrow/NFT marketplace, not yet built, whi
 consumes it today. Documented at the schema field, the reader (`UR_N|Royalty`), and the write entrypoint
 (`C_UpdateNonceRoyalty`) — no behavior change, comment-only. Z.repl green. — *DPDC-N·M2*
 
-#27M **[DPDC-F]** The make+merge round trip and the C_RepurposeCollectableFragments-without-consent
+#27M **[DPDC-F]** ~~The make+merge round trip and the C_RepurposeCollectableFragments-without-consent
 scenario are both actually executed in the checked-in REPL suite but never asserted (`(expect ...)` absent
-in both cases) — masking #3C/#4C from CI entirely. — *DPDC-F·M1*
+in both cases) — masking #3C/#4C from CI entirely.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-23**
+(`ROUND-02-FIXES.md` Fix #24) — the only prior test was unreachable (disabled file, crashes before this
+section even standalone), so this closes real zero-coverage, not just a missing assertion. New canonical
+suite `REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl`, wired into `Stage02_Tester.repl`: Make→Merge exact
+conservation, plus repurpose-without-consent traced to `DPDC-C|C>SINGLE-DEBIT`'s `wipe-mode=true` →
+`CAP_Owner` gate (owner-only), proven directly and via an isolation control on the `patron` argument.
+Z.repl green, 12/12 assertions pass. — *DPDC-F·M1*
 
 #28M **[EQUITY]** "Shareholder collection" identity is a self-checked `"E|"` string prefix, not a registry
 EQUITY itself owns — the only real backstop today is a different module's role table

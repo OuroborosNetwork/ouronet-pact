@@ -1,0 +1,341 @@
+;;
+;; REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl — source layout mirrors console
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== TXnnn · mm · <slug> ====  pairs with (print "--- [TXnnn · mm · …] ---") (mm = group within that begin-tx, 01..)
+;;   format "{}": only from Talos C_* return, ref-DPDC UR_*/URC_* return, expect/expect-failure doc, or (env-gas).
+;;   REPL tests: (expect …) / (expect-failure …) return strings — collect in a list and (map print …) so every assertion line appears in the REPL; no nested format wrapping expect.
+;;
+;; DPDC Audit #27M: DPDC-F (SFT/NFT fragmentation — Make/Merge/Repurpose) had zero REPL coverage anywhere
+;; reachable from any active pipeline — the only prior test (REPL/Stage_02/[6.1]_DPDC.repl) is unreachable
+;; (commented out of Stage02_Tester.repl, and even loaded directly it crashes before reaching that logic).
+;; This file is the first real, reachable, asserted DPDC-F coverage. Same pattern as [6.1.1]_EQUITY.repl.
+;;
+;; Covers exactly the two scenarios the finding calls out:
+;;   TX-FRAG-002 — a real Make -> Merge round trip with exact-conservation (expect) assertions.
+;;   TX-FRAG-003 — a real repurpose-without-consent (expect-failure): DPDC-F|C>REPURPOSE's own defcap only
+;;                 checks list-length equality; the real owner-only gate lives downstream, inside the debit
+;;                 leg (XE_DebitSFT-FragmentNonce ... wipe-mode=true), which swaps CAP_EnforceAccountOwnership
+;;                 for ref-DPDC::CAP_Owner (collection-owner-only). Proven two ways: (a) a non-owner signer
+;;                 attempting to move someone else's fragments is rejected, and (b) an isolation control —
+;;                 same call with patron=<the real owner account> but the tx still only signed by the
+;;                 non-owner key — is *also* rejected, showing the gate is keyed off who signed the
+;;                 transaction (the owner-konto guard), not the <patron> billing argument.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl")
+(print "================================================================")
+(print "Legend (terminal observability):")
+(print "  <<…>>     expect / expect-failure doc (format …) — REPL logs pass/fail")
+(print "  <(TS02-C1.DPSF|C_…)> => \"…\"      Talos client -> DPDC-F/DPDC-C/DPDC-T write (return value)")
+(print "  <(DPDC.UR_…)> => \"…\"             ref-DPDC utility read (return value)")
+(print "  <(REPL|env-gas)> …               gas after tx (env-gas)")
+(print "")
+(print "Source: ;;|| NEXT > between txs; ;;==== TXnnn · mm · … ==== before each REPL group banner (mm = intra-tx group).")
+(print "REPL tests: (map print [(expect (format \"<<TX…>> …\" […]) expected actual) …]) — expect / expect-failure return strings; map print surfaces each line.")
+(print "")
+(print "===================Initialise DPDC-FRAGMENTS TX Block==========================")
+
+(begin-tx "TX-FRAG-001 - Issue + Create fragmentable SFT nonce")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-FRAG-001 · 01 · env-sigs (caps) ====
+(print "--- [TX-FRAG-001 · 01 · env-sigs (caps)] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (owner:string KST.ANHD)
+        (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpsf-price))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+)
+;;==== TX-FRAG-001 · 02 · Talos DPSF|C_Issue + DPSF|C_Create + baseline reads ====
+(print "--- [TX-FRAG-001 · 02 · issue + create + baseline reads] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "TestFragNonce" "Test fragmentable nonce"
+                (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_Issue TestFragCollection/TFRG)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Issue owner owner owner "TestFragCollection" "TFRG" true true true true true true true true)])
+        ]
+    )
+    (let ((id:string "TFRG-98c486052a51"))
+        (map print
+            [
+                (format "<(TS02-C1.DPSF|C_Create id=TFRG nonce-1 amount=1000)> => \"{}\""
+                    [(ref-TS02-C1::DPSF|C_Create owner id [1000] [nd])])
+            ]
+        )
+        (map print
+            [
+                (expect "<<TX-FRAG-001>> creator/owner holds all 1,000 native units of nonce 1 at creation"
+                    1000
+                    (ref-DPDC::UR_AccountNonceSupply owner id true 1)
+                )
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-FRAG-001 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-FRAG-002 - Enable fragmentation, transfer to LUMY, Make -> Merge exact conservation")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-FRAG-002 · 01 · env-sigs (caps) - ANHD (owner) enables + transfers ====
+(print "--- [TX-FRAG-002 · 01 · env-sigs (caps) - ANHD] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-FRAG-002 · 02 · owner enables fragmentation for nonce 1, transfers 100 units to LUMY ====
+(print "--- [TX-FRAG-002 · 02 · owner enables fragmentation + transfers 100 units to LUMY] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (id:string "TFRG-98c486052a51")
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "TestFragEnable" "Fragmentation enable marker"
+                (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_EnableNonceFragmentation nonce=1)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_EnableNonceFragmentation owner id 1 nd)])
+            (format "<(TS02-C1.DPSF|C_TransferNonce ANHD->LUMY 100)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_TransferNonce owner id owner lumy 1 100 false)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-FRAG-002>> LUMY holds exactly 100 native units of nonce 1 after transfer"
+                100
+                (ref-DPDC::UR_AccountNonceSupply lumy id true 1)
+            )
+        ]
+    )
+    ""
+)
+;;==== TX-FRAG-002 · 03 · env-sigs (caps) - LUMY (self holder) Makes/Merges her own holding ====
+(print "--- [TX-FRAG-002 · 03 · env-sigs (caps) - LUMY] ---")
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+;;==== TX-FRAG-002 · 04 · Make: 100 native units -> 100,000 fragment units ====
+(print "--- [TX-FRAG-002 · 04 · Make 100 native units (nonce 1) -> 100,000 fragment units (nonce -1)] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (lumy:string KST.LUMY)
+        (id:string "TFRG-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_MakeFragments LUMY 100 native -> fragments)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_MakeFragments lumy lumy id 1 100)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-FRAG-002>> Make: LUMY's native units (nonce 1) fully converted, balance drops to 0"
+                0
+                (ref-DPDC::UR_AccountNonceSupply lumy id true 1)
+            )
+            (expect "<<TX-FRAG-002>> Make: LUMY credited exactly 1000x fragment units (nonce -1) = 100,000"
+                100000
+                (ref-DPDC::UR_AccountNonceSupply lumy id true -1)
+            )
+        ]
+    )
+    ""
+)
+;;==== TX-FRAG-002 · 05 · Merge: 100,000 fragment units -> 100 native units, full-circle conservation ====
+(print "--- [TX-FRAG-002 · 05 · Merge 100,000 fragment units -> 100 native units; full-circle conservation] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (lumy:string KST.LUMY)
+        (id:string "TFRG-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_MergeFragments LUMY 100,000 fragments -> native)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_MergeFragments lumy lumy id -1 100000)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-FRAG-002>> Merge: LUMY's fragment units (nonce -1) fully drained back to 0"
+                0
+                (ref-DPDC::UR_AccountNonceSupply lumy id true -1)
+            )
+            (expect "<<TX-FRAG-002>> Merge: LUMY's native units (nonce 1) restored to the full 100 (exact conservation, Make+Merge round trip)"
+                100
+                (ref-DPDC::UR_AccountNonceSupply lumy id true 1)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-FRAG-002 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-FRAG-003 - Repurpose consent gate: non-owner rejected, owner succeeds")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-FRAG-003 · 01 · env-sigs (caps) - LUMY re-fragments her restored native units ====
+(print "--- [TX-FRAG-003 · 01 · env-sigs (caps) - LUMY] ---")
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+;;==== TX-FRAG-003 · 02 · re-fragment LUMY's 100 native units for the repurpose probe ====
+(print "--- [TX-FRAG-003 · 02 · re-fragment LUMY's 100 native units for the repurpose probe] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (lumy:string KST.LUMY)
+        (id:string "TFRG-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_MakeFragments LUMY re-fragment 100 native)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_MakeFragments lumy lumy id 1 100)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-FRAG-003>> LUMY holds 100,000 fragment units again, ready for the repurpose probe"
+                100000
+                (ref-DPDC::UR_AccountNonceSupply lumy id true -1)
+            )
+        ]
+    )
+    ""
+)
+;;==== TX-FRAG-003 · 03 · env-sigs (caps) - EMMA (non-owner) attempts to repurpose LUMY's fragments ====
+(print "--- [TX-FRAG-003 · 03 · env-sigs (caps) - EMMA (non-owner)] ---")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+;;==== TX-FRAG-003 · 04 · non-owner repurpose rejected (+ isolation control) ====
+(print "--- [TX-FRAG-003 · 04 · non-owner repurpose rejected (DPDC-F|C>REPURPOSE only checks list-length; the real gate is CAP_Owner, downstream in the wipe-mode debit leg)] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (id:string "TFRG-98c486052a51")
+    )
+    (map print
+        [
+            (expect-failure
+                "<<TX-FRAG-003>> non-owner (EMMA) repurposing LUMY's fragments to herself is rejected (CAP_Owner gate)"
+                (ref-TS02-C1::DPSF|C_RepurposeFragments emma id lumy emma [-1] [100000])
+            )
+            ;;Isolation control: same call, patron=the real owner-konto (correct billing account) but the
+            ;;tx is STILL only signed by EMMA's key -- proves the failure tracks the tx signer against the
+            ;;owner-konto guard (CAP_Owner), not the <patron> argument used for IGNIS billing.
+            (expect-failure
+                "<<TX-FRAG-003>> isolation control: patron=owner-konto but signer=EMMA is still rejected"
+                (ref-TS02-C1::DPSF|C_RepurposeFragments (ref-DPDC::UR_OwnerKonto id true) id lumy emma [-1] [100000])
+            )
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-FRAG-003>> LUMY's fragment balance is UNCHANGED by both rejected attempts"
+                100000
+                (ref-DPDC::UR_AccountNonceSupply lumy id true -1)
+            )
+        ]
+    )
+    ""
+)
+;;==== TX-FRAG-003 · 05 · env-sigs (caps) - ANHD (the real collection owner) ====
+(print "--- [TX-FRAG-003 · 05 · env-sigs (caps) - ANHD (real owner)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-FRAG-003 · 06 · owner-authorized repurpose succeeds ====
+(print "--- [TX-FRAG-003 · 06 · owner-authorized repurpose LUMY -> EMMA succeeds] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (lumy:string KST.LUMY)
+        (emma:string KST.EMMA)
+        (id:string "TFRG-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_RepurposeFragments owner-authorized LUMY->EMMA)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_RepurposeFragments owner id lumy emma [-1] [100000])])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-FRAG-003>> LUMY's fragment balance fully drained by the owner-authorized repurpose"
+                0
+                (ref-DPDC::UR_AccountNonceSupply lumy id true -1)
+            )
+            (expect "<<TX-FRAG-003>> EMMA credited the full 100,000 fragment units by the owner-authorized repurpose"
+                100000
+                (ref-DPDC::UR_AccountNonceSupply emma id true -1)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-FRAG-003 ==================================================")
+(print "")
+(print "=== END FILE [6.1.2]_DPDC-FRAGMENTS.repl ================================")
+(print "")
