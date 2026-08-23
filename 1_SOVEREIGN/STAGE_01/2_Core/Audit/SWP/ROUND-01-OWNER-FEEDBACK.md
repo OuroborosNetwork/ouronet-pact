@@ -2078,3 +2078,20 @@ caller exists. No code change — the real fix already landed as C4/#11C (`ROUND
 C7/#8C (`ROUND-02-FIXES.md` Fix #4); this finding is closed as their byproduct, not by any new work. — *L42*
 
 ---
+
+## L43 (#43L, U|SWP — `UC_ComputeD`'s docstring claims 5 iterations, code runs 6) — **CLOSED — already fixed as a byproduct of H1 (#24H), no code change**
+
+**Checked the current source before writing anything:** `UC_ComputeD`'s docstring (`12_U_SWP.pact:221`)
+now reads "Uses `UC_DNext` for aproximation over 12 fixed iterations," and the code runs
+`(enumerate 0 11)` — 12 iterations, matching exactly. The doc/code mismatch this finding describes
+(5-in-docstring vs. 6-in-code) doesn't exist anymore: H1 (#24H, this same session) bumped the iteration
+count 6 → 12 for a real convergence reason (measured 0.0078 short at 1000x reserve skew) and, doing so,
+necessarily rewrote the docstring to describe the new count — closing this exact doc/code drift as an
+unavoidable side effect, not a separate documentation pass.
+
+**Owner direction:** finalize as closed, document it.
+
+**Status:** CLOSED — no code change here; the fix already landed as H1/#24H (`ROUND-02-FIXES.md` Fix
+#15). Closed as a byproduct, same pattern as H5/#23H (closed by C4) and L42 (closed by C4+C7). — *L43*
+
+---

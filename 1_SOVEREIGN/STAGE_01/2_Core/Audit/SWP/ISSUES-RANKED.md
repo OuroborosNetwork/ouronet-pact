@@ -357,7 +357,12 @@ already tripped this exact crash without naming it. No live path, no code change
 of already-landed fixes, same pattern as H5/#23H being closed as a byproduct of C4. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`. — *L42*
 
-#43L **[U|SWP]** `UC_ComputeD`'s docstring claims 5 iterations; the code runs 6.
+#43L **[U|SWP]** ~~`UC_ComputeD`'s docstring claims 5 iterations; the code runs 6.~~ — **CLOSED — already
+fixed as a byproduct of H1/#24H, 2026-08-23.** H1 bumped the iteration count 6 → 12 for a real convergence
+reason (measured 0.0078 short at 1000x reserve skew) and, doing so, rewrote the docstring to describe the
+new count. Current source: docstring says 12, code runs 12 — the doc/code drift this finding describes no
+longer exists. No code change here, closed as a byproduct like L42/H5. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L43*
 
 #44L **[U|BFS]** `UCX_*`/`UDCX_*` is a locally-invented naming tier not codified in `StoicSyntax.md`.
 
