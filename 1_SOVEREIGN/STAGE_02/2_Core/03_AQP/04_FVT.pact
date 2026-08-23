@@ -1055,6 +1055,10 @@
         @doc "Composite key for FVT|T|MultipletFamily: F | token-0 | token-1 | token-2."
         (concat ["F" BAR token-0-id BAR token-1-id BAR token-2-id])
     )
+    (defun UCk_RpsStream:string (fvt-id:string dptf-id:string position:integer)
+        @doc "Composite key for FVT|T|RPS|Stream: fvt-id | dptf-id | position."
+        (concat [fvt-id BAR dptf-id BAR (int-to-str 10 position)])
+    )
     (defun UC_ComputeInjectGainedRps:decimal (reward-amount:decimal denominator:decimal)
         @doc "Pure: Tier-2 G increment for one inject — floor(R / S, CT_FVT_RPS_PREC). UrStoa ≡ floor(stoa/S, STOA_PREC)."
         (if (<= denominator 0.0)
@@ -1536,6 +1540,30 @@
         (require-capability (SECURE))
         (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"zombie-rewards": zombie-rewards})
     )
+    (defun WU_RpsGlobal|StreamCount:string
+        (fvt-id:string dptf-id:string stream-count:integer)
+        @doc "Set stream-count (live stream positions on this lane) on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"stream-count": stream-count})
+    )
+    (defun WU_RpsGlobal|StreamLastRelease:string
+        (fvt-id:string dptf-id:string stream-last-release:time)
+        @doc "Set stream-last-release (shared lane drip checkpoint) on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"stream-last-release": stream-last-release})
+    )
+    (defun WU_RpsGlobal|StreamUnreleased:string
+        (fvt-id:string dptf-id:string stream-unreleased:decimal)
+        @doc "Set stream-unreleased (custodied-but-not-yet-dripped total) on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"stream-unreleased": stream-unreleased})
+    )
+    (defun WW_RpsStream:string
+        (fvt-id:string dptf-id:string position:integer row:object{FVT|RPS|Stream})
+        @doc "Upsert a FVT|T|RPS|Stream row (add-stream + drip compaction rewrite; overwrites a stale pruned slot)."
+        (require-capability (SECURE))
+        (write FVT|T|RPS|Stream (UCk_RpsStream fvt-id dptf-id position) row)
+    )
     ;;
     ;; [5] FVT|T|RPS|Member  Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
     (defun WI_RpsMember:string
@@ -1786,6 +1814,10 @@
     (defun UR_FVT-RG|StreamUnreleased:decimal (fvt-id:string dptf-id:string)
         @doc "Reads stream-unreleased (custodied-but-not-yet-dripped total on this lane) from global RPS row."
         (at "stream-unreleased" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+    (defun UR_FVT-RS|Stream:object{FVT|RPS|Stream} (fvt-id:string dptf-id:string position:integer)
+        @doc "Reads one FVT|T|RPS|Stream row (an active stream position). Positions 1..stream-count always exist."
+        (read FVT|T|RPS|Stream (UCk_RpsStream fvt-id dptf-id position))
     )
     ;;
     ;; [4] FVT|T|MultipletFamily
@@ -5001,6 +5033,122 @@
         )
     )
     ;; --- Shared inject-CORE + cross-module XE_ building blocks (CC_Inject FVT-local; MTX|n|C_Inject via MTX-AQP) ---
+    (defun XI_DistributeInjectAmount:object{IgnisCollectorV1.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Escrow-aware distribution of `amount` (already in AQP|SC_NAME custody) to the CURRENT stakers of one \
+            \ reward lane — the shared PHASE 2+3 core used by BOTH an instant inject (XI_FvtInjectCore) and a stream \
+            \ drip (XI_ReleaseStream), so a streamed release is IDENTICAL to an instant inject of the same amount. \
+            \ FLUSH (divisor > 0): R_eff = amount + zombie; FARM split-at-inject over fresh S, VAULT/TREASURY \
+            \ G += R_eff / deb-sum; available-rewards += R_eff; zombie → 0. ESCROW (divisor 0, no stakers): hold \
+            \ `amount` as zombie-rewards, touch nothing else (kept out of the M1 last-claimant sweep). require SECURE."
+        (require-capability (SECURE))
+        (let
+            (
+                (zombie:decimal (UR_FVT-RG|ZombieRewards fvt-id reward-dptf-id))
+                (denominator:decimal
+                    (if (= (UR_FVT|FvtClass fvt-id) 0)
+                        (URC_FarmInjectDenominatorFresh fvt-id)
+                        (URC_InjectDenominator fvt-id)
+                    )
+                )
+            )
+            (if (> denominator 0.0)
+                ;; FLUSH — distribute amount + any escrowed zombie to the CURRENT stakers.
+                (let
+                    (
+                        (eff:decimal (+ amount zombie))
+                    )
+                    (if (= (UR_FVT|FvtClass fvt-id) 0)
+                        (XI_1|FarmSplitInject fvt-id reward-dptf-id eff denominator)
+                        (WU_RpsGlobal|CurrentRps fvt-id reward-dptf-id
+                            (+ (UR_FVT-RG|CurrentRps fvt-id reward-dptf-id)
+                               (UC_ComputeInjectGainedRps eff denominator)))
+                    )
+                    ;; available-rewards enters G only NOW (the flush) — bump by the full R_eff.
+                    (WU_RpsGlobal|AvailableRewards fvt-id reward-dptf-id
+                        (+ (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id) eff))
+                    ;; zombie fully consumed by this flush (skip the write when there was none).
+                    (if (> zombie 0.0)
+                        (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id 0.0)
+                        "no escrow to clear")
+                )
+                ;; ESCROW — no stakers (divisor 0): park `amount` in limbo, available-rewards untouched.
+                (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id (+ zombie amount))
+            )
+            (UC_EmptyOc)
+        )
+    )
+    (defun XI_ReleaseStream:object{IgnisCollectorV1.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string)
+        @doc "The DRIP / checkpoint for one reward lane. Releases the vested-since-last-drip slice of every active \
+            \ stream and distributes it via XI_DistributeInjectAmount (so a stream === an instant inject of that \
+            \ slice; a zero-weight interval escrows to zombie). Per stream: rel = min(rate * elapsed, amount - \
+            \ released), or the exact remainder once finished (flush → zero dust). Survivors are compacted to \
+            \ positions 1..k; finished streams are pruned (freeing slots). Fast no-op when stream-count = 0. \
+            \ require SECURE (writes G / available-rewards / the stream ledger)."
+        (require-capability (SECURE))
+        (let ((count:integer (UR_FVT-RG|StreamCount fvt-id reward-dptf-id)))
+            (if (= count 0)
+                (UC_EmptyOc)                                        ;; fast path — no stream on this lane
+                (let*
+                    (
+                        (now:time (at "block-time" (chain-data)))
+                        (last:time (UR_FVT-RG|StreamLastRelease fvt-id reward-dptf-id))
+                        ;; walk positions 1..count → { total released this drip, survivor rows (released advanced) }
+                        (walk:object
+                            (fold
+                                (lambda (acc:object idx:integer)
+                                    (let*
+                                        (
+                                            (s:object{FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id reward-dptf-id idx))
+                                            (remaining:decimal (- (at "amount" s) (at "released" s)))
+                                            (finished:bool (>= now (at "finish" s)))
+                                            (rel:decimal
+                                                (if finished
+                                                    remaining                             ;; exact-remainder flush
+                                                    (let ((by-rate:decimal (* (at "rate" s) (diff-time now last))))
+                                                        (if (> by-rate remaining) remaining by-rate))))
+                                        )
+                                        { "total" : (+ (at "total" acc) rel)
+                                        , "keep"  :
+                                            (if finished
+                                                (at "keep" acc)                           ;; pruned — freed slot
+                                                (+ (at "keep" acc)
+                                                   [ (UDC_FVT|RPS|Stream (at "rate" s) (at "finish" s) (at "amount" s)
+                                                        (+ (at "released" s) rel) fvt-id reward-dptf-id idx) ]))
+                                        }
+                                    )
+                                )
+                                { "total" : 0.0, "keep" : [] }
+                                (enumerate 1 count)
+                            )
+                        )
+                        (total:decimal (at "total" walk))
+                        (survivors:[object{FVT|RPS|Stream}] (at "keep" walk))
+                        (k:integer (length survivors))
+                    )
+                    ;; 1. distribute the released slice (also flushes escrowed zombie; zero-weight interval → zombie)
+                    (if (> total 0.0) (XI_DistributeInjectAmount fvt-id reward-dptf-id total) (UC_EmptyOc))
+                    ;; 2. rewrite survivors compacted to positions 1..k (position field re-stamped)
+                    (if (> k 0)
+                        (map
+                            (lambda (i:integer)
+                                (let ((r:object{FVT|RPS|Stream} (at i survivors)))
+                                    (WW_RpsStream fvt-id reward-dptf-id (+ i 1)
+                                        (UDC_FVT|RPS|Stream (at "rate" r) (at "finish" r) (at "amount" r)
+                                            (at "released" r) fvt-id reward-dptf-id (+ i 1)))))
+                            (enumerate 0 (- k 1)))
+                        "no survivors")
+                    ;; 3. update the lane cursor
+                    (WU_RpsGlobal|StreamCount fvt-id reward-dptf-id k)
+                    (WU_RpsGlobal|StreamUnreleased fvt-id reward-dptf-id
+                        (- (UR_FVT-RG|StreamUnreleased fvt-id reward-dptf-id) total))
+                    (WU_RpsGlobal|StreamLastRelease fvt-id reward-dptf-id now)
+                    (UC_EmptyOc)
+                )
+            )
+        )
+    )
     (defun XI_FvtInjectCore:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "THE single inject-CORE for ALL FVT classes — the ONLY place inject writes exist. C_Inject, CC_Inject \
@@ -5025,48 +5173,11 @@
                 [
                     ;;===>PHASE 1=== custody transfer · UrStoa ≡ C_Transfer / C_Transmit
                     (ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)
-                    ;;===>PHASE 2+3=== escrow-aware distribute + available-rewards. Reward tokens are ALREADY in
-                    ;; custody. ESCROW-on-empty: divisor 0 (no stakers) ⟹ HOLD `amount` as zombie-rewards and touch
-                    ;; nothing else — available-rewards is NOT bumped, so the M1 last-claimant dust sweep can never
-                    ;; pay this limbo balance to a prior cohort. Otherwise FLUSH R_eff = amount + zombie to whoever is
-                    ;; staked NOW (FARM: split-at-inject over fresh S; VAULT/TREASURY: G += R_eff / deb-sum),
-                    ;; available-rewards += R_eff, zombie→0. Divisor computed HERE (farm S needs a member scan that
-                    ;; cannot live in a defcap; vault deb-sum is the maintained mirror).
-                    (let
-                        (
-                            (zombie:decimal (UR_FVT-RG|ZombieRewards fvt-id reward-dptf-id))
-                            (denominator:decimal
-                                (if (= (UR_FVT|FvtClass fvt-id) 0)
-                                    (URC_FarmInjectDenominatorFresh fvt-id)
-                                    (URC_InjectDenominator fvt-id)
-                                )
-                            )
-                        )
-                        (if (> denominator 0.0)
-                            ;; FLUSH — distribute amount + any escrowed zombie to the CURRENT stakers.
-                            (let
-                                (
-                                    (eff:decimal (+ amount zombie))
-                                )
-                                (if (= (UR_FVT|FvtClass fvt-id) 0)
-                                    (XI_1|FarmSplitInject fvt-id reward-dptf-id eff denominator)
-                                    (WU_RpsGlobal|CurrentRps fvt-id reward-dptf-id
-                                        (+ (UR_FVT-RG|CurrentRps fvt-id reward-dptf-id)
-                                           (UC_ComputeInjectGainedRps eff denominator)))
-                                )
-                                ;; available-rewards enters G only NOW (the flush) — bump by the full R_eff.
-                                (WU_RpsGlobal|AvailableRewards fvt-id reward-dptf-id
-                                    (+ (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id) eff))
-                                ;; zombie fully consumed by this flush (skip the write when there was none).
-                                (if (> zombie 0.0)
-                                    (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id 0.0)
-                                    "no escrow to clear")
-                            )
-                            ;; ESCROW — no stakers (divisor 0): park `amount` in limbo, available-rewards untouched.
-                            (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id (+ zombie amount))
-                        )
-                        (UC_EmptyOc)
-                    )
+                    ;;===>PHASE 2+3=== escrow-aware distribute + available-rewards (shared with the stream drip).
+                    ;; Reward tokens are ALREADY in custody. XI_DistributeInjectAmount handles both the FLUSH
+                    ;; (divisor > 0 → farm split-at-inject / vault G bump, available-rewards += R_eff, zombie→0) and
+                    ;; the ESCROW-on-empty case (divisor 0 → hold `amount` as zombie, kept out of the M1 sweep).
+                    (XI_DistributeInjectAmount fvt-id reward-dptf-id amount)
                     ;; PHASE 4.1 — Do not reset unclaimed-count · UrStoa comment-only slot
                     (ref-IGNIS::UDC_ConstructOutputCumulator
                         GAS|INJECT owner-konto trigger [fvt-id reward-dptf-id (format "{}" [amount])]
