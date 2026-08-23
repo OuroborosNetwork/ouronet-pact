@@ -2050,3 +2050,31 @@ not swept under this exception.
 change, tagged **excluded from the StoicSyntax rename sweep**. — *L41*
 
 ---
+
+## L42 (#42L, U|SWP — `UC_ComputeWP`/`UC_ComputeInverseWP` divide by weight with no zero-guard of their own) — **CLOSED — already covered by C4 (#11C) + C7 (#8C), residual only, no code change**
+
+**Confirmed the mechanism, then checked reachability before proposing anything:** `UC_ComputeWP`
+(`12_U_SWP.pact`) computes `(inverse-ow (floor (/ 1.0 ow) 24))` where `ow` is the output-position token's
+weight — confirmed directly against the real Pact binary that `(/ 1.0 0.0)` throws a hard "Arithmetic
+exception: div by zero," not a clean message. `UC_ComputeInverseWP` has the identical shape on its own
+input-side weight.
+
+**Traced every real path that can ever set a pool's weight — both already closed this exact gap:**
+`SWPI::UEV_Issue` (C4/#11C's own fix, this same session) enforces `>= 0.1` on every weight at issuance;
+`SWP::C_ModifyWeights` (C7/#8C's fix) enforces the identical `>= 0.1` floor on every post-issuance
+reweight. No other path exists to set a pool's weight. In fact, C4's own adversarial revert-and-reproduce
+test already tripped over this exact crash without naming it: reverting the C4 fix and testing a literal
+`0.0` weight "still failed even reverted — something else downstream (a real division-by-zero...) already
+aborts on exact zero" — that undiagnosed "something else downstream" is precisely this function's
+unguarded `(/ 1.0 ow)`.
+
+**Owner direction:** finalize as closed, document it.
+
+**Status:** CLOSED — no live weight of `0.0` can reach a real pool today; both entry points (issuance,
+modification) floor every weight at `0.1` before this function is ever reached. Residual only, same class
+as M1/L40/L41's own accepted residual risk: a hypothetical future caller of these `UC_*` functions that
+bypasses both validated entry points would still hit a raw crash instead of a clean message, but no such
+caller exists. No code change — the real fix already landed as C4/#11C (`ROUND-02-FIXES.md` Fix #11) and
+C7/#8C (`ROUND-02-FIXES.md` Fix #4); this finding is closed as their byproduct, not by any new work. — *L42*
+
+---

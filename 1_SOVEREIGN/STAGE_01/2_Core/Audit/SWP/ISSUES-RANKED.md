@@ -348,7 +348,14 @@ list/string shape, not a business decision. Formally codified as a new documente
 `OuronetInformational/StoicSyntax.md` § 6.1 (version bumped 1.8.0 → 1.9.0) and cross-referenced in
 `StoicSyntax-Prefixes.md`. No code change. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L41*
 
-#42L **[U|SWP]** `UC_ComputeWP`/`InverseWP` divide by a token's weight with no zero-guard of their own.
+#42L **[U|SWP]** ~~`UC_ComputeWP`/`InverseWP` divide by a token's weight with no zero-guard of their
+own.~~ — **CLOSED — already covered by C4/#11C + C7/#8C, residual only, 2026-08-23.** Confirmed
+`(/ 1.0 0.0)` is a real hard crash in Pact, but traced every real path that can ever set a pool's weight:
+issuance (`UEV_Issue`, C4/#11C) and modification (`C_ModifyWeights`, C7/#8C) both already floor every
+weight at `>=0.1`, closing this before the function is ever reached. C4's own adversarial revert test
+already tripped this exact crash without naming it. No live path, no code change — closed as a byproduct
+of already-landed fixes, same pattern as H5/#23H being closed as a byproduct of C4. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L42*
 
 #43L **[U|SWP]** `UC_ComputeD`'s docstring claims 5 iterations; the code runs 6.
 
