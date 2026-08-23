@@ -3,11 +3,15 @@
     (defun GOV|AQP|SC_NAME ())
     (defun GOV|AQP|PBL ())
     ;;
-    ;;  [UCK]
+    (defun UEV_IMC ())
+    ;;
+    (defcap AQP|GOV ())
+    ;; [UC]  compute
+    ;;
     (defun UCk_Anchors:string (account:string anchor-id:string))
     (defun UCk_UserBoost:string (account:string boost-class-id:string))
+    ;; [UR]  read
     ;;
-    ;;  [UR] ANK|Schema
     (defun UR_ANK|AnchoredAsset:string (anchor-id:string))
     (defun UR_ANK|Fungibility:[bool] (anchor-id:string))
     (defun UR_ANK|BoostClassId:string (anchor-id:string))
@@ -20,26 +24,19 @@
     (defun UR_ANK|NFTraitValue:string (anchor-id:string))
     (defun UR_ANK|NFNonceClass:integer (anchor-id:string))
     (defun UR_ANK|ID:string (anchor-id:string))
-    (defun URH_ANK|AllAnchorIds:[string] ())
     (defun UR_ANK|AnchorsForAsset:[string] (asset-id:string))
-    ;;  [UR] BoostClass
     (defun UR_BC|Anchors:integer (boost-class-id:string))
     (defun UR_BC|Active:bool (boost-class-id:string))
     (defun UR_BC|ScoreLinks:[string] (boost-class-id:string))
     (defun UR_BC|ScoreLinkCount:integer (boost-class-id:string))
     (defun UR_BC|ID:string (boost-class-id:string))
-    (defun URH_BC|AllBoostClassIds:[string] ())
-    ;;  [UR] AssetAnchors
     (defun UR_AA|GroupsActive:integer (asset-id:string))
     (defun UR_AA|AnchorsActive:integer (asset-id:string))
-    ;;  [UR] UserSchema
     (defun UR_ANK-U|Promile:decimal (account:string anchor-id:string))
     (defun UR_ANK-U|Account:string (account:string anchor-id:string))
     (defun UR_ANK-U|ID:string (account:string anchor-id:string))
-    ;;  [UR] UserBoostSchema
     (defun UR_UB|AggregatePromile:decimal (account:string boost-class-id:string))
     ;;
-    ;;  [URC]
     (defun URC_TrueFungibleAnchorPromile:decimal
         (anchor-id:string total-dptf-amount:decimal)
     )
@@ -58,36 +55,17 @@
     (defun URC_TraitOrClass:bool (anchor-id:string))
     (defun URC_ConformNonces:integer (dpnf-id:string nonces:[integer] trait-key:string trait-value:string))
     (defun URC_ConformNoncesByClass:integer (dpnf-id:string nonces:[integer] nonce-class:integer))
-    ;;
-    ;;  [UEV]
-    (defun UEV_IMC ())
+    ;; [URH] heavy-read
+    (defun URH_ANK|AllAnchorIds:[string] ())
+    (defun URH_BC|AllBoostClassIds:[string] ())
+    ;; [UEV] enforce
     (defun UEV_AnkFungibility (asset-fungibility:[bool]))
     (defun UEV_Promile (anchor-precision:integer anchor-promile:decimal))
     (defun UEV_IssueAnchor (ank-asset:string boost-class-id:string))
     (defun UEV_AssetAnchorCap (ank-asset:string))
     (defun UEV_LiveAnchor (anchor-id:string))
+    ;; [XE]
     ;;
-    ;;  [C]
-    (defun C_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator}
-        (boost-class-id:string)
-    )
-    (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
-    )
-    (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
-    )
-    (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
-    )
-    (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
-    )
-    (defun C_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} (anchor-id:string))
-    ;;
-    (defcap AQP|GOV ())
-    ;;
-    ;;  [XE]  cross-module backward (FVT::XI_RefreshTrueFungibleStakeAnchors, C_SyncTrueFungibleAnchors)
     (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
         (account:string dptf-id:string total-dptf-amount:decimal)
     )
@@ -107,6 +85,24 @@
     (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
         (account:string dpnf-id:string nonces:[integer])
     )
+    ;; [C]   client
+    ;;
+    (defun C_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator}
+        (boost-class-id:string)
+    )
+    (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string anchor-name:string dptf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dptf-amount:decimal)
+    )
+    (defun C_IssueSemiFungibleAnchor:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string anchor-name:string dpsf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpsf-nonce:integer)
+    )
+    (defun C_IssueNonFungibleAnchor:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-trait-key:string dpnf-trait-value:string)
+    )
+    (defun C_IssueNonFungibleSetAnchor:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
+    )
+    (defun C_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} (anchor-id:string))
 )
 (module AQP-ANK GOV
     ;; REPL observability: REPL/Stage_02/[6.2.1]_AQP-ANK.repl tags each intra-tx group as TXnnn · mm · <slug> in ;;==== … ==== and (print "--- [TXnnn · mm · …] ---"); mm is 01.. within each begin-tx.
@@ -606,6 +602,7 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;; [UC]  compute
     (defun UCk_Anchors:string
         (account:string anchor-id:string)
         @doc "Composite key for ANK|T|Anchors (account BAR anchor-id)."
@@ -616,11 +613,10 @@
         @doc "Composite key for ANK|T|UserBoost (account BAR boost-class-id)."
         (concat [account BAR boost-class-id])
     )
-    ;;{F0}  [UR]
+    ;; [UR]  read
     ;; Reads follow schema order: (1) ANK|Schema (2) ANK|BoostClass (3) ANK|AssetAnchors (4) ANK|UserSchema (5) ANK|UserBoostSchema
     ;; Policy P|T, P|MT — not ANK rows; use P|Info, P|UR, P|UR_IMP above.
     ;;
-    ;; [1] ANK|T|Anchor  (ANK|Schema)  Key = <Anchor-ID>
     ;; Core row: UR_ANK|Data
     (defun UR_ANK|Data:object{ANK|Schema} (anchor-id:string)
         @doc "Reads full anchor definition row from ANK|T|Anchor."
@@ -675,12 +671,7 @@
         @doc "Reads anchor-id field from anchor row."
         (at "anchor-id" (UR_ANK|Data anchor-id))
     )
-    (defun URH_ANK|AllAnchorIds:[string] ()
-        @doc "Returns all row keys from ANK|T|Anchor."
-        (keys ANK|T|Anchor)
-    )
     ;;
-    ;; [2] ANK|T|BoostClass  (ANK|BoostClass)  Key = <Boost-Class-ID>
     (defun UR_BC|Data:object{ANK|BoostClass} (boost-class-id:string)
         @doc "Reads full BoostClass row."
         (read ANK|T|BoostClass boost-class-id)
@@ -711,12 +702,7 @@
         @doc "Reads boost-class-id from BoostClass row."
         (at "boost-class-id" (read ANK|T|BoostClass boost-class-id ["boost-class-id"]))
     )
-    (defun URH_BC|AllBoostClassIds:[string] ()
-        @doc "Returns all row keys from ANK|T|BoostClass."
-        (keys ANK|T|BoostClass)
-    )
     ;;
-    ;; [3] ANK|T|AssetAnchors  (ANK|AssetAnchors)  Key = <Asset-ID>
     (defun UR_AA|Data:object{ANK|AssetAnchors} (asset-id:string)
         @doc "Reads full per-asset bookkeeping row (with-default-read when absent)."
         (let
@@ -809,7 +795,6 @@
         )
     )
     ;;
-    ;; [4] ANK|T|Anchors  (ANK|UserSchema)  Key = <Ouronet-Account> | <Anchor-ID>
     ;; Core row: UR_ANK-U|Data
     (defun UR_ANK-U|Data:object{ANK|UserSchema} (account:string anchor-id:string)
         @doc "Core read: user cumulative promile row for account x anchor."
@@ -834,7 +819,6 @@
         (at "anchor-id" (UR_ANK-U|Data account anchor-id))
     )
     ;;
-    ;; [5] ANK|T|UserBoost  (ANK|UserBoostSchema)  Key = <Ouronet-Account> | <Boost-Class-ID>
     (defun UR_UB|Data:object{ANK|UserBoostSchema} (account:string boost-class-id:string)
         @doc "Reads user-boost aggregate row (with-default-read when absent)."
         (with-default-read ANK|T|UserBoost (UCk_UserBoost account boost-class-id)
@@ -850,7 +834,6 @@
         (at "aggregate-promile" (UR_UB|Data account boost-class-id))
     )
     ;;
-    ;;{F1}  [URC]
     (defun URC_TrueFungibleAnchorPromile:decimal 
         (anchor-id:string total-dptf-amount:decimal)
         @doc "Promile from staked DPTF vs anchor reference amount, times anchor promile. \
@@ -1141,7 +1124,16 @@
             ,"asset-id"         : (at "asset-id" aa)}
         )
     )
-    ;;{F2}  [UEV]
+    ;; [URH] heavy-read
+    (defun URH_ANK|AllAnchorIds:[string] ()
+        @doc "Returns all row keys from ANK|T|Anchor."
+        (keys ANK|T|Anchor)
+    )
+    (defun URH_BC|AllBoostClassIds:[string] ()
+        @doc "Returns all row keys from ANK|T|BoostClass."
+        (keys ANK|T|BoostClass)
+    )
+    ;; [UEV] enforce
     (defun UEV_AnkFungibility (asset-fungibility:[bool])
         @doc "Validates asset-fungibility tuple (TF/SF/NF discriminator) for anchor-class / asset-summary tables."
         (let
@@ -1196,7 +1188,60 @@
             (enforce iz-anchor-active (format "Anchor {} must be alive for operation" [anchor-id]))
         )
     )
-    ;;{F3}  [UDC]
+    ;; WU_UserBoost|AggregatePromile — not used: mutates via WW_UserBoost (full row).
+    ;; WU_UserBoost|Account — select key; WU not needed.
+    ;; WU_UserBoost|BoostClassId — select key; WU not needed.
+    (defun CAP_Owner (anchor-id:string)
+        @doc "Enforces Anchor Ownership; This is computed as: \
+        \ 1] For DPTFs Computed via <CAP_TF|Owner> \
+        \ 2] For DPSFs and DPNFs can be either its Owner or Creator"
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
+                (ank-asset:string (UR_ANK|AnchoredAsset anchor-id))
+                (ank-fungibility:[bool] (UR_ANK|Fungibility anchor-id))
+            )
+            (if (= ank-fungibility [true true])
+                (CAP_TF|Owner ank-asset)
+                (if (= ank-fungibility [false true])
+                    (ref-DPDC::CAP_OwnerOrCreator ank-asset true)
+                    (ref-DPDC::CAP_OwnerOrCreator ank-asset false)
+                )
+            )
+        )
+    )
+    (defun CAP_TF|Owner (dptf-id:string)
+        @doc "Enforces dptf-id Ownership, as underlying Dptf-Based Anchor Ownership \
+        \ 3 DPTF variants can exist as underlying anchored asset: \
+        \ 1] Pure DPTF      = Its Owner \
+        \ 2] Frozen DPTF    = DPTF Parent Ownership \
+        \ 3] Reserved DPTF  = DPTF Parent Ownership \
+        \ \
+        \ \
+        \ 4] LP DPTF        = Cannot exist as underlaying DPTF-Based Anchor \
+        \ 5] Frozen LP DPTF = Cannot exist as underlaying DPTF-Based Anchor"
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
+                (first-two:string (take 2 dptf-id))
+                (core-dptf-id:string
+                    (cond
+                        ((= first-two "F|") (ref-DPTF::UR_Frozen dptf-id))
+                        ((= first-two "R|") (ref-DPTF::UR_Reservation dptf-id))
+                        dptf-id
+                    )
+                )
+                (owner:string (ref-DPTF::UR_Konto core-dptf-id))
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner)
+        )
+    )
+    ;; [UDC] construct
     (defun UDC_ANK|Schema:object{ANK|Schema}
         (a:string b:[bool] c:string d:integer e:bool f:decimal g:decimal h:integer i:string j:string k:integer l:string)
         @doc "Constructs anchor definition row for ANK|T|Anchor."
@@ -1482,11 +1527,10 @@
         ,"ouronet-account"     : ouronet-account
         ,"boost-class-id"      : boost-class-id}
     )
-    ;;{FW}  [W]
+    ;; [W]   write
     ;; Five blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
     ;;
-    ;; [1] ANK|T|Anchor  (ANK|Schema)  Key = <Anchor-ID>
     (defun WI_Anchor:string
         (anchor-id:string row:object{ANK|Schema})
         @doc "Insert ANK|T|Anchor full row (issue only)."
@@ -1531,7 +1575,6 @@
     ;; WU_Anchor|NFNonceClass — not mutable [.]
     ;; WU_Anchor|ID — select key; WU not needed.
     ;;
-    ;; [2] ANK|T|BoostClass  (ANK|BoostClass)  Key = <Boost-Class-ID>
     (defun WI_BoostClass:string
         (boost-class-id:string row:object{ANK|BoostClass})
         @doc "Insert ANK|T|BoostClass full row (inline issue when acnoi)."
@@ -1560,7 +1603,6 @@
     )
     ;; WU_BoostClass|ID — select key; WU not needed.
     ;;
-    ;; [3] ANK|T|AssetAnchors  (ANK|AssetAnchors)  Key = <Asset-ID>
     ;; WI_AssetAnchors — not used: first row touch is WW_AssetAnchors (upsert path).
     (defun WW_AssetAnchors:string
         (asset-id:string row:object{ANK|AssetAnchors})
@@ -1579,7 +1621,6 @@
     ;; WU_AssetAnchors|AnchorsActive — not used: mutates via WW_AssetAnchors (full row).
     ;; WU_AssetAnchors|AssetId — select key; WU not needed.
     ;;
-    ;; [4] ANK|T|Anchors  (ANK|UserSchema)  Key = <Ouronet-Account> | <Anchor-ID>
     ;; WI_Anchors — not used: first row touch is WW_Anchors (upsert path).
     (defun WW_Anchors:string
         (account:string anchor-id:string promile:decimal)
@@ -1599,7 +1640,6 @@
     ;; WU_Anchors|Account — select key; WU not needed.
     ;; WU_Anchors|ID — select key; WU not needed.
     ;;
-    ;; [5] ANK|T|UserBoost  (ANK|UserBoostSchema)  Key = <Ouronet-Account> | <Boost-Class-ID>
     ;; WI_UserBoost — not used: first row touch is WW_UserBoost (upsert path).
     (defun WW_UserBoost:string
         (account:string boost-class-id:string aggregate-promile:decimal)
@@ -1609,63 +1649,466 @@
             (UDC_UserBoost aggregate-promile account boost-class-id)
         )
     )
-    ;; WU_UserBoost|AggregatePromile — not used: mutates via WW_UserBoost (full row).
-    ;; WU_UserBoost|Account — select key; WU not needed.
-    ;; WU_UserBoost|BoostClassId — select key; WU not needed.
-    ;;{F4}  [CAP]
-    (defun CAP_Owner (anchor-id:string)
-        @doc "Enforces Anchor Ownership; This is computed as: \
-        \ 1] For DPTFs Computed via <CAP_TF|Owner> \
-        \ 2] For DPSFs and DPNFs can be either its Owner or Creator"
+    ;; [XI]
+    ;;
+    ;; Depth: C_* → XI_* (depth 0) → XI_1|* … ; XE_* / XB_* → XI_1|* (depth 1) → XI_2|* …
+    ;; Blocks: map first, then functions in map order (entry → children → shared leaves).
+    ;;
+    ;; --- Block A · C_Issue*Anchor ---
+    ;;   C_Issue*Anchor
+    ;;     ├ XI_IssueBoostClass (optional)
+    ;;     └ XI_IssueAnchor
+    ;;          └ XI_PlaceAnchorInBookkeeping
+    ;; --- Block B · C_RevokeAnchor ---
+    ;;   C_RevokeAnchor → XI_RevokeAnchorBookkeeping
+    ;; --- Block C · TF user promile (FVT phase 2.2 backward) ---
+    ;;   XE_UpdateTrueFungibleUserAnchorValues
+    ;;     └ XI_1|UpdateTrueFungibleUserAnchorValues
+    ;; --- Block D · SF user promile ---
+    ;;   XE_UpdateSemiFungibleUserAnchorValues
+    ;;     └ XI_1|UpdateSemiFungibleUserAnchorValues
+    ;; --- Block E · NF user promile ---
+    ;;   XE_UpdateNonFungibleUserAnchorValues
+    ;;     └ XI_1|UpdateNonFungibleUserAnchorValues
+    ;; --- Block F · shared leaf ---
+    ;;   XI_2|RecomputeAffectedBoostAggregates (TF / SF / NF / resync)
+    ;;
+    (defun XI_IssueBoostClass:string
+        (boost-class-name:string)
+        @doc "Internal (C_Issue*Anchor · depth 0]): create BoostClass inline when acnoi; returns boost-class-id."
+        ;; SECURE: granted by WI_BoostClass (underlying W_).
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                 ;;
-                (ank-asset:string (UR_ANK|AnchoredAsset anchor-id))
-                (ank-fungibility:[bool] (UR_ANK|Fungibility anchor-id))
+                (boost-class-id:string (ref-U|DALOS::UDC_Makeid boost-class-name))
             )
-            (if (= ank-fungibility [true true])
-                (CAP_TF|Owner ank-asset)
-                (if (= ank-fungibility [false true])
-                    (ref-DPDC::CAP_OwnerOrCreator ank-asset true)
-                    (ref-DPDC::CAP_OwnerOrCreator ank-asset false)
-                )
+            (WI_BoostClass boost-class-id
+                (UDC_BoostClass BAR BAR BAR BAR BAR BAR BAR 0 true boost-class-id)
             )
+            boost-class-id
         )
     )
-    (defun CAP_TF|Owner (dptf-id:string)
-        @doc "Enforces dptf-id Ownership, as underlying Dptf-Based Anchor Ownership \
-        \ 3 DPTF variants can exist as underlying anchored asset: \
-        \ 1] Pure DPTF      = Its Owner \
-        \ 2] Frozen DPTF    = DPTF Parent Ownership \
-        \ 3] Reserved DPTF  = DPTF Parent Ownership \
-        \ \
-        \ \
-        \ 4] LP DPTF        = Cannot exist as underlaying DPTF-Based Anchor \
-        \ 5] Frozen LP DPTF = Cannot exist as underlaying DPTF-Based Anchor"
+    (defun XI_IssueAnchor:string
+        (
+            ank-name:string ank-asset:string ank-fungibility:[bool] boost-class-id:string ank-precision:integer ank-promile:decimal
+            dptf-amount:decimal dpsf-nonce:integer dpnf-trait-key:string dpnf-trait-value:string dpnf-nonce-class:integer
+        )
+        @doc "Internal (C_Issue*Anchor · depth 0]): insert ANK|T|Anchor row; returns anchor-id."
+        ;; SECURE: granted by WI_Anchor (underlying W_).
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                 ;;
-                (first-two:string (take 2 dptf-id))
-                (core-dptf-id:string
-                    (cond
-                        ((= first-two "F|") (ref-DPTF::UR_Frozen dptf-id))
-                        ((= first-two "R|") (ref-DPTF::UR_Reservation dptf-id))
-                        dptf-id
-                    )
-                )
-                (owner:string (ref-DPTF::UR_Konto core-dptf-id))
+                (anchor-id:string (ref-U|DALOS::UDC_Makeid ank-name))
             )
-            (ref-DALOS::CAP_EnforceAccountOwnership owner)
+            (WI_Anchor anchor-id
+                (UDC_ANK|Schema
+                    ank-asset ank-fungibility boost-class-id ank-precision true ank-promile
+                    dptf-amount dpsf-nonce dpnf-trait-key dpnf-trait-value dpnf-nonce-class anchor-id
+                )
+            )
+            anchor-id
+        )
+    )
+    (defun XI_PlaceAnchorInBookkeeping (anchor-id:string asset-id:string boost-class-id:string)
+        @doc "Internal (C_Issue*Anchor · depth 1]): place anchor in BoostClass + AssetAnchors bookkeeping."
+        ;; SECURE: granted by WW_BoostClass and WW_AssetAnchors (underlying W_).
+        (let
+            (
+                (bc:object{ANK|BoostClass} (UR_BC|Data boost-class-id))
+                (aa:object{ANK|AssetAnchors} (UR_AA|Data asset-id))
+            )
+            (WW_BoostClass boost-class-id (UDC_BC|WithAddedAnchor bc anchor-id))
+            (WW_AssetAnchors asset-id (UDC_AA|PlaceAnchor aa anchor-id))
         )
     )
     ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
+    ;; --- Block B · C_RevokeAnchor ---
+    (defun XI_RevokeAnchorBookkeeping (anchor-id:string)
+        @doc "Internal (C_RevokeAnchor · depth 0]): remove anchor from BoostClass + AssetAnchors bookkeeping."
+        ;; SECURE: granted by WW_BoostClass and WW_AssetAnchors (underlying W_).
+        (let
+            (
+                (ank-asset:string (UR_ANK|AnchoredAsset anchor-id))
+                (boost-class-id:string (UR_ANK|BoostClassId anchor-id))
+                (bc:object{ANK|BoostClass} (UR_BC|Data boost-class-id))
+                (aa:object{ANK|AssetAnchors} (UR_AA|Data ank-asset))
+            )
+            (WW_BoostClass boost-class-id (UDC_BC|WithRemovedAnchor bc anchor-id))
+            (WW_AssetAnchors ank-asset (UDC_AA|RemoveAnchor aa anchor-id))
+        )
+    )
+    (defun XI_1|UpdateTrueFungibleUserAnchorValues
+        (account:string dptf-id:string total-dptf-amount:decimal)
+        @doc "Internal (XE_Update*TF · depth 1]): rewrite user promile for each live TF anchor on dptf-id, then XI_2|RecomputeAffectedBoostAggregates."
+        ;; SECURE: granted by WW_Anchors (map) and XI_2|RecomputeAffectedBoostAggregates (WW_UserBoost).
+        (let
+            (
+                (aids:[string] (UR_ANK|AnchorsForAsset dptf-id))
+            )
+            (if (= (length aids) 0)
+                true
+                (let
+                    (
+                        (affected-bcs:[string]
+                            ;; map: live anchors on this DPTF asset (write user promile; collect boost-class-id)
+                            (map
+                                (lambda (aid:string)
+                                    (let
+                                        (
+                                            (new-promile:decimal (URC_TrueFungibleAnchorPromile aid total-dptf-amount))
+                                        )
+                                        (WW_Anchors account aid new-promile)
+                                        (UR_ANK|BoostClassId aid)
+                                    )
+                                )
+                                aids
+                            )
+                        )
+                    )
+                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
+                )
+            )
+        )
+    )
+    (defun XI_1|UpdateSemiFungibleUserAnchorValues
+        (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
+        @doc "Internal (XE_Update*SF · depth 1]): rewrite user promile for each live SF anchor on dpsf-id, then XI_2|RecomputeAffectedBoostAggregates."
+        ;; SECURE: granted by WW_Anchors (map) and XI_2|RecomputeAffectedBoostAggregates (WW_UserBoost).
+        (let
+            (
+                (aids:[string] (UR_ANK|AnchorsForAsset dpsf-id))
+            )
+            (if (= (length aids) 0)
+                true
+                (let
+                    (
+                        (affected-bcs:[string]
+                            ;; map: live anchors on this DPSF asset (write user promile; collect boost-class-id)
+                            (map
+                                (lambda (aid:string)
+                                    (let
+                                        (
+                                            (new-promile:decimal (URC_SemiFungibleAnchorPromile account aid nonces nonce-amounts direction))
+                                        )
+                                        (WW_Anchors account aid new-promile)
+                                        (UR_ANK|BoostClassId aid)
+                                    )
+                                )
+                                aids
+                            )
+                        )
+                    )
+                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
+                )
+            )
+        )
+    )
+    (defun XI_1|UpdateNonFungibleUserAnchorValues
+        (account:string dpnf-id:string nonces:[integer] direction:bool)
+        @doc "Internal (XE_Update*NF · depth 1]): rewrite user promile for each live NF anchor on dpnf-id, then XI_2|RecomputeAffectedBoostAggregates."
+        ;; SECURE: granted by WW_Anchors (map) and XI_2|RecomputeAffectedBoostAggregates (WW_UserBoost).
+        (let
+            (
+                (aids:[string] (UR_ANK|AnchorsForAsset dpnf-id))
+            )
+            (if (= (length aids) 0)
+                true
+                (let
+                    (
+                        (affected-bcs:[string]
+                            ;; map: live anchors on this DPNF asset (write user promile; collect boost-class-id)
+                            (map
+                                (lambda (aid:string)
+                                    (let
+                                        (
+                                            (new-promile:decimal (URC_NonFungibleAnchorPromile account aid nonces direction))
+                                        )
+                                        (WW_Anchors account aid new-promile)
+                                        (UR_ANK|BoostClassId aid)
+                                    )
+                                )
+                                aids
+                            )
+                        )
+                    )
+                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
+                )
+            )
+        )
+    )
+    (defun XI_1|ResyncSemiFungibleUserAnchorValues
+        (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Internal (XE_ResyncSemiFungible* · depth 1]): absolute promile per live SF anchor from rollup nonce inventory."
+        ;; SECURE: granted by WW_Anchors (map) and XI_2|RecomputeAffectedBoostAggregates (WW_UserBoost).
+        (let
+            (
+                (aids:[string] (UR_ANK|AnchorsForAsset dpsf-id))
+            )
+            (if (= (length aids) 0)
+                true
+                (let
+                    (
+                        (affected-bcs:[string]
+                            (map
+                                (lambda (aid:string)
+                                    (let
+                                        (
+                                            (new-promile:decimal
+                                                (URC_SemiFungibleAnchorPromileAbsolute aid nonces nonce-amounts)
+                                            )
+                                        )
+                                        (WW_Anchors account aid new-promile)
+                                        (UR_ANK|BoostClassId aid)
+                                    )
+                                )
+                                aids
+                            )
+                        )
+                    )
+                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
+                )
+            )
+        )
+    )
+    (defun XI_1|ResyncNonFungibleUserAnchorValues
+        (account:string dpnf-id:string nonces:[integer])
+        @doc "Internal (XE_ResyncNonFungible* · depth 1]): absolute promile per live NF anchor from rollup nonce inventory."
+        ;; SECURE: granted by WW_Anchors (map) and XI_2|RecomputeAffectedBoostAggregates (WW_UserBoost).
+        (let
+            (
+                (aids:[string] (UR_ANK|AnchorsForAsset dpnf-id))
+            )
+            (if (= (length aids) 0)
+                true
+                (let
+                    (
+                        (affected-bcs:[string]
+                            (map
+                                (lambda (aid:string)
+                                    (let
+                                        (
+                                            (new-promile:decimal
+                                                (URC_NonFungibleAnchorPromileAbsolute aid nonces)
+                                            )
+                                        )
+                                        (WW_Anchors account aid new-promile)
+                                        (UR_ANK|BoostClassId aid)
+                                    )
+                                )
+                                aids
+                            )
+                        )
+                    )
+                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
+                )
+            )
+        )
+    )
+    ;;
+    ;; --- Block F · shared leaf ---
+    (defun XI_2|RecomputeAffectedBoostAggregates (account:string boost-class-ids:[string])
+        @doc "Internal (user promile update · depth 2 · shared leaf]): recompute ANK|T|UserBoost aggregate-promile per boost-class-id."
+        ;; SECURE: granted by WW_UserBoost (underlying W_).
+        ;; map: distinct boost-class-ids touched by anchor promile refresh
+        (map
+            (lambda (bcid:string)
+                (let
+                    (
+                        (bc:object{ANK|BoostClass} (UR_BC|Data bcid))
+                        (n:integer (at "anchors" bc))
+                    )
+                    (if (<= n 0)
+                        ;; class has NO anchors left ⇒ aggregate-promile is 0. Must WRITE it (not skip) — the sweep
+                        ;; can remove the LAST anchor from a class, and a skipped write would leave a stale nonzero
+                        ;; aggregate (surfaced by the re-score sweep proof). Normal stake/unstake never hits n<=0.
+                        (WW_UserBoost account bcid 0.0)
+                        (let
+                            (
+                                (agg:decimal
+                                    ;; fold: anchor slots 0..n-1 in this BoostClass (sum user promile)
+                                    (fold
+                                        (lambda (acc:decimal idx:integer)
+                                            (let
+                                                (
+                                                    (aid:string (URC_BC|AnchorIdAtSlot bc idx))
+                                                )
+                                                (if (= aid BAR)
+                                                    acc
+                                                    (+ acc (UR_ANK-U|Promile account aid))
+                                                )
+                                            )
+                                        )
+                                        0.0
+                                        (enumerate 0 (- n 1))
+                                    )
+                                )
+                            )
+                            (WW_UserBoost account bcid agg)
+                        )
+                    )
+                )
+            )
+            boost-class-ids
+        )
+    )
+    ;; [XE]
+    (defun XE_SweepRevokeAnchor:string
+        (anchor-id:string)
+        @doc "Forward (re-score sweep terminal · MTX-AQP): revoke an EMPLOYED anchor after the sweep has refreshed \
+            \ every affected holder — set state false + remove it from its BoostClass/AssetAnchors, SKIPPING the #9 \
+            \ score-link lock (which C_RevokeAnchor enforces for UNemployed anchors). The reverse-index set is \
+            \ UNCHANGED: scores keep employing the class (via its other anchors, or an emptied class contributing \
+            \ 0 boost). No IGNIS (the sweep defpact bills). UEV_IMC + ANK|XE>SWEEP-REVOKE (liveness + owner + SECURE)."
+        (UEV_IMC)
+        (with-capability (ANK|XE>SWEEP-REVOKE anchor-id)
+            (WU_Anchor|State anchor-id false)
+            (XI_RevokeAnchorBookkeeping anchor-id)
+        )
+        anchor-id
+    )
+    (defun XE_BumpBoostClassScoreLinks:string
+        (boost-class-id:string score-id:string)
+        @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink): register score-id in the BoostClass reverse-index set, \
+            \ locking revoke of any anchor in this class while the set is non-empty (H4 #9 lock + the sweep's \
+            \ enumerable index). Idempotent. UEV_IMC + ANK|C>BUMP-BOOST-CLASS-LINKS (composes SECURE)."
+        (UEV_IMC)
+        (with-capability (ANK|C>BUMP-BOOST-CLASS-LINKS boost-class-id)
+            (WU_BC|AddScoreLink boost-class-id score-id)
+        )
+    )
+    (defun XE_UnbumpBoostClassScoreLinks:string
+        (boost-class-id:string score-id:string)
+        @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink re-point/unlink): remove score-id from the BoostClass \
+            \ reverse-index set (M4 #13 / sweep unlink). Releases the class's revoke lock once the set empties. \
+            \ UEV_IMC + ANK|C>BUMP-BOOST-CLASS-LINKS (composes SECURE)."
+        (UEV_IMC)
+        (with-capability (ANK|C>BUMP-BOOST-CLASS-LINKS boost-class-id)
+            (WU_BC|RemoveScoreLink boost-class-id score-id)
+        )
+    )
+    (defun XE_RecomputeUserBoostAggregates:string
+        (account:string boost-class-ids:[string])
+        @doc "Forward (re-score sweep): refold this user's aggregate-promile for the given boost-classes from the \
+            \ anchors CURRENTLY in each class. After a sweep removes (or re-prices) an anchor GLOBALLY, this \
+            \ re-derives each holder's stored aggregate-promile so it no longer reflects the retired anchor — the \
+            \ DEEPER recompute (the deb refresh alone assumes the aggregate is correct). NO fund movement; the \
+            \ sweep defpact bills IGNIS. UEV_IMC + ANK|XE>SWEEP (composes SECURE)."
+        (UEV_IMC)
+        (with-capability (ANK|XE>SWEEP)
+            (XI_2|RecomputeAffectedBoostAggregates account boost-class-ids)
+            (format "ANK sweep: refolded {} boost aggregate(s) for {}" [(length boost-class-ids) account])
+        )
+    )
+    ;;
+    ;; --- Block C · TF user promile ---
+    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
+        (account:string dptf-id:string total-dptf-amount:decimal)
+        @doc "Backward (FVT::XI_RefreshTrueFungibleStakeAnchors / C_Sync*): UEV_IMC + XI_1|UpdateTrueFungibleUserAnchorValues \
+            \ when n_live > 0; IGNIS = ignis|small × n_live (live anchors on dptf-id). \
+            \ IGNIS interactor = AQP|SC_NAME (pool vault receiver)."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (aids:[string] (UR_ANK|AnchorsForAsset dptf-id))
+                (n-live:integer (length aids))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (if (> n-live 0)
+                (with-capability (ANK|C>UPDATE-DPTF account dptf-id total-dptf-amount)
+                    (XI_1|UpdateTrueFungibleUserAnchorValues account dptf-id total-dptf-amount)
+                )
+                true
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
+                AQP|SC_NAME
+                trigger
+                [account dptf-id]
+            )
+        )
+    )
+    ;;
+    ;; --- Block D · SF user promile ---
+    (defun XE_UpdateSemiFungibleUserAnchorValues
+        (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
+        @doc "Updates user promile for each live SF anchor on dpsf-id, then recomputes affected BoostClass aggregates."
+        (UEV_IMC)
+        (with-capability (ANK|C>UPDATE-DPSF account dpsf-id nonces)
+            (XI_1|UpdateSemiFungibleUserAnchorValues account dpsf-id nonces nonce-amounts direction)
+        )
+    )
+    ;;
+    ;; --- Block E · NF user promile ---
+    (defun XE_UpdateNonFungibleUserAnchorValues
+        (account:string dpnf-id:string nonces:[integer] direction:bool)
+        @doc "Updates user promile for each live NF anchor on dpnf-id, then recomputes affected BoostClass aggregates."
+        (UEV_IMC)
+        (with-capability (ANK|C>UPDATE-DPNF account dpnf-id nonces)
+            (XI_1|UpdateNonFungibleUserAnchorValues account dpnf-id nonces direction)
+        )
+    )
+    ;;
+    ;; --- Block D′ · SF resync (C_SyncCollectableAnchors · son=true) ---
+    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
+        (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite SF promile from full rollup inventory; IGNIS per live anchor."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (aids:[string] (UR_ANK|AnchorsForAsset dpsf-id))
+                (n-live:integer (length aids))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (if (> n-live 0)
+                (with-capability (ANK|C>UPDATE-DPSF account dpsf-id nonces)
+                    (XI_1|ResyncSemiFungibleUserAnchorValues account dpsf-id nonces nonce-amounts)
+                )
+                true
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
+                AQP|SC_NAME
+                trigger
+                [account dpsf-id]
+            )
+        )
+    )
+    ;;
+    ;; --- Block E′ · NF resync (C_SyncCollectableAnchors · son=false) ---
+    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
+        (account:string dpnf-id:string nonces:[integer])
+        @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite NF promile from full rollup inventory; IGNIS per live anchor."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (aids:[string] (UR_ANK|AnchorsForAsset dpnf-id))
+                (n-live:integer (length aids))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (if (> n-live 0)
+                (with-capability (ANK|C>UPDATE-DPNF account dpnf-id nonces)
+                    (XI_1|ResyncNonFungibleUserAnchorValues account dpnf-id nonces)
+                )
+                true
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
+                AQP|SC_NAME
+                trigger
+                [account dpnf-id]
+            )
+        )
+    )
+    ;; [C]   client
+    ;;
     (defun C_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator}
         (boost-class-id:string)
         @doc "Revokes an empty BoostClass."
@@ -1821,463 +2264,6 @@
                 (XI_RevokeAnchorBookkeeping anchor-id)
                 (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
             )
-        )
-    )
-    (defun XE_SweepRevokeAnchor:string
-        (anchor-id:string)
-        @doc "Forward (re-score sweep terminal · MTX-AQP): revoke an EMPLOYED anchor after the sweep has refreshed \
-            \ every affected holder — set state false + remove it from its BoostClass/AssetAnchors, SKIPPING the #9 \
-            \ score-link lock (which C_RevokeAnchor enforces for UNemployed anchors). The reverse-index set is \
-            \ UNCHANGED: scores keep employing the class (via its other anchors, or an emptied class contributing \
-            \ 0 boost). No IGNIS (the sweep defpact bills). UEV_IMC + ANK|XE>SWEEP-REVOKE (liveness + owner + SECURE)."
-        (UEV_IMC)
-        (with-capability (ANK|XE>SWEEP-REVOKE anchor-id)
-            (WU_Anchor|State anchor-id false)
-            (XI_RevokeAnchorBookkeeping anchor-id)
-        )
-        anchor-id
-    )
-    (defun XE_BumpBoostClassScoreLinks:string
-        (boost-class-id:string score-id:string)
-        @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink): register score-id in the BoostClass reverse-index set, \
-            \ locking revoke of any anchor in this class while the set is non-empty (H4 #9 lock + the sweep's \
-            \ enumerable index). Idempotent. UEV_IMC + ANK|C>BUMP-BOOST-CLASS-LINKS (composes SECURE)."
-        (UEV_IMC)
-        (with-capability (ANK|C>BUMP-BOOST-CLASS-LINKS boost-class-id)
-            (WU_BC|AddScoreLink boost-class-id score-id)
-        )
-    )
-    (defun XE_UnbumpBoostClassScoreLinks:string
-        (boost-class-id:string score-id:string)
-        @doc "Forward (AQP-SCORE::XI_CreateBoostClassLink re-point/unlink): remove score-id from the BoostClass \
-            \ reverse-index set (M4 #13 / sweep unlink). Releases the class's revoke lock once the set empties. \
-            \ UEV_IMC + ANK|C>BUMP-BOOST-CLASS-LINKS (composes SECURE)."
-        (UEV_IMC)
-        (with-capability (ANK|C>BUMP-BOOST-CLASS-LINKS boost-class-id)
-            (WU_BC|RemoveScoreLink boost-class-id score-id)
-        )
-    )
-    (defun XE_RecomputeUserBoostAggregates:string
-        (account:string boost-class-ids:[string])
-        @doc "Forward (re-score sweep): refold this user's aggregate-promile for the given boost-classes from the \
-            \ anchors CURRENTLY in each class. After a sweep removes (or re-prices) an anchor GLOBALLY, this \
-            \ re-derives each holder's stored aggregate-promile so it no longer reflects the retired anchor — the \
-            \ DEEPER recompute (the deb refresh alone assumes the aggregate is correct). NO fund movement; the \
-            \ sweep defpact bills IGNIS. UEV_IMC + ANK|XE>SWEEP (composes SECURE)."
-        (UEV_IMC)
-        (with-capability (ANK|XE>SWEEP)
-            (XI_2|RecomputeAffectedBoostAggregates account boost-class-ids)
-            (format "ANK sweep: refolded {} boost aggregate(s) for {}" [(length boost-class-ids) account])
-        )
-    )
-    ;;
-    ;;{F7}  [X]
-    ;; Depth: C_* → XI_* (depth 0) → XI_1|* … ; XE_* / XB_* → XI_1|* (depth 1) → XI_2|* …
-    ;; Blocks: map first, then functions in map order (entry → children → shared leaves).
-    ;;
-    ;; --- Block A · C_Issue*Anchor ---
-    ;;   C_Issue*Anchor
-    ;;     ├ XI_IssueBoostClass (optional)
-    ;;     └ XI_IssueAnchor
-    ;;          └ XI_PlaceAnchorInBookkeeping
-    ;; --- Block B · C_RevokeAnchor ---
-    ;;   C_RevokeAnchor → XI_RevokeAnchorBookkeeping
-    ;; --- Block C · TF user promile (FVT phase 2.2 backward) ---
-    ;;   XE_UpdateTrueFungibleUserAnchorValues
-    ;;     └ XI_1|UpdateTrueFungibleUserAnchorValues
-    ;; --- Block D · SF user promile ---
-    ;;   XE_UpdateSemiFungibleUserAnchorValues
-    ;;     └ XI_1|UpdateSemiFungibleUserAnchorValues
-    ;; --- Block E · NF user promile ---
-    ;;   XE_UpdateNonFungibleUserAnchorValues
-    ;;     └ XI_1|UpdateNonFungibleUserAnchorValues
-    ;; --- Block F · shared leaf ---
-    ;;   XI_2|RecomputeAffectedBoostAggregates (TF / SF / NF / resync)
-    ;;
-    (defun XI_IssueBoostClass:string
-        (boost-class-name:string)
-        @doc "Internal (C_Issue*Anchor · depth 0]): create BoostClass inline when acnoi; returns boost-class-id."
-        ;; SECURE: granted by WI_BoostClass (underlying W_).
-        (let
-            (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                ;;
-                (boost-class-id:string (ref-U|DALOS::UDC_Makeid boost-class-name))
-            )
-            (WI_BoostClass boost-class-id
-                (UDC_BoostClass BAR BAR BAR BAR BAR BAR BAR 0 true boost-class-id)
-            )
-            boost-class-id
-        )
-    )
-    (defun XI_IssueAnchor:string
-        (
-            ank-name:string ank-asset:string ank-fungibility:[bool] boost-class-id:string ank-precision:integer ank-promile:decimal
-            dptf-amount:decimal dpsf-nonce:integer dpnf-trait-key:string dpnf-trait-value:string dpnf-nonce-class:integer
-        )
-        @doc "Internal (C_Issue*Anchor · depth 0]): insert ANK|T|Anchor row; returns anchor-id."
-        ;; SECURE: granted by WI_Anchor (underlying W_).
-        (let
-            (
-                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                ;;
-                (anchor-id:string (ref-U|DALOS::UDC_Makeid ank-name))
-            )
-            (WI_Anchor anchor-id
-                (UDC_ANK|Schema
-                    ank-asset ank-fungibility boost-class-id ank-precision true ank-promile
-                    dptf-amount dpsf-nonce dpnf-trait-key dpnf-trait-value dpnf-nonce-class anchor-id
-                )
-            )
-            anchor-id
-        )
-    )
-    (defun XI_PlaceAnchorInBookkeeping (anchor-id:string asset-id:string boost-class-id:string)
-        @doc "Internal (C_Issue*Anchor · depth 1]): place anchor in BoostClass + AssetAnchors bookkeeping."
-        ;; SECURE: granted by WW_BoostClass and WW_AssetAnchors (underlying W_).
-        (let
-            (
-                (bc:object{ANK|BoostClass} (UR_BC|Data boost-class-id))
-                (aa:object{ANK|AssetAnchors} (UR_AA|Data asset-id))
-            )
-            (WW_BoostClass boost-class-id (UDC_BC|WithAddedAnchor bc anchor-id))
-            (WW_AssetAnchors asset-id (UDC_AA|PlaceAnchor aa anchor-id))
-        )
-    )
-    ;;
-    ;; --- Block B · C_RevokeAnchor ---
-    (defun XI_RevokeAnchorBookkeeping (anchor-id:string)
-        @doc "Internal (C_RevokeAnchor · depth 0]): remove anchor from BoostClass + AssetAnchors bookkeeping."
-        ;; SECURE: granted by WW_BoostClass and WW_AssetAnchors (underlying W_).
-        (let
-            (
-                (ank-asset:string (UR_ANK|AnchoredAsset anchor-id))
-                (boost-class-id:string (UR_ANK|BoostClassId anchor-id))
-                (bc:object{ANK|BoostClass} (UR_BC|Data boost-class-id))
-                (aa:object{ANK|AssetAnchors} (UR_AA|Data ank-asset))
-            )
-            (WW_BoostClass boost-class-id (UDC_BC|WithRemovedAnchor bc anchor-id))
-            (WW_AssetAnchors ank-asset (UDC_AA|RemoveAnchor aa anchor-id))
-        )
-    )
-    ;;
-    ;; --- Block C · TF user promile ---
-    (defun XE_UpdateTrueFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
-        (account:string dptf-id:string total-dptf-amount:decimal)
-        @doc "Backward (FVT::XI_RefreshTrueFungibleStakeAnchors / C_Sync*): UEV_IMC + XI_1|UpdateTrueFungibleUserAnchorValues \
-            \ when n_live > 0; IGNIS = ignis|small × n_live (live anchors on dptf-id). \
-            \ IGNIS interactor = AQP|SC_NAME (pool vault receiver)."
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                ;;
-                (aids:[string] (UR_ANK|AnchorsForAsset dptf-id))
-                (n-live:integer (length aids))
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-            )
-            (if (> n-live 0)
-                (with-capability (ANK|C>UPDATE-DPTF account dptf-id total-dptf-amount)
-                    (XI_1|UpdateTrueFungibleUserAnchorValues account dptf-id total-dptf-amount)
-                )
-                true
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
-                AQP|SC_NAME
-                trigger
-                [account dptf-id]
-            )
-        )
-    )
-    (defun XI_1|UpdateTrueFungibleUserAnchorValues
-        (account:string dptf-id:string total-dptf-amount:decimal)
-        @doc "Internal (XE_Update*TF · depth 1]): rewrite user promile for each live TF anchor on dptf-id, then XI_2|RecomputeAffectedBoostAggregates."
-        ;; SECURE: granted by WW_Anchors (map) and XI_2|RecomputeAffectedBoostAggregates (WW_UserBoost).
-        (let
-            (
-                (aids:[string] (UR_ANK|AnchorsForAsset dptf-id))
-            )
-            (if (= (length aids) 0)
-                true
-                (let
-                    (
-                        (affected-bcs:[string]
-                            ;; map: live anchors on this DPTF asset (write user promile; collect boost-class-id)
-                            (map
-                                (lambda (aid:string)
-                                    (let
-                                        (
-                                            (new-promile:decimal (URC_TrueFungibleAnchorPromile aid total-dptf-amount))
-                                        )
-                                        (WW_Anchors account aid new-promile)
-                                        (UR_ANK|BoostClassId aid)
-                                    )
-                                )
-                                aids
-                            )
-                        )
-                    )
-                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
-                )
-            )
-        )
-    )
-    ;;
-    ;; --- Block D · SF user promile ---
-    (defun XE_UpdateSemiFungibleUserAnchorValues
-        (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
-        @doc "Updates user promile for each live SF anchor on dpsf-id, then recomputes affected BoostClass aggregates."
-        (UEV_IMC)
-        (with-capability (ANK|C>UPDATE-DPSF account dpsf-id nonces)
-            (XI_1|UpdateSemiFungibleUserAnchorValues account dpsf-id nonces nonce-amounts direction)
-        )
-    )
-    (defun XI_1|UpdateSemiFungibleUserAnchorValues
-        (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer] direction:bool)
-        @doc "Internal (XE_Update*SF · depth 1]): rewrite user promile for each live SF anchor on dpsf-id, then XI_2|RecomputeAffectedBoostAggregates."
-        ;; SECURE: granted by WW_Anchors (map) and XI_2|RecomputeAffectedBoostAggregates (WW_UserBoost).
-        (let
-            (
-                (aids:[string] (UR_ANK|AnchorsForAsset dpsf-id))
-            )
-            (if (= (length aids) 0)
-                true
-                (let
-                    (
-                        (affected-bcs:[string]
-                            ;; map: live anchors on this DPSF asset (write user promile; collect boost-class-id)
-                            (map
-                                (lambda (aid:string)
-                                    (let
-                                        (
-                                            (new-promile:decimal (URC_SemiFungibleAnchorPromile account aid nonces nonce-amounts direction))
-                                        )
-                                        (WW_Anchors account aid new-promile)
-                                        (UR_ANK|BoostClassId aid)
-                                    )
-                                )
-                                aids
-                            )
-                        )
-                    )
-                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
-                )
-            )
-        )
-    )
-    ;;
-    ;; --- Block E · NF user promile ---
-    (defun XE_UpdateNonFungibleUserAnchorValues
-        (account:string dpnf-id:string nonces:[integer] direction:bool)
-        @doc "Updates user promile for each live NF anchor on dpnf-id, then recomputes affected BoostClass aggregates."
-        (UEV_IMC)
-        (with-capability (ANK|C>UPDATE-DPNF account dpnf-id nonces)
-            (XI_1|UpdateNonFungibleUserAnchorValues account dpnf-id nonces direction)
-        )
-    )
-    (defun XI_1|UpdateNonFungibleUserAnchorValues
-        (account:string dpnf-id:string nonces:[integer] direction:bool)
-        @doc "Internal (XE_Update*NF · depth 1]): rewrite user promile for each live NF anchor on dpnf-id, then XI_2|RecomputeAffectedBoostAggregates."
-        ;; SECURE: granted by WW_Anchors (map) and XI_2|RecomputeAffectedBoostAggregates (WW_UserBoost).
-        (let
-            (
-                (aids:[string] (UR_ANK|AnchorsForAsset dpnf-id))
-            )
-            (if (= (length aids) 0)
-                true
-                (let
-                    (
-                        (affected-bcs:[string]
-                            ;; map: live anchors on this DPNF asset (write user promile; collect boost-class-id)
-                            (map
-                                (lambda (aid:string)
-                                    (let
-                                        (
-                                            (new-promile:decimal (URC_NonFungibleAnchorPromile account aid nonces direction))
-                                        )
-                                        (WW_Anchors account aid new-promile)
-                                        (UR_ANK|BoostClassId aid)
-                                    )
-                                )
-                                aids
-                            )
-                        )
-                    )
-                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
-                )
-            )
-        )
-    )
-    ;;
-    ;; --- Block D′ · SF resync (C_SyncCollectableAnchors · son=true) ---
-    (defun XE_ResyncSemiFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
-        (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite SF promile from full rollup inventory; IGNIS per live anchor."
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                ;;
-                (aids:[string] (UR_ANK|AnchorsForAsset dpsf-id))
-                (n-live:integer (length aids))
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-            )
-            (if (> n-live 0)
-                (with-capability (ANK|C>UPDATE-DPSF account dpsf-id nonces)
-                    (XI_1|ResyncSemiFungibleUserAnchorValues account dpsf-id nonces nonce-amounts)
-                )
-                true
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
-                AQP|SC_NAME
-                trigger
-                [account dpsf-id]
-            )
-        )
-    )
-    (defun XI_1|ResyncSemiFungibleUserAnchorValues
-        (account:string dpsf-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "Internal (XE_ResyncSemiFungible* · depth 1]): absolute promile per live SF anchor from rollup nonce inventory."
-        ;; SECURE: granted by WW_Anchors (map) and XI_2|RecomputeAffectedBoostAggregates (WW_UserBoost).
-        (let
-            (
-                (aids:[string] (UR_ANK|AnchorsForAsset dpsf-id))
-            )
-            (if (= (length aids) 0)
-                true
-                (let
-                    (
-                        (affected-bcs:[string]
-                            (map
-                                (lambda (aid:string)
-                                    (let
-                                        (
-                                            (new-promile:decimal
-                                                (URC_SemiFungibleAnchorPromileAbsolute aid nonces nonce-amounts)
-                                            )
-                                        )
-                                        (WW_Anchors account aid new-promile)
-                                        (UR_ANK|BoostClassId aid)
-                                    )
-                                )
-                                aids
-                            )
-                        )
-                    )
-                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
-                )
-            )
-        )
-    )
-    ;;
-    ;; --- Block E′ · NF resync (C_SyncCollectableAnchors · son=false) ---
-    (defun XE_ResyncNonFungibleUserAnchorValues:object{IgnisCollectorV1.OutputCumulator}
-        (account:string dpnf-id:string nonces:[integer])
-        @doc "Backward (AQP::C_SyncCollectableAnchors): rewrite NF promile from full rollup inventory; IGNIS per live anchor."
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                ;;
-                (aids:[string] (UR_ANK|AnchorsForAsset dpnf-id))
-                (n-live:integer (length aids))
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-            )
-            (if (> n-live 0)
-                (with-capability (ANK|C>UPDATE-DPNF account dpnf-id nonces)
-                    (XI_1|ResyncNonFungibleUserAnchorValues account dpnf-id nonces)
-                )
-                true
-            )
-            (ref-IGNIS::UDC_ConstructOutputCumulator
-                (URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
-                AQP|SC_NAME
-                trigger
-                [account dpnf-id]
-            )
-        )
-    )
-    (defun XI_1|ResyncNonFungibleUserAnchorValues
-        (account:string dpnf-id:string nonces:[integer])
-        @doc "Internal (XE_ResyncNonFungible* · depth 1]): absolute promile per live NF anchor from rollup nonce inventory."
-        ;; SECURE: granted by WW_Anchors (map) and XI_2|RecomputeAffectedBoostAggregates (WW_UserBoost).
-        (let
-            (
-                (aids:[string] (UR_ANK|AnchorsForAsset dpnf-id))
-            )
-            (if (= (length aids) 0)
-                true
-                (let
-                    (
-                        (affected-bcs:[string]
-                            (map
-                                (lambda (aid:string)
-                                    (let
-                                        (
-                                            (new-promile:decimal
-                                                (URC_NonFungibleAnchorPromileAbsolute aid nonces)
-                                            )
-                                        )
-                                        (WW_Anchors account aid new-promile)
-                                        (UR_ANK|BoostClassId aid)
-                                    )
-                                )
-                                aids
-                            )
-                        )
-                    )
-                    (XI_2|RecomputeAffectedBoostAggregates account (distinct affected-bcs))
-                )
-            )
-        )
-    )
-    ;;
-    ;; --- Block F · shared leaf ---
-    (defun XI_2|RecomputeAffectedBoostAggregates (account:string boost-class-ids:[string])
-        @doc "Internal (user promile update · depth 2 · shared leaf]): recompute ANK|T|UserBoost aggregate-promile per boost-class-id."
-        ;; SECURE: granted by WW_UserBoost (underlying W_).
-        ;; map: distinct boost-class-ids touched by anchor promile refresh
-        (map
-            (lambda (bcid:string)
-                (let
-                    (
-                        (bc:object{ANK|BoostClass} (UR_BC|Data bcid))
-                        (n:integer (at "anchors" bc))
-                    )
-                    (if (<= n 0)
-                        ;; class has NO anchors left ⇒ aggregate-promile is 0. Must WRITE it (not skip) — the sweep
-                        ;; can remove the LAST anchor from a class, and a skipped write would leave a stale nonzero
-                        ;; aggregate (surfaced by the re-score sweep proof). Normal stake/unstake never hits n<=0.
-                        (WW_UserBoost account bcid 0.0)
-                        (let
-                            (
-                                (agg:decimal
-                                    ;; fold: anchor slots 0..n-1 in this BoostClass (sum user promile)
-                                    (fold
-                                        (lambda (acc:decimal idx:integer)
-                                            (let
-                                                (
-                                                    (aid:string (URC_BC|AnchorIdAtSlot bc idx))
-                                                )
-                                                (if (= aid BAR)
-                                                    acc
-                                                    (+ acc (UR_ANK-U|Promile account aid))
-                                                )
-                                            )
-                                        )
-                                        0.0
-                                        (enumerate 0 (- n 1))
-                                    )
-                                )
-                            )
-                            (WW_UserBoost account bcid agg)
-                        )
-                    )
-                )
-            )
-            boost-class-ids
         )
     )
     ;;
