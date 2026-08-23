@@ -217,6 +217,9 @@
     (defun AQP-FVT|C_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
+    (defun AQP-FVT|C_InjectStream:string
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+    )
     (defun AQP-FVT|CC_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
@@ -1760,6 +1763,27 @@
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (format "Successfully injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|C_InjectStream:string
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        @doc "Injects reward DPTF as a TIME-STREAM (linear vesting over `duration` seconds, 1h..365d) into fvt-id \
+            \ and collects IGNIS on patron. The DELAYED counterpart of AQP-FVT|C_Inject (instant): the amount vests \
+            \ continuously and whoever is staked during each slice earns it (late stakers included). Independent \
+            \ overlapping streams, capped by the FVT owner konto's Elite tier. See Audit/STREAMED-INJECT-DESIGN.md."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_InjectStream patron fvt-id reward-dptf-id amount duration)
+                )
+                (ref-TS01-A::XB_DynamicFuelKDA)
+                (format "Successfully streamed {} {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])
             )
         )
     )

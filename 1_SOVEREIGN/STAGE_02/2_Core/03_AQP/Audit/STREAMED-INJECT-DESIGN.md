@@ -246,13 +246,24 @@ inject entrypoints gain a `duration` param → cascade the signature to the Talo
 readers that return module schemas stay module-only (interface object-return rule).
 
 **Build order (each step green before the next):**
-1. Schema + `deftable` + constants + `UDC_FVT|RPS|Stream` constructor; add the 3 Global fields (+ defaults).
-2. `URC_MaxStreamLanes` + `UEV_StreamParams`.
-3. `XI_ReleaseStream` — vault branch first (prove drip + compaction + flush on a treasury), then the farm branch.
-4. Wire the drip into inject (instant vs add-stream), then stake/unstake/collect/deb-fix/sweep.
+1. ✅ **DONE (f8c0749)** Schema + `deftable` + `create-table` + constants + `UDC_FVT|RPS|Stream`; 3 Global fields
+   (faithful `UDC_FVT|RPS|Global`, 13 params).
+2. ✅ **DONE (feefb09)** `URC_MaxStreamLanes` + `UEV_StreamParams` + 3 per-field stream readers.
+3. ✅ **DONE (147b9a8)** `XI_DistributeInjectAmount` (extracted from `XI_FvtInjectCore`, byte-preserving) +
+   `XI_ReleaseStream` (the drip: fold walk, clamp+finish-flush, distribute, compact) + key/writers/reader.
+4. ✅ **DONE (a6a3de4)** Drip wired checkpoint-first at inject (PHASE 0) + `C_InjectStream`/`XI_FvtAddStream` +
+   stake/unstake (`XI_RpsPreScore`) + collect (`C_Collect`) + deb-fix batches + sweep.
 5. `URC_LiveClaimable` + `URC_StreamStatus`.
-6. Talos direct + delayed wrappers; thread `duration` through.
-7. Tests 1→10; then a gas pass on the streamed farm drip.
+6. Talos direct + **`AQP-FVT|C_InjectStream`** delayed wrapper (needed to smoke-test — `C_InjectStream` is `UEV_IMC`-gated).
+7. Tests 1→10 (smoke test first: create stream → advance block-time → drip → verify release); gas pass on the farm drip.
+
+**Implementation refinement (owner-notified):** instead of adding a `duration` param to `C_Inject` (which would
+cascade the signature through the interface + Talos + the MTX defpact + every existing test), a **separate
+`C_InjectStream` entrypoint** was added (D11's "delayed wrapper"), so `C_Inject` is byte-identical and the cascade
+is zero. Also: `UEV_StreamParams` is the count-INDEPENDENT duration+rate check (defcap-safe); the count-DEPENDENT
+slot-cap is enforced in `XI_FvtAddStream` AFTER the drip (a finished stream frees its slot only once the drip
+prunes it). All drips fast-return when `stream-count = 0`, so non-streamed pools are unaffected (proven: full AQP
+audit ALL GREEN after each of Steps 1–4).
 
 ---
 
