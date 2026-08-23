@@ -1775,6 +1775,18 @@
         @doc "Reads multiplet-family-id from global RPS row."
         (at "multiplet-family-id" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
     )
+    (defun UR_FVT-RG|StreamCount:integer (fvt-id:string dptf-id:string)
+        @doc "Reads stream-count (live linear-release stream positions on this lane; 0 = none) from global RPS row."
+        (at "stream-count" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+    (defun UR_FVT-RG|StreamLastRelease:time (fvt-id:string dptf-id:string)
+        @doc "Reads stream-last-release (shared lane drip checkpoint) from global RPS row."
+        (at "stream-last-release" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+    (defun UR_FVT-RG|StreamUnreleased:decimal (fvt-id:string dptf-id:string)
+        @doc "Reads stream-unreleased (custodied-but-not-yet-dripped total on this lane) from global RPS row."
+        (at "stream-unreleased" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
     ;;
     ;; [4] FVT|T|MultipletFamily
     (defun UR_FVT-MF|MultipletFamily:object{FVT|MultipletFamily} (multiplet-family-id:string)
@@ -2021,6 +2033,27 @@
                     member-ids
                 )
             )
+        )
+    )
+    (defun URC_MaxStreamLanes:integer (account:string)
+        @doc "Max concurrent streamed injects the FVT owner konto may run, by Elite tier (snapshot at inject, D5). \
+            \ Smart accounts have no Elite level, so they resolve to their sovereign standard account. \
+            \ slots = max(1, (major-1)*7 + minor): everyone gets >= 1, capped at STREAM_MAX_LANES (49 at tier 7.7)."
+        (let*
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;; 1. smart account → its controlling sovereign (standard) account; standard account → itself
+                (tier-acct:string
+                    (if (ref-DALOS::UR_AccountType account)
+                        (ref-DALOS::UR_AccountSovereign account)
+                        account))
+                ;; 2. the stored Elite tier of that account, as major.minor integers
+                (major:integer (ref-DALOS::UR_Elite-Tier-Major tier-acct))
+                (minor:integer (ref-DALOS::UR_Elite-Tier-Minor tier-acct))
+                ;; 3. tier → slot count; NOVICE (major 0) underflows to <1 and is floored to the guaranteed 1
+                (slots:integer (+ (* (- major 1) 7) minor))
+            )
+            (if (< slots 1) 1 slots)
         )
     )
     (defun URC_ScoreClassMatchesFvtClass:bool (fvt-class:integer score-class:integer)
@@ -2923,6 +2956,31 @@
             (ref-DALOS::UEV_EnforceAccountExists patron)
             (ref-DPTF::UEV_id reward-dptf-id)
             (ref-DPTF::UEV_Amount reward-dptf-id amount)
+        )
+    )
+    (defun UEV_StreamParams:bool
+        (owner:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        @doc "Guard for a STREAMED inject (fires only when duration > 0; instant injects keep just amount > 0). \
+            \ Enforces: duration in [STREAM_MIN_DURATION, STREAM_MAX_DURATION]; a minimum release rate \
+            \ amount/duration >= STREAM_MIN_UPS * 10^(-reward-decimals) (precision-normalized, so the floor is \
+            \ uniform across token decimals); and a free stream slot under the owner konto's Elite-tier cap."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (reward-dec:integer (ref-DPTF::UR_Decimals reward-dptf-id))
+                ;; min-rate = STREAM_MIN_UPS smallest-units / sec = STREAM_MIN_UPS / 10^dec (integer pow is exact —
+                ;; no float64 precision loss). For a 12-dp token: 1e7 / 1e12 = 1e-5 token/sec.
+                (min-rate:decimal (/ (dec STREAM_MIN_UPS) (dec (^ 10 reward-dec))))
+                (rate:decimal (/ amount (dec duration)))
+            )
+            (enforce
+                (fold (and) true
+                    [ (>= duration STREAM_MIN_DURATION)
+                      (<= duration STREAM_MAX_DURATION)
+                      (>= rate min-rate) ])
+                "FVT|Stream: duration must be 1h..365d and rate >= STREAM_MIN_UPS/sec (raise amount or shorten duration)")
+            (enforce (< (UR_FVT-RG|StreamCount fvt-id reward-dptf-id) (URC_MaxStreamLanes owner))
+                "FVT|Stream: stream slots full for this owner's Elite tier — use a direct (instant) inject")
         )
     )
     (defun UEV_CollectContext
