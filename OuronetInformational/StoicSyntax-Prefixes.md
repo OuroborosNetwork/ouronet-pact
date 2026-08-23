@@ -37,7 +37,7 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 
 | Prefix | Class | Meaning | On execution path? | Colour family |
 |--------|-------|---------|--------------------|---------------|
-| `UC_`   | compute | Pure compute on arguments only — **no table reads, no `enforce`** | yes | **COMPUTE** |
+| `UC_`   | compute | Pure compute on arguments only — **no table reads, no `enforce`**\* | yes | **COMPUTE** |
 | `UCk_`  | compute·key | Pure compute that builds a **composite table key** (`concat […BAR…]`) | yes | **COMPUTE** |
 | `UCx_`  | compute·aux | Pure-compute **auxiliary** of the function above it | yes | **COMPUTE** (dim) |
 | `UR_`   | read | **Point** read (single row/field by key) | yes | **READ** |
@@ -81,6 +81,11 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 | `P\|*` | Policy capabilities + policy-registry functions (IMC guard registry) | **STRUCTURAL** (dim) |
 | `SECURE` | The home secure-compose leaf capability (guards writers) | **STRUCTURAL** (dim) |
 | `UEV_IMC` | The inter-module-call gate (special `UEV_`; opens every `C_`/`CC_`/`X` entrypoint) | **STRUCTURAL** (dim) |
+
+> \* **Documented exception (StoicSyntax.md § 6.1, v1.9.0):** `U|LST`'s bounds-guard helpers
+> (`UC_ReplaceAt`, `UC_RemoveItemAt`, `UC_LE`, `UC_FE`) and any `UC_*` calling them stay `UC_*` and are
+> excluded from renaming — their `enforce` guards the computation's own list/string shape (index-in-
+> bounds, not-empty), not a business/domain decision.
 
 > **Not prefixes — module/table scopes.** Tokens like `DPTF`, `DPOF`, `DPSF`, `DPNF`, `DPDC`,
 > `DALOS`, `SWP`, `ATS`, `VST`, `AQP`, `ANK`, `SCR`, `FVT`, `MTX`, `IGNIS`, `DEMIPAD`, `PYTHIA`,

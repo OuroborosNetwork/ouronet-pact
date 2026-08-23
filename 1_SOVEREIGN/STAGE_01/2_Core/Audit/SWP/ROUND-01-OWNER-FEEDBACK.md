@@ -2023,3 +2023,30 @@ the prediction that this check was never reachable, since removing it changed no
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #26. Awaiting Round III re-verify. — *L40*
 
 ---
+
+## L41 (#41L, U|SWP — `UC_*` surface transitively inherits `enforce` from `U|LST` helpers) — **DESIGN, accepted — documented exception, excluded from the sweep**
+
+**Presented, not assumed fixable like L40:** unlike L40's single dead check, `U|LST::UC_ReplaceAt`/
+`UC_RemoveItemAt`/`UC_LE`/`UC_FE` are called pervasively and load-bearingly across `U|SWP`'s own `UC_*`
+surface — including inside `UC_ComputeY`/`UC_ComputeInverseY`, the actual stable-swap Newton-solver math.
+These aren't dead checks like L40's; they're real bounds-guards (index-in-bounds, list-not-empty)
+preventing a bare out-of-bounds crash mid-computation. Deleting them the way L40's dead check was deleted
+would strip real protection from live, critical math.
+
+**Owner direction:** exclude this from the sweep entirely. Leave `U|LST` as-is, note it as a documented
+exception, and these stay `UC_*` — because they're fundamentally computing over string/list values, and
+their `enforce` calls exist only to keep that computation from getting corrupted (an out-of-bounds crash
+mid-fold), not to gate a business/application decision the way a real `UEV_*` domain check would.
+
+**Formalized as a versioned StoicSyntax rule, not just noted here** — per this codebase's own convention
+("when a durable rule changes, bump the version and update the file first"): added as a documented
+exception in `OuronetInformational/StoicSyntax.md` § 6.1 (bumped **1.8.0 → 1.9.0**, changelog row added)
+and cross-referenced in `OuronetInformational/StoicSyntax-Prefixes.md`'s own `UC_` row. Scoped narrowly
+and explicitly — only `U|LST`'s named list/string-shape bounds-guard helpers (and any `UC_*` that calls
+them) are covered; a `UC_*` calling into real business validation elsewhere is still a genuine violation,
+not swept under this exception.
+
+**Status:** DESIGN, accepted — documented exception, formally codified in StoicSyntax v1.9.0. No code
+change, tagged **excluded from the StoicSyntax rename sweep**. — *L41*
+
+---

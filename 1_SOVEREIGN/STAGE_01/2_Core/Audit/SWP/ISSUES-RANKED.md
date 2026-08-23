@@ -338,8 +338,15 @@ from the same source via the same `enumerate` range), so the cross-module `UEV_U
 never actually fail — dead defense, not load-bearing. Removed it, restoring `UC_*` purity. Full regression
 clean before/after. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L40*
 
-#41L **[U|SWP]** The module's `UC_*` surface transitively inherits `enforce` from `U|LST` helpers — purity
-contract not fully honored end-to-end.
+#41L **[U|SWP]** ~~The module's `UC_*` surface transitively inherits `enforce` from `U|LST` helpers —
+purity contract not fully honored end-to-end.~~ — **DESIGN, accepted — documented exception (owner,
+2026-08-23).** Unlike L40, these `enforce` calls (`UC_ReplaceAt`/`UC_RemoveItemAt`/`UC_LE`/`UC_FE`) are
+load-bearing bounds-guards used pervasively inside live math (`UC_ComputeY`/`UC_ComputeInverseY` and
+others) — not dead checks; removing them would strip real out-of-bounds crash protection. Owner: exclude
+entirely from the StoicSyntax sweep, these stay `UC_*` — the `enforce` guards the computation's own
+list/string shape, not a business decision. Formally codified as a new documented exception in
+`OuronetInformational/StoicSyntax.md` § 6.1 (version bumped 1.8.0 → 1.9.0) and cross-referenced in
+`StoicSyntax-Prefixes.md`. No code change. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L41*
 
 #42L **[U|SWP]** `UC_ComputeWP`/`InverseWP` divide by a token's weight with no zero-guard of their own.
 

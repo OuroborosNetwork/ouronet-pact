@@ -2,9 +2,9 @@
 
 | | |
 |--|--|
-| **Version** | **1.8.0** |
+| **Version** | **1.9.0** |
 | **Status** | Published discipline — rules Ouronet follows; offered for any Pact builder |
-| **Date** | 2026-08-21 |
+| **Date** | 2026-08-23 |
 | **Home** | Ouronet (this repository) — the codebase that practices and proves the method |
 
 **What StoicSyntax is.** A **discipline and set of rules** for writing Pact: how to name and place functions, where validation lives, how writes are isolated, how modules authorize each other **without borrowing each other’s capabilities**, and how one module can safely **compose calls across many modules** into auditable client flows.
@@ -479,6 +479,19 @@ Top of a StoicSyntax module (reference skeleton: ModuleSample):
 | **CAP_** | Account / ownership enforce helpers | like UEV, ownership-focused | — |
 
 **Auxiliary depth:** `URCX_` / `URDCX_` under parent URC/URDC blocks (same read-depth rules).
+
+**Documented exception — bounds-guard `enforce` inside `UC_` list/string helpers (SWP L41, 2026-08-23):**
+`U|LST`'s own `UC_*` helpers (`UC_ReplaceAt`, `UC_RemoveItemAt`, `UC_LE`, `UC_FE`, and `UEV_NotEmpty`
+where they call it) `enforce` on a list's own shape — index-in-bounds, list-not-empty — before indexing
+into it. This is **not** a business/domain validation the "must not enforce" rule is meant to keep out of
+`UC_*`; it is a guard **intrinsic to the computation itself**, preventing a bare out-of-bounds crash mid-
+computation, not gating an application-level decision. Any `UC_*` elsewhere in the codebase that calls
+these specific helpers (e.g. `U|SWP`'s `UC_ComputeY`/`UC_ComputeInverseY`/`UC_AddSupply`/
+`UC_RemoveSupply`) **stays `UC_*`** and is **excluded from any StoicSyntax rename/reclassification
+sweep** — do not rename these to `UEV_`/`URC_` or split them apart chasing pure-`UC_` compliance. Scope
+is narrow and explicit: only this specific class (list/string-shape bounds guards). A `UC_*` calling into
+real business validation (an owner check, a balance check, a domain-rule enforce) is still a genuine
+violation and not covered by this exception.
 
 **Migration signals**
 
@@ -1577,6 +1590,7 @@ These stay explained in context; this is the single index of what is Ouronet-spe
 | **1.6.7** | 2026-08-01 | **§ 12.1**: X source order = all tier 0, then all tier 1, then all tier 2… (no interleaved stacks) |
 | **1.7.0** | 2026-08-11 | **§ 19 Ouronet-specific rules** (new chapter): `X-cm_` naming for X funcs that emit an IGNIS cumulator (R1); multi-table X allowed (R2); `CC_`/`AA_` HEAVY prefixes for `C_`/`A_` that unavoidably scan (R3); X `@doc` output rule (R4); Ouronet-specifics consolidation index (R5). From AQP audit Round I owner feedback. |
 | **1.8.0** | 2026-08-21 | **§ 19.5 `;;Key = <...>`** (new rule, R6): every `deftable` — domain or `P|T`/`P|MT` policy table alike, no exceptions — carries an inline comment stating its own row key. Introduced by the AQP modules, formalized here after being applied retroactively across the SWP-family modules (owner reminder, #34 session). |
+| **1.9.0** | 2026-08-23 | **§ 6.1 documented exception**: `U|LST`'s bounds-guard `enforce` helpers (`UC_ReplaceAt`, `UC_RemoveItemAt`, `UC_LE`, `UC_FE`) and any `UC_*` calling them stay `UC_*` and are excluded from renaming/reclassification — the `enforce` guards the computation's own list/string shape (index-in-bounds, not-empty), not a business/domain decision. From SWP audit Round I, finding L41 (owner direction, 2026-08-23). |
 
 **Bump rules**
 
