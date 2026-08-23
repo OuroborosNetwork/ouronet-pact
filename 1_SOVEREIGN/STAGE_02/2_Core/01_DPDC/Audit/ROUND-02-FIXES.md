@@ -986,3 +986,33 @@ pipeline (confirmed no id/ticker collisions).
 
 **Interface implication:** none — new REPL file only; `[6.1]_DPDC.repl` left disabled as before (its own
 unrelated pre-existing crash is a separate, already-logged backlog item, not fixed by this).
+
+## Fix #21 — DPDC-C · M2 (#23M) — `XI_CreditOrDebitCollectables`'s dispatch `cond` fails open, not closed
+
+**Owner-approved 2026-08-23.** Owner: `true` and `(enforce false ...)` are both boolean-typed in that
+position, so the swap is a straightforward like-for-like replacement.
+
+**Root cause:** `03_DPDC-C.pact` — `XI_CreditOrDebitCollectables`'s 16-branch `cond` re-derives, from the
+actual `nonces`/`amounts` shape, which capability *should* already be granted, and asserts it via
+`require-capability`. The trailing default (reached if no branch matches) was a bare `true` — meaning any
+future input shape that isn't one of today's 16 exhaustive cases would silently skip every authorization
+check and fall through straight to the credit/debit write.
+
+**Fix — one line:**
+```pact
+-true
++(enforce false (format "Unreachable nonce/amount shape for {} {}" [nonces amounts]))
+```
+
+**Verification, and its honest limits:** this is a defense-in-depth backstop Round I itself flagged as
+*currently unreachable* — the 16 branches are exhaustive over every real input shape the upstream
+invariants (`UEV_NonceType`/`UEV_NonceTypeMapper`) allow today. That means there is no legitimate call that
+reaches this fallback to reproduce a before/after — doing so would require deliberately breaking an
+upstream invariant elsewhere, which would be a different bug. What was verified: `cd REPL && pact Z.repl`
+— clean, `Load successful` — the entire existing test suite (every real credit/debit/create/transfer/burn/
+wipe/set/fragment operation across every module, including the new EQUITY suite) still passes 100%,
+confirming the change doesn't wrongly reject anything real. Owner accepted this scope of verification as
+sufficient given the finding's own "currently unreachable" framing — no synthetic/mocked reachability test
+was requested.
+
+**Interface implication:** none — internal to the function body.

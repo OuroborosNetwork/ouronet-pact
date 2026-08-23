@@ -101,7 +101,22 @@ one at a time in `ISSUES-RANKED.md` order and this table is updated in place as 
 | H12 | HIGH | DPDC-N | `C_UpdateNonceIgnisRoyalty` — no upper bound at all | **REFUTED (design-intentional) 2026-08-23** — owner: no principled ceiling exists (a $10M NFT could legitimately warrant a $10K movement royalty), left to the collection owner's discretion. Precision-only check stays, no magnitude bound. No code change |
 | H13 | HIGH | DPDC-S | `score-multiplier` unvalidated at Define, checked at Update | **ALREADY CLOSED by #15H's fix chain 2026-08-23** — Fix #13/#14/#16 already added Define-time validation and removed the Update path entirely. No separate action needed |
 | H14 | HIGH | EQUITY | Zero REPL/test coverage for the entire financial-instrument module | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #20)** — new canonical `REPL/Stage_02/[6.1.1]_EQUITY.repl` wired into the active pipeline (19 assertions: Issue baseline, Make/Convert/Break exact conservation, 5 negative paths). Found the old test was unreachable/print-only; fixing it required Fix #19 first (a real #5C-vs-EQUITY collision). Z.repl green |
-| M1-M16 | MED | various | See `ISSUES-RANKED.md` #23M-#38M | OPEN |
+| M1 (#23M) | MED | DPDC-C | `XI_CreditOrDebitCollectables` dispatch `cond` fails open on unmatched shape | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #21)** — trailing `true` → `enforce false`; full Z.repl still 100% clean (no legitimate path affected); no live reachability repro possible by the finding's own "currently unreachable" nature, owner accepted |
+| M2 (#24M) | MED | DPDC-C | NFT `amount=1` enforced on native Credit, absent on 3 fragment/hybrid Credit variants | OPEN |
+| M3 (#25M) | MED | DPDC-N | Royalty/ignis-royalty read live at transfer time, no snapshot/max-price guard | OPEN |
+| M4 (#26M) | MED | DPDC-N | `C_UpdateNonceRoyalty` mutates `royalty` — zero on-chain economic consumers | OPEN |
+| M5 (#27M) | MED | DPDC-F | Make+merge round trip and `C_RepurposeCollectableFragments`-without-consent untested | OPEN |
+| M6 (#28M) | MED | EQUITY | "Shareholder collection" identity is a self-checked `"E\|"` prefix, not a registry | OPEN |
+| M7 (#29M) | MED | EQUITY | `URC_CombineCapacity`'s 50% packaging cap is an undocumented magic constant | OPEN |
+| M8 (#30M) | MED | DPDC-S | `C_EnableSetClassFragmentation` skips the active-state gate its siblings enforce | OPEN |
+| M9 (#31M) | MED | DPDC-S | Primordial set-definition bounds only check running max, not each value (like #6C) | OPEN |
+| M10 (#32M) | MED | DPDC-S | Hybrid set Make-time/Break-time constituent ordering reversed (currently harmless) | OPEN |
+| M11 (#33M) | MED | DPDC-I/U\|DALOS | Collection id (`UDC_Makeid`) keyed only on `prev-block-hash` | OPEN |
+| M12 (#34M) | MED | DPDC | `URD_AccountNoncesWithSupplies` returns `[{}]` instead of `[]` when empty | OPEN |
+| M13 (#35M) | MED | DPDC | `XB_DeployAccountSFT`/`NFT` never verify caller controls target account | OPEN |
+| M14 (#36M) | MED | DPDC | `AUP_Account`/`AUP_Property` slice composite keys via hardcoded offsets | OPEN |
+| M15 (#37M) | MED | DPDC-UDC | `UDC_ZeroNonceData` called cross-module via typed ref but absent from that interface | OPEN |
+| M16 (#38M) | MED | DPDC-UDC/DPDC-S | `UDC_NoPrimordialSet`/`NoCompositeSet` sentinels structurally indistinguishable from real data | OPEN |
 | L1-L17 | LOW | various | See `ISSUES-RANKED.md` #39L-#55L (+1 unnumbered doc-only note) | OPEN |
 
 ## Live-vs-local (Pythia) status

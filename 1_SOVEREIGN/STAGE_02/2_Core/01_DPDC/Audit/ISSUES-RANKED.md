@@ -285,10 +285,13 @@ wired into the active `Stage02_Tester.repl`/`Z.repl` pipeline. All passing, Z.re
 
 ## MEDIUM
 
-#23M **[DPDC-C]** `XI_CreditOrDebitCollectables`'s 16-branch capability-dispatch `cond` silently no-ops
+#23M **[DPDC-C]** ~~`XI_CreditOrDebitCollectables`'s 16-branch capability-dispatch `cond` silently no-ops
 (skips all authorization) on an unmatched shape instead of hard-failing — currently unreachable given
-today's upstream invariants, but a future weakening of those invariants fails open, not closed. —
-*DPDC-C·M2*
+today's upstream invariants, but a future weakening of those invariants fails open, not closed.~~ —
+**FIXED ✅ AND PROVEN ✅ 2026-08-23** (`ROUND-02-FIXES.md` Fix #21) — trailing `true` replaced with
+`(enforce false ...)`, fails closed instead of open. Full Z.repl (every real credit/debit path in the
+suite) still 100% clean. No live before/after reachability repro is possible given the finding's own
+"currently unreachable" nature — owner accepted this scope of verification. — *DPDC-C·M2*
 
 #24M **[DPDC-C]** NFT `amount=1` enforcement is present on native-NFT Credit but absent on all three
 NFT-fragment/hybrid Credit variants of the identical logical operation — same root cause as #1C/#3C, worth

@@ -519,3 +519,15 @@ and all validation paths (capacity, modulo, nonce range) correctly reject bad in
 `REPL/Stage_02/[6.1.1]_EQUITY.repl` (Issue baseline + Make/Convert/Break round trip with exact-value
 assertions + 5 negative-path checks), wired into `Stage02_Tester.repl`'s active load chain so it now runs
 on every `Z.repl` execution. 19 assertions total, all passing. Full `Z.repl` green.
+
+## #23M · DPDC-C · M2 — dispatch `cond` fails open on an unmatched shape
+
+**Verdict: CONFIRMED, FIXED (2026-08-23).** Owner confirmed `true` → `(enforce false ...)` is a
+straightforward like-for-like swap (both boolean-typed in that position).
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #21)** — the `cond`'s trailing default now hard-aborts
+instead of silently skipping every `require-capability` check above it. Verified honestly within the
+limits of what a "currently unreachable" defense-in-depth backstop allows: full `Z.repl` (every real
+credit/debit path in the entire test suite) still passes 100% clean — no legitimate call was ever wrongly
+rejected. No live "used to silently pass, now aborts" reproduction is possible without deliberately
+breaking a different, unrelated upstream invariant — owner accepted this scope of verification.

@@ -673,7 +673,11 @@
                 ((UC_AndTruths [(not isg) (not ong) (not onp) cod (not son)])       (require-capability (DPNF|C>CREDIT-HYBRID-NONCES id nonces amounts)))
                 ((UC_AndTruths [(not isg) (not ong) (not onp) (not cod) son])       (require-capability (DPSF|C>DEBIT-HYBRID-NONCES account id nonces amounts)))
                 ((UC_AndTruths [(not isg) (not ong) (not onp) (not cod) (not son)]) (require-capability (DPNF|C>DEBIT-HYBRID-NONCES account id nonces amounts)))
-                true
+                ;; DPDC Audit #23M: fail closed, not open. The 16 branches above are exhaustive given
+                ;; today's upstream invariants (UEV_NonceType/UEV_NonceTypeMapper) — this default only
+                ;; fires if a future change weakens that guarantee, and it must hard-abort rather than
+                ;; silently skip every require-capability check above and fall through to the write.
+                (enforce false (format "Unreachable nonce/amount shape for {} {}" [nonces amounts]))
             )
             (if cod
                 (ref-DPDC::XE_DeployAccountWNE account id son)
