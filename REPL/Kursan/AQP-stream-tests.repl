@@ -327,4 +327,62 @@
 )
 (commit-tx)
 (print "")
+;;
+;; ============================================================================
+;; T-STREAM-05 — Gas probe (vault O(1) drip): measure a collect that DRIPS an active stream vs a baseline collect
+;;   with no stream (the drip fast-returns). The delta is the per-collect vault drip overhead.
+;; ============================================================================
+(begin-tx "T-STREAM-05 - vault drip gas probe")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (anhd:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "StreamScore"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "StreamVault"))
+        (t5:time (time "2027-09-01T00:00:00Z"))
+        (gs-key:string "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
+    )
+    ;; drain any leftover stream so the baseline collect has stream-count = 0
+    (env-chain-data { "block-time": t5 })
+    (env-sigs
+        [ { "key": "PK_AncientHodler", "caps": [] }
+          { "key": gs-key, "caps":
+            [ (coin.TRANSFER (concat ["k:" gs-key]) "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+    (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+    ;;==== baseline: collect with NO active stream (drip fast-returns) ====
+    (print "--- [T-STREAM-05 · baseline collect (no stream)] ---")
+    (env-gas 0)
+    (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+    (let ((g-base:integer (env-gas)))
+        ;;==== stream-active: inject a stream, advance 12h, collect (drip releases + distributes) ====
+        (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)
+        (env-chain-data { "block-time": (add-time t5 43200) })
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": gs-key, "caps":
+                [ (coin.TRANSFER (concat ["k:" gs-key]) "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                  (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                  (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                  (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+        (print "--- [T-STREAM-05 · stream-active collect (drip)] ---")
+        (env-gas 0)
+        (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+        (let ((g-stream:integer (env-gas)))
+            (map print
+                [ (format "<<T-STREAM-05>> baseline collect (no stream) gas = {}" [g-base])
+                  (format "<<T-STREAM-05>> stream collect (1 stream, drip) gas = {}" [g-stream])
+                  (format "<<T-STREAM-05>> vault drip overhead ~= {} gas (O(1), 1 stream)" [(- g-stream g-base)])
+                  (expect (format "<<T-STREAM-05>> a single vault-stream collect fits well under 2M got={}" [g-stream]) true (< g-stream 2000000)) ])))
+    (env-sigs [])
+)
+(commit-tx)
+(print "")
 (print "=== END AQP-stream-tests.repl ===")
