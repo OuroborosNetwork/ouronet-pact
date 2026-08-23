@@ -385,4 +385,75 @@
 )
 (commit-tx)
 (print "")
+;;
+;; ============================================================================
+;; T-STREAM-06 — FARM (class 0) drip: a streamed inject on a farm releases via the O(members) split-at-inject
+;;   path (XI_1|FarmSplitInject fed by the drip). ANHD stakes OURO-LP into a farm; stream 240 OURO / 24h; at
+;;   +12h ANHD (sole staker) collects ~120. Proves the drip's FARM branch (vs the vault branch proven above).
+;; ============================================================================
+(begin-tx "T-STREAM-06 - farm (class 0) streamed drip")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (anhd:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (swpair:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-U|CT:module{OuronetConstantsV1} U|CT)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "FarmStreamScore"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "FarmStreamFvt"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "FarmStreamPool"))
+        (t6:time (time "2027-11-01T00:00:00Z"))
+        (gs-key:string "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
+    )
+    (let ((lp-id:string (ref-SWP::UR_TokenLP swpair)))
+        (print (format "<<T-STREAM-06>> ouro-lp-id = {} ; ANHD LP balance = {}" [lp-id (ref-DPTF::UR_AccountSupply lp-id anhd)]))
+        ;;==== T-STREAM-06 · 01 · build a class-0 farm on the OURO-LP + stake LP @t6 ====
+        (print "--- [T-STREAM-06 · 01 · build farm + stake LP] ---")
+        (env-chain-data { "block-time": t6 })
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": gs-key, "caps":
+                [ (coin.TRANSFER (concat ["k:" gs-key]) "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                  (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                  (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                  (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+        ;; farm score is a class-0 LP score (lp-denominator = OURO full id, per README_HOWTO_FVT)
+        (ref-TS02-C3::AQP-SCR|C_IssueLiquidityScore patron patron "FarmStreamScore" 12 ouro-id 1.0 1.0)
+        (ref-TS02-C3::AQP-POOL|C_Issue patron "FarmStreamPool" lp-id 0)
+        (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+        (ref-TS02-C3::AQP-FVT|C_Issue patron "FarmStreamFvt" patron 0 ouro-id)
+        (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false (ref-U|CT::CT_BAR))
+        (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)
+        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id anhd anhd lp-id 1.0)
+        ;;==== T-STREAM-06 · 02 · @t6: stream 240 OURO / 24h into the farm ====
+        (print "--- [T-STREAM-06 · 02 · C_InjectStream 240/24h into farm] ---")
+        (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)
+        (expect "<<T-STREAM-06>> farm stream active (count 1)" 1 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
+        ;;==== T-STREAM-06 · 03 · @t6+12h: sole staker ANHD collects ~120 (farm drip released half) ====
+        (print "--- [T-STREAM-06 · 03 · @t6+12h farm collect ~120] ---")
+        (env-chain-data { "block-time": (add-time t6 43200) })
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": gs-key, "caps":
+                [ (coin.TRANSFER (concat ["k:" gs-key]) "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+                  (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+                  (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+                  (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+        (let ((anhd-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id anhd)))
+            (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+            (let ((payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id anhd) anhd-pre)))
+                (map print
+                    [ (format "<<T-STREAM-06>> farm ANHD payout @12h = {}" [payout])
+                      (expect (format "<<T-STREAM-06>> farm drip released ~half (120) to sole staker got={}" [payout]) true (and (> payout 119.9) (< payout 120.1))) ]))))
+    (env-sigs [])
+)
+(commit-tx)
+(print "")
 (print "=== END AQP-stream-tests.repl ===")
