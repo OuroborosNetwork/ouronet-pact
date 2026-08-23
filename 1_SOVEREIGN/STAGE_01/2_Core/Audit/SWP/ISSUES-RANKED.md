@@ -386,7 +386,13 @@ Captured its return value and pinned the real measured output via `expect`, afte
 live value rather than guessing. Adversarially proven the assertion is real: corrupted the expected value
 by one digit, got a genuine `FAILURE`, restored. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L46*
 
-#47L **[SWPI]** Unrecognized pool-type falls back to a silent `-1.0` sentinel instead of aborting.
+#47L **[SWPI]** ~~Unrecognized pool-type falls back to a silent `-1.0` sentinel instead of aborting.~~ —
+**REFUTED — provably unreachable by construction, 2026-08-23.** Traced the full chain: `pool-type` is
+always the first char of the swpair's own ID string; every swpair ID is built by exactly one exhaustive
+function (`UC_PoolID`→`UC_Prefix`, only ever "S"/"W"/"P"), called from exactly one insertion point
+(`SWP::XE_Issue`'s `insert`, confirmed the only one — every other table touch is `update`). Structurally
+closed, not merely unreachable today. No code change. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L47*
 
 #48L **[SWPI]** Undocumented, unrelated-looking magic constants (`5040000.0`, `10000000.0`).
 

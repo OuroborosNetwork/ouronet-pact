@@ -2176,3 +2176,36 @@ Issuance-only regression (unaffected — `TX 016a` isn't in that path): exit 0, 
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #28. Awaiting Round III re-verify. — *L46*
 
 ---
+
+## L47 (#47L, SWPI — unrecognized pool-type falls back to a silent `-1.0` sentinel instead of aborting) — **REFUTED — provably unreachable by construction, no code change**
+
+**First proposed a fix, then the owner correctly pushed back on whether it was needed at all** — asked
+whether the `pool-type` data fed in could ever really be anything else, given how it's produced. Traced
+the full chain instead of assuming either way:
+- `pool-type` at every real call site is `(ref-U|SWP::UC_PoolType swpair)` — literally
+  `(take 1 swpair)`, the first character of the swpair's own ID string.
+- Every swpair ID that will ever exist is built by exactly one function, `UC_PoolID`, called from exactly
+  one place: `SWP::XE_Issue`'s `insert` into `SWP|Pairs`. Confirmed no second insertion path exists —
+  every other touch to that table anywhere in the module is `update`, which requires the row to already
+  exist.
+- `UC_PoolID` derives its own prefix character from `UC_Prefix`, which is exhaustive by construction —
+  `(if (= amp -1.0) (if (= ws 1.0) "W" "P") "S")` — there is no fourth branch, nothing else it can ever
+  produce.
+
+**Also worked through why the "fix" itself wasn't syntactically simple, before concluding it wasn't
+needed at all:** a bare `(enforce false ...)` can't sit in a `cond`'s trailing default slot — Pact
+requires every branch (default included) to type-check to the function's declared return type
+(`decimal`), and `enforce` returns `bool`; that would be a compile-time type error, not a runtime
+improvement. The syntactically-valid fix would have been an `enforce` placed *before* the `cond`
+(mirroring the existing stable-pool single-input check already sitting there), leaving `-1.0` as a
+provably-unreachable trailing default only Pact's type checker still requires.
+
+**Owner's read confirmed:** `pool-type` can never be anything but `"S"`/`"W"`/`"P"` for any real swpair,
+ever — not "unreachable today, could regress," but structurally closed given the single exhaustive
+construction path. Adding the enforce would be pure defensive bloat guarding against a state that
+literally cannot occur.
+
+**Status:** REFUTED — no enforce needed, no code change. Closed as provably unreachable by construction,
+not merely unreachable in practice. — *L47*
+
+---
