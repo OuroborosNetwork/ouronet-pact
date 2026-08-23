@@ -2117,3 +2117,35 @@ migration-mapping table); only the mechanical rename of the 14 `UCX_*`/`UDCX_*` 
 `13_U_BFS.pact` remains, deferred to the planned post-merge sweep from `main`. — *L44*
 
 ---
+
+## L45 (#45L, SWPT — `URC_AllGraphPaths` misleadingly named, returns one shortest chain per node, not all paths) — **CONFIRMED, FIXED, PROVEN**
+
+**Re-verified the finding still held, not assumed stale like some prior LOW items:** `URC_AllGraphPaths`
+is unchanged since the original finding — still a thin wrapper over `UC_BFS`, still returns
+`(at "chains" bfs-obj)` (one shortest chain per reached node), still named as if it returns every path.
+Actually worse now than when flagged: the module also has `URC_ComputeAllRoutes` (#34 Phase 11's genuine
+exhaustive multi-route search) with a near-identical name sitting right next to it — real risk of a future
+reader grabbing the wrong one.
+
+**Owner direction:** rename it properly and refactor the module to use the new name — this isn't a
+StoicSyntax prefix-tier gap like L44 (the `URC_` prefix itself is correct), it's a plain misleading
+descriptive name, worth fixing directly rather than deferring to the sweep.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`:** renamed `URC_AllGraphPaths` →
+`URC_ShortestChainPerNode` (interface declaration + implementation + doc). Traced every real reference
+first (interface, the one real caller `URC_ComputeGraphPath`, zero REPL references by name) — updated the
+caller's own local binding name (`all-paths` → `shortest-chains`) and doc for the same clarity. New doc
+comment explains the actual semantics precisely, including a verified note that `output` plays no role in
+the BFS itself (confirmed against `UC_MakeGraphNodes`'s own pre-existing doc: "stay in the signature
+(unused)") — accepted only for signature symmetry with its caller. No version bump needed on
+`SwapTracerV2` — still pre-mainnet, matching every other interface edit this whole audit.
+
+**Adversarially proven, live:** full `[6.2]`/`[6.3]` suite (every pre-existing exact-value route assertion
+from C6/H2/H4/M2's own fixes — would have failed on any behavior drift from the rename): exit 0, 0
+`FAILURE`. Issuance-only regression: exit 0, 0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0
+`FAILURE`, `Load successful`. Pure rename — zero behavior change by construction, confirmed by the
+untouched exact-value assertions still passing byte-identical.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #27. Awaiting Round III re-verify. — *L45*
+
+---

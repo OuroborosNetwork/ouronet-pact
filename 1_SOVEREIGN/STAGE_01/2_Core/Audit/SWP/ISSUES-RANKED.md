@@ -371,8 +371,12 @@ mechanical rename. Owner: a broader StoicSyntax refactor runs as its own pass fr
 audit's findings are merged — tagged for that, not hand-renamed now. No code change. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`. — *L44*
 
-#45L **[SWPT]** `URC_AllGraphPaths` is misleadingly named — returns one shortest chain per node, not all
-paths.
+#45L **[SWPT]** ~~`URC_AllGraphPaths` is misleadingly named — returns one shortest chain per node, not all
+paths.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-23** (`ROUND-02-FIXES.md` Fix #27). Owner: rename it properly,
+refactor the module to use the new name. Renamed to `URC_ShortestChainPerNode`; traced and updated the
+one real caller (`URC_ComputeGraphPath`) and its own local binding/doc. Pure rename, zero behavior
+change — every pre-existing exact-value route assertion (C6/H2/H4/M2) still passes byte-identical. Full
+writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L45*
 
 #46L **[SWPT]** The REPL suite's "Smart Swap" coverage is a single transaction with no assertions on the
 chosen route — none of #6C/#13C/#19H–21H are caught by existing tests.

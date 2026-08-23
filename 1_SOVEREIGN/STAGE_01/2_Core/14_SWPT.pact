@@ -45,7 +45,9 @@
     (defun URC_Edges:[string] (t1:string t2:string))
     (defun URC_EdgesActive:[string] (t1:string t2:string whitelist:[string]))
     (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string]))
-    (defun URC_AllGraphPaths:[[string]] (input:string output:string swpairs:[string]))
+    ;;#45L fix: renamed from URC_AllGraphPaths — misleading, doesn't return all
+    ;;paths (one shortest BFS chain per reached node, not every simple path).
+    (defun URC_ShortestChainPerNode:[[string]] (input:string output:string swpairs:[string]))
     (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string]))
     ;;#34M/M2 fix: additive — finds up to 3 edge-disjoint candidate routes instead
     ;;of just the single first-found one; see the defun's own @doc for the full
@@ -281,8 +283,8 @@
         (filter (lambda (swpair:string) (contains swpair whitelist)) (URC_Edges t1 t2))
     )
     (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string])
-        @doc "Computes the path between an <input> and <output> using BFS via <URC_AllGraphPaths> \
-        \ from a passed down list of existing <swpairs>. \
+        @doc "Computes the path between an <input> and <output> using BFS via \
+        \ <URC_ShortestChainPerNode> from a passed down list of existing <swpairs>. \
         \ #20H fix: returns the clean [BAR] sentinel — never a bare out-of-bounds \
         \ <at> crash — whenever no chain reaches <output>, including the case of a \
         \ genuinely disconnected pair once <swpairs> has been narrowed upstream \
@@ -290,10 +292,10 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (all-paths:[[string]] (URC_AllGraphPaths input output swpairs))
+                (shortest-chains:[[string]] (URC_ShortestChainPerNode input output swpairs))
 
             )
-            (if (!= all-paths [[BAR]])
+            (if (!= shortest-chains [[BAR]])
                 (let
                     (
                         (fp:[[string]]
@@ -302,7 +304,7 @@
                                     (acc:[[string]] idx:integer)
                                     (let
                                         (
-                                            (e:[string] (at idx all-paths))
+                                            (e:[string] (at idx shortest-chains))
                                             (l:string (at 0 (take -1 e)))
                                             (check:bool (= l output))
                                         )
@@ -312,8 +314,8 @@
                                         )
                                     )
                                 )
-                                all-paths
-                                (enumerate 0 (- (length all-paths) 1))
+                                shortest-chains
+                                (enumerate 0 (- (length shortest-chains) 1))
                             )
                         )
                     )
@@ -326,9 +328,15 @@
             )
         )
     )
-    (defun URC_AllGraphPaths:[[string]] (input:string output:string swpairs:[string])
-        @doc "Computes all paths that exist in a Graph defined from <input> ids, <output> ids \
-        \ over a specific passed-down list of existing <swpairs>"
+    (defun URC_ShortestChainPerNode:[[string]] (input:string output:string swpairs:[string])
+        @doc "#45L fix: renamed from URC_AllGraphPaths — the old name claimed 'all paths' \
+            \ but this runs a single BFS traversal from <input> and keeps exactly one \
+            \ shortest chain per node BFS reaches, not every simple path through the \
+            \ graph (that's <URC_ComputeAllRoutes>, a different function entirely, added \
+            \ in #34 Phase 11). <output> is accepted for signature symmetry with its only \
+            \ caller (<URC_ComputeGraphPath>, which post-filters this result down to \
+            \ chains actually ending at <output>) — it plays no role in the BFS itself, \
+            \ which explores every reachable node from <input> regardless of <output>."
         (let
             (
                 (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)

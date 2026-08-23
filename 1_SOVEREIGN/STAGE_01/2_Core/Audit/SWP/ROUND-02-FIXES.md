@@ -1338,3 +1338,23 @@ as M1.
 0 / 0 `FAILURE` — confirming the removed check was never reachable, exactly as predicted.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #27 — L45 (#45L): `URC_AllGraphPaths` renamed to `URC_ShortestChainPerNode`
+
+**Owner direction:** rename it properly, refactor the module to use the new name.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`:** `URC_AllGraphPaths` → `URC_ShortestChainPerNode`
+(interface declaration, implementation, doc). Traced every real reference first: interface, the one real
+caller `URC_ComputeGraphPath` (updated its own local `all-paths` → `shortest-chains` binding and doc too),
+zero REPL references by name. New doc precisely describes the actual semantics (one shortest BFS chain
+per reached node from `input`, distinct from `URC_ComputeAllRoutes`) and notes `output` plays no real
+role in the BFS (verified against `UC_MakeGraphNodes`'s own existing "stay in the signature (unused)"
+doc). No version bump on `SwapTracerV2` — still pre-mainnet.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite (every pre-existing exact-value route assertion from
+C6/H2/H4/M2), issuance-only regression, and full `Z.repl` all exit 0 / 0 `FAILURE` — pure rename, zero
+behavior change, confirmed by every untouched exact-value assertion still passing byte-identical.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
