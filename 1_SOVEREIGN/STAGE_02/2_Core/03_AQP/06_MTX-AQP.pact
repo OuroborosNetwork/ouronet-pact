@@ -176,7 +176,51 @@
                     score-ids))
         )
     )
-    ;;{F1}  [C] client wrappers — acquire the flow cap, then run the defpact
+    ;;{F1}  [X] paginated window recompute — advances by GLOBAL offset over the fixed flattened present set
+    (defun XI_SweepRecomputeWindow:integer
+        (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
+        @doc "Recompute holders whose GLOBAL flattened index — present users concatenated across score-ids in order \
+            \ — falls in [win-lo, win-hi). Per score, slice its present users to the window overlap and forward one \
+            \ AQP-FVT::XE_FvtSweepRecomputeChunk. The sweep freeze makes URH_FvtPresentUsers order deterministic \
+            \ across steps, so (drop offset) advances the window without re-processing (contrast the inject's \
+            \ shrinking (take N) set). Returns the number of holders recomputed. Runs under MTX-AQP|C>SWEEP-REVOKE."
+        (at "processed"
+            (fold
+                (lambda (acc:object sid:string)
+                    (let
+                        (
+                            (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                            (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                            (seen-before:integer (at "seen" acc))
+                            (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
+                            (member:string
+                                (if (ref-SCR::UR_SCR|ScoreTriplet sid) (ref-SCR::UR_SCR|ScoreTripletId sid) sid))
+                        )
+                        (let
+                            (
+                                (users:[string] (ref-FVT::URH_FvtPresentUsers fvt))
+                            )
+                            (let
+                                (
+                                    (seen-after:integer (+ seen-before (length users)))
+                                    (lo:integer (if (> win-lo seen-before) win-lo seen-before))
+                                )
+                                (let
+                                    (
+                                        (hi:integer (if (< win-hi seen-after) win-hi seen-after))
+                                    )
+                                    (if (> hi lo)
+                                        (let
+                                            (
+                                                (slice:[string] (take (- hi lo) (drop (- lo seen-before) users)))
+                                            )
+                                            (ref-FVT::XE_FvtSweepRecomputeChunk fvt member boost-class-id slice)
+                                            {"seen": seen-after, "processed": (+ (at "processed" acc) (length slice))})
+                                        {"seen": seen-after, "processed": (at "processed" acc)}))))))
+                {"seen": 0, "processed": 0}
+                score-ids))
+    )
+    ;;{F2}  [C] client wrappers — acquire the flow cap, then run the defpact
     (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "2-step enforced-fresh inject (spike fallback for AQP-FVT::CC_Inject; handles up to 2×N_FIX stale \
             \ stakers). Acquires MTX-AQP|C>INJECT, then runs the MTX|2|C_Inject defpact. Advance with \
@@ -196,7 +240,7 @@
             (MTX|2|C_SweepRevokeAnchor patron anchor-id)
         )
     )
-    ;;{F2}  [MTX|C]
+    ;;{F3}  [MTX|C] client defpacts
     (defpact MTX|2|C_Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Enforced-fresh vault/treasury inject as a 2-step defpact: each step's opening stale scan IS the \
             \ pre-inject freshness proof — atomically fixing a whole scanned set of size <= N_FIX leaves zero \
@@ -323,50 +367,6 @@
                                 )
                                 (ref-FVT::XE_SweepEnd anchor-id)
                                 (format "MTX Sweep 2|2: recomputed {} remaining holder(s) — anchor {} retired." [n anchor-id])))))))
-    )
-    ;;{F3}  [XI] paginated window recompute — advances by GLOBAL offset over the fixed flattened present set
-    (defun XI_SweepRecomputeWindow:integer
-        (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
-        @doc "Recompute holders whose GLOBAL flattened index — present users concatenated across score-ids in order \
-            \ — falls in [win-lo, win-hi). Per score, slice its present users to the window overlap and forward one \
-            \ AQP-FVT::XE_FvtSweepRecomputeChunk. The sweep freeze makes URH_FvtPresentUsers order deterministic \
-            \ across steps, so (drop offset) advances the window without re-processing (contrast the inject's \
-            \ shrinking (take N) set). Returns the number of holders recomputed. Runs under MTX-AQP|C>SWEEP-REVOKE."
-        (at "processed"
-            (fold
-                (lambda (acc:object sid:string)
-                    (let
-                        (
-                            (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
-                            (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                            (seen-before:integer (at "seen" acc))
-                            (fvt:string (ref-SCR::UR_SCR|ScoreFvtLink sid))
-                            (member:string
-                                (if (ref-SCR::UR_SCR|ScoreTriplet sid) (ref-SCR::UR_SCR|ScoreTripletId sid) sid))
-                        )
-                        (let
-                            (
-                                (users:[string] (ref-FVT::URH_FvtPresentUsers fvt))
-                            )
-                            (let
-                                (
-                                    (seen-after:integer (+ seen-before (length users)))
-                                    (lo:integer (if (> win-lo seen-before) win-lo seen-before))
-                                )
-                                (let
-                                    (
-                                        (hi:integer (if (< win-hi seen-after) win-hi seen-after))
-                                    )
-                                    (if (> hi lo)
-                                        (let
-                                            (
-                                                (slice:[string] (take (- hi lo) (drop (- lo seen-before) users)))
-                                            )
-                                            (ref-FVT::XE_FvtSweepRecomputeChunk fvt member boost-class-id slice)
-                                            {"seen": seen-after, "processed": (+ (at "processed" acc) (length slice))})
-                                        {"seen": seen-after, "processed": (at "processed" acc)}))))))
-                {"seen": 0, "processed": 0}
-                score-ids))
     )
     ;;
 )
