@@ -2232,3 +2232,20 @@ derivation on demand right now, but it's not an arbitrary/undocumented-by-accide
 change, no renaming, no centralizing. — *L48*
 
 ---
+
+## L49 (#49L, SWPI — `URC_Hopper`'s doc says "cheapest available edge," imprecise for what should be "maximizes output") — **CONFIRMED, FIXED, PROVEN**
+
+**Checked whether the finding's location still existed before fixing it:** `URC_Hopper` itself was
+already rewritten with an accurate doc during the #19H fix — the "cheapest" wording had migrated,
+unchanged, into its successor `URCX_HopperForNodes` (split out during #34M/M2). Confirmed via grep it's
+the only remaining "cheapest" instance in the file.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`:** doc corrected to "highest-output edge," with a note
+explaining the wording was backwards (C1/#6C's own fix made this function maximize output among parallel
+pools, not minimize cost). Pure doc wording, zero behavior change.
+
+**Adversarially proven:** full `Z.repl` regression: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #29. Awaiting Round III re-verify. — *L49*
+
+---

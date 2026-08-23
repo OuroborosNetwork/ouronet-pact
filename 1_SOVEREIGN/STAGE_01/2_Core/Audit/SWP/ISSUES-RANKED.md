@@ -402,8 +402,11 @@ real reason tied to share computation, owner-verified correct at implementation 
 not recalled on demand, but not an accidental/undocumented value). No code change. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`. — *L48*
 
-#49L **[SWPI]** `URC_Hopper`'s doc says "cheapest available edge" — imprecise framing for what should mean
-"maximizes output" (see #6C).
+#49L **[SWPI]** ~~`URC_Hopper`'s doc says "cheapest available edge" — imprecise framing for what should
+mean "maximizes output" (see #6C).~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-24** (`ROUND-02-FIXES.md` Fix #29).
+Wording had migrated unchanged into `URCX_HopperForNodes` (#34M/M2's successor). Corrected to
+"highest-output edge." Pure doc change, zero behavior change. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L49*
 
 #50L **[SWP]** `UR_StoaValue` performs an ungated table write as a side effect of a nominal "read".
 

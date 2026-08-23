@@ -1376,3 +1376,14 @@ by one decimal digit — genuine `FAILURE`, exact diff shown. Restored, reran cl
 suite, issuance-only regression, and full `Z.repl` all exit 0 / 0 `FAILURE`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #29 — L49 (#49L): `URCX_HopperForNodes` doc corrected, "cheapest" → "highest-output"
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`:** the "cheapest available edge" wording (backwards —
+C1/#6C's fix made this maximize output, not minimize cost) had migrated unchanged from `URC_Hopper` into
+its #34M/M2 successor `URCX_HopperForNodes`. Corrected to "highest-output edge." Pure doc wording, zero
+behavior change. Full `Z.repl` regression: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

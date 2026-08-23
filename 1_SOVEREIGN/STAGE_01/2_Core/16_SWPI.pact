@@ -882,7 +882,9 @@
             \ so the identical per-hop best-edge computation can be run once per \
             \ candidate route in <URCX_Hopper>'s best-of-K comparison, not just the \
             \ single first-found route. Computes: \
-            \ 1] The hops along <nodes>, the <edges> as the cheapest available edge from all available \
+            \ 1] The hops along <nodes>, the <edges> as the highest-output edge from all available \
+            \ #49L fix: was 'cheapest available edge' — backwards framing (C1/#6C's own fix made \
+            \ this maximize output among parallel pools, not minimize cost) \
             \ 2] The best <output> values using said best <edges>, given the <hopper-input-amount>"
         (let
             (
