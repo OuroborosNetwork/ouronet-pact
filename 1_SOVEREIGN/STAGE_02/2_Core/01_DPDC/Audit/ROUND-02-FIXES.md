@@ -1064,3 +1064,22 @@ is a plain `enforce`-only function, not capability/IMC-gated):
 
 **Interface implication:** `DPNF|C>CREDIT-FRAGMENT-NONCE` is an internal capability, not part of any
 interface — no signature change to `DpdcCreateV1`.
+
+## Fix #23 — DPDC-N · M2 (#26M) — `royalty` field documented as an intentional forward-looking hook
+
+**Owner-approved 2026-08-23.** Owner: the `royalty` field is designed for the upcoming Escrow/NFT
+marketplace, which isn't built yet — that's exactly why nothing consumes it today. Confirmed intentional,
+not dead/unfinished code, matching fix direction (b) from Round I ("if intentionally off-chain-only,
+document that explicitly").
+
+**Fix — documentation only, no behavior change:** added `@doc`/comment notes at the three places someone
+would reasonably look to understand this field, cross-referencing each other and #26M:
+- `0_Interfaces/02_Core.pact` — `DPDC|NonceData.royalty` schema field comment.
+- `02_DPDC.pact::UR_N|Royalty` — the reader, contrasted explicitly with its actively-consumed sibling
+  `UR_N|IgnisRoyalty`.
+- `10_DPDC-N.pact::C_UpdateNonceRoyalty` — the write entrypoint.
+
+**Post-fix proof:** `cd REPL && pact Z.repl` — clean, `Load successful`; comment-only changes to an
+interface schema and function docs, no behavior/type change possible to regress.
+
+**Interface implication:** none — comments only, no signature or schema shape change.

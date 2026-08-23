@@ -443,6 +443,9 @@
     ;;
     ;; [2.1] - [Generic Nonce-Data Read]
     (defun UR_N|Royalty:decimal (n:object{DpdcUdcV1.DPDC|NonceData})
+        @doc "Forward-looking hook for the upcoming Escrow/NFT marketplace (not yet built) — no on-chain \
+            \ consumer reads this today, unlike UR_N|IgnisRoyalty below, which DPDC-T's transfer pricing \
+            \ actively consumes. Confirmed intentional, not dead/unfinished code. DPDC Audit #26M."
         (at "royalty" n)
     )
     (defun UR_N|IgnisRoyalty:decimal (n:object{DpdcUdcV1.DPDC|NonceData})

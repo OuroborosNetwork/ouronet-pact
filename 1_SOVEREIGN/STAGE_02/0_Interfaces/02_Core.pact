@@ -45,7 +45,9 @@
         split-data:object{DPDC|NonceData}   ;;Data of the Nonce Fragment Elements
     )
     (defschema DPDC|NonceData
-        royalty:decimal
+        royalty:decimal   ;;Forward-looking hook for the upcoming Escrow/NFT marketplace (not yet built) —
+                          ;;no on-chain consumer reads this today, unlike its sibling <ignis> below, which
+                          ;;is actively consumed by DPDC-T's transfer pricing. DPDC Audit #26M.
         ignis:decimal
         name:string
         description:string

@@ -317,10 +317,13 @@ token's economics). Chose to leave it as-is: royalty changes are already `@event
 well-built marketplace UI can re-read the live value immediately before signing, and as Ouronet admin the
 owner can red-flag an abusive collection if reports come in. No code change. — *DPDC-N·M1*
 
-#26M **[DPDC-N]** `C_UpdateNonceRoyalty` mutates a field (`royalty`) with zero on-chain economic consumers
+#26M **[DPDC-N]** ~~`C_UpdateNonceRoyalty` mutates a field (`royalty`) with zero on-chain economic consumers
 anywhere in the loaded module set — either an unfinished "Volumetric Royalty Fee" feature or an
-undocumented off-chain-only hint; an owner paying to change it gets no on-chain effect either way. —
-*DPDC-N·M2*
+undocumented off-chain-only hint; an owner paying to change it gets no on-chain effect either way.~~ —
+**FIXED ✅ AND PROVEN ✅ 2026-08-23** (`ROUND-02-FIXES.md` Fix #23) — owner confirmed intentional: a
+forward-looking hook for the upcoming Escrow/NFT marketplace, not yet built, which is exactly why nothing
+consumes it today. Documented at the schema field, the reader (`UR_N|Royalty`), and the write entrypoint
+(`C_UpdateNonceRoyalty`) — no behavior change, comment-only. Z.repl green. — *DPDC-N·M2*
 
 #27M **[DPDC-F]** The make+merge round trip and the C_RepurposeCollectableFragments-without-consent
 scenario are both actually executed in the checked-in REPL suite but never asserted (`(expect ...)` absent

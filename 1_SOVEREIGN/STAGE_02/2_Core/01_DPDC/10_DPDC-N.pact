@@ -425,7 +425,9 @@
     )
     (defun C_UpdateNonceRoyalty
         (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal)
-        @doc "[1] Updates Nonce Native Royalty Value"
+        @doc "[1] Updates Nonce Native Royalty Value. This field is a forward-looking hook for the \
+            \ upcoming Escrow/NFT marketplace (not yet built) — no on-chain consumer reads it today; \
+            \ confirmed intentional, not dead/unfinished code. See DPDC Audit #26M."
         (UEV_IMC)
         (let
             (

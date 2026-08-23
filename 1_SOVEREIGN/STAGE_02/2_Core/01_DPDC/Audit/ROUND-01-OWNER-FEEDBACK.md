@@ -561,3 +561,14 @@ trusted dominion over their own token's economics. Royalty changes are already `
 time; a well-built marketplace UI can re-read the live value immediately before presenting a sign prompt;
 and as Ouronet admin, the owner retains the ability to red-flag a collection if abuse is reported. No code
 change.
+
+## #26M · DPDC-N · M2 — `royalty` has zero on-chain economic consumers
+
+**Verdict: CONFIRMED intentional, documented (2026-08-23).** Owner: `royalty` is designed for the upcoming
+Escrow/NFT marketplace, which isn't built yet — that's exactly why nothing consumes it on-chain today, not
+an unfinished-feature accident or a stray "Volumetric Royalty Fee" reference left dangling.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #23)** — documentation only: added `@doc`/comment notes
+at the schema field, the reader (`UR_N|Royalty`), and the write entrypoint
+(`C_UpdateNonceRoyalty`), explaining the field is a confirmed-intentional forward-looking hook, contrasted
+with its actively-consumed sibling `ignis`/`UR_N|IgnisRoyalty`. No behavior change. Z.repl green.
