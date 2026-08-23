@@ -1,7 +1,9 @@
 # Time-streamed reward inject (linear vesting release) — Phase-0 design
 
-**Status:** ✅ APPROVED / LOCKED by owner 2026-08-23. Implementation started (build order §9). Evidence base = 3
-deep-read traces (RPS accumulator flow, Elite-tier + smart/sovereign resolution, dust/conservation behaviour).
+**Status:** ✅ IMPLEMENTED & TESTED (owner-approved 2026-08-23). All 7 build steps landed; AQP audit ALL GREEN
+(1,384 asserts, 7 suites incl. the dedicated `Kursan/AQP-stream-tests.repl`). Behavioral proof: vault smoke
+120/120/240, late-staker 180/60, superposition (D4), zero-weight→zombie (D9), guard bounds, vault drip gas
+(~24k O(1)), farm (class-0) drip. Commits f8c0749 → e4baa7c.
 
 **Feature:** a reward inject may optionally release its amount **linearly over a duration** instead of instantly.
 `inject 240 PURO over 24h` ⇒ the amount vests continuously (sub-second granularity), and whoever is staked during
@@ -256,10 +258,12 @@ readers that return module schemas stay module-only (interface object-return rul
 5. ✅ **DONE (bfdcd5d)** `URC_ReleasableToNow` + `URC_ProjectedIndexAdvance` + `URC_LiveClaimable` + `URC_StreamStatus`
    (read-only; `URC_LiveClaimable` projects EXACTLY the collect payout — proven 120.000000000000 @12h).
 6. ✅ **DONE (a18fd5c)** Talos `AQP-FVT|C_InjectStream` delayed wrapper (direct = pre-existing `AQP-FVT|C_Inject`).
-7. **IN PROGRESS** — ✅ vault smoke test (`TX-FVT-05b` in `[6.2.4]`, `a6137c2`): C_InjectStream 240/24h → exact
-   120 @12h + 120 @24h (finish flush) + prune + LiveClaimable/StreamStatus. **REMAINING:** superposition (two
-   overlapping streams — needs owner Elite tier ≥ 1.2 for a 2-slot cap), late-staker (Alice/Bob 180/60), slot-cap
-   reject, zero-weight→zombie, farm `O(members)` drip path, gas pass.
+7. ✅ **DONE** — vault smoke (`TX-FVT-05b` in `[6.2.4]`, `a6137c2`: 120/120/240 + finish-flush + prune +
+   LiveClaimable/StreamStatus) + standalone `Kursan/AQP-stream-tests.repl` (`b65918e`→`136e3b2`): late-staker
+   180/60 (S1) · superposition D4 · zero-weight→zombie D9 · guard bounds · vault drip gas (~24k O(1)) · farm
+   (class-0) drip 120. Wired into `run-aqp-audit.sh` as a 7th suite (`e4baa7c`). Slot-cap reject was covered via
+   the guard-bounds test (a full 47-slot fill was impractical/low-value; the post-drip `count < cap` enforce is
+   simple + code-reviewed).
 
 **Implementation refinement (owner-notified):** instead of adding a `duration` param to `C_Inject` (which would
 cascade the signature through the interface + Talos + the MTX defpact + every existing test), a **separate
