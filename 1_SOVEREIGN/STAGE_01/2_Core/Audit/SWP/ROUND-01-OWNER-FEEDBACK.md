@@ -2149,3 +2149,30 @@ untouched exact-value assertions still passing byte-identical.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #27. Awaiting Round III re-verify. — *L45*
 
 ---
+
+## L46 (#46L, SWPT — Smart Swap REPL coverage is one TX with no route assertions, none of #6C/#13C/#19H-21H caught) — **CONFIRMED, FIXED, PROVEN**
+
+**Checked the literal claim, and the actual underlying worry, separately:** `SWP|TX 016a` is still exactly
+what the finding describes — one `SWP|CC_SmartSwapWithSlippage` call, zero assertion. But the real worry
+(C1/C6/H4/H2/H3/M2 regressing silently) is no longer accurate: every one of those fixes landed with its
+own dedicated adversarial regression test (the diamond-topology route comparisons at `SWP|TX 032c`-`032g`,
+disabled-pool fallback tests, etc.) — the real risk is already covered elsewhere, just not by this
+specific smoke test.
+
+**Owner direction:** fix it anyway, make sure not to break anything.
+
+**Fix — `REPL/Stage_01/[6.3]_SWP.repl`, `SWP|TX 016a`:** captured the swap's own return value instead of
+discarding it, and added a real `expect` pinning the exact result. Didn't guess the expected value — first
+ran with a probe `print` to capture the real, live output at this exact point in the suite's topology
+(`"Succesfully smart-swapped 5.0 AKOSON-98c486052a51 to 4.187143624737786198597098 TUSD-98c486052a51 via
+3 Swaps over 3 Pools"`), then wrote the assertion against that measured value.
+
+**Adversarially proven the assertion actually catches something, not just that it passes:** deliberately
+corrupted the expected value by one decimal digit and reran — genuine `FAILURE`, exact expected-vs-received
+diff shown. Restored the correct value, reran clean. Full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`.
+Issuance-only regression (unaffected — `TX 016a` isn't in that path): exit 0, 0 `FAILURE`. Full `Z.repl`
+(Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #28. Awaiting Round III re-verify. — *L46*
+
+---

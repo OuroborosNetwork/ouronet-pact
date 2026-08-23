@@ -378,8 +378,13 @@ one real caller (`URC_ComputeGraphPath`) and its own local binding/doc. Pure ren
 change — every pre-existing exact-value route assertion (C6/H2/H4/M2) still passes byte-identical. Full
 writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L45*
 
-#46L **[SWPT]** The REPL suite's "Smart Swap" coverage is a single transaction with no assertions on the
-chosen route — none of #6C/#13C/#19H–21H are caught by existing tests.
+#46L **[SWPT]** ~~The REPL suite's "Smart Swap" coverage is a single transaction with no assertions on the
+chosen route — none of #6C/#13C/#19H–21H are caught by existing tests.~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-23** (`ROUND-02-FIXES.md` Fix #28). The real worry (those bugs regressing silently) is already
+covered by each fix's own dedicated adversarial test, but `SWP|TX 016a` itself still asserted nothing.
+Captured its return value and pinned the real measured output via `expect`, after probing for the actual
+live value rather than guessing. Adversarially proven the assertion is real: corrupted the expected value
+by one digit, got a genuine `FAILURE`, restored. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L46*
 
 #47L **[SWPI]** Unrecognized pool-type falls back to a silent `-1.0` sentinel instead of aborting.
 

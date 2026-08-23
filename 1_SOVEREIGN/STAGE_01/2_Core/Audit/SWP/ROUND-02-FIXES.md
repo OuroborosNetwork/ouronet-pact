@@ -1358,3 +1358,21 @@ C6/H2/H4/M2), issuance-only regression, and full `Z.repl` all exit 0 / 0 `FAILUR
 behavior change, confirmed by every untouched exact-value assertion still passing byte-identical.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #28 — L46 (#46L): `SWP|TX 016a` SmartSwap smoke test now asserts its real output
+
+**Owner direction:** fix it anyway, make sure not to break anything.
+
+**Fix — `REPL/Stage_01/[6.3]_SWP.repl`:** `SWP|TX 016a`'s SmartSwap call used to discard its own return
+value. Captured it and added a real `expect`. Didn't guess the expected value — probed first to capture
+the actual live output at this exact suite state, then wrote the assertion against the measured value:
+`"Succesfully smart-swapped 5.0 AKOSON-98c486052a51 to 4.187143624737786198597098 TUSD-98c486052a51 via 3
+Swaps over 3 Pools"`.
+
+**Adversarially proven the assertion is real, not decorative:** deliberately corrupted the expected value
+by one decimal digit — genuine `FAILURE`, exact diff shown. Restored, reran clean. Full `[6.2]`/`[6.3]`
+suite, issuance-only regression, and full `Z.repl` all exit 0 / 0 `FAILURE`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

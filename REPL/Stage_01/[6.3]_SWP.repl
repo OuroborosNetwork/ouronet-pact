@@ -1440,24 +1440,38 @@
 
 ;;==== SWP|TX 016a - 1x SmartSwaps · 02 · let / invocation ==== ===================================
 (print "--- [SWP|TX 016a - 1x SmartSwaps · 02 · let / invocation] ---")
+;;#46L fix: this used to be a bare invocation with zero assertion on the
+;;chosen route/output amount — the finding's own worry ("none of #6C/#13C/
+;;#19H-21H are caught") is already covered elsewhere today by each fix's
+;;own dedicated adversarial proof (SWP|TX 032c-032g etc.), but this smoke
+;;test itself asserted nothing. Pins the real, measured output for this
+;;exact swap/topology so a real routing/pricing regression here would now
+;;fail loudly instead of silently.
 (let
     (
         (ref-SWPU:module{SwapperUsageV2} SWPU)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-    )
-    (ref-TS01-C3::SWP|CC_SmartSwapWithSlippage
-        KST.ANHD
-        KST.AOZT
-        "AKOSON-98c486052a51"
-        5.0
-        "TUSD-98c486052a51"
-        (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds
-            "AKOSON-98c486052a51"
-            5.0
-            "TUSD-98c486052a51"
-            1.0
+        (swap-result:string
+            (ref-TS01-C3::SWP|CC_SmartSwapWithSlippage
+                KST.ANHD
+                KST.AOZT
+                "AKOSON-98c486052a51"
+                5.0
+                "TUSD-98c486052a51"
+                (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds
+                    "AKOSON-98c486052a51"
+                    5.0
+                    "TUSD-98c486052a51"
+                    1.0
+                )
+            )
         )
-
+    )
+    (print
+        (expect "#46L: SmartSwap 5.0 AKOSON -> TUSD delivers the exact measured route/output"
+            "Succesfully smart-swapped 5.0 AKOSON-98c486052a51 to 4.187143624737786198597098 TUSD-98c486052a51 via 3 Swaps over 3 Pools"
+            swap-result
+        )
     )
 )
 
