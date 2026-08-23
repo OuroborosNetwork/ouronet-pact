@@ -371,6 +371,14 @@
         segmentation:bool
         reward-kind:string                                      ;;[.]   PLAIN | MULTIPLET_BASE
         multiplet-family-id:string                              ;;[.]   BAR or F|t0|t1|t2
+        ;; Time-streamed inject (linear vesting) — the lane's active-stream ledger cursor. stream-count = live
+        ;; stream positions (0 = none; the drip fast-returns). stream-last-release = shared lane checkpoint (every
+        ;; active stream's start <= this, since a new stream is only added AFTER a drip). stream-unreleased =
+        ;; custodied-but-not-yet-dripped total (held in AQP|SC_NAME, kept OUT of available-rewards / the M1 sweep
+        ;; until the drip releases it). See Audit/STREAMED-INJECT-DESIGN.md.
+        stream-count:integer
+        stream-last-release:time
+        stream-unreleased:decimal
         ;;
         ;;Select Keys
         fvt-id:string
@@ -395,6 +403,23 @@
         fvt-id:string
         score-entity-id:string
         dptf-id:string
+    )
+    (defschema FVT|RPS|Stream
+        @doc "Key = <FVT-ID> | <DPTF-ID> | <position 1..49>. One live linear-release stream on a reward lane. \
+            \ Positions are kept COMPACT (occupied = 1..stream-count); a finished stream is pruned and later \
+            \ positions shift down. UI renders position n as tier-style major.minor (major = ceil(n/7), \
+            \ minor = ((n-1) mod 7) + 1). rate = amount/duration (token-per-second, high precision); finish = \
+            \ block-time the stream stops; amount = original streamed amount; released = cumulative released so \
+            \ far, so the finish drip flushes (amount - released) and per-stream conservation is exact."
+        rate:decimal
+        finish:time
+        amount:decimal
+        released:decimal
+        ;;
+        ;;Select Keys
+        fvt-id:string
+        dptf-id:string
+        position:integer
     )
     (defschema FVT|MemberVault
         @doc "Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID> (base ATS token). The per-member mini-vault for the \
@@ -511,14 +536,29 @@
     (deftable FVT|T|RPS|Global:{FVT|RPS|Global})                ;; Key = <FVT-ID> | <DPTF-ID>
     (deftable FVT|T|RPS|Member:{FVT|RPS|Member})                ;; Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
     (deftable FVT|T|RPS|User:{FVT|RPS|User})                    ;; Key = <User-ID> | <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
+    (deftable FVT|T|RPS|Stream:{FVT|RPS|Stream})                ;; Key = <FVT-ID> | <DPTF-ID> | <position 1..49>
     (deftable FVT|T|MemberUserWeight:{FVT|MemberUserWeight})    ;; Key = <User-ID> | <FVT-ID> | <Score-Entity-ID>
     (deftable FVT|T|MemberVault:{FVT|MemberVault})              ;; Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
-    (deftable FVT|T|UserPresence:{FVT|UserPresence})           ;; Key = <FVT-ID> | <Ouronet-ID>
+    (deftable FVT|T|UserPresence:{FVT|UserPresence})            ;; Key = <FVT-ID> | <Ouronet-ID>
     (deftable FVT|T|ForcedFixCount:{FVT|ForcedFixCount})        ;; Key = <FVT-ID> | <DPTF-ID> | <User-ID>
     (deftable FVT|T|VacateFreeze:{FVT|VacateFreeze})            ;; Key = <FVT-ID>
     (deftable FVT|T|SweepProgress:{FVT|SweepProgress})          ;; Key = <Anchor-ID>
     ;;{3}
     (defconst CT_FVT_RPS_PREC 48)
+    ;; --- Time-streamed inject (linear vesting release) — see Audit/STREAMED-INJECT-DESIGN.md ---
+    (defconst STREAM_EPOCH:time (time "1970-01-01T00:00:00Z")
+        "Default stream-last-release for a lane with no live stream (irrelevant while stream-count = 0).")
+    (defconst STREAM_MIN_UPS 10000000
+        "Anti-degeneracy floor: min smallest-token-units released per second for a streamed inject. \
+       \ Precision-normalized — the effective min rate is STREAM_MIN_UPS * 10^(-reward-decimals), so it is \
+       \ uniform across tokens (a 24-dp token clears it with a tiny amount; a 12-dp token needs ~0.864/24h).")
+    (defconst STREAM_MAX_DURATION 31536000
+        "Max stream duration in seconds (365 days).")
+    (defconst STREAM_MIN_DURATION 3600
+        "Min stream duration in seconds (1 hour). duration = 0 means an INSTANT inject (unchanged path).")
+    (defconst STREAM_MAX_LANES 49
+        "Hard ceiling on concurrent streams per lane (7x7 grid). The per-account cap (URC_MaxStreamLanes, by \
+       \ Elite tier of the FVT owner konto) is always <= this.")
     ;; --- Re-score sweep CC-batch gas backstop (loose ceiling + UI seed, mirrors the vacate cap philosophy) ---
     (defconst SWEEP-CHUNK-GAS-BUDGET 2000000
         "Nominal per-tx gas envelope the sweep CC-batch chunk cap is sized against (backstop, not the optimizer).")
@@ -1098,10 +1138,15 @@
             segmentation:bool
             reward-kind:string
             multiplet-family-id:string
+            stream-count:integer
+            stream-last-release:time
+            stream-unreleased:decimal
             fvt-id:string
             dptf-id:string
         )
-        @doc "Core constructor for object{FVT|RPS|Global}."
+        @doc "Core constructor for object{FVT|RPS|Global}. Stream-ledger fields (stream-count / \
+            \ stream-last-release / stream-unreleased) pass through faithfully; true inserts seed them 0 / \
+            \ STREAM_EPOCH / 0.0 (a fresh lane has no stream)."
         {"reward-enabled"       : reward-enabled
         ,"current-rps"          : current-rps
         ,"available-rewards"    : available-rewards
@@ -1110,8 +1155,30 @@
         ,"segmentation"         : segmentation
         ,"reward-kind"          : reward-kind
         ,"multiplet-family-id"    : multiplet-family-id
+        ,"stream-count"         : stream-count
+        ,"stream-last-release"  : stream-last-release
+        ,"stream-unreleased"    : stream-unreleased
         ,"fvt-id"               : fvt-id
         ,"dptf-id"              : dptf-id}
+    )
+    (defun UDC_FVT|RPS|Stream:object{FVT|RPS|Stream}
+        (
+            rate:decimal
+            finish:time
+            amount:decimal
+            released:decimal
+            fvt-id:string
+            dptf-id:string
+            position:integer
+        )
+        @doc "Core constructor for object{FVT|RPS|Stream} — one active linear-release stream position."
+        {"rate"             : rate
+        ,"finish"           : finish
+        ,"amount"           : amount
+        ,"released"         : released
+        ,"fvt-id"           : fvt-id
+        ,"dptf-id"          : dptf-id
+        ,"position"         : position}
     )
     (defun UDC_FVT|MultipletFamily:object{FVT|MultipletFamily}
         (
@@ -1651,7 +1718,7 @@
     (defun UR_FVT-RG|RpsGlobal:object{FVT|RPS|Global} (fvt-id:string dptf-id:string)
         @doc "Reads global RPS row for one reward token; absent rows read as disabled with zeroed rps fields."
         (with-default-read FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id)
-            (UDC_FVT|RPS|Global false 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR fvt-id dptf-id)
+            (UDC_FVT|RPS|Global false 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 fvt-id dptf-id)
             {"reward-enabled"       := re
             ,"current-rps"          := cr
             ,"available-rewards"    := ar
@@ -1660,9 +1727,12 @@
             ,"segmentation"         := seg
             ,"reward-kind"          := rk
             ,"multiplet-family-id"    := tfid
+            ,"stream-count"         := sc
+            ,"stream-last-release"  := slr
+            ,"stream-unreleased"    := sur
             ,"fvt-id"               := fid
             ,"dptf-id"              := did}
-            (UDC_FVT|RPS|Global re cr ar uc zb seg rk tfid fid did)
+            (UDC_FVT|RPS|Global re cr ar uc zb seg rk tfid sc slr sur fid did)
         )
     )
     (defun UR_FVT-RG|RewardEnabled:bool (fvt-id:string dptf-id:string)
@@ -4028,7 +4098,7 @@
         @doc "Under SECURE (FVT|C>ADD-REWARD-LINK): insert reward-enabled RPS|Global; +1 enabled-reward-count."
         ;; SECURE: granted by WI_RpsGlobal and WU_Fvt|EnabledRewardCount (underlying W_).
         (WI_RpsGlobal fvt-id reward-dptf-id
-            (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 segmentation reward-kind multiplet-family-id fvt-id reward-dptf-id)
+            (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 segmentation reward-kind multiplet-family-id 0 STREAM_EPOCH 0.0 fvt-id reward-dptf-id)
         )
         (WU_Fvt|EnabledRewardCount fvt-id (+ (UR_FVT|EnabledRewardCount fvt-id) 1))
         fvt-id
@@ -5478,7 +5548,7 @@
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 fvt-id score-id)
                     )
                     (WI_RpsGlobal fvt-id reward-dptf-id
-                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR fvt-id reward-dptf-id)
+                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 fvt-id reward-dptf-id)
                     )
                     (ref-SCR::XE_CreateFvtLink score-id fvt-id)
                 )
@@ -5501,7 +5571,7 @@
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 fvt-id score-id)
                     )
                     (WI_RpsGlobal fvt-id reward-dptf-id
-                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR fvt-id reward-dptf-id)
+                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 fvt-id reward-dptf-id)
                     )
                     (ref-SCR::XE_CreateFvtLink score-id fvt-id)
                 )
@@ -5520,9 +5590,10 @@
 (create-table FVT|T)                                            ;; Key = <FVT-ID>
 (create-table FVT|T|ScoreEntityLink)                            ;; Key = <FVT-ID> | <Score-Entity-ID>
 (create-table FVT|T|MultipletFamily)                            ;; Key = <Multiplet-Family-ID>
-(create-table FVT|T|RPS|Global)                                ;; Key = <FVT-ID> | <DPTF-ID>
-(create-table FVT|T|RPS|Member)                                ;; Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
+(create-table FVT|T|RPS|Global)                                 ;; Key = <FVT-ID> | <DPTF-ID>
+(create-table FVT|T|RPS|Member)                                 ;; Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
 (create-table FVT|T|RPS|User)                                   ;; Key = <User-ID> | <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
+(create-table FVT|T|RPS|Stream)                                 ;; Key = <FVT-ID> | <DPTF-ID> | <position 1..49>
 (create-table FVT|T|MemberUserWeight)                           ;; Key = <User-ID> | <FVT-ID> | <Score-Entity-ID>
 (create-table FVT|T|MemberVault)                                ;; Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
 (create-table FVT|T|UserPresence)                               ;; Key = <FVT-ID> | <Ouronet-ID>

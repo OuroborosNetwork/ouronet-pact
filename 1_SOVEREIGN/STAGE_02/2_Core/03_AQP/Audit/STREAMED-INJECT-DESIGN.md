@@ -1,7 +1,7 @@
 # Time-streamed reward inject (linear vesting release) — Phase-0 design
 
-**Status:** 🟡 PROPOSED — pending owner sign-off. Evidence base = 3 deep-read traces (RPS accumulator flow,
-Elite-tier + smart/sovereign resolution, dust/conservation behaviour). No code written yet.
+**Status:** ✅ APPROVED / LOCKED by owner 2026-08-23. Implementation started (build order §9). Evidence base = 3
+deep-read traces (RPS accumulator flow, Elite-tier + smart/sovereign resolution, dust/conservation behaviour).
 
 **Feature:** a reward inject may optionally release its amount **linearly over a duration** instead of instantly.
 `inject 240 PURO over 24h` ⇒ the amount vests continuously (sub-second granularity), and whoever is staked during
