@@ -229,4 +229,102 @@
 )
 (commit-tx)
 (print "")
+;;
+;; ============================================================================
+;; T-STREAM-03 — Zero-weight interval → zombie escrow (D9). Drain old streams, inject C, BOTH stakers unstake
+;;   mid-stream; the next drip (at re-stake) runs at total-weight 0, so the elapsed slice escrows to zombie-rewards.
+;; ============================================================================
+(begin-tx "T-STREAM-03 - zero-weight interval escrows to zombie (D9)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "StreamScore"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "StreamVault"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "StreamPool"))
+        (t3:time (time "2027-03-01T00:00:00Z"))
+        (gs-key:string "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
+    )
+    ;;==== T-STREAM-03 · 01 · @t3: drain leftover A+B streams, then inject stream C 240/24h ====
+    (print "--- [T-STREAM-03 · 01 · drain old streams + inject C] ---")
+    (env-chain-data { "block-time": t3 })
+    (env-sigs
+        [ { "key": "PK_AncientHodler", "caps": [] }
+          { "key": "PK_Emma", "caps": [] }
+          { "key": gs-key, "caps":
+            [ (coin.TRANSFER (concat ["k:" gs-key]) "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+    (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+    (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 1 score-id ouro-id)
+    (expect "<<T-STREAM-03>> old streams drained (count 0)" 0 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
+    (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)
+    ;;==== T-STREAM-03 · 02 · @t3+6h: BOTH stakers fully unstake (drip credits C[0,6h] at total 200; weight → 0) ====
+    (print "--- [T-STREAM-03 · 02 · @t3+6h both fully unstake] ---")
+    (env-chain-data { "block-time": (add-time t3 21600) })
+    (ref-TS02-C3::AQP-POOL|C_UnstakeTrueFungible anhd pool-id anhd anhd ouro-id 100.0)
+    (ref-TS02-C3::AQP-POOL|C_UnstakeTrueFungible emma pool-id emma emma ouro-id 100.0)
+    (print (format "<<T-STREAM-03>> zombie before zero-weight drip = {}" [(AQP-FVT.UR_FVT-RG|ZombieRewards fvt-id ouro-id)]))
+    ;;==== T-STREAM-03 · 03 · @t3+12h: ANHD re-stakes → drip runs at weight 0 → C[6h,12h]=60 escrows to zombie ====
+    (print "--- [T-STREAM-03 · 03 · @t3+12h re-stake → zero-weight slice escrows] ---")
+    (env-chain-data { "block-time": (add-time t3 43200) })
+    (env-sigs
+        [ { "key": "PK_AncientHodler", "caps": [] }
+          { "key": gs-key, "caps":
+            [ (coin.TRANSFER (concat ["k:" gs-key]) "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id anhd anhd ouro-id 100.0)
+    (let ((zombie:decimal (AQP-FVT.UR_FVT-RG|ZombieRewards fvt-id ouro-id)))
+        (map print
+            [ (format "<<T-STREAM-03>> zombie after zero-weight drip = {}" [zombie])
+              (expect (format "<<T-STREAM-03>> zero-weight interval C[6h,12h]=60 escrowed to zombie got={}" [zombie]) true (and (> zombie 59.99) (< zombie 60.01))) ]))
+    (env-sigs [])
+)
+(commit-tx)
+(print "")
+;;
+;; ============================================================================
+;; T-STREAM-04 — Guard bounds (UEV_StreamParams): duration < 1h, duration > 365d, and rate below the min are rejected.
+;; ============================================================================
+(begin-tx "T-STREAM-04 - streamed inject guard bounds")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-06-01T00:00:00Z") })
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "StreamVault"))
+        (gs-key:string "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
+    )
+    (print "--- [T-STREAM-04 · guard rejects out-of-range duration + sub-min rate] ---")
+    (env-sigs
+        [ { "key": "PK_AncientHodler", "caps": [] }
+          { "key": gs-key, "caps":
+            [ (coin.TRANSFER (concat ["k:" gs-key]) "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+    (map print
+        [ (expect-failure "<<T-STREAM-04>> duration < 1h rejected" "FVT|Stream: duration must be 1h"
+            (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 1800))
+          (expect-failure "<<T-STREAM-04>> duration > 365d rejected" "FVT|Stream: duration must be 1h"
+            (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 40000000))
+          (expect-failure "<<T-STREAM-04>> rate below min rejected" "FVT|Stream: duration must be 1h"
+            (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 0.00000000001 31536000)) ])
+    (env-sigs [])
+)
+(commit-tx)
+(print "")
 (print "=== END AQP-stream-tests.repl ===")
