@@ -364,7 +364,12 @@ new count. Current source: docstring says 12, code runs 12 — the doc/code drif
 longer exists. No code change here, closed as a byproduct like L42/H5. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`. — *L43*
 
-#44L **[U|BFS]** `UCX_*`/`UDCX_*` is a locally-invented naming tier not codified in `StoicSyntax.md`.
+#44L **[U|BFS]** `UCX_*`/`UDCX_*` is a locally-invented naming tier not codified in `StoicSyntax.md`. —
+**TAGGED FOR SWEEP, 2026-08-23.** Premise no longer holds as originally written: `StoicSyntax-Prefixes.md`
+now formally defines this tier (`UCx_`/`UDCx_`) and already lists `UCX_→UCx_`/`UDCX_→UDCx_` as a planned
+mechanical rename. Owner: a broader StoicSyntax refactor runs as its own pass from `main` once every
+audit's findings are merged — tagged for that, not hand-renamed now. No code change. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L44*
 
 #45L **[SWPT]** `URC_AllGraphPaths` is misleadingly named — returns one shortest chain per node, not all
 paths.

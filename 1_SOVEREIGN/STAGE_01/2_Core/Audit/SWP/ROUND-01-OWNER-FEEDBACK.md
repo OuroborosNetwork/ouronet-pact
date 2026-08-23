@@ -2095,3 +2095,25 @@ unavoidable side effect, not a separate documentation pass.
 #15). Closed as a byproduct, same pattern as H5/#23H (closed by C4) and L42 (closed by C4+C7). — *L43*
 
 ---
+
+## L44 (#44L, U|BFS — `UCX_*`/`UDCX_*` is a locally-invented aux-depth naming tier not codified in `StoicSyntax.md`) — **TAGGED FOR SWEEP — not resolved individually**
+
+**Checked whether the finding's premise still holds before tagging it either way:** `13_U_BFS.pact` has 9
+`UCX_*` functions (`UCX_GraphNodeLinks`, `UCX_PrimalQE`, `UCX_GetChains`, …) and 5 `UDCX_*` functions
+(`UDCX_AddVisited`, `UDCX_AddChains`, …) — all internal, none declared on the public `BreadthFirstSearchV1`
+interface (confirmed while working #38M/M4 in this same file). The finding's premise ("not codified") is
+no longer true: `OuronetInformational/StoicSyntax-Prefixes.md` now formally defines this exact tier —
+`UCx_`/`UDCx_` (lowercase `x` = "auxiliary of the function directly above it") are real registry entries
+with real semantics, and its own migration-mapping table already lists `UCX_ → UCx_` / `UDCX_ → UDCx_` as
+a planned mechanical rename (uppercase → lowercase, pure find-replace, zero behavior change).
+
+**Owner direction:** a broader StoicSyntax refactor (naming, function arrangement within modules,
+interface cleanup) is planned as its own pass, run **from `main`, after every audit's findings are merged
+there** — not piecemeal inside this branch. Tag this finding for that sweep rather than hand-renaming 14
+functions now.
+
+**Status:** TAGGED FOR SWEEP — no code change here. The concept is already codified (`StoicSyntax-Prefixes.md`,
+migration-mapping table); only the mechanical rename of the 14 `UCX_*`/`UDCX_*` functions in
+`13_U_BFS.pact` remains, deferred to the planned post-merge sweep from `main`. — *L44*
+
+---
