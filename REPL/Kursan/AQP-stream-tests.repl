@@ -165,4 +165,68 @@
 )
 (commit-tx)
 (print "")
+;;
+;; ============================================================================
+;; T-STREAM-02 — Superposition (D4): two overlapping 24h streams BOTH pay during the overlap window.
+;;   Reuses the 2-staker vault (ANHD 100 + EMMA 100, total 200). Requires the owner konto's Elite-tier cap >= 2.
+;; ============================================================================
+(begin-tx "T-STREAM-02 - superposition (two overlapping streams)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "StreamScore"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "StreamVault"))
+        (t2:time (time "2026-12-01T00:00:00Z"))
+        (gs-key:string "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
+    )
+    (print (format "<<T-STREAM-02>> owner (ANHD) stream-lane cap = {}" [(AQP-FVT.URC_MaxStreamLanes patron)]))
+    (expect "<<T-STREAM-02>> owner cap >= 2 (needed for two concurrent streams)" true (>= (AQP-FVT.URC_MaxStreamLanes patron) 2))
+    ;;==== T-STREAM-02 · 01 · @t2: stream A 240/24h ====
+    (print "--- [T-STREAM-02 · 01 · @t2 stream A 240/24h] ---")
+    (env-chain-data { "block-time": t2 })
+    (env-sigs
+        [ { "key": "PK_AncientHodler", "caps": [] }
+          { "key": gs-key, "caps":
+            [ (coin.TRANSFER (concat ["k:" gs-key]) "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+    (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)
+    ;;==== T-STREAM-02 · 02 · @t2+12h: clear A's first half, then add stream B 240/24h (now 2 overlapping) ====
+    (print "--- [T-STREAM-02 · 02 · @t2+12h clear + stream B 240/24h] ---")
+    (env-chain-data { "block-time": (add-time t2 43200) })
+    (env-sigs
+        [ { "key": "PK_AncientHodler", "caps": [] }
+          { "key": "PK_Emma", "caps": [] }
+          { "key": gs-key, "caps":
+            [ (coin.TRANSFER (concat ["k:" gs-key]) "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+              (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+    (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+    (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 1 score-id ouro-id)
+    (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)
+    (expect "<<T-STREAM-02>> 2 streams active after B" 2 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
+    ;;==== T-STREAM-02 · 03 · @t2+18h: ANHD collect for [12h,18h] must be 60 (A 60 + B 60 at total 200) ====
+    ;;   Superposition proof: a SINGLE stream would give ANHD 30; both streams paying gives 60.
+    (print "--- [T-STREAM-02 · 03 · @t2+18h ANHD collect = 60 (both streams pay)] ---")
+    (env-chain-data { "block-time": (add-time t2 64800) })
+    (let ((anhd-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id anhd)))
+        (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+        (let ((anhd-payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id anhd) anhd-pre)))
+            (map print
+                [ (format "<<T-STREAM-02>> ANHD [12h,18h] payout = {} (one stream would be 30)" [anhd-payout])
+                  (expect (format "<<T-STREAM-02>> both streams pay in overlap → 60 got={}" [anhd-payout]) true (and (> anhd-payout 59.99) (< anhd-payout 60.01))) ])))
+    (env-sigs [])
+)
+(commit-tx)
+(print "")
 (print "=== END AQP-stream-tests.repl ===")
