@@ -546,3 +546,18 @@ wrong reason (blocked by the pre-existing `UEV_IMC` guard, not the new check; co
 control case failing identically) — corrected to test the validator function directly instead. Live-proven:
 real Make-Fragments flow still produces exactly 1000; the validator correctly rejects 500/0/-1000/1500 and
 accepts 1000/2000. Full `Z.repl` green.
+
+## #25M · DPDC-N · M1 — royalty read live at transfer time, no snapshot/max-price guard
+
+**Verdict: REFUTED, design-intentional (2026-08-23).** Worked through the tradeoffs with the owner before
+deciding: (1) a slippage-style `max-ignis-royalty` parameter would give real buyer protection but requires
+a `DpdcTransferV1`/`V2` interface change and UI-level work to actually be useful; (2) a timelock on royalty
+changes would protect the transfer hot path without touching its interface, but the owner correctly pointed
+out a plain "lock" toggle buys nothing against the actual threat — the same role holder who could raise the
+fee also controls the lock, so they'd simply unlock, change, and relock in their own transaction; (3) leave
+it as-is. Owner chose (3): this is the same trust model already accepted for #4C (repurpose bypass),
+#17H (repurpose skips gates), and #20H (unbounded ignis-royalty) — the collection owner has complete,
+trusted dominion over their own token's economics. Royalty changes are already `@event`-logged in real
+time; a well-built marketplace UI can re-read the live value immediately before presenting a sign prompt;
+and as Ouronet admin, the owner retains the ability to red-flag a collection if abuse is reported. No code
+change.

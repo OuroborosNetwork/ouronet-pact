@@ -304,9 +304,18 @@ the new check — confirmed by a legal-amount control failing identically) befor
 Corrected proof: real Make-Fragments flow still produces exactly 1000; the validator correctly rejects
 500/0/-1000/1500 and accepts 1000/2000. Z.repl green. — *DPDC-C·M1*
 
-#25M **[DPDC-N]** Royalty and IGNIS-royalty are read live at transfer time with no snapshot or max-price
+#25M **[DPDC-N]** ~~Royalty and IGNIS-royalty are read live at transfer time with no snapshot or max-price
 guard — a `role-modify-royalties` holder can front-run a pending buyer's transfer by raising the fee
-mid-flight, amplified by #20H's missing ceiling. — *DPDC-N·M1*
+mid-flight, amplified by #20H's missing ceiling.~~ — **REFUTED (design-intentional) 2026-08-23** — weighed
+3 options with the owner: a slippage-style `max-ignis-royalty` guard (real protection, but needs a
+`DpdcTransferV1`/`V2` interface change and UI work to be useful), a timelock on royalty changes (protects
+the hot transfer path without touching its interface, but doesn't stop the underlying scenario, just delays
+it), and leaving it as-is. Owner: a lock buys nothing against the actual threat (the role holder controls
+the lock too, so they'd just unlock-modify-relock in their own transaction) — and this is the same trust
+model already accepted for #4C/#17H/#20H (collection owner has complete, trusted dominion over their own
+token's economics). Chose to leave it as-is: royalty changes are already `@event`-logged in real time, a
+well-built marketplace UI can re-read the live value immediately before signing, and as Ouronet admin the
+owner can red-flag an abusive collection if reports come in. No code change. — *DPDC-N·M1*
 
 #26M **[DPDC-N]** `C_UpdateNonceRoyalty` mutates a field (`royalty`) with zero on-chain economic consumers
 anywhere in the loaded module set — either an unfinished "Volumetric Royalty Fee" feature or an
