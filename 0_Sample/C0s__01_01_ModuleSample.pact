@@ -108,15 +108,21 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;-- block 3: UTILITY FUNCTIONS (auxiliaries, in family order; W last) ------
+    ;;{F0}  [UC]   compute        UC / UCk        (+UCx aux beneath its base)
+    ;;{F1}  [UR]   read           UR / URC / URU  (+URCx aux)
+    ;;{F2}  [URH]  heavy-read     URH / URHC      (+URHx / URHCx aux)
+    ;;{F3}  [UEV]  enforce        UEV
+    ;;{F4}  [CAP]  own-enforce    CAP
+    ;;{F5}  [UDC]  construct      UDC             (+UDCx aux)
+    ;;{F6}  [W]    write          WU / WU2-4 / WW / WI
     ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;-- block 4: X — AUXILIARY ORCHESTRATION (protected; sub-tiering observed) -
+    ;;{F7}  [X]    XI  ->  XE  ->  XB
+    ;;
+    ;;-- block 5: USER FUNCTIONS (complete/final recipes — LAST) ---------------
+    ;;{F8}  [A]    admin          A_ / AA_
+    ;;{F9}  [C]    client         C_ / CC_
     ;;
 )
 

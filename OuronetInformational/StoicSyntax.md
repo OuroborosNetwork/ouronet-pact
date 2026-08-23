@@ -44,7 +44,7 @@ In StoicSyntax, a function’s **prefix is its contract**. You know privilege an
 | `C_` / `CC_` / `A_` | Client / single-tx client / admin recipes |
 | `…x` (lowercase) | Auxiliary of the function directly above it (same class + colour) |
 
-Capabilities are banded (**C1–C4**), FUNCTIONS are ordered (**UC → … → X**), and `defcap` / `let` bodies follow a fixed statement order. A reader can navigate a multi-thousand-line module by **prefix and section**, not by hunting for side effects. That is intentional: **the layout is the first audit pass**.
+Capabilities are banded (**C1–C4**), FUNCTIONS are ordered (**UC → UR → URH → UEV → CAP → UDC → W → X → A → C** — auxiliaries first, complete user recipes last; see StoicSyntax-Prefixes § 5.1), and `defcap` / `let` bodies follow a fixed statement order. A reader can navigate a multi-thousand-line module by **prefix and section**, not by hunting for side effects. That is intentional: **the layout is the first audit pass**.
 
 ### 2. Bugs are designed out
 

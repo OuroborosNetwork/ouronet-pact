@@ -158,6 +158,31 @@ used only inside its own module does not.
 
 ---
 
+## 5.1 Canonical within-module ORDER (and interface mirror)
+
+A module reads strictly **bottom-up**: every dependency precedes what composes it, so the file
+culminates in its **public recipes**. Five blocks:
+
+1. **Schemas / tables / constants** — const-helper defuns (e.g. `CT_Bar` feeding `(defconst BAR (CT_Bar))`)
+   stay here; a `defconst` that calls a defun needs it defined *above* the const.
+2. **Capabilities** — bands C1–C4.
+3. **Utility functions** (the "first round" — all auxiliaries), in family order:
+   `UC / UCk` → `UR / URC / URU` → `URH / URHC` → `UEV` → `CAP` → `UDC` → **`W` (`WU / WU2-4 / WW / WI`)**.
+   `W` is **last** in this block; each `…x` auxiliary sits directly beneath its base function.
+4. **X — auxiliary orchestration**: `XI` → `XE` → `XB` (sub-tiering observed).
+5. **User functions** (the complete/final recipes — **LAST**): `A_ / AA_` → `C_ / CC_`
+   (admin = a user fn needing admin rights; client = a user fn anyone may call).
+
+The **interface mirrors this order**, dropping the four excluded kinds (§5):
+`UC/UCk → UR/URC/URU → URH/URHC → UEV → CAP → UDC → XE/XB → A → C`.
+
+> **Amendment (2026-08).** Two corrections to earlier canon: (a) `W` writers moved to the **tail of
+> block 3** (were loosely placed); (b) `X` is an *auxiliary* layer, so it now precedes the user
+> functions — the old `A → C → X` becomes `… → X → A → C`, and the module ends on `A_/C_`. Worked
+> reference for the amended order: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_MTX-AQP.pact`.
+
+---
+
 **Two hard rules the colour should reinforce:**
 1. **HEAVY-READ must be visually loud** — its entire reason to exist as a separate class is so a
    reviewer instantly sees a scan and checks it is **off the execution path** (never called from a
