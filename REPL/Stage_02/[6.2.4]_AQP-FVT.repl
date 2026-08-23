@@ -505,6 +505,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "TfStakePool"))
         (t0:time (time "2026-09-01T00:00:00Z"))
     )
     ;;==== TX-FVT-05b · 01 · inject stream at T0 ====
@@ -516,12 +517,19 @@
         (map print
             [ (expect "<<05b>> stream-count = 1 after inject" 1 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
               (expect "<<05b>> stream-unreleased = 240 after inject" 240.0 (AQP-FVT.UR_FVT-RG|StreamUnreleased fvt-id ouro-id))
+              (expect "<<05b>> URC_StreamStatus active-count = 1" 1 (at "active-count" (AQP-FVT.URC_StreamStatus fvt-id ouro-id)))
+              (expect "<<05b>> URC_StreamStatus unreleased = 240" 240.0 (at "unreleased" (AQP-FVT.URC_StreamStatus fvt-id ouro-id)))
               (expect (format "<<05b>> inject debited 240 got={}" [(- ouro-pre (ref-DPTF::UR_AccountSupply ouro-id patron))]) 240.0 (- ouro-pre (ref-DPTF::UR_AccountSupply ouro-id patron))) ]))
     (env-sigs [])
     ;;==== TX-FVT-05b · 02 · collect at T0+12h → ~half (120) released to sole staker ====
     (print "--- [TX-FVT-05b · 02 · collect @ T0+12h → ~120] ---")
     (env-chain-data { "block-time": (add-time t0 43200) })
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    ;; URC_LiveClaimable must PROJECT ~120 (pre-collect, read-only) and match the actual collect payout below
+    (let ((live:decimal (AQP-FVT.URC_LiveClaimable patron fvt-id pool-id 1 score-id ouro-id)))
+        (map print
+            [ (format "<<05b>> URC_LiveClaimable @12h (pre-collect) = {}" [live])
+              (expect (format "<<05b>> URC_LiveClaimable projects ~120 @12h got={}" [live]) true (and (> live 119.99) (< live 120.01))) ]))
     (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
         (print (format "<(C_Collect @12h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id ouro-id)]))
         (let ((payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-pre)))

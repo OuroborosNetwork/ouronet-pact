@@ -2581,6 +2581,96 @@
             )
         )
     )
+    (defun URC_ReleasableToNow:decimal (fvt-id:string dptf-id:string)
+        @doc "Read-only: the total a drip would release RIGHT NOW across the lane's active streams — rate*elapsed \
+            \ floored to the token's decimals, or the exact remainder for a finished stream. Mirrors XI_ReleaseStream's \
+            \ per-stream rel WITHOUT writes (for URC_LiveClaimable / URC_StreamStatus). 0.0 when no stream is active."
+        (let ((count:integer (UR_FVT-RG|StreamCount fvt-id dptf-id)))
+            (if (= count 0)
+                0.0
+                (let*
+                    (
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                        (now:time (at "block-time" (chain-data)))
+                        (last:time (UR_FVT-RG|StreamLastRelease fvt-id dptf-id))
+                        (reward-dec:integer (ref-DPTF::UR_Decimals dptf-id))
+                    )
+                    (fold
+                        (lambda (acc:decimal idx:integer)
+                            (let*
+                                (
+                                    (s:object{FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id dptf-id idx))
+                                    (remaining:decimal (- (at "amount" s) (at "released" s)))
+                                    (rel:decimal
+                                        (if (>= now (at "finish" s))
+                                            remaining
+                                            (let ((by-rate:decimal (floor (* (at "rate" s) (diff-time now last)) reward-dec)))
+                                                (if (> by-rate remaining) remaining by-rate))))
+                                )
+                                (+ acc rel)))
+                        0.0
+                        (enumerate 1 count))))))
+    (defun URC_ProjectedIndexAdvance:decimal
+        (fvt-id:string score-entity-type:integer score-entity-id:string dptf-id:string releasable:decimal)
+        @doc "Read-only: the Tier-1 index (L_i / G) advance that distributing `releasable` right now would produce \
+            \ (for URC_LiveClaimable). VAULT/TREASURY: floor(releasable / total-deb-score, 48). FARM: member-slice = \
+            \ floor(releasable × member-STOA-weight / S, reward-dec), then floor(member-slice / member-deb-divisor, 48) \
+            \ — mirrors XI_1|FarmSplitInject (ignores the rare pending-member ptr flush). Uses UC_ComputeInjectGainedRps."
+        (if (= (UR_FVT|FvtClass fvt-id) 0)
+            (let*
+                (
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (reward-dec:integer (ref-DPTF::UR_Decimals dptf-id))
+                    (s-farm:decimal (URC_FarmInjectDenominatorFresh fvt-id))
+                    (w-i:decimal (URC_MemberStakedStoaValue score-entity-type score-entity-id (UR_FVT-SEL|Swpair fvt-id score-entity-id)))
+                    (member-slice:decimal (if (> s-farm 0.0) (floor (/ (* releasable w-i) s-farm) reward-dec) 0.0))
+                    (total-deb:decimal (URC_ScoreEntityMemberTier2Divisor fvt-id score-entity-type score-entity-id))
+                )
+                (if (> total-deb 0.0) (floor (/ member-slice total-deb) CT_FVT_RPS_PREC) 0.0))
+            (UC_ComputeInjectGainedRps releasable (URC_InjectDenominator fvt-id))))
+    (defun URC_LiveClaimable:decimal
+        (user-id:string fvt-id:string pool-id:string score-entity-type:integer score-entity-id:string dptf-id:string)
+        @doc "Read-only PROJECTION of the user's claimable INCLUDING stream time vested up to now (drips the lane in \
+            \ memory, no writes): pending + floor(deb-user × (projected-index − last-rps), reward-dec), where \
+            \ projected-index = current index + URC_ProjectedIndexAdvance(releasable-to-now). Lets the UI show accrual \
+            \ ticking with no tx. Uses the NORMAL per-user path — for the last-claimant dust-sweep edge the real \
+            \ collect pays the whole available-rewards, so this slightly under-estimates there (a UI hint, not a promise)."
+        (let*
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (reward-dec:integer (ref-DPTF::UR_Decimals dptf-id))
+                (deb-user:decimal (URC_ScoreEntityUserWeight user-id fvt-id pool-id score-entity-type score-entity-id))
+                (releasable:decimal (URC_ReleasableToNow fvt-id dptf-id))
+                (proj-index:decimal
+                    (+ (URC_FvtTier1IndexRps fvt-id score-entity-id dptf-id)
+                       (URC_ProjectedIndexAdvance fvt-id score-entity-type score-entity-id dptf-id releasable)))
+                (pending:decimal (UR_FVT-RU|PendingRewards user-id fvt-id score-entity-id dptf-id))
+                (last-rps:decimal (UR_FVT-RU|LastRps user-id fvt-id score-entity-id dptf-id))
+            )
+            (+ pending (floor (* deb-user (- proj-index last-rps)) reward-dec))))
+    (defun URC_StreamStatus:object (fvt-id:string dptf-id:string)
+        @doc "Read-only lane stream summary for the UI (the 7x7 view): active-count (live positions 1..stream-count), \
+            \ total-rate (Σ rate over streams NOT yet finished), earliest-finish (soonest a stream ends; STREAM_EPOCH \
+            \ when none), unreleased (custodied-but-not-yet-dripped). Reads positions 1..stream-count."
+        (let ((count:integer (UR_FVT-RG|StreamCount fvt-id dptf-id)))
+            (if (= count 0)
+                { "active-count" : 0, "total-rate" : 0.0, "earliest-finish" : STREAM_EPOCH, "unreleased" : 0.0 }
+                (let
+                    (
+                        (now:time (at "block-time" (chain-data)))
+                        (agg:object
+                            (fold
+                                (lambda (acc:object idx:integer)
+                                    (let ((s:object{FVT|RPS|Stream} (UR_FVT-RS|Stream fvt-id dptf-id idx)))
+                                        { "rate" : (+ (at "rate" acc) (if (> (at "finish" s) now) (at "rate" s) 0.0))
+                                        , "earliest" : (if (< (at "finish" s) (at "earliest" acc)) (at "finish" s) (at "earliest" acc)) }))
+                                { "rate" : 0.0, "earliest" : (at "finish" (UR_FVT-RS|Stream fvt-id dptf-id 1)) }
+                                (enumerate 1 count)))
+                    )
+                    { "active-count" : count
+                    , "total-rate" : (at "rate" agg)
+                    , "earliest-finish" : (at "earliest" agg)
+                    , "unreleased" : (UR_FVT-RG|StreamUnreleased fvt-id dptf-id) }))))
     (defun URC_SettleScorePlanRows:[object{FVT|SettleScorePlan}]
         (settle-scores:[string] fvt-reward-bundle:[object{FVT|SettleFvtRewards}])
         @doc "Distinct score-entity settle plans — triplet members collapse to one triplet-id plan."
