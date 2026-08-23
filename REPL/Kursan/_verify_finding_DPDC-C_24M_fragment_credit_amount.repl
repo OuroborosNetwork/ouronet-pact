@@ -1,0 +1,103 @@
+;; Verification for DPDC Audit finding #24M (DPDC-C): NFT fragment/hybrid credit amounts had no bound at
+;; all -- native NFT credit correctly enforces amount=1, but the fragment-nonce credit capabilities
+;; (single, multi, hybrid) enforced nothing. The real invariant isn't "=1" (that's native-only) -- an NFT's
+;; fragments exist in units of 1000 per whole NFT (DPDC-F::C_MakeFragments computes f-amount = 1000 *
+;; amount), so the correct bound is "a positive multiple of 1000". Today's only caller (C_MakeFragments)
+;; can only ever produce exactly 1000 (forced by the upstream native amount=1 rule), so this is a
+;; defense-in-depth backstop -- proven here by confirming (a) the real Make flow still works correctly,
+;; and (b) a direct attempt to credit a non-1000-multiple NFT fragment amount is rejected.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-24M - fragment credit amount must be a positive multiple of 1000")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (owner:string KST.ANHD)
+        (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpnf-price))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+)
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (owner:string KST.ANHD)
+        (creator:string KST.ANHD)
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "n" "d" (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_URI|Data "ipfs://a" "" "" "" "" "" "")
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (print (format "ISSUE = {}"
+        [(ref-TS02-C2::DPNF|C_Issue owner owner creator "FragCreditProbeNFT" "FCPN"
+            true true true true true true true true)]))
+    (let ((id:string "FCPN-98c486052a51"))
+        (print (format "CREATE 1 = {}" [(ref-TS02-C2::DPNF|C_Create owner id [nd])]))
+        (print (format "ENABLE FRAGMENTATION = {}"
+            [(ref-TS02-C2::DPNF|C_EnableNonceFragmentation owner id 1 nd)]))
+        ;; #24M positive control: the real Make-Fragments flow always produces exactly 1000 -- still works.
+        (print (format "<<24M-1>> MAKE FRAGMENTS (real flow, must succeed) RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_MakeFragments owner owner id 1 1)]))
+        (print (format "ANHD fragment (-1) balance after Make = {}"
+            [(ref-DPDC::UR_AccountNonceSupply owner id false -1)]))
+        ;; #24M negative, corrected methodology: XE_CreditNFT-FragmentNonce is UEV_IMC-gated -- ANY direct
+        ;; top-level call (legal amount or not) is rejected by "None of the guards passed" before the new
+        ;; amount check ever runs (confirmed live: a direct call with the LEGAL amount 2000 fails
+        ;; identically). C_MakeFragments is the only registered caller, and it can only ever produce
+        ;; exactly 1000 -- so there is no reachable path, legitimate or otherwise, to exercise the new
+        ;; check through the real capability chain. Testing the validator function itself directly instead
+        ;; (UEV_FragmentCreditAmount is a plain enforce-only function, not capability/IMC-gated).
+        (print (expect-failure "<<24M-2>> UEV_FragmentCreditAmount rejects 500 (not a multiple of 1000)"
+            (ref-DPDC-C::UEV_FragmentCreditAmount 500)))
+        (print (expect-failure "<<24M-3>> UEV_FragmentCreditAmount rejects 0"
+            (ref-DPDC-C::UEV_FragmentCreditAmount 0)))
+        (print (expect-failure "<<24M-4>> UEV_FragmentCreditAmount rejects -1000"
+            (ref-DPDC-C::UEV_FragmentCreditAmount -1000)))
+        (print (expect-failure "<<24M-4b>> UEV_FragmentCreditAmount rejects 1500 (multiple of neither)"
+            (ref-DPDC-C::UEV_FragmentCreditAmount 1500)))
+        ;; Control: legal multiples of 1000 are accepted (proves the check isn't overbroad).
+        (print (expect "<<24M-5>> UEV_FragmentCreditAmount accepts 1000"
+            true
+            (ref-DPDC-C::UEV_FragmentCreditAmount 1000)
+        ))
+        (print (expect "<<24M-5b>> UEV_FragmentCreditAmount accepts 2000"
+            true
+            (ref-DPDC-C::UEV_FragmentCreditAmount 2000)
+        ))
+        ""
+    )
+)
+(commit-tx)

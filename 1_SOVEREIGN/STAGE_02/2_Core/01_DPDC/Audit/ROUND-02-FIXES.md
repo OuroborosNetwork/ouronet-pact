@@ -1016,3 +1016,51 @@ sufficient given the finding's own "currently unreachable" framing — no synthe
 was requested.
 
 **Interface implication:** none — internal to the function body.
+
+## Fix #22 — DPDC-C · M1 (#24M) — NFT fragment/hybrid credit had no amount bound at all
+
+**Owner-approved 2026-08-23.** Owner corrected the finding's original framing: the invariant isn't
+"amount=1" (that's native-NFT-only, since a whole NFT is always quantity 1) — an NFT's fragments exist in
+units of **1000 per whole NFT**, so the correct bound for fragment credit is "a positive multiple of
+1000". Confirmed by tracing `DPDC-F::C_MakeFragments`: it transfers the whole NFT first (forcing
+`amount=1` via the already-hardened native rule), then computes `f-amount = 1000 * amount`, so today's
+only caller can only ever produce exactly 1000.
+
+**Root cause:** `03_DPDC-C.pact` — `DPNF|C>CREDIT-FRAGMENT-NONCE` (no `amount` param at all),
+`DPNF|C>CREDIT-FRAGMENT-NONCES`, and `DPNF|C>CREDIT-HYBRID-NONCES`'s fragment legs enforced nothing on the
+credited amount — unlike native `DPNF|C>CREDIT-NONCE`/`NONCES`, which correctly enforce `=1`.
+
+**Fix — shared validator, wired into all three:**
+```pact
+(defun UEV_FragmentCreditAmount (amount:integer)
+    (enforce (and (> amount 0) (= (mod amount 1000) 0))
+        (format "NFT fragment credit amount of {} must be a positive multiple of 1000" [amount]))
+)
+```
+- `DPNF|C>CREDIT-FRAGMENT-NONCE` — gained an `amount:integer` parameter (previously had none), validated;
+  both call sites (`XE_CreditNFT-FragmentNonce`, and the single-fragment dispatch branch in
+  `XI_CreditOrDebitCollectables`) updated to thread `amount`/`a0` through.
+- `DPNF|C>CREDIT-FRAGMENT-NONCES` — validates every element of `amounts` (every entry in this call is
+  already a fragment, by dispatch).
+- `DPNF|C>CREDIT-HYBRID-NONCES` — validates only the fragment (negative-nonce) legs; native (positive)
+  legs are untouched, since `MappedUpdateOwnerNFT` hardcodes native NFT credit supply to `1` regardless of
+  any `amounts` value, making the native side of a hybrid credit already safe by construction.
+
+**Proof — and a methodology mistake caught and corrected before it stood:** the first proof attempt called
+`XE_CreditNFT-FragmentNonce` directly from a bare REPL top level with a bad amount, expecting rejection.
+It "passed" (`expect-failure` succeeded) — but a control case with the *legal* amount 2000 failed
+identically (`"None of the guards passed"`, from `UEV_IMC`), proving the rejections were **not** from the
+new amount check at all — `XE_` functions are IMC-gated and reject *any* direct top-level call regardless
+of amount. Caught this before treating it as real proof (same class of mistake as Fix #1's original
+`expect-failure` pitfall). Since `C_MakeFragments` is the only registered caller and can only ever produce
+exactly 1000, there is no reachable path — legitimate or otherwise — to exercise the new check through the
+real capability chain. Corrected to test the validator function itself directly (`UEV_FragmentCreditAmount`
+is a plain `enforce`-only function, not capability/IMC-gated):
+`REPL/Kursan/_verify_finding_DPDC-C_24M_fragment_credit_amount.repl` —
+- Real `C_MakeFragments` flow (enable fragmentation, fragment 1 NFT) still works, producing exactly `1000`
+  fragment balance — confirms the fix doesn't touch the legitimate path.
+- `UEV_FragmentCreditAmount` rejects `500`, `0`, `-1000`, `1500`; accepts `1000`, `2000`.
+- `cd REPL && pact Z.repl` — clean, `Load successful`.
+
+**Interface implication:** `DPNF|C>CREDIT-FRAGMENT-NONCE` is an internal capability, not part of any
+interface — no signature change to `DpdcCreateV1`.

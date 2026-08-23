@@ -531,3 +531,18 @@ limits of what a "currently unreachable" defense-in-depth backstop allows: full 
 credit/debit path in the entire test suite) still passes 100% clean — no legitimate call was ever wrongly
 rejected. No live "used to silently pass, now aborts" reproduction is possible without deliberately
 breaking a different, unrelated upstream invariant — owner accepted this scope of verification.
+
+## #24M · DPDC-C · M1 — NFT fragment/hybrid credit had no amount bound at all
+
+**Verdict: CONFIRMED, FIXED (2026-08-23).** Owner corrected the framing before any fix was written: the
+invariant isn't "amount=1" (native-only) — fragments exist in units of 1000 per whole NFT. Owner: keep it
+at exactly "multiples of 1000" (not auto-split remainder), can also be guided from the UI, but wants the
+backend enforcement added too.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #22)** — new shared `UEV_FragmentCreditAmount`
+((positive, multiple of 1000)) wired into all three NFT fragment/hybrid credit capabilities. Caught and
+corrected a real proof-methodology mistake along the way — an initial direct-call test "passed" for the
+wrong reason (blocked by the pre-existing `UEV_IMC` guard, not the new check; confirmed by a legal-amount
+control case failing identically) — corrected to test the validator function directly instead. Live-proven:
+real Make-Fragments flow still produces exactly 1000; the validator correctly rejects 500/0/-1000/1500 and
+accepts 1000/2000. Full `Z.repl` green.

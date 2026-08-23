@@ -293,9 +293,16 @@ today's upstream invariants, but a future weakening of those invariants fails op
 suite) still 100% clean. No live before/after reachability repro is possible given the finding's own
 "currently unreachable" nature — owner accepted this scope of verification. — *DPDC-C·M2*
 
-#24M **[DPDC-C]** NFT `amount=1` enforcement is present on native-NFT Credit but absent on all three
+#24M **[DPDC-C]** ~~NFT `amount=1` enforcement is present on native-NFT Credit but absent on all three
 NFT-fragment/hybrid Credit variants of the identical logical operation — same root cause as #1C/#3C, worth
-its own explicit fix once the sign floor lands. — *DPDC-C·M1*
+its own explicit fix once the sign floor lands.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-23**
+(`ROUND-02-FIXES.md` Fix #22) — owner corrected the framing: the real invariant is "positive multiple of
+1000" (fragments are 1000 units per whole NFT), not `=1` (native-only). New shared
+`UEV_FragmentCreditAmount` wired into all 3 fragment/hybrid credit capabilities. Caught and corrected a
+proof-methodology mistake (an initial test "passed" only because of the pre-existing `UEV_IMC` guard, not
+the new check — confirmed by a legal-amount control failing identically) before treating it as real.
+Corrected proof: real Make-Fragments flow still produces exactly 1000; the validator correctly rejects
+500/0/-1000/1500 and accepts 1000/2000. Z.repl green. — *DPDC-C·M1*
 
 #25M **[DPDC-N]** Royalty and IGNIS-royalty are read live at transfer time with no snapshot or max-price
 guard — a `role-modify-royalties` holder can front-run a pending buyer's transfer by raising the fee

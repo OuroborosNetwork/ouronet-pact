@@ -224,7 +224,8 @@
     (defcap DPSF|C>CREDIT-FRAGMENT-NONCE (id:string nonce:integer)
         (compose-capability (DPDC-C|C>SINGLE-CREDIT id true nonce true))
     )
-    (defcap DPNF|C>CREDIT-FRAGMENT-NONCE (id:string nonce:integer)
+    (defcap DPNF|C>CREDIT-FRAGMENT-NONCE (id:string nonce:integer amount:integer)
+        (UEV_FragmentCreditAmount amount)
         (compose-capability (DPDC-C|C>SINGLE-CREDIT id false nonce true))
     )
     (defcap DPSF|C>CREDIT-NONCE (id:string nonce:integer)
@@ -249,6 +250,7 @@
         (compose-capability (DPDC-C|C>MULTI-CREDIT id true nonces amounts true))
     )
     (defcap DPNF|C>CREDIT-FRAGMENT-NONCES (id:string nonces:[integer] amounts:[integer])
+        (map (lambda (a:integer) (UEV_FragmentCreditAmount a)) amounts)
         (compose-capability (DPDC-C|C>MULTI-CREDIT id false nonces amounts true))
     )
     (defcap DPSF|C>CREDIT-NONCES (id:string nonces:[integer] amounts:[integer])
@@ -268,6 +270,20 @@
         (compose-capability (DPDC|C>HYBRID-MULTI-CREDIT id true nonces amounts))
     )
     (defcap DPNF|C>CREDIT-HYBRID-NONCES (id:string nonces:[integer] amounts:[integer])
+        ;; DPDC Audit #24M: only the fragment (negative) legs carry a real, amount-driven credit —
+        ;; the native (positive) legs are unaffected by <amounts> here (MappedUpdateOwnerNFT hardcodes
+        ;; native NFT supply to 1 regardless of the input value), so only the fragment legs need the
+        ;; positive-multiple-of-1000 check.
+        (map
+            (lambda
+                (idx:integer)
+                (if (< (at idx nonces) 0)
+                    (UEV_FragmentCreditAmount (at idx amounts))
+                    true
+                )
+            )
+            (enumerate 0 (- (length nonces) 1))
+        )
         (compose-capability (DPDC|C>HYBRID-MULTI-CREDIT id false nonces amounts))
     )
     (defcap DPDC|C>HYBRID-MULTI-CREDIT (id:string son:bool nonces:[integer] amounts:[integer])
@@ -443,6 +459,17 @@
             \ it inverts the credit/debit direction in CreditOrDebitDPDC. See DPDC Audit #1C."
         (enforce (>= amount 0) "Amount cannot be negative")
     )
+    (defun UEV_FragmentCreditAmount (amount:integer)
+        @doc "An NFT itself is always quantity 1, but its fragments exist in units of 1000 per whole \
+            \ NFT (see DPDC-F::C_MakeFragments' <f-amount = 1000 * amount>) — every NFT fragment \
+            \ credit amount must be a positive multiple of 1000. Today's only caller (C_MakeFragments) \
+            \ can only ever produce exactly 1000 (forced by the upstream native amount=1 rule), so this \
+            \ is a defense-in-depth backstop, not a live-exploit fix. See DPDC Audit #24M."
+        (enforce
+            (and (> amount 0) (= (mod amount 1000) 0))
+            (format "NFT fragment credit amount of {} must be a positive multiple of 1000" [amount])
+        )
+    )
     ;;{F3}  [UDC]
     ;;{F4}  [CAP]
     ;;
@@ -481,7 +508,7 @@
     )
     (defun XE_CreditNFT-FragmentNonce (account:string id:string nonce:integer amount:integer)
         (UEV_IMC)
-        (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id nonce)
+        (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id nonce amount)
             (XI_CreditNFT account id [nonce] [amount])
         )
     )
@@ -653,7 +680,7 @@
                 ((UC_AndTruths [isg (not inn) (not cod) (not son)])                 (require-capability (DPNF|C>DEBIT-NONCE account id n0 a0 wipe-mode)))
                 ;;Fragment Nonce
                 ((UC_AndTruths [isg inn cod son])                                   (require-capability (DPSF|C>CREDIT-FRAGMENT-NONCE id n0)))
-                ((UC_AndTruths [isg inn cod (not son)])                             (require-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id n0)))
+                ((UC_AndTruths [isg inn cod (not son)])                             (require-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id n0 a0)))
                 ((UC_AndTruths [isg inn (not cod) son])                             (require-capability (DPSF|C>DEBIT-FRAGMENT-NONCE account id n0 a0 wipe-mode)))
                 ((UC_AndTruths [isg inn (not cod) (not son)])                       (require-capability (DPNF|C>DEBIT-FRAGMENT-NONCE account id n0 a0 wipe-mode)))
                 ;;
