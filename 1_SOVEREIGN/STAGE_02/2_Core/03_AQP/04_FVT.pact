@@ -131,6 +131,9 @@
     (defun C_Inject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
+    (defun C_InjectStream:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+    )
     (defun CC_Inject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
@@ -778,6 +781,19 @@
             \ Composes P|SECURE-CALLER + P|FVT|REMOTE-GOV for TFT custody to AQP|SC_NAME."
         @event
         (UEV_InjectContext patron fvt-id reward-dptf-id amount)
+        (compose-capability (P|SECURE-CALLER))
+        (compose-capability (P|FVT|REMOTE-GOV))
+    )
+    (defcap FVT|C>INJECT-STREAM
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        @doc "Inject a reward DPTF as a TIME-STREAM (linear vesting over `duration` seconds). Same reward context \
+            \ as an instant inject (UEV_InjectContext: not vacate-frozen, reward-enabled, patron/amount valid) plus \
+            \ the count-independent stream-param guard (UEV_StreamParams: duration bounds + min rate). The slot-cap \
+            \ (Elite-tier concurrent-stream limit on the FVT owner konto) is enforced in XI_FvtAddStream AFTER the \
+            \ drip. Composes the same P|SECURE-CALLER + P|FVT|REMOTE-GOV as an inject (TFT custody to AQP|SC_NAME)."
+        @event
+        (UEV_InjectContext patron fvt-id reward-dptf-id amount)
+        (UEV_StreamParams reward-dptf-id amount duration)
         (compose-capability (P|SECURE-CALLER))
         (compose-capability (P|FVT|REMOTE-GOV))
     )
@@ -2991,17 +3007,16 @@
         )
     )
     (defun UEV_StreamParams:bool
-        (owner:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
-        @doc "Guard for a STREAMED inject (fires only when duration > 0; instant injects keep just amount > 0). \
-            \ Enforces: duration in [STREAM_MIN_DURATION, STREAM_MAX_DURATION]; a minimum release rate \
-            \ amount/duration >= STREAM_MIN_UPS * 10^(-reward-decimals) (precision-normalized, so the floor is \
-            \ uniform across token decimals); and a free stream slot under the owner konto's Elite-tier cap."
+        (reward-dptf-id:string amount:decimal duration:integer)
+        @doc "Count-INDEPENDENT part of the streamed-inject guard (defcap-safe — no post-drip state): duration in \
+            \ [STREAM_MIN_DURATION, STREAM_MAX_DURATION] and a minimum release rate amount/duration >= \
+            \ STREAM_MIN_UPS * 10^(-reward-decimals) (precision-normalized via exact integer pow, so the floor is \
+            \ uniform across token decimals; 1e-5/sec for a 12-dp token). The count-DEPENDENT slot-cap check lives \
+            \ in XI_FvtAddStream AFTER the drip — a finished stream frees its slot only once the drip prunes it."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (reward-dec:integer (ref-DPTF::UR_Decimals reward-dptf-id))
-                ;; min-rate = STREAM_MIN_UPS smallest-units / sec = STREAM_MIN_UPS / 10^dec (integer pow is exact —
-                ;; no float64 precision loss). For a 12-dp token: 1e7 / 1e12 = 1e-5 token/sec.
                 (min-rate:decimal (/ (dec STREAM_MIN_UPS) (dec (^ 10 reward-dec))))
                 (rate:decimal (/ amount (dec duration)))
             )
@@ -3011,8 +3026,6 @@
                       (<= duration STREAM_MAX_DURATION)
                       (>= rate min-rate) ])
                 "FVT|Stream: duration must be 1h..365d and rate >= STREAM_MIN_UPS/sec (raise amount or shorten duration)")
-            (enforce (< (UR_FVT-RG|StreamCount fvt-id reward-dptf-id) (URC_MaxStreamLanes owner))
-                "FVT|Stream: stream slots full for this owner's Elite tier — use a direct (instant) inject")
         )
     )
     (defun UEV_CollectContext
@@ -3404,6 +3417,20 @@
             \ UrStoa ≡ C_URV|Inject."
         (XB_FvtInject patron fvt-id reward-dptf-id amount)
     )
+    (defun C_InjectStream:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        @doc "Inject a reward DPTF as a TIME-STREAM — the DELAYED inject path (any FVT class): `amount` vests \
+            \ LINEARLY over `duration` seconds (1h..365d) and whoever is staked during each slice earns that slice \
+            \ (late stakers included). duration = 0 is not accepted here — use C_Inject for an instant inject. \
+            \ Streams are independent + overlap (no merge), capped per the FVT owner konto's Elite tier; a full \
+            \ lane accepts only instant injects until a stream finishes. Delegates to XI_FvtAddStream under \
+            \ FVT|C>INJECT-STREAM (validate + custody + SECURE). UI: URC_LiveClaimable / URC_StreamStatus show \
+            \ real-time accrual. See Audit/STREAMED-INJECT-DESIGN.md."
+        (UEV_IMC)
+        (with-capability (FVT|C>INJECT-STREAM patron fvt-id reward-dptf-id amount duration)
+            (XI_FvtAddStream patron fvt-id reward-dptf-id amount duration)
+        )
+    )
     (defun CC_Inject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "HEAVY (R3 `CC_`) enforced-FRESH inject for ANY FVT class (farm/vault/treasury) — see the INJECT \
@@ -3433,6 +3460,8 @@
                                 (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
                                 (reward-rows:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
                             )
+                            ;; DRIP each reward lane once (checkpoint) before the fix loop → users settle at now's index
+                            (map (lambda (d:string) (XI_ReleaseStream fvt-id d)) reward-rows)
                             (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) (URH_FvtStalePresentUsers fvt-id))
                             (UC_EmptyOc)
                         )
@@ -3467,6 +3496,9 @@
                         (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
                         (reward-rows:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
                     )
+                    ;; DRIP each reward lane ONCE (checkpoint) before the fix loop so every user settles against the
+                    ;; now-current index (no time passes during the batch tx). No-op when no lane carries a stream.
+                    (map (lambda (d:string) (XI_ReleaseStream fvt-id d)) reward-rows)
                     ;; force-refresh this chunk of stale stakers (penalized); fixed users drop out of the stale set
                     (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) batch)
                     (let
@@ -3682,6 +3714,10 @@
                     (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
+                ;; DRIP the collected lane FIRST (checkpoint) so the farm pre-settle, the payout
+                ;; (URC_CollectClaimableRewards) and the PHASE-4 last-rps advance all reflect streamed rewards
+                ;; vested up to `now`. No-op when the lane carries no live stream.
+                (XI_ReleaseStream fvt-id reward-dptf-id)
                 (if (= (UR_FVT|FvtClass fvt-id) 0)
                     (XI_2|SettleMemberTier2 fvt-id score-entity-type score-entity-id reward-dptf-id)
                     true
@@ -4464,6 +4500,15 @@
                 (distinct-fvts:[string] (at "distinct-fvts" settle-bundle))
                 (settle-plans:[object{FVT|SettleScorePlan}] (at "settle-plans" settle-bundle))
             )
+            ;; PHASE 2.0 — DRIP every affected reward lane FIRST (checkpoint) so the ghost-TVL / Tier-2 settle and
+            ;; the per-user banking below run against the now-current index (streamed rewards vest up to `now`).
+            ;; Uses the plans' own reward-dptf-ids (no extra scan); a lane shared by two plans is dripped twice —
+            ;; the 2nd drip is a no-op (elapsed 0). No-op entirely when no lane on the plan carries a live stream.
+            (map
+                (lambda (plan:object{FVT|SettleScorePlan})
+                    (map (lambda (reward-dptf-id:string) (XI_ReleaseStream (at "fvt-id" plan) reward-dptf-id))
+                         (at "reward-dptf-ids" plan)))
+                settle-plans)
             (XI_1|SyncFarmGhostTvlForEmployedScores settle-plans)
             (map
                 (lambda (plan:object{FVT|SettleScorePlan})
@@ -5171,6 +5216,9 @@
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                 [
+                    ;;===>PHASE 0=== drip pending streams first (checkpoint) so an instant amount distributes on top of
+                    ;; a freshly-released lane — a live stream + an instant inject in the same tx compose correctly.
+                    (XI_ReleaseStream fvt-id reward-dptf-id)
                     ;;===>PHASE 1=== custody transfer · UrStoa ≡ C_Transfer / C_Transmit
                     (ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)
                     ;;===>PHASE 2+3=== escrow-aware distribute + available-rewards (shared with the stream drip).
@@ -5184,6 +5232,58 @@
                     )
                 ]
                 []
+            )
+        )
+    )
+    (defun XI_FvtAddStream:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        @doc "Streamed inject CORE (linear vesting). (0) DRIP pending streams (checkpoint + prune finished → free \
+            \ slots); (0b) enforce a free stream slot on the POST-DRIP count under the FVT owner konto's Elite-tier \
+            \ cap; (1) custody-transfer `amount` patron→AQP|SC_NAME (held, invisible to available-rewards until \
+            \ dripped); (2) append a stream at the next compacted position (rate = amount/duration, finish = \
+            \ now+duration, released 0) and bump the lane cursor (stream-count, stream-unreleased += amount, \
+            \ stream-last-release = now). NO distribution here — later drips release it linearly. require SECURE."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            ;; PHASE 0 — drip (checkpoint + prune finished streams) so the shared last-release is `now` before we add
+            (let ((drip-oc:object{IgnisCollectorV1.OutputCumulator} (XI_ReleaseStream fvt-id reward-dptf-id)))
+                ;; PHASE 0b — slot-cap on the POST-DRIP count (Elite tier of the FVT owner konto, D5)
+                (enforce (< (UR_FVT-RG|StreamCount fvt-id reward-dptf-id) (URC_MaxStreamLanes owner-konto))
+                    "FVT|Stream: stream slots full for this owner's Elite tier — use a direct (instant) inject")
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [
+                        drip-oc
+                        ;; PHASE 1 — custody transfer `amount` into AQP|SC_NAME (held until dripped)
+                        (ref-TFT::C_Transfer reward-dptf-id patron AQP|SC_NAME amount true)
+                        ;; PHASE 2 — append the stream at the next compacted position + bump the lane cursor
+                        (let*
+                            (
+                                (count:integer (UR_FVT-RG|StreamCount fvt-id reward-dptf-id))
+                                (now:time (at "block-time" (chain-data)))
+                                (new-pos:integer (+ count 1))
+                            )
+                            (WW_RpsStream fvt-id reward-dptf-id new-pos
+                                (UDC_FVT|RPS|Stream (/ amount (dec duration)) (add-time now duration) amount 0.0
+                                    fvt-id reward-dptf-id new-pos))
+                            (WU_RpsGlobal|StreamCount fvt-id reward-dptf-id new-pos)
+                            (WU_RpsGlobal|StreamUnreleased fvt-id reward-dptf-id
+                                (+ (UR_FVT-RG|StreamUnreleased fvt-id reward-dptf-id) amount))
+                            (WU_RpsGlobal|StreamLastRelease fvt-id reward-dptf-id now)
+                            (UC_EmptyOc)
+                        )
+                        ;; PHASE 3 — GAS (same lane event as an instant inject)
+                        (ref-IGNIS::UDC_ConstructOutputCumulator
+                            GAS|INJECT owner-konto trigger [fvt-id reward-dptf-id (format "{}" [amount])]
+                        )
+                    ]
+                    []
+                )
             )
         )
     )
@@ -5201,6 +5301,8 @@
                     (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
                     (reward-rows:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
                 )
+                ;; DRIP each reward lane once (checkpoint) before the fix loop → users settle at now's index
+                (map (lambda (d:string) (XI_ReleaseStream fvt-id d)) reward-rows)
                 (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) users))
             (UC_EmptyOc)
         )
@@ -5231,6 +5333,8 @@
             (
                 (reward-rows:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
             )
+            ;; DRIP each reward lane once (checkpoint) before the recompute loop → holders settle at now's index
+            (map (lambda (d:string) (XI_ReleaseStream fvt-id d)) reward-rows)
             (map
                 (lambda (u:string)
                     (XI_SweepRecomputeUserMemberIn u fvt-id (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id) score-entity-id swept-boost-class-id reward-rows))
