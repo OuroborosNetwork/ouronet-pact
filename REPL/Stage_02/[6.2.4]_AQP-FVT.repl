@@ -488,6 +488,75 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
+;; TX-FVT-05b — Streamed inject (linear vesting) smoke: C_InjectStream 240 OURO over 24h; the sole staker (ANHD)
+;;   collects ~half at +12h and the exact remainder at +24h (finish flush → stream pruned). Proves the drip's
+;;   time-based release, the exact-remainder flush, and compaction. Block-time driven via env-chain-data.
+(begin-tx "TX-FVT-05b - streamed inject linear vesting smoke")
+(print "")
+(print "=== TX-FVT-05b — C_InjectStream 240 OURO / 24h → collect @12h (~120) + @24h (~120) ===")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "TfStakeScore"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+        (t0:time (time "2026-09-01T00:00:00Z"))
+    )
+    ;;==== TX-FVT-05b · 01 · inject stream at T0 ====
+    (print "--- [TX-FVT-05b · 01 · C_InjectStream 240 / 24h @ T0] ---")
+    (env-chain-data { "block-time": t0 })
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
+        (print (format "<(AQP-FVT|C_InjectStream)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)]))
+        (map print
+            [ (expect "<<05b>> stream-count = 1 after inject" 1 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
+              (expect "<<05b>> stream-unreleased = 240 after inject" 240.0 (AQP-FVT.UR_FVT-RG|StreamUnreleased fvt-id ouro-id))
+              (expect (format "<<05b>> inject debited 240 got={}" [(- ouro-pre (ref-DPTF::UR_AccountSupply ouro-id patron))]) 240.0 (- ouro-pre (ref-DPTF::UR_AccountSupply ouro-id patron))) ]))
+    (env-sigs [])
+    ;;==== TX-FVT-05b · 02 · collect at T0+12h → ~half (120) released to sole staker ====
+    (print "--- [TX-FVT-05b · 02 · collect @ T0+12h → ~120] ---")
+    (env-chain-data { "block-time": (add-time t0 43200) })
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
+        (print (format "<(C_Collect @12h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id ouro-id)]))
+        (let ((payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-pre)))
+            (map print
+                [ (format "<<05b>> payout @12h = {}" [payout])
+                  (expect (format "<<05b>> ~half (120) released @12h got={}" [payout]) true (and (> payout 119.99) (< payout 120.01)))
+                  (expect "<<05b>> stream still active @12h" 1 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id)) ])))
+    (env-sigs [])
+    ;;==== TX-FVT-05b · 03 · collect at T0+24h (finish) → remaining ~120, stream pruned ====
+    (print "--- [TX-FVT-05b · 03 · collect @ T0+24h (finish) → ~120 + prune] ---")
+    (env-chain-data { "block-time": (add-time t0 86400) })
+    (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+    (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
+        (print (format "<(C_Collect @24h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id ouro-id)]))
+        (let
+            (
+                (payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-pre))
+                (unreleased:decimal (AQP-FVT.UR_FVT-RG|StreamUnreleased fvt-id ouro-id))
+            )
+            (map print
+                [ (format "<<05b>> payout @24h = {} ; stream-unreleased = {}" [payout unreleased])
+                  (expect (format "<<05b>> remaining ~120 released @24h got={}" [payout]) true (and (> payout 119.99) (< payout 120.01)))
+                  (expect "<<05b>> stream pruned @24h (count 0)" 0 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
+                  (expect (format "<<05b>> stream-unreleased flushed to ~0 got={}" [unreleased]) true (< unreleased 0.0000001)) ])))
+    (env-sigs [])
+)
+(commit-tx)
+(print "")
+(print "=== END TX-FVT-05b =========================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;
 ;; TX-FVT-06 — Sync repair while staked (issue 2nd OURO TF anchor → C_SyncTrueFungibleAnchors)
 (begin-tx "TX-FVT-06 - TF anchor sync repair while staked")
 (print "")

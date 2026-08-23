@@ -5137,8 +5137,13 @@
                 (UC_EmptyOc)                                        ;; fast path — no stream on this lane
                 (let*
                     (
+                        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                         (now:time (at "block-time" (chain-data)))
                         (last:time (UR_FVT-RG|StreamLastRelease fvt-id reward-dptf-id))
+                        ;; released amounts must be conformant to the reward token's precision — rate*elapsed is a
+                        ;; high-precision product, so FLOOR each slice to the token's decimals (the finish-flush later
+                        ;; releases amount-released, recovering the accumulated crumbs → exact per-stream conservation).
+                        (reward-dec:integer (ref-DPTF::UR_Decimals reward-dptf-id))
                         ;; walk positions 1..count → { total released this drip, survivor rows (released advanced) }
                         (walk:object
                             (fold
@@ -5151,7 +5156,7 @@
                                             (rel:decimal
                                                 (if finished
                                                     remaining                             ;; exact-remainder flush
-                                                    (let ((by-rate:decimal (* (at "rate" s) (diff-time now last))))
+                                                    (let ((by-rate:decimal (floor (* (at "rate" s) (diff-time now last)) reward-dec)))
                                                         (if (> by-rate remaining) remaining by-rate))))
                                         )
                                         { "total" : (+ (at "total" acc) rel)
