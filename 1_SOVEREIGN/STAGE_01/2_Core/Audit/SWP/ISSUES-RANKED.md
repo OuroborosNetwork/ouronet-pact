@@ -394,7 +394,13 @@ function (`UC_PoolID`→`UC_Prefix`, only ever "S"/"W"/"P"), called from exactly
 closed, not merely unreachable today. No code change. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`. — *L47*
 
-#48L **[SWPI]** Undocumented, unrelated-looking magic constants (`5040000.0`, `10000000.0`).
+#48L **[SWPI]** Undocumented, unrelated-looking magic constants (`5040000.0`, `10000000.0`). —
+**DESIGN, accepted — both owner-verified, 2026-08-23.** `10000000.0` (`URC_PoolValue`) is the same fixed
+genesis LP mint amount as `GENESIS_LP_SUPPLY` — every issuance mints exactly 10M, by design, just used in
+a different function than #36/M5 touched. `5040000.0` (`UC_PoolShares`/`UC_DeviationInValueShares`) has a
+real reason tied to share computation, owner-verified correct at implementation time (exact derivation
+not recalled on demand, but not an accidental/undocumented value). No code change. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L48*
 
 #49L **[SWPI]** `URC_Hopper`'s doc says "cheapest available edge" — imprecise framing for what should mean
 "maximizes output" (see #6C).

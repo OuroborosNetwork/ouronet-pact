@@ -2209,3 +2209,26 @@ literally cannot occur.
 not merely unreachable in practice. — *L47*
 
 ---
+
+## L48 (#48L, SWPI — undocumented, unrelated-looking magic constants `5040000.0`/`10000000.0`) — **DESIGN, accepted — both intentional and owner-verified, no code change**
+
+**Traced both before presenting, not taken on faith either way:**
+- `10000000.0` at `16_SWPI.pact:1357` (inside `URC_PoolValue`) is the same genesis LP mint value already
+  named `GENESIS_LP_SUPPLY` for `C_Issue`/`XE_IssueWrite` during the #36/M5 fix — a real duplicate, in a
+  different function #36 wasn't scoped to touch.
+- `5040000.0` (3 uses, `UC_PoolShares`/`UC_DeviationInValueShares`, also consumed from `SWPL`'s
+  asymmetric-liquidity add/remove logic) — checked for any documented rationale anywhere in the codebase
+  or `OuronetInformational/`; found none.
+
+**Owner, on `10000000.0`:** leave as-is — every new SWP issuance mints exactly 10,000,000 LP tokens,
+fixed, by design; that's why the number is used here too, not an accidental duplicate needing
+unification.
+
+**Owner, on `5040000.0`:** leave as-is — there's a real reason for this specific number tied to how
+shares are computed; owner verified it was correct at implementation time, doesn't recall the exact
+derivation on demand right now, but it's not an arbitrary/undocumented-by-accident value.
+
+**Status:** DESIGN, accepted — both constants intentional and owner-verified, not oversights. No code
+change, no renaming, no centralizing. — *L48*
+
+---
