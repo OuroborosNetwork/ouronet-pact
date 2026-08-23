@@ -253,9 +253,13 @@ readers that return module schemas stay module-only (interface object-return rul
    `XI_ReleaseStream` (the drip: fold walk, clamp+finish-flush, distribute, compact) + key/writers/reader.
 4. ✅ **DONE (a6a3de4)** Drip wired checkpoint-first at inject (PHASE 0) + `C_InjectStream`/`XI_FvtAddStream` +
    stake/unstake (`XI_RpsPreScore`) + collect (`C_Collect`) + deb-fix batches + sweep.
-5. `URC_LiveClaimable` + `URC_StreamStatus`.
-6. Talos direct + **`AQP-FVT|C_InjectStream`** delayed wrapper (needed to smoke-test — `C_InjectStream` is `UEV_IMC`-gated).
-7. Tests 1→10 (smoke test first: create stream → advance block-time → drip → verify release); gas pass on the farm drip.
+5. ✅ **DONE (bfdcd5d)** `URC_ReleasableToNow` + `URC_ProjectedIndexAdvance` + `URC_LiveClaimable` + `URC_StreamStatus`
+   (read-only; `URC_LiveClaimable` projects EXACTLY the collect payout — proven 120.000000000000 @12h).
+6. ✅ **DONE (a18fd5c)** Talos `AQP-FVT|C_InjectStream` delayed wrapper (direct = pre-existing `AQP-FVT|C_Inject`).
+7. **IN PROGRESS** — ✅ vault smoke test (`TX-FVT-05b` in `[6.2.4]`, `a6137c2`): C_InjectStream 240/24h → exact
+   120 @12h + 120 @24h (finish flush) + prune + LiveClaimable/StreamStatus. **REMAINING:** superposition (two
+   overlapping streams — needs owner Elite tier ≥ 1.2 for a 2-slot cap), late-staker (Alice/Bob 180/60), slot-cap
+   reject, zero-weight→zombie, farm `O(members)` drip path, gas pass.
 
 **Implementation refinement (owner-notified):** instead of adding a `duration` param to `C_Inject` (which would
 cascade the signature through the interface + Talos + the MTX defpact + every existing test), a **separate
