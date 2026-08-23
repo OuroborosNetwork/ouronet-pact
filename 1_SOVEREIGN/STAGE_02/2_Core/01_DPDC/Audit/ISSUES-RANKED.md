@@ -69,7 +69,13 @@ to.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-20** (`ROUND-02-FIXES.md` Fix #3) �
 burn (never freeze-gated — only the burn role) and wipe (frozen+`can-wipe`-gated) from ever touching the
 escrow account; both live-proven rejected at the identical line, ordinary burn on a real account still
 works, `Z.repl` green. The respawn "compounding" risk needed no separate fix — it was downstream of the
-collateral being destroyed, which can no longer happen. — *DPDC-MNG·C1*
+collateral being destroyed, which can no longer happen. **Follow-up (2026-08-23, Fix #19):** the blanket
+`account != dpdc` block was found, while building real EQUITY test coverage (#22H), to also block EQUITY's
+legitimate `Convert`/`Break` package-share flows — a same-transaction, non-fragment escrow use of `dpdc`
+completely unrelated to what #5C protects. Narrowed the check to only block burning/wiping a `dpdc`-held
+nonce that's *currently fragmented* (via `DPDC::UR_SplitNonceData`, since this capability only ever handles
+Class-0 nonces). Live-proven: EQUITY's Convert/Break now work correctly with exact conservation; the
+original fragment protection is untouched. Z.repl green. — *DPDC-MNG·C1*
 
 #6C **[DPDC-S]** ~~Composite/Hybrid SFT set-class definitions with `allowed-sclass = 0` (the codebase's
 reserved "not part of any set" sentinel) pass definition validation — Make then legitimately transfers a
@@ -265,9 +271,17 @@ chain, 2026-08-23** — Fix #13 added exactly this Define-time validation (preci
 removed the Update path entirely, Fix #16 tightened the floor to `[1.0,100.0]`. No separate action needed. —
 *DPDC-S·H2*
 
-#22H **[EQUITY]** The entire financial-instrument module (shareholder package shares — dilution-sensitive
+#22H **[EQUITY]** ~~The entire financial-instrument module (shareholder package shares — dilution-sensitive
 by construction) has zero REPL/test coverage anywhere in the repository; every conservation claim in this
-audit for EQUITY is verified only by static reading, never exercised end-to-end. — *EQUITY·H1*
+audit for EQUITY is verified only by static reading, never exercised end-to-end.~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-23** (`ROUND-02-FIXES.md` Fix #20) — owner recalled testing EQUITY and believed it worked; verified
+live rather than assumed. Found real test code existed (`[6.1]_DPDC.repl` "TX 014") but was fully
+unreachable (file disabled, and even run directly crashes on an earlier unrelated bug before reaching it;
+its target collection is never actually created; assertions were print-only). Building real coverage
+surfaced and required fixing a genuine regression first (#5C follow-up, Fix #19 — EQUITY's Convert/Break
+was actually broken by an earlier fix). Once fixed, added `REPL/Stage_02/[6.1.1]_EQUITY.repl` — Issue
+baseline + Make/Convert/Break exact-conservation round trip + 5 negative-path checks, 19 assertions total,
+wired into the active `Stage02_Tester.repl`/`Z.repl` pipeline. All passing, Z.repl green. — *EQUITY·H1*
 
 ## MEDIUM
 

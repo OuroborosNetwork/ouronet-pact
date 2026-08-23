@@ -1,0 +1,279 @@
+;;
+;; REPL/Stage_02/[6.1.1]_EQUITY.repl — source layout mirrors console
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== TXnnn · mm · <slug> ====  pairs with (print "--- [TXnnn · mm · …] ---") (mm = group within that begin-tx, 01..)
+;;   format "{}": only from Talos C_* return, ref-DPDC/ref-EQUITY UR_*/URC_* return, expect/expect-failure doc, or (env-gas).
+;;   REPL tests: (expect …) / (expect-failure …) return strings — collect in a list and (map print …) so every assertion line appears in the REPL; no nested format wrapping expect.
+;;
+;; DPDC Audit #22H: EQUITY (shareholder package shares) had zero REPL coverage anywhere reachable from any
+;; active pipeline — the only prior test (REPL/Stage_02/[6.1]_DPDC.repl "TX 014") is unreachable (that file
+;; is commented out of Stage02_Tester.repl, and even loaded directly it never reaches TX 014 due to an
+;; earlier unrelated crash) and references a collection id nothing ever actually creates. This file is the
+;; first real, reachable, asserted EQUITY coverage.
+;;
+;; This suite also live-proved and closed a real regression found while building it: DPDC Audit #5C's fix
+;; (DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES blocking all burn/wipe of the <dpdc> system account) blocked
+;; EQUITY's Convert/Break paths, which legitimately use <dpdc> as a same-transaction escrow unrelated to
+;; fragmentation. See the #5C follow-up fix in 06_DPDC-MNG.pact for the narrowed check.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.1.1]_EQUITY.repl")
+(print "================================================================")
+(print "Legend (terminal observability):")
+(print "  <<…>>     expect / expect-failure doc (format …) — REPL logs pass/fail")
+(print "  <(TS02-C1.DPSF|C_…)> => \"…\"      Talos client → EQUITY write (return value)")
+(print "  <(DPDC.UR_…)> / <(EQUITY.URC_…)> => \"…\"   ref-module utility read (return value)")
+(print "  <(REPL|env-gas)> …               gas after tx (env-gas)")
+(print "")
+(print "Source: ;;|| NEXT > between txs; ;;==== TXnnn · mm · … ==== before each REPL group banner (mm = intra-tx group).")
+(print "REPL tests: (map print [(expect (format \"<<TX…>> …\" […]) expected actual) …]) — expect / expect-failure return strings; map print surfaces each line.")
+(print "")
+(print "===================Initialise EQUITY TX Block==========================")
+
+(begin-tx "TX-EQUITY-001 - Issue Shareholder Collection")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-EQUITY-001 · 01 · env-sigs (caps) ====
+(print "--- [TX-EQUITY-001 · 01 · env-sigs (caps)] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (owner:string KST.ANHD)
+        (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpsf-price))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+)
+;;==== TX-EQUITY-001 · 02 · Talos DPSF|C_IssueCompany + baseline reads ====
+(print "--- [TX-EQUITY-001 · 02 · issue + baseline reads] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-EQUITY:module{EquityV1} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (links:[string] (make-list 24 "ipfs://EquityTestLink"))
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_IssueCompany TestStageEquity/TSEQ)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_IssueCompany owner owner "TestStageEquity" "TSEQ" 5.0 100.0 links)])
+        ]
+    )
+    (let ((id:string "E|TSEQ-98c486052a51"))
+        (map print
+            [
+                (expect "<<TX-EQUITY-001>> collection owner-konto is the dpdc system account"
+                    (ref-DPDC::GOV|DPDC|SC_NAME)
+                    (ref-DPDC::UR_OwnerKonto id true)
+                )
+                (expect "<<TX-EQUITY-001>> collection creator-konto is the issuing account"
+                    owner
+                    (ref-DPDC::UR_CreatorKonto id true)
+                )
+                (expect "<<TX-EQUITY-001>> creator holds all 1,000,000 barebone shares (nonce 1) at issuance"
+                    1000000
+                    (ref-DPDC::UR_AccountNonceSupply owner id true 1)
+                )
+                (expect "<<TX-EQUITY-001>> SharesPerMillion = [100 200 500 1000 2000 5000 10000] for 1 mil shares"
+                    [100 200 500 1000 2000 5000 10000]
+                    (ref-EQUITY::URC_SharesPerMillion id)
+                )
+                (expect "<<TX-EQUITY-001>> CombineCapacity = half of total shares (500,000) before any packaging"
+                    500000
+                    (ref-EQUITY::URC_CombineCapacity id)
+                )
+                (expect "<<TX-EQUITY-001>> all 7 package tiers start at zero supply"
+                    [0 0 0 0 0 0 0]
+                    (ref-EQUITY::UR_TierSupplies id)
+                )
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-EQUITY-001 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-EQUITY-002 - Make / Convert / Break round trip, exact conservation")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-EQUITY-002 · 01 · env-sigs (caps) ====
+(print "--- [TX-EQUITY-002 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-EQUITY-002 · 02 · Make: 100,000 shares -> 1,000 Tier-1 packages ====
+(print "--- [TX-EQUITY-002 · 02 · Make 100,000 shares -> Tier 1 (100 shares/unit) = 1,000 units] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-EQUITY:module{EquityV1} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (id:string "E|TSEQ-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_MorphEquity Make 100000 shares->Tier1)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 100000 2)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-EQUITY-002>> Make: barebone shares (nonce 1) debited by exactly 100,000"
+                900000
+                (ref-DPDC::UR_AccountNonceSupply owner id true 1)
+            )
+            (expect "<<TX-EQUITY-002>> Make: Tier-1 packages (nonce 2) credited with exactly 1,000 units"
+                1000
+                (ref-DPDC::UR_AccountNonceSupply owner id true 2)
+            )
+            (expect "<<TX-EQUITY-002>> Make: CombineCapacity drops by the packaged share-equivalent (500,000 -> 400,000)"
+                400000
+                (ref-EQUITY::URC_CombineCapacity id)
+            )
+        ]
+    )
+    ""
+)
+;;==== TX-EQUITY-002 · 03 · Convert: 1,000 Tier-1 -> 500 Tier-2 units (same share-equivalent) ====
+(print "--- [TX-EQUITY-002 · 03 · Convert 1,000 Tier-1 (100/unit) -> 500 Tier-2 (200/unit)] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (id:string "E|TSEQ-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_MorphEquity Convert Tier1->Tier2)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_MorphEquity owner owner id 2 1000 3)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-EQUITY-002>> Convert: Tier-1 (nonce 2) fully drained"
+                0
+                (ref-DPDC::UR_AccountNonceSupply owner id true 2)
+            )
+            (expect "<<TX-EQUITY-002>> Convert: Tier-2 (nonce 3) credited with the equivalent 500 units"
+                500
+                (ref-DPDC::UR_AccountNonceSupply owner id true 3)
+            )
+        ]
+    )
+    ""
+)
+;;==== TX-EQUITY-002 · 04 · Break: 500 Tier-2 units -> 100,000 individual shares, exact conservation ====
+(print "--- [TX-EQUITY-002 · 04 · Break 500 Tier-2 units -> 100,000 shares; full-circle conservation] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-EQUITY:module{EquityV1} EQUITY)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (id:string "E|TSEQ-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_MorphEquity Break Tier2->shares)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_MorphEquity owner owner id 3 500 1)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-EQUITY-002>> Break: barebone shares (nonce 1) restored to the full 1,000,000 (exact conservation, Make+Convert+Break round trip)"
+                1000000
+                (ref-DPDC::UR_AccountNonceSupply owner id true 1)
+            )
+            (expect "<<TX-EQUITY-002>> Break: Tier-2 (nonce 3) fully drained"
+                0
+                (ref-DPDC::UR_AccountNonceSupply owner id true 3)
+            )
+            (expect "<<TX-EQUITY-002>> Break: CombineCapacity restored to the full 500,000"
+                500000
+                (ref-EQUITY::URC_CombineCapacity id)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-EQUITY-002 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-EQUITY-003 - negative paths: capacity, modulo, invalid nonce/tier")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-EQUITY-003 · 01 · env-sigs (caps) ====
+(print "--- [TX-EQUITY-003 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-EQUITY-003 · 02 · capacity / modulo / morph-target validation ====
+(print "--- [TX-EQUITY-003 · 02 · capacity / modulo / morph-target validation] ---")
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (id:string "E|TSEQ-98c486052a51")
+    )
+    (map print
+        [
+            (expect-failure
+                "<<TX-EQUITY-003>> Make beyond the 500,000-share combine capacity (50% cap) rejected"
+                (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 600000 2)
+            )
+            (expect-failure
+                "<<TX-EQUITY-003>> Make with an amount not evenly divisible by the tier's shares-per-unit rejected"
+                (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 150 2)
+            )
+            (expect-failure
+                "<<TX-EQUITY-003>> Morph with input nonce == output nonce rejected"
+                (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 1000 1)
+            )
+            (expect-failure
+                "<<TX-EQUITY-003>> Morph with an out-of-range nonce (9, only 1-8 valid) rejected"
+                (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 1000 9)
+            )
+            (expect-failure
+                "<<TX-EQUITY-003>> Morph with an out-of-range nonce (0, only 1-8 valid) rejected"
+                (ref-TS02-C1::DPSF|C_MorphEquity owner owner id 1 1000 0)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-EQUITY-003 ==================================================")
+(print "")
+(print "=== END FILE [6.1.1]_EQUITY.repl ========================================")
+(print "")

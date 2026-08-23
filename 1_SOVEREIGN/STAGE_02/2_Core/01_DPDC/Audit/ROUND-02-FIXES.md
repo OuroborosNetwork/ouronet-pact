@@ -892,3 +892,97 @@ implementation + the probe script that exercises it.
 **Interface implication:** `DpdcSetsV1` — a function is renamed (not just added/removed). Per repo policy,
 V1 stays freely editable pre-mainnet-adjustment; owner explicitly noted the upcoming full redeploy will
 bump interfaces across the board regardless, so this rename doesn't need special handling now.
+
+## Fix #19 — DPDC-MNG · C1 (#5C follow-up) — escrow-immunity check blocked EQUITY's legitimate Convert/Break
+
+**Owner-approved 2026-08-23.** Found while building real EQUITY test coverage for #22H (owner recalled
+testing EQUITY and believed the functions worked correctly — investigating that claim surfaced this).
+
+**Root cause:** Fix #3 (#5C, already closed CRITICAL) added a blanket rule to
+`DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES`: nothing can ever be burned/wiped from the `dpdc` system account —
+correct for what #5C protected (fragment collateral held in escrow, orphaned if burned out from under
+fragment holders). But `EQUITY::XI_ConvertPackageShares`/`XI_BreakPackageShares` legitimately use `dpdc` as
+a **same-transaction, non-fragment escrow** (transfer share-tier in, burn the old tier, credit the new
+tier, transfer back out) — completely unrelated to fragmentation. The blanket rule blocked both paths
+outright: confirmed live, `EQUITY::XI_ConvertPackageShares → DPDC-MNG::C_BurnSFT` threw `"Not allowed for
+the DPDC system account"` on a real Convert call; Break would hit the identical wall (it also burns from
+`dpdc`).
+
+**Fix — narrow the check to the actual invariant #5C cares about:** only block burn/wipe of a `dpdc`-held
+nonce when that specific nonce is **currently fragmented** — not any use of the `dpdc` account name at all.
+```pact
+-(enforce (!= account (ref-DPDC::GOV|DPDC|SC_NAME)) "Not allowed for the DPDC system account")
++(if (= account (ref-DPDC::GOV|DPDC|SC_NAME))
++    (enforce
++        (not (fold (or) false (map (lambda (n:integer) (!= (ref-DPDC::UR_SplitNonceData id son n) zd)) nonces)))
++        "Not allowed for the DPDC system account when backing outstanding fragments"
++    )
++    true
++)
+```
+Implementation note: this capability only ever handles Class-0 nonces (enforced by the sibling composed
+capability `DPDC-MNG|C>IZ-CLASS-ZERO`), so "is it fragmented" reduces to "does it have non-zero split-data"
+— checked directly via `DPDC::UR_SplitNonceData` (already safely referenceable — same module, `02_DPDC.pact`,
+deployed well before `06_DPDC-MNG.pact`). First attempt used `DPDC-F::UEV_IzNonceFragmented` directly, which
+is more general (also handles Set-class fragmentation) — but `DpdcFragmentsV1` is declared inside
+`09_DPDC-F.pact`, deployed *after* `06_DPDC-MNG.pact`; confirmed live that referencing it throws `"Cannot
+find module: ouronet-ns.DpdcFragmentsV1"` at DPDC-MNG's own deploy step. Corrected to the DPDC-only
+approach once the class-0-only guarantee made the simpler check exactly equivalent for this call site.
+
+**Post-fix proof:** re-ran the exact EQUITY Make → Convert → Break round trip live (see Fix #20 / the new
+`[6.1.1]_EQUITY.repl` suite) — Convert and Break now succeed correctly, with exact share conservation
+(1,000,000 → 900,000 → [Convert] → 1,000,000 restored). `cd REPL && pact Z.repl` — clean, `Load successful`.
+
+**Interface implication:** none — internal to the defcap body, no signature change.
+
+## Fix #20 — EQUITY · H1 (#22H) — real, reachable, asserted REPL coverage added
+
+**Owner-approved 2026-08-23.** Owner recalled testing EQUITY and believed the functions worked correctly —
+asked to verify that recollection live before accepting or rejecting Round I's "zero coverage" finding.
+
+**What was actually found (not assumed):**
+- Real test code for EQUITY *does* exist — `REPL/Stage_02/[6.1]_DPDC.repl` "TX 014 -- Equity Collection
+  Tests" calls `DPSF|C_MorphEquity` and prints nonce supplies. Round I's "zero coverage" framing was too
+  strong at the literal "does test code exist" level.
+- But it never actually runs: (1) `[6.1]_DPDC.repl` is commented out of `Stage02_Tester.repl` and not
+  loaded by `Z.repl`; (2) even loaded directly (built the full dependency chain and ran it), it crashes on
+  an earlier, already-known, unrelated bug (the dead `nonce-supply` binding in
+  `DPDC-T::UEV_AmountsForTransfer`, flagged during Fix #1) before ever reaching TX014; (3) TX014 operates
+  on a collection id (`"E|DH-98c486052a51"`) that nothing in the repo — genesis included — ever actually
+  creates (`C_IssueShareholderCollection`/`DPSF|C_IssueCompany` have zero callers anywhere); (4) the test
+  only `print`s values, no `expect` assertions, so even historically it relied on manual eyeballing.
+- Along the way, caught and fixed a regression my own Fix #18 (rename) caused: `[6.1]_DPDC.repl:364,384`
+  called the old `UR_N|Score` name — my "zero callers" check for that rename only grepped `.pact` files,
+  missing this `.repl` reference. Updated both call sites to `URC_N|Score`.
+- Building a real test then surfaced Fix #19 (the #5C/EQUITY escrow collision, logged separately) — fixing
+  that was a prerequisite for EQUITY's Convert/Break paths to work at all.
+
+**Once Fix #19 was in place, live-verified the owner's recollection was correct** — every EQUITY function
+works exactly as designed: Issue creates the 8-nonce structure correctly (1,000,000 barebone shares,
+7 zero-supply package tiers, `SharesPerMillion`/`CombineCapacity` computed correctly); Make/Convert/Break
+round-trip with exact conservation (1,000,000 → 900,000 → ... → 1,000,000 restored, `CombineCapacity`
+500,000 → 400,000 → 500,000); every validation path (50% capacity cap, modulo-divisibility, same-nonce
+morph, out-of-range nonce) correctly rejects.
+
+**Fix — new canonical REPL suite, wired into the real pipeline:**
+`REPL/Stage_02/[6.1.1]_EQUITY.repl` — follows the canonical integration layout (file header/Legend/Source/
+REPL-tests banners, `;;==== TXnnn · mm · <slug> ====` groups, `expect`/`expect-failure` with a single
+`format` doc string each, batched via `map print`), three transactions:
+- `TX-EQUITY-001` — Issue, assert owner/creator/initial-supply/`SharesPerMillion`/`CombineCapacity`/
+  `TierSupplies` are all correct at genesis.
+- `TX-EQUITY-002` — Make → Convert → Break round trip, asserting exact supply/capacity values at every
+  step (not just "it didn't crash").
+- `TX-EQUITY-003` — 5 negative-path checks: over-capacity Make, non-divisible Make, same-nonce morph,
+  nonce `9` and `0` (out of the valid `1..8` range).
+
+Wired into `Stage02_Tester.repl` (loaded right after `[4.0]_Sovereign-Executor.repl`, uncommented/active —
+not the disabled `[6.1]_DPDC.repl` path), which `Z.repl` already includes — this suite now runs on every
+default pipeline execution.
+
+**Post-fix proof:** all 6 `expect` assertions in TX-EQUITY-001, 8 in TX-EQUITY-002, and 5 `expect-failure`
+in TX-EQUITY-003 pass — `"Expect: success"` / `"Expect failure: Success"` on every line, none silently
+skipped. Full `cd REPL && pact Z.repl` — clean, `Load successful`, no interference with the rest of the
+pipeline (confirmed no id/ticker collisions).
+
+**Interface implication:** none — new REPL file only; `[6.1]_DPDC.repl` left disabled as before (its own
+unrelated pre-existing crash is a separate, already-logged backlog item, not fixed by this).

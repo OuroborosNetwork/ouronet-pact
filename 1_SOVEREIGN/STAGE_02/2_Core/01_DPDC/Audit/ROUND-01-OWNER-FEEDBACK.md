@@ -486,3 +486,36 @@ fixes already closed: Fix #13 added precision + magnitude validation to all thre
 (previously zero validation there), Fix #14 removed the Update capability entirely (so "checked only at
 Update, not Define" is now moot — Update doesn't exist), Fix #16 tightened the floor to `[1.0,100.0]`. No
 separate action needed.
+
+## #5C follow-up · DPDC-MNG · C1 — escrow-immunity check blocked EQUITY's legitimate Convert/Break
+
+Found while building real EQUITY test coverage for #22H — the already-closed #5C fix (blanket "never
+burn/wipe the `dpdc` account") turned out to block a completely legitimate, unrelated use: EQUITY's
+Convert/Break flows use `dpdc` as a same-transaction escrow, never fragmentation. Owner: "you are right, we
+have to unblock EQUITY functionality" — confirmed narrowing the check to fragmentation-specific is correct.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #19)** — the `dpdc`-account block now only fires when the
+specific nonce being burned/wiped is currently fragmented (checked via `DPDC::UR_SplitNonceData`, since
+this capability only ever handles Class-0 nonces). Live-proven: EQUITY's Convert and Break now succeed
+correctly with exact conservation. Z.repl green.
+
+## #22H · EQUITY · H1 — zero REPL/test coverage for the entire module
+
+**Verdict: CONFIRMED gap existed, FIXED (2026-08-23).** Owner recalled testing EQUITY and believed all
+functions worked correctly — asked to verify that live before accepting Round I's finding. Investigation
+found the claim was partially right (test code existed) but the coverage was fully non-functional:
+`[6.1]_DPDC.repl`'s "TX 014" is unreachable (file disabled in the active pipeline, and even run directly it
+crashes on an earlier unrelated bug before reaching TX014; the collection id it targets is never actually
+created by anything; the assertions were print-only, no `expect`). Also caught and fixed, along the way, a
+regression from my own #19H rename (`[6.1]_DPDC.repl` still referenced the old `UR_N|Score` name) and
+uncovered a second real bug (the #5C/EQUITY escrow collision, fixed separately, Fix #19) that was actively
+preventing EQUITY's Convert/Break from working at all.
+
+Once that was fixed, live-verified the owner's recollection was correct: every EQUITY function — Issue,
+Make, Convert, Break — works exactly as designed, with exact share conservation across a full round trip,
+and all validation paths (capacity, modulo, nonce range) correctly reject bad input.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #20)** — new canonical REPL suite
+`REPL/Stage_02/[6.1.1]_EQUITY.repl` (Issue baseline + Make/Convert/Break round trip with exact-value
+assertions + 5 negative-path checks), wired into `Stage02_Tester.repl`'s active load chain so it now runs
+on every `Z.repl` execution. 19 assertions total, all passing. Full `Z.repl` green.

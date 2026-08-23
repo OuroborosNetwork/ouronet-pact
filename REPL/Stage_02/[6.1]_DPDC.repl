@@ -361,7 +361,7 @@
             (ref-DPDC::UR_N|Description (ref-DPDC::UR_NonceData id true 1))
 
             (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NativeNonceData id true 1))
-            (ref-DPDC-S::UR_N|Score id true 1)
+            (ref-DPDC-S::URC_N|Score id true 1)
 
             (ref-DPDC::UR_N|MetaData (ref-DPDC::UR_NonceData id true 1))
             (ref-DPDC::UR_NonceValue id true 1)
@@ -381,7 +381,7 @@
             (ref-DPDC::UR_N|Description (ref-DPDC::UR_NonceData id true -1))
 
             (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NonceData id true -1))
-            (ref-DPDC-S::UR_N|Score id true 1)
+            (ref-DPDC-S::URC_N|Score id true 1)
 
             (ref-DPDC::UR_N|MetaData (ref-DPDC::UR_NonceData id true -1))
             (ref-DPDC::UR_NonceValue id true (abs -1))
