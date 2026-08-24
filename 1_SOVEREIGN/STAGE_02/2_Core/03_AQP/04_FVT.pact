@@ -98,6 +98,7 @@
     (defun XE_SetFvtOracleOn:string (fvt-id:string oracle-on:bool))
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool))
     (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time))
+    (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string))
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
     )
@@ -893,6 +894,41 @@
             \ SECURE guard is satisfied for the cross-module XE calls into AQP-POOL (freeze) and AQP-ANK (revoke); \
             \ the anchor owner (= anchored-asset owner) is enforced inside ANK|XE>SWEEP-REVOKE."
         (compose-capability (P|SECURE-CALLER))
+    )
+    (defcap FVT|XE>ADMIT-DELEGATION (fvt-id:string triplet-id:string operator:string)
+        @doc "DSA: authorize admitting an OPERATOR-owned triplet as a delegation agency member on a class-0 DSA \
+            \ vault FVT — vault-like (swpair \"|\", ghost 0; its inject weight is capture, not ghost-tvl). Runs the \
+            \ STRUCTURAL subset of the normal triplet admission (triplet issued, category matches class, no \
+            \ pre-existing link, silver has an aqpool, all three fvt-links BAR) but with `silver-owner == operator` \
+            \ + the operator's account ownership, and SKIPS the LP-farm rules (swpair/lp-denominator/ghost-weight) \
+            \ — a delegation member does not use ghost-tvl. Isolated from C_AddScoreEntity's admission (never \
+            \ weakened). Composes SECURE for the XE_CreateFvtLink + XI_AddScoreEntity writes."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (fvt-class:integer (UR_FVT|FvtClass fvt-id))
+                (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
+                (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
+                (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
+                (silver-owner:string (ref-SCR::UR_SCR|ScoreOwnerKonto silver-id))
+                (silver-aqpool:string (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id))
+            )
+            (enforce (ref-SCR::URC_TripletExists triplet-id) "Triplet must be issued in AQP-SCORE")
+            (enforce (ref-SCR::URC_TripletCategoryMatchesFvtClass (ref-SCR::UR_SCR|TripletCategory triplet-id) fvt-class)
+                "Triplet category must match FVT class")
+            (enforce
+                (fold (and) true
+                    [(= silver-owner operator)
+                     (not (URC_FvtScoreEntityLinkRowExists fvt-id triplet-id))
+                     (!= silver-aqpool BAR)
+                     (= (ref-SCR::UR_SCR|ScoreFvtLink bronze-id) BAR)
+                     (= (ref-SCR::UR_SCR|ScoreFvtLink silver-id) BAR)
+                     (= (ref-SCR::UR_SCR|ScoreFvtLink golden-id) BAR)])
+                "Invalid delegation admission: operator ownership, existing link, silver aqpool, or fvt-links")
+            (ref-DALOS::CAP_EnforceAccountOwnership operator)
+            (compose-capability (SECURE))
+        )
     )
     (defcap FVT|C>SWEEP-DRAIN (patron:string anchor-id:string chunk:integer)
         @doc "Protects a paginated re-score sweep CHUNK (CC_SweepRecomputeChunk). The sweep was authorized + the \
@@ -5089,6 +5125,25 @@
         (UEV_IMC)
         (with-capability (SECURE)
             (WU_ScoreEntityLink|Capture fvt-id score-entity-id capture-units capture-weight oracle-ts)
+        )
+    )
+    (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string)
+        @doc "DSA: admit an OPERATOR-owned triplet as a delegation agency member on a class-0 DSA vault FVT — \
+            \ vault-like (swpair \"|\", ghost 0; inject weight = capture). Creates the three SCR fvt-links + inserts \
+            \ the ScoreEntityLink via the same write path as C_AddScoreEntity, but validated by \
+            \ FVT|XE>ADMIT-DELEGATION (operator ownership, LP-farm rules skipped). DSA flips `delegation` on via \
+            \ XE_SetMemberDelegation after this. UEV_IMC + FVT|XE>ADMIT-DELEGATION."
+        (UEV_IMC)
+        (with-capability (FVT|XE>ADMIT-DELEGATION fvt-id triplet-id operator)
+            (let
+                (
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                )
+                (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id) fvt-id)
+                (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id) fvt-id)
+                (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id) fvt-id)
+                (XI_AddScoreEntity fvt-id CT_SCORE_ENTITY_TRIPLET triplet-id "|" 0.0)
+            )
         )
     )
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
