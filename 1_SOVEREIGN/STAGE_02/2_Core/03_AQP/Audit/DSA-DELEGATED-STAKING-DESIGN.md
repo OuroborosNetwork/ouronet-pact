@@ -1,134 +1,241 @@
-# DSA — Delegated Staking Agencies — Phase-0 design notes
+# DSA — Delegated Staking Agencies — v1 LOCKED spec
 
-**Module name:** **`DSA`** (Delegated Staking Agencies). New AQP module, layered on the existing FVT two-tier
-settle + the existing triplet. Custodians Vault is its first client.
+**Module:** **`DSA`** (Delegated Staking Agencies). New AQP core module, layered on the existing FVT two-tier
+farm settle + the existing triplet. **Custodians Vault** is its first client.
 
-**Status:** 🟡 DESIGN IN PROGRESS — v1 scope agreed with owner; not yet written as a locked doc, no code.
-Build order: **(1) streamed inject** (see `STREAMED-INJECT-DESIGN.md`) → **(2) DSA**. This file captures the
-design discussion so the next session resumes cleanly.
+**Status:** 🟢 **LOCKED v1 (owner-approved 2026-08-24).** Dependency #1 (streamed inject) is **DONE**
+(`STREAMED-INJECT-DESIGN.md`, commits f8c0749 → e4baa7c). This doc supersedes the Phase-0 notes; every §11
+open item is resolved (see §13). No code yet — build order in §12.
 
 ---
 
 ## 1. What it is
-A delegated node-staking model (MultiversX staking-agency style) on AQP. Users stake Custodians assets to earn
-**quintessence** (a score); a user with enough quintessence opens a **delegation agency** (a pool others stake
-into); the operator must run **nodes** to *capture* the agency's reward units and takes a **fee** from delegators.
+A delegated node-staking model (MultiversX staking-agency style) on AQP. Users stake **Custodians** assets to
+earn **quintessence** (a score); a user with enough quintessence opens a **delegation agency** (a pool others
+stake into); the operator must run **nodes** to *capture* the agency's reward units and takes a **fee** from
+delegators.
 
-Custodians concretely: a collection with 3 SFT types (+fragments) — nonce1→**bronze**, nonce2→**silver**,
-nonce3→**gold** quintessence (additive); **nonce4 = an anchor that boosts score +5%** (the existing
-anchor/boost-class mechanism — no new work). `unit-score` (e.g. 20k) = 1 staking unit = 1 node; open gate =
-`unit-score / 2`.
+**Custodians** concretely: a collection with 3 SFT types (+fragments) — nonce1→**bronze**, nonce2→**silver**,
+nonce3→**gold** quintessence (additive); **nonce4 = an anchor that boosts score +5%** (existing anchor/
+boost-class mechanism — no new work). `unit-score` (e.g. 20 000) = 1 staking unit = 1 node; **open gate =
+`unit-score / 2`**.
 
-## 2. The architecture resolution (the key unlock)
-- **An agency = a user-created MEMBER (score-entity) on the FVT.** Delegators = users within that member. The
-  FVT's existing **two-tier farm settle** (global → member → user) already does the inter-agency split (by
-  captured units) and the intra-agency split (by quintessence).
-- **There is no single shared triplet — one triplet PER agency, all cut from one template.** The FVT owner
-  defines the template once (Custodians→bronze/silver/gold mapping, reward tokens + ats-ladder, `unit-score`).
-  Opening an agency creates *that operator's own* pool + bronze/silver/gold scores + triplet, registered as a
-  member owned by the operator. Agencies are differentiated by pool/triplet id. The reward ladder
-  (`FVT|MultipletFamily`, keyed by tokens) is **shared** by all agencies.
-- **Custodians is exactly N=3 = the EXISTING triplet.** No N-multiplet generalization needed for v1 (deferred).
+---
 
-## 3. The one real extension to the FVT core — "earns per full units" (capture transform)
-Today a member's inter-member weight is its *raw* staked value. DSA needs the member weight to be the **capture**:
+## 2. Core architecture — the load-bearing rule
+
+> **1 agency = 1 FVT member (score-entity).** Delegators are the users *within* that member.
+
+- The member may be a **singular score OR a triplet** — whichever the asset's scoring needs. For **Custodians it
+  is a triplet** (quintessence has 3 qualities: bronze/silver/gold). The delegation/capture logic lives at the
+  **member** level, so it is identical for singular and triplet members. This is the abstraction that makes the
+  whole thing work: registering one member on the FVT = opening one agency.
+- The FVT's existing **two-tier farm settle** already does both splits, for free:
+  - **inter-agency** (global → member): which agency gets what share of an inject — by *captured units*.
+  - **intra-agency** (member → user): which delegator inside an agency gets what — by *raw quintessence*.
+- **One triplet per agency, cut from one template.** The FVT owner defines the template once (Custodians →
+  bronze/silver/gold mapping, reward tokens + ats-ladder, `unit-score`). Opening an agency creates *that
+  operator's own* pool + bronze/silver/gold scores + triplet, registered as a member owned by the operator.
+  Agencies are differentiated by pool/triplet id. The reward ladder (`FVT|MultipletFamily`, keyed by tokens) is
+  **shared** by all agencies.
+- **Custodians is exactly N=3 = the EXISTING triplet.** No N-multiplet generalization in v1 (deferred, §11).
+
+---
+
+## 3. The FVT-core extension (the only change to FVT settle)
+
+Today a member's inter-member weight is its *raw* staked score. A delegation member's inter-member weight must be
+the **capture** instead. Minimal, deploy-order-safe:
+
+**New per-member fields (on the FVT member row):**
+| field | meaning | written by |
+|---|---|---|
+| `delegation:bool` | is this member a DSA agency? | DSA at open |
+| `capture-units:decimal` | **ideal capacity** = `min(⌊Q / unit-score⌋, nodes)` | DSA on Q- or oracle-change |
+| `capture-weight:decimal` | **actual** = `capture-units × uptime/1000` | DSA on Q- or oracle-change |
+| `oracle-ts:time` | timestamp of the last oracle write (for 25h expiry) | DSA on oracle write |
+
+**New per-FVT flag:** `oracle-on:bool` — if **off**, the node/uptime check is disabled: `capture-units = ⌊Q/unit-score⌋`,
+`uptime ≡ 1000`, no expiry (`capture-weight = capture-units`). If **on**, the oracle governs nodes + uptime + expiry.
+
+**Dependency direction = DSA → FVT (legal; FVT deploys first).** The transform math + its inputs (`unit-score`,
+`nodes`, `uptime`) live in **DSA**; DSA writes the four fields onto the member via an **`XE_` on FVT** whenever
+quintessence changes (delegator stake/unstake) or the oracle updates (nodes/uptime). **FVT only ever reads its
+own fields** — computing capture fresh would need FVT→DSA (a forbidden forward ref), hence the stored fields.
+
+**Recompute triggers (DSA writes the fields):**
+1. delegator **stake / unstake** → `Q` changes → recompute `capture-units` + `capture-weight`.
+2. **oracle write** → `nodes` / `uptime` / `oracle-ts` change → recompute `capture-units` + `capture-weight`.
+
+**Topup dilution is native + free.** Inter-member weight is floored to whole units (`capture-units`), but the
+**intra-member divisor stays raw `Q`** — so the leftover (e.g. 5k over a 60k = 3-unit capture) dilutes exactly as
+intended; more nodes captured → smaller relative dilution. This is the existing two-axis design (`W_i ≠
+intra-divisor`), no new work.
+
+---
+
+## 4. Inject math — ideal denominator + royalty (the uptime mechanic)
+
+At an inject of amount `A` into a delegation FVT reward lane, over its delegation members `i`:
+
 ```
-capture-weight = min( floor(Q_p / unit-score), nodes_p ) × uptime_p / 1000
+S_ideal          = Σ capture-units_i                    ; ideal capacity (whole units, uptime-blind)
+effective_i      = expired_i ? 0 : capture-weight_i     ; expired (now − oracle-ts > 25h, oracle-on) ⇒ 0
+distributed_i    = A × effective_i / S_ideal            ; agency i's uptime-fair share (then split intra-agency by raw Q)
+royalty        +=  A − Σ distributed_i                  ; = A × (S_ideal − Σ effective_i) / S_ideal
 ```
-Minimal, deploy-order-safe extension:
-- Add **`delegation:bool` + stored `capture-weight:decimal`** on the FVT member.
-- At the **single** inter-member weight site (farm-split weight read), branch: normal member → raw value (today);
-  delegation member → the stored `capture-weight`. Matching branch at the denominator `S = Σ capture-weight`.
-- **The transform math + inputs (`unit-score`, `nodes`, `uptime`) live in `DSA`.** DSA writes `capture-weight`
-  onto the member whenever quintessence changes (stake/unstake) or the oracle updates (nodes/uptime), via an
-  `XE_` on FVT. FVT only ever *reads its own field* — so the dependency is **DSA → FVT** (allowed; FVT deploys
-  first). Computing fresh would need FVT→DSA, a forbidden forward ref — hence the stored field.
-- **Topup dilution is native**: `W_i` (inter-member) is floored to whole units, but the intra-member divisor
-  stays **raw `Q_p`** — so the leftover (e.g. 5k over a 60k=3-unit capture) dilutes exactly as intended, more
-  nodes captured → smaller relative dilution. This is the existing two-axis design (W_i ≠ intra-divisor), free.
 
-## 4. Operator fee
-- Flat **1–50%**, skimmed at the member level from **delegators only** (not the operator's own stake). Greenfield
-  — no per-member fee/operator exists today.
-- Operator is an **ownership role independent of stake**: an operator may withdraw *all* their own stake and still
-  run the agency + collect fees; the pool keeps earning on the delegators' quintessence.
-- Open gate `unit-score/2` is a **one-time open gate** (operator may drop below afterwards). *(CONFIRM next session —
-  owner implied open-only, not a maintained minimum.)*
+**Why the ideal denominator (not `Σ capture-weight`):** the inject rewards *full capacity*; each agency earns
+only its `uptime/1000` fraction of its units, and the **shortfall accrues to the royalty pool** — a well-run
+agency is never handed a competitor's downtime.
 
-## 5. Reward modes (all on the triplet)
+*Worked:* 2 agencies, 1 unit each, `A = 100`, uptime A=1000 / B=500 → `S_ideal = 2` → A gets 50, B gets 25,
+**royalty += 25**. (Contrast `Σ capture-weight = 1.5` → A 66.7 / B 33.3 / royalty 0 — rejected.)
+
+**Edge cases (all reuse existing behaviour):**
+- `S_ideal = 0` (every agency below one full unit — e.g. all drained, or none run a node): the delegation
+  denominator is 0 → the inject hits the **existing ESCROW branch** in `XI_DistributeInjectAmount` → parks in the
+  **zombie pool**, flushing to whoever captures next. No special-casing.
+- `S_ideal > 0` but `Σ effective = 0` (all agencies have capacity but all are down/expired): nothing distributed
+  → the **entire `A` → royalty** (nobody performed). Distinct from the zombie case (capacity exists).
+
+The royalty accrual and `S_ideal`/`effective` reads all use FVT-stored fields → no FVT→DSA. The **royalty pool**
+is a new per-`(fvt, reward-token)` accumulator on FVT.
+
+---
+
+## 5. Agency lifecycle
+
+- **Open gate = one-time.** Opening requires `quintessence ≥ unit-score/2`. After opening there is **no maintained
+  minimum**: the operator may withdraw everything — including his last asset, dropping his own score to 0 in his
+  own agency. **An agency, once created, exists forever** (its member row persists at `capture = 0`; it simply
+  captures nothing until it holds ≥ 1 full unit again).
+- **Operator = an ownership role independent of stake.** An operator may hold zero personal stake and still run the
+  agency + collect fees; the pool keeps earning on the delegators' quintessence. (Relaxes today's `member-owner ==
+  fvt-owner` admission so `member-owner = operator`.)
+
+---
+
+## 6. Operator fee
+- Flat **1–50 %**, skimmed at the member level from **delegators only** (never the operator's own stake).
+  Greenfield — no per-member fee/operator exists today.
+- v1 = **flat fee, collected normally.** The elite-tier fee reduction + deferred-fee/Vesta benefit is **deferred**
+  (§11); v1 stubs the fee field + leaves room for the later curve.
+
+---
+
+## 7. Oracle (nodes + uptime)
+- Per agency: **`nodes`** (integer) + **`uptime`** promile (min 0.0001, max 1000.0; full reward needs 1000.0).
+- Written by a **daily** platform-automaton tx using an **FVT-owner-delegated key** (registered on the FVT), which
+  writes per-agency `{nodes, uptime}` and stamps `oracle-ts`.
+- **Validity = 25 h** (daily cadence + 1 h overlap, so there is never a gap between "last write expired" and "next
+  write arrives"). At inject, `now − oracle-ts > 25h` ⇒ that agency's `effective = 0` (§4).
+- **Per-FVT toggle `oracle-on`** (§3): off ⇒ node/uptime check disabled, `capture = units`, `uptime ≡ 1000`, no
+  expiry. On but no uptime submitted for an agency yet ⇒ default **uptime = 1000** until first write.
+
+---
+
+## 8. Royalty pool + disposal
+- The uptime shortfall (§4) accrues into a per-`(fvt, reward-token)` **royalty pool** — it does **not** pay
+  delegators. Disposed **periodically** (e.g. weekly), not on every inject.
+- Three **admin/owner** disposal functions (poolable weekly; optional autonomous weekly trigger, like the falls
+  automation):
+  ```
+  A_WithdrawRoyalty(fvt-id, reward-token)          ; send the pool to the FVT owner
+  A_BurnRoyalty    (fvt-id, reward-token)          ; burn it (DPDC autonomous burn role)
+  A_FuelRoyalty    (fvt-id, reward-token, swpair)  ; fuel <swpair> — add liquidity WITHOUT minting LP
+  ```
+- **`swpair` is a per-call input** to `A_FuelRoyalty` (not stored config) → maximal flexibility, and it removes the
+  §8-legacy "fuel-target config hook" entirely.
+- **IGNIS normalization is universal** across all three: IGNIS cannot be withdrawn/burned/fueled as a token, so if
+  a royalty leg is in **IGNIS** → an **autonomous IGNIS→OURO conversion** runs first, and the resulting **OURO**
+  is what gets withdrawn / burned / fueled. (Wire against the existing IGNIS→OURO path — pin the exact primitive at
+  build time.)
+
+---
+
+## 9. Reward modes (all on the triplet)
 1. **Direct single-DPTF** — inject X, collect X (today's model). *Secondary gas = Ignis, type-agnostic.*
 2. **Homogeneous quality split** — each lane → one token via the existing ATS ladder (bronze→Ouro, silver→Auryn
    via ats-01, gold→EliteAuryn via ats-01→ats-12). Already built (`MULTIPLET_BASE` collect).
-3. **Heterogeneous quality split — NEW, in v1.** A **reward-mode flag** (homogeneous | heterogeneous) + a
-   **per-type split matrix** stored per heterogeneous reward. Primary example: bronze 20/40/40, silver 40/30/30,
-   gold 60/20/20 across Ouro/Auryn/EliteAuryn (rows sum 100%). At collect, the heterogeneous branch splits each
-   lane's amount across the 3 tokens per the matrix, routing non-native portions through the same ATS legs. Slots
-   into `XI_1|CollectRewards` `MULTIPLET_BASE` as a second branch. *(Matrix storage location — extend
-   `FVT|MultipletFamily` vs sibling schema — decide in the doc.)*
-- **Primary reward** = 20% of daily Ouro emission, delivered via the **streamed inject** (feature #1).
+3. **Heterogeneous quality split — NEW, v1 (Round B).** A **reward-mode flag** (homogeneous | heterogeneous) + a
+   **per-type split matrix** stored per heterogeneous reward. Example: bronze 20/40/40, silver 40/30/30, gold
+   60/20/20 across Ouro/Auryn/EliteAuryn (rows sum 100 %). At collect, the heterogeneous branch splits each lane's
+   amount across the 3 tokens per the matrix, routing non-native portions through the same ATS legs. Slots into
+   `XI_1|CollectRewards`'s `MULTIPLET_BASE` as a second branch. *(Matrix storage — extend `FVT|MultipletFamily`
+   vs a sibling schema — decided in Round B.)*
+- **Primary reward** = 20 % of daily Ouro emission, delivered via the **streamed inject** (feature #1, done).
 
-## 6. External oracle (nodes + uptime)
-- Per operator/agency: **`nodes`** (integer) + **`uptime`** promile (min 0.0001, max 1000.0). Full reward needs
-  1000.0; uptime scales capture pro-rata that cycle.
-- Written by a daily tx (platform automaton using an **FVT-owner-delegated key** to write per-agency values).
-  Validity **24-25h**; expired → captures nothing. **Optional toggle** per FVT: if off, capture = units (no node
-  check) and uptime defaults 100%; if no uptime submitted while on → default 100%. *(CONFIRM exact expiry +
-  auth mechanics in the doc.)*
+---
 
-## 7. Royalty pool
-- The uptime shortfall (up to 1000.0 minus actual) does **not** pay the delegators. It accrues to the FVT
-  **royalty pool** → FVT owner **withdraws** (if `capture:bool`) or it's **burned** on inject (DPDC has an
-  autonomous burn role). Fuel-target redirection (below) is the deferred alternative to withdraw/burn.
-
-## 8. DEFERRED to later iterations (provision hooks now, build later)
-- **Elite-tier fee reduction + deferred-fee benefit + Vesta conversion.** Recorded curve for later:
-  operator tier reduces the fee **~10%/major** (tier 7 → 70%, 1%→0.3%); the **participant's** tier further
-  reduces *that* multiplicatively (2 majors → −20%, 0.3%→0.24%). Distinct from SWP's 7%/major, so a **custom
-  curve**. Meaningless without the "operator benefits from the deferred %" mechanism: the deferred fee % is
-  collected from the participant but **swapped into an earning token (Blessed Vesta)** and given to **both**
-  operator and participant — so a high-tier operator earns *and* earns for delegators. Needs **Vesta** infra
-  (upcoming: virtual-mining LP token, variants Native/Sleeping/Frozen/Blessed → Unified Mining Index → Unity).
-  v1 = flat fee, collected normally; fee field + a **fuel-target hook** stubbed.
-- **Fuel-target / fee-redirection** — general mechanic: an injected token may designate fuel targets; deferred
-  fees + uptime-shortfall route there (swap→frozen-stakable token, or fuel a pool = add liquidity without minting
-  LP). Provision the config hook; implement later.
-- **Collateral / slashing** — EliteAuryn collateral burned on misbehavior (per-node? TBD). May not exist at all.
-- **N-multiplet** — generalize triplet → N (positional-3 schemas/keys/lane-math/2-hop-ladder → list-valued).
-  Not needed for Custodians (N=3).
-
-## 9. v1 scope (agreed)
-`DSA` module: open-agency (user-created member, `unit-score/2` open gate, operator + flat fee) · capture transform
-(FVT `delegation`+`capture-weight` extension) · oracle {nodes, uptime} (daily, 24-25h expiry, optional toggle,
-default 100%) · royalty pool (withdraw/burn) · reward modes: direct Ignis + homogeneous + **heterogeneous split** ·
-daily Ouro via the **streamed inject**. **Deferred:** N-multiplet · elite-reduction+Vesta · fuel-targets ·
-collateral.
-
-## 10. Reuse pillars vs new-builds (grounded in code, from the 3 investigation traces)
+## 10. Reuse vs new-build (grounded in code)
 **Reuse (confirmed):**
-- Triplet: `SCR|Triplet` (3 positional score-ids), created by `C_IssueTriplet` (`02_SCORE.pact:2993`) — already
-  **owner-gated** (a user who owns 3 matching scores bundles them), so user-created bundles have precedent.
-- Reward ladder: `FVT|MultipletFamily` (`04_FVT.pact:345`, tokens + 2 ATS legs; `rank` field says "v1 = 3").
-- Two-tier settle: `XI_1|FarmSplitInject` (`04_FVT.pact:4469`, member weight read fresh at ~`:4496`, denom
-  ~`:1935-1951`) + `XI_2|BankUserTier1Pending`. **W_i and the intra-member divisor are distinct axes** → the
-  capture/topup split is native.
-- 4th-nonce boost = existing anchor/boost-class (+5%).
-- Elite fee reduction (for the deferred phase): `URC_EliteFeeReduction` (`16_SWPI.pact:587`) →
-  `UC_GasCost`/`UC_GasDiscount` (`08_U_DALOS.pact:182`), `discount% = 7*(major-1)+minor`, cap 49% — mirror pattern.
+- Triplet: `SCR|Triplet` (3 positional score-ids), `C_IssueTriplet` (`02_SCORE.pact`) — already **owner-gated**
+  (a user who owns 3 matching scores bundles them) → user-created bundles have precedent.
+- Reward ladder: `FVT|MultipletFamily` (`04_FVT.pact`, tokens + 2 ATS legs; `rank` "v1 = 3").
+- Two-tier settle: `XI_1|FarmSplitInject` (member weight read site) + `XI_2|BankUserTier1Pending`. **`W_i` and the
+  intra-member divisor are distinct axes** → capture/topup split is native.
+- Zombie escrow: `XI_DistributeInjectAmount` ESCROW branch (`S = 0` → park) — the drained-agency case (§4).
+- 4th-nonce boost = existing anchor/boost-class (+5 %).
+- Elite fee reduction (deferred phase): `URC_EliteFeeReduction` (`16_SWPI.pact`) → `UC_GasCost/UC_GasDiscount`
+  (`08_U_DALOS.pact`) — mirror pattern for the custom operator curve.
 
 **Genuine new-builds:**
-- User-created member admission (today: `score-owner == fvt-owner`, `04_FVT.pact:2722/2740/2790` — relax so member
-  owner = operator).
-- Per-member operator + fee (none exists today).
-- Capture-weight field + branch at the FVT weight site (§3).
-- Heterogeneous split branch + matrix (§5.3).
-- The `DSA` module: agencies, oracle, royalty, (stubbed) fuel-targets.
+- FVT: `delegation` + `capture-units` + `capture-weight` + `oracle-ts` fields + `oracle-on` flag; the
+  ideal-denominator branch at the weight site + denominator; royalty-pool accumulator + accrual at inject; the
+  `XE_` DSA calls to write the member fields + the royalty-disposal writers.
+- User-created member admission (`member-owner = operator`, relaxing `score-owner == fvt-owner`).
+- Per-member operator + flat fee.
+- Heterogeneous split branch + matrix (§9.3, Round B).
+- The **`DSA`** module: agency open, capture transform, oracle write path (delegated key), royalty disposal
+  (withdraw/burn/fuel + IGNIS→OURO), fee.
 
-## 11. Open items to confirm next session
-- Half-unit open gate: one-time vs maintained minimum (§4).
-- Heterogeneous matrix storage (extend `MultipletFamily` vs sibling schema).
-- Oracle exact expiry window + the FVT-owner-delegated write auth.
-- `capture-weight` recompute triggers (stake/unstake + oracle) and their gas.
-- Interface/deploy-order for the FVT `XE_` that DSA calls to write `capture-weight`.
+---
 
-*Design discussion 2026-08-23. Resume: streamed inject first, then DSA Round A (agency + capture + FVT extension
-+ oracle + royalty), Round B (heterogeneous split matrix).*
+## 11. Deferred (provision hooks now, build later)
+- **Elite-tier fee reduction + deferred-fee benefit + Vesta conversion.** Operator tier reduces the fee ~10 %/major
+  (tier 7 → 70 %, 1 %→0.3 %); the participant's tier further reduces *that* multiplicatively (2 majors → −20 %,
+  0.3 %→0.24 %) — a **custom curve** (distinct from SWP's 7 %/major). The deferred fee % is swapped into **Blessed
+  Vesta** and given to both operator and participant. Needs **Vesta** infra (virtual-mining LP: Native/Sleeping/
+  Frozen/Blessed → Unified Mining Index → Unity). v1 = flat fee; leave the fee field + a fee-redirection seam.
+- **Non-royalty fuel-target / fee-redirection** — the general "injected token designates fuel targets" mechanic for
+  *deferred fees* (distinct from royalty-fuel, which IS v1 per §8). Provision later.
+- **Collateral / slashing** — EliteAuryn collateral burned on misbehavior (per-node? TBD). May not exist at all.
+- **N-multiplet** — generalize triplet → N (positional-3 schemas/keys/lane-math/2-hop-ladder → list-valued). Not
+  needed for Custodians (N=3).
+
+---
+
+## 12. Build order
+
+**Round A — the spine (this is where we start).**
+1. **FVT extension.** Add the four member fields + `oracle-on` flag + royalty-pool schema. Branch the inter-member
+   weight site + denominator to the ideal-denominator model; accrue the royalty gap at inject; add the `XE_`
+   writers DSA calls (member fields + royalty writers) and the royalty-disposal writers. Green-gate: existing FVT
+   audit stays green (non-delegation members unchanged — the branch is `delegation ? … : today`).
+2. **DSA skeleton.** Module scaffold (schemas/tables/caps in canon StoicSyntax order) + agency **open** (one-time
+   gate, user-created member = operator, template instantiation) + operator/flat-fee.
+3. **Oracle path.** Delegated-key registration + daily `{nodes, uptime}` write → recompute + stamp `oracle-ts`;
+   25h expiry; `oracle-on` toggle + defaults.
+4. **Royalty disposal.** `A_WithdrawRoyalty` / `A_BurnRoyalty` / `A_FuelRoyalty(swpair)` + universal IGNIS→OURO
+   pre-normalization; weekly-poolable.
+5. **Talos wiring** (open agency, oracle write, royalty disposal, delegator stake/unstake path) + tests, each
+   green-gated and committed like the streamed inject / CC_UnstaleAll.
+
+**Round B — heterogeneous split.** Reward-mode flag + per-type split matrix (storage decided here) + the collect
+branch in `MULTIPLET_BASE`. Tests.
+
+---
+
+## 13. §11-of-Phase-0 open items — all resolved
+| item | resolution |
+|---|---|
+| Half-unit open gate one-time vs maintained | **one-time** to open; withdraw-anything after; agency persists forever; all-drained → zombie (§5, §4). |
+| Uptime — inject-time vs maintained | **both**: maintained on the member (fields, §3), applied at inject via the **ideal-denominator** split → shortfall to royalty (§4). |
+| Oracle expiry + write auth | **25 h**; FVT-owner-delegated key writes daily `{nodes, uptime}` + `oracle-ts`; per-FVT `oracle-on` toggle (§7). |
+| `capture-weight` recompute triggers | delegator **stake/unstake** + **oracle write** (§3). |
+| Royalty destination | pool → **withdraw / burn / fuel(swpair)**, IGNIS→OURO pre-normalized, admin/weekly (§8). |
+| FVT `XE_` interface/deploy order | **DSA → FVT** (FVT deploys first; DSA calls FVT `XE_` to write member fields + royalty; FVT reads its own fields only) (§3). |
+| Heterogeneous matrix storage | decided in **Round B** (§9.3). |
+
+*Locked 2026-08-24. Resume at Round A step 1 (FVT extension).*
