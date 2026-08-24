@@ -382,12 +382,12 @@ FVT/SCORE core.
 - **`XE_AdmitDelegationMember`** + `FVT|XE>ADMIT-DELEGATION` cap — isolated operator-owned admission (`95ee657`)
   *(currently triplet-only; Phase 2 generalizes to single).*
 - Design fully locked (`d4762d8`, `d6d74ec`, `d745a0a` + this).
+- **Phase 1 — Score-entity MODEL (SCORE).** ✅ **DONE** — `SCR|ScoreEntityModel` + `C_IssueSingleScoreModel` /
+  `C_CombineTripletScoreModel` (17a, `8d3ebaf`); `C_IssueScoreFromModel` factory + `XI_IssueOneFromModel`
+  (17b, `5a297dc`); Talos wrappers; `dsa-model-tests.repl` (9th audit suite) green. Refinements: model
+  precision 3..24; the operator supplies an **`agency-name`** (score-names can't embed the raw konto).
 
 ### 🔨 TO BUILD (phases)
-- **Phase 1 — Score-entity MODEL (SCORE).** `SCR|ScoreEntityModel` schema + table + `C_IssueSingleScoreModel` +
-  `C_CombineTripletScoreModel` + readers + interface + create-table (17a); `C_IssueScoreFromModel` factory
-  composing `XI_Issue` + `XI_IssueSemiFungibleScoreDefinition` (+ `XI_IssueTriplet`) (17b); Talos wiring.
-  *Verify:* define the Custodians triplet model (3 singles + combine) → issue a conforming triplet from it.
 - **Phase 2 — DSA vault + agency open.** `A_DefineDelegationVault(fvt-id, model-id, unit-score)` (class-0 +
   common-denom `"|"` + `oracle-on` + `DSA|Template`); generalize `XE_AdmitDelegationMember` to single|triplet;
   `C_OpenAgency(operator, fvt-id)` (factory-issue → admit → set delegation → `unit-score/2` gate → `DSA|Agency`);
