@@ -229,6 +229,9 @@
     (defun AQP-FVT|CC_InjectFinalize:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
+    (defun AQP-FVT|CC_UnstaleAll:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+    )
     (defun MTX-AQP|C_2|Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
@@ -1844,6 +1847,26 @@
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (format "Successfully FRESH-injected {} {} into FVT {} (paginated)." [amount reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-FVT|CC_UnstaleAll:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+        @doc "OWNER mass deb-unstale — force-refresh up to `chunk` currently-stale present stakers (penalized, same \
+            \ 2e tag as an inject's fix) to make the FVT INJECTION-READY, WITHOUT injecting. Repeat until the report \
+            \ says injection-ready (or `all up to date` when nothing is stale), then run a light AQP-FVT|C_Inject. \
+            \ Owner-gated in AQP-FVT::CC_UnstaleAll. `chunk` is the UI's simulated slice (bounded by INJECT-FIX-CHUNK-MAX). \
+            \ Lives in AQP-FVT."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                )
+                (let ((r:string (ref-FVT::CC_UnstaleAll patron fvt-id reward-dptf-id chunk)))
+                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    r
+                )
             )
         )
     )

@@ -28,6 +28,7 @@ SUITES=(
   "deb-staleness-inject-cc.repl|enforced-fresh inject CC-batch (defun+gate) — CC_InjectFixChunk pages the stale set, CC_InjectFinalize gates on zero-stale then injects"
   "triplet-collect-golden.repl|farm multiplet triplet collect fairness + dual-stream vacate"
   "Kursan/AQP-stream-tests.repl|streamed inject (linear vesting): late-staker 180/60 + superposition (D4) + zero-weight->zombie (D9) + guard bounds + vault drip gas + farm (class-0) drip"
+  "deb-staleness-unstale-all-cc.repl|owner mass deb-unstale (CC_UnstaleAll): owner-gate (non-owner refused) + penalized 2e tag + all-up-to-date idempotent no-op"
 )
 
 echo "================================================================"

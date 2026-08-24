@@ -1,0 +1,186 @@
+;; ============================================================================
+;; REPL/Stage_02/[6.2.8d]_AQP-UNSTALE-ALL-CC.repl — OWNER mass deb-unstale (CC_UnstaleAll).
+;;
+;; Legend: <(...)>  live call echo   ·   <<TX-UNSTALEALL*>>  assertion tag.
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CC_UnstaleAll +
+;;         FVT|C>UNSTALE-ALL), 3_Talos/04_TS02-C3.pact (AQP-FVT|CC_UnstaleAll).
+;; REPL tests: deb-staleness-unstale-all-cc.repl.
+;;
+;; WHAT THIS PROVES — the owner-side counterpart to [6.2.8b] C_UnstaleMyScores: the FVT
+;; entity OWNER force-unstales EVERY present staker to make the entity injection-ready,
+;; WITHOUT injecting (the inject's fix-phase decoupled). Contrast [6.2.8b]:
+;;   (a) OWNER-GATED — a non-owner (Emma) is refused (CAP_EnforceAccountOwnership on the
+;;       FVT owner-konto); the owner (ANHD) succeeds.
+;;   (b) PENALIZED — unlike the self-service path, the fixed user is tagged with the 2e
+;;       forced-fix count (UR_FVT-FFC|Count > 0), EXACTLY as a real inject would.
+;;   (c) "ALL UP TO DATE" — a second run on the now-fresh entity is a cheap no-op that
+;;       reports injection-ready without adding any penalty.
+;; Same SubsidiaryTreasury deb fixture as [6.2.8b]/[6.2.8c]; separate driver (moves ANHD's
+;; Elite-DEB from the same starting deb, so it runs in its own pact process).
+;; ============================================================================
+(begin-tx "TX-UNSTALEALL01 - move ANHD Elite-DEB DOWN => stale present staker(s)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TX-UNSTALEALL01 · 01 · create staleness for the owner mass-unstale] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (ea-id:string (ref-DALOS::UR_EliteAurynID))
+        (deb-pre:decimal (ref-DALOS::UR_Elite-DEB anhd))
+        (owner-konto:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+        (ffc-pre:integer (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+        (ea-bal:decimal (ref-DPTF::UR_AccountSupply ea-id anhd))
+    )
+    (map print
+        [
+            (format "<(UNSTALEALL01 pre: elite-deb / owner-konto / forced-fix-count)> => {} / {} / {}" [deb-pre owner-konto ffc-pre])
+            (expect "<<TX-UNSTALEALL01>> pre: FVT owner-konto is ANHD (owner-gate target)" anhd owner-konto)
+            (expect "<<TX-UNSTALEALL01>> pre: score is FRESH" false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd pool-id score-id))
+            (expect "<<TX-UNSTALEALL01>> pre: no forced-fix penalty yet" 0 ffc-pre)
+        ]
+    )
+    ;; drop ANHD's EliteAuryn to ~1% → live Elite-DEB falls a tier ⇒ his treasury scores go stale
+    (ref-TS01-C1::DPTF|C_Transfer anhd ea-id anhd emma (floor (* ea-bal 0.99) 4) false)
+    (map print
+        [
+            (format "<(UNSTALEALL01 post-move: elite-deb {} -> {} · stale present users = {})>" [deb-pre (ref-DALOS::UR_Elite-DEB anhd) (length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])
+            (expect "<<TX-UNSTALEALL01>> score now STALE" true (ref-SCR::URC_U-SCR|UserScoreDebStale anhd pool-id score-id))
+            (expect "<<TX-UNSTALEALL01>> exactly one stale present staker (ANHD)" 1 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| The op is OWNER-GATED — a non-owner (Emma) must be refused before any fix runs.
+;;
+(begin-tx "TX-UNSTALEALL02 - owner-gate: a NON-owner (Emma) is refused")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(print "--- [TX-UNSTALEALL02 · 01 · non-owner refused by CAP_EnforceAccountOwnership] ---")
+(let
+    (
+        (emma:string KST.EMMA)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+    )
+    (map print
+        [
+            ;; Emma is not the FVT owner ⇒ the CAP_EnforceAccountOwnership on the owner-konto refuses.
+            (expect-failure "<<TX-UNSTALEALL02>> non-owner Emma REFUSED by the owner-gate"
+                (ref-TS02-C3::AQP-FVT|CC_UnstaleAll emma fvt-id auryn-id 100))
+            ;; nothing was fixed — the staleness is untouched
+            (expect "<<TX-UNSTALEALL02>> staleness untouched by the refused call" 1 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| The OWNER (ANHD) mass-unstales — every present staker refreshed, tagged with the 2e
+;;|| penalty (same as an inject's forced fix), leaving the entity injection-ready.
+;;
+(begin-tx "TX-UNSTALEALL03 - owner ANHD mass-unstales (penalized) => injection-ready")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TX-UNSTALEALL03 · 01 · CC_UnstaleAll refreshes every stale staker, penalized] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (score-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryWonderCoach"))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "DHWonderCoach"))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+    )
+    (let
+        (
+            (report:string (ref-TS02-C3::AQP-FVT|CC_UnstaleAll anhd fvt-id auryn-id 100))
+        )
+        (let
+            (
+                (ffc-post:integer (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+            )
+            (map print
+                [
+                    (format "<(UNSTALEALL03 report)> => \"{}\"" [report])
+                    (format "<(UNSTALEALL03 post: stale-count / forced-fix-count)> => {} / {}" [(length (ref-FVT::URH_FvtStalePresentUsers fvt-id)) ffc-post])
+                    ;; (a) reported the "unstaled N" branch (single present staker ⇒ 1 of 1, injection-ready)
+                    (expect "<<TX-UNSTALEALL03>> report is the unstaled-N branch"
+                        "Unstale-all: unstaled 1 of 1 stale staker(s) — 0 remain (injection-ready)." report)
+                    ;; (b) staleness cleared — the entity is injection-ready
+                    (expect "<<TX-UNSTALEALL03>> post: NO stale present users remain" 0 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+                    (expect "<<TX-UNSTALEALL03>> post: score FRESH again" false (ref-SCR::URC_U-SCR|UserScoreDebStale anhd pool-id score-id))
+                    ;; (c) PENALIZED — the owner-forced fix billed the 2e count (contrast [6.2.8b] self-service = 0)
+                    (expect (format "<<TX-UNSTALEALL03>> owner mass-unstale IS penalized (forced-fix count now {} > 0)" [ffc-post]) true (> ffc-post 0))
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| A second run on the now-fresh entity is a cheap no-op: "all present stakers up to date",
+;;|| and it must NOT add any further penalty.
+;;
+(begin-tx "TX-UNSTALEALL04 - re-run on the fresh entity => all up to date, no new penalty")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print "--- [TX-UNSTALEALL04 · 01 · idempotent no-op reports all up to date] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
+        (auryn-id:string "AURYN-98c486052a51")
+        (ffc-pre:integer (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+    )
+    (let
+        (
+            (report:string (ref-TS02-C3::AQP-FVT|CC_UnstaleAll anhd fvt-id auryn-id 100))
+        )
+        (map print
+            [
+                (format "<(UNSTALEALL04 report)> => \"{}\"" [report])
+                ;; (a) the "all up to date" branch — exactly what the owner asked for when nothing is stale
+                (expect "<<TX-UNSTALEALL04>> report is the all-up-to-date branch"
+                    (format "Unstale-all: FVT {} lane {} — all present stakers up to date (injection-ready)." [fvt-id auryn-id]) report)
+                ;; (b) still zero stale
+                (expect "<<TX-UNSTALEALL04>> still zero stale" 0 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
+                ;; (c) no new penalty — a no-op fixes nobody, so the forced-fix count is unchanged
+                (expect (format "<<TX-UNSTALEALL04>> no new penalty on the no-op (forced-fix count unchanged at {})" [ffc-pre])
+                    ffc-pre (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== [6.2.8d]_AQP-UNSTALE-ALL-CC END — owner mass-unstale: gated, penalized, idempotent ===")

@@ -188,6 +188,9 @@
     (defun CC_InjectFinalize:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
+    (defun CC_UnstaleAll:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+    )
     (defun CC_SweepRevokeAnchor:string (patron:string anchor-id:string))
     (defun CC_SweepBegin:string (patron:string anchor-id:string))
     (defun CC_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
@@ -811,6 +814,26 @@
             "Reward link row must exist and be enabled for a fix pass")
         (enforce (and (> chunk 0) (<= chunk INJECT-FIX-CHUNK-MAX))
             "Inject-fix chunk out of range — the UI sizes it by simulation, the gas meter is the real ceiling")
+        (compose-capability (P|SECURE-CALLER))
+    )
+    (defcap FVT|C>UNSTALE-ALL (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+        @doc "Protects the OWNER-run mass deb-unstale (CC_UnstaleAll): the FVT entity owner force-refreshes up to \
+            \ `chunk` currently-stale present stakers to make the entity INJECTION-READY, WITHOUT injecting. Uses \
+            \ the SAME penalized fix as an inject's fix-phase (XI_FixUserFvtDebPenalizedIn records the 2e forced-fix \
+            \ count on (fvt, reward-dptf, user) → the user reimburses it in non-discountable IGNIS at his next \
+            \ collect of this lane), so a standalone prep and a real inject tag stale users identically. Validates \
+            \ the SAME reward context as an inject (not vacate-frozen, reward link row exists + enabled) minus the \
+            \ amount, plus the `chunk` bound. Unlike the permissionless inject-fix (part of a billed inject flow), \
+            \ this standalone op is OWNER-GATED — only the FVT owner may pre-unstale their own entity. Composes \
+            \ P|SECURE-CALLER for the intra-module fix + the cross-module XE_RefreshUserScoreDeb into AQP-SCORE."
+        @event
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS))
+            (ref-DALOS::CAP_EnforceAccountOwnership (UR_FVT|OwnerKonto fvt-id)))
+        (enforce (not (UR_FVT|VacateFrozen fvt-id)) "FVT is frozen: a pool it serves is mid-vacate")
+        (enforce (and (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) (UR_FVT-RG|RewardEnabled fvt-id reward-dptf-id))
+            "Reward link row must exist and be enabled for an unstale pass")
+        (enforce (and (> chunk 0) (<= chunk INJECT-FIX-CHUNK-MAX))
+            "Unstale chunk out of range — the UI sizes it by simulation, the gas meter is the real ceiling")
         (compose-capability (P|SECURE-CALLER))
     )
     (defcap FVT|C>SWEEP-REVOKE (patron:string anchor-id:string)
@@ -5359,6 +5382,48 @@
                 (enforce (= 0 stale-remaining)
                     "Stale stakers remain — page CC_InjectFixChunk until none remain before finalizing (or use single-tx CC_Inject)")
                 (XI_FvtInjectCore patron fvt-id reward-dptf-id amount)
+            )
+        )
+    )
+    (defun CC_UnstaleAll:string
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+        @doc "OWNER-run mass deb-unstale: force-refresh up to `chunk` CURRENTLY-stale present stakers of `fvt-id` to \
+            \ make the entity INJECTION-READY, WITHOUT injecting — the inject's FIX phase (CC_InjectFixChunk) decoupled \
+            \ from the inject. Same penalized fix (XI_FixUserFvtDebPenalizedIn: settle at old deb → refresh to live → \
+            \ resync mirror, recording the 2e forced-fix count on this lane, which the user reimburses in IGNIS at his \
+            \ next collect), so pre-unstaling tags stale users EXACTLY as a real inject would. No cursor: fixed users \
+            \ read fresh and drop out of URH_FvtStalePresentUsers, so the stale set SHRINKS — repeat until none remain, \
+            \ then a cheap light C_Inject (or CC_Inject) runs on the fresh divisor. When NO present staker is stale it \
+            \ is a cheap no-op reporting `all up to date`. OWNER-GATED (contrast the permissionless inject-fix). \
+            \ UEV_IMC + FVT|C>UNSTALE-ALL (owner + reward context + chunk bound). Not IGNIS-billed (gas-station \
+            \ subsidised like the inject-fix pages; cost is recovered from the fixed users' 2e)."
+        (UEV_IMC)
+        (with-capability (FVT|C>UNSTALE-ALL patron fvt-id reward-dptf-id chunk)
+            (let
+                (
+                    (stale:[string] (URH_FvtStalePresentUsers fvt-id))
+                )
+                (let
+                    (
+                        (batch:[string] (take chunk stale))
+                        ;; hoist the FVT-invariant member + reward-row lists ONCE for the whole chunk (no per-user re-scan)
+                        (members:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
+                        (reward-rows:[string] (URH_FVT-RG|EnabledRewardRows fvt-id))
+                    )
+                    ;; DRIP each reward lane ONCE (checkpoint) before the fix loop so every user settles against the
+                    ;; now-current index (no time passes during the batch tx). No-op when no lane carries a stream.
+                    (map (lambda (d:string) (XI_ReleaseStream fvt-id d)) reward-rows)
+                    ;; force-refresh this chunk of stale stakers (penalized — records the 2e forced-fix count); fixed
+                    ;; users read fresh and drop out of the stale set.
+                    (map (lambda (u:string) (XI_FixUserFvtDebPenalizedIn fvt-id reward-dptf-id u members reward-rows)) batch)
+                    (let
+                        (
+                            (remaining:integer (- (length stale) (length batch)))
+                        )
+                        (if (= (length stale) 0)
+                            (format "Unstale-all: FVT {} lane {} — all present stakers up to date (injection-ready)." [fvt-id reward-dptf-id])
+                            (format "Unstale-all: unstaled {} of {} stale staker(s) — {} remain{}." [(length batch) (length stale) remaining (if (= remaining 0) " (injection-ready)" ", keep paging")])))
+                )
             )
         )
     )
