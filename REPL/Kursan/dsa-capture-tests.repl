@@ -353,4 +353,108 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(print "=== dsa-capture-tests END — atomic open + capture recompute + delegated oracle (Phase 3) ===")
+;;
+;;|| NEXT >
+;;|| Phase 4 — oracle 25h expiry: stored capture is frozen, but the EFFECTIVE capture (what inject reads) drops
+;;|| to 0 once the oracle data is older than DSA_ORACLE_TTL (25h). Last oracle-ts = 2027-11-02T02:00:00Z.
+;;
+(begin-tx "TX-P3-07 - effective capture FRESH (< 25h)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-03T00:00:00Z") })   ; +22h — fresh
+(print "--- [TX-P3-07 · 01 · effective capture fresh] ---")
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            (map print
+              [ ;; 22h after the oracle write (< 25h) — effective capture == stored capture-weight (1.5)
+                (expect "<<TX-P3-07>> effective capture fresh (22h) = 1.5" 1.5 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id)) ]))
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Same agency, read 27h after the oracle write: EXPIRED ⇒ effective capture 0 (the stored 1.5 is untouched).
+;;
+(begin-tx "TX-P3-08 - effective capture EXPIRED (> 25h)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-03T05:00:00Z") })   ; +27h — expired
+(print "--- [TX-P3-08 · 01 · effective capture expired] ---")
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            (map print
+              [ ;; 27h after the oracle write (> 25h) — effective capture is 0 (stale oracle captures nothing)
+                (expect "<<TX-P3-08>> effective capture EXPIRED (27h) = 0" 0.0 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id))
+                ;; the STORED capture-weight is untouched — only the effective (inject-time) read decays
+                (expect "<<TX-P3-08>> stored capture-weight untouched = 1.5" 1.5 (ref-FVT::UR_FVT-SEL|CaptureWeight fvt-id triplet-id)) ]))
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| An oracle write NOT signed by the authorized oracle key is rejected (delegated-guard enforcement).
+;;
+(begin-tx "TX-P3-09 - unauthorized oracle write rejected")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-03T06:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-09 · 01 · unauthorized oracle write rejected] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            ;; dsa-oracle-key is NOT signed here ⇒ the DSA|A>ORACLE-WRITE guard enforce fails
+            (map print
+              [ (expect-failure "<<TX-P3-09>> oracle write without the authorized key rejected"
+                    (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 5 1000)) ]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== dsa-capture-tests END — atomic open + capture recompute + oracle (incl. 25h expiry) (Phase 3+4) ===")

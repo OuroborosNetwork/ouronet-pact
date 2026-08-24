@@ -425,10 +425,11 @@ FVT/SCORE core.
   `SWP::UR_StoaValue "|"`. `dsa-capture-tests.repl` (11th audit suite) green: fragment→stake, atomic open
   (Q1=3550), oracle capture-units 1, recompute Q→7100 capture-units 3 (oracle-ts preserved), node-cap (units 2),
   uptime scaling (weight 1.5). *Oracle `oracle-on` toggle + 25h expiry behavioral proof folds into Phase 4/5.*
-- **Phase 4 — Oracle expiry + toggle behavioral proof.** The oracle WRITE mechanism (`A_SetOracleAuth` +
-  delegated-guard `A_OracleWrite` + `oracle-on` arming) shipped in Phase 3. Remaining: prove the **25h expiry**
-  (`URC_MemberEffectiveCapture` → 0 when `now − oracle-ts > DSA_ORACLE_TTL`) + the `oracle-on` toggle + oracle-guard
-  rejection (wrong key). *Verify:* stale oracle (>25h) → effective capture 0; unauthorized oracle write rejected.
+- **Phase 4 — Oracle expiry + guard enforcement.** ✅ **DONE** (in `dsa-capture-tests.repl`, TX-P3-07/08/09):
+  the **25h expiry** — `URC_MemberEffectiveCapture` returns the stored capture-weight while fresh (22h → 1.5) but
+  **0 once `now − oracle-ts > DSA_ORACLE_TTL`** (27h → 0), with the STORED capture-weight untouched (only the
+  inject-time effective read decays); and the **delegated-guard enforcement** — an `A_OracleWrite` NOT signed by
+  the authorized oracle key is rejected. (The oracle write mechanism + `oracle-on` arming shipped in Phase 3.)
 - **Phase 5 — Inject + royalty (BEHAVIORAL PROOF of the FVT-core).** Inject into a live delegation vault via the
   existing `CC_Inject`/`C_Inject`. *Verify:* split by `capture-weight / Σ capture-units`; **uptime shortfall →
   royalty pool**; all-drained → **zombie**; operator **fee** skimmed from delegators at collect.
