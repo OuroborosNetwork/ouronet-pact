@@ -430,9 +430,21 @@ FVT/SCORE core.
   **0 once `now − oracle-ts > DSA_ORACLE_TTL`** (27h → 0), with the STORED capture-weight untouched (only the
   inject-time effective read decays); and the **delegated-guard enforcement** — an `A_OracleWrite` NOT signed by
   the authorized oracle key is rejected. (The oracle write mechanism + `oracle-on` arming shipped in Phase 3.)
-- **Phase 5 — Inject + royalty (BEHAVIORAL PROOF of the FVT-core).** Inject into a live delegation vault via the
-  existing `CC_Inject`/`C_Inject`. *Verify:* split by `capture-weight / Σ capture-units`; **uptime shortfall →
-  royalty pool**; all-drained → **zombie**; operator **fee** skimmed from delegators at collect.
+- **Phase 5 — Inject + royalty (BEHAVIORAL PROOF of the FVT-core).** ✅ **DONE** (in `dsa-capture-tests.repl`,
+  TX-P3-10..14, via `AQP-FVT|C_Inject` — the naive path is correct for a single agency; it reads capture fresh at
+  inject). Verified on the live agency (capture-units 3, effective weight 1.5 at uptime 500, S=3):
+  - **Inject 1000** → member-slice `floor(1000·1.5/3)=500`, royalty `floor(1000·(3−1.5)/3)=500`, global Tier-1
+    available 500, member Tier-2 mini-vault 500, zombie 0, conservation `global+royalty=1000`.
+  - **Operator collect** (sole staker sweeps Tier-1) → payout 500; royalty pool untouched (500); global → 0.
+  - **Expired oracle** (>25h): effective weight 0 but capture-units (divisor) still 3 → the whole inject is
+    CONFISCATED to royalty (`floor(200·(3−0)/3)=200` → royalty 700), zombie stays 0. *(Distinct from zombie — a
+    stale-oracle penalty, not lost capacity.)*
+  - **Zero-node oracle** (fresh, nodes 0 → capture-units 0 → divisor 0) → inject 300 ESCROWS to **zombie** (300),
+    royalty unchanged. *(The true all-drained/no-capacity path; flushed on the next inject with a live divisor.)*
+  - ⚠️ **GAP surfaced:** the operator **fee-per-mille** is stored on `DSA|Agency` + read by `UR_DSA-AGN|FeePerMille`
+    but is **NOT skimmed anywhere in the collect path** yet. It only bites when a DELEGATOR (≠ operator) collects, so
+    it needs (a) collect-fee wiring in the FVT collect + (b) a multi-delegator fixture. Deferred to **Phase 5b /
+    the collect-wiring phase** (single-agency operator = sole staker ⇒ no fee applies in this fixture).
 - **Phase 6 — Royalty disposal.** `A_WithdrawRoyalty` / `A_BurnRoyalty` / `A_FuelRoyalty(swpair)` +
   `OUROBOROS::C_Compress` IGNIS→OURO (core→core) + SWP fuel (add-liq, no LP mint). *Verify:* accrue → dispose each way.
 - **Phase 7 — Talos + gas full wiring.** All DSA client/admin ops into Talos + gas-station allowlist + IMP; the

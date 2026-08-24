@@ -457,4 +457,267 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(print "=== dsa-capture-tests END — atomic open + capture recompute + oracle (incl. 25h expiry) (Phase 3+4) ===")
+;;
+;;|| NEXT >
+;;|| Phase 5 — INJECT + ROYALTY. Re-arm the oracle FRESH (nodes 10, uptime 500 ⇒ capture-units 3, weight 1.5,
+;;|| S = Σcapture-units = 3). A shortfall uptime (< full) means the member's effective weight (1.5) is below its
+;;|| ideal capture-units (3): the gap is custodied as ROYALTY. Inject N ⇒ member-slice floor(N·1.5/3)=N/2,
+;;|| royalty floor(N·(3-1.5)/3)=N/2.
+;;
+(begin-tx "TX-P3-10 - re-arm oracle fresh (uptime 500)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-04T00:00:00Z") })
+(env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "dsa-oracle-key", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-10 · 01 · re-arm oracle fresh] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 10 500)
+            (print (format "<(ANHD OURO balance)> => {}" [(ref-DPTF::UR_AccountSupply "OURO-98c486052a51" anhd)]))
+            (map print
+              [ (expect "<<TX-P3-10>> capture-units 3 (fresh)" 3.0 (ref-FVT::UR_FVT-SEL|CaptureUnits fvt-id triplet-id))
+                (expect "<<TX-P3-10>> capture-weight 1.5 (uptime 500)" 1.5 (ref-FVT::UR_FVT-SEL|CaptureWeight fvt-id triplet-id))
+                (expect "<<TX-P3-10>> effective capture fresh = 1.5" 1.5 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id)) ]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Inject 1000 OURO: member-slice 500, royalty 500 (the uptime-500 shortfall). Global available += 500.
+;;
+(begin-tx "TX-P3-11 - inject 1000 OURO (split member 500 / royalty 500)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-04T01:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-11 · 01 · inject 1000 OURO] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 1000.0)
+            (let
+                (
+                    (roy:decimal (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+                    (glob:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro))
+                    (memv:decimal (ref-FVT::UR_FVT-MV|AvailableRewards fvt-id triplet-id ouro))
+                    (zomb:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id ouro))
+                )
+                (print (format "<(royalty/global/member/zombie)> => {} / {} / {} / {}" [roy glob memv zomb]))
+                (map print
+                  [ ;; uptime-500 shortfall: half the inject is custodied as royalty
+                    (expect "<<TX-P3-11>> royalty pool = 500 (uptime shortfall)" 500.0 roy)
+                    ;; the live half flows to the member: global Tier-1 available += 500
+                    (expect "<<TX-P3-11>> global available = 500" 500.0 glob)
+                    ;; member Tier-2 mini-vault credited its slice = 500
+                    (expect "<<TX-P3-11>> member mini-vault available = 500" 500.0 memv)
+                    ;; nothing escrowed — the divisor was live (S=3)
+                    (expect "<<TX-P3-11>> zombie/escrow = 0" 0.0 zomb)
+                    ;; conservation: member-live + royalty == inject
+                    (expect "<<TX-P3-11>> conservation glob + royalty = 1000" 1000.0 (+ glob roy)) ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| The operator (sole staker) collects its live share (~500). Delegator-fee skim is a later phase (unbuilt).
+;;
+(begin-tx "TX-P3-12 - operator collects its live share")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-04T02:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-12 · 01 · operator collect] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            (let ((bal-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))
+                (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 3 triplet-id ouro)
+                (let ((payout:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) bal-before)))
+                    (print (format "<(operator collect payout)> => {}" [payout]))
+                    (map print
+                      [ ;; sole staker sweeps the live Tier-1 pool (500); royalty stays custodied (not paid at collect)
+                        (expect "<<TX-P3-12>> operator collected the live share = 500" 500.0 payout)
+                        (expect "<<TX-P3-12>> royalty pool untouched by collect = 500" 500.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+                        (expect "<<TX-P3-12>> global available drained to 0" 0.0 (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro)) ])))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| EXPIRED oracle: the effective WEIGHT is 0 but capture-UNITS (the divisor) is still 3 — so the member's whole
+;;|| ideal-vs-effective gap is confiscated: the inject lands ENTIRELY in ROYALTY (the operator is penalized for
+;;|| letting the oracle go stale). This is distinct from zombie (which needs a 0 divisor — proven next).
+;;
+(begin-tx "TX-P3-13 - expired oracle → inject confiscated to royalty")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-05T02:00:00Z") })   ; +26h after the last oracle write → expired
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-13 · 01 · expired oracle → zombie escrow] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            (let ((roy-before:decimal (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro)))
+                ;; effective capture is 0 (oracle > 25h stale) but capture-units (divisor) is still 3
+                (expect "<<TX-P3-13>> effective capture expired = 0" 0.0 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id))
+                (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 200.0)
+                (map print
+                  [ ;; whole 200 confiscated to royalty (ideal 3 − effective 0, over S=3) — NOT escrowed
+                    (expect "<<TX-P3-13>> inject confiscated to royalty (+200 → 700)" (+ roy-before 200.0) (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+                    (expect "<<TX-P3-13>> zombie stays 0 (divisor was live)" 0.0 (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id ouro))
+                    (expect "<<TX-P3-13>> global available still 0 (nothing live)" 0.0 (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro)) ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| ZOMBIE — a FRESH oracle reporting 0 nodes drives capture-units to 0 ⇒ the divisor is 0 (no live capacity).
+;;|| An inject then has nowhere to land: it escrows to the zombie pool (flushed on the next inject with a divisor).
+;;
+(begin-tx "TX-P3-14 - zero-node oracle → divisor 0 → inject escrows to zombie")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-06T00:00:00Z") })
+(env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "dsa-oracle-key", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-14 · 01 · zero-node oracle → zombie escrow] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            (let ((roy-before:decimal (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro)))
+                ;; fresh oracle, 0 nodes → capture-units 0 → divisor 0
+                (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 0 1000)
+                (expect "<<TX-P3-14>> zero nodes → capture-units 0" 0.0 (ref-FVT::UR_FVT-SEL|CaptureUnits fvt-id triplet-id))
+                (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 300.0)
+                (map print
+                  [ (expect "<<TX-P3-14>> inject escrowed to zombie = 300" 300.0 (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id ouro))
+                    (expect "<<TX-P3-14>> royalty pool unchanged by escrow" roy-before (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+                    (expect "<<TX-P3-14>> global available still 0" 0.0 (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id ouro)) ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== dsa-capture-tests END — open + capture + oracle + inject/royalty/zombie/collect (Phase 3+4+5) ===")
