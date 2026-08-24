@@ -527,7 +527,6 @@
     (defun UEV_PrimordialSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}])
         (let
             (
-                (ref-U|INT:module{OuronetIntegersV1} U|INT)
                 (ref-DPDC:module{DpdcV1} DPDC)
                 (nonces-used-in-set-definition:[integer]
                     (fold
@@ -539,10 +538,24 @@
                         (enumerate 0 (- (length set-definition) 1))
                     )
                 )
-                (max:integer (ref-U|INT::UC_MaxInteger (distinct nonces-used-in-set-definition)))
                 (nu:integer (ref-DPDC::UR_NoncesUsed id son))
             )
-            (enforce (<= max nu) "Invalid Set-Definition for a Primordial Set with non existent Nonces")
+            ;;DPDC Audit #31M: check every individual allowed-nonce value, not just the running max of
+            ;;the whole list (the old (<= max nu) check let an out-of-range negative "fragment" value
+            ;;hide behind any legitimately-small value elsewhere in the same definition, since a large
+            ;;negative number is always <= a small positive max). A value is only plausible if it
+            ;;references an existing native nonce (positive, 1..nu) or a fragment encoding of one
+            ;;(negative, magnitude 1..nu) -- 0 is never valid either way.
+            (enforce
+                (fold (and) true
+                    (map
+                        (lambda (n:integer) (and (> (abs n) 0) (<= (abs n) nu)))
+                        nonces-used-in-set-definition
+                    )
+                )
+                (format "Invalid Set-Definition for a Primordial Set: every allowed-nonce must reference \
+                    \ an existing native nonce (magnitude 1-{}) or its fragment encoding" [nu])
+            )
             (map
                 (lambda
                     (idx:integer)

@@ -366,9 +366,15 @@ skips the `UEV_SetActiveState` gate its four siblings all enforce.~~ — **FIXED
 active, so the normal flow is unaffected; live-proven on `DHCD-98c486052a51`: toggle-off now rejects
 enable-fragmentation, toggle-on restores it. Z.repl green. — *DPDC-S·M2*
 
-#31M **[DPDC-S]** Primordial set-definition bounds (like #6C's composite-side root cause) only check the
+#31M **[DPDC-S]** ~~Primordial set-definition bounds (like #6C's composite-side root cause) only check the
 running maximum referenced value, not each individual entry — an unsatisfiable-but-nonzero value silently
-burns a monotonic, never-reclaimed set-class slot rather than value-locking a real nonce. — *DPDC-S·M3*
+burns a monotonic, never-reclaimed set-class slot rather than value-locking a real nonce.~~ — **FIXED ✅
+AND PROVEN ✅ 2026-08-23** (`ROUND-02-FIXES.md` Fix #27) — bug reproduced live first (a `DPSF|C_DefinePrimordialSet`
+call with a garbage `-100000` value alongside legit `1`/`2` values on the real `DHCD-98c486052a51`
+collection succeeded, since the old plain-max check can't see a large negative as wrong when a small
+legit value is also present), then fixed with a per-element `0 < abs(n) <= nu` bound on every
+`allowed-nonces` value. Re-proven post-fix: the garbage value and a `0` control case are both now
+rejected; a legitimate all-real-values definition still succeeds. Z.repl green. — *DPDC-S·M3*
 
 #32M **[DPDC-S]** Hybrid set Make-time constituent ordering and Break-time reconstruction ordering are
 opposite conventions in two different functions — currently harmless only because every current constraint

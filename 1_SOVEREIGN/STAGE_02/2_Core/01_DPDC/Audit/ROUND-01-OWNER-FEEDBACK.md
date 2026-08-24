@@ -634,3 +634,20 @@ the same check with the opposite-of-target-toggle semantics). Since a freshly de
 active by default, the normal Define -> EnableFragmentation flow is unaffected; the check only bites if
 the set-class was deliberately toggled off first. Live-proven on the real `DHCD-98c486052a51` collection:
 toggle off -> rejected, toggle back on -> succeeds. Z.repl green.
+
+## #31M · DPDC-S · M3 — Primordial set-definition bounds only check the running max, not each value
+
+**Verdict: CONFIRMED, FIXED (2026-08-23).** Owner asked explicitly to prove the bug live before fixing,
+and prove the fix afterward — not just assert it.
+
+**Proof of the bug (before any fix):** `REPL/Kursan/_verify_finding_DPDC-S_31M_primordial_element_bounds.repl`
+against the real `DHCD-98c486052a51` collection — a `DPSF|C_DefinePrimordialSet` call with an out-of-range
+garbage value (`-100000`, alongside two legit values `1`/`2`) printed a success message instead of being
+rejected, confirming the old `(<= max nu)` check (plain numeric max, not max-of-magnitude) can't see a
+large negative garbage value as wrong when a small legit value is also present in the same definition.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #27)** — replaced the whole-list max check with a
+per-element bound (`0 < abs(n) <= nu` for every value, also rejecting `0`), matching the fix direction and
+the same pattern already used on the Composite side (#6C). Re-ran the same probe after the fix: the
+garbage value and a `0` control case are now both rejected; a legitimate definition with only real
+in-range values still succeeds normally. Z.repl green.

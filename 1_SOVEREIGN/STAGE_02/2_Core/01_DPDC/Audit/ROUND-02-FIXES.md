@@ -1188,3 +1188,37 @@ clean, `Load successful` (no existing test enables fragmentation on a deactivate
 regresses).
 
 **Interface implication:** none — internal capability logic only, no `DpdcSetsV1` signature change.
+
+## Fix #27 — DPDC-S · M3 (#31M) — per-element bounds on Primordial set-definition values
+
+**Owner-approved 2026-08-23**, with an explicit instruction to prove the bug live before fixing and prove
+the fix afterward, not just assert it.
+
+**Root cause:** `UEV_PrimordialSetDefinition` (`08_DPDC-S.pact:527-554`) validated the whole
+set-definition by computing the plain **maximum** of every `allowed-nonces` value across all positions
+and checking `max <= nu` (number of native nonces that exist). Since fragment-encoding nonces are
+legitimately negative, `UC_MaxInteger` (a plain numeric max, not max-of-magnitude) meant a large garbage
+negative value was *always* less than any small positive value elsewhere in the same definition — the
+check had no way to see it as wrong. Same root-cause shape as the earlier Composite-side fix (#6C), now
+found on the Primordial side too.
+
+**Live proof the bug was real (before any fix):**
+`REPL/Kursan/_verify_finding_DPDC-S_31M_primordial_element_bounds.repl`, run against the real
+`DHCD-98c486052a51` collection (10 native nonces, so `nu=10`) — a `DPSF|C_DefinePrimordialSet` call with
+positions `[1] [2] [-100000]` printed `"Primordial Set <GarbageProbeSet> for SFT Collection
+DHCD-98c486052a51 defined succesfully"` — a value that can never correspond to any real nonce or fragment
+was accepted, silently burning a monotonic, never-reclaimed `set-classes-used` slot on an unsatisfiable
+set.
+
+**Fix:** replaced the whole-list max check with a per-element `enforce`: every `allowed-nonces` value
+must satisfy `0 < abs(n) <= nu` — plausible as either a positive native nonce or a negative fragment
+encoding of one, and explicitly rejecting `0` (never valid either way), matching the fix direction from
+Round I and the same per-element pattern already used on the Composite side.
+
+**Live proof the fix works:** re-ran the same probe file after the fix —
+`-100000` -> `expect-failure` passes (now correctly rejected); a `0` control case -> `expect-failure`
+passes; a legitimate definition using only real in-range values (`[1] [2] [-3]`) still succeeds
+normally. `cd REPL && pact Z.repl` — clean, `Load successful` (every existing Primordial set-definition
+in the active pipeline already used only real, in-range values, so nothing regresses).
+
+**Interface implication:** none — internal validation logic only, no `DpdcSetsV1` signature change.

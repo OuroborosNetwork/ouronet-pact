@@ -1,0 +1,92 @@
+;; Verify Fix for DPDC Audit #31M — UEV_PrimordialSetDefinition previously only checked the MAX of all
+;; allowed-nonce values across a whole set-definition, not each individual value, so a garbage
+;; large-negative value (impossible fragment encoding) could hide behind any legit small value elsewhere
+;; in the same definition. BEFORE the fix this file proved the exact same call below actually succeeds
+;; (see git history / ROUND-02-FIXES.md Fix #27 for the pre-fix run's output). AFTER the fix (current
+;; state of 08_DPDC-S.pact), it must be rejected, while a legitimate all-real-values definition still works.
+;;
+;; Uses the real DHCD-98c486052a51 collection (already has 10 native nonces created -> nu=10).
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage00a_StoaTests.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage02_Tester.repl")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "PROBE-31M - AFTER fix: garbage out-of-range value rejected; legit definition still works")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (id:string "DHCD-98c486052a51")
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "GarbageProbeSet" "Set with a bogus out-of-range primordial element"
+                (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+        (nd2:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "LegitProbeSet" "Set with only real primordial elements"
+                (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    ;;This collection has exactly 10 native nonces (nu=10). -100000 cannot correspond to any real nonce
+    ;;or fragment of one, yet the definition also includes legit values (1, 2), so the running MAX stayed
+    ;;at 2 -- well under nu=10 -- and the OLD (<= max nu) check had no way to see -100000 as wrong. The
+    ;;NEW per-element check must reject this outright.
+    (print
+        (expect-failure
+            "garbage out-of-range primordial element (-100000) is rejected (DPDC Audit #31M fix)"
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
+                owner id "GarbageProbeSet" 1.0
+                [
+                    (ref-DPDC-UDC::N [1])
+                    (ref-DPDC-UDC::N [2])
+                    (ref-DPDC-UDC::N [-100000])
+                ]
+                nd
+            )
+        )
+    )
+    ;;Control: 0 must also be rejected (never a valid native nonce or fragment encoding).
+    (print
+        (expect-failure
+            "zero as a primordial allowed-nonce is rejected (DPDC Audit #31M fix)"
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
+                owner id "ZeroProbeSet" 1.0
+                [
+                    (ref-DPDC-UDC::N [1])
+                    (ref-DPDC-UDC::N [0])
+                ]
+                nd
+            )
+        )
+    )
+    ;;Control: a definition using only real, in-range native nonces (some positive, some already-real
+    ;;fragment-encoding-shaped negatives within magnitude 1-10) must still be accepted normally.
+    (print
+        (ref-TS02-C1::DPSF|C_DefinePrimordialSet
+            owner id "LegitProbeSet" 1.0
+            [
+                (ref-DPDC-UDC::N [1])
+                (ref-DPDC-UDC::N [2])
+                (ref-DPDC-UDC::N [-3])
+            ]
+            nd2
+        )
+    )
+)
+(commit-tx)
