@@ -2282,3 +2282,29 @@ confirming zero observable behavior change to any real caller.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #30. Awaiting Round III re-verify. — *L50*
 
 ---
+
+## L51 (#51L, SWP — `C_ModifyWeights` composes bare `(SECURE)` instead of a named master client cap, unusual layering vs. the rest of the module) — **REFUTED — correct shape, no code change**
+
+**Traced why before treating it as a bug:** every sibling `C_*` in the module (`C_UpdateAmplifier`,
+`C_UpdateFee`, `C_ModifyCanChangeOwner`, …) composes its own named cap directly and calls a matching
+`XI_*` (internal-only) for the write. `C_ModifyWeights` is the one exception — it composes bare
+`(SECURE)` and calls `XB_ModifyWeights` instead, which is the one that composes the real named cap
+(`SWP|S>WEIGHTS`). Confirmed why the prefix differs: `XB_ModifyWeights` genuinely is called externally
+too — `17_SWPL.pact` calls `ref-SWP::XB_ModifyWeights` directly, cross-module, twice — unlike every
+sibling's `XI_*`, which is unreachable any way but through its own `C_*`.
+
+**Owner reasoned through the correct shape from memory, without looking at the code, and it matched
+exactly:** an `XB_*` (both internal and external) needs its own `UEV_IMC` + complete `with-capability`
+inside the defun, since it can't rely on an internal caller's context; the `C_*` wrapping it only needs
+bare `SECURE` to gate the hand-off, since `XB_ModifyWeights` fully re-validates on every call regardless
+of caller. Confirmed against the actual source: `XB_ModifyWeights` opens with `(UEV_IMC)` then its own
+`(with-capability (SWP|S>WEIGHTS …) …)`; `C_ModifyWeights` opens with `(UEV_IMC)` then bare
+`(with-capability (SECURE) (XB_ModifyWeights …) …)` — exactly the predicted shape, matching this
+codebase's own documented `XB_*`/`XE_*` contract.
+
+**Status:** REFUTED — not an inconsistency. `C_ModifyWeights`'s layering correctly follows from
+`XB_ModifyWeights`'s genuine dual internal/external role, which no sibling `XI_*`-based `C_*` shares.
+Composing the named cap a second time at the `C_*` level would be redundant, not more correct. No code
+change. — *L51*
+
+---

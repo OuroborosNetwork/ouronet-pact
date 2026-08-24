@@ -417,8 +417,12 @@ crashed on the exact legacy-row case. Dropped the `update`; legacy rows now retu
 read. Traced every reader of the field codebase-wide (including cross-module, AQP's `FVT`) — nothing
 depends on it being persisted. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L50*
 
-#51L **[SWP]** `C_ModifyWeights` composes a bare `(SECURE)` cap directly instead of a named master client
-cap.
+#51L **[SWP]** ~~`C_ModifyWeights` composes a bare `(SECURE)` cap directly instead of a named master
+client cap.~~ — **REFUTED — correct shape, 2026-08-24.** `C_ModifyWeights` is the module's one `C_*`
+whose write half is `XB_*` (both internal and external, genuinely called cross-module from `SWPL`)
+instead of `XI_*` (internal-only, every sibling's shape). `XB_ModifyWeights` correctly carries its own
+`UEV_IMC` + full named cap; `C_ModifyWeights`'s bare `SECURE` is enough to gate the hand-off. Not an
+inconsistency. No code change. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L51*
 
 #52L **[SWP]** `XE_Issue`/`XI_ToggleFeeLock` return meaningful values with no documenting `@doc`.
 
