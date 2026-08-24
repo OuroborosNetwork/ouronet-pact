@@ -58,6 +58,7 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 
 | Prefix | Class | Meaning | Colour family |
 |--------|-------|---------|---------------|
+| `AU_` | admin·update | **Admin Update** — schema/data migration only (force existing rows onto a newly-added field), admin-mode only; placed immediately before `A_`. Codifies the pre-existing `AHU`/`AUP_*` pattern (see `StoicSyntax.md` § 6.2, v1.10.0) | **RECIPE** |
 | `A_`  | admin | Admin-key mutation | **RECIPE** |
 | `C_`  | client | Client entrypoint — builds IGNIS cumulators, returns `OutputCumulator`; **cannot be invoked from its own module** | **RECIPE** |
 | `CC_` | client·single-tx | Single-transaction enforced-fresh client variant of a `C_` | **RECIPE** |
@@ -130,7 +131,7 @@ their base, optionally **dimmed / desaturated / italic** to signal "specializati
 | **CONSTRUCT**  | `UDC_ UDCx_` | object builders |
 | **CONSTANT**   | `CT_` | constant accessors — muted |
 | **WRITE**      | `WI_ WU_ WU2_ WU3_ WU4_ WW_` | persistence — distinct write hue |
-| **RECIPE**     | `A_ C_ CC_` | client/admin entrypoints — strong/bold |
+| **RECIPE**     | `AU_ A_ C_ CC_` | client/admin entrypoints — strong/bold |
 | **PROTECTED**  | `XI_ XE_ XB_` | protected orchestration — distinct band |
 | **STRUCTURAL** | `GOV GOV\|* P\|* SECURE UEV_IMC` | standardized boilerplate — dim/grey |
 

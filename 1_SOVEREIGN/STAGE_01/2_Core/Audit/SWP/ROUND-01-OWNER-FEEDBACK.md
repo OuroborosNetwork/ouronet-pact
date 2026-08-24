@@ -2354,7 +2354,7 @@ change.
 
 ---
 
-## L54 (#54L, SWP — admin migration utility `AHU`/`AUP_SwapPair(s)` falls outside the module's own prefix vocabulary) — **OPEN — owner decision pending, not yet resolved**
+## L54 (#54L, SWP — admin migration utility `AHU`/`AUP_SwapPair(s)` falls outside the module's own prefix vocabulary) — **DESIGN, accepted — `AU_` formalized, existing instances deferred to the full sweep**
 
 **Traced before presenting, found something worth flagging beyond the naming question:** `AHU`
 (`15_SWP.pact:1871`) is a separate admin capability, distinct from the module's normal `GOV`/keyset-ref
@@ -2369,10 +2369,26 @@ done and may be needed again), and formalize a new StoicSyntax prefix category, 
 — admin-mode-only functions whose sole purpose is applying schema/data updates during migrations,
 distinct from `A_*`'s live-business-mutation role.
 
-**Still open:** whether `AHU`/`AUP_SwapPair(s)` themselves get renamed to the new `AU_` convention now
-(making them the first real example), or stay under their existing names as a historical artifact from
-before the convention existed, with `AU_` applying only to new functions going forward. Deferred —
-returning to it later. No code change, no StoicSyntax version bump yet.
+**Checked whether renaming just SWP's copy made sense before asking again, and it changed the answer:**
+`AHU`/`AUP_*` is not a SWP-specific naming slip — the identical pattern (a local `AHU` cap + `AUP_*`
+migration functions) already repeats across six modules: `01_DALOS`, `05_DPTF`, `06_DPOF`, `08_ATS`,
+`15_SWP`, and Stage 2's `02_DPDC` (`AUP_OuronetAccount`, `AUP_TrueFungibleAccount`, `AUP_TrueFungible`,
+`AUP_UnstakeAccount`, `AUP_AutostakePair`, `AUP_OrtoFungibleAccount`, `AUP_OrtoFungible`,
+`AUP_SwapPair(s)`). Renaming SWP's copy alone would trade one inconsistency for another (five other
+modules would still say `AHU`); renaming all six now would balloon a single LOW-severity SWP finding into
+an unscoped cross-module refactor.
+
+**Owner's direction on placement, then final call:** `AU_` placed immediately before `A_` in the
+FUNCTIONS block order (§7) and the protected-entrypoints table (§6.2) — matching the "admin-mode-only,
+migration-only" role sitting adjacent to but distinct from live admin mutations. Close the finding: `AU_`
+formalized now (`OuronetInformational/StoicSyntax.md` § 6.2/§7, bumped **1.9.0 → 1.10.0**, changelog row
+added; mirrored in `StoicSyntax-Prefixes.md`); the six existing `AHU`/`AUP_*` instances are a known,
+deliberate, shared pattern intentionally left unrenamed for now — explicitly deferred to the full
+post-merge StoicSyntax sweep as one coordinated cross-module rename, not touched piecemeal.
+
+**Status:** DESIGN, accepted — `AU_` is now a real, versioned StoicSyntax rule, not just a note here. No
+`.pact` code changed; the rename itself is deliberately scoped to the later sweep. Fully resolved, not
+left open. — *L54*
 
 ---
 

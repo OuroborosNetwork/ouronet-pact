@@ -2,9 +2,9 @@
 
 | | |
 |--|--|
-| **Version** | **1.9.0** |
+| **Version** | **1.10.0** |
 | **Status** | Published discipline — rules Ouronet follows; offered for any Pact builder |
-| **Date** | 2026-08-23 |
+| **Date** | 2026-08-24 |
 | **Home** | Ouronet (this repository) — the codebase that practices and proves the method |
 
 **What StoicSyntax is.** A **discipline and set of rules** for writing Pact: how to name and place functions, where validation lives, how writes are isolated, how modules authorize each other **without borrowing each other’s capabilities**, and how one module can safely **compose calls across many modules** into auditable client flows.
@@ -503,6 +503,7 @@ violation and not covered by this exception.
 
 | Prefix | Who | Role |
 |--------|-----|------|
+| **AU_** | Admin keys, admin-mode only | **Admin Update** — schema/data migration functions only (e.g. force existing rows to pick up a newly-added field). Distinct from `A_`'s live-business-mutation role; placed immediately before `A_` in the FUNCTIONS block (§7). Introduced 2026-08-24 from the SWP audit (L54) — codifies the pre-existing `AHU`/`AUP_*` pattern already used across `01_DALOS`, `05_DPTF`, `06_DPOF`, `08_ATS`, `15_SWP`, `02_DPDC` as the forward-going standard name. |
 | **A_** | Admin keys | Administrator recipes |
 | **C_** | Client / via Aggregator | Client recipes; may wire optional fee cumulators (Ouronet: IGNIS) |
 | **XI_** | This module only | Internal orchestration → `W_*` |
@@ -548,8 +549,9 @@ Under **FUNCTIONS**, group in this order (AQP reference: `05_VCT.pact`):
 | 8 | **URDC_** | Scan+compute |
 | 9 | **UEV_** | Validation |
 | 10 | **C_** | Client recipes |
-| 11 | **A_** | Admin recipes |
-| 12 | **X** (`XI_` / `XE_` / `XB_`) | Orchestration / cross-module writes — inside XI: **all tier 0, then all tier 1, then all tier 2…** (§ 12.1) |
+| 11 | **AU_** | Admin Update — schema/data migration functions only (§6.2), placed immediately before `A_` |
+| 12 | **A_** | Admin recipes |
+| 13 | **X** (`XI_` / `XE_` / `XB_`) | Orchestration / cross-module writes — inside XI: **all tier 0, then all tier 1, then all tier 2…** (§ 12.1) |
 
 **CAP_** helpers sit with **UEV_** or just before **C_** per module habit.
 
@@ -1591,6 +1593,7 @@ These stay explained in context; this is the single index of what is Ouronet-spe
 | **1.7.0** | 2026-08-11 | **§ 19 Ouronet-specific rules** (new chapter): `X-cm_` naming for X funcs that emit an IGNIS cumulator (R1); multi-table X allowed (R2); `CC_`/`AA_` HEAVY prefixes for `C_`/`A_` that unavoidably scan (R3); X `@doc` output rule (R4); Ouronet-specifics consolidation index (R5). From AQP audit Round I owner feedback. |
 | **1.8.0** | 2026-08-21 | **§ 19.5 `;;Key = <...>`** (new rule, R6): every `deftable` — domain or `P|T`/`P|MT` policy table alike, no exceptions — carries an inline comment stating its own row key. Introduced by the AQP modules, formalized here after being applied retroactively across the SWP-family modules (owner reminder, #34 session). |
 | **1.9.0** | 2026-08-23 | **§ 6.1 documented exception**: `U|LST`'s bounds-guard `enforce` helpers (`UC_ReplaceAt`, `UC_RemoveItemAt`, `UC_LE`, `UC_FE`) and any `UC_*` calling them stay `UC_*` and are excluded from renaming/reclassification — the `enforce` guards the computation's own list/string shape (index-in-bounds, not-empty), not a business/domain decision. From SWP audit Round I, finding L41 (owner direction, 2026-08-23). |
+| **1.10.0** | 2026-08-24 | **§ 6.2 / § 7 new prefix `AU_`** (Admin Update): admin-mode-only functions whose sole purpose is schema/data migration (force existing rows to pick up a newly-added field), distinct from `A_`'s live-business-mutation role; placed immediately before `A_` in the FUNCTIONS block order. Codifies the pre-existing `AHU`/`AUP_*` pattern already used across `01_DALOS`, `05_DPTF`, `06_DPOF`, `08_ATS`, `15_SWP`, `02_DPDC` as the forward-going standard name — existing instances are a known, deliberate, shared pattern intentionally left unrenamed for now, deferred to the full post-merge StoicSyntax sweep as one coordinated cross-module rename rather than touched piecemeal. From SWP audit Round I, finding L54 (owner direction, 2026-08-24). |
 
 **Bump rules**
 

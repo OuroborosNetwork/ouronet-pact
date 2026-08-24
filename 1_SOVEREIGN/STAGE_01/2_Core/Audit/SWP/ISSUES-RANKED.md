@@ -437,11 +437,14 @@ Fix #32). Cross-checked against the real swap-fee formula: fee is per-mille (100
 is 960 promille, always leaving 4% fees can never consume. Doc added capturing both units and rationale.
 Pure doc change. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L53*
 
-#54L **[SWP]** Admin migration utility `AHU`/`AUP_SwapPair(s)` falls outside the module's own prefix
-vocabulary. — **OPEN, 2026-08-24.** Confirmed deliberate schema-migration tooling, gated by a separate
-obfuscated-account admin path. Owner: keep for historical purposes, formalize a new `AU_` (Admin Update)
-StoicSyntax category — still open whether these specific functions get renamed now or `AU_` applies only
-going forward. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L54*
+#54L **[SWP]** ~~Admin migration utility `AHU`/`AUP_SwapPair(s)` falls outside the module's own prefix
+vocabulary.~~ — **DESIGN, accepted — `AU_` formalized, 2026-08-24.** Confirmed deliberate schema-migration
+tooling, gated by a separate obfuscated-account admin path. Confirmed the identical pattern already
+repeats across 6 modules (DALOS, DPTF, DPOF, ATS, SWP, DPDC) — not a SWP-only slip, so renaming just one
+copy would trade one inconsistency for another. Owner: formalize `AU_` (Admin Update) as a new StoicSyntax
+category, placed immediately before `A_`; existing instances deliberately deferred to the full
+cross-module sweep, not renamed piecemeal. Codified in `StoicSyntax.md` v1.10.0. No `.pact` code change.
+Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L54*
 
 #55L **[SWP]** ~~`XE_CanAddOrSwapToggle` redundantly re-derives a check `UEV_IMC` already performed.~~ —
 **FIXED ✅ AND PROVEN ✅ 2026-08-24** (`ROUND-02-FIXES.md` Fix #33). Since `UEV_IMC` aborts on failure,
