@@ -30,6 +30,8 @@
         (patron:string fvt-id:string reward-dptf-id:string))
     (defun A_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string))
+    (defun A_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string swpair:string))
     ;;
 )
 ;;
@@ -192,6 +194,7 @@
     (defconst GAS|ORACLE-WRITE:decimal 200.0)
     (defconst GAS|WITHDRAW-ROYALTY:decimal 400.0)
     (defconst GAS|BURN-ROYALTY:decimal 400.0)
+    (defconst GAS|FUEL-ROYALTY:decimal 500.0)
     (defconst DSA_UPTIME_MIN:integer 0)
     ;;
     ;;<==========>
@@ -295,6 +298,23 @@
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
             (enforce (= patron fvt-owner) "Only the FVT owner may burn royalty")
+            (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
+        )
+        (compose-capability (P|SECURE-CALLER))
+    )
+    (defcap DSA|C>FUEL-ROYALTY (patron:string fvt-id:string swpair:string)
+        @doc "Owner-only: FUEL a swpair with the whole royalty pool of a DSA vault (add liquidity, no LP mint). \
+            \ Enforces the vault is a live DSA vault + patron IS the FVT owner (+ signs). Composes P|SECURE-CALLER \
+            \ so DSA's registered IMC guard is active for the FVT XE_FuelRoyalty custody-fuel call."
+        @event
+        (let
+            (
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+            )
+            (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
+            (enforce (= patron fvt-owner) "Only the FVT owner may fuel with royalty")
             (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
         )
         (compose-capability (P|SECURE-CALLER))
@@ -569,6 +589,25 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
                     [ (ref-IGNIS::UDC_ConstructOutputCumulator GAS|BURN-ROYALTY patron (ref-IGNIS::URC_IsVirtualGasZero) [fvt-id])
                       (ref-FVT::XE_BurnRoyalty fvt-id reward-dptf-id) ]
+                    [fvt-id])
+            )
+        )
+    )
+    (defun A_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string swpair:string)
+        @doc "Owner-only: dispose the whole royalty pool of <reward-dptf-id> on a DSA vault by FUELING <swpair> \
+            \ (add liquidity WITHOUT minting LP — delegates to FVT::XE_FuelRoyalty; the reward-dptf must be a token \
+            \ of the swpair). UEV_IMC + DSA|C>FUEL-ROYALTY. Bills GAS|FUEL-ROYALTY merged with the fuel's IGNIS."
+        (UEV_IMC)
+        (with-capability (DSA|C>FUEL-ROYALTY patron fvt-id swpair)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [ (ref-IGNIS::UDC_ConstructOutputCumulator GAS|FUEL-ROYALTY patron (ref-IGNIS::URC_IsVirtualGasZero) [fvt-id])
+                      (ref-FVT::XE_FuelRoyalty fvt-id reward-dptf-id swpair) ]
                     [fvt-id])
             )
         )

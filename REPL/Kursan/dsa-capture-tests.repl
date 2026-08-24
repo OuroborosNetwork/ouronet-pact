@@ -896,4 +896,104 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(print "=== dsa-capture-tests END — open + capture + oracle + inject/royalty + withdraw + burn (Phase 3-6) ===")
+;;
+;;|| NEXT >
+;;|| Royalty disposal (FUEL). Accrue a fresh royalty (200), then FUEL the OURO swpair with it — adds liquidity
+;;|| WITHOUT minting LP: the swpair's reserves rise by the royalty while the LP total supply is unchanged.
+;;
+(begin-tx "TX-P3-19 - re-arm + inject to accrue royalty for fuel")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-06T05:00:00Z") })
+(env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "dsa-oracle-key", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-19 · 01 · re-arm oracle + inject 400] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 10 500)
+            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 400.0)
+            (map print
+              [ (expect "<<TX-P3-19>> royalty accrued = 200 (uptime-500 shortfall)" 200.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro)) ]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Fuel the OURO swpair — reserves rise by 200, LP total supply unchanged (no LP minted), royalty pool zeroed.
+;;
+(begin-tx "TX-P3-20 - owner fuels a swpair with the royalty (no LP mint)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 90000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-06T06:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-20 · 01 · owner fuels swpair with royalty] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ouro:string "OURO-98c486052a51")
+        (swpair:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
+        (let
+            (
+                (roy-before:decimal (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+                (reserves-before:decimal (fold (+) 0.0 (ref-SWP::UR_PoolTokenSupplies swpair)))
+                (lp-supply-before:decimal (ref-DPTF::UR_Supply (ref-SWP::UR_TokenLP swpair)))
+            )
+            (ref-TS02-C3::AQP-DSA|A_FuelRoyalty anhd fvt-id ouro swpair)
+            (let
+                (
+                    (reserves-added:decimal (- (fold (+) 0.0 (ref-SWP::UR_PoolTokenSupplies swpair)) reserves-before))
+                    (lp-supply-after:decimal (ref-DPTF::UR_Supply (ref-SWP::UR_TokenLP swpair)))
+                )
+                (map print
+                  [ ;; the whole royalty (200) was added to the swpair's reserves
+                    (expect "<<TX-P3-20>> swpair reserves rose by the royalty" roy-before reserves-added)
+                    (expect "<<TX-P3-20>> reserves rose by exactly 200" 200.0 reserves-added)
+                    ;; NO LP was minted — fueling boosts LP value, it does not issue LP
+                    (expect "<<TX-P3-20>> LP total supply unchanged (no LP minted)" lp-supply-before lp-supply-after)
+                    (expect "<<TX-P3-20>> royalty pool zeroed after fuel" 0.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro)) ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== dsa-capture-tests END — open + capture + oracle + inject/royalty + withdraw/burn/fuel (Phase 3-6) ===")

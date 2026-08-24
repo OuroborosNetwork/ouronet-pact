@@ -282,6 +282,9 @@
     (defun AQP-DSA|A_BurnRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string)
     )
+    (defun AQP-DSA|A_FuelRoyalty:string
+        (patron:string fvt-id:string reward-dptf-id:string swpair:string)
+    )
 )
 ;;
 (module TS02-C3 GOV
@@ -2258,6 +2261,24 @@
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (format "Royalty pool of {} on FVT {} burned." [reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-DSA|A_FuelRoyalty:string
+        (patron:string fvt-id:string reward-dptf-id:string swpair:string)
+        @doc "DSA (Talos): the FVT owner FUELS <swpair> with the whole royalty pool of <reward-dptf-id> on vault \
+            \ <fvt-id> (adds liquidity, no LP mint); collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_FuelRoyalty patron fvt-id reward-dptf-id swpair)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Royalty pool of {} on FVT {} fueled into swpair {}." [reward-dptf-id fvt-id swpair])
             )
         )
     )

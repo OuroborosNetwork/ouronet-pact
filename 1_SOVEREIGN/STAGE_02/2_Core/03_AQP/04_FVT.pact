@@ -101,6 +101,7 @@
     (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string))
     (defun XE_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string destination:string))
     (defun XE_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string))
+    (defun XE_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string swpair:string))
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
     )
@@ -293,6 +294,7 @@
                 (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
                 (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
                 (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
+                (ref-P|SWPLC:module{OuronetPolicyV1} SWPLC)
                 (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
                 ;;
                 (dg:guard (create-capability-guard (SECURE)))
@@ -307,6 +309,8 @@
             (ref-P|DPDC-T::P|A_AddIMP mg)
             ;; DPTF: FVT burns the royalty pool in place from AQP|SC_NAME (DSA royalty burn disposal).
             (ref-P|DPTF::P|A_AddIMP mg)
+            ;; SWPLC: FVT fuels a swpair with the royalty pool from AQP|SC_NAME (DSA royalty fuel disposal).
+            (ref-P|SWPLC::P|A_AddIMP mg)
             (ref-P|ATSU::P|A_AddIMP mg)
         )
     )
@@ -5197,6 +5201,30 @@
                 )
                 (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
                 (ref-DPTF::C_Burn reward-dptf-id AQP|SC_NAME royalty)
+            )
+        )
+    )
+    (defun XE_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string swpair:string)
+        @doc "DSA royalty disposal (FUEL): zero the royalty pool (reward-dptf) of <fvt-id> and FUEL <swpair> with \
+            \ its whole balance from the AQP pool-vault custody — adds liquidity WITHOUT minting LP (SWPLC::C_Fuel), \
+            \ boosting LP value. The reward-dptf must be one of the swpair's tokens; the fuel amount goes in its \
+            \ slot, 0 in the others. UEV_IMC + FVT|XE>DISPOSE-ROYALTY (P|FVT|REMOTE-GOV custody authority for the \
+            \ AQP|SC_NAME leg). FVT is a registered SWPLC IMC caller. Returns the fuel's OutputCumulator."
+        (UEV_IMC)
+        (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
+            (let
+                (
+                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
+                    (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
+                    (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                )
+                (enforce (contains reward-dptf-id pool-tokens) "Reward token is not a token of the swpair")
+                (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
+                (ref-SWPLC::C_Fuel AQP|SC_NAME swpair
+                    (map (lambda (t:string) (if (= t reward-dptf-id) royalty 0.0)) pool-tokens)
+                    true true)
             )
         )
     )
