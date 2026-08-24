@@ -591,3 +591,21 @@ branch (`CAP_Owner`, collection-owner-only) — proven both directly (non-owner 
 isolation control (same call, billing `patron` set to the real owner, but still only signed by the
 non-owner key — still rejected, confirming the gate tracks the tx signer against the owner-konto guard,
 not the `patron` argument). Full `Z.repl` green, all 12 new assertions pass.
+
+## #28M · EQUITY · M1 — "shareholder collection" identity is a self-checked string prefix, not a registry EQUITY owns
+
+**Verdict: REFUTED (2026-08-23).** Owner immediately flagged the premise of my first explanation as wrong:
+"that won't work, because you can't name your collection in that manner, the `|` is not allowed in the
+name you define at issuance time." Traced this precisely rather than defending the original framing, and
+found the owner was right on a mechanism I hadn't checked: collection name/ticker characters go through
+`UEV_NameOrTicker` -> `UC_IzStringANC` -> `UC_IzCharacterANC`, which only allows `|` when the internal
+`iz-special` flag is `true`. The only public, wallet-callable issuance path (`TS02-C1.DPSF|C_Issue`)
+hardcodes `iz-special=false` — so `"|"` is structurally impossible in a publicly-issued ticker, full stop.
+`"E|"` IDs can only ever come from the handful of privileged internal call sites (EQUITY's own issuance,
+SWP pool-pair naming) that invoke the core `DPDC-I::C_IssueDigitalCollection` directly with
+`iz-special=true`. On top of that, even those privileged callers must satisfy
+`(CAP_EnforceAccountOwnership owner-account)` — since EQUITY always names `dpdc` as owner, forging a
+lookalike would require already controlling `dpdc`'s own account guard, not just typing the string "dpdc".
+Two independent, stacked walls, neither of which the original Round I finding (flagged `[PLAUSIBLE]`, not
+`[CONFIRMED]`) had accounted for. No exploitable path found. No code change — documented as REFUTED in
+`ISSUES-RANKED.md` and `README.md`.

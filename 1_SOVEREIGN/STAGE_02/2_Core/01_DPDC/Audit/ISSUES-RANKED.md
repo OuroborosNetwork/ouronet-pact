@@ -335,10 +335,20 @@ conservation, plus repurpose-without-consent traced to `DPDC-C|C>SINGLE-DEBIT`'s
 `CAP_Owner` gate (owner-only), proven directly and via an isolation control on the `patron` argument.
 Z.repl green, 12/12 assertions pass. — *DPDC-F·M1*
 
-#28M **[EQUITY]** "Shareholder collection" identity is a self-checked `"E|"` string prefix, not a registry
+#28M **[EQUITY]** ~~"Shareholder collection" identity is a self-checked `"E|"` string prefix, not a registry
 EQUITY itself owns — the only real backstop today is a different module's role table
 (`DPDC-MNG`'s `role-nft-add-quantity`/`role-nft-burn`), an implicit trust chain rather than an
-EQUITY-owned invariant. — *EQUITY·M1*
+EQUITY-owned invariant.~~ — **REFUTED 2026-08-23** — the "any caller can forge an `E|`-prefixed collection"
+premise doesn't survive a deeper trace. Two independent, stacked walls block it: (1) collection
+name/ticker characters go through `UEV_NameOrTicker` -> `UC_IzStringANC` -> `UC_IzCharacterANC`, which only
+allows `|` when the internal `iz-special` flag is `true` — the only public, wallet-callable issuance path
+(`TS02-C1.DPSF|C_Issue`) hardcodes `iz-special=false`, so `"|"` is structurally impossible in a
+publicly-issued ticker; `"E|"` IDs can only ever originate from the handful of privileged call sites
+(EQUITY's own issuance, SWP pool-pair naming) that invoke the core function directly with
+`iz-special=true`. (2) Even for those privileged callers, `DPDC-I|C>ISSUE` enforces
+`CAP_EnforceAccountOwnership owner-account` — since EQUITY always names `dpdc` as owner, forging a
+lookalike would require already controlling `dpdc`'s own guard, not just typing the string "dpdc". No
+exploitable path found; no code change. — *EQUITY·M1*
 
 #29M **[EQUITY]** `URC_CombineCapacity`'s "at most 50% of shares may ever be packaged" rule is an
 undocumented magic constant (`(/ shares 2)`, no `defconst`, no `@doc`) — a permanent cap-table invariant a
