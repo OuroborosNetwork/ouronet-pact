@@ -1439,3 +1439,19 @@ worst case is `320.0 × 3 = 960` promille, always leaving 40 promille (4%) fees 
 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #33 — L55 (#55L): `XE_CanAddOrSwapToggle`'s redundant second guard check removed
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** `XE_CanAddOrSwapToggle` re-ran `UEV_Any` against
+`[local-guard] + (P|UR_IMP)` right after `(UEV_IMC)` already checked `(P|UR_IMP)` alone. Since `UEV_IMC`
+is a bare statement that aborts on failure, reaching the second check already proves `(P|UR_IMP)` alone
+passes — adding `local-guard` to an already-guaranteed-passing OR-set can never change the outcome. Pure
+dead weight. Confirmed `SWP|C>ADD-OR-SWAP` (referenced by the removed local guard) is still genuinely
+composed elsewhere (`C_ToggleAddOrSwap`), not orphaned. Removed the redundant block entirely.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite and full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0
+`FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

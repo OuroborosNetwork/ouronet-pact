@@ -438,9 +438,16 @@ is 960 promille, always leaving 4% fees can never consume. Doc added capturing b
 Pure doc change. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L53*
 
 #54L **[SWP]** Admin migration utility `AHU`/`AUP_SwapPair(s)` falls outside the module's own prefix
-vocabulary.
+vocabulary. — **OPEN, 2026-08-24.** Confirmed deliberate schema-migration tooling, gated by a separate
+obfuscated-account admin path. Owner: keep for historical purposes, formalize a new `AU_` (Admin Update)
+StoicSyntax category — still open whether these specific functions get renamed now or `AU_` applies only
+going forward. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L54*
 
-#55L **[SWP]** `XE_CanAddOrSwapToggle` redundantly re-derives a check `UEV_IMC` already performed.
+#55L **[SWP]** ~~`XE_CanAddOrSwapToggle` redundantly re-derives a check `UEV_IMC` already performed.~~ —
+**FIXED ✅ AND PROVEN ✅ 2026-08-24** (`ROUND-02-FIXES.md` Fix #33). Since `UEV_IMC` aborts on failure,
+reaching the second check already proves the same guard list passes — provably dead weight. Removed;
+confirmed the referenced cap still composed elsewhere. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L55*
 
 #56L **[SWPL]** `URC_AreAmountsBalanced` contains a raw `enforce` inside a `URC_*` (belongs in `UEV_*`).
 

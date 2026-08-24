@@ -1732,16 +1732,14 @@
         )
     )
     (defun XE_CanAddOrSwapToggle (swpair:string toggle:bool add-or-swap:bool)
+        @doc "#55L fix: removed a redundant second guard check that used to sit here — \
+            \ it re-ran UEV_Any against [local-guard] + (P|UR_IMP), the exact same list \
+            \ UEV_IMC (above) already checked, plus one extra local guard. Since UEV_IMC \
+            \ is a bare statement (not wrapped in try) and aborts the whole tx on \
+            \ failure, reaching this point already proves (P|UR_IMP) alone contains a \
+            \ passing guard — adding local-guard to an already-guaranteed-passing OR-set \
+            \ can never change the outcome. Pure dead weight, safely removed."
         (UEV_IMC)
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-                (local-guard:guard (create-capability-guard (SWP|C>ADD-OR-SWAP swpair toggle add-or-swap)))
-                (mg:[guard] (P|UR_IMP))
-                (ag:[guard] (+ [local-guard] mg))
-            )
-            (ref-U|G::UEV_Any ag)
-        )
         (if add-or-swap
             (update SWP|Pairs swpair
                 {"can-add"                      : toggle}

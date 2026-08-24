@@ -2353,3 +2353,47 @@ change.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #32. Awaiting Round III re-verify. — *L53*
 
 ---
+
+## L54 (#54L, SWP — admin migration utility `AHU`/`AUP_SwapPair(s)` falls outside the module's own prefix vocabulary) — **OPEN — owner decision pending, not yet resolved**
+
+**Traced before presenting, found something worth flagging beyond the naming question:** `AHU`
+(`15_SWP.pact:1871`) is a separate admin capability, distinct from the module's normal `GOV`/keyset-ref
+path — gated by `CAP_EnforceAccountOwnership` against a single hardcoded account string, deliberately
+obfuscated (a mix of Latin/Cyrillic/Greek-lookalike Unicode). `AUP_SwapPair` does
+`(update SWP|Pairs id {"id": id})` — rewrites a row's own `id` field back to itself.
+
+**Owner confirmed the purpose:** genuine, deliberate schema-migration tooling — used historically when new
+fields were added to `SWP|Pairs`, to force existing rows to pick up the new schema shape. Not vestigial.
+Direction: keep these functions (historical/observational value — they document how past migrations were
+done and may be needed again), and formalize a new StoicSyntax prefix category, **`AU_`** (Admin Update)
+— admin-mode-only functions whose sole purpose is applying schema/data updates during migrations,
+distinct from `A_*`'s live-business-mutation role.
+
+**Still open:** whether `AHU`/`AUP_SwapPair(s)` themselves get renamed to the new `AU_` convention now
+(making them the first real example), or stay under their existing names as a historical artifact from
+before the convention existed, with `AU_` applying only to new functions going forward. Deferred —
+returning to it later. No code change, no StoicSyntax version bump yet.
+
+---
+
+## L55 (#55L, SWP — `XE_CanAddOrSwapToggle` redundantly re-derives a check `UEV_IMC` already performed) — **CONFIRMED, FIXED, PROVEN**
+
+**Traced whether the second check could ever actually matter, not assumed dead on sight:**
+`XE_CanAddOrSwapToggle` called `(UEV_IMC)` — exactly `UEV_Any (P|UR_IMP)` — then immediately re-ran
+`UEV_Any` again against `[local-guard] + (P|UR_IMP)`, the identical list with one extra local guard
+prepended. Since `(UEV_IMC)` is a bare statement (not wrapped in `try`) and aborts the whole transaction
+on failure, reaching the second check already proves `(P|UR_IMP)` alone contains a passing guard —
+`UEV_Any` only needs one guard to pass, so adding `local-guard` to an already-guaranteed-passing OR-set
+can never change the outcome. Confirmed `SWP|C>ADD-OR-SWAP` (referenced by the local guard) is still
+genuinely composed elsewhere (`C_ToggleAddOrSwap`'s own `with-capability`, the real validation gate) —
+not orphaned by removing the redundant copy.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** removed the entire redundant second guard-check
+block; `(UEV_IMC)` remains the sole gate before the write. Pure dead-code removal, zero behavior change.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite (exercising `C_ToggleAddOrSwap`'s existing tests) and
+full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #33. Awaiting Round III re-verify. — *L55*
+
+---
