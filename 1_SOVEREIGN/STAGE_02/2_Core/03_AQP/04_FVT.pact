@@ -100,6 +100,7 @@
     (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time))
     (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string))
     (defun XE_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string destination:string))
+    (defun XE_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string))
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
     )
@@ -291,6 +292,7 @@
                 (ref-P|TFT:module{OuronetPolicyV1} TFT)
                 (ref-P|DPOF:module{OuronetPolicyV1} DPOF)
                 (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
+                (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
                 (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
                 ;;
                 (dg:guard (create-capability-guard (SECURE)))
@@ -303,6 +305,8 @@
             (ref-P|TFT::P|A_AddIMP mg)
             (ref-P|DPOF::P|A_AddIMP mg)
             (ref-P|DPDC-T::P|A_AddIMP mg)
+            ;; DPTF: FVT burns the royalty pool in place from AQP|SC_NAME (DSA royalty burn disposal).
+            (ref-P|DPTF::P|A_AddIMP mg)
             (ref-P|ATSU::P|A_AddIMP mg)
         )
     )
@@ -5175,6 +5179,24 @@
                 )
                 (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
                 (ref-TFT::C_Transfer reward-dptf-id AQP|SC_NAME destination royalty true)
+            )
+        )
+    )
+    (defun XE_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string)
+        @doc "DSA royalty disposal (BURN): zero the royalty pool (reward-dptf) of <fvt-id> and BURN its whole \
+            \ balance in place from the AQP pool-vault custody (AQP|SC_NAME — which holds the autonomic burn role \
+            \ via DALOS UR_AutonomicRoles; FVT is a registered DPTF IMC caller). UEV_IMC + FVT|XE>DISPOSE-ROYALTY. \
+            \ Returns the burn's OutputCumulator."
+        (UEV_IMC)
+        (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
+            (let
+                (
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
+                )
+                (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
+                (ref-DPTF::C_Burn reward-dptf-id AQP|SC_NAME royalty)
             )
         )
     )

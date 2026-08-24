@@ -802,4 +802,98 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(print "=== dsa-capture-tests END — open + capture + oracle + inject/royalty + royalty withdraw (Phase 3-6) ===")
+;;
+;;|| NEXT >
+;;|| Royalty disposal (BURN). Re-arm the oracle fresh + inject 400 to accrue a new royalty (200 = uptime-500
+;;|| shortfall), then BURN it in place from AQP custody — the token's total supply drops by the burned amount.
+;;
+(begin-tx "TX-P3-17 - re-arm + inject to accrue fresh royalty")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-06T03:00:00Z") })
+(env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "dsa-oracle-key", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-17 · 01 · re-arm oracle + inject 400] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 10 500)
+            ;; the divisor is live again (capture-units 3) → this inject FLUSHES the 300 zombie from TX-P3-14:
+            ;; eff = 400 + 300 = 700 ; royalty = floor(700·(3-1.5)/3) = 350 ; member = 350 ; zombie → 0.
+            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 400.0)
+            (map print
+              [ (expect "<<TX-P3-17>> royalty accrued = 350 (400 inject + 300 zombie flush, uptime-500 shortfall)" 350.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+                (expect "<<TX-P3-17>> zombie flushed to 0 by the live inject" 0.0 (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id ouro)) ]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Burn the fresh royalty — total OURO supply drops by exactly the burned amount (proves burn, not transfer).
+;;
+(begin-tx "TX-P3-18 - owner burns the royalty pool")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-06T04:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-18 · 01 · owner burns royalty] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
+        (let
+            (
+                (roy-before:decimal (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+                (supply-before:decimal (ref-DPTF::UR_Supply ouro))
+            )
+            (ref-TS02-C3::AQP-DSA|A_BurnRoyalty anhd fvt-id ouro)
+            (let ((burned:decimal (- supply-before (ref-DPTF::UR_Supply ouro))))
+                (map print
+                  [ ;; the whole royalty (350) was burned — OURO total supply dropped by exactly that
+                    (expect "<<TX-P3-18>> total OURO supply dropped by the royalty" roy-before burned)
+                    (expect "<<TX-P3-18>> burned exactly 350" 350.0 burned)
+                    (expect "<<TX-P3-18>> royalty pool zeroed after burn" 0.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro)) ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== dsa-capture-tests END — open + capture + oracle + inject/royalty + withdraw + burn (Phase 3-6) ===")
