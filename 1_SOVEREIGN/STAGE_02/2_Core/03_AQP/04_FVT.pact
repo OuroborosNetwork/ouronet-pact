@@ -329,6 +329,7 @@
         member-link-count:integer                               ;;[M]   ScoreEntityLink rows (gates C_SetMosaic; no keys in defcap)
         mosaic:bool                                             ;;[Mu]  mix score + triplet entities when true
         membership-mode:string                                  ;;[Mu]  BAR | SCORE | TRUE-TRIPLET | STANDARD-TRIPLET
+        oracle-on:bool                                          ;;[M]   DSA: node/uptime oracle governs capture (off ⇒ capture = units, uptime ≡ 1000, no expiry). Default false.
         ;;
         ;;Select Keys
         fvt-id:string
@@ -342,6 +343,14 @@
         total-lane-weight:decimal                               ;;[M]   Farm-triplet Level-1 divisor Σ w-user;
         ;;                                                              snapshot-maintained at stake/unstake (phase 4.6),
         ;;                                                              point-read as the L_i divisor (no staker scan).
+        ;; DSA (Delegated Staking Agencies) — set only for a delegation member (= an agency); default
+        ;; false/0.0/0.0/EPOCH for every normal member. DSA maintains them (delegator stake/unstake + the daily
+        ;; oracle) via an XE_; FVT only ever READS its own fields at inject (dependency DSA -> FVT). See
+        ;; Audit/DSA-DELEGATED-STAKING-DESIGN.md §3.
+        delegation:bool                                         ;;[M]   is this member a DSA agency?
+        capture-units:decimal                                   ;;[M]   ideal capacity = min(floor(Q/unit-score), nodes) — the IDEAL denominator term
+        capture-weight:decimal                                  ;;[M]   actual = capture-units × uptime/1000 — the inject NUMERATOR
+        oracle-ts:time                                          ;;[M]   timestamp of the last oracle write (now − ts > 25h ⇒ effective capture 0)
         ;;
         ;;Select Keys
         fvt-id:string                                           ;;[.]
@@ -384,6 +393,11 @@
         stream-count:integer
         stream-last-release:time
         stream-unreleased:decimal
+        ;; DSA royalty pool: the uptime-shortfall slice of a delegation inject that no agency captured
+        ;; (Σ capture-units − Σ effective capture-weight, worth A×that/Σunits). Custodied in AQP|SC_NAME, kept
+        ;; OUT of available-rewards / G / the M1 sweep until the owner disposes it (withdraw / burn / fuel).
+        ;; Always 0.0 on a non-delegation lane (Σ capture-weight == Σ capture-units ⇒ no shortfall).
+        royalty-rewards:decimal
         ;;
         ;;Select Keys
         fvt-id:string
@@ -1230,15 +1244,19 @@
     (defun UR_FVT-SEL|ScoreEntityLink:object{FVT|ScoreEntityLink} (fvt-id:string score-entity-id:string)
         @doc "Reads ScoreEntityLink row; absent rows read as disabled with farm sentinels via default object."
         (with-default-read FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id)
-            (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE false BAR 0.0 0.0 fvt-id score-entity-id)
+            (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE false BAR 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-entity-id)
             {"score-entity-type"        := et
             ,"enabled"                  := en
             ,"swpair"                   := sp
             ,"ghost-tvl-weight"         := w
             ,"total-lane-weight"        := tlw
+            ,"delegation"               := dg
+            ,"capture-units"            := cu
+            ,"capture-weight"          := cw
+            ,"oracle-ts"                := ots
             ,"fvt-id"                   := fid
             ,"score-entity-id"          := seid}
-            (UDC_FVT|ScoreEntityLink et en sp w tlw fid seid)
+            (UDC_FVT|ScoreEntityLink et en sp w tlw dg cu cw ots fid seid)
         )
     )
     (defun UR_FVT-SEL|Enabled:bool (fvt-id:string score-entity-id:string)
@@ -1281,7 +1299,7 @@
     (defun UR_FVT-RG|RpsGlobal:object{FVT|RPS|Global} (fvt-id:string dptf-id:string)
         @doc "Reads global RPS row for one reward token; absent rows read as disabled with zeroed rps fields."
         (with-default-read FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id)
-            (UDC_FVT|RPS|Global false 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 fvt-id dptf-id)
+            (UDC_FVT|RPS|Global false 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 0.0 fvt-id dptf-id)
             {"reward-enabled"       := re
             ,"current-rps"          := cr
             ,"available-rewards"    := ar
@@ -1293,9 +1311,10 @@
             ,"stream-count"         := sc
             ,"stream-last-release"  := slr
             ,"stream-unreleased"    := sur
+            ,"royalty-rewards"      := ry
             ,"fvt-id"               := fid
             ,"dptf-id"              := did}
-            (UDC_FVT|RPS|Global re cr ar uc zb seg rk tfid sc slr sur fid did)
+            (UDC_FVT|RPS|Global re cr ar uc zb seg rk tfid sc slr sur ry fid did)
         )
     )
     (defun UR_FVT-RG|RewardEnabled:bool (fvt-id:string dptf-id:string)
@@ -2845,9 +2864,11 @@
             member-link-count:integer
             mosaic:bool
             membership-mode:string
+            oracle-on:bool
             fvt-id:string
         )
-        @doc "Core constructor for object{FVT|Schema}."
+        @doc "Core constructor for object{FVT|Schema}. oracle-on (DSA node/uptime oracle toggle) passes through — \
+            \ false for every non-DSA FVT."
         {"fvt-class"                : fvt-class
         ,"owner-konto"              : owner-konto
         ,"can-upgrade"              : can-upgrade
@@ -2862,6 +2883,7 @@
         ,"member-link-count"        : member-link-count
         ,"mosaic"                   : mosaic
         ,"membership-mode"          : membership-mode
+        ,"oracle-on"                : oracle-on
         ,"fvt-id"                   : fvt-id}
     )
     (defun UDC_FVT|ScoreEntityLink:object{FVT|ScoreEntityLink}
@@ -2871,15 +2893,25 @@
             swpair:string
             ghost-tvl-weight:decimal
             total-lane-weight:decimal
+            delegation:bool
+            capture-units:decimal
+            capture-weight:decimal
+            oracle-ts:time
             fvt-id:string
             score-entity-id:string
         )
-        @doc "Core constructor for object{FVT|ScoreEntityLink}."
+        @doc "Core constructor for object{FVT|ScoreEntityLink}. DSA fields (delegation / capture-units / \
+            \ capture-weight / oracle-ts) pass through faithfully — a normal member passes \
+            \ false / 0.0 / 0.0 / STREAM_EPOCH; DSA passes an agency's live capture."
         {"score-entity-type"        : score-entity-type
         ,"enabled"                  : enabled
         ,"swpair"                   : swpair
         ,"ghost-tvl-weight"         : ghost-tvl-weight
         ,"total-lane-weight"        : total-lane-weight
+        ,"delegation"               : delegation
+        ,"capture-units"            : capture-units
+        ,"capture-weight"           : capture-weight
+        ,"oracle-ts"                : oracle-ts
         ,"fvt-id"                   : fvt-id
         ,"score-entity-id"          : score-entity-id}
     )
@@ -2896,12 +2928,13 @@
             stream-count:integer
             stream-last-release:time
             stream-unreleased:decimal
+            royalty-rewards:decimal
             fvt-id:string
             dptf-id:string
         )
         @doc "Core constructor for object{FVT|RPS|Global}. Stream-ledger fields (stream-count / \
-            \ stream-last-release / stream-unreleased) pass through faithfully; true inserts seed them 0 / \
-            \ STREAM_EPOCH / 0.0 (a fresh lane has no stream)."
+            \ stream-last-release / stream-unreleased) + the DSA royalty-rewards pool pass through faithfully; \
+            \ true inserts seed them 0 / STREAM_EPOCH / 0.0 / 0.0 (a fresh lane has no stream, no royalty)."
         {"reward-enabled"       : reward-enabled
         ,"current-rps"          : current-rps
         ,"available-rewards"    : available-rewards
@@ -2913,6 +2946,7 @@
         ,"stream-count"         : stream-count
         ,"stream-last-release"  : stream-last-release
         ,"stream-unreleased"    : stream-unreleased
+        ,"royalty-rewards"      : royalty-rewards
         ,"fvt-id"               : fvt-id
         ,"dptf-id"              : dptf-id}
     )
@@ -3361,7 +3395,7 @@
         (WI_Fvt fvt-id
             (UDC_FVT|Schema
                 fvt-class owner-konto true true common-denominator
-                0.0 0.0 0.0 0.0 0 0 0 true CT_MEMBERSHIP_MODE_BAR fvt-id
+                0.0 0.0 0.0 0.0 0 0 0 true CT_MEMBERSHIP_MODE_BAR false fvt-id
             )
         )
     )
@@ -3394,7 +3428,7 @@
         @doc "Under SECURE: insert enabled ScoreEntityLink; farm adds W_i to S; lock membership-mode when non-mosaic."
         (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
             (WI_ScoreEntityLink fvt-id score-entity-id
-                (UDC_FVT|ScoreEntityLink score-entity-type true swpair ghost-weight 0.0 fvt-id score-entity-id)
+                (UDC_FVT|ScoreEntityLink score-entity-type true swpair ghost-weight 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-entity-id)
             )
             (WU_Fvt|MemberLinkCount fvt-id (+ (UR_FVT|MemberLinkCount fvt-id) 1))
             (if (and (not (UR_FVT|Mosaic fvt-id)) (= (UR_FVT|MembershipMode fvt-id) CT_MEMBERSHIP_MODE_BAR))
@@ -3479,7 +3513,7 @@
         @doc "Under SECURE (FVT|C>ADD-REWARD-LINK): insert reward-enabled RPS|Global; +1 enabled-reward-count."
         ;; SECURE: granted by WI_RpsGlobal and WU_Fvt|EnabledRewardCount (underlying W_).
         (WI_RpsGlobal fvt-id reward-dptf-id
-            (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 segmentation reward-kind multiplet-family-id 0 STREAM_EPOCH 0.0 fvt-id reward-dptf-id)
+            (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 segmentation reward-kind multiplet-family-id 0 STREAM_EPOCH 0.0 0.0 fvt-id reward-dptf-id)
         )
         (WU_Fvt|EnabledRewardCount fvt-id (+ (UR_FVT|EnabledRewardCount fvt-id) 1))
         fvt-id
@@ -5959,13 +5993,13 @@
             (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR fvt-id)
+                        (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
-                        (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 fvt-id score-id)
+                        (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
                     )
                     (WI_RpsGlobal fvt-id reward-dptf-id
-                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 fvt-id reward-dptf-id)
+                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 0.0 fvt-id reward-dptf-id)
                     )
                     (ref-SCR::XE_CreateFvtLink score-id fvt-id)
                 )
@@ -5982,13 +6016,13 @@
             (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 2 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR fvt-id)
+                        (UDC_FVT|Schema 2 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
-                        (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 fvt-id score-id)
+                        (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
                     )
                     (WI_RpsGlobal fvt-id reward-dptf-id
-                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 fvt-id reward-dptf-id)
+                        (UDC_FVT|RPS|Global true 0.0 0.0 0 0.0 false CT_REWARD_KIND_PLAIN BAR 0 STREAM_EPOCH 0.0 0.0 fvt-id reward-dptf-id)
                     )
                     (ref-SCR::XE_CreateFvtLink score-id fvt-id)
                 )
