@@ -2464,3 +2464,21 @@ Stage 2) all exit 0, 0 `FAILURE`, `Load successful`.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #34. Awaiting Round III re-verify. — *L56*
 
 ---
+
+## L57 (#57L, SWPL — `XI_AddLiqSendAndMint` performs two distinct writes, transfer + mint, in one `XI_*`) — **DESIGN, accepted — no code change**
+
+**Owner:** no point splitting into two `XI_*` here. Raised a sharper framing: is there any reason the two
+`C_*` calls (`TFT::C_MultiTransfer`, `DPTF::C_Mint`) need to be wrapped in a shared function at all,
+rather than called directly at each site — unless the wrapper is genuinely reused multiple times or does
+more than just the two calls?
+
+**Checked the actual reuse before agreeing:** `XI_AddLiqSendAndMint` is called from **3 separate sites**
+in `17_SWPL.pact` (the standard, iced, and glacial add-liquidity paths), each already wrapping it in its
+own `(with-capability (SECURE) ...)`. Real reuse, not cosmetic bundling — matches the owner's own stated
+exception criteria exactly.
+
+**Status:** DESIGN, accepted — the combined name is already honest about what it does, the internal
+ordering (transfer-in before mint-out, custody-first) is correct, and the shared-function structure is
+justified by genuine 3-site reuse, not arbitrary bundling. No code change. — *L57*
+
+---

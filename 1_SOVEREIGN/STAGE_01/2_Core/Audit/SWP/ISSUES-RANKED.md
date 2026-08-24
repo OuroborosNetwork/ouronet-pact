@@ -462,7 +462,11 @@ check let `[-5.0, 10.0]` through clean). Adversarially proven: reverting just th
 but with a far worse opaque error deep in the transfer layer — a real upgrade, not a no-op. Full writeup
 in `ROUND-01-OWNER-FEEDBACK.md`. — *L56*
 
-#57L **[SWPL]** `XI_AddLiqSendAndMint` performs two distinct writes (transfer + mint) in one `XI_*`.
+#57L **[SWPL]** ~~`XI_AddLiqSendAndMint` performs two distinct writes (transfer + mint) in one
+`XI_*`.~~ — **DESIGN, accepted — no split, 2026-08-24.** Checked reuse before agreeing: called from 3
+separate sites in `17_SWPL.pact`, real reuse not cosmetic bundling. Combined name already honest, internal
+ordering correct (transfer-in before mint-out). No code change. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L57*
 
 #58L **[SWPL]** `|KDA-PID`-qualified `defun` names deviate from the "prefix-only" naming convention.
 
