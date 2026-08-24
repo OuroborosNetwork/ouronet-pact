@@ -95,6 +95,9 @@
     (defun XE_SweepBegin:string (anchor-id:string))
     (defun XE_SweepEnd:string (anchor-id:string))
     (defun XE_SetFvtVacateFrozen:string (fvt-id:string frozen:bool))
+    (defun XE_SetFvtOracleOn:string (fvt-id:string oracle-on:bool))
+    (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool))
+    (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time))
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
     )
@@ -5063,6 +5066,29 @@
         (UEV_IMC)
         (with-capability (SECURE)
             (WU_FvtVacateFreeze fvt-id frozen)
+        )
+    )
+    (defun XE_SetFvtOracleOn:string (fvt-id:string oracle-on:bool)
+        @doc "DSA: toggle this FVT's node/uptime oracle (off ⇒ capture = units, uptime ≡ 1000, no expiry). UEV_IMC + SECURE."
+        (UEV_IMC)
+        (with-capability (SECURE)
+            (WU_Fvt|OracleOn fvt-id oracle-on)
+        )
+    )
+    (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool)
+        @doc "DSA: flip a member to (or from) a delegation agency. UEV_IMC + SECURE."
+        (UEV_IMC)
+        (with-capability (SECURE)
+            (WU_ScoreEntityLink|Delegation fvt-id score-entity-id delegation)
+        )
+    )
+    (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time)
+        @doc "DSA: set an agency's capture fields — the values the inject reads (numerator = capture-weight, \
+            \ denominator term = capture-units, 25h expiry = oracle-ts). Recomputed by DSA on delegator \
+            \ stake/unstake or an oracle write. UEV_IMC + SECURE."
+        (UEV_IMC)
+        (with-capability (SECURE)
+            (WU_ScoreEntityLink|Capture fvt-id score-entity-id capture-units capture-weight oracle-ts)
         )
     )
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
