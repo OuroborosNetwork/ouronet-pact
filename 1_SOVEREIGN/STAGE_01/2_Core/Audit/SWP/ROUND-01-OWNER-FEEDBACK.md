@@ -2482,3 +2482,29 @@ ordering (transfer-in before mint-out, custody-first) is correct, and the shared
 justified by genuine 3-site reuse, not arbitrary bundling. No code change. — *L57*
 
 ---
+
+## L58 (#58L, SWPL — `|KDA-PID`-qualified `defun` names deviate from the "prefix-only" naming convention) — **TAGGED FOR SWEEP — not resolved individually**
+
+**Checked how widespread the pattern actually is before treating it as a naming nit:** not SWP-specific
+— `|KDA-PID` appears **308 times across 17 files**, spanning the SWP family (`17_SWPL`, `18_SWPLC`,
+`19_SWPU`, `20_MTX-SWP`, `16_SWPI`, `03_INFO-ZERO`, `21_INFO-ONE+`), Talos (`04_TS01-C3`, `05_TS01-P`),
+the root price reader (`01_U_CT::UR|KDA-PID`, `0_Interfaces/01_Utilities.pact`), the entire Stage 2
+DemiPad family (`00_Demipad`, `01_Spark`, `02_Snakes`, `03_Custodians`, `04_STOICPAY` — unrelated to
+SWP), a Slave module (`2_SLAVE/Stage_Z/01_DPL-UR.pact`), and REPL test references.
+
+**Owner explained what `KDA-PID` actually means:** Kadena price in dollars — on Kadena's chain, an Oracle
+supplied a live USD price for KDA. Post-migration to StoaChain, there's no oracle yet and no live STOA
+price, so it's hardcoded at $0.1; a future Oracle ("Aletheia") will supply real STOA pricing once built.
+The concept has already shifted from "Kadena price" to "Stoa price" — owner's direction: rename
+`KDA-PID` → `STOA-PID` throughout, once it can be done as one coordinated pass.
+
+**Owner's call on scope and timing:** this is a protocol-wide rename of an economic concept (the price
+basis for IGNIS/KDA gas pricing), not a SWP-scoped naming fix — it touches multiple unrelated Stage 2
+modules. Confirmed with the owner before executing anything this size: defer to the full StoicSyntax
+sweep, run from `main` once all audits are merged, same treatment as L44/L54's own deferred cross-cutting
+renames — not resolved piecemeal inside this branch.
+
+**Status:** TAGGED FOR SWEEP — no code change here. Direction recorded precisely (`KDA-PID` → `STOA-PID`,
+all 308 occurrences across 17 files) so the eventual sweep doesn't have to rediscover scope or intent. — *L58*
+
+---

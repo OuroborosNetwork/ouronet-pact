@@ -468,7 +468,12 @@ separate sites in `17_SWPL.pact`, real reuse not cosmetic bundling. Combined nam
 ordering correct (transfer-in before mint-out). No code change. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`. — *L57*
 
-#58L **[SWPL]** `|KDA-PID`-qualified `defun` names deviate from the "prefix-only" naming convention.
+#58L **[SWPL]** `|KDA-PID`-qualified `defun` names deviate from the "prefix-only" naming convention. —
+**TAGGED FOR SWEEP, 2026-08-24.** Not SWP-specific: 308 occurrences across 17 files, including the entire
+Stage 2 DemiPad family. Owner: `KDA-PID` means Kadena's USD price (pre-migration); now hardcoded $0.1
+pending the future Aletheia Oracle — rename `KDA-PID` → `STOA-PID` throughout, deferred to the full sweep
+from `main` (protocol-wide economic-concept rename, not a SWP-scoped fix). No code change. Full writeup
+in `ROUND-01-OWNER-FEEDBACK.md`. — *L58*
 
 #59L **[SWPL]** Reserve bump happens before the actual token transfer inside `XE|KDA-PID_AddLiqudity` — safe
 only by same-tx atomicity; worth a defensive comment given MTX-SWP elsewhere *is* multi-step.
