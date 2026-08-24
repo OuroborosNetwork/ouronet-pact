@@ -315,3 +315,50 @@ Deploy order: `07_DSA.pact` loads **after** FVT (DSA→FVT), in `REPL/Stage_02/[
 **Round B** — heterogeneous quality-split matrix (§9.3).
 
 *FVT-core done 2026-08-24. Resume at §16 step 1 (DSA module skeleton).*
+
+---
+
+## 17. Score-entity MODEL — architecture pivot (owner-locked 2026-08-24)
+
+**Why:** SCORE's score *definitions* (`C_Issue*ScoreDefinition`) attach to one specific `score-id` — they are
+bespoke per-score, NOT reusable. For a delegation vault every agency must score **identically** (fair capture),
+so we add a **first-class, reusable score-entity MODEL** that every agency instantiates. Owner decisions:
+
+- **Delegators score in the OPERATOR's score.** An agency = ONE score entity (the operator's, issued from the
+  model). Each delegator's stake is tracked as their per-user score (`SCR|UserSchema`, keyed user × operator's
+  score-id) — the existing per-user tier; the two-tier settle's user-tier splits the agency's reward by those
+  individual quintessence shares (minus operator fee). The *staking* side needs nothing new.
+- **A delegation-FVT is the SAME construct** — a normal class-0 FVT (common-denominator `"|"`), made a
+  "delegation vault" by (a) its members being delegation agencies (the member `delegation`/`capture` fields) and
+  (b) a `DSA|Template` binding it to a `model-id` + unit-score + `oracle-on`. No new FVT type.
+
+**The model — new first-class entity in `02_SCORE.pact` (ONE new table):**
+- **`SCR|ScoreEntityModel`** (key `model-id`, `entity-type` = single | triplet):
+  - **single**: the scoring spec — `score-class`, `collectable-id` (dpsf/dpnf), `precision`, definition data
+    (`nonces` + `nonce-score-values`; NF traits later). E.g. bronze = `{SF, Custodians, [-1], [1]}`.
+  - **triplet**: references **three single model-ids** (`bronze/silver/golden-model-id`); no scoring data of its own.
+- **`C_IssueScoreEntityModel(...)`** — admin defines a model → `model-id` (via `U|DALOS::UDC_Makeid` on a name).
+  Custodians = 4 calls (3 singles + 1 triplet combining them). Mirrors the score/triplet layering exactly.
+- **`C_IssueScoreFromModel(patron, owner-konto, model-id)`** — the FACTORY. single → compose the internal writers
+  `XI_Issue` (score-class 3 SF) + `XI_IssueSemiFungibleScoreDefinition` (from the model's nonces/values) under one
+  cumulator; triplet → recurse over the 3 single models, then `XI_IssueTriplet`. **Compose the `XI_*` writers,
+  NOT the `C_*` clients** (no nested C_/double-billing). Deterministic score-names from (model + owner) so the
+  factory is idempotent per operator. Returns the (score|triplet) id. Conforming by construction.
+
+**Building blocks confirmed (02_SCORE.pact):** `UDC_Makeid` (id from name), `XI_Issue` (used by
+C_IssueSemiFungibleScore `:3473`), `XI_IssueSemiFungibleScoreDefinition` (`:3617`), `XI_IssueTriplet` (`:3597`),
+`UCk_Triplet` / `UC_ComputeTripletId`.
+
+**Revised DSA flow (supersedes §16 step 2's inline triplet issuance):**
+1. `SCORE::C_IssueScoreEntityModel` ×4 → the Custodians triplet `model-id`.
+2. `DSA::A_DefineDelegationVault(fvt-id, model-id, unit-score)` — class-0 + common-denom `"|"` + `oracle-on`,
+   bound to the model.
+3. `DSA::C_OpenAgency(operator, fvt-id)` → `SCORE::C_IssueScoreFromModel(operator, model-id)` → the operator's
+   agency score entity → `XE_AdmitDelegationMember` (generalize to admit single OR triplet) → set delegation →
+   record operator + fee (`quintessence ≥ unit-score/2` gate).
+4. Delegators stake Custodians into the agency score as beneficiaries → per-user scores → capture recompute.
+
+**Build order:** (17a) `SCR|ScoreEntityModel` schema + table + `C_IssueScoreEntityModel` + readers (green-gate);
+(17b) `C_IssueScoreFromModel` factory (green-gate); then DSA `A_DefineDelegationVault` + `C_OpenAgency` on top.
+
+*Model pivot locked 2026-08-24. Resume at §17 build order 17a (SCORE model schema + define).*
