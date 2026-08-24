@@ -1409,3 +1409,18 @@ in storage, only on the returned value.
 + Stage 2, exercising the cross-module `FVT` caller) all exit 0 / 0 `FAILURE`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #31 — L52 (#52L): `@doc` added to `XE_Issue`/`XI_ToggleFeeLock` per R4
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** traced what each function actually returns before
+writing docs. `XE_Issue:string` returns `swpair`, used by callers to continue their own flow.
+`XI_ToggleFeeLock:[decimal]` returns `[0.0 0.0]` (locking) or the real ATS unlock price (unlocking) —
+confirmed genuinely billed to the patron via its caller `C_ToggleFeeLock`. Added real `@doc` to both per
+R4. Pure documentation, zero behavior change.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite and full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0
+`FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

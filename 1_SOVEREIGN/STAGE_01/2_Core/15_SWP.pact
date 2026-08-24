@@ -1654,6 +1654,11 @@
         )
     )
     (defun XE_Issue:string (account:string pool-tokens:[object{SwapperV3.PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @doc "Forward writer: inserts the new SWP|Pairs row, registers the LP tracker \
+            \ (C9 fix), saves the pool, and deploys token accounts. \
+            \ #52L fix (R4): returns the newly-constructed <swpair> ID — callers \
+            \ (e.g. SWPI::C_Issue, MTX-SWP::MTX|C_Issue) need it back to finish \
+            \ building their own response/continue the issuance flow."
         (UEV_IMC)
         (let
             (
@@ -1796,6 +1801,12 @@
         )
     )
     (defun XI_ToggleFeeLock:[decimal] (swpair:string toggle:bool)
+        @doc "Writes the new fee-lock state. \
+            \ #52L fix (R4): returns [virtual-gas-cost(IGNIS) native-gas-cost(KDA)] — \
+            \ [0.0 0.0] when locking (toggle=true, free); the real ATS unlock price \
+            \ (U|ATS::UC_UnlockPrice) when unlocking (toggle=false), scaled by this \
+            \ pool's current <UR_FeeUnlocks> count. The caller (C_ToggleFeeLock) bills \
+            \ this back to the patron."
         (require-capability (SWP|C>TG_FEE-LOCK swpair toggle))
         (let
             (

@@ -2308,3 +2308,22 @@ Composing the named cap a second time at the `C_*` level would be redundant, not
 change. — *L51*
 
 ---
+
+## L52 (#52L, SWP — `XE_Issue`/`XI_ToggleFeeLock` return meaningful values with no documenting `@doc` per R4) — **CONFIRMED, FIXED, PROVEN**
+
+**Confirmed both violate R4 (§19.4), then traced what they actually return before writing docs — not
+guessed:** `XE_Issue:string` returns `swpair`, the newly-constructed pool ID, used by its own callers
+(`SWPI::C_Issue`, `MTX-SWP::MTX|C_Issue`) to continue their own flow. `XI_ToggleFeeLock:[decimal]`
+returns `[0.0 0.0]` when locking, or the real ATS unlock price (`U|ATS::UC_UnlockPrice`, itself
+`[virtual-gas-cost(IGNIS) native-gas-cost(KDA)]`) when unlocking — traced its caller (`C_ToggleFeeLock`)
+to confirm this is genuinely billed back to the patron via `KDA|C_Collect`, not decorative.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** added real `@doc` to both, per R4 — what each
+function does and precisely what it returns and why. Pure documentation, zero behavior change.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite and full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0
+`FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #31. Awaiting Round III re-verify. — *L52*
+
+---

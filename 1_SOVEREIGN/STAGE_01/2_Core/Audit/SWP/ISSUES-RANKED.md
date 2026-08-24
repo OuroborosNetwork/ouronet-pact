@@ -424,7 +424,11 @@ instead of `XI_*` (internal-only, every sibling's shape). `XB_ModifyWeights` cor
 `UEV_IMC` + full named cap; `C_ModifyWeights`'s bare `SECURE` is enough to gate the hand-off. Not an
 inconsistency. No code change. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L51*
 
-#52L **[SWP]** `XE_Issue`/`XI_ToggleFeeLock` return meaningful values with no documenting `@doc`.
+#52L **[SWP]** ~~`XE_Issue`/`XI_ToggleFeeLock` return meaningful values with no documenting `@doc`.~~ —
+**FIXED ✅ AND PROVEN ✅ 2026-08-24** (`ROUND-02-FIXES.md` Fix #31). Traced what each actually returns
+first: `XE_Issue` returns the new `swpair` ID; `XI_ToggleFeeLock` returns `[0.0 0.0]` or the real ATS
+unlock price, confirmed genuinely billed to the patron via `C_ToggleFeeLock`. Real `@doc` added to both
+per R4. Pure doc change, zero behavior change. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L52*
 
 #53L **[SWP]** `UEV_PoolFee`'s upper bound (320.0) has units that aren't self-evidently sane — needs
 cross-check against SWPU's fee formula.
