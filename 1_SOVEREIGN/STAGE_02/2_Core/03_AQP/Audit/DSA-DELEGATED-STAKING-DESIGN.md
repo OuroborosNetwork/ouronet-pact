@@ -362,3 +362,54 @@ C_IssueSemiFungibleScore `:3473`), `XI_IssueSemiFungibleScoreDefinition` (`:3617
 (17b) `C_IssueScoreFromModel` factory (green-gate); then DSA `A_DefineDelegationVault` + `C_OpenAgency` on top.
 
 *Model pivot locked 2026-08-24. Resume at §17 build order 17a (SCORE model schema + define).*
+
+---
+
+## 18. BUILD TRACKER (phased) — where we are
+
+**Discipline per phase:** build → StoicSyntax canon-order refactor → a REPL verification flow (`.repl` scenario,
+exact assertions) → green-gate that flow → commit. **After the last phase: rerun the FULL AQP audit
+(`run-aqp-audit.sh`, now 8 suites) + add a DSA suite as the 9th** to prove zero regression in the shared
+FVT/SCORE core.
+
+### ✅ BUILT (committed, green)
+- **FVT-core extension** — member fields + FVT `oracle-on` + lane `royalty-rewards` + faithful constructors
+  (`854ec21`); readers + writers (`fbc7178`); `URC_MemberEffectiveCapture` (25h expiry) + ideal-denominator
+  split + royalty accrual in `XI_1|FarmSplitInject` / `XI_DistributeInjectAmount` (`96b05c3`); XE_ writers
+  `XE_SetFvtOracleOn/SetMemberDelegation/SetMemberCapture` (`d7b87d7`). *(behaviorally proven only structurally
+  so far — no delegation member exists yet; first real proof = Phase 5.)*
+- **DSA module skeleton** — `07_DSA.pact` scaffolding + `DSA|Template`/`Agency`/`OracleAuth` + deploy wiring (`1d2078f`).
+- **`XE_AdmitDelegationMember`** + `FVT|XE>ADMIT-DELEGATION` cap — isolated operator-owned admission (`95ee657`)
+  *(currently triplet-only; Phase 2 generalizes to single).*
+- Design fully locked (`d4762d8`, `d6d74ec`, `d745a0a` + this).
+
+### 🔨 TO BUILD (phases)
+- **Phase 1 — Score-entity MODEL (SCORE).** `SCR|ScoreEntityModel` schema + table + `C_IssueSingleScoreModel` +
+  `C_CombineTripletScoreModel` + readers + interface + create-table (17a); `C_IssueScoreFromModel` factory
+  composing `XI_Issue` + `XI_IssueSemiFungibleScoreDefinition` (+ `XI_IssueTriplet`) (17b); Talos wiring.
+  *Verify:* define the Custodians triplet model (3 singles + combine) → issue a conforming triplet from it.
+- **Phase 2 — DSA vault + agency open.** `A_DefineDelegationVault(fvt-id, model-id, unit-score)` (class-0 +
+  common-denom `"|"` + `oracle-on` + `DSA|Template`); generalize `XE_AdmitDelegationMember` to single|triplet;
+  `C_OpenAgency(operator, fvt-id)` (factory-issue → admit → set delegation → `unit-score/2` gate → `DSA|Agency`);
+  Talos wiring + IMP registration (`DSA::P|A_Define` in executor). *Verify:* define vault + open an agency.
+- **Phase 3 — Delegator staking + capture recompute.** Confirm/enable a non-owner delegator staking into the
+  operator's agency score (beneficiary path; add a DSA stake wrapper if needed); `URC` for the agency's aggregate
+  quintessence Q; recompute `capture-units = min(⌊Q/unit-score⌋, nodes)` + `capture-weight` → `XE_SetMemberCapture`
+  on stake/unstake. *Verify:* **fragment Custodians 1/2/3 → stake −1/−2/−3 → Q (1/10/100) → capture computed.**
+- **Phase 4 — Oracle.** `A_SetOracleAuth(fvt-id, guard)`; delegated-guard `A_OracleWrite` sets `{nodes, uptime}`
+  per agency + recompute + stamp oracle-ts; `oracle-on` toggle. *Verify:* oracle write + 25h expiry → capture 0.
+- **Phase 5 — Inject + royalty (BEHAVIORAL PROOF of the FVT-core).** Inject into a live delegation vault via the
+  existing `CC_Inject`/`C_Inject`. *Verify:* split by `capture-weight / Σ capture-units`; **uptime shortfall →
+  royalty pool**; all-drained → **zombie**; operator **fee** skimmed from delegators at collect.
+- **Phase 6 — Royalty disposal.** `A_WithdrawRoyalty` / `A_BurnRoyalty` / `A_FuelRoyalty(swpair)` +
+  `OUROBOROS::C_Compress` IGNIS→OURO (core→core) + SWP fuel (add-liq, no LP mint). *Verify:* accrue → dispose each way.
+- **Phase 7 — Talos + gas full wiring.** All DSA client/admin ops into Talos + gas-station allowlist + IMP; the
+  operator-fee collect path. *Verify:* end-to-end via Talos.
+- **Phase 8 — Round B: heterogeneous quality split.** Reward-mode flag + per-type split matrix + the
+  `MULTIPLET_BASE` collect branch (§9.3). *Verify:* heterogeneous payout.
+
+### 🏁 FINAL — full regression gate
+Rerun `run-aqp-audit.sh` (8 suites) **+ a new `dsa-*.repl` suite (9th)** — all green ⇒ the DSA feature is
+complete and the shared FVT/SCORE core is regression-free.
+
+*Tracker written 2026-08-24. Next: Phase 1 (17a).*
