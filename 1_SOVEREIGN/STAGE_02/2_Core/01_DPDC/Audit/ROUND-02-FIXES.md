@@ -1162,3 +1162,29 @@ over-capacity Make (600,000 > 500,000) still correctly rejected — all of which
 post-refactor, confirming the constant extraction is a pure rename with no behavior change.
 
 **Interface implication:** none — internal constant/doc changes only, no `EquityV1` signature change.
+
+## Fix #26 — DPDC-S · M2 (#30M) — `C_EnableSetClassFragmentation` now requires the set-class be active
+
+**Owner-approved 2026-08-23.** Owner: "you are right, that is a check that is legitimately missing, let's
+add it and fix this."
+
+**Root cause:** `DPDC-S|C>ENABLE-FRAGMENTATION` (`08_DPDC-S.pact:273-291`) was the only one of the
+owner-gated set-class mutations that didn't call `UEV_SetActiveState`. Its siblings `C>TOGGLE` (requires
+the current state be the opposite of the target toggle) and `C>RENAME` (requires the set-class currently
+be active) both enforce it; enable-fragmentation only checked "not already fragmented" + ownership,
+letting an owner enable fragmentation on a deactivated (toggled-off) set-class — inconsistent with the
+rest of the admin surface.
+
+**Fix:** added `(UEV_SetActiveState id son set-class true)` to `DPDC-S|C>ENABLE-FRAGMENTATION`, matching
+`C>RENAME`'s requirement. A freshly `Define`d set-class starts `iz-active = true` by default (confirmed in
+`01_DPDC-UDC.pact`'s `S` constructor), so the normal Define -> EnableFragmentation flow is unaffected —
+the new check only bites if an owner has deliberately toggled the set-class off first.
+
+**Proof:** `REPL/Kursan/_verify_finding_DPDC-S_30M_enable-frag-active-gate.repl` — reuses the live
+`DHCD-98c486052a51` set-class 1 from the active pipeline: toggles it off, confirms
+`DPSF|C_EnableSetClassFragmentation` now fails with the new check; toggles it back on, confirms the
+identical call now succeeds and the set-class reads fragmented afterward. `cd REPL && pact Z.repl` —
+clean, `Load successful` (no existing test enables fragmentation on a deactivated set-class, so nothing
+regresses).
+
+**Interface implication:** none — internal capability logic only, no `DpdcSetsV1` signature change.

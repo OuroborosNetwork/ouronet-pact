@@ -622,3 +622,15 @@ undocumented sibling functions in the same packaging-capacity subsystem (`UR_Tie
 `URC_MakeSharePackage`, `URC_SingleSharePerMillions`), per the owner's "where it needs to be" instruction.
 Pure rename/doc change — the #22H EQUITY REPL suite's exact-number assertions (500,000/400,000 capacity
 values, over-capacity rejection) all still pass identically post-refactor. Z.repl green.
+
+## #30M · DPDC-S · M2 — `C_EnableSetClassFragmentation` skips the active-state gate its siblings enforce
+
+**Verdict: CONFIRMED, FIXED (2026-08-23).** Owner: "you are right, that is a check that is legitimately
+missing, let's add it and fix this."
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #26)** — added `UEV_SetActiveState id son set-class true`
+to `DPDC-S|C>ENABLE-FRAGMENTATION`, matching `C>RENAME`'s requirement (its other sibling, `C>TOGGLE`, uses
+the same check with the opposite-of-target-toggle semantics). Since a freshly defined set-class starts
+active by default, the normal Define -> EnableFragmentation flow is unaffected; the check only bites if
+the set-class was deliberately toggled off first. Live-proven on the real `DHCD-98c486052a51` collection:
+toggle off -> rejected, toggle back on -> succeeds. Z.repl green.

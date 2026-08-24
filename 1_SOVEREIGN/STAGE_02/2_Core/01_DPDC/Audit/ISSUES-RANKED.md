@@ -359,8 +359,12 @@ packaging-capacity subsystem (`UR_TierSupplies`, `URC_MakeSharePackage`, `URC_Si
 Pure rename/doc change — the #22H EQUITY REPL suite's exact-number assertions (500,000/400,000 capacity
 values, over-capacity rejection) all still pass identically. Z.repl green. — *EQUITY·M2*
 
-#30M **[DPDC-S]** `C_EnableSetClassFragmentation` is the only one of five owner-gated set mutations that
-skips the `UEV_SetActiveState` gate its four siblings all enforce. — *DPDC-S·M2*
+#30M **[DPDC-S]** ~~`C_EnableSetClassFragmentation` is the only one of five owner-gated set mutations that
+skips the `UEV_SetActiveState` gate its four siblings all enforce.~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-23** (`ROUND-02-FIXES.md` Fix #26) — added `(UEV_SetActiveState id son set-class true)` to
+`DPDC-S|C>ENABLE-FRAGMENTATION`, matching `C>RENAME`'s requirement. Define defaults new set-classes to
+active, so the normal flow is unaffected; live-proven on `DHCD-98c486052a51`: toggle-off now rejects
+enable-fragmentation, toggle-on restores it. Z.repl green. — *DPDC-S·M2*
 
 #31M **[DPDC-S]** Primordial set-definition bounds (like #6C's composite-side root cause) only check the
 running maximum referenced value, not each individual entry — an unsatisfiable-but-nonzero value silently

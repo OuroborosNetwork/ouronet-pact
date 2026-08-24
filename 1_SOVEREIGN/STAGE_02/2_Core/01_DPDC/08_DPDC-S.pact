@@ -284,6 +284,9 @@
             )
             (enforce (not iz-fragmented) "Set Class must not be fragmented in order to enable fragmentation for it !")
             (UEV_SetClass id son set-class)
+            ;;DPDC Audit #30M: require the set-class be active, consistent with its C>TOGGLE/C>RENAME
+            ;;siblings — this was the only one of the owner-gated set mutations that skipped the check.
+            (UEV_SetActiveState id son set-class true)
             (ref-DPDC::CAP_Owner id son)
             (ref-DPDC-C::UEV_NonceDataForCreation fragmentation-ind)
             (compose-capability (SECURE))

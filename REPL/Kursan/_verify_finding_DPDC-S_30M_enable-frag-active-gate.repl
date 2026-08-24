@@ -1,0 +1,49 @@
+;; Verify Fix for DPDC Audit #30M — C_EnableSetClassFragmentation now requires the set-class be active,
+;; consistent with its C>TOGGLE/C>RENAME siblings.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage00a_StoaTests.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage02_Tester.repl")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "PROBE-30M - deactivated set-class rejects EnableFragmentation; reactivated allows it")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (id:string "DHCD-98c486052a51")
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "TestFragSet" "Set fragmentation-enable marker"
+                (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (print (format "set-class 1 active before toggle-off = {}" [(ref-DPDC-S::UR_IzSetActive id true 1)]))
+    ;;Deactivate the set-class (an owner-legitimate admin action)
+    (print (ref-TS02-C1::DPSF|C_ToggleSet owner id 1 false))
+    (print (format "set-class 1 active after toggle-off = {}" [(ref-DPDC-S::UR_IzSetActive id true 1)]))
+    ;;Attempting to enable fragmentation on a deactivated set-class must now be rejected
+    (print
+        (expect-failure
+            "EnableSetClassFragmentation on a deactivated set-class is rejected (DPDC Audit #30M fix)"
+            (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation owner id 1 nd)
+        )
+    )
+    ;;Reactivate; the exact same call must now succeed
+    (print (ref-TS02-C1::DPSF|C_ToggleSet owner id 1 true))
+    (print (format "set-class 1 active after toggle-on = {}" [(ref-DPDC-S::UR_IzSetActive id true 1)]))
+    (print (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation owner id 1 nd))
+    (print (format "set-class 1 iz-fragmented after enable = {}" [(ref-DPDC-S::UEV_IzSetClassFragmented id true 1)]))
+)
+(commit-tx)
