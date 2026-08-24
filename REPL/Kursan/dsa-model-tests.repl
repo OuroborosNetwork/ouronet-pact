@@ -1,0 +1,120 @@
+;;
+;; REPL/Kursan/dsa-model-tests.repl — DSA Phase 1 (17a) verification: the score-entity MODEL.
+;; Proves: define 3 SINGLE models (Custodians bronze/silver/gold: nonces -1/-2/-3 → 1/10/100),
+;; then COMBINE them into a TRIPLET model; the rows persist with the right shape; and the guards
+;; reject a duplicate model-id + a triplet referencing a non-existent (or non-single) sub-model.
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/02_SCORE.pact (SCR|ScoreEntityModel + C_IssueSingleScoreModel
+;;         + C_CombineTripletScoreModel), 3_Talos/04_TS02-C3.pact (AQP-SCR|C_IssueSingleScoreModel / ...Combine...).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/dsa-model-tests.repl  —  DSA score-entity MODEL (17a)")
+(print "================================================================")
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+(print "")
+;;
+;; ============================================================================
+;; DSA-MODEL-01 — define 3 single models + combine into a triplet model
+;; ============================================================================
+(begin-tx "DSA-MODEL-01 - define singles + combine triplet")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [DSA-MODEL-01 · 01 · define bronze/silver/gold single models + combine] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (cust:string "CUSTODIANS-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (bronze-id:string (ref-U|DALOS::UDC_Makeid "DsaCustBronze"))
+            (silver-id:string (ref-U|DALOS::UDC_Makeid "DsaCustSilver"))
+            (gold-id:string   (ref-U|DALOS::UDC_Makeid "DsaCustGold"))
+            (model-id:string  (ref-U|DALOS::UDC_Makeid "DsaCustModel"))
+        )
+        ;; define the three SINGLE models (Custodians fragment nonces → quintessence)
+        (print (format "<(bronze)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 0 [-1] [1.0])]))
+        (print (format "<(silver)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustSilver" 3 cust 0 [-2] [10.0])]))
+        (print (format "<(gold)>   => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustGold"   3 cust 0 [-3] [100.0])]))
+        ;; combine into a TRIPLET model
+        (print (format "<(combine)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaCustModel" bronze-id silver-id gold-id)]))
+        (let
+            (
+                (bronze:object{AQP-SCORE.SCR|ScoreEntityModel} (AQP-SCORE.UR_SCR|ScoreEntityModel bronze-id))
+                (triplet:object{AQP-SCORE.SCR|ScoreEntityModel} (AQP-SCORE.UR_SCR|ScoreEntityModel model-id))
+            )
+            (map print
+                [
+                    ;; single model shape
+                    (expect "<<DSA-MODEL-01>> bronze is a SINGLE model (entity-type 1)" 1 (at "entity-type" bronze))
+                    (expect "<<DSA-MODEL-01>> bronze scores nonce -1" [-1] (at "nonces" bronze))
+                    (expect "<<DSA-MODEL-01>> bronze value 1.0" [1.0] (at "nonce-score-values" bronze))
+                    (expect "<<DSA-MODEL-01>> bronze collectable stored" cust (at "collectable-id" bronze))
+                    ;; triplet model shape — references the 3 sub-model-ids, no scoring data of its own
+                    (expect "<<DSA-MODEL-01>> triplet is a TRIPLET model (entity-type 3)" 3 (at "entity-type" triplet))
+                    (expect "<<DSA-MODEL-01>> triplet -> bronze sub-model" bronze-id (at "bronze-model-id" triplet))
+                    (expect "<<DSA-MODEL-01>> triplet -> silver sub-model" silver-id (at "silver-model-id" triplet))
+                    (expect "<<DSA-MODEL-01>> triplet -> gold sub-model"   gold-id   (at "golden-model-id" triplet))
+                ]
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| The guards must reject a duplicate model-id and a triplet over a missing sub-model.
+;;
+(begin-tx "DSA-MODEL-02 - guard rejections")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [DSA-MODEL-02 · 01 · duplicate + missing-sub-model rejected] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (cust:string "CUSTODIANS-98c486052a51")
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (map print
+        [
+            ;; re-defining DsaCustBronze → model-id already exists
+            (expect-failure "<<DSA-MODEL-02>> duplicate model-id rejected"
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 0 [-1] [1.0]))
+            ;; combine over a non-existent sub-model → rejected
+            (expect-failure "<<DSA-MODEL-02>> triplet over a missing sub-model rejected"
+                (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaBadModel" "Nonexistent-Model-Id" "Nonexistent-Model-Id" "Nonexistent-Model-Id"))
+            ;; nonces/values length mismatch → rejected
+            (expect-failure "<<DSA-MODEL-02>> nonces/values length mismatch rejected"
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaMismatch" 3 cust 0 [-1 -2] [1.0]))
+        ]
+    )
+)
+(commit-tx)
+(print "")
+(print "=== dsa-model-tests END — score-entity MODEL define/combine + guards ===")

@@ -29,6 +29,7 @@ SUITES=(
   "triplet-collect-golden.repl|farm multiplet triplet collect fairness + dual-stream vacate"
   "Kursan/AQP-stream-tests.repl|streamed inject (linear vesting): late-staker 180/60 + superposition (D4) + zero-weight->zombie (D9) + guard bounds + vault drip gas + farm (class-0) drip"
   "deb-staleness-unstale-all-cc.repl|owner mass deb-unstale (CC_UnstaleAll): owner-gate (non-owner refused) + penalized 2e tag + all-up-to-date idempotent no-op"
+  "Kursan/dsa-model-tests.repl|DSA score-entity MODEL (17a): define 3 single models (Custodians -1/-2/-3) + combine triplet + guard rejections"
 )
 
 echo "================================================================"

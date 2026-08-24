@@ -148,6 +148,12 @@
     (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV1.OutputCumulator}
         (score-id:string dpnf-id:string dpnf-nonce-classes:[integer] class-score-values:[decimal])
     )
+    (defun C_IssueSingleScoreModel:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+    )
+    (defun C_CombineTripletScoreModel:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+    )
 )
 (module AQP-SCORE GOV
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
@@ -445,6 +451,23 @@
         triplet-id:string                                    ;;[.]   Select key T|bronze|silver|golden
         true-triplet:bool                                    ;;[.]   Boost-anchored bundle (one BAR hub, two satellites)
     )
+    (defschema SCR|ScoreEntityModel
+        @doc "Key = <Model-ID>. A reusable score-entity TEMPLATE so many entities issue IDENTICALLY (DSA: every \
+            \ agency scores the same). single (entity-type 1): the scoring spec — issue 1 score + its SF definition \
+            \ from it. triplet (entity-type 3): references three single model-ids — issue the 3 singles, then \
+            \ C_IssueTriplet. Tags: [.] fixed at define."
+        entity-type:integer                                  ;;[.]   CT_SCORE_MODEL_SINGLE (1) | CT_SCORE_MODEL_TRIPLET (3)
+        score-class:integer                                  ;;[.]   single: 3 = SemiFungible (DPSF), v1 SF only. triplet: 0.
+        collectable-id:string                                ;;[.]   single: the DPSF id the definition scores. triplet: BAR.
+        precision:integer                                    ;;[.]   single: score precision. triplet: 0.
+        nonces:[integer]                                     ;;[.]   single: SF definition nonces (incl. fragment negatives). triplet: [].
+        nonce-score-values:[decimal]                         ;;[.]   single: parallel values. triplet: [].
+        bronze-model-id:string                               ;;[.]   triplet: the 3 sub single-model ids. single: BAR.
+        silver-model-id:string
+        golden-model-id:string
+        ;;Select Keys
+        model-id:string                                      ;;[.]
+    )
     ;;
     ;;{2}
     (deftable SCR|T|Score:{SCR|Schema})                         ;;1] Key = <Score-ID>
@@ -456,6 +479,7 @@
     (deftable SCR|T|NF|DefRevision:{SCR|NF|DefRevision})        ;;7] Key = <Score-ID> | <DPNF-ID>
     (deftable SCR|T|NF|TraitKeys:{SCR|NF|TraitKeys})            ;;7b] Key = <Score-ID> | <DPNF-ID>
     (deftable SCR|T|Triplet:{SCR|Triplet})                      ;;8] Key = <Triplet-ID>
+    (deftable SCR|T|ScoreEntityModel:{SCR|ScoreEntityModel})    ;;9] Key = <Model-ID>
     ;;{3}
     (defun CT_Bar ()
         @doc "Returns CT_BAR constant."
@@ -464,6 +488,9 @@
     (defconst BAR                                               (CT_Bar))
     (defconst GAS|ISSUE-SCORE                                   1000.0)
     (defconst GAS|ISSUE-TRIPLET                                 500.0)
+    (defconst GAS|ISSUE-SCORE-MODEL                             500.0)
+    (defconst CT_SCORE_MODEL_SINGLE:integer                     1)
+    (defconst CT_SCORE_MODEL_TRIPLET:integer                    3)
     (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2)))
     (defconst EOC                                               (CT_EmptyCumulator))
     (defun CT_AqpScName:string
@@ -1158,6 +1185,50 @@
                 (enumerate 0 (- l1 1))
             )
             (UEV_DpnfStakeScoreContext ouronet-account pool-id score-id)
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|C>ISSUE-SINGLE-SCORE-MODEL
+        (patron:string model-name:string score-class:integer nonces:[integer] nonce-score-values:[decimal])
+        @doc "Define a SINGLE score-entity model. Enforces: patron account exists, the model-id (from model-name) \
+            \ is free, and nonces/values are the same NON-empty length. Composes SECURE for the model write."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+            )
+            (ref-DALOS::UEV_EnforceAccountExists patron)
+            (enforce (not (URC_ScoreEntityModelExists (ref-U|DALOS::UDC_Makeid model-name))) "Model id already exists")
+            (enforce (and (= (length nonces) (length nonce-score-values)) (> (length nonces) 0))
+                "nonces and nonce-score-values must be the same non-empty length")
+        )
+        (compose-capability (SECURE))
+    )
+    (defcap SCR|C>COMBINE-TRIPLET-SCORE-MODEL
+        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        @doc "Combine three SINGLE models into a TRIPLET score-entity model. Enforces: patron exists, model-id \
+            \ free, the three sub-models all exist AND are single. Composes SECURE for the model write."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+            )
+            (ref-DALOS::UEV_EnforceAccountExists patron)
+            (enforce (not (URC_ScoreEntityModelExists (ref-U|DALOS::UDC_Makeid model-name))) "Model id already exists")
+            (enforce
+                (fold (and) true
+                    [(URC_ScoreEntityModelExists bronze-model-id)
+                     (URC_ScoreEntityModelExists silver-model-id)
+                     (URC_ScoreEntityModelExists golden-model-id)])
+                "The three sub-models must all exist")
+            (enforce
+                (fold (and) true
+                    [(= (UR_SCR|ModelEntityType bronze-model-id) CT_SCORE_MODEL_SINGLE)
+                     (= (UR_SCR|ModelEntityType silver-model-id) CT_SCORE_MODEL_SINGLE)
+                     (= (UR_SCR|ModelEntityType golden-model-id) CT_SCORE_MODEL_SINGLE)])
+                "The three sub-models must all be single")
         )
         (compose-capability (SECURE))
     )
@@ -2172,6 +2243,20 @@
         @doc "True for Z| legs (mx-sleeping); false for H| legs (mx-hibernated). Native dpof-id is unused on non-special path."
         (not (= (take 2 dpof-id) "H|"))
     )
+    ;;
+    ;;<====> DSA score-entity MODEL (§17) — reusable templates (canon-refactored after this build step)
+    (defun URC_ScoreEntityModelExists:bool (model-id:string)
+        @doc "True when a score-entity model row exists."
+        (with-default-read SCR|T|ScoreEntityModel model-id {"model-id" : BAR} {"model-id" := m} (!= m BAR))
+    )
+    (defun UR_SCR|ScoreEntityModel:object{SCR|ScoreEntityModel} (model-id:string)
+        @doc "Reads the full score-entity model row."
+        (read SCR|T|ScoreEntityModel model-id)
+    )
+    (defun UR_SCR|ModelEntityType:integer (model-id:string)
+        @doc "Reads a model's entity-type (single = 1 | triplet = 3)."
+        (at "entity-type" (read SCR|T|ScoreEntityModel model-id ["entity-type"]))
+    )
     ;; [URH] heavy-read
     ;;
     ;;
@@ -2568,6 +2653,22 @@
         ,"triplet-id"       : triplet-id
         ,"true-triplet"     : true-triplet}
     )
+    (defun UDC_SCR|ScoreEntityModel:object{SCR|ScoreEntityModel}
+        (entity-type:integer score-class:integer collectable-id:string precision:integer
+         nonces:[integer] nonce-score-values:[decimal]
+         bronze-model-id:string silver-model-id:string golden-model-id:string model-id:string)
+        @doc "Core constructor for object{SCR|ScoreEntityModel}."
+        {"entity-type"        : entity-type
+        ,"score-class"        : score-class
+        ,"collectable-id"     : collectable-id
+        ,"precision"          : precision
+        ,"nonces"             : nonces
+        ,"nonce-score-values" : nonce-score-values
+        ,"bronze-model-id"    : bronze-model-id
+        ,"silver-model-id"    : silver-model-id
+        ,"golden-model-id"    : golden-model-id
+        ,"model-id"           : model-id}
+    )
     ;; [W]   write
     ;; Nine blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
@@ -2779,6 +2880,11 @@
         @doc "Insert SCR|T|Triplet full row (C_IssueTriplet only)."
         (require-capability (SECURE))
         (insert SCR|T|Triplet triplet-id row)
+    )
+    (defun WI_ScoreEntityModel:string (model-id:string row:object{SCR|ScoreEntityModel})
+        @doc "Insert a score-entity model row. require SECURE."
+        (require-capability (SECURE))
+        (insert SCR|T|ScoreEntityModel model-id row)
     )
     ;; [XI]
     ;;
@@ -3681,6 +3787,44 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator price owner-konto trigger [])
         )
     )
+    (defun C_IssueSingleScoreModel:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+        @doc "Define a SINGLE score-entity model (the scoring spec for one score + its SF definition). model-id \
+            \ from model-name (UDC_Makeid). UEV_IMC + SCR|C>ISSUE-SINGLE-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
+        (UEV_IMC)
+        (with-capability (SCR|C>ISSUE-SINGLE-SCORE-MODEL patron model-name score-class nonces nonce-score-values)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (model-id:string (ref-U|DALOS::UDC_Makeid model-name))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (WI_ScoreEntityModel model-id
+                    (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_SINGLE score-class collectable-id precision nonces nonce-score-values BAR BAR BAR model-id))
+                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron trigger [model-id])
+            )
+        )
+    )
+    (defun C_CombineTripletScoreModel:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        @doc "Combine three SINGLE models into a TRIPLET score-entity model. model-id from model-name. \
+            \ UEV_IMC + SCR|C>COMBINE-TRIPLET-SCORE-MODEL. Bills GAS|ISSUE-SCORE-MODEL."
+        (UEV_IMC)
+        (with-capability (SCR|C>COMBINE-TRIPLET-SCORE-MODEL patron model-name bronze-model-id silver-model-id golden-model-id)
+            (let
+                (
+                    (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (model-id:string (ref-U|DALOS::UDC_Makeid model-name))
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (WI_ScoreEntityModel model-id
+                    (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_TRIPLET 0 BAR 0 [] [] bronze-model-id silver-model-id golden-model-id model-id))
+                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron trigger [model-id])
+            )
+        )
+    )
     ;;
 )
 
@@ -3696,3 +3840,4 @@
 (create-table SCR|T|NF|DefRevision)
 (create-table SCR|T|NF|TraitKeys)
 (create-table SCR|T|Triplet)
+(create-table SCR|T|ScoreEntityModel)

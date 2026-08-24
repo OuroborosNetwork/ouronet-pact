@@ -47,6 +47,12 @@
     (defun AQP-SCR|C_IssueTriplet:string
         (patron:string bronze-score-id:string silver-score-id:string golden-score-id:string)
     )
+    (defun AQP-SCR|C_IssueSingleScoreModel:string
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+    )
+    (defun AQP-SCR|C_CombineTripletScoreModel:string
+        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+    )
     (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
         (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
     )
@@ -891,6 +897,42 @@
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (format "Successfully issued triplet {}." [triplet-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueSingleScoreModel:string
+        (patron:string model-name:string score-class:integer collectable-id:string precision:integer nonces:[integer] nonce-score-values:[decimal])
+        @doc "Defines a SINGLE score-entity model in AQP-SCORE and collects IGNIS on patron. Returns the model-id."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-SCR::C_IssueSingleScoreModel patron model-name score-class collectable-id precision nonces nonce-score-values)
+                    )
+                    (model-id:string (at 0 (at "output" ico)))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Successfully defined single score-entity model {}." [model-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_CombineTripletScoreModel:string
+        (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
+        @doc "Combines three single models into a TRIPLET score-entity model in AQP-SCORE and collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-SCR::C_CombineTripletScoreModel patron model-name bronze-model-id silver-model-id golden-model-id)
+                    )
+                    (model-id:string (at 0 (at "output" ico)))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Successfully combined triplet score-entity model {}." [model-id])
             )
         )
     )
