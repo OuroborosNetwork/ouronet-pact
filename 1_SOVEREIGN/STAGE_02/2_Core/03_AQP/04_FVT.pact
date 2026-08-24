@@ -584,6 +584,12 @@
     (defconst STREAM_MAX_LANES 49
         "Hard ceiling on concurrent streams per lane (7x7 grid). The per-account cap (URC_MaxStreamLanes, by \
        \ Elite tier of the FVT owner konto) is always <= this.")
+    ;; --- DSA (Delegated Staking Agencies) — see Audit/DSA-DELEGATED-STAKING-DESIGN.md ---
+    (defconst DSA_ORACLE_TTL 90000
+        "Oracle validity window in seconds (25h = a daily oracle write + 1h overlap, so there is never a gap \
+       \ between last-write-expired and next-write). At inject, a delegation member whose last oracle write is \
+       \ older than this (now − oracle-ts > DSA_ORACLE_TTL) captures NOTHING (effective weight 0 ⇒ its whole \
+       \ share routes to the royalty pool). Only consulted when the FVT's oracle-on flag is set.")
     ;; --- Re-score sweep CC-batch gas backstop (loose ceiling + UI seed, mirrors the vacate cap philosophy) ---
     (defconst SWEEP-CHUNK-GAS-BUDGET 2000000
         "Nominal per-tx gas envelope the sweep CC-batch chunk cap is sized against (backstop, not the optimizer).")
@@ -1557,7 +1563,9 @@
     (defun URC_FarmInjectDenominatorFresh:decimal (fvt-id:string)
         @doc "Split-at-inject farm S computed FRESH (audit LP redesign / Stage 2): sum of each enabled member's \
             \ current staked STOA value (URC_MemberStakedStoaValue). No cache, no sync — the value is base-dependent \
-            \ so it must be read at inject. Enumerates members (URD) — inject is an infrequent, bounded operator path."
+            \ so it must be read at inject. Enumerates members (URD) — inject is an infrequent, bounded operator path. \
+            \ DSA: a delegation member contributes its IDEAL capacity (capture-units), NOT its staked value — the \
+            \ ideal denominator that lets the uptime shortfall route to royalty (S §4)."
         (let
             (
                 (member-ids:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
@@ -1565,10 +1573,13 @@
             (fold (+) 0.0
                 (map
                     (lambda (score-entity-id:string)
-                        (URC_MemberStakedStoaValue
-                            (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id)
-                            score-entity-id
-                            (UR_FVT-SEL|Swpair fvt-id score-entity-id)
+                        (if (UR_FVT-SEL|Delegation fvt-id score-entity-id)
+                            (UR_FVT-SEL|CaptureUnits fvt-id score-entity-id)
+                            (URC_MemberStakedStoaValue
+                                (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id)
+                                score-entity-id
+                                (UR_FVT-SEL|Swpair fvt-id score-entity-id)
+                            )
                         )
                     )
                     member-ids
@@ -1674,6 +1685,21 @@
                 )
             )
             (floor (* staked-amount per-lp) CT_FVT_RPS_PREC)
+        )
+    )
+    (defun URC_MemberEffectiveCapture:decimal (fvt-id:string score-entity-id:string)
+        @doc "DSA agency inject NUMERATOR: the member's uptime-adjusted capture-weight, ZEROED when the oracle is \
+            \ on AND its last write has expired (now − oracle-ts > DSA_ORACLE_TTL, 25h). Oracle off ⇒ capture-weight \
+            \ as-is (DSA maintains it at uptime 1000). Only meaningful for a delegation member (S §4)."
+        (let
+            (
+                (cw:decimal (UR_FVT-SEL|CaptureWeight fvt-id score-entity-id))
+            )
+            (if (and (UR_FVT|OracleOn fvt-id)
+                     (> (diff-time (at "block-time" (chain-data)) (UR_FVT-SEL|OracleTs fvt-id score-entity-id)) (dec DSA_ORACLE_TTL)))
+                0.0
+                cw
+            )
         )
     )
     ;; NOTE (audit LP redesign): URC_MemberStakedStoaValue above is the correct Level-2 primitive (staked value),
@@ -4015,13 +4041,17 @@
             true
         )
     )
-    (defun XI_1|FarmSplitInject:object{IgnisCollectorV1.OutputCumulator}
+    (defun XI_1|FarmSplitInject:decimal
         (fvt-id:string reward-dptf-id:string amount:decimal S:decimal)
         @doc "Split-at-inject (audit LP redesign / Stage 2): distribute <amount> across enabled FARM members by \
             \ their FRESH staked STOA value (member-slice = amount x W_i / S), advancing each member's Tier-1 \
             \ index L_i (member-deb-rps) by member-slice / total-deb — or parking in pending-member-rewards when \
             \ the member has value but no stakers (total-deb = 0). No global G: farms distribute at inject, not \
-            \ via a Tier-2 accumulator. Mirrors XI_2|SettleMemberTier2's row math with member-slice in place of earned."
+            \ via a Tier-2 accumulator. Mirrors XI_2|SettleMemberTier2's row math with member-slice in place of earned. \
+            \ DSA: a delegation member's W_i is its EFFECTIVE capture (uptime-adjusted, 0 if expired), while S sums \
+            \ IDEAL capacity (capture-units); the per-member gap floor(amount×(ideal−W_i)/S) is the uptime shortfall, \
+            \ accumulated and RETURNED so the caller routes it to the royalty pool (0 for every normal member, whose \
+            \ ideal == W_i)."
         ;; SECURE: granted by WI_RpsMember / WW_RpsMember (underlying W_).
         (let
             (
@@ -4029,8 +4059,8 @@
                 (member-ids:[string] (URH_FvtEnabledScoreEntityIdsForFvt fvt-id))
                 (reward-prec:integer (ref-DPTF::UR_Decimals reward-dptf-id))
             )
-            (map
-                (lambda (score-entity-id:string)
+            (fold
+                (lambda (royalty-acc:decimal score-entity-id:string)
                     (do
                         (if (not (URC_FvtRpsMemberRowExists fvt-id score-entity-id reward-dptf-id))
                             (WI_RpsMember fvt-id score-entity-id reward-dptf-id
@@ -4042,8 +4072,18 @@
                             (
                                 (score-entity-type:integer (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id))
                                 (swpair:string (UR_FVT-SEL|Swpair fvt-id score-entity-id))
-                                (w-i:decimal (URC_MemberStakedStoaValue score-entity-type score-entity-id swpair))
+                                (delegation:bool (UR_FVT-SEL|Delegation fvt-id score-entity-id))
+                                ;; W_i (numerator): delegation ⇒ effective capture (uptime-adjusted, 0 if expired); else staked value
+                                (w-i:decimal
+                                    (if delegation
+                                        (URC_MemberEffectiveCapture fvt-id score-entity-id)
+                                        (URC_MemberStakedStoaValue score-entity-type score-entity-id swpair)))
+                                ;; ideal capacity: delegation ⇒ capture-units; else == W_i (so its gap is 0)
+                                (ideal-i:decimal
+                                    (if delegation (UR_FVT-SEL|CaptureUnits fvt-id score-entity-id) w-i))
                                 (member-slice:decimal (floor (/ (* amount w-i) S) reward-prec))
+                                ;; uptime shortfall for this member (0 for a normal member; ideal-i == w-i)
+                                (royalty-i:decimal (floor (/ (* amount (- ideal-i w-i)) S) reward-prec))
                                 (total-deb:decimal (URC_ScoreEntityMemberTier2Divisor fvt-id score-entity-type score-entity-id))
                                 (g-i:decimal (UR_FVT-RM|LastFarmRpsG fvt-id score-entity-id reward-dptf-id))
                                 (L-i:decimal (UR_FVT-RM|MemberDebRps fvt-id score-entity-id reward-dptf-id))
@@ -4077,12 +4117,14 @@
                             (WU_MemberVault|AvailableRewards fvt-id score-entity-id reward-dptf-id
                                 (+ (UR_FVT-MV|AvailableRewards fvt-id score-entity-id reward-dptf-id) member-slice)
                             )
+                            ;; thread the uptime-shortfall accumulator (royalty-i is 0 for a normal member)
+                            (+ royalty-acc royalty-i)
                         )
                     )
                 )
+                0.0
                 member-ids
             )
-            (UC_EmptyOc)
         )
     )
     (defun XI_2|SettleMemberTier2:object{IgnisCollectorV1.OutputCumulator}
@@ -4371,19 +4413,35 @@
                     (
                         (eff:decimal (+ amount zombie))
                     )
-                    (if (= (UR_FVT|FvtClass fvt-id) 0)
-                        (XI_1|FarmSplitInject fvt-id reward-dptf-id eff denominator)
-                        (WU_RpsGlobal|CurrentRps fvt-id reward-dptf-id
-                            (+ (UR_FVT-RG|CurrentRps fvt-id reward-dptf-id)
-                               (UC_ComputeInjectGainedRps eff denominator)))
+                    (let
+                        (
+                            ;; farm split RETURNS the DSA uptime shortfall (0 for a normal farm); vault/treasury has none.
+                            (royalty:decimal
+                                (if (= (UR_FVT|FvtClass fvt-id) 0)
+                                    (XI_1|FarmSplitInject fvt-id reward-dptf-id eff denominator)
+                                    (do
+                                        (WU_RpsGlobal|CurrentRps fvt-id reward-dptf-id
+                                            (+ (UR_FVT-RG|CurrentRps fvt-id reward-dptf-id)
+                                               (UC_ComputeInjectGainedRps eff denominator)))
+                                        0.0)
+                                )
+                            )
+                        )
+                        ;; available-rewards enters G only NOW (the flush) — bump by R_eff MINUS the DSA uptime
+                        ;; shortfall (royalty is 0 for a normal farm / vault ⇒ the full R_eff, exactly as before).
+                        (WU_RpsGlobal|AvailableRewards fvt-id reward-dptf-id
+                            (+ (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id) (- eff royalty)))
+                        ;; DSA: the uptime shortfall accrues to the royalty pool (custodied, out of available / G /
+                        ;; the M1 last-claimant sweep). Skip the write when there is none (non-delegation / full uptime).
+                        (if (> royalty 0.0)
+                            (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id
+                                (+ (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id) royalty))
+                            "no royalty")
+                        ;; zombie fully consumed by this flush (skip the write when there was none).
+                        (if (> zombie 0.0)
+                            (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id 0.0)
+                            "no escrow to clear")
                     )
-                    ;; available-rewards enters G only NOW (the flush) — bump by the full R_eff.
-                    (WU_RpsGlobal|AvailableRewards fvt-id reward-dptf-id
-                        (+ (UR_FVT-RG|AvailableRewards fvt-id reward-dptf-id) eff))
-                    ;; zombie fully consumed by this flush (skip the write when there was none).
-                    (if (> zombie 0.0)
-                        (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id 0.0)
-                        "no escrow to clear")
                 )
                 ;; ESCROW — no stakers (divisor 0): park `amount` in limbo, available-rewards untouched.
                 (WU_RpsGlobal|ZombieRewards fvt-id reward-dptf-id (+ zombie amount))
