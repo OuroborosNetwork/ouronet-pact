@@ -554,6 +554,32 @@
             )
         )
     )
+    (defun A_ToggleExternalOracle:string (on:bool)
+        @doc "DSA MODULE ADMIN (GOV): flip the SINGULAR GLOBAL external-oracle switch for ALL operators at once. \
+            \ OFF ⇒ external oracling is bypassed protocol-wide — every agency captures its STORED weight (oracle \
+            \ entries, fresh or stale, are ignored); ON ⇒ the oracle-validity freshness gate applies (an operator \
+            \ with no/stale entry captures 0). Composes P|SECURE-CALLER for the FVT global-config write."
+        (with-capability (GOV|DSA_ADMIN)
+            (with-capability (P|SECURE-CALLER)
+                (let ((ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT))
+                    (ref-FVT::XE_SetExternalOracle on)
+                )
+            )
+        )
+    )
+    (defun A_SetOracleValidity:string (seconds:integer)
+        @doc "DSA MODULE ADMIN (GOV): set the GLOBAL oracle-validity window (seconds; the freshness horizon an \
+            \ oracle write is honored for while external-oracle is ON). Must be positive. Composes P|SECURE-CALLER \
+            \ for the FVT global-config write."
+        (enforce (> seconds 0) "oracle-validity must be positive")
+        (with-capability (GOV|DSA_ADMIN)
+            (with-capability (P|SECURE-CALLER)
+                (let ((ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT))
+                    (ref-FVT::XE_SetOracleValidity seconds)
+                )
+            )
+        )
+    )
     (defun A_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string)
         @doc "Owner-only: dispose the whole royalty pool (uptime-shortfall custody) of <reward-dptf-id> on a DSA \

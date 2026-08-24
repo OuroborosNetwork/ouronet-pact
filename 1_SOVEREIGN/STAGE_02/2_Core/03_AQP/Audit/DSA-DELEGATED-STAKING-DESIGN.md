@@ -445,22 +445,27 @@ FVT/SCORE core.
     but is **NOT skimmed anywhere in the collect path** yet. It only bites when a DELEGATOR (≠ operator) collects, so
     it needs (a) collect-fee wiring in the FVT collect + (b) a multi-delegator fixture. Deferred to **Phase 5b /
     the collect-wiring phase** (single-agency operator = sole staker ⇒ no fee applies in this fixture).
-- **Phase 6 — Royalty disposal.** 🟡 **PARTIAL.**
-  - ✅ **Withdraw DONE** — FVT `XE_WithdrawRoyalty(fvt-id, reward-dptf-id, destination)` under `FVT|XE>DISPOSE-ROYALTY`
-    (composes `P|SECURE-CALLER + P|FVT|REMOTE-GOV`): zeros `royalty-rewards` + `TFT::C_Transfer` the pool out of
-    `AQP|SC_NAME` custody. DSA `A_WithdrawRoyalty` (owner-gated) → destination = owner. Test: royalty 700 →
-    owner, pool zeroed, non-owner rejected. 11-suite audit green.
-  - 🔨 **Burn** — BLOCKED on a decision: `AQP|SC_NAME` is **NOT** in `DALOS::UR_AutonomicRoles`
-    (`{DALOS,ATS,VST,LIQUID,OUROBOROS,SWP,DHV2}`), so it can't burn a reward token without the *stored* burn role.
-    Options: (a) reward-token owner grants `AQP|SC_NAME` the burn role (`DPTF|C_ToggleBurnRole`, as `[5.3]` does)
-    then burn in place; (b) route royalty out to a burn-authorized account then burn; (c) add `AQP|SC_NAME` to
-    `UR_AutonomicRoles` (DALOS/Stage-01, broad). *Awaiting owner decision.*
-  - 🔨 **Fuel** — `SWP|C_Fuel(patron, account, swpair, input-amounts)` EXISTS (adds liquidity WITHOUT minting LP)
-    but is **missing from the `TalosStageOne_ClientThreeV1` interface**; expose it (+ the `SWPLC::C_Fuel` core-call
-    wiring / IMC) to build `A_FuelRoyalty`. *Awaiting owner go-ahead (SWP interface touch).*
-  - 🔨 **Compress (IGNIS→OURO)** — only `OUROBOROS::C_Compress` (no `XE_`); DSA is **not** in OUROBOROS's IMP.
-    Unexercised by the OURO fixture. Wire via a new `XE_Compress` or an IMP hookup (Stage-01) when an IGNIS-reward
-    delegation vault is needed. *Deferred.*
+- **Phase 6 — Royalty disposal.** 🟢 **DONE (3/3 modes; compress pending).** One FVT primitive per mode under
+  `FVT|XE>DISPOSE-ROYALTY` (composes `P|SECURE-CALLER + P|FVT|REMOTE-GOV` — the AQP-custody authority), each zeros
+  `royalty-rewards` and moves the pool out of `AQP|SC_NAME`; owner-gated DSA `A_` shells + Talos wrappers.
+  - ✅ **Withdraw** (`92f9d29`) — `XE_WithdrawRoyalty` → `TFT::C_Transfer` to the owner. Test: 700 → owner.
+  - ✅ **Burn** (`bf5b17c`) — `XE_BurnRoyalty` → `DPTF::C_Burn` in place. Owner-decision (c) taken: added
+    `GOV|AQP|SC_NAME` to **`DALOS::UR_AutonomicRoles`** (AQP pool-vault now has autonomic burn) + registered FVT in
+    DPTF's IMP. Test: 350 burned (incl. a 300 **zombie-flush** into the live inject) → total OURO supply −350.
+  - ✅ **Fuel** (`6d4a810`) — `XE_FuelRoyalty` → `SWPLC::C_Fuel` (registered FVT in SWPLC's IMP; builds the
+    input-amounts array). Test: 200 fueled into the OURO swpair → reserves +200, **LP supply UNCHANGED (no mint)**.
+  - 🔨 **Compress (IGNIS→OURO)** — pending: the Custodians vault will carry an **IGNIS reward line** (daily gas
+    cumulation) alongside 20% OURO, so an IGNIS royalty leg must **pre-normalize to OURO** (`OUROBOROS::C_Compress`,
+    98.5%) before withdraw/burn/fuel. Needs FVT in OUROBOROS's IMP + an `if reward-dptf == IGNIS → compress first`
+    branch in the disposals. Unexercised by the OURO fixture. *Next.*
+- **Oracle model — GLOBAL external-oracle switch + variable validity (owner-requested).** ✅ **DONE.** Replaced
+  the per-FVT `oracle-on` + the `DSA_ORACLE_TTL` constant in `URC_MemberEffectiveCapture` with a SINGULAR global
+  config row (`FVT|T|DsaOracleConfig`, lazily-defaulted on / 25h): `UR_ExternalOracle` + `UR_OracleValidity`
+  readers, `XE_SetExternalOracle` / `XE_SetOracleValidity` setters, and DSA **module-admin** (`GOV|DSA_ADMIN`)
+  `A_ToggleExternalOracle` / `A_SetOracleValidity`. Semantics: external-oracle **ON** ⇒ a member captures its stored
+  weight only while its last oracle write is fresher than `oracle-validity` (no/stale entry ⇒ 0); **OFF** ⇒ oracling
+  bypassed protocol-wide, stored capture trusted. Test: 2h-old write expires at a 1h validity; OFF → trust 1.5 at
+  29h stale; ON → 0 again.
 - **Phase 7 — Talos + gas full wiring.** All DSA client/admin ops into Talos + gas-station allowlist + IMP; the
   operator-fee collect path. *Verify:* end-to-end via Talos.
 - **Phase 8 — Round B: heterogeneous quality split.** Reward-mode flag + per-type split matrix + the

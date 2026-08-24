@@ -96,6 +96,10 @@
     (defun XE_SweepEnd:string (anchor-id:string))
     (defun XE_SetFvtVacateFrozen:string (fvt-id:string frozen:bool))
     (defun XE_SetFvtOracleOn:string (fvt-id:string oracle-on:bool))
+    (defun XE_SetExternalOracle:string (on:bool))
+    (defun XE_SetOracleValidity:string (seconds:integer))
+    (defun UR_ExternalOracle:bool ())
+    (defun UR_OracleValidity:integer ())
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool))
     (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time))
     (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string))
@@ -566,6 +570,17 @@
         offset:integer
         active:bool
     )
+    (defschema FVT|DsaOracleConfig
+        @doc "Single GLOBAL row (key = FVT|DSA-ORACLE-KEY). The protocol-wide DSA external-oracle switch + validity \
+            \ window, replacing the per-FVT oracle-on + the DSA_ORACLE_TTL constant. `external-oracle` = is external \
+            \ oracling on at all: ON ⇒ a delegation member captures its weight only while its last oracle write is \
+            \ fresher than `oracle-validity` seconds (no/stale entry ⇒ effective 0); OFF ⇒ oracling is bypassed \
+            \ entirely and the stored capture-weight is trusted as-is. Read lazily (defaults: on=true, \
+            \ validity=DSA_ORACLE_TTL) so no init is needed; written only by A_ToggleExternalOracle / \
+            \ A_SetOracleValidity (DSA module admin) via the FVT XE_ setters."
+        external-oracle:bool
+        oracle-validity:integer
+    )
     ;;
     ;;{2}
     (deftable FVT|T:{FVT|Schema})                               ;; Key = <FVT-ID>
@@ -581,8 +596,10 @@
     (deftable FVT|T|ForcedFixCount:{FVT|ForcedFixCount})        ;; Key = <FVT-ID> | <DPTF-ID> | <User-ID>
     (deftable FVT|T|VacateFreeze:{FVT|VacateFreeze})            ;; Key = <FVT-ID>
     (deftable FVT|T|SweepProgress:{FVT|SweepProgress})          ;; Key = <Anchor-ID>
+    (deftable FVT|T|DsaOracleConfig:{FVT|DsaOracleConfig})      ;; Key = FVT|DSA-ORACLE-KEY (single global row)
     ;;{3}
     (defconst CT_FVT_RPS_PREC 48)
+    (defconst FVT|DSA-ORACLE-KEY:string "GLOBAL")
     ;; --- Time-streamed inject (linear vesting release) — see Audit/STREAMED-INJECT-DESIGN.md ---
     (defconst STREAM_EPOCH:time (time "1970-01-01T00:00:00Z")
         "Default stream-last-release for a lane with no live stream (irrelevant while stream-count = 0).")
@@ -1745,16 +1762,30 @@
             (floor (* staked-amount per-lp) CT_FVT_RPS_PREC)
         )
     )
+    (defun UR_ExternalOracle:bool ()
+        @doc "The GLOBAL DSA external-oracle switch (single row). ON (default) ⇒ delegation capture is gated by \
+            \ oracle freshness; OFF ⇒ oracling is bypassed and the stored capture-weight is trusted."
+        (with-default-read FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY
+            {"external-oracle" : true} {"external-oracle" := x} x)
+    )
+    (defun UR_OracleValidity:integer ()
+        @doc "The GLOBAL DSA oracle-validity window in seconds (default DSA_ORACLE_TTL = 25h). An oracle write older \
+            \ than this captures nothing while external-oracle is ON."
+        (with-default-read FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY
+            {"oracle-validity" : DSA_ORACLE_TTL} {"oracle-validity" := v} v)
+    )
     (defun URC_MemberEffectiveCapture:decimal (fvt-id:string score-entity-id:string)
-        @doc "DSA agency inject NUMERATOR: the member's uptime-adjusted capture-weight, ZEROED when the oracle is \
-            \ on AND its last write has expired (now − oracle-ts > DSA_ORACLE_TTL, 25h). Oracle off ⇒ capture-weight \
-            \ as-is (DSA maintains it at uptime 1000). Only meaningful for a delegation member (S §4)."
+        @doc "DSA agency inject NUMERATOR: the member's uptime-adjusted capture-weight, ZEROED when the GLOBAL \
+            \ external-oracle switch is ON AND this member's last oracle write has expired (now − oracle-ts > the \
+            \ global oracle-validity, default 25h). external-oracle OFF ⇒ capture-weight as-is (oracling bypassed, \
+            \ stored weight trusted). No/stale entry while ON ⇒ 0 (a default oracle-ts is always stale). Only \
+            \ meaningful for a delegation member (§4)."
         (let
             (
                 (cw:decimal (UR_FVT-SEL|CaptureWeight fvt-id score-entity-id))
             )
-            (if (and (UR_FVT|OracleOn fvt-id)
-                     (> (diff-time (at "block-time" (chain-data)) (UR_FVT-SEL|OracleTs fvt-id score-entity-id)) (dec DSA_ORACLE_TTL)))
+            (if (and (UR_ExternalOracle)
+                     (> (diff-time (at "block-time" (chain-data)) (UR_FVT-SEL|OracleTs fvt-id score-entity-id)) (dec (UR_OracleValidity))))
                 0.0
                 cw
             )
@@ -5133,6 +5164,28 @@
             (WU_Fvt|OracleOn fvt-id oracle-on)
         )
     )
+    (defun XE_SetExternalOracle:string (on:bool)
+        @doc "DSA (module admin): set the GLOBAL external-oracle switch. Preserves the current oracle-validity. \
+            \ UEV_IMC + SECURE."
+        (UEV_IMC)
+        (with-capability (SECURE)
+            (with-default-read FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY
+                {"oracle-validity" : DSA_ORACLE_TTL} {"oracle-validity" := v}
+                (write FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY {"external-oracle" : on, "oracle-validity" : v})
+            )
+        )
+    )
+    (defun XE_SetOracleValidity:string (seconds:integer)
+        @doc "DSA (module admin): set the GLOBAL oracle-validity window (seconds). Preserves the current \
+            \ external-oracle switch. UEV_IMC + SECURE."
+        (UEV_IMC)
+        (with-capability (SECURE)
+            (with-default-read FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY
+                {"external-oracle" : true} {"external-oracle" := x}
+                (write FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY {"external-oracle" : x, "oracle-validity" : seconds})
+            )
+        )
+    )
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool)
         @doc "DSA: flip a member to (or from) a delegation agency. UEV_IMC + SECURE."
         (UEV_IMC)
@@ -6325,5 +6378,6 @@
 (create-table FVT|T|MemberVault)                                ;; Key = <FVT-ID> | <Score-Entity-ID> | <DPTF-ID>
 (create-table FVT|T|UserPresence)                               ;; Key = <FVT-ID> | <Ouronet-ID>
 (create-table FVT|T|ForcedFixCount)                             ;; Key = <FVT-ID> | <DPTF-ID> | <User-ID>
+(create-table FVT|T|DsaOracleConfig)                            ;; Key = FVT|DSA-ORACLE-KEY (single global row)
 (create-table FVT|T|VacateFreeze)                               ;; Key = <FVT-ID>
 (create-table FVT|T|SweepProgress)                              ;; Key = <Anchor-ID>

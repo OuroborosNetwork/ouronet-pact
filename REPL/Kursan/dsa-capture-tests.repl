@@ -996,4 +996,118 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(print "=== dsa-capture-tests END — open + capture + oracle + inject/royalty + withdraw/burn/fuel (Phase 3-6) ===")
+;;
+;;|| NEXT >
+;;|| GLOBAL external-oracle switch + variable oracle-validity (DSA module admin). The member's last oracle write
+;;|| is fixed at 2027-11-06T05:00:00Z (TX-P3-19). First: shrink the validity window so a 2h-old write expires.
+;;
+(begin-tx "TX-P3-21 - variable oracle-validity")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-06T07:00:00Z") })   ; +2h after the last oracle write
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [TX-P3-21 · 01 · variable oracle-validity] ---")
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            ;; at the DEFAULT validity (25h) a 2h-old oracle is fresh → effective = stored weight (1.5)
+            (expect "<<TX-P3-21>> 2h-old oracle fresh at default validity → 1.5" 1.5 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id))
+            ;; shrink validity to 1h → the same 2h-old oracle is now expired → effective 0
+            (AQP-DSA.A_SetOracleValidity 3600)
+            (map print
+              [ (expect "<<TX-P3-21>> oracle-validity set to 3600s" 3600 (ref-FVT::UR_OracleValidity))
+                (expect "<<TX-P3-21>> 2h-old oracle EXPIRED at 1h validity → 0" 0.0 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id)) ])
+            ;; restore the default window for the switch tests
+            (AQP-DSA.A_SetOracleValidity 90000)
+            ""
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Turn the GLOBAL external-oracle OFF: even a long-stale oracle is ignored — the stored capture-weight is trusted.
+;;
+(begin-tx "TX-P3-22 - external-oracle OFF (trust stored capture)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-07T10:00:00Z") })   ; +29h — well past the 25h window
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [TX-P3-22 · 01 · external-oracle OFF] ---")
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            ;; oracle ON, 29h-stale → effective 0
+            (expect "<<TX-P3-22>> stale oracle (ON) → 0" 0.0 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id))
+            (AQP-DSA.A_ToggleExternalOracle false)
+            (map print
+              [ (expect "<<TX-P3-22>> external-oracle switched OFF" false (ref-FVT::UR_ExternalOracle))
+                ;; oracle OFF → oracling bypassed → the stored capture-weight (1.5) is trusted despite staleness
+                (expect "<<TX-P3-22>> oracle OFF → stored capture trusted = 1.5" 1.5 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id)) ])
+            ""
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Turn it back ON — the freshness gate re-applies, so the stale member captures 0 again.
+;;
+(begin-tx "TX-P3-23 - external-oracle back ON")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-07T10:00:00Z") })
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [TX-P3-23 · 01 · external-oracle back ON] ---")
+(let
+    (
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            (AQP-DSA.A_ToggleExternalOracle true)
+            (map print
+              [ (expect "<<TX-P3-23>> external-oracle switched back ON" true (ref-FVT::UR_ExternalOracle))
+                (expect "<<TX-P3-23>> oracle ON → stale member captures 0 again" 0.0 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id)) ])
+            ""
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== dsa-capture-tests END — open/capture/oracle/inject/royalty/disposal + global oracle switch (Phase 3-6) ===")
