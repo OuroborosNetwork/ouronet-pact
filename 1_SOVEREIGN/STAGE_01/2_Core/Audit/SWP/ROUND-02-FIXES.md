@@ -1387,3 +1387,25 @@ its #34M/M2 successor `URCX_HopperForNodes`. Corrected to "highest-output edge."
 behavior change. Full `Z.repl` regression: exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #30 — L50 (#50L): `UR_StoaValue` no longer writes as a side effect of a read
+
+**Owner:** the write's original purpose was a deliberate migration artifact (populate the field once, a
+real event later writes the genuine value) — confirmed, then authorized removing the write.
+
+**Tested the obvious fix before proposing it — it was wrong:** `with-default-read` looked like the clean
+replacement, but a scratch repro (old-schema row read against a newer schema with an added field)
+confirmed its default only covers a key entirely absent from the table, not a field missing from an
+existing row — it would crash on exactly the legacy-row case. Caught before it shipped.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** dropped the `update`; legacy rows now return `0.0`
+computed fresh on every read, never persisted. Traced every reader of `"stoa-value"` codebase-wide first
+(including cross-module — AQP's `FVT`) — confirmed nothing depends on the field being physically present
+in storage, only on the returned value.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite, issuance-only regression, and full `Z.repl` (Stage 1
++ Stage 2, exercising the cross-module `FVT` caller) all exit 0 / 0 `FAILURE`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

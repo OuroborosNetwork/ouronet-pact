@@ -800,18 +800,22 @@
     (defun UR_StoaValue:decimal (swpair:string)
         @doc "STOA pool ledger scalar. Same row existence semantics as other UR_* on SWP|Pairs: \
             \ <read SWP|Pairs swpair …> fails if <swpair> is not a pool. Legacy V2 rows without \
-            \ stoa-value are updated to 0.0 on first read (narrow read returns {})."
+            \ stoa-value (narrow read returns {}) return 0.0 directly, computed fresh on every \
+            \ read — never persisted here. \
+            \ #50L fix: this used to backfill 0.0 into storage on first read as a migration \
+            \ artifact/optimization — a real ungated write as a side effect of a nominal UR_* \
+            \ read, at the caller's own gas expense. Confirmed safe to drop: traced every read \
+            \ of \"stoa-value\" anywhere in the codebase (including cross-module, AQP's FVT) — \
+            \ this function is the only one that ever reads the field directly, so nothing \
+            \ depends on it being physically present in storage. A real price update \
+            \ (<XE_UpdateStoaValue>) still writes the genuine value whenever one actually \
+            \ occurs; genesis pools already seed the field from day one, so this only ever \
+            \ applied to pre-V3 legacy rows anyway."
         (let
             (
                 (temp (read SWP|Pairs swpair ["stoa-value"]))
-                (needs-populate:bool (= temp {}))
-                (v:decimal (if needs-populate 0.0 (at "stoa-value" temp)))
             )
-            (if needs-populate
-                (update SWP|Pairs swpair {"stoa-value": 0.0})
-                true
-            )
-            v
+            (if (= temp {}) 0.0 (at "stoa-value" temp))
         )
     )
     (defun UR_Pools:[string] (pool-category:string)

@@ -2249,3 +2249,36 @@ pools, not minimize cost). Pure doc wording, zero behavior change.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #29. Awaiting Round III re-verify. — *L49*
 
 ---
+
+## L50 (#50L, SWP — `UR_StoaValue` performs an ungated table write as a side effect of a nominal "read") — **CONFIRMED, FIXED, PROVEN**
+
+**Confirmed the violation, then tested the obvious fix before proposing it — and it would have been
+wrong.** `UR_StoaValue` (a `UR_*`) did a real `update SWP|Pairs swpair {"stoa-value": 0.0}` write when it
+encountered a legacy V2 row predating the V3 `stoa-value` field. First instinct was to swap this for
+`with-default-read`. Built a scratch repro simulating exactly this scenario (an old-schema row read
+against a newer module schema with an added field) before proposing it as the fix — confirmed
+`with-default-read`'s default only covers a key **entirely absent** from the table, not a field missing
+from an otherwise-existing row; it throws "Key not found in object" on precisely the legacy-row case it
+would need to handle. Would have been a real regression if shipped without testing.
+
+**Owner confirmed the write's original purpose:** a deliberate migration artifact — populate the field
+once so a real event (`XE_UpdateStoaValue`) can later write the genuine value; not an oversight.
+
+**Traced every reader of `stoa-value` before removing the write, to confirm nothing depends on it being
+physically persisted:** grepped the entire codebase (Stage 1 and Stage 2, including cross-module —
+AQP's `FVT` module reads this via `SWP::UR_StoaValue`) — `UR_StoaValue` is the only function anywhere
+that ever reads the field directly. No caller inspects the underlying row's write history, only the
+returned decimal. Genesis pools already seed the field to `0.0` from day one, so this only ever mattered
+for pre-V3 legacy rows.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** dropped the `update` entirely; a legacy row now
+returns `0.0` computed fresh on every read, never persisted here. `XE_UpdateStoaValue` still writes the
+real value whenever an actual price update occurs. Restores `UR_*` purity — no write, no side effect.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite, issuance-only regression, and full `Z.repl` (Stage 1
++ Stage 2, exercising the cross-module `FVT` caller too) all exit 0, 0 `FAILURE`, `Load successful` —
+confirming zero observable behavior change to any real caller.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #30. Awaiting Round III re-verify. — *L50*
+
+---

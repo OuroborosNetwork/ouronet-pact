@@ -408,7 +408,14 @@ Wording had migrated unchanged into `URCX_HopperForNodes` (#34M/M2's successor).
 "highest-output edge." Pure doc change, zero behavior change. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`. — *L49*
 
-#50L **[SWP]** `UR_StoaValue` performs an ungated table write as a side effect of a nominal "read".
+#50L **[SWP]** ~~`UR_StoaValue` performs an ungated table write as a side effect of a nominal
+"read".~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-24** (`ROUND-02-FIXES.md` Fix #30). Owner: deliberate
+migration artifact (populate once, a real event writes the genuine value later), confirmed then
+authorized removing it. First-instinct fix (`with-default-read`) tested via a scratch repro and found
+wrong before proposing it — its default doesn't cover a field missing from an existing row, would have
+crashed on the exact legacy-row case. Dropped the `update`; legacy rows now return `0.0` fresh every
+read. Traced every reader of the field codebase-wide (including cross-module, AQP's `FVT`) — nothing
+depends on it being persisted. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L50*
 
 #51L **[SWP]** `C_ModifyWeights` composes a bare `(SECURE)` cap directly instead of a named master client
 cap.
