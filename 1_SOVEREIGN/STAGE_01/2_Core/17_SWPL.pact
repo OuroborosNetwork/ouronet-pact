@@ -1768,6 +1768,17 @@
             account:string swpair:string asymmetric-collection:bool gaseous-collection:bool kda-pid:decimal
             ld:object{SwapperLiquidityV1.LiquidityData} clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
         )
+        @doc "#59L note: every branch below calls XE_UpdateSupplies (reserve bump) BEFORE \
+            \ XI_AddLiqSendAndMint (the actual token transfer-in + LP mint). That ordering \
+            \ is only safe because this whole function always executes as one atomic \
+            \ unit — never split across a transaction/step boundary. Confirmed for both \
+            \ real call shapes: the single-tx SWPLC client paths call this directly \
+            \ inside one transaction; MTX-SWP::MTX|C_AddLiquidity's defpact calls it \
+            \ entirely within Step 1's own step-with-rollback block (never spanning \
+            \ Step 1 and a later step) — a defpact step is itself a single atomic \
+            \ transaction, so the same guarantee holds there too. If a future caller \
+            \ ever needs to split this function's bump and transfer across two separate \
+            \ steps, this ordering would need re-deriving from scratch, not assumed safe."
         (UEV_IMC)
         (let
             (

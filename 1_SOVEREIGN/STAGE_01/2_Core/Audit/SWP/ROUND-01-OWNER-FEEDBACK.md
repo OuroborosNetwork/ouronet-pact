@@ -2508,3 +2508,30 @@ renames — not resolved piecemeal inside this branch.
 all 308 occurrences across 17 files) so the eventual sweep doesn't have to rediscover scope or intent. — *L58*
 
 ---
+
+## L59 (#59L, SWPL — reserve bump happens before the actual transfer inside `XE|KDA-PID_AddLiqudity`, safe only by same-tx atomicity) — **CONFIRMED, FIXED, PROVEN**
+
+**Checked the exact worry the finding raised, not just its conclusion:** every branch of
+`XE|KDA-PID_AddLiqudity` calls `XE_UpdateSupplies` (reserve bump) before `XI_AddLiqSendAndMint` (the
+actual transfer-in + LP mint). The finding already concluded this is safe for a single transaction, but
+flagged the real risk: if `MTX-SWP`'s multi-step defpact ever split the bump and the transfer across two
+*separate* steps (which really are separate transactions over time, not atomic with each other), reserves
+could reflect tokens that haven't actually arrived — a real, exploitable window.
+
+**Traced `MTX-SWP::MTX|C_AddLiquidity` directly to check whether that split actually happens:** it
+doesn't. `XE|KDA-PID_AddLiqudity` is called entirely within Step 1's own `step-with-rollback` block —
+never spanning Step 1 and a later step. Since each individual pact step is itself a single atomic
+transaction, the same same-tx guarantee holds there too, confirmed rather than assumed.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact`:** added a `@doc` to `XE|KDA-PID_AddLiqudity`
+explaining the ordering invariant precisely, confirming it holds for both real call shapes (single-tx
+SWPLC client paths, and MTX-SWP's defpact Step 1), and flagging explicitly that a future caller splitting
+the bump and transfer across two steps would need to re-derive this safety, not assume it. Pure
+documentation, zero behavior change.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite and full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0
+`FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #35. Awaiting Round III re-verify. — *L59*
+
+---

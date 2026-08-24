@@ -1483,3 +1483,20 @@ a real upgrade from late/opaque to early/clean, not a redundant no-op. Full `[6.
 issuance-only regression, and full `Z.repl` (Stage 1 + Stage 2) all exit 0, 0 `FAILURE`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #35 — L59 (#59L): documented the atomicity invariant behind `XE|KDA-PID_AddLiqudity`'s ordering
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact`:** every branch of `XE|KDA-PID_AddLiqudity` bumps
+reserves (`XE_UpdateSupplies`) before the actual transfer (`XI_AddLiqSendAndMint`), safe only by same-tx
+atomicity. Traced `MTX-SWP::MTX|C_AddLiquidity` directly (the finding's specific worry) to confirm this
+function is always called entirely within one pact step (Step 1's own `step-with-rollback`), never split
+across steps — a defpact step is itself atomic, so the guarantee holds there too. Added `@doc` recording
+this precisely, including an explicit flag that a future caller splitting bump/transfer across two steps
+would need to re-derive the safety, not assume it. Pure documentation, zero behavior change.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite and full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0
+`FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

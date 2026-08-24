@@ -475,8 +475,13 @@ pending the future Aletheia Oracle — rename `KDA-PID` → `STOA-PID` throughou
 from `main` (protocol-wide economic-concept rename, not a SWP-scoped fix). No code change. Full writeup
 in `ROUND-01-OWNER-FEEDBACK.md`. — *L58*
 
-#59L **[SWPL]** Reserve bump happens before the actual token transfer inside `XE|KDA-PID_AddLiqudity` — safe
-only by same-tx atomicity; worth a defensive comment given MTX-SWP elsewhere *is* multi-step.
+#59L **[SWPL]** ~~Reserve bump happens before the actual token transfer inside `XE|KDA-PID_AddLiqudity` —
+safe only by same-tx atomicity; worth a defensive comment given MTX-SWP elsewhere *is* multi-step.~~ —
+**FIXED ✅ AND PROVEN ✅ 2026-08-24** (`ROUND-02-FIXES.md` Fix #35). Traced the real worry directly: does
+`MTX-SWP`'s defpact split the bump and transfer across separate, non-atomic steps? No — confirmed the
+whole function is always called entirely within Step 1's own `step-with-rollback`. Added `@doc` recording
+the invariant and flagging it for any future caller. Pure doc change. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L59*
 
 #60L **[SWPLC]** LP-branding fee attribution resolves via DPTF/DPOF `Konto`, not `SWP::UR_OwnerKonto`
 directly — a potential (not confirmed) billing-attribution mismatch.
