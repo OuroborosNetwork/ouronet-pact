@@ -421,9 +421,16 @@ the same "Talos module needs its own IMC registration" shape already fixed once 
 audits. Full launchpad scenario re-run clean; Z.repl green. Handoff sent for DPTF/DPOF (same shape
 confirmed to exist there too). — *DPDC·M2*
 
-#36M **[DPDC]** `AUP_Account`/`AUP_Property` admin-migration helpers slice composite keys via hardcoded
+#36M **[DPDC]** ~~`AUP_Account`/`AUP_Property` admin-migration helpers slice composite keys via hardcoded
 character offsets instead of the BAR-delimiter split used everywhere else in the file — silently corrupts
-Select-Key fields for any non-standard-length account during a migration run. — *DPDC·M3*
+Select-Key fields for any non-standard-length account during a migration run.~~ — **REFUTED 2026-08-24**
+— owner: "there are no non-162-char accounts." Confirmed via `GLYPH|UEV_ApolloAccountCheck`/
+`GLYPH|UEV_ApolloAccount` (`08_U_DALOS.pact:316-356`): every valid DALOS account is hard-`enforce`d to be
+exactly 162 characters — not a coincidental pattern but a system-wide invariant, checked before any
+Account-table row involving it can exist. The `k:`/`c:`-format strings used elsewhere in this audit are
+unrelated raw Kadena coin addresses (for `coin.TRANSFER` only), never valid `account` values in a DPDC
+Account-table key. `AUP_Account`'s hardcoded offsets rely on a real guarantee — no bug, no code change.
+— *DPDC·M3*
 
 #37M **[DPDC-UDC]** `UDC_ZeroNonceData` is called cross-module through a `module{DpdcUdcV1}`-typed ref from
 4 sibling files but is absent from the `DpdcUdcV1` interface itself — works today only via Pact's dynamic

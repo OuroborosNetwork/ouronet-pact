@@ -729,3 +729,17 @@ peer (only `TS02-C1`'s/`TS02-C2`'s was, carried through the now-removed wrapper'
 registering `TS02-DPAD`'s own guard into DPDC's `P|A_Define`, the same "Talos module needs its own IMC
 registration" shape already fixed once in the AQP audit and once in the ATS audit (#34N). Re-ran the full
 launchpad scenario end to end after the fix — clean. Z.repl green.
+
+## #36M · DPDC · M3 — `AUP_Account` slices composite keys with hardcoded offsets instead of a delimiter split
+
+**Verdict: REFUTED (2026-08-24).** Owner corrected the premise directly: "there are no non-162-char
+accounts." Checked `GLYPH|UEV_ApolloAccountCheck`/`GLYPH|UEV_ApolloAccount` (`08_U_DALOS.pact:316-356`)
+and confirmed this isn't a typical-but-fragile pattern — it's a hard-enforced invariant:
+`(enforce (= account-len 162) "Apollo account string does not conform to length 162")`. Every valid
+DALOS/Ouronet account is required to be a 162-character "₱."/"Π."/"Ѻ."/"Σ."-prefixed string, checked
+(via `UEV_EnforceAccountExists`/account-type checks) before any Account-table row involving it can ever
+exist. The `k:`/`c:`-format strings used throughout this whole audit for `coin.TRANSFER` payees are raw
+Kadena-chain coin addresses — a completely separate namespace from DALOS's own account identity system,
+and never valid candidates for the `account` field in a DPDC Account-table key. `AUP_Account`'s hardcoded
+`-163`/`-162` offsets rely on a real, system-wide, enforced guarantee, not a coincidence — there is no
+bug. No code change.
