@@ -720,4 +720,86 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(print "=== dsa-capture-tests END — open + capture + oracle + inject/royalty/zombie/collect (Phase 3+4+5) ===")
+;;
+;;|| NEXT >
+;;|| Phase 6 — royalty DISPOSAL (withdraw). The royalty pool accrued 500 (TX-P3-11) + 200 (TX-P3-13) = 700; the
+;;|| owner withdraws it out of AQP custody to the owner konto and the pool zeroes.
+;;
+(begin-tx "TX-P3-15 - owner withdraws the royalty pool")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-06T01:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-15 · 01 · owner withdraws royalty] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+        )
+        (let
+            (
+                (roy-before:decimal (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+                (bal-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd))
+            )
+            (print (format "<(royalty pool before withdraw)> => {}" [roy-before]))
+            (ref-TS02-C3::AQP-DSA|A_WithdrawRoyalty anhd fvt-id ouro)
+            (let ((received:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) bal-before)))
+                (map print
+                  [ ;; the whole accrued royalty (700 = 500 + 200) landed on the owner
+                    (expect "<<TX-P3-15>> owner received the whole royalty pool" roy-before received)
+                    (expect "<<TX-P3-15>> royalty pool zeroed after withdraw" 0.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
+                    ;; sanity: it was the 700 accrued across the two shortfall/expiry injects
+                    (expect "<<TX-P3-15>> withdrawn royalty = 700" 700.0 received) ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| A non-owner cannot withdraw the royalty pool.
+;;
+(begin-tx "TX-P3-16 - non-owner royalty withdraw rejected")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-06T02:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-16 · 01 · non-owner withdraw rejected] ---")
+(let
+    (
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
+        (map print
+          [ (expect-failure "<<TX-P3-16>> non-owner royalty withdraw rejected"
+                (ref-TS02-C3::AQP-DSA|A_WithdrawRoyalty "k:not-the-owner" fvt-id ouro)) ]))
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== dsa-capture-tests END — open + capture + oracle + inject/royalty + royalty withdraw (Phase 3-6) ===")

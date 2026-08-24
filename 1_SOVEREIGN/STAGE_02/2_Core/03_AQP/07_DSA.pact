@@ -26,6 +26,8 @@
         (patron:string fvt-id:string oracle-guard:guard))
     (defun A_OracleWrite:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer))
+    (defun A_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string))
     ;;
 )
 ;;
@@ -186,6 +188,7 @@
     (defconst GAS|RECOMPUTE-CAPTURE:decimal 300.0)
     (defconst GAS|SET-ORACLE-AUTH:decimal 300.0)
     (defconst GAS|ORACLE-WRITE:decimal 200.0)
+    (defconst GAS|WITHDRAW-ROYALTY:decimal 400.0)
     (defconst DSA_UPTIME_MIN:integer 0)
     ;;
     ;;<==========>
@@ -255,6 +258,23 @@
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
             (enforce (= patron fvt-owner) "Only the FVT owner may set the oracle authority")
+            (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
+        )
+        (compose-capability (P|SECURE-CALLER))
+    )
+    (defcap DSA|C>WITHDRAW-ROYALTY (patron:string fvt-id:string)
+        @doc "Owner-only: withdraw the whole royalty pool of a DSA vault to the FVT owner. Enforces the vault is a \
+            \ live DSA vault + patron IS the FVT owner (+ signs). Composes P|SECURE-CALLER so DSA's registered IMC \
+            \ guard is active for the FVT XE_WithdrawRoyalty custody call."
+        @event
+        (let
+            (
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+            )
+            (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
+            (enforce (= patron fvt-owner) "Only the FVT owner may withdraw royalty")
             (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
         )
         (compose-capability (P|SECURE-CALLER))
@@ -491,6 +511,26 @@
                 (WU_Agency-Oracle fvt-id score-entity-id nodes uptime)
                 (XI_ApplyCapture fvt-id score-entity-id (at "block-time" (chain-data)))
                 (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ORACLE-WRITE patron trigger [score-entity-id])
+            )
+        )
+    )
+    (defun A_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string)
+        @doc "Owner-only: dispose the whole royalty pool (uptime-shortfall custody) of <reward-dptf-id> on a DSA \
+            \ vault by WITHDRAWING it to the FVT owner (delegates the AQP-custody move + zero to the FVT primitive \
+            \ FVT::XE_WithdrawRoyalty, which holds the custody-governor authority). UEV_IMC + DSA|C>WITHDRAW-ROYALTY. \
+            \ Bills GAS|WITHDRAW-ROYALTY merged with the custody transfer's IGNIS."
+        (UEV_IMC)
+        (with-capability (DSA|C>WITHDRAW-ROYALTY patron fvt-id)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                )
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [ (ref-IGNIS::UDC_ConstructOutputCumulator GAS|WITHDRAW-ROYALTY patron (ref-IGNIS::URC_IsVirtualGasZero) [fvt-id])
+                      (ref-FVT::XE_WithdrawRoyalty fvt-id reward-dptf-id (ref-FVT::UR_FVT|OwnerKonto fvt-id)) ]
+                    [fvt-id])
             )
         )
     )

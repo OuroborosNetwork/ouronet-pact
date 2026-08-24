@@ -276,6 +276,9 @@
     (defun AQP-DSA|A_OracleWrite:string
         (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
     )
+    (defun AQP-DSA|A_WithdrawRoyalty:string
+        (patron:string fvt-id:string reward-dptf-id:string)
+    )
 )
 ;;
 (module TS02-C3 GOV
@@ -2216,6 +2219,24 @@
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (format "Oracle wrote nodes {} / uptime {}‰ for agency {}." [nodes uptime score-entity-id])
+            )
+        )
+    )
+    (defun AQP-DSA|A_WithdrawRoyalty:string
+        (patron:string fvt-id:string reward-dptf-id:string)
+        @doc "DSA (Talos): the FVT owner withdraws the whole royalty pool of <reward-dptf-id> on vault <fvt-id> to \
+            \ the owner konto; collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_WithdrawRoyalty patron fvt-id reward-dptf-id)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Royalty pool of {} on FVT {} withdrawn to the owner." [reward-dptf-id fvt-id])
             )
         )
     )

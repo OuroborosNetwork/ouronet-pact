@@ -99,6 +99,7 @@
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool))
     (defun XE_SetMemberCapture:string (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time))
     (defun XE_AdmitDelegationMember:string (fvt-id:string triplet-id:string operator:string))
+    (defun XE_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string destination:string))
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
     )
@@ -929,6 +930,16 @@
             (ref-DALOS::CAP_EnforceAccountOwnership operator)
             (compose-capability (SECURE))
         )
+    )
+    (defcap FVT|XE>DISPOSE-ROYALTY (fvt-id:string reward-dptf-id:string)
+        @doc "DSA royalty disposal: authorize moving the whole royalty pool (reward-dptf) OUT of the AQP pool-vault \
+            \ custody (AQP|SC_NAME) + zeroing royalty-rewards. Enforces a non-empty pool. Composes P|SECURE-CALLER + \
+            \ P|FVT|REMOTE-GOV — the AQP custody-governor authority for the TFT leg out of AQP|SC_NAME (same as \
+            \ FVT|C>INJECT). Owner authorization is enforced upstream in the DSA A_ shell."
+        @event
+        (enforce (> (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id) 0.0) "No royalty to dispose")
+        (compose-capability (P|SECURE-CALLER))
+        (compose-capability (P|FVT|REMOTE-GOV))
     )
     (defcap FVT|C>SWEEP-DRAIN (patron:string anchor-id:string chunk:integer)
         @doc "Protects a paginated re-score sweep CHUNK (CC_SweepRecomputeChunk). The sweep was authorized + the \
@@ -5146,6 +5157,24 @@
                 (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id) fvt-id)
                 (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id) fvt-id)
                 (XI_AddScoreEntity fvt-id CT_SCORE_ENTITY_TRIPLET triplet-id "|" 0.0)
+            )
+        )
+    )
+    (defun XE_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator}
+        (fvt-id:string reward-dptf-id:string destination:string)
+        @doc "DSA royalty disposal (WITHDRAW): zero the royalty pool (reward-dptf) of <fvt-id> and move its whole \
+            \ balance OUT of the AQP pool-vault custody (AQP|SC_NAME) to <destination> via TFT. UEV_IMC + \
+            \ FVT|XE>DISPOSE-ROYALTY (composes P|SECURE-CALLER + P|FVT|REMOTE-GOV for the AQP custody leg). Returns \
+            \ the TFT transfer's OutputCumulator. Owner authorization is enforced upstream in DSA's A_ shell."
+        (UEV_IMC)
+        (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
+            (let
+                (
+                    (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                    (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
+                )
+                (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
+                (ref-TFT::C_Transfer reward-dptf-id AQP|SC_NAME destination royalty true)
             )
         )
     )
