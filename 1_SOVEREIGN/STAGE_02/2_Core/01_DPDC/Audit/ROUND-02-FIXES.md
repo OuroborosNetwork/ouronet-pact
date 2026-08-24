@@ -1132,3 +1132,33 @@ new file print `"Expect: success ..."` / `"Expect failure: Success: ..."` in the
 silently skipped, no regressions elsewhere in the ~3000-line log.
 
 **Interface implication:** none — new REPL test file only, no `.pact` source changed.
+
+## Fix #25 — EQUITY · M2 (#29M) — named, documented constant for the 50% packaging cap
+
+**Owner-approved 2026-08-23.** Owner: "yes, let's do that, and add `@doc` in case it's missing, where it
+needs to be."
+
+**Root cause:** `URC_CombineCapacity` (`11_EQUITY+.pact:265-278`) expressed a real, deliberate business
+rule — at most 50% of a company's total shares may ever be packaged into tradeable tier-units (nonces
+2-8) at once, the rest must stay as loose barebone shares (nonce 1) — as a bare `(/ shares 2)`, with zero
+`@doc`, zero named constant, zero rationale anywhere in the file. A future maintainer reading `(/ shares
+2)` cold has no way to tell "deliberate 50% cap" from "stray bug," and nothing else in the module would
+catch a silent change to that ratio.
+
+**Fix:**
+- New `(defconst PACKAGING_CAP_DIVISOR 2)` next to the module's other small constants (`BAR`/`P`/`S`),
+  with a comment explaining the 50% packaging-cap rule and naming `URC_CombineCapacity` as its sole
+  consumer.
+- `URC_CombineCapacity`'s `half-shares` now divides by `PACKAGING_CAP_DIVISOR` instead of the bare `2` —
+  identical arithmetic, self-documenting.
+- Added `@doc` to `URC_CombineCapacity` itself (previously undocumented) plus its three immediate,
+  previously-undocumented sibling functions that feed the same packaging-capacity subsystem:
+  `UR_TierSupplies`, `URC_MakeSharePackage`, `URC_SingleSharePerMillions`.
+
+**Proof:** `cd REPL && pact Z.repl` — clean, `Load successful`. The EQUITY suite added for #22H
+(`[6.1.1]_EQUITY.repl`) already pins the exact numbers this constant governs — `CombineCapacity` = 500,000
+at issuance, 400,000 after packaging 100,000 shares, restored to 500,000 after a full Break, and the
+over-capacity Make (600,000 > 500,000) still correctly rejected — all of which still pass identically
+post-refactor, confirming the constant extraction is a pure rename with no behavior change.
+
+**Interface implication:** none — internal constant/doc changes only, no `EquityV1` signature change.

@@ -350,9 +350,14 @@ publicly-issued ticker; `"E|"` IDs can only ever originate from the handful of p
 lookalike would require already controlling `dpdc`'s own guard, not just typing the string "dpdc". No
 exploitable path found; no code change. — *EQUITY·M1*
 
-#29M **[EQUITY]** `URC_CombineCapacity`'s "at most 50% of shares may ever be packaged" rule is an
+#29M **[EQUITY]** ~~`URC_CombineCapacity`'s "at most 50% of shares may ever be packaged" rule is an
 undocumented magic constant (`(/ shares 2)`, no `defconst`, no `@doc`) — a permanent cap-table invariant a
-future maintainer is equally likely to "fix" as a bug. — *EQUITY·M2*
+future maintainer is equally likely to "fix" as a bug.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-23**
+(`ROUND-02-FIXES.md` Fix #25) — extracted to a named, documented `PACKAGING_CAP_DIVISOR` constant; added
+`@doc` to `URC_CombineCapacity` and 3 previously-undocumented sibling functions in the same
+packaging-capacity subsystem (`UR_TierSupplies`, `URC_MakeSharePackage`, `URC_SingleSharePerMillions`).
+Pure rename/doc change — the #22H EQUITY REPL suite's exact-number assertions (500,000/400,000 capacity
+values, over-capacity rejection) all still pass identically. Z.repl green. — *EQUITY·M2*
 
 #30M **[DPDC-S]** `C_EnableSetClassFragmentation` is the only one of five owner-gated set mutations that
 skips the `UEV_SetActiveState` gate its four siblings all enforce. — *DPDC-S·M2*

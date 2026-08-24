@@ -143,6 +143,10 @@
     (defconst BAR                   (CT_Bar))
     (defconst P                     ["0.1‰" "0.2‰" "0.5‰" "1‰" "2‰" "5‰" "1%"])
     (defconst S                     [100 200 500 1000 2000 5000 10000])
+    ;;DPDC Audit #29M: at most 1/PACKAGING_CAP_DIVISOR (50%) of a company's total shares (nonce 1) may
+    ;;ever be packaged into tradeable tier-units (nonces 2-8) at once; the remainder must stay as loose,
+    ;;unpackaged barebone shares. See URC_CombineCapacity below, the sole consumer of this constant.
+    (defconst PACKAGING_CAP_DIVISOR 2)
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -227,6 +231,8 @@
     )
     ;;{F0}  [UR]
     (defun UR_TierSupplies:[integer] (id:string)
+        @doc "Total outstanding supply of each package tier (nonces 2-8, in tier-unit counts, not \
+            \ share-equivalents), in tier order."
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
@@ -246,6 +252,9 @@
     )
     ;;{F1}  [URC]
     (defun URC_MakeSharePackage:integer (id:string shares-amount:integer package-share-tier:integer)
+        @doc "Converts a raw <shares-amount> into the equivalent whole number of <package-share-tier> \
+            \ units. Assumes even divisibility -- UEV_ShareAmountsForMaking enforces that before this \
+            \ result is trusted."
         (/ shares-amount (URC_SingleSharePerMillions id package-share-tier))
     )
     (defun URC_SharesPerMillion:[integer] (id:string)
@@ -259,15 +268,20 @@
         )
     )
     (defun URC_SingleSharePerMillions (id:string package-share-tier:integer)
+        @doc "Share-per-unit value for a single <package-share-tier> (1-7), scaled to this collection's \
+            \ total share count. See URC_SharesPerMillion."
         (at (- package-share-tier 1) (URC_SharesPerMillion id))
-        
+
     )
     (defun URC_CombineCapacity:integer (id:string)
+        @doc "Remaining share-equivalent headroom that may still be packaged into tier-units (nonces \
+            \ 2-8) before hitting the 1/PACKAGING_CAP_DIVISOR (50%) packaging cap on total shares \
+            \ (nonce 1). DPDC Audit #29M."
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
                 (shares:integer (ref-DPDC::UR_NonceSupply id true 1))
-                (half-shares:integer (/ shares 2))
+                (half-shares:integer (/ shares PACKAGING_CAP_DIVISOR))
                 (spm:[integer] (URC_SharesPerMillion id))
                 (supplies:[integer] (UR_TierSupplies id))
                 (supplies-as-shares:[integer] (zip (*) supplies spm))

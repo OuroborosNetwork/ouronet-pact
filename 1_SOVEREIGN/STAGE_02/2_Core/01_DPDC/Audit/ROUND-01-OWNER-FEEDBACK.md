@@ -609,3 +609,16 @@ lookalike would require already controlling `dpdc`'s own account guard, not just
 Two independent, stacked walls, neither of which the original Round I finding (flagged `[PLAUSIBLE]`, not
 `[CONFIRMED]`) had accounted for. No exploitable path found. No code change — documented as REFUTED in
 `ISSUES-RANKED.md` and `README.md`.
+
+## #29M · EQUITY · M2 — 50% packaging cap is an undocumented magic constant
+
+**Verdict: CONFIRMED, FIXED (2026-08-23).** Owner: "yes, let's do that, and add `@doc` in case it's
+missing, where it needs to be."
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #25)** — extracted the bare `(/ shares 2)` in
+`URC_CombineCapacity` into a named, documented `PACKAGING_CAP_DIVISOR` constant explaining the 50%
+packaging-cap business rule. Also added `@doc` to `URC_CombineCapacity` itself and to three previously
+undocumented sibling functions in the same packaging-capacity subsystem (`UR_TierSupplies`,
+`URC_MakeSharePackage`, `URC_SingleSharePerMillions`), per the owner's "where it needs to be" instruction.
+Pure rename/doc change — the #22H EQUITY REPL suite's exact-number assertions (500,000/400,000 capacity
+values, over-capacity rejection) all still pass identically post-refactor. Z.repl green.
