@@ -285,8 +285,12 @@ Deploy order: `07_DSA.pact` loads **after** FVT (DSA→FVT), in `REPL/Stage_02/[
 4. **Oracle write path** — `DSA|OracleAuth` delegated guard writes daily `{nodes, uptime}` + stamps oracle-ts;
    `oracle-on` toggle via `XE_SetFvtOracleOn`; defaults uptime 1000.
 5. **Royalty disposal** — `A_WithdrawRoyalty` / `A_BurnRoyalty` / `A_FuelRoyalty(swpair)`; read + zero
-   `royalty-rewards`, move from AQP custody; **IGNIS→OURO** pre-normalize (find the conversion primitive — the
-   one genuine unknown to resolve at build time); fuel = SWP add-liquidity-no-mint.
+   `royalty-rewards`, move from AQP custody; **IGNIS→OURO** pre-normalize via the **`OUROBOROS`** module
+   (interface `OuroborosV1`, `STAGE_01/2_Core/13_OUROBOROS.pact`; 98.5% efficiency / 1.5% compression fee;
+   `URC_Compress` = quote, `C_Compress` = client entry). **Wire OUROBOROS DIRECTLY (core→core module ref `::`),
+   NOT the Talos wrapper** — DSA composes compress *inside* a new function, so it takes the core entry (resolve
+   `C_Compress` vs an internal `XE_/XB_` compress variant at build time; add one to OUROBOROS if only `C_` exists).
+   The resulting OURO is then withdrawn / burned / fueled; fuel = SWP add-liquidity-no-mint.
 6. **Talos + IMP** — register DSA in FVT's IMP (`P|A_Define`), Talos client/admin wrappers, gas.
 7. **Tests** — Custodians fragment fixture (fragment 1/2/3 → stake −1/−2/−3 → Q → capture), inject with
    uptime shortfall → royalty, all-drained → zombie, disposal.
