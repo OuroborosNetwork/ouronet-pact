@@ -2,7 +2,7 @@
 
 | | |
 |--|--|
-| **Version** | **1.10.0** |
+| **Version** | **1.11.0** |
 | **Status** | Published discipline — rules Ouronet follows; offered for any Pact builder |
 | **Date** | 2026-08-24 |
 | **Home** | Ouronet (this repository) — the codebase that practices and proves the method |
@@ -480,18 +480,43 @@ Top of a StoicSyntax module (reference skeleton: ModuleSample):
 
 **Auxiliary depth:** `URCX_` / `URDCX_` under parent URC/URDC blocks (same read-depth rules).
 
-**Documented exception — bounds-guard `enforce` inside `UC_` list/string helpers (SWP L41, 2026-08-23):**
-`U|LST`'s own `UC_*` helpers (`UC_ReplaceAt`, `UC_RemoveItemAt`, `UC_LE`, `UC_FE`, and `UEV_NotEmpty`
-where they call it) `enforce` on a list's own shape — index-in-bounds, list-not-empty — before indexing
-into it. This is **not** a business/domain validation the "must not enforce" rule is meant to keep out of
-`UC_*`; it is a guard **intrinsic to the computation itself**, preventing a bare out-of-bounds crash mid-
-computation, not gating an application-level decision. Any `UC_*` elsewhere in the codebase that calls
-these specific helpers (e.g. `U|SWP`'s `UC_ComputeY`/`UC_ComputeInverseY`/`UC_AddSupply`/
-`UC_RemoveSupply`) **stays `UC_*`** and is **excluded from any StoicSyntax rename/reclassification
-sweep** — do not rename these to `UEV_`/`URC_` or split them apart chasing pure-`UC_` compliance. Scope
-is narrow and explicit: only this specific class (list/string-shape bounds guards). A `UC_*` calling into
-real business validation (an owner check, a balance check, a domain-rule enforce) is still a genuine
-violation and not covered by this exception.
+**`v` — validating (new prefix, SWP L56, 2026-08-24):** a stackable lowercase specialization role (same
+mechanism as `StoicSyntax-Prefixes.md` § 1's `x`/`k`) marking a `UC_`/`URC_`/`URDC_` function whose
+`enforce` is an **intrinsic, unavoidable part of its own single job** — a shape/domain guard on the
+computation itself (e.g. "these amounts must sum positive, and no individual amount may be negative," as
+part of computing whether a liquidity split is balanced) — **not** business/client validation that
+belongs in a separate `UEV_*`/defcap. `UCv_`/`URCv_`/`URDCv_` may `enforce`; everything else about their
+allowed-callee contract is unchanged from the base tier. Legitimate **only** when: (1) every real caller
+does not already guarantee the property (so the check is reachable, not tautological — deleting it would
+be wrong), **and** (2) there is no single non-`UC_`/`URC_`/`URDC_` choke point upstream shared by every
+real caller — relocating the check to a caller-side `UEV_*` would mean duplicating the identical check at
+every real call site instead of once, in the one place all real paths already share. If a genuine single
+non-tier choke point exists (a shared defcap, a shared `UEV_*` entrypoint every real caller already
+composes), the check belongs there instead — `v` is for when it doesn't.
+
+**Documented instances:**
+- **`U|LST`'s bounds-guard helpers (SWP L41, 2026-08-23 — retroactively named `UCv_`/`URCv_` here):**
+  `UC_ReplaceAt`, `UC_RemoveItemAt`, `UC_LE`, `UC_FE` (and `UEV_NotEmpty` where they call it) `enforce`
+  on a list's own shape — index-in-bounds, list-not-empty — before indexing into it, preventing a bare
+  out-of-bounds crash mid-computation. Any `UC_*` elsewhere that calls these specific helpers (e.g.
+  `U|SWP`'s `UC_ComputeY`/`UC_ComputeInverseY`/`UC_AddSupply`/`UC_RemoveSupply`) is excluded from any
+  StoicSyntax rename/reclassification sweep for this reason — the existing instances are **not**
+  required to actually rename to `UCv_`/`URCv_` right now (same "known pattern, deferred to the full
+  post-merge sweep" treatment as L54's `AU_`), this note just formally names the category they already
+  belong to.
+- **`SWPL::URC_AreAmountsBalanced` → `URCv_AreAmountsBalanced` (SWP L56, 2026-08-24):** validates that
+  liquidity-add amounts sum positive and no individual amount is negative, as an intrinsic part of
+  computing whether the amounts are balanced. Traced all 11 real callers (across `SWPL`, `SWPLC`,
+  `MTX-SWP`, `INFO-ONE+`) before keeping this — 8 of 11 pass raw, caller-controlled amounts with zero
+  upstream validation, so the check is genuinely reachable, not tautological; and no single
+  non-`URC_*` choke point exists upstream shared by all of them (three separate modules call in
+  directly), so relocating to a `UEV_*` would mean duplicating the identical check 8 times instead of
+  once. Renamed to `URCv_*` and actually renamed in source (unlike `U|LST`'s deferred instances above),
+  since this is the second real example of the category and the rename was in scope for this finding.
+
+A `UC_*`/`URC_*` calling into real business validation (an owner check, a balance check, a domain-rule
+enforce) is still a genuine violation and **not** covered by `v` — `v` is narrowly for shape/domain
+guards intrinsic to the computation, never for gating an application-level decision.
 
 **Migration signals**
 
@@ -1594,6 +1619,7 @@ These stay explained in context; this is the single index of what is Ouronet-spe
 | **1.8.0** | 2026-08-21 | **§ 19.5 `;;Key = <...>`** (new rule, R6): every `deftable` — domain or `P|T`/`P|MT` policy table alike, no exceptions — carries an inline comment stating its own row key. Introduced by the AQP modules, formalized here after being applied retroactively across the SWP-family modules (owner reminder, #34 session). |
 | **1.9.0** | 2026-08-23 | **§ 6.1 documented exception**: `U|LST`'s bounds-guard `enforce` helpers (`UC_ReplaceAt`, `UC_RemoveItemAt`, `UC_LE`, `UC_FE`) and any `UC_*` calling them stay `UC_*` and are excluded from renaming/reclassification — the `enforce` guards the computation's own list/string shape (index-in-bounds, not-empty), not a business/domain decision. From SWP audit Round I, finding L41 (owner direction, 2026-08-23). |
 | **1.10.0** | 2026-08-24 | **§ 6.2 / § 7 new prefix `AU_`** (Admin Update): admin-mode-only functions whose sole purpose is schema/data migration (force existing rows to pick up a newly-added field), distinct from `A_`'s live-business-mutation role; placed immediately before `A_` in the FUNCTIONS block order. Codifies the pre-existing `AHU`/`AUP_*` pattern already used across `01_DALOS`, `05_DPTF`, `06_DPOF`, `08_ATS`, `15_SWP`, `02_DPDC` as the forward-going standard name — existing instances are a known, deliberate, shared pattern intentionally left unrenamed for now, deferred to the full post-merge StoicSyntax sweep as one coordinated cross-module rename rather than touched piecemeal. From SWP audit Round I, finding L54 (owner direction, 2026-08-24). |
+| **1.11.0** | 2026-08-24 | **§ 6.1 new stackable specialization `v`** (validating): marks a `UC_`/`URC_`/`URDC_` function whose `enforce` is intrinsic to its own computation (a shape/domain guard, never business validation) — legitimate only when the check is genuinely reachable (not tautological) *and* no single non-tier choke point exists upstream shared by every real caller (otherwise the check belongs in a `UEV_*` there instead). `UCv_`/`URCv_`/`URDCv_`. Retroactively formalizes the `U|LST` bounds-guard exception from v1.9.0/L41 as a named category (existing instances still deferred, not renamed); first fresh application is `SWPL::URC_AreAmountsBalanced` → `URCv_AreAmountsBalanced`, renamed in source. From SWP audit Round I, finding L56 (owner direction, 2026-08-24). |
 
 **Bump rules**
 

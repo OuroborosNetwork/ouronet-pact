@@ -2413,3 +2413,54 @@ full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0 `FAILURE`, `Load successful`.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #33. Awaiting Round III re-verify. — *L55*
 
 ---
+
+## L56 (#56L, SWPL — `URC_AreAmountsBalanced` contains a raw `enforce` inside a `URC_*`) — **CONFIRMED, FIXED, PROVEN**
+
+**Re-verified the finding's own "matches AQP's L1 pattern" framing before trusting it, and it didn't
+match.** AQP's L1 was a genuine tautology (deleted outright — a value checked against its own derivation
+source, unfailable in every real path). Applied the same rigor here via a full agent-driven trace of
+every real caller: `URC_AreAmountsBalanced` ← `URC_SortLiquidity` ← `URC_LD` ← **11 real call sites**
+across `SWPL`/`SWPLC`/`MTX-SWP`/`INFO-ONE+`. 8 of 11 pass raw, caller-controlled amounts with **zero**
+upstream validation — the check is genuinely reachable, not dead. Owner's own instinct (before the trace
+completed) correctly flagged that the check was weaker than it looked: `sum > 0.0` alone lets a
+mixed-sign list like `[-5.0, 10.0]` sail through.
+
+**Owner's architectural question, answered by tracing rather than assuming:** is there a single place to
+put proper validation outside the `URC_*` chain, or would it require duplicating at every call site?
+Traced it: no — the three raw-input call groups live in three separate modules, each calling
+`SWPL::URC_LD` directly; the only place all 11 real callers converge is the `URC_LD` →
+`URC_SortLiquidity` → `URC_AreAmountsBalanced` chain itself. Per StoicSyntax's own rule, `URC_*`'s
+allowed callees are `UR_`/`UC_`/other `URC_` only — not `UEV_*` — so even calling a `UEV_*` from inside
+`URC_AreAmountsBalanced` would reproduce the exact transitive-violation shape just fixed for L40, one
+hop later. Genuinely one place, or eight — no clean single-`UEV_*` option exists.
+
+**Owner's resolution — formalize a new StoicSyntax specialization instead of forcing a false choice:**
+neither "leave a known-incomplete check in place" nor "duplicate it 8 times for a naming technicality."
+Introduced **`v`** (validating) as a new stackable lowercase specialization role (same mechanism as the
+existing `x`/`k`), marking a `UC_`/`URC_`/`URDC_` function whose `enforce` is intrinsic to its own
+computation — legitimate only when (1) the check is genuinely reachable, not tautological, and (2) no
+single non-tier choke point exists upstream shared by every real caller. This also retroactively gives
+L41's `U|LST` exception (v1.9.0) a real, named category instead of an ad-hoc carve-out.
+
+**Fix:**
+- `OuronetInformational/StoicSyntax.md` § 6.1 + `StoicSyntax-Prefixes.md` § 1/§ 2: formalized `v`
+  (bumped **1.10.0 → 1.11.0**, changelog row added), documenting both instances — `U|LST` (L41, deferred,
+  not renamed) and this one (renamed in source, the first fresh application).
+- `1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact`: renamed `URC_AreAmountsBalanced` → `URCv_AreAmountsBalanced`
+  (interface + implementation + its one real caller `URC_SortLiquidity`). Added the missing per-element
+  `>= 0.0` check (matching the equivalent check already correct in `SWPLC::UEV_InputsForLP`, which only
+  covers the separate `C_Fuel` flow) — the old sum-only check never actually protected against negative
+  individual amounts.
+
+**Adversarially proven, live — new `SWP|TX 038b` in `[6.3]_SWP.repl`:** `[-100.0, 600.0]` (sums to
+`500.0 > 0.0`) against a real pool via `SWP|C_AddIcedLiquidity` — cleanly rejected with the new message.
+Reverted just the new per-element check (rename and sum-check left in place): the identical call **still
+failed**, but with a far worse, opaque error — `'-100.0 is not a Valid Transaction amount'`, thrown deep
+in the DPTF transfer layer — confirming the fix isn't a redundant safety net, it genuinely upgrades an
+opaque late abort into a clean, precise, early rejection at the point of the actual violation. Restored,
+reconfirmed clean. Full `[6.2]`/`[6.3]` suite, issuance-only regression, and full `Z.repl` (Stage 1 +
+Stage 2) all exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #34. Awaiting Round III re-verify. — *L56*
+
+---

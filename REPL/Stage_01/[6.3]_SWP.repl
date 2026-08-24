@@ -6068,6 +6068,45 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "SWP|TX 038b - #56L Adversarial Proof: Negative Amount Rejected")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 038b - #56L Adversarial Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 038b - #56L Adversarial Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_Emma", "caps": [] }
+    ]
+)
+;;==== SWP|TX 038b - #56L Adversarial Proof · 02 · let / invocation ====
+(print "--- [SWP|TX 038b - #56L Adversarial Proof · 02 · let / invocation] ---")
+;;#56L fix proof: [-100.0 600.0] sums to 500.0 (> 0.0) — the OLD sum-only check in
+;;URC_AreAmountsBalanced would have let this straight through despite the negative
+;;element; the new per-element check in URCv_AreAmountsBalanced must reject it
+;;cleanly instead, before any transfer is attempted.
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (patron:string KST.ANHD)
+        (pool:string "P|OURO-98c486052a51|VST-98c486052a51")
+    )
+    (print
+        (expect-failure "#56L: negative input amount rejected even though the sum is positive"
+            "No input amount may be negative"
+            (ref-TS01-C3::SWP|C_AddIcedLiquidity patron patron pool [-100.0 600.0])
+        )
+    )
+)
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 039 - Add Glacial Liquidity")
 (namespace "ouronet-ns")

@@ -1455,3 +1455,31 @@ composed elsewhere (`C_ToggleAddOrSwap`), not orphaned. Removed the redundant bl
 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #34 — L56 (#56L): new StoicSyntax `v` specialization + `URCv_AreAmountsBalanced` strengthened
+
+**Owner direction:** traced whether the check was tautological (not — 8 of 11 real callers pass raw
+unvalidated amounts) and whether a single non-`URC_*` choke point exists to relocate it to (none — three
+separate modules call `SWPL::URC_LD` directly, and `URC_*`'s own allowed-callee contract forbids calling
+`UEV_*` anyway). Owner: rather than force "leave incomplete" vs. "duplicate 8 times," formalize a new
+StoicSyntax specialization for this legitimate case.
+
+**Fix:**
+- `OuronetInformational/StoicSyntax.md` + `StoicSyntax-Prefixes.md`: new stackable `v` (validating)
+  specialization — `UCv_`/`URCv_`/`URDCv_` — for a compute/read-compute function whose `enforce` is
+  intrinsic to its own computation, legitimate only when reachable (not tautological) and no single
+  upstream choke point exists. Bumped **1.10.0 → 1.11.0**. Retroactively names L41's `U|LST` exception
+  under this same category (still deferred, not renamed).
+- `1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact`: `URC_AreAmountsBalanced` → `URCv_AreAmountsBalanced`
+  (renamed in source, the first fresh `v` application). Added the missing per-element `>= 0.0` check —
+  the old sum-only check let mixed-sign lists like `[-5.0, 10.0]` through clean.
+
+**Adversarially proven, live — new `SWP|TX 038b`:** `[-100.0, 600.0]` (sum `500.0 > 0.0`) cleanly
+rejected with the new message. Reverted just the new check: the same call still failed, but with an
+opaque error deep in the DPTF transfer layer (`'-100.0 is not a Valid Transaction amount'`) — confirming
+a real upgrade from late/opaque to early/clean, not a redundant no-op. Full `[6.2]`/`[6.3]` suite,
+issuance-only regression, and full `Z.repl` (Stage 1 + Stage 2) all exit 0, 0 `FAILURE`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

@@ -17,6 +17,16 @@ A name is `PREFIX_Name` (or `PREFIX_Scope|Name`). The prefix is read left-to-rig
 - **lowercase letters = a specialization role** appended to the class:
   - `k` → the compute produces a **composite table Key** (`concat` fields with `BAR`).
   - `x` → the function is an **auxiliary** (a private helper of the function directly ABOVE it).
+  - `v` → **validating** — the function's `enforce` is an intrinsic, unavoidable part of its own single
+    job (a shape/domain guard on the computation itself — e.g. "these amounts must sum positive and none
+    may be negative" as part of computing whether they're balanced), **not** business/client validation
+    that belongs in a separate `UEV_*`/defcap. Legitimate on `UC_`/`URC_`/`URDC_` — `UCv_`/`URCv_`/
+    `URDCv_` — where every other real caller does not already guarantee the property, so the check is
+    reachable and not tautological (deleting it would be wrong), but relocating it to a caller-side
+    `UEV_*` would mean duplicating the identical check at every real call site instead of once, in the
+    one place all real paths already share. Introduced 2026-08-24 (SWP audit L56) — retroactively also
+    covers the `U|LST` bounds-guard exception from v1.9.0/§6.1 (L41), now a named category instead of an
+    ad-hoc carve-out.
   - lowercase markers may stack (rare): `UCkx_` = a key-building auxiliary.
 - **`|` = a module/table scope** inside the *name* part, not the prefix
   (`UR_SCR|ScoreOwnerKonto` = a `UR_` reader scoped to the `SCR` tables;
@@ -40,9 +50,11 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 | `UC_`   | compute | Pure compute on arguments only — **no table reads, no `enforce`**\* | yes | **COMPUTE** |
 | `UCk_`  | compute·key | Pure compute that builds a **composite table key** (`concat […BAR…]`) | yes | **COMPUTE** |
 | `UCx_`  | compute·aux | Pure-compute **auxiliary** of the function above it | yes | **COMPUTE** (dim) |
+| `UCv_`  | compute·validating | `UC_` whose `enforce` is intrinsic to its own computation (§1 `v`) — not business validation | yes | **COMPUTE** |
 | `UR_`   | read | **Point** read (single row/field by key) | yes | **READ** |
 | `URC_`  | read+compute | Point read **+ derive** (no `enforce`) | yes | **READ** |
 | `URCx_` | read+compute·aux | `URC_` **auxiliary** | yes | **READ** (dim) |
+| `URCv_` | read+compute·validating | `URC_` whose `enforce` is intrinsic to its own computation (§1 `v`) | yes | **READ** |
 | `URU_`  | read·upgrade | Read helper for **version-upgrade / migration** paths | admin only | **READ** (dim) |
 | `URH_`  | heavy-read | **Scan** read (`select` / `keys`) — expensive/unbounded | **NO — off-path only** | **HEAVY-READ ⚠** |
 | `URHx_` | heavy-read·aux | `URH_` **auxiliary** | **NO** | **HEAVY-READ ⚠** (dim) |

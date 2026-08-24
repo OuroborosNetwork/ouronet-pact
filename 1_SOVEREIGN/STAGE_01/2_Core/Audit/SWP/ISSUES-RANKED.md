@@ -452,7 +452,15 @@ reaching the second check already proves the same guard list passes — provably
 confirmed the referenced cap still composed elsewhere. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`. — *L55*
 
-#56L **[SWPL]** `URC_AreAmountsBalanced` contains a raw `enforce` inside a `URC_*` (belongs in `UEV_*`).
+#56L **[SWPL]** ~~`URC_AreAmountsBalanced` contains a raw `enforce` inside a `URC_*` (belongs in
+`UEV_*`).~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-24** (`ROUND-02-FIXES.md` Fix #34). Traced all 11 real
+callers: 8 of 11 pass raw unvalidated amounts — genuinely reachable, not tautological — and no single
+non-`URC_*` choke point exists to relocate the check to. New StoicSyntax `v` (validating) specialization
+formalized (v1.10.0 → v1.11.0) rather than forcing a false "leave incomplete vs. duplicate 8x" choice.
+Renamed `URCv_AreAmountsBalanced`, added the missing per-element negative-amount check (the old sum-only
+check let `[-5.0, 10.0]` through clean). Adversarially proven: reverting just the new check still fails,
+but with a far worse opaque error deep in the transfer layer — a real upgrade, not a no-op. Full writeup
+in `ROUND-01-OWNER-FEEDBACK.md`. — *L56*
 
 #57L **[SWPL]** `XI_AddLiqSendAndMint` performs two distinct writes (transfer + mint) in one `XI_*`.
 
