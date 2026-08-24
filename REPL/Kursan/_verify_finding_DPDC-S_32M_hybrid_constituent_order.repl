@@ -1,0 +1,55 @@
+;; Verify Fix for DPDC Audit #32M — URC_SemiFungibleConstituents's hybrid branch now returns
+;; [primordial..., composite...], matching UEV_NoncesForSetClass's Make-time (take l-psd)/(drop l-psd)
+;; convention. Previously it returned the reverse ([composite..., primordial...]).
+;;
+;; Uses the real DHCD-98c486052a51 collection: it already has 10 native nonces (nu=10) and a Primordial
+;; set-class 1 ("CodingDivision", nonce-of-set=11) defined in the active pipeline ([4.0]_Sovereign-Executor).
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage00a_StoaTests.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage02_Tester.repl")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "PROBE-32M - Hybrid constituent order now matches Make-time convention")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (id:string "DHCD-98c486052a51")
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "HybridProbeSet" "Hybrid set: primordial leg nonce 5 + composite leg set-class 1"
+                (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (print (format "set-classes-used before = {} (expect 1, from [4.0]'s CodingDivision primordial set)" [(ref-DPDC::UR_SetClassesUsed id true)]))
+    (print
+        (ref-TS02-C1::DPSF|C_DefineHybridSet
+            owner id "HybridProbeSet" 1.0
+            [(ref-DPDC-UDC::N [5])]
+            [(ref-DPDC-UDC::C 1)]
+            nd
+        )
+    )
+    ;;New Hybrid set-class = 2 (set-classes-used was 1). Its own nonce-of-set = 12 (nu was 11 after
+    ;;set-class 1's own nonce 11 was created back in [4.0]) -- not needed for this probe, just noted.
+    (print
+        (expect "<<PROBE-32M>> Hybrid constituents = [primordial nonce 5, composite set-class-1's nonce 11] -- primordial-first, matching Make-time's (take l-psd)/(drop l-psd) convention"
+            [5 11]
+            (ref-DPDC-S::URC_SemiFungibleConstituents id 2)
+        )
+    )
+)
+(commit-tx)

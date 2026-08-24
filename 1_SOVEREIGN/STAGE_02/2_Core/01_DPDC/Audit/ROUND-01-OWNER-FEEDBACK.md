@@ -651,3 +651,20 @@ per-element bound (`0 < abs(n) <= nu` for every value, also rejecting `0`), matc
 the same pattern already used on the Composite side (#6C). Re-ran the same probe after the fix: the
 garbage value and a `0` control case are now both rejected; a legitimate definition with only real
 in-range values still succeeds normally. Z.repl green.
+
+## #32M · DPDC-S · M1 — Hybrid set Make-time and Break-time constituent ordering are reversed
+
+**Verdict: CONFIRMED, FIXED (2026-08-23).** Owner: "let's fix it then and document as such, making sure
+you don't break anything."
+
+**Proof of the bug (before any fix):** temporarily reverted the change and ran
+`REPL/Kursan/_verify_finding_DPDC-S_32M_hybrid_constituent_order.repl` against a real Hybrid set-class on
+`DHCD-98c486052a51` — `URC_SemiFungibleConstituents` (Break-time) returned `[11 5]` (composite-first) while
+Make-time's `UEV_NoncesForSetClass` expects `[primordial..., composite...]` (`[5 11]`), confirming the two
+functions really did disagree.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #28)** — normalized `URC_SemiFungibleConstituents`'s
+hybrid branch to primordial-first, matching Make-time; added cross-referencing comments at both functions.
+Re-ran the same probe after restoring the fix: now returns `[5 11]`, matching exactly. Full `Z.repl` green
+— confirmed no active-pipeline test defines or exercises a Hybrid set today, so nothing else could
+regress.

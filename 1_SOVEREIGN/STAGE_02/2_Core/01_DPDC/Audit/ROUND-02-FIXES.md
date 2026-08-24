@@ -1222,3 +1222,35 @@ normally. `cd REPL && pact Z.repl` — clean, `Load successful` (every existing 
 in the active pipeline already used only real, in-range values, so nothing regresses).
 
 **Interface implication:** none — internal validation logic only, no `DpdcSetsV1` signature change.
+
+## Fix #28 — DPDC-S · M1 (#32M) — Hybrid set constituent ordering normalized (Break now matches Make)
+
+**Owner-approved 2026-08-23**, with an explicit instruction to prove nothing breaks.
+
+**Root cause:** for Hybrid sets, `UEV_NoncesForSetClass` (Make-time, `08_DPDC-S.pact:694-697`) expects the
+caller's `nonces` list ordered **`[primordial..., composite...]`** — it does `(take l-psd nonces)` for the
+primordial legs and `(drop l-psd nonces)` for the composite legs. `URC_SemiFungibleConstituents`
+(Break-time reconstruction, `08_DPDC-S.pact:462-465`) built its return list as
+`(+ (URCX|CSD_NonceList id csd) (URCX|PSD_FirstNoncesList psd))` — **`[composite..., primordial...]`**, the
+reverse. Harmless today only because every leg (primordial or composite) gets the same uniform
+`how-many-sets` scalar applied to it in both `C_MakeSemiFungibleSet` and `C_BreakSemiFungibleSet` — so the
+*set* of (nonce, quantity) pairs is order-independent, only their *sum* matters today. A future
+non-uniform per-position quantity would silently misattribute between legs with nothing to catch it.
+
+**Live proof the bug was real (before any fix):** temporarily reverted the change (`git stash`) and ran
+`REPL/Kursan/_verify_finding_DPDC-S_32M_hybrid_constituent_order.repl` against a real Hybrid set-class
+defined on `DHCD-98c486052a51` (primordial leg = native nonce 5, composite leg = the pre-existing
+`CodingDivision` set-class 1, whose own nonce is 11) — `URC_SemiFungibleConstituents id 2` returned
+`[11 5]` (composite-first), confirmed via `expect` failure output: `expected: [5 11], received: [11 5]`.
+
+**Fix:** flipped `URC_SemiFungibleConstituents`'s hybrid branch to `(+ (URCX|PSD_FirstNoncesList psd)
+(URCX|CSD_NonceList id csd))` — primordial-first, matching Make-time. Added cross-referencing comments at
+both functions (each pointing at the other) so a future change to either function's ordering prompts a
+look at its counterpart.
+
+**Live proof the fix works:** restored the change and re-ran the identical probe — `URC_SemiFungibleConstituents id 2`
+now returns `[5 11]`, matching Make-time's convention exactly (`expect` passes). `cd REPL && pact Z.repl`
+— clean, `Load successful`; no active-pipeline test defines or exercises a Hybrid set today (matches the
+already-known zero-DPDC-S-set-coverage gap, #DPDC-S·L1), so nothing else could regress.
+
+**Interface implication:** none — internal read-function logic only, no `DpdcSetsV1` signature change.

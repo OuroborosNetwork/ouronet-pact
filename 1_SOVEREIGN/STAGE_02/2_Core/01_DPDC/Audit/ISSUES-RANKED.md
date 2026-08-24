@@ -376,9 +376,15 @@ legit value is also present), then fixed with a per-element `0 < abs(n) <= nu` b
 `allowed-nonces` value. Re-proven post-fix: the garbage value and a `0` control case are both now
 rejected; a legitimate all-real-values definition still succeeds. Z.repl green. — *DPDC-S·M3*
 
-#32M **[DPDC-S]** Hybrid set Make-time constituent ordering and Break-time reconstruction ordering are
+#32M **[DPDC-S]** ~~Hybrid set Make-time constituent ordering and Break-time reconstruction ordering are
 opposite conventions in two different functions — currently harmless only because every current constraint
-happens to make the (nonce, quantity) set order-independent; structurally fragile. — *DPDC-S·M1*
+happens to make the (nonce, quantity) set order-independent; structurally fragile.~~ — **FIXED ✅ AND
+PROVEN ✅ 2026-08-23** (`ROUND-02-FIXES.md` Fix #28) — bug reproduced live first: temporarily reverted
+the fix and confirmed `URC_SemiFungibleConstituents` (Break-time) really did return `[11 5]`
+(composite-first) against a real Hybrid set-class on `DHCD-98c486052a51`, opposite of Make-time's expected
+`[5 11]` (primordial-first). Normalized Break-time to primordial-first, added cross-referencing comments
+at both functions. Re-proven post-fix: now returns `[5 11]`, matching exactly. Z.repl green — no
+active-pipeline test defines a Hybrid set today, so nothing else could regress. — *DPDC-S·M1*
 
 #33M **[DPDC-I / U|DALOS]** Collection id generation (`UDC_Makeid`) is keyed only on `prev-block-hash`, a
 block-level constant identical for every tx in the same block, with no per-tx uniqueness component — two

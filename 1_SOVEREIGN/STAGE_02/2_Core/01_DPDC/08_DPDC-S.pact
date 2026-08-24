@@ -459,8 +459,13 @@
                 (if (= l-csd 0)
                     ;;Primordial Set
                     (URCX|PSD_FirstNoncesList psd)
-                    ;;Hybrid Set
-                    (+ (URCX|CSD_NonceList id csd) (URCX|PSD_FirstNoncesList psd))
+                    ;;Hybrid Set — DPDC Audit #32M: order must be [primordial..., composite...], matching
+                    ;;the Make-time convention in UEV_NoncesForSetClass's hybrid branch below (which does
+                    ;;(take l-psd nonces) for primordial, (drop l-psd nonces) for composite). The two were
+                    ;;previously reversed relative to each other — harmless today only because every leg
+                    ;;gets the same uniform <how-many-sets> scalar, but a future non-uniform per-position
+                    ;;quantity would silently misattribute between legs. Keep both in this same order.
+                    (+ (URCX|PSD_FirstNoncesList psd) (URCX|CSD_NonceList id csd))
                 )
             )
         )
@@ -686,7 +691,10 @@
                 (if (= l-csd 0)
                     ;;Primordial Set
                     (UEV_Primordial nonces psd)
-                    ;;Hybrid Set
+                    ;;Hybrid Set — expects <nonces> ordered [primordial..., composite...]. DPDC Audit
+                    ;;#32M: URC_SemiFungibleConstituents's hybrid branch (Break-time reconstruction,
+                    ;;above in [F1]) must keep the same ordering convention if either function's order
+                    ;;ever changes.
                     (do
                         (UEV_Primordial (take l-psd nonces) psd)
                         (UEV_Composite id son (drop l-psd nonces) csd)
