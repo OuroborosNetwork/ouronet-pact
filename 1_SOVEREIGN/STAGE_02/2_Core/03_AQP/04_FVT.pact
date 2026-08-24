@@ -24,12 +24,17 @@
     (defun UR_FVT|MemberLinkCount:integer (fvt-id:string))
     (defun UR_FVT|Mosaic:bool (fvt-id:string))
     (defun UR_FVT|MembershipMode:string (fvt-id:string))
+    (defun UR_FVT|OracleOn:bool (fvt-id:string))
     (defun UR_FVT|FvtId:string (fvt-id:string))
     ;;
     (defun UR_FVT-SEL|Enabled:bool (fvt-id:string score-entity-id:string))
     (defun UR_FVT-SEL|ScoreEntityType:integer (fvt-id:string score-entity-id:string))
     (defun UR_FVT-SEL|Swpair:string (fvt-id:string score-entity-id:string))
     (defun UR_FVT-SEL|GhostTvlWeight:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|Delegation:bool (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|CaptureUnits:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|CaptureWeight:decimal (fvt-id:string score-entity-id:string))
+    (defun UR_FVT-SEL|OracleTs:time (fvt-id:string score-entity-id:string))
     (defun UR_FVT-SEL|FvtId:string (fvt-id:string score-entity-id:string))
     (defun UR_FVT-SEL|ScoreEntityId:string (fvt-id:string score-entity-id:string))
     ;;
@@ -45,6 +50,7 @@
     (defun UR_FVT-RG|AvailableRewards:decimal (fvt-id:string dptf-id:string))
     (defun UR_FVT-RG|UnclaimedCount:integer (fvt-id:string dptf-id:string))
     (defun UR_FVT-RG|ZombieRewards:decimal (fvt-id:string dptf-id:string))
+    (defun UR_FVT-RG|RoyaltyRewards:decimal (fvt-id:string dptf-id:string))
     (defun UR_FVT-RG|Segmentation:bool (fvt-id:string dptf-id:string))
     (defun UR_FVT-RG|FvtId:string (fvt-id:string dptf-id:string))
     (defun UR_FVT-RG|DptfId:string (fvt-id:string dptf-id:string))
@@ -1236,6 +1242,10 @@
         @doc "Reads membership-mode from FVT row."
         (at "membership-mode" (read FVT|T fvt-id ["membership-mode"]))
     )
+    (defun UR_FVT|OracleOn:bool (fvt-id:string)
+        @doc "DSA: does the node/uptime oracle govern capture on this FVT? false ⇒ capture = units, uptime ≡ 1000, no expiry."
+        (at "oracle-on" (read FVT|T fvt-id ["oracle-on"]))
+    )
     (defun UR_FVT|FvtId:string (fvt-id:string)
         @doc "Reads fvt-id field from FVT row."
         (at "fvt-id" (read FVT|T fvt-id ["fvt-id"]))
@@ -1278,6 +1288,22 @@
     (defun UR_FVT-SEL|TotalLaneWeight:decimal (fvt-id:string score-entity-id:string)
         @doc "Reads total-lane-weight (farm-triplet Level-1 divisor Σ w-user) from ScoreEntityLink row."
         (at "total-lane-weight" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+    (defun UR_FVT-SEL|Delegation:bool (fvt-id:string score-entity-id:string)
+        @doc "DSA: is this member a delegation agency? false for a normal member."
+        (at "delegation" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+    (defun UR_FVT-SEL|CaptureUnits:decimal (fvt-id:string score-entity-id:string)
+        @doc "DSA: an agency's ideal capacity = min(floor(Q/unit-score), nodes) — the IDEAL inject denominator term. 0.0 for a normal member."
+        (at "capture-units" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+    (defun UR_FVT-SEL|CaptureWeight:decimal (fvt-id:string score-entity-id:string)
+        @doc "DSA: an agency's uptime-adjusted actual = capture-units × uptime/1000 — the inject NUMERATOR (pre-expiry). 0.0 for a normal member."
+        (at "capture-weight" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
+    )
+    (defun UR_FVT-SEL|OracleTs:time (fvt-id:string score-entity-id:string)
+        @doc "DSA: timestamp of the last oracle write for this agency (now − ts > 25h ⇒ expired ⇒ effective capture 0)."
+        (at "oracle-ts" (UR_FVT-SEL|ScoreEntityLink fvt-id score-entity-id))
     )
     (defun UR_FVT-MUW|ContribWeight:decimal (user-id:string fvt-id:string score-entity-id:string)
         @doc "Reads a farm-triplet user's stored Level-1 weight snapshot; 0.0 when absent."
@@ -1368,6 +1394,10 @@
     (defun UR_FVT-RG|StreamUnreleased:decimal (fvt-id:string dptf-id:string)
         @doc "Reads stream-unreleased (custodied-but-not-yet-dripped total on this lane) from global RPS row."
         (at "stream-unreleased" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
+    )
+    (defun UR_FVT-RG|RoyaltyRewards:decimal (fvt-id:string dptf-id:string)
+        @doc "DSA: the royalty pool (uptime-shortfall custody) on this lane; 0.0 when absent / non-delegation."
+        (at "royalty-rewards" (UR_FVT-RG|RpsGlobal fvt-id dptf-id))
     )
     (defun UR_FVT-RS|Stream:object{FVT|RPS|Stream} (fvt-id:string dptf-id:string position:integer)
         @doc "Reads one FVT|T|RPS|Stream row (an active stream position). Positions 1..stream-count always exist."
@@ -3150,6 +3180,12 @@
         (require-capability (SECURE))
         (update FVT|T fvt-id {"membership-mode": membership-mode})
     )
+    (defun WU_Fvt|OracleOn:string
+        (fvt-id:string oracle-on:bool)
+        @doc "DSA: toggle the node/uptime oracle on this FVT."
+        (require-capability (SECURE))
+        (update FVT|T fvt-id {"oracle-on": oracle-on})
+    )
     ;; WU_Fvt|FvtId — select key; WU not needed.
     ;;
     (defun WI_ScoreEntityLink:string
@@ -3175,6 +3211,19 @@
         @doc "Update total-lane-weight (farm-triplet Level-1 divisor Σ w-user) on FVT|T|ScoreEntityLink."
         (require-capability (SECURE))
         (update FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id) {"total-lane-weight": total-lane-weight})
+    )
+    (defun WU_ScoreEntityLink|Capture:string
+        (fvt-id:string score-entity-id:string capture-units:decimal capture-weight:decimal oracle-ts:time)
+        @doc "DSA: set an agency's capture fields (ideal capacity, uptime-adjusted actual, last-oracle timestamp) on FVT|T|ScoreEntityLink."
+        (require-capability (SECURE))
+        (update FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"capture-units": capture-units, "capture-weight": capture-weight, "oracle-ts": oracle-ts})
+    )
+    (defun WU_ScoreEntityLink|Delegation:string
+        (fvt-id:string score-entity-id:string delegation:bool)
+        @doc "DSA: flip a member to (or from) a delegation agency on FVT|T|ScoreEntityLink."
+        (require-capability (SECURE))
+        (update FVT|T|ScoreEntityLink (UCk_ScoreEntityLink fvt-id score-entity-id) {"delegation": delegation})
     )
     ;; FVT|T|MemberUserWeight  Key = <User-ID> | <FVT-ID> | <Score-Entity-ID>
     (defun WW_MemberUserWeight:string
@@ -3285,6 +3334,12 @@
         @doc "Set zombie-rewards (escrow-on-empty limbo balance) on FVT|T|RPS|Global."
         (require-capability (SECURE))
         (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"zombie-rewards": zombie-rewards})
+    )
+    (defun WU_RpsGlobal|RoyaltyRewards:string
+        (fvt-id:string dptf-id:string royalty-rewards:decimal)
+        @doc "DSA: set royalty-rewards (the uptime-shortfall custody pool) on FVT|T|RPS|Global."
+        (require-capability (SECURE))
+        (update FVT|T|RPS|Global (UCk_RpsGlobal fvt-id dptf-id) {"royalty-rewards": royalty-rewards})
     )
     (defun WU_RpsGlobal|StreamCount:string
         (fvt-id:string dptf-id:string stream-count:integer)
