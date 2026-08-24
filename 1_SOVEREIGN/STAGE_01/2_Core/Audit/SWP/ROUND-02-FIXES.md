@@ -1500,3 +1500,22 @@ would need to re-derive the safety, not assume it. Pure documentation, zero beha
 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #36 — L61 (#61L): real REPL coverage for `SWP|C_UpgradeBrandingLPs`
+
+**Fix — `REPL/Stage_01/[6.4]_Admin.repl`:** the original commented-out call was stale (wrong Talos module
+reference, wouldn't have compiled). Traced the real `BRD` flag state machine first: every LP token gets a
+`BRD|BrandingTable` row at issuance with `flag: 3` (Gray), so `entity-pos 1` needs no extra setup.
+Commented out three unrelated pre-existing broken calls found while trying to get a clean run (a
+never-issued ATS pair, two never-created frozen/sleeping-LP variants, a never-registered smart account in
+a separate later transaction) — none related to this fix. Added a new `SWP|TX 002`: propose real branding
+data, upgrade, then assert the live branding and flag actually updated — not just that the calls didn't
+error. Placed after the file's first transaction, since later unrelated breakage would otherwise block it.
+
+**Adversarially proven:** all 3 assertions pass. Corrupted the expected flag value — genuine `FAILURE`
+with the exact diff. Restored, reconfirmed. Default `Z.repl` pipeline (`[6.4]` excluded, as normal): exit
+0, 0 `FAILURE`. No `.pact` source touched.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

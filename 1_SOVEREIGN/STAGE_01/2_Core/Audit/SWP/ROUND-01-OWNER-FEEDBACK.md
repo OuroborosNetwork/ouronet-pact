@@ -2556,3 +2556,44 @@ check and lose the incentive entirely, benefiting no one.
 **Status:** DESIGN, accepted — working as intended, not a bug. No code change. — *L60*
 
 ---
+
+## L61 (#61L, SWPLC — `C_UpgradeBrandingLPs` is commented out in the REPL suite, untested) — **CONFIRMED, FIXED, PROVEN**
+
+**Investigated why before just uncommenting it:** `BRD::XE_UpgradeBranding` is a real state machine keyed
+off a `flag` (Golden/Blue/Green/Gray/Red hierarchy), with different rules per starting flag. Traced a
+fresh LP token's real starting state: `BRD|DEFAULT` sets `flag: 3` (Gray) for every entity, and every LP
+token gets its own `BRD|BrandingTable` row at issuance (`DPTF::XB_IssueFree` → `XE_Issue`, confirmed via
+`05_DPTF.pact:2136`, inside the exact same flow `DPTF::XE_IssueLP` uses) — so `entity-pos 1` (the plain
+LP token) needs no extra setup and is safe to test directly, unlike `entity-pos 2`/`3` (frozen/sleeping
+LP), which only exist if a user separately created that variant.
+
+**Found the original commented-out call was already stale, not just disabled:** it referenced
+`ref-TS01-C2::SWP|C_UpgradeBrandingLPs`, but both `SWP|C_UpdatePendingBrandingLPs`/`C_UpgradeBrandingLPs`
+actually live on `TalosStageOne_ClientThreeV3` (`04_TS01-C3.pact`) — would not have compiled as written
+even if simply uncommented.
+
+**Found the whole file was more broken than "just commented out for cost reasons," while trying to get a
+clean run:** `[6.4]_Admin.repl` (already excluded from the default `Z.repl` pipeline) hard-fails at load
+on a pre-existing, unrelated reference to an ATS pair (`"Magnindium-98c486052a51"`) that's never actually
+issued anywhere in the test suite — confirmed via a repo-wide grep, the only reference to that name is
+this one broken call. Also found the pool used in this file's existing (pre-existing, already-uncommented)
+`entity-pos` 2/3 `C_UpdatePendingBrandingLPs` calls never had a frozen/sleeping LP variant created, so
+those also hard-fail. And a separate, later transaction in the same file references a never-registered
+smart account. None of these are related to `C_UpgradeBrandingLPs` or to this fix.
+
+**Fix — `REPL/Stage_01/[6.4]_Admin.repl`:** commented out the three unrelated pre-existing broken calls
+(with notes explaining each), added a new, real `SWP|TX 002` proving `C_UpgradeBrandingLPs`: proposes real
+branding data via `C_UpdatePendingBrandingLPs` on pool6's own LP token (`entity-pos 1`), then upgrades via
+`C_UpgradeBrandingLPs`, then asserts the *live* branding (not just pending) actually reflects the proposed
+data and the flag moved Gray(3) → Blue(1). Placed right after this file's first transaction rather than
+at the original commented-out location, since several unrelated broken transactions later in the file
+would otherwise block it from ever being reached — out of scope for this fix, left alone.
+
+**Adversarially proven, live:** all 3 new assertions pass. Deliberately corrupted the expected flag value
+(`1` → `999`) — genuine `FAILURE` with the exact expected-vs-received diff. Restored, reconfirmed clean.
+Default `Z.repl` pipeline (`[6.4]` excluded, as normal): exit 0, 0 `FAILURE`. No `.pact` source touched —
+purely REPL coverage.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #36. Awaiting Round III re-verify. — *L61*
+
+---

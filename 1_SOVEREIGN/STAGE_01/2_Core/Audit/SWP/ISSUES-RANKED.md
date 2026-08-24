@@ -491,7 +491,14 @@ legitimately qualifies; the pool owner's normal account wouldn't qualify either,
 just lose the incentive, not redirect it to the owner. No code change. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`. — *L60*
 
-#61L **[SWPLC]** `C_UpgradeBrandingLPs` is commented out in the REPL suite — untested.
+#61L **[SWPLC]** ~~`C_UpgradeBrandingLPs` is commented out in the REPL suite — untested.~~ — **FIXED ✅
+AND PROVEN ✅ 2026-08-25** (`ROUND-02-FIXES.md` Fix #36). Original call was stale (wrong Talos module,
+wouldn't have compiled). Traced the real `BRD` flag state machine, found and commented out 3 unrelated
+pre-existing broken calls blocking the file from loading (never-issued ATS pair, never-created
+frozen/sleeping-LP variants, a never-registered smart account). Added a new `SWP|TX 002` proving
+propose→upgrade genuinely moves pending branding to live and flips Gray(3)→Blue(1). Adversarially
+proven: corrupted the expected value, got a genuine `FAILURE`, restored. No `.pact` source touched. Full
+writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L61*
 
 #62L **[SWPLC]** `C_Fuel` has zero REPL coverage of any kind despite moving real funds.
 
