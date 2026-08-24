@@ -154,6 +154,9 @@
     (defun C_CombineTripletScoreModel:object{IgnisCollectorV1.OutputCumulator}
         (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
     )
+    (defun C_IssueScoreFromModel:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string owner-konto:string model-id:string agency-name:string)
+    )
 )
 (module AQP-SCORE GOV
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
@@ -1233,6 +1236,14 @@
         (compose-capability (SECURE))
     )
     ;;
+    (defcap SCR|C>ISSUE-SCORE-FROM-MODEL (patron:string owner-konto:string model-id:string)
+        @doc "FACTORY authorisation: issue a score entity conforming to <model-id>, owned by owner-konto. Enforces \
+            \ the model exists; composes SECURE. The per-score SCR|XI>ISSUE-SCORE + the SCR|C>ISSUE-TRIPLET combine \
+            \ are acquired INLINE by the factory as it issues each score."
+        @event
+        (enforce (URC_ScoreEntityModelExists model-id) "Model must exist")
+        (compose-capability (SECURE))
+    )
     ;;<=======>
     ;;FUNCTIONS
     ;; [UC]  compute
@@ -3301,6 +3312,29 @@
             )
         )
     )
+    ;;<====> DSA score-entity model FACTORY (§17b) — issue conforming entities (canon-refactored after this step)
+    (defun XI_IssueOneFromModel:string (owner-konto:string single-model-id:string score-name:string)
+        @doc "Issue ONE SF score (class 3) named <score-name> + its SF definition from a SINGLE model, owned by \
+            \ owner-konto. Returns the score-id (UDC_Makeid score-name). require SECURE; acquires SCR|XI>ISSUE-SCORE \
+            \ for the score insert (the SF definition write runs under the already-granted SECURE)."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (m:object{SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel single-model-id))
+            )
+            (let
+                (
+                    (prec:integer (at "precision" m))
+                    (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+                )
+                (with-capability (SCR|XI>ISSUE-SCORE score-name owner-konto prec 3 BAR 2.0 1.0 1.0 -1)
+                    (XI_Issue score-name owner-konto prec 3 BAR 2.0 1.0 1.0 false -1))
+                (XI_IssueSemiFungibleScoreDefinition score-id (at "collectable-id" m) (at "nonces" m) (at "nonce-score-values" m))
+                score-id
+            )
+        )
+    )
     ;; [XE]
     ;;
     ;; --- Block B · Stake user-score delta (UrStoa phases 4.1 + 4.2 + 4.3) ---
@@ -3822,6 +3856,48 @@
                 (WI_ScoreEntityModel model-id
                     (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_TRIPLET 0 BAR 0 [] [] bronze-model-id silver-model-id golden-model-id model-id))
                 (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron trigger [model-id])
+            )
+        )
+    )
+    (defun C_IssueScoreFromModel:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string owner-konto:string model-id:string agency-name:string)
+        @doc "FACTORY: issue a score entity conforming to <model-id>, owned by owner-konto, named <agency-name>. \
+            \ single → 1 SF score named agency-name + its definition; triplet → 3 sub-scores named \
+            \ agency-name+Bronze/Silver/Golden (from the sub single-models) + XI_IssueTriplet. agency-name must be a \
+            \ valid, globally-unique score-name (collision ⇒ rejected). Returns the (score | triplet) id in \
+            \ output[0]. UEV_IMC + SCR|C>ISSUE-SCORE-FROM-MODEL (composes SECURE). Bills GAS|ISSUE-SCORE-MODEL."
+        (UEV_IMC)
+        (with-capability (SCR|C>ISSUE-SCORE-FROM-MODEL patron owner-konto model-id)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (let
+                    (
+                        (result-id:string
+                            (if (= (UR_SCR|ModelEntityType model-id) CT_SCORE_MODEL_SINGLE)
+                                (XI_IssueOneFromModel owner-konto model-id agency-name)
+                                (let
+                                    (
+                                        (m:object{SCR|ScoreEntityModel} (UR_SCR|ScoreEntityModel model-id))
+                                    )
+                                    (let
+                                        (
+                                            (b:string (XI_IssueOneFromModel owner-konto (at "bronze-model-id" m) (concat [agency-name "Bronze"])))
+                                            (s:string (XI_IssueOneFromModel owner-konto (at "silver-model-id" m) (concat [agency-name "Silver"])))
+                                            (g:string (XI_IssueOneFromModel owner-konto (at "golden-model-id" m) (concat [agency-name "Golden"])))
+                                        )
+                                        (with-capability (SCR|C>ISSUE-TRIPLET b s g)
+                                            (XI_IssueTriplet b s g))
+                                        (UC_ComputeTripletId b s g)
+                                    )
+                                )
+                            )
+                        )
+                    )
+                    (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron trigger [result-id])
+                )
             )
         )
     )

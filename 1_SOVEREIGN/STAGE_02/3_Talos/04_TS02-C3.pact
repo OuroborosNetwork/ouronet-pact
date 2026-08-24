@@ -53,6 +53,7 @@
     (defun AQP-SCR|C_CombineTripletScoreModel:string
         (patron:string model-name:string bronze-model-id:string silver-model-id:string golden-model-id:string)
     )
+    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string))
     (defun AQP-SCR|C_IssueSemiFungibleScoreDefinition:string
         (patron:string score-id:string dpsf-id:string nonces:[integer] nonce-score-values:[decimal])
     )
@@ -933,6 +934,24 @@
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (format "Successfully combined triplet score-entity model {}." [model-id])
+            )
+        )
+    )
+    (defun AQP-SCR|C_IssueScoreFromModel:string (patron:string owner-konto:string model-id:string agency-name:string)
+        @doc "FACTORY (Talos): issue a conforming score entity from <model-id> for owner-konto; collects IGNIS on \
+            \ patron. Returns the (score | triplet) id."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-SCR::C_IssueScoreFromModel patron owner-konto model-id agency-name)
+                    )
+                    (entity-id:string (at 0 (at "output" ico)))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Successfully issued score entity {} from model {}." [entity-id model-id])
             )
         )
     )

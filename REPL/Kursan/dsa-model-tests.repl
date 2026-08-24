@@ -50,9 +50,9 @@
             (model-id:string  (ref-U|DALOS::UDC_Makeid "DsaCustModel"))
         )
         ;; define the three SINGLE models (Custodians fragment nonces → quintessence)
-        (print (format "<(bronze)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 0 [-1] [1.0])]))
-        (print (format "<(silver)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustSilver" 3 cust 0 [-2] [10.0])]))
-        (print (format "<(gold)>   => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustGold"   3 cust 0 [-3] [100.0])]))
+        (print (format "<(bronze)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 24 [-1] [1.0])]))
+        (print (format "<(silver)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustSilver" 3 cust 24 [-2] [10.0])]))
+        (print (format "<(gold)>   => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustGold"   3 cust 24 [-3] [100.0])]))
         ;; combine into a TRIPLET model
         (print (format "<(combine)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaCustModel" bronze-id silver-id gold-id)]))
         (let
@@ -105,16 +105,78 @@
         [
             ;; re-defining DsaCustBronze → model-id already exists
             (expect-failure "<<DSA-MODEL-02>> duplicate model-id rejected"
-                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 0 [-1] [1.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaCustBronze" 3 cust 24 [-1] [1.0]))
             ;; combine over a non-existent sub-model → rejected
             (expect-failure "<<DSA-MODEL-02>> triplet over a missing sub-model rejected"
                 (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaBadModel" "Nonexistent-Model-Id" "Nonexistent-Model-Id" "Nonexistent-Model-Id"))
             ;; nonces/values length mismatch → rejected
             (expect-failure "<<DSA-MODEL-02>> nonces/values length mismatch rejected"
-                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaMismatch" 3 cust 0 [-1 -2] [1.0]))
+                (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaMismatch" 3 cust 24 [-1 -2] [1.0]))
         ]
     )
 )
 (commit-tx)
 (print "")
-(print "=== dsa-model-tests END — score-entity MODEL define/combine + guards ===")
+;;
+;;|| NEXT >
+;;|| FACTORY (17b): issue a conforming triplet score entity from the model, owned by an operator.
+;;
+(begin-tx "DSA-MODEL-03 - factory: issue a triplet score entity from the model")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [DSA-MODEL-03 · 01 · factory issues a conforming triplet for the operator] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (model-id:string        (ref-U|DALOS::UDC_Makeid "DsaCustModel"))
+            (bronze-model-id:string (ref-U|DALOS::UDC_Makeid "DsaCustBronze"))
+            (silver-model-id:string (ref-U|DALOS::UDC_Makeid "DsaCustSilver"))
+            (gold-model-id:string   (ref-U|DALOS::UDC_Makeid "DsaCustGold"))
+        )
+        ;; FACTORY — issue ANHD's conforming agency score entity (a triplet) from the model, named "AnhdAgency"
+        (print (format "<(factory)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "AnhdAgency")]))
+        (let
+            (
+                ;; the score ids the factory produced (sub-score-name = concat[agency-name role])
+                (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["AnhdAgency" "Bronze"])))
+                (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["AnhdAgency" "Silver"])))
+                (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["AnhdAgency" "Golden"])))
+            )
+            (let
+                (
+                    (triplet-id:string (AQP-SCORE.UC_ComputeTripletId bronze-sid silver-sid gold-sid))
+                )
+                (map print
+                    [
+                        ;; the 3 sub-scores were issued, owned by the operator
+                        (expect "<<DSA-MODEL-03>> bronze sub-score owned by operator" anhd (ref-SCR::UR_SCR|ScoreOwnerKonto bronze-sid))
+                        (expect "<<DSA-MODEL-03>> silver sub-score owned by operator" anhd (ref-SCR::UR_SCR|ScoreOwnerKonto silver-sid))
+                        (expect "<<DSA-MODEL-03>> gold sub-score owned by operator"   anhd (ref-SCR::UR_SCR|ScoreOwnerKonto gold-sid))
+                        ;; the factory bundled them into a triplet (the agency's member-to-be)
+                        (expect "<<DSA-MODEL-03>> factory bundled the 3 scores into a triplet" true (ref-SCR::URC_TripletExists triplet-id))
+                        ;; idempotent: re-issuing the same (operator, model) collides on the score-id ⇒ rejected
+                        (expect-failure "<<DSA-MODEL-03>> re-issuing the same agency-name is rejected (score-id collision)"
+                            (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "AnhdAgency"))
+                    ]
+                )
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== dsa-model-tests END — score-entity MODEL define/combine + FACTORY issue ===")
