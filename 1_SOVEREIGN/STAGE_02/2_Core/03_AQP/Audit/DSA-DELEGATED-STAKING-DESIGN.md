@@ -276,10 +276,27 @@ Deploy order: `07_DSA.pact` loads **after** FVT (DSA→FVT), in `REPL/Stage_02/[
    `DSA|Template` (per vault: fvt-id, custodians-asset-id, unit-score, active), `DSA|Agency`
    (fvt-id, score-entity-id=triplet member, operator-konto, fee, nodes, uptime), `DSA|OracleAuth`
    (fvt-id → delegated oracle guard) + tables + caps + constructors + readers. Wire deploy + create-tables.
-2. **Agency open** — user-created member = operator: create the operator's pool + bronze/silver/gold scores +
-   triplet (reuse `C_IssueTriplet`), admit as an FVT member with **`member-owner = operator`** (relax the
-   `score-owner == fvt-owner` admission, FVT `UEV_AddScoreEntityContext` ~`:2639`), set `delegation` via
-   `XE_SetMemberDelegation`. Enforce the one-time `quintessence ≥ unit-score/2` open gate. Operator + flat fee.
+2. **Agency open** — user-created member = operator. **SCOPED (2026-08-24):**
+   - A DSA agency triplet is **operator-owned + vault-like** (`swpair="|"`, `ghost-weight=0`; its inject weight is
+     `capture`, not ghost-tvl), even though the DSA vault FVT is **class-0** (uses the farm split — the 1b-ii
+     delegation branch reads `capture-weight`/`capture-units`, ignoring ghost-tvl). So the DSA vault FVT is
+     issued **class-0 with common-denominator `"|"`**.
+   - The existing LP-farm admission (`UEV_AddScoreEntityTripletContext` FVT ~`:2660`) can't be reused directly —
+     it hardcodes `silver-owner == fvt-owner`, `swpair == expected-LP-swpair`, `lp-denom == common-denom`,
+     `ghost-weight > 0`, all of which conflict with a vault-like operator-owned agency. **Build an isolated
+     FVT-side primitive** (does NOT touch/weaken the normal admission):
+     - **`XE_AdmitDelegationMember(fvt-id, triplet-id, operator)`** — `UEV_IMC` + a new
+       `FVT|XE>ADMIT-DELEGATION` cap that runs the *structural* subset (triplet issued, category matches class,
+       membership mode, **no** pre-existing link, silver has an aqpool, all three fvt-links BAR) **with
+       `silver-owner == operator`** + `CAP_EnforceAccountOwnership operator`, and **skips** the LP-farm rules
+       (swpair/lp-denom/ghost). Write path = `ref-SCR::XE_CreateFvtLink ×3` + `XI_AddScoreEntity fvt-id
+       TRIPLET triplet-id "|" 0.0` (both already exist; C_AddScoreEntity ~`:5258` is the model).
+   - DSA `C_OpenAgency` then: operator creates pool + bronze/silver/gold scores + triplet (`C_IssueTriplet`) →
+     `XE_AdmitDelegationMember` → `XE_SetMemberDelegation true` → enforce one-time `quintessence ≥ unit-score/2`
+     gate → write `DSA|Agency` (operator + flat fee). Quintessence Q = Σ over the operator's staked Custodians
+     fragment nonces of `DEMIPAD-CUSTODIANS::UC_NonceQuintessence`.
+   - **Security note:** the isolated primitive means the normal `C_AddScoreEntity` admission is byte-identical
+     (never weakened); the operator-owned path is a separate, auditable entrypoint.
 3. **Capture recompute** — on delegator stake/unstake (Q change) or oracle write: `capture-units =
    min(⌊Q/unit-score⌋, nodes)`, `capture-weight = capture-units × uptime/1000` → `XE_SetMemberCapture`.
 4. **Oracle write path** — `DSA|OracleAuth` delegated guard writes daily `{nodes, uptime}` + stamps oracle-ts;
