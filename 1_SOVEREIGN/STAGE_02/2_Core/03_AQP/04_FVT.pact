@@ -4015,6 +4015,9 @@
                                     (!= fvt-id BAR)
                                     (= (UR_FVT|FvtClass fvt-id) 0)
                                     (UR_FVT-SEL|Enabled fvt-id score-entity-id)
+                                    ;; DSA delegation members ride the class-0 farm code but have no LP swpair ("|",
+                                    ;; ghost 0) — their inject weight is CAPTURE, not ghost-TVL. Skip the SWP sync.
+                                    (not (UR_FVT-SEL|Delegation fvt-id score-entity-id))
                                 ]
                             )
                             (let

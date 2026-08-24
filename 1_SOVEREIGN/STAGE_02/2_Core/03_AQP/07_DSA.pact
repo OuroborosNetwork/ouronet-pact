@@ -3,8 +3,8 @@
 ;;   an agency = one FVT member (a triplet for Custodians); delegators stake into it; the operator runs
 ;;   nodes to CAPTURE reward units and takes a fee. Depends on AQP-FVT (deploys first; DSA writes the
 ;;   member's delegation/capture fields via FVT XE_ and reads its own at inject). First client: Custodians.
-;; Spec: Audit/DSA-DELEGATED-STAKING-DESIGN.md (v1 LOCKED). This is the module SKELETON (§16 step 1):
-;;   data model + scaffolding; agency-open / capture / oracle / royalty land in later commits.
+;; Spec: Audit/DSA-DELEGATED-STAKING-DESIGN.md (v1 LOCKED). Built in phases: data model + vault define +
+;;   agency open (Phase 2); capture recompute + delegated oracle (Phase 3); royalty disposal + collect (later).
 ;;
 (interface DsaV1
     @doc "Delegated Staking Agencies — client/reader surface (v1; grows as the module is built)."
@@ -17,8 +17,15 @@
     ;;
     (defun A_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string model-id:string unit-score:integer))
-    (defun C_OpenAgency:object{IgnisCollectorV1.OutputCumulator}
+    (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string))
+    (defun C_AdmitAgency:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer))
+    (defun C_RecomputeCapture:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-id:string))
+    (defun A_SetOracleAuth:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string oracle-guard:guard))
+    (defun A_OracleWrite:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer))
     ;;
 )
 ;;
@@ -176,6 +183,10 @@
     (defconst DSA_UPTIME_FULL:integer 1000)
     (defconst GAS|DEFINE-VAULT:decimal 500.0)
     (defconst GAS|OPEN-AGENCY:decimal 500.0)
+    (defconst GAS|RECOMPUTE-CAPTURE:decimal 300.0)
+    (defconst GAS|SET-ORACLE-AUTH:decimal 300.0)
+    (defconst GAS|ORACLE-WRITE:decimal 200.0)
+    (defconst DSA_UPTIME_MIN:integer 0)
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -205,16 +216,65 @@
     )
     ;;{C3}
     (defcap DSA|C>OPEN-AGENCY (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-        @doc "Open a delegation agency on an active DSA vault, using an existing operator-owned score entity. \
-            \ Enforces: the vault template exists + active, fee in [DSA_FEE_MIN, DSA_FEE_MAX], and the ONE-TIME open \
-            \ gate — the agency's quintessence ≥ unit-score/2 (the operator must have staked to start). Composes \
-            \ P|SECURE-CALLER so DSA's registered IMC guard + SECURE are active for the FVT XE_ admit/delegation \
-            \ calls + the DSA|Agency write. Operator account-ownership is enforced downstream in FVT|XE>ADMIT-DELEGATION."
+        @doc "Authorize opening a delegation agency on an active DSA vault. Enforces the vault template exists + \
+            \ active and the fee is in [DSA_FEE_MIN, DSA_FEE_MAX]. Composes P|SECURE-CALLER so DSA's registered IMC \
+            \ guard + SECURE are active for the FVT admit/delegation/stake calls + the DSA|Agency write. The \
+            \ one-time quintessence ≥ unit-score/2 OPEN GATE is NOT here — it is a TERMINAL enforce at the END of \
+            \ C_OpenAgency's body, AFTER the operator's initial stake (the cap runs before the body, when Q is still \
+            \ 0; a score can only be staked once admission has linked it, so the stake must live inside open). \
+            \ Operator account-ownership is enforced downstream in FVT|XE>ADMIT-DELEGATION."
         @event
         (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
         (enforce (and (>= fee-per-mille DSA_FEE_MIN) (<= fee-per-mille DSA_FEE_MAX)) "Operator fee out of range (1%..50%)")
-        (enforce (>= (URC_AgencyQuintessence score-entity-id) (/ (dec (UR_DSA-TMP|UnitScore fvt-id)) 2.0))
-            "Open gate: agency quintessence must be >= unit-score/2 (stake more to start)")
+        (compose-capability (P|SECURE-CALLER))
+    )
+    (defcap DSA|C>RECOMPUTE-CAPTURE (patron:string fvt-id:string score-entity-id:string)
+        @doc "Recompute an agency's capture from its CURRENT quintessence / nodes / uptime (permissionless — any \
+            \ patron may keep an agency's capture fresh after a delegator stake/unstake changed Q). Enforces the \
+            \ FVT is a DSA vault + the score entity is a delegation member. Composes P|SECURE-CALLER for the FVT \
+            \ XE_SetMemberCapture write."
+        @event
+        (let
+            (
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+            )
+            (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
+            (enforce (ref-FVT::UR_FVT-SEL|Delegation fvt-id score-entity-id) "Score entity is not a delegation member")
+        )
+        (compose-capability (P|SECURE-CALLER))
+    )
+    (defcap DSA|C>SET-ORACLE-AUTH (patron:string fvt-id:string)
+        @doc "Authorize the delegated oracle key for a DSA vault + arm the FVT oracle-on expiry. Owner-gated \
+            \ (patron IS the FVT owner + signs). Composes P|SECURE-CALLER for the FVT XE_SetFvtOracleOn write."
+        @event
+        (let
+            (
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+            )
+            (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
+            (enforce (= patron fvt-owner) "Only the FVT owner may set the oracle authority")
+            (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
+        )
+        (compose-capability (P|SECURE-CALLER))
+    )
+    (defcap DSA|A>ORACLE-WRITE (fvt-id:string score-entity-id:string nodes:integer uptime:integer)
+        @doc "The delegated oracle writes an agency's daily {nodes, uptime}. Enforces the registered oracle guard \
+            \ (DSA|OracleAuth), the score entity is a delegation member, nodes non-negative, uptime in \
+            \ [DSA_UPTIME_MIN, DSA_UPTIME_FULL]. Composes P|SECURE-CALLER for the recompute + FVT capture write."
+        @event
+        (let
+            (
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+            )
+            (enforce-guard (UR_DSA-ORA|Guard fvt-id))
+            (enforce (ref-FVT::UR_FVT-SEL|Delegation fvt-id score-entity-id) "Score entity is not a delegation member")
+            (enforce (fold (and) true
+                [ (>= nodes 0)
+                  (>= uptime DSA_UPTIME_MIN)
+                  (<= uptime DSA_UPTIME_FULL) ]) "Oracle values out of range (nodes >= 0, uptime 0..1000)")
+        )
         (compose-capability (P|SECURE-CALLER))
     )
     ;;{C4}
@@ -225,6 +285,12 @@
     (defun UCk_Agency:string (fvt-id:string score-entity-id:string)
         @doc "Composite key for DSA|T|Agency: fvt-id | score-entity-id."
         (concat [fvt-id BAR score-entity-id])
+    )
+    ;;<====> Phase 3 — capture recompute + delegated oracle (canon-refactored after this build step)
+    (defun UC_CaptureWeight:decimal (capture-units:decimal uptime:integer)
+        @doc "The capture-weight (inject numerator) = capture-units × uptime / DSA_UPTIME_FULL. Uptime is a \
+            \ per-mille [0..1000]; /1000 is exact in decimal, so no rounding is needed."
+        (* capture-units (/ (dec uptime) (dec DSA_UPTIME_FULL)))
     )
     ;; [UR]  read
     (defun UR_DSA-TMP|Template:object{DSA|Template} (fvt-id:string)
@@ -293,6 +359,25 @@
                   (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id))))
         )
     )
+    (defun URC_CaptureUnits:decimal (fvt-id:string score-entity-id:string)
+        @doc "How many whole capture units this agency currently commands = min(⌊Q / unit-score⌋, nodes): the \
+            \ stake supports ⌊Q/unit-score⌋ units, capped by the oracle-reported node count."
+        (let
+            (
+                (raw:integer (floor (/ (URC_AgencyQuintessence score-entity-id) (dec (UR_DSA-TMP|UnitScore fvt-id)))))
+                (nodes:integer (UR_DSA-AGN|Nodes fvt-id score-entity-id))
+            )
+            (dec (if (< raw nodes) raw nodes))
+        )
+    )
+    ;; [UEV] enforce
+    (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string)
+        @doc "Terminal open gate — after the operator's initial stake, the agency quintessence must clear \
+            \ unit-score/2. The Talos AQP-DSA|C_OpenAgency flow calls this at the END of the atomic open (admit → \
+            \ stake → THIS); a short operator stake fails here and rolls the whole open back. Unprotected read+enforce."
+        (enforce (>= (URC_AgencyQuintessence score-entity-id) (/ (dec (UR_DSA-TMP|UnitScore fvt-id)) 2.0))
+            "Open gate: operator must stake quintessence >= unit-score/2 to open")
+    )
     ;; [UDC] construct
     (defun UDC_DSA|Template:object{DSA|Template}
         (model-id:string unit-score:integer active:bool fvt-id:string)
@@ -329,6 +414,32 @@
         (require-capability (SECURE))
         (insert DSA|T|Agency (UCk_Agency fvt-id score-entity-id) row)
     )
+    (defun WU_Agency-Oracle:string (fvt-id:string score-entity-id:string nodes:integer uptime:integer)
+        @doc "Update an agency's oracle inputs {nodes, uptime}. require SECURE."
+        (require-capability (SECURE))
+        (update DSA|T|Agency (UCk_Agency fvt-id score-entity-id) {"nodes" : nodes, "uptime" : uptime})
+    )
+    (defun WI_OracleAuth:string (fvt-id:string row:object{DSA|OracleAuth})
+        @doc "Write (set / rotate) a DSA vault's oracle authority row. require SECURE."
+        (require-capability (SECURE))
+        (write DSA|T|OracleAuth fvt-id row)
+    )
+    ;; [XI]
+    (defun XI_ApplyCapture:string (fvt-id:string score-entity-id:string oracle-ts:time)
+        @doc "Recompute an agency's capture from CURRENT Q / nodes / uptime and write it onto the FVT member \
+            \ (XE_SetMemberCapture), stamping the given oracle-ts. Callers hold P|SECURE-CALLER (⇒ SECURE + the \
+            \ DSA IMC guard the FVT XE_ requires); a stake recompute passes the PRESERVED oracle-ts, an oracle \
+            \ write passes NOW."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (units:decimal (URC_CaptureUnits fvt-id score-entity-id))
+            )
+            (ref-FVT::XE_SetMemberCapture fvt-id score-entity-id
+                units (UC_CaptureWeight units (UR_DSA-AGN|Uptime fvt-id score-entity-id)) oracle-ts)
+        )
+    )
     ;; [A]   admin
     (defun A_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string model-id:string unit-score:integer)
@@ -346,13 +457,53 @@
             )
         )
     )
+    (defun A_SetOracleAuth:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string oracle-guard:guard)
+        @doc "Owner-only: authorize the delegated oracle key for this DSA vault (DSA|OracleAuth) and ARM the FVT \
+            \ oracle-on expiry, so stale oracle data (>25h) captures nothing. UEV_IMC + DSA|C>SET-ORACLE-AUTH. \
+            \ Bills GAS|SET-ORACLE-AUTH."
+        (UEV_IMC)
+        (with-capability (DSA|C>SET-ORACLE-AUTH patron fvt-id)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (WI_OracleAuth fvt-id (UDC_DSA|OracleAuth oracle-guard fvt-id))
+                (ref-FVT::XE_SetFvtOracleOn fvt-id true)
+                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-ORACLE-AUTH patron trigger [fvt-id])
+            )
+        )
+    )
+    (defun A_OracleWrite:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
+        @doc "Delegated-oracle-only: write an agency's daily {nodes, uptime}, then recompute its capture stamped \
+            \ with NOW (fresh oracle-ts resets the 25h expiry). Authorized by the registered oracle guard. \
+            \ UEV_IMC + DSA|A>ORACLE-WRITE. Bills GAS|ORACLE-WRITE."
+        (UEV_IMC)
+        (with-capability (DSA|A>ORACLE-WRITE fvt-id score-entity-id nodes uptime)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (WU_Agency-Oracle fvt-id score-entity-id nodes uptime)
+                (XI_ApplyCapture fvt-id score-entity-id (at "block-time" (chain-data)))
+                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ORACLE-WRITE patron trigger [score-entity-id])
+            )
+        )
+    )
     ;; [C]   client
-    (defun C_OpenAgency:object{IgnisCollectorV1.OutputCumulator}
+    (defun C_AdmitAgency:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-        @doc "Open a delegation agency on a DSA vault using an existing operator-owned (factory-issued, staked) \
-            \ score entity: admit it as a member (FVT XE_AdmitDelegationMember — operator ownership enforced there), \
-            \ flip it to a delegation member, and record DSA|Agency (operator + fee, nodes 0, uptime full). The \
-            \ one-time quintessence ≥ unit-score/2 gate is in the cap. UEV_IMC + DSA|C>OPEN-AGENCY. Bills GAS|OPEN-AGENCY."
+        @doc "Core admit of the ATOMIC open (the Talos AQP-DSA|C_OpenAgency flow drives the full sequence): admit \
+            \ the operator's BLANK triplet as a delegation member of the class-0 vault FVT (XE_AdmitDelegationMember \
+            \ — requires the sub-scores' fvt-links BAR, i.e. unstaked) + flip delegation on + record DSA|Agency. \
+            \ Does NOT stake or gate: the deep DPDC custody transfer of the operator's stake needs the caller's \
+            \ guard registered in DPDC-T's IMP, which is P|TS (Talos) — so the Talos flow performs the stake under \
+            \ P|TS after this admit, then calls UEV_OpenGate as the terminal atomic check (a short stake reverts the \
+            \ whole open). UEV_IMC + DSA|C>OPEN-AGENCY. Bills GAS|OPEN-AGENCY."
         (UEV_IMC)
         (with-capability (DSA|C>OPEN-AGENCY patron fvt-id score-entity-id fee-per-mille)
             (let
@@ -365,6 +516,24 @@
                 (ref-FVT::XE_SetMemberDelegation fvt-id score-entity-id true)
                 (WI_Agency fvt-id score-entity-id (UDC_DSA|Agency patron fee-per-mille 0 DSA_UPTIME_FULL fvt-id score-entity-id))
                 (ref-IGNIS::UDC_ConstructOutputCumulator GAS|OPEN-AGENCY patron trigger [score-entity-id])
+            )
+        )
+    )
+    (defun C_RecomputeCapture:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-id:string)
+        @doc "Permissionless: recompute an agency's capture from its CURRENT quintessence (after a delegator \
+            \ stake/unstake changed Q), PRESERVING the stored oracle-ts (a stake must not refresh oracle freshness). \
+            \ UEV_IMC + DSA|C>RECOMPUTE-CAPTURE. Bills GAS|RECOMPUTE-CAPTURE."
+        (UEV_IMC)
+        (with-capability (DSA|C>RECOMPUTE-CAPTURE patron fvt-id score-entity-id)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (XI_ApplyCapture fvt-id score-entity-id (ref-FVT::UR_FVT-SEL|OracleTs fvt-id score-entity-id))
+                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|RECOMPUTE-CAPTURE patron trigger [score-entity-id])
             )
         )
     )

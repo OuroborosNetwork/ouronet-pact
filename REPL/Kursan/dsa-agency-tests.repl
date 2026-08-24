@@ -157,19 +157,24 @@
             (
                 (triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid))
             )
+            ;; Open is now ONE atomic tx (admit blank → stake operator's half → terminal Q≥unit-score/2 gate).
+            ;; These probe the CAP-level guards (fee-range, vault-active) that fire before the body, plus the
+            ;; admit precondition (triplet must be employed in a pool). The staked happy-path + short-stake gate
+            ;; rejection are proven end-to-end in the Phase-3 capture suite (which builds the pool + stake fixture).
+            ;; Placeholder stake args (dummy pool, empty nonces) never execute — the guard/admit fails first.
             (map print
-                [ ;; the operator triplet is unstaked ⇒ quintessence 0 < unit-score/2 (10000) ⇒ open gate rejects
-                  (expect-failure "<<DSA-VAULT-02>> open rejected — quintessence below gate (Q=0)"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id triplet-id 100))
-                  ;; fee below the floor (10 = 1%) is rejected before the gate
+                [ ;; fee below the floor (10 = 1%) — rejected in the cap, before the body
                   (expect-failure "<<DSA-VAULT-02>> open rejected — fee below floor"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id triplet-id 5))
-                  ;; fee above the ceiling (500 = 50%) is rejected
+                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id "dummy-pool" triplet-id 5 "DHOC-98c486052a51" []))
+                  ;; fee above the ceiling (500 = 50%) — rejected in the cap
                   (expect-failure "<<DSA-VAULT-02>> open rejected — fee above ceiling"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id triplet-id 600))
-                  ;; opening on a non-vault FVT (no template) is rejected
+                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id "dummy-pool" triplet-id 600 "DHOC-98c486052a51" []))
+                  ;; opening on a non-vault FVT (no template) — rejected in the cap (vault-active)
                   (expect-failure "<<DSA-VAULT-02>> open rejected — FVT is not a DSA vault"
-                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd "not-a-vault-fvt" triplet-id 100)) ])
+                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd "not-a-vault-fvt" "dummy-pool" triplet-id 100 "DHOC-98c486052a51" []))
+                  ;; triplet not employed in a pool (silver has no aqpool) — admit precondition fails in the body
+                  (expect-failure "<<DSA-VAULT-02>> open rejected — triplet not set up (no pool employ)"
+                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id "dummy-pool" triplet-id 100 "DHOC-98c486052a51" [])) ])
             ""
         )
     )

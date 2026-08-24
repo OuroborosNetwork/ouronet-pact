@@ -264,7 +264,17 @@
         (patron:string fvt-id:string model-id:string unit-score:integer)
     )
     (defun AQP-DSA|C_OpenAgency:string
-        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
+         collectable-id:string stake-nonces:[integer])
+    )
+    (defun AQP-DSA|C_RecomputeCapture:string
+        (patron:string fvt-id:string score-entity-id:string)
+    )
+    (defun AQP-DSA|A_SetOracleAuth:string
+        (patron:string fvt-id:string oracle-guard:guard)
+    )
+    (defun AQP-DSA|A_OracleWrite:string
+        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
     )
 )
 ;;
@@ -2126,20 +2136,86 @@
         )
     )
     (defun AQP-DSA|C_OpenAgency:string
-        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-        @doc "DSA (Talos): open a delegation agency on a vault using operator-owned score entity <score-entity-id> \
-            \ (fee per-mille); collects IGNIS on patron. Enforces the one-time quintessence open gate."
+        (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
+         collectable-id:string stake-nonces:[integer])
+        @doc "DSA (Talos): open a delegation agency ATOMICALLY under P|TS — (1) admit the operator's BLANK triplet \
+            \ <score-entity-id> to vault <fvt-id> (AQP-DSA::C_AdmitAgency); (2) stake the operator's initial \
+            \ <collectable-id>/<stake-nonces> from <pool-id> (FVT::C_CollectableStakeFlow — runs under P|TS so the \
+            \ deep DPDC custody transfer's IMC passes); (3) enforce the terminal quintessence >= unit-score/2 open \
+            \ gate (AQP-DSA::UEV_OpenGate — a short stake reverts the whole open). Collects both cumulators on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DPDC:module{DpdcV1} DPDC)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                )
+                ;; (1) admit the blank triplet (fvt-links must be BAR) + record the agency
+                (ref-IGNIS::C_Collect patron
+                    (ref-DSA::C_AdmitAgency patron fvt-id score-entity-id fee-per-mille))
+                ;; (2) stake the operator's initial quintessence into the now-linked, reward-ready triplet
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_CollectableStakeFlow
+                        pool-id patron patron collectable-id true
+                        stake-nonces (ref-DPDC::UR_AccountNoncesSupplies patron collectable-id true stake-nonces) true))
+                ;; (3) terminal atomic gate — after the stake, Q must clear unit-score/2 or the whole tx reverts
+                (ref-DSA::UEV_OpenGate fvt-id score-entity-id)
+                (format "Agency opened on FVT {} for score-entity {} (fee {} per-mille)." [fvt-id score-entity-id fee-per-mille])
+            )
+        )
+    )
+    (defun AQP-DSA|C_RecomputeCapture:string
+        (patron:string fvt-id:string score-entity-id:string)
+        @doc "DSA (Talos): permissionlessly recompute an agency's capture from its current quintessence (after a \
+            \ delegator stake/unstake changed Q); collects IGNIS on patron."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DSA:module{DsaV1} AQP-DSA)
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DSA::C_OpenAgency patron fvt-id score-entity-id fee-per-mille)
+                        (ref-DSA::C_RecomputeCapture patron fvt-id score-entity-id)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (format "Agency opened on FVT {} for score-entity {} (fee {}‰)." [fvt-id score-entity-id fee-per-mille])
+                (format "Capture recomputed for agency {} on FVT {}." [score-entity-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-DSA|A_SetOracleAuth:string
+        (patron:string fvt-id:string oracle-guard:guard)
+        @doc "DSA (Talos): owner authorizes the delegated oracle key for a vault + arms the 25h capture expiry; \
+            \ collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_SetOracleAuth patron fvt-id oracle-guard)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Oracle authority set + oracle-on armed on FVT {}." [fvt-id])
+            )
+        )
+    )
+    (defun AQP-DSA|A_OracleWrite:string
+        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
+        @doc "DSA (Talos): the delegated oracle writes an agency's daily {nodes, uptime} + recomputes its capture \
+            \ (fresh oracle-ts); collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_OracleWrite patron fvt-id score-entity-id nodes uptime)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Oracle wrote nodes {} / uptime {}‰ for agency {}." [nodes uptime score-entity-id])
             )
         )
     )

@@ -31,6 +31,7 @@ SUITES=(
   "deb-staleness-unstale-all-cc.repl|owner mass deb-unstale (CC_UnstaleAll): owner-gate (non-owner refused) + penalized 2e tag + all-up-to-date idempotent no-op"
   "Kursan/dsa-model-tests.repl|DSA score-entity MODEL (17a): define 3 single models (Custodians -1/-2/-3) + combine triplet + guard rejections"
   "Kursan/dsa-agency-tests.repl|DSA Phase 2: A_DefineDelegationVault binds a class-0 FVT (owner-gated) + C_OpenAgency gate/fee/vault-active guards reject (Q=0 open gate)"
+  "Kursan/dsa-capture-tests.repl|DSA Phase 3: Custodians fragment->stake, ATOMIC open (admit+operator-stake+terminal gate), delegated oracle capture math (node-cap + uptime), permissionless recompute (oracle-ts preserved)"
 )
 
 echo "================================================================"

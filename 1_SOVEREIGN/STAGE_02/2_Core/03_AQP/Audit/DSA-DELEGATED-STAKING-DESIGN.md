@@ -106,10 +106,19 @@ is a new per-`(fvt, reward-token)` accumulator on FVT.
 
 ## 5. Agency lifecycle
 
-- **Open gate = one-time.** Opening requires `quintessence ≥ unit-score/2`. After opening there is **no maintained
-  minimum**: the operator may withdraw everything — including his last asset, dropping his own score to 0 in his
-  own agency. **An agency, once created, exists forever** (its member row persists at `capture = 0`; it simply
-  captures nothing until it holds ≥ 1 full unit again).
+- **Open gate = one-time, enforced ATOMICALLY at the END of open.** Opening requires `quintessence ≥ unit-score/2`.
+  **Ordering constraint discovered in Phase 3 (2026-08-24):** a score is *stakeable* only once its `fvt-link != BAR`
+  (`URC_ScoreFvtStakeReady` = enabled ScoreEntityLink + reward token), but `FVT|XE>ADMIT-DELEGATION` requires the
+  three sub-scores' `fvt-link == BAR`. So the operator **cannot** stake into the triplet *before* admission — at
+  admit time Q is necessarily 0. Resolution (owner-approved): **open is one atomic transaction** — (0) create the
+  agency blank, (1) admit the blank triplet + make the delegation FVT stake-ready (reward token + enabled links),
+  (2) stake the operator's initial half into the triplet, (3) enforce `Q ≥ unit-score/2` as a **terminal enforce**.
+  Because the tx is atomic, staking too little fails the terminal gate and rolls the whole open back — so "you
+  cannot open without staking your half" still holds, just checked *after* the stake, not before it. (The Phase 2
+  `C_OpenAgency` that pre-checked the gate in its cap at Q=0 is reworked into this atomic flow in Phase 3.)
+- After opening there is **no maintained minimum**: the operator may withdraw everything — including his last
+  asset, dropping his own score to 0 in his own agency. **An agency, once created, exists forever** (its member row
+  persists at `capture = 0`; it simply captures nothing until it holds ≥ 1 full unit again).
 - **Operator = an ownership role independent of stake.** An operator may hold zero personal stake and still run the
   agency + collect fees; the pool keeps earning on the delegators' quintessence. (Relaxes today's `member-owner ==
   fvt-owner` admission so `member-owner = operator`.)
@@ -403,12 +412,23 @@ FVT/SCORE core.
   Custodians fragment→stake fixture).*
 
 ### 🔨 TO BUILD (phases)
-- **Phase 3 — Delegator staking + capture recompute.** Confirm/enable a non-owner delegator staking into the
-  operator's agency score (beneficiary path; add a DSA stake wrapper if needed); `URC` for the agency's aggregate
-  quintessence Q; recompute `capture-units = min(⌊Q/unit-score⌋, nodes)` + `capture-weight` → `XE_SetMemberCapture`
-  on stake/unstake. *Verify:* **fragment Custodians 1/2/3 → stake −1/−2/−3 → Q (1/10/100) → capture computed.**
-- **Phase 4 — Oracle.** `A_SetOracleAuth(fvt-id, guard)`; delegated-guard `A_OracleWrite` sets `{nodes, uptime}`
-  per agency + recompute + stamp oracle-ts; `oracle-on` toggle. *Verify:* oracle write + 25h expiry → capture 0.
+- **Phase 3 — Atomic open + capture recompute + delegated oracle.** ✅ **DONE.** The ordering knot (a score is
+  stakeable only when fvt-linked, but admission needs fvt-links BAR) forced the **open to be one atomic tx**:
+  `AQP-DSA|C_OpenAgency` (Talos, under `P|TS`) = admit the blank triplet (`C_AdmitAgency`) → stake the operator's
+  initial Custodians (`FVT::C_CollectableStakeFlow` — must run under `P|TS` so the deep `DPDC-T` custody transfer's
+  IMC passes; DSA-initiated stake fails there) → terminal `UEV_OpenGate` (`Q ≥ unit-score/2`; short stake reverts
+  the whole open). Capture: `URC_CaptureUnits = min(⌊Q/unit-score⌋, nodes)`, `UC_CaptureWeight = units × uptime/1000`,
+  applied via `XI_ApplyCapture → FVT::XE_SetMemberCapture`. `C_RecomputeCapture` (permissionless, preserves
+  oracle-ts) picks up Q changes; the oracle (`A_SetOracleAuth` + delegated-guard `A_OracleWrite`) stamps fresh
+  oracle-ts + recomputes. **FVT fix:** the class-0 farm ghost-TVL sync (`XI_2|SyncFarmGhostTvlCore`) now SKIPS
+  delegation members (swpair `"|"`, capture-based, not ghost-TVL) — else the operator's stake choked on
+  `SWP::UR_StoaValue "|"`. `dsa-capture-tests.repl` (11th audit suite) green: fragment→stake, atomic open
+  (Q1=3550), oracle capture-units 1, recompute Q→7100 capture-units 3 (oracle-ts preserved), node-cap (units 2),
+  uptime scaling (weight 1.5). *Oracle `oracle-on` toggle + 25h expiry behavioral proof folds into Phase 4/5.*
+- **Phase 4 — Oracle expiry + toggle behavioral proof.** The oracle WRITE mechanism (`A_SetOracleAuth` +
+  delegated-guard `A_OracleWrite` + `oracle-on` arming) shipped in Phase 3. Remaining: prove the **25h expiry**
+  (`URC_MemberEffectiveCapture` → 0 when `now − oracle-ts > DSA_ORACLE_TTL`) + the `oracle-on` toggle + oracle-guard
+  rejection (wrong key). *Verify:* stale oracle (>25h) → effective capture 0; unauthorized oracle write rejected.
 - **Phase 5 — Inject + royalty (BEHAVIORAL PROOF of the FVT-core).** Inject into a live delegation vault via the
   existing `CC_Inject`/`C_Inject`. *Verify:* split by `capture-weight / Σ capture-units`; **uptime shortfall →
   royalty pool**; all-drained → **zombie**; operator **fee** skimmed from delegators at collect.

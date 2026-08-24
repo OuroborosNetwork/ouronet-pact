@@ -1,0 +1,356 @@
+;;
+;; REPL/Kursan/dsa-capture-tests.repl — DSA Phase 3: atomic agency OPEN + capture recompute + delegated oracle.
+;; Proves the full delegated-staking lifecycle end to end:
+;;   1. the operator fragments Custodians (DHOC) wholes 1/2/3 -> fragment nonces -1/-2/-3;
+;;   2. issues a triplet score entity from a DHOC model + a class-0 delegation vault (reward-linked);
+;;   3. OPENS the agency ATOMICALLY — admit the BLANK triplet -> stake the operator's initial half -> the
+;;      terminal quintessence >= unit-score/2 gate (all one tx; a short stake would roll the whole open back);
+;;   4. the delegated ORACLE writes {nodes, uptime} -> capture-units = min(Q/unit-score, nodes),
+;;      capture-weight = capture-units x uptime/1000 (node-cap + uptime-scaling proven);
+;;   5. a second operator stake grows Q, and the PERMISSIONLESS C_RecomputeCapture picks it up while
+;;      PRESERVING the stored oracle-ts (a stake must not refresh oracle freshness).
+;; unit-score = 2000 => open gate = 1000. Custodians quintessence: -1->1, -2->10, -3->100 (x0.001 fragment scale).
+;; Source: 07_DSA.pact (C_OpenAgency atomic, A_SetOracleAuth, A_OracleWrite, C_RecomputeCapture, URC_CaptureUnits).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/dsa-capture-tests.repl  —  DSA atomic open + capture + oracle (Phase 3)")
+(print "================================================================")
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+;; AQP-BOOT Step0 — wires the AQP-family (AQP-POOL/FVT/SCORE) IMC guards (P|AQP|CALLER into DPDC-T/TFT/DPOF
+;; IMPs) so the collectable stake's deep custody transfer passes UEV_IMC. Required for any AQP stake path.
+(begin-tx "P3-BOOT - KBN slave")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+(load "../../2_SLAVE/Stage_02/02_KBunnies.pact")
+(commit-tx)
+(begin-tx "P3-BOOT - AQP-BOOT")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+(load "../../2_SLAVE/Stage_02/04_AQP-BOOT.pact")
+(commit-tx)
+(begin-tx "P3-BOOT - Step0")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(print (format "<(Step0)> => \"{}\"" [(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)]))
+(commit-tx)
+(print "")
+
+;; standard gas-station sig block reused by every tx
+;; (PK_AncientHodler + the 4 gas-station coin.TRANSFER caps)
+;;
+;; ============================================================================
+;; TX-P3-01 — Fragment DHOC wholes 1/2/3 (batch 1: bronze 50 / silver 50 / gold 30) -> -1/-2/-3
+;; ============================================================================
+(begin-tx "TX-P3-01 - fragment DHOC (batch 1)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-01T00:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-01 · 01 · fragment DHOC wholes -> fragment nonces] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (dhoc:string "DHOC-98c486052a51")
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+    )
+    (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 1 50)   ; bronze whole 1 -> -1  (50000 frags -> q 50)
+    (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 2 50)   ; silver whole 2 -> -2  (50000 frags -> q 500)
+    (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 3 30)   ; gold   whole 3 -> -3  (30000 frags -> q 3000)
+    (map print
+      [ (expect "<<TX-P3-01>> ANHD holds 50000 frag -1" 50000 (ref-DPDC::UR_AccountNonceSupply anhd dhoc true -1))
+        (expect "<<TX-P3-01>> ANHD holds 50000 frag -2" 50000 (ref-DPDC::UR_AccountNonceSupply anhd dhoc true -2))
+        (expect "<<TX-P3-01>> ANHD holds 30000 frag -3" 30000 (ref-DPDC::UR_AccountNonceSupply anhd dhoc true -3)) ]))
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Issue the DHOC model + operator triplet, the class-0 delegation vault (reward-linked), and the pool.
+;;
+(begin-tx "TX-P3-02 - model + triplet + delegation vault + pool")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-01T00:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-02 · 01 · model + triplet + reward-linked class-0 vault + pool employ] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (dhoc:string "DHOC-98c486052a51")
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|CT:module{OuronetConstantsV1} U|CT)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (bronze-mid:string (ref-U|DALOS::UDC_Makeid "P3capBronzeModel"))
+            (silver-mid:string (ref-U|DALOS::UDC_Makeid "P3capSilverModel"))
+            (gold-mid:string   (ref-U|DALOS::UDC_Makeid "P3capGoldModel"))
+            (model-id:string   (ref-U|DALOS::UDC_Makeid "P3capTripletModel"))
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (pool-id:string    (ref-U|DALOS::UDC_Makeid "P3capPool"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        ;; DHOC score-entity model (fragment nonces -> quintessence)
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "P3capBronzeModel" 3 dhoc 24 [-1] [1.0])
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "P3capSilverModel" 3 dhoc 24 [-2] [10.0])
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "P3capGoldModel"   3 dhoc 24 [-3] [100.0])
+        (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "P3capTripletModel" bronze-mid silver-mid gold-mid)
+        ;; FACTORY — the operator's blank triplet (3 sub-scores + SF definitions)
+        (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "P3capAgency")
+        ;; the class-0 delegation vault FVT + reward token (OURO) -> members become stake-ready
+        (ref-TS02-C3::AQP-FVT|C_Issue anhd "P3DelegationVault" anhd 0 ouro)
+        (ref-TS02-C3::AQP-FVT|C_AddRewardLink anhd fvt-id ouro false (ref-U|CT::CT_BAR))
+        ;; bind the vault as a DSA delegation vault (unit-score 2000 => open gate 1000)
+        (ref-TS02-C3::AQP-DSA|A_DefineDelegationVault anhd fvt-id model-id 2000)
+        ;; class-3 DHOC pool employing the 3 sub-scores (so the triplet's silver has an aqpool for admission)
+        (ref-TS02-C3::AQP-POOL|C_Issue anhd "P3capPool" dhoc 3)
+        (ref-TS02-C3::AQP-POOL|C_AddScore anhd pool-id bronze-sid)
+        (ref-TS02-C3::AQP-POOL|C_AddScore anhd pool-id silver-sid)
+        (ref-TS02-C3::AQP-POOL|C_AddScore anhd pool-id gold-sid)
+        (map print
+          [ (expect "<<TX-P3-02>> vault template unit-score 2000" 2000 (AQP-DSA.UR_DSA-TMP|UnitScore fvt-id))
+            (expect "<<TX-P3-02>> vault FVT is class-0" 0 (AQP-FVT.UR_FVT|FvtClass fvt-id)) ])
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| ATOMIC OPEN — admit the blank triplet -> stake the operator's initial half -> terminal Q>=unit-score/2 gate.
+;;
+(begin-tx "TX-P3-03 - atomic open (admit + operator stake + terminal gate)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 90000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-01T00:01:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-03 · 01 · atomic agency open] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (dhoc:string "DHOC-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (pool-id:string    (ref-U|DALOS::UDC_Makeid "P3capPool"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            ;; atomic: admit blank triplet -> stake ANHD's full -1/-2/-3 supply (Q1 = 50+500+3000 = 3550) -> gate
+            (print (format "<(open)> => \"{}\""
+                [ (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id pool-id triplet-id 100 dhoc [-1 -2 -3]) ]))
+            (map print
+              [ (expect "<<TX-P3-03>> agency operator recorded" anhd (AQP-DSA.UR_DSA-AGN|Operator fvt-id triplet-id))
+                (expect "<<TX-P3-03>> member flagged as delegation" true (AQP-FVT.UR_FVT-SEL|Delegation fvt-id triplet-id))
+                (expect "<<TX-P3-03>> agency quintessence Q1 = 3550" 3550.0 (AQP-DSA.URC_AgencyQuintessence triplet-id))
+                ;; capture is still 0 — no oracle has reported nodes yet (nodes 0 => min(Q/us, 0) = 0)
+                (expect "<<TX-P3-03>> capture-units 0 before oracle" 0.0 (AQP-FVT.UR_FVT-SEL|CaptureUnits fvt-id triplet-id)) ])
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| The owner authorizes a delegated oracle key; the oracle reports nodes/uptime => capture is computed.
+;;
+(begin-tx "TX-P3-04 - oracle auth + first oracle write (capture math)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-01T01:00:00Z") })
+(env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "dsa-oracle-key", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-04 · 01 · oracle auth + first oracle write] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            ;; owner authorizes the delegated oracle key + arms oracle-on (25h expiry)
+            (ref-TS02-C3::AQP-DSA|A_SetOracleAuth anhd fvt-id (read-keyset "dsa-oracle"))
+            ;; oracle reports 10 nodes at full uptime -> capture-units = min(3550/2000, 10) = min(1,10) = 1
+            (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 10 1000)
+            (map print
+              [ (expect "<<TX-P3-04>> oracle-on armed" true (AQP-FVT.UR_FVT|OracleOn fvt-id))
+                (expect "<<TX-P3-04>> capture-units = 1 (3550/2000 capped by 10 nodes)" 1.0 (AQP-FVT.UR_FVT-SEL|CaptureUnits fvt-id triplet-id))
+                (expect "<<TX-P3-04>> capture-weight = 1.0 (1 unit x 1000/1000)" 1.0 (AQP-FVT.UR_FVT-SEL|CaptureWeight fvt-id triplet-id)) ])
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| A second operator stake grows Q; the permissionless recompute picks it up and preserves the oracle-ts.
+;;
+(begin-tx "TX-P3-05 - grow Q + permissionless recompute (oracle-ts preserved)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 90000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-02T00:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-05 · 01 · fragment batch 2 + stake + recompute] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (dhoc:string "DHOC-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (pool-id:string    (ref-U|DALOS::UDC_Makeid "P3capPool"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            (let ((ts-before:time (ref-FVT::UR_FVT-SEL|OracleTs fvt-id triplet-id)))
+                ;; fragment a second batch + stake it into the (now admitted, stake-ready) triplet -> Q -> 7100
+                (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 1 50)
+                (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 2 50)
+                (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 3 30)
+                (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable anhd pool-id anhd anhd dhoc [-1 -2 -3])
+                ;; permissionless recompute — picks up the new Q, keeps the oracle's nodes/uptime + oracle-ts
+                (ref-TS02-C3::AQP-DSA|C_RecomputeCapture anhd fvt-id triplet-id)
+                (map print
+                  [ (expect "<<TX-P3-05>> Q grew to 7100" 7100.0 (AQP-DSA.URC_AgencyQuintessence triplet-id))
+                    ;; capture-units = min(7100/2000, 10) = min(3,10) = 3 ; weight = 3 x 1000/1000 = 3
+                    (expect "<<TX-P3-05>> recompute -> capture-units 3" 3.0 (ref-FVT::UR_FVT-SEL|CaptureUnits fvt-id triplet-id))
+                    (expect "<<TX-P3-05>> recompute -> capture-weight 3.0" 3.0 (ref-FVT::UR_FVT-SEL|CaptureWeight fvt-id triplet-id))
+                    ;; a stake recompute must NOT refresh oracle freshness — oracle-ts is preserved
+                    (expect "<<TX-P3-05>> oracle-ts preserved by the stake recompute" ts-before (ref-FVT::UR_FVT-SEL|OracleTs fvt-id triplet-id)) ])
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Oracle re-reports: node-cap binds, then uptime scales the capture-weight.
+;;
+(begin-tx "TX-P3-06 - node-cap + uptime scaling")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-02T02:00:00Z") })
+(env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "dsa-oracle-key", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-06 · 01 · node-cap then uptime scaling] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            ;; nodes 2 < 7100/2000=3 => the NODE CAP binds: capture-units = 2
+            (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 2 1000)
+            (let ((cu-cap:decimal (ref-FVT::UR_FVT-SEL|CaptureUnits fvt-id triplet-id))
+                  (cw-cap:decimal (ref-FVT::UR_FVT-SEL|CaptureWeight fvt-id triplet-id)))
+                ;; nodes 10, uptime 500per-mille => capture-units 3, weight = 3 x 500/1000 = 1.5
+                (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 10 500)
+                (map print
+                  [ (expect "<<TX-P3-06>> node cap binds -> capture-units 2" 2.0 cu-cap)
+                    (expect "<<TX-P3-06>> node cap -> capture-weight 2.0" 2.0 cw-cap)
+                    (expect "<<TX-P3-06>> uptime scaling -> capture-units 3" 3.0 (ref-FVT::UR_FVT-SEL|CaptureUnits fvt-id triplet-id))
+                    (expect "<<TX-P3-06>> uptime 500per-mille -> capture-weight 1.5" 1.5 (ref-FVT::UR_FVT-SEL|CaptureWeight fvt-id triplet-id)) ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== dsa-capture-tests END — atomic open + capture recompute + delegated oracle (Phase 3) ===")
