@@ -239,3 +239,58 @@ branch in `MULTIPLET_BASE`. Tests.
 | Heterogeneous matrix storage | decided in **Round B** (§9.3). |
 
 *Locked 2026-08-24. Resume at Round A step 1 (FVT extension).*
+
+---
+
+## 14. BUILD LOG — FVT-core extension COMPLETE (Round A step 1)
+
+The whole FVT side of the extension is built, committed, and green (full AQP audit, 8 suites, throughout):
+
+| sub-step | what landed | commit |
+|---|---|---|
+| 1a | member fields `delegation`/`capture-units`/`capture-weight`/`oracle-ts`, FVT `oracle-on`, lane `royalty-rewards`; 3 UDC constructors → faithful params; 13 call sites | `854ec21` |
+| 1b-i | readers (iface+module) `UR_FVT-SEL\|Delegation/CaptureUnits/CaptureWeight/OracleTs`, `UR_FVT\|OracleOn`, `UR_FVT-RG\|RoyaltyRewards`; writers `WU_ScoreEntityLink\|Capture/Delegation`, `WU_Fvt\|OracleOn`, `WU_RpsGlobal\|RoyaltyRewards` | `fbc7178` |
+| 1b-ii | `DSA_ORACLE_TTL` (90000s=25h), `URC_MemberEffectiveCapture` (uptime + 25h expiry), `URC_FarmInjectDenominatorFresh` → Σ capture-units for delegation members, `XI_1\|FarmSplitInject` map→fold returns the royalty gap, `XI_DistributeInjectAmount` `available += eff−royalty` / `royalty += gap` | `96b05c3` |
+| 1c | FVT `XE_` writers DSA calls: `XE_SetFvtOracleOn`, `XE_SetMemberDelegation`, `XE_SetMemberCapture` (UEV_IMC + SECURE) | `d7b87d7` |
+
+**Conservation proven:** a normal member has `ideal == W_i` ⇒ gap 0 ⇒ `available += eff` exactly as before; the
+royalty field is only ever touched by a delegation member with an uptime shortfall. Custody exact: `available + royalty = eff`.
+
+## 15. CONFIRMED Custodians integration (owner, 2026-08-24)
+
+`DEMIPAD-CUSTODIANS` (`2_Core/02_DEMIPAD/03_Custodians.pact`) **is** the collection (the existing module is the
+*sale* side, `C_Acquire`). Concrete facts to build the DSA vault against:
+- **Quintessence** already exists: `DEMIPAD-CUSTODIANS::UC_NonceQuintessence(nonce, validation)` →
+  `-1 → 1` (bronze), `-2 → 10` (silver), else (`-3`) `→ 100` (gold). **Additive.** It scores the **fragment
+  (negative) nonces**, so a whole Custodian (nonce 1/2/3, +4 = anchor boost) is **fragmented first** (via
+  **`DPDC-F`**, the DPDC fragment module) into `-1/-2/-3` fragments, which are what stake for quintessence.
+- Custodians is a **DPDC collectable** (uses `ref-DPDC::UR_AccountNonceSupply`).
+- **Test requirement (owner):** the DSA test must **fragment nonces 1/2/3** and assert the fragments
+  **`-1/-2/-3` are properly accepted** (staked → quintessence Q → capture) alongside/after fragmentation.
+
+## 16. DSA-module build plan (Round A step 2+, phased — resume here)
+
+Deploy order: `07_DSA.pact` loads **after** FVT (DSA→FVT), in `REPL/Stage_02/[2.3]_EarningPools.repl` after MTX-AQP.
+
+1. **Skeleton + data model** — module scaffold (GOV/POLICY/IMC, template of MTX-AQP), schemas:
+   `DSA|Template` (per vault: fvt-id, custodians-asset-id, unit-score, active), `DSA|Agency`
+   (fvt-id, score-entity-id=triplet member, operator-konto, fee, nodes, uptime), `DSA|OracleAuth`
+   (fvt-id → delegated oracle guard) + tables + caps + constructors + readers. Wire deploy + create-tables.
+2. **Agency open** — user-created member = operator: create the operator's pool + bronze/silver/gold scores +
+   triplet (reuse `C_IssueTriplet`), admit as an FVT member with **`member-owner = operator`** (relax the
+   `score-owner == fvt-owner` admission, FVT `UEV_AddScoreEntityContext` ~`:2639`), set `delegation` via
+   `XE_SetMemberDelegation`. Enforce the one-time `quintessence ≥ unit-score/2` open gate. Operator + flat fee.
+3. **Capture recompute** — on delegator stake/unstake (Q change) or oracle write: `capture-units =
+   min(⌊Q/unit-score⌋, nodes)`, `capture-weight = capture-units × uptime/1000` → `XE_SetMemberCapture`.
+4. **Oracle write path** — `DSA|OracleAuth` delegated guard writes daily `{nodes, uptime}` + stamps oracle-ts;
+   `oracle-on` toggle via `XE_SetFvtOracleOn`; defaults uptime 1000.
+5. **Royalty disposal** — `A_WithdrawRoyalty` / `A_BurnRoyalty` / `A_FuelRoyalty(swpair)`; read + zero
+   `royalty-rewards`, move from AQP custody; **IGNIS→OURO** pre-normalize (find the conversion primitive — the
+   one genuine unknown to resolve at build time); fuel = SWP add-liquidity-no-mint.
+6. **Talos + IMP** — register DSA in FVT's IMP (`P|A_Define`), Talos client/admin wrappers, gas.
+7. **Tests** — Custodians fragment fixture (fragment 1/2/3 → stake −1/−2/−3 → Q → capture), inject with
+   uptime shortfall → royalty, all-drained → zombie, disposal.
+
+**Round B** — heterogeneous quality-split matrix (§9.3).
+
+*FVT-core done 2026-08-24. Resume at §16 step 1 (DSA module skeleton).*
