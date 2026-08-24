@@ -2327,3 +2327,29 @@ function does and precisely what it returns and why. Pure documentation, zero be
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #31. Awaiting Round III re-verify. — *L52*
 
 ---
+
+## L53 (#53L, SWP — `UEV_PoolFee`'s upper bound (320.0) has units not self-evidently sane) — **CONFIRMED, FIXED, PROVEN**
+
+**Did exactly what the finding asked before concluding anything:** cross-checked `320.0` against the real
+swap-fee formula (`16_SWPI.pact`'s `fselp`/`ofs`), which treats `1000.0` as the full-fee basis — confirming
+fee is expressed in per-mille, so `320.0` means a 32% ceiling, not a nonsensical raw number. Traced
+`UEV_PoolFee`'s real callers: it gates both `fee-lp` at issuance and the LP-or-special slot via
+`C_UpdateFee`.
+
+**Owner explained the design rationale for the specific number:** the same bound is deliberately mirrored
+across all three fee components a pool can carry — LP fee, special-target fee, liquid-boost fee — so
+their combined worst case is `320.0 × 3 = 960` promille, always leaving at least 40 promille (4%) of
+every swap that fees can never fully consume. `320.0` wasn't picked arbitrarily; it's `≈1000/3`, sized
+specifically to prevent the three independently-capped components from ever summing to the full 1000.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** added `@doc` to `UEV_PoolFee` capturing both the
+per-mille units and the three-way-mirrored design rationale, so a future reader doesn't have to
+reverse-engineer it from the swap formula the way this trace did. Pure documentation, zero behavior
+change.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite and full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0
+`FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #32. Awaiting Round III re-verify. — *L53*
+
+---

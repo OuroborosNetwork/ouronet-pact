@@ -1102,6 +1102,14 @@
         )
     )
     (defun UEV_PoolFee (fee:decimal)
+        @doc "Enforces <fee> is a valid pool fee amount. \
+            \ #53L fix: units are per-mille (parts per 1000) — the actual swap math \
+            \ (16_SWPI.pact's <fselp>/<ofs>) treats 1000.0 as the full-fee basis, so \
+            \ e.g. fee=10.0 means 1%. The 320.0 max (32%) is deliberate, not arbitrary: \
+            \ this same bound gates all three fee components a pool can carry — LP fee, \
+            \ special-target fee, and liquid-boost fee — mirrored to the identical cap, \
+            \ so their combined worst case is 320.0*3 = 960 promille, always leaving at \
+            \ least 40 promille (4%) of every swap that fees can never fully consume."
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)

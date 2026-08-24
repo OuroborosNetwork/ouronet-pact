@@ -430,8 +430,12 @@ first: `XE_Issue` returns the new `swpair` ID; `XI_ToggleFeeLock` returns `[0.0 
 unlock price, confirmed genuinely billed to the patron via `C_ToggleFeeLock`. Real `@doc` added to both
 per R4. Pure doc change, zero behavior change. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L52*
 
-#53L **[SWP]** `UEV_PoolFee`'s upper bound (320.0) has units that aren't self-evidently sane — needs
-cross-check against SWPU's fee formula.
+#53L **[SWP]** ~~`UEV_PoolFee`'s upper bound (320.0) has units that aren't self-evidently sane — needs
+cross-check against SWPU's fee formula.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-24** (`ROUND-02-FIXES.md`
+Fix #32). Cross-checked against the real swap-fee formula: fee is per-mille (1000.0 basis), so 320.0 =
+32%, not arbitrary. Owner: mirrored across LP/special/boost fee components so their combined worst case
+is 960 promille, always leaving 4% fees can never consume. Doc added capturing both units and rationale.
+Pure doc change. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L53*
 
 #54L **[SWP]** Admin migration utility `AHU`/`AUP_SwapPair(s)` falls outside the module's own prefix
 vocabulary.

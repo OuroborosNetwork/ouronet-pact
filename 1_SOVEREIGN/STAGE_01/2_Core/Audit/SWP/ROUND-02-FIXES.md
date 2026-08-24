@@ -1424,3 +1424,18 @@ R4. Pure documentation, zero behavior change.
 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #32 — L53 (#53L): `UEV_PoolFee`'s 320.0 bound documented (units + design rationale)
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** cross-checked `320.0` against the real swap-fee
+formula first — confirmed fee is per-mille (1000.0 full-fee basis), so `320.0` = 32%, not arbitrary. Owner
+explained why that specific number: mirrored across LP/special/boost fee components, so their combined
+worst case is `320.0 × 3 = 960` promille, always leaving 40 promille (4%) fees can never consume. Added
+`@doc` capturing both. Pure documentation, zero behavior change.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite and full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0
+`FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
