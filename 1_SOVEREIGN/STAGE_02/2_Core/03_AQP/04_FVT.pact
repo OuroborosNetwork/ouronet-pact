@@ -299,6 +299,7 @@
                 (ref-P|DPDC-T:module{OuronetPolicyV1} DPDC-T)
                 (ref-P|DPTF:module{OuronetPolicyV1} DPTF)
                 (ref-P|SWPLC:module{OuronetPolicyV1} SWPLC)
+                (ref-P|ORBR:module{OuronetPolicyV1} OUROBOROS)
                 (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
                 ;;
                 (dg:guard (create-capability-guard (SECURE)))
@@ -315,6 +316,8 @@
             (ref-P|DPTF::P|A_AddIMP mg)
             ;; SWPLC: FVT fuels a swpair with the royalty pool from AQP|SC_NAME (DSA royalty fuel disposal).
             (ref-P|SWPLC::P|A_AddIMP mg)
+            ;; OUROBOROS: FVT normalizes an IGNIS royalty leg to OURO (XB_Compress) before disposal.
+            (ref-P|ORBR::P|A_AddIMP mg)
             (ref-P|ATSU::P|A_AddIMP mg)
         )
     )
@@ -5221,63 +5224,117 @@
             )
         )
     )
+    (defun XI_NormalizeRoyalty:object (reward-dptf-id:string amount:decimal)
+        @doc "IGNIS pre-normalization for a royalty disposal: if the royalty leg is IGNIS, COMPRESS it to OURO in \
+            \ AQP|SC_NAME custody (OUROBOROS::XB_Compress, 98.5%) and return {token: OURO, amount: OURO-received, \
+            \ oc: compress-cumulator}; else return {token, amount, oc: empty} unchanged. The disposal then moves \
+            \ the normalized token — IGNIS can be neither withdrawn nor fueled as a token, so it is always \
+            \ converted first. require SECURE (the disposal cap holds P|SECURE-CALLER + P|FVT|REMOTE-GOV, so the \
+            \ IGNIS custody legs inside XB_Compress are authorized)."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (if (= reward-dptf-id (ref-DALOS::UR_IgnisID))
+                (let
+                    (
+                        (ref-ORBR:module{OuroborosV1} OUROBOROS)
+                    )
+                    {"token"  : (ref-DALOS::UR_OuroborosID)
+                    ,"amount" : (at 0 (ref-ORBR::URC_Compress amount))
+                    ,"oc"     : (ref-ORBR::XB_Compress AQP|SC_NAME amount)}
+                )
+                {"token" : reward-dptf-id, "amount" : amount, "oc" : (UC_EmptyOc)}
+            )
+        )
+    )
     (defun XE_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string destination:string)
-        @doc "DSA royalty disposal (WITHDRAW): zero the royalty pool (reward-dptf) of <fvt-id> and move its whole \
-            \ balance OUT of the AQP pool-vault custody (AQP|SC_NAME) to <destination> via TFT. UEV_IMC + \
-            \ FVT|XE>DISPOSE-ROYALTY (composes P|SECURE-CALLER + P|FVT|REMOTE-GOV for the AQP custody leg). Returns \
-            \ the TFT transfer's OutputCumulator. Owner authorization is enforced upstream in DSA's A_ shell."
+        @doc "DSA royalty disposal (WITHDRAW): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it \
+            \ to OURO if needed, and move the whole balance OUT of the AQP pool-vault custody (AQP|SC_NAME) to \
+            \ <destination> via TFT. UEV_IMC + FVT|XE>DISPOSE-ROYALTY (composes P|SECURE-CALLER + P|FVT|REMOTE-GOV \
+            \ for the AQP custody leg). Returns the (compress + transfer) OutputCumulator. Owner authorization is \
+            \ enforced upstream in DSA's A_ shell."
         (UEV_IMC)
         (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
             (let
                 (
                     (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
                 )
                 (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
-                (ref-TFT::C_Transfer reward-dptf-id AQP|SC_NAME destination royalty true)
+                (let
+                    (
+                        (norm:object (XI_NormalizeRoyalty reward-dptf-id royalty))
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [ (at "oc" norm)
+                          (ref-TFT::C_Transfer (at "token" norm) AQP|SC_NAME destination (at "amount" norm) true) ]
+                        [destination])
+                )
             )
         )
     )
     (defun XE_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string)
-        @doc "DSA royalty disposal (BURN): zero the royalty pool (reward-dptf) of <fvt-id> and BURN its whole \
-            \ balance in place from the AQP pool-vault custody (AQP|SC_NAME — which holds the autonomic burn role \
-            \ via DALOS UR_AutonomicRoles; FVT is a registered DPTF IMC caller). UEV_IMC + FVT|XE>DISPOSE-ROYALTY. \
-            \ Returns the burn's OutputCumulator."
+        @doc "DSA royalty disposal (BURN): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
+            \ OURO if needed, and BURN the whole balance in place from the AQP pool-vault custody (AQP|SC_NAME — \
+            \ which holds the autonomic burn role via DALOS UR_AutonomicRoles; FVT is a registered DPTF IMC caller). \
+            \ UEV_IMC + FVT|XE>DISPOSE-ROYALTY. Returns the (compress + burn) OutputCumulator."
         (UEV_IMC)
         (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
             (let
                 (
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
                 )
                 (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
-                (ref-DPTF::C_Burn reward-dptf-id AQP|SC_NAME royalty)
+                (let
+                    (
+                        (norm:object (XI_NormalizeRoyalty reward-dptf-id royalty))
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [ (at "oc" norm)
+                          (ref-DPTF::C_Burn (at "token" norm) AQP|SC_NAME (at "amount" norm)) ]
+                        [reward-dptf-id])
+                )
             )
         )
     )
     (defun XE_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string swpair:string)
-        @doc "DSA royalty disposal (FUEL): zero the royalty pool (reward-dptf) of <fvt-id> and FUEL <swpair> with \
-            \ its whole balance from the AQP pool-vault custody — adds liquidity WITHOUT minting LP (SWPLC::C_Fuel), \
-            \ boosting LP value. The reward-dptf must be one of the swpair's tokens; the fuel amount goes in its \
-            \ slot, 0 in the others. UEV_IMC + FVT|XE>DISPOSE-ROYALTY (P|FVT|REMOTE-GOV custody authority for the \
-            \ AQP|SC_NAME leg). FVT is a registered SWPLC IMC caller. Returns the fuel's OutputCumulator."
+        @doc "DSA royalty disposal (FUEL): zero the royalty pool (reward-dptf) of <fvt-id>, IGNIS-normalize it to \
+            \ OURO if needed, and FUEL <swpair> with the whole balance from the AQP pool-vault custody — adds \
+            \ liquidity WITHOUT minting LP (SWPLC::C_Fuel), boosting LP value. The NORMALIZED token must be one of \
+            \ the swpair's tokens; the fuel amount goes in its slot, 0 in the others. UEV_IMC + FVT|XE>DISPOSE-ROYALTY \
+            \ (P|FVT|REMOTE-GOV custody authority). FVT is a registered SWPLC IMC caller. Returns the (compress + \
+            \ fuel) OutputCumulator."
         (UEV_IMC)
         (with-capability (FVT|XE>DISPOSE-ROYALTY fvt-id reward-dptf-id)
             (let
                 (
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (royalty:decimal (UR_FVT-RG|RoyaltyRewards fvt-id reward-dptf-id))
-                    (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
                 )
-                (enforce (contains reward-dptf-id pool-tokens) "Reward token is not a token of the swpair")
                 (WU_RpsGlobal|RoyaltyRewards fvt-id reward-dptf-id 0.0)
-                (ref-SWPLC::C_Fuel AQP|SC_NAME swpair
-                    (map (lambda (t:string) (if (= t reward-dptf-id) royalty 0.0)) pool-tokens)
-                    true true)
+                (let
+                    (
+                        (norm:object (XI_NormalizeRoyalty reward-dptf-id royalty))
+                        (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                    )
+                    (enforce (contains (at "token" norm) pool-tokens) "Normalized royalty token is not a token of the swpair")
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [ (at "oc" norm)
+                          (ref-SWPLC::C_Fuel AQP|SC_NAME swpair
+                              (map (lambda (t:string) (if (= t (at "token" norm)) (at "amount" norm) 0.0)) pool-tokens)
+                              true true) ]
+                        [reward-dptf-id])
+                )
             )
         )
     )

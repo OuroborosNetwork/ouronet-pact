@@ -1110,4 +1110,98 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(print "=== dsa-capture-tests END — open/capture/oracle/inject/royalty/disposal + global oracle switch (Phase 3-6) ===")
+;;
+;;|| NEXT >
+;;|| IGNIS reward line → royalty in IGNIS. On disposal, IGNIS is pre-normalized to OURO (XB_Compress, 98.5%): IGNIS
+;;|| can be neither withdrawn nor fueled as a token, so it always converts first. Add an IGNIS reward + inject 400
+;;|| IGNIS (uptime-500 shortfall → 200 IGNIS royalty).
+;;
+(begin-tx "TX-P3-24 - IGNIS reward + inject → IGNIS royalty")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 90000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-08T00:00:00Z") })
+(env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "dsa-oracle-key", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-24 · 01 · IGNIS reward + inject] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (gas:string "GAS-98c486052a51")
+        (ref-U|CT:module{OuronetConstantsV1} U|CT)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "P3DelegationVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
+            ;; add the IGNIS reward line to the vault + re-arm the oracle fresh
+            (ref-TS02-C3::AQP-FVT|C_AddRewardLink anhd fvt-id gas false (ref-U|CT::CT_BAR))
+            (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 10 500)
+            ;; inject 400 IGNIS → member 200, royalty 200 (uptime-500 shortfall)
+            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id gas 400.0)
+            (map print
+              [ (expect "<<TX-P3-24>> IGNIS royalty accrued = 200" 200.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id gas)) ]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Withdraw the IGNIS royalty — it is COMPRESSED to OURO (200 IGNIS → 1.97 OURO at 98.5%) and the OURO lands on
+;;|| the owner. The IGNIS royalty pool zeroes; the disposal never moves IGNIS as a token.
+;;
+(begin-tx "TX-P3-25 - withdraw IGNIS royalty → compressed to OURO")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 90000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-08T01:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [TX-P3-25 · 01 · withdraw IGNIS royalty → OURO] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (gas:string "GAS-98c486052a51")
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let ((fvt-id:string (ref-U|DALOS::UDC_Makeid "P3DelegationVault")))
+        (let ((ouro-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))
+            (ref-TS02-C3::AQP-DSA|A_WithdrawRoyalty anhd fvt-id gas)
+            (let ((ouro-received:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) ouro-before)))
+                (print (format "<(owner OURO from IGNIS royalty)> => {}" [ouro-received]))
+                (map print
+                  [ ;; 200 IGNIS → floor(200/100)=2 OURO × 98.5% = 1.97 OURO to the owner
+                    (expect "<<TX-P3-25>> IGNIS royalty compressed to 1.97 OURO on the owner" 1.97 ouro-received)
+                    (expect "<<TX-P3-25>> IGNIS royalty pool zeroed" 0.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id gas)) ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== dsa-capture-tests END — DSA lifecycle: open/capture/oracle/inject/royalty + 4-mode disposal (Phase 3-6) ===")

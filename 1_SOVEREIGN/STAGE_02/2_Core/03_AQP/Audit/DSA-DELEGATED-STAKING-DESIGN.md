@@ -454,10 +454,14 @@ FVT/SCORE core.
     DPTF's IMP. Test: 350 burned (incl. a 300 **zombie-flush** into the live inject) → total OURO supply −350.
   - ✅ **Fuel** (`6d4a810`) — `XE_FuelRoyalty` → `SWPLC::C_Fuel` (registered FVT in SWPLC's IMP; builds the
     input-amounts array). Test: 200 fueled into the OURO swpair → reserves +200, **LP supply UNCHANGED (no mint)**.
-  - 🔨 **Compress (IGNIS→OURO)** — pending: the Custodians vault will carry an **IGNIS reward line** (daily gas
-    cumulation) alongside 20% OURO, so an IGNIS royalty leg must **pre-normalize to OURO** (`OUROBOROS::C_Compress`,
-    98.5%) before withdraw/burn/fuel. Needs FVT in OUROBOROS's IMP + an `if reward-dptf == IGNIS → compress first`
-    branch in the disposals. Unexercised by the OURO fixture. *Next.*
+  - ✅ **Compress (IGNIS→OURO)** — the Custodians vault carries an **IGNIS reward line** (daily gas cumulation)
+    alongside 20% OURO, so an IGNIS royalty leg **pre-normalizes to OURO** before withdraw/burn/fuel (IGNIS can be
+    neither withdrawn nor fueled as a token). Built: `OUROBOROS::XB_Compress(client, ignis-amount)` — an
+    SC-account-tolerant sibling of `C_Compress` (cap `IGNIS|XB>COMPRESS` omits the standard-account restriction; the
+    caller-module IMC gate is the trust boundary), so `AQP|SC_NAME` custody may convert. FVT registered in
+    OUROBOROS's IMP; `XI_NormalizeRoyalty` (compress if IGNIS → {OURO, remainder, oc}) folds into all three
+    disposals. Test: 200 IGNIS royalty → withdraw → **1.97 OURO** (98.5%) on the owner; OURO legs pass through
+    unchanged. **All 4 disposal modes complete.**
 - **Oracle model — GLOBAL external-oracle switch + variable validity (owner-requested).** ✅ **DONE.** Replaced
   the per-FVT `oracle-on` + the `DSA_ORACLE_TTL` constant in `URC_MemberEffectiveCapture` with a SINGULAR global
   config row (`FVT|T|DsaOracleConfig`, lazily-defaulted on / 25h): `UR_ExternalOracle` + `UR_OracleValidity`

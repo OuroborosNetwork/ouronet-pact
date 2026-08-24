@@ -17,6 +17,7 @@
     ;;
     ;;
     (defun C_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
+    (defun XB_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} ())
     (defun C_Sublimate:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
     (defun C_WithdrawFees:object{IgnisCollectorV1.OutputCumulator} (id:string target:string))
@@ -198,6 +199,19 @@
             (compose-capability (P|ORBR|CALLER))
         )
     )
+    (defcap IGNIS|XB>COMPRESS (client:string)
+        @doc "SC-account-tolerant compress authorization for INTERNAL module callers (registered OUROBOROS IMC — \
+            \ e.g. AQP-FVT normalizing an IGNIS royalty leg to OURO before disposal). Same conversion as \
+            \ IGNIS|C>COMPRESS but WITHOUT the standard-account restriction; the caller-module IMC gate (UEV_IMC in \
+            \ XB_Compress) is the trust boundary."
+        @event
+        (compose-capability (IGNIS|XB>CONVERT client))
+    )
+    (defcap IGNIS|XB>CONVERT (client:string)
+        (UEV_Exchange)
+        (compose-capability (ORBR|GOV))
+        (compose-capability (P|ORBR|CALLER))
+    )
     (defcap OUROBOROS|C>WITHDRAW (id:string target:string)
         @event
         (let
@@ -354,6 +368,39 @@
                         ;;03]Ouroboros mints OURO <ouro-remainder-amount>
                         (ref-DPTF::C_Mint ouro-id ORBR|SC_NAME ouro-remainder-amount false)
                         ;;04]Ouroboros transfers OURO <ouro-remainder-amount> to <client>
+                        (ref-TFT::C_Transfer ouro-id ORBR|SC_NAME client ouro-remainder-amount true)
+                    ]
+                    [ouro-remainder-amount]
+                )
+            )
+        )
+    )
+    (defun XB_Compress:object{IgnisCollectorV1.OutputCumulator}
+        (client:string ignis-amount:decimal)
+        @doc "SC-account-tolerant IGNIS→OURO compress for INTERNAL module callers (registered OUROBOROS IMC). Same \
+            \ conversion + fee as C_Compress (98.5% efficiency), but authorized by IGNIS|XB>COMPRESS which OMITS the \
+            \ standard-account restriction — so a SMART account (e.g. AQP|SC_NAME custody) may normalize an IGNIS \
+            \ royalty leg to OURO before disposal. UEV_IMC gates the caller module. The <client>'s IGNIS→ORBR \
+            \ transfer is authorized by whatever cap the caller holds for <client> (e.g. P|FVT|REMOTE-GOV)."
+        (UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (ignis-to-ouro:[decimal] (URC_Compress ignis-amount))
+                (ouro-remainder-amount:decimal (at 0 ignis-to-ouro))
+            )
+            (with-capability (IGNIS|XB>COMPRESS client)
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [
+                        (ref-TFT::C_Transfer ignis-id client ORBR|SC_NAME ignis-amount true)
+                        (ref-DPTF::C_Burn ignis-id ORBR|SC_NAME ignis-amount)
+                        (ref-DPTF::C_Mint ouro-id ORBR|SC_NAME ouro-remainder-amount false)
                         (ref-TFT::C_Transfer ouro-id ORBR|SC_NAME client ouro-remainder-amount true)
                     ]
                     [ouro-remainder-amount]
