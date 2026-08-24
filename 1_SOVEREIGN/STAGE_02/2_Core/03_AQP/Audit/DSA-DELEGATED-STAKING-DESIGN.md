@@ -445,8 +445,22 @@ FVT/SCORE core.
     but is **NOT skimmed anywhere in the collect path** yet. It only bites when a DELEGATOR (≠ operator) collects, so
     it needs (a) collect-fee wiring in the FVT collect + (b) a multi-delegator fixture. Deferred to **Phase 5b /
     the collect-wiring phase** (single-agency operator = sole staker ⇒ no fee applies in this fixture).
-- **Phase 6 — Royalty disposal.** `A_WithdrawRoyalty` / `A_BurnRoyalty` / `A_FuelRoyalty(swpair)` +
-  `OUROBOROS::C_Compress` IGNIS→OURO (core→core) + SWP fuel (add-liq, no LP mint). *Verify:* accrue → dispose each way.
+- **Phase 6 — Royalty disposal.** 🟡 **PARTIAL.**
+  - ✅ **Withdraw DONE** — FVT `XE_WithdrawRoyalty(fvt-id, reward-dptf-id, destination)` under `FVT|XE>DISPOSE-ROYALTY`
+    (composes `P|SECURE-CALLER + P|FVT|REMOTE-GOV`): zeros `royalty-rewards` + `TFT::C_Transfer` the pool out of
+    `AQP|SC_NAME` custody. DSA `A_WithdrawRoyalty` (owner-gated) → destination = owner. Test: royalty 700 →
+    owner, pool zeroed, non-owner rejected. 11-suite audit green.
+  - 🔨 **Burn** — BLOCKED on a decision: `AQP|SC_NAME` is **NOT** in `DALOS::UR_AutonomicRoles`
+    (`{DALOS,ATS,VST,LIQUID,OUROBOROS,SWP,DHV2}`), so it can't burn a reward token without the *stored* burn role.
+    Options: (a) reward-token owner grants `AQP|SC_NAME` the burn role (`DPTF|C_ToggleBurnRole`, as `[5.3]` does)
+    then burn in place; (b) route royalty out to a burn-authorized account then burn; (c) add `AQP|SC_NAME` to
+    `UR_AutonomicRoles` (DALOS/Stage-01, broad). *Awaiting owner decision.*
+  - 🔨 **Fuel** — `SWP|C_Fuel(patron, account, swpair, input-amounts)` EXISTS (adds liquidity WITHOUT minting LP)
+    but is **missing from the `TalosStageOne_ClientThreeV1` interface**; expose it (+ the `SWPLC::C_Fuel` core-call
+    wiring / IMC) to build `A_FuelRoyalty`. *Awaiting owner go-ahead (SWP interface touch).*
+  - 🔨 **Compress (IGNIS→OURO)** — only `OUROBOROS::C_Compress` (no `XE_`); DSA is **not** in OUROBOROS's IMP.
+    Unexercised by the OURO fixture. Wire via a new `XE_Compress` or an IMP hookup (Stage-01) when an IGNIS-reward
+    delegation vault is needed. *Deferred.*
 - **Phase 7 — Talos + gas full wiring.** All DSA client/admin ops into Talos + gas-station allowlist + IMP; the
   operator-fee collect path. *Verify:* end-to-end via Talos.
 - **Phase 8 — Round B: heterogeneous quality split.** Reward-mode flag + per-type split matrix + the
