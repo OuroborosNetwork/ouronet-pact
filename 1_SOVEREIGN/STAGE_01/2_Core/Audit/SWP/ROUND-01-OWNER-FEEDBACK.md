@@ -2535,3 +2535,24 @@ documentation, zero behavior change.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #35. Awaiting Round III re-verify. — *L59*
 
 ---
+
+## L60 (#60L, SWPLC — LP-branding fee attribution resolves via DPTF/DPOF `Konto`, not `SWP::UR_OwnerKonto` directly) — **DESIGN, accepted — no code change**
+
+**Traced the full billing/credit mechanism before concluding anything, not taken on faith either way:**
+`C_UpdatePendingBrandingLPs`'s `entity-owner` never drives a debit — real IGNIS payment is always billed
+to the calling `patron`. `entity-owner` only controls a 25% referral-style **credit** back to whoever's
+named — and for LP-token branding (`entity-pos` 1/2), that resolves to `SWP|SC_NAME` (the module's own
+smart account, confirmed set as the LP token's own `owner-konto` at issuance via `DPTF::XE_IssueLP`), not
+the real pool owner. Confirmed `entity-pos 3` (sleeping-LP) diverts the same way, to `VST|SC_NAME`.
+
+**Owner's correction, once the mechanism was laid out precisely:** the 25% credit only exists as a
+**smart-account interactor incentive** in the first place — `IGNIS::UR_AccountType` gates whether the
+named `interactor` qualifies at all; a normal (non-smart) account fails that check and the credit falls
+through to the general IGNIS pot instead. `SWP|SC_NAME` legitimately earns the 25% because it genuinely
+*is* a registered smart account. Swapping `entity-owner` for `SWP::UR_OwnerKonto` (typically a normal
+user account) wouldn't redirect the credit to the pool owner at all — it would just fail the smart-account
+check and lose the incentive entirely, benefiting no one.
+
+**Status:** DESIGN, accepted — working as intended, not a bug. No code change. — *L60*
+
+---

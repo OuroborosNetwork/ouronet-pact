@@ -484,7 +484,12 @@ the invariant and flagging it for any future caller. Pure doc change. Full write
 `ROUND-01-OWNER-FEEDBACK.md`. — *L59*
 
 #60L **[SWPLC]** LP-branding fee attribution resolves via DPTF/DPOF `Konto`, not `SWP::UR_OwnerKonto`
-directly — a potential (not confirmed) billing-attribution mismatch.
+directly — a potential (not confirmed) billing-attribution mismatch. — **DESIGN, accepted — working as
+intended, 2026-08-24.** Traced the mechanism: `entity-owner` never drives a debit (always billed to
+`patron`), only a 25% smart-account interactor credit gated by `UR_AccountType`. `SWP|SC_NAME`
+legitimately qualifies; the pool owner's normal account wouldn't qualify either, so "fixing" this would
+just lose the incentive, not redirect it to the owner. No code change. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L60*
 
 #61L **[SWPLC]** `C_UpgradeBrandingLPs` is commented out in the REPL suite — untested.
 
