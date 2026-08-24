@@ -1320,3 +1320,78 @@ genuinely holds DHCD nonces) still returns its real entries unaffected. `cd REPL
 `Load successful`.
 
 **Interface implication:** none — return element type `[object]` unaffected; `[]` is a valid `[object]`.
+
+## Fix #31 — DPDC · M2 (#35M) — removed standalone `DeployAccount` entrypoints; a real regression caught mid-fix
+
+**Owner-approved 2026-08-23.** Owner: this function isn't meant to be used standalone — real association
+happens automatically (on transfer, etc.) — "I don't see any reason why anyone would want to run it for
+his account... I think we should block its direct usage, and leave it only in the functions that call
+it." Also requested a copy-paste handoff for the sibling DPTF/DPOF audit, since the same shape exists
+there (confirmed: `TS01-C1.pact`'s `DPTF|C_DeployAccount`/`DPOF|C_DeployAccount`, same naked
+`P|TS`-only-gated chain into `DPTF::C_DeployAccount`/`DPOF::C_DeployAccount`, `UEV_IMC`-only).
+
+**Root cause:** `DPSF|C_DeployAccount`/`DPNF|C_DeployAccount` (Talos, `01_TS02-C1.pact`/`02_TS02-C2.pact`)
+were gated only by `P|TS` (global pause check) — no check that the caller controls `account`. They forwarded
+to `DPDC-I::C_DeployAccountSFT`/`C_DeployAccountNFT` (`04_DPDC-I.pact`, completely naked, no cap at all),
+which forwarded to `DPDC::XB_DeployAccountSFT`/`XB_DeployAccountNFT` (`UEV_IMC` only — "is a registered
+peer module's capability currently composed," not "does the signer own `account`"). Any signer could
+force any existing account to associate with any collection.
+
+**Why the obvious fix (add `CAP_EnforceAccountOwnership account`) is wrong:** every legitimate use of
+`XB_DeployAccountSFT`/`NFT` — auto-association on transfer (`XE_DeployAccountWNE`, called from
+`DPDC-C`/`DPDC-F`), role-toggles (`DPDC-R`), Issue (`DPDC-I`'s own flow), set-fragmentation (`DPDC-S`) —
+associates the **recipient/target** of an action the recipient never signs (e.g. a transfer recipient
+doesn't sign the sender's transfer transaction). Adding an ownership check at this shared layer would have
+broken every one of those legitimate flows, not just the standalone abuse path.
+
+**Fix:**
+1. Removed `DPSF|C_DeployAccount` (`01_TS02-C1.pact`, interface + module) and `DPNF|C_DeployAccount`
+   (`02_TS02-C2.pact`, interface + module) — same removal pattern as `DPSF|C_UpdateSetMultiplier` (#15H).
+2. Removed the now-orphaned `DPDC-I::C_DeployAccountSFT`/`C_DeployAccountNFT` (interface + module,
+   `04_DPDC-I.pact`) — nothing else called them.
+3. Traced every real caller before touching anything (not just Talos-wired ones) and found
+   `03_TS02-DPAD.pact`'s `A_RegisterAssetToLaunchpad` (DemiPad's admin-gated launchpad-registration flow)
+   genuinely depends on `DPSF|C_DeployAccount`/`DPNF|C_DeployAccount` to associate the launchpad's own
+   system account (`lpad`) with a newly-registered asset. Redirected it to call
+   `ref-DPDC::XB_DeployAccountSFT`/`XB_DeployAccountNFT` directly — the exact same module-to-module
+   pattern every other legitimate internal caller already uses.
+4. Left a dead-reference comment in the disabled `REPL/Stage_02/[6.1]_DPDC.repl` (already unreachable,
+   out of scope per the established "don't resurrect" precedent) so a future resurrection attempt doesn't
+   hit a silent surprise.
+
+**A real regression caught by insisting on live, end-to-end proof instead of "it compiles":** the first
+version of step 3 compiled cleanly and `Z.repl` passed — but actually *running* the real launchpad
+scenario (`[5.3]_Launchpad.repl`, not in the default active profile) failed:
+`DPDC.UEV_IMC ... "None of the guards passed"`. Root cause: `UEV_IMC` doesn't check "which module's code
+is calling this" — it checks "is one of DPDC's registered peer-module capabilities currently composed."
+Previously, `TS02-C1`'s own `P|TALOS-SUMMONER` capability (composed via the now-removed
+`DPSF|C_DeployAccount`'s `with-capability (P|TS)`) stayed composed through the whole call chain down into
+`DPDC-I` and then `DPDC`. Once `TS02-DPAD` called `XB_DeployAccountSFT` directly, it was *its own*
+`P|TALOS-SUMMONER` capability in scope — a different capability entity, never registered as a trusted
+DPDC peer (`TS02-DPAD`'s own `P|A_Define` only ever registered itself with `DEMIPAD`/`DEMIPAD-SPARK`/
+`DEMIPAD-SNAKES`/`DEMIPAD-CUSTODIANS`/`DEMIPAD-STOICPAY`/`STOAICO` — never `DPDC`). Same "Talos module
+needs its own IMC registration into the core module it calls directly" shape already fixed once in the
+AQP audit (`03_AQP/Audit/ROUND-02-FIXES.md`'s "Reverse IMC" note, TS02-C3 → MTX-AQP) and once in the ATS
+audit (#34N/Fix #17, `P|A_Define` missing ATS/ATSU registration). Fixed by adding
+`(ref-P|DPDC::P|A_AddIMP mg)` to `03_TS02-DPAD.pact`'s own `P|A_Define`, registering its guard as an
+additional trusted DPDC peer — purely additive, doesn't touch any existing trust relationship.
+
+**Proof:** `REPL/Kursan/_verify_finding_DPDC_35M_deploy_account_removal.repl` — loads the full real
+launchpad scenario (`[5.3]_Launchpad.repl`), which genuinely exercises `A_RegisterAssetToLaunchpad` on a
+real SFT/EQUITY collection via the redirected code path. Failed with the IMC error on the first attempt;
+clean `Load successful` after the `P|A_Define` fix. Full `cd REPL && pact Z.repl` (default active profile,
+unaffected by any of this since it never calls the launchpad scenario) also stays clean.
+
+**Interface implication:** `DpdcIssueV1` loses `C_DeployAccountSFT`/`C_DeployAccountNFT` (removed
+outright, not deprecated — matches `DpdcSetsV1`'s `C_UpdateSetMultiplier` removal precedent from #15H).
+`TalosStageTwo_ClientOneV1`/`TalosStageTwo_ClientTwoV1` lose `DPSF|C_DeployAccount`/
+`DPNF|C_DeployAccount`. No other interface changes.
+
+**Handoff sent to the DPTF/DPOF audit** (owner will relay): the identical shape exists in
+`TS01-C1.pact`'s `DPTF|C_DeployAccount`/`DPOF|C_DeployAccount` → naked `DPTF::C_DeployAccount`/
+`DPOF::C_DeployAccount` (`UEV_IMC` only). If flagged there too, same fix shape applies — don't add an
+ownership check at the core layer (breaks legitimate auto-associate-on-transfer); block the standalone
+Talos entrypoint instead, redirecting any real internal callers (checked: `ATS`/`SWP` already call
+`DPTF::C_DeployAccount` directly, bypassing Talos, so the core pattern already exists there too) — and
+double-check for a DemiPad-style surprise dependency plus the same IMC-registration gap before calling it
+done.

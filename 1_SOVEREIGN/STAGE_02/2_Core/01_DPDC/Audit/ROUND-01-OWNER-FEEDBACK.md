@@ -704,3 +704,28 @@ green.
 `[]`, mirroring the sibling `URD_AccountNonces` right above it. Live-proven: a synthetic never-credited
 account now correctly gets `[]` (length `0`, was `[{}]`/length `1`); a real account with actual nonces is
 unaffected. Z.repl green.
+
+## #35M · DPDC · M2 — any signer can force any account to associate with any collection
+
+**Verdict: CONFIRMED, FIXED (2026-08-23).** Owner: this function isn't meant to be used standalone — real
+association happens automatically on transfer, and there's no reason anyone would want to run it for
+their own account directly. "I think we should block its direct usage, and leave it only in the functions
+that call it." Also asked for a copy-paste handoff to the sibling DPTF/DPOF audit, since the identical
+shape exists there too (confirmed before writing the handoff: `TS01-C1.pact`'s `DPTF|C_DeployAccount`/
+`DPOF|C_DeployAccount`, same naked chain).
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #31)** — removed the standalone Talos entrypoints
+(`DPSF|C_DeployAccount`/`DPNF|C_DeployAccount`) and the now-orphaned `DPDC-I::C_DeployAccountSFT`/
+`C_DeployAccountNFT`, matching the #15H removal precedent. Before touching anything, traced every real
+caller and found `TS02-DPAD::A_RegisterAssetToLaunchpad` (DemiPad) genuinely depends on this path —
+redirected it to call `DPDC::XB_DeployAccountSFT`/`NFT` directly, the same pattern every other legitimate
+internal caller uses (so an ownership check at the shared `XB_` layer, the "obvious" fix, would have
+broken auto-associate-on-transfer for everyone — the recipient of a transfer never signs it).
+
+**A real regression caught only because a full end-to-end scenario was run, not just a compile check:**
+the first version of the redirect passed `Z.repl` but broke the real launchpad scenario
+(`[5.3]_Launchpad.repl`) — `TS02-DPAD`'s own capability had never been registered as a trusted DPDC IMC
+peer (only `TS02-C1`'s/`TS02-C2`'s was, carried through the now-removed wrapper's call chain). Fixed by
+registering `TS02-DPAD`'s own guard into DPDC's `P|A_Define`, the same "Talos module needs its own IMC
+registration" shape already fixed once in the AQP audit and once in the ATS audit (#34N). Re-ran the full
+launchpad scenario end to end after the fix — clean. Z.repl green.

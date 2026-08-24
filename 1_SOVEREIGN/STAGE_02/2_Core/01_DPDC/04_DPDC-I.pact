@@ -6,8 +6,10 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_DeployAccountSFT (account:string id:string))
-    (defun C_DeployAccountNFT (account:string id:string))
+    ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: standalone deployment, reachable via a public
+    ;; Talos entrypoint with no ownership check, let any signer force any existing account to associate
+    ;; with any collection. Real auto-association always calls DPDC::XB_DeployAccountSFT/NFT directly,
+    ;; module-to-module (see DPDC-C/DPDC-F/DPDC-R/DPDC-S and this module's own Issue flow below).
     (defun C_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator}
         (
             patron:string son:bool
@@ -145,24 +147,7 @@
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
-    (defun C_DeployAccountSFT (account:string id:string)
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (f:bool false)
-            )
-            (ref-DPDC::XB_DeployAccountSFT account id f f f f f f f f f f f)
-        )
-    )
-    (defun C_DeployAccountNFT (account:string id:string)
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (f:bool false)
-            )
-            (ref-DPDC::XB_DeployAccountNFT account id f f f f f f f f f f)
-        )
-    )
+    ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: see interface-side removal note above.
     (defun C_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator}
         (
             patron:string son:bool

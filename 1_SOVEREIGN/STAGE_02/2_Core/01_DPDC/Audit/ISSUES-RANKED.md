@@ -406,10 +406,20 @@ nonces of a collectable — wrong non-zero count and a malformed row for any ind
 Live-proven: a synthetic never-credited account now returns `[]` (length `0`, was `[{}]`/length `1`); a
 real account with actual nonces returns its real entries unaffected. Z.repl green. — *DPDC·M1*
 
-#35M **[DPDC]** `XB_DeployAccountSFT`/`XB_DeployAccountNFT` never verify the caller controls the target
+#35M **[DPDC]** ~~`XB_DeployAccountSFT`/`XB_DeployAccountNFT` never verify the caller controls the target
 `account`, and the `DPDC-I`/Talos wrappers on top add no ownership check either — any signer can force any
 existing account to "associate" with any collection (state-bloat/griefing, no direct fund/permission loss;
-the write itself is confirmed idempotent-safe, not an overwrite bug). — *DPDC·M2*
+the write itself is confirmed idempotent-safe, not an overwrite bug).~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-23** (`ROUND-02-FIXES.md` Fix #31) — removed the standalone Talos entrypoints
+(`DPSF|C_DeployAccount`/`DPNF|C_DeployAccount`) and the now-orphaned `DPDC-I::C_DeployAccountSFT`/
+`C_DeployAccountNFT`, matching the #15H removal precedent — an ownership check at the shared `XB_` layer
+would have broken legitimate auto-associate-on-transfer instead. Traced every real caller first and found
+`TS02-DPAD::A_RegisterAssetToLaunchpad` (DemiPad) genuinely depends on this path; redirected it to call
+`XB_DeployAccountSFT`/`NFT` directly. Caught and fixed a real regression via full end-to-end proof (not
+just a compile check): the redirect needed `TS02-DPAD`'s own guard registered as a trusted DPDC IMC peer,
+the same "Talos module needs its own IMC registration" shape already fixed once each in the AQP and ATS
+audits. Full launchpad scenario re-run clean; Z.repl green. Handoff sent for DPTF/DPOF (same shape
+confirmed to exist there too). — *DPDC·M2*
 
 #36M **[DPDC]** `AUP_Account`/`AUP_Property` admin-migration helpers slice composite keys via hardcoded
 character offsets instead of the BAR-delimiter split used everywhere else in the file — silently corrupts

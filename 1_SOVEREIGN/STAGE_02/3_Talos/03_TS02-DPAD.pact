@@ -113,6 +113,7 @@
                 (ref-P|CUSTODIANS:module{OuronetPolicyV1} DEMIPAD-CUSTODIANS)
                 (ref-P|KPAY:module{OuronetPolicyV1} DEMIPAD-STOICPAY)
                 (ref-P|STOAICO:module{OuronetPolicyV1} STOAICO)
+                (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -122,7 +123,11 @@
             (ref-P|CUSTODIANS::P|A_AddIMP mg)
             (ref-P|KPAY::P|A_AddIMP mg)
             (ref-P|STOAICO::P|A_AddIMP mg)
-
+            ;;DPDC Audit #35M: TS02-DPAD now calls DPDC::XB_DeployAccountSFT/NFT directly (the removed
+            ;;DPSF|C_DeployAccount/DPNF|C_DeployAccount Talos wrappers previously carried TS02-C1/C2's
+            ;;own registered guard through the call chain instead) -- register this module's own guard
+            ;;as a trusted DPDC peer so UEV_IMC recognizes the direct call.
+            (ref-P|DPDC::P|A_AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -180,21 +185,26 @@
             (let
                 (
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                    (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
-                    (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+                    (ref-DPDC:module{DpdcV1} DPDC)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                     (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
                     (tf:[bool] [true true])
                     (of:[bool] [true false])
                     (sf:[bool] [false true])
                     (nf:[bool] [false false])
+                    (f:bool false)
                 )
                 (ref-DEMIPAD::A_RegisterAssetToLaunchpad patron asset-id fungibility)
+                ;;DPDC Audit #35M: DPSF|C_DeployAccount/DPNF|C_DeployAccount (the public Talos
+                ;;entrypoints) were removed — they let any signer force any account to associate with
+                ;;any collection, no ownership check. This call to DPDC::XB_DeployAccountSFT/NFT
+                ;;directly, module-to-module, is exactly the pattern every other legitimate internal
+                ;;caller (DPDC-C/DPDC-F/DPDC-R/DPDC-S) already uses.
                 (cond
                     ((= fungibility tf) (ref-TS01-C1::DPTF|C_DeployAccount patron asset-id lpad))
                     ((= fungibility of) (ref-TS01-C1::DPOF|C_DeployAccount patron asset-id lpad))
-                    ((= fungibility sf) (ref-TS02-C1::DPSF|C_DeployAccount patron lpad asset-id))
-                    ((= fungibility nf) (ref-TS02-C2::DPNF|C_DeployAccount patron lpad asset-id))
+                    ((= fungibility sf) (ref-DPDC::XB_DeployAccountSFT lpad asset-id f f f f f f f f f f f))
+                    ((= fungibility nf) (ref-DPDC::XB_DeployAccountNFT lpad asset-id f f f f f f f f f f))
                     true
                 )
             )

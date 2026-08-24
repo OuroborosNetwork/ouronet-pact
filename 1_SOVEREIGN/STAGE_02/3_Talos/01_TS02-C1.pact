@@ -22,7 +22,10 @@
     ;;
     ;;  [4] DPDC-I
     ;;
-    (defun DPSF|C_DeployAccount (patron:string account:string id:string))
+    ;; DPSF|C_DeployAccount removed — DPDC Audit #35M: standalone deployment let any signer force any
+    ;; existing account to associate with any collection, with no ownership check. Real auto-association
+    ;; (on transfer, role-toggle, Issue, set-fragmentation) always calls DPDC::XB_DeployAccountSFT
+    ;; directly, module-to-module, bypassing this public entrypoint entirely.
     (defun DPSF|C_Issue:string 
         (
             patron:string 
@@ -402,21 +405,7 @@
     ;;
     ;;  [4] DPDC-I
     ;;
-    (defun DPSF|C_DeployAccount (patron:string account:string id:string)
-        @doc "Deploys a DPSF Account. Stand Alone Deployment costs 2 IGNIS"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-I:module{DpdcIssueV1} DPDC-I)
-                )
-                (ref-DPDC-I::C_DeployAccountSFT account id)
-                (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_SmallCumulator account)
-                )
-            )
-        )
-    )
+    ;; DPSF|C_DeployAccount removed — DPDC Audit #35M: see interface-side removal note above.
     (defun DPSF|C_Issue:string
         (
             patron:string 
