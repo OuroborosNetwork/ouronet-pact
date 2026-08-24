@@ -260,6 +260,12 @@
     (defun AQP-FVT|C_Collect:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
+    (defun AQP-DSA|A_DefineDelegationVault:string
+        (patron:string fvt-id:string model-id:string unit-score:integer)
+    )
+    (defun AQP-DSA|C_OpenAgency:string
+        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+    )
 )
 ;;
 (module TS02-C3 GOV
@@ -345,6 +351,7 @@
                 (ref-P|VCT:module{OuronetPolicyV1} AQP-VCT)
                 (ref-P|ATSU:module{OuronetPolicyV1} ATSU)
                 (ref-P|MTX-AQP:module{OuronetPolicyV1} MTX-AQP)
+                (ref-P|DSA:module{OuronetPolicyV1} AQP-DSA)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
@@ -356,6 +363,8 @@
             (ref-P|ATSU::P|A_AddIMP mg)
             ;; MTX-AQP defpact wrapper below — register the Talos summoner as an allowed IMC caller of MTX-AQP.
             (ref-P|MTX-AQP::P|A_AddIMP mg)
+            ;; DSA vault/agency wrappers below — register the Talos summoner as an allowed IMC caller of AQP-DSA.
+            (ref-P|DSA::P|A_AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -2094,6 +2103,43 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-FVT::REPL_BootstrapTreasury fvt-id owner-konto score-id reward-dptf-id)
+            )
+        )
+    )
+    ;;{F6b}  [DSA]
+    (defun AQP-DSA|A_DefineDelegationVault:string
+        (patron:string fvt-id:string model-id:string unit-score:integer)
+        @doc "DSA (Talos): bind a class-0 FVT as a delegation vault (score-entity model + unit-score); collects \
+            \ IGNIS on patron. Only the FVT owner may run it."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_DefineDelegationVault patron fvt-id model-id unit-score)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "DSA vault defined on FVT {} (model {}, unit-score {})." [fvt-id model-id unit-score])
+            )
+        )
+    )
+    (defun AQP-DSA|C_OpenAgency:string
+        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "DSA (Talos): open a delegation agency on a vault using operator-owned score entity <score-entity-id> \
+            \ (fee per-mille); collects IGNIS on patron. Enforces the one-time quintessence open gate."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::C_OpenAgency patron fvt-id score-entity-id fee-per-mille)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Agency opened on FVT {} for score-entity {} (fee {}‰)." [fvt-id score-entity-id fee-per-mille])
             )
         )
     )

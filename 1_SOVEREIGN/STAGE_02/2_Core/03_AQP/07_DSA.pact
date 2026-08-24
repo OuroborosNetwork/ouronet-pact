@@ -15,9 +15,14 @@
     (defun UR_DSA-AGN|Nodes:integer (fvt-id:string score-entity-id:string))
     (defun UR_DSA-AGN|Uptime:integer (fvt-id:string score-entity-id:string))
     ;;
+    (defun A_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string model-id:string unit-score:integer))
+    (defun C_OpenAgency:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer))
+    ;;
 )
 ;;
-(module DSA GOV
+(module AQP-DSA GOV
     ;;
     (implements OuronetPolicyV1)
     (implements DsaV1)
@@ -169,6 +174,8 @@
     (defconst DSA_FEE_MAX:integer 500)
     ;; Full-uptime promile (the oracle scale; capture-weight = capture-units × uptime / DSA_UPTIME_FULL).
     (defconst DSA_UPTIME_FULL:integer 1000)
+    (defconst GAS|DEFINE-VAULT:decimal 500.0)
+    (defconst GAS|OPEN-AGENCY:decimal 500.0)
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -177,17 +184,49 @@
         true
     )
     ;;{C2}
+    (defcap DSA|C>DEFINE-VAULT (patron:string fvt-id:string model-id:string unit-score:integer)
+        @doc "Bind a class-0 FVT as a DSA delegation vault. Enforces: the FVT exists + is class-0, patron IS the \
+            \ FVT owner (+ signs), unit-score positive, no template yet. Composes SECURE for the template write. \
+            \ (The model-id's validity is enforced when C_OpenAgency calls the SCORE factory.)"
+        @event
+        (let
+            (
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+            )
+            (enforce (= (ref-FVT::UR_FVT|FvtClass fvt-id) 0) "DSA vault must be a class-0 FVT")
+            (enforce (= patron fvt-owner) "Only the FVT owner may define the delegation vault")
+            (enforce (> unit-score 0) "unit-score must be positive")
+            (enforce (not (URC_DsaTemplateExists fvt-id)) "This FVT is already a DSA vault")
+            (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
+        )
+        (compose-capability (SECURE))
+    )
     ;;{C3}
+    (defcap DSA|C>OPEN-AGENCY (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "Open a delegation agency on an active DSA vault, using an existing operator-owned score entity. \
+            \ Enforces: the vault template exists + active, fee in [DSA_FEE_MIN, DSA_FEE_MAX], and the ONE-TIME open \
+            \ gate — the agency's quintessence ≥ unit-score/2 (the operator must have staked to start). Composes \
+            \ P|SECURE-CALLER so DSA's registered IMC guard + SECURE are active for the FVT XE_ admit/delegation \
+            \ calls + the DSA|Agency write. Operator account-ownership is enforced downstream in FVT|XE>ADMIT-DELEGATION."
+        @event
+        (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
+        (enforce (and (>= fee-per-mille DSA_FEE_MIN) (<= fee-per-mille DSA_FEE_MAX)) "Operator fee out of range (1%..50%)")
+        (enforce (>= (URC_AgencyQuintessence score-entity-id) (/ (dec (UR_DSA-TMP|UnitScore fvt-id)) 2.0))
+            "Open gate: agency quintessence must be >= unit-score/2 (stake more to start)")
+        (compose-capability (P|SECURE-CALLER))
+    )
     ;;{C4}
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UCk] composite keys
+    ;; [UC]  compute
     (defun UCk_Agency:string (fvt-id:string score-entity-id:string)
         @doc "Composite key for DSA|T|Agency: fvt-id | score-entity-id."
         (concat [fvt-id BAR score-entity-id])
     )
-    ;;{F1}  [UR] template
+    ;; [UR]  read
     (defun UR_DSA-TMP|Template:object{DSA|Template} (fvt-id:string)
         @doc "Reads the full DSA template row for a vault."
         (read DSA|T|Template fvt-id)
@@ -204,7 +243,6 @@
         @doc "Reads whether a DSA vault template is active."
         (at "active" (read DSA|T|Template fvt-id ["active"]))
     )
-    ;;{F2}  [UR] agency
     (defun UR_DSA-AGN|Agency:object{DSA|Agency} (fvt-id:string score-entity-id:string)
         @doc "Reads the full agency row (absent ⇒ defaults: no operator, min fee, no nodes, full uptime)."
         (with-default-read DSA|T|Agency (UCk_Agency fvt-id score-entity-id)
@@ -230,12 +268,32 @@
         @doc "Reads an agency's oracle uptime promile (1..1000)."
         (at "uptime" (UR_DSA-AGN|Agency fvt-id score-entity-id))
     )
-    ;;{F3}  [UR] oracle-auth
     (defun UR_DSA-ORA|Guard:guard (fvt-id:string)
         @doc "Reads the delegated oracle-write guard for a DSA vault."
         (at "oracle-guard" (read DSA|T|OracleAuth fvt-id ["oracle-guard"]))
     )
-    ;;{F4}  [UDC] constructors
+    ;;<====> Phase 2 — vault define + agency open (canon-refactored after this build step)
+    (defun URC_DsaTemplateExists:bool (fvt-id:string)
+        @doc "True when a DSA vault template exists for this FVT."
+        (with-default-read DSA|T|Template fvt-id {"fvt-id" : BAR} {"fvt-id" := f} (!= f BAR))
+    )
+    (defun URC_DsaTemplateActive:bool (fvt-id:string)
+        @doc "True when a DSA vault template exists AND is active."
+        (with-default-read DSA|T|Template fvt-id {"fvt-id" : BAR, "active" : false} {"fvt-id" := f, "active" := a} (and (!= f BAR) a))
+    )
+    (defun URC_AgencyQuintessence:decimal (score-entity-id:string)
+        @doc "An agency's total quintessence = Σ the triplet's three scores' total-base-score (staked collectable × \
+            \ the model's nonce values). The open gate + the capture divisor read this."
+        (let
+            (
+                (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+            )
+            (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletBronzeScoreId score-entity-id))
+               (+ (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
+                  (ref-SCR::UR_SCR|ScoreTotalBaseScore (ref-SCR::UR_SCR|TripletGoldenScoreId score-entity-id))))
+        )
+    )
+    ;; [UDC] construct
     (defun UDC_DSA|Template:object{DSA|Template}
         (model-id:string unit-score:integer active:bool fvt-id:string)
         @doc "Core constructor for object{DSA|Template}."
@@ -259,6 +317,56 @@
         @doc "Core constructor for object{DSA|OracleAuth}."
         {"oracle-guard" : oracle-guard
         ,"fvt-id"       : fvt-id}
+    )
+    ;; [W]   write
+    (defun WI_Template:string (fvt-id:string row:object{DSA|Template})
+        @doc "Insert a DSA vault template row. require SECURE."
+        (require-capability (SECURE))
+        (insert DSA|T|Template fvt-id row)
+    )
+    (defun WI_Agency:string (fvt-id:string score-entity-id:string row:object{DSA|Agency})
+        @doc "Insert a DSA agency row. require SECURE."
+        (require-capability (SECURE))
+        (insert DSA|T|Agency (UCk_Agency fvt-id score-entity-id) row)
+    )
+    ;; [A]   admin
+    (defun A_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string model-id:string unit-score:integer)
+        @doc "Bind a class-0 FVT as a DSA delegation vault: record the score-entity model + unit-score (active). \
+            \ Only the FVT owner may define it. UEV_IMC + DSA|C>DEFINE-VAULT. Bills GAS|DEFINE-VAULT."
+        (UEV_IMC)
+        (with-capability (DSA|C>DEFINE-VAULT patron fvt-id model-id unit-score)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (WI_Template fvt-id (UDC_DSA|Template model-id unit-score true fvt-id))
+                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|DEFINE-VAULT patron trigger [fvt-id])
+            )
+        )
+    )
+    ;; [C]   client
+    (defun C_OpenAgency:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "Open a delegation agency on a DSA vault using an existing operator-owned (factory-issued, staked) \
+            \ score entity: admit it as a member (FVT XE_AdmitDelegationMember — operator ownership enforced there), \
+            \ flip it to a delegation member, and record DSA|Agency (operator + fee, nodes 0, uptime full). The \
+            \ one-time quintessence ≥ unit-score/2 gate is in the cap. UEV_IMC + DSA|C>OPEN-AGENCY. Bills GAS|OPEN-AGENCY."
+        (UEV_IMC)
+        (with-capability (DSA|C>OPEN-AGENCY patron fvt-id score-entity-id fee-per-mille)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (ref-FVT::XE_AdmitDelegationMember fvt-id score-entity-id patron)
+                (ref-FVT::XE_SetMemberDelegation fvt-id score-entity-id true)
+                (WI_Agency fvt-id score-entity-id (UDC_DSA|Agency patron fee-per-mille 0 DSA_UPTIME_FULL fvt-id score-entity-id))
+                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|OPEN-AGENCY patron trigger [score-entity-id])
+            )
+        )
     )
     ;;
 )

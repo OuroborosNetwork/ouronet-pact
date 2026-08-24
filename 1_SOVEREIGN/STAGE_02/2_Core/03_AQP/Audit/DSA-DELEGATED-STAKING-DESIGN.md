@@ -387,11 +387,22 @@ FVT/SCORE core.
   (17b, `5a297dc`); Talos wrappers; `dsa-model-tests.repl` (9th audit suite) green. Refinements: model
   precision 3..24; the operator supplies an **`agency-name`** (score-names can't embed the raw konto).
 
+- **Phase 2 — DSA vault + agency open.** ✅ **DONE** — `A_DefineDelegationVault(patron, fvt-id, model-id,
+  unit-score)` writes `DSA|Template` (model + unit-score, active) on an owner-owned **class-0 FVT**;
+  `C_OpenAgency(patron, fvt-id, score-entity-id, fee-per-mille)` admits the operator's factory triplet
+  (`XE_AdmitDelegationMember`) → flips it to a delegation member (`XE_SetMemberDelegation`) → writes
+  `DSA|Agency`, gated by the one-time **quintessence ≥ unit-score/2** open gate + fee-range + vault-active.
+  Module renamed `DSA` → **`AQP-DSA`** (family convention); canon-reordered; Talos wrappers
+  `AQP-DSA|A_DefineDelegationVault` / `AQP-DSA|C_OpenAgency` + IMP registration in **both** directions
+  (`TS02-C3::P|A_Define` adds Talos to AQP-DSA's IMP; executor calls `AQP-DSA::P|A_Define` to add DSA to
+  AQP-FVT's IMP). *Deviation from the lock:* the vault FVT keeps a **real LP common-denom** (e.g. `OURO`),
+  not `"|"` — a class-0 FVT requires a real LP denom (FVT L690); delegation **members** still bypass all
+  class/LP admission rules via `XE_AdmitDelegationMember`, which is what matters. `dsa-agency-tests.repl`
+  (10th audit suite) green: define + read template + owner/positive/duplicate guards + the 4 open-guard
+  rejections (Q=0 gate, fee floor, fee ceiling, non-vault). *Staked happy-path open → Phase 3 (needs the
+  Custodians fragment→stake fixture).*
+
 ### 🔨 TO BUILD (phases)
-- **Phase 2 — DSA vault + agency open.** `A_DefineDelegationVault(fvt-id, model-id, unit-score)` (class-0 +
-  common-denom `"|"` + `oracle-on` + `DSA|Template`); generalize `XE_AdmitDelegationMember` to single|triplet;
-  `C_OpenAgency(operator, fvt-id)` (factory-issue → admit → set delegation → `unit-score/2` gate → `DSA|Agency`);
-  Talos wiring + IMP registration (`DSA::P|A_Define` in executor). *Verify:* define vault + open an agency.
 - **Phase 3 — Delegator staking + capture recompute.** Confirm/enable a non-owner delegator staking into the
   operator's agency score (beneficiary path; add a DSA stake wrapper if needed); `URC` for the agency's aggregate
   quintessence Q; recompute `capture-units = min(⌊Q/unit-score⌋, nodes)` + `capture-weight` → `XE_SetMemberCapture`

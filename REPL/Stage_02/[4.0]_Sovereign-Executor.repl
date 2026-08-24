@@ -84,6 +84,7 @@
         (ref-P|TS02-C3:module{OuronetPolicyV1}    TS02-C3)
         ;;
         (ref-P|MTX-AQP:module{OuronetPolicyV1}    MTX-AQP)
+        (ref-P|DSA:module{OuronetPolicyV1}        AQP-DSA)
         ;;
 
     )
@@ -108,6 +109,8 @@
         ;;
         ;;MTX-AQP — registers its caller guard in AQP-FVT's IMP so the MTX|n|C_Inject defpact's XE_ calls pass UEV_IMC
         (ref-P|MTX-AQP::P|A_Define)
+        ;;DSA — registers its caller guard in AQP-FVT's IMP so C_OpenAgency's XE_ admit/delegation calls pass UEV_IMC
+        (ref-P|DSA::P|A_Define)
         ;;
         ;;Set DPDC Governor
         ;;REPL-VARIANT:

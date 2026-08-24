@@ -1,0 +1,179 @@
+;;
+;; REPL/Kursan/dsa-agency-tests.repl — DSA Phase 2 verification: VAULT DEFINE + AGENCY OPEN surface.
+;; Proves: (1) A_DefineDelegationVault binds a class-0 FVT as a delegation vault (model + unit-score,
+;; active) and only the FVT owner may run it; (2) C_OpenAgency's one-time quintessence open gate + the
+;; fee-range + vault-active guards reject as designed. The STAKED happy-path open (gate passes) lands in
+;; Phase 3 once the Custodians fragment→stake fixture exists — here the operator's factory triplet is
+;; unstaked (Q=0), so the gate is proven by its rejection.
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/07_DSA.pact (A_DefineDelegationVault / C_OpenAgency),
+;;         3_Talos/04_TS02-C3.pact (AQP-DSA|A_DefineDelegationVault / AQP-DSA|C_OpenAgency).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/dsa-agency-tests.repl  —  DSA vault define + agency open (Phase 2)")
+(print "================================================================")
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+(print "")
+;;
+;; ============================================================================
+;; DSA-AGN-FIXTURE — model + factory triplet (operator ANHD) + class-0 FVT (the vault-to-be)
+;; ============================================================================
+(begin-tx "DSA-AGN-FIXTURE - model + operator triplet + class-0 FVT")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-01T00:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [DSA-AGN-FIXTURE · 01 · define model + factory triplet + class-0 FVT] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (cust:string "CUSTODIANS-98c486052a51")
+        (ouro-id:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (bronze-id:string (ref-U|DALOS::UDC_Makeid "DsaAgnBronze"))
+            (silver-id:string (ref-U|DALOS::UDC_Makeid "DsaAgnSilver"))
+            (gold-id:string   (ref-U|DALOS::UDC_Makeid "DsaAgnGold"))
+        )
+        ;; 1. the score-entity model (Custodians fragment nonces → quintessence)
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaAgnBronze" 3 cust 24 [-1] [1.0])
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaAgnSilver" 3 cust 24 [-2] [10.0])
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "DsaAgnGold"   3 cust 24 [-3] [100.0])
+        (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "DsaAgnModel" bronze-id silver-id gold-id)
+        ;; 2. FACTORY — ANHD's operator triplet (unstaked, Q=0)
+        (print (format "<(factory)> => \"{}\"" [(ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd (ref-U|DALOS::UDC_Makeid "DsaAgnModel") "AnhdOperator")]))
+        ;; 3. the class-0 FVT this vault binds (owner = ANHD, common-denom = OURO — an LP-farm denom)
+        (print (format "<(fvt)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Issue anhd "DsaAgnVault" anhd 0 ouro-id)]))
+        (let
+            (
+                (fvt-id:string (ref-U|DALOS::UDC_Makeid "DsaAgnVault"))
+            )
+            (map print
+                [ (expect "<<DSA-AGN-FIXTURE>> vault FVT is class-0" 0 (AQP-FVT.UR_FVT|FvtClass fvt-id))
+                  (expect "<<DSA-AGN-FIXTURE>> vault FVT owned by operator" anhd (AQP-FVT.UR_FVT|OwnerKonto fvt-id)) ]))
+        ""
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| A_DefineDelegationVault binds the class-0 FVT as a vault (model + unit-score, active); only the owner may.
+;;
+(begin-tx "DSA-VAULT-01 - define vault + owner/positive/duplicate guards")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [DSA-VAULT-01 · 01 · define vault + read template] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DSA:module{DsaV1} AQP-DSA)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string    (ref-U|DALOS::UDC_Makeid "DsaAgnVault"))
+            (model-id:string  (ref-U|DALOS::UDC_Makeid "DsaAgnModel"))
+        )
+        ;; define the vault (unit-score 20000 → open gate = 10000 quintessence)
+        (print (format "<(define)> => \"{}\"" [(ref-TS02-C3::AQP-DSA|A_DefineDelegationVault anhd fvt-id model-id 20000)]))
+        (map print
+            [ (expect "<<DSA-VAULT-01>> template records the model" model-id (at "model-id" (ref-DSA::UR_DSA-TMP|Template fvt-id)))
+              (expect "<<DSA-VAULT-01>> template unit-score" 20000 (ref-DSA::UR_DSA-TMP|UnitScore fvt-id))
+              (expect "<<DSA-VAULT-01>> template active" true (ref-DSA::UR_DSA-TMP|Active fvt-id)) ])
+        (print "--- [DSA-VAULT-01 · 02 · owner / positive / duplicate guards] ---")
+        (map print
+            [ ;; a non-owner cannot define the vault (patron != FVT owner)
+              (expect-failure "<<DSA-VAULT-01>> non-owner define rejected"
+                  (ref-TS02-C3::AQP-DSA|A_DefineDelegationVault "k:not-the-owner" fvt-id model-id 20000))
+              ;; unit-score must be positive
+              (expect-failure "<<DSA-VAULT-01>> zero unit-score rejected"
+                  (ref-TS02-C3::AQP-DSA|A_DefineDelegationVault anhd fvt-id model-id 0))
+              ;; re-defining an already-bound vault is rejected
+              (expect-failure "<<DSA-VAULT-01>> duplicate vault-define rejected"
+                  (ref-TS02-C3::AQP-DSA|A_DefineDelegationVault anhd fvt-id model-id 20000)) ])
+        ""
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| C_OpenAgency's guards: vault-active + fee-range + the one-time quintessence open gate (Q=0 ⇒ rejected).
+;;
+(begin-tx "DSA-VAULT-02 - agency-open guards (gate / fee / vault-active)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 30000000)(env-gas 0)
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [DSA-VAULT-02 · 01 · open-agency guards reject] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string     (ref-U|DALOS::UDC_Makeid "DsaAgnVault"))
+            (bronze-sid:string (ref-U|DALOS::UDC_Makeid (concat ["AnhdOperator" "Bronze"])))
+            (silver-sid:string (ref-U|DALOS::UDC_Makeid (concat ["AnhdOperator" "Silver"])))
+            (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["AnhdOperator" "Golden"])))
+        )
+        (let
+            (
+                (triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid))
+            )
+            (map print
+                [ ;; the operator triplet is unstaked ⇒ quintessence 0 < unit-score/2 (10000) ⇒ open gate rejects
+                  (expect-failure "<<DSA-VAULT-02>> open rejected — quintessence below gate (Q=0)"
+                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id triplet-id 100))
+                  ;; fee below the floor (10 = 1%) is rejected before the gate
+                  (expect-failure "<<DSA-VAULT-02>> open rejected — fee below floor"
+                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id triplet-id 5))
+                  ;; fee above the ceiling (500 = 50%) is rejected
+                  (expect-failure "<<DSA-VAULT-02>> open rejected — fee above ceiling"
+                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id triplet-id 600))
+                  ;; opening on a non-vault FVT (no template) is rejected
+                  (expect-failure "<<DSA-VAULT-02>> open rejected — FVT is not a DSA vault"
+                      (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd "not-a-vault-fvt" triplet-id 100)) ])
+            ""
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== dsa-agency-tests END — vault define + agency-open guards (Phase 2) ===")
