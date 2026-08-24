@@ -127,10 +127,10 @@
     ;;SCHEMAS-TABLES-CONSTANTS
     ;;{1}
     (defschema DSA|Template
-        @doc "Key = <FVT-ID>. Per DSA vault: the FVT owner's one-time template — the staked collection + the \
-            \ unit-score (1 staking unit = 1 node; open gate = unit-score/2). Quality→quintessence mapping lives \
-            \ in the staked collection (Custodians: UC_NonceQuintessence)."
-        custodians-asset-id:string                              ;;[.]   the DPDC collectable staked for quintessence
+        @doc "Key = <FVT-ID>. Per DSA vault: binds a class-0 FVT to the score-entity MODEL every agency \
+            \ instantiates (SCR|ScoreEntityModel) + the unit-score (1 staking unit = 1 node; open gate = \
+            \ unit-score/2). The model fixes the scoring (Custodians nonce→quintessence) so all agencies are comparable."
+        model-id:string                                         ;;[.]   the SCR|ScoreEntityModel agencies instantiate (SCORE)
         unit-score:integer                                      ;;[.]   quintessence per capture unit (e.g. 20000)
         active:bool                                             ;;[M]
         ;;Select Keys
@@ -192,9 +192,9 @@
         @doc "Reads the full DSA template row for a vault."
         (read DSA|T|Template fvt-id)
     )
-    (defun UR_DSA-TMP|CustodiansAssetId:string (fvt-id:string)
-        @doc "Reads the staked collection (DPDC collectable) id for a DSA vault."
-        (at "custodians-asset-id" (read DSA|T|Template fvt-id ["custodians-asset-id"]))
+    (defun UR_DSA-TMP|ModelId:string (fvt-id:string)
+        @doc "Reads the score-entity model-id bound to a DSA vault."
+        (at "model-id" (read DSA|T|Template fvt-id ["model-id"]))
     )
     (defun UR_DSA-TMP|UnitScore:integer (fvt-id:string)
         @doc "Reads the unit-score (quintessence per capture unit; open gate = unit-score/2) for a DSA vault."
@@ -237,9 +237,9 @@
     )
     ;;{F4}  [UDC] constructors
     (defun UDC_DSA|Template:object{DSA|Template}
-        (custodians-asset-id:string unit-score:integer active:bool fvt-id:string)
+        (model-id:string unit-score:integer active:bool fvt-id:string)
         @doc "Core constructor for object{DSA|Template}."
-        {"custodians-asset-id" : custodians-asset-id
+        {"model-id"            : model-id
         ,"unit-score"          : unit-score
         ,"active"              : active
         ,"fvt-id"              : fvt-id}

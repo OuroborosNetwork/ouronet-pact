@@ -907,7 +907,6 @@
             (
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (fvt-class:integer (UR_FVT|FvtClass fvt-id))
                 (bronze-id:string (ref-SCR::UR_SCR|TripletBronzeScoreId triplet-id))
                 (silver-id:string (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id))
                 (golden-id:string (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id))
@@ -915,8 +914,9 @@
                 (silver-aqpool:string (ref-SCR::UR_SCR|ScoreAqpoolLink silver-id))
             )
             (enforce (ref-SCR::URC_TripletExists triplet-id) "Triplet must be issued in AQP-SCORE")
-            (enforce (ref-SCR::URC_TripletCategoryMatchesFvtClass (ref-SCR::UR_SCR|TripletCategory triplet-id) fvt-class)
-                "Triplet category must match FVT class")
+            ;; NOTE: the triplet-category↔fvt-class check is intentionally SKIPPED for delegation — a DSA agency is
+            ;; an SF/quintessence triplet admitted to a class-0 FVT purely to ride the farm-split code; it does not
+            ;; fit the LP class model (see DSA-DELEGATED-STAKING-DESIGN.md §2). All class/LP rules are bypassed here.
             (enforce
                 (fold (and) true
                     [(= silver-owner operator)
