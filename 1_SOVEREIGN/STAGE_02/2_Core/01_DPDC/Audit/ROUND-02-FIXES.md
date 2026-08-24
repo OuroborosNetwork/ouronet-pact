@@ -1297,3 +1297,26 @@ Stage-1 utility function, verified nothing regressed given how broadly `UDC_Make
 
 **Interface implication:** none — `UDC_Makeid` is unqualified (no interface return-type signature
 involved beyond `string`), doc-only change, no behavior/type change possible to regress.
+
+## Fix #30 — DPDC · M1 (#34M) — `URD_AccountNoncesWithSupplies` returns `[]`, not `[{}]`, when empty
+
+**Owner-approved 2026-08-23.** Owner: "Yes, fix it."
+
+**Root cause:** `URD_AccountNoncesWithSupplies` (`02_DPDC.pact:713-732`) returned `[{}]` — a one-element
+list containing a single empty object, with none of the expected `"nonce"`/`"supply"` keys — when an
+account holds zero nonces of a collection. Its sibling `URD_AccountNonces` right above it correctly
+returns `[]` for the identical "nothing found" case. The sole known consumer,
+`2_SLAVE/Stage_Z/01_DPL-UR.pact:1968-1973`, reports `(length wallet-nonces)` directly — for a zero-nonce
+account this returned `1` instead of `0`, a phantom-nonce count any wallet/marketplace UI built on it
+would surface, and the malformed `{}` element would throw for any stricter consumer indexing into it.
+
+**Fix:** changed the empty-case branch from `[{}]` to `[]`, exactly mirroring `URD_AccountNonces`.
+
+**Proof:** `REPL/Kursan/_verify_finding_DPDC_34M_empty_nonces_with_supplies.repl` — a synthetic
+never-credited account (KST.EMMA/LUMY turned out to already hold real DHCD nonces from earlier AQP
+scoring tests, so a fresh synthetic account was used instead for an unambiguous zero-results case) now
+gets `[]` (was `[{}]`), and `(length ...)` on it is `0` (was `1`); a real account (`KST.ANHD`, which
+genuinely holds DHCD nonces) still returns its real entries unaffected. `cd REPL && pact Z.repl` — clean,
+`Load successful`.
+
+**Interface implication:** none — return element type `[object]` unaffected; `[]` is a valid `[object]`.

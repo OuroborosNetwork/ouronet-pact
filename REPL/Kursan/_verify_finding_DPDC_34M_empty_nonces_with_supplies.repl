@@ -1,0 +1,49 @@
+;; Verify Fix for DPDC Audit #34M — URD_AccountNoncesWithSupplies now returns [] (not [{}]) when an
+;; account holds zero nonces of a collection, matching its sibling URD_AccountNonces.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage00a_StoaTests.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage02_Tester.repl")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "PROBE-34M - empty-result read returns [] not [{}]")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (id:string "DHCD-98c486052a51")
+        ;;A synthetic account name never credited anything anywhere in the pipeline -- a genuine,
+        ;;unambiguous zero-results case (EMMA/LUMY turned out to already hold real DHCD nonces from
+        ;;earlier AQP scoring tests, so a shared fixture account wasn't a clean choice here).
+        (nobody:string "k:0000000000000000000000000000000000000000000000000000000000nobody")
+    )
+    (print
+        (expect "<<PROBE-34M>> zero-nonce account returns [] from URD_AccountNoncesWithSupplies (was [{}])"
+            []
+            (ref-DPDC::URD_AccountNoncesWithSupplies nobody id true)
+        )
+    )
+    (print
+        (expect "<<PROBE-34M>> (length ...) on the empty result is now 0 (was 1, the phantom-nonce bug)"
+            0
+            (length (ref-DPDC::URD_AccountNoncesWithSupplies nobody id true))
+        )
+    )
+    ;;Control: ANHD DOES hold real nonces of DHCD -- confirm the non-empty path is unaffected.
+    (print
+        (format "<(DPDC.URD_AccountNoncesWithSupplies ANHD DHCD)> => {}"
+            [(ref-DPDC::URD_AccountNoncesWithSupplies KST.ANHD id true)]
+        )
+    )
+    (print
+        (expect "<<PROBE-34M>> non-empty case (ANHD holds real DHCD nonces) still returns real entries"
+            true
+            (> (length (ref-DPDC::URD_AccountNoncesWithSupplies KST.ANHD id true)) 0)
+        )
+    )
+)
+(commit-tx)

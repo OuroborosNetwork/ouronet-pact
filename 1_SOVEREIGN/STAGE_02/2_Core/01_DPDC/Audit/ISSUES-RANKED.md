@@ -399,9 +399,12 @@ collision-probe-and-retry logic added to all 7 consumer modules, disproportionat
 atomic, self-healing (next block = different hash), and not exploitable beyond forcing a retry. Documented
 via `@doc` on `UDC_Makeid` (`ROUND-02-FIXES.md` Fix #29); no functional change. — *DPDC-I·M1*
 
-#34M **[DPDC]** `URD_AccountNoncesWithSupplies` returns `[{}]` instead of `[]` when an account holds zero
+#34M **[DPDC]** ~~`URD_AccountNoncesWithSupplies` returns `[{}]` instead of `[]` when an account holds zero
 nonces of a collectable — wrong non-zero count and a malformed row for any indexer/wallet UI built on it
-(sibling `URD_AccountNonces` gets this right). — *DPDC·M1*
+(sibling `URD_AccountNonces` gets this right).~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-23**
+(`ROUND-02-FIXES.md` Fix #30) — changed the empty-case branch to `[]`, mirroring `URD_AccountNonces`.
+Live-proven: a synthetic never-credited account now returns `[]` (length `0`, was `[{}]`/length `1`); a
+real account with actual nonces returns its real entries unaffected. Z.repl green. — *DPDC·M1*
 
 #35M **[DPDC]** `XB_DeployAccountSFT`/`XB_DeployAccountNFT` never verify the caller controls the target
 `account`, and the `DPDC-I`/Talos wrappers on top add no ownership check either — any signer can force any

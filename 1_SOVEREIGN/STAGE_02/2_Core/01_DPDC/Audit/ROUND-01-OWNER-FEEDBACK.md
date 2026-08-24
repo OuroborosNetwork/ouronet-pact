@@ -695,3 +695,12 @@ Owner: "Yes leave as is, document choice."
 `UDC_Makeid` itself explaining the same-block collision behavior, naming the shared table and all 7
 consumers, and the accepted recovery path (resubmit in a later block). No functional change. Z.repl
 green.
+
+## #34M · DPDC · M1 — `URD_AccountNoncesWithSupplies` returns `[{}]` instead of `[]` when empty
+
+**Verdict: CONFIRMED, FIXED (2026-08-23).** Owner: "Yes, fix it."
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #30)** — changed the empty-case branch from `[{}]` to
+`[]`, mirroring the sibling `URD_AccountNonces` right above it. Live-proven: a synthetic never-credited
+account now correctly gets `[]` (length `0`, was `[{}]`/length `1`); a real account with actual nonces is
+unaffected. Z.repl green.

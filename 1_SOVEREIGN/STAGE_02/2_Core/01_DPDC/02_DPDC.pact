@@ -724,8 +724,11 @@
                     )
                 )
             )
-            (if (= (length results) 0) 
-                [{}] 
+            ;;DPDC Audit #34M: was [{}] (a 1-element list of an empty object with no "nonce"/"supply"
+            ;;keys) -- a phantom result that inflates any caller's (length ...) count by 1 for an
+            ;;account holding zero nonces. Mirror URD_AccountNonces's correct [] for the empty case.
+            (if (= (length results) 0)
+                []
                 (filter (lambda (x) (> (at "supply" x) 0)) results)
             )
         )
