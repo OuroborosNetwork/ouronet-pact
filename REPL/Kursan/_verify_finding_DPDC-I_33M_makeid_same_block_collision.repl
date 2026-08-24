@@ -1,0 +1,74 @@
+;; Verify finding #33M — UDC_Makeid keys collection ids only on prev-block-hash (block-level, identical
+;; for every tx in the same block), not a per-tx nonce. Owner's precise claim to verify:
+;;   1) Two issuances of the SAME asset type (both SFT, or both NFT) with the SAME ticker in the SAME tx
+;;      collide (second insert fails) -- because both land in the same fungibility-specific table
+;;      (DPSF|T|Properties / DPNF|T|Properties), keyed only by <id>.
+;;   2) One SFT + one NFT issuance with the SAME ticker in the SAME tx do NOT collide -- because SFT and
+;;      NFT collections live in two SEPARATE tables, so an identical <id> string in each doesn't collide.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage00a_StoaTests.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage02_Tester.repl")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "PROBE-33M - same-tx same-ticker: same-type collides, cross-type does not")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (owner:string KST.ANHD)
+        (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
+        (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
+        (split-dpsf:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpsf-price))
+        (split-dpnf:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpnf-price))
+        ;;Total per-payee amount needed to cover 2x dpsf issuances + 1x dpnf issuance in this one tx.
+        (t0:decimal (+ (* 2.0 (at 0 split-dpsf)) (at 0 split-dpnf)))
+        (t1:decimal (+ (* 2.0 (at 1 split-dpsf)) (at 1 split-dpnf)))
+        (t2:decimal (+ (* 2.0 (at 2 split-dpsf)) (at 2 split-dpnf)))
+        (t3:decimal (+ (* 2.0 (at 3 split-dpsf)) (at 3 split-dpnf)))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" t2)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" t0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" t3)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" t1)
+                ]
+            }
+        ]
+    )
+)
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (owner:string KST.ANHD)
+    )
+    ;;1] First SFT issuance with ticker DUP33M -- must succeed.
+    (print (ref-TS02-C1::DPSF|C_Issue owner owner owner "DupProbeOne" "DUP33M" true true true true true true true true))
+    ;;2] Second SFT issuance, SAME ticker, SAME tx (same prev-block-hash) -- expect this to fail
+    ;;   (collides in the same DPSF|T|Properties table on the identical <id>).
+    (print
+        (expect-failure
+            "second SFT issuance with the identical ticker in the same tx collides (DPDC Audit #33M)"
+            (ref-TS02-C1::DPSF|C_Issue owner owner owner "DupProbeTwo" "DUP33M" true true true true true true true true)
+        )
+    )
+    ;;3] NFT issuance, SAME ticker, SAME tx -- expect this to SUCCEED, since DPNF and DPSF collections
+    ;;   live in separate tables (DPNF|T|Properties vs DPSF|T|Properties), so an identical <id> string
+    ;;   doesn't collide across the two.
+    (print (ref-TS02-C2::DPNF|C_Issue owner owner owner "DupProbeThree" "DUP33M" true true true true true true true true))
+)
+(commit-tx)

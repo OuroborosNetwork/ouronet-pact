@@ -1254,3 +1254,46 @@ now returns `[5 11]`, matching Make-time's convention exactly (`expect` passes).
 already-known zero-DPDC-S-set-coverage gap, #DPDC-S·L1), so nothing else could regress.
 
 **Interface implication:** none — internal read-function logic only, no `DpdcSetsV1` signature change.
+
+## Fix #29 — DPDC-I/U|DALOS · M1 (#33M) — documented as accepted, by-design (no functional change)
+
+**Owner-approved 2026-08-23:** "Yes leave as is, document choice."
+
+**What was live-verified (`REPL/Kursan/_verify_finding_DPDC-I_33M_makeid_same_block_collision.repl`),
+correcting an assumption along the way:**
+1. Two SFT issuances with the identical ticker in the same tx (guaranteed same `prev-block-hash`) collide
+   — confirmed live: second `DPSF|C_Issue` call raises `expect-failure` as expected, since both would
+   insert the identical `id` into the same `DPSF|T|Properties` table.
+2. The owner initially believed an SFT + NFT issuance with the same ticker in the same tx would succeed,
+   since DPDC-I's own Properties tables *are* split by type (`DPSF|T|Properties` / `DPNF|T|Properties`).
+   Live-tested this too — it does **not** succeed. Every collection issuance (regardless of NFT/SFT)
+   calls `BRD::XE_Issue id`, which inserts into a single, **globally shared** `BRD|BrandingTable`
+   (`04_BRD.pact:277`) keyed only by `id` — with no type-based separation. The second issuance's `insert`
+   collides there first, before DPDC's own tables are ever reached: `"Value already found while in
+   Insert mode in table ouronet-ns.BRD_BRD|BrandingTable at key ..."`.
+3. Confirmed the collision surface is far wider than DPDC: `BRD::XE_Issue` is called from 7 different
+   modules across both stages — `04_DPDC-I.pact`, `05_DPTF.pact`, `06_DPOF.pact`, `00_DPMF.pact`,
+   `08_ATS.pact`, `20_MTX-SWP.pact`, `16_SWPI.pact` — every one of which keys its branding entry off a
+   `U|DALOS::UDC_Makeid`-derived id built from `prev-block-hash` alone. Any two of these, of any type,
+   from any module, colliding on id in the same block hit this same shared table.
+
+**Why no fix was made:** `UDC_Makeid` lives in `U|DALOS`, a Stage-1 **Utility**, deployed before `BRD` (a
+Stage-1 **Core** module) exists on-chain. Detecting/retrying a collision inside `UDC_Makeid` would require
+reading a Core-module table from a Utility — the same deploy-order violation class hit earlier this
+session with `DpdcFragmentsV1` (an earlier-deployed file can't reference a later-declared interface). The
+only place a real fix could live is inside each of the 7 individual callers, each adding its own
+collision-probe-and-retry logic — a broad, cross-module, multi-audit-domain change for a failure mode
+that is atomic (whole tx aborts cleanly, no partial state), self-healing (the very next block has a
+different `prev-block-hash`, guaranteeing a different id), and not exploitable for anything beyond forcing
+a same-block retry. Owner agreed this cost/benefit doesn't justify the change.
+
+**Fix — documentation only:** added a `@doc` note to `UDC_Makeid` itself (`08_U_DALOS.pact:481-496`)
+explaining the same-block collision behavior, naming the shared `BRD|BrandingTable` and all 7 consumer
+modules, explaining why it can't be fixed at this layer, and confirming the accepted recovery path
+(resubmit in a later block). No functional/behavioral change.
+
+**Proof:** `cd REPL && pact Z.repl` — clean, `Load successful` (doc-only change to a widely-shared
+Stage-1 utility function, verified nothing regressed given how broadly `UDC_Makeid` is consumed).
+
+**Interface implication:** none — `UDC_Makeid` is unqualified (no interface return-type signature
+involved beyond `string`), doc-only change, no behavior/type change possible to regress.

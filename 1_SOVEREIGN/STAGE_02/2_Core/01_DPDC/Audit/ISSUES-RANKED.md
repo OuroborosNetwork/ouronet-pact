@@ -386,10 +386,18 @@ the fix and confirmed `URC_SemiFungibleConstituents` (Break-time) really did ret
 at both functions. Re-proven post-fix: now returns `[5 11]`, matching exactly. Z.repl green — no
 active-pipeline test defines a Hybrid set today, so nothing else could regress. — *DPDC-S·M1*
 
-#33M **[DPDC-I / U|DALOS]** Collection id generation (`UDC_Makeid`) is keyed only on `prev-block-hash`, a
+#33M **[DPDC-I / U|DALOS]** ~~Collection id generation (`UDC_Makeid`) is keyed only on `prev-block-hash`, a
 block-level constant identical for every tx in the same block, with no per-tx uniqueness component — two
-same-ticker issuances in the same block collide and the second hard-aborts with an opaque low-level error
-instead of a graceful uniqueness message (real, if not cheap, griefing/DoS surface). — *DPDC-I·M1*
+same-ticker issuances in the same block collide and the second hard-aborts with an opaque low-level error~~
+— **REFUTED (accepted, by-design), documented 2026-08-23** — live-verified two ways: same-type same-ticker
+same-block collision confirmed as expected; a second, corrected assumption along the way — NFT+SFT with
+the same ticker in the same tx does NOT work either, both collide first in the globally-shared
+`BRD|BrandingTable` (used by 7 modules: DPDC-I, DPTF, ATS, MTX-SWP, DPOF, DPMF, SWPI), before DPDC's own
+type-split tables are ever reached. No fix possible inside `UDC_Makeid` (Stage-1 Utility, deployed before
+`BRD` Core module — a deploy-order violation to read it); a real fix would need separate
+collision-probe-and-retry logic added to all 7 consumer modules, disproportionate to a failure mode that's
+atomic, self-healing (next block = different hash), and not exploitable beyond forcing a retry. Documented
+via `@doc` on `UDC_Makeid` (`ROUND-02-FIXES.md` Fix #29); no functional change. — *DPDC-I·M1*
 
 #34M **[DPDC]** `URD_AccountNoncesWithSupplies` returns `[{}]` instead of `[]` when an account holds zero
 nonces of a collectable — wrong non-zero count and a malformed row for any indexer/wallet UI built on it

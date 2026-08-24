@@ -668,3 +668,30 @@ hybrid branch to primordial-first, matching Make-time; added cross-referencing c
 Re-ran the same probe after restoring the fix: now returns `[5 11]`, matching exactly. Full `Z.repl` green
 — confirmed no active-pipeline test defines or exercises a Hybrid set today, so nothing else could
 regress.
+
+## #33M · DPDC-I/U|DALOS · M1 — collection id collides on same-ticker same-block issuance
+
+**Verdict: REFUTED (accepted, by-design), documented (2026-08-23).** Owner initially reasoned the impact
+was narrow — "if you issue two collections in the same tx [with the same ticker] it's bad, it fails...
+but only if the assets have the same name, which you don't want anyway... if you issue an NFT and an SFT
+collection with the same ticker in the same transaction it works" — and leaned toward leaving it as-is
+since deliberately reusing a ticker isn't something you'd want regardless.
+
+Live-verified this precisely, per standing practice, and it corrected part of that belief: same-type
+same-ticker collision is confirmed exactly as described, but the NFT+SFT-same-ticker case does **not**
+actually work — both hit a shared, cross-module `BRD|BrandingTable` (used by 7 different modules'
+issuance paths, not just DPDC) before DPDC's own type-split tables are ever reached. Reported this
+correction back to the owner ("Jezes, I forgot about this... what table is that, is it only for nfts and
+sfts?"), confirmed it's system-wide (`DPDC-I`, `DPTF`, `ATS`, `MTX-SWP`, `DPOF`, `DPMF`, `SWPI`), and
+walked through the fix options: the owner's own "perturb one character on collision" idea would need
+`UDC_Makeid` (a Stage-1 Utility, deployed before `BRD`) to read a Core-module table to detect a collision
+— a deploy-order violation, ruling out fixing it at that layer. The only real fix would mean adding
+collision-probe-and-retry logic separately to all 7 consumer modules, for a failure mode that's atomic,
+self-healing (next block = different `prev-block-hash`), and not exploitable beyond forcing a retry.
+
+Owner: "Yes leave as is, document choice."
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #29)** — documentation only: added a `@doc` note to
+`UDC_Makeid` itself explaining the same-block collision behavior, naming the shared table and all 7
+consumers, and the accepted recovery path (resubmit in a later block). No functional change. Z.repl
+green.
