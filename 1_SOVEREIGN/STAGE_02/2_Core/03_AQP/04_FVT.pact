@@ -98,6 +98,7 @@
     (defun XE_SetFvtOracleOn:string (fvt-id:string oracle-on:bool))
     (defun XE_SetExternalOracle:string (on:bool))
     (defun XE_SetOracleValidity:string (seconds:integer))
+    (defun XE_SetAgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer))
     (defun UR_ExternalOracle:bool ())
     (defun UR_OracleValidity:integer ())
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool))
@@ -573,6 +574,17 @@
         offset:integer
         active:bool
     )
+    (defschema FVT|AgencyFee
+        @doc "Key = <FVT-ID> | <Score-Entity-ID>. DSA operator fee for a delegation member (the agency), mirrored \
+            \ from DSA|Agency so the FVT inject settle can read it locally (FVT can't reach DSA). At inject the \
+            \ member-slice is split: the delegator-facing index L_i advances by member-slice·(1−fee) (so ALL \
+            \ stakers accrue net), and the whole member-slice·fee is credited DIRECTLY to the operator's pending — \
+            \ giving the operator its own weighted share + the fee (effective weight own + fee·Σdelegators), \
+            \ delegators (1−fee), conserved. The fee is never baked into a stored weight, so a fee change is O(1) \
+            \ (it only reprices the NEXT inject). Set by DSA at open + A_SetAgencyFee."
+        operator-konto:string
+        fee-per-mille:integer
+    )
     (defschema FVT|DsaOracleConfig
         @doc "Single GLOBAL row (key = FVT|DSA-ORACLE-KEY). The protocol-wide DSA external-oracle switch + validity \
             \ window, replacing the per-FVT oracle-on + the DSA_ORACLE_TTL constant. `external-oracle` = is external \
@@ -600,6 +612,7 @@
     (deftable FVT|T|VacateFreeze:{FVT|VacateFreeze})            ;; Key = <FVT-ID>
     (deftable FVT|T|SweepProgress:{FVT|SweepProgress})          ;; Key = <Anchor-ID>
     (deftable FVT|T|DsaOracleConfig:{FVT|DsaOracleConfig})      ;; Key = FVT|DSA-ORACLE-KEY (single global row)
+    (deftable FVT|T|AgencyFee:{FVT|AgencyFee})                  ;; Key = <FVT-ID> | <Score-Entity-ID>
     ;;{3}
     (defconst CT_FVT_RPS_PREC 48)
     (defconst FVT|DSA-ORACLE-KEY:string "GLOBAL")
@@ -4180,6 +4193,22 @@
                                 ;; uptime shortfall for this member (0 for a normal member; ideal-i == w-i)
                                 (royalty-i:decimal (floor (/ (* amount (- ideal-i w-i)) S) reward-prec))
                                 (total-deb:decimal (URC_ScoreEntityMemberTier2Divisor fvt-id score-entity-type score-entity-id))
+                                ;; DSA operator fee: split the member-slice — the member index L_i advances by the
+                                ;; NET (1−fee) so EVERY staker accrues net, and the whole fee slice is credited
+                                ;; DIRECT to the operator's pending ⇒ operator earns own-share + fee (effective
+                                ;; own + fee·Σdelegators), delegators (1−fee), conserved. Only when a delegation
+                                ;; member has an operator fee AND live stakers (total-deb>0). Fee never touches a
+                                ;; stored weight, so a fee change reprices only the NEXT inject (O(1)).
+                                (operator:string (if delegation (UR_FVT-AF|Operator fvt-id score-entity-id) BAR))
+                                (fee-per-mille:integer
+                                    (if (fold (and) true [delegation (!= operator BAR) (> total-deb 0.0)])
+                                        (UR_FVT-AF|FeePerMille fvt-id score-entity-id)
+                                        0))
+                                (member-slice-fee:decimal
+                                    (if (> fee-per-mille 0)
+                                        (floor (/ (* member-slice (dec fee-per-mille)) 1000.0) reward-prec)
+                                        0.0))
+                                (member-slice-net:decimal (- member-slice member-slice-fee))
                                 (g-i:decimal (UR_FVT-RM|LastFarmRpsG fvt-id score-entity-id reward-dptf-id))
                                 (L-i:decimal (UR_FVT-RM|MemberDebRps fvt-id score-entity-id reward-dptf-id))
                                 (ptr:decimal (UR_FVT-RM|PendingMemberRewards fvt-id score-entity-id reward-dptf-id))
@@ -4194,13 +4223,13 @@
                                 )
                                 (new-li:decimal
                                     (if (> total-deb 0.0)
-                                        (+ L-i-work (floor (/ member-slice total-deb) CT_FVT_RPS_PREC))
+                                        (+ L-i-work (floor (/ member-slice-net total-deb) CT_FVT_RPS_PREC))
                                         L-i-work
                                     )
                                 )
                                 (new-ptr:decimal
-                                    (if (and (= total-deb 0.0) (> member-slice 0.0))
-                                        (floor (+ ptr-work member-slice) reward-prec)
+                                    (if (and (= total-deb 0.0) (> member-slice-net 0.0))
+                                        (floor (+ ptr-work member-slice-net) reward-prec)
                                         ptr-work
                                     )
                                 )
@@ -4208,9 +4237,20 @@
                             (WW_RpsMember fvt-id score-entity-id reward-dptf-id
                                 (UDC_FVT|RPS|Member g-i new-li new-ptr fvt-id score-entity-id reward-dptf-id)
                             )
-                            ;; #10 credit: this member's routed slice enters its mini-vault (Tier-1 dust sweep)
+                            ;; #10 credit: this member's routed slice enters its mini-vault (Tier-1 dust sweep).
+                            ;; The FULL slice enters (net rides L_i, fee rides operator pending) so paid == routed.
                             (WU_MemberVault|AvailableRewards fvt-id score-entity-id reward-dptf-id
                                 (+ (UR_FVT-MV|AvailableRewards fvt-id score-entity-id reward-dptf-id) member-slice)
+                            )
+                            ;; DSA operator fee: credit the whole fee slice DIRECT to the operator's pending
+                            ;; (survives deb refresh — pending is a free additive term, never scaled by weight).
+                            (if (> member-slice-fee 0.0)
+                                (do
+                                    (XI_2|EnsureRpsUserRow operator fvt-id score-entity-id reward-dptf-id)
+                                    (WU_RpsUser|PendingRewards operator fvt-id score-entity-id reward-dptf-id
+                                        (+ (UR_FVT-RU|PendingRewards operator fvt-id score-entity-id reward-dptf-id) member-slice-fee))
+                                )
+                                true
                             )
                             ;; thread the uptime-shortfall accumulator (royalty-i is 0 for a normal member)
                             (+ royalty-acc royalty-i)
@@ -5187,6 +5227,30 @@
                 {"external-oracle" : true} {"external-oracle" := x}
                 (write FVT|T|DsaOracleConfig FVT|DSA-ORACLE-KEY {"external-oracle" : x, "oracle-validity" : seconds})
             )
+        )
+    )
+    (defun UR_FVT-AF|FeePerMille:integer (fvt-id:string score-entity-id:string)
+        @doc "A delegation member's operator fee-per-mille (0 when unset ⇒ no split)."
+        (with-default-read FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"fee-per-mille" : 0} {"fee-per-mille" := f} f)
+    )
+    (defun UR_FVT-AF|Operator:string (fvt-id:string score-entity-id:string)
+        @doc "A delegation member's operator konto (BAR when unset)."
+        (with-default-read FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"operator-konto" : BAR} {"operator-konto" := o} o)
+    )
+    (defun WU_AgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer)
+        @doc "Write a delegation member's operator + fee mirror. require SECURE."
+        (require-capability (SECURE))
+        (write FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"operator-konto" : operator-konto, "fee-per-mille" : fee-per-mille})
+    )
+    (defun XE_SetAgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer)
+        @doc "DSA: set/update a delegation member's operator + fee (mirrored from DSA|Agency so the inject settle \
+            \ reads it locally). Set at open + on a fee change. UEV_IMC + SECURE."
+        (UEV_IMC)
+        (with-capability (SECURE)
+            (WU_AgencyFee fvt-id score-entity-id operator-konto fee-per-mille)
         )
     )
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool)
@@ -6436,5 +6500,6 @@
 (create-table FVT|T|UserPresence)                               ;; Key = <FVT-ID> | <Ouronet-ID>
 (create-table FVT|T|ForcedFixCount)                             ;; Key = <FVT-ID> | <DPTF-ID> | <User-ID>
 (create-table FVT|T|DsaOracleConfig)                            ;; Key = FVT|DSA-ORACLE-KEY (single global row)
+(create-table FVT|T|AgencyFee)                                  ;; Key = <FVT-ID> | <Score-Entity-ID>
 (create-table FVT|T|VacateFreeze)                               ;; Key = <FVT-ID>
 (create-table FVT|T|SweepProgress)                              ;; Key = <Anchor-ID>

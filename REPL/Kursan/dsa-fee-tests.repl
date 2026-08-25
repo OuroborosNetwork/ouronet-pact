@@ -1,0 +1,373 @@
+;;
+;; REPL/Kursan/dsa-fee-tests.repl — DSA Phase 5b: the operator fee (two-track, applied at inject).
+;; Proves the fee split on a MULTI-delegator agency: operator own = 1000, delegators EMMA + LUMY = 2000 each
+;; (W=5000, D=4000), fee = 10%. Inject 5000 OURO => the member index advances at (1−fee) so every staker accrues
+;; net, and the whole fee slice is credited DIRECT to the operator =>
+;;   operator collects 1400  (own 1000x0.9 = 900 via index  +  fee 500 direct)   = R·(own+fee·D)/W
+;;   EMMA/LUMY collect 1800 each  (2000x0.9)                                      = R·d·(1−fee)/W
+;; The operator collects its share INDEPENDENTLY (first, before any delegator). A mid-stream A_SetAgencyFee to
+;; 20% reprices ONLY the next inject (O(1), no per-delegator recompute): operator 1800, delegators 1600 each.
+;; Source: 04_FVT.pact XI_1|FarmSplitInject (fee split) + FVT|AgencyFee + 07_DSA.pact A_SetAgencyFee.
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Kursan/dsa-fee-tests.repl  —  DSA operator fee (two-track) (Phase 5b)")
+(print "================================================================")
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+(begin-tx "FEE-BOOT - KBN slave")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+(load "../../2_SLAVE/Stage_02/02_KBunnies.pact")
+(commit-tx)
+(begin-tx "FEE-BOOT - AQP-BOOT")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+(load "../../2_SLAVE/Stage_02/04_AQP-BOOT.pact")
+(commit-tx)
+(begin-tx "FEE-BOOT - Step0")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(AQP-BOOT.C_Step0_WireImcAndGovernor KST.ANHD)
+(commit-tx)
+(print "")
+
+;; env-sigs helper reused: PK_AncientHodler + the gas-station 4x coin.TRANSFER block.
+;; ============================================================================
+;; FEE-01 — fragment 500 silver DHOC -> -2 frags; distribute 200k to EMMA + 200k to LUMY (ANHD keeps 100k)
+;; ============================================================================
+(begin-tx "FEE-01 - fragment + distribute silver to delegators")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-01T00:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [FEE-01 · 01 · fragment + distribute] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (dhoc:string "DHOC-98c486052a51")
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+    )
+    ;; 500 silver wholes -> 500000 fragment nonces (-2); each 1000-frag block = 10 quintessence when staked
+    (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 2 500)
+    ;; hand 200k to EMMA + 200k to LUMY (=> 2000 quintessence each); ANHD keeps 100k (=> 1000)
+    (ref-TS02-C1::DPSF|C_TransferNonce anhd dhoc anhd emma -2 200000 false)
+    (ref-TS02-C1::DPSF|C_TransferNonce anhd dhoc anhd lumy -2 200000 false)
+    (map print
+      [ (expect "<<FEE-01>> ANHD keeps 100000 frag -2" 100000 (ref-DPDC::UR_AccountNonceSupply anhd dhoc true -2))
+        (expect "<<FEE-01>> EMMA holds 200000 frag -2" 200000 (ref-DPDC::UR_AccountNonceSupply emma dhoc true -2))
+        (expect "<<FEE-01>> LUMY holds 200000 frag -2" 200000 (ref-DPDC::UR_AccountNonceSupply lumy dhoc true -2)) ]))
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Model + operator triplet + reward-linked class-0 vault + pool employing the 3 sub-scores.
+;;
+(begin-tx "FEE-02 - model + triplet + vault + pool")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 60000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-01T00:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [FEE-02 · 01 · model + triplet + vault + pool] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (dhoc:string "DHOC-98c486052a51")
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|CT:module{OuronetConstantsV1} U|CT)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (bmid:string (ref-U|DALOS::UDC_Makeid "FeeBronzeModel"))
+            (smid:string (ref-U|DALOS::UDC_Makeid "FeeSilverModel"))
+            (gmid:string (ref-U|DALOS::UDC_Makeid "FeeGoldModel"))
+            (model-id:string (ref-U|DALOS::UDC_Makeid "FeeTripletModel"))
+            (fvt-id:string   (ref-U|DALOS::UDC_Makeid "FeeVault"))
+            (pool-id:string  (ref-U|DALOS::UDC_Makeid "FeePool"))
+            (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Bronze"])))
+            (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Silver"])))
+            (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Golden"])))
+        )
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "FeeBronzeModel" 3 dhoc 24 [-1] [1.0])
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "FeeSilverModel" 3 dhoc 24 [-2] [10.0])
+        (ref-TS02-C3::AQP-SCR|C_IssueSingleScoreModel anhd "FeeGoldModel"   3 dhoc 24 [-3] [100.0])
+        (ref-TS02-C3::AQP-SCR|C_CombineTripletScoreModel anhd "FeeTripletModel" bmid smid gmid)
+        (ref-TS02-C3::AQP-SCR|C_IssueScoreFromModel anhd anhd model-id "FeeAgency")
+        (ref-TS02-C3::AQP-FVT|C_Issue anhd "FeeVault" anhd 0 ouro)
+        (ref-TS02-C3::AQP-FVT|C_AddRewardLink anhd fvt-id ouro false (ref-U|CT::CT_BAR))
+        (ref-TS02-C3::AQP-DSA|A_DefineDelegationVault anhd fvt-id model-id 2000)
+        (ref-TS02-C3::AQP-POOL|C_Issue anhd "FeePool" dhoc 3)
+        (ref-TS02-C3::AQP-POOL|C_AddScore anhd pool-id bsid)
+        (ref-TS02-C3::AQP-POOL|C_AddScore anhd pool-id ssid)
+        (ref-TS02-C3::AQP-POOL|C_AddScore anhd pool-id gsid)
+        (print (format "<(setup)> => vault {} pool {}" [fvt-id pool-id]))
+        ""
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Open the agency: operator ANHD stakes its 100k -2 frags (=> 1000 quintessence, clears the 1000 gate), fee 10%.
+;;
+(begin-tx "FEE-03 - open agency (operator stakes 1000, fee 100 per-mille)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 90000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-01T00:01:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [FEE-03 · 01 · open agency] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (dhoc:string "DHOC-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string  (ref-U|DALOS::UDC_Makeid "FeeVault"))
+            (pool-id:string (ref-U|DALOS::UDC_Makeid "FeePool"))
+            (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Bronze"])))
+            (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Silver"])))
+            (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
+            (ref-TS02-C3::AQP-DSA|C_OpenAgency anhd fvt-id pool-id triplet-id 100 dhoc [-2])
+            (map print
+              [ (expect "<<FEE-03>> agency Q = 1000 (operator own)" 1000.0 (AQP-DSA.URC_AgencyQuintessence triplet-id)) ]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Delegators EMMA + LUMY each stake 2000 into the operator's agency (Q -> 5000). Then oracle nodes/uptime.
+;;
+(begin-tx "FEE-04 - delegators stake + oracle")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 120000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-01T02:00:00Z") })
+(env-data { "dsa-oracle": { "keys": ["dsa-oracle-key"], "pred": "keys-all" } })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "PK_Emma", "caps": [] }
+    { "key": "PK_Lumy", "caps": [] }
+    { "key": "dsa-oracle-key", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [FEE-04 · 01 · delegators stake + oracle] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (dhoc:string "DHOC-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string  (ref-U|DALOS::UDC_Makeid "FeeVault"))
+            (pool-id:string (ref-U|DALOS::UDC_Makeid "FeePool"))
+            (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Bronze"])))
+            (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Silver"])))
+            (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
+            ;; each delegator stakes their -2 supply (200k => 2000 quintessence) into the operator's pool
+            (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable emma pool-id emma emma dhoc [-2])
+            (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable lumy pool-id lumy lumy dhoc [-2])
+            ;; owner authorizes the oracle key, then oracle: 10 nodes at FULL uptime => capture-units =
+            ;; min(5000/2000,10)=2, weight 2 (no royalty shortfall)
+            (ref-TS02-C3::AQP-DSA|A_SetOracleAuth anhd fvt-id (read-keyset "dsa-oracle"))
+            (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 10 1000)
+            (map print
+              [ (expect "<<FEE-04>> agency Q = 5000 (1000 op + 2000 + 2000)" 5000.0 (AQP-DSA.URC_AgencyQuintessence triplet-id))
+                (expect "<<FEE-04>> capture-units 2" 2.0 (AQP-FVT.UR_FVT-SEL|CaptureUnits fvt-id triplet-id))
+                (expect "<<FEE-04>> capture-weight 2 (full uptime)" 2.0 (AQP-FVT.UR_FVT-SEL|CaptureWeight fvt-id triplet-id)) ]))
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Inject 5000 OURO. member-slice = 5000 (full uptime). Then collect — OPERATOR FIRST (independent of delegators).
+;;
+(begin-tx "FEE-05 - inject 5000 + collect all (fee 10%)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 120000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-01T03:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "PK_Emma", "caps": [] }
+    { "key": "PK_Lumy", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [FEE-05 · 01 · inject + collect] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string  (ref-U|DALOS::UDC_Makeid "FeeVault"))
+            (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Bronze"])))
+            (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Silver"])))
+            (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
+            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 5000.0)
+            ;; OPERATOR COLLECTS FIRST — independent of delegators
+            (let ((op-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))
+                (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 3 triplet-id ouro)
+                (let
+                    (
+                        (op-got:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) op-before))
+                        (em-before:decimal (ref-DPTF::UR_AccountSupply ouro emma))
+                    )
+                    (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 3 triplet-id ouro)
+                    (let
+                        (
+                            (em-got:decimal (- (ref-DPTF::UR_AccountSupply ouro emma) em-before))
+                            (lu-before:decimal (ref-DPTF::UR_AccountSupply ouro lumy))
+                        )
+                        (ref-TS02-C3::AQP-FVT|C_Collect lumy fvt-id 3 triplet-id ouro)
+                        (let ((lu-got:decimal (- (ref-DPTF::UR_AccountSupply ouro lumy) lu-before)))
+                            (print (format "<(operator / emma / lumy)> => {} / {} / {}" [op-got em-got lu-got]))
+                            (map print
+                              [ (expect "<<FEE-05>> operator collected 1400 (own 900 net + fee 500), INDEPENDENT" 1400.0 op-got)
+                                (expect "<<FEE-05>> EMMA collected 1800 (2000 net of 10%)" 1800.0 em-got)
+                                (expect "<<FEE-05>> LUMY collected 1800" 1800.0 lu-got)
+                                (expect "<<FEE-05>> conservation: op+emma+lumy = 5000" 5000.0 (+ op-got (+ em-got lu-got))) ])))))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;
+;;|| NEXT >
+;;|| Mid-stream fee change to 20% (A_SetAgencyFee) — reprices ONLY the next inject (O(1), no per-delegator touch):
+;;|| operator 1800 (own 800 net + fee 1000), delegators 1600 each.
+;;
+(begin-tx "FEE-06 - fee -> 20%, inject, collect (reprice future only)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 120000000)(env-gas 0)
+(env-chain-data { "block-time": (time "2027-11-01T04:00:00Z") })
+(env-sigs
+  [ { "key": "PK_AncientHodler", "caps": [] }
+    { "key": "PK_Emma", "caps": [] }
+    { "key": "PK_Lumy", "caps": [] }
+    { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+    , "caps":
+      [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
+        (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
+(print "--- [FEE-06 · 01 · fee change + inject + collect] ---")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (ouro:string "OURO-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+    )
+    (let
+        (
+            (fvt-id:string  (ref-U|DALOS::UDC_Makeid "FeeVault"))
+            (bsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Bronze"])))
+            (ssid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Silver"])))
+            (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["FeeAgency" "Golden"])))
+        )
+        (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
+            ;; O(1) fee change — reprices only the next inject
+            (ref-TS02-C3::AQP-DSA|A_SetAgencyFee anhd fvt-id triplet-id 200)
+            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 5000.0)
+            (let ((op-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))
+                (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 3 triplet-id ouro)
+                (let
+                    (
+                        (op-got:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) op-before))
+                        (em-before:decimal (ref-DPTF::UR_AccountSupply ouro emma))
+                    )
+                    (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 3 triplet-id ouro)
+                    (let
+                        (
+                            (em-got:decimal (- (ref-DPTF::UR_AccountSupply ouro emma) em-before))
+                            (lu-before:decimal (ref-DPTF::UR_AccountSupply ouro lumy))
+                        )
+                        (ref-TS02-C3::AQP-FVT|C_Collect lumy fvt-id 3 triplet-id ouro)
+                        (let ((lu-got:decimal (- (ref-DPTF::UR_AccountSupply ouro lumy) lu-before)))
+                            (print (format "<(20%% op / emma / lumy)> => {} / {} / {}" [op-got em-got lu-got]))
+                            (map print
+                              [ (expect "<<FEE-06>> operator collected 1800 (own 800 net + fee 1000) at 20%" 1800.0 op-got)
+                                (expect "<<FEE-06>> EMMA collected 1600 (2000 net of 20%)" 1600.0 em-got)
+                                (expect "<<FEE-06>> LUMY collected 1600" 1600.0 lu-got)
+                                (expect "<<FEE-06>> conservation: op+emma+lumy = 5000" 5000.0 (+ op-got (+ em-got lu-got))) ])))))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== dsa-fee-tests END — operator two-track fee: 25k/95k split + independent collect + O(1) fee change ===")

@@ -32,6 +32,8 @@
         (patron:string fvt-id:string reward-dptf-id:string))
     (defun A_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string swpair:string))
+    (defun A_SetAgencyFee:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer))
     ;;
 )
 ;;
@@ -195,6 +197,7 @@
     (defconst GAS|WITHDRAW-ROYALTY:decimal 400.0)
     (defconst GAS|BURN-ROYALTY:decimal 400.0)
     (defconst GAS|FUEL-ROYALTY:decimal 500.0)
+    (defconst GAS|SET-AGENCY-FEE:decimal 300.0)
     (defconst DSA_UPTIME_MIN:integer 0)
     ;;
     ;;<==========>
@@ -315,6 +318,24 @@
             )
             (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
             (enforce (= patron fvt-owner) "Only the FVT owner may fuel with royalty")
+            (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
+        )
+        (compose-capability (P|SECURE-CALLER))
+    )
+    (defcap DSA|C>SET-AGENCY-FEE (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "Owner-only: change a delegation agency's operator fee. Enforces the vault is live, patron IS the FVT \
+            \ owner (+ signs), fee in [DSA_FEE_MIN, DSA_FEE_MAX]. A fee change is O(1) — it reprices only FUTURE \
+            \ injects (the fee is never baked into a stored weight). Composes P|SECURE-CALLER for the FVT mirror."
+        @event
+        (let
+            (
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (fvt-owner:string (ref-FVT::UR_FVT|OwnerKonto fvt-id))
+            )
+            (enforce (URC_DsaTemplateActive fvt-id) "DSA vault not defined or inactive")
+            (enforce (= patron fvt-owner) "Only the FVT owner may change the agency fee")
+            (enforce (and (>= fee-per-mille DSA_FEE_MIN) (<= fee-per-mille DSA_FEE_MAX)) "Operator fee out of range (1%..50%)")
             (ref-DALOS::CAP_EnforceAccountOwnership fvt-owner)
         )
         (compose-capability (P|SECURE-CALLER))
@@ -479,6 +500,11 @@
         (require-capability (SECURE))
         (update DSA|T|Agency (UCk_Agency fvt-id score-entity-id) {"nodes" : nodes, "uptime" : uptime})
     )
+    (defun WU_Agency-Fee:string (fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "Update an agency's operator fee-per-mille. require SECURE."
+        (require-capability (SECURE))
+        (update DSA|T|Agency (UCk_Agency fvt-id score-entity-id) {"fee-per-mille" : fee-per-mille})
+    )
     (defun WI_OracleAuth:string (fvt-id:string row:object{DSA|OracleAuth})
         @doc "Write (set / rotate) a DSA vault's oracle authority row. require SECURE."
         (require-capability (SECURE))
@@ -638,6 +664,26 @@
             )
         )
     )
+    (defun A_SetAgencyFee:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "Owner-only: change a delegation agency's operator fee-per-mille. Updates DSA|Agency + mirrors it onto \
+            \ the FVT member (FVT::XE_SetAgencyFee) so the next inject uses the new split. Safe + O(1) — the fee is \
+            \ never in a stored weight, so this reprices only FUTURE injects, no per-delegator recompute. UEV_IMC + \
+            \ DSA|C>SET-AGENCY-FEE. Bills GAS|SET-AGENCY-FEE."
+        (UEV_IMC)
+        (with-capability (DSA|C>SET-AGENCY-FEE patron fvt-id score-entity-id fee-per-mille)
+            (let
+                (
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                )
+                (WU_Agency-Fee fvt-id score-entity-id fee-per-mille)
+                (ref-FVT::XE_SetAgencyFee fvt-id score-entity-id (UR_DSA-AGN|Operator fvt-id score-entity-id) fee-per-mille)
+                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-AGENCY-FEE patron trigger [score-entity-id])
+            )
+        )
+    )
     ;; [C]   client
     (defun C_AdmitAgency:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
@@ -659,6 +705,8 @@
                 (ref-FVT::XE_AdmitDelegationMember fvt-id score-entity-id patron)
                 (ref-FVT::XE_SetMemberDelegation fvt-id score-entity-id true)
                 (WI_Agency fvt-id score-entity-id (UDC_DSA|Agency patron fee-per-mille 0 DSA_UPTIME_FULL fvt-id score-entity-id))
+                ;; mirror the operator + fee onto the FVT member so the inject settle can apply the fee split locally
+                (ref-FVT::XE_SetAgencyFee fvt-id score-entity-id patron fee-per-mille)
                 (ref-IGNIS::UDC_ConstructOutputCumulator GAS|OPEN-AGENCY patron trigger [score-entity-id])
             )
         )

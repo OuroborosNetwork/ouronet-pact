@@ -441,10 +441,20 @@ FVT/SCORE core.
     stale-oracle penalty, not lost capacity.)*
   - **Zero-node oracle** (fresh, nodes 0 → capture-units 0 → divisor 0) → inject 300 ESCROWS to **zombie** (300),
     royalty unchanged. *(The true all-drained/no-capacity path; flushed on the next inject with a live divisor.)*
-  - ⚠️ **GAP surfaced:** the operator **fee-per-mille** is stored on `DSA|Agency` + read by `UR_DSA-AGN|FeePerMille`
-    but is **NOT skimmed anywhere in the collect path** yet. It only bites when a DELEGATOR (≠ operator) collects, so
-    it needs (a) collect-fee wiring in the FVT collect + (b) a multi-delegator fixture. Deferred to **Phase 5b /
-    the collect-wiring phase** (single-agency operator = sole staker ⇒ no fee applies in this fixture).
+  - ✅ **Operator fee — Phase 5b DONE (two-track, applied at inject).** The fee is NOT skimmed at collect (that
+    would make the operator wait on delegators to collect) and NOT baked into stored weights (that would force an
+    O(delegators) recompute on a fee change). Instead, at inject (`XI_1|FarmSplitInject`), a delegation member's
+    `member-slice` is split: the member index `L_i` advances by `member-slice·(1−fee)` (so EVERY staker accrues
+    net), and the whole `member-slice·fee` is credited DIRECT to the operator's `FVT|RPS|User.pending-rewards`.
+    Result: operator earns `own·(1−fee)` via the index **+** the full fee ⇒ effective `own + fee·Σdelegators`;
+    delegators earn `d·(1−fee)` — the score-redistribution the owner described, conserved. The operator's fee is in
+    *its* ledger the moment reward arrives, so it **collects independently** of delegators. State: `FVT|AgencyFee`
+    (operator-konto + fee-per-mille, mirrored from DSA at open via `XE_SetAgencyFee`); admin `A_SetAgencyFee`
+    reprices only FUTURE injects (**O(1)** — no per-delegator touch). Collect/checkpoint/fix machinery unchanged.
+    Test `dsa-fee-tests.repl` (12th suite): operator own 1000, delegators 2000+2000, fee 10%, inject 5000 →
+    operator collects 1400 (900 net + 500 fee, FIRST/independent), delegators 1800 each; a mid-stream fee→20%
+    reprices the next inject to 1800 / 1600 / 1600. Sole-operator agencies self-pay the full slice ⇒ Phase-3 suite
+    unaffected.
 - **Phase 6 — Royalty disposal.** 🟢 **DONE (3/3 modes; compress pending).** One FVT primitive per mode under
   `FVT|XE>DISPOSE-ROYALTY` (composes `P|SECURE-CALLER + P|FVT|REMOTE-GOV` — the AQP-custody authority), each zeros
   `royalty-rewards` and moves the pool out of `AQP|SC_NAME`; owner-gated DSA `A_` shells + Talos wrappers.

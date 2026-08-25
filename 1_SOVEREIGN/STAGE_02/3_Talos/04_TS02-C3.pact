@@ -285,6 +285,9 @@
     (defun AQP-DSA|A_FuelRoyalty:string
         (patron:string fvt-id:string reward-dptf-id:string swpair:string)
     )
+    (defun AQP-DSA|A_SetAgencyFee:string
+        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+    )
 )
 ;;
 (module TS02-C3 GOV
@@ -2279,6 +2282,24 @@
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (format "Royalty pool of {} on FVT {} fueled into swpair {}." [reward-dptf-id fvt-id swpair])
+            )
+        )
+    )
+    (defun AQP-DSA|A_SetAgencyFee:string
+        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "DSA (Talos): the FVT owner changes a delegation agency's operator fee (reprices only future injects); \
+            \ collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_SetAgencyFee patron fvt-id score-entity-id fee-per-mille)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])
             )
         )
     )
