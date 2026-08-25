@@ -480,8 +480,18 @@ FVT/SCORE core.
   weight only while its last oracle write is fresher than `oracle-validity` (no/stale entry ⇒ 0); **OFF** ⇒ oracling
   bypassed protocol-wide, stored capture trusted. Test: 2h-old write expires at a 1h validity; OFF → trust 1.5 at
   29h stale; ON → 0 again.
-- **Phase 7 — Talos + gas full wiring.** All DSA client/admin ops into Talos + gas-station allowlist + IMP; the
-  operator-fee collect path. *Verify:* end-to-end via Talos.
+- **Phase 7 — Talos + gas full wiring.** ✅ **DONE.** All DSA client/admin ops now have `AQP-DSA|…` wrappers on
+  `TS02-C3`: `A_DefineDelegationVault`, `C_OpenAgency`, `C_RecomputeCapture`, `A_SetOracleAuth`, `A_OracleWrite`,
+  `A_WithdrawRoyalty`, `A_BurnRoyalty`, `A_FuelRoyalty`, `A_SetAgencyFee` (all IGNIS-billed), plus the two
+  chain-wide GOV switches `A_ToggleExternalOracle` / `A_SetOracleValidity` (added to the `DsaV1` interface + wrapped
+  as plain `P|TS` passthroughs — no IGNIS, since they return `string` not an `OutputCumulator`). **Gas-station
+  allowlist:** satisfied *by construction* — DALOS's gas-payer cap is a code-**shape** allowlist that pays any
+  `(ouronet-ns.TS…` top-level form (Case 1), so every Talos-routed DSA op is already payable; there is no
+  per-function list to extend. **IMP registration:** wired by `AQP-BOOT.C_Step0_WireImcAndGovernor` (AQP-family IMP)
+  and proven green by every `dsa-*` suite routing through Talos. **Operator-fee collect path:** the fee is credited
+  to the operator's `pending-rewards` at inject, so the operator collects it via the ordinary `AQP-FVT|C_Collect`
+  (proven independent in `dsa-fee-tests.repl`). *Verified:* the two GOV switches now flow through
+  `ref-TS02-C3::AQP-DSA|A_SetOracleValidity` / `…|A_ToggleExternalOracle` in `dsa-capture-tests.repl` (TX-P3-21/22/23).
 - **Phase 8 — Round B: heterogeneous quality split.** ✅ **DONE** (in `Kursan/dsa-hetero-split-tests.repl`).
   On the FVT: `FVT|QualitySplit` schema + `FVT|T|QualitySplit` table (key `<FVT-ID>|<DPTF-ID>`, same as
   `RPS|Global`) hold a per-reward **mode** (`HOMOGENEOUS` default when the row is absent | `HETEROGENEOUS`) +
@@ -500,6 +510,6 @@ FVT/SCORE core.
 ### 🏁 FINAL — full regression gate
 Rerun `run-aqp-audit.sh` — now **13 suites** (the original AQP coverage + `dsa-model`, `dsa-agency`,
 `dsa-capture`, `dsa-fee`, and `dsa-hetero-split`) — all green ⇒ the DSA feature is complete and the shared
-FVT/SCORE core is regression-free. Remaining: Phase 7 (Talos + gas full wiring, task #65).
+FVT/SCORE core is regression-free. **All phases (1–8) DONE.**
 
-*Tracker written 2026-08-24. Round B (Phase 8) done 2026-08-25.*
+*Tracker written 2026-08-24. Round B (Phase 8) + Phase 7 (Talos/gas wiring) done 2026-08-25.*

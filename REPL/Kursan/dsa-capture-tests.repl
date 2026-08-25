@@ -1012,6 +1012,7 @@
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -1023,13 +1024,13 @@
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
             ;; at the DEFAULT validity (25h) a 2h-old oracle is fresh → effective = stored weight (1.5)
             (expect "<<TX-P3-21>> 2h-old oracle fresh at default validity → 1.5" 1.5 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id))
-            ;; shrink validity to 1h → the same 2h-old oracle is now expired → effective 0
-            (AQP-DSA.A_SetOracleValidity 3600)
+            ;; shrink validity to 1h (via the Talos GOV wrapper) → the same 2h-old oracle is now expired → effective 0
+            (ref-TS02-C3::AQP-DSA|A_SetOracleValidity 3600)
             (map print
-              [ (expect "<<TX-P3-21>> oracle-validity set to 3600s" 3600 (ref-FVT::UR_OracleValidity))
+              [ (expect "<<TX-P3-21>> oracle-validity set to 3600s (Talos wrapper)" 3600 (ref-FVT::UR_OracleValidity))
                 (expect "<<TX-P3-21>> 2h-old oracle EXPIRED at 1h validity → 0" 0.0 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id)) ])
             ;; restore the default window for the switch tests
-            (AQP-DSA.A_SetOracleValidity 90000)
+            (ref-TS02-C3::AQP-DSA|A_SetOracleValidity 90000)
             ""
         )
     )
@@ -1052,6 +1053,7 @@
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -1063,7 +1065,8 @@
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
             ;; oracle ON, 29h-stale → effective 0
             (expect "<<TX-P3-22>> stale oracle (ON) → 0" 0.0 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id))
-            (AQP-DSA.A_ToggleExternalOracle false)
+            ;; flip the GLOBAL external-oracle OFF via the Talos GOV wrapper
+            (ref-TS02-C3::AQP-DSA|A_ToggleExternalOracle false)
             (map print
               [ (expect "<<TX-P3-22>> external-oracle switched OFF" false (ref-FVT::UR_ExternalOracle))
                 ;; oracle OFF → oracling bypassed → the stored capture-weight (1.5) is trusted despite staleness
@@ -1090,6 +1093,7 @@
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
     )
     (let
         (
@@ -1099,7 +1103,7 @@
             (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
-            (AQP-DSA.A_ToggleExternalOracle true)
+            (ref-TS02-C3::AQP-DSA|A_ToggleExternalOracle true)
             (map print
               [ (expect "<<TX-P3-23>> external-oracle switched back ON" true (ref-FVT::UR_ExternalOracle))
                 (expect "<<TX-P3-23>> oracle ON → stale member captures 0 again" 0.0 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id)) ])

@@ -34,6 +34,8 @@
         (patron:string fvt-id:string reward-dptf-id:string swpair:string))
     (defun A_SetAgencyFee:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer))
+    (defun A_ToggleExternalOracle:string (on:bool))
+    (defun A_SetOracleValidity:string (seconds:integer))
     ;;
 )
 ;;

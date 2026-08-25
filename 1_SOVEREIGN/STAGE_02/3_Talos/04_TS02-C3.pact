@@ -291,6 +291,8 @@
     (defun AQP-DSA|A_SetAgencyFee:string
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
     )
+    (defun AQP-DSA|A_ToggleExternalOracle:string (on:bool))
+    (defun AQP-DSA|A_SetOracleValidity:string (seconds:integer))
 )
 ;;
 (module TS02-C3 GOV
@@ -2321,6 +2323,32 @@
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])
+            )
+        )
+    )
+    (defun AQP-DSA|A_ToggleExternalOracle:string (on:bool)
+        @doc "DSA (Talos): MODULE ADMIN (GOV) flip of the SINGULAR GLOBAL external-oracle switch for ALL agencies. \
+            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                )
+                (ref-DSA::A_ToggleExternalOracle on)
+                (format "Global external-oracle switch set to {}." [on])
+            )
+        )
+    )
+    (defun AQP-DSA|A_SetOracleValidity:string (seconds:integer)
+        @doc "DSA (Talos): MODULE ADMIN (GOV) set of the GLOBAL oracle-validity window (freshness horizon, seconds). \
+            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                )
+                (ref-DSA::A_SetOracleValidity seconds)
+                (format "Global oracle-validity window set to {} seconds." [seconds])
             )
         )
     )
