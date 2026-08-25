@@ -6107,6 +6107,58 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "SWP|TX 038c - #62L C_Fuel Proof")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 038c - #62L C_Fuel Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 038c - #62L C_Fuel Proof · 01 · env-sigs (caps)] ---")
+;;#62L fix: SWPLC::C_Fuel had zero REPL coverage of any kind despite moving real
+;;funds. Proves the real, permissionless, direct-mode Talos path (SWP|C_Fuel):
+;;"increases Liquidity without issuing LP" per its own doc — a real transfer into
+;;the pool's own custody, reserves bumped by exactly the fueled amount, no LP
+;;minted. Uses a delta assertion (post - pre) rather than absolute values, since
+;;pool6's reserves have moved through hundreds of prior transactions by this point
+;;in the suite — the delta is what actually proves the fix, not any specific
+;;absolute number.
+(let
+    (
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (ref-SWP:module{SwapperV3} SWP)
+        (patron:string KST.ANHD)
+        (pool:string "P|OURO-98c486052a51|VST-98c486052a51")
+        (fuel-amounts:[decimal] [10.0 20.0])
+        (pre-supplies:[decimal] (ref-SWP::UR_PoolTokenSupplies "P|OURO-98c486052a51|VST-98c486052a51"))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+        ]
+    )
+    ;;==== SWP|TX 038c - #62L C_Fuel Proof · 02 · let / invocation ====
+    (print "--- [SWP|TX 038c - #62L C_Fuel Proof · 02 · let / invocation] ---")
+    (print (ref-TS01-C3::SWP|C_Fuel patron patron pool fuel-amounts))
+    (let
+        (
+            (post-supplies:[decimal] (ref-SWP::UR_PoolTokenSupplies pool))
+            (delta:[decimal] (zip (-) post-supplies pre-supplies))
+        )
+        (print
+            (expect "#62L: C_Fuel bumped pool reserves by exactly the fueled amounts, no LP minted"
+                fuel-amounts
+                delta
+            )
+        )
+    )
+)
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (print "=======================Swap Tests=================================")
 (begin-tx "SWP|TX 039 - Add Glacial Liquidity")
 (namespace "ouronet-ns")

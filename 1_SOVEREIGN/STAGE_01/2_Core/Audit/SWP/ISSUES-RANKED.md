@@ -500,7 +500,14 @@ propose→upgrade genuinely moves pending branding to live and flips Gray(3)→B
 proven: corrupted the expected value, got a genuine `FAILURE`, restored. No `.pact` source touched. Full
 writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L61*
 
-#62L **[SWPLC]** `C_Fuel` has zero REPL coverage of any kind despite moving real funds.
+#62L **[SWPLC]** ~~`C_Fuel` has zero REPL coverage of any kind despite moving real funds.~~ — **FIXED ✅
+AND PROVEN ✅ 2026-08-25** (`ROUND-02-FIXES.md` Fix #37). Traced both modes: DIRECT (the only
+externally-reachable path, via Talos `SWP|C_Fuel`) is safe by construction — caller only ever spends
+their own funds, no LP minted; INDIRECT is internal-only, never exposed via Talos, already covered by the
+established `UEV_IMC` mechanism. Added `SWP|TX 038c` proving the real DIRECT path bumps pool reserves by
+exactly the fueled amounts via a delta assertion (post minus pre supplies). Adversarially proven:
+corrupted the expected delta, got a genuine `FAILURE`, restored. No `.pact` source touched. Full writeup
+in `ROUND-01-OWNER-FEEDBACK.md`. — *L62*
 
 #63L **[SWPLC]** The module defines no `XI_*` at all — every `C_*` orchestrates peer calls inline.
 

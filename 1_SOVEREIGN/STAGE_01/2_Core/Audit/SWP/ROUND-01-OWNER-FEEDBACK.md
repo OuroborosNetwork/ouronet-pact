@@ -2596,4 +2596,39 @@ purely REPL coverage.
 
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #36. Awaiting Round III re-verify. — *L61*
 
+## L62 (#62L, SWPLC — `C_Fuel` has zero REPL coverage of any kind despite moving real funds) — **CONFIRMED, FIXED, PROVEN**
+
+**Investigated the actual risk before adding a test:** `SWPLC::C_Fuel` has two modes gated by a
+`direct-or-indirect:bool` argument. DIRECT (`true`) does a real `TFT::C_MultiTransfer` from the calling
+account into the pool's own `SWP|SC_NAME` custody, under `SWPLC|C>DIRECT-FUEL` (composes `P|DT` +
+`P|SWPLC|CALLER`, both trivially-true — the real authorization is that the caller can only ever move their
+own funds). INDIRECT (`false`) skips the transfer entirely and just bumps `XE_UpdateSupplies` reserves,
+returning the `EOC` sentinel, under `SWPLC|C>INDIRECT-FUEL` (also trivially-true).
+
+**Confirmed INDIRECT is not externally reachable:** grepped every caller of `C_Fuel` across the codebase.
+The only real, permissionless, externally-wired path is Talos `SWP|C_Fuel` (`04_TS01-C3.pact:583-600`,
+doc: "Fueling increases Liquidity without issuing LP, therefore increasing LP Value"), which always calls
+`direct-or-indirect=true`. The `false` (INDIRECT) mode is only ever called internally, from `19_SWPU.pact`
+(lines 1256, 1515) — never exposed via Talos — and is protected the same way every other internal-only
+core call is: the established `UEV_IMC` module-registration check, not an account-level cap. So DIRECT is
+safe by construction (caller spends only their own funds, no LP minted, straight donation-to-reserves), and
+INDIRECT's only real protection is already covered by the existing, already-audited `UEV_IMC` mechanism.
+No security fix needed — this was purely a coverage gap, not a vulnerability.
+
+**Fix — `REPL/Stage_01/[6.3]_SWP.repl`:** added a new `SWP|TX 038c` proving the real, permissionless
+DIRECT path (`Talos SWP|C_Fuel`) does exactly what its own doc claims: bumps pool6's reserves by exactly
+the fueled amounts (`[10.0 20.0]`), with no LP minted. Used a delta assertion (`post-supplies` minus
+`pre-supplies` via `(zip (-) post pre)`) rather than an absolute value, since pool6's reserves have moved
+through hundreds of prior transactions by this point in the suite — only the delta actually proves the
+claim. Did not attempt to assert the caller's own balance decrease (no DPTF balance-reader function exists
+in the current API surface; that side is implicitly covered by TFT's own, already-audited transfer tests).
+
+**Adversarially proven, live:** deliberately corrupted the expected delta (`fuel-amounts` → `[999.0
+999.0]`) — genuine `FAILURE` with the exact expected-vs-received diff (`expected: [999.0 999.0], received:
+[10.0 20.0]`). Restored, reconfirmed clean. Full suite (`[6.2]`+`[6.3]`): exit 0, 0 `FAILURE`. Default
+`Z.repl` pipeline (`[6.2+3]` issuance-only): exit 0, 0 `FAILURE`, `Stage01_Tester.repl` shows zero drift
+after reverting. No `.pact` source touched — purely REPL coverage.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #37. Awaiting Round III re-verify. — *L62*
+
 ---

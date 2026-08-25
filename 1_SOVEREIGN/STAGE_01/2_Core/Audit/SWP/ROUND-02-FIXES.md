@@ -1519,3 +1519,24 @@ with the exact diff. Restored, reconfirmed. Default `Z.repl` pipeline (`[6.4]` e
 0, 0 `FAILURE`. No `.pact` source touched.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #37 — L62 (#62L): real REPL coverage for `SWPLC::C_Fuel`
+
+**Fix — `REPL/Stage_01/[6.3]_SWP.repl`:** investigated `C_Fuel`'s two modes first. DIRECT (the only
+externally-reachable path, via Talos `SWP|C_Fuel`) does a real `TFT::C_MultiTransfer` from the caller into
+the pool's own custody — safe by construction, caller only ever spends their own funds, no LP minted.
+INDIRECT (no real transfer, just bumps reserves) is never exposed via Talos, only called internally from
+`19_SWPU.pact`, and already protected by the established `UEV_IMC` module-registration mechanism — no
+security fix needed, purely a coverage gap. Added a new `SWP|TX 038c` proving the real DIRECT path bumps
+pool6's reserves by exactly the fueled amounts, no LP minted, via a delta assertion (`post` minus `pre`
+supplies) rather than an absolute value, since pool6's reserves have moved through hundreds of prior
+transactions by this point in the suite.
+
+**Adversarially proven:** corrupted the expected delta (`fuel-amounts` → `[999.0 999.0]`) — genuine
+`FAILURE` with the exact diff (`expected: [999.0 999.0], received: [10.0 20.0]`). Restored, reconfirmed.
+Full suite (`[6.2]`+`[6.3]`): exit 0, 0 `FAILURE`. Default `Z.repl` pipeline (`[6.2+3]` issuance-only): exit
+0, 0 `FAILURE`, `Stage01_Tester.repl` reverted with zero drift. No `.pact` source touched.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
