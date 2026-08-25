@@ -482,11 +482,24 @@ FVT/SCORE core.
   29h stale; ON → 0 again.
 - **Phase 7 — Talos + gas full wiring.** All DSA client/admin ops into Talos + gas-station allowlist + IMP; the
   operator-fee collect path. *Verify:* end-to-end via Talos.
-- **Phase 8 — Round B: heterogeneous quality split.** Reward-mode flag + per-type split matrix + the
-  `MULTIPLET_BASE` collect branch (§9.3). *Verify:* heterogeneous payout.
+- **Phase 8 — Round B: heterogeneous quality split.** ✅ **DONE** (in `Kursan/dsa-hetero-split-tests.repl`).
+  On the FVT: `FVT|QualitySplit` schema + `FVT|T|QualitySplit` table (key `<FVT-ID>|<DPTF-ID>`, same as
+  `RPS|Global`) hold a per-reward **mode** (`HOMOGENEOUS` default when the row is absent | `HETEROGENEOUS`) +
+  three per-lane per-mille rows `bronze/silver/gold-split = [to-t0 to-t1 to-t2]` (each sums to 1000, validated by
+  `UC_PerMilleRow`). Owner-gated setter `C_SetQualitySplit` (cap `FVT|C>SET-QUALITY-SPLIT` → `UEV_QualitySplitContext`:
+  reward link exists + is `MULTIPLET_BASE` with an active family + valid mode + valid rows + FVT-owner) writes the
+  matrix via `WI_QualitySplit` — **O(1) reprice, no per-delegator recompute**. Collect branch: in
+  `XI_TransferRewardDptfFromVault`, when `mode == HETEROGENEOUS`, `XI_1|HeterogeneousLaneRoute` splits **each** lane
+  amount across all 3 ladder tokens per its row, aggregates `total-t0/t1/t2` (t2 = dust-free remainder), and reuses
+  the homogeneous per-leg primitives (token-0 raw transfer + pre-fund + ATSU `C_Coil`/`C_Curl` with precision
+  guards). Talos wrapper `AQP-FVT|C_SetQualitySplit` (`TS02-C3`). *Verified:* default mode HOMOGENEOUS; owner sets
+  matrix, readers round-trip; matrix `[1000 0 0]×3` → collect routes the whole payout to OURO (Auryn/Elite 0 —
+  impossible under homogeneous); O(1) reprice to `[0 1000 0]×3` → next collect is pure Auryn (Coil leg); guard
+  rejections (non-owner, a row not summing to 1000, a 2-element row, unknown mode, a non-`MULTIPLET_BASE` reward).
 
 ### 🏁 FINAL — full regression gate
-Rerun `run-aqp-audit.sh` (8 suites) **+ a new `dsa-*.repl` suite (9th)** — all green ⇒ the DSA feature is
-complete and the shared FVT/SCORE core is regression-free.
+Rerun `run-aqp-audit.sh` — now **13 suites** (the original AQP coverage + `dsa-model`, `dsa-agency`,
+`dsa-capture`, `dsa-fee`, and `dsa-hetero-split`) — all green ⇒ the DSA feature is complete and the shared
+FVT/SCORE core is regression-free. Remaining: Phase 7 (Talos + gas full wiring, task #65).
 
-*Tracker written 2026-08-24. Next: Phase 1 (17a).*
+*Tracker written 2026-08-24. Round B (Phase 8) done 2026-08-25.*

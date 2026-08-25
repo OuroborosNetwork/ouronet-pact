@@ -209,6 +209,9 @@
     (defun AQP-FVT|C_ToggleRewardLink:string
         (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
     )
+    (defun AQP-FVT|C_SetQualitySplit:string
+        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+    )
     (defun AQP-FVT|C_Control:string
         (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
     )
@@ -1774,6 +1777,24 @@
                     (ref-FVT::C_ToggleRewardLink patron fvt-id reward-dptf-id enabled)
                 )
                 (format "Successfully toggled reward link {} on FVT {} to enabled={}." [reward-dptf-id fvt-id enabled])
+            )
+        )
+    )
+    (defun AQP-FVT|C_SetQualitySplit:string
+        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        @doc "Round B: set a MULTIPLET_BASE reward's quality-split MODE + heterogeneous MATRIX (owner-gated). \
+            \ HOMOGENEOUS routes each lane to its one ladder token; HETEROGENEOUS splits each lane across all 3 \
+            \ ladder tokens per its [to-t0 to-t1 to-t2] per-mille row. Collects IGNIS output on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_SetQualitySplit patron fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
+                )
+                (format "Successfully set quality split mode={} on reward {} of FVT {}." [mode reward-dptf-id fvt-id])
             )
         )
     )

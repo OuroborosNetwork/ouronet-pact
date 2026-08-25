@@ -107,6 +107,9 @@
     (defun XE_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string destination:string))
     (defun XE_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string))
     (defun XE_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string reward-dptf-id:string swpair:string))
+    (defun C_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+    )
     (defun XE_BankScorePendingRewards:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string pool-id:string plan:object)
     )
@@ -396,6 +399,21 @@
         ;;Select Keys
         multiplet-family-id:string
     )
+    (defschema FVT|QualitySplit
+        @doc "Key = <FVT-ID> | <DPTF-ID> (same as RPS|Global). Round B: the per-FVT reward MODE + heterogeneous \
+            \ split MATRIX for a MULTIPLET_BASE triplet reward. HOMOGENEOUS ⇒ each lane routes to its one ladder \
+            \ token (bronze→t0, silver→t1, gold→t2) — the default when this row is absent. HETEROGENEOUS ⇒ each \
+            \ lane splits across ALL 3 ladder tokens per its row [to-t0 to-t1 to-t2] (per-mille, sums to 1000): \
+            \ bronze-split for the bronze lane, silver-split for silver, gold-split for gold. Per-FVT-reward + \
+            \ owner-tunable (unlike the chain-wide immutable FVT|MultipletFamily ladder)."
+        mode:string                                             ;;[M]   HOMOGENEOUS | HETEROGENEOUS
+        bronze-split:[integer]                                  ;;[M]   [to-t0 to-t1 to-t2] per-mille, sums 1000
+        silver-split:[integer]                                  ;;[M]
+        gold-split:[integer]                                    ;;[M]
+        ;;Select Keys
+        fvt-id:string
+        dptf-id:string
+    )
     (defschema FVT|RPS|Global
         @doc "Key = <FVT-ID> | <DPTF-ID>. One registered reward DPTF on this FVT."
         reward-enabled:bool
@@ -613,6 +631,7 @@
     (deftable FVT|T|SweepProgress:{FVT|SweepProgress})          ;; Key = <Anchor-ID>
     (deftable FVT|T|DsaOracleConfig:{FVT|DsaOracleConfig})      ;; Key = FVT|DSA-ORACLE-KEY (single global row)
     (deftable FVT|T|AgencyFee:{FVT|AgencyFee})                  ;; Key = <FVT-ID> | <Score-Entity-ID>
+    (deftable FVT|T|QualitySplit:{FVT|QualitySplit})            ;; Key = <FVT-ID> | <DPTF-ID>
     ;;{3}
     (defconst CT_FVT_RPS_PREC 48)
     (defconst FVT|DSA-ORACLE-KEY:string "GLOBAL")
@@ -682,12 +701,18 @@
     (defconst GAS|SET-MOSAIC                                    500.0)
     (defconst GAS|ADD-REWARD-LINK                               500.0)
     (defconst GAS|TOGGLE-REWARD-LINK                            500.0)
+    (defconst GAS|SET-QUALITY-SPLIT                             500.0)
     (defconst GAS|SET-COMMON-DENOMINATOR                        500.0)
     (defconst GAS|INJECT                                        500.0)
     (defconst GAS|COLLECT                                       500.0)
     (defconst GAS|UNSTALE                                       500.0)
     (defconst CT_REWARD_KIND_PLAIN                              "PLAIN")
     (defconst CT_REWARD_KIND_MULTIPLET_BASE                     "MULTIPLET_BASE")
+    ;; Round B: a MULTIPLET_BASE triplet reward line can split each lane HOMOGENEOUSLY (each lane → one ladder
+    ;; token: bronze→token-0, silver→token-1, gold→token-2) or HETEROGENEOUSLY (each lane → all 3 ladder tokens
+    ;; per a stored per-mille matrix). Absent config ⇒ HOMOGENEOUS (unchanged behavior).
+    (defconst CT_REWARD_MODE_HOMOGENEOUS                        "HOMOGENEOUS")
+    (defconst CT_REWARD_MODE_HETEROGENEOUS                      "HETEROGENEOUS")
     (defconst CT_SCORE_ENTITY_SCORE                             1)
     (defconst CT_SCORE_ENTITY_TRIPLET                           3)
     (defconst CT_MEMBERSHIP_MODE_BAR                            "BAR")
@@ -833,6 +858,13 @@
         @doc "Insert FVT|T|RPS|Global with reward-enabled true. FVT owner; issued reward DPTF. Composes SECURE."
         @event
         (UEV_AddRewardLinkContext fvt-id reward-dptf-id reward-kind multiplet-family-id)
+        (compose-capability (SECURE))
+    )
+    (defcap FVT|C>SET-QUALITY-SPLIT
+        (fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        @doc "Set a MULTIPLET_BASE reward's quality-split mode + heterogeneous matrix. FVT owner. Composes SECURE."
+        @event
+        (UEV_QualitySplitContext fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
         (compose-capability (SECURE))
     )
     (defcap FVT|C>TOGGLE-REWARD-LINK (fvt-id:string reward-dptf-id:string enabled:bool)
@@ -1228,6 +1260,16 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
             (ref-IGNIS::DALOS|EmptyOutputCumulatorV2)
+        )
+    )
+    (defun UC_PerMilleRow:bool (row:[integer])
+        @doc "True when `row` is exactly 3 non-negative integers summing to 1000 (a heterogeneous lane split)."
+        (and
+            (= (length row) 3)
+            (and
+                (fold (and) true (map (lambda (x:integer) (>= x 0)) row))
+                (= (fold (+) 0 row) 1000)
+            )
         )
     )
     ;; [UR]  read
@@ -2975,6 +3017,53 @@
             (ref-DPTF::UEV_id reward-dptf-id)
         )
     )
+    (defun UEV_QualitySplitContext
+        (fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        @doc "C_SetQualitySplit admission: the reward link must exist and be MULTIPLET_BASE with an active family \
+            \ (the split only means anything for a triplet ladder). mode in {HOMOGENEOUS, HETEROGENEOUS}. In \
+            \ HETEROGENEOUS mode each lane row is [to-t0 to-t1 to-t2] of exactly 3 non-negative per-mille weights \
+            \ summing to 1000; HOMOGENEOUS ignores the rows. Owner-gated."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (heterogeneous:bool (= mode CT_REWARD_MODE_HETEROGENEOUS))
+            )
+            ;; 1) the reward link must exist and be a MULTIPLET_BASE triplet ladder
+            (enforce (URC_FvtRpsGlobalRowExists fvt-id reward-dptf-id) "Reward link row must exist")
+            (enforce
+                (fold (and) true
+                    [
+                        (= (UR_FVT-RG|RewardKind fvt-id reward-dptf-id) CT_REWARD_KIND_MULTIPLET_BASE)
+                        (URC_MultipletFamilyExists (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
+                        (UR_FVT-MF|Active (UR_FVT-RG|MultipletFamilyId fvt-id reward-dptf-id))
+                    ]
+                )
+                "Quality split requires a MULTIPLET_BASE reward with an active MultipletFamily"
+            )
+            ;; 2) mode is one of the two known modes
+            (enforce
+                (or (= mode CT_REWARD_MODE_HOMOGENEOUS) heterogeneous)
+                "mode must be HOMOGENEOUS or HETEROGENEOUS"
+            )
+            ;; 3) in heterogeneous mode each lane row = 3 non-negative per-mille weights summing to 1000
+            (if heterogeneous
+                (enforce
+                    (fold (and) true
+                        [
+                            (UC_PerMilleRow bronze-split)
+                            (UC_PerMilleRow silver-split)
+                            (UC_PerMilleRow gold-split)
+                        ]
+                    )
+                    "Each lane split must be [to-t0 to-t1 to-t2] non-negative per-mille summing to 1000"
+                )
+                true
+            )
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+        )
+    )
     (defun UEV_SetCommonDenominatorContext (fvt-id:string common-denominator:string)
         @doc "C_SetCommonDenominator: farm only, can-upgrade, no ScoreEntityLinks yet, valid DPTF id."
         (let
@@ -3774,6 +3863,8 @@
                             (ats-01:string (UR_FVT-MF|Ats01Id mf-id))
                             (ats-12:string (UR_FVT-MF|Ats12Id mf-id))
                             (prec:integer (ref-DPTF::UR_Decimals token-0))
+                            ;; Round B: HETEROGENEOUS ⇒ each lane splits across all 3 ladder tokens per the matrix
+                            (mode:string (UR_FVT-QS|Mode fvt-id reward-dptf-id))
                             (amt-b:decimal (if (> w-total 0.0) (floor (* payout (/ lane-b w-total)) prec) 0.0))
                             (amt-s:decimal (if (> w-total 0.0) (floor (* payout (/ lane-s w-total)) prec) 0.0))
                             (amt-g:decimal (- payout (+ amt-b amt-s)))
@@ -3795,14 +3886,19 @@
                                             false))
                                     false))
                         )
-                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                            [
-                                (if (> amt-b 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron amt-b true) (UC_EmptyOc))
-                                (if (> fund-sg 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron fund-sg true) (UC_EmptyOc))
-                                (if coil-s-ok (ref-ATSU::C_Coil patron ats-01 token-0 amt-s) (UC_EmptyOc))
-                                (if curl-g-ok (ref-ATSU::C_Curl patron ats-01 ats-12 token-0 amt-g) (UC_EmptyOc))
-                            ]
-                            []
+                        (if (= mode CT_REWARD_MODE_HETEROGENEOUS)
+                            ;; heterogeneous: each lane → all 3 ladder tokens per the FVT|QualitySplit matrix
+                            (XI_1|HeterogeneousLaneRoute patron fvt-id reward-dptf-id mf-id amt-b amt-s amt-g prec)
+                            ;; homogeneous (default): bronze → token-0 raw, silver → token-1 (coil), gold → token-2 (curl)
+                            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                [
+                                    (if (> amt-b 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron amt-b true) (UC_EmptyOc))
+                                    (if (> fund-sg 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron fund-sg true) (UC_EmptyOc))
+                                    (if coil-s-ok (ref-ATSU::C_Coil patron ats-01 token-0 amt-s) (UC_EmptyOc))
+                                    (if curl-g-ok (ref-ATSU::C_Curl patron ats-01 ats-12 token-0 amt-g) (UC_EmptyOc))
+                                ]
+                                []
+                            )
                         )
                     )
                     (ref-TFT::C_Transfer reward-dptf-id AQP|SC_NAME patron payout true)
@@ -5253,6 +5349,90 @@
             (WU_AgencyFee fvt-id score-entity-id operator-konto fee-per-mille)
         )
     )
+    (defun UR_FVT-QS|Mode:string (fvt-id:string dptf-id:string)
+        @doc "A MULTIPLET_BASE reward's quality-split mode (HOMOGENEOUS when unset ⇒ unchanged lane→one-token routing)."
+        (with-default-read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id)
+            {"mode" : CT_REWARD_MODE_HOMOGENEOUS} {"mode" := m} m)
+    )
+    (defun UR_FVT-QS|BronzeSplit:[integer] (fvt-id:string dptf-id:string)
+        @doc "Heterogeneous bronze-lane split [to-t0 to-t1 to-t2] per-mille."
+        (at "bronze-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["bronze-split"]))
+    )
+    (defun UR_FVT-QS|SilverSplit:[integer] (fvt-id:string dptf-id:string)
+        @doc "Heterogeneous silver-lane split [to-t0 to-t1 to-t2] per-mille."
+        (at "silver-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["silver-split"]))
+    )
+    (defun UR_FVT-QS|GoldSplit:[integer] (fvt-id:string dptf-id:string)
+        @doc "Heterogeneous gold-lane split [to-t0 to-t1 to-t2] per-mille."
+        (at "gold-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["gold-split"]))
+    )
+    (defun WI_QualitySplit:string
+        (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        @doc "Write a reward's quality-split config (mode + 3-lane matrix). require SECURE."
+        (require-capability (SECURE))
+        (write FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id)
+            {"mode"         : mode
+            ,"bronze-split" : bronze-split
+            ,"silver-split" : silver-split
+            ,"gold-split"   : gold-split
+            ,"fvt-id"       : fvt-id
+            ,"dptf-id"      : dptf-id})
+    )
+    (defun XI_1|HeterogeneousLaneRoute:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string mf-id:string amt-b:decimal amt-s:decimal amt-g:decimal prec:integer)
+        @doc "Heterogeneous MULTIPLET_BASE collect: split EACH lane amount across the 3 ladder tokens per the \
+            \ FVT|QualitySplit matrix (per-mille rows), aggregate the 3 tokens, and route total-t0 raw / total-t1 \
+            \ via one ATS leg / total-t2 via two — reusing the homogeneous per-leg primitives (pre-fund token-0, \
+            \ then Coil/Curl). total-t2 is the dust-free remainder. require SECURE."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-ATSU:module{AutostakeUsageV1} ATSU)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (bs:[integer] (UR_FVT-QS|BronzeSplit fvt-id reward-dptf-id))
+                (ss:[integer] (UR_FVT-QS|SilverSplit fvt-id reward-dptf-id))
+                (gs:[integer] (UR_FVT-QS|GoldSplit fvt-id reward-dptf-id))
+                (token-0:string (UR_FVT-MF|Token0Id mf-id))
+                (ats-01:string (UR_FVT-MF|Ats01Id mf-id))
+                (ats-12:string (UR_FVT-MF|Ats12Id mf-id))
+                ;; per-lane token-0/token-1 slices (per-mille); token-2 is the remainder, aggregated below
+                (b0:decimal (floor (/ (* amt-b (dec (at 0 bs))) 1000.0) prec))
+                (b1:decimal (floor (/ (* amt-b (dec (at 1 bs))) 1000.0) prec))
+                (s0:decimal (floor (/ (* amt-s (dec (at 0 ss))) 1000.0) prec))
+                (s1:decimal (floor (/ (* amt-s (dec (at 1 ss))) 1000.0) prec))
+                (g0:decimal (floor (/ (* amt-g (dec (at 0 gs))) 1000.0) prec))
+                (g1:decimal (floor (/ (* amt-g (dec (at 1 gs))) 1000.0) prec))
+                (total-t0:decimal (+ b0 (+ s0 g0)))
+                (total-t1:decimal (+ b1 (+ s1 g1)))
+                (total-t2:decimal (- (+ amt-b (+ amt-s amt-g)) (+ total-t0 total-t1)))
+                (fund-12:decimal (+ total-t1 total-t2))
+                (coil-ok:bool
+                    (if (> total-t1 0.0)
+                        (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t1)) 0.0)
+                        false))
+                (curl-ok:bool
+                    (if (> total-t2 0.0)
+                        (let ((h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t2)))
+                            (if (> (at "rbt-amount" h1) 0.0)
+                                (> (at "rbt-amount"
+                                        (ref-ATS::URC_RewardBearingTokenAmounts ats-12 (at "rbt-id" h1) (at "rbt-amount" h1)))
+                                   0.0)
+                                false))
+                        false))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (if (> total-t0 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron total-t0 true) (UC_EmptyOc))
+                    (if (> fund-12 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron fund-12 true) (UC_EmptyOc))
+                    (if coil-ok (ref-ATSU::C_Coil patron ats-01 token-0 total-t1) (UC_EmptyOc))
+                    (if curl-ok (ref-ATSU::C_Curl patron ats-01 ats-12 token-0 total-t2) (UC_EmptyOc))
+                ]
+                []
+            )
+        )
+    )
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool)
         @doc "DSA: flip a member to (or from) a delegation agency. UEV_IMC + SECURE."
         (UEV_IMC)
@@ -5680,6 +5860,26 @@
                 (XI_ToggleRewardLink fvt-id reward-dptf-id enabled)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator GAS|TOGGLE-REWARD-LINK owner-konto trigger [fvt-id reward-dptf-id])
+        )
+    )
+    (defun C_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        @doc "Round B: set a MULTIPLET_BASE reward's quality-split MODE + heterogeneous MATRIX. HOMOGENEOUS (default \
+            \ when unset) routes each quality lane to its one ladder token (bronze->t0, silver->t1, gold->t2). \
+            \ HETEROGENEOUS routes each lane across ALL 3 ladder tokens per its [to-t0 to-t1 to-t2] per-mille row \
+            \ (each row sums to 1000). FVT owner; O(1) reprice (no per-delegator recompute). GAS|SET-QUALITY-SPLIT."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (FVT|C>SET-QUALITY-SPLIT fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
+                (WI_QualitySplit fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-QUALITY-SPLIT owner-konto trigger [fvt-id reward-dptf-id mode])
         )
     )
     ;;RPS economics (FVT|T|RPS|Global / FVT|T|RPS|User)
@@ -6501,5 +6701,6 @@
 (create-table FVT|T|ForcedFixCount)                             ;; Key = <FVT-ID> | <DPTF-ID> | <User-ID>
 (create-table FVT|T|DsaOracleConfig)                            ;; Key = FVT|DSA-ORACLE-KEY (single global row)
 (create-table FVT|T|AgencyFee)                                  ;; Key = <FVT-ID> | <Score-Entity-ID>
+(create-table FVT|T|QualitySplit)                               ;; Key = <FVT-ID> | <DPTF-ID>
 (create-table FVT|T|VacateFreeze)                               ;; Key = <FVT-ID>
 (create-table FVT|T|SweepProgress)                              ;; Key = <Anchor-ID>
