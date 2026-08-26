@@ -2652,3 +2652,35 @@ would have nothing local left to write. Its absence is the natural shape of the 
 piece. No code change. — *L63*
 
 ---
+
+## L64 (#64L, SWPI — `URC_Swap`'s `validation:bool` parameter name is misleading, contributed to #5C being easy to miss) — **TAGGED FOR SWEEP — not resolved individually**
+
+**Investigated what `validation` actually gates, before proposing anything:** confirmed it has nothing to
+do with gross-vs-net/fee amounts — it only toggles whether `UEV_SwapData` (pure input-shape/membership
+enforcement: uniform list lengths, every input-id is on the pool, output-id isn't one of the inputs,
+output-id is a pool token, `1 ≤ input-count < pool-token-count`) runs before the curve math executes. The
+real gross/netto distinction lives entirely elsewhere, in `UC_BareboneSwapWithFeez`. The naming confusion
+is real: an auditor skimming `(URC_Swap swpair dsid true)` could plausibly misread `true` as "netto/
+validated amount" rather than "also enforce token membership" — called out as a contributor to #5C (C11,
+ultimately closed as DESIGN-refuted) being easy to miss.
+
+**Found the real shape of the problem before proposing a param rename:** `URC_Swap` (`16_SWPI.pact:733`)
+conditionally runs an `enforce`-containing call from inside a function prefixed `URC_` — the exact case
+the new StoicSyntax `v` (validating) specialization was created for during L56
+(`URCv_AreAmountsBalanced`). Found an identical sibling while checking, `URC_InverseSwap`
+(`16_SWPI.pact:808`), with the same `validation:bool` gating `UEV_InverseSwapData` the same way —
+currently unused/unreachable anywhere in the codebase (declared, never called), but the same shape.
+
+**Owner's call:** the fix isn't renaming the boolean parameter — it's renaming the functions themselves
+(`URC_Swap` → `URCv_Swap`, `URC_InverseSwap` → `URCv_InverseSwap`), per the already-established
+sequencing recorded in
+`OuronetInformational/memories/2026-08-22-stoicsyntax-refactor-will-require-a-docs-sync-pass.md`:
+function/module names are not second-guessed against StoicSyntax during the per-module audits — that's
+explicitly deferred to one dedicated refactor pass once every module's audit is complete. Same treatment
+as L58's `KDA-PID` → `STOA-PID` deferral.
+
+**Status:** TAGGED FOR SWEEP — no code change here. Direction recorded precisely (`URC_Swap` →
+`URCv_Swap`, `URC_InverseSwap` → `URCv_InverseSwap`, both in `16_SWPI.pact`) so the eventual sweep
+doesn't have to rediscover scope or intent. — *L64*
+
+---

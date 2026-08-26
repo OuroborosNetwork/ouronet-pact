@@ -519,8 +519,15 @@ own, only governance-only policy tables (`P|T`/`P|MT`, gated by `GOV`, outside t
 to write — its absence is the natural shape of a 100%-orchestration module, not a gap. No code change.
 Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L63*
 
-#64L **[SWPU]** `URC_Swap`'s `validation:bool` parameter name is misleading (toggles enforcement, not
-gross-vs-net — directly contributed to #5C being easy to miss).
+#64L **[SWPI]** `URC_Swap`'s `validation:bool` parameter name is misleading (toggles enforcement, not
+gross-vs-net — directly contributed to #5C being easy to miss). — **TAGGED FOR SWEEP, 2026-08-26.** Real
+fix isn't a param rename: `URC_Swap` (`16_SWPI.pact:733`) conditionally runs an `enforce`-containing call
+from inside a nominally-pure `URC_*` — exactly the new StoicSyntax `v` (validating) specialization
+(formalized L56, `URCv_AreAmountsBalanced`). Found an identical sibling, `URC_InverseSwap`
+(`16_SWPI.pact:808`, currently unused/unreachable anywhere in the codebase), same shape. Owner: defer
+both renames (`URC_Swap` → `URCv_Swap`, `URC_InverseSwap` → `URCv_InverseSwap`) to the one dedicated
+StoicSyntax refactor sweep after all module audits finish — same treatment as L58. No code change. Full
+writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L64*
 
 #65L **[SWPU]** `URC_Hopper` is computed twice for the same Smart Swap transaction (wasted gas only).
 
