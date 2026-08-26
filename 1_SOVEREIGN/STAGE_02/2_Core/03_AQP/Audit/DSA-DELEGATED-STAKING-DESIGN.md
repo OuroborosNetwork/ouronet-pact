@@ -508,8 +508,22 @@ FVT/SCORE core.
   rejections (non-owner, a row not summing to 1000, a 2-element row, unknown mode, a non-`MULTIPLET_BASE` reward).
 
 ### 🏁 FINAL — full regression gate
-Rerun `run-aqp-audit.sh` — now **13 suites** (the original AQP coverage + `dsa-model`, `dsa-agency`,
-`dsa-capture`, `dsa-fee`, and `dsa-hetero-split`) — all green ⇒ the DSA feature is complete and the shared
-FVT/SCORE core is regression-free. **All phases (1–8) DONE.**
+Rerun `run-aqp-audit.sh` — now **14 suites** (the original AQP coverage + `dsa-model`, `dsa-agency`,
+`dsa-capture`, `dsa-fee`, `dsa-hetero-split`, and the single-process **`dsa-grand-tour`**) — all green ⇒ the
+DSA feature is complete and the shared FVT/SCORE core is regression-free. **All phases (1–8) DONE.**
 
-*Tracker written 2026-08-24. Round B (Phase 8) + Phase 7 (Talos/gas wiring) done 2026-08-25.*
+**Grand-tour integration proof (`Kursan/dsa-grand-tour.repl`, 69 asserts).** One agency, one process, the whole
+lifecycle end to end: fragment custodian frags → 3 single score models → combine triplet → issue operator score
+→ class-0 vault with a **MULTIPLET_BASE** OURO reward (ladder family) → `A_DefineDelegationVault` → open agency
+(operator stakes, fee 10%) → EMMA + LUMY delegate-stake (Q→5000) → oracle authorize + write (10 nodes @ full
+uptime, capture 2/2) → set **HETEROGENEOUS** split `[1000 0 0]×3` → inject 5000 → collect (operator FIRST +
+independent): operator 1400 OURO (own 900 + fee 500), delegators 1800 each, conservation 5000 → reprice the
+**matrix** to `[0 1000 0]×3` (reroute every lane to Auryn via the Coil leg): all receive Auryn, operator's < a
+delegator's (fee ordering preserved) → **O(1) fee reprice** to 20% (all-OURO again): operator 1800, delegators
+1600 → the two chain-wide GOV oracle switches through Talos. This is the definitive proof that the operator
+two-track **fee** and the Round B **heterogeneous split** compose correctly on the *same* delegation agency: a
+`MULTIPLET_BASE` reward routes each fee-adjusted collect through the quality-lane split, and an all-`[1000 0 0]`
+matrix degenerates the ladder to a raw OURO transfer so the exact fee arithmetic stays assertable.
+
+*Tracker written 2026-08-24. Round B (Phase 8) + Phase 7 (Talos/gas wiring) done 2026-08-25. Grand-tour
+integration proof 2026-08-26.*
