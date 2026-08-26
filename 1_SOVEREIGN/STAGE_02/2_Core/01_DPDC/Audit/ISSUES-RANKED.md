@@ -446,10 +446,17 @@ DemiPad/AQP-ANK) and `UEV_CanWipeON` (called from DPDC-MNG); `DpdcSetsV1` missin
 siblings; pure interface-declaration additions, zero behavior change; no version bump needed (pre-mainnet
 `V1` stays freely editable). Z.repl green. — *DPDC-UDC·M1*
 
-#38M **[DPDC-UDC / DPDC-S]** `UDC_NoPrimordialSet`/`UDC_NoCompositeSet` sentinels are structurally
+#38M **[DPDC-UDC / DPDC-S]** ~~`UDC_NoPrimordialSet`/`UDC_NoCompositeSet` sentinels are structurally
 indistinguishable from a degenerate real definition, detected only by ad hoc structural equality at the one
 call site that needs it — self-limiting today (nonce 0 never exists) but depends on an implicit,
-undocumented cross-module invariant with zero explicit guard. — *DPDC-UDC·M2*
+undocumented cross-module invariant with zero explicit guard.~~ — **ALREADY CLOSED BY FIX #27 (#31M) —
+LIVE-PROVEN 2026-08-26** — tested both sentinel values directly against a real collection: a
+user-supplied Primordial position `[0]` and a Composite position `-1` (exactly matching
+`UDC_NoPrimordialSet`/`UDC_NoCompositeSet`) are both rejected today. Composite side blocked by a
+pre-existing `sc > 0` check; primordial side blocked by #31M's `0 < abs(n) <= nu` per-element bound
+(`abs(0) = 0` fails `> 0`). Neither fix targeted this finding specifically, but between them both
+sentinel values are now genuinely unreachable by any real definition. No code change needed. —
+*DPDC-UDC·M2*
 
 ## LOW
 

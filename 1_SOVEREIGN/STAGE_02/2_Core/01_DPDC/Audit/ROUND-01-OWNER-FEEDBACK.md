@@ -766,3 +766,16 @@ functions on other modules) and found 3 more real instances of the identical pat
 missing `C_DefineHybridSet` (called from the real Talos `DPSF|C_DefineHybridSet` client wrapper). All 4
 added next to their declared siblings, matching each module's real ordering. Pure interface-declaration
 additions, zero behavior change. Z.repl green.
+
+## #38M · DPDC-UDC/DPDC-S · M2 — sentinel objects structurally indistinguishable from real definitions
+
+**Verdict: CONFIRMED, ALREADY CLOSED by Fix #27 (#31M) — LIVE-PROVEN (2026-08-26).** No owner discussion
+needed beyond presenting the live-verified closure: `UDC_NoPrimordialSet` (`[N [0]]`) and
+`UDC_NoCompositeSet` (`[C -1]`) were worried to be reproducible by a real user-supplied set definition,
+which would silently misclassify against DPDC-S's sentinel-comparison logic. Tested directly on a real
+collection: a Primordial position of `[0]` and a Composite position of `-1` are **both rejected** today.
+The composite side was already blocked by a pre-existing `sc > 0` check predating this session; the
+primordial side is blocked by our own #31M fix's `0 < abs(n) <= nu` per-element bound (`abs(0) = 0` fails
+`> 0`). Neither fix targeted #38M specifically, but between them both sentinel values are now genuinely
+unreachable by any real definition. Since the fix direction was an either/or (fix the validators, or
+export detector predicates) and the validator side is fully closed, no further code change needed.
