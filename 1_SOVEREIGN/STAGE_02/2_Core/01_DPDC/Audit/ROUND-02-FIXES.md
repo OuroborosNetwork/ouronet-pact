@@ -1395,3 +1395,65 @@ Talos entrypoint instead, redirecting any real internal callers (checked: `ATS`/
 `DPTF::C_DeployAccount` directly, bypassing Talos, so the core pattern already exists there too) — and
 double-check for a DemiPad-style surprise dependency plus the same IMC-registration gap before calling it
 done.
+
+## Fix #32 — DPDC-UDC · M1 (#37M) — `UDC_ZeroNonceData` declared, plus a full-family sweep for the same pattern
+
+**Owner-approved 2026-08-24/25.** Discussion started when the owner questioned the Round I framing
+("wtf, functions have to be exposed in an interface for them to work, right?"). Verified live, in an
+isolated minimal Pact 5.4 test (interface with one declared function, module implementing it plus one
+extra undeclared function, called both through a `module{Interface}`-typed ref): **both calls succeed**.
+Pact resolves `ref::function` dynamically against whatever concrete module is bound, not statically
+against the interface's declared members — the entire "functions callable cross-module must be declared
+in an interface" rule in this codebase is a **discipline/convention only, not compiler-enforced**. Owner
+then asked to (1) fix `UDC_ZeroNonceData` and (2) sweep the whole DPDC family for the same pattern before
+moving to the next finding — "wed sourley need to bump [the interface] once we make the stoic syntax
+sweep most probably" was raised, but per `CLAUDE.md`'s own policy (`V1` freely editable pre-mainnet, no
+bump needed until first live deployment), there was no bump to avoid either way — fixing now or batching
+into a future sweep cost exactly the same.
+
+**Sweep methodology:** for each of the 11 DPDC `.pact` files, parsed (a) the interface(s) it `implements`
+and their declared function sets (including cross-referencing the two Stage interface hub files, since
+`OuronetPolicyV1` lives in Stage 1's and most DPDC-specific interfaces are declared inline per-file), and
+(b) the module's own actual `defun` names. Diffed to find candidates present in the module but absent
+from every interface it implements. Then, for each candidate, searched the whole `1_SOVEREIGN`/`2_SLAVE`
+tree for a real cross-module call site (`ref-<ModuleName>::function`), tracing each `ref` alias back to
+its actual `(ref-alias:module{Interface} ModuleName)` binding to confirm it's genuinely bound to *this*
+module and not a same-named function on a different module (the initial naive sweep pass produced
+hundreds of false positives this way — `GOV|Demiurgoi`/`P|Info`/`P|A_Add*` are boilerplate names every
+module defines its own copy of, and a bare `::funcname` grep can't tell them apart without tracing the
+bind).
+
+**Found 3 more real instances beyond `UDC_ZeroNonceData` itself**, all with the identical shape (real,
+genuinely cross-module-called function; declared sibling functions present; this one specifically
+missing):
+- `DpdcV1` (`02_DPDC.pact`) missing `CAP_OwnerOrCreator` — called from `02_DEMIPAD/00_Demipad.pact` and
+  `03_AQP/01_ANK.pact`. Siblings `CAP_Owner`/`CAP_Creator` are declared right next to where this belongs.
+- `DpdcV1` missing `UEV_CanWipeON` — called from `06_DPDC-MNG.pact`. Its four siblings
+  (`UEV_CanUpgradeON`/`UEV_CanPauseON`/`UEV_CanAddSpecialRoleON`/`UEV_CanFreezeON`) are all declared as a
+  tidy group; this is the one gap in that family.
+- `DpdcSetsV1` (`08_DPDC-S.pact`) missing `C_DefineHybridSet` — called from the real Talos client wrapper
+  `DPSF|C_DefineHybridSet` in both `01_TS02-C1.pact` and `02_TS02-C2.pact`. Siblings
+  `C_DefinePrimordialSet`/`C_DefineCompositeSet` are declared; this is the third leg of that family.
+
+Checked the other 7 DPDC modules (`DPDC-C`, `DPDC-I`, `DPDC-R`, `DPDC-MNG`, `DPDC-T`, `DPDC-F`, `DPDC-N`,
+`EQUITY`) — zero further hits.
+
+**Fix:** added all 4 missing declarations to their respective interfaces, each placed next to its
+declared siblings, matching the module's own real ordering (`UDC_ZeroNonceData` next to
+`UDC_ZeroNonceElement`/`UDC_NoMetaData` in `DpdcUdcV1`; `CAP_OwnerOrCreator` next to `CAP_Owner`/
+`CAP_Creator`, `UEV_CanWipeON` between `UEV_CanFreezeON`/`UEV_PauseState`, both in `DpdcV1`;
+`C_DefineHybridSet` between `C_DefineCompositeSet`/`C_EnableSetClassFragmentation` in `DpdcSetsV1`). Pure
+interface-declaration additions — no function body, capability, or behavior touched anywhere.
+
+**Proof:** `cd REPL && pact Z.repl` — clean, `Load successful`. Since Pact never enforced the missing
+declarations as an error in the first place (confirmed by the isolated test above), there's no
+before/after behavioral difference to demonstrate — the proof here is that the additions compile cleanly
+and don't conflict with anything across the whole active pipeline.
+
+**Interface implication:** `DpdcUdcV1`, `DpdcV1`, `DpdcSetsV1` each gain one function declaration. No
+version bump — pre-mainnet, `V1` stays freely editable per `CLAUDE.md` policy.
+
+**Worth carrying forward:** this Pact semantics fact (interface membership is discipline-only, not
+compiler-enforced) applies to the *whole* codebase, not just DPDC — worth a note in
+`OuronetInformational` so a future comprehensive StoicSyntax sweep knows to check for this pattern
+everywhere, not just re-derive it from scratch.

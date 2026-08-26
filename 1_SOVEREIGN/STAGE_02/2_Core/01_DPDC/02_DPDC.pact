@@ -98,6 +98,7 @@
     (defun UEV_CanAddSpecialRoleON (id:string son:bool))
     (defun UEV_ToggleSpecialRole (id:string son:bool toggle:bool))
     (defun UEV_CanFreezeON (id:string son:bool))
+    (defun UEV_CanWipeON (id:string son:bool))
     (defun UEV_PauseState (id:string son:bool state:bool))
     (defun UEV_AccountAddQuantityState (id:string account:string state:bool))
     (defun UEV_AccountFreezeState (id:string son:bool account:string state:bool))
@@ -129,6 +130,7 @@
     ;;
     (defun CAP_Owner (id:string son:bool))
     (defun CAP_Creator (id:string son:bool))
+    (defun CAP_OwnerOrCreator (id:string son:bool))
     ;;
     ;;  [X]
     ;;

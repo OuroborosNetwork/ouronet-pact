@@ -743,3 +743,26 @@ Kadena-chain coin addresses — a completely separate namespace from DALOS's own
 and never valid candidates for the `account` field in a DPDC Account-table key. `AUP_Account`'s hardcoded
 `-163`/`-162` offsets rely on a real, system-wide, enforced guarantee, not a coincidence — there is no
 bug. No code change.
+
+## #37M · DPDC-UDC · M1 — `UDC_ZeroNonceData` undeclared in its own interface (plus a full-family sweep)
+
+**Verdict: CONFIRMED, FIXED (2026-08-25), scope expanded by owner request.** Owner's reaction to the
+Round I framing — "so you mean calling function with ref:: works without them having to be exposed in an
+interface? I thought we HAD to expose them in an interface for them to work... wtf!!!!" — prompted live
+verification in an isolated Pact 5.4 test before re-asserting anything: confirmed Pact really does
+dynamically resolve `ref::function` against the concrete bound module, not statically against the
+interface's declared members. The whole "cross-module functions must be interface-declared" rule in this
+codebase is discipline-only, not compiler-enforced. Owner raised whether adding the function would force
+an interface version bump anyway (given a future StoicSyntax sweep would probably need one); confirmed
+per `CLAUDE.md`'s own pre-mainnet policy, `V1` stays freely editable regardless — no bump needed either
+way, so there was no cost difference between fixing now or batching later. Owner: "Do 1 and 2 before we
+move [to the] next issue" — fix `UDC_ZeroNonceData`, and sweep the whole DPDC family for the same pattern.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #32)** — added `UDC_ZeroNonceData` to `DpdcUdcV1`. Swept
+all 11 DPDC modules (parse each module's real `defun`s vs. every interface it implements, then trace each
+candidate's actual cross-module call sites back to their real `ref` bindings to rule out same-named
+functions on other modules) and found 3 more real instances of the identical pattern: `DpdcV1` missing
+`CAP_OwnerOrCreator` (called from DemiPad/AQP-ANK) and `UEV_CanWipeON` (called from DPDC-MNG); `DpdcSetsV1`
+missing `C_DefineHybridSet` (called from the real Talos `DPSF|C_DefineHybridSet` client wrapper). All 4
+added next to their declared siblings, matching each module's real ordering. Pure interface-declaration
+additions, zero behavior change. Z.repl green.

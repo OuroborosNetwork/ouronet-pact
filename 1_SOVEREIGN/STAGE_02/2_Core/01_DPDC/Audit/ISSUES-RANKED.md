@@ -432,10 +432,19 @@ unrelated raw Kadena coin addresses (for `coin.TRANSFER` only), never valid `acc
 Account-table key. `AUP_Account`'s hardcoded offsets rely on a real guarantee — no bug, no code change.
 — *DPDC·M3*
 
-#37M **[DPDC-UDC]** `UDC_ZeroNonceData` is called cross-module through a `module{DpdcUdcV1}`-typed ref from
+#37M **[DPDC-UDC]** ~~`UDC_ZeroNonceData` is called cross-module through a `module{DpdcUdcV1}`-typed ref from
 4 sibling files but is absent from the `DpdcUdcV1` interface itself — works today only via Pact's dynamic
-`ref::fun` resolution, not the documented static-interface contract; free to fix before mainnet. —
-*DPDC-UDC·M1*
+`ref::fun` resolution, not the documented static-interface contract; free to fix before mainnet.~~ —
+**FIXED ✅ AND PROVEN ✅ 2026-08-25** (`ROUND-02-FIXES.md` Fix #32) — live-verified in an isolated Pact
+5.4 test that interface membership is genuinely not compiler-enforced (a module can call any function on
+another module through a `module{Interface}`-typed ref, declared or not). Fixed `UDC_ZeroNonceData`, then
+swept all 11 DPDC modules for the same pattern (module `defun`s vs. every implemented interface, each
+candidate's cross-module call sites traced back to their real bindings to rule out name collisions with
+other modules) and found 3 more real instances: `DpdcV1` missing `CAP_OwnerOrCreator` (called from
+DemiPad/AQP-ANK) and `UEV_CanWipeON` (called from DPDC-MNG); `DpdcSetsV1` missing `C_DefineHybridSet`
+(called from the real Talos `DPSF|C_DefineHybridSet` client wrapper). All 4 added next to their declared
+siblings; pure interface-declaration additions, zero behavior change; no version bump needed (pre-mainnet
+`V1` stays freely editable). Z.repl green. — *DPDC-UDC·M1*
 
 #38M **[DPDC-UDC / DPDC-S]** `UDC_NoPrimordialSet`/`UDC_NoCompositeSet` sentinels are structurally
 indistinguishable from a degenerate real definition, detected only by ad hoc structural equality at the one

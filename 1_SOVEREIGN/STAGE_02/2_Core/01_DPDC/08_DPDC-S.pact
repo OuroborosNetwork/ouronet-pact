@@ -68,6 +68,14 @@
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
     )
+    (defun C_DefineHybridSet:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool set-name:string score-multiplier:decimal
+            primordial-sd:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV1.DPDC|NonceData}
+        )
+    )
     (defun C_EnableSetClassFragmentation:object{IgnisCollectorV1.OutputCumulator}
         (
             id:string son:bool set-class:integer

@@ -243,6 +243,7 @@
     ;;
     ;;  [2]
     (defun UDC_ZeroNonceElement:object{DPDC|NonceElement} ())
+    (defun UDC_ZeroNonceData:object{DPDC|NonceData} ())
     (defun UDC_NoMetaData:object{NonceMetaData} ())
     (defun UDC_MetaData:object{NonceMetaData} (meta-data:object))
     (defun UDC_ScoreMetaData:object{NonceMetaData} (score:decimal meta-data:object))
