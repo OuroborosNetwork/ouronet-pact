@@ -1,0 +1,86 @@
+;; ================================================================
+;; FILE  REPL/Kursan/aqp-info-tests.repl
+;; ----------------------------------------------------------------
+;; AQP-INFO cost-preview verification. For each AQP-<MOD>|INFO_* function, assert its
+;; reported cost (ignis-full / kadena-full) equals the EXACT source the execution bills
+;; (the GAS| constant read cross-module, or UR_UsagePrice tier × multiplier). Billing is
+;; enabled (DALOS|A_IgnisToggle) so the magnitudes are the real, non-subsidised numbers.
+;;
+;; Procedure: OuronetInformational/skills/aqp-info-module-procedure.md
+;; ================================================================
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+(begin-tx "AQP-INFO - load module")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] }])
+(load "../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_AQP-INFO.pact")
+(commit-tx)
+;;
+;;|| NEXT >
+;;|| Billing (virtual IGNIS + native KADENA) is already enabled by the standard boot, so the info
+;;|| magnitudes below are the real, non-subsidised numbers. Assert virtual billing is live first.
+;;
+(begin-tx "AQP-INFO - confirm billing live")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+    (expect "virtual IGNIS billing is live (costs are real, not subsidised)" false (ref-IGNIS::URC_IsVirtualGasZero)))
+(commit-tx)
+(print "")
+;;
+;;==== AQP-INFO · ANK group cost-equality ====
+(begin-tx "AQP-INFO-ANK - anchor group cost equality")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "=== AQP-INFO ANK group: info cost == execution cost source ===")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+    )
+    (let
+        (
+            (standard:decimal (ref-DALOS::UR_UsagePrice "standard"))
+            (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+            ;; issue previews (acnoi false = 1x STOA, true = 2x STOA)
+            (i-tf-link:object (AQP-INFO.AQP-ANK|INFO_IssueTrueFungibleAnchor anhd "AName" "DPTF-x" false "BC-x" 4 100.0 1000.0))
+            (i-tf-new:object  (AQP-INFO.AQP-ANK|INFO_IssueTrueFungibleAnchor anhd "AName" "DPTF-x" true  "BCName" 4 100.0 1000.0))
+            (i-sf:object      (AQP-INFO.AQP-ANK|INFO_IssueSemiFungibleAnchor anhd "AName" "DPSF-x" false "BC-x" 4 100.0 1))
+            (i-nf:object      (AQP-INFO.AQP-ANK|INFO_IssueNonFungibleAnchor anhd "AName" "DPNF-x" true "BCName" 4 100.0 "rarity" "gold"))
+            (i-nfs:object     (AQP-INFO.AQP-ANK|INFO_IssueNonFungibleSetAnchor anhd "AName" "DPNF-x" false "BC-x" 4 100.0 1))
+            (i-rev-a:object   (AQP-INFO.AQP-ANK|INFO_RevokeAnchor anhd "ANK-x"))
+            (i-rev-bc:object  (AQP-INFO.AQP-ANK|INFO_RevokeBoostClass anhd "BC-x"))
+        )
+        (map print
+            [
+                ;; IGNIS: every anchor issue = inline 1000.0 (matches ANK C_Issue* gas-costs)
+                (expect "<<ANK>> TF issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-tf-link)))
+                (expect "<<ANK>> SF issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-sf)))
+                (expect "<<ANK>> NF issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-nf)))
+                (expect "<<ANK>> NFSet issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-nfs)))
+                ;; STOA: standard × (2 if acnoi else 1) — the exact ANK KDA|C_Collect amount
+                (expect "<<ANK>> TF issue (link) kadena-full == standard" standard (at "kadena-full" (at "kadena" i-tf-link)))
+                (expect "<<ANK>> TF issue (acnoi) kadena-full == 2×standard" (* 2.0 standard) (at "kadena-full" (at "kadena" i-tf-new)))
+                (expect "<<ANK>> NF issue (acnoi) kadena-full == 2×standard" (* 2.0 standard) (at "kadena-full" (at "kadena" i-nf)))
+                ;; revokes: biggest-tier IGNIS, no STOA
+                (expect "<<ANK>> RevokeAnchor ignis-full == ignis|biggest" biggest (at "ignis-full" (at "ignis" i-rev-a)))
+                (expect "<<ANK>> RevokeAnchor no STOA" 0.0 (at "kadena-full" (at "kadena" i-rev-a)))
+                (expect "<<ANK>> RevokeBoostClass ignis-full == ignis|biggest" biggest (at "ignis-full" (at "ignis" i-rev-bc)))
+                ;; the account-specific need is discount × full (non-negative, ≤ full)
+                (expect "<<ANK>> TF issue ignis-need ≤ full" true (<= (at "ignis-need" (at "ignis" i-tf-link)) 1000.0))
+                (expect "<<ANK>> preview carries the execution function name in pre-text" true
+                    (contains "Executes via TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor." (at "pre-text" i-tf-link)))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== END aqp-info-tests.repl (ANK group green) ===")
