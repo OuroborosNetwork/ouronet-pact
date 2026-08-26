@@ -214,4 +214,49 @@
 )
 (commit-tx)
 (print "")
-(print "=== END aqp-info-tests.repl (ANK + SCORE + POOL + FVT groups green) ===")
+;;
+;;==== AQP-INFO · DSA + MTX group cost-equality ====
+(begin-tx "AQP-INFO-DSA - dsa + mtx cost equality")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-data { "gg": { "keys": ["gk"], "pred": "keys-all" } })
+(namespace "ouronet-ns")
+(print "=== AQP-INFO DSA + MTX groups: info cost == execution cost source ===")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (g:guard (read-keyset "gg"))
+    )
+    (let
+        (
+            (i-def:object (AQP-INFO.AQP-DSA|INFO_DefineDelegationVault anhd "FVT-x" "M-x" 2000))
+            (i-open:object (AQP-INFO.AQP-DSA|INFO_OpenAgency anhd "FVT-x" "POOL-x" "T-x" 100 "DHOC-x" [-2]))
+            (i-rec:object (AQP-INFO.AQP-DSA|INFO_RecomputeCapture anhd "FVT-x" "T-x"))
+            (i-auth:object (AQP-INFO.AQP-DSA|INFO_SetOracleAuth anhd "FVT-x" g))
+            (i-write:object (AQP-INFO.AQP-DSA|INFO_OracleWrite anhd "FVT-x" "T-x" 10 1000))
+            (i-tog:object (AQP-INFO.AQP-DSA|INFO_ToggleExternalOracle anhd false))
+            (i-wr:object (AQP-INFO.AQP-DSA|INFO_WithdrawRoyalty anhd "FVT-x" "OURO-x"))
+            (i-fuel:object (AQP-INFO.AQP-DSA|INFO_FuelRoyalty anhd "FVT-x" "OURO-x" "W|a|b|c"))
+            (i-fee:object (AQP-INFO.AQP-DSA|INFO_SetAgencyFee anhd "FVT-x" "T-x" 200))
+            (i-mtxinj:object (AQP-INFO.AQP-MTX|INFO_2Inject anhd "FVT-x" "OURO-x" 100.0))
+            (i-mtxsweep:object (AQP-INFO.AQP-MTX|INFO_2SweepRevokeAnchor anhd "ANK-x"))
+        )
+        (map print
+            [
+                (expect "<<DSA>> define-vault ignis-full == GAS|DEFINE-VAULT (500)" AQP-DSA.GAS|DEFINE-VAULT (at "ignis-full" (at "ignis" i-def)))
+                (expect "<<DSA>> open-agency base ignis-full == GAS|OPEN-AGENCY (500)" AQP-DSA.GAS|OPEN-AGENCY (at "ignis-full" (at "ignis" i-open)))
+                (expect "<<DSA>> recompute-capture ignis-full == GAS|RECOMPUTE-CAPTURE (300)" AQP-DSA.GAS|RECOMPUTE-CAPTURE (at "ignis-full" (at "ignis" i-rec)))
+                (expect "<<DSA>> set-oracle-auth ignis-full == GAS|SET-ORACLE-AUTH (300)" AQP-DSA.GAS|SET-ORACLE-AUTH (at "ignis-full" (at "ignis" i-auth)))
+                (expect "<<DSA>> oracle-write ignis-full == GAS|ORACLE-WRITE (200)" AQP-DSA.GAS|ORACLE-WRITE (at "ignis-full" (at "ignis" i-write)))
+                (expect "<<DSA>> withdraw-royalty ignis-full == GAS|WITHDRAW-ROYALTY (400)" AQP-DSA.GAS|WITHDRAW-ROYALTY (at "ignis-full" (at "ignis" i-wr)))
+                (expect "<<DSA>> fuel-royalty ignis-full == GAS|FUEL-ROYALTY (500)" AQP-DSA.GAS|FUEL-ROYALTY (at "ignis-full" (at "ignis" i-fuel)))
+                (expect "<<DSA>> set-agency-fee ignis-full == GAS|SET-AGENCY-FEE (300)" AQP-DSA.GAS|SET-AGENCY-FEE (at "ignis-full" (at "ignis" i-fee)))
+                (expect "<<DSA>> toggle-external-oracle GOV (ignis 0)" 0.0 (at "ignis-full" (at "ignis" i-tog)))
+                (expect "<<MTX>> 2-inject ignis-full == GAS|INJECT (500)" AQP-FVT.GAS|INJECT (at "ignis-full" (at "ignis" i-mtxinj)))
+                (expect "<<MTX>> 2-sweep subsidised (ignis 0)" 0.0 (at "ignis-full" (at "ignis" i-mtxsweep)))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== END aqp-info-tests.repl (ANK+SCORE+POOL+FVT+DSA+MTX groups green) ===")

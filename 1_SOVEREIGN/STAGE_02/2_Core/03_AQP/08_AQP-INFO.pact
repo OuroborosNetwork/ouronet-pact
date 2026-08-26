@@ -777,6 +777,167 @@
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 []))
     )
+    ;;
+    ;;<====================>
+    ;;[AQP-DSA] Delegated Staking Agencies
+    ;;<====================>
+    (defun AQP-DSA|INFO_DefineDelegationVault:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string model-id:string unit-score:integer)
+        @doc "Cost preview for AQP-DSA|A_DefineDelegationVault. IGNIS GAS|DEFINE-VAULT; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Bind a class-0 FVT as a DSA delegation vault." "Executes via TS02-C3.AQP-DSA|A_DefineDelegationVault."]
+                [(format "FVT {} bound as delegation vault (model {})." [fvt-id model-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|DEFINE-VAULT))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-DSA|INFO_OpenAgency:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer collectable-id:string stake-nonces:[integer])
+        @doc "Cost preview for AQP-DSA|C_OpenAgency. IGNIS GAS|OPEN-AGENCY base; the atomic open also stakes the \
+            \ operator's collateral (staking legs added at execution). No STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Open a delegation agency (admit + operator-stake + terminal gate)."
+                 "Base IGNIS shown; the operator collateral stake adds its legs at execution."
+                 "Executes via TS02-C3.AQP-DSA|C_OpenAgency."]
+                [(format "Agency {} opened on vault {} (fee {} per-mille)." [score-entity-id fvt-id fee-per-mille])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|OPEN-AGENCY))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-DSA|INFO_RecomputeCapture:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string score-entity-id:string)
+        @doc "Cost preview for AQP-DSA|C_RecomputeCapture. IGNIS GAS|RECOMPUTE-CAPTURE; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Recompute an agency's capture (permissionless; preserves oracle-ts)." "Executes via TS02-C3.AQP-DSA|C_RecomputeCapture."]
+                [(format "Agency {} capture recomputed on vault {}." [score-entity-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|RECOMPUTE-CAPTURE))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-DSA|INFO_SetOracleAuth:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string oracle-guard:guard)
+        @doc "Cost preview for AQP-DSA|A_SetOracleAuth. IGNIS GAS|SET-ORACLE-AUTH; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Authorize the delegated oracle key + arm the capture expiry." "Executes via TS02-C3.AQP-DSA|A_SetOracleAuth."]
+                [(format "Oracle authority set on vault {}." [fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|SET-ORACLE-AUTH))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-DSA|INFO_OracleWrite:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
+        @doc "Cost preview for AQP-DSA|A_OracleWrite. IGNIS GAS|ORACLE-WRITE; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Oracle writes an agency's daily {nodes, uptime} + recomputes its capture." "Executes via TS02-C3.AQP-DSA|A_OracleWrite."]
+                [(format "Oracle wrote nodes {} / uptime {} for agency {}." [nodes uptime score-entity-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|ORACLE-WRITE))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-DSA|INFO_ToggleExternalOracle:object{OuronetInfoV1.ClientInfo}
+        (patron:string on:bool)
+        @doc "Cost preview for AQP-DSA|A_ToggleExternalOracle. Chain-wide GOV switch — no IGNIS/STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Flip the SINGULAR GLOBAL external-oracle switch for ALL agencies (governance)."
+                 "Master-signed governance action — no gas."
+                 "Executes via TS02-C3.AQP-DSA|A_ToggleExternalOracle."]
+                [(format "Global external-oracle switch set to {}." [on])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-DSA|INFO_SetOracleValidity:object{OuronetInfoV1.ClientInfo}
+        (patron:string seconds:integer)
+        @doc "Cost preview for AQP-DSA|A_SetOracleValidity. Chain-wide GOV switch — no IGNIS/STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Set the GLOBAL oracle-validity window (freshness horizon; governance)."
+                 "Master-signed governance action — no gas."
+                 "Executes via TS02-C3.AQP-DSA|A_SetOracleValidity."]
+                [(format "Global oracle-validity window set to {} seconds." [seconds])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-DSA|INFO_WithdrawRoyalty:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string)
+        @doc "Cost preview for AQP-DSA|A_WithdrawRoyalty. IGNIS GAS|WITHDRAW-ROYALTY; STOA none (custody move)."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Withdraw the whole royalty pool to the FVT owner." "Executes via TS02-C3.AQP-DSA|A_WithdrawRoyalty."]
+                [(format "Royalty pool of reward {} on FVT {} withdrawn to owner." [reward-dptf-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|WITHDRAW-ROYALTY))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-DSA|INFO_BurnRoyalty:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string)
+        @doc "Cost preview for AQP-DSA|A_BurnRoyalty. IGNIS GAS|BURN-ROYALTY; STOA none (custody burn)."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Burn the whole royalty pool." "Executes via TS02-C3.AQP-DSA|A_BurnRoyalty."]
+                [(format "Royalty pool of reward {} on FVT {} burned." [reward-dptf-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|BURN-ROYALTY))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-DSA|INFO_FuelRoyalty:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string swpair:string)
+        @doc "Cost preview for AQP-DSA|A_FuelRoyalty. IGNIS GAS|FUEL-ROYALTY; STOA none (custody move)."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Fuel a swap pair with the whole royalty pool (no LP mint)." "Executes via TS02-C3.AQP-DSA|A_FuelRoyalty."]
+                [(format "Royalty pool of reward {} on FVT {} fueled into {}." [reward-dptf-id fvt-id swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|FUEL-ROYALTY))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-DSA|INFO_SetAgencyFee:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "Cost preview for AQP-DSA|A_SetAgencyFee. IGNIS GAS|SET-AGENCY-FEE; no STOA. O(1) reprice."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Change a delegation agency's operator fee (reprices only future injects)." "Executes via TS02-C3.AQP-DSA|A_SetAgencyFee."]
+                [(format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|SET-AGENCY-FEE))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    ;;
+    ;;<====================>
+    ;;[AQP-MTX] Matrix drivers (spike-fallback defpacts)
+    ;;<====================>
+    (defun AQP-MTX|INFO_2Inject:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Cost preview for MTX-AQP|C_2|Inject (2-step enforced-fresh inject). IGNIS GAS|INJECT (inner XB_FvtInject); STOA none."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: 2-step enforced-fresh inject (spike fallback for CC_Inject on vault/treasury)."
+                 "Executes via TS02-C3.MTX-AQP|C_2|Inject."]
+                [(format "2-step fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [amount]))
+    )
+    (defun AQP-MTX|INFO_2SweepRevokeAnchor:object{OuronetInfoV1.ClientInfo}
+        (patron:string anchor-id:string)
+        @doc "Cost preview for MTX-AQP|C_2|SweepRevokeAnchor. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: 2-step paginated sweep retiring an employed anchor (spike fallback for CC_SweepRevokeAnchor)."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.MTX-AQP|C_2|SweepRevokeAnchor."]
+                [(format "2-step swept + retired anchor {}." [anchor-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
     ;;{F4}  [CAP]
     ;;{F5}  [A]
     ;;{F6}  [C]
