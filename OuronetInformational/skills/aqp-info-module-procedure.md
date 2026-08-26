@@ -154,17 +154,36 @@ SCORE definition writers bill `count × UR_UsagePrice "<tier>"`:
 - `C_IssueNonFungibleScoreDefinition` / `…SetScoreDefinition` → `… × UR_UsagePrice "ignis|biggest"`.
 Port the exact `length`/multiplier expression from the execution.
 
-### 4d. Multi-ICO recipe (stake / unstake / vacate / ladder-collect)
-No single `GAS|` const — the execution concatenates several sub-cumulators. **Port every leg**:
-1. Reconstruct each leg's cumulator from the target module's own `UDC_*Cumulator` builder (e.g.
-   `ref-TFT::UDC_TransferCumulator`, `ref-TFT::UDC_MultiTransferCumulator`) and take its ifp via
-   `OI|UC_IfpFromOutputCumulator`.
-2. For a fixed sub-cost, use its `GAS|` const directly.
-3. `fold (+) 0.0 [ifp1 ifp2 …]` → total ifp.
-This is exactly the `ATS|INFO_Coil` / `UCX_Swap` pattern in INFO-ONE. Where the AQP core does **not**
-expose a builder for a leg, add a thin non-mutating `UDC_*Cumulator` reader to that core module (mirroring
-`URC_StakeScoreDeltaIgnisCumulator`) rather than approximating — the number must be exact. Note in
-`post-text` when a portion is state-dependent (e.g. per-stale-member fix, ladder Coil/Curl legs).
+### 4d. Variable-cost / batch entrypoints — the **preflight-plan + per-leg-unit** pattern (owner-mandated)
+Some entrypoints have **no single `GAS|` const** and no simple formula — their cost is a live sum of
+sub-cumulators that scales with state: how many owner-legs / nonces a vacate touches, how many employed
+scores a stake settles, how many stale members a fresh-inject fixes, how many holders a sweep re-scores.
+For **all** such variable-cost `CC_`/`A_`/stake-flow functions, use the **same uniform architecture** — one
+dirty-read serves three consumers (the UI's capacity split, the batch execution, and this cost preview):
+
+1. **A URH "preflight" dirty-read** that enumerates the work — the leg/plan list. AQP already has these
+   (e.g. `URHC_BuildVacateSlicePlan`, `URHC_VacateUnitCountForKind`, `URH_Vacate*PoolLegs` for vacate;
+   `URC_PoolActiveScoreIds` for a stake's employed scores). The UI runs it once to split the operation into
+   capacity-bounded batches; the **info function consumes the same reader** for its count.
+2. **A per-leg IGNIS *unit* reader** that the execution flow itself multiplies out — a single non-mutating
+   `URC_…IgnisUnit` const (like `URC_StakeScoreDeltaIgnisUnit`). Wire the SAME unit into the flow's cost
+   construction *and* the info function, so the two can **never diverge** (drift-proof). Where a core flow
+   doesn't yet expose such a unit, **add a thin `URC_…IgnisUnit` reader and route the flow's cost through it**
+   — this is a sanctioned, minimal core change; do not approximate.
+3. **The info computes** `base-fixed-legs + (per-leg-unit × preflight-count) [+ reconstructed one-off legs
+   via `ref-TFT::UDC_TransferCumulator` etc.]`, all behind the `UC|GasPrice` toggle gate, then
+   `OI|UC_IfpFromOutputCumulator` / `fold (+)` as needed.
+
+Two info shapes per such family:
+- **`…|INFO_<Op>Full(pool/fvt-id, asset-id, kind)`** — runs the preflight URH → total count → **grand-total
+  cost** + the slice breakdown (batch count + per-batch cost) for the UI's "whole operation" preview.
+- **`…|INFO_<Op>Batch…(the same slice args the CC_ execution takes)`** — the leg list for one capacity
+  batch IS the execution's args, so the info consumes them directly → that batch's **exact** cost.
+
+This is the `ATS|INFO_Coil` reconstruction idea generalized: instead of hand-porting each leg, the flow and
+the info share a preflight-count + per-leg-unit contract. Ladder-collect (MULTIPLET Coil/Curl legs) is the
+degenerate case — reconstruct the 2 ATS legs via `ref-ATS::URC_RewardBearingTokenAmounts` + `SIP|URC_*`.
+`post-text` still names the state-dependent portion.
 
 ### 4e. Subsidised / gas-station-paid op
 `CC_*FixChunk`, `CC_UnstaleAll`, the sweep pages (`CC_SweepBegin/RecomputeChunk`) charge the patron
