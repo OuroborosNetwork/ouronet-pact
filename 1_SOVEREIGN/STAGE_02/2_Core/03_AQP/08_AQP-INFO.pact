@@ -513,6 +513,270 @@
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 []))
     )
+    ;;
+    ;;<====================>
+    ;;[AQP-FVT] Farms / Vaults / Treasuries (config + rewards)
+    ;;<====================>
+    (defun AQP-FVT|INFO_Issue:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-name:string owner-konto:string fvt-class:integer common-denominator:string)
+        @doc "Cost preview for AQP-FVT|C_Issue. IGNIS GAS|ISSUE-FVT + STOA 'smart'."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Create a Farm / Vault / Treasury." "Executes via TS02-C3.AQP-FVT|C_Issue."]
+                [(format "FVT '{}' created (class {}) for {}." [fvt-name fvt-class owner-konto])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ISSUE-FVT))
+                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Smart))
+                []))
+    )
+    (defun AQP-FVT|INFO_RotateOwnership:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string new-owner-konto:string)
+        @doc "Cost preview for AQP-FVT|C_RotateOwnership. IGNIS 'ignis|medium'; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Transfer an FVT's owner-konto." "Executes via TS02-C3.AQP-FVT|C_RotateOwnership."]
+                [(format "FVT {} ownership moved to {}." [fvt-id new-owner-konto])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_Control:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string new-can-upgrade:bool new-can-change-owner:bool)
+        @doc "Cost preview for AQP-FVT|C_Control. IGNIS 'ignis|medium'; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Set an FVT's can-upgrade / can-change-owner flags." "Executes via TS02-C3.AQP-FVT|C_Control."]
+                [(format "FVT {} control flags updated." [fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_SetCommonDenominator:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string common-denominator:string)
+        @doc "Cost preview for AQP-FVT|C_SetCommonDenominator. IGNIS GAS|SET-COMMON-DENOMINATOR; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Set a farm's common-denominator (before any links)." "Executes via TS02-C3.AQP-FVT|C_SetCommonDenominator."]
+                [(format "FVT {} common-denominator set to {}." [fvt-id common-denominator])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-COMMON-DENOMINATOR))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_SetMosaic:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string mosaic:bool)
+        @doc "Cost preview for AQP-FVT|C_SetMosaic. IGNIS GAS|SET-MOSAIC; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Toggle a farm's mosaic membership policy." "Executes via TS02-C3.AQP-FVT|C_SetMosaic."]
+                [(format "FVT {} mosaic set to {}." [fvt-id mosaic])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-MOSAIC))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_AddScoreEntity:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
+        @doc "Cost preview for AQP-FVT|C_AddScoreEntity. IGNIS GAS|ADD-SCORE-ENTITY; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Register a score (type 1) or triplet (type 3) on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddScoreEntity."]
+                [(format "Score-entity {} (type {}) registered on FVT {}." [score-entity-id score-entity-type fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ADD-SCORE-ENTITY))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_ToggleScoreEntityLink:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string enabled:bool)
+        @doc "Cost preview for AQP-FVT|C_ToggleScoreEntityLink. IGNIS GAS|TOGGLE-SCORE-ENTITY-LINK; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Enable/disable a ScoreEntityLink on an FVT." "Executes via TS02-C3.AQP-FVT|C_ToggleScoreEntityLink."]
+                [(format "FVT {} score-entity {} enabled={}." [fvt-id score-entity-id enabled])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|TOGGLE-SCORE-ENTITY-LINK))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_IssueMultipletFamily:object{OuronetInfoV1.ClientInfo}
+        (patron:string token-0-id:string token-1-id:string token-2-id:string ats-0-1-id:string ats-1-2-id:string)
+        @doc "Cost preview for AQP-FVT|C_IssueMultipletFamily. IGNIS GAS|ISSUE-MULTIPLET-FAMILY; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Issue a chain-wide MultipletFamily reward ladder." "Executes via TS02-C3.AQP-FVT|C_IssueMultipletFamily."]
+                [(format "MultipletFamily issued: {} -> {} -> {}." [token-0-id token-1-id token-2-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ISSUE-MULTIPLET-FAMILY))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_AddRewardLink:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string segmentation:bool multiplet-family-id:string)
+        @doc "Cost preview for AQP-FVT|C_AddRewardLink. IGNIS GAS|ADD-REWARD-LINK; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Register a reward DPTF on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddRewardLink."]
+                [(format "Reward {} linked on FVT {} (family {})." [reward-dptf-id fvt-id multiplet-family-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ADD-REWARD-LINK))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_ToggleRewardLink:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
+        @doc "Cost preview for AQP-FVT|C_ToggleRewardLink. IGNIS GAS|TOGGLE-REWARD-LINK; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Toggle a reward link's enabled flag." "Executes via TS02-C3.AQP-FVT|C_ToggleRewardLink."]
+                [(format "FVT {} reward {} enabled={}." [fvt-id reward-dptf-id enabled])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|TOGGLE-REWARD-LINK))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_SetQualitySplit:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        @doc "Cost preview for AQP-FVT|C_SetQualitySplit. IGNIS GAS|SET-QUALITY-SPLIT; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Set a MULTIPLET_BASE reward's quality-split mode + matrix." "Executes via TS02-C3.AQP-FVT|C_SetQualitySplit."]
+                [(format "FVT {} reward {} quality-split mode={}." [fvt-id reward-dptf-id mode])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-QUALITY-SPLIT))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_Inject:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Cost preview for AQP-FVT|C_Inject. IGNIS GAS|INJECT; STOA none (reward-DPTF is a custody transfer)."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Inject reward tokens into an FVT (naive, current divisor)."
+                 (format "You also transfer {} of reward token {} into custody." [amount reward-dptf-id])
+                 "Executes via TS02-C3.AQP-FVT|C_Inject."]
+                [(format "Injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [amount]))
+    )
+    (defun AQP-FVT|INFO_InjectStream:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
+        @doc "Cost preview for AQP-FVT|C_InjectStream. IGNIS GAS|INJECT; STOA none (custody transfer)."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Inject reward tokens as a linear time-stream over the given duration."
+                 "Executes via TS02-C3.AQP-FVT|C_InjectStream."]
+                [(format "Streaming {} of {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [amount]))
+    )
+    (defun AQP-FVT|INFO_CC_Inject:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Cost preview for AQP-FVT|CC_Inject (enforced-fresh single-tx inject). IGNIS GAS|INJECT; STOA none."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Enforced-fresh single-tx inject (fixes all stale members first)."
+                 "Executes via TS02-C3.AQP-FVT|CC_Inject."]
+                [(format "Fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [amount]))
+    )
+    (defun AQP-FVT|INFO_CC_InjectFinalize:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
+        @doc "Cost preview for AQP-FVT|CC_InjectFinalize. IGNIS GAS|INJECT; STOA none."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Finalize a paginated fresh inject (zero-stale gate, then inject)."
+                 "Executes via TS02-C3.AQP-FVT|CC_InjectFinalize."]
+                [(format "Finalized fresh inject of {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [amount]))
+    )
+    (defun AQP-FVT|INFO_CC_InjectFixChunk:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+        @doc "Cost preview for AQP-FVT|CC_InjectFixChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Page the enforced-fresh FIX phase (up to `chunk` stale members)."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.AQP-FVT|CC_InjectFixChunk."]
+                [(format "Fixed up to {} stale members on FVT {} reward {}." [chunk fvt-id reward-dptf-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_CC_UnstaleAll:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
+        @doc "Cost preview for AQP-FVT|CC_UnstaleAll. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Owner mass deb-unstale (make injection-ready; no inject)."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.AQP-FVT|CC_UnstaleAll."]
+                [(format "Unstaled up to {} members on FVT {}." [chunk fvt-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_UnstaleMyScores:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-ids:[string])
+        @doc "Cost preview for AQP-FVT|C_UnstaleMyScores. IGNIS GAS|UNSTALE; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Self-service deb-unstale of your own scores across FVTs." "Executes via TS02-C3.AQP-FVT|C_UnstaleMyScores."]
+                [(format "Unstaled your scores across {} FVTs." [(length fvt-ids)])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|UNSTALE))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_Collect:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
+        @doc "Cost preview for AQP-FVT|C_Collect. IGNIS GAS|COLLECT base; STOA none. For a MULTIPLET_BASE triplet \
+            \ reward the payout also fires ATS Coil/Curl ladder legs (added at execution)."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Collect your claimable reward from this FVT membership."
+                 "Base IGNIS shown; a triplet MULTIPLET reward adds ladder (Coil/Curl) legs at execution."
+                 "Executes via TS02-C3.AQP-FVT|C_Collect."]
+                [(format "Collected reward token {} from score-entity {}." [reward-dptf-id score-entity-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|COLLECT))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_CC_SweepRevokeAnchor:object{OuronetInfoV1.ClientInfo}
+        (patron:string anchor-id:string)
+        @doc "Cost preview for AQP-FVT|CC_SweepRevokeAnchor. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Single-tx re-score sweep retiring an employed anchor."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.AQP-FVT|CC_SweepRevokeAnchor."]
+                [(format "Swept + retired anchor {}." [anchor-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_CC_SweepBegin:object{OuronetInfoV1.ClientInfo}
+        (patron:string anchor-id:string)
+        @doc "Cost preview for AQP-FVT|CC_SweepBegin. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Open a paginated re-score sweep (freeze + swept-revoke + cursor)."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.AQP-FVT|CC_SweepBegin."]
+                [(format "Opened sweep on anchor {}." [anchor-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-FVT|INFO_CC_SweepRecomputeChunk:object{OuronetInfoV1.ClientInfo}
+        (patron:string anchor-id:string chunk:integer)
+        @doc "Cost preview for AQP-FVT|CC_SweepRecomputeChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Page a re-score sweep (recompute the next `chunk` holders; final page unfreezes)."
+                 "Gas-station subsidised — costs you nothing."
+                 "Executes via TS02-C3.AQP-FVT|CC_SweepRecomputeChunk."]
+                [(format "Recomputed up to {} holders on anchor {}'s sweep." [chunk anchor-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
     ;;{F4}  [CAP]
     ;;{F5}  [A]
     ;;{F6}  [C]
