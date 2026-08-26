@@ -83,4 +83,88 @@
 )
 (commit-tx)
 (print "")
-(print "=== END aqp-info-tests.repl (ANK group green) ===")
+;;
+;;==== AQP-INFO · SCORE group cost-equality ====
+(begin-tx "AQP-INFO-SCR - score group cost equality")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "=== AQP-INFO SCORE group: info cost == execution cost source ===")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+    )
+    (let
+        (
+            (smart:decimal (ref-DALOS::UR_UsagePrice "smart"))
+            (medium:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
+            (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+            (big:decimal (ref-DALOS::UR_UsagePrice "ignis|big"))
+            (i-issue:object (AQP-INFO.AQP-SCR|INFO_IssueTrueFungibleScore anhd anhd "S" 4 0.0))
+            (i-rotate:object (AQP-INFO.AQP-SCR|INFO_RotateScoreOwnership anhd "SCR-x" anhd))
+            (i-bclink:object (AQP-INFO.AQP-SCR|INFO_CreateScoreBoostClassLink anhd "SCR-x" "BC-x"))
+            (i-deb:object (AQP-INFO.AQP-SCR|INFO_EnableDebBoost anhd "SCR-x"))
+            (i-triplet:object (AQP-INFO.AQP-SCR|INFO_IssueTriplet anhd "B" "S" "G"))
+            (i-model:object (AQP-INFO.AQP-SCR|INFO_IssueSingleScoreModel anhd "M" 3 "DHOC-x" 4 [-2] [10.0]))
+            (i-sfdef:object (AQP-INFO.AQP-SCR|INFO_IssueSemiFungibleScoreDefinition anhd "SCR-x" "DPSF-x" [1 2 3] [1.0 2.0 3.0]))
+            (i-nfdef:object (AQP-INFO.AQP-SCR|INFO_IssueNonFungibleScoreDefinition anhd "SCR-x" "DPNF-x" ["a" "b"] ["x" "y"] [1.0 2.0]))
+        )
+        (map print
+            [
+                (expect "<<SCR>> issue ignis-full == GAS|ISSUE-SCORE (1000)" AQP-SCORE.GAS|ISSUE-SCORE (at "ignis-full" (at "ignis" i-issue)))
+                (expect "<<SCR>> issue kadena-full == smart" smart (at "kadena-full" (at "kadena" i-issue)))
+                (expect "<<SCR>> rotate ignis-full == ignis|medium" medium (at "ignis-full" (at "ignis" i-rotate)))
+                (expect "<<SCR>> boost-class-link ignis-full == ignis|biggest" biggest (at "ignis-full" (at "ignis" i-bclink)))
+                (expect "<<SCR>> enable-deb-boost ignis-full == ignis|medium" medium (at "ignis-full" (at "ignis" i-deb)))
+                (expect "<<SCR>> triplet ignis-full == GAS|ISSUE-TRIPLET (500)" AQP-SCORE.GAS|ISSUE-TRIPLET (at "ignis-full" (at "ignis" i-triplet)))
+                (expect "<<SCR>> model ignis-full == GAS|ISSUE-SCORE-MODEL (500)" AQP-SCORE.GAS|ISSUE-SCORE-MODEL (at "ignis-full" (at "ignis" i-model)))
+                ;; computed defs: exactly count × tier
+                (expect "<<SCR>> SF def ignis-full == 3 × ignis|big" (* 3.0 big) (at "ignis-full" (at "ignis" i-sfdef)))
+                (expect "<<SCR>> NF def ignis-full == 2 × ignis|biggest" (* 2.0 biggest) (at "ignis-full" (at "ignis" i-nfdef)))
+                ;; all score ops carry no STOA except the issue ops
+                (expect "<<SCR>> rotate no STOA" 0.0 (at "kadena-full" (at "kadena" i-rotate)))
+                (expect "<<SCR>> model no STOA" 0.0 (at "kadena-full" (at "kadena" i-model)))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;
+;;==== AQP-INFO · POOL config group cost-equality ====
+(begin-tx "AQP-INFO-POOL - pool config cost equality")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "=== AQP-INFO POOL config group: info cost == execution cost source ===")
+(let
+    (
+        (anhd:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+    )
+    (let
+        (
+            (smart:decimal (ref-DALOS::UR_UsagePrice "smart"))
+            (i-issue:object (AQP-INFO.AQP-POOL|INFO_Issue anhd "P" "DHOC-x" 3))
+            (i-add:object (AQP-INFO.AQP-POOL|INFO_AddScore anhd "POOL-x" "SCR-x"))
+            (i-rev:object (AQP-INFO.AQP-POOL|INFO_RevokeScore anhd "POOL-x" "SCR-x"))
+            (i-en:object (AQP-INFO.AQP-POOL|INFO_EnablePoolStake anhd "POOL-x"))
+            (i-tf:object (AQP-INFO.AQP-POOL|INFO_SyncTrueFungibleAnchors anhd "BEN-x" "DPTF-x"))
+            (i-sf:object (AQP-INFO.AQP-POOL|INFO_SyncSemiFungibleAnchors anhd "BEN-x" "DPSF-x"))
+        )
+        (map print
+            [
+                (expect "<<POOL>> issue ignis-full == GAS|ISSUE-POOL (1000)" AQP-POOL.GAS|ISSUE-POOL (at "ignis-full" (at "ignis" i-issue)))
+                (expect "<<POOL>> issue kadena-full == smart" smart (at "kadena-full" (at "kadena" i-issue)))
+                (expect "<<POOL>> add-score ignis-full == GAS|ADD-SCORE (500)" AQP-POOL.GAS|ADD-SCORE (at "ignis-full" (at "ignis" i-add)))
+                (expect "<<POOL>> revoke-score ignis-full == GAS|REVOKE-SCORE (500)" AQP-POOL.GAS|REVOKE-SCORE (at "ignis-full" (at "ignis" i-rev)))
+                (expect "<<POOL>> enable-stake ignis-full == GAS|SET-POOL-STAKE (500)" AQP-POOL.GAS|SET-POOL-STAKE (at "ignis-full" (at "ignis" i-en)))
+                (expect "<<POOL>> sync-TF base ignis-full == GAS|SYNC-TF-ANCHORS (50)" AQP-POOL.GAS|SYNC-TF-ANCHORS (at "ignis-full" (at "ignis" i-tf)))
+                (expect "<<POOL>> sync-SF base ignis-full == GAS|SYNC-COLLECTABLE-ANCHORS (50)" AQP-POOL.GAS|SYNC-COLLECTABLE-ANCHORS (at "ignis-full" (at "ignis" i-sf)))
+                (expect "<<POOL>> add-score no STOA" 0.0 (at "kadena-full" (at "kadena" i-add)))
+            ]
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== END aqp-info-tests.repl (ANK + SCORE + POOL-config groups green) ===")
