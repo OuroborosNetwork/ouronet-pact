@@ -2562,6 +2562,35 @@
                     score-ids))
         )
     )
+    ;; FVT|T|AgencyFee  Key = <FVT-ID> | <Score-Entity-ID>  (DSA operator-fee mirror; Phase 5b)
+    (defun UR_FVT-AF|FeePerMille:integer (fvt-id:string score-entity-id:string)
+        @doc "A delegation member's operator fee-per-mille (0 when unset ⇒ no split)."
+        (with-default-read FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"fee-per-mille" : 0} {"fee-per-mille" := f} f)
+    )
+    (defun UR_FVT-AF|Operator:string (fvt-id:string score-entity-id:string)
+        @doc "A delegation member's operator konto (BAR when unset)."
+        (with-default-read FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"operator-konto" : BAR} {"operator-konto" := o} o)
+    )
+    ;; FVT|T|QualitySplit  Key = <FVT-ID> | <DPTF-ID>  (DSA Round B heterogeneous split matrix)
+    (defun UR_FVT-QS|Mode:string (fvt-id:string dptf-id:string)
+        @doc "A MULTIPLET_BASE reward's quality-split mode (HOMOGENEOUS when unset ⇒ unchanged lane→one-token routing)."
+        (with-default-read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id)
+            {"mode" : CT_REWARD_MODE_HOMOGENEOUS} {"mode" := m} m)
+    )
+    (defun UR_FVT-QS|BronzeSplit:[integer] (fvt-id:string dptf-id:string)
+        @doc "Heterogeneous bronze-lane split [to-t0 to-t1 to-t2] per-mille."
+        (at "bronze-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["bronze-split"]))
+    )
+    (defun UR_FVT-QS|SilverSplit:[integer] (fvt-id:string dptf-id:string)
+        @doc "Heterogeneous silver-lane split [to-t0 to-t1 to-t2] per-mille."
+        (at "silver-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["silver-split"]))
+    )
+    (defun UR_FVT-QS|GoldSplit:[integer] (fvt-id:string dptf-id:string)
+        @doc "Heterogeneous gold-lane split [to-t0 to-t1 to-t2] per-mille."
+        (at "gold-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["gold-split"]))
+    )
     ;; [URH] heavy-read
     (defun URH_FvtPresentUsers:[string] (fvt-id:string)
         @doc "HEAVY (one `select` over the small purpose-built presence table): all ouronet-ids currently marked \
@@ -3616,6 +3645,24 @@
         @doc "Update pending-rewards on FVT|T|RPS|User."
         (require-capability (SECURE))
         (update FVT|T|RPS|User (UCk_RpsUser user-id fvt-id score-entity-id dptf-id) {"pending-rewards": pending-rewards})
+    )
+    (defun WU_AgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer)
+        @doc "Write a delegation member's operator + fee mirror. require SECURE."
+        (require-capability (SECURE))
+        (write FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
+            {"operator-konto" : operator-konto, "fee-per-mille" : fee-per-mille})
+    )
+    (defun WI_QualitySplit:string
+        (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
+        @doc "Write a reward's quality-split config (mode + 3-lane matrix). require SECURE."
+        (require-capability (SECURE))
+        (write FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id)
+            {"mode"         : mode
+            ,"bronze-split" : bronze-split
+            ,"silver-split" : silver-split
+            ,"gold-split"   : gold-split
+            ,"fvt-id"       : fvt-id
+            ,"dptf-id"      : dptf-id})
     )
     ;; [XI]
     ;;
@@ -5199,6 +5246,86 @@
             )
         )
     )
+    (defun XI_1|HeterogeneousLaneRoute:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string reward-dptf-id:string mf-id:string amt-b:decimal amt-s:decimal amt-g:decimal prec:integer)
+        @doc "Heterogeneous MULTIPLET_BASE collect: split EACH lane amount across the 3 ladder tokens per the \
+            \ FVT|QualitySplit matrix (per-mille rows), aggregate the 3 tokens, and route total-t0 raw / total-t1 \
+            \ via one ATS leg / total-t2 via two — reusing the homogeneous per-leg primitives (pre-fund token-0, \
+            \ then Coil/Curl). total-t2 is the dust-free remainder. require SECURE."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-ATSU:module{AutostakeUsageV1} ATSU)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (bs:[integer] (UR_FVT-QS|BronzeSplit fvt-id reward-dptf-id))
+                (ss:[integer] (UR_FVT-QS|SilverSplit fvt-id reward-dptf-id))
+                (gs:[integer] (UR_FVT-QS|GoldSplit fvt-id reward-dptf-id))
+                (token-0:string (UR_FVT-MF|Token0Id mf-id))
+                (ats-01:string (UR_FVT-MF|Ats01Id mf-id))
+                (ats-12:string (UR_FVT-MF|Ats12Id mf-id))
+                ;; per-lane token-0/token-1 slices (per-mille); token-2 is the remainder, aggregated below
+                (b0:decimal (floor (/ (* amt-b (dec (at 0 bs))) 1000.0) prec))
+                (b1:decimal (floor (/ (* amt-b (dec (at 1 bs))) 1000.0) prec))
+                (s0:decimal (floor (/ (* amt-s (dec (at 0 ss))) 1000.0) prec))
+                (s1:decimal (floor (/ (* amt-s (dec (at 1 ss))) 1000.0) prec))
+                (g0:decimal (floor (/ (* amt-g (dec (at 0 gs))) 1000.0) prec))
+                (g1:decimal (floor (/ (* amt-g (dec (at 1 gs))) 1000.0) prec))
+                (total-t0:decimal (+ b0 (+ s0 g0)))
+                (total-t1:decimal (+ b1 (+ s1 g1)))
+                (total-t2:decimal (- (+ amt-b (+ amt-s amt-g)) (+ total-t0 total-t1)))
+                (fund-12:decimal (+ total-t1 total-t2))
+                (coil-ok:bool
+                    (if (> total-t1 0.0)
+                        (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t1)) 0.0)
+                        false))
+                (curl-ok:bool
+                    (if (> total-t2 0.0)
+                        (let ((h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t2)))
+                            (if (> (at "rbt-amount" h1) 0.0)
+                                (> (at "rbt-amount"
+                                        (ref-ATS::URC_RewardBearingTokenAmounts ats-12 (at "rbt-id" h1) (at "rbt-amount" h1)))
+                                   0.0)
+                                false))
+                        false))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (if (> total-t0 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron total-t0 true) (UC_EmptyOc))
+                    (if (> fund-12 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron fund-12 true) (UC_EmptyOc))
+                    (if coil-ok (ref-ATSU::C_Coil patron ats-01 token-0 total-t1) (UC_EmptyOc))
+                    (if curl-ok (ref-ATSU::C_Curl patron ats-01 ats-12 token-0 total-t2) (UC_EmptyOc))
+                ]
+                []
+            )
+        )
+    )
+    (defun XI_NormalizeRoyalty:object (reward-dptf-id:string amount:decimal)
+        @doc "IGNIS pre-normalization for a royalty disposal: if the royalty leg is IGNIS, COMPRESS it to OURO in \
+            \ AQP|SC_NAME custody (OUROBOROS::XB_Compress, 98.5%) and return {token: OURO, amount: OURO-received, \
+            \ oc: compress-cumulator}; else return {token, amount, oc: empty} unchanged. The disposal then moves \
+            \ the normalized token — IGNIS can be neither withdrawn nor fueled as a token, so it is always \
+            \ converted first. require SECURE (the disposal cap holds P|SECURE-CALLER + P|FVT|REMOTE-GOV, so the \
+            \ IGNIS custody legs inside XB_Compress are authorized)."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (if (= reward-dptf-id (ref-DALOS::UR_IgnisID))
+                (let
+                    (
+                        (ref-ORBR:module{OuroborosV1} OUROBOROS)
+                    )
+                    {"token"  : (ref-DALOS::UR_OuroborosID)
+                    ,"amount" : (at 0 (ref-ORBR::URC_Compress amount))
+                    ,"oc"     : (ref-ORBR::XB_Compress AQP|SC_NAME amount)}
+                )
+                {"token" : reward-dptf-id, "amount" : amount, "oc" : (UC_EmptyOc)}
+            )
+        )
+    )
     ;; [XE]
     (defun XE_FvtFixUserChunk:object{IgnisCollectorV1.OutputCumulator}
         (fvt-id:string reward-dptf-id:string users:[string])
@@ -5325,112 +5452,12 @@
             )
         )
     )
-    (defun UR_FVT-AF|FeePerMille:integer (fvt-id:string score-entity-id:string)
-        @doc "A delegation member's operator fee-per-mille (0 when unset ⇒ no split)."
-        (with-default-read FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
-            {"fee-per-mille" : 0} {"fee-per-mille" := f} f)
-    )
-    (defun UR_FVT-AF|Operator:string (fvt-id:string score-entity-id:string)
-        @doc "A delegation member's operator konto (BAR when unset)."
-        (with-default-read FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
-            {"operator-konto" : BAR} {"operator-konto" := o} o)
-    )
-    (defun WU_AgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer)
-        @doc "Write a delegation member's operator + fee mirror. require SECURE."
-        (require-capability (SECURE))
-        (write FVT|T|AgencyFee (UCk_ScoreEntityLink fvt-id score-entity-id)
-            {"operator-konto" : operator-konto, "fee-per-mille" : fee-per-mille})
-    )
     (defun XE_SetAgencyFee:string (fvt-id:string score-entity-id:string operator-konto:string fee-per-mille:integer)
         @doc "DSA: set/update a delegation member's operator + fee (mirrored from DSA|Agency so the inject settle \
             \ reads it locally). Set at open + on a fee change. UEV_IMC + SECURE."
         (UEV_IMC)
         (with-capability (SECURE)
             (WU_AgencyFee fvt-id score-entity-id operator-konto fee-per-mille)
-        )
-    )
-    (defun UR_FVT-QS|Mode:string (fvt-id:string dptf-id:string)
-        @doc "A MULTIPLET_BASE reward's quality-split mode (HOMOGENEOUS when unset ⇒ unchanged lane→one-token routing)."
-        (with-default-read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id)
-            {"mode" : CT_REWARD_MODE_HOMOGENEOUS} {"mode" := m} m)
-    )
-    (defun UR_FVT-QS|BronzeSplit:[integer] (fvt-id:string dptf-id:string)
-        @doc "Heterogeneous bronze-lane split [to-t0 to-t1 to-t2] per-mille."
-        (at "bronze-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["bronze-split"]))
-    )
-    (defun UR_FVT-QS|SilverSplit:[integer] (fvt-id:string dptf-id:string)
-        @doc "Heterogeneous silver-lane split [to-t0 to-t1 to-t2] per-mille."
-        (at "silver-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["silver-split"]))
-    )
-    (defun UR_FVT-QS|GoldSplit:[integer] (fvt-id:string dptf-id:string)
-        @doc "Heterogeneous gold-lane split [to-t0 to-t1 to-t2] per-mille."
-        (at "gold-split" (read FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id) ["gold-split"]))
-    )
-    (defun WI_QualitySplit:string
-        (fvt-id:string dptf-id:string mode:string bronze-split:[integer] silver-split:[integer] gold-split:[integer])
-        @doc "Write a reward's quality-split config (mode + 3-lane matrix). require SECURE."
-        (require-capability (SECURE))
-        (write FVT|T|QualitySplit (UCk_RpsGlobal fvt-id dptf-id)
-            {"mode"         : mode
-            ,"bronze-split" : bronze-split
-            ,"silver-split" : silver-split
-            ,"gold-split"   : gold-split
-            ,"fvt-id"       : fvt-id
-            ,"dptf-id"      : dptf-id})
-    )
-    (defun XI_1|HeterogeneousLaneRoute:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string mf-id:string amt-b:decimal amt-s:decimal amt-g:decimal prec:integer)
-        @doc "Heterogeneous MULTIPLET_BASE collect: split EACH lane amount across the 3 ladder tokens per the \
-            \ FVT|QualitySplit matrix (per-mille rows), aggregate the 3 tokens, and route total-t0 raw / total-t1 \
-            \ via one ATS leg / total-t2 via two — reusing the homogeneous per-leg primitives (pre-fund token-0, \
-            \ then Coil/Curl). total-t2 is the dust-free remainder. require SECURE."
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-ATSU:module{AutostakeUsageV1} ATSU)
-                (ref-ATS:module{AutostakeV2} ATS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (bs:[integer] (UR_FVT-QS|BronzeSplit fvt-id reward-dptf-id))
-                (ss:[integer] (UR_FVT-QS|SilverSplit fvt-id reward-dptf-id))
-                (gs:[integer] (UR_FVT-QS|GoldSplit fvt-id reward-dptf-id))
-                (token-0:string (UR_FVT-MF|Token0Id mf-id))
-                (ats-01:string (UR_FVT-MF|Ats01Id mf-id))
-                (ats-12:string (UR_FVT-MF|Ats12Id mf-id))
-                ;; per-lane token-0/token-1 slices (per-mille); token-2 is the remainder, aggregated below
-                (b0:decimal (floor (/ (* amt-b (dec (at 0 bs))) 1000.0) prec))
-                (b1:decimal (floor (/ (* amt-b (dec (at 1 bs))) 1000.0) prec))
-                (s0:decimal (floor (/ (* amt-s (dec (at 0 ss))) 1000.0) prec))
-                (s1:decimal (floor (/ (* amt-s (dec (at 1 ss))) 1000.0) prec))
-                (g0:decimal (floor (/ (* amt-g (dec (at 0 gs))) 1000.0) prec))
-                (g1:decimal (floor (/ (* amt-g (dec (at 1 gs))) 1000.0) prec))
-                (total-t0:decimal (+ b0 (+ s0 g0)))
-                (total-t1:decimal (+ b1 (+ s1 g1)))
-                (total-t2:decimal (- (+ amt-b (+ amt-s amt-g)) (+ total-t0 total-t1)))
-                (fund-12:decimal (+ total-t1 total-t2))
-                (coil-ok:bool
-                    (if (> total-t1 0.0)
-                        (> (at "rbt-amount" (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t1)) 0.0)
-                        false))
-                (curl-ok:bool
-                    (if (> total-t2 0.0)
-                        (let ((h1:object (ref-ATS::URC_RewardBearingTokenAmounts ats-01 token-0 total-t2)))
-                            (if (> (at "rbt-amount" h1) 0.0)
-                                (> (at "rbt-amount"
-                                        (ref-ATS::URC_RewardBearingTokenAmounts ats-12 (at "rbt-id" h1) (at "rbt-amount" h1)))
-                                   0.0)
-                                false))
-                        false))
-            )
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                [
-                    (if (> total-t0 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron total-t0 true) (UC_EmptyOc))
-                    (if (> fund-12 0.0) (ref-TFT::C_Transfer token-0 AQP|SC_NAME patron fund-12 true) (UC_EmptyOc))
-                    (if coil-ok (ref-ATSU::C_Coil patron ats-01 token-0 total-t1) (UC_EmptyOc))
-                    (if curl-ok (ref-ATSU::C_Curl patron ats-01 ats-12 token-0 total-t2) (UC_EmptyOc))
-                ]
-                []
-            )
         )
     )
     (defun XE_SetMemberDelegation:string (fvt-id:string score-entity-id:string delegation:bool)
@@ -5465,31 +5492,6 @@
                 (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletSilverScoreId triplet-id) fvt-id)
                 (ref-SCR::XE_CreateFvtLink (ref-SCR::UR_SCR|TripletGoldenScoreId triplet-id) fvt-id)
                 (XI_AddScoreEntity fvt-id CT_SCORE_ENTITY_TRIPLET triplet-id "|" 0.0)
-            )
-        )
-    )
-    (defun XI_NormalizeRoyalty:object (reward-dptf-id:string amount:decimal)
-        @doc "IGNIS pre-normalization for a royalty disposal: if the royalty leg is IGNIS, COMPRESS it to OURO in \
-            \ AQP|SC_NAME custody (OUROBOROS::XB_Compress, 98.5%) and return {token: OURO, amount: OURO-received, \
-            \ oc: compress-cumulator}; else return {token, amount, oc: empty} unchanged. The disposal then moves \
-            \ the normalized token — IGNIS can be neither withdrawn nor fueled as a token, so it is always \
-            \ converted first. require SECURE (the disposal cap holds P|SECURE-CALLER + P|FVT|REMOTE-GOV, so the \
-            \ IGNIS custody legs inside XB_Compress are authorized)."
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (if (= reward-dptf-id (ref-DALOS::UR_IgnisID))
-                (let
-                    (
-                        (ref-ORBR:module{OuroborosV1} OUROBOROS)
-                    )
-                    {"token"  : (ref-DALOS::UR_OuroborosID)
-                    ,"amount" : (at 0 (ref-ORBR::URC_Compress amount))
-                    ,"oc"     : (ref-ORBR::XB_Compress AQP|SC_NAME amount)}
-                )
-                {"token" : reward-dptf-id, "amount" : amount, "oc" : (UC_EmptyOc)}
             )
         )
     )
