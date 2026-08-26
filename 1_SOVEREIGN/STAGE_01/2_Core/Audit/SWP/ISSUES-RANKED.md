@@ -509,7 +509,15 @@ exactly the fueled amounts via a delta assertion (post minus pre supplies). Adve
 corrupted the expected delta, got a genuine `FAILURE`, restored. No `.pact` source touched. Full writeup
 in `ROUND-01-OWNER-FEEDBACK.md`. — *L62*
 
-#63L **[SWPLC]** The module defines no `XI_*` at all — every `C_*` orchestrates peer calls inline.
+#63L **[SWPLC]** ~~The module defines no `XI_*` at all — every `C_*` orchestrates peer calls inline.~~ —
+**DESIGN — accepted, working as intended, 2026-08-26.** Traced it: SWPLC owns no domain tables of its
+own, only governance-only policy tables (`P|T`/`P|MT`, gated by `GOV`, outside the client flow). Every
+`C_*` is pure orchestration — all real persisted writes happen in the modules it calls into
+(`BRD::XE_UpdatePendingBranding`, `SWP::XE_UpdateSupplies`, `SWPL::XE|KDA-PID_AddLiqudity`,
+`DPTF::C_Burn`, `TFT::C_Transfer`/`C_MultiTransfer`, `VST::C_Freeze`/`C_Sleep`), exactly the documented
+`XE_*` forward-module-entrypoint pattern. With no local state to persist, there's nothing for an `XI_*`
+to write — its absence is the natural shape of a 100%-orchestration module, not a gap. No code change.
+Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L63*
 
 #64L **[SWPU]** `URC_Swap`'s `validation:bool` parameter name is misleading (toggles enforcement, not
 gross-vs-net — directly contributed to #5C being easy to miss).

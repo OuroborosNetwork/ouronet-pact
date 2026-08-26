@@ -2632,3 +2632,23 @@ after reverting. No `.pact` source touched — purely REPL coverage.
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #37. Awaiting Round III re-verify. — *L62*
 
 ---
+
+## L63 (#63L, SWPLC — the module defines no `XI_*` at all, every `C_*` orchestrates peer calls inline) — **DESIGN, accepted — no code change**
+
+**Investigated before accepting:** checked whether SWPLC owns any domain tables of its own that a missing
+`XI_*` should be writing to. It doesn't — the only `deftable`s in the module are the governance-only
+policy tables (`P|T`, `P|MT`), written exclusively by `GOV`-gated admin functions (`P|A_Add`,
+`P|A_AddIMP`), entirely outside the client (`C_*`) flow.
+
+**Traced every real write reachable from a `C_*` in this module:** every one lands in a *different*
+module's `XE_*`/`C_*` — `BRD::XE_UpdatePendingBranding`, `BRD::XE_UpgradeBranding`,
+`SWP::XE_UpdateSupplies`, `SWPL::XE|KDA-PID_AddLiqudity`, `SWPL::XE_AutonomousSwapManagement`,
+`DPTF::C_Burn`, `TFT::C_Transfer`/`C_MultiTransfer`, `VST::C_Freeze`/`C_Sleep`. This is exactly the
+documented `XE_*` "forward-module entrypoint" pattern from `CLAUDE.md` — SWPLC is the client/orchestration
+layer, the persistence itself belongs to (and stays in) the owning module.
+
+**Status:** DESIGN, accepted — SWPLC is 100% orchestration with zero domain state of its own; an `XI_*`
+would have nothing local left to write. Its absence is the natural shape of the module, not a missing
+piece. No code change. — *L63*
+
+---
