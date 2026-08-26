@@ -35,6 +35,7 @@ SUITES=(
   "Kursan/dsa-fee-tests.repl|DSA Phase 5b: operator two-track fee at inject — multi-delegator split (operator own+fee vs delegators (1-fee)), independent operator collect, O(1) A_SetAgencyFee reprice"
   "Kursan/dsa-hetero-split-tests.repl|DSA Round B: heterogeneous quality-split matrix — HOMOGENEOUS default, owner-set HET matrix routing (all-to-OURO/all-to-Auryn), O(1) reprice, guard rejections (non-owner, bad row sum, non-multiplet reward)"
   "Kursan/dsa-grand-tour.repl|DSA GRAND TOUR (single process, one agency): create vault + define triplet + MULTIPLET_BASE reward + open + delegator stake + oracle + HETEROGENEOUS split + fee two-track + inject + independent collect + matrix reprice + O(1) fee reprice + global GOV oracle switches"
+  "Kursan/aqp-info-tests.repl|AQP-INFO cost previews: each AQP-<MOD>|INFO_* fixed-cost function's reported ignis-full/kadena-full == the execution's exact GAS| constant / UsagePrice source (ANK/SCORE/POOL/FVT/DSA/MTX groups; stake/vacate reconstruction pending)"
 )
 
 echo "================================================================"
