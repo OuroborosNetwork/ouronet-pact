@@ -1612,11 +1612,11 @@ pipeline both exit 0, 0 `FAILURE`.
 
 ---
 
-## Fix #42 — #65bL: 4-phase graph-search engine optimization, 58.2% cumulative gas reduction
+## Fix #42 — #65bL: 5-phase graph-search engine optimization, 63.9% cumulative gas reduction
 
 **Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`, `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`,
-`1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`:** 4 phases, scoped and measured independently, 3
-shipped:
+`1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`, `REPL/Stage_01/[6.3]_SWP.repl`:** 5 phases, scoped
+and measured independently, 4 shipped:
 
 - **Phase 1:** wired `URCX_Hopper` to the pre-existing-but-unused `SWPT|PathCache` (write-only in
   the live code until now) via a new `URC_ReadPathCacheFresh`. Required fixing the cache's own
@@ -1645,14 +1645,47 @@ shipped:
   further. Correctness proven directly (byte-identical against the original `URC_PoolValue`),
   adversarially confirmed.
 
-**Cumulative: 5,094,054 → 2,129,569 gas, a 58.2% reduction** from the pre-`#65L` baseline, all 4
-phases combined.
+- **Phase 5:** owner asked directly whether the live routing search was still capped at 3, and
+  proposed first-found only, reasoning that with dozens of parallel pools the chance any of the 2
+  extra best-of-3 candidates is actually better is small, and that chronic pool imbalance doesn't
+  persist under organic swap activity. Checked against `#34M`/M2's own original adversarial proof
+  first (a deliberately hand-engineered diamond topology, not evidence of natural behavior at
+  scale), then measured directly: first-found vs best-of-3 against the real, organically-grown
+  ~102-pool topology across 7 representative pairs (1-8 hops) — best-of-3 won zero of them.
+  Switched `URCX_Hopper`/`URCX_HopperFromRaw` to a single `SWPT::URC_ComputeGraphPath`(`FromRaw`)
+  call. Caught and fixed a real bug before shipping: the first implementation attempt used the
+  original, never-Phase-2-optimized self-fetching `URC_ComputeGraphPath` for `URCX_Hopper`'s own
+  call, measured as *more* expensive than best-of-3 (isolated and confirmed via a stash-style
+  before/after) — corrected to route through `URC_FetchRawGraph` + `URC_ComputeGraphPathFromRaw`
+  instead, the same Phase-2-cheap machinery best-of-3's own first attempt already used.
+  `SWPT::URC_ComputeAlternateRoutes`/`FromRaw` are not deleted, still correct, no longer the
+  default. Updated the original `#34M/M2` adversarial proof (`SWP|TX 032g`) to honestly assert the
+  live default now takes the worse route on that deliberately-engineered topology (confirmed:
+  1989.96, matching the original proof exactly) while a direct call to
+  `SWPT::URC_ComputeAlternateRoutes` still finds the better one (confirmed: ~4994, matching the
+  original ballpark) — proving the machinery isn't broken, just no longer wired in by default. The
+  greedy per-hop edge-selection limitation (locally-optimal per hop is not the same as a
+  globally-optimal path) is now stated explicitly in `URCX_Hopper`'s own `@doc` — always true,
+  this fix doesn't introduce it, only removes the cross-route comparison layered on top. Measured:
+  2,129,569 → 1,837,000 gas, 13.7% further.
+
+**Cumulative: 5,094,054 → 1,837,000 gas, a 63.9% reduction** from the pre-`#65L` baseline, all 5
+phases combined. The worst-of-the-worst-case scenario now fits **under** the real ~2,000,000 gas
+ceiling — it did not before this work.
 
 **Adversarially proven:** Phase 1's cache-hit path (returns exactly the cached node path, not an
-independently recomputed one) and Phase 4's correctness (byte-identical to the original function)
-both corrupted and reconfirmed failing, then restored. Full suite (`[6.2]`+`[6.3]`) and default
-issuance-only (`[6.2+3]`) pipelines both exit 0, 0 `FAILURE` throughout every phase,
+independently recomputed one), Phase 4's correctness (byte-identical to the original function), and
+Phase 5's honestly-updated adversarial proof (live default genuinely takes the worse route on the
+engineered topology, direct `URC_ComputeAlternateRoutes` call still finds the better one) all
+verified with real, printed numbers, not just passing assertions. Full suite (`[6.2]`+`[6.3]`) and
+default issuance-only (`[6.2+3]`) pipelines both exit 0, 0 `FAILURE` throughout every phase,
 `Stage01_Tester.repl` reverted to its default afterward (zero drift).
+
+**Owner note recorded for the capstone/UI phase (not a code change in this repo):** part of the
+reasoning for Phase 5 was that a chunk of SmartSwap's real traffic is arguably direct, single-pool
+swaps that don't need SmartSwap's routing complexity at all — recorded as a UI-design ask for the
+capstone phase to add a separate, simplified direct-pool-swap interface. See
+`OuronetInformational/memories/2026-08-28-capstone-ui-needs-a-simplified-direct-pool-swap-interface.md`.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Full detail in
 `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`.

@@ -558,7 +558,7 @@ engine.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-28** (`ROUND-02-FIXES.md` Fix #
 (widen the search — raise K, "search 10k") was investigated and refuted with hard evidence before any
 code changed: Pact 5 has no per-transaction read cache, marginal gas per additional attempt is roughly
 linear until the route set is structurally exhausted, and a flat wide search would blow 10-100x past the
-real ~2,000,000 gas ceiling on any topology with real route diversity. 4-phase design instead, 3 shipped:
+real ~2,000,000 gas ceiling on any topology with real route diversity. 5-phase design instead, 4 shipped:
 **Phase 1** wired `URCX_Hopper` to the pre-existing-but-unused `SWPT|PathCache` (plus a
 topology-versioning fix — was insert-only, permanently unrefreshable), measured 477,825→11,491 gas
 (~41.6x) on a warm cache. **Phase 2** stopped the best-of-3 routing search re-reading the same graph rows
@@ -567,8 +567,16 @@ a sorted raw-graph) was built and measured — a synthetic benchmark suggested a
 measurement showed a regression (+27,527 gas); reverted, the real number trusted over the synthetic one,
 recorded as a genuine negative result, not silently dropped. **Phase 4** shared one raw-graph fetch across
 the STOA-repricing loop's multiple pool queries, measured 2,216,311→2,129,569 gas (3.9% further),
-correctness adversarially proven byte-identical against the original function. **Cumulative:
-5,094,054→2,129,569 gas, 58.2% reduction** from the pre-`#65L` baseline. Full writeup in
+correctness adversarially proven byte-identical against the original function. **Phase 5** measured
+best-of-3 vs first-found directly against the real, organically-grown ~102-pool topology across 7
+representative pairs (1-8 hops) — best-of-3 beat first-found in ZERO of them. Switched the live default
+to first-found, caught a real bug along the way (first attempt used the never-optimized self-fetching
+path instead of the raw-graph-once one, making it briefly cost *more*, corrected before shipping), and
+updated the original `#34M/M2` adversarial proof (`SWP|TX 032g`) to honestly show the live path now takes
+the worse route on that deliberately-engineered topology, while `SWPT::URC_ComputeAlternateRoutes` itself
+(kept, not deleted) still finds the better one when called directly — measured 2,129,569→1,837,000 gas
+(13.7% further). **Cumulative: 5,094,054→1,837,000 gas, 63.9% reduction** from the pre-`#65L` baseline —
+the worst-of-the-worst-case scenario now fits UNDER the real 2,000,000 gas ceiling. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md` and `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`.
 — *#65bL*
 

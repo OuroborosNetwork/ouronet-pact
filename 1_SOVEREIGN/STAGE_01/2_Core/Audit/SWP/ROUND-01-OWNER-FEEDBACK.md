@@ -2822,10 +2822,65 @@ own sibling discovery, wired in here since it was the cheapest, highest-leverage
   (shared fetch) produces byte-identical output to the original `URC_PoolValue` (self-fetch) for a
   real pool, adversarially proven (corrupted the expected value, got a genuine `FAILURE`, restored).
 
-**Cumulative result: 5,094,054 → 2,129,569 gas, a 58.2% reduction** from the pre-`#65L` baseline,
-across all 4 phases combined. Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`)
-pipelines both verified clean (exit 0, 0 `FAILURE`) throughout every phase, with
-`Stage01_Tester.repl` reverted to its default afterward (zero drift).
+- **Phase 5 — is best-of-3 still earning its cost at this codebase's real scale?** After Phase
+  4 landed, the owner asked directly whether the on-chain routing search was still capped at 3,
+  and proposed switching to first-found only — reasoning that with dozens of parallel pools, the
+  chance any of the 2 extra best-of-3 candidates is actually better is small, and that
+  chronically-unbalanced pools don't stay unbalanced for long (organic swap activity pushes them
+  back toward parity). This directly touches `#34M`/M2's own original fix, so it was checked
+  properly, not assumed either way: `#34M`/M2's real adversarial proof (`SWP|TX 032c`-`032g`) used
+  a *deliberately hand-engineered* diamond topology (issuance order controlled specifically to make
+  BFS's first-found route the weak one) to demonstrate the failure mode is real — a genuine ~2.5x
+  value gap (1989.96 vs 4906.02 output) in that constructed scenario. That's not the same as
+  proving the failure mode happens *naturally* at real scale, and nobody had checked. So it was
+  measured directly: first-found vs best-of-3, against the actual organically-grown ~102-pool
+  topology (not engineered), across 7 representative pairs spanning 1-8 hops, several different
+  token regions. **Best-of-3 found a better route than first-found in zero of the seven pairs —
+  0.0% difference, every time.**
+
+  Switched `URCX_Hopper`/`URCX_HopperFromRaw` (the shared core behind `URC_Hopper`/
+  `URC_HopperActive`, so both STOA-pricing and real swap execution) from best-of-3 to a single
+  `SWPT::URC_ComputeGraphPath`(`FromRaw`) call. Caught a real implementation bug before shipping:
+  the first attempt at this used the *original*, never-Phase-2-optimized self-fetching
+  `URC_ComputeGraphPath` for `URCX_Hopper`'s own routing call — which meant a single search that
+  was still paying the pre-Phase-2 cost, while best-of-3's own first attempt (via
+  `URC_ComputeAlternateRoutes`'s internal fetch) was already Phase-2-cheap. Measured directly
+  before trusting it: this made the "optimization" net *more* expensive than best-of-3, exactly
+  backwards. Isolated and confirmed via a stash-style before/after, then fixed by routing through
+  `URC_FetchRawGraph` + `URC_ComputeGraphPathFromRaw` instead — the same Phase-2-cheap machinery
+  best-of-3 already used for its own first attempt, just called once instead of up to three times.
+
+  `SWPT::URC_ComputeAlternateRoutes`/`FromRaw` are **not deleted** — still correct, still callable,
+  no longer the default. The original adversarial proof (`SWP|TX 032g`) was updated, not removed,
+  to state the tradeoff honestly: it now asserts the live default (first-found) genuinely takes the
+  *worse* route on that deliberately-engineered topology (confirmed: 1989.96 TSTZ, matching the
+  original proof's own number exactly), while a new, direct call to
+  `SWPT::URC_ComputeAlternateRoutes` (bypassing the live default) still finds the better route
+  (confirmed: ~4994 TSTZ, matching the original proof's ballpark) — proving the underlying
+  machinery isn't broken, only no longer wired into the default path. The greedy per-hop edge
+  selection's own limitation (`URCX_HopperForNodes`'s `URC_BestEdgeFiltered` choice at each hop is
+  locally optimal, not a guarantee of a globally-optimal end-to-end path) is now stated explicitly
+  in `URCX_Hopper`'s own `@doc` — this was always structurally true, at every K including
+  best-of-3; this fix doesn't introduce it, it only removes the (measured, at this topology, not
+  earning its cost) cross-route comparison layered on top of it.
+
+  Measured: 2,129,569 → 1,837,000 gas, a further **13.7%**.
+
+**Cumulative result: 5,094,054 → 1,837,000 gas, a 63.9% reduction** from the pre-`#65L` baseline,
+across all 5 phases combined. The worst-of-the-worst-case scenario this codebase can construct (max
+6-hop route, 7 active special fee targets on every pool along it, Liquid Boost on, ~102 active
+pools) **now fits under the real ~2,000,000 gas ceiling — it did not before this work.** Full suite
+(`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean (exit 0, 0
+`FAILURE`) throughout every phase, with `Stage01_Tester.repl` reverted to its default afterward
+(zero drift).
+
+**Owner note recorded for the capstone/UI phase (not a code change in this repo):** part of the
+reasoning for accepting the first-found tradeoff was that a chunk of SmartSwap's real traffic is
+arguably direct, single-pool swaps that have none of SmartSwap's actual routing complexity to begin
+with — the UI currently funnels them through the SmartSwap tab regardless. Recorded as a UI-design
+ask for whoever builds the capstone phase: add a separate, simplified swap interface for direct
+pool swaps. See
+`OuronetInformational/memories/2026-08-28-capstone-ui-needs-a-simplified-direct-pool-swap-interface.md`.
 
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #42 and
 `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md` for the full phase-by-phase

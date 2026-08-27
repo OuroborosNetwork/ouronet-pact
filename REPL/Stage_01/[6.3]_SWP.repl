@@ -3563,12 +3563,29 @@
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
+;;#65bL Phase 5 fix: this diamond topology was deliberately hand-engineered (TSTC
+;;issued first / thin, TSTD issued second / deep) specifically to demonstrate that
+;;first-found-only routing CAN land on a worse route than a value-aware search would
+;;— exactly the failure mode #34M/M2's original best-of-3 fix closed. That failure
+;;mode is real and this proof still demonstrates it. What changed: #65bL Phase 5
+;;measured, on this codebase's real organically-grown ~102-pool topology (7
+;;representative pairs, 1-8 hops), that best-of-3 never actually found anything
+;;better than first-found there — so the LIVE default routing path
+;;(SWP|CC_SmartSwapNoSlippage -> URC_HopperActive -> URCX_Hopper) now uses
+;;first-found only. On THIS deliberately-adversarial topology specifically, that
+;;means the live path now takes the worse route — proven directly below, not
+;;glossed over. SWPT::URC_ComputeAlternateRoutes itself is unchanged and still
+;;correctly finds the better route when called directly — also proven below — it's
+;;simply no longer wired into the default live path.
 ;;==== SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 02 · let / invocation ==== ======================
 (print "--- [SWP|TX 032g - #34M/M2 Adversarial Proof Swap · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
         (tstz-before:decimal (ref-DPTF::UR_AccountSupply "TSTZ-98c486052a51" KST.ANHD))
         (swap-result:string
             (ref-TS01-C3::SWP|CC_SmartSwapNoSlippage
@@ -3581,15 +3598,20 @@
         )
         (tstz-after:decimal (ref-DPTF::UR_AccountSupply "TSTZ-98c486052a51" KST.ANHD))
         (tstz-received:decimal (- tstz-after tstz-before))
+        ;;Direct proof SWPT::URC_ComputeAlternateRoutes (bypassing the now-K=1 live
+        ;;path entirely) still finds the genuinely better route on this same topology.
+        (active-swpairs:[string] (ref-SWP::URC_ActiveSwpairs))
+        (alt-routes:[[string]] (ref-SWPT::URC_ComputeAlternateRoutes "OURO-98c486052a51" "TSTZ-98c486052a51" active-swpairs))
+        (alt-candidates:[object{SwapperIssueV3.Hopper}]
+            (map (lambda (nodes:[string]) (ref-SWPI::URCX_HopperForNodes nodes 10000.0 active-swpairs)) alt-routes)
+        )
+        (alt-best-val:decimal (at 0 (take -1 (at "output-values" (ref-SWPI::UC_BestHopper alt-candidates)))))
     )
     (map print
         [
             (format "Swap result: {}" [swap-result])
-            (format "TSTZ received: {}" [tstz-received])
-            ;;#34M/M2 fix: the route through TSTD (deep second-hop pool) must pay
-            ;;out far more than the route through TSTC (thin second-hop pool),
-            ;;even though TSTC's route is the one BFS discovers first (issued
-            ;;first, so it's the first neighbour explored).
+            (format "TSTZ received (live, first-found only): {}" [tstz-received])
+            (format "TSTZ available via URC_ComputeAlternateRoutes directly (best-of-3, not the live default): {}" [alt-best-val])
             (expect
                 "Smart swap actually executed (not a routing failure)"
                 true
@@ -3600,12 +3622,24 @@
                 true
                 (contains "via 2 Swaps" swap-result)
             )
+            ;;#65bL Phase 5: the live default now takes the WORSE route here — the
+            ;;exact tradeoff this whole comment block documents, proven, not hidden.
             (expect
-                "Took the BETTER route (via deep-liquidity TSTD, measured ~4906 \
-                \ TSTZ) — NOT the worse route BFS finds first (via thin TSTC, \
-                \ which would land far lower, well under half this)"
+                "Live default (first-found only) now takes the WORSE route here \
+                \ (via thin TSTC) — well under half of what best-of-3 would have \
+                \ delivered, exactly the #34M/M2 failure mode, now knowingly accepted \
+                \ for this artificial worst case in exchange for real gas savings at \
+                \ this codebase's actual organic topology"
                 true
-                (> tstz-received 3000.0)
+                (< tstz-received 3000.0)
+            )
+            ;;...while the underlying best-of-3 machinery, called directly, still
+            ;;finds the better route — proving it's not broken, just not the default.
+            (expect
+                "SWPT::URC_ComputeAlternateRoutes, called directly, still finds the \
+                \ BETTER route (via deep-liquidity TSTD) on this same topology"
+                true
+                (> alt-best-val 3000.0)
             )
         ]
     )

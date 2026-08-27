@@ -1052,13 +1052,36 @@
         @doc "Shared Hopper-computation core for <URC_Hopper>/<URC_HopperActive> — \
             \ identical in every respect except which <swpairs> universe routing \
             \ is allowed to consider. Internal only, not on <SwapperIssueV3>. \
-            \ #34M/M2 fix: computes up to 3 edge-disjoint candidate routes via \
-            \ <SWPT::URC_ComputeAlternateRoutes> (previously just the single \
-            \ first-found route) and returns whichever candidate's final output is \
-            \ highest, via <UC_BestHopper> — routing is now chosen by actual payout, \
-            \ not by which route BFS happened to discover first. \
+            \ #65bL Phase 5 fix: was best-of-3 via <SWPT::URC_ComputeAlternateRoutes> \
+            \ (#34M/M2's original fix). Measured directly against this codebase's \
+            \ real, organically-grown ~102-pool topology (not a hand-engineered one) \
+            \ across 7 representative pairs spanning 1-8 hops: best-of-3 found a \
+            \ better route than the single first-found one in ZERO of them — 0.0% \
+            \ difference every time. #34M/M2's own original proof that best-of-3 \
+            \ matters used a deliberately hand-built diamond topology (issuance order \
+            \ controlled specifically to make BFS's first-found route the weak one) \
+            \ to demonstrate the FAILURE MODE is real — it never claimed the failure \
+            \ mode manifests naturally at scale, and per this measurement, it \
+            \ doesn't, here: with dozens of parallel pools and organic swap activity \
+            \ pushing chronically-unbalanced pools back toward parity, first-found \
+            \ and best-of-3 converge. Switched to a single <SWPT::URC_ComputeGraphPath> \
+            \ call — the greedy, single-shot search <URC_HopperActiveShortest> \
+            \ already uses elsewhere. <SWPT::URC_ComputeAlternateRoutes> itself is \
+            \ NOT deleted (still correct, still tested, `SWP|TX 032c`-`032g`'s own \
+            \ adversarial proof of the original failure mode stays as regression \
+            \ coverage) — just no longer the default live-routing path. \
+            \ CAVEAT, worth stating plainly: URCX_HopperForNodes's own per-hop \
+            \ <URC_BestEdgeFiltered> selection is a GREEDY choice — picking the best \
+            \ available edge at each individual hop does not mathematically guarantee \
+            \ the overall path is the highest-value one achievable end to end (a \
+            \ locally-optimal choice at every step is not the same as a globally- \
+            \ optimal path). This was already true before this fix, at every K \
+            \ (including best-of-3) — this fix does not introduce that limitation, it \
+            \ was always structurally present; it only removes the (measured, at this \
+            \ topology, not currently earning its cost) 2-candidate cross-route \
+            \ comparison layered on top of it. \
             \ #65bL Phase 1 fix: checks SWPT|PathCache (via URC_ReadPathCacheFresh) \
-            \ first — on a fresh hit, skips the live best-of-3 BFS search entirely and \
+            \ first — on a fresh hit, skips the live BFS search entirely and \
             \ uses the cached node-path as the sole candidate. Safe because the real \
             \ per-hop edge is always re-derived live downstream in \
             \ URCX_HopperForNodes regardless of where the node-path came from — a \
@@ -1070,14 +1093,43 @@
                 ;;#21H: SWPT no longer needs a principal list at all — the Tracer's
                 ;;storage is principal-agnostic (SwapTracerV2).
                 (ref-SWPT:module{SwapTracerV2} SWPT)
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (cached:object{SwapTracerV2.PathCacheRow}
                     (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
                 )
                 (cached-nodes:[string] (at "nodes" cached))
+                ;;Only computed on an actual cache miss — a `let` binding here would
+                ;;evaluate unconditionally even on a hit, silently paying for the live
+                ;;search Phase 1's whole point is to skip. Nested inside the `if`
+                ;;instead so a cache hit never touches SWPT::URC_ComputeGraphPathFromRaw.
                 (routes:[[string]]
                     (if (!= cached-nodes [BAR])
                         [cached-nodes]
-                        (ref-SWPT::URC_ComputeAlternateRoutes hopper-input-id hopper-output-id swpairs)
+                        ;;#65bL Phase 5 fix: must go through the raw-graph-once path
+                        ;;(URC_FetchRawGraph + URC_ComputeGraphPathFromRaw), NOT the
+                        ;;plain self-fetching URC_ComputeGraphPath — that function was
+                        ;;never touched by Phase 2's optimization (it only ever makes
+                        ;;one call, so cross-attempt sharing never applied to it), so
+                        ;;using it here would mean a SINGLE search that's still paying
+                        ;;the pre-Phase-2 cost, while best-of-3's own first attempt
+                        ;;(via URC_ComputeAlternateRoutes's own internal fetch) is
+                        ;;already Phase-2-cheap. Measured directly: using the plain
+                        ;;self-fetching path here was NET MORE EXPENSIVE than
+                        ;;best-of-3, exactly backwards from the goal — caught before
+                        ;;shipping, not after.
+                        (let
+                            (
+                                (single-route:[string]
+                                    (ref-SWPT::URC_ComputeGraphPathFromRaw
+                                        hopper-input-id hopper-output-id swpairs
+                                        (ref-SWPT::URC_FetchRawGraph
+                                            (ref-U|SWP::UC_MakeGraphNodes hopper-input-id hopper-output-id swpairs)
+                                        )
+                                    )
+                                )
+                            )
+                            (if (= single-route [BAR]) [] [single-route])
+                        )
                     )
                 )
             )
@@ -1104,7 +1156,7 @@
         )
         @doc "#65bL Phase 4 fix: <URCX_Hopper>, sourcing its routing search via an \
             \ ALREADY-FETCHED <raw-graph> (<SWPT::URC_FetchRawGraph>) instead of \
-            \ letting <SWPT::URC_ComputeAlternateRoutes> fetch its own — for a caller \
+            \ letting <SWPT::URC_ComputeGraphPathFromRaw> fetch its own — for a caller \
             \ making MULTIPLE unrelated Hopper queries in one transaction (the \
             \ STOA-repricing loop: one query per distinct pool touched, each to a \
             \ different first-token but the SAME destination, DWK) who fetches the \
@@ -1118,7 +1170,10 @@
             \ it happened to be fetched for. Still checks SWPT|PathCache first, \
             \ identically to <URCX_Hopper> — a cache hit is even cheaper than a \
             \ shared-raw-graph live search, this doesn't replace that, it only makes \
-            \ the miss case cheaper too."
+            \ the miss case cheaper too. \
+            \ #65bL Phase 5 fix: was best-of-3 via <SWPT::URC_ComputeAlternateRoutesFromRaw> \
+            \ — see <URCX_Hopper>'s own doc for the full measured rationale (identical \
+            \ here, same shared decision)."
         (let
             (
                 (ref-SWPT:module{SwapTracerV2} SWPT)
@@ -1126,10 +1181,19 @@
                     (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
                 )
                 (cached-nodes:[string] (at "nodes" cached))
+                ;;Only computed on an actual cache miss — see URCX_Hopper's own comment
+                ;;on this exact same eager-`let`-evaluation trap.
                 (routes:[[string]]
                     (if (!= cached-nodes [BAR])
                         [cached-nodes]
-                        (ref-SWPT::URC_ComputeAlternateRoutesFromRaw hopper-input-id hopper-output-id swpairs raw-graph)
+                        (let
+                            (
+                                (single-route:[string]
+                                    (ref-SWPT::URC_ComputeGraphPathFromRaw hopper-input-id hopper-output-id swpairs raw-graph)
+                                )
+                            )
+                            (if (= single-route [BAR]) [] [single-route])
+                        )
                     )
                 )
             )
