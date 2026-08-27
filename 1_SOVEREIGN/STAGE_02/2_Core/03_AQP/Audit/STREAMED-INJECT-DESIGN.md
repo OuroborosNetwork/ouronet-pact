@@ -187,7 +187,7 @@ The drip runs **per reward lane** (fvt-id | dptf-id), inside the existing per-re
 | **Stake** | `XI_RpsPreScore` (4294) | drip lane **before** the weight mutation (`XI_SyncFvtTotalDebMirrors` 4172 / triplet 4203 / farm ghost 4375) |
 | **Unstake** | `XI_RpsPreScore` (4294) | drip lane before weight mutation (last unstake → next drip sees weight 0 → zombie) |
 | **Collect** | `C_Collect` (3507) | drip lane before `URC_CollectClaimableRewards` (2407) |
-| **Deb-fix** | `XI_FixUserMemberDeb` / `CC_InjectFixChunk` (3287) | drip lane before settle |
+| **Deb-fix** | `XI_FixUserMemberDeb` / `CCp_InjectFixChunk` (3287) | drip lane before settle |
 | **Sweep** | `XI_FvtSweepRecomputeChunk` | drip lane before recompute |
 
 Independent-streams create (inject, `duration>0`): **drip first**, then append — never merge. Instant inject during

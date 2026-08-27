@@ -156,12 +156,12 @@ comparison oracles):
 
 - **Inject CC-batch (defun+gate)** — the scalable twin of the fixed 2-step defpact, for stale sets exceeding
   one tx. No cursor needed (unlike the sweep): the stale set *shrinks* as it is fixed, so
-  **`CC_InjectFixChunk(patron, fvt, reward-dptf, chunk)`** force-refreshes up to `chunk` currently-stale users
+  **`CCp_InjectFixChunk(patron, fvt, reward-dptf, chunk)`** force-refreshes up to `chunk` currently-stale users
   (penalized, same 2e as the defpact) — repeat until `URH_FvtStalePresentUsers` is empty — then
   **`CC_InjectFinalize(patron, fvt, reward-dptf, amount)`** enforces zero-stale and injects on the fresh
   divisor via the shared `XI_FvtInjectCore` (identical outcome to `CC_Inject`). Loose `INJECT-FIX-CHUNK-MAX`
   backstop. Each Talos call is its own tx (real pagination = one gas-station settlement per tx). Talos:
-  `AQP-FVT|CC_InjectFixChunk` / `AQP-FVT|CC_InjectFinalize`.
+  `AQP-FVT|CCp_InjectFixChunk` / `AQP-FVT|CC_InjectFinalize`.
 - **User self-service unstale** — **`C_UnstaleMyScores(patron, fvt-ids)`**: the caller refreshes THEIR OWN
   stale scores across the listed FVTs (settle at old deb → refresh to live → resync mirror), auth =
   `CAP_EnforceAccountOwnership(patron)`. **NON-penalized** — only inject-*forced* fixes bill the 2e count, so

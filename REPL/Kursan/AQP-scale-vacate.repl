@@ -1,6 +1,6 @@
 ;;
 ;; REPL/Kursan/AQP-scale-vacate.repl — VACATE at large population (50 distinct users).
-;; Proves the vacate-v2 CC_BatchDrainTrueFungible pagination over 50 stakers: drain in
+;; Proves the vacate-v2 Cp_BatchDrainTrueFungible pagination over 50 stakers: drain in
 ;; rounds under the 2M chain limit, freeze holds between rounds, C_FinalizeVacate closes.
 ;; Reuses the VCTGAS synth-account generators ([6.2.6]_AQP-VCT-GAS-BASE.repl: synth 001..999).
 ;;
@@ -97,7 +97,7 @@
 (print "")
 ;;
 ;; ============================================================================
-;; SCALE-VAC-DRAIN — page the 50-user vacate in rounds of 15 (CC_BatchDrainTrueFungible).
+;; SCALE-VAC-DRAIN — page the 50-user vacate in rounds of 15 (Cp_BatchDrainTrueFungible).
 ;; Each round is its own tx (one gas-station settlement); the freeze HOLDS between rounds
 ;; (commit-forward: the drain never finalizes). Records gas + gas-per-leg + fits-2M.
 ;; ============================================================================
@@ -131,7 +131,7 @@
     )
     (let ((n:integer (length owners)))
         (env-gas 0)
-        (ref-TS02-C3::AQP-POOL|CC_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
+        (ref-TS02-C3::AQP-POOL|Cp_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
         (let
             (
                 (g:integer (env-gas))
@@ -181,7 +181,7 @@
     )
     (let ((n:integer (length owners)))
         (env-gas 0)
-        (ref-TS02-C3::AQP-POOL|CC_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
+        (ref-TS02-C3::AQP-POOL|Cp_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
         (let
             (
                 (g:integer (env-gas))
@@ -231,7 +231,7 @@
     )
     (let ((n:integer (length owners)))
         (env-gas 0)
-        (ref-TS02-C3::AQP-POOL|CC_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
+        (ref-TS02-C3::AQP-POOL|Cp_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
         (let
             (
                 (g:integer (env-gas))
@@ -281,7 +281,7 @@
     )
     (let ((n:integer (length owners)))
         (env-gas 0)
-        (ref-TS02-C3::AQP-POOL|CC_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
+        (ref-TS02-C3::AQP-POOL|Cp_BatchDrainTrueFungible patron pool-id ouro-id owners owners (make-list n 2.0))
         (let
             (
                 (g:integer (env-gas))

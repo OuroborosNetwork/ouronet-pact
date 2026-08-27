@@ -91,7 +91,7 @@ settled on last drain), finalize touches only: the ≤7 aggregates (set 0), `nns
 The drain is an **unknown, large N** (13k NFTs). A **defpact has a fixed step count** decided at start — it
 cannot scale to an arbitrary, UI-discovered position count, and a stuck/oversized step strands the pact.
 So:
-- **Drain = repeatable parallel *defuns*.** Each drain tx is an independent `CC_BatchDrain*` call: read live
+- **Drain = repeatable parallel *defuns*.** Each drain tx is an independent `Cp_BatchDrain*` call: read live
   tracker rows for a chunk, `bulk-transfer + clear tracker (nns -= count)` + per-drained-user `unn -= 1`
   and settle-if-`unn==0` (§4). Idempotent (re-reads live rows), parallelizable (disjoint tracker rows),
   submit as many as the UI needs — exactly like v1's batches but with **no aggregate/score-delta work**.
@@ -116,7 +116,7 @@ Linear, self-contained, no defpact — the common case for small/medium pools.
 ## 8. v2 — BATCH version (paginated, large pools)
 
 **Phase A — DRAIN (parallel, defun, no defpact).** UI reads remaining positions (`URH_Vacate*Inventory`)
-and submits **independent** `CC_BatchDrain*` txs, each: `bulk-transfer chunk + clear tracker rows + nns -=
+and submits **independent** `Cp_BatchDrain*` txs, each: `bulk-transfer chunk + clear tracker rows + nns -=
 count`, plus per-user `unn -= drained` and settle-on-`unn==0` (§4). No aggregate/score work → per-position
 cost ≈ transfer floor → cap ~700–800/tx (calibrated). Parallel-safe (disjoint tracker rows, no shared
 aggregate touched).
@@ -124,15 +124,15 @@ aggregate touched).
 > **Batch-slicing constraint (inherited from v1):** the TFT/collectable bulk-transfer requires **unique
 > receivers**, so a single drain batch must not carry two legs with the **same owner** (both would resolve
 > to the same receiver). The UI slices batches by unique owner (`UC_Vacate*LegsToBulkArrays` maps leg→owner
-> without aggregating). Same rule the v1 `CC_BatchVacate*` batches follow.
+> without aggregating). Same rule the v1 `Cp_BatchVacate*` batches follow.
 
 > **STATUS — Step 3 drain paths COMPLETE + runtime-proven for ALL asset families.** All reuse the
 > asset-agnostic `XI_2|SettleBeneficiaryRewardsOnly` (Bank→Book→Checkpoint reward triple), drop their
 > `XE_Apply*StakeDelta`, and never finalize:
-> - **TF** — `CC_BatchDrainTrueFungible` (`18e3e55`), proven by `TX-VCT-DRAIN` (15 assertions).
-> - **OF** — `CC_BatchDrainOrtoFungible` (`aee4a11` code / `f8bbcf6` test `TX-FVT-OF-DRAIN`, 7 assertions):
+> - **TF** — `Cp_BatchDrainTrueFungible` (`18e3e55`), proven by `TX-VCT-DRAIN` (15 assertions).
+> - **OF** — `Cp_BatchDrainOrtoFungible` (`aee4a11` code / `f8bbcf6` test `TX-FVT-OF-DRAIN`, 7 assertions):
 >   tracker-clear only (no rollup/anchor).
-> - **Collectable (SF/NF)** — `CC_BatchDrainCollectable` (`aee4a11` / `4d5c577` test `TX-FVT-NF-DRAIN`, 9
+> - **Collectable (SF/NF)** — `Cp_BatchDrainCollectable` (`aee4a11` / `4d5c577` test `TX-FVT-NF-DRAIN`, 9
 >   assertions): tracker-clear + per-leg rollup + per-leg anchor refresh (delta-based; verified the anchor
 >   refresh never writes the per-user deb, so it's safe before the last-drain Bank). Proven for a **ghost
 >   nonce** (0-score) — occupancy via `unn`, the #FP1 point `nzs` misses.
@@ -198,7 +198,7 @@ per-user finalize cost.
 `URC_PoolFullyVacated` (nns-based) as the Phase-B gate, the existing `unclaimed`/`C_Collect` path.
 
 **New entrypoints:**
-- `CC_BatchDrain{TrueFungible,Collectable}` (+ Talos wiring) — Phase-A drain defuns (per asset family, like
+- `Cp_BatchDrain{TrueFungible,Collectable}` (+ Talos wiring) — Phase-A drain defuns (per asset family, like
   v1's batch vacate; no score/aggregate work).
 - `C_FinalizeVacate` (+ cap enforcing `nns == 0`) — Phase-B nuke defun (bulk-zero + generation bump).
 - Score `URC` readers updated to honor `vacate-generation` (stale row ⇒ 0); stake writers stamp the current

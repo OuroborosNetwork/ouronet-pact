@@ -1,7 +1,7 @@
 ;;
 ;; REPL/Kursan/AQP-scale-inject.repl — ENFORCED-FRESH INJECT at large population.
 ;; 50 synth staked in a deb-based vault, all made STALE (Elite-DEB raised AFTER staking),
-;; then CC_InjectFixChunk pages the fix + CC_InjectFinalize injects. Reuses VCTGAS synth.
+;; then CCp_InjectFixChunk pages the fix + CC_InjectFinalize injects. Reuses VCTGAS synth.
 ;;
 ;; This test FOUND a quadratic scan and DROVE its fix. Originally each fix round cost
 ;; ~3.96M gas (over 2M) + finalize ~2.1M — because URH_FvtStalePresentUsers re-scanned
@@ -112,9 +112,9 @@
 (print "")
 ;;
 ;; ============================================================================
-;; SCALE-INJ-FIX — page the deb-fix over the shrinking stale set (CC_InjectFixChunk 15/round).
+;; SCALE-INJ-FIX — page the deb-fix over the shrinking stale set (CCp_InjectFixChunk 15/round).
 ;; ============================================================================
-(begin-tx "SCALE-INJ-R1 - CC_InjectFixChunk 15")
+(begin-tx "SCALE-INJ-R1 - CCp_InjectFixChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 (env-sigs
@@ -142,7 +142,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
     )
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|CC_InjectFixChunk patron fvt-id ouro-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_InjectFixChunk patron fvt-id ouro-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -160,7 +160,7 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(begin-tx "SCALE-INJ-R2 - CC_InjectFixChunk 15")
+(begin-tx "SCALE-INJ-R2 - CCp_InjectFixChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 (env-sigs
@@ -188,7 +188,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
     )
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|CC_InjectFixChunk patron fvt-id ouro-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_InjectFixChunk patron fvt-id ouro-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -206,7 +206,7 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(begin-tx "SCALE-INJ-R3 - CC_InjectFixChunk 15")
+(begin-tx "SCALE-INJ-R3 - CCp_InjectFixChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 (env-sigs
@@ -234,7 +234,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
     )
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|CC_InjectFixChunk patron fvt-id ouro-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_InjectFixChunk patron fvt-id ouro-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -252,7 +252,7 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(begin-tx "SCALE-INJ-R4 - CC_InjectFixChunk 15")
+(begin-tx "SCALE-INJ-R4 - CCp_InjectFixChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 (env-sigs
@@ -280,7 +280,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "ScaleInjFvt"))
     )
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|CC_InjectFixChunk patron fvt-id ouro-id 15)
+    (ref-TS02-C3::AQP-FVT|CCp_InjectFixChunk patron fvt-id ouro-id 15)
     (let
         (
             (g:integer (env-gas))

@@ -535,9 +535,9 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-FVT-DC-05 - CC_BatchVacateCollectables multi-owner (2 legs)")
+(begin-tx "TX-FVT-DC-05 - Cp_BatchVacateCollectables multi-owner (2 legs)")
 (print "")
-(print "=== TX-FVT-DC-05 — CC_BatchVacateCollectables 2 owner legs (1 batch drains) ==")
+(print "=== TX-FVT-DC-05 — Cp_BatchVacateCollectables 2 owner legs (1 batch drains) ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -613,9 +613,9 @@
         (enforce (> vacate-a 0) "owner-a tracker must hold stake")
         (enforce (> vacate-b 0) "owner-b tracker must hold stake")
         (print (format "<(URD vacate legs)> => {}" [inventory]))
-        (print "--- [TX-FVT-DC-05 · 02 · CC_BatchVacateCollectables (2 legs, 1 batch → auto-finalize)] ---")
-        (print (format "<(TS02-C3.AQP-POOL|CC_BatchVacateCollectables)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_BatchVacateCollectables
+        (print "--- [TX-FVT-DC-05 · 02 · Cp_BatchVacateCollectables (2 legs, 1 batch → auto-finalize)] ---")
+        (print (format "<(TS02-C3.AQP-POOL|Cp_BatchVacateCollectables)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|Cp_BatchVacateCollectables
                 patron pool-id dpsf-id true
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
@@ -736,7 +736,7 @@
 (print "=== END TX-FVT-DC-NNS =======================================================")
 (print "")
 ;; DEFERRED (see TEST_DEFERRED.md + README_VACATE_UI.md):
-;; - DPNF Bloodshed-scale vacate (repeat CC_BatchVacateCollectables per owner / nonce chunk)
-;; - CC_BatchVacateTrueFungible + CC_BatchVacateOrtoFungible on class-0 LP pool
+;; - DPNF Bloodshed-scale vacate (repeat Cp_BatchVacateCollectables per owner / nonce chunk)
+;; - Cp_BatchVacateTrueFungible + Cp_BatchVacateOrtoFungible on class-0 LP pool
 ;; - Bloodshed DPNF full-collection vacate gas limit (tune VACATE-GAS-MAX-*)
 (print "")

@@ -126,10 +126,10 @@ The paginated **`MTX|2|C_SweepRevokeAnchor` defpact** (step 5's `take N`) is cap
 fixed-step wall (same reason vacate dropped its defpact, §5.1). The scalable path is a **defun+gate twin** in
 `AQP-FVT`, mirroring the vacate-v2 drain shape (`VACATE-V2-DESIGN.md`):
 
-- **`CC_SweepBegin(patron, anchor-id)`** — the bracket: freeze every affected pool + swept-revoke the anchor
+- **`C_SweepBegin(patron, anchor-id)`** — the bracket: freeze every affected pool + swept-revoke the anchor
   (the reverse index survives the revoke, so nothing needs persisting), then open a **`FVT|SweepProgress`
   cursor** `{total, offset, active}` over the frozen recompute set. Recompute is *deferred*.
-- **`CC_SweepRecomputeChunk(patron, anchor-id, chunk)`** — pages `[offset, min(offset+chunk, total))` over the
+- **`Cp_SweepRecomputeChunk(patron, anchor-id, chunk)`** — pages `[offset, min(offset+chunk, total))` over the
   global-flattened present set via `XI_FvtSweepRecomputeWindow` (a FVT-local twin of the defpact's
   `XI_SweepRecomputeWindow` — both funnel through the SAME `XI_FvtSweepRecomputeChunk` leaf, so the two paths
   recompute identically). **Self-finalizing**: the chunk that reaches `total` unfreezes + closes the cursor;
@@ -137,7 +137,7 @@ fixed-step wall (same reason vacate dropped its defpact, §5.1). The scalable pa
   `SWEEP-CHUNK-MAX` backstop (the UI simulates the true optimum; the node gas meter is the real ceiling).
 - The single-tx `CC_SweepRevokeAnchor` (§D1) and the 2-step defpact are **kept as comparison oracles** — the
   cursor + freeze are *committed state* (the defun+gate's edge over the defpact's in-memory `yield`), so a
-  batch survives arbitrary tx boundaries. Talos: `AQP-FVT|CC_SweepBegin` / `AQP-FVT|CC_SweepRecomputeChunk`.
+  batch survives arbitrary tx boundaries. Talos: `AQP-FVT|C_SweepBegin` / `AQP-FVT|Cp_SweepRecomputeChunk`.
 - **Follow-up:** the ≥2-holder partial-page demo (a chunk leaving some stale so the pool stays frozen) needs a
   2-holder LP fixture; `SWEEP-CHUNK-MAX`'s per-holder coefficient is a generous placeholder pending a gas probe.
 
@@ -248,7 +248,7 @@ incrementally); first/last detection is trivially safe.
   `vacate-in-progress`), **collect** + **inject** (FVT, on `vacate-frozen`); `XI_MaybeFinalizeBatchVacate` → when
   `URC_PoolFullyVacated` (all ≤7 scores `nzs==0`) clear `vacate-in-progress` + re-enable stake + unfreeze the FVTs.
   Prove isolated (begin freezes; the 4 ops reject mid-vacate; finalize lifts all).
-- **Phase 2 — 3 batch functions.** `CC_BatchVacate{TrueFungible,OrtoFungible,Collectables}` + `VCT|C>BATCH-VACATE`
+- **Phase 2 — 3 batch functions.** `Cp_BatchVacate{TrueFungible,OrtoFungible,Collectables}` + `VCT|C>BATCH-VACATE`
   cap (owner-gate + validate the supplied slice vs the live tracker per kind — `URC_VacateTfLegBalancesOk` /
   `URC_VacateOrtoNoncesSufficient`+`…LegBeneficiaryOk` / `URC_VacateCollectableNoncesSufficient`+`…LegBeneficiaryOk`)
   + Talos wrappers + IGNIS. Skeleton (identical, only the consume line differs):
@@ -300,12 +300,12 @@ to 0 only when the beneficiary's TOTAL stake (all their legs/nonces, TF + OF) is
 (finalize) fires only on the genuinely-last batch, unifying TF and OF series automatically (§5-mixed-pool note).
 
 **Dual pools (class 0/1):** the UI dirty-reads BOTH `URH_VacateTrueFungiblePoolLegs` and
-`URH_VacateOrtoFungiblePoolLegs`, builds a TF series (`CC_BatchVacateTrueFungible`) AND an OF series
-(`CC_BatchVacateOrtoFungible`), and fires them as ONE campaign; finalize fires only when the whole pool is empty.
+`URH_VacateOrtoFungiblePoolLegs`, builds a TF series (`Cp_BatchVacateTrueFungible`) AND an OF series
+(`Cp_BatchVacateOrtoFungible`), and fires them as ONE campaign; finalize fires only when the whole pool is empty.
 
 **UI algorithm:** (1) read `aqp-class` + `PoolAssetId`; (2) dirty-read the class's lanes (TF+OF for 0/1; OF for 2;
 DPSF/DPNF for 3/4) via the `URD_Vacate*PoolLegs` scanners; (3) flatten to legs, partition into disjoint gas-bounded
-slices (across legs; within a leg by nonces for nonce kinds); (4) fire `CC_BatchVacate<Kind>` per slice; (5) on a
+slices (across legs; within a leg by nonces for nonce kinds); (4) fire `Cp_BatchVacate<Kind>` per slice; (5) on a
 validation/gas failure, re-read the affected lane and rebuild the remaining slices.
 
 ## 6. Cross-cutting decisions (recommendations)

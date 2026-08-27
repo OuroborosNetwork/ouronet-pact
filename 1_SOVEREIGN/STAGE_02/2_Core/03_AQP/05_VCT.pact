@@ -23,17 +23,17 @@
     (defun XB_VacateNonFungible:object{IgnisCollectorV1.OutputCumulator} (pool-id:string dpnf-id:string))
     ;; [C]   client
     (defun CC_FullVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
-    (defun CC_BatchVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun CC_BatchVacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchVacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun CC_BatchVacateCollectables:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchVacateCollectables:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun CC_BatchDrainTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchDrainTrueFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun CC_BatchDrainOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchDrainOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun CC_BatchDrainCollectable:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchDrainCollectable:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun C_AbortVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
     (defun C_FinalizeVacate:object{IgnisCollectorV1.OutputCumulator} (pool-id:string))
@@ -52,7 +52,7 @@
 ;;       same on-chain scan, standalone or as the family branch CC_FullVacate composes.
 ;;
 ;;   STATELESS BATCHED LEGS (multi-tx, Talos wired) — for pools too large to empty in one tx
-;;     CC_BatchVacate{TrueFungible,OrtoFungible,Collectables}(… owner/beneficiary/nonce slice …) —
+;;     Cp_BatchVacate{TrueFungible,OrtoFungible,Collectables}(… owner/beneficiary/nonce slice …) —
 ;;       UI splits inventory into gas-safe, disjoint (owner,beneficiary[,nonce]) slices and fires N
 ;;       parallel txs. There is NO finalize flag: the first batch auto-begins (freeze stake+unstake+
 ;;       the pool's FVTs), each batch drains its slice, and the batch that empties the pool
@@ -307,7 +307,7 @@
     ;; [CAP] pool-owner enforce predicate. MUST be a defun (not a defcap): every VCT|C>* vacate/abort
     ;; cap calls it BARE — `(CAP_VctVacatePoolOwner pool-id)` — as an inline enforce. A defcap bare-called
     ;; that way does NOT run its body, which silently no-opped the owner gate on the WHOLE vacate surface
-    ;; (CC_FullVacate / XB_Vacate* / CC_BatchVacate* / C_AbortVacate) — any non-owner could vacate or abort.
+    ;; (CC_FullVacate / XB_Vacate* / Cp_BatchVacate* / C_AbortVacate) — any non-owner could vacate or abort.
     ;; A defun runs the enforce, exactly like AQP-POOL::CAP_PoolOwner. Only the pool owner may vacate/abort.
     (defun CAP_VctVacatePoolOwner (pool-id:string)
         @doc "Vacate operations require tx sender ownership of the pool's canonical owner konto."
@@ -2794,15 +2794,15 @@
         )
     )
     ;; ═══════════════════════════════════════════════════════════════════════════
-    ;; PHASE 2 — CC_BatchVacate<Kind>: one tx of a UI-sliced multi-tx campaign. The UI dirty-reads the
+    ;; PHASE 2 — Cp_BatchVacate<Kind>: one tx of a UI-sliced multi-tx campaign. The UI dirty-reads the
     ;; URH_Vacate*PoolLegs scanners, splits into disjoint gas-bounded slices (across legs; within a leg by nonces
-    ;; for nonce kinds), and fires one CC_BatchVacate<Kind> per slice. Each: validate the slice vs the LIVE tracker
+    ;; for nonce kinds), and fires one Cp_BatchVacate<Kind> per slice. Each: validate the slice vs the LIVE tracker
     ;; + owner-gate (VCT|C>LEGS-*-VACATE), EnsureVacateBegun (first tx freezes stake/unstake pool-side + collect/
     ;; inject on the pool's FVTs), consume the slice, then MaybeFinalizeVacate with finalize=true (auto — honoured
     ;; only when URC_PoolFullyVacated, i.e. the genuinely-last batch, which then unfreezes). Serial block execution
     ;; makes this conflict-free; split beneficiaries drain incrementally.
     ;; ═══════════════════════════════════════════════════════════════════════════
-    (defun CC_BatchVacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchVacateOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
             dpof-id:string
@@ -2840,7 +2840,7 @@
             )
         )
     )
-    (defun CC_BatchVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchVacateTrueFungible:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
             dptf-id:string
@@ -2868,7 +2868,7 @@
             )
         )
     )
-    (defun CC_BatchDrainTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchDrainTrueFungible:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
             dptf-id:string
@@ -2878,11 +2878,11 @@
         )
         @doc "Vacate-v2 FAST-DRAIN: one TF batch that returns assets to owners and preserves each fully-drained \
             \ beneficiary's rewards, but does NOT touch scores and does NOT finalize. Same validation + owner gate \
-            \ as CC_BatchVacateTrueFungible (VCT|C>LEGS-TRUE-FUNGIBLE-VACATE, finalize=false), EnsureVacateBegun \
+            \ as Cp_BatchVacateTrueFungible (VCT|C>LEGS-TRUE-FUNGIBLE-VACATE, finalize=false), EnsureVacateBegun \
             \ (freeze if first), then XI_DrainTrueFungibleFromLegs (per-leg transfer+tracker-zero+rollup; \
             \ settle-once for beneficiaries whose last position drained). The pool stays FROZEN until \
             \ C_FinalizeVacate nukes the scores (generation bump + aggregate zero) once nns==0. Commit-forward: v1 \
-            \ CC_BatchVacateTrueFungible remains the abortable/score-delta path."
+            \ Cp_BatchVacateTrueFungible remains the abortable/score-delta path."
         (UEV_IMC)
         (with-capability
             (VCT|C>LEGS-TRUE-FUNGIBLE-VACATE pool-id dptf-id owner-ids beneficiary-ids amounts false)
@@ -2891,7 +2891,7 @@
                 (UC_TfLegsFromParallelArrays owner-ids beneficiary-ids amounts))
         )
     )
-    (defun CC_BatchDrainOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchDrainOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
             dpof-id:string
@@ -2901,10 +2901,10 @@
         )
         @doc "Vacate-v2 FAST-DRAIN OF batch: return each owner's DPOF nonces + preserve each fully-drained \
             \ beneficiary's rewards, but does NOT touch scores and does NOT finalize. Amounts resolved from the \
-            \ live tracker (whole-nonce). Same validation + owner gate as CC_BatchVacateOrtoFungible \
+            \ live tracker (whole-nonce). Same validation + owner gate as Cp_BatchVacateOrtoFungible \
             \ (VCT|C>LEGS-ORTO-FUNGIBLE-VACATE, finalize=false), EnsureVacateBegun (freeze if first), then \
             \ XI_DrainOrtoFungibleBatch. Pool stays FROZEN until C_FinalizeVacate nukes scores once nns==0. \
-            \ Commit-forward; v1 CC_BatchVacateOrtoFungible remains the abortable/score-delta path."
+            \ Commit-forward; v1 Cp_BatchVacateOrtoFungible remains the abortable/score-delta path."
         (UEV_IMC)
         (let
             (
@@ -2921,7 +2921,7 @@
             )
         )
     )
-    (defun CC_BatchDrainCollectable:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchDrainCollectable:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
             collectable-id:string
@@ -2933,9 +2933,9 @@
         )
         @doc "Vacate-v2 FAST-DRAIN collectable (SF son=true / NF son=false) batch: return each owner's nonces + \
             \ preserve each fully-drained beneficiary's rewards, but does NOT touch scores and does NOT finalize. \
-            \ Same validation + owner gate as CC_BatchVacateCollectables (VCT|C>LEGS-COLLECTABLE-VACATE, \
+            \ Same validation + owner gate as Cp_BatchVacateCollectables (VCT|C>LEGS-COLLECTABLE-VACATE, \
             \ finalize=false), EnsureVacateBegun (freeze if first), then XI_DrainCollectableBatch. Pool stays \
-            \ FROZEN until C_FinalizeVacate nukes scores once nns==0. Commit-forward; v1 CC_BatchVacateCollectables \
+            \ FROZEN until C_FinalizeVacate nukes scores once nns==0. Commit-forward; v1 Cp_BatchVacateCollectables \
             \ remains the abortable/score-delta path."
         (UEV_IMC)
         (with-capability
@@ -2947,7 +2947,7 @@
                 pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array)
         )
     )
-    (defun CC_BatchVacateCollectables:object{IgnisCollectorV1.OutputCumulator}
+    (defun Cp_BatchVacateCollectables:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
             collectable-id:string
@@ -2992,10 +2992,10 @@
     (defun C_FinalizeVacate:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string)
         @doc "Vacate-v2 FINALIZE (the nuke) — commit-forward terminal step of a v2 campaign. After the pool has \
-            \ been fully drained (nns==0) via CC_BatchDrain*, bulk-zero every employed score's aggregates + bump \
+            \ been fully drained (nns==0) via Cp_BatchDrain*, bulk-zero every employed score's aggregates + bump \
             \ their vacate-generation (lazily invalidating all per-user rows — the drained beneficiaries were \
             \ already settled during the drain), then clear vacate-in-progress, RE-ENABLE stake, and unfreeze the \
-            \ pool's FVTs. Pool-owner + nns==0 gated (in the cap). v1 CC_BatchVacate* auto-finalizes instead."
+            \ pool's FVTs. Pool-owner + nns==0 gated (in the cap). v1 Cp_BatchVacate* auto-finalizes instead."
         (UEV_IMC)
         (with-capability (VCT|C>FINALIZE-VACATE pool-id)
             (let

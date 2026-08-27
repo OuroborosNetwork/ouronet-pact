@@ -1,6 +1,6 @@
 ;;
 ;; REPL/deb-staleness-unstale-all-cc.repl — driver for the OWNER mass deb-unstale
-;; (CC_UnstaleAll). Loads the IDENTICAL fixture chain as deb-staleness-inject-cc.repl
+;; (CCp_UnstaleAll). Loads the IDENTICAL fixture chain as deb-staleness-inject-cc.repl
 ;; (through [6.4]_AQP-EXHAUSTIVE-COLLECT.repl, which stands up SubsidiaryTreasury +
 ;; ANHD's deb-based stake), then exercises the owner-run mass-unstale: the FVT owner
 ;; force-refreshes every stale present staker to make the entity injection-ready,
@@ -12,7 +12,7 @@
 ;;
 (print "")
 (print "================================================================")
-(print "FILE  REPL/deb-staleness-unstale-all-cc.repl  —  owner mass-unstale (CC_UnstaleAll)")
+(print "FILE  REPL/deb-staleness-unstale-all-cc.repl  —  owner mass-unstale (CCp_UnstaleAll)")
 (print "================================================================")
 (load "Stage00_Sanboxes.repl")
 (load "Stage01_Tester.repl")

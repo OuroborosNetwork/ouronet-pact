@@ -687,27 +687,27 @@
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 [amount]))
     )
-    (defun AQP-FVT|INFO_CC_InjectFixChunk:object{OuronetInfoV1.ClientInfo}
+    (defun AQP-FVT|INFO_CCp_InjectFixChunk:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-        @doc "Cost preview for AQP-FVT|CC_InjectFixChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
+        @doc "Cost preview for AQP-FVT|CCp_InjectFixChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Page the enforced-fresh FIX phase (up to `chunk` stale members)."
                  "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|CC_InjectFixChunk."]
+                 "Executes via TS02-C3.AQP-FVT|CCp_InjectFixChunk."]
                 [(format "Fixed up to {} stale members on FVT {} reward {}." [chunk fvt-id reward-dptf-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_CC_UnstaleAll:object{OuronetInfoV1.ClientInfo}
+    (defun AQP-FVT|INFO_CCp_UnstaleAll:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-        @doc "Cost preview for AQP-FVT|CC_UnstaleAll. Gas-station subsidised — no IGNIS/STOA to the patron."
+        @doc "Cost preview for AQP-FVT|CCp_UnstaleAll. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Owner mass deb-unstale (make injection-ready; no inject)."
                  "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|CC_UnstaleAll."]
+                 "Executes via TS02-C3.AQP-FVT|CCp_UnstaleAll."]
                 [(format "Unstaled up to {} members on FVT {}." [chunk fvt-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
@@ -751,27 +751,27 @@
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_CC_SweepBegin:object{OuronetInfoV1.ClientInfo}
+    (defun AQP-FVT|INFO_C_SweepBegin:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string)
-        @doc "Cost preview for AQP-FVT|CC_SweepBegin. Gas-station subsidised — no IGNIS/STOA to the patron."
+        @doc "Cost preview for AQP-FVT|C_SweepBegin. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Open a paginated re-score sweep (freeze + swept-revoke + cursor)."
                  "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|CC_SweepBegin."]
+                 "Executes via TS02-C3.AQP-FVT|C_SweepBegin."]
                 [(format "Opened sweep on anchor {}." [anchor-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_CC_SweepRecomputeChunk:object{OuronetInfoV1.ClientInfo}
+    (defun AQP-FVT|INFO_Cp_SweepRecomputeChunk:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string chunk:integer)
-        @doc "Cost preview for AQP-FVT|CC_SweepRecomputeChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
+        @doc "Cost preview for AQP-FVT|Cp_SweepRecomputeChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Page a re-score sweep (recompute the next `chunk` holders; final page unfreezes)."
                  "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|CC_SweepRecomputeChunk."]
+                 "Executes via TS02-C3.AQP-FVT|Cp_SweepRecomputeChunk."]
                 [(format "Recomputed up to {} holders on anchor {}'s sweep." [chunk anchor-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)

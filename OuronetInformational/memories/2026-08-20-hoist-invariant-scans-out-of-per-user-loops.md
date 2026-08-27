@@ -52,9 +52,9 @@ single-tx / defpact) get the speedup at once.
 
 All now fit the 2M block target with headroom (~18k/user inject, ~7k/holder sweep).
 
-**Watch-out:** a single-tx path can be fixed while a batch path still calls the old convenience leaf. `CC_InjectFixChunk`
+**Watch-out:** a single-tx path can be fixed while a batch path still calls the old convenience leaf. `CCp_InjectFixChunk`
 kept calling per-user `XI_FixUserFvtDebPenalized` (the scanning convenience) after the *sweep* path was hoisted — so
-sweep dropped to 106k but inject stayed at 1.4M until `CC_InjectFixChunk` was re-pointed at the `*In` twin (156af20).
+sweep dropped to 106k but inject stayed at 1.4M until `CCp_InjectFixChunk` was re-pointed at the `*In` twin (156af20).
 **When you hoist, grep every caller of the convenience leaf, not just the one you were measuring.**
 
 ## Follow-on audit — are the URH definitions themselves self-quadratic?

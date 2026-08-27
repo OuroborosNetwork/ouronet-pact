@@ -1,9 +1,9 @@
 ;; ============================================================================
-;; REPL/Stage_02/[6.2.8d]_AQP-UNSTALE-ALL-CC.repl — OWNER mass deb-unstale (CC_UnstaleAll).
+;; REPL/Stage_02/[6.2.8d]_AQP-UNSTALE-ALL-CC.repl — OWNER mass deb-unstale (CCp_UnstaleAll).
 ;;
 ;; Legend: <(...)>  live call echo   ·   <<TX-UNSTALEALL*>>  assertion tag.
-;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CC_UnstaleAll +
-;;         FVT|C>UNSTALE-ALL), 3_Talos/04_TS02-C3.pact (AQP-FVT|CC_UnstaleAll).
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CCp_UnstaleAll +
+;;         FVT|C>UNSTALE-ALL), 3_Talos/04_TS02-C3.pact (AQP-FVT|CCp_UnstaleAll).
 ;; REPL tests: deb-staleness-unstale-all-cc.repl.
 ;;
 ;; WHAT THIS PROVES — the owner-side counterpart to [6.2.8b] C_UnstaleMyScores: the FVT
@@ -85,7 +85,7 @@
         [
             ;; Emma is not the FVT owner ⇒ the CAP_EnforceAccountOwnership on the owner-konto refuses.
             (expect-failure "<<TX-UNSTALEALL02>> non-owner Emma REFUSED by the owner-gate"
-                (ref-TS02-C3::AQP-FVT|CC_UnstaleAll emma fvt-id auryn-id 100))
+                (ref-TS02-C3::AQP-FVT|CCp_UnstaleAll emma fvt-id auryn-id 100))
             ;; nothing was fixed — the staleness is untouched
             (expect "<<TX-UNSTALEALL02>> staleness untouched by the refused call" 1 (length (ref-FVT::URH_FvtStalePresentUsers fvt-id)))
         ]
@@ -102,7 +102,7 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-(print "--- [TX-UNSTALEALL03 · 01 · CC_UnstaleAll refreshes every stale staker, penalized] ---")
+(print "--- [TX-UNSTALEALL03 · 01 · CCp_UnstaleAll refreshes every stale staker, penalized] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -117,7 +117,7 @@
     )
     (let
         (
-            (report:string (ref-TS02-C3::AQP-FVT|CC_UnstaleAll anhd fvt-id auryn-id 100))
+            (report:string (ref-TS02-C3::AQP-FVT|CCp_UnstaleAll anhd fvt-id auryn-id 100))
         )
         (let
             (
@@ -164,7 +164,7 @@
     )
     (let
         (
-            (report:string (ref-TS02-C3::AQP-FVT|CC_UnstaleAll anhd fvt-id auryn-id 100))
+            (report:string (ref-TS02-C3::AQP-FVT|CCp_UnstaleAll anhd fvt-id auryn-id 100))
         )
         (map print
             [

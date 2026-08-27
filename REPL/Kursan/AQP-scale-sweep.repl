@@ -1,6 +1,6 @@
 ;;
 ;; REPL/Kursan/AQP-scale-sweep.repl — ANCHOR SWEEP at large population (50 holders).
-;; Proves the sweep CC-batch (CC_SweepBegin + CC_SweepRecomputeChunk) over 50 present
+;; Proves the sweep CC-batch (C_SweepBegin + Cp_SweepRecomputeChunk) over 50 present
 ;; holders: revoke an anchor, recompute all 50 in rounds under 2M, freeze holds between
 ;; rounds, cursor closes. Reuses VCTGAS synth accounts.
 ;;
@@ -104,7 +104,7 @@
 ;; SCALE-SWP-BEGIN — revoke the anchor: freeze pools + swept-revoke + open cursor (total=50).
 ;; Recompute is DEFERRED (synth promiles unchanged here).
 ;; ============================================================================
-(begin-tx "SCALE-SWP-BEGIN - CC_SweepBegin (revoke + freeze + open cursor)")
+(begin-tx "SCALE-SWP-BEGIN - C_SweepBegin (revoke + freeze + open cursor)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 (env-sigs
@@ -121,7 +121,7 @@
         }
     ]
 )
-(print "--- [SCALE-SWP-BEGIN · CC_SweepBegin] ---")
+(print "--- [SCALE-SWP-BEGIN · C_SweepBegin] ---")
 (let
     (
         (patron:string KST.ANHD)
@@ -135,7 +135,7 @@
         (probe-user:string (VCTGAS.UC_SynthAccount 1))
     )
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|CC_SweepBegin patron anchor-id)
+    (ref-TS02-C3::AQP-FVT|C_SweepBegin patron anchor-id)
     (let
         (
             (g:integer (env-gas))
@@ -157,7 +157,7 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(begin-tx "SCALE-SWP-R1 - CC_SweepRecomputeChunk 15")
+(begin-tx "SCALE-SWP-R1 - Cp_SweepRecomputeChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 (env-sigs
@@ -185,7 +185,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|CC_SweepRecomputeChunk patron anchor-id 15)
+    (ref-TS02-C3::AQP-FVT|Cp_SweepRecomputeChunk patron anchor-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -206,7 +206,7 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(begin-tx "SCALE-SWP-R2 - CC_SweepRecomputeChunk 15")
+(begin-tx "SCALE-SWP-R2 - Cp_SweepRecomputeChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 (env-sigs
@@ -234,7 +234,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|CC_SweepRecomputeChunk patron anchor-id 15)
+    (ref-TS02-C3::AQP-FVT|Cp_SweepRecomputeChunk patron anchor-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -255,7 +255,7 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(begin-tx "SCALE-SWP-R3 - CC_SweepRecomputeChunk 15")
+(begin-tx "SCALE-SWP-R3 - Cp_SweepRecomputeChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 (env-sigs
@@ -283,7 +283,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|CC_SweepRecomputeChunk patron anchor-id 15)
+    (ref-TS02-C3::AQP-FVT|Cp_SweepRecomputeChunk patron anchor-id 15)
     (let
         (
             (g:integer (env-gas))
@@ -304,7 +304,7 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(begin-tx "SCALE-SWP-R4 - CC_SweepRecomputeChunk 15")
+(begin-tx "SCALE-SWP-R4 - Cp_SweepRecomputeChunk 15")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
 (env-sigs
@@ -332,7 +332,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid "ScaleSwpPool"))
     )
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|CC_SweepRecomputeChunk patron anchor-id 15)
+    (ref-TS02-C3::AQP-FVT|Cp_SweepRecomputeChunk patron anchor-id 15)
     (let
         (
             (g:integer (env-gas))

@@ -6,7 +6,7 @@ fix-plan numbers are in `README.md`.
 > **Superseded surface (Phase 4, commits 57f5a6e / 96c33f8):** entries below that name the old vacate API
 > (`C_FullVacate*`, `C_Vacate*Legs`) or the FULL-only validators (`URC_VacateFullBatch*`,
 > `URC_Vacate*LegsBeneficiaryOk`) refer to code REMOVED in Phase 4 + its closeout. Live surface: `CC_FullVacate`
-> / `XB_Vacate*` / `CC_BatchVacate*`. Append-only record kept for history.
+> / `XB_Vacate*` / `Cp_BatchVacate*`. Append-only record kept for history.
 
 ---
 

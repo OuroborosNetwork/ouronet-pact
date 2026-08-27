@@ -2,9 +2,9 @@
 ;; REPL/Stage_02/[6.2.8c]_AQP-INJECT-CC.repl — enforced-fresh inject CC-batch (#FP4.3).
 ;;
 ;; Legend: <(...)>  live call echo   ·   <<TX-INJECT-CC*>>  assertion tag.
-;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CC_InjectFixChunk +
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CCp_InjectFixChunk +
 ;;         CC_InjectFinalize + FVT|C>INJECT-FIX + INJECT-FIX-CHUNK-MAX), 3_Talos/
-;;         04_TS02-C3.pact (AQP-FVT|CC_InjectFixChunk / AQP-FVT|CC_InjectFinalize).
+;;         04_TS02-C3.pact (AQP-FVT|CCp_InjectFixChunk / AQP-FVT|CC_InjectFinalize).
 ;; REPL tests: deb-staleness-inject-cc.repl.
 ;;
 ;; WHAT THIS PROVES — the paginated (defun+gate) twin of the fixed 2-step MTX|2|C_Inject
@@ -13,7 +13,7 @@
 ;;   1. ANHD moves his own Elite-DEB DOWN -> his SubsidiaryTreasury scores go STALE.
 ;;   2. CC_InjectFinalize REFUSES to inject while any staker is stale (the enforced-fresh
 ;;      gate) -> expect-failure.
-;;   3. CC_InjectFixChunk pages the stale set (shrinks as fixed) until none remain.
+;;   3. CCp_InjectFixChunk pages the stale set (shrinks as fixed) until none remain.
 ;;   4. CC_InjectFinalize now injects on the FRESH divisor — G advances, mirror resynced.
 ;; Single present staker (ANHD) ⇒ one fix chunk clears the set (parity with DEB06 + the
 ;; defpact, both terminal-in-one on this fixture); the >=2-staker partial-page demo (a
@@ -66,7 +66,7 @@
 ;;
 ;;|| NEXT >
 ;;|| Staleness committed. The inject must NOT proceed until every staker is fresh —
-;;|| CC_InjectFinalize refuses, CC_InjectFixChunk pages the fix, then finalize injects.
+;;|| CC_InjectFinalize refuses, CCp_InjectFixChunk pages the fix, then finalize injects.
 ;;
 ;; NOTE: each Talos client call is its OWN tx — that IS how a paginated inject runs on chain (fix chunks and the
 ;; finalize are separate submissions). One gas-station settlement (XB_DynamicFuelKDA) per tx.
@@ -103,7 +103,7 @@
 ;;|| NEXT >
 ;;|| PAGE the fix in its own tx — the stale set shrinks to empty.
 ;;
-(begin-tx "TX-INJECT-CC03 - CC_InjectFixChunk pages the stale set to empty")
+(begin-tx "TX-INJECT-CC03 - CCp_InjectFixChunk pages the stale set to empty")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -121,8 +121,8 @@
         (bunnies-pool:string (ref-SCR::UR_SCR|ScoreAqpoolLink bunnies-score))
     )
     ;; chunk=100 covers the (single-staker) set; the stale set shrinks to empty
-    (print (format "<(INJECT-CC03 AQP-FVT|CC_InjectFixChunk chunk=100)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|CC_InjectFixChunk anhd fvt-id auryn-id 100)]))
+    (print (format "<(INJECT-CC03 AQP-FVT|CCp_InjectFixChunk chunk=100)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|CCp_InjectFixChunk anhd fvt-id auryn-id 100)]))
     (map print
         [
             (format "<(INJECT-CC03 post-fix: stale-count)> => {}" [(length (ref-FVT::URH_FvtStalePresentUsers fvt-id))])

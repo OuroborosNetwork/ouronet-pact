@@ -190,7 +190,7 @@
             (i-inj:object (AQP-INFO.AQP-FVT|INFO_Inject anhd "FVT-x" "OURO-x" 100.0))
             (i-col:object (AQP-INFO.AQP-FVT|INFO_Collect anhd "FVT-x" 3 "T-x" "OURO-x"))
             (i-unst:object (AQP-INFO.AQP-FVT|INFO_UnstaleMyScores anhd ["FVT-x"]))
-            (i-fix:object (AQP-INFO.AQP-FVT|INFO_CC_InjectFixChunk anhd "FVT-x" "OURO-x" 10))
+            (i-fix:object (AQP-INFO.AQP-FVT|INFO_CCp_InjectFixChunk anhd "FVT-x" "OURO-x" 10))
             (i-sweep:object (AQP-INFO.AQP-FVT|INFO_CC_SweepRevokeAnchor anhd "ANK-x"))
         )
         (map print
@@ -206,7 +206,7 @@
                 (expect "<<FVT>> collect base ignis-full == GAS|COLLECT (500)" AQP-FVT.GAS|COLLECT (at "ignis-full" (at "ignis" i-col)))
                 (expect "<<FVT>> unstale ignis-full == GAS|UNSTALE (500)" AQP-FVT.GAS|UNSTALE (at "ignis-full" (at "ignis" i-unst)))
                 ;; subsidised ops: zero to the patron
-                (expect "<<FVT>> CC_InjectFixChunk subsidised (ignis 0)" 0.0 (at "ignis-full" (at "ignis" i-fix)))
+                (expect "<<FVT>> CCp_InjectFixChunk subsidised (ignis 0)" 0.0 (at "ignis-full" (at "ignis" i-fix)))
                 (expect "<<FVT>> CC_SweepRevokeAnchor subsidised (ignis 0)" 0.0 (at "ignis-full" (at "ignis" i-sweep)))
             ]
         )

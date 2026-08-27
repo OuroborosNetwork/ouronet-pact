@@ -457,11 +457,11 @@
 (print "")
 (begin-tx "TX-FVT-NF-DRAIN - vacate-v2 collectable(NF) fast-drain: nonce back + occupancy cleared + not finalized")
 (print "")
-(print "=== TX-FVT-NF-DRAIN — v2 CC_BatchDrainCollectable(son=false): return nonce, occupancy via unn (ghost) ==")
+(print "=== TX-FVT-NF-DRAIN — v2 Cp_BatchDrainCollectable(son=false): return nonce, occupancy via unn (ghost) ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; DEDICATED class-4 NF pool (freeze isolated). Mint 1 DHB nonce (a model-0 GHOST -> score 0), stake it, then
-;; FAST-DRAIN via CC_BatchDrainCollectable. Proves the collectable drain wiring end-to-end: nonce returns, the
+;; FAST-DRAIN via Cp_BatchDrainCollectable. Proves the collectable drain wiring end-to-end: nonce returns, the
 ;; pool nns / user unn track the ghost position (nns/unn go 0->1->0 — the #FP1 point, caught by occupancy not
 ;; nzs), settle-on-last-drain fires, score is UNTOUCHED (0 ghost), and the pool stays FROZEN (never finalizes).
 (let
@@ -537,7 +537,7 @@
                 (print "--- [TX-FVT-NF-DRAIN · 02 · FAST-DRAIN the nonce] ---")
                 (let
                     (
-                        (y:string (ref-TS02-C3::AQP-POOL|CC_BatchDrainCollectable patron pool-id dpnf-id false [owner-id] [beneficiary-id] [[stake-nonce]] [[1]]))
+                        (y:string (ref-TS02-C3::AQP-POOL|Cp_BatchDrainCollectable patron pool-id dpnf-id false [owner-id] [beneficiary-id] [[stake-nonce]] [[1]]))
                     )
                     (let
                         (
@@ -583,7 +583,7 @@
 ;; nonce, + v1's cheap model-0 delta). NfBench{V,D}{1,6}. Pool-owner keyset PK_Lumy signed through.
 (begin-tx "TX-NF-BENCH - vacate-v2 gas benchmark: concentrated NF v1-vacate vs v2-drain (N=1,6 nonces)")
 (print "")
-(print "=== TX-NF-BENCH — concentrated NF (1 ben) per-nonce marginal: v1 CC_BatchVacate vs v2 CC_BatchDrain ==")
+(print "=== TX-NF-BENCH — concentrated NF (1 ben) per-nonce marginal: v1 Cp_BatchVacate vs v2 Cp_BatchDrain ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 100000000)
 (let
@@ -646,8 +646,8 @@
                                 (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id ben dpnf-id minted)
                                 (let ((g0:integer (env-gas)))
                                     (if drain
-                                        (ref-TS02-C3::AQP-POOL|CC_BatchDrainCollectable patron pool-id dpnf-id false [owner-id] [ben] [minted] [amts])
-                                        (ref-TS02-C3::AQP-POOL|CC_BatchVacateCollectables patron pool-id dpnf-id false [owner-id] [ben] [minted] [amts]))
+                                        (ref-TS02-C3::AQP-POOL|Cp_BatchDrainCollectable patron pool-id dpnf-id false [owner-id] [ben] [minted] [amts])
+                                        (ref-TS02-C3::AQP-POOL|Cp_BatchVacateCollectables patron pool-id dpnf-id false [owner-id] [ben] [minted] [amts]))
                                     (- (env-gas) g0)
                                 )
                             )
@@ -693,7 +693,7 @@
 ;; model-0 N=6 above (vacate 95310 / drain 88563) to see how much model-1 inflates v1 (and that v2 is flat).
 (begin-tx "TX-NF-BENCH-M1 - model-1 KBN trait-scoring marginal: v1 vacate vs v2 drain (N=6)")
 (print "")
-(print "=== TX-NF-BENCH-M1 — model-1 (KBN trait scoring) N=6: v1 CC_BatchVacate vs v2 CC_BatchDrain ==")
+(print "=== TX-NF-BENCH-M1 — model-1 (KBN trait scoring) N=6: v1 Cp_BatchVacate vs v2 Cp_BatchDrain ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 100000000)
 (let
@@ -773,8 +773,8 @@
                                     (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner-id ben kbn-id ns)
                                     (let ((g0:integer (env-gas)))
                                         (if drain
-                                            (ref-TS02-C3::AQP-POOL|CC_BatchDrainCollectable patron pool-id kbn-id false [owner-id] [ben] [ns] [amts])
-                                            (ref-TS02-C3::AQP-POOL|CC_BatchVacateCollectables patron pool-id kbn-id false [owner-id] [ben] [ns] [amts]))
+                                            (ref-TS02-C3::AQP-POOL|Cp_BatchDrainCollectable patron pool-id kbn-id false [owner-id] [ben] [ns] [amts])
+                                            (ref-TS02-C3::AQP-POOL|Cp_BatchVacateCollectables patron pool-id kbn-id false [owner-id] [ben] [ns] [amts]))
                                         (- (env-gas) g0)
                                     )
                                 )

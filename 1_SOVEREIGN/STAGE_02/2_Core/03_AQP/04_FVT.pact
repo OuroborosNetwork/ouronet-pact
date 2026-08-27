@@ -203,18 +203,18 @@
     (defun CC_Inject:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
-    (defun CC_InjectFixChunk:string
+    (defun CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun CC_InjectFinalize:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
-    (defun CC_UnstaleAll:string
+    (defun CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun CC_SweepRevokeAnchor:string (patron:string anchor-id:string))
-    (defun CC_SweepBegin:string (patron:string anchor-id:string))
-    (defun CC_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
+    (defun C_SweepBegin:string (patron:string anchor-id:string))
+    (defun Cp_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
     (defun C_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string fvt-ids:[string]))
     (defun C_Collect:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
@@ -580,8 +580,8 @@
         frozen:bool
     )
     (defschema FVT|SweepProgress
-        @doc "Key = <Anchor-ID>. Cursor for the paginated defun+gate re-score sweep (CC_SweepBegin → \
-            \ CC_SweepRecomputeChunk*), the scalable twin of the fixed 2-step MTX|2|C_SweepRevokeAnchor defpact. \
+        @doc "Key = <Anchor-ID>. Cursor for the paginated defun+gate re-score sweep (C_SweepBegin → \
+            \ Cp_SweepRecomputeChunk*), the scalable twin of the fixed 2-step MTX|2|C_SweepRevokeAnchor defpact. \
             \ `total` = the recompute-set size captured at BEGIN (sweep-in-progress freeze holds URH_FvtPresentUsers \
             \ fixed across the batch's separate txs); `offset` = holders recomputed so far over the GLOBAL flattened \
             \ present set (present users concatenated across the boost-class's score-ids in order); `active` = a \
@@ -904,7 +904,7 @@
         (compose-capability (P|FVT|REMOTE-GOV))
     )
     (defcap FVT|C>INJECT-FIX (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-        @doc "Protects a paginated enforced-fresh inject FIX chunk (CC_InjectFixChunk) — the scalable prelude to \
+        @doc "Protects a paginated enforced-fresh inject FIX chunk (CCp_InjectFixChunk) — the scalable prelude to \
             \ CC_InjectFinalize, for stale sets exceeding one tx. Validates the SAME reward context as an inject \
             \ (not vacate-frozen, reward link row exists + enabled) minus the amount, so a fix pass is always tied \
             \ to a real reward link (the fix force-refreshes stale stakers + records the 2e penalty, exactly as \
@@ -921,7 +921,7 @@
         (compose-capability (P|SECURE-CALLER))
     )
     (defcap FVT|C>UNSTALE-ALL (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
-        @doc "Protects the OWNER-run mass deb-unstale (CC_UnstaleAll): the FVT entity owner force-refreshes up to \
+        @doc "Protects the OWNER-run mass deb-unstale (CCp_UnstaleAll): the FVT entity owner force-refreshes up to \
             \ `chunk` currently-stale present stakers to make the entity INJECTION-READY, WITHOUT injecting. Uses \
             \ the SAME penalized fix as an inject's fix-phase (XI_FixUserFvtDebPenalizedIn records the 2e forced-fix \
             \ count on (fvt, reward-dptf, user) → the user reimburses it in non-discountable IGNIS at his next \
@@ -1015,8 +1015,8 @@
         (compose-capability (P|FVT|REMOTE-GOV))
     )
     (defcap FVT|C>SWEEP-DRAIN (patron:string anchor-id:string chunk:integer)
-        @doc "Protects a paginated re-score sweep CHUNK (CC_SweepRecomputeChunk). The sweep was authorized + the \
-            \ anchor swept-revoked at CC_SweepBegin (owner enforced in ANK|XE>SWEEP-REVOKE); a chunk only COMPLETES \
+        @doc "Protects a paginated re-score sweep CHUNK (Cp_SweepRecomputeChunk). The sweep was authorized + the \
+            \ anchor swept-revoked at C_SweepBegin (owner enforced in ANK|XE>SWEEP-REVOKE); a chunk only COMPLETES \
             \ the already-committed recompute under the freeze, so it re-checks the cursor is ACTIVE (honest \
             \ completion — re-enforcing owner per chunk is unnecessary; premature unfreeze is impossible because \
             \ the body unfreezes only when offset reaches total). `chunk` is bounded by the loose gas backstop \
@@ -1337,8 +1337,8 @@
         )
     )
     (defun UR_FVT|SweepActive:bool (anchor-id:string)
-        @doc "True while a paginated re-score sweep is open for anchor-id (gates CC_SweepRecomputeChunk; blocks a \
-            \ double CC_SweepBegin)."
+        @doc "True while a paginated re-score sweep is open for anchor-id (gates Cp_SweepRecomputeChunk; blocks a \
+            \ double C_SweepBegin)."
         (at "active" (UR_FVT|SweepProgress anchor-id))
     )
     (defun UR_FVT|CommonDenominator:string (fvt-id:string)
@@ -2549,7 +2549,7 @@
     )
     (defun URC_FvtSweepTotalPresent:integer (score-ids:[string])
         @doc "Total present holders across every FVT member employing the swept boost-class = the paginated \
-            \ recompute-set size for CC_SweepBegin. Read-only; sweep-in-progress keeps URH_FvtPresentUsers fixed \
+            \ recompute-set size for C_SweepBegin. Read-only; sweep-in-progress keeps URH_FvtPresentUsers fixed \
             \ across the CC-batch's txs. FVT-local twin of MTX-AQP::URC_SweepTotalPresent (the defpact's copy) — \
             \ both fold the SAME URH_FvtPresentUsers, so they agree by construction."
         (let
@@ -2727,7 +2727,7 @@
     )
     (defun URH_FvtStalePresentUsers:[string] (fvt-id:string)
         @doc "HEAVY sweep scan (M3 #12): the FVT's present users who have ≥1 deb-stale member — the exact set that \
-            \ CC_Inject / the MTX|n|C_Inject defpact / CC_InjectFixChunk must fix before injecting. Computes the \
+            \ CC_Inject / the MTX|n|C_Inject defpact / CCp_InjectFixChunk must fix before injecting. Computes the \
             \ FVT's enabled members ONCE and reuses it across every present user (was O(users × ScoreEntityLink \
             \ scan) — the per-user re-scan a 50-user scale probe measured at ~2M gas; now O(scan + users))."
         (let
@@ -6011,7 +6011,7 @@
             )
         )
     )
-    (defun CC_InjectFixChunk:string
+    (defun CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "PAGE the enforced-fresh inject's FIX phase — the scalable prelude to CC_InjectFinalize, the defun+gate \
             \ twin of the fixed 2-step MTX|2|C_Inject defpact, for stale sets exceeding one tx. Fixes up to `chunk` \
@@ -6051,13 +6051,13 @@
     (defun CC_InjectFinalize:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "FINALIZE a paginated enforced-fresh inject: enforce that NO stale present user remains (the prior \
-            \ CC_InjectFixChunk pages made the divisor live), then inject on the fresh divisor via the shared \
+            \ CCp_InjectFixChunk pages made the divisor live), then inject on the fresh divisor via the shared \
             \ XI_FvtInjectCore — identical outcome to the single-tx CC_Inject and the MTX|2|C_Inject defpact terminal \
             \ step. The zero-stale gate is the enforced-fresh guarantee at the moment of inject (a heavy scan, so it \
             \ lives in the body, not the defcap). UEV_IMC + FVT|C>INJECT (same auth as any inject)."
         (UEV_IMC)
         (with-capability (FVT|C>INJECT patron fvt-id reward-dptf-id amount)
-            ;; enforced-fresh gate: refuse to inject while any present staker is stale (page CC_InjectFixChunk first).
+            ;; enforced-fresh gate: refuse to inject while any present staker is stale (page CCp_InjectFixChunk first).
             ;; The URH_ scan (select) MUST be computed in a let, NOT inside the enforce — Pact evaluates an enforce
             ;; predicate in read-only/sys-only mode, where select is disallowed. Fires before XI_FvtInjectCore's
             ;; custody transfer, so an aborted finalize moves no funds.
@@ -6066,15 +6066,15 @@
                     (stale-remaining:integer (length (URH_FvtStalePresentUsers fvt-id)))
                 )
                 (enforce (= 0 stale-remaining)
-                    "Stale stakers remain — page CC_InjectFixChunk until none remain before finalizing (or use single-tx CC_Inject)")
+                    "Stale stakers remain — page CCp_InjectFixChunk until none remain before finalizing (or use single-tx CC_Inject)")
                 (XI_FvtInjectCore patron fvt-id reward-dptf-id amount)
             )
         )
     )
-    (defun CC_UnstaleAll:string
+    (defun CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "OWNER-run mass deb-unstale: force-refresh up to `chunk` CURRENTLY-stale present stakers of `fvt-id` to \
-            \ make the entity INJECTION-READY, WITHOUT injecting — the inject's FIX phase (CC_InjectFixChunk) decoupled \
+            \ make the entity INJECTION-READY, WITHOUT injecting — the inject's FIX phase (CCp_InjectFixChunk) decoupled \
             \ from the inject. Same penalized fix (XI_FixUserFvtDebPenalizedIn: settle at old deb → refresh to live → \
             \ resync mirror, recording the 2e forced-fix count on this lane, which the user reimburses in IGNIS at his \
             \ next collect), so pre-unstaling tags stale users EXACTLY as a real inject would. No cursor: fixed users \
@@ -6156,12 +6156,12 @@
             )
         )
     )
-    (defun CC_SweepBegin:string
+    (defun C_SweepBegin:string
         (patron:string anchor-id:string)
         @doc "OPEN a paginated defun+gate re-score sweep — the scalable twin of CC_SweepRevokeAnchor (single-tx) \
             \ and MTX|2|C_SweepRevokeAnchor (fixed 2-step defpact). Mirrors steps 1-2 of the single-tx: FREEZE every \
             \ affected pool then swept-revoke the anchor globally (skips the #9 score-link lock), then records the \
-            \ frozen recompute-set size in an offset-0 cursor. Recompute is deferred to repeated CC_SweepRecomputeChunk \
+            \ frozen recompute-set size in an offset-0 cursor. Recompute is deferred to repeated Cp_SweepRecomputeChunk \
             \ calls under the held freeze; the finalizing chunk unfreezes. Use this + chunking when the holder set \
             \ exceeds one tx; for small sets prefer the single-tx CC_SweepRevokeAnchor. Owner-initiated (the anchor \
             \ owner signs; CAP_Owner enforced inside ANK|XE>SWEEP-REVOKE). UEV_IMC + FVT|C>SWEEP-REVOKE."
@@ -6190,12 +6190,12 @@
                             (total:integer (URC_FvtSweepTotalPresent score-ids))
                         )
                         (WU_FvtSweepProgress anchor-id total 0 true)
-                        (format "Sweep begun for anchor {} (BoostClass {}): swept-revoked; {} holder(s) to recompute across {} score(s) — page via CC_SweepRecomputeChunk." [anchor-id boost-class-id total (length score-ids)]))
+                        (format "Sweep begun for anchor {} (BoostClass {}): swept-revoked; {} holder(s) to recompute across {} score(s) — page via Cp_SweepRecomputeChunk." [anchor-id boost-class-id total (length score-ids)]))
                 )
             )
         )
     )
-    (defun CC_SweepRecomputeChunk:string
+    (defun Cp_SweepRecomputeChunk:string
         (patron:string anchor-id:string chunk:integer)
         @doc "PAGE a paginated re-score sweep: recompute the next `chunk` holders over the GLOBAL flattened present \
             \ set [offset, min(offset+chunk, total)), advancing the cursor. When the window reaches `total` the set \

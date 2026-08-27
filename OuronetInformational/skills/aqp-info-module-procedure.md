@@ -186,7 +186,7 @@ degenerate case — reconstruct the 2 ATS legs via `ref-ATS::URC_RewardBearingTo
 `post-text` still names the state-dependent portion.
 
 ### 4e. Subsidised / gas-station-paid op
-`CC_*FixChunk`, `CC_UnstaleAll`, the sweep pages (`CC_SweepBegin/RecomputeChunk`) charge the patron
+`CC_*FixChunk`, `CCp_UnstaleAll`, the sweep pages (`C_SweepBegin/RecomputeChunk`) charge the patron
 nothing (gas-station subsidised). → `OI|UDC_NoIgnisCosts` + `OI|UDC_NoKadenaCosts`, and say so in text.
 
 ### 4f. Admin `A_` returning `:string` (GOV switches)

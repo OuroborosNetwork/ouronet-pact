@@ -11,7 +11,7 @@ in the enforce:
 ```lisp
 ;; WRONG — select inside the enforce predicate
 (enforce (= 0 (length (URH_FvtStalePresentUsers fvt-id)))
-    "Stale stakers remain — page CC_InjectFixChunk first")
+    "Stale stakers remain — page CCp_InjectFixChunk first")
 ```
 
 `URH_FvtStalePresentUsers` does a `select` over `FVT|T|UserPresence`. At runtime this aborted with:
@@ -37,7 +37,7 @@ Compute the scan in a `let`, then `enforce` on the plain value:
 ```lisp
 ;; RIGHT
 (let ((stale-remaining:integer (length (URH_FvtStalePresentUsers fvt-id))))
-    (enforce (= 0 stale-remaining) "Stale stakers remain — page CC_InjectFixChunk first")
+    (enforce (= 0 stale-remaining) "Stale stakers remain — page CCp_InjectFixChunk first")
     ...)
 ```
 

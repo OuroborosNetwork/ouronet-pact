@@ -6,7 +6,7 @@ Pool **vacate** is a **forced unstake**: same FVT recipe phases as unstake (`dir
 
 > **Rehaul note.** There is **no `finalize` flag** and there are **no UI-supplied Legs for a full vacate**. The two variants are:
 > - **Full** (`CC_FullVacate` / `XB_Vacate*`): input is **just the pool-id** (+ asset-id for the per-stream `XB_` forms). VCT scans the pool inventory **on-chain**, drains it, and auto begin+finalize.
-> - **Batch** (`CC_BatchVacate*`): the UI splits inventory into disjoint gas-safe slices and fires N txs. The **first** batch auto-begins (freezes); the batch that **empties the pool** auto-finalizes. No UI "finalize" claim — the chain decides via `URC_PoolFullyVacated`.
+> - **Batch** (`Cp_BatchVacate*`): the UI splits inventory into disjoint gas-safe slices and fires N txs. The **first** batch auto-begins (freezes); the batch that **empties the pool** auto-finalizes. No UI "finalize" claim — the chain decides via `URC_PoolFullyVacated`.
 
 ---
 
@@ -18,7 +18,7 @@ Class-0 LP farms usually have **two streams** (native TF LP + Z\| OF LP); other 
 1. READ pool class + per-stream inventory + unit-count
 2. TRY Full: if the whole pool empties in one ~2M-gas tx → CC_FullVacate(pool-id)   (or XB_Vacate* per stream)
 3. ELSE Batch: per stream, slice inventory at VACATE-GAS-MAX-*; build N disjoint
-   CC_BatchVacate* txs (each ≤ ~2M gas); shrink slice size and rebuild on gas fail
+   Cp_BatchVacate* txs (each ≤ ~2M gas); shrink slice size and rebuild on gas fail
 4. SHOW constructed tx list → user confirms → dump ALL txs on chain (parallel is fine)
 ```
 
@@ -33,7 +33,7 @@ Class-0 LP farms usually have **two streams** (native TF LP + Z\| OF LP); other 
 | `UR_AQP\|PoolStakeEnabled pool-id` | `AQP-POOL` | Observability |
 | `UR_VacateInProgress pool-id` | `AQP-VCT` | Mid-vacate resume / abort UI |
 
-**Resolve asset-id(s) for streams** (only needed for the per-stream `XB_`/`CC_BatchVacate*` forms; `CC_FullVacate` derives them on-chain):
+**Resolve asset-id(s) for streams** (only needed for the per-stream `XB_`/`Cp_BatchVacate*` forms; `CC_FullVacate` derives them on-chain):
 
 | Class | Stream | `asset-id` / `vacate-kind` |
 |-------|--------|----------------------------|
@@ -144,17 +144,17 @@ plan  = URHC_BuildVacateSlicePlan pool-id asset-id kind N
 slice = (at i (at "slices" plan))
 
 # TF — per-leg amount MUST equal the live tracker balance (URC_VacateTfLegBalancesOk)
-AQP-POOL|CC_BatchVacateTrueFungible
+AQP-POOL|Cp_BatchVacateTrueFungible
   patron pool-id dptf-id
   (at "owner-ids" slice) (at "beneficiary-ids" slice) (at "amounts" slice)
 
 # OF — whole-nonce; amounts resolved on-chain from the tracker (UI passes NO amounts)
-AQP-POOL|CC_BatchVacateOrtoFungible
+AQP-POOL|Cp_BatchVacateOrtoFungible
   patron pool-id dpof-id
   (at "owner-ids" slice) (at "beneficiary-ids" slice) (at "nonces-array" slice)
 
 # DPSF (son=true) / DPNF (son=false)
-AQP-POOL|CC_BatchVacateCollectables
+AQP-POOL|Cp_BatchVacateCollectables
   patron pool-id collectable-id son
   (at "owner-ids" slice) (at "beneficiary-ids" slice)
   (at "nonces-array" slice) (at "amounts-array" slice)
@@ -192,12 +192,12 @@ AQP-POOL|CC_BatchVacateCollectables
 |---------|------|-------|
 | **Full (agnostic)** | Whole pool empties in one ~2M tx | `CC_FullVacate(pool-id)` |
 | **Full (per stream)** | One stream, one tx | `XB_Vacate{TrueFungible,OrtoFungible,SemiFungible,NonFungible}` |
-| **Batch** | Pool too large for one tx | `CC_BatchVacate{TrueFungible,OrtoFungible,Collectables}` |
+| **Batch** | Pool too large for one tx | `Cp_BatchVacate{TrueFungible,OrtoFungible,Collectables}` |
 
 ```
 UI reads (URD / URDC / UC)
   → Full: CC_FullVacate(pool-id) / XB_Vacate*(pool-id[,asset])   (VCT scans on-chain)
-  → Batch: construct N× CC_BatchVacate* slices
+  → Batch: construct N× Cp_BatchVacate* slices
   → Talos AQP-POOL|*
   → AQP-VCT XI_EnsureVacateBegun (freeze) → XI_Vacate* → XI_MaybeFinalizeVacate (auto on drain)
 ```
@@ -210,7 +210,7 @@ UI reads (URD / URDC / UC)
 
 | Layer | Cap |
 |-------|-----|
-| Talos | `CC_FullVacate` / `XB_Vacate*` / `CC_BatchVacate*` compose `P\|TS`; `AQP\|C>ABORT-VACATE` for abort |
+| Talos | `CC_FullVacate` / `XB_Vacate*` / `Cp_BatchVacate*` compose `P\|TS`; `AQP\|C>ABORT-VACATE` for abort |
 | VCT recipe | `VCT\|C>VACATE` (agnostic master) · `VCT\|C>LEGS-*-VACATE` (batch) · `VCT\|C>ABORT-VACATE-POOL` |
 | Begin/finalize | `XI_EnsureVacateBegun` (freeze) / `XI_MaybeFinalizeVacate` (auto-unfreeze on drain) |
 | Unwind | `AQP-FVT` `XE_Run*VacateLeg` (IMC); FVT freeze via `FVT::XE_SetFvtVacateFrozen` |
@@ -221,8 +221,8 @@ UI reads (URD / URDC / UC)
 
 | Test | Variant |
 |------|---------|
-| `[6.2.4]_AQP-FVT-OF.repl` TX-FVT-07 / 08 | `CC_BatchVacateOrtoFungible` / `CC_FullVacate` |
-| `[6.2.4]_AQP-FVT-DC.repl` TX-FVT-DC-04 / 05 | `CC_FullVacate` / `CC_BatchVacateCollectables` |
-| `[6.2.5]_AQP-VCT.repl` | `CC_FullVacate` + `XB_Vacate*` + `CC_BatchVacate*` (multi-batch, partial, split-beneficiary) + Abort + rejects |
-| `[6.2.6]_AQP-VCT-GAS.repl` | `CC_BatchVacate*` chunk-gas ceilings |
+| `[6.2.4]_AQP-FVT-OF.repl` TX-FVT-07 / 08 | `Cp_BatchVacateOrtoFungible` / `CC_FullVacate` |
+| `[6.2.4]_AQP-FVT-DC.repl` TX-FVT-DC-04 / 05 | `CC_FullVacate` / `Cp_BatchVacateCollectables` |
+| `[6.2.5]_AQP-VCT.repl` | `CC_FullVacate` + `XB_Vacate*` + `Cp_BatchVacate*` (multi-batch, partial, split-beneficiary) + Abort + rejects |
+| `[6.2.6]_AQP-VCT-GAS.repl` | `Cp_BatchVacate*` chunk-gas ceilings |
 | `REPL/aqp-deploy-gate.repl` | Z + VCT gate |

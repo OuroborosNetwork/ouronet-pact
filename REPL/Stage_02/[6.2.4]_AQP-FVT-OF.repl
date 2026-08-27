@@ -393,9 +393,9 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-FVT-07 - CC_BatchVacateOrtoFungible (UI-sliced batch vacate)")
+(begin-tx "TX-FVT-07 - Cp_BatchVacateOrtoFungible (UI-sliced batch vacate)")
 (print "")
-(print "=== TX-FVT-07 — CC_BatchVacateOrtoFungible (single batch drains → auto-finalize) ===")
+(print "=== TX-FVT-07 — Cp_BatchVacateOrtoFungible (single batch drains → auto-finalize) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -443,9 +443,9 @@
         )
         (enforce (> vacate-amount 0.0) "tracker must hold stake before vacate")
         (print (format "<(vacate-nonce vacate-amount)> => {} / {}" [stake-nonce vacate-amount]))
-        (print "--- [TX-FVT-07 · 02 · CC_BatchVacateOrtoFungible (single batch drains → auto-finalize)] ---")
-        (print (format "<(TS02-C3.AQP-POOL|CC_BatchVacateOrtoFungible)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|CC_BatchVacateOrtoFungible
+        (print "--- [TX-FVT-07 · 02 · Cp_BatchVacateOrtoFungible (single batch drains → auto-finalize)] ---")
+        (print (format "<(TS02-C3.AQP-POOL|Cp_BatchVacateOrtoFungible)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|Cp_BatchVacateOrtoFungible
                 patron pool-id dpof-id
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
@@ -645,7 +645,7 @@
 (print "")
 (begin-tx "TX-FVT-OF-DRAIN - vacate-v2 OF fast-drain: nonce back + score UNTOUCHED + not finalized")
 (print "")
-(print "=== TX-FVT-OF-DRAIN — v2 CC_BatchDrainOrtoFungible: return nonce + preserve rewards, NO score delta ==")
+(print "=== TX-FVT-OF-DRAIN — v2 Cp_BatchDrainOrtoFungible: return nonce + preserve rewards, NO score delta ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; DEDICATED class-2 OF pool (so the drain's freeze is isolated from OfStakePool, which [6.2.5] reuses). Stake
@@ -719,7 +719,7 @@
                     (base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))
                     (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                     (unn1:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
-                    (y:string (ref-TS02-C3::AQP-POOL|CC_BatchDrainOrtoFungible patron pool-id dpof-id [owner-id] [beneficiary-id] [[nonce]]))
+                    (y:string (ref-TS02-C3::AQP-POOL|Cp_BatchDrainOrtoFungible patron pool-id dpof-id [owner-id] [beneficiary-id] [[nonce]]))
                 )
                 (let
                     (

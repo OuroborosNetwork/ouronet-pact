@@ -4,7 +4,7 @@
 
 > **Superseded surface (2026-08 Phase 4 vacate rehaul):** findings/snippets below that name the old vacate API —
 > `C_FullVacate*`, `C_Vacate*Legs`, and the `VCT|C>FULL-*` caps — refer to code REMOVED in Phase 4 (commit
-> 57f5a6e). The live surface is `CC_FullVacate` / `XB_Vacate*` / `CC_BatchVacate*` (auto-begin-freeze /
+> 57f5a6e). The live surface is `CC_FullVacate` / `XB_Vacate*` / `Cp_BatchVacate*` (auto-begin-freeze /
 > auto-finalize-on-drain, no finalize flag); see `README_VACATE_UI.md` + `README_TALOS_CATALOGUE.md`. This record
 > is kept append-only for history.
 **Scope:** `01_ANK.pact`, `02_SCORE.pact`, `03_AQP.pact` (POOL), `04_FVT.pact`, `05_VCT.pact` (~15,300 lines).

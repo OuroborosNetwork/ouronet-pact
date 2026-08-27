@@ -89,8 +89,8 @@ enforced-fresh inject, pool vacate), Ouronet uses a **defun+gate** shape rather 
 chunk unfreezes / injects only when the set is exhausted). Chunk size is bounded by a **loose backstop const**
 that seeds the UI's `/local` simulation (the node gas meter is the real ceiling; an oversized chunk aborts
 atomically). The single-tx path + any `defpact` are kept as **comparison oracles**. Live examples: vacate-v2
-drain (`CC_BatchDrain*`), sweep (`CC_SweepBegin`/`CC_SweepRecomputeChunk`), inject
-(`CC_InjectFixChunk`/`CC_InjectFinalize`). Design of record: `03_AQP/Audit/{SWEEP-VACATE,VACATE-V2,M3-DEB}-DESIGN.md`.
+drain (`Cp_BatchDrain*`), sweep (`C_SweepBegin`/`Cp_SweepRecomputeChunk`), inject
+(`CCp_InjectFixChunk`/`CC_InjectFinalize`). Design of record: `03_AQP/Audit/{SWEEP-VACATE,VACATE-V2,M3-DEB}-DESIGN.md`.
 
 ### DPMF historical note
 

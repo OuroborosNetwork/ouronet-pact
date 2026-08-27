@@ -114,28 +114,28 @@
                 (asset-id:string (at "asset-id" payload))
             )
             (if (= kind AQP-VCT.VACATE-KIND-TF)
-                (ref-TS02-C3::AQP-POOL|CC_BatchVacateTrueFungible
+                (ref-TS02-C3::AQP-POOL|Cp_BatchVacateTrueFungible
                     patron pool-id asset-id
                     (at "owner-ids" payload)
                     (at "beneficiary-ids" payload)
                     (at "tf-amounts" payload)
                 )
                 (if (= kind AQP-VCT.VACATE-KIND-OF)
-                    (ref-TS02-C3::AQP-POOL|CC_BatchVacateOrtoFungible
+                    (ref-TS02-C3::AQP-POOL|Cp_BatchVacateOrtoFungible
                         patron pool-id asset-id
                         (at "owner-ids" payload)
                         (at "beneficiary-ids" payload)
                         (at "nonces-array" payload)
                     )
                     (if (= kind AQP-VCT.VACATE-KIND-DPSF)
-                        (ref-TS02-C3::AQP-POOL|CC_BatchVacateCollectables
+                        (ref-TS02-C3::AQP-POOL|Cp_BatchVacateCollectables
                             patron pool-id asset-id true
                             (at "owner-ids" payload)
                             (at "beneficiary-ids" payload)
                             (at "nonces-array" payload)
                             (at "amounts-array" payload)
                         )
-                        (ref-TS02-C3::AQP-POOL|CC_BatchVacateCollectables
+                        (ref-TS02-C3::AQP-POOL|Cp_BatchVacateCollectables
                             patron pool-id asset-id false
                             (at "owner-ids" payload)
                             (at "beneficiary-ids" payload)
@@ -468,7 +468,7 @@
                     "owner-ids": (at "owner-ids" slice0),
                     "beneficiary-ids": (at "beneficiary-ids" slice0),
                     "nonces-array": (at "nonces-array" slice0),
-                    ;; OF batch resolves amounts on-chain (CC_BatchVacateOrtoFungible ignores amounts-array).
+                    ;; OF batch resolves amounts on-chain (Cp_BatchVacateOrtoFungible ignores amounts-array).
                     "amounts-array": (if (= vacate-kind AQP-VCT.VACATE-KIND-OF)
                         []
                         (at "amounts-array" slice0)

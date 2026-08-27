@@ -41,7 +41,7 @@ already have read-only cost-readers**, so reconstruct the total by summing:
   Add a `URC_RefreshTrueFungibleAnchorsIgnis(beneficiary-id, dptf-id)` (mirroring the ANK promile-refresh +
   AQP sync-count cost) and consume it. (Same gap for OF/SF/NF anchor refresh.)
 
-### vacate/drain (POOL wrappers `CC_FullVacate` / `CC_BatchVacate*` / `CC_BatchDrain*`)
+### vacate/drain (POOL wrappers `CC_FullVacate` / `Cp_BatchVacate*` / `Cp_BatchDrain*`)
 Preflight = `URHC_BuildVacateSlicePlan(pool-id, asset-id, vacate-kind, slice-count)` +
 `URHC_VacateUnitCountForKind(pool-id, asset-id, vacate-kind)` (TF→owner-count, OF/collectable→nonce-total).
 Two info shapes:
@@ -50,7 +50,7 @@ Two info shapes:
 - `AQP-POOL|INFO_BatchVacate…(same slice args as the CC_ execution)` → that batch's exact cost from its own
   leg list.
 The vacate cost is `bulk custody transfer + finalize base + per-leg increment × leg-count`. Determine the
-per-leg unit from `CC_BatchVacateTrueFungible`'s cumulator construction (tracker-ocs + score-ocs +
+per-leg unit from `Cp_BatchVacateTrueFungible`'s cumulator construction (tracker-ocs + score-ocs +
 unwind/bulk-oc, ~line 1900-2130 of `05_VCT.pact`); **add `URC_Vacate…IgnisUnit` on VCT if a clean unit isn't
 already exposed**, and route the flow's own cost through it for drift-proofing.
 - `C_AbortVacate` = empty cumulator (free); `C_FinalizeVacate` = `ignis|medium` tier (already a fixed-cost —

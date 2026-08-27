@@ -128,9 +128,9 @@ Sovereign recipes live in **AQP-FVT** (`C_*StakeFlow`). Talos resolves amounts/n
 | `AQP-POOL\|XB_VacateOrtoFungible` | patron, pool-id, dpof-id | One-tx vacate of ONE OF asset | Pool owner | On-chain scan | F |
 | `AQP-POOL\|XB_VacateSemiFungible` | patron, pool-id, dpsf-id | One-tx vacate of the DPSF collection | Pool owner (class 3) | On-chain scan | F |
 | `AQP-POOL\|XB_VacateNonFungible` | patron, pool-id, dpnf-id | One-tx vacate of the DPNF collection | Pool owner (class 4) | On-chain scan | F |
-| `AQP-POOL\|CC_BatchVacateTrueFungible` | patron, pool-id, dptf-id, owners, bens, amounts | One UI-sliced TF batch | Pool owner; disjoint gas-safe slice; per-leg amount == tracker | No finalize flag: first batch auto-begins (freezes), the batch that empties the pool auto-finalizes | F |
-| `AQP-POOL\|CC_BatchVacateOrtoFungible` | patron, pool-id, dpof-id, owners, bens, nonces | One UI-sliced OF batch | Pool owner; amounts resolved on-chain from tracker | Same auto-begin / auto-finalize | F |
-| `AQP-POOL\|CC_BatchVacateCollectables` | patron, pool-id, collectable-id, son, owners, bens, nonces, amounts | One UI-sliced DPSF (son=true) / DPNF (son=false) batch | Pool owner | Same auto-begin / auto-finalize | F |
+| `AQP-POOL\|Cp_BatchVacateTrueFungible` | patron, pool-id, dptf-id, owners, bens, amounts | One UI-sliced TF batch | Pool owner; disjoint gas-safe slice; per-leg amount == tracker | No finalize flag: first batch auto-begins (freezes), the batch that empties the pool auto-finalizes | F |
+| `AQP-POOL\|Cp_BatchVacateOrtoFungible` | patron, pool-id, dpof-id, owners, bens, nonces | One UI-sliced OF batch | Pool owner; amounts resolved on-chain from tracker | Same auto-begin / auto-finalize | F |
+| `AQP-POOL\|Cp_BatchVacateCollectables` | patron, pool-id, collectable-id, son, owners, bens, nonces, amounts | One UI-sliced DPSF (son=true) / DPNF (son=false) batch | Pool owner | Same auto-begin / auto-finalize | F |
 | `AQP-POOL\|C_AbortVacate` | patron, pool-id | Clear vacate-in-progress mid-campaign | Pool owner | **Stake stays disabled** (ops re-enable) | F |
 
 **UI offline helpers (not Talos):** `AQP-VCT.URD_Vacate*Inventory`, `URHC_BuildVacateSlicePlan`, `UC_ComputeMinSliceCount`.  

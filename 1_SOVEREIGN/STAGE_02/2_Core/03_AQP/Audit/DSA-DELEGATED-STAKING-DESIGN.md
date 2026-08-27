@@ -229,7 +229,7 @@ is a new per-`(fvt, reward-token)` accumulator on FVT.
 4. **Royalty disposal.** `A_WithdrawRoyalty` / `A_BurnRoyalty` / `A_FuelRoyalty(swpair)` + universal IGNIS→OURO
    pre-normalization; weekly-poolable.
 5. **Talos wiring** (open agency, oracle write, royalty disposal, delegator stake/unstake path) + tests, each
-   green-gated and committed like the streamed inject / CC_UnstaleAll.
+   green-gated and committed like the streamed inject / CCp_UnstaleAll.
 
 **Round B — heterogeneous split.** Reward-mode flag + per-type split matrix (storage decided here) + the collect
 branch in `MULTIPLET_BASE`. Tests.

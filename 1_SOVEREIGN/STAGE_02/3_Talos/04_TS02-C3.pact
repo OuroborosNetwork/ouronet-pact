@@ -165,17 +165,17 @@
     )
     (defun AQP-POOL|C_FinalizeVacate:string (patron:string pool-id:string))
     (defun AQP-POOL|CC_FullVacate:string (patron:string pool-id:string))
-    (defun AQP-POOL|CC_BatchVacateTrueFungible:string
+    (defun AQP-POOL|Cp_BatchVacateTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun AQP-POOL|CC_BatchVacateOrtoFungible:string
+    (defun AQP-POOL|Cp_BatchVacateOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun AQP-POOL|CC_BatchVacateCollectables:string
+    (defun AQP-POOL|Cp_BatchVacateCollectables:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun AQP-POOL|CC_BatchDrainTrueFungible:string
+    (defun AQP-POOL|Cp_BatchDrainTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun AQP-POOL|CC_BatchDrainOrtoFungible:string
+    (defun AQP-POOL|Cp_BatchDrainOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun AQP-POOL|CC_BatchDrainCollectable:string
+    (defun AQP-POOL|Cp_BatchDrainCollectable:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string pool-id:string))
     (defun AQP-POOL|XB_VacateOrtoFungible:string (patron:string pool-id:string dpof-id:string))
@@ -233,13 +233,13 @@
     (defun AQP-FVT|CC_Inject:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
-    (defun AQP-FVT|CC_InjectFixChunk:string
+    (defun AQP-FVT|CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun AQP-FVT|CC_InjectFinalize:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
     )
-    (defun AQP-FVT|CC_UnstaleAll:string
+    (defun AQP-FVT|CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun MTX-AQP|C_2|Inject:string
@@ -251,10 +251,10 @@
     (defun AQP-FVT|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
     )
-    (defun AQP-FVT|CC_SweepBegin:string
+    (defun AQP-FVT|C_SweepBegin:string
         (patron:string anchor-id:string)
     )
-    (defun AQP-FVT|CC_SweepRecomputeChunk:string
+    (defun AQP-FVT|Cp_SweepRecomputeChunk:string
         (patron:string anchor-id:string chunk:integer)
     )
     (defun AQP-FVT|C_UnstaleMyScores:string
@@ -1403,7 +1403,7 @@
     )
     (defun AQP-POOL|C_FinalizeVacate:string
         (patron:string pool-id:string)
-        @doc "Vacate-v2 FINALIZE (nuke) — after a pool has been fully drained via AQP-POOL|CC_BatchDrain*, this \
+        @doc "Vacate-v2 FINALIZE (nuke) — after a pool has been fully drained via AQP-POOL|Cp_BatchDrain*, this \
             \ bulk-zeroes every employed score + bumps their vacate-generation (lazily invalidating all per-user \
             \ rows), then clears vacate-in-progress, re-enables stake, and unfreezes the pool's FVTs. Pool-owner + \
             \ nns==0 gated in VCT; IGNIS on patron. The commit-forward terminal step of a v2 drain campaign."
@@ -1434,7 +1434,7 @@
             )
         )
     )
-    (defun AQP-POOL|CC_BatchVacateTrueFungible:string
+    (defun AQP-POOL|Cp_BatchVacateTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
         @doc "One TF batch of a UI-sliced vacate campaign. The first successful batch freezes the pool + its FVTs; \
             \ the batch that empties the pool auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
@@ -1445,17 +1445,17 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::CC_BatchVacateTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
+                    (ref-VCT::Cp_BatchVacateTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
                 (format "Batch-vacated {} TF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dptf-id])
             )
         )
     )
-    (defun AQP-POOL|CC_BatchDrainTrueFungible:string
+    (defun AQP-POOL|Cp_BatchDrainTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
         @doc "Vacate-v2 FAST-DRAIN — one TF batch that returns assets + preserves rewards WITHOUT touching scores \
-            \ and WITHOUT finalizing (cheaper than CC_BatchVacateTrueFungible for large pools). First batch freezes \
+            \ and WITHOUT finalizing (cheaper than Cp_BatchVacateTrueFungible for large pools). First batch freezes \
             \ the pool + its FVTs; the pool stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once \
-            \ empty. Owner enforced in VCT; IGNIS on patron. Commit-forward — CC_BatchVacateTrueFungible is the \
+            \ empty. Owner enforced in VCT; IGNIS on patron. Commit-forward — Cp_BatchVacateTrueFungible is the \
             \ abortable path."
         (with-capability (P|TS)
             (let
@@ -1464,18 +1464,18 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::CC_BatchDrainTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
+                    (ref-VCT::Cp_BatchDrainTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
                 (format "Fast-drained {} TF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
                     [(length owner-ids) pool-id dptf-id])
             )
         )
     )
-    (defun AQP-POOL|CC_BatchDrainOrtoFungible:string
+    (defun AQP-POOL|Cp_BatchDrainOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
         @doc "Vacate-v2 FAST-DRAIN — one OF batch that returns nonces + preserves rewards WITHOUT touching scores \
             \ and WITHOUT finalizing. Amounts resolved on-chain from the tracker. First batch freezes the pool + \
             \ its FVTs; it stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced \
-            \ in VCT; IGNIS on patron. Commit-forward — CC_BatchVacateOrtoFungible is the abortable path."
+            \ in VCT; IGNIS on patron. Commit-forward — Cp_BatchVacateOrtoFungible is the abortable path."
         (with-capability (P|TS)
             (let
                 (
@@ -1483,18 +1483,18 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::CC_BatchDrainOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+                    (ref-VCT::Cp_BatchDrainOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
                 (format "Fast-drained {} OF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
                     [(length owner-ids) pool-id dpof-id])
             )
         )
     )
-    (defun AQP-POOL|CC_BatchDrainCollectable:string
+    (defun AQP-POOL|Cp_BatchDrainCollectable:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
         @doc "Vacate-v2 FAST-DRAIN — one DPSF (son=true) / DPNF (son=false) batch that returns nonces + preserves \
             \ rewards WITHOUT touching scores and WITHOUT finalizing. First batch freezes the pool + its FVTs; it \
             \ stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced in VCT; \
-            \ IGNIS on patron. Commit-forward — CC_BatchVacateCollectables is the abortable path."
+            \ IGNIS on patron. Commit-forward — Cp_BatchVacateCollectables is the abortable path."
         (with-capability (P|TS)
             (let
                 (
@@ -1502,13 +1502,13 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::CC_BatchDrainCollectable pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
+                    (ref-VCT::Cp_BatchDrainCollectable pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
                 (format "Fast-drained {} collectable leg(s) on Pool {} (asset {}, son {}) — scores untouched, awaiting finalize."
                     [(length owner-ids) pool-id collectable-id son])
             )
         )
     )
-    (defun AQP-POOL|CC_BatchVacateOrtoFungible:string
+    (defun AQP-POOL|Cp_BatchVacateOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
         @doc "One OF batch of a UI-sliced vacate campaign (amounts resolved on-chain from the tracker). First batch \
             \ freezes; the emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
@@ -1519,12 +1519,12 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::CC_BatchVacateOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+                    (ref-VCT::Cp_BatchVacateOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
                 (format "Batch-vacated {} OF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dpof-id])
             )
         )
     )
-    (defun AQP-POOL|CC_BatchVacateCollectables:string
+    (defun AQP-POOL|Cp_BatchVacateCollectables:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
         @doc "One DPSF (son=true) / DPNF (son=false) batch of a UI-sliced vacate campaign. First batch freezes; the \
             \ emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
@@ -1535,7 +1535,7 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::CC_BatchVacateCollectables pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
+                    (ref-VCT::Cp_BatchVacateCollectables pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
                 (format "Batch-vacated {} collectable leg(s) on Pool {} (asset {}, son {})."
                     [(length owner-ids) pool-id collectable-id son])
             )
@@ -1926,7 +1926,7 @@
             )
         )
     )
-    (defun AQP-FVT|CC_InjectFixChunk:string
+    (defun AQP-FVT|CCp_InjectFixChunk:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "PAGE the enforced-fresh inject's fix phase — refresh up to `chunk` currently-stale stakers (penalized), \
             \ the scalable prelude to AQP-FVT|CC_InjectFinalize for stale sets exceeding one tx. Repeat until none \
@@ -1938,7 +1938,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
-                (let ((r:string (ref-FVT::CC_InjectFixChunk patron fvt-id reward-dptf-id chunk)))
+                (let ((r:string (ref-FVT::CCp_InjectFixChunk patron fvt-id reward-dptf-id chunk)))
                     (ref-TS01-A::XB_DynamicFuelKDA)
                     r
                 )
@@ -1947,7 +1947,7 @@
     )
     (defun AQP-FVT|CC_InjectFinalize:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "FINALIZE a paginated enforced-fresh inject: after CC_InjectFixChunk pages left ZERO stale, inject on \
+        @doc "FINALIZE a paginated enforced-fresh inject: after CCp_InjectFixChunk pages left ZERO stale, inject on \
             \ the fresh divisor + collect IGNIS on patron — same outcome as the single-tx AQP-FVT|CC_Inject. Lives \
             \ in AQP-FVT."
         (with-capability (P|TS)
@@ -1965,12 +1965,12 @@
             )
         )
     )
-    (defun AQP-FVT|CC_UnstaleAll:string
+    (defun AQP-FVT|CCp_UnstaleAll:string
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "OWNER mass deb-unstale — force-refresh up to `chunk` currently-stale present stakers (penalized, same \
             \ 2e tag as an inject's fix) to make the FVT INJECTION-READY, WITHOUT injecting. Repeat until the report \
             \ says injection-ready (or `all up to date` when nothing is stale), then run a light AQP-FVT|C_Inject. \
-            \ Owner-gated in AQP-FVT::CC_UnstaleAll. `chunk` is the UI's simulated slice (bounded by INJECT-FIX-CHUNK-MAX). \
+            \ Owner-gated in AQP-FVT::CCp_UnstaleAll. `chunk` is the UI's simulated slice (bounded by INJECT-FIX-CHUNK-MAX). \
             \ Lives in AQP-FVT."
         (with-capability (P|TS)
             (let
@@ -1978,7 +1978,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
-                (let ((r:string (ref-FVT::CC_UnstaleAll patron fvt-id reward-dptf-id chunk)))
+                (let ((r:string (ref-FVT::CCp_UnstaleAll patron fvt-id reward-dptf-id chunk)))
                     (ref-TS01-A::XB_DynamicFuelKDA)
                     r
                 )
@@ -2040,25 +2040,25 @@
             )
         )
     )
-    (defun AQP-FVT|CC_SweepBegin:string
+    (defun AQP-FVT|C_SweepBegin:string
         (patron:string anchor-id:string)
         @doc "OPEN a paginated (defun+gate) re-score sweep — the scalable twin of AQP-FVT|CC_SweepRevokeAnchor for \
             \ holder sets exceeding one tx: freezes the affected pools + swept-revokes the anchor, then defers the \
-            \ recompute to AQP-FVT|CC_SweepRecomputeChunk calls under the held freeze. Owner-initiated. Lives in AQP-FVT."
+            \ recompute to AQP-FVT|Cp_SweepRecomputeChunk calls under the held freeze. Owner-initiated. Lives in AQP-FVT."
         (with-capability (P|TS)
             (let
                 (
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
-                (let ((r:string (ref-FVT::CC_SweepBegin patron anchor-id)))
+                (let ((r:string (ref-FVT::C_SweepBegin patron anchor-id)))
                     (ref-TS01-A::XB_DynamicFuelKDA)
                     r
                 )
             )
         )
     )
-    (defun AQP-FVT|CC_SweepRecomputeChunk:string
+    (defun AQP-FVT|Cp_SweepRecomputeChunk:string
         (patron:string anchor-id:string chunk:integer)
         @doc "PAGE an open re-score sweep: recompute the next `chunk` holders over the frozen global present set, \
             \ advancing the cursor; the finalizing chunk (set exhausted) unfreezes the affected pools. `chunk` is \
@@ -2069,7 +2069,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
-                (let ((r:string (ref-FVT::CC_SweepRecomputeChunk patron anchor-id chunk)))
+                (let ((r:string (ref-FVT::Cp_SweepRecomputeChunk patron anchor-id chunk)))
                     (ref-TS01-A::XB_DynamicFuelKDA)
                     r
                 )

@@ -24,8 +24,8 @@ single-tx path + the defpact stay as comparison oracles), plus a user-facing sel
 
 | Work | Surface (AQP-FVT + Talos TS02-C3) | Proof |
 |------|-----------------------------------|-------|
-| **Sweep CC-batch** (H4 scaling) | `CC_SweepBegin` + `CC_SweepRecomputeChunk` + `FVT\|SweepProgress` cursor; loose `SWEEP-CHUNK-MAX` backstop | `[6.2.8]` via `deb-staleness-sweep-cc.repl` — same end-state as the `SWEEP01` defpact (agg 100→0, lane 20→0); freeze+cursor survive the tx boundary |
-| **Inject CC-batch** (M3 2d scaling) | `CC_InjectFixChunk` (pages the shrinking stale set) + `CC_InjectFinalize` (zero-stale gate → inject) | `[6.2.8c]` via `deb-staleness-inject-cc.repl` — gate refuses while stale, then injects on the fresh divisor (G advances), == single-tx `CC_Inject` |
+| **Sweep CC-batch** (H4 scaling) | `C_SweepBegin` + `Cp_SweepRecomputeChunk` + `FVT\|SweepProgress` cursor; loose `SWEEP-CHUNK-MAX` backstop | `[6.2.8]` via `deb-staleness-sweep-cc.repl` — same end-state as the `SWEEP01` defpact (agg 100→0, lane 20→0); freeze+cursor survive the tx boundary |
+| **Inject CC-batch** (M3 2d scaling) | `CCp_InjectFixChunk` (pages the shrinking stale set) + `CC_InjectFinalize` (zero-stale gate → inject) | `[6.2.8c]` via `deb-staleness-inject-cc.repl` — gate refuses while stale, then injects on the fresh divisor (G advances), == single-tx `CC_Inject` |
 | **Self-service unstale** (M3) | `C_UnstaleMyScores(patron, fvt-ids)` — refresh your OWN stale scores, **non-penalized** (only inject-forced fixes bill the 2e); detectors `URC_FvtUserHasStaleMember`/`StaleMemberCount` on the interface | `[6.2.8b]` — stale→fresh, mirror resynced, forced-fix count stays 0 |
 
 **#FP5 comprehensive green-run** — `bash REPL/run-aqp-audit.sh` = **ALL GREEN** (6 suites: comprehensive,

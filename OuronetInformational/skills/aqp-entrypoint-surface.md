@@ -50,12 +50,12 @@ IGNIS on issue = inline `1000.0` (no defconst); revokes = biggest-tier.
 `GAS|ISSUE-FVT 1000`, `GAS|ADD-SCORE-ENTITY 500`, `GAS|ISSUE-MULTIPLET-FAMILY 500`, `GAS|TOGGLE-SCORE-ENTITY-LINK 500`, `GAS|SET-MOSAIC 500`, `GAS|ADD-REWARD-LINK 500`, `GAS|TOGGLE-REWARD-LINK 500`, `GAS|SET-QUALITY-SPLIT 500`, `GAS|SET-COMMON-DENOMINATOR 500`, `GAS|INJECT 500`, `GAS|COLLECT 500`, `GAS|UNSTALE 500`.
 
 Config: `C_Issue` (1000, STOA `smart`), `C_RotateOwnership`/`C_Control` (medium), `C_SetCommonDenominator`, `C_SetMosaic`, `C_AddScoreEntity`, `C_ToggleScoreEntityLink`, `C_IssueMultipletFamily`, `C_AddRewardLink`, `C_ToggleRewardLink`, `C_SetQualitySplit` (each its named 500 const).
-Rewards: `C_Inject` / `C_InjectStream` / `CC_Inject` / `CC_InjectFinalize` (`GAS|INJECT` 500, custody), `CC_InjectFixChunk` / `CC_UnstaleAll` (subsidised, no IGNIS), `C_UnstaleMyScores` (`GAS|UNSTALE` 500), `C_Collect` (`GAS|COLLECT` 500, custody).
-Sweep: `CC_SweepRevokeAnchor` / `CC_SweepBegin` / `CC_SweepRecomputeChunk` (subsidised).
+Rewards: `C_Inject` / `C_InjectStream` / `CC_Inject` / `CC_InjectFinalize` (`GAS|INJECT` 500, custody), `CCp_InjectFixChunk` / `CCp_UnstaleAll` (subsidised, no IGNIS), `C_UnstaleMyScores` (`GAS|UNSTALE` 500), `C_Collect` (`GAS|COLLECT` 500, custody).
+Sweep: `CC_SweepRevokeAnchor` / `C_SweepBegin` / `Cp_SweepRecomputeChunk` (subsidised).
 
 ## 05_VCT — Vacate  (via `AQP-POOL|…` wrappers)
 No `GAS|` consts; batch/full return concatenated XI ICOs, custody only.
-`CC_FullVacate`, `CC_BatchVacateTrueFungible` / `…OrtoFungible` / `…Collectables`, `CC_BatchDrainTrueFungible` / `…OrtoFungible` / `…Collectable`, `C_AbortVacate` (empty cumulator), `C_FinalizeVacate` (medium-tier).
+`CC_FullVacate`, `Cp_BatchVacateTrueFungible` / `…OrtoFungible` / `…Collectables`, `Cp_BatchDrainTrueFungible` / `…OrtoFungible` / `…Collectable`, `C_AbortVacate` (empty cumulator), `C_FinalizeVacate` (medium-tier).
 
 ## 06_MTX-AQP — Matrix defpacts  (`MTX-AQP|…`)
 `C_2|Inject` (2-step fresh inject; inner `GAS|INJECT` 500), `C_2|SweepRevokeAnchor` (subsidised). Underlying `defpact MTX|2|C_Inject` / `MTX|2|C_SweepRevokeAnchor`.
