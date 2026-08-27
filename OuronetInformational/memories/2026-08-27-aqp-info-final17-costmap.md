@@ -175,6 +175,36 @@ class-3 pool + C_AddScore + REPL_BootstrapVault; query owned nonces via (DPDC:mo
 URD_AccountNonces owner id true. Same for OF (class-2, C_IssueOrtoFungibleScore, DPOF.URD_AccountNonces).
 REMAINING: only the 7 batch vacate/drain + FullVacate via VARIANT A.
 
+## VACATE variant-A — CONCRETE TF batch-vacate cost (read 05_VCT.pact:1942-2013)
+`CCp_BatchVacateTrueFungible` → `XI_VacateTrueFungibleFromLegs` → concat[unwind-oc, bulk-oc]:
+- unwind = `XI_1|VacateTrueFungibleUnwindFromLegs(pool-id, dptf-id, legs)` (1975):
+  - **per-LEG map** over `legs` (count = owner rows = URHC_VacateUnitCountForKind TF): each =
+    `AQP-POOL.XE_ZeroDptfTrackerSlot` → confirm tier (likely flat medium — VERIFY in 03_AQP).
+  - **per-BENEFICIARY map** over unique beneficiaries (`UC_VacateUniqueBeneficiariesFromLegs`):
+    each = `XI_2|VacateTrueFungibleBeneficiaryUnwind` (1942) = concat of the SAME shared pricers
+    as stake phases 3-5, byte-for-byte:
+      · XE_TrueFungibleBeneficiaryRollup  → SIP|URC_Biggest (×1)
+      · XI_3|RpsVacatePreZero             → FREE (0.0)
+      · XE_RefreshTrueFungibleStakeAnchors→ ANK.URC_TrueFungibleStakeAnchorRefreshIgnis(n-live) + SIP|URC_Biggest
+      · XE_ApplyTrueFungibleStakeDelta    → URC_StakeScoreDeltaSum(pool-id)   [all active scores; TF]
+      · XE_BookStakeUnclaimedCounts       → URC_BookStakeUnclaimedIgnis(distinct-fvts of THAT benef bundle)
+      · XE_CheckpointStakeRps             → URC_CheckpointStakeRpsIgnis
+    (each beneficiary's distinct-fvts/scores come from URHC_BuildStakeSettleBundle pool-id benef.)
+- bulk-oc = `TFT::C_MultiBulkTransfer` over receiver/amount arrays → reconstruct via TFT bulk pure
+  ctor + OI|UC_IfpFromOutputCumulator (like the stake transfer leg).
+So `URC_VacateTfBatchCostIfp` = Σ_legs trackerZero + Σ_uniqBenef [rollup+anchor+scoreDelta+book+checkpoint] + bulkIfp.
+Counts/lists from URHC_BuildVacateSlicePlan (owner-ids + beneficiary-ids) — already read-only.
+OF/coll variants: same shape (agent map): OF omits anchor+rollup; coll uses flat anchor + rollup×|nonces|.
+DRAIN: omits ApplyStakeDelta; per-benef settle-triple fires ONLY when UserUnn hits 0 (data-dependent —
+read each benef's unn and simulate the decrement). C_FullVacate = Σ over lanes of the batch recipe.
+
+### Variant-A wiring choice (owner wants ONE fn for exec+info)
+Cleanest: put `URC_Vacate*CostIfp` on AQP-VCT; INFO calls it. For true exec-billing-through-it,
+the exec currently bills via emergent XE_ cumulators — either (i) leave exec as-is and rely on a
+ground-truth test to lock exec==reader (drift caught by CI), or (ii) refactor exec to attach the
+reader's cumulator (bigger change). Recommend (i) first (safe, additive), (ii) as part of point-A rethink.
+Ground-truth like the stake fixtures: fresh vacate-ready pool, preview then real CCp_BatchVacate*, assert GAS delta.
+
 ## NEXT STEPS (ordered)
 1. TF ground-truth: full-boot staked pool → `INFO_StakeTrueFungible.ignis-need` == real IGNIS
    (token GAS-98c486052a51) balance delta of `AQP-POOL|CC_StakeTrueFungible`. Prove the TF pattern
