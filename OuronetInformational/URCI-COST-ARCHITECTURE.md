@@ -58,18 +58,25 @@ pre/post text), each shrinks to a few lines. Consequences:
 - **Size-rule (B) synergy:** `INFO-ONE` is already terribly big because it re-derives cost inline;
   the `URCi` refactor shrinks it dramatically. A and B help each other here.
 
-### Placement (owner, 2026-08-27): INFO modules are LAST, after `3_Talos`
+### Placement (owner, 2026-08-27): INFO modules live in `Z_Reads/`, LAST, after `3_Talos`
 INFO is a **pure read-only presentation layer** — it only *calls* core `URCi`s + reads state, and
 **nothing references it via `module{}`** (leaf; never triggers the interface cascade rule). So each
-stage's INFO module deploys **last in that stage's order, after `3_Talos`** — its own slot, e.g.
-`1_SOVEREIGN/STAGE_0N/4_Info/` (paralleling `0_Interfaces / 1_Utilities / 2_Core / 3_Talos`). This
-is the same "read-only goes last" architecture the slave `Stage_Z` modules already follow
-(`2_SLAVE/Stage_Z/01_DPL-UR.pact`, EXPLORER) — those are purely read functions placed dead-last.
-INFO stays **sovereign** (it's the official preview API), just positioned last. Deploying after
-everything it references means zero forward-reference risk, and being a leaf means editing it
-only ever redeploys the (small) INFO module.
+stage's INFO module deploys **dead-last**, in a new per-stage folder
+**`1_SOVEREIGN/STAGE_0N/Z_Reads/`** (after `0_Interfaces / 1_Utilities / 2_Core / 3_Talos`).
+- **Why `Z_Reads`, not `4_Info`:** `Z_` sorts **absolutely last alphabetically regardless of how
+  many numbered layers are ever added** (a future `4_`/`5_` core layer would slot *before* a `4_Info`;
+  `Z_` can never be displaced). It also mirrors the slave convention exactly — `2_SLAVE/Stage_Z`
+  (read-only, last: `DPL-UR`, `EXPLORER`) ↔ sovereign `Z_Reads` (read-only, last). "Reads" is the
+  right generalization: it houses pure-read presentation modules (INFO now; room for a sovereign
+  explorer-style reader later), not only "info".
+- INFO stays **sovereign** (it's the official preview API), just positioned last. Deploying after
+  everything it references = zero forward-reference risk; being a leaf means editing it only ever
+  redeploys the (small) INFO module.
 - **Relocation:** the consolidated per-stage INFO moves out of `2_Core` (where `INFO-ONE` /
-  `AQP-INFO` live today) into `4_Info/`, deployed after Talos.
+  `AQP-INFO` live today) into `Z_Reads/`.
+- **Load-order refactor required:** the REPL pipeline (`Z.repl`, `Stage01_Tester.repl`,
+  `Stage02_Tester.repl`, the `[x]` loaders) **and** the on-chain deploy sequence must load each
+  stage's `Z_Reads/` modules **last in that stage**. Do this when the relocation lands (Phase 2.3).
 
 ## 5. CI drift-gate (makes "changes apply to both" true without Option B)
 Promote the ground-truth harness (`REPL/aqp-info-groundtruth.repl` + `[6.5.1]`, pattern: preview

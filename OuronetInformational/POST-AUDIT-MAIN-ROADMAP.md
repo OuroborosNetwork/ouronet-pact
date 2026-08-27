@@ -39,10 +39,14 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
 - [ ] **2.2** Build the **7 vacate/drain/FullVacate INFO** as `URCi_Vacate*` callers (cost map:
       `memories/2026-08-27-aqp-info-final17-costmap.md` — the two-map concat + drain `UserUnn==0`
       subset). This completes the "final 17".
-- [ ] **2.3** **Consolidate to one INFO module per stage** and **relocate to a new `4_Info/` slot
-      (after `3_Talos`), deployed LAST** — read-only presentation layer, leaf (nothing refs it), same
-      "read-only goes last" placement as slave `Stage_Z` (`DPL-UR`/`EXPLORER`). Move out of `2_Core`
-      (`INFO-ONE`/`AQP-INFO`); delete reconstruction bodies; confirm `INFO-ONE` shrinks.
+- [ ] **2.3** **Consolidate to one INFO module per stage** and **relocate to a new
+      `1_SOVEREIGN/STAGE_0N/Z_Reads/` slot (after `3_Talos`), deployed LAST** — read-only presentation
+      layer, leaf (nothing refs it); `Z_` sorts absolutely last regardless of future numbered layers,
+      mirroring slave `Stage_Z` (`DPL-UR`/`EXPLORER`). Move out of `2_Core` (`INFO-ONE`/`AQP-INFO`);
+      delete reconstruction bodies; confirm `INFO-ONE` shrinks.
+- [ ] **2.4** **Refactor load order:** update the REPL pipeline (`Z.repl`, `Stage01/02_Tester.repl`,
+      the `[x]` loaders) **and** the on-chain deploy sequence to load each stage's `Z_Reads/` modules
+      last in that stage.
       Delete the reconstruction bodies (now redundant). Confirm `INFO-ONE` shrinks materially.
 
 ## PHASE 3 — Re-price IGNIS (point A; spec: `memories/2026-08-27-ignis-cost-rethink.md`; task #76)
