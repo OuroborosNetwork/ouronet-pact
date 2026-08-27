@@ -133,3 +133,21 @@ rule, **audit line counts before the next mainnet deploy** and identify capabili
 any module in the Warning/Danger band. Cross-reference with `MODULE_ARCHITECTURE.md`
 (prefixes/capability bands) when choosing seams — the C1–C4 cap bands and the `XI/XE/XB`
 split already hint at natural authorization boundaries.
+
+### ⚠ MEASURED 2026-08-27 — `04_FVT.pact` is OVER the ceiling
+First application of this rule flagged a blocker:
+
+| module | lines | band |
+|--------|-------|------|
+| `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact` | **6,694** | **IMPOSSIBLE (> ~6,635)** |
+| `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/05_VCT.pact` | 3,023 | Target (room to grow) |
+| `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/08_AQP-INFO.pact` | 1,178 | Target |
+
+**FVT cannot be deployed/upgraded on StoaChain's 2M block gas limit as-is** (it loads in the
+REPL, which does not enforce the block cap). This is a **pre-mainnet blocker** and must be
+split along a capability seam **before** any on-chain deploy — and before it accretes live
+tables that make splitting a migration problem (§3). Candidate seams to evaluate: the FVT
+config surface (issue/rotate/control/denominator/mosaic/score-entity/reward-link/quality-split)
+vs. the reward-runtime surface (inject/stream/collect/stake-flow/sweep/deb) — they likely have
+distinct capability clusters. Do NOT split by line count; find the `defcap` boundary. This is
+part of the deferred "handle B" work (owner directive: after the INFO functions).
