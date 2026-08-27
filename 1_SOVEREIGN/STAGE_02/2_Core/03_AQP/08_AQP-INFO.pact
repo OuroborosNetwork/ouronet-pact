@@ -164,11 +164,12 @@
         )
     )
     (defun URC_CollectableStakeFlowIfp:decimal
-        (pool-id:string owner-id:string beneficiary-id:string collectable-id:string son:bool nonces:[integer] direction:bool)
+        (pool-id:string owner-id:string beneficiary-id:string collectable-id:string son:bool nonces:[integer] nonce-amounts:[integer] direction:bool)
         @doc "Toggled total IGNIS IFP of CC_CollectableStakeFlow (04_FVT.pact:6544; SF son=true class-3 / NF \
             \ son=false class-4). Legs: transfer(DPDC-T, direction-dependent) + tracker(medium × |nonces|) + \
             \ rollup(medium × |nonces|) + RPS-settle + anchor(FLAT medium + biggest) + score-delta(class == son?3:4) \
-            \ + book + checkpoint. nonce-amounts derived like the wrapper (DPDC.UR_AccountNoncesSupplies)."
+            \ + book + checkpoint. nonce-amounts is caller-supplied: stake derives it from owner supply (owner \
+            \ holds the nonces pre-stake), unstake gets it from the caller (the vault holds them mid-stake)."
         (let*
             (
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
@@ -178,7 +179,6 @@
                 (vault:string     AQP-POOL.AQP|SC_NAME)
                 (sender:string    (if direction owner-id vault))
                 (receiver:string  (if direction vault owner-id))
-                (nonce-amounts:[integer] (DPDC.UR_AccountNoncesSupplies owner-id collectable-id son nonces))
                 (nn:decimal       (dec (length nonces)))
                 (tgt-class:integer (if son 3 4))
             )
@@ -685,20 +685,22 @@
                  "Executes via TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable."]
                 [(format "Staked {} DPSF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id true nonces true))
+                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id true nonces
+                        (DPDC.UR_AccountNoncesSupplies owner-id collectable-id true nonces) true))
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 [(length nonces)]))
     )
     (defun AQP-POOL|INFO_UnstakeSemiFungibleCollectable:object{OuronetInfoV1.ClientInfo}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
-        @doc "Cost preview for AQP-POOL|CC_UnstakeSemiFungibleCollectable (DPSF, son=true / class-3). Same legs as SF stake; no STOA."
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Cost preview for AQP-POOL|CC_UnstakeSemiFungibleCollectable (DPSF, son=true / class-3). Same legs as SF stake; \
+            \ nonce-amounts is caller-supplied (the staked quantities — owner no longer holds them). No STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Unstake Semi-Fungible collectable nonces (DPSF) from the pool."
                  "Executes via TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable."]
                 [(format "Unstaked {} DPSF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id true nonces false))
+                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts false))
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 [(length nonces)]))
     )
@@ -712,20 +714,22 @@
                  "Executes via TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable."]
                 [(format "Staked {} DPNF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id false nonces true))
+                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id false nonces
+                        (DPDC.UR_AccountNoncesSupplies owner-id collectable-id false nonces) true))
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 [(length nonces)]))
     )
     (defun AQP-POOL|INFO_UnstakeNonFungibleCollectable:object{OuronetInfoV1.ClientInfo}
-        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
-        @doc "Cost preview for AQP-POOL|CC_UnstakeNonFungibleCollectable (DPNF, son=false / class-4). Same legs as NF stake; no STOA."
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer] nonce-amounts:[integer])
+        @doc "Cost preview for AQP-POOL|CC_UnstakeNonFungibleCollectable (DPNF, son=false / class-4). Same legs as NF stake; \
+            \ nonce-amounts is caller-supplied (the staked quantities — owner no longer holds them). No STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Unstake Non-Fungible collectable nonces (DPNF) from the pool."
                  "Executes via TS02-C3.AQP-POOL|CC_UnstakeNonFungibleCollectable."]
                 [(format "Unstaked {} DPNF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
-                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id false nonces false))
+                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts false))
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 [(length nonces)]))
     )
