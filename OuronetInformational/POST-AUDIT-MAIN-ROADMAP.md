@@ -171,9 +171,27 @@ Verified on main: the two live fixes landed — `P|A_Define` IMP registration
 - [ ] **Final consolidated ATS audit write-up** (owner-requested) — after `#22L`/`#26L`/`#28L`/`#31L` +
       `P|A_Define` are all closed.
 
+### DPDC audit — carried over (MERGED to main, `7efe386`; source: `1_SOVEREIGN/STAGE_02/2_Core/01_DPDC/Audit/`)
+All 11 DPDC modules, 58 tracked items ALL closed (35 fixed+live-verified, 13 refuted, 4 already-closed,
+2 no-bug, 4 deferred). 3 new canonical REPL suites wired in (`[6.1.1]_EQUITY`, `[6.1.2]_DPDC-FRAGMENTS`,
+`[6.1.3]_DPDC-S`). Interface changes pre-mainnet, no bump. Signatures my AQP-INFO calls
+(`UDC_MultiTransferCumulator`, `UR_AccountNoncesSupplies`, `URD_AccountNonces`) verified intact.
+Remaining (4 deferred LOW — map onto our phases):
+- [ ] **#40L** — `Wipe*` family (Heavy/Pure/Clean/Dirty) rename/rethink → a **StoicSyntax pass**
+      (fold into the Phase 1 module-by-module walk, or a standalone StoicSyntax cleanup).
+- [ ] **#41L/#42L** — branding + ownership-gate **test-coverage gaps** → **Phase 5.2** (repo-wide REPL
+      coverage completion).
+- [ ] **#43L** — a write-tier fn returns a display string instead of ending on a write → **Phase 2**
+      (INFO/URCi rearchitecture — the `XI_`/`XB_` "end on write, no return" rule; the display belongs
+      in the INFO/read layer).
+- [ ] FYI (non-blocking): an AQP-side investigation (does the DPDC-S score-multiplier apply at staking
+      time?) was handed off and is pending independently. The DPTF/DPOF "no-ownership-check DeployAccount"
+      shape was confirmed to exist there too → fold into the DPTF-DPOF audit at merge.
+- [ ] Optional cleanup: the `REPL/Kursan/_verify_finding_*` scratch files came in with the merge
+      (audit evidence) — keep or prune per owner.
+
 ### SWP audit — TO FOLD AT MERGE (worktree `swp`; `…/Audit/SWP/ISSUES-RANKED.md`, `ROUND-02-FIXES.md`)
-### DPDC audit — TO FOLD AT MERGE (worktree `dpdc`; `…/Audit/DPDC-*` + audit commits `#27M`–`#39L`)
-### DPTF-DPOF audit — TO FOLD AT MERGE (worktree `dptf-dpof`)
+### DPTF-DPOF audit — TO FOLD AT MERGE (worktree `dptf-dpof`; watch for the DeployAccount no-ownership-check shape flagged by DPDC)
 
 ---
 

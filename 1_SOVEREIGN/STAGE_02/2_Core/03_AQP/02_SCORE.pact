@@ -1759,7 +1759,7 @@
     )
     (defun URCx_DpnfModelZeroDpdcNativeRawWeight:decimal
         (dpnf-id:string nonces:[integer] nonce-amounts:[integer])
-        @doc "NFT score model 0 only: sum_i amount_i × full nonce score. Uses DPDC-S UR_N|Score — the CANONICAL \
+        @doc "NFT score model 0 only: sum_i amount_i × full nonce score. Uses DPDC-S URC_N|Score — the CANONICAL \
             \ full score of a nonce, which already applies the Set-class score-multiplier (set nonces, DPDC #15H), \
             \ the -1.0 unscored sentinel, and the fragment (/1000) scaling for negative nonces. Floored at 0 (L7 \
             \ #19) as a backstop so an unscored/negative result never contributes negative stake weight. (A set \
@@ -1776,10 +1776,10 @@
                         (
                             (n:integer (at idx nonces))
                             (q:integer (at idx nonce-amounts))
-                            ;; DPDC #15H: UR_N|Score is the FULL score (raw × set-class multiplier, + sentinel +
+                            ;; DPDC #15H: URC_N|Score is the FULL score (raw × set-class multiplier, + sentinel +
                             ;; fragment /1000), so a Set nonce is scored with its multiplier applied. L7 #19 floor:
                             ;; clamp to 0 so an unscored/negative result never yields negative stake weight.
-                            (full-unit-score:decimal (ref-DPDC-S::UR_N|Score dpnf-id false n))
+                            (full-unit-score:decimal (ref-DPDC-S::URC_N|Score dpnf-id false n))
                             (unit-score:decimal (if (< full-unit-score 0.0) 0.0 full-unit-score))
                         )
                         (+ acc (* (dec q) unit-score))
