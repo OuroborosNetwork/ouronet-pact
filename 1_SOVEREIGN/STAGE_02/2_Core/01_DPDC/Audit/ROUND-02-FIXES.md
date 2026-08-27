@@ -1601,3 +1601,38 @@ a bigger scope to be rearchitected on `main`, top to bottom, alongside the `Wipe
 deferred rather than patched piecemeal now — a narrow fix here (factor the string into a `UDC_*` helper)
 would likely be redone or invalidated by that broader pass. No code change made in this session; carried
 forward into the final consolidated audit report.
+
+## #41L / #42L — DPDC · L3, DPDC-R · L1 — DEFERRED (branding + NFT test-coverage gaps, ownership-gate negative-path coverage)
+
+**Owner-approved 2026-08-27.** Same reasoning as #40L: the whole REPL test suite is due a top-to-bottom
+refactor (Stage 1 through Stage 2), planned as a separate main-branch effort. Building narrow, isolated
+coverage for these two specific gaps now would likely be reshaped or redone by that broader pass. Deferred
+alongside #40L/#43L; carried forward into the final consolidated audit report. No test change made in this
+session.
+
+## Fix #35 — DPDC-S · L3 (#52L), DPDC-I · L1 (#53L) — confirmed-intentional design, documented
+
+**Owner-approved 2026-08-27.**
+
+**#52L** — owner: "I think it's designed to be raw. Making a set computes raw score, and applies the
+multiplier for that set." Investigated the one call site first (`C_MakeNonFungibleSet`, NFT set-instance
+creation) and confirmed this is a live, reachable question, not theoretical — a Composite/Hybrid NFT
+set's constituent nonces can genuinely be previously-Made instances from another (possibly multiplied)
+set-class. Owner confirmed the design intent precisely: a set-class's own multiplier applies exactly
+once, at that set's own level (when its score is later read via `URC_N|Score`), not per-constituent at
+Make-time — this avoids multipliers compounding as sets nest inside sets. Owner additionally confirmed
+this matches real, already-observed correct scores for the mainnet Bloodshed set-NFT collection. Added a
+`@doc` to `URC_NoncesSummedScore` explaining this precisely (raw-sum by design, multiplier applies once
+at the set's own level, cross-referencing `URC_N|Score`). No behavior change — confirmed correct as-is.
+
+**#53L** — owner: "that's intentional. I create a collection, the creator is my friend, he has an
+account, I, the owner of the collection, designate him as creator. its intentional." `creator-account` is
+deliberately not ownership-checked in `DPDC-I|C>ISSUE`, unlike `owner-account` — matches the same
+"collection owner has complete dominion" trust model already established for #4C/#17H/#20H/#25M. Added a
+`@doc` to `DPDC-I|C>ISSUE` explaining this explicitly. No behavior change.
+
+**Proof:** `cd REPL && pact Z.repl` — clean, `Load successful`. Both changes are `@doc`-only additions,
+no logic touched.
+
+**Interface implication:** none — both docs live on internal capabilities/functions, not part of any
+interface's declared surface.

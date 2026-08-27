@@ -907,3 +907,32 @@ interface change. Z.repl green.
 
 **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — corrected the `@doc` to match
 `DPSF|AccountRoles` and the real, consistently-used key-construction code. Doc-only. Z.repl green.
+
+## #41L / #42L · DPDC · L3, DPDC-R · L1 — test-coverage gaps
+
+**Verdict: DEFERRED (2026-08-27).** Owner: same reasoning as #40L — "we'll have to do it anyway, there's
+the whole refactor of REPL tests to work top to bottom from Stage 1 to 2." Deferred to that planned
+main-branch effort rather than building narrow coverage now that would likely be reshaped by it.
+
+## #52L · DPDC-S · L3 — `URC_NoncesSummedScore` sums raw scores, discarding a nested set's own multiplier
+
+**Verdict: REFUTED, design-intentional (2026-08-27).** Asked the owner to weigh in after tracing the one
+real call site (`C_MakeNonFungibleSet`), since this is genuinely live/reachable for Composite/Hybrid NFT
+sets, not theoretical, and ties to the still-unresolved multiplier-wiring question from #15H/Fix #13.
+Owner: "I think it's designed to be raw. Making a set computes raw score, and applies the multiplier for
+that set. This function has already been called on main blockchain, and I think I already observed
+correct scores for the Bloodshed collection of set NFTs." Confirmed intentional and empirically correct
+on mainnet — the multiplier applies once, at a set's own level, not per-constituent, avoiding
+compounding as sets nest.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #35)** — added a `@doc` to `URC_NoncesSummedScore`
+explaining the design precisely. No behavior change. Z.repl green.
+
+## #53L · DPDC-I · L1 — `creator-account` bound with no ownership/consent check
+
+**Verdict: REFUTED, design-intentional (2026-08-27).** Owner: "that's intentional. I create a collection,
+the creator is my friend, he has an account, I, the owner of the collection, designate him as creator.
+its intentional." Same "collection owner has complete dominion" trust model as #4C/#17H/#20H/#25M.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #35)** — added a `@doc` to `DPDC-I|C>ISSUE` explaining
+this explicitly. No behavior change. Z.repl green.

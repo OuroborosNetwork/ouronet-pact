@@ -425,6 +425,15 @@
         ]
     )
     (defun URC_NoncesSummedScore:decimal (id:string son:bool nonces:[integer])
+        @doc "Bakes a new NFT set instance's own raw score from the RAW (unmultiplied) scores of its \
+            \ constituent nonces -- deliberately via UR_N|RawScore, not the multiplier-applying \
+            \ URC_N|Score. DPDC Audit #52L: confirmed intentional design, owner-verified against real \
+            \ mainnet Bloodshed set-NFT scores. A set-class's own score-multiplier is meant to apply \
+            \ exactly once, at that set's own level, when ITS score is later read (via URC_N|Score) -- \
+            \ not per-constituent here at Make-time. For a Composite/Hybrid set whose constituent is \
+            \ itself a previously-Made, already-multiplied set instance from another set-class, this \
+            \ correctly sums that constituent's pre-multiplier raw value, so multipliers don't compound \
+            \ across nested sets."
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)

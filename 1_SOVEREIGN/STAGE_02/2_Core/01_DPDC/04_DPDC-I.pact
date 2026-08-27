@@ -120,6 +120,13 @@
     )
     ;;{C2}
     (defcap DPDC-I|C>ISSUE (owner-account:string creator-account:string collection-name:string collection-ticker:string iz-special:bool)
+        @doc "DPDC Audit #53L: <creator-account> is intentionally NOT ownership-checked, unlike \
+            \ <owner-account> (real CAP_EnforceAccountOwnership below). The collection owner is meant \
+            \ to be able to freely designate any account -- e.g. a trusted associate -- as the \
+            \ collection's creator without that account's separate consent/signature, the same way an \
+            \ owner has complete dominion over their own collection's admin structure elsewhere in this \
+            \ module family (#4C/#17H/#20H/#25M). Only the type/prefix is validated \
+            \ (UEV_EnforceAccountType) so <creator-account> is at least a real, well-formed account."
         @event
         (let
             (

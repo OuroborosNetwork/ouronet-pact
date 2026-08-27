@@ -479,11 +479,13 @@ consolidated audit report. No code or test change made here. — *DPDC-MNG·L1*
 #41L **[DPDC]** Test-coverage gaps: branding functions (zero calls anywhere, exactly why #9H was never
 caught) and stark SFT-vs-NFT asymmetry — `DPNF|C_*` gets one exercised call in the entire suite vs. dozens
 for `DPSF|C_*`, leaving the entire NFT-side duplicate of every SFT-tested path effectively unverified. —
-*DPDC·L3*
+**⏸ DEFERRED 2026-08-27** — owner: whole REPL suite due a top-to-bottom Stage1→2 refactor on `main`, same
+reasoning as #40L. Carried into the final audit report. — *DPDC·L3*
 
 #42L **[DPDC-R]** No REPL coverage exercises the ownership gate's negative path (non-owner attempting a
 role toggle/move) for any of the 12 role functions, and several toggle-off legs are commented out — the
-single highest-value missing assertion class for this module; would have caught #13H. — *DPDC-R·L1*
+single highest-value missing assertion class for this module; would have caught #13H. — **⏸ DEFERRED
+2026-08-27** — same as #41L/#40L, folded into the planned REPL-suite refactor on `main`. — *DPDC-R·L1*
 
 #43L **[DPDC-C]** `XI_RegisterCollectionElement` (an `XI_` write-tier function) returns a formatted
 business string instead of ending on a write, embedding presentation logic in a write-tier function —
@@ -535,13 +537,20 @@ length-bound `enforce` on both `UEV_PrimordialSetDefinition`/`UEV_CompositeSetDe
 the raw error text is now the intended clean message, not the old opaque crash, for empty and
 oversized (21-position) definitions alike. Z.repl green. — *DPDC-S·L2*
 
-#52L **[DPDC-S]** `URC_NoncesSummedScore` sums raw constituent scores via `UR_N|RawScore`, silently
+#52L **[DPDC-S]** ~~`URC_NoncesSummedScore` sums raw constituent scores via `UR_N|RawScore`, silently
 discarding any set-multiplier a constituent nonce itself carries if it's a nested previously-made set —
-possibly intentional (avoid double-multiplication) but undocumented and untested. — *DPDC-S·L3*
+possibly intentional (avoid double-multiplication) but undocumented and untested.~~ — **REFUTED,
+design-intentional 2026-08-27** (`ROUND-02-FIXES.md` Fix #35) — owner: raw-sum is correct by design; a
+set-class's multiplier applies once, at that set's own level, not per-constituent, avoiding compounding
+as sets nest — matches observed correct mainnet Bloodshed set-NFT scores. `@doc` added, no behavior
+change. Z.repl green. — *DPDC-S·L3*
 
-#53L **[DPDC-I]** `creator-account` is bound into a new collection with no ownership/consent check (only
+#53L **[DPDC-I]** ~~`creator-account` is bound into a new collection with no ownership/consent check (only
 `owner-account` goes through real `CAP_EnforceAccountOwnership`) — an unconsenting third party can be named
-"creator" and silently granted real collection-admin permissions. — *DPDC-I·L1*
+"creator" and silently granted real collection-admin permissions.~~ — **REFUTED, design-intentional
+2026-08-27** (`ROUND-02-FIXES.md` Fix #35) — owner: deliberate (naming a trusted associate as creator),
+same "owner has complete dominion" trust model as #4C/#17H/#20H/#25M. `@doc` added, no behavior change.
+Z.repl green. — *DPDC-I·L1*
 
 #54L **[DPDC-I]** ~~`C_DeployAccountSFT`/`C_DeployAccountNFT` carry no `UEV_IMC`, no capability, and no
 `@doc` explaining the intentionally-permissionless design~~ — **ALREADY CLOSED, moot 2026-08-27** — these
