@@ -1471,6 +1471,19 @@
     )
     (defun C_ToggleAddOrSwap:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string toggle:bool add-or-swap:bool)
+        @doc "#71L: called directly (cross-module C_->C_) by SWPU::C_ToggleSwapCapability and \
+            \ SWPLC::C_ToggleAddLiquidity, instead of through an XE_* forward entrypoint — \
+            \ intentional, DESIGN-accepted, not an oversight. This function is not a plain \
+            \ toggle write: it bills real IGNIS (ico0), bootstraps LP burn/mint/fee-exemption \
+            \ roles the first time add-liquidity is enabled (ico1-ico4), and — critically — is \
+            \ the ONLY place in this call chain that enforces pool ownership, via \
+            \ SWP|C>ADD-OR-SWAP's composed CAP_Owner. The existing XE_CanAddOrSwapToggle does \
+            \ none of that (only UEV_IMC + a raw update, no ownership check) and would need to \
+            \ replicate all of the above to be a safe drop-in replacement for either caller — \
+            \ neither SWPU::SPWU|C>TOGGLE-SWAP nor SWPLC::P|SWPLC|CALLER re-derives ownership \
+            \ independently, so rerouting through the bare XE_* today would silently strip \
+            \ authorization. Left as-is; a properly-capped XE_* replacement is real design work, \
+            \ not a mechanical rename — deferred, not attempted here."
         (UEV_IMC)
         (let
             (

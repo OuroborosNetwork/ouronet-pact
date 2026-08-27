@@ -235,6 +235,15 @@ no pact has a TTL/expiry.~~ — **DESIGN, accepted (owner, 2026-08-19).** "It's 
 as is." Same non-live `MTX-SWP` module already confirmed for M11 (zero Talos wiring). Full trace in
 `ROUND-01-OWNER-FEEDBACK.md`. — *M12*
 
+#32bM **[MTX-SWP]** Off-cycle correction, surfaced during `#67L`'s investigation: M11/M12's "zero Talos
+wiring anywhere in the codebase" premise is factually wrong — `TS01-CP` (`05_TS01-P.pact`) has wired
+`MTX-SWP::C_IssueStablePool`/`WeightedPool`/`StandardPool` and the full AddLiquidity family since the
+repo's first commit, not a later regression. — **FILED, verdicts unchanged, deferred to `main`
+(owner, 2026-08-27).** M11's other stated reason (fee-before-gate is a deliberate anti-abandonment
+incentive) was never contingent on this and still stands on its own. Owner: leave M11/M12 as recorded,
+don't reopen now — a planned red-team pass over the whole Pact codebase on `main` will cover it. Full
+writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *#32bM*
+
 #34M **[U|SWP / SWPT / SWPI / SWPU / Talos]** ~~BFS keeps only one chain per node and routing does zero
 amount-out/liquidity comparison across candidate paths — "Smart Swap" is pure hop-count routing.~~ —
 **Phase 1 FIXED ✅ AND PROVEN ✅ 2026-08-20** (`ROUND-02-FIXES.md` Fix #19). New
@@ -556,22 +565,44 @@ it became its own master issue. No code change yet. Full investigation, evidence
 questions captured in `ROUND-01-OWNER-FEEDBACK.md` and the new
 `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`. — *#65bL*
 
-#66L **[SWPU]** Failure-branch `OutputCumulator` objects are hand-built instead of via a `UDC_*` constructor.
+#66L **[SWPU]** ~~Failure-branch `OutputCumulator` objects are hand-built instead of via a `UDC_*`
+constructor.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-27** (`ROUND-02-FIXES.md` Fix #39). Confirmed
+`UDC_ConstructOutputCumulator 0.0 BAR true [msg]` reproduces all 3 hand-built failure objects exactly,
+verified via a standalone byte-identical REPL check. Part of the larger INFO-function/IGNIS-collector
+architecture due a full rehaul on `main` — fixed here since safe, will be swept again as part of that
+rehaul. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L66*
 
-#67L **[MTX-SWP]** `MTX|C_AddSleepingLiquidity` burns a Step-0-cached nonce amount instead of re-reading it
-at Step 1 (believed safe only because `DPOF::C_Burn` is assumed to enforce sufficiency).
+#67L **[MTX-SWP]** ~~`MTX|C_AddSleepingLiquidity` burns a Step-0-cached nonce amount instead of
+re-reading it at Step 1 (believed safe only because `DPOF::C_Burn` is assumed to enforce
+sufficiency).~~ — **CONFIRMED SAFE, no code change, 2026-08-27.** `DPOF::C_Burn` unconditionally
+enforces live supply at execution time; a stale cache can only cause a revert, never an over-burn.
+This investigation surfaced the M11/M12 reachability correction — see `#32bM`. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L67*
 
-#68L **[MTX-SWP]** No TTL/expiry on any of the 8 `defpact` flows — open pacts persist forever, state bloat.
+#68L **[MTX-SWP]** ~~No TTL/expiry on any of the 8 `defpact` flows — open pacts persist forever, state
+bloat.~~ — **DESIGN — accepted structural limitation, 2026-08-27.** Pact has no native mechanism to
+force-expire an open, uncontinued `defpact` — no scheduled execution exists, and nothing can run
+against an abandoned pact without someone submitting a continuation. Not expressible as ordinary Pact
+logic inside the existing flows. No code change. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L68*
 
-#69L **[MTX-SWP]** `MTX-SWP|S>ADD-LQ`'s own doc implies a short, bounded `kda-pid` lock window the code
-doesn't actually enforce (see #28M).
+#69L **[MTX-SWP]** ~~`MTX-SWP|S>ADD-LQ`'s own doc implies a short, bounded `kda-pid` lock window the
+code doesn't actually enforce (see #28M).~~ — **CLOSED — premise doesn't hold, already covered,
+2026-08-27.** Current `@doc` just says "Records the KDA-PID the MTX was initiated with," makes no such
+claim. Substance already closed at M10, residual explicitly tied to L68. No code change. Full writeup
+in `ROUND-01-OWNER-FEEDBACK.md`. — *L69*
 
-#70L **[Talos]** `SWP|C_Fuel`/`SWP|C_Firestarter` are public on `TS01-C3` but not declared on its own
-interface — reachable only via the concrete module reference.
+#70L **[Talos]** ~~`SWP|C_Fuel`/`SWP|C_Firestarter` are public on `TS01-C3` but not declared on its own
+interface — reachable only via the concrete module reference.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-27**
+(`ROUND-02-FIXES.md` Fix #40). Genuine interface-completeness gap, not a security issue. Matching stubs
+added to `TalosStageOne_ClientThreeV3`. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L70*
 
-#71L **[Talos]** `SWPU::C_ToggleSwapCapability`/`SWPLC::C_ToggleAddLiquidity` call `SWP::C_ToggleAddOrSwap`
-directly (core-to-core `C_`→`C_`) instead of through the `XE_*` forward entrypoint that already exists for
-exactly this purpose.
+#71L **[Talos]** ~~`SWPU::C_ToggleSwapCapability`/`SWPLC::C_ToggleAddLiquidity` call
+`SWP::C_ToggleAddOrSwap` directly (core-to-core `C_`→`C_`) instead of through the `XE_*` forward
+entrypoint that already exists for exactly this purpose.~~ — **DESIGN — accepted, documented
+(`ROUND-02-FIXES.md` Fix #41).** Rerouting to `XE_CanAddOrSwapToggle` would silently strip real IGNIS
+billing, LP-role bootstrap, and the only ownership check in this chain. Not a safe mechanical fix.
+Owner: leave as-is. Real `@doc` added to `C_ToggleAddOrSwap` recording why. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *L71*
 
 ---
 

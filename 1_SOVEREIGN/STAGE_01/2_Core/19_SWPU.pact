@@ -973,6 +973,7 @@
         (require-capability (SECURE))
         (let
             (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (nodes:[string] (at "nodes" h-obj))
                 (edges:[string] (at "edges" h-obj))
                 (ovs:[decimal] (at "output-values" h-obj))
@@ -1003,12 +1004,9 @@
                         (>= feeless-final min)
                         ;;(<= feeless-final max)
                         (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid NO_PATH)
-                        {"cumulator-chain"   :
-                            [
-                                {"ignis"        : 0.0
-                                ,"interactor"   : BAR}
-                            ]
-                        ,"output"            : [exceed-message]}
+                        ;;#66L fix: named UDC_* constructor instead of a hand-built object literal —
+                        ;;trigger=true reproduces the exact same {"ignis":0.0,"interactor":BAR} shape.
+                        (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [exceed-message])
                     )
                 )
                 (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid NO_PATH)
@@ -1033,6 +1031,7 @@
         (let
             (
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (nodes:[string] (at "nodes" (at "swap-route" bundle)))
                 (edges:[string] (at "edges" (at "swap-route" bundle)))
                 (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperForKnownRoute nodes edges input-amount))
@@ -1054,12 +1053,9 @@
                     (if
                         (>= feeless-final min)
                         (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid (at "boost-path" bundle))
-                        {"cumulator-chain"   :
-                            [
-                                {"ignis"        : 0.0
-                                ,"interactor"   : BAR}
-                            ]
-                        ,"output"            : [exceed-message]}
+                        ;;#66L fix: named UDC_* constructor instead of a hand-built object literal —
+                        ;;trigger=true reproduces the exact same {"ignis":0.0,"interactor":BAR} shape.
+                        (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [exceed-message])
                     )
                 )
                 (XI_SmartSwap account input-id input-amount output-id nodes edges kda-pid (at "boost-path" bundle))
@@ -1430,7 +1426,8 @@
                         (let
                             (
                                 (ref-SWPI:module{SwapperIssueV3} SWPI)
-                                (max-toa:decimal 
+                                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                                (max-toa:decimal
                                     ;; Actual output at execution time (pool may have changed since quote)
                                     (ref-SWPI::URC_Swap swpair dsid true)
                                 )
@@ -1477,12 +1474,10 @@
                                 (>= max-toa min)
                                 ;;(<= max-toa max)
                                 (XI_Swap account swpair dsid)
-                                {"cumulator-chain"      :
-                                    [
-                                        {"ignis"        : 0.0
-                                        ,"interactor"   : BAR}
-                                    ]
-                                ,"output"               : [exceed-message]}
+                                ;;#66L fix: named UDC_* constructor instead of a hand-built object
+                                ;;literal — trigger=true reproduces the exact same
+                                ;;{"ignis":0.0,"interactor":BAR} shape.
+                                (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [exceed-message])
                             )
                         )
                     )

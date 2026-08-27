@@ -92,6 +92,11 @@
     (defun SWP|C_AddFrozenLiquidity:string (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal))
     (defun SWP|C_AddSleepingLiquidity:string (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
     (defun SWP|C_RemoveLiquidity (patron:string account:string swpair:string lp-amount:decimal))
+    ;;#70L fix: SWP|C_Fuel/SWP|C_Firestarter are real, public functions on the TS01-C3
+    ;;module below but were missing from this interface (interface-completeness gap,
+    ;;not a security issue — both were still reachable via the concrete module ref).
+    (defun SWP|C_Fuel (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_Firestarter (fire-starter:string))
     ;;Smart Swap
     (defun SWP|CC_SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
     (defun SWP|CC_SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))

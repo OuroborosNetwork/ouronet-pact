@@ -1564,3 +1564,48 @@ reduction (~9.8%) for the identical call. Full suite (`[6.2]`+`[6.3]`): exit 0, 
 drift.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #39 — L66 (#66L): `UDC_ConstructOutputCumulator` instead of hand-built failure-branch objects
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact`:** confirmed `IGNIS::UDC_MakeModularCumulator`'s
+`trigger=true` branch already returns exactly `{"ignis": 0.0, "interactor": BAR}` regardless of its
+`price`/`active-account` arguments, so `IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [msg]`
+reproduces all 3 hand-built slippage-exceeded failure objects (`XI_SmartSwapRouter`,
+`XI_SmartSwapExplicitRoute`, `XI|KDA-PID_Swap`) exactly. Replaced all 3, adding the missing `ref-IGNIS`
+binding to each `let`.
+
+**Adversarially proven, not just argued:** standalone REPL check against the full deployed environment
+confirmed byte-identical output between the hand-built literal and the `UDC_*`-constructed version
+(`"Expect: success"`). Full suite + default issuance-only pipeline both exit 0, 0 `FAILURE`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Will be re-swept during the planned INFO-function architectural
+rehaul on `main` (owner's framing — fixed now since safe/confirmed, not treated as permanently settled).
+
+---
+
+## Fix #40 — L70 (#70L): added `SWP|C_Fuel`/`SWP|C_Firestarter` to `TalosStageOne_ClientThreeV3`
+
+**Fix — `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`:** confirmed both functions are real, public,
+live on the `TS01-C3` module but missing from the interface it implements — an interface-completeness
+gap (both remained callable via the concrete module ref either way, not a security issue). Added
+matching stubs, signatures copied exactly from the live module.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Full suite + default issuance-only pipeline both exit 0, 0
+`FAILURE` (pure interface addition, verified via successful `Z.repl` load).
+
+---
+
+## Fix #41 — L71 (#71L): documented why `C_ToggleAddOrSwap` is called directly, not via an `XE_*`
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** investigated rerouting `SWPU::C_ToggleSwapCapability`/
+`SWPLC::C_ToggleAddLiquidity` through the existing `XE_CanAddOrSwapToggle` and found it unsafe —
+`C_ToggleAddOrSwap` bills real IGNIS, bootstraps LP roles, and is the only place enforcing pool
+ownership in this chain; the bare `XE_*` has none of that, and neither caller's own capability
+re-derives ownership independently. Owner: leave as-is, document instead. Added a real `@doc` to
+`C_ToggleAddOrSwap` recording exactly why the direct cross-module `C_`→`C_` call is intentional, what
+would break if naively rerouted, and that a real `XE_*` replacement is deferred, not forgotten.
+
+**Status:** DESIGN, accepted — `@doc` only, no functional change. Full suite + default issuance-only
+pipeline both exit 0, 0 `FAILURE`.

@@ -2774,3 +2774,167 @@ captured in the new `OuronetInformational/HANDOFF-swp-graph-search-engine-optimi
 `HANDOFF-swp-exhaustive-path-search.md`'s own role for `#34`. — *#65bL*
 
 ---
+
+## #32bM (off-cycle correction to M11/M12 — the "MTX-SWP has zero Talos wiring" premise was wrong) — **FILED, deferred to `main`, verdicts unchanged**
+
+**Surfaced during L67's investigation.** M11 (#32M) and M12 (#33M) were both closed 2026-08-19 as
+"DESIGN, accepted — confirmed non-live," resting in part on: "`MTX|C_Issue` and every `MTX-SWP`
+defpact have zero Talos wiring anywhere in the codebase — unreachable through the only supported
+client/gas-station path." **That specific factual claim is wrong.** `1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact`
+(module `TS01-CP`, implementing the live `TalosStageOne_ClientPactsV3` interface) directly wires
+`MTX-SWP::C_IssueStablePool`/`C_IssueWeightedPool`/`C_IssueStandardPool` (all three call the shared
+`MTX|C_Issue` defpact M11 is about) and the full `C_Add{Standard,Iced,Glacial,Frozen,Sleeping}Liquidity`
+family M12 is about. Checked git history: this wiring is not a later regression — `ref-MTX-SWP::C_IssueStablePool`
+is called from this same file as far back as the repo's very first commit (`dde2bf4`, "Initial import
+of Ouronet codebase"). It was live and reachable when M11/M12 were investigated; the 2026-08-19 verdict
+simply missed it.
+
+**What still holds, what doesn't:** M11's *other* stated reason — Step 2 charging IGNIS+KDA before
+Step 3's issuance is a deliberate anti-abandonment incentive, independent of reachability — was never
+contingent on this claim and isn't affected. What's no longer accurate is treating either finding as
+inert because "nobody can reach this code." Re-read `MTX|C_Issue`'s defpact directly (`20_MTX-SWP.pact:802-`):
+confirmed Step 2 does charge before Step 3 issues, exactly as M11 described, and this path is reachable
+today via `SWP|C_IssueStablePool`/`WeightedPool`/`StandardPool` on `TS01-CP`.
+
+**Owner's direction (2026-08-27):** leave M11/M12's verdicts as recorded — no reopening now. File this
+correction and defer it to `main`, where a planned red-team pass over the whole Pact codebase will cover
+it along with everything else. This entry exists purely so the false "confirmed non-live" premise isn't
+silently trusted by a future reader — matching this audit's own HARD RULE ("verify against the actual
+committed files before trusting any 'we already settled this' claim, including claims made by the agent
+itself"). M11/M12's status-tracker rows are annotated pointing here; their original verdict text is
+**not** edited (append-only).
+
+**Status:** FILED — no verdict change, no code change, explicitly deferred to the `main`-branch red-team
+review. — *#32bM*
+
+---
+
+## L66 (#66L, SWPU — failure-branch `OutputCumulator` objects hand-built instead of via a `UDC_*` constructor) — **CONFIRMED, FIXED, PROVEN**
+
+**Found and confirmed a real drop-in replacement before touching anything:** all 3 hand-built
+`{"cumulator-chain": [{"ignis": 0.0, "interactor": BAR}], "output": [msg]}` literals
+(`19_SWPU.pact:1006, 1057, 1480`, the slippage-exceeded soft-fail branches in `XI_SmartSwapRouter`,
+`XI_SmartSwapExplicitRoute`, `XI|KDA-PID_Swap`) are structurally identical to what
+`IGNIS::UDC_MakeModularCumulator`'s own `trigger=true` branch already returns
+(`02_IGNIS.pact:414-416`: `{"ignis": 0.0, "interactor": BAR}`, unconditionally, regardless of the
+`price`/`active-account` arguments passed in) — meaning `IGNIS::UDC_ConstructOutputCumulator 0.0 BAR
+true [msg]` reproduces the exact hand-built shape via the module's own existing named constructor.
+
+**Fix:** replaced all 3 sites with `(ref-IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [msg])`,
+adding the missing `ref-IGNIS` module-reference binding to each `let` where it wasn't already present.
+
+**Adversarially proven the equivalence, not just argued it:** built a standalone REPL check (loaded the
+full deployed environment, called both the hand-built literal and the `UDC_*`-constructed version with
+identical inputs) — `expect` confirmed byte-identical output, `"Expect: success"`. Full suite
+(`[6.2]`+`[6.3]`) and default issuance-only pipeline both exit 0, 0 `FAILURE`.
+
+**Owner's framing:** `OutputCumulator`/IGNIS-collector code is part of the larger "INFO functions"
+architecture due for a full rehaul on `main` — fixed here anyway since it was safe and confirmed, will
+be swept again as part of that broader rehaul rather than treated as permanently settled.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #39. Will be re-swept during the
+planned INFO-function architectural rehaul on `main`. — *L66*
+
+---
+
+## L67 (#67L, MTX-SWP — `MTX|C_AddSleepingLiquidity` burns a Step-0-cached nonce amount instead of re-reading at Step 1) — **CONFIRMED SAFE, no code change**
+
+**Traced the actual enforcement, not just the caching pattern:** confirmed the defpact caches
+`batch-amount` at Step 0 via `DPOF::UR_NonceSupply` (`20_MTX-SWP.pact:676`), yields it (`:686-691`),
+and Step 1 burns the cached value directly (`:738`) without re-reading current supply. But
+`DPOF::C_Burn` (`06_DPOF.pact:1957-1974`) grants `DPOF|C>BURN` → composes `DPOF|C>DEBIT`, whose
+capability body reads `UR_NonceSupply` **fresh at grant time** (`:649`) and unconditionally enforces
+`(<= amount nonce-supply)` (`:651-654`) — this runs at real Step-1 execution time, not against the
+Step-0 snapshot. A stale/too-large cached amount cannot cause an over-burn; it can only cause the whole
+step to revert.
+
+**Staleness window is real but harmless:** Step 0/Step 1 are separate transactions, so an intervening
+tx could lower the same nonce's supply in between. Since an existing nonce's supply can only ever
+decrease, the only failure mode from staleness is a Step-1 revert — never a silent over-burn.
+
+**Correction found along the way, filed separately:** this investigation is what surfaced the M11/M12
+reachability error — see `#32bM` above. Doesn't change this finding's own safety verdict (`DPOF::C_Burn`'s
+enforcement is unconditional and real regardless of whether MTX-SWP is reachable).
+
+**Status:** CONFIRMED SAFE — `DPOF::C_Burn`'s live-supply enforcement makes the cached amount provably
+non-exploitable. No code change. — *L67*
+
+---
+
+## L68 (#68L, MTX-SWP — no TTL/expiry mechanism on any of the 8 `defpact` flows) — **DESIGN, accepted structural limitation**
+
+**Owner's own assessment, checked and confirmed correct:** Pact has no native mechanism to force-expire
+an open, uncontinued `defpact` — there is no scheduled/cron execution, and the only way an open pact's
+state can ever change is via someone submitting a continuation transaction for that exact pact. An
+abandoned pact that nobody ever continues simply has no code path that can ever run against it again —
+there is nothing to attach a TTL check *to*. A TTL/expiry mechanism here isn't a missing `enforce`, it
+would require entirely different on-chain or off-chain infrastructure (e.g. a separate sweep
+transaction someone is incentivized to submit, or a redesign of the flow away from open-ended
+multi-step `defpact`s) — not a fix expressible as ordinary Pact logic inside the existing flows.
+
+**Status:** DESIGN, accepted as a structural limitation of the `defpact` primitive itself, not a
+fixable gap in this code. No code change. Residual linkage to H10/M10/M12's own "time-window exposure"
+notes stays as previously recorded — this finding is the reason none of those got a TTL-based fix
+either. — *L68*
+
+---
+
+## L69 (#69L, MTX-SWP — `MTX-SWP|S>ADD-LQ`'s own `@doc` implies a bounded `kda-pid` lock window not enforced) — **CLOSED, already covered / premise doesn't hold against current text**
+
+**Checked the actual current doc text before treating this as still open:** `MTX-SWP|S>ADD-LQ`'s real
+`@doc` (`20_MTX-SWP.pact:276`) reads only `"Records the KDA-PID the MTX was initiated with"` — it does
+not claim or imply a short, bounded lock window. The substantive concern this finding is pointing at
+(a fixed `kda-pid` persisting unchanged across a multi-step flow, no re-validation) was already
+investigated and closed as DESIGN by the owner at **M10** (2026-08-19): a fixed price across one
+logical multi-step event is intentional, not an oversight; residual time-window exposure explicitly
+rides on **L68** (no TTL), same linkage as H10/M12.
+
+**Status:** CLOSED — the doc doesn't make the claim described, and the underlying substance is already
+recorded at M10 with its residual explicitly tied to L68. No code change. — *L69*
+
+---
+
+## L70 (#70L, Talos — `SWP|C_Fuel`/`SWP|C_Firestarter` public on `TS01-C3` but missing from its own interface) — **CONFIRMED, FIXED, PROVEN**
+
+**Confirmed the gap directly against the live interface:** read `TalosStageOne_ClientThreeV3`
+(`04_TS01-C3.pact:56-113`) in full — `SWP|C_Fuel` and `SWP|C_Firestarter` are real, public functions on
+the `TS01-C3` module (`:583`, `:785`) but neither is declared on the interface it implements
+(everything else the module exposes is). Confirmed this is genuinely interface-incompleteness, not a
+security issue — both remain fully callable via the concrete module reference either way; the gap only
+matters for code that needs an interface-typed (`module{TalosStageOne_ClientThreeV3}`) reference rather
+than the concrete module.
+
+**Fix:** added matching stubs to the interface, signatures copied exactly from the live module
+(`(defun SWP|C_Fuel (patron:string account:string swpair:string input-amounts:[decimal]))` and
+`(defun SWP|C_Firestarter (fire-starter:string))`), placed after `SWP|C_RemoveLiquidity` alongside the
+rest of the liquidity/misc section.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #40. Full suite + default issuance-only
+pipeline both exit 0, 0 `FAILURE` (interface addition, no behavior change, verified by successful
+`Z.repl` load). — *L70*
+
+---
+
+## L71 (#71L, Talos — `SWPU::C_ToggleSwapCapability`/`SWPLC::C_ToggleAddLiquidity` call `SWP::C_ToggleAddOrSwap` directly instead of an `XE_*` forward entrypoint) — **DESIGN, accepted, documented**
+
+**Investigated whether rerouting through the existing `XE_*` would be a safe mechanical fix — it would
+not be.** `SWP::C_ToggleAddOrSwap` (`15_SWP.pact:1472-1548`) does far more than a toggle write: it bills
+real IGNIS (`ico0`), bootstraps LP burn/mint/fee-exemption roles the first time add-liquidity is enabled
+(`ico1`-`ico4`), and — critically — is the **only** place in this call chain that enforces pool
+ownership, via `SWP|C>ADD-OR-SWAP`'s composed `CAP_Owner`. The module's own `XE_CanAddOrSwapToggle`
+(`:1734-1751`) does none of that (only `UEV_IMC` + a raw `update`, no ownership check at all). Neither
+caller's own capability re-derives ownership independently (`SWPU`'s `SPWU|C>TOGGLE-SWAP` only checks a
+pool-worth threshold when toggling swap ON; `SWPLC`'s `P|SWPLC|CALLER` is literally `true`) — rerouting
+either caller to the bare `XE_*` today would silently strip authorization from both.
+
+**Owner's call:** leave it as-is — it works, and a properly-capped `XE_*` replacement is real design
+work (build ownership + billing + role-bootstrap into a genuine forward entrypoint), not a mechanical
+rename, and not worth doing piecemeal now. Documented instead: added a real `@doc` to
+`C_ToggleAddOrSwap` (`15_SWP.pact`) recording exactly why the direct cross-module `C_`→`C_` call is
+intentional, what would break if naively rerouted, and that a real `XE_*` replacement is deferred, not
+forgotten.
+
+**Status:** DESIGN, accepted — unusual layering, intentional, documented. No functional code change,
+`@doc` only. See `ROUND-02-FIXES.md` Fix #41. — *L71*
+
+---
