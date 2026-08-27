@@ -32,6 +32,10 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
       **composer `URCi_*`** per `C_`/`CC_`/`A_`. Token modules (TFT/DPOF/DPDC-T) already have
       cost ctors → formalize as `URCi`.
 - [ ] **1.3** Keep a running line-count check per module (rule B) as `URCi`s are added.
+- [ ] **1.4 StoicSyntax renames carried over from audits** (do during the per-module walk):
+      **DPDC #40L** — `Wipe*` family (Heavy/Pure/Clean/Dirty) rename/rethink; **ATS #31L** — Talos
+      `C_SetHotRecoveryFee` (singular) vs core `C_SetHotRecoveryFees` (plural), rename (no interface
+      bump needed, pre-mainnet). Add more as SWP/DPTF-DPOF land.
 
 ## PHASE 2 — INFO rehaul: COMPLETE coverage + consolidate (not just AQP)
 The INFO rehaul is **total** — every client/admin entrypoint across the WHOLE codebase gets an INFO
@@ -54,6 +58,9 @@ and partially). This phase both *simplifies* the existing INFO and *completes* t
 - [ ] **2.5** **Refactor load order:** update the REPL pipeline (`Z.repl`, `Stage01/02_Tester.repl`,
       the `[x]` loaders) **and** the on-chain deploy sequence to load each stage's `Z_Reads/` modules
       last in that stage.
+- [ ] **2.6 Write-tier/read-layer fixes carried over from audits:** **DPDC #43L** — a write-tier fn
+      returns a display string instead of ending on a write; move the "what it did/costs" display into
+      the INFO/read layer (`XI_`/`XB_` end on write, no return). Add more as SWP/DPTF-DPOF land.
 
 ## PHASE 3 — Re-price IGNIS (point A; spec: `memories/2026-08-27-ignis-cost-rethink.md`; task #76)
 - [ ] **3.1** **Measurement pass:** instrument real STOA gas per client op by run-shape (build on
@@ -82,7 +89,9 @@ to main. This phase closes the coverage gap repo-wide AND lands the single-compr
       Stage 1 + Stage 2 with a grep-based coverage audit (the audits each flagged gaps — fold their
       lists in, e.g. ATS `#22L`, `[6.6]_ATS.repl`). Write canonical REPL suites for every untested
       entrypoint, in the required layout (`REPL_AND_TESTS.md`). Untested code ships bugs — this is
-      correctness, not polish.
+      correctness, not polish. **Carried-over coverage gaps to fold in:** ATS `#22L` (12 config
+      `C_`/`A_` fns; wire `[6.6]_ATS.repl` past the #12a dup-MVST block), DPDC `#41L/#42L` (branding +
+      ownership-gate); + SWP/DPTF-DPOF gaps as they land.
 - [ ] **5.3** **Single comprehensive run — the whole codebase, one boot.** Generalize `AQP-FULL.repl`
       from AQP to **everything**: one hermetic run that boots once and exercises ALL Pact code (Stage 1
       + Stage 2 + slaves + `Z_Reads` INFO). Requires the hermetic fixture isolation from the AQP
