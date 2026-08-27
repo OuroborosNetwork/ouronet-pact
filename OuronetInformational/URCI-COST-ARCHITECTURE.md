@@ -48,6 +48,12 @@ billing everywhere down to AQP + Stage 1 = top-to-bottom rehaul. Migrate toward 
 if the purity is ever judged worth it; never a prerequisite.
 
 ## 4. INFO consolidation + placement (the big win)
+**The INFO rehaul is TOTAL, not just a simplification.** Because each `URCi`-caller INFO is only a few
+lines, the rehaul both (a) simplifies the existing INFO *and* (b) **completes the missing coverage**:
+every client/admin entrypoint (`C_`/`CC_`/`A_`/`AA_`) across the WHOLE codebase gets an INFO preview.
+Today only `INFO-ONE`/`INFO-TWO`/`AQP-INFO` exist and only partially — a large number of INFO functions
+are missing. The `URCi` layer is what makes completing them cheap.
+
 Once INFO functions are **thin `URCi` callers** (call the composer `URCi` + wrap in `ClientInfo`
 pre/post text), each shrinks to a few lines. Consequences:
 - **Keep the INFO modules** (so the current UI keeps working — same `INFO_*` names/return shape),

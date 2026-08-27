@@ -33,21 +33,27 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
       cost ctors → formalize as `URCi`.
 - [ ] **1.3** Keep a running line-count check per module (rule B) as `URCi`s are added.
 
-## PHASE 2 — INFO consolidation (finishes the last 7 vacate INFO for free)
-- [ ] **2.1** Gut each `INFO_*` body to a thin **composer-`URCi` call + `ClientInfo` text**
+## PHASE 2 — INFO rehaul: COMPLETE coverage + consolidate (not just AQP)
+The INFO rehaul is **total** — every client/admin entrypoint across the WHOLE codebase gets an INFO
+preview via its composer `URCi`. Many are currently missing (only INFO-ONE/INFO-TWO/AQP-INFO exist,
+and partially). This phase both *simplifies* the existing INFO and *completes* the missing ones.
+- [ ] **2.1** Gut each existing `INFO_*` body to a thin **composer-`URCi` call + `ClientInfo` text**
       (keep names/return shape so the UI is untouched).
-- [ ] **2.2** Build the **7 vacate/drain/FullVacate INFO** as `URCi_Vacate*` callers (cost map:
-      `memories/2026-08-27-aqp-info-final17-costmap.md` — the two-map concat + drain `UserUnn==0`
-      subset). This completes the "final 17".
-- [ ] **2.3** **Consolidate to one INFO module per stage** and **relocate to a new
+- [ ] **2.2** Build the **7 AQP vacate/drain/FullVacate INFO** as `URCi_Vacate*` callers (cost map:
+      `memories/2026-08-27-aqp-info-final17-costmap.md`). Completes the AQP "final 17".
+- [ ] **2.3** **COMPLETE the missing INFO across every module/stage.** Inventory every
+      `C_`/`CC_`/`A_`/`AA_` client/admin entrypoint (Stage 1 + Stage 2, all modules) and build an INFO
+      preview for each that lacks one — thin composer-`URCi` callers. This is the bulk of the rehaul:
+      a ton of INFO functions are currently missing. Track coverage in a checklist (mirror the
+      `aqp-entrypoint-surface.md` catalog approach, extended repo-wide).
+- [ ] **2.4** **Consolidate to one INFO module per stage** and **relocate to a new
       `1_SOVEREIGN/STAGE_0N/Z_Reads/` slot (after `3_Talos`), deployed LAST** — read-only presentation
       layer, leaf (nothing refs it); `Z_` sorts absolutely last regardless of future numbered layers,
       mirroring slave `Stage_Z` (`DPL-UR`/`EXPLORER`). Move out of `2_Core` (`INFO-ONE`/`AQP-INFO`);
-      delete reconstruction bodies; confirm `INFO-ONE` shrinks.
-- [ ] **2.4** **Refactor load order:** update the REPL pipeline (`Z.repl`, `Stage01/02_Tester.repl`,
+      delete reconstruction bodies; confirm `INFO-ONE` shrinks materially.
+- [ ] **2.5** **Refactor load order:** update the REPL pipeline (`Z.repl`, `Stage01/02_Tester.repl`,
       the `[x]` loaders) **and** the on-chain deploy sequence to load each stage's `Z_Reads/` modules
       last in that stage.
-      Delete the reconstruction bodies (now redundant). Confirm `INFO-ONE` shrinks materially.
 
 ## PHASE 3 — Re-price IGNIS (point A; spec: `memories/2026-08-27-ignis-cost-rethink.md`; task #76)
 - [ ] **3.1** **Measurement pass:** instrument real STOA gas per client op by run-shape (build on
@@ -65,14 +71,24 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
       split any in Warning/Danger band along capability seams.
 - [ ] **4.3** Update `MODULE-SIZING.md` applicability table with post-`URCi` measurements.
 
-## PHASE 5 — Harden: CI drift-gate + unified single-boot test
-- [ ] **5.1** **CI-gate the ground-truth harness** (`aqp-info-groundtruth.repl`): exec `ignis-need`
-      == real IGNIS/GAS delta. This is the exec↔info drift lock that lets Option A skip a rehaul —
-      any cost change not reflected in `URCi`/INFO fails the build.
-- [ ] **5.2** Finish the **unified single-boot AQP test** (tasks #71/#72/#73): hermetic fixture
-      isolation for the destructive tails (give each its own disjoint NFs/accounts/anchor + delta-based
-      pre-state) so they fold into `AQP-FULL.repl`; extract + fold the info/stream/DSA inline bodies
-      (Phase B). Goal: one boot exercises everything. Spec: `memories/2026-08-27-aqp-full-unified-test.md`.
+## PHASE 5 — REPL finalization + CI harden (test EVERYTHING in one run)
+The audits kept surfacing functions with **zero REPL coverage** (e.g. ATS `#22L` found 12 untested
+config fns — and two real bugs hid there precisely because nothing called them). Those were deferred
+to main. This phase closes the coverage gap repo-wide AND lands the single-comprehensive-run refactor.
+- [ ] **5.1** **CI-gate the ground-truth harness**: exec `ignis-need` == real IGNIS/GAS delta. The
+      exec↔info drift lock that lets Option A skip a rehaul. Extend it to cover **every** INFO function
+      (all of Phase 2's completed coverage), not just the 3 currently proven.
+- [ ] **5.2** **REPL coverage completion (repo-wide).** Inventory every `C_`/`CC_`/`A_`/`AA_` across
+      Stage 1 + Stage 2 with a grep-based coverage audit (the audits each flagged gaps — fold their
+      lists in, e.g. ATS `#22L`, `[6.6]_ATS.repl`). Write canonical REPL suites for every untested
+      entrypoint, in the required layout (`REPL_AND_TESTS.md`). Untested code ships bugs — this is
+      correctness, not polish.
+- [ ] **5.3** **Single comprehensive run — the whole codebase, one boot.** Generalize `AQP-FULL.repl`
+      from AQP to **everything**: one hermetic run that boots once and exercises ALL Pact code (Stage 1
+      + Stage 2 + slaves + `Z_Reads` INFO). Requires the hermetic fixture isolation from the AQP
+      unified-test work (tasks #71/#72/#73: disjoint fixtures per destructive scenario + delta-based
+      pre-state; fold info/stream/DSA inline bodies). Spec: `memories/2026-08-27-aqp-full-unified-test.md`.
+      End state: **one command tests the entire system top-to-bottom.**
 
 ---
 
@@ -117,4 +133,5 @@ Verified on main: the two live fixes landed — `P|A_Define` IMP registration
 
 ## Quick task map
 #21 SWP audit · #23 ATS audit → **Phase 0**. #77 URCi → **Phase 1-2**. #74 vacate INFO → **Phase 2.2**.
-#76 re-price → **Phase 3**. #75 FVT split → **Phase 4**. #71/#72/#73 unified test → **Phase 5.2**.
+#78 complete-all-INFO → **Phase 2.3**. #76 re-price → **Phase 3**. #75 FVT split → **Phase 4**.
+#79 REPL coverage completion → **Phase 5.2**. #71/#72/#73 whole-codebase single run → **Phase 5.3**.
