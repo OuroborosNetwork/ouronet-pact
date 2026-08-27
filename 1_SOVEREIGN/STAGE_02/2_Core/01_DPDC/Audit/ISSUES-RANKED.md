@@ -487,39 +487,53 @@ single highest-value missing assertion class for this module; would have caught 
 
 #43L **[DPDC-C]** `XI_RegisterCollectionElement` (an `XI_` write-tier function) returns a formatted
 business string instead of ending on a write, embedding presentation logic in a write-tier function —
-StoicSyntax discipline deviation, not a functional bug. — *DPDC-C·L1*
+StoicSyntax discipline deviation, not a functional bug. — **⏸ DEFERRED 2026-08-27** — touches INFO
+function architecture (the UI read-points showing what a client function did/costs); owner: rearchitected
+on `main` alongside #40L. No code change; carried into the final audit report. — *DPDC-C·L1*
 
-#44L **[DPDC-T]** Dual `implements DpdcTransferV1` + `DpdcTransferV2` deviates from the repo's
-"latest-version-only" cascade policy — deliberately documented as an additive-only exception, no functional
-risk, but a process/documentation divergence worth formally recording. — *DPDC-T·L1*
+#44L **[DPDC-T]** ~~Dual `implements DpdcTransferV1` + `DpdcTransferV2` deviates from the repo's
+"latest-version-only" cascade policy~~ — **CLOSED 2026-08-27, already adequately documented** — Round I's
+own trace found this already self-documented as intentional in `DpdcTransferV2`'s own `@doc`
+("Additive... does not replace `DpdcTransferV1`"), and confirmed both interfaces are genuinely live, not
+a silent gap. No code change needed. — *DPDC-T·L1*
 
-#45L **[DPDC-UDC]** `UDC_ScoreMetaData` is dead code — the real score-mutation path (`XI_U|NonceScore`)
-bypasses this constructor entirely via a raw object merge, violating the repo's own "prefer named
-constructors over ad-hoc `object{}` literals" convention. — *DPDC-UDC·L1*
+#45L **[DPDC-UDC]** ~~`UDC_ScoreMetaData` is dead code~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-27**
+(`ROUND-02-FIXES.md` Fix #34) — removed rather than rewired: wiring it into `XI_U|NonceScore` as
+originally suggested would have unsafely reset a real set-instance's composition (the constructor
+hardcodes `composition=[0]`). Z.repl green. — *DPDC-UDC·L1*
 
-#46L **[DPDC-UDC]** Several constructors (`UDC_DPDC|Properties`, `UDC_URI|Type`/`Data`, `UDC_NonceData`)
-take 5-8 same-typed positional parameters in a row — a standing transposition risk with no
-compiler-enforced field binding; every current call site was audited and found safe (named locals in field
-order), design-robustness note only, no live bug. — *DPDC-UDC·L2*
+#46L **[DPDC-UDC]** ~~Several constructors (`UDC_DPDC|Properties`, `UDC_URI|Type`/`Data`, `UDC_NonceData`)
+take 5-8 same-typed positional parameters in a row~~ — **CLOSED 2026-08-27, no live bug** — every real
+call site already audited by Round I and confirmed safe (named locals in field order); a larger
+constructor redesign isn't warranted for a confirmed non-issue. — *DPDC-UDC·L2*
 
-#47L **[DPDC-F]** `C_RepurposeCollectableFragments` Multi Mode has no `length>0` guard — an empty
-nonces/amounts pair passes the cap and likely aborts several call-hops later with an opaque out-of-bounds
-error instead of a clear gate-level message. — *DPDC-F·L1*
+#47L **[DPDC-F]** ~~`C_RepurposeCollectableFragments` Multi Mode has no `length>0` guard~~ — **FIXED ✅
+AND PROVEN ✅ 2026-08-27** (`ROUND-02-FIXES.md` Fix #34) — added `(> l1 0)` to `DPDC-F|C>REPURPOSE`'s
+existing length-match enforce. Live-proven: the clean message now fires, not the old downstream
+out-of-bounds crash. Z.repl green. — *DPDC-F·L1*
 
-#48L **[DPDC-F]** `DPDC-F|C>MERGE` omits `id`/`son` from its capability parameters and neither `C>NONCE`
-nor `C>MERGE` are marked `@event`, inconsistent with sibling caps in the same file — not independently
-exploitable, weakens the module's own audit trail. — *DPDC-F·L2*
+#48L **[DPDC-F]** ~~`DPDC-F|C>MERGE` omits `id`/`son` from its capability parameters and neither `C>NONCE`
+nor `C>MERGE` are marked `@event`~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-27** (`ROUND-02-FIXES.md` Fix #34)
+— added `id`/`son` to `C>MERGE` and `@event` to both caps, matching sibling caps in the file; call site
+updated. Z.repl green (exercised live by the #27M fragments suite's `C_MergeFragments` call). —
+*DPDC-F·L2*
 
-#49L **[EQUITY]** Make/Break reimplements `DPDC-S`'s "combine nonces / break back" pattern with a bespoke,
-divergent mechanism sharing no code and no test surface — architecturally defensible, but a future
-`DPDC-S` invariant fix won't propagate here automatically. — *EQUITY·L1*
+#49L **[EQUITY]** ~~Make/Break reimplements `DPDC-S`'s "combine nonces / break back" pattern with a
+bespoke, divergent mechanism~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-27** (`ROUND-02-FIXES.md` Fix #34) —
+added cross-referencing `@doc` notes to `XI_MakePackageShares`/`XI_BreakPackageShares` documenting the
+intentional divergence and flagging future `DPDC-S` invariant changes for manual EQUITY review. No
+behavior change, Z.repl green. — *EQUITY·L1*
 
-#50L **[EQUITY]** `URC_SingleSharePerMillions` has no declared return type, inconsistent with every sibling
-`URC_*`/`UC_*` in the file — cosmetic type-hygiene only. — *EQUITY·L2*
+#50L **[EQUITY]** ~~`URC_SingleSharePerMillions` has no declared return type~~ — **FIXED ✅ AND PROVEN ✅
+2026-08-27** (`ROUND-02-FIXES.md` Fix #34) — added `:integer` to the module `defun` and `EquityV1`
+interface declaration. Z.repl green. — *EQUITY·L2*
 
-#51L **[DPDC-S]** Empty set-definitions crash with an opaque `Array index out of bounds` error instead of a
-clean `enforce` message (`(enumerate 0 -1)` returns `[0,-1]`, not `[]`) — fails closed, not exploitable, but
-confusing; no upper bound on definition length exists either. — *DPDC-S·L2*
+#51L **[DPDC-S]** ~~Empty set-definitions crash with an opaque `Array index out of bounds` error instead of
+a clean `enforce` message... no upper bound on definition length exists either~~ — **FIXED ✅ AND PROVEN
+✅ 2026-08-27** (`ROUND-02-FIXES.md` Fix #34) — new `MAX_SET_DEFINITION_SIZE` constant (20) and a combined
+length-bound `enforce` on both `UEV_PrimordialSetDefinition`/`UEV_CompositeSetDefinition`. Live-proven:
+the raw error text is now the intended clean message, not the old opaque crash, for empty and
+oversized (21-position) definitions alike. Z.repl green. — *DPDC-S·L2*
 
 #52L **[DPDC-S]** `URC_NoncesSummedScore` sums raw constituent scores via `UR_N|RawScore`, silently
 discarding any set-multiplier a constituent nonce itself carries if it's a nested previously-made set —
@@ -529,15 +543,17 @@ possibly intentional (avoid double-multiplication) but undocumented and untested
 `owner-account` goes through real `CAP_EnforceAccountOwnership`) — an unconsenting third party can be named
 "creator" and silently granted real collection-admin permissions. — *DPDC-I·L1*
 
-#54L **[DPDC-I]** `C_DeployAccountSFT`/`C_DeployAccountNFT` carry no `UEV_IMC`, no capability, and no
-`@doc` explaining the intentionally-permissionless design — traced and confirmed non-exploitable (the
-callee is existence-gated and idempotent), but reads as under-protected to a reviewer until that's traced.
-— *DPDC-I·L2*
+#54L **[DPDC-I]** ~~`C_DeployAccountSFT`/`C_DeployAccountNFT` carry no `UEV_IMC`, no capability, and no
+`@doc` explaining the intentionally-permissionless design~~ — **ALREADY CLOSED, moot 2026-08-27** — these
+two functions no longer exist, fully removed in Fix #31 (#35M) earlier this session. — *DPDC-I·L2*
 
-#55L **[DPDC]** `UR_AS-KEYS` performs a full table scan (`keys`) but is named with the point-read `UR_`
-prefix instead of `URD_`, breaking the prefix-as-contract guarantee — no execution-path risk (manual/admin
-use only), pure naming violation. — *DPDC·L1*
+#55L **[DPDC]** ~~`UR_AS-KEYS` performs a full table scan (`keys`) but is named with the point-read `UR_`
+prefix instead of `URD_`~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-27** (`ROUND-02-FIXES.md` Fix #34) — renamed
+to `URD_AS-Keys`, matching this file's other `URD_*` scans; doc-comment reference updated. Not currently
+on `DpdcV1`, no interface change. Z.repl green. — *DPDC·L1*
 
 Also recorded, not independently numbered (documentation-only, zero functional risk):
-**[DPDC]** `DPNF|AccountRoles`'s interface `@doc` states the reverse composite-key field order from what
-the real, consistently-used code does — *DPDC·L2*.
+~~**[DPDC]** `DPNF|AccountRoles`'s interface `@doc` states the reverse composite-key field order from what
+the real, consistently-used code does.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-27** (`ROUND-02-FIXES.md`
+Fix #34) — corrected the `@doc` to match `DPSF|AccountRoles` and the real code. Doc-only. Z.repl green. —
+*DPDC·L2*.

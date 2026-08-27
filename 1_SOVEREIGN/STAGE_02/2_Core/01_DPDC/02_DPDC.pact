@@ -351,7 +351,9 @@
         )
     )
     ;;{F0}  [UR]
-    (defun UR_AS-KEYS:[string] (son:bool)
+    ;;DPDC Audit #55L: renamed from UR_AS-KEYS -- a full (keys ...) table scan belongs under the URD_
+    ;;prefix (dirty/scan-tier reads), not UR_ (point reads); matches this file's other URD_* scans.
+    (defun URD_AS-Keys:[string] (son:bool)
         (keys (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))
     )
     ;;
@@ -1600,7 +1602,7 @@
             (compose-capability (SECURE))
         )
     )
-    ;;get keys with (UR_AS-KEYS son)
+    ;;get keys with (URD_AS-Keys son)
     (defun AUP_SFTs (kis:[string])
         (with-capability (AHU)
             (let

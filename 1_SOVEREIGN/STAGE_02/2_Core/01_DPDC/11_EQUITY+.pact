@@ -14,7 +14,7 @@
     ;;
     (defun URC_MakeSharePackage:integer (id:string shares-amount:integer package-share-tier:integer))
     (defun URC_SharesPerMillion:[integer] (id:string))
-    (defun URC_SingleSharePerMillions (id:string package-share-tier:integer))
+    (defun URC_SingleSharePerMillions:integer (id:string package-share-tier:integer))
     (defun URC_CombineCapacity:integer (id:string))
     ;;
     ;;  [UEV]
@@ -267,7 +267,7 @@
             (map (* tcs-in-millions) S)
         )
     )
-    (defun URC_SingleSharePerMillions (id:string package-share-tier:integer)
+    (defun URC_SingleSharePerMillions:integer (id:string package-share-tier:integer)
         @doc "Share-per-unit value for a single <package-share-tier> (1-7), scaled to this collection's \
             \ total share count. See URC_SharesPerMillion."
         (at (- package-share-tier 1) (URC_SharesPerMillion id))
@@ -527,7 +527,12 @@
     )
     (defun XI_MakePackageShares:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string shares-amount:integer package-share-tier:integer)
-        @doc "Combines Nonce 1 to Nonce 2,3,4,5,6,7,8"
+        @doc "Combines Nonce 1 to Nonce 2,3,4,5,6,7,8. \
+            \ DPDC Audit #49L: this is an intentionally separate, bespoke implementation of the \
+            \ same conceptual pattern as DPDC-S::C_MakeSemiFungibleSet/C_BreakSemiFungibleSet -- EQUITY \
+            \ wants freely-transferable tier tokens, not opaque set-bundles, so it shares no code with \
+            \ DPDC-S. A future DPDC-S invariant fix will NOT automatically propagate here; cross-link \
+            \ any such change to this pair of functions for manual review."
         (require-capability (SECURE))
         (with-capability (EQUITY|C>MAKE id shares-amount package-share-tier)
             (let
@@ -563,7 +568,9 @@
     )
     (defun XI_BreakPackageShares:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string package-share-tier:integer amount:integer)
-        @doc "Brakes Nonce 2,3,4,5,6,7,8 to Nonce 1"
+        @doc "Brakes Nonce 2,3,4,5,6,7,8 to Nonce 1. \
+            \ DPDC Audit #49L: see XI_MakePackageShares's @doc -- intentionally bespoke vs. DPDC-S, \
+            \ cross-link any DPDC-S Make/Break invariant change here for manual review."
         (require-capability (SECURE))
         (with-capability (EQUITY|C>BREAK id package-share-tier)
             (let

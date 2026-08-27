@@ -140,7 +140,9 @@
                 (l1:integer (length fragment-nonces))
                 (l2:integer (length fragment-amounts))
             )
-            (enforce (= l1 l2) "Invalid Repurpose data")
+            ;;DPDC Audit #47L: reject an empty repurpose here, with a clear message, instead of letting
+            ;;it fall through to an unfriendly out-of-bounds error several call-hops downstream.
+            (enforce (and (= l1 l2) (> l1 0)) "Invalid Repurpose data")
         )
     )
     (defcap DPDC-F|C>ENABLE-FRAGMENTATION
@@ -166,12 +168,16 @@
     )
     (defcap DPDC-F|C>NONCE
         (id:string son:bool nonce:integer)
+        @event
         (UEV_Fragmentation id son nonce)
         (compose-capability (P|DPDC-F|CALLER))
         (compose-capability (P|DPDC-F|REMOTE-GOV))
     )
-    (defcap DPDC-F|C>MERGE 
-        (nonce:integer amount:integer)
+    (defcap DPDC-F|C>MERGE
+        ;;DPDC Audit #48L: added id/son (were missing, inconsistent with every sibling cap in this file)
+        ;;and @event, so this capability carries the same audit-trail visibility as C>NONCE/C>REPURPOSE.
+        (id:string son:bool nonce:integer amount:integer)
+        @event
         (let
             (
                 (divided:integer (mod amount 1000))
@@ -314,7 +320,7 @@
     (defun C_MergeFragments:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string son:bool nonce:integer amount:integer)
         (UEV_IMC)
-        (with-capability (DPDC-F|C>MERGE nonce amount)
+        (with-capability (DPDC-F|C>MERGE id son nonce amount)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)

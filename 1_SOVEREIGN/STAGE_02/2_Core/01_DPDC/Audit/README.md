@@ -119,21 +119,21 @@ one at a time in `ISSUES-RANKED.md` order and this table is updated in place as 
 | M16 (#38M) | MED | DPDC-UDC/DPDC-S | `UDC_NoPrimordialSet`/`NoCompositeSet` sentinels structurally indistinguishable from real data | **ALREADY CLOSED BY FIX #27 (#31M) — LIVE-PROVEN 2026-08-26** — both sentinel values (`[0]` primordial, `-1` composite) tested directly and confirmed rejected today: composite blocked by a pre-existing `sc > 0` check, primordial blocked by #31M's `0 < abs(n) <= nu` bound. No code change needed |
 | L1 (#39L) | LOW | DPDC-S | Zero REPL coverage for Make/Break round trip and admin mutations | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #33)** — new canonical suite `REPL/Stage_02/[6.1.3]_DPDC-S.repl`, wired into `Stage02_Tester.repl`. Covers Primordial/Composite/Hybrid SFT + NFT Make→Break round trips and `C_ToggleSet`/`C_RenameSet`/`C_EnableSetClassFragmentation`, 40 assertions. Doubles as regression coverage for #6C/#30M/#31M/#32M. Z.repl green |
 | L2 (#40L) | LOW | DPDC-MNG | `Wipe*` family (`Heavy`/`Pure`/`Clean`/`Dirty`) has zero REPL coverage — the checked-in "Wipe Tests" tx is commented out | **⏸ DEFERRED 2026-08-27** — owner: `Wipe*` needs renaming/rethinking as part of an upcoming StoicSyntax architecture pass; testing names/shapes about to change is premature. Handle together with that rename pass (separate effort, on `main`); carried into the final audit report |
-| L3 (#41L) | LOW | DPDC | Branding functions untested; stark SFT-vs-NFT test asymmetry | OPEN |
-| L4 (#42L) | LOW | DPDC-R | No negative-path coverage for the ownership gate across all 12 role functions | OPEN |
-| L5 (#43L) | LOW | DPDC-C | `XI_RegisterCollectionElement` returns a formatted string instead of ending on a write | OPEN |
-| L6 (#44L) | LOW | DPDC-T | Dual `implements DpdcTransferV1`+`V2` deviates from "latest-version-only" cascade policy | OPEN |
-| L7 (#45L) | LOW | DPDC-UDC | `UDC_ScoreMetaData` is dead code — real score-mutation path bypasses it | OPEN |
-| L8 (#46L) | LOW | DPDC-UDC | Several constructors take 5-8 same-typed positional params in a row (transposition risk) | OPEN |
-| L9 (#47L) | LOW | DPDC-F | `C_RepurposeCollectableFragments` Multi Mode has no `length>0` guard | OPEN |
-| L10 (#48L) | LOW | DPDC-F | `DPDC-F\|C>MERGE` omits `id`/`son` from cap params; missing `@event` on 2 caps | OPEN |
-| L11 (#49L) | LOW | EQUITY | Make/Break reimplements DPDC-S's pattern with a bespoke, divergent mechanism | OPEN |
-| L12 (#50L) | LOW | EQUITY | `URC_SingleSharePerMillions` has no declared return type | OPEN |
-| L13 (#51L) | LOW | DPDC-S | Empty set-definitions crash with opaque `Array index out of bounds` instead of a clean `enforce` | OPEN |
-| L14 (#52L) | LOW | DPDC-S | `URC_NoncesSummedScore` silently discards a nested set's own multiplier | OPEN |
-| L15 (#53L) | LOW | DPDC-I | `creator-account` bound with no ownership/consent check (unlike `owner-account`) | OPEN |
-| L16 (#54L) | LOW | DPDC-I | `C_DeployAccountSFT`/`NFT` carry no `UEV_IMC`/cap/`@doc` (traced non-exploitable) | OPEN |
-| L17 (#55L) | LOW | DPDC | `UR_AS-KEYS` is a full table scan but named with the point-read `UR_` prefix | OPEN |
+| L3 (#41L) | LOW | DPDC | Branding functions untested; stark SFT-vs-NFT test asymmetry | OPEN — test-coverage investment, owner's call on scope |
+| L4 (#42L) | LOW | DPDC-R | No negative-path coverage for the ownership gate across all 12 role functions | OPEN — test-coverage investment, owner's call on scope |
+| L5 (#43L) | LOW | DPDC-C | `XI_RegisterCollectionElement` returns a formatted string instead of ending on a write | **⏸ DEFERRED 2026-08-27** — touches INFO function architecture (UI cost/description read-points); owner: rearchitected on `main` alongside #40L. No code change; carried into the final audit report |
+| L6 (#44L) | LOW | DPDC-T | Dual `implements DpdcTransferV1`+`V2` deviates from "latest-version-only" cascade policy | **CLOSED 2026-08-27** — already self-documented as an intentional additive pattern in `DpdcTransferV2`'s own `@doc`; no code change needed |
+| L7 (#45L) | LOW | DPDC-UDC | `UDC_ScoreMetaData` is dead code — real score-mutation path bypasses it | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — removed (not rewired: wiring in as originally suggested would have unsafely reset a real set-instance's composition). Z.repl green |
+| L8 (#46L) | LOW | DPDC-UDC | Several constructors take 5-8 same-typed positional params in a row (transposition risk) | **CLOSED 2026-08-27** — no live bug; every real call site already audited and confirmed safe by Round I. No redesign warranted |
+| L9 (#47L) | LOW | DPDC-F | `C_RepurposeCollectableFragments` Multi Mode has no `length>0` guard | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — added `(> l1 0)` to the existing length-match enforce. Live-proven the clean message now fires. Z.repl green |
+| L10 (#48L) | LOW | DPDC-F | `DPDC-F\|C>MERGE` omits `id`/`son` from cap params; missing `@event` on 2 caps | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — added `id`/`son` + `@event` to both caps; call site updated. Z.repl green |
+| L11 (#49L) | LOW | EQUITY | Make/Break reimplements DPDC-S's pattern with a bespoke, divergent mechanism | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — added cross-referencing `@doc` notes flagging the intentional divergence for future manual review. Z.repl green |
+| L12 (#50L) | LOW | EQUITY | `URC_SingleSharePerMillions` has no declared return type | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — added `:integer` to module + interface. Z.repl green |
+| L13 (#51L) | LOW | DPDC-S | Empty set-definitions crash with opaque `Array index out of bounds` instead of a clean `enforce` | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — new `MAX_SET_DEFINITION_SIZE`(20) + length-bound enforce on both Primordial/Composite validators. Live-proven the clean message now fires instead of the crash. Z.repl green |
+| L14 (#52L) | LOW | DPDC-S | `URC_NoncesSummedScore` silently discards a nested set's own multiplier | OPEN — needs owner's design-intent call |
+| L15 (#53L) | LOW | DPDC-I | `creator-account` bound with no ownership/consent check (unlike `owner-account`) | OPEN — needs owner discussion |
+| L16 (#54L) | LOW | DPDC-I | `C_DeployAccountSFT`/`NFT` carry no `UEV_IMC`/cap/`@doc` (traced non-exploitable) | **ALREADY CLOSED, moot 2026-08-27** — the functions no longer exist, fully removed in Fix #31 (#35M) |
+| L17 (#55L) | LOW | DPDC | `UR_AS-KEYS` is a full table scan but named with the point-read `UR_` prefix | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — renamed to `URD_AS-Keys`, matching sibling `URD_*` scans. Z.repl green |
 
 ## Live-vs-local (Pythia) status
 

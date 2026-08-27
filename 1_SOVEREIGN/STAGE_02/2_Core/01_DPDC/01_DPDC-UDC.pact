@@ -307,10 +307,7 @@
         (meta-data:object)
         (UDC_NonceMetaData -1.0 [0] meta-data)
     )
-    (defun UDC_ScoreMetaData:object{DpdcUdcV1.NonceMetaData}
-        (score:decimal meta-data:object)
-        (UDC_NonceMetaData score [0] meta-data)
-    )
+    ;; UDC_ScoreMetaData removed — DPDC Audit #45L: see interface-side removal note above.
     (defun UDC_ZeroURI|Type:object{DpdcUdcV1.URI|Type} ()
         (UDC_URI|Type false false false false false false false)
     )

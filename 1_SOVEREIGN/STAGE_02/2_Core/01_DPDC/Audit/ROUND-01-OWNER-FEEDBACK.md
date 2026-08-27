@@ -802,3 +802,108 @@ pass — building test coverage for names/shapes that are about to change is pre
 handled together with that rename/rethink pass (done separately, with extra steps on `main`, not as part
 of this audit branch). Will be carried forward into the final consolidated audit report rather than
 closed here. No code or test change made in this session.
+
+## Triage of remaining LOW findings (2026-08-27)
+
+Owner asked which of the remaining LOW findings could defer to the same "main" rearchitecture as #40M,
+vs. which are safe to just fix now. Clarified scope precisely before filing anything: "INFO functions"
+means the functions designed as UI read-points showing what a client function does and what it costs.
+Checked every remaining finding against that exact definition — only **#43L** genuinely touches that
+layer (a display string embedded in a write-tier function). Everything else is either a small mechanical
+fix or a real judgment call, not a naming/architecture concern. Owner: fix and close everything fixable,
+leave only the genuine judgment calls open.
+
+## #43L · DPDC-C · L1 — DEFERRED (touches INFO function architecture)
+
+**Verdict: DEFERRED (2026-08-27).** `XI_RegisterCollectionElement` returns a formatted display string
+instead of ending on a write — presentation logic in a write-tier function. Confirmed this is genuinely
+an INFO-layer concern per the owner's definition (the string is literally "what this client function
+did"). Deferred to the same `main` rearchitecture as #40L. No code change made; carried into the final
+report.
+
+## #45L · DPDC-UDC · L1 — `UDC_ScoreMetaData` dead code
+
+**Verdict: CONFIRMED, FIXED (2026-08-27).** Part of the "fix everything else" batch.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — removed, not rewired: wiring it into
+`XI_U|NonceScore` as Round I's alternative suggested would have been unsafe (the constructor hardcodes
+`composition=[0]`, silently resetting a real set-instance's composition). Z.repl green.
+
+## #44L · DPDC-T · L1 — dual `implements DpdcTransferV1`+`V2` deviates from cascade policy
+
+**Verdict: ALREADY ADEQUATELY DOCUMENTED, closed (2026-08-27).** No owner judgment needed — Round I's own
+trace already found `DpdcTransferV2`'s `@doc` explicitly states this is an intentional additive-only
+pattern, not a silent gap, and confirmed both interfaces are genuinely live. Closed with a note, no code
+change; a repo-wide `INTERFACE_VERSIONING.md` cross-reference is a possible future enhancement, out of
+this audit's scope.
+
+## #46L · DPDC-UDC · L2 — several constructors take 5-8 same-typed positional params
+
+**Verdict: NO LIVE BUG, closed (2026-08-27).** No owner judgment needed — Round I already audited every
+real call site and confirmed all use named locals in field order; no transposition bug found. A larger
+constructor redesign isn't warranted for a confirmed non-issue.
+
+## #47L · DPDC-F · L1 — `C_RepurposeCollectableFragments` Multi Mode missing `length>0` guard
+
+**Verdict: CONFIRMED, FIXED (2026-08-27).** Part of the batch.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — added `(> l1 0)` to the existing length-match
+enforce. Live-proven: an empty repurpose now fails at the gate with the clear message, not an opaque
+out-of-bounds crash downstream. Z.repl green.
+
+## #48L · DPDC-F · L2 — `DPDC-F|C>MERGE` missing `id`/`son` params and `@event`
+
+**Verdict: CONFIRMED, FIXED (2026-08-27).** Part of the batch.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — added `id`/`son` to `C>MERGE`'s signature and
+`@event` to both `C>NONCE`/`C>MERGE`, matching every sibling cap in the file. Its one call site
+(`C_MergeFragments`) already exercised by the #27M fragments suite, confirming the signature change
+works correctly. Z.repl green.
+
+## #49L · EQUITY · L1 — Make/Break reimplements DPDC-S's pattern with a bespoke mechanism
+
+**Verdict: CONFIRMED intentional, documented (2026-08-27).** Part of the batch — matches Round I's own
+documentation-only fix direction.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — added cross-referencing `@doc` notes to
+`XI_MakePackageShares`/`XI_BreakPackageShares` explaining the intentional divergence and flagging future
+`DPDC-S` invariant changes for manual EQUITY review. No behavior change, Z.repl green.
+
+## #50L · EQUITY · L2 — `URC_SingleSharePerMillions` missing declared return type
+
+**Verdict: CONFIRMED, FIXED (2026-08-27).** Part of the batch.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — added `:integer` to the module `defun` and the
+`EquityV1` interface declaration. Z.repl green.
+
+## #51L · DPDC-S · L2 — empty/oversized set-definitions crash with an opaque error
+
+**Verdict: CONFIRMED, FIXED (2026-08-27).** Part of the batch.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — added a new `MAX_SET_DEFINITION_SIZE` constant
+(20) and a combined length-bound `enforce` to both `UEV_PrimordialSetDefinition`/
+`UEV_CompositeSetDefinition`. Live-proven: the raw (non-`expect-failure`) error text is now the intended
+clean message ("Set-Definition length must be between 1 and 20 positions"), not the old opaque
+out-of-bounds crash; confirmed for empty Primordial, empty Composite, and an oversized (21-position)
+definition. Z.repl green, including the new #39L DPDC-S suite's real definitions still passing unaffected.
+
+## #54L · DPDC-I · L2 — `C_DeployAccountSFT`/`NFT` no `UEV_IMC`/cap/`@doc`
+
+**Verdict: ALREADY CLOSED, moot (2026-08-27).** Those two functions no longer exist — fully removed in
+Fix #31 (#35M) earlier this session. Nothing to fix; noted in the batch write-up.
+
+## #55L · DPDC · L1 — `UR_AS-KEYS` named with the point-read prefix instead of `URD_`
+
+**Verdict: CONFIRMED, FIXED (2026-08-27).** Not INFO-architecture-related (an admin-tooling helper, not a
+UI cost/description read-point) — added to the batch.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — renamed to `URD_AS-Keys`, matching the file's
+other `URD_*` scan functions; updated its own doc-comment reference. Not currently on `DpdcV1`, no
+interface change. Z.repl green.
+
+## Unnumbered note · DPDC · L2 — `DPNF|AccountRoles` doc states the wrong field order
+
+**Verdict: CONFIRMED, FIXED (2026-08-27).** Part of the batch.
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #34)** — corrected the `@doc` to match
+`DPSF|AccountRoles` and the real, consistently-used key-construction code. Doc-only. Z.repl green.

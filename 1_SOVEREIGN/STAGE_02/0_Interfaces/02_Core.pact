@@ -111,7 +111,7 @@
     )
     ;;DPNF
     (defschema DPNF|AccountRoles
-        @doc "Key = <account> + BAR + <DPNF-id>"
+        @doc "Key = <DPNF-id> + BAR + <account>"
         roles:object{AccountRoles}
         ;;
         ;;ForSelect, store Key Make-up
@@ -246,7 +246,10 @@
     (defun UDC_ZeroNonceData:object{DPDC|NonceData} ())
     (defun UDC_NoMetaData:object{NonceMetaData} ())
     (defun UDC_MetaData:object{NonceMetaData} (meta-data:object))
-    (defun UDC_ScoreMetaData:object{NonceMetaData} (score:decimal meta-data:object))
+    ;; UDC_ScoreMetaData removed — DPDC Audit #45L: dead code, zero callers. The real score-mutation
+    ;; path (DPDC-N::XI_U|NonceScore) correctly preserves an existing nonce's composition via a targeted
+    ;; merge; this constructor hardcoded composition=[0], which would have silently reset a real set
+    ;; instance's composition if ever wired in as originally suggested — removal, not rewiring, is safe.
     (defun UDC_ZeroURI|Type:object{URI|Type} ())
     (defun UDC_ZeroURI|Data:object{URI|Data} ())
     ;;  [6]

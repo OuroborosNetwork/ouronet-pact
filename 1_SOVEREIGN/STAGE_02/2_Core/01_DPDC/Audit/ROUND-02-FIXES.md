@@ -1499,3 +1499,105 @@ pipeline log. All 40 new assertions print `"Expect: success ..."` / `"Expect fai
 none silently skipped.
 
 **Interface implication:** none — new REPL test file only, no `.pact` source changed.
+
+## Fix #34 — batch: unnumbered doc note + #45L/#47L/#48L/#49L/#50L/#51L (LOW, mechanical), #54L closed as moot
+
+**Owner-approved 2026-08-27** ("regarding all other small issues that you can fix, do so, documenting fix
+and closing them"), after triaging the remaining LOW findings into: (a) touches "INFO functions" (the
+read-points-for-UI-cost/description layer) → deferred (see #43L below), (b) small mechanical fixes → this
+batch, (c) genuinely needs owner judgment → left open for individual discussion (#41L/#42L/#52L/#53L).
+
+**Unnumbered doc note (`DPDC·L2`)** — `DPNF|AccountRoles`'s `@doc` stated the reverse composite-key field
+order (`<account> + BAR + <DPNF-id>`) from its sibling `DPSF|AccountRoles` (`<id> + BAR + <account>`) and
+from the real, consistently-used code (`(concat [id BAR account])` for both tables). Fixed the doc string
+in `0_Interfaces/02_Core.pact` to match. Doc-only, no behavior possible to regress.
+
+**#45L (`DPDC-UDC·L1`)** — `UDC_ScoreMetaData` was dead code (zero callers). Round I's fix direction
+offered "wire through the constructor OR remove" — checked wiring it into `XI_U|NonceScore` (the real
+score-mutation path) and found it would be **unsafe**: the constructor hardcodes `composition=[0]`, but
+`XI_U|NonceScore`'s existing raw-object-merge correctly *preserves* an existing nonce's real composition
+(which could be a genuine set-instance's `[1,3]`-style list). Wiring it in as suggested would have
+silently reset that on every score update. Removed the dead function instead (interface + module) — the
+safe alternative Round I also offered.
+
+**#44L — closed, already adequately documented, no code change.** Dual `implements DpdcTransferV1` +
+`DpdcTransferV2` deviates from the repo's "latest-version-only" cascade policy. Round I's own trace found
+this already explicitly self-documented in `DpdcTransferV2`'s `@doc` ("Additive DPDC-T surface — opt-in
+per consumer; does not replace `DpdcTransferV1`") and confirmed both are genuinely live (Talos type-refs
+`V1` for `C_Transfer`/etc. and `V2` specifically for `C_BulkTransfer`) — a deliberate, non-dangling
+exception, not a silent gap. No further DPDC-side change needed; a repo-wide `INTERFACE_VERSIONING.md`
+cross-reference is a possible future enhancement but out of this audit's scope.
+
+**#46L — closed, no live bug, no code change.** Several `DPDC-UDC` constructors take 5-8 same-typed
+positional parameters in a row (a standing transposition-risk pattern). Round I already audited every
+real call site (`02_DPDC.pact`, `04_DPDC-I.pact`, `11_EQUITY+.pact`) and confirmed all use named locals
+in field order — no live transposition bug exists today. A larger redesign (e.g. named-field object
+constructors) isn't warranted to fix a non-issue; documented as a reviewed design-robustness note, no
+functional change made.
+
+**#47L** — `DPDC-F|C>REPURPOSE` accepted `l1=l2=0` (an empty repurpose), which would abort several
+call-hops downstream on an opaque out-of-bounds error instead of a clear gate-level message. Added
+`(> l1 0)` to the existing length-match `enforce`.
+
+**#48L** — `DPDC-F|C>MERGE` was missing `id`/`son` from its parameters and neither it nor `C>NONCE` were
+marked `@event`, inconsistent with every sibling cap in the file. Added `id:string son:bool` to
+`C>MERGE`'s signature and `@event` to both; updated `C>MERGE`'s one call site (`C_MergeFragments`) to pass
+them through.
+
+**#49L** — EQUITY's `XI_MakePackageShares`/`XI_BreakPackageShares` reimplement DPDC-S's Make/Break
+pattern with a bespoke, divergent mechanism sharing no code. Round I's own fix direction was
+documentation-only (architecturally defensible: EQUITY wants freely-transferable tier tokens, not opaque
+set-bundles). Added cross-referencing `@doc` notes to both functions explaining the intentional
+divergence and flagging that a future `DPDC-S` Make/Break invariant change needs manual EQUITY review.
+
+**#50L** — `URC_SingleSharePerMillions` had no declared return type, inconsistent with every sibling
+`URC_*`/`UC_*` in the file. Added `:integer` to both the module `defun` and the `EquityV1` interface
+declaration.
+
+**#51L** — Primordial/Composite (and by extension Hybrid, which calls both) set-definitions crashed with
+an opaque out-of-bounds error on an empty list (`(enumerate 0 -1)` returns `[0 -1]`, not `[]`, live-verified
+against Pact 5.4), and had no upper bound either (an unreasonably large definition could push Make/Break
+gas past the practical ceiling, permanently bricking that set-class). Added a new
+`MAX_SET_DEFINITION_SIZE` constant (20 — comfortably above every real definition in the active pipeline,
+the largest being `dhcd-id`'s 10-position CodingDivision set) and a combined `(and (> 0) (<= MAX))`
+`enforce` with a clear message, at the top of both `UEV_PrimordialSetDefinition` and
+`UEV_CompositeSetDefinition`, before any enumerate-based fold runs.
+
+**#54L — closed as moot, no code change.** Worried that `C_DeployAccountSFT`/`C_DeployAccountNFT` (in
+`DPDC-I`) carried no `UEV_IMC`/capability/`@doc`. Those two functions no longer exist — they were fully
+removed in Fix #31 (#35M) earlier this session. Nothing to fix.
+
+**#55L** — `UR_AS-KEYS` performs a full `(keys ...)` table scan but was named with the point-read `UR_`
+prefix instead of `URD_`, breaking the prefix-as-contract guarantee (not INFO-architecture-related — this
+is an internal admin-tooling helper, not a UI cost/description read-point). Renamed to `URD_AS-Keys`,
+matching this file's other `URD_*` scan functions; updated its own doc-comment reference (its only
+"caller," since it's invoked manually off-chain per its own note, not by any live code path). Not
+currently declared on `DpdcV1`, so no interface change.
+
+**Live proof (not just "Z.repl still passes"):**
+`REPL/Kursan/_verify_finding_DPDC-F-S_47L-51L_empty_definition_guards.repl` — confirmed all four new
+guards actually fire with the intended clean message, not just any failure: raw (non-`expect-failure`)
+call to `DPSF|C_DefinePrimordialSet` with `[]` surfaces `"...08_DPDC-S.pact:550:8: Set-Definition length
+must be between 1 and 20 positions"` — the new message, not the old opaque out-of-bounds crash. Also
+confirmed: empty `DPSF|C_RepurposeFragments` rejected (#47L), empty Composite definition rejected, and a
+21-position (over `MAX_SET_DEFINITION_SIZE=20`) Primordial definition rejected.
+
+**Proof:** `cd REPL && pact Z.repl` — clean, `Load successful`, zero `FAILURE` lines. All existing suites
+(including #39L's new DPDC-S suite, which exercises real Primordial/Composite/Hybrid definitions and
+`C_MergeFragments`) still pass unchanged, confirming the new guards don't affect any legitimate path.
+
+**Interface implication:** `DpdcUdcV1` loses `UDC_ScoreMetaData` (removed); `EquityV1`'s
+`URC_SingleSharePerMillions` gains a return-type annotation (text-only, not signature-breaking in Pact's
+sense). `DPDC-F|C>MERGE` is an internal capability, not part of `DpdcFragmentsV1` — no interface change.
+No version bump — pre-mainnet, `V1`/`EquityV1` stay freely editable.
+
+## #43L — DPDC-C · L1 — DEFERRED (touches INFO function architecture)
+
+**Owner-approved 2026-08-27.** `XI_RegisterCollectionElement` (an `XI_` write-tier function) returns a
+formatted business string (e.g. `"Created N Collectables..."`) instead of ending on a write, per
+StoicSyntax's `XI_` contract — presentation/display logic embedded in a write-tier function. Owner: INFO
+functions (the read-points a UI uses to display what a client function did and what it costs) are part of
+a bigger scope to be rearchitected on `main`, top to bottom, alongside the `Wipe*` family (#40L). Filed and
+deferred rather than patched piecemeal now — a narrow fix here (factor the string into a `UDC_*` helper)
+would likely be redone or invalidated by that broader pass. No code change made in this session; carried
+forward into the final consolidated audit report.

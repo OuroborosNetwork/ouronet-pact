@@ -195,6 +195,12 @@
     (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2)))
     (defconst BAR                   (CT_Bar))
     (defconst EOC                   (CT_EmptyCumulator))
+    ;;DPDC Audit #51L: a Primordial/Composite set-definition must have at least 1 position (an empty
+    ;;list previously crashed with an opaque out-of-bounds error, since (enumerate 0 -1) returns [0 -1],
+    ;;not [] -- see UEV_PrimordialSetDefinition/UEV_CompositeSetDefinition) and at most this many, so an
+    ;;unreasonably large definition can't push Make/Break gas past the practical ceiling and permanently
+    ;;brick that set-class for its owner.
+    (defconst MAX_SET_DEFINITION_SIZE 20)
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -538,6 +544,13 @@
     )
     ;;{F2}  [UEV]
     (defun UEV_PrimordialSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}])
+        ;;DPDC Audit #51L: reject empty/oversized definitions with a clear message before any
+        ;;enumerate-based fold runs (an empty list would otherwise crash with an opaque
+        ;;out-of-bounds error several lines below).
+        (enforce
+            (and (> (length set-definition) 0) (<= (length set-definition) MAX_SET_DEFINITION_SIZE))
+            (format "Set-Definition length must be between 1 and {} positions" [MAX_SET_DEFINITION_SIZE])
+        )
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
@@ -591,6 +604,11 @@
         )
     )
     (defun UEV_CompositeSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}])
+        ;;DPDC Audit #51L: same empty/oversized-definition guard as UEV_PrimordialSetDefinition above.
+        (enforce
+            (and (> (length set-definition) 0) (<= (length set-definition) MAX_SET_DEFINITION_SIZE))
+            (format "Set-Definition length must be between 1 and {} positions" [MAX_SET_DEFINITION_SIZE])
+        )
         (let
             (
                 (ref-U|INT:module{OuronetIntegersV1} U|INT)
