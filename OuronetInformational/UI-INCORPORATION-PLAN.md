@@ -18,9 +18,10 @@ But it IS tractable for an AI agent working from a **written incorporation plan*
 finalized Pact surface → UI. That plan is this document's deliverable.
 
 ## Why it must come AFTER workstream #1 (hard dependency)
-The incorporation doc is derived from the **final shape** of the code. It requires:
+The incorporation doc is derived from the **final shape** of the code. It requires (roadmap Phases 1-7):
 1. All Pact fixes finalized (audits in; URCi; **complete INFO coverage**; re-price; module splits).
-2. A **fresh top-to-bottom redeploy** of Stage 1 + Stage 2 (new final entrypoint set).
+2. The **red-team attack** + fixes done (Phase 6) and the **Audit Book** assembled (Parts I/II/III).
+3. A **fresh top-to-bottom redeploy** of Stage 1 + Stage 2 (Phase 7) — the final entrypoint set.
 Only then is the client/admin/INFO surface stable and total — which is what the UI enumerates.
 
 ## The KEY synergy — workstream #1 IS the bridge to the UI
@@ -58,6 +59,34 @@ Walk the **Talos** client surface (the only supported client path) module by mod
 button → attach its INFO + readers + input form. The transitive-heavy (`CC_`/`AA_`) naming tells
 the UI which actions are expensive/slow (progress UI, batching). The result is a complete,
 deterministic page/button map — reviewable before a line of frontend is written.
+**But that map is the SUBSTRATE, not the design** — see the next section.
+
+## ⚠ This is an INTELLIGENT blueprint, NOT a button listing (owner, 2026-08-27)
+The enumeration above is necessary but NOT sufficient. The document must apply **UX intelligence**
+to determine how this monster of a codebase is *best* presented — grouped by **user intent and
+journey**, not mechanically one-button-per-function. Concretely:
+
+- **Role-based control panels.** A DPTF issuer gets a **token control panel**: tweak the token,
+  grant/revoke roles, freeze / wipe / unfreeze accounts, mint / burn, manage supply — all the
+  owner-surface for *that* token, coherently on one panel, not scattered as loose buttons.
+- **Role-grant-driven UI (permission-aware rendering).** An account that has been *granted* a
+  specific role must get the UI to *act on* that role — the interface renders per the caller's
+  actual granted capabilities, so each user sees exactly the actions they can perform. This needs
+  its own integration (read the account's roles → surface the matching control surfaces).
+- **Workflow / journey flows**, not isolated calls. Autostake, e.g.: browse/list pools →
+  participate → coil / curl → combine with vesting → create special tokens — presented as a guided
+  flow with the state and previews (INFO) inline, because that's how a user actually *does* the
+  thing. Same pattern for SWP (pairs, routes, LP), AQP (anchors/scores/pools/FVT), DemiPad, DSA.
+- **Progressive disclosure + dashboards.** Summary/landing dashboards per role/asset that drill into
+  the control panels and flows; hide advanced/rare admin surfaces behind clear affordances.
+- **Miss nothing.** The intelligence is in the *structure*, but coverage must remain total — every
+  built capability has a home in some panel/flow. The entrypoint catalog (substrate) is the
+  checklist that guarantees nothing built is left unexposed.
+
+So the deliverable is a **designed information+interaction architecture** over the code's full
+capability set — the best way to present everything — with the enumeration underneath as the
+completeness guarantee. Some scaffolding already exists (the owner's partial UI, incl. a
+mobile-friendly page) — build on it, don't discard it.
 
 ## Scope + stakes (why this is worth doing right)
 Full implementation opens Ouronet to users: create tokens of any kind, open autostake pools, make

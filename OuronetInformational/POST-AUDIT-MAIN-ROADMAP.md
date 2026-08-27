@@ -90,24 +90,49 @@ to main. This phase closes the coverage gap repo-wide AND lands the single-compr
       pre-state; fold info/stream/DSA inline bodies). Spec: `memories/2026-08-27-aqp-full-unified-test.md`.
       End state: **one command tests the entire system top-to-bottom.**
 
-## PHASE 6 — UI incorporation (CAPSTONE; workstream #2; spec: `UI-INCORPORATION-PLAN.md`; task #80)
-The second major workstream: a **document of incorporation** an AI agent (OuronetUI) follows to
-implement the ENTIRE Ouronet functionality onto the web UI — every client/admin function, every
-asset type (7), every role — derived from the **final Pact shape**, not built button-by-button.
-- [ ] **6.0 Hard dependency:** all of Phases 1-5 done + a **fresh top-to-bottom redeploy** of Stage
-      1 + 2 (final entrypoint set). The UI enumerates the finalized, total client/admin/INFO surface.
-- [ ] **6.1** Extend the **repo-wide entrypoint-surface catalog** (from Phase 2.3) into the UI input:
-      per entrypoint → role + asset-type + domain + INFO fn + readers + input form. This catalog IS
-      the machine-readable UI spec (every action, its cost, its state).
-- [ ] **6.2** Write the incorporation document: page/menu map on **role × asset-type × domain** axes;
-      per page the displayed metrics (readers), buttons (client fns), per button exec fn + INFO fn +
-      inputs/validation; navigation per role; **mobile-first** (build on the existing partial UI).
-- [ ] **6.3** Hand to the OuronetUI agent to implement page-by-page against the deterministic map.
+## PHASE 6 — Red team attack + Audit Book (BEFORE redeploy; tasks #81, #82)
+With the code in its **final shape**, just before redeploy: a comprehensive **multi-agent red-team
+attack on ALL modules** to expose vulnerabilities. Its findings + fixes become Part III of the book.
+- [ ] **6.1 Red team attack (all modules).** Multi-agent adversarial security audit: fan out
+      attackers per module / attack-surface — capability & auth bypass (module-boundary guard,
+      composed caps), arithmetic/rounding/precision, economic & MEV (front-run, sandwich, ratio
+      extremes), ordering/reentrancy-like, cross-module boundary abuse, defpact/Hydra-slice races,
+      gas-station exploitation, sentinel/collision. Synthesize + **adversarially verify** each
+      candidate finding against code (CONFIRMED/REFUTED), fix, re-test. Same rigor as the initial
+      audits, adversarial framing.
+- [ ] **6.2 Assemble the Audit Book** (expected hundreds of pages) — spec: `AUDIT-BOOK.md`:
+      - **Part I** — initial module audits (ATS, SWP, DPDC, DPTF-DPOF, AQP) — the `…/Audit/*` trees.
+      - **Part II** — the whole main-work round (Phases 1-5): every URCi/INFO/re-price/split/REPL
+        modification + fix, documented audit-style. **Document main-work AS IT LANDS — it IS Part II.**
+      - **Part III** — the red-team attack audit (6.1): vulnerabilities sought, found, fixed.
+      One consolidated, publishable book telling the whole story end to end.
 
-**Why #1 enables #2:** the completed INFO surface + entrypoint catalog is already ~80% of a UI spec
-(button = client fn; preview = INFO; metrics = readers; form = wrapper sig). Finalizing INFO
-coverage (Phase 2.3) is literally the bridge to the UI. Manual build: 10-20 yrs solo / 2-4 yrs
-human+AI; scoped to an agent following the plan: **weeks**.
+## PHASE 7 — Deploy-ready gate + fresh top-to-bottom redeploy (task #83)
+- [ ] **7.1** Final green-gate: whole-codebase single run (5.3) green + all audits closed + book
+      assembled + every module within the deploy ceiling (rule B; FVT split done).
+- [ ] **7.2** **Fresh top-to-bottom redeploy** of Stage 1 + Stage 2 (+ slaves). This finalized
+      entrypoint set is the shape the UI enumerates.
+
+## PHASE 8 — UI incorporation (CAPSTONE; workstream #2; spec: `UI-INCORPORATION-PLAN.md`; task #80)
+The second major workstream: a **document of incorporation** an AI agent (OuronetUI) follows to
+implement the ENTIRE Ouronet functionality onto the web UI — an **intelligent UX blueprint**, NOT a
+brain-dead button listing (see the plan doc).
+- [ ] **8.0 Hard dependency:** Phases 1-7 done (final shape redeployed).
+- [ ] **8.1** Extend the **repo-wide entrypoint-surface catalog** (from Phase 2.3) into UI input: per
+      entrypoint → role + asset-type + domain + INFO fn + readers + input form. The machine-readable
+      substrate (every action, its cost, its state) — the *raw material*, not the design.
+- [ ] **8.2** Write the incorporation document as an **intelligent architecture**: role-based control
+      panels (e.g. a DPTF issuer's control panel — tweak token, grant/revoke roles, freeze/wipe/
+      unfreeze, mint/burn), **role-grant-driven UI** (accounts granted a role get UI to act on it),
+      and **workflow-oriented flows** (autostake: browse pools, participate, coil/curl, combine with
+      vesting, create special tokens). Group by **user intent/journey**, not mechanical fn→button.
+      Mobile-first; build on the existing partial UI. Miss nothing that's been built.
+- [ ] **8.3** Hand to the OuronetUI agent to implement, against the intelligent blueprint.
+
+**Why #1 enables #2:** the completed INFO surface + entrypoint catalog is ~80% of the *substrate*
+(button = client fn; preview = INFO; metrics = readers; form = wrapper sig). Phase 2.3 is the bridge.
+But 8.2 is where **intelligence** turns that substrate into the best possible UX. Manual build:
+10-20 yrs solo / 2-4 yrs human+AI; scoped to an agent following an intelligent plan: **weeks**.
 
 ---
 
@@ -154,4 +179,5 @@ Verified on main: the two live fixes landed — `P|A_Define` IMP registration
 #21 SWP audit · #23 ATS audit → **Phase 0**. #77 URCi → **Phase 1-2**. #74 vacate INFO → **Phase 2.2**.
 #78 complete-all-INFO → **Phase 2.3**. #76 re-price → **Phase 3**. #75 FVT split → **Phase 4**.
 #79 REPL coverage completion → **Phase 5.2**. #71/#72/#73 whole-codebase single run → **Phase 5.3**.
-#80 UI incorporation (capstone) → **Phase 6**.
+#81 red team attack → **Phase 6.1**. #82 Audit Book → **Phase 6.2**. #83 redeploy → **Phase 7**.
+#80 UI incorporation (capstone) → **Phase 8**.
