@@ -2724,7 +2724,7 @@ issuance-only): exit 0, 0 `FAILURE`, `Stage01_Tester.repl` reverted with zero dr
 
 ---
 
-## #65bL (off-cycle, SWPT / U|BFS / SWPI / SWPU — the graph-search engine rebuilds the whole graph from scratch on every best-of-K attempt) — **OPEN, PARKED FOR DEDICATED DESIGN PASS**
+## #65bL (off-cycle, SWPT / SWPI / Talos — the graph-search engine rebuilds the whole graph from scratch on every best-of-K attempt) — **CONFIRMED, FIXED, PROVEN**
 
 **Surfaced during L65's own fix**, not a pre-existing findings-list item — the follow-up discussion
 about `CC_SmartSwap`'s heavy reads led directly here. Owner asked two things: how many heavy reads
@@ -2763,15 +2763,75 @@ Corroborating evidence this shape of win is real and available: Fix #24 (`M4`/`#
 proved a 39% gas cut is achievable from pure in-memory restructuring alone (`UCX_GraphNodeLinks`,
 zero table reads touched), separate from and additive to the read-layer opportunity found here.
 
-**Status:** OPEN — deliberately not designed or implemented. Owner's direction: finish the LOW
-queue (`#66L`–`#71L`) first, then return to this and any other complex issue surfaced along the way
-for careful, dedicated design — the same treatment `#34`/M2 received before it grew into its own
-13-phase master issue with dedicated `HANDOFF-swp-*.md` docs. Full evidence, the rejected
-wide-search alternative, and the open design questions (how to share the raw graph read across K
-attempts without breaking per-attempt filtering; whether the STOA-repricing loop should get the same
-treatment; full blast-radius enumeration across every caller of the shared BFS primitives) are
-captured in the new `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`, mirroring
-`HANDOFF-swp-exhaustive-path-search.md`'s own role for `#34`. — *#65bL*
+**Design and implementation (2026-08-28), after the full LOW queue closed per the owner's own
+sequencing:** four phases scoped, matching the two open design questions above precisely — sharing
+the raw graph read across K attempts (Phase 2), and whether the STOA-repricing loop should get the
+same treatment (Phase 4) — plus a third question that came up mid-design (is there a fundamentally
+better data structure/algorithm for the per-node lookup itself, Phase 3) and the pre-existing-but-
+unused `SWPT|PathCache` infrastructure discovered during the L67 investigation (Phase 1, `#32bM`'s
+own sibling discovery, wired in here since it was the cheapest, highest-leverage piece available).
+
+- **Phase 1 — wire `URCX_Hopper` to `SWPT|PathCache`.** Found the cache was write-only in the live
+  code (the bundle-based swap flow warms it, nothing ever reads it back). Wired `URCX_Hopper` to
+  check it first via a new `URC_ReadPathCacheFresh`, skipping the live best-of-3 search entirely on
+  a fresh hit — safe because the real per-hop edge is always re-derived live downstream regardless
+  of where the node-path came from. Required fixing the cache's own permanent-staleness bug first
+  (`#65bL`'s own sibling gap the owner flagged: "the cache must store the topology count... that's
+  something I asked, and I think it didn't get implemented" — confirmed true): added a
+  `topology-version` counter, bumped only on genuine topology change (not `A_RebuildGraph` replays),
+  and changed `XI_RegisterPath` from strict insert-only to version-checked refresh. Measured: a
+  forced cache-miss cost 477,825 gas; the real cache hit for the identical lookup cost 11,491 gas —
+  **~41.6x**. Adversarially proven the hit returns exactly the cached path, not an independently
+  recomputed one that happens to match.
+
+- **Phase 2 (Tier 1) — stop the routing search from re-reading the same graph rows 3x.** Split
+  `URC_MakeGraph`'s read-and-filter into a raw-fetch half (`URC_FetchRawGraph`, one `SWPT|Graph` read
+  per node) and a pure in-memory filter half (`UC_MakeGraphFromRaw`), and made
+  `URC_ComputeAlternateRoutes` fetch once and reuse it across all 3 best-of-K attempts instead of
+  each attempt independently re-reading and rebuilding the whole graph — safe because only the
+  swpairs *filter* shrinks between attempts, never the raw rows themselves. Measured on the
+  established P2-scale checkpoint (`SWP|TX 032z2`): 4,593,400 → 2,216,311 gas, a **51.7%**
+  reduction — the single biggest win of the whole effort, and it fires on every cold search
+  regardless of cache state.
+
+- **Phase 3 — investigated a smarter data structure/algorithm for the per-node lookup, built it,
+  measured it, did NOT ship it.** The obvious "use a keyed object instead of a list" idea was tested
+  directly and found impossible in Pact 5 (object literals require compile-time-static keys, not
+  runtime-computed ones — confirmed by a real parse error, not a guess). That test pointed at the
+  real alternative: binary search over a sorted list, using only primitives Pact 5 actually has
+  (`sort`, index-based `at`). An isolated synthetic benchmark showed it winning 2.3-4.9x at 100-300
+  elements. But the *real* integrated measurement — the actual function, the actual P2-scale 143-node
+  graph — showed it as a net **regression** (+27,527 gas on the same checkpoint). Isolated the cause
+  by reverting only the lookup call (kept the rest of Phase 2/4 unchanged) to confirm the regression
+  traced to binary search itself, not something else (the `sort` itself measured at just 3 gas —
+  not the culprit). Reverted cleanly. The real measurement was trusted over the synthetic one,
+  exactly the discipline this whole audit has followed throughout — and it's recorded here as a
+  genuine result, not silently dropped, because a documented "tried, disproven" is worth as much as
+  a documented fix.
+
+- **Phase 4 (Tier 2) — share one raw-graph fetch across the STOA-repricing loop.** The loop (Talos
+  layer, one `URC_PoolValue` call per distinct pool a self-searching swap touched) was the actual
+  dominant cost this whole investigation started from. Confirmed `SWPT::UC_MakeGraphNodes` is
+  provably input/output-independent (derives every token from the full `swpairs` list regardless of
+  which specific pair is being queried) — meaning ONE raw-graph fetch against the full topology is
+  valid for every distinct pool's own first-token→DWK query in the same loop, not just the one it
+  happened to be fetched for. Threaded `URC_PoolValueFromRaw`/`URC_WorthDWKFromRaw`/
+  `URCX_HopperFromRaw`/`URC_ComputeAlternateRoutesFromRaw` end to end from the Talos layer down into
+  SWPT, fetching once before the loop instead of once per pool inside it. Measured: 2,216,311 →
+  2,129,569 gas, a further **3.9%**. Correctness proven directly, not assumed: `URC_PoolValueFromRaw`
+  (shared fetch) produces byte-identical output to the original `URC_PoolValue` (self-fetch) for a
+  real pool, adversarially proven (corrupted the expected value, got a genuine `FAILURE`, restored).
+
+**Cumulative result: 5,094,054 → 2,129,569 gas, a 58.2% reduction** from the pre-`#65L` baseline,
+across all 4 phases combined. Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`)
+pipelines both verified clean (exit 0, 0 `FAILURE`) throughout every phase, with
+`Stage01_Tester.repl` reverted to its default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #42 and
+`OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md` for the full phase-by-phase
+detail, mirroring `HANDOFF-swp-exhaustive-path-search.md`'s own role for `#34`. Awaiting Round III
+re-verify (though per the owner's later direction, Round III itself is out of scope for this
+branch). — *#65bL*
 
 ---
 

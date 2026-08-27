@@ -1,14 +1,46 @@
-# Handoff: SWP on-chain graph-search engine optimization (parked, pre-design)
+# Handoff: SWP on-chain graph-search engine optimization
 
-## Status: **OPEN — parked for a dedicated design pass**
+## Status: **CLOSED — implemented, measured, proven (2026-08-28)**
 
-No code has changed for this issue. It is deliberately **not** being designed or implemented yet
-— the owner's explicit direction (2026-08-27) was to finish the LOW-item queue (`#66L`–`#71L`)
-first, then come back and "carefully churn over" this and any other complex issue that surfaced
-along the way, the same way `#34` (`ISSUES-RANKED.md`/`M2`) got its own dedicated multi-phase
-handoff once it outgrew a single-row fix. This document exists so the investigation that led here
-isn't lost before that dedicated pass happens — see `HANDOFF-swp-exhaustive-path-search.md` for
-the precedent this is deliberately mirroring.
+All 32 LOW findings closed first (per the owner's 2026-08-27 sequencing), then this got its own
+dedicated design-and-implementation pass, the same way `#34` (`ISSUES-RANKED.md`/`M2`) got its own
+multi-phase handoff once it outgrew a single-row fix — see `HANDOFF-swp-exhaustive-path-search.md`
+for the precedent this deliberately mirrors. Four phases were scoped; 3 shipped, 1 was investigated,
+measured, and deliberately NOT shipped after the real data contradicted the design intent. Real,
+measured cumulative result on the established P2-scale benchmark (`SWP|TX 032z2`, `CC_SmartSwap`,
+~102 active pools): **5,094,054 → 2,129,569 gas, a 58.2% reduction** from the pre-`#65L` baseline.
+
+## Final outcome — all 4 phases
+
+| Phase | What | Result |
+|---|---|---|
+| **1** | Wire `URCX_Hopper` to the pre-existing-but-unused `SWPT\|PathCache`, plus the topology-versioning fix needed to make a cache entry ever refreshable (previously insert-only, permanent) | **Shipped.** Measured: 477,825 gas (forced miss) → 11,491 gas (real cache hit) for the identical lookup — **~41.6x** on a warm cache. |
+| **2 (Tier 1)** | Stop `URC_ComputeAlternateRoutes`'s 3 best-of-K attempts from each independently re-reading and rebuilding the whole graph — fetch each candidate node's raw `SWPT\|Graph` row once, filter in-memory per attempt | **Shipped.** Measured on the P2-scale checkpoint: 4,593,400 → 2,216,311 gas, a **51.7%** reduction — the single biggest win, and it's the cold-search path, unconditional on cache state. |
+| **3** | Binary search over a sorted raw-graph list instead of `UCX_GraphNodeLinks`'s linear scan | **Investigated, built, measured, NOT shipped.** An isolated synthetic benchmark showed binary search winning 2.3-4.9x at 100-300 elements. The real integrated measurement, at the actual P2-scale 143-node graph, showed a net **regression** (+27,527 gas) — isolated and confirmed (reverted only the lookup call, kept everything else) before ruling it out. Reverted cleanly; the real measurement was trusted over the synthetic one. Recorded as a genuine negative result, not silently dropped. |
+| **4 (Tier 2)** | Share ONE raw-graph fetch across the STOA-repricing loop's multiple distinct-pool queries (Talos layer), not just within one query's own best-of-3 attempts — enabled by `SWPT::UC_MakeGraphNodes` being provably input/output-independent (one fetch against a given `swpairs` universe is valid for every query against that universe) | **Shipped.** Measured on the same checkpoint: 2,216,311 → 2,129,569 gas, a further **3.9%**. Correctness proven directly: `URC_PoolValueFromRaw` (shared fetch) returns byte-identical output to the original `URC_PoolValue` (self-fetch) for a real pool, adversarially proven (corrupted the expectation, got a genuine `FAILURE`, restored). |
+
+## New functions/tables shipped
+
+- `14_SWPT.pact`: `SWPT|TopologyVersion` table + `TopologyVersionRow` schema; `topology-version` field
+  added to `PathCacheRow`; `UR_TopologyVersion`; `XI_BumpTopologyVersion`; `XI_UpdatePair` now bumps
+  it on genuine change only; `XI_RegisterPath` now version-checked refresh instead of insert-only;
+  `URC_ReadPathCacheFresh`; `RawGraphNode` schema; `URC_FetchRawGraph`; `UC_MakeGraphFromRaw`;
+  `URC_ShortestChainPerNodeFromRaw`; `URC_ComputeGraphPathFromRaw`; `URC_ComputeAlternateRoutesFromRaw`
+  (`URC_ComputeAlternateRoutes` is now a thin wrapper over it).
+- `16_SWPI.pact`: `URCX_HopperFromRaw`; `URC_HopperFromRaw`; `URC_WorthDWKFromRaw`;
+  `URC_PoolValueFromRaw`.
+- `04_TS01-C3.pact`: `SWP|CC_SmartSwap{With,No}Slippage`'s STOA-repricing loop fetches the raw graph
+  once and calls `URC_PoolValueFromRaw` per pool instead of `URC_PoolValue`.
+- `REPL/Stage_01/[6.3]_SWP.repl`: `SWP|TX 032z6b` (Phase 1 warm-cache proof), `SWP|TX 032z6c`
+  (Phase 4 correctness proof), both adversarially proven.
+
+Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean
+(exit 0, 0 `FAILURE`) throughout every phase, with `Stage01_Tester.repl` reverted to its default
+afterward (zero drift).
+
+---
+
+## Original pre-implementation investigation (kept for context)
 
 ## Origin
 

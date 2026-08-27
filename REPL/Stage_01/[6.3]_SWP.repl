@@ -4946,17 +4946,19 @@
                     (at "nodes" (ref-SWPT::URC_ReadPathCache "RegTestTokenB" "RegTestTokenA"))
                 )
                 ;; Second registration attempt for the SAME (forward) pair, with DELIBERATELY
-                ;; DIFFERENT (bogus) data -- must no-op, never overwrite (first-write-wins,
-                ;; self-verifying — the owner's final-check catch, not trusting a caller's
-                ;; is-new claim as the write authority).
+                ;; DIFFERENT (bogus) data -- must no-op, never overwrite. #65bL Phase 1:
+                ;; no longer strictly first-write-wins -- now version-checked (self-verifying,
+                ;; the owner's final-check catch, not trusting a caller's is-new claim as the
+                ;; write authority) -- but no real topology change happened between the two
+                ;; calls in this test, so the cached entry is still current and must still no-op.
                 (expect "XI_RegisterPath: re-registration attempt on an already-cached forward pair no-ops"
-                    "already cached, no-op"
+                    "already fresh, no-op"
                     (SWPT.XI_RegisterPath "RegTestTokenA" "RegTestTokenB" ["bogus"] [bogus-pool])
                 )
                 ;; Same no-op check, attempted via the REVERSE direction this time -- must
-                ;; ALSO be caught (first-write-wins checks BOTH directions before writing).
+                ;; ALSO be caught (both directions are checked before writing).
                 (expect "XI_RegisterPath: re-registration attempt via the reverse direction ALSO no-ops"
-                    "already cached, no-op"
+                    "already fresh, no-op"
                     (SWPT.XI_RegisterPath "RegTestTokenB" "RegTestTokenA" ["bogus"] [bogus-pool])
                 )
                 ;; Confirm the ORIGINAL data survived both attempted overwrites untouched.
@@ -5150,6 +5152,118 @@
 (print (format "<<<<<<<SWP|TX 032z6 #34 PHASE 8 BUNDLE-BASED SMARTSWAP (Liquid Boost ON, ~102 active pools) ==> {} KDA GAS>>>>>>>" [(env-gas)]))
 (print "Compare directly against SWP|TX 032z2's recorded SWP|CC_SmartSwapNoSlippage gas at the same ~102-active-pool state — this is the real 'how much does outsourcing dirty reads save us' number.")
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z6b - #65bL Phase 1 PathCache-Wired URCX_Hopper Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z6b - #65bL Phase 1 PathCache Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 032z6b - #65bL Phase 1 PathCache Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;#65bL Phase 1 fix: SWP|TX 032z6 (immediately above) already warmed SWPT|PathCache
+;;for <verify-first-token>->DWK via the bundle-based swap's own cache self-warming
+;;(XI_RegisterBundlePaths). URCX_Hopper (16_SWPI.pact) now checks SWPT|PathCache
+;;(via URC_ReadPathCacheFresh) before running its own live best-of-3 BFS search.
+;;This proves: (1) a warm-cache call returns EXACTLY the cached node path, not some
+;;independently-recomputed route that just happens to match, and (2) the real
+;;measured gas cost of that same lookup, for later comparison against the same
+;;scenario with Phase 1's URCX_Hopper wiring reverted (see the stashed before/after
+;;measurement in the session notes for this fix).
+;;==== SWP|TX 032z6b - #65bL Phase 1 PathCache Proof · 02 · recompute + measured call ====
+(print "--- [SWP|TX 032z6b - #65bL Phase 1 PathCache Proof · 02 · recompute + measured call] ---")
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (dwk:string (ref-DALOS::UR_WrappedStoaID))
+        (input-id "W1-98c486052a51")
+        (output-id "W7-98c486052a51")
+        ;;Recompute the same route/first-tokens derivation TX 032z6 used, to identify
+        ;;the exact same <verify-first-token> its cache-warming registered.
+        (route-h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id 10.0))
+        (route-edges:[string] (at "edges" route-h))
+        (distinct-pools:[string] (distinct route-edges))
+        (first-tokens:[string] (distinct (map (lambda (sp:string) (at 0 (ref-SWP::UR_PoolTokens sp))) distinct-pools)))
+        (verify-first-token:string (at 0 first-tokens))
+        (cached-row:object{SwapTracerV2.PathCacheRow} (ref-SWPT::URC_ReadPathCache verify-first-token dwk))
+        (cached-nodes:[string] (at "nodes" cached-row))
+    )
+    (map print
+        [
+            (expect "#65bL Phase 1: cache is genuinely warm for verify-first-token->DWK before this proof starts"
+                true
+                (!= cached-nodes [SWPT.BAR])
+            )
+        ]
+    )
+    (env-gas 0)
+    (let
+        (
+            (h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper verify-first-token dwk 1.0))
+        )
+        (map print
+            [
+                (expect "#65bL Phase 1: URC_Hopper on a warm cache returns EXACTLY the cached node path"
+                    cached-nodes
+                    (at "nodes" h)
+                )
+                (format "#65bL Phase 1: URC_Hopper(verify-first-token, DWK) WARM-CACHE gas: {}" [(env-gas)])
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z6c - #65bL Phase 4 Shared Raw-Graph URC_PoolValueFromRaw Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z6c - #65bL Phase 4 Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 032z6c - #65bL Phase 4 Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;#65bL Phase 4 fix: the STOA-repricing loop in SWP|CC_SmartSwap{With,No}Slippage
+;;(04_TS01-C3.pact) now fetches ONE raw graph and calls SWPI::URC_PoolValueFromRaw
+;;for every distinct pool touched, instead of each pool's own URC_PoolValue call
+;;independently re-reading and rebuilding the whole graph. Proves the shared-fetch
+;;version produces EXACTLY the same result as the original, unchanged URC_PoolValue
+;;for a real pool — correctness preserved, not just "still runs."
+;;==== SWP|TX 032z6c - #65bL Phase 4 Proof · 02 · direct comparison ====
+(print "--- [SWP|TX 032z6c - #65bL Phase 4 Proof · 02 · direct comparison] ---")
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+        (test-pool:string "P|OURO-98c486052a51|VST-98c486052a51")
+        (all-swpairs:[string] (ref-SWP::URC_Swpairs))
+        (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes SWPT.BAR SWPT.BAR all-swpairs))
+        (raw-graph:[object{SwapTracerV2.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+        (original-result:[decimal] (ref-SWPI::URC_PoolValue test-pool))
+        (from-raw-result:[decimal] (ref-SWPI::URC_PoolValueFromRaw test-pool raw-graph))
+    )
+    (print
+        (expect "#65bL Phase 4: URC_PoolValueFromRaw(shared raw-graph) == URC_PoolValue(self-fetch), byte-identical"
+            original-result
+            from-raw-result
+        )
+    )
+)
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>

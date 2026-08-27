@@ -1609,3 +1609,50 @@ would break if naively rerouted, and that a real `XE_*` replacement is deferred,
 
 **Status:** DESIGN, accepted — `@doc` only, no functional change. Full suite + default issuance-only
 pipeline both exit 0, 0 `FAILURE`.
+
+---
+
+## Fix #42 — #65bL: 4-phase graph-search engine optimization, 58.2% cumulative gas reduction
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`, `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`,
+`1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`:** 4 phases, scoped and measured independently, 3
+shipped:
+
+- **Phase 1:** wired `URCX_Hopper` to the pre-existing-but-unused `SWPT|PathCache` (write-only in
+  the live code until now) via a new `URC_ReadPathCacheFresh`. Required fixing the cache's own
+  permanent-staleness bug first — added a `topology-version` counter (`SWPT|TopologyVersion`,
+  bumped only on genuine topology change via `XI_UpdatePair`'s own `did-change` detection, never on
+  an `A_RebuildGraph` replay), added the field to `PathCacheRow`, and changed `XI_RegisterPath` from
+  strict insert-only to version-checked refresh. Measured: 477,825 gas (forced miss) → 11,491 gas
+  (real hit) for the identical lookup, ~41.6x.
+- **Phase 2:** split `URC_MakeGraph` into a raw-fetch half (`URC_FetchRawGraph`) and a pure
+  in-memory filter half (`UC_MakeGraphFromRaw`/`URC_ShortestChainPerNodeFromRaw`/
+  `URC_ComputeGraphPathFromRaw`), and made `URC_ComputeAlternateRoutes` (now a thin wrapper over new
+  `URC_ComputeAlternateRoutesFromRaw`) fetch the graph once and reuse it across all 3 best-of-K
+  attempts instead of each attempt independently re-reading and rebuilding it. Measured on the
+  established P2-scale checkpoint (`SWP|TX 032z2`): 4,593,400 → 2,216,311 gas, 51.7%.
+- **Phase 3:** investigated, built, and measured a binary-search replacement for the per-node linear
+  scan (sorted raw-graph + bounded-fold binary search, using only real Pact 5 primitives — a
+  keyed-object approach was tested and confirmed impossible first, a genuine parse error, not a
+  guess). A synthetic benchmark suggested a 2.3-4.9x win at 100-300 elements; the real integrated
+  measurement at the actual 143-node P2-scale graph showed a regression (+27,527 gas), isolated and
+  confirmed (reverted only the lookup call) before ruling it out. Reverted cleanly — not shipped.
+- **Phase 4:** confirmed `SWPT::UC_MakeGraphNodes` is input/output-independent, so one raw-graph
+  fetch against the full topology is valid for every distinct pool's own repricing query in the same
+  transaction. Added `URC_PoolValueFromRaw`/`URC_WorthDWKFromRaw`/`URCX_HopperFromRaw` end to end and
+  wired `04_TS01-C3.pact`'s `SWP|CC_SmartSwap{With,No}Slippage` STOA-repricing loop to fetch once,
+  before the loop, instead of once per pool inside it. Measured: 2,216,311 → 2,129,569 gas, 3.9%
+  further. Correctness proven directly (byte-identical against the original `URC_PoolValue`),
+  adversarially confirmed.
+
+**Cumulative: 5,094,054 → 2,129,569 gas, a 58.2% reduction** from the pre-`#65L` baseline, all 4
+phases combined.
+
+**Adversarially proven:** Phase 1's cache-hit path (returns exactly the cached node path, not an
+independently recomputed one) and Phase 4's correctness (byte-identical to the original function)
+both corrupted and reconfirmed failing, then restored. Full suite (`[6.2]`+`[6.3]`) and default
+issuance-only (`[6.2+3]`) pipelines both exit 0, 0 `FAILURE` throughout every phase,
+`Stage01_Tester.repl` reverted to its default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅. Full detail in
+`OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`.

@@ -855,7 +855,15 @@
         )
         @doc "Executes a Smart Swap from <input-id> to <output-id> with slippage protection. \
             \ Path is traced automatically via BFS across all pool bases. \
-            \ #34 Phase 8: renamed from SWP|C_SmartSwapWithSlippage."
+            \ #34 Phase 8: renamed from SWP|C_SmartSwapWithSlippage. \
+            \ #65bL Phase 4 fix: the STOA-repricing loop below (one URC_PoolValue call \
+            \ per distinct pool touched) now fetches the whole topology's raw graph \
+            \ ONCE via URC_PoolValueFromRaw's shared <raw-graph>, instead of each \
+            \ pool's own URC_PoolValue call independently re-reading and rebuilding \
+            \ it. Safe per SWPT::UC_MakeGraphNodes being input/output-independent — \
+            \ one fetch against the full <all-swpairs> universe covers every distinct \
+            \ pool's own first-token->DWK query, not just the one it happened to be \
+            \ fetched for (see URCX_HopperFromRaw's own doc)."
         (with-capability (P|TS)
             (let
                 (
@@ -864,6 +872,8 @@
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-SWPT:module{SwapTracerV2} SWPT)
+                    (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                     (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
@@ -877,11 +887,20 @@
                     ;;shadow-recompute this via a fresh `URC_Hopper` BFS call (unused here —
                     ;;this loop already correctly used <at 3 out>, the swap's own recorded
                     ;;`distinct-edges`). Pure gas cleanup, no behavior change.
+                    ;;
+                    ;;#65bL Phase 4: fetched ONCE, shared across every distinct pool
+                    ;;below — this is TOPOLOGY only (SWPT|Graph), unaffected by the
+                    ;;swap's own reserve changes, so nothing depends on fetching it
+                    ;;before or after the swap. Each pool's own reserve-dependent reads
+                    ;;still happen live, inside the loop, per pool, as before.
+                    (all-swpairs:[string] (ref-SWP::URC_Swpairs))
+                    (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes BAR BAR all-swpairs))
+                    (raw-graph:[object{SwapTracerV2.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (map
                     (lambda (sp:string)
-                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValue sp)))
+                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromRaw sp raw-graph)))
                     )
                     (at 3 out)
                 )
@@ -899,7 +918,9 @@
         )
         @doc "Executes a Smart Swap from <input-id> to <output-id> without slippage protection. \
             \ Path is traced automatically via BFS across all pool bases. \
-            \ #34 Phase 8: renamed from SWP|C_SmartSwapNoSlippage."
+            \ #34 Phase 8: renamed from SWP|C_SmartSwapNoSlippage. \
+            \ #65bL Phase 4 fix: see SWP|CC_SmartSwapWithSlippage's own doc — same \
+            \ shared-raw-graph STOA-repricing-loop fix, mirrored here."
         (with-capability (P|TS)
             (let
                 (
@@ -908,6 +929,8 @@
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-SWPT:module{SwapTracerV2} SWPT)
+                    (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                     (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
                     (slippage-bounds:object{SwapperUsageV2.Slippage}
                         (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0)
@@ -927,11 +950,20 @@
                     ;;`distinct-edges` list XI_SmartSwap already recorded as the real traversed
                     ;;pools (19_SWPU.pact XI_SmartSwap) — matches SmartSwapWithSlippage's
                     ;;(already-correct) pattern above.
+                    ;;
+                    ;;#65bL Phase 4: fetched ONCE, shared across every distinct pool
+                    ;;below — this is TOPOLOGY only (SWPT|Graph), unaffected by the
+                    ;;swap's own reserve changes, so nothing depends on fetching it
+                    ;;before or after the swap. Each pool's own reserve-dependent reads
+                    ;;still happen live, inside the loop, per pool, as before.
+                    (all-swpairs:[string] (ref-SWP::URC_Swpairs))
+                    (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes BAR BAR all-swpairs))
+                    (raw-graph:[object{SwapTracerV2.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (map
                     (lambda (sp:string)
-                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValue sp)))
+                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromRaw sp raw-graph)))
                     )
                     (at 3 out)
                 )

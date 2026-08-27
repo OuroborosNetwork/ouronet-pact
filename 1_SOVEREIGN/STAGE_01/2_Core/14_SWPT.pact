@@ -25,8 +25,8 @@
         swpairs:[string]
     )
     (defschema PathCacheRow
-        @doc "#34 Phase 6/7: a cached, first-write-wins route between two tokens, keyed \
-            \ by <token-a>|<token-b> in whichever direction was first registered — no \
+        @doc "#34 Phase 6/7: a cached route between two tokens, keyed by <token-a>|\
+            \ <token-b> in whichever direction was first registered — no \
             \ canonicalization, readers check both directions and reverse on a miss in \
             \ one of them. Stores only the route STRUCTURE, never a computed value — \
             \ every real use re-derives the current value from live reserves, so a \
@@ -35,9 +35,38 @@
             \ falls back from. Same <nodes>/<edges> shape as <URC_ComputeGraphPath>'s \
             \ own return (both endpoints included in <nodes>). Declared on this \
             \ interface, not the module, since interface function signatures below \
-            \ reference it and interfaces load before module schemas exist."
+            \ reference it and interfaces load before module schemas exist. \
+            \ #65bL Phase 1 fix: added <topology-version>, the global topology-version \
+            \ counter's value at the moment this entry was written — WITHOUT it, \
+            \ 'first-write-wins, never overwritten' meant a cached entry could never be \
+            \ refreshed even after new pools made a better route possible; a reader \
+            \ now compares this against the live counter (<UR_TopologyVersion>) to tell \
+            \ a genuinely-current entry from a stale one, and a stale entry can be \
+            \ overwritten instead of permanently blocking any future improvement."
         nodes:[string]
         edges:[string]
+        topology-version:integer
+    )
+    (defschema TopologyVersionRow
+        @doc "#65bL Phase 1: single counter, bumped once per genuinely new token-pair \
+            \ connection or genuinely new parallel pool (see <XI_UpdatePair>'s own \
+            \ <did-change> logic) — never bumped on an idempotent replay (e.g. \
+            \ <A_RebuildGraph> re-running over already-registered pools). A coarse \
+            \ generation number, not an exact change-count: a single multi-token pool \
+            \ issuance bumps it once per ordered token-pair it introduces, not once per \
+            \ pool. That's fine — its only job is 'has anything changed since a given \
+            \ read', not precise counting."
+        version:integer
+    )
+    (defschema RawGraphNode
+        @doc "#65bL Phase 2: one token's raw, unfiltered neighbour data — exactly what \
+            \ <UR_Graph> returns for it, paired with its own name. The point of this \
+            \ shape is to let a caller read a whole node universe's raw rows ONCE \
+            \ (<URC_FetchRawGraph>) and reuse them across multiple best-of-K attempts \
+            \ via a purely in-memory filter (<UC_MakeGraphFromRaw>) instead of each \
+            \ attempt independently re-reading and rebuilding the whole graph."
+        node:string
+        neighbours:[object{NeighbourEdge}]
     )
 
     (defun UR_Graph:[object{NeighbourEdge}] (token:string))
@@ -49,10 +78,31 @@
     ;;paths (one shortest BFS chain per reached node, not every simple path).
     (defun URC_ShortestChainPerNode:[[string]] (input:string output:string swpairs:[string]))
     (defun URC_MakeGraph:[object{BreadthFirstSearchV1.GraphNode}] (input:string output:string swpairs:[string]))
+    ;;#65bL Phase 2: raw-fetch/pure-filter split, used by URC_ComputeAlternateRoutes/
+    ;;URC_ComputeAllRoutes to fetch each candidate node's SWPT|Graph row exactly ONCE
+    ;;per transaction and reuse it across every best-of-K attempt, instead of each
+    ;;attempt calling URC_MakeGraph (a fresh read per node, every time).
+    (defun URC_FetchRawGraph:[object{RawGraphNode}] (nodes:[string]))
+    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV1.GraphNode}]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+    )
+    (defun URC_ShortestChainPerNodeFromRaw:[[string]]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+    )
+    (defun URC_ComputeGraphPathFromRaw:[string]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+    )
     ;;#34M/M2 fix: additive — finds up to 3 edge-disjoint candidate routes instead
     ;;of just the single first-found one; see the defun's own @doc for the full
     ;;rationale.
     (defun URC_ComputeAlternateRoutes:[[string]] (input:string output:string swpairs:[string]))
+    ;;#65bL Phase 4: URC_ComputeAlternateRoutes, sourcing its graph via an
+    ;;ALREADY-FETCHED <raw-graph> instead of fetching its own — lets a caller doing
+    ;;multiple unrelated best-of-K searches in one transaction (the STOA-repricing
+    ;;loop, one search per distinct pool) share ONE raw-graph fetch across all of them.
+    (defun URC_ComputeAlternateRoutesFromRaw:[[string]]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+    )
     ;;#34 Phase 11 (the original #34 ask): generalizes URC_ComputeAlternateRoutes' fixed
     ;;3-attempt cap into a real parameterized search — see the defun's own @doc for the
     ;;full mechanics (early-exit, depth-cap filter, outer hard stop).
@@ -63,6 +113,13 @@
     ;;same reason URC_EdgesActive's own whitelist check couldn't live here either — SWPT
     ;;deploys before SWP, can't reach it.
     (defun URC_ReadPathCache:object{PathCacheRow} (token-a:string token-b:string))
+    ;;#65bL Phase 1: current global topology-version counter — one point read.
+    (defun UR_TopologyVersion:integer ())
+    ;;#65bL Phase 1: URC_ReadPathCache, additionally collapsing a STALE entry (its
+    ;;topology-version behind the current one) to the same [BAR] miss sentinel a
+    ;;genuinely-absent entry already returns — callers never need to know the
+    ;;difference between "never cached" and "cached but outdated."
+    (defun URC_ReadPathCacheFresh:object{PathCacheRow} (token-a:string token-b:string))
     (defun URC_EdgeConnects:bool (i-id:string o-id:string swpair:string))
     (defun URC_ValidatePathStructure:bool (nodes:[string] edges:[string]))
     (defun XI_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string]))
@@ -180,9 +237,16 @@
     ;;{2}
     (deftable SWPT|Graph:{SWPT|GraphSchema})                    ;;Key = <token>
     (deftable SWPT|PathCache:{SwapTracerV2.PathCacheRow})       ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
+    ;;#65bL Phase 1: own table per this codebase's storage-pattern rule (never
+    ;;co-locate a row read for other reasons — segregated so only the path that
+    ;;needs the counter pays to deserialize it).
+    (deftable SWPT|TopologyVersion:{SwapTracerV2.TopologyVersionRow})  ;;Key = TOPOLOGY_VERSION_KEY (singleton)
     ;;{3}
     (defun CT_Bar ()                (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                   (CT_Bar))
+    ;;#65bL Phase 1: singleton key for SWPT|TopologyVersion — same pattern as this
+    ;;codebase's other singleton-row tables (e.g. policy's P|I).
+    (defconst TOPOLOGY_VERSION_KEY   "topology-version")
     ;;#34 Phase 11: P0.4's depth cap (7 tokens / 6 hops, "the sexy number 7") — same
     ;;value URC_ValidatePathStructure already enforces on submitted bundles, reused
     ;;here as a post-discovery filter in URC_ComputeAllRoutes (see that function's own
@@ -248,11 +312,24 @@
     (defun UR_PathCacheRaw:object{SwapTracerV2.PathCacheRow} (key:string)
         @doc "#34 Phase 7: raw keyed read against SWPT|PathCache, [BAR]-sentinel default \
             \ for a missing row. Internal — callers go through <URC_ReadPathCache> for the \
-            \ reversed-lookup logic, never this directly."
+            \ reversed-lookup logic, never this directly. \
+            \ #65bL Phase 1: default <topology-version> is -1 — always older than any \
+            \ real counter value (starts at 0, only ever increases), so a missing row \
+            \ is automatically treated as stale by any freshness check, same as a \
+            \ genuinely-absent entry always was structurally."
         (with-default-read SWPT|PathCache key
-            {"nodes" : [BAR], "edges" : []}
-            {"nodes" := n, "edges" := e}
-            {"nodes" : n, "edges" : e}
+            {"nodes" : [BAR], "edges" : [], "topology-version" : -1}
+            {"nodes" := n, "edges" := e, "topology-version" := tv}
+            {"nodes" : n, "edges" : e, "topology-version" : tv}
+        )
+    )
+    (defun UR_TopologyVersion:integer ()
+        @doc "#65bL Phase 1: current global topology-version counter — one point read, \
+            \ default 0 for the pre-first-bump state."
+        (with-default-read SWPT|TopologyVersion TOPOLOGY_VERSION_KEY
+            {"version" : 0}
+            {"version" := v}
+            v
         )
     )
     ;;{F1}  [URC]
@@ -378,18 +455,42 @@
             \ so the count must be a number decided in advance, not a runtime \
             \ condition; measured sufficient against this codebase's actual pool \
             \ topology (see the SWP audit's adversarial REPL proof for #34M/M2). \
-            \ An exhausted-universe guard (empty <swpairsN>) short-circuits to [BAR] \
-            \ instead of calling <URC_ComputeGraphPath> — that function's own \
-            \ downstream graph-building (M3, a separate tracked finding) crashes \
-            \ rather than cleanly returning no-route on an empty list, and this is \
-            \ the first caller able to legitimately produce one (a fully-excluded, \
-            \ single-pool universe after route1/route2 already claimed it). \
             \ Returns only the routes genuinely found (drops [BAR] no-route results), \
-            \ so the result can have 0-3 entries; the caller picks the best by value."
+            \ so the result can have 0-3 entries; the caller picks the best by value. \
+            \ #65bL Phase 4 fix: now a thin wrapper — fetches the raw graph for this \
+            \ call's own node universe, then delegates to \
+            \ <URC_ComputeAlternateRoutesFromRaw>. A caller who's already fetched a \
+            \ raw graph covering this <swpairs> universe (e.g. the STOA-repricing \
+            \ loop, sharing one fetch across many unrelated calls) should call that \
+            \ function directly instead, to skip this self-fetch."
+        (let*
+            (
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (full-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
+                (raw-graph:[object{RawGraphNode}] (URC_FetchRawGraph full-nodes))
+            )
+            (URC_ComputeAlternateRoutesFromRaw input output swpairs raw-graph)
+        )
+    )
+    (defun URC_ComputeAlternateRoutesFromRaw:[[string]]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+        @doc "#65bL Phase 2/4 fix: <URC_ComputeAlternateRoutes>'s real logic, \
+            \ parameterized on an ALREADY-FETCHED <raw-graph> instead of fetching its \
+            \ own — see <URC_ComputeAlternateRoutes>'s own doc for the full best-of-3 \
+            \ rationale (unchanged here) and <URCX_HopperFromRaw>'s doc for why one \
+            \ fetch can safely serve many different (input,output) queries against \
+            \ the same <swpairs> universe (<UC_MakeGraphNodes> is input/output- \
+            \ independent by construction). An exhausted-universe guard (empty \
+            \ <swpairsN>) short-circuits to [BAR] instead of calling \
+            \ <URC_ComputeGraphPathFromRaw> — that function's own downstream \
+            \ graph-building (M3, a separate tracked finding) crashes rather than \
+            \ cleanly returning no-route on an empty list, and this is the first \
+            \ caller able to legitimately produce one (a fully-excluded, single-pool \
+            \ universe after route1/route2 already claimed it)."
         (let*
             (
                 (route1:[string]
-                    (if (= swpairs []) [BAR] (URC_ComputeGraphPath input output swpairs))
+                    (if (= swpairs []) [BAR] (URC_ComputeGraphPathFromRaw input output swpairs raw-graph))
                 )
                 (swpairs2:[string]
                     (if (= route1 [BAR])
@@ -400,7 +501,7 @@
                 (route2:[string]
                     (if (or (= route1 [BAR]) (= swpairs2 []))
                         [BAR]
-                        (URC_ComputeGraphPath input output swpairs2)
+                        (URC_ComputeGraphPathFromRaw input output swpairs2 raw-graph)
                     )
                 )
                 (swpairs3:[string]
@@ -412,7 +513,7 @@
                 (route3:[string]
                     (if (or (= route2 [BAR]) (= swpairs3 []))
                         [BAR]
-                        (URC_ComputeGraphPath input output swpairs3)
+                        (URC_ComputeGraphPathFromRaw input output swpairs3 raw-graph)
                     )
                 )
             )
@@ -560,16 +661,171 @@
             )
         )
     )
+    (defun URC_FetchRawGraph:[object{RawGraphNode}] (nodes:[string])
+        @doc "#65bL Phase 2: reads each of <nodes>'s SWPT|Graph row exactly once — \
+            \ the read-fetch half of the raw-fetch/pure-filter split. A caller doing \
+            \ multiple best-of-K attempts over the SAME node universe calls this \
+            \ ONCE, then reuses the result via <UC_MakeGraphFromRaw> for every \
+            \ attempt instead of each attempt independently re-reading and \
+            \ rebuilding the whole graph the way <URC_MakeGraph> does. \
+            \ #65bL Phase 3 investigated: a sorted-list + binary-search lookup was \
+            \ built and measured against the linear scan <UC_MakeGraphFromRaw> uses \
+            \ — an isolated synthetic benchmark showed binary search winning at \
+            \ 100-300 elements, but the REAL integrated measurement (this exact \
+            \ function, the real P2-scale 143-node universe) showed it as a net \
+            \ REGRESSION (+27,527 gas on the SWP|TX 032z2 checkpoint), isolated and \
+            \ confirmed by reverting only the lookup call. Trusted the real \
+            \ measurement over the synthetic one and dropped it — recorded in \
+            \ ROUND-01-OWNER-FEEDBACK.md as a real, deliberately-not-shipped result, \
+            \ not silently discarded."
+        (map
+            (lambda (n:string) {"node": n, "neighbours": (UR_Graph n)})
+            nodes
+        )
+    )
+    (defun UC_MakeGraphFromRaw:[object{BreadthFirstSearchV1.GraphNode}]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+        @doc "#65bL Phase 2: pure (zero table reads) equivalent of <URC_MakeGraph> — \
+            \ builds the identical active-filtered [GraphNode] shape, but derives \
+            \ every node's links from an ALREADY-FETCHED <raw-graph> \
+            \ (<URC_FetchRawGraph>) instead of re-reading SWPT|Graph per node, and \
+            \ also skips the double-read <URC_MakeGraph> itself has (one read via \
+            \ <URC_TokenNeighbours> to list neighbour tokens, another via \
+            \ <URC_EdgesActive>/<URC_Edges> per neighbour to re-derive the exact \
+            \ same swpairs already sitting in that first read's result) — the \
+            \ per-neighbour <swpairs> field is already right there on each \
+            \ <NeighbourEdge>, filtered directly, no re-read or re-derivation \
+            \ needed either way. <raw-graph> must cover every node <swpairs> could \
+            \ ever produce here — always true when it was fetched against a \
+            \ swpairs universe that's a SUPERSET of this one (e.g. the original, \
+            \ unshrunk universe a best-of-K search started from, reused unchanged \
+            \ across every attempt's own shrinking exclusion universe)."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (nodes:[string] (ref-U|SWP::UC_MakeGraphNodes input output swpairs))
+            )
+            (if (= 0 (length nodes))
+                []
+                (fold
+                    (lambda
+                        (acc:[object{BreadthFirstSearchV1.GraphNode}] idx:integer)
+                        (let*
+                            (
+                                (this-node:string (at idx nodes))
+                                ;;#65bL Phase 3 investigated a binary-search replacement for
+                                ;;this scan (see URC_FetchRawGraph's own doc) — measured as a
+                                ;;real regression on the actual integrated call, not shipped.
+                                ;;Linear filter stays, unchanged from Phase 2.
+                                (raw-matches:[object{RawGraphNode}]
+                                    (filter (lambda (rg:object{RawGraphNode}) (= (at "node" rg) this-node)) raw-graph)
+                                )
+                                (neighbours:[object{NeighbourEdge}]
+                                    (if (= 0 (length raw-matches)) [] (at "neighbours" (at 0 raw-matches)))
+                                )
+                            )
+                            (ref-U|LST::UC_AppL
+                                acc
+                                {
+                                    "node": this-node,
+                                    "links":
+                                        (map (at "token")
+                                            (filter
+                                                (lambda (ne:object{NeighbourEdge})
+                                                    (!=
+                                                        (filter
+                                                            (lambda (sp:string) (contains sp swpairs))
+                                                            (at "swpairs" ne)
+                                                        )
+                                                        []
+                                                    )
+                                                )
+                                                neighbours
+                                            )
+                                        )
+                                }
+                            )
+                        )
+                    )
+                    []
+                    (enumerate 0 (- (length nodes) 1))
+                )
+            )
+        )
+    )
+    (defun URC_ShortestChainPerNodeFromRaw:[[string]]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+        @doc "#65bL Phase 2: <URC_ShortestChainPerNode>, sourcing its graph via \
+            \ <UC_MakeGraphFromRaw> (an already-fetched <raw-graph>) instead of \
+            \ <URC_MakeGraph> (a fresh read per node, every call)."
+        (let
+            (
+                (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
+                (graph:[object{BreadthFirstSearchV1.GraphNode}]
+                    (UC_MakeGraphFromRaw input output swpairs raw-graph)
+                )
+                (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFS graph input))
+            )
+            (at "chains" bfs-obj)
+        )
+    )
+    (defun URC_ComputeGraphPathFromRaw:[string]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+        @doc "#65bL Phase 2: <URC_ComputeGraphPath>, sourcing its graph via \
+            \ <URC_ShortestChainPerNodeFromRaw> instead of \
+            \ <URC_ShortestChainPerNode> — same post-filter-down-to-<output> logic, \
+            \ unchanged, just fed from an already-fetched raw graph."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (shortest-chains:[[string]]
+                    (URC_ShortestChainPerNodeFromRaw input output swpairs raw-graph)
+                )
+            )
+            (if (!= shortest-chains [[BAR]])
+                (let
+                    (
+                        (fp:[[string]]
+                            (fold
+                                (lambda
+                                    (acc:[[string]] idx:integer)
+                                    (let
+                                        (
+                                            (e:[string] (at idx shortest-chains))
+                                            (l:string (at 0 (take -1 e)))
+                                            (check:bool (= l output))
+                                        )
+                                        (if (not check)
+                                            (ref-U|LST::UC_RemoveItem acc e)
+                                            acc
+                                        )
+                                    )
+                                )
+                                shortest-chains
+                                (enumerate 0 (- (length shortest-chains) 1))
+                            )
+                        )
+                    )
+                    (if (> (length fp) 0) (at 0 fp) [BAR])
+                )
+                [BAR]
+            )
+        )
+    )
     ;;#34 Phase 7: dirty-read path-cache core functions.
     (defun URC_ReadPathCache:object{SwapTracerV2.PathCacheRow} (token-a:string token-b:string)
         @doc "Reversed-lookup read: checks <token-a>|<token-b> first, then \
             \ <token-b>|<token-a> reversed (the graph is confirmed bidirectional — \
             \ XI_UpdateGraphForSwpair's symmetric i×j registration), before concluding \
-            \ no cached path exists. Returns {nodes:[BAR], edges:[]} on a genuine miss \
-            \ in both directions — never a crash, always a clean sentinel. No trust \
-            \ implied: every caller still runs <URC_ValidatePathStructure> (or SWPI's \
-            \ active-required wrapper) on whatever this returns before using it — a hit \
-            \ here is not itself proof of current validity, only of prior registration."
+            \ no cached path exists. Returns {nodes:[BAR], edges:[], topology-version:-1} \
+            \ on a genuine miss in both directions — never a crash, always a clean \
+            \ sentinel. No trust implied: every caller still runs \
+            \ <URC_ValidatePathStructure> (or SWPI's active-required wrapper) on \
+            \ whatever this returns before using it — a hit here is not itself proof of \
+            \ current validity, only of prior registration. Raw registration status \
+            \ only — callers wanting freshness too go through \
+            \ <URC_ReadPathCacheFresh> instead (#65bL Phase 1)."
         (let*
             (
                 (key-fwd:string (+ (+ token-a "|") token-b))
@@ -585,11 +841,29 @@
                     (if (!= (at "nodes" row-rev) [BAR])
                         {
                             "nodes" : (reverse (at "nodes" row-rev)),
-                            "edges" : (reverse (at "edges" row-rev))
+                            "edges" : (reverse (at "edges" row-rev)),
+                            "topology-version" : (at "topology-version" row-rev)
                         }
-                        {"nodes" : [BAR], "edges" : []}
+                        {"nodes" : [BAR], "edges" : [], "topology-version" : -1}
                     )
                 )
+            )
+        )
+    )
+    (defun URC_ReadPathCacheFresh:object{SwapTracerV2.PathCacheRow} (token-a:string token-b:string)
+        @doc "#65bL Phase 1: <URC_ReadPathCache>, additionally collapsing a STALE entry \
+            \ (its <topology-version> behind the live counter) to the same [BAR] miss \
+            \ sentinel a genuinely-absent entry already returns. Callers never need to \
+            \ distinguish 'never cached' from 'cached but topology has moved on since' — \
+            \ both mean 'don't trust this, go search live instead'."
+        (let*
+            (
+                (row:object{SwapTracerV2.PathCacheRow} (URC_ReadPathCache token-a token-b))
+                (current-version:integer (UR_TopologyVersion))
+            )
+            (if (< (at "topology-version" row) current-version)
+                {"nodes" : [BAR], "edges" : [], "topology-version" : -1}
+                row
             )
         )
     )
@@ -680,23 +954,38 @@
     (defun XI_UpdatePair (from:string to:string swpair:string)
         @doc "Adds <to> as a neighbour of <from> via <swpair>, creating the neighbour \
             \ entry if this is the first connection between them, or appending \
-            \ <swpair> to the existing entry's swpairs list if not already present."
+            \ <swpair> to the existing entry's swpairs list if not already present. \
+            \ #65bL Phase 1 fix: also bumps the global topology-version counter, but \
+            \ ONLY when this call genuinely changes something — a new token-pair \
+            \ connection, or a new parallel pool on an already-connected pair — never \
+            \ on an idempotent replay of an already-registered pair+swpair (e.g. \
+            \ A_RebuildGraph re-running over every existing pool). <did-change> below \
+            \ is exactly the same condition the pre-existing branching already computed \
+            \ implicitly; this just names it so it can also gate the version bump."
         (require-capability (SECURE))
         (let*
             (
                 (existing:[object{SwapTracerV2.NeighbourEdge}] (UR_Graph from))
                 (idx:[integer] (UC_FindNeighbourIndex existing to))
+                (is-new-pair:bool (= (length idx) 0))
+                (old-swpairs:[string]
+                    (if is-new-pair
+                        []
+                        (at "swpairs" (at (at 0 idx) existing))
+                    )
+                )
+                (is-new-swpair:bool (not (contains swpair old-swpairs)))
+                (did-change:bool (or is-new-pair is-new-swpair))
                 (new-neighbours:[object{SwapTracerV2.NeighbourEdge}]
-                    (if (= (length idx) 0)
+                    (if is-new-pair
                         (+ existing [{"token": to, "swpairs": [swpair]}])
                         (let*
                             (
                                 (i:integer (at 0 idx))
-                                (old-swpairs:[string] (at "swpairs" (at i existing)))
                                 (new-swpairs:[string]
-                                    (if (contains swpair old-swpairs)
-                                        old-swpairs
+                                    (if is-new-swpair
                                         (+ old-swpairs [swpair])
+                                        old-swpairs
                                     )
                                 )
                             )
@@ -706,29 +995,59 @@
                 )
             )
             (write SWPT|Graph from {"neighbours": new-neighbours})
+            (if did-change (XI_BumpTopologyVersion) "no-op")
+        )
+    )
+    (defun XI_BumpTopologyVersion ()
+        @doc "#65bL Phase 1: increments the global topology-version counter by 1. \
+            \ Called only from <XI_UpdatePair> when it detects a genuine change — \
+            \ never unconditionally."
+        (require-capability (SECURE))
+        (write SWPT|TopologyVersion TOPOLOGY_VERSION_KEY
+            {"version": (+ (UR_TopologyVersion) 1)}
         )
     )
     (defun XI_RegisterPath (token-a:string token-b:string nodes:[string] edges:[string])
-        @doc "#34 Phase 7: first-write-wins registration into SWPT|PathCache. \
-            \ Self-verifying (owner's final-check catch, 2026-08-21) — checks whether a \
-            \ row already exists in EITHER direction before writing, rather than trusting \
-            \ a caller's is-new claim as the write authority. No-ops safely if either \
-            \ direction is already registered, guaranteeing no overwrite is ever possible \
-            \ regardless of what the caller believed. Structural validation is the \
-            \ CALLER's responsibility (URC_ValidatePathStructure/SWPI's active-required \
-            \ wrapper) — this function only handles the write-safety half, matching this \
-            \ codebase's XI_* convention of writes-only, no enforce/validation here."
+        @doc "#34 Phase 7: registration into SWPT|PathCache. Self-verifying (owner's \
+            \ final-check catch, 2026-08-21) — checks whether a row already exists in \
+            \ EITHER direction before writing, rather than trusting a caller's is-new \
+            \ claim as the write authority. Structural validation is the CALLER's \
+            \ responsibility (URC_ValidatePathStructure/SWPI's active-required wrapper) \
+            \ — this function only handles the write-safety half, matching this \
+            \ codebase's XI_* convention of writes-only, no enforce/validation here. \
+            \ #65bL Phase 1 fix: was strictly first-write-wins/insert-only, meaning a \
+            \ cached entry could never be refreshed even after new topology made a \
+            \ better route possible — permanent staleness by construction. Now \
+            \ version-checked: a genuinely absent entry still inserts; an existing \
+            \ entry only gets overwritten if its own <topology-version> is behind the \
+            \ current counter (topology has moved on since it was cached), otherwise \
+            \ still a no-op — never a redundant write for an already-current entry."
         (require-capability (SECURE))
         (let*
             (
                 (key-fwd:string (+ (+ token-a "|") token-b))
                 (key-rev:string (+ (+ token-b "|") token-a))
-                (already-fwd:bool (!= (at "nodes" (UR_PathCacheRaw key-fwd)) [BAR]))
-                (already-rev:bool (!= (at "nodes" (UR_PathCacheRaw key-rev)) [BAR]))
+                (row-fwd:object{SwapTracerV2.PathCacheRow} (UR_PathCacheRaw key-fwd))
+                (row-rev:object{SwapTracerV2.PathCacheRow} (UR_PathCacheRaw key-rev))
+                (already-fwd:bool (!= (at "nodes" row-fwd) [BAR]))
+                (already-rev:bool (!= (at "nodes" row-rev) [BAR]))
+                (current-version:integer (UR_TopologyVersion))
+                (new-row:object{SwapTracerV2.PathCacheRow}
+                    {"nodes": nodes, "edges": edges, "topology-version": current-version}
+                )
             )
-            (if (or already-fwd already-rev)
-                "already cached, no-op"
-                (insert SWPT|PathCache key-fwd {"nodes": nodes, "edges": edges})
+            (if (and (not already-fwd) (not already-rev))
+                (insert SWPT|PathCache key-fwd new-row)
+                (if already-fwd
+                    (if (< (at "topology-version" row-fwd) current-version)
+                        (write SWPT|PathCache key-fwd new-row)
+                        "already fresh, no-op"
+                    )
+                    (if (< (at "topology-version" row-rev) current-version)
+                        (write SWPT|PathCache key-rev new-row)
+                        "already fresh, no-op"
+                    )
+                )
             )
         )
     )
@@ -753,3 +1072,4 @@
 (create-table P|MT)
 (create-table SWPT|Graph)
 (create-table SWPT|PathCache)
+(create-table SWPT|TopologyVersion)

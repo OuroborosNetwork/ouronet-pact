@@ -63,6 +63,15 @@
     (defun URC_Hopper:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
     (defun URC_HopperActive:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
     (defun URC_HopperActiveShortest:object{Hopper} (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal))
+    ;;#65bL Phase 4: URC_Hopper, sourcing its graph from an ALREADY-FETCHED <raw-graph>
+    ;;(SWPT::URC_FetchRawGraph) instead of URCX_Hopper's own self-fetch — lets a caller
+    ;;doing MULTIPLE unrelated Hopper queries in the same transaction (e.g. the
+    ;;STOA-repricing loop, one query per distinct pool touched) fetch the whole
+    ;;topology's raw graph exactly ONCE and reuse it across every query, instead of
+    ;;each query independently re-reading and rebuilding it.
+    (defun URC_HopperFromRaw:object{Hopper}
+        (hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal raw-graph:[object{SwapTracerV2.RawGraphNode}])
+    )
     ;;#34 Phase 11 — the original #34 ask: genuine exhaustive route discovery. Mirrors
     ;;URCX_Hopper (the shared internal core URC_Hopper/URC_HopperActive both wrap) but
     ;;calls SWPT::URC_ComputeAllRoutes instead of the K=3-capped
@@ -97,6 +106,11 @@
     (defun URC_SingleWorthDWK (id:string))
     (defun URC_WorthDWK (id:string amount:decimal))
     (defun URC_PoolValue:[decimal] (swpair:string))
+    ;;#65bL Phase 4: URC_WorthDWK/URC_PoolValue, sourcing any graph search they need
+    ;;via an ALREADY-FETCHED <raw-graph> instead of a fresh self-fetch per call — see
+    ;;URC_HopperFromRaw's own doc for the full rationale (repricing-loop sharing).
+    (defun URC_WorthDWKFromRaw (id:string amount:decimal raw-graph:[object{SwapTracerV2.RawGraphNode}]))
+    (defun URC_PoolValueFromRaw:[decimal] (swpair:string raw-graph:[object{SwapTracerV2.RawGraphNode}]))
         ;;
     (defun URC_DirectRefillAmounts:[decimal] (swpair:string ids:[string] amounts:[decimal]))
     (defun URC_IndirectRefillAmounts:[decimal] (X:[decimal] positions:[integer] amounts:[decimal]))
@@ -1042,14 +1056,81 @@
             \ <SWPT::URC_ComputeAlternateRoutes> (previously just the single \
             \ first-found route) and returns whichever candidate's final output is \
             \ highest, via <UC_BestHopper> — routing is now chosen by actual payout, \
-            \ not by which route BFS happened to discover first."
+            \ not by which route BFS happened to discover first. \
+            \ #65bL Phase 1 fix: checks SWPT|PathCache (via URC_ReadPathCacheFresh) \
+            \ first — on a fresh hit, skips the live best-of-3 BFS search entirely and \
+            \ uses the cached node-path as the sole candidate. Safe because the real \
+            \ per-hop edge is always re-derived live downstream in \
+            \ URCX_HopperForNodes regardless of where the node-path came from — a \
+            \ cache hit only changes WHICH nodes get tried, never how an edge gets \
+            \ picked or validated. On a miss (or a stale entry, topology-version \
+            \ behind current), falls through to the unchanged live search."
         (let
             (
                 ;;#21H: SWPT no longer needs a principal list at all — the Tracer's
                 ;;storage is principal-agnostic (SwapTracerV2).
                 (ref-SWPT:module{SwapTracerV2} SWPT)
+                (cached:object{SwapTracerV2.PathCacheRow}
+                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
+                )
+                (cached-nodes:[string] (at "nodes" cached))
                 (routes:[[string]]
-                    (ref-SWPT::URC_ComputeAlternateRoutes hopper-input-id hopper-output-id swpairs)
+                    (if (!= cached-nodes [BAR])
+                        [cached-nodes]
+                        (ref-SWPT::URC_ComputeAlternateRoutes hopper-input-id hopper-output-id swpairs)
+                    )
+                )
+            )
+            (if (= (length routes) 0)
+                (at 0 EMPTY_HOPPER)
+                (let
+                    (
+                        (candidates:[object{SwapperIssueV3.Hopper}]
+                            (map
+                                (lambda (nodes:[string]) (URCX_HopperForNodes nodes hopper-input-amount swpairs))
+                                routes
+                            )
+                        )
+                    )
+                    (UC_BestHopper candidates)
+                )
+            )
+        )
+    )
+    (defun URCX_HopperFromRaw:object{SwapperIssueV3.Hopper}
+        (
+            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
+            swpairs:[string] raw-graph:[object{SwapTracerV2.RawGraphNode}]
+        )
+        @doc "#65bL Phase 4 fix: <URCX_Hopper>, sourcing its routing search via an \
+            \ ALREADY-FETCHED <raw-graph> (<SWPT::URC_FetchRawGraph>) instead of \
+            \ letting <SWPT::URC_ComputeAlternateRoutes> fetch its own — for a caller \
+            \ making MULTIPLE unrelated Hopper queries in one transaction (the \
+            \ STOA-repricing loop: one query per distinct pool touched, each to a \
+            \ different first-token but the SAME destination, DWK) who fetches the \
+            \ whole topology's raw graph exactly ONCE and reuses it across every \
+            \ query. Safe because <SWPT::UC_MakeGraphNodes> (the node-universe \
+            \ derivation both the fetch and every query rely on) is <input>/<output>- \
+            \ independent by construction — it derives every token appearing across \
+            \ the full <swpairs> list, regardless of which specific pair is being \
+            \ queried — so ONE raw-graph fetched against a given <swpairs> universe \
+            \ is valid for EVERY query against that same universe, not just the one \
+            \ it happened to be fetched for. Still checks SWPT|PathCache first, \
+            \ identically to <URCX_Hopper> — a cache hit is even cheaper than a \
+            \ shared-raw-graph live search, this doesn't replace that, it only makes \
+            \ the miss case cheaper too."
+        (let
+            (
+                (ref-SWPT:module{SwapTracerV2} SWPT)
+                (cached:object{SwapTracerV2.PathCacheRow}
+                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
+                )
+                (cached-nodes:[string] (at "nodes" cached))
+                (routes:[[string]]
+                    (if (!= cached-nodes [BAR])
+                        [cached-nodes]
+                        (ref-SWPT::URC_ComputeAlternateRoutesFromRaw hopper-input-id hopper-output-id swpairs raw-graph)
+                    )
                 )
             )
             (if (= (length routes) 0)
@@ -1127,6 +1208,21 @@
                 (ref-SWP:module{SwapperV3} SWP)
             )
             (URCX_Hopper hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs))
+        )
+    )
+    (defun URC_HopperFromRaw:object{SwapperIssueV3.Hopper}
+        (
+            hopper-input-id:string hopper-output-id:string hopper-input-amount:decimal
+            raw-graph:[object{SwapTracerV2.RawGraphNode}]
+        )
+        @doc "#65bL Phase 4 fix: <URC_Hopper>, sourcing its routing search via an \
+            \ ALREADY-FETCHED <raw-graph> instead of a fresh self-fetch — see \
+            \ <URCX_HopperFromRaw>'s own doc for the full rationale."
+        (let
+            (
+                (ref-SWP:module{SwapperV3} SWP)
+            )
+            (URCX_HopperFromRaw hopper-input-id hopper-output-id hopper-input-amount (ref-SWP::URC_Swpairs) raw-graph)
         )
     )
     (defun URC_HopperActive:object{SwapperIssueV3.Hopper}
@@ -1340,6 +1436,46 @@
             )
         )
     )
+    (defun URC_WorthDWKFromRaw (id:string amount:decimal raw-graph:[object{SwapTracerV2.RawGraphNode}])
+        @doc "#65bL Phase 4 fix: <URC_WorthDWK>, sourcing any graph search it needs \
+            \ via an ALREADY-FETCHED <raw-graph> (<URC_HopperFromRaw>) instead of a \
+            \ fresh self-fetch — see <URCX_HopperFromRaw>'s own doc for the full \
+            \ rationale (repricing-loop sharing). The DWK/DLK short-circuit branches \
+            \ never needed a graph search to begin with and stay unchanged."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (dwk:string (ref-DALOS::UR_WrappedStoaID))
+                (dlk:string (ref-DALOS::UR_SilverStoaID))
+            )
+            (if (= id dwk)
+                amount
+                (if (= id dlk)
+                    (let
+                        (
+                            (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                            (ref-ATS:module{AutostakeV2} ATS)
+                            (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk))
+                            (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
+                            (index-value:decimal (ref-ATS::URC_Index kdaliquindex))
+                            (dlk-prec:integer (ref-DPTF::UR_Decimals dlk))
+                        )
+                        (floor (* amount index-value) dlk-prec)
+                    )
+                    (let
+                        (
+                            (h-obj:object{SwapperIssueV3.Hopper} (URC_HopperFromRaw id dwk amount raw-graph))
+                            (ovs:[decimal] (at "output-values" h-obj))
+                        )
+                        (if (= (length ovs) 0)
+                            0.0
+                            (at 0 (take -1 ovs))
+                        )
+                    )
+                )
+            )
+        )
+    )
     (defun URC_PoolValue:[decimal] (swpair:string)
         @doc "Outputs the Pool Value in DWK. \
             \ If the Pool is empty, even though its value is technically zero, \
@@ -1383,6 +1519,69 @@
                 (first-token-precision:integer (ref-DPTF::UR_Decimals first-token))
                 (first-weigth:decimal (at 0 w))
                 (first-worth:decimal (URC_WorthDWK first-token first-token-supply))
+                ;;
+                (pool-worth:decimal
+                    (if (or (= pool-type "S") (= pool-type "P"))
+                        (floor (* (dec how-many) first-worth) first-token-precision)
+                        (floor (/ first-worth first-weigth) first-token-precision)
+                    )
+                )
+                (lp-worth:decimal
+                    (floor (/ pool-worth lp-supply) lp-prec)
+                )
+            )
+            [pool-worth lp-worth]
+        )
+    )
+    (defun URC_PoolValueFromRaw:[decimal] (swpair:string raw-graph:[object{SwapTracerV2.RawGraphNode}])
+        @doc "#65bL Phase 4 fix: <URC_PoolValue>, sourcing its <URC_WorthDWK> call via \
+            \ an ALREADY-FETCHED <raw-graph> (<URC_WorthDWKFromRaw>) instead of a \
+            \ fresh self-fetch. Built for the STOA-repricing loop \
+            \ (TS01-C3::SWP|CC_SmartSwap{With,No}Slippage, one URC_PoolValue call per \
+            \ distinct pool a self-searching swap touched) — every call in that loop \
+            \ now shares ONE raw-graph fetch instead of each one independently \
+            \ re-reading and rebuilding the whole graph, same shape of win Phase 2 \
+            \ already proved for a single Hopper call's own best-of-3 attempts, \
+            \ extended here across the WHOLE loop's separate calls. Everything else \
+            \ (genesis-vs-live supply/weight selection, pool-worth/lp-worth formulas) \
+            \ is byte-for-byte identical to <URC_PoolValue> — only the one \
+            \ <first-worth> line changes."
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-SWP:module{SwapperV3} SWP)
+                ;;
+                (current-lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
+                (lp-supply:decimal
+                    (if (= current-lp-supply 0.0)
+                        10000000.0
+                        current-lp-supply
+                    )
+                )
+                (pool-token-supplies:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_PoolGenesisSupplies swpair)
+                        (ref-SWP::UR_PoolTokenSupplies swpair)
+                    )
+                )
+                (w:[decimal]
+                    (if (= current-lp-supply 0.0)
+                        (ref-SWP::UR_GenesisWeigths swpair)
+                        (ref-SWP::UR_Weigths swpair)
+                    )
+                )
+                ;;
+                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                (how-many:integer (length pool-tokens))
+                (lp-prec:integer (ref-DPTF::UR_Decimals (ref-SWP::UR_TokenLP swpair)))
+                ;;
+                (first-token:string (at 0 pool-tokens))
+                (first-token-supply:decimal (at 0 pool-token-supplies))
+                (first-token-precision:integer (ref-DPTF::UR_Decimals first-token))
+                (first-weigth:decimal (at 0 w))
+                (first-worth:decimal (URC_WorthDWKFromRaw first-token first-token-supply raw-graph))
                 ;;
                 (pool-worth:decimal
                     (if (or (= pool-type "S") (= pool-type "P"))
