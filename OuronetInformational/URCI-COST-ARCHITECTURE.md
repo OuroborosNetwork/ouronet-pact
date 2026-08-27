@@ -22,6 +22,16 @@ Two levels:
 - **Composer `URCi`** — one per `C_`/`CC_`/`A_`. Concats the leaf `URCi`s → the op's total cumulator.
   **This is what the INFO function calls.**
 
+### Placement rule (owner, 2026-08-27): `URCi` lives IN its module, never in a shared cost module
+Each `URCi` sits in the **same module as the function it prices** — the exec leaf calls its own
+`URCi` with no cross-module hop, and the composer `URCi` sits with its `C_`/flow and reaches leaf
+`URCi`s by `ref` exactly where the flow already crosses module boundaries. This is correct, not just
+convenient: an atomic leaf cost must not cross a module boundary (rule B §4c — minimise the `ref`
+surface; every hop is a place the module-boundary guard does real work). The INFO module is the only
+thing that reaches *across* to call composer `URCi`s.
+**Do NOT exile cost functions into a dedicated cost module to dodge size** — the size fix is to
+**split the module** (point B), keeping each `URCi` with its code.
+
 ## 3. Option A (CHOSEN) — leaves expose URCi, executor composes as today
 - Each cost-emitting **leaf** exposes a `URCi_<leaf>` and returns it from its own body.
 - The **executor keeps composing via the `XE_` returns** (control flow UNCHANGED — no rehaul).
@@ -66,9 +76,13 @@ the rehaul: exec↔info can never silently diverge.
 4. **Re-price (point A):** value re-price via UsagePrice; heavy-read surcharge emitted by the
    `URH_/URHC_/URD_` readers (scaled to rows scanned) — localized at the transitive-heavy functions.
    Edits land on the `URCi` / UsagePrice → both exec and info move together.
-5. **FVT split (point B):** FVT is already OVER the deploy ceiling (6,694 lines); split along a
-   capability seam so §2 code lands in right-sized modules (or home new `URCi`s in a dedicated cost
-   module). A and B meet here.
+5. **AQP splits (point B):** `URCi` code stays **in-module** (§2 placement rule), so adding it grows
+   each module. Stage-1 modules were sized for Kadena's 150k cap (~2,900 lines) and have headroom
+   under StoaChain's larger ceiling → room for their `URCi`s without splitting. **AQP is the
+   exception:** FVT is already OVER the deploy ceiling (6,694 lines) and the others grow as `URCi`s
+   land — so expect a **few capability-seam splits in AQP afterwards** (FVT certainly; re-audit
+   POOL/SCORE/ANK/VCT line counts once their `URCi`s are in). A and B meet here: split to make room,
+   don't relocate the cost functions.
 
 ## 7. State of the current AQP INFO work (transitional — keep)
 The AQP stake/unstake INFO functions (TF/OF/SF/NF, all **ground-truth-proven cent-exact**) and
