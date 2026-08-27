@@ -23,6 +23,12 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
       `bash REPL/run-aqp-audit.sh` (15 suites) + `pact Z.repl` (Stage 00/01/02) +
       `pact aqp-info-groundtruth.repl` (TF/OF/SF cost-equality) + `pact AQP-FULL.repl`
       (non-destructive core). Everything must be green before touching anything else.
+- [ ] **0.4 Discover LIVE interface versions (early — informs the Phase 7 bump).** Read the currently
+      **deployed** Ouronet modules on-chain (Pythia keyless dirty-read —
+      `OuronetInformational/pythia-dirty-read-access.md`) and record which interface version each live
+      module implements. The next version for any interface that changes = **live + 1** (so we know if
+      a new interface is V2 or V3). Record the **live→target(+1) map**. NB: local dev has already moved
+      ahead of live for some (e.g. ATS on `V2` while live is `V1`) — target is relative to **live**, not local.
 
 ## PHASE 1 — URCi cost architecture (spec: `URCI-COST-ARCHITECTURE.md`; task #77)
 - [ ] **1.1** Register the **`URCi_*` prefix** in `StoicSyntax-Prefixes.md` + `StoicSyntax.md`
@@ -116,10 +122,20 @@ attack on ALL modules** to expose vulnerabilities. Its findings + fixes become P
       - **Part III** — the red-team attack audit (6.1): vulnerabilities sought, found, fixed.
       One consolidated, publishable book telling the whole story end to end.
 
-## PHASE 7 — Deploy-ready gate + fresh top-to-bottom redeploy (task #83)
-- [ ] **7.1** Final green-gate: whole-codebase single run (5.3) green + all audits closed + book
-      assembled + every module within the deploy ceiling (rule B; FVT split done).
-- [ ] **7.2** **Fresh top-to-bottom redeploy** of Stage 1 + Stage 2 (+ slaves). This finalized
+## PHASE 7 — Interface version bump + cascade + deploy-ready gate + redeploy (tasks #83, #85)
+Almost EVERY interface will carry new code by now (audits + URCi + INFO + re-price + splits +
+red-team fixes), so each changed interface must become its **next version**. Do this ONCE, here,
+after all code is final — never repeatedly. Spec: `ARCHITECTURE/INTERFACE_VERSIONING.md`.
+- [ ] **7.1 Interface version bump.** For every interface whose code changed, bump its suffix to
+      **live + 1** using the Phase-0.4 live→target map (`V1`→`V2`, or `V2`→`V3` where local already moved).
+- [ ] **7.2 Cascade refactor (BIG — whole codebase; task #85).** Per the cascade rule: every interface
+      that names a bumped one (`module{B}` / `object{B.Schema}`) must itself bump, and EVERY consumer
+      updates its `ref-`/`implements` to the new version, **in lockstep**. Interfaces are pervasive, so
+      this touches most of the codebase — a distinct large refactor. Mechanical (rename + rewire), so it
+      lands after the red team (logic is final); do it, then re-gate.
+- [ ] **7.3 Deploy-ready gate:** whole-codebase single run (5.3) green + all audits closed + book
+      assembled + every module within the deploy ceiling (rule B; FVT split done) + version bump green.
+- [ ] **7.4 Fresh top-to-bottom redeploy** of Stage 1 + Stage 2 (+ slaves). This finalized
       entrypoint set is the shape the UI enumerates.
 
 ## PHASE 8 — UI incorporation (CAPSTONE; workstream #2; spec: `UI-INCORPORATION-PLAN.md`; task #80)
@@ -213,5 +229,6 @@ Remaining (4 deferred LOW — map onto our phases):
 #21 SWP audit · #23 ATS audit → **Phase 0**. #77 URCi → **Phase 1-2**. #74 vacate INFO → **Phase 2.2**.
 #78 complete-all-INFO → **Phase 2.3**. #76 re-price → **Phase 3**. #75 FVT split → **Phase 4**.
 #79 REPL coverage completion → **Phase 5.2**. #71/#72/#73 whole-codebase single run → **Phase 5.3**.
-#81 red team attack → **Phase 6.1**. #82 Audit Book → **Phase 6.2**. #83 redeploy → **Phase 7**.
+#81 red team attack → **Phase 6.1**. #82 Audit Book → **Phase 6.2**. #85 interface version bump +
+cascade → **Phase 7.1-7.2**. #83 redeploy → **Phase 7.3-7.4**.
 #80 UI incorporation desktop (grafted onto pantheonic) → **Phase 8A**. #84 mobile translation → **Phase 8B**.
