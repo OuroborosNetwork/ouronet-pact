@@ -539,6 +539,23 @@ and `XI_SmartSwapRouter`, mirroring the bundle-based path's own already-establis
 just asserted: real gas dropped from 5,094,054 → 4,593,400 (~9.8%) on the same P2-scale checkpoint. Full
 writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L65*
 
+#65bL **[SWPT / U|BFS / SWPI / SWPU]** Off-cycle, surfaced during `#65L`'s own fix and the follow-up
+discussion it prompted: `CC_SmartSwap`'s graph-search engine (`URC_ComputeAlternateRoutes` →
+`URC_ComputeGraphPath` → `URC_MakeGraph`) rebuilds the entire graph from scratch, from raw table reads,
+on every one of its best-of-K routing attempts — no cross-attempt reuse, plus a within-attempt per-node
+re-fetch on top. The true dominant SmartSwap cost (per-distinct-pool STOA-value repricing via
+`URC_WorthDWK`, 56.9% of gas per `HANDOFF-swp-exhaustive-path-search.md`) shares this same unoptimized
+engine. — **OPEN — PARKED FOR DEDICATED DESIGN PASS, 2026-08-27.** Owner's first instinct (widen the
+search — raise K, "search 10k") was investigated and refuted with hard evidence: Pact 5 has no
+per-transaction read cache, marginal gas per additional attempt is roughly linear until the route set is
+structurally exhausted, and a flat wide search would blow 10-100x past the real ~2,000,000 gas ceiling on
+any topology with real route diversity. The real, confirmed, previously-unexploited opportunity is
+eliminating redundant reads/recomputation within the existing small K, not searching wider. Owner:
+finish the LOW queue first, then come back and design this properly — same treatment `#34`/M2 got before
+it became its own master issue. No code change yet. Full investigation, evidence, and open design
+questions captured in `ROUND-01-OWNER-FEEDBACK.md` and the new
+`OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`. — *#65bL*
+
 #66L **[SWPU]** Failure-branch `OutputCumulator` objects are hand-built instead of via a `UDC_*` constructor.
 
 #67L **[MTX-SWP]** `MTX|C_AddSleepingLiquidity` burns a Step-0-cached nonce amount instead of re-reading it

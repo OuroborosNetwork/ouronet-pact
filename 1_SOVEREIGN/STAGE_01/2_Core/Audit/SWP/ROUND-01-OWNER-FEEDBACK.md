@@ -2723,3 +2723,54 @@ issuance-only): exit 0, 0 `FAILURE`, `Stage01_Tester.repl` reverted with zero dr
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #38. Awaiting Round III re-verify. — *L65*
 
 ---
+
+## #65bL (off-cycle, SWPT / U|BFS / SWPI / SWPU — the graph-search engine rebuilds the whole graph from scratch on every best-of-K attempt) — **OPEN, PARKED FOR DEDICATED DESIGN PASS**
+
+**Surfaced during L65's own fix**, not a pre-existing findings-list item — the follow-up discussion
+about `CC_SmartSwap`'s heavy reads led directly here. Owner asked two things: how many heavy reads
+does `CC_SmartSwap` really have (is best-of-3 too much for a tiny 1-2 pool swap), and can the
+search engine itself be rewritten to be fundamentally cheaper.
+
+**Traced the real heavy-read footprint** — it's not the "3 searches + 1 path-to-DLK" the owner
+remembered. Main routing (`URC_HopperActive`, called once, internally best-of-3) and the boost-path
+search (`URC_HopperActiveShortest`, once, single BFS) were both real, but a third category was
+missing from the count entirely: per-distinct-pool STOA-value repricing, running at the Talos layer
+right after `CC_SmartSwap` returns, doing another best-of-3 search **per pool touched**. Per
+`HANDOFF-swp-exhaustive-path-search.md`'s own Phase-5 measurement, this is 56.9% of total gas at the
+102-pool benchmark — the actual dominant cost, not routing.
+
+**Owner's first proposal — search much wider (10k, or scaled to pool count) since "once all paths
+are found, the rest is dirt cheap" — investigated and refuted with hard evidence before agreeing to
+anything:** Pact 5 has no per-transaction read cache (confirmed against `pact5/SEMANTICS.md` and the
+BFS code itself — every attempt independently re-reads and rebuilds the graph from scratch, no
+memoization exists anywhere in `URC_ComputeAlternateRoutes`/`URC_ComputeGraphPath`/`URC_MakeGraph`).
+The measured data in `HANDOFF-swp-exhaustive-path-search.md` (lines 331-345, 540-543) shows roughly
+linear marginal cost per attempt (~28k-420k gas depending on topology), flattening only once the
+real route set is structurally exhausted — not from caching, from an early-exit fold. A flat wide
+search would cost 10-100x over the real ~2,000,000 gas ceiling on any topology with genuine route
+diversity. This was reported back plainly and the owner accepted the correction.
+
+**What's real instead, per the owner's actual ask ("rewrite the search engine to optimize it"):**
+traced `URC_ComputeAlternateRoutes`'s full call chain and confirmed, with evidence, two genuine,
+previously-unconsidered redundancies — not a rejected idea, a genuine gap:
+1. Cross-attempt: the raw `SWPT|Graph` table rows are identical across all K attempts (only the
+   downstream edge-exclusion filter differs), yet each attempt independently re-reads and rebuilds
+   the entire graph from scratch.
+2. Within a single attempt: a node of degree `d` gets its row re-fetched `d` times (once per
+   candidate neighbor) instead of once.
+
+Corroborating evidence this shape of win is real and available: Fix #24 (`M4`/`#38M`) already
+proved a 39% gas cut is achievable from pure in-memory restructuring alone (`UCX_GraphNodeLinks`,
+zero table reads touched), separate from and additive to the read-layer opportunity found here.
+
+**Status:** OPEN — deliberately not designed or implemented. Owner's direction: finish the LOW
+queue (`#66L`–`#71L`) first, then return to this and any other complex issue surfaced along the way
+for careful, dedicated design — the same treatment `#34`/M2 received before it grew into its own
+13-phase master issue with dedicated `HANDOFF-swp-*.md` docs. Full evidence, the rejected
+wide-search alternative, and the open design questions (how to share the raw graph read across K
+attempts without breaking per-attempt filtering; whether the STOA-repricing loop should get the same
+treatment; full blast-radius enumeration across every caller of the shared BFS primitives) are
+captured in the new `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`, mirroring
+`HANDOFF-swp-exhaustive-path-search.md`'s own role for `#34`. — *#65bL*
+
+---
