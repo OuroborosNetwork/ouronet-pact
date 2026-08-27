@@ -49,7 +49,7 @@ Implemented in code; **no REPL asserts yet.**
 
 ## 2. Collectable stake — gaps beyond DPSF smoke
 
-- [ ] **DPNF** full flow: `C_StakeNonFungibleCollectable` / unstake + `BenDpnfNonceTotal` rollup + trait/class anchors
+- [ ] **DPNF** full flow: `CC_StakeNonFungibleCollectable` / unstake + `BenDpnfNonceTotal` rollup + trait/class anchors
 - [ ] `BenDpsfAnkMeta` / `BenDpnfAnkMeta` reads after stake (sync-count vs `UR_AA|AnchorsActive`)
 - [ ] Cross-pool: same beneficiary stakes same collection in **two pools** → one rollup row per nonce, two tracker rows
 - [ ] Unstake rollup guard: `URC_CollectableUnstakeRollupSufficient` rejects when rollup < tracker
@@ -59,7 +59,7 @@ Implemented in code; **no REPL asserts yet.**
 
 ## 3. True fungible stake — gaps beyond TX-FVT-03
 
-- [ ] `C_UnstakeTrueFungible` / full unstake clears tracker + `BenDptfTotal`
+- [ ] `CC_UnstakeTrueFungible` / full unstake clears tracker + `BenDptfTotal`
 - [ ] Frozen leg `F|dptf-id` separate `BenDptfTotal` row from native
 - [ ] LP class-0 pool stake (native + frozen + OF paths)
 - [ ] Multi-score pool: all employed scores updated on stake

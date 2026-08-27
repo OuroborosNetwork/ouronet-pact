@@ -41,7 +41,7 @@ In StoicSyntax, a function’s **prefix is its contract**. You know privilege an
 | `UDC_` | Data constructor |
 | `WI_` / `WU_` / `WW_` | Persistence only (insert / update / write) |
 | `XI_` / `XE_` / `XB_` | Orchestrate writes (no validation) |
-| `C_` / `CC_` / `A_` / `AA_` | Client / heavy client / admin / heavy admin recipes (double letter = contains a heavy read). A `p` suffix (`Cp_`/`CCp_`/`Ap_`/`AAp_`) = a **Hydra** parallel slice — fed a `URH_*` dirty-read plan slice, fired in parallel (vs `defpact` = sequential). See StoicSyntax-Prefixes § "Recipe axes". |
+| `C_` / `CC_` / `A_` / `AA_` | Client / heavy client / admin / heavy admin recipes. **Double letter = heavy = a heavy scan (`URH_*`/`URHC_*`/`URD_*`) is reached *somewhere in the whole execution tree, at any depth*** (transitive — the at-a-glance "a heavy read is hit in here" signal). A `p` suffix (`Cp_`/`CCp_`/`Ap_`/`AAp_`) = a **Hydra** parallel slice — fed a `URH_*` dirty-read plan slice, fired in parallel (vs `defpact` = sequential). See StoicSyntax-Prefixes § "Recipe axes". |
 | `…x` (lowercase) | Auxiliary of the function directly above it (same class + colour) |
 
 Capabilities are banded (**C1–C4**), FUNCTIONS are ordered (**UC → UR → URH → UEV → CAP → UDC → W → X → A → C** — auxiliaries first, complete user recipes last; see StoicSyntax-Prefixes § 5.1), and `defcap` / `let` bodies follow a fixed statement order. A reader can navigate a multi-thousand-line module by **prefix and section**, not by hunting for side effects. That is intentional: **the layout is the first audit pass**.

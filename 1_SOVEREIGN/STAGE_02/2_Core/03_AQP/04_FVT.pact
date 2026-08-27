@@ -138,13 +138,13 @@
     )
     ;; [C]   client
     ;;
-    (defun C_TrueFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_TrueFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
     )
-    (defun C_OrtoFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
     )
-    (defun C_CollectableStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_CollectableStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -194,10 +194,7 @@
     (defun C_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string enabled:bool)
     )
-    (defun C_Inject:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-    )
-    (defun C_InjectStream:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_InjectStream:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
     )
     (defun CC_Inject:object{IgnisCollectorV1.OutputCumulator}
@@ -213,10 +210,10 @@
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
     )
     (defun CC_SweepRevokeAnchor:string (patron:string anchor-id:string))
-    (defun C_SweepBegin:string (patron:string anchor-id:string))
-    (defun Cp_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
-    (defun C_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string fvt-ids:[string]))
-    (defun C_Collect:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_SweepBegin:string (patron:string anchor-id:string))
+    (defun CCp_SweepRecomputeChunk:string (patron:string anchor-id:string chunk:integer))
+    (defun CC_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string fvt-ids:[string]))
+    (defun CC_Collect:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
 )
@@ -580,8 +577,8 @@
         frozen:bool
     )
     (defschema FVT|SweepProgress
-        @doc "Key = <Anchor-ID>. Cursor for the paginated defun+gate re-score sweep (C_SweepBegin → \
-            \ Cp_SweepRecomputeChunk*), the scalable twin of the fixed 2-step MTX|2|C_SweepRevokeAnchor defpact. \
+        @doc "Key = <Anchor-ID>. Cursor for the paginated defun+gate re-score sweep (CC_SweepBegin → \
+            \ CCp_SweepRecomputeChunk*), the scalable twin of the fixed 2-step MTX|2|C_SweepRevokeAnchor defpact. \
             \ `total` = the recompute-set size captured at BEGIN (sweep-in-progress freeze holds URH_FvtPresentUsers \
             \ fixed across the batch's separate txs); `offset` = holders recomputed so far over the GLOBAL flattened \
             \ present set (present users concatenated across the boost-class's score-ids in order); `active` = a \
@@ -1015,8 +1012,8 @@
         (compose-capability (P|FVT|REMOTE-GOV))
     )
     (defcap FVT|C>SWEEP-DRAIN (patron:string anchor-id:string chunk:integer)
-        @doc "Protects a paginated re-score sweep CHUNK (Cp_SweepRecomputeChunk). The sweep was authorized + the \
-            \ anchor swept-revoked at C_SweepBegin (owner enforced in ANK|XE>SWEEP-REVOKE); a chunk only COMPLETES \
+        @doc "Protects a paginated re-score sweep CHUNK (CCp_SweepRecomputeChunk). The sweep was authorized + the \
+            \ anchor swept-revoked at CC_SweepBegin (owner enforced in ANK|XE>SWEEP-REVOKE); a chunk only COMPLETES \
             \ the already-committed recompute under the freeze, so it re-checks the cursor is ACTIVE (honest \
             \ completion — re-enforcing owner per chunk is unnecessary; premature unfreeze is impossible because \
             \ the body unfreezes only when offset reaches total). `chunk` is bounded by the loose gas backstop \
@@ -1029,7 +1026,7 @@
         (compose-capability (P|SECURE-CALLER))
     )
     (defcap FVT|C>UNSTALE-MY-SCORES (patron:string)
-        @doc "User SELF-SERVICE deb-unstale (C_UnstaleMyScores): the caller refreshes THEIR OWN stale scores \
+        @doc "User SELF-SERVICE deb-unstale (CC_UnstaleMyScores): the caller refreshes THEIR OWN stale scores \
             \ across the listed FVTs — settle pending at the old deb, refresh the score deb to the live Elite-DEB, \
             \ resync the FVT total-deb mirror — NON-penalized (contrast the inject's forced fix, which bills the \
             \ 2e penalty; self-service is deliberately the cheaper path so users proactively unstale). Auth = \
@@ -1105,7 +1102,7 @@
             ;;9b] FVT common-denominator vs member scores — C_AddScoreEntity admission
             ;;9c] aqpool-link slot assignment — C_AddScore / C_RevokeScore
             ;;
-            ;;--- UrStoa canonical phases (see map above C_TrueFungibleStakeFlow) ---
+            ;;--- UrStoa canonical phases (see map above CC_TrueFungibleStakeFlow) ---
             ;; PHASE 1   1.1–1.3 AQP-POOL custody
             ;; PHASE 2   FVT::XI_RpsPreScore
             ;; PHASE 3   3.1 TF anchors; 3.2/3.3 reserved
@@ -1337,8 +1334,8 @@
         )
     )
     (defun UR_FVT|SweepActive:bool (anchor-id:string)
-        @doc "True while a paginated re-score sweep is open for anchor-id (gates Cp_SweepRecomputeChunk; blocks a \
-            \ double C_SweepBegin)."
+        @doc "True while a paginated re-score sweep is open for anchor-id (gates CCp_SweepRecomputeChunk; blocks a \
+            \ double CC_SweepBegin)."
         (at "active" (UR_FVT|SweepProgress anchor-id))
     )
     (defun UR_FVT|CommonDenominator:string (fvt-id:string)
@@ -2549,7 +2546,7 @@
     )
     (defun URC_FvtSweepTotalPresent:integer (score-ids:[string])
         @doc "Total present holders across every FVT member employing the swept boost-class = the paginated \
-            \ recompute-set size for C_SweepBegin. Read-only; sweep-in-progress keeps URH_FvtPresentUsers fixed \
+            \ recompute-set size for CC_SweepBegin. Read-only; sweep-in-progress keeps URH_FvtPresentUsers fixed \
             \ across the CC-batch's txs. FVT-local twin of MTX-AQP::URC_SweepTotalPresent (the defpact's copy) — \
             \ both fold the SAME URH_FvtPresentUsers, so they agree by construction."
         (let
@@ -2969,7 +2966,7 @@
     )
     (defun UEV_CollectContext
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-        @doc "C_Collect: dispatch by score-entity-type; MULTIPLET_BASE triplet collect requires matching global."
+        @doc "CC_Collect: dispatch by score-entity-type; MULTIPLET_BASE triplet collect requires matching global."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -2977,7 +2974,7 @@
                 (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                 (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                 (reward-kind:string (UR_FVT-RG|RewardKind fvt-id reward-dptf-id))
-                ;; the score's employing pool (triplet ⇒ silver leg's pool — mirrors C_Collect's resolution)
+                ;; the score's employing pool (triplet ⇒ silver leg's pool — mirrors CC_Collect's resolution)
                 (pool-id:string
                     (if (= score-entity-type CT_SCORE_ENTITY_TRIPLET)
                         (ref-SCR::UR_SCR|ScoreAqpoolLink (ref-SCR::UR_SCR|TripletSilverScoreId score-entity-id))
@@ -3697,7 +3694,7 @@
     ;;  4d-4f] pending and unclaimed-count updates; last-rps_user := L_i
     ;;
     ;;5]SWP / AQP — SWP|Pairs.stoa-value updated by TS01 swap/liquidity txs (no FVT call from SWP).
-    ;;  FVT lazy-sync on reward entry (C_AddScoreEntity, C_Inject, XI_SettleStakePendingRewards phase-2 entry, C_Collect):
+    ;;  FVT lazy-sync on reward entry (C_AddScoreEntity, C_Inject, XI_SettleStakePendingRewards phase-2 entry, CC_Collect):
     ;;  read SWP::UR_StoaValue via ScoreEntityLink.swpair; if W_live ≠ W_cached settle Tier-2 at old W_i; write W_i; fix S.
     ;;
     ;; --- Block L · Lifecycle XI (C_Issue / C_AddScoreEntity / …) ---
@@ -3708,7 +3705,7 @@
     ;;   C_AddRewardLink / C_ToggleRewardLink
     ;;     └ XI_AddRewardLink / XI_ToggleRewardLink
     ;;   C_Inject — phased recipe (see canonical inject map above C_Inject)
-    ;;   C_Collect — phased recipe (see canonical collect map above C_Collect)
+    ;;   CC_Collect — phased recipe (see canonical collect map above CC_Collect)
     ;;
     (defun XI_IssueFvt:string
         (fvt-id:string fvt-class:integer owner-konto:string common-denominator:string)
@@ -3865,7 +3862,7 @@
     ;;     └ WU_RpsGlobal|AvailableRewards
     ;;
     ;; --- Block E · Collect (UrStoa C_URV|Collect analogue) ---
-    ;;   C_Collect — phased recipe in C_ body (same structure as C_Inject / C_TrueFungibleStakeFlow)
+    ;;   CC_Collect — phased recipe in C_ body (same structure as C_Inject / CC_TrueFungibleStakeFlow)
     ;;     ├ XI_TransferRewardDptfFromVault            (coin 1 · URC_CollectClaimableRewards inside)
     ;;     ├ WU_RpsGlobal|AvailableRewards decrement (coin 5 · pre-reset URC read)
     ;;     ├ WU_RpsUser|PendingRewards reset           (coin 2)
@@ -4101,7 +4098,7 @@
         )
     )
     ;;
-    ;; --- Block A · Phase 2.1 settle (C_TrueFungibleStakeFlow) ---
+    ;; --- Block A · Phase 2.1 settle (CC_TrueFungibleStakeFlow) ---
     ;;   XI_RpsPreScore — orchestrator: ghost TVL → ensure rows → bank pending
     ;;     └ (map) → XI_1|EnsureScoreRewardRows, XI_1|BankScorePendingRewards
     ;;
@@ -4961,7 +4958,7 @@
                 score-ids))
     )
     ;;
-    ;; --- Block B · Phase 3 anchor refresh (C_TrueFungibleStakeFlow · 3.1) ---
+    ;; --- Block B · Phase 3 anchor refresh (CC_TrueFungibleStakeFlow · 3.1) ---
     ;;   XI_RefreshTrueFungibleStakeAnchors
     ;;     ├ AQP-ANK::XE_UpdateTrueFungibleUserAnchorValues
     ;;     └ AQP-POOL::XB_SetBenDptfAnkSyncCount
@@ -4969,7 +4966,7 @@
     ;; --- Anchors (AQP-ANK · TF stake only) ---
     (defun XI_RefreshTrueFungibleStakeAnchors:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
-        @doc "Internal (C_TrueFungibleStakeFlow phase 3.1 · depth 0]): read post-ico1 BenDptfTotal balance, \
+        @doc "Internal (CC_TrueFungibleStakeFlow phase 3.1 · depth 0]): read post-ico1 BenDptfTotal balance, \
             \ call backward ANK promile refresh + AQP last-ank-sync-count bump; concat IGNIS OCs. \
             \ require-capability (SECURE) only — backward XE_* use UEV_IMC / domain caps."
         (require-capability (SECURE))
@@ -4991,7 +4988,7 @@
         )
     )
     ;;
-    ;; --- Block B′ · Phase 3 anchor refresh (C_CollectableStakeFlow · 3.2 or 3.3 via son) ---
+    ;; --- Block B′ · Phase 3 anchor refresh (CC_CollectableStakeFlow · 3.2 or 3.3 via son) ---
     ;;   XI_RefreshCollectableStakeAnchors
     ;;     ├ AQP-ANK::XE_UpdateSemiFungible* or XE_UpdateNonFungible*
     ;;     └ AQP-POOL::XB_SetBenCollectableAnkSyncCount
@@ -5005,7 +5002,7 @@
             nonce-amounts:[integer]
             direction:bool
         )
-        @doc "Internal (C_CollectableStakeFlow phase 3]): ANK promile refresh — DPSF (son=true) or DPNF (son=false)."
+        @doc "Internal (CC_CollectableStakeFlow phase 3]): ANK promile refresh — DPSF (son=true) or DPNF (son=false)."
         (require-capability (SECURE))
         (let
             (
@@ -5926,7 +5923,7 @@
     ;; INJECT FUNCTION MATRIX — all three route through the ONE core XI_FvtInjectCore
     ;; ───────────────────────────────────────────────────────────────────────────
     ;;   Entrypoint (Talos wrapper)        Farm(0,LP)  Vault(1,TF/SF/NF)  Treasury(2,OF)  Divisor  Tx
-    ;;   C_Inject   (AQP-FVT|C_Inject)        yes           yes               yes          naive    1
+    ;;   C_Inject   (AQP-FVT|CC_Inject)        yes           yes               yes          naive    1
     ;;   CC_Inject  (AQP-FVT|CC_Inject)       yes           yes               yes          fresh    1
     ;;   MTX|2|C_Inject defpact (C_2|Inject)  yes           yes               yes          fresh    2*
     ;;   (* spike fallback for CC_Inject — up to 2×N_FIX stale stakers across 2 steps)
@@ -5945,17 +5942,7 @@
     ;;   costs one member-iteration more than a 3-member farm.
     ;; ───────────────────────────────────────────────────────────────────────────
     ;;
-    (defun C_Inject:object{IgnisCollectorV1.OutputCumulator}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Inject reward DPTF — the NAIVE path (any FVT class): distributes over the CURRENT divisor (may be \
-            \ deb-lagged; each staker self-heals at their next collect). See the INJECT FUNCTION MATRIX above. This \
-            \ is the C_ client contract (Talos/gas) only — it delegates to the shared XB_FvtInject (UEV_IMC + \
-            \ FVT|C>INJECT + XI_FvtInjectCore), the SAME both-internal-and-external entry the MTX|n|C_Inject defpact \
-            \ uses. For an enforced-FRESH divisor (fix every stale member first) use CC_Inject or the defpact. \
-            \ UrStoa ≡ C_URV|Inject."
-        (XB_FvtInject patron fvt-id reward-dptf-id amount)
-    )
-    (defun C_InjectStream:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_InjectStream:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Inject a reward DPTF as a TIME-STREAM — the DELAYED inject path (any FVT class): `amount` vests \
             \ LINEARLY over `duration` seconds (1h..365d) and whoever is staked during each slice earns that slice \
@@ -6156,12 +6143,12 @@
             )
         )
     )
-    (defun C_SweepBegin:string
+    (defun CC_SweepBegin:string
         (patron:string anchor-id:string)
         @doc "OPEN a paginated defun+gate re-score sweep — the scalable twin of CC_SweepRevokeAnchor (single-tx) \
             \ and MTX|2|C_SweepRevokeAnchor (fixed 2-step defpact). Mirrors steps 1-2 of the single-tx: FREEZE every \
             \ affected pool then swept-revoke the anchor globally (skips the #9 score-link lock), then records the \
-            \ frozen recompute-set size in an offset-0 cursor. Recompute is deferred to repeated Cp_SweepRecomputeChunk \
+            \ frozen recompute-set size in an offset-0 cursor. Recompute is deferred to repeated CCp_SweepRecomputeChunk \
             \ calls under the held freeze; the finalizing chunk unfreezes. Use this + chunking when the holder set \
             \ exceeds one tx; for small sets prefer the single-tx CC_SweepRevokeAnchor. Owner-initiated (the anchor \
             \ owner signs; CAP_Owner enforced inside ANK|XE>SWEEP-REVOKE). UEV_IMC + FVT|C>SWEEP-REVOKE."
@@ -6190,12 +6177,12 @@
                             (total:integer (URC_FvtSweepTotalPresent score-ids))
                         )
                         (WU_FvtSweepProgress anchor-id total 0 true)
-                        (format "Sweep begun for anchor {} (BoostClass {}): swept-revoked; {} holder(s) to recompute across {} score(s) — page via Cp_SweepRecomputeChunk." [anchor-id boost-class-id total (length score-ids)]))
+                        (format "Sweep begun for anchor {} (BoostClass {}): swept-revoked; {} holder(s) to recompute across {} score(s) — page via CCp_SweepRecomputeChunk." [anchor-id boost-class-id total (length score-ids)]))
                 )
             )
         )
     )
-    (defun Cp_SweepRecomputeChunk:string
+    (defun CCp_SweepRecomputeChunk:string
         (patron:string anchor-id:string chunk:integer)
         @doc "PAGE a paginated re-score sweep: recompute the next `chunk` holders over the GLOBAL flattened present \
             \ set [offset, min(offset+chunk, total)), advancing the cursor. When the window reaches `total` the set \
@@ -6246,7 +6233,7 @@
             )
         )
     )
-    (defun C_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-ids:[string])
         @doc "User SELF-SERVICE deb-unstale: the caller refreshes THEIR OWN stale scores across `fvt-ids` — per \
             \ FVT, XI_FixUserFvtDeb settles the caller's pending at the OLD deb, refreshes each score deb to the \
@@ -6276,7 +6263,7 @@
             )
         )
     )
-    (defun C_Collect:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_Collect:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collect reward DPTF — phases 0 → 5 — see canonical collect map above. UrStoa ≡ C_URV|Collect."
         (UEV_IMC)
@@ -6421,8 +6408,8 @@
     ;; Flow slots: TF=1.1–1.3,3.1 | OF=1.1–1.2 (1.3/3.x comment-only) | DPDC=1.1–1.2 + 3.2 or 3.3
     ;; ═══════════════════════════════════════════════════════════════════════════
     ;;
-    ;; --- TF stake/unstake recipe (Talos client → C_TrueFungibleStakeFlow) ---
-    (defun C_TrueFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    ;; --- TF stake/unstake recipe (Talos client → CC_TrueFungibleStakeFlow) ---
+    (defun CC_TrueFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
         @doc "Core TF stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above."
         (UEV_IMC)
@@ -6486,9 +6473,9 @@
         )
     )
     ;;
-    ;; --- OF stake/unstake recipe (Talos ×4 → C_OrtoFungibleStakeFlow) ---
+    ;; --- OF stake/unstake recipe (Talos ×4 → CC_OrtoFungibleStakeFlow) ---
     ;;   No phase 2.2 — ANK anchors are DPTF / DPSF / DPNF only; OF custody does not refresh promile.
-    (defun C_OrtoFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    (defun CC_OrtoFungibleStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] nonce-amounts:[decimal] direction:bool)
         @doc "Core OrtoFungible stake/unstake recipe. Phases 1 → 2 → 3 → 4 → 5 — see canonical map above. \
             \ OF: phase 1.3 and 3.x are N/A (comment-only in ICO list)."
@@ -6553,8 +6540,8 @@
         )
     )
     ;;
-    ;; --- DPDC collectable stake/unstake recipe (Talos ×4 → C_CollectableStakeFlow; son=true DPSF / false DPNF) ---
-    (defun C_CollectableStakeFlow:object{IgnisCollectorV1.OutputCumulator}
+    ;; --- DPDC collectable stake/unstake recipe (Talos ×4 → CC_CollectableStakeFlow; son=true DPSF / false DPNF) ---
+    (defun CC_CollectableStakeFlow:object{IgnisCollectorV1.OutputCumulator}
         (
             pool-id:string
             owner-id:string
@@ -6578,7 +6565,7 @@
                     (ref-AQP:module{AcquisitionPoolsV1} AQP-POOL)
                     (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
                     ;;
-                    ;; M5: beneficiary-id is authoritative BOTH directions (see C_OrtoFungibleStakeFlow). The caller
+                    ;; M5: beneficiary-id is authoritative BOTH directions (see CC_OrtoFungibleStakeFlow). The caller
                     ;; supplies the real beneficiary on unstake, so the exact (owner, beneficiary) tracker + Ben rollup
                     ;; rows are settled — no self-key derivation. Sufficiency is enforced in the cap.
                     (settle-beneficiary:string beneficiary-id)

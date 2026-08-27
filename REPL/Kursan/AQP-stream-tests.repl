@@ -5,7 +5,7 @@
 ;;                ANHD collects 180 (sole for h0-12 = 120, half of h12-24 = 60), EMMA collects 60. Proves late
 ;;                stakers capture only the post-join drip, and the drip-at-stake checkpoint is exact.
 ;; Legend: <(call)> invocation echo · <<T-STREAM-nn>> assertion tag.
-;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (C_InjectStream / XI_ReleaseStream)
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CC_InjectStream / XI_ReleaseStream)
 ;;
 (print "")
 (print "================================================================")
@@ -112,7 +112,7 @@
         (gs-key:string "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
     )
     ;;==== T-STREAM-01 · 01 · @T0: ANHD stakes 100, then streams 240 / 24h ====
-    (print "--- [T-STREAM-01 · 01 · @T0 ANHD stake 100 + C_InjectStream 240/24h] ---")
+    (print "--- [T-STREAM-01 · 01 · @T0 ANHD stake 100 + CC_InjectStream 240/24h] ---")
     (env-chain-data { "block-time": t0 })
     (env-sigs
         [ { "key": "PK_AncientHodler", "caps": [] }
@@ -121,8 +121,8 @@
               (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
-    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id anhd anhd ouro-id 100.0)
-    (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id anhd anhd ouro-id 100.0)
+    (ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 240.0 86400)
     ;;==== T-STREAM-01 · 02 · @T0+12h: fund EMMA + EMMA stakes 100 (drip credits ANHD the h0-12 slice = 120) ====
     (print "--- [T-STREAM-01 · 02 · @T0+12h EMMA stake 100] ---")
     (env-chain-data { "block-time": (add-time t0 43200) })
@@ -136,7 +136,7 @@
               (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
     (if (< (ref-DPTF::UR_AccountSupply ouro-id emma) 100.0)
         (ref-TS01-C1::DPTF|C_Transfer patron ouro-id anhd emma 100.0 true) true)
-    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id emma emma ouro-id 100.0)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id emma emma ouro-id 100.0)
     ;;==== T-STREAM-01 · 03 · @T0+24h (finish): ANHD collects 180, EMMA collects 60 ====
     (print "--- [T-STREAM-01 · 03 · @T0+24h collect ANHD=180 / EMMA=60] ---")
     (env-chain-data { "block-time": (add-time t0 86400) })
@@ -149,13 +149,13 @@
               (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
     (let ((anhd-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id anhd)))
-        (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+        (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
         (let ((anhd-payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id anhd) anhd-pre)))
             (map print
                 [ (format "<<T-STREAM-01>> ANHD payout @24h = {}" [anhd-payout])
                   (expect (format "<<T-STREAM-01>> ANHD = 180 (120 sole h0-12 + 60 half h12-24) got={}" [anhd-payout]) true (and (> anhd-payout 179.99) (< anhd-payout 180.01))) ])))
     (let ((emma-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id emma)))
-        (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 1 score-id ouro-id)
+        (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 1 score-id ouro-id)
         (let ((emma-payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id emma) emma-pre)))
             (map print
                 [ (format "<<T-STREAM-01>> EMMA payout @24h = {}" [emma-payout])
@@ -199,7 +199,7 @@
               (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
-    (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)
+    (ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 240.0 86400)
     ;;==== T-STREAM-02 · 02 · @t2+12h: clear A's first half, then add stream B 240/24h (now 2 overlapping) ====
     (print "--- [T-STREAM-02 · 02 · @t2+12h clear + stream B 240/24h] ---")
     (env-chain-data { "block-time": (add-time t2 43200) })
@@ -211,16 +211,16 @@
               (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
-    (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
-    (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 1 score-id ouro-id)
-    (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)
+    (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
+    (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 1 score-id ouro-id)
+    (ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 240.0 86400)
     (expect "<<T-STREAM-02>> 2 streams active after B" 2 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
     ;;==== T-STREAM-02 · 03 · @t2+18h: ANHD collect for [12h,18h] must be 60 (A 60 + B 60 at total 200) ====
     ;;   Superposition proof: a SINGLE stream would give ANHD 30; both streams paying gives 60.
     (print "--- [T-STREAM-02 · 03 · @t2+18h ANHD collect = 60 (both streams pay)] ---")
     (env-chain-data { "block-time": (add-time t2 64800) })
     (let ((anhd-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id anhd)))
-        (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+        (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
         (let ((anhd-payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id anhd) anhd-pre)))
             (map print
                 [ (format "<<T-STREAM-02>> ANHD [12h,18h] payout = {} (one stream would be 30)" [anhd-payout])
@@ -262,15 +262,15 @@
               (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
-    (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
-    (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 1 score-id ouro-id)
+    (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
+    (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 1 score-id ouro-id)
     (expect "<<T-STREAM-03>> old streams drained (count 0)" 0 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
-    (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)
+    (ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 240.0 86400)
     ;;==== T-STREAM-03 · 02 · @t3+6h: BOTH stakers fully unstake (drip credits C[0,6h] at total 200; weight → 0) ====
     (print "--- [T-STREAM-03 · 02 · @t3+6h both fully unstake] ---")
     (env-chain-data { "block-time": (add-time t3 21600) })
-    (ref-TS02-C3::AQP-POOL|C_UnstakeTrueFungible anhd pool-id anhd anhd ouro-id 100.0)
-    (ref-TS02-C3::AQP-POOL|C_UnstakeTrueFungible emma pool-id emma emma ouro-id 100.0)
+    (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible anhd pool-id anhd anhd ouro-id 100.0)
+    (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible emma pool-id emma emma ouro-id 100.0)
     (print (format "<<T-STREAM-03>> zombie before zero-weight drip = {}" [(AQP-FVT.UR_FVT-RG|ZombieRewards fvt-id ouro-id)]))
     ;;==== T-STREAM-03 · 03 · @t3+12h: ANHD re-stakes → drip runs at weight 0 → C[6h,12h]=60 escrows to zombie ====
     (print "--- [T-STREAM-03 · 03 · @t3+12h re-stake → zero-weight slice escrows] ---")
@@ -282,7 +282,7 @@
               (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
-    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id anhd anhd ouro-id 100.0)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id anhd anhd ouro-id 100.0)
     (let ((zombie:decimal (AQP-FVT.UR_FVT-RG|ZombieRewards fvt-id ouro-id)))
         (map print
             [ (format "<<T-STREAM-03>> zombie after zero-weight drip = {}" [zombie])
@@ -318,11 +318,11 @@
               (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
     (map print
         [ (expect-failure "<<T-STREAM-04>> duration < 1h rejected" "FVT|Stream: duration must be 1h"
-            (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 1800))
+            (ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 240.0 1800))
           (expect-failure "<<T-STREAM-04>> duration > 365d rejected" "FVT|Stream: duration must be 1h"
-            (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 40000000))
+            (ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 240.0 40000000))
           (expect-failure "<<T-STREAM-04>> rate below min rejected" "FVT|Stream: duration must be 1h"
-            (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 0.00000000001 31536000)) ])
+            (ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 0.00000000001 31536000)) ])
     (env-sigs [])
 )
 (commit-tx)
@@ -356,14 +356,14 @@
               (coin.TRANSFER (concat ["k:" gs-key]) "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
               (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
-    (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+    (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
     ;;==== baseline: collect with NO active stream (drip fast-returns) ====
     (print "--- [T-STREAM-05 · baseline collect (no stream)] ---")
     (env-gas 0)
-    (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+    (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
     (let ((g-base:integer (env-gas)))
         ;;==== stream-active: inject a stream, advance 12h, collect (drip releases + distributes) ====
-        (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)
+        (ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 240.0 86400)
         (env-chain-data { "block-time": (add-time t5 43200) })
         (env-sigs
             [ { "key": "PK_AncientHodler", "caps": [] }
@@ -374,7 +374,7 @@
                   (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
         (print "--- [T-STREAM-05 · stream-active collect (drip)] ---")
         (env-gas 0)
-        (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+        (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
         (let ((g-stream:integer (env-gas)))
             (map print
                 [ (format "<<T-STREAM-05>> baseline collect (no stream) gas = {}" [g-base])
@@ -431,10 +431,10 @@
         (ref-TS02-C3::AQP-FVT|C_Issue patron "FarmStreamFvt" patron 0 ouro-id)
         (ref-TS02-C3::AQP-FVT|C_AddRewardLink patron fvt-id ouro-id false (ref-U|CT::CT_BAR))
         (ref-TS02-C3::AQP-FVT|C_AddScoreEntity patron fvt-id 1 score-id)
-        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id anhd anhd lp-id 1.0)
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id anhd anhd lp-id 1.0)
         ;;==== T-STREAM-06 · 02 · @t6: stream 240 OURO / 24h into the farm ====
-        (print "--- [T-STREAM-06 · 02 · C_InjectStream 240/24h into farm] ---")
-        (ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)
+        (print "--- [T-STREAM-06 · 02 · CC_InjectStream 240/24h into farm] ---")
+        (ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 240.0 86400)
         (expect "<<T-STREAM-06>> farm stream active (count 1)" 1 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
         ;;==== T-STREAM-06 · 03 · @t6+12h: sole staker ANHD collects ~120 (farm drip released half) ====
         (print "--- [T-STREAM-06 · 03 · @t6+12h farm collect ~120] ---")
@@ -447,7 +447,7 @@
                   (coin.TRANSFER (concat ["k:" gs-key]) "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" 1000000.0)
                   (coin.TRANSFER (concat ["k:" gs-key]) "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" 1000000.0) ] } ])
         (let ((anhd-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id anhd)))
-            (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+            (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
             (let ((payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id anhd) anhd-pre)))
                 (map print
                     [ (format "<<T-STREAM-06>> farm ANHD payout @12h = {}" [payout])

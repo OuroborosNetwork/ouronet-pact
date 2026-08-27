@@ -186,7 +186,7 @@ The drip runs **per reward lane** (fvt-id | dptf-id), inside the existing per-re
 | **Inject** | `XI_FvtInjectCore` (4876) via `XB_FvtInject` (5097) | drip lane → then: `duration=0` distribute now (today's path); `duration>0` `UEV_StreamParams` + add stream at `count+1`, `count++`, `stream-unreleased += amount`, custody transfer |
 | **Stake** | `XI_RpsPreScore` (4294) | drip lane **before** the weight mutation (`XI_SyncFvtTotalDebMirrors` 4172 / triplet 4203 / farm ghost 4375) |
 | **Unstake** | `XI_RpsPreScore` (4294) | drip lane before weight mutation (last unstake → next drip sees weight 0 → zombie) |
-| **Collect** | `C_Collect` (3507) | drip lane before `URC_CollectClaimableRewards` (2407) |
+| **Collect** | `CC_Collect` (3507) | drip lane before `URC_CollectClaimableRewards` (2407) |
 | **Deb-fix** | `XI_FixUserMemberDeb` / `CCp_InjectFixChunk` (3287) | drip lane before settle |
 | **Sweep** | `XI_FvtSweepRecomputeChunk` | drip lane before recompute |
 
@@ -243,7 +243,7 @@ time.)*
 ## 9. Interface versioning & build order
 
 **Versioning:** FVT is pre-mainnet **V1 → edited in place**. New schema/table/constants are module-local. The
-inject entrypoints gain a `duration` param → cascade the signature to the Talos wrappers (TS02-C3 `AQP-FVT|C_Inject`
+inject entrypoints gain a `duration` param → cascade the signature to the Talos wrappers (TS02-C3 `AQP-FVT|CC_Inject`
 1748 / `CC_Inject` 1766 / `CC_InjectFinalize` 1806, and `MTX-AQP|C_2|Inject` 1826) and the MTX defpact. New URC
 readers that return module schemas stay module-only (interface object-return rule).
 
@@ -253,11 +253,11 @@ readers that return module schemas stay module-only (interface object-return rul
 2. ✅ **DONE (feefb09)** `URC_MaxStreamLanes` + `UEV_StreamParams` + 3 per-field stream readers.
 3. ✅ **DONE (147b9a8)** `XI_DistributeInjectAmount` (extracted from `XI_FvtInjectCore`, byte-preserving) +
    `XI_ReleaseStream` (the drip: fold walk, clamp+finish-flush, distribute, compact) + key/writers/reader.
-4. ✅ **DONE (a6a3de4)** Drip wired checkpoint-first at inject (PHASE 0) + `C_InjectStream`/`XI_FvtAddStream` +
-   stake/unstake (`XI_RpsPreScore`) + collect (`C_Collect`) + deb-fix batches + sweep.
+4. ✅ **DONE (a6a3de4)** Drip wired checkpoint-first at inject (PHASE 0) + `CC_InjectStream`/`XI_FvtAddStream` +
+   stake/unstake (`XI_RpsPreScore`) + collect (`CC_Collect`) + deb-fix batches + sweep.
 5. ✅ **DONE (bfdcd5d)** `URC_ReleasableToNow` + `URC_ProjectedIndexAdvance` + `URC_LiveClaimable` + `URC_StreamStatus`
    (read-only; `URC_LiveClaimable` projects EXACTLY the collect payout — proven 120.000000000000 @12h).
-6. ✅ **DONE (a18fd5c)** Talos `AQP-FVT|C_InjectStream` delayed wrapper (direct = pre-existing `AQP-FVT|C_Inject`).
+6. ✅ **DONE (a18fd5c)** Talos `AQP-FVT|CC_InjectStream` delayed wrapper (direct = pre-existing `AQP-FVT|CC_Inject`).
 7. ✅ **DONE** — vault smoke (`TX-FVT-05b` in `[6.2.4]`, `a6137c2`: 120/120/240 + finish-flush + prune +
    LiveClaimable/StreamStatus) + standalone `Kursan/AQP-stream-tests.repl` (`b65918e`→`136e3b2`): late-staker
    180/60 (S1) · superposition D4 · zero-weight→zombie D9 · guard bounds · vault drip gas (~24k O(1)) · farm
@@ -267,7 +267,7 @@ readers that return module schemas stay module-only (interface object-return rul
 
 **Implementation refinement (owner-notified):** instead of adding a `duration` param to `C_Inject` (which would
 cascade the signature through the interface + Talos + the MTX defpact + every existing test), a **separate
-`C_InjectStream` entrypoint** was added (D11's "delayed wrapper"), so `C_Inject` is byte-identical and the cascade
+`CC_InjectStream` entrypoint** was added (D11's "delayed wrapper"), so `C_Inject` is byte-identical and the cascade
 is zero. Also: `UEV_StreamParams` is the count-INDEPENDENT duration+rate check (defcap-safe); the count-DEPENDENT
 slot-cap is enforced in `XI_FvtAddStream` AFTER the drip (a finished stream frees its slot only once the drip
 prunes it). All drips fast-return when `stream-count = 0`, so non-streamed pools are unaffected (proven: full AQP

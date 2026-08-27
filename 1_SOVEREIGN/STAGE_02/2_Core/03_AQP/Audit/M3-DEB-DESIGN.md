@@ -162,12 +162,12 @@ comparison oracles):
   divisor via the shared `XI_FvtInjectCore` (identical outcome to `CC_Inject`). Loose `INJECT-FIX-CHUNK-MAX`
   backstop. Each Talos call is its own tx (real pagination = one gas-station settlement per tx). Talos:
   `AQP-FVT|CCp_InjectFixChunk` / `AQP-FVT|CC_InjectFinalize`.
-- **User self-service unstale** — **`C_UnstaleMyScores(patron, fvt-ids)`**: the caller refreshes THEIR OWN
+- **User self-service unstale** — **`CC_UnstaleMyScores(patron, fvt-ids)`**: the caller refreshes THEIR OWN
   stale scores across the listed FVTs (settle at old deb → refresh to live → resync mirror), auth =
   `CAP_EnforceAccountOwnership(patron)`. **NON-penalized** — only inject-*forced* fixes bill the 2e count, so
   self-service is deliberately the cheap path (an incentive to self-heal proactively). The UI finds the FVT
   list via the now-interface-exposed `URC_FvtUserHasStaleMember` / `URC_FvtUserStaleMemberCount`. Single-tx,
-  bounded (a user's own FVT set is small — no pagination). Talos: `AQP-FVT|C_UnstaleMyScores`.
+  bounded (a user's own FVT set is small — no pagination). Talos: `AQP-FVT|CC_UnstaleMyScores`.
 
 ### 2.6 Accepted residuals / limits (explicit)
 - **Bounded, never zero:** staleness bounded to one settle/inject cycle (≈ a day). The un-checkpointed span pays
@@ -260,7 +260,7 @@ either fits or fails → fall back to defpact).
    own scores. Changed reward weights; boost-linked test values updated. golden 33/0, Z 225/0.
 2. **Deb-staleness (Part 2):**
    - **2a substrate — ✅ DONE.** `URC_U-SCR|UserScoreDebStale` (point-read compare; Stage-2-only, no epoch).
-   - **2b collect-backstop — 🔧 WRITTEN, DEFECTIVE, REBUILDING.** SCORE `XE_RefreshUserScoreDeb` + FVT `C_Collect`
+   - **2b collect-backstop — 🔧 WRITTEN, DEFECTIVE, REBUILDING.** SCORE `XE_RefreshUserScoreDeb` + FVT `CC_Collect`
      PHASE 6 exist, but the refresh mutates SCORE deb-score WITHOUT resyncing the FVT `total-deb-score` mirror →
      desyncs the vault/treasury divisor → breaks conservation on a *real* deb change. Passed the suites only because
      deb is static there (refresh = permanent no-op → the branch was never executed). Correct refresh must:

@@ -84,14 +84,14 @@ Sovereign recipes live in **AQP-FVT** (`C_*StakeFlow`). Talos resolves amounts/n
 
 | Talos | Args (summary) | Use for | Assumes | Limits / notes | Phase |
 |-------|----------------|---------|---------|----------------|------:|
-| `AQP-POOL\|C_StakeTrueFungible` | patron, pool, owner, beneficiary, dptf-id, amount | Stake TF / native\|F\| LP | Stake enabled; class OK; supply | Partial amounts OK | E |
-| `AQP-POOL\|C_UnstakeTrueFungible` | … amount | Unstake TF | Tracker balance | Partial OK | E |
-| `AQP-POOL\|C_StakeOrtoFungible` | … dpof-id, nonces | Stake whole OF nonces | Class 0/1/2 OF rules | Whole nonce only | E |
-| `AQP-POOL\|C_UnstakeOrtoFungible` | … nonces | Unstake OF | Tracker holds nonces | Whole nonce; beneficiary from tracker | E |
-| `AQP-POOL\|C_StakeSemiFungibleCollectable` | … dpsf-id, nonces | Stake DPSF | Class 3 | Full nonce rows into tracker | E |
-| `AQP-POOL\|C_UnstakeSemiFungibleCollectable` | … nonces, nonce-amounts | Unstake DPSF | Tracker qty | Partial qty OK | E |
-| `AQP-POOL\|C_StakeNonFungibleCollectable` | … dpnf-id, nonces | Stake DPNF | Class 4 | — | E |
-| `AQP-POOL\|C_UnstakeNonFungibleCollectable` | … nonces, nonce-amounts | Unstake DPNF | Tracker qty | Partial qty OK | E |
+| `AQP-POOL\|CC_StakeTrueFungible` | patron, pool, owner, beneficiary, dptf-id, amount | Stake TF / native\|F\| LP | Stake enabled; class OK; supply | Partial amounts OK | E |
+| `AQP-POOL\|CC_UnstakeTrueFungible` | … amount | Unstake TF | Tracker balance | Partial OK | E |
+| `AQP-POOL\|CC_StakeOrtoFungible` | … dpof-id, nonces | Stake whole OF nonces | Class 0/1/2 OF rules | Whole nonce only | E |
+| `AQP-POOL\|CC_UnstakeOrtoFungible` | … nonces | Unstake OF | Tracker holds nonces | Whole nonce; beneficiary from tracker | E |
+| `AQP-POOL\|CC_StakeSemiFungibleCollectable` | … dpsf-id, nonces | Stake DPSF | Class 3 | Full nonce rows into tracker | E |
+| `AQP-POOL\|CC_UnstakeSemiFungibleCollectable` | … nonces, nonce-amounts | Unstake DPSF | Tracker qty | Partial qty OK | E |
+| `AQP-POOL\|CC_StakeNonFungibleCollectable` | … dpnf-id, nonces | Stake DPNF | Class 4 | — | E |
+| `AQP-POOL\|CC_UnstakeNonFungibleCollectable` | … nonces, nonce-amounts | Unstake DPNF | Tracker qty | Partial qty OK | E |
 | `AQP-POOL\|C_SyncTrueFungibleAnchors` | patron, beneficiary, dptf-id | Repair TF ANK after external moves | Beneficiary holds context | Pool-agnostic | E |
 | `AQP-POOL\|C_SyncSemiFungibleAnchors` | patron, beneficiary, dpsf-id | Repair SF ANK | — | — | E |
 | `AQP-POOL\|C_SyncNonFungibleAnchors` | patron, beneficiary, dpnf-id | Repair NF ANK | — | — | E |
@@ -115,7 +115,7 @@ Sovereign recipes live in **AQP-FVT** (`C_*StakeFlow`). Talos resolves amounts/n
 | `AQP-FVT\|C_Control` | … can-upgrade, can-change-owner | FVT control | Owner | — | D |
 | `AQP-FVT\|C_RotateOwnership` | … new-owner | Rotate FVT owner | `can-change-owner` | — | D |
 | `AQP-FVT\|C_Inject` | patron, fvt-id, reward-dptf-id, amount | Fund rewards | Reward link enabled; amount ≤ patron supply | Farm: advances G using S | E |
-| `AQP-FVT\|C_Collect` | patron, fvt-id, score-entity-type, score-entity-id, reward-dptf-id | User claim | Pending rewards; type 1 or 3 | Does not unstake | E |
+| `AQP-FVT\|CC_Collect` | patron, fvt-id, score-entity-type, score-entity-id, reward-dptf-id | User claim | Pending rewards; type 1 or 3 | Does not unstake | E |
 
 ---
 
@@ -128,9 +128,9 @@ Sovereign recipes live in **AQP-FVT** (`C_*StakeFlow`). Talos resolves amounts/n
 | `AQP-POOL\|XB_VacateOrtoFungible` | patron, pool-id, dpof-id | One-tx vacate of ONE OF asset | Pool owner | On-chain scan | F |
 | `AQP-POOL\|XB_VacateSemiFungible` | patron, pool-id, dpsf-id | One-tx vacate of the DPSF collection | Pool owner (class 3) | On-chain scan | F |
 | `AQP-POOL\|XB_VacateNonFungible` | patron, pool-id, dpnf-id | One-tx vacate of the DPNF collection | Pool owner (class 4) | On-chain scan | F |
-| `AQP-POOL\|Cp_BatchVacateTrueFungible` | patron, pool-id, dptf-id, owners, bens, amounts | One UI-sliced TF batch | Pool owner; disjoint gas-safe slice; per-leg amount == tracker | No finalize flag: first batch auto-begins (freezes), the batch that empties the pool auto-finalizes | F |
-| `AQP-POOL\|Cp_BatchVacateOrtoFungible` | patron, pool-id, dpof-id, owners, bens, nonces | One UI-sliced OF batch | Pool owner; amounts resolved on-chain from tracker | Same auto-begin / auto-finalize | F |
-| `AQP-POOL\|Cp_BatchVacateCollectables` | patron, pool-id, collectable-id, son, owners, bens, nonces, amounts | One UI-sliced DPSF (son=true) / DPNF (son=false) batch | Pool owner | Same auto-begin / auto-finalize | F |
+| `AQP-POOL\|CCp_BatchVacateTrueFungible` | patron, pool-id, dptf-id, owners, bens, amounts | One UI-sliced TF batch | Pool owner; disjoint gas-safe slice; per-leg amount == tracker | No finalize flag: first batch auto-begins (freezes), the batch that empties the pool auto-finalizes | F |
+| `AQP-POOL\|CCp_BatchVacateOrtoFungible` | patron, pool-id, dpof-id, owners, bens, nonces | One UI-sliced OF batch | Pool owner; amounts resolved on-chain from tracker | Same auto-begin / auto-finalize | F |
+| `AQP-POOL\|CCp_BatchVacateCollectables` | patron, pool-id, collectable-id, son, owners, bens, nonces, amounts | One UI-sliced DPSF (son=true) / DPNF (son=false) batch | Pool owner | Same auto-begin / auto-finalize | F |
 | `AQP-POOL\|C_AbortVacate` | patron, pool-id | Clear vacate-in-progress mid-campaign | Pool owner | **Stake stays disabled** (ops re-enable) | F |
 
 **UI offline helpers (not Talos):** `AQP-VCT.URD_Vacate*Inventory`, `URHC_BuildVacateSlicePlan`, `UC_ComputeMinSliceCount`.  
@@ -143,9 +143,9 @@ Full protocol: [README_VACATE_UI.md](README_VACATE_UI.md).
 | Intent | Call |
 |--------|------|
 | Create OURO LP earning line | See [README_HOWTO_FVT.md](README_HOWTO_FVT.md) § Farm LP |
-| Stake OURO | `C_StakeTrueFungible` on class-1 pool |
-| Stake LP | `C_StakeTrueFungible` (native LP) and/or `C_StakeOrtoFungible` (Z\|) on class-0 |
-| Claim rewards | `AQP-FVT\|C_Collect` |
+| Stake OURO | `CC_StakeTrueFungible` on class-1 pool |
+| Stake LP | `CC_StakeTrueFungible` (native LP) and/or `CC_StakeOrtoFungible` (Z\|) on class-0 |
+| Claim rewards | `AQP-FVT\|CC_Collect` |
 | Fund rewards | `AQP-FVT\|C_Inject` |
 | Empty a pool as owner | `C_FullVacate*` or `C_Vacate*Legs` |
 | Pause deposits | `C_DisablePoolStake` |

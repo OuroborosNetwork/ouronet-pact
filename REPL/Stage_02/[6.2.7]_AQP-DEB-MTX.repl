@@ -118,8 +118,8 @@
         (stored-pre:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
         (mirror-pre:decimal (ref-FVT::UR_FVT|TotalDebScore fvt-id))
     )
-    (print (format "<(DEB01 C_Collect treasury Auryn)> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id auryn-id)]))
+    (print (format "<(DEB01 CC_Collect treasury Auryn)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id auryn-id)]))
     (let
         (
             (stored-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
@@ -193,14 +193,14 @@
         (amt:integer (ref-DPDC::UR_AccountNonceSupply emma dhwc-id true nonce))
     )
     ;; STAKE — EMMA's only position in the FVT
-    (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable emma pool-id emma emma dhwc-id [nonce])
+    (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable emma pool-id emma emma dhwc-id [nonce])
     (let
         (
             (present-after-stake:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
             (enum-after-stake:bool (contains emma (ref-FVT::URH_FvtPresentUsers fvt-id)))
         )
         ;; FULL UNSTAKE — drops EMMA's last (only) position
-        (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable emma pool-id emma emma dhwc-id [nonce] [amt])
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable emma pool-id emma emma dhwc-id [nonce] [amt])
         (let
             (
                 (present-after-unstake:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
@@ -255,7 +255,7 @@
     (expect "<<TX-AQP-DEB04>> ANHD WonderCoach weight >0 before"
         true (> (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id) 0.0))
     ;; fully unstake ONLY the WonderCoach member
-    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id anhd anhd dhwc-id [nonce] [amt])
+    (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable anhd pool-id anhd anhd dhwc-id [nonce] [amt])
     (let
         (
             (wc-after:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))
@@ -302,9 +302,9 @@
     )
     (expect "<<TX-AQP-DEB05>> EMMA absent before the 2-member setup"
         false (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma))
-    (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable emma wc-pool emma emma dhwc-id [2])
+    (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable emma wc-pool emma emma dhwc-id [2])
     (let ((after-wc:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)))
-        (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable emma bunnies-pool emma emma kbn-id [1])
+        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable emma bunnies-pool emma emma kbn-id [1])
         (let ((after-both:bool (ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)))
             (map print
                 [
@@ -335,7 +335,7 @@
         (dhwc-id:string "DHWC-98c486052a51")
         (amt:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance wc-pool dhwc-id emma emma 2)))
     )
-    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable emma wc-pool emma emma dhwc-id [2] [amt])
+    (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable emma wc-pool emma emma dhwc-id [2] [amt])
     (map print
         [
             (format "<(DEB05 present after unstaking WonderCoach)> => {}" [(ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)])
@@ -363,7 +363,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid "SubsidiaryTreasury"))
         (kbn-id:string "KBN-98c486052a51")
     )
-    (ref-TS02-C3::AQP-POOL|C_UnstakeNonFungibleCollectable emma bunnies-pool emma emma kbn-id [1] [1])
+    (ref-TS02-C3::AQP-POOL|CC_UnstakeNonFungibleCollectable emma bunnies-pool emma emma kbn-id [1] [1])
     (map print
         [
             (format "<(DEB05 present after unstaking Bunnies — the last)> => {}" [(ref-FVT::UR_FVT-UP|IsPresent fvt-id emma)])
@@ -468,8 +468,8 @@
             (format "<(DEB07 forced-fix-count before collect)> => {}" [ffc-pre])
             ;; CC_Inject (DEB06) forced 2 fixes for ANHD on the auryn lane
             (expect "<<TX-AQP-DEB07>> CC_Inject recorded 2 forced fixes for ANHD (Bunnies + CodingDivision)" 2 ffc-pre)
-            (format "<(DEB07 C_Collect Bunnies auryn)> => \"{}\""
-                [(ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 bunnies-score auryn-id)])
+            (format "<(DEB07 CC_Collect Bunnies auryn)> => \"{}\""
+                [(ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 bunnies-score auryn-id)])
             ;; the collect charged count×RATE non-discountable IGNIS and ZEROED the count
             (expect "<<TX-AQP-DEB07>> forced-fix count ZEROED after collect (penalty charged)"
                 0 (ref-FVT::UR_FVT-FFC|Count fvt-id auryn-id anhd))
@@ -645,8 +645,8 @@
         (amt-anhd:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dhcd-id anhd anhd 5)))
         (amt-lumy:integer (round (ref-AQP::UR_AQP|DPSFTrackerBalance pool-id dhcd-id lumy lumy 5)))
     )
-    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id anhd anhd dhcd-id [5] [amt-anhd])
-    (ref-TS02-C3::AQP-POOL|C_UnstakeSemiFungibleCollectable anhd pool-id lumy lumy dhcd-id [5] [amt-lumy])
+    (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable anhd pool-id anhd anhd dhcd-id [5] [amt-anhd])
+    (ref-TS02-C3::AQP-POOL|CC_UnstakeSemiFungibleCollectable anhd pool-id lumy lumy dhcd-id [5] [amt-lumy])
     (map print
         [
             (format "<(DEB10a unstaked ANHD/LUMY nonce5)> => {} / {}" [amt-anhd amt-lumy])
@@ -679,8 +679,8 @@
             (ar-pre:decimal (ref-FVT::UR_FVT-RG|AvailableRewards fvt-id wstoa-id))
             (zb-pre:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
         )
-        (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id wstoa-id 10.0)
-        (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id wstoa-id 15.0)
+        (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id wstoa-id 10.0)
+        (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id wstoa-id 15.0)
         (let
             (
                 (g-post:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id wstoa-id))
@@ -725,21 +725,21 @@
         (dhcd-id:string "DHCD-98c486052a51")
     )
     ;; ANHD re-enters as the SOLE staker (LUMY stays out).
-    (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable anhd pool-id anhd anhd dhcd-id [5])
+    (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable anhd pool-id anhd anhd dhcd-id [5])
     (let
         (
             (zb-pre:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
             (denom:decimal (ref-FVT::URC_InjectDenominator fvt-id))
         )
         ;; The first NON-zero inject: R_eff = 5 (this amount) + 25 (escrow) = 30, distributed to ANHD.
-        (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id wstoa-id 5.0)
+        (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id wstoa-id 5.0)
         (let
             (
                 (zb-post:decimal (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id wstoa-id))
                 ;; measure the COLLECT payout in isolation: balance immediately before vs after the collect.
                 (wstoa-pre-collect:decimal (ref-DPTF::UR_AccountSupply wstoa-id anhd))
             )
-            (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id wstoa-id)
+            (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id wstoa-id)
             (let
                 (
                     (payout:decimal (- (ref-DPTF::UR_AccountSupply wstoa-id anhd) wstoa-pre-collect))

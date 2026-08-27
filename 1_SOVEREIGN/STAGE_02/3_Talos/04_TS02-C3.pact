@@ -82,7 +82,7 @@
         (patron:string pool-id:string)
     )
     ;;
-    (defun AQP-POOL|C_StakeSemiFungibleCollectable:string
+    (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -92,7 +92,7 @@
             nonces:[integer]
         )
     )
-    (defun AQP-POOL|C_UnstakeSemiFungibleCollectable:string
+    (defun AQP-POOL|CC_UnstakeSemiFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -103,7 +103,7 @@
             nonce-amounts:[integer]
         )
     )
-    (defun AQP-POOL|C_StakeNonFungibleCollectable:string
+    (defun AQP-POOL|CC_StakeNonFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -113,7 +113,7 @@
             nonces:[integer]
         )
     )
-    (defun AQP-POOL|C_UnstakeNonFungibleCollectable:string
+    (defun AQP-POOL|CC_UnstakeNonFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -125,13 +125,13 @@
         )
     )
     ;;
-    (defun AQP-POOL|C_StakeTrueFungible:string
+    (defun AQP-POOL|CC_StakeTrueFungible:string
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
     )
-    (defun AQP-POOL|C_UnstakeTrueFungible:string
+    (defun AQP-POOL|CC_UnstakeTrueFungible:string
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
     )
-    (defun AQP-POOL|C_StakeOrtoFungible:string
+    (defun AQP-POOL|CC_StakeOrtoFungible:string
         (
             patron:string
             pool-id:string
@@ -141,7 +141,7 @@
             nonces:[integer]
         )
     )
-    (defun AQP-POOL|C_UnstakeOrtoFungible:string
+    (defun AQP-POOL|CC_UnstakeOrtoFungible:string
         (
             patron:string
             pool-id:string
@@ -165,17 +165,17 @@
     )
     (defun AQP-POOL|C_FinalizeVacate:string (patron:string pool-id:string))
     (defun AQP-POOL|CC_FullVacate:string (patron:string pool-id:string))
-    (defun AQP-POOL|Cp_BatchVacateTrueFungible:string
+    (defun AQP-POOL|CCp_BatchVacateTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun AQP-POOL|Cp_BatchVacateOrtoFungible:string
+    (defun AQP-POOL|CCp_BatchVacateOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun AQP-POOL|Cp_BatchVacateCollectables:string
+    (defun AQP-POOL|CCp_BatchVacateCollectables:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
-    (defun AQP-POOL|Cp_BatchDrainTrueFungible:string
+    (defun AQP-POOL|CCp_BatchDrainTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal]))
-    (defun AQP-POOL|Cp_BatchDrainOrtoFungible:string
+    (defun AQP-POOL|CCp_BatchDrainOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]]))
-    (defun AQP-POOL|Cp_BatchDrainCollectable:string
+    (defun AQP-POOL|CCp_BatchDrainCollectable:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]]))
     (defun AQP-POOL|XB_VacateTrueFungible:string (patron:string pool-id:string))
     (defun AQP-POOL|XB_VacateOrtoFungible:string (patron:string pool-id:string dpof-id:string))
@@ -224,10 +224,7 @@
     (defun AQP-FVT|C_SetMosaic:string
         (patron:string fvt-id:string mosaic:bool)
     )
-    (defun AQP-FVT|C_Inject:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-    )
-    (defun AQP-FVT|C_InjectStream:string
+    (defun AQP-FVT|CC_InjectStream:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
     )
     (defun AQP-FVT|CC_Inject:string
@@ -251,16 +248,16 @@
     (defun AQP-FVT|CC_SweepRevokeAnchor:string
         (patron:string anchor-id:string)
     )
-    (defun AQP-FVT|C_SweepBegin:string
+    (defun AQP-FVT|CC_SweepBegin:string
         (patron:string anchor-id:string)
     )
-    (defun AQP-FVT|Cp_SweepRecomputeChunk:string
+    (defun AQP-FVT|CCp_SweepRecomputeChunk:string
         (patron:string anchor-id:string chunk:integer)
     )
-    (defun AQP-FVT|C_UnstaleMyScores:string
+    (defun AQP-FVT|CC_UnstaleMyScores:string
         (patron:string fvt-ids:[string])
     )
-    (defun AQP-FVT|C_Collect:string
+    (defun AQP-FVT|CC_Collect:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
     (defun AQP-DSA|A_DefineDelegationVault:string
@@ -418,13 +415,13 @@
     ;;{C2}
     (defcap AQP|C>STAKE-TRUE-FUNGIBLE
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "AQP client event: stake TrueFungible. Composes P|TS only; sovereign recipe in FVT::C_TrueFungibleStakeFlow."
+        @doc "AQP client event: stake TrueFungible. Composes P|TS only; sovereign recipe in FVT::CC_TrueFungibleStakeFlow."
         @event
         (compose-capability (P|TS))
     )
     (defcap AQP|C>UNSTAKE-TRUE-FUNGIBLE
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "AQP client event: unstake TrueFungible. Composes P|TS only; sovereign recipe in FVT::C_TrueFungibleStakeFlow."
+        @doc "AQP client event: unstake TrueFungible. Composes P|TS only; sovereign recipe in FVT::CC_TrueFungibleStakeFlow."
         @event
         (compose-capability (P|TS))
     )
@@ -1133,9 +1130,9 @@
         )
     )
     ;;
-    (defun AQP-POOL|C_StakeTrueFungible:string
+    (defun AQP-POOL|CC_StakeTrueFungible:string
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "Stake DPTF (or native|F| LP) into pool-id. Talos client shell: event cap + FVT::C_TrueFungibleStakeFlow direction=true."
+        @doc "Stake DPTF (or native|F| LP) into pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=true."
         (with-capability (AQP|C>STAKE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
             (let
                 (
@@ -1143,15 +1140,15 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount true)
+                    (ref-FVT::CC_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount true)
                 )
                 (UC_FormatStakeTrueFungibleResult pool-id owner-id beneficiary-id dptf-id amount)
             )
         )
     )
-    (defun AQP-POOL|C_UnstakeTrueFungible:string
+    (defun AQP-POOL|CC_UnstakeTrueFungible:string
         (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
-        @doc "Unstake DPTF from pool-id. Talos client shell: event cap + FVT::C_TrueFungibleStakeFlow direction=false."
+        @doc "Unstake DPTF from pool-id. Talos client shell: event cap + FVT::CC_TrueFungibleStakeFlow direction=false."
         (with-capability (AQP|C>UNSTAKE-TRUE-FUNGIBLE patron pool-id owner-id beneficiary-id dptf-id amount)
             (let
                 (
@@ -1159,13 +1156,13 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false)
+                    (ref-FVT::CC_TrueFungibleStakeFlow pool-id owner-id beneficiary-id dptf-id amount false)
                 )
                 (UC_FormatUnstakeTrueFungibleResult pool-id owner-id beneficiary-id dptf-id amount)
             )
         )
     )
-    (defun AQP-POOL|C_StakeOrtoFungible:string
+    (defun AQP-POOL|CC_StakeOrtoFungible:string
         (
             patron:string
             pool-id:string
@@ -1189,7 +1186,7 @@
                         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
-                        (ref-FVT::C_OrtoFungibleStakeFlow
+                        (ref-FVT::CC_OrtoFungibleStakeFlow
                             pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts true
                         )
                     )
@@ -1198,7 +1195,7 @@
             )
         )
     )
-    (defun AQP-POOL|C_UnstakeOrtoFungible:string
+    (defun AQP-POOL|CC_UnstakeOrtoFungible:string
         (
             patron:string
             pool-id:string
@@ -1224,7 +1221,7 @@
                         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
-                        (ref-FVT::C_OrtoFungibleStakeFlow
+                        (ref-FVT::CC_OrtoFungibleStakeFlow
                             pool-id owner-id beneficiary-id dpof-id nonces nonce-amounts false
                         )
                     )
@@ -1234,7 +1231,7 @@
         )
     )
     ;;
-    (defun AQP-POOL|C_StakeSemiFungibleCollectable:string
+    (defun AQP-POOL|CC_StakeSemiFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -1243,7 +1240,7 @@
             collectable-id:string
             nonces:[integer]
         )
-        @doc "Stake DPSF collectable (son=true). Poll DPDC::UR_AccountNoncesSupplies, then FVT::C_CollectableStakeFlow."
+        @doc "Stake DPSF collectable (son=true). Poll DPDC::UR_AccountNoncesSupplies, then FVT::CC_CollectableStakeFlow."
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
@@ -1261,7 +1258,7 @@
                         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
-                        (ref-FVT::C_CollectableStakeFlow
+                        (ref-FVT::CC_CollectableStakeFlow
                             pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts true
                         )
                     )
@@ -1272,7 +1269,7 @@
             )
         )
     )
-    (defun AQP-POOL|C_UnstakeSemiFungibleCollectable:string
+    (defun AQP-POOL|CC_UnstakeSemiFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -1298,7 +1295,7 @@
                         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
-                        (ref-FVT::C_CollectableStakeFlow
+                        (ref-FVT::CC_CollectableStakeFlow
                             pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts false
                         )
                     )
@@ -1307,7 +1304,7 @@
             )
         )
     )
-    (defun AQP-POOL|C_StakeNonFungibleCollectable:string
+    (defun AQP-POOL|CC_StakeNonFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -1316,7 +1313,7 @@
             collectable-id:string
             nonces:[integer]
         )
-        @doc "Stake DPNF collectable (son=false). Poll DPDC::UR_AccountNoncesSupplies, then FVT::C_CollectableStakeFlow."
+        @doc "Stake DPNF collectable (son=false). Poll DPDC::UR_AccountNoncesSupplies, then FVT::CC_CollectableStakeFlow."
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
@@ -1334,7 +1331,7 @@
                         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
-                        (ref-FVT::C_CollectableStakeFlow
+                        (ref-FVT::CC_CollectableStakeFlow
                             pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts true
                         )
                     )
@@ -1345,7 +1342,7 @@
             )
         )
     )
-    (defun AQP-POOL|C_UnstakeNonFungibleCollectable:string
+    (defun AQP-POOL|CC_UnstakeNonFungibleCollectable:string
         (
             patron:string
             pool-id:string
@@ -1371,7 +1368,7 @@
                         (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     )
                     (ref-IGNIS::C_Collect patron
-                        (ref-FVT::C_CollectableStakeFlow
+                        (ref-FVT::CC_CollectableStakeFlow
                             pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts false
                         )
                     )
@@ -1434,7 +1431,7 @@
             )
         )
     )
-    (defun AQP-POOL|Cp_BatchVacateTrueFungible:string
+    (defun AQP-POOL|CCp_BatchVacateTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
         @doc "One TF batch of a UI-sliced vacate campaign. The first successful batch freezes the pool + its FVTs; \
             \ the batch that empties the pool auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
@@ -1445,17 +1442,17 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::Cp_BatchVacateTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
+                    (ref-VCT::CCp_BatchVacateTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
                 (format "Batch-vacated {} TF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dptf-id])
             )
         )
     )
-    (defun AQP-POOL|Cp_BatchDrainTrueFungible:string
+    (defun AQP-POOL|CCp_BatchDrainTrueFungible:string
         (patron:string pool-id:string dptf-id:string owner-ids:[string] beneficiary-ids:[string] amounts:[decimal])
         @doc "Vacate-v2 FAST-DRAIN — one TF batch that returns assets + preserves rewards WITHOUT touching scores \
-            \ and WITHOUT finalizing (cheaper than Cp_BatchVacateTrueFungible for large pools). First batch freezes \
+            \ and WITHOUT finalizing (cheaper than CCp_BatchVacateTrueFungible for large pools). First batch freezes \
             \ the pool + its FVTs; the pool stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once \
-            \ empty. Owner enforced in VCT; IGNIS on patron. Commit-forward — Cp_BatchVacateTrueFungible is the \
+            \ empty. Owner enforced in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateTrueFungible is the \
             \ abortable path."
         (with-capability (P|TS)
             (let
@@ -1464,18 +1461,18 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::Cp_BatchDrainTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
+                    (ref-VCT::CCp_BatchDrainTrueFungible pool-id dptf-id owner-ids beneficiary-ids amounts))
                 (format "Fast-drained {} TF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
                     [(length owner-ids) pool-id dptf-id])
             )
         )
     )
-    (defun AQP-POOL|Cp_BatchDrainOrtoFungible:string
+    (defun AQP-POOL|CCp_BatchDrainOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
         @doc "Vacate-v2 FAST-DRAIN — one OF batch that returns nonces + preserves rewards WITHOUT touching scores \
             \ and WITHOUT finalizing. Amounts resolved on-chain from the tracker. First batch freezes the pool + \
             \ its FVTs; it stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced \
-            \ in VCT; IGNIS on patron. Commit-forward — Cp_BatchVacateOrtoFungible is the abortable path."
+            \ in VCT; IGNIS on patron. Commit-forward — CCp_BatchVacateOrtoFungible is the abortable path."
         (with-capability (P|TS)
             (let
                 (
@@ -1483,18 +1480,18 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::Cp_BatchDrainOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+                    (ref-VCT::CCp_BatchDrainOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
                 (format "Fast-drained {} OF leg(s) on Pool {} (asset {}) — scores untouched, awaiting finalize."
                     [(length owner-ids) pool-id dpof-id])
             )
         )
     )
-    (defun AQP-POOL|Cp_BatchDrainCollectable:string
+    (defun AQP-POOL|CCp_BatchDrainCollectable:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
         @doc "Vacate-v2 FAST-DRAIN — one DPSF (son=true) / DPNF (son=false) batch that returns nonces + preserves \
             \ rewards WITHOUT touching scores and WITHOUT finalizing. First batch freezes the pool + its FVTs; it \
             \ stays frozen until AQP-POOL|C_FinalizeVacate nukes the scores once empty. Owner enforced in VCT; \
-            \ IGNIS on patron. Commit-forward — Cp_BatchVacateCollectables is the abortable path."
+            \ IGNIS on patron. Commit-forward — CCp_BatchVacateCollectables is the abortable path."
         (with-capability (P|TS)
             (let
                 (
@@ -1502,13 +1499,13 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::Cp_BatchDrainCollectable pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
+                    (ref-VCT::CCp_BatchDrainCollectable pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
                 (format "Fast-drained {} collectable leg(s) on Pool {} (asset {}, son {}) — scores untouched, awaiting finalize."
                     [(length owner-ids) pool-id collectable-id son])
             )
         )
     )
-    (defun AQP-POOL|Cp_BatchVacateOrtoFungible:string
+    (defun AQP-POOL|CCp_BatchVacateOrtoFungible:string
         (patron:string pool-id:string dpof-id:string owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]])
         @doc "One OF batch of a UI-sliced vacate campaign (amounts resolved on-chain from the tracker). First batch \
             \ freezes; the emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
@@ -1519,12 +1516,12 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::Cp_BatchVacateOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
+                    (ref-VCT::CCp_BatchVacateOrtoFungible pool-id dpof-id owner-ids beneficiary-ids nonces-array))
                 (format "Batch-vacated {} OF leg(s) on Pool {} (asset {})." [(length owner-ids) pool-id dpof-id])
             )
         )
     )
-    (defun AQP-POOL|Cp_BatchVacateCollectables:string
+    (defun AQP-POOL|CCp_BatchVacateCollectables:string
         (patron:string pool-id:string collectable-id:string son:bool owner-ids:[string] beneficiary-ids:[string] nonces-array:[[integer]] amounts-array:[[integer]])
         @doc "One DPSF (son=true) / DPNF (son=false) batch of a UI-sliced vacate campaign. First batch freezes; the \
             \ emptying batch auto-finalizes/unfreezes. Owner enforced in VCT; IGNIS on patron."
@@ -1535,7 +1532,7 @@
                     (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-VCT::Cp_BatchVacateCollectables pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
+                    (ref-VCT::CCp_BatchVacateCollectables pool-id collectable-id son owner-ids beneficiary-ids nonces-array amounts-array))
                 (format "Batch-vacated {} collectable leg(s) on Pool {} (asset {}, son {})."
                     [(length owner-ids) pool-id collectable-id son])
             )
@@ -1866,28 +1863,10 @@
             )
         )
     )
-    (defun AQP-FVT|C_Inject:string
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Injects reward DPTF into fvt-id (RPS G + available-rewards) and collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_Inject patron fvt-id reward-dptf-id amount)
-                )
-                (ref-TS01-A::XB_DynamicFuelKDA)
-                (format "Successfully injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-FVT|C_InjectStream:string
+    (defun AQP-FVT|CC_InjectStream:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
         @doc "Injects reward DPTF as a TIME-STREAM (linear vesting over `duration` seconds, 1h..365d) into fvt-id \
-            \ and collects IGNIS on patron. The DELAYED counterpart of AQP-FVT|C_Inject (instant): the amount vests \
+            \ and collects IGNIS on patron. The DELAYED counterpart of AQP-FVT|CC_Inject (instant): the amount vests \
             \ continuously and whoever is staked during each slice earns it (late stakers included). Independent \
             \ overlapping streams, capped by the FVT owner konto's Elite tier. See Audit/STREAMED-INJECT-DESIGN.md."
         (with-capability (P|TS)
@@ -1898,7 +1877,7 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_InjectStream patron fvt-id reward-dptf-id amount duration)
+                    (ref-FVT::CC_InjectStream patron fvt-id reward-dptf-id amount duration)
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (format "Successfully streamed {} {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])
@@ -1969,7 +1948,7 @@
         (patron:string fvt-id:string reward-dptf-id:string chunk:integer)
         @doc "OWNER mass deb-unstale — force-refresh up to `chunk` currently-stale present stakers (penalized, same \
             \ 2e tag as an inject's fix) to make the FVT INJECTION-READY, WITHOUT injecting. Repeat until the report \
-            \ says injection-ready (or `all up to date` when nothing is stale), then run a light AQP-FVT|C_Inject. \
+            \ says injection-ready (or `all up to date` when nothing is stale), then run a light AQP-FVT|CC_Inject. \
             \ Owner-gated in AQP-FVT::CCp_UnstaleAll. `chunk` is the UI's simulated slice (bounded by INJECT-FIX-CHUNK-MAX). \
             \ Lives in AQP-FVT."
         (with-capability (P|TS)
@@ -2040,25 +2019,25 @@
             )
         )
     )
-    (defun AQP-FVT|C_SweepBegin:string
+    (defun AQP-FVT|CC_SweepBegin:string
         (patron:string anchor-id:string)
         @doc "OPEN a paginated (defun+gate) re-score sweep — the scalable twin of AQP-FVT|CC_SweepRevokeAnchor for \
             \ holder sets exceeding one tx: freezes the affected pools + swept-revokes the anchor, then defers the \
-            \ recompute to AQP-FVT|Cp_SweepRecomputeChunk calls under the held freeze. Owner-initiated. Lives in AQP-FVT."
+            \ recompute to AQP-FVT|CCp_SweepRecomputeChunk calls under the held freeze. Owner-initiated. Lives in AQP-FVT."
         (with-capability (P|TS)
             (let
                 (
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
-                (let ((r:string (ref-FVT::C_SweepBegin patron anchor-id)))
+                (let ((r:string (ref-FVT::CC_SweepBegin patron anchor-id)))
                     (ref-TS01-A::XB_DynamicFuelKDA)
                     r
                 )
             )
         )
     )
-    (defun AQP-FVT|Cp_SweepRecomputeChunk:string
+    (defun AQP-FVT|CCp_SweepRecomputeChunk:string
         (patron:string anchor-id:string chunk:integer)
         @doc "PAGE an open re-score sweep: recompute the next `chunk` holders over the frozen global present set, \
             \ advancing the cursor; the finalizing chunk (set exhausted) unfreezes the affected pools. `chunk` is \
@@ -2069,14 +2048,14 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
-                (let ((r:string (ref-FVT::Cp_SweepRecomputeChunk patron anchor-id chunk)))
+                (let ((r:string (ref-FVT::CCp_SweepRecomputeChunk patron anchor-id chunk)))
                     (ref-TS01-A::XB_DynamicFuelKDA)
                     r
                 )
             )
         )
     )
-    (defun AQP-FVT|C_UnstaleMyScores:string
+    (defun AQP-FVT|CC_UnstaleMyScores:string
         (patron:string fvt-ids:[string])
         @doc "User self-service deb-unstale: the caller refreshes THEIR OWN stale scores across the listed FVTs \
             \ (non-penalized — the cheap alternative to being force-fixed by an inject), then collects IGNIS on \
@@ -2090,14 +2069,14 @@
                     (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_UnstaleMyScores patron fvt-ids)
+                    (ref-FVT::CC_UnstaleMyScores patron fvt-ids)
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (format "Refreshed your stale scores across {} FVT(s)." [(length fvt-ids)])
             )
         )
     )
-    (defun AQP-FVT|C_Collect:string
+    (defun AQP-FVT|CC_Collect:string
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
         @doc "Collects pending reward DPTF for patron on one score-entity from fvt-id; collects IGNIS on patron."
         (with-capability (P|TS)
@@ -2110,7 +2089,7 @@
                     (bal-before:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))
                 )
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_Collect patron fvt-id score-entity-type score-entity-id reward-dptf-id)
+                    (ref-FVT::CC_Collect patron fvt-id score-entity-type score-entity-id reward-dptf-id)
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 (let
@@ -2175,7 +2154,7 @@
          collectable-id:string stake-nonces:[integer])
         @doc "DSA (Talos): open a delegation agency ATOMICALLY under P|TS — (1) admit the operator's BLANK triplet \
             \ <score-entity-id> to vault <fvt-id> (AQP-DSA::C_AdmitAgency); (2) stake the operator's initial \
-            \ <collectable-id>/<stake-nonces> from <pool-id> (FVT::C_CollectableStakeFlow — runs under P|TS so the \
+            \ <collectable-id>/<stake-nonces> from <pool-id> (FVT::CC_CollectableStakeFlow — runs under P|TS so the \
             \ deep DPDC custody transfer's IMC passes); (3) enforce the terminal quintessence >= unit-score/2 open \
             \ gate (AQP-DSA::UEV_OpenGate — a short stake reverts the whole open). Collects both cumulators on patron."
         (with-capability (P|TS)
@@ -2191,7 +2170,7 @@
                     (ref-DSA::C_AdmitAgency patron fvt-id score-entity-id fee-per-mille))
                 ;; (2) stake the operator's initial quintessence into the now-linked, reward-ready triplet
                 (ref-IGNIS::C_Collect patron
-                    (ref-FVT::C_CollectableStakeFlow
+                    (ref-FVT::CC_CollectableStakeFlow
                         pool-id patron patron collectable-id true
                         stake-nonces (ref-DPDC::UR_AccountNoncesSupplies patron collectable-id true stake-nonces) true))
                 ;; (3) terminal atomic gate — after the stake, Q must clear unit-score/2 or the whole tx reverts

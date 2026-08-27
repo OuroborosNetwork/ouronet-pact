@@ -38,7 +38,7 @@
     )
     (enforce (> (length nonces) 0) "EMMA needs DHB nonces from PopulateBloodshed")
     (print (format "<(C_StakeNonFungible DHB nonce={})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner beneficiary dhb-id [stake-nonce])
+        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary dhb-id [stake-nonce])
     ]))
     (let
         (
@@ -82,7 +82,7 @@
     )
     (enforce (> (length nonces) 0) "EMMA needs DHN nonces from PopulateNosferatu")
     (print (format "<(C_StakeNonFungible DHN nonce={})> => \"{}\"" [stake-nonce
-        (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner beneficiary dhn-id [stake-nonce])
+        (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary dhn-id [stake-nonce])
     ]))
     (let
         (
@@ -127,7 +127,7 @@
                 (stake-nonce:integer (at 0 nonces))
             )
             (print (format "<(C_StakeNonFungible KBN bunny nonce={})> => \"{}\"" [stake-nonce
-                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [stake-nonce])
+                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable patron pool-id owner beneficiary kbn-id [stake-nonce])
             ]))
             (let
                 (
@@ -174,7 +174,7 @@
     (if (> total-bunnies 0.0)
         (do
             (print (format "<(C_Inject Auryn subsidiary {})> => \"{}\"" [inject-amt
-                (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id auryn-id inject-amt)
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id auryn-id inject-amt)
             ]))
             (let
                 (

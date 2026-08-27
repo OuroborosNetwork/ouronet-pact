@@ -415,7 +415,7 @@ FVT/SCORE core.
 - **Phase 3 — Atomic open + capture recompute + delegated oracle.** ✅ **DONE.** The ordering knot (a score is
   stakeable only when fvt-linked, but admission needs fvt-links BAR) forced the **open to be one atomic tx**:
   `AQP-DSA|C_OpenAgency` (Talos, under `P|TS`) = admit the blank triplet (`C_AdmitAgency`) → stake the operator's
-  initial Custodians (`FVT::C_CollectableStakeFlow` — must run under `P|TS` so the deep `DPDC-T` custody transfer's
+  initial Custodians (`FVT::CC_CollectableStakeFlow` — must run under `P|TS` so the deep `DPDC-T` custody transfer's
   IMC passes; DSA-initiated stake fails there) → terminal `UEV_OpenGate` (`Q ≥ unit-score/2`; short stake reverts
   the whole open). Capture: `URC_CaptureUnits = min(⌊Q/unit-score⌋, nodes)`, `UC_CaptureWeight = units × uptime/1000`,
   applied via `XI_ApplyCapture → FVT::XE_SetMemberCapture`. `C_RecomputeCapture` (permissionless, preserves
@@ -431,7 +431,7 @@ FVT/SCORE core.
   inject-time effective read decays); and the **delegated-guard enforcement** — an `A_OracleWrite` NOT signed by
   the authorized oracle key is rejected. (The oracle write mechanism + `oracle-on` arming shipped in Phase 3.)
 - **Phase 5 — Inject + royalty (BEHAVIORAL PROOF of the FVT-core).** ✅ **DONE** (in `dsa-capture-tests.repl`,
-  TX-P3-10..14, via `AQP-FVT|C_Inject` — the naive path is correct for a single agency; it reads capture fresh at
+  TX-P3-10..14, via `AQP-FVT|CC_Inject` — the naive path is correct for a single agency; it reads capture fresh at
   inject). Verified on the live agency (capture-units 3, effective weight 1.5 at uptime 500, S=3):
   - **Inject 1000** → member-slice `floor(1000·1.5/3)=500`, royalty `floor(1000·(3−1.5)/3)=500`, global Tier-1
     available 500, member Tier-2 mini-vault 500, zombie 0, conservation `global+royalty=1000`.
@@ -489,7 +489,7 @@ FVT/SCORE core.
   `(ouronet-ns.TS…` top-level form (Case 1), so every Talos-routed DSA op is already payable; there is no
   per-function list to extend. **IMP registration:** wired by `AQP-BOOT.C_Step0_WireImcAndGovernor` (AQP-family IMP)
   and proven green by every `dsa-*` suite routing through Talos. **Operator-fee collect path:** the fee is credited
-  to the operator's `pending-rewards` at inject, so the operator collects it via the ordinary `AQP-FVT|C_Collect`
+  to the operator's `pending-rewards` at inject, so the operator collects it via the ordinary `AQP-FVT|CC_Collect`
   (proven independent in `dsa-fee-tests.repl`). *Verified:* the two GOV switches now flow through
   `ref-TS02-C3::AQP-DSA|A_SetOracleValidity` / `…|A_ToggleExternalOracle` in `dsa-capture-tests.repl` (TX-P3-21/22/23).
 - **Phase 8 — Round B: heterogeneous quality split.** ✅ **DONE** (in `Kursan/dsa-hetero-split-tests.repl`).

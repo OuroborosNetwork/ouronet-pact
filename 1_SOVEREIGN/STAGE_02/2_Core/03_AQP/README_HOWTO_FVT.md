@@ -44,8 +44,8 @@ All client calls below are **`TS02-C3.AQP-*|C_*`** unless noted.
 | 6 | `AQP-POOL|C_AddScore` ×3 | Employ triplet |
 | 7 | `AQP-POOL|C_EnablePoolStake` | If not already enabled at issue policy |
 | 8 | `AQP-FVT|C_AddScoreEntity` ×3 **or** entity type 3 with triplet id | Type **1** per score-id, or type **3** triplet — follow product wiring used in BOOT/golden |
-| 9 | Users `C_StakeTrueFungible` / `C_StakeOrtoFungible` | Native LP and/or Z\| orto leg |
-| 10 | Ops `C_Inject` / users `C_Collect` | Collect: type 1 or 3 matching how ScoreEntity was added |
+| 9 | Users `CC_StakeTrueFungible` / `CC_StakeOrtoFungible` | Native LP and/or Z\| orto leg |
+| 10 | Ops `C_Inject` / users `CC_Collect` | Collect: type 1 or 3 matching how ScoreEntity was added |
 
 ### Adding a second OURO LP to the **same** farm
 
@@ -71,10 +71,10 @@ Repeat steps 1–9 with **new score names** and a **new pool**. Add ScoreEntity 
 4. `AQP-POOL|C_AddScore`.
 5. `AQP-FVT|C_Issue` — `fvt-class=1` (Vault).
 6. `C_AddRewardLink` + `C_AddScoreEntity` (type 1).
-7. Users `C_StakeTrueFungible` / `C_UnstakeTrueFungible`.
-8. `C_Inject` / `C_Collect`.
+7. Users `CC_StakeTrueFungible` / `CC_UnstakeTrueFungible`.
+8. `C_Inject` / `CC_Collect`.
 
-**Sleeping / hibernating DPOF satellites** on class-1 pools: use `C_StakeOrtoFungible` / unstake for Z\|/H\| legs when product supports them — pool class must allow that OF id.
+**Sleeping / hibernating DPOF satellites** on class-1 pools: use `CC_StakeOrtoFungible` / unstake for Z\|/H\| legs when product supports them — pool class must allow that OF id.
 
 ---
 
@@ -84,8 +84,8 @@ Repeat steps 1–9 with **new score names** and a **new pool**. Add ScoreEntity 
 2. `AQP-SCR|C_IssueSemiFungibleScoreDefinition` — nonce → weight map.
 3. `AQP-POOL|C_Issue` — `aqp-class=3`, asset = DPSF id.
 4. `C_AddScore` → FVT Vault/Treasury (`fvt-class` 1 or 2) → reward link → ScoreEntity.
-5. Stake: `C_StakeSemiFungibleCollectable` (nonces).
-6. Unstake: `C_UnstakeSemiFungibleCollectable` (nonces + amounts).
+5. Stake: `CC_StakeSemiFungibleCollectable` (nonces).
+6. Unstake: `CC_UnstakeSemiFungibleCollectable` (nonces + amounts).
 
 ---
 
@@ -95,7 +95,7 @@ Same pattern as SF with:
 
 - `C_IssueNonFungibleScore` + trait **or** set definition.
 - Pool `aqp-class=4`.
-- `C_StakeNonFungibleCollectable` / `C_UnstakeNonFungibleCollectable`.
+- `CC_StakeNonFungibleCollectable` / `CC_UnstakeNonFungibleCollectable`.
 
 ---
 
@@ -103,7 +103,7 @@ Same pattern as SF with:
 
 1. `C_IssueOrtoFungibleScore`.
 2. Pool `aqp-class=2`, asset = circulating DPOF id (not Z\|/H\|).
-3. Wire FVT + stake via `C_StakeOrtoFungible` (whole nonces).
+3. Wire FVT + stake via `CC_StakeOrtoFungible` (whole nonces).
 
 ---
 

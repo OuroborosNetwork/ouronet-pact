@@ -284,7 +284,7 @@
                 (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 1 50)
                 (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 2 50)
                 (ref-TS02-C1::DPSF|C_MakeFragments anhd anhd dhoc 3 30)
-                (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable anhd pool-id anhd anhd dhoc [-1 -2 -3])
+                (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable anhd pool-id anhd anhd dhoc [-1 -2 -3])
                 ;; permissionless recompute — picks up the new Q, keeps the oracle's nodes/uptime + oracle-ts
                 (ref-TS02-C3::AQP-DSA|C_RecomputeCapture anhd fvt-id triplet-id)
                 (map print
@@ -541,7 +541,7 @@
             (gold-sid:string   (ref-U|DALOS::UDC_Makeid (concat ["P3capAgency" "Golden"])))
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
-            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 1000.0)
+            (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id ouro 1000.0)
             (let
                 (
                     (roy:decimal (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
@@ -603,7 +603,7 @@
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
             (let ((bal-before:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))
-                (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 3 triplet-id ouro)
+                (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 3 triplet-id ouro)
                 (let ((payout:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) bal-before)))
                     (print (format "<(operator collect payout)> => {}" [payout]))
                     (map print
@@ -656,7 +656,7 @@
             (let ((roy-before:decimal (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro)))
                 ;; effective capture is 0 (oracle > 25h stale) but capture-units (divisor) is still 3
                 (expect "<<TX-P3-13>> effective capture expired = 0" 0.0 (ref-FVT::URC_MemberEffectiveCapture fvt-id triplet-id))
-                (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 200.0)
+                (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id ouro 200.0)
                 (map print
                   [ ;; whole 200 confiscated to royalty (ideal 3 − effective 0, over S=3) — NOT escrowed
                     (expect "<<TX-P3-13>> inject confiscated to royalty (+200 → 700)" (+ roy-before 200.0) (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
@@ -709,7 +709,7 @@
                 ;; fresh oracle, 0 nodes → capture-units 0 → divisor 0
                 (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 0 1000)
                 (expect "<<TX-P3-14>> zero nodes → capture-units 0" 0.0 (ref-FVT::UR_FVT-SEL|CaptureUnits fvt-id triplet-id))
-                (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 300.0)
+                (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id ouro 300.0)
                 (map print
                   [ (expect "<<TX-P3-14>> inject escrowed to zombie = 300" 300.0 (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id ouro))
                     (expect "<<TX-P3-14>> royalty pool unchanged by escrow" roy-before (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
@@ -842,7 +842,7 @@
             (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 10 500)
             ;; the divisor is live again (capture-units 3) → this inject FLUSHES the 300 zombie from TX-P3-14:
             ;; eff = 400 + 300 = 700 ; royalty = floor(700·(3-1.5)/3) = 350 ; member = 350 ; zombie → 0.
-            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 400.0)
+            (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id ouro 400.0)
             (map print
               [ (expect "<<TX-P3-17>> royalty accrued = 350 (400 inject + 300 zombie flush, uptime-500 shortfall)" 350.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro))
                 (expect "<<TX-P3-17>> zombie flushed to 0 by the live inject" 0.0 (ref-FVT::UR_FVT-RG|ZombieRewards fvt-id ouro)) ]))
@@ -934,7 +934,7 @@
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bronze-sid silver-sid gold-sid)))
             (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 10 500)
-            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 400.0)
+            (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id ouro 400.0)
             (map print
               [ (expect "<<TX-P3-19>> royalty accrued = 200 (uptime-500 shortfall)" 200.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id ouro)) ]))
     )
@@ -1157,7 +1157,7 @@
             (ref-TS02-C3::AQP-FVT|C_AddRewardLink anhd fvt-id gas false (ref-U|CT::CT_BAR))
             (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 10 500)
             ;; inject 400 IGNIS → member 200, royalty 200 (uptime-500 shortfall)
-            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id gas 400.0)
+            (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id gas 400.0)
             (map print
               [ (expect "<<TX-P3-24>> IGNIS royalty accrued = 200" 200.0 (ref-FVT::UR_FVT-RG|RoyaltyRewards fvt-id gas)) ]))
     )

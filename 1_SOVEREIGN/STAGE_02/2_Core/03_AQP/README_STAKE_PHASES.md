@@ -2,7 +2,7 @@
 
 Reference: UrStoa `C_URV|Stake` / `C_URV|Unstake` in `00_StoaSandbox/coin.pact`.
 
-All flows (`C_TrueFungibleStakeFlow`, `C_OrtoFungibleStakeFlow`, future `C_CollectableStakeFlow`) share the **same phase skeleton**. Steps marked **—** are **comment-only** in the FVT ICO list (no function call).
+All flows (`CC_TrueFungibleStakeFlow`, `CC_OrtoFungibleStakeFlow`, future `CC_CollectableStakeFlow`) share the **same phase skeleton**. Steps marked **—** are **comment-only** in the FVT ICO list (no function call).
 
 ## PHASE 1 — Custody (`AQP-POOL`)
 

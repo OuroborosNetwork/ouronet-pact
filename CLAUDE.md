@@ -112,8 +112,8 @@ Protected (locked inside their module — **not** the public integrator surface)
 
 | Prefix | Meaning |
 |--------|---------|
-| `A_*` / `AA_*` | Admin-key mutations. Doubled `AA_` = **heavy** (body contains a `URH_*` heavy read). |
-| `C_*` / `CC_*` | Client entry for slave modules. Builds IGNIS cumulators and returns `OutputCumulator`. **Cannot be invoked from its own module** — clients reach it via Talos. Doubled `CC_` = **heavy** (contains a `URH_*` read). |
+| `A_*` / `AA_*` | Admin-key mutations. Doubled `AA_` = **heavy**: a heavy scan (`URH_*`/`URHC_*`/`URD_*`) is reached **somewhere in the whole execution tree, at any depth** (transitive). |
+| `C_*` / `CC_*` | Client entry for slave modules. Builds IGNIS cumulators and returns `OutputCumulator`. **Cannot be invoked from its own module** — clients reach it via Talos. Doubled `CC_` = **heavy** (a `URH_*`/`URHC_*`/`URD_*` scan is reached anywhere in its execution tree, at any depth). |
 | `Cp_*` / `CCp_*` / `Ap_*` / `AAp_*` | **Hydra** parallel-slice recipes (the `p` = parallel). Fed one slice of a `URH_*` dirty-read plan, order-independent, retryable, fired **in parallel** (contrast `defpact` = sequential). `Cp_`/`Ap_` carry NO heavy read; `CCp_`/`AAp_` still do. Anatomy: `URH_*` preflight → `Cp_`/`CCp_` slices → optional `C_`/`CC_` begin/finalize. Canonical families: deb-unstale, anchor-sweep, vacate. See `OuronetInformational/StoicSyntax-Prefixes.md` § "Recipe axes". |
 | `XI_*` | Internal-only protected (this module). |
 | `XE_*` | For external modules only (forward-module entrypoints). |

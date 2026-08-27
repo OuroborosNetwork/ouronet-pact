@@ -153,7 +153,7 @@ Permanent row per `(fvt-id, score-id)`; **`enabled`** `[M]` toggles participatio
 
 ## Reward + RPS tables (no separate RewardLink)
 
-Reward registration uses **one row per `(fvt-id, dptf-id)`** in **`FVT|T|RPS|Global`**. There is **no** `FVT|T|RewardLink` table: **`reward-enabled`** on that row replaces the old `FVT|RewardLink.enabled` flag and gates **`C_Inject`** / **`C_Collect`**.
+Reward registration uses **one row per `(fvt-id, dptf-id)`** in **`FVT|T|RPS|Global`**. There is **no** `FVT|T|RewardLink` table: **`reward-enabled`** on that row replaces the old `FVT|RewardLink.enabled` flag and gates **`C_Inject`** / **`CC_Collect`**.
 
 - **`FVT|T|RPS|Global`** — `reward-enabled`, farm **G** (`current-rps`), `available-rewards`, `unclaimed-count`, `segmentation` (see `04_FVT.pact` for `[.]` / `[M]` per field).
 - **`FVT|T|RPS|User`** — per `(user-id, fvt-id, score-id, dptf-id)`: Tier‑1 checkpoint against **L_i** for that score tranche.
@@ -169,7 +169,7 @@ Reward registration uses **one row per `(fvt-id, dptf-id)`** in **`FVT|T|RPS|Glo
 | `C_ToggleScoreLink` | Enable/disable member |
 | `C_AddRewardLink` / `C_ToggleRewardLink` | Insert / toggle `FVT|T|RPS|Global` (same key as reward row; `reward-enabled`) |
 | `C_Inject` | Deposit reward; farm: `G += R / S` |
-| `C_Collect` | User claim through Tier‑2 settle + Tier‑1 line |
+| `CC_Collect` | User claim through Tier‑2 settle + Tier‑1 line |
 | `SWP::XE_RefreshGhostTvlForSwpair` | *(SWP module)* refresh ghost TVL row for one pair |
 | `FVT::XE_SyncFarmScoreGhostTvlFromSwp` | *(this module)* AQP calls after SWP refresh; Tier‑2 settle + `W_i` / `S` update |
 

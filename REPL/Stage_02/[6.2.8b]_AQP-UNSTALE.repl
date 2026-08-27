@@ -2,13 +2,13 @@
 ;; REPL/Stage_02/[6.2.8b]_AQP-UNSTALE.repl — user self-service deb-unstale (#FP4.2).
 ;;
 ;; Legend: <(...)>  live call echo   ·   <<TX-UNSTALE*>>  assertion tag.
-;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (C_UnstaleMyScores +
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (CC_UnstaleMyScores +
 ;;         FVT|C>UNSTALE-MY-SCORES + GAS|UNSTALE), 3_Talos/04_TS02-C3.pact
-;;         (AQP-FVT|C_UnstaleMyScores). REPL tests: deb-staleness-sweep-cc.repl.
+;;         (AQP-FVT|CC_UnstaleMyScores). REPL tests: deb-staleness-sweep-cc.repl.
 ;;
 ;; WHAT THIS PROVES — the UI-facing self-service unstale: ANHD moves his own Elite-DEB
 ;; DOWN (staleness on his SubsidiaryTreasury/SubsidiaryWonderCoach deb-score), then calls
-;; C_UnstaleMyScores([SubsidiaryTreasury]) to refresh it himself. Same fix outcome as a
+;; CC_UnstaleMyScores([SubsidiaryTreasury]) to refresh it himself. Same fix outcome as a
 ;; collect/inject (stored deb -> live, mirror resynced by Δdeb = conservation), but:
 ;;   (a) auth is the caller's OWN account ownership (CAP_EnforceAccountOwnership), and
 ;;   (b) it is NON-penalized — the 2e forced-fix count stays 0 (self-service is the cheap
@@ -71,11 +71,11 @@
 ;;|| The staleness is committed. ANHD now self-services the refresh — no collect/inject,
 ;;|| no owner/admin — just his own account ownership, and it must NOT bill the 2e penalty.
 ;;
-(begin-tx "TX-UNSTALE02 - ANHD self-unstales via C_UnstaleMyScores (non-penalized)")
+(begin-tx "TX-UNSTALE02 - ANHD self-unstales via CC_UnstaleMyScores (non-penalized)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-(print "--- [TX-UNSTALE02 · 01 · C_UnstaleMyScores refreshes ANHD's own stale scores] ---")
+(print "--- [TX-UNSTALE02 · 01 · CC_UnstaleMyScores refreshes ANHD's own stale scores] ---")
 (let
     (
         (anhd:string KST.ANHD)
@@ -99,8 +99,8 @@
         ]
     )
     ;; THE SELF-SERVICE UNSTALE — ANHD refreshes his own stale scores in SubsidiaryTreasury.
-    (print (format "<(UNSTALE02 AQP-FVT|C_UnstaleMyScores anhd [SubsidiaryTreasury])> => \"{}\""
-        [(ref-TS02-C3::AQP-FVT|C_UnstaleMyScores anhd [fvt-id])]))
+    (print (format "<(UNSTALE02 AQP-FVT|CC_UnstaleMyScores anhd [SubsidiaryTreasury])> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|CC_UnstaleMyScores anhd [fvt-id])]))
     (let
         (
             (stored-post:decimal (ref-SCR::UR_U-SCR|UserScoreDebScore anhd pool-id score-id))

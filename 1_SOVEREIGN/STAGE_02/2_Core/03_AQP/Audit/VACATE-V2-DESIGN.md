@@ -52,7 +52,7 @@ reward must be captured first. That O(users) settle work is **unavoidable** — 
 claims without leaving stale per-user scores that would corrupt a reconfigured pool.
 
 **Decision: settle a user the moment their *last* position drains, into their existing `unclaimed` balance;
-they `C_Collect` later via the existing path (no new claim surface).** This works because during v2 the
+they `CC_Collect` later via the existing path (no new claim surface).** This works because during v2 the
 score *aggregates* are untouched until the nuke, so a settle mid-drain reads the same RPS/score state it
 would at finalize. Two supports make it exact and idempotent:
 - **A per-user occupancy counter (`unn` — user-nonces-in-pool)**, decremented on each drained position;
@@ -129,10 +129,10 @@ aggregate touched).
 > **STATUS — Step 3 drain paths COMPLETE + runtime-proven for ALL asset families.** All reuse the
 > asset-agnostic `XI_2|SettleBeneficiaryRewardsOnly` (Bank→Book→Checkpoint reward triple), drop their
 > `XE_Apply*StakeDelta`, and never finalize:
-> - **TF** — `Cp_BatchDrainTrueFungible` (`18e3e55`), proven by `TX-VCT-DRAIN` (15 assertions).
-> - **OF** — `Cp_BatchDrainOrtoFungible` (`aee4a11` code / `f8bbcf6` test `TX-FVT-OF-DRAIN`, 7 assertions):
+> - **TF** — `CCp_BatchDrainTrueFungible` (`18e3e55`), proven by `TX-VCT-DRAIN` (15 assertions).
+> - **OF** — `CCp_BatchDrainOrtoFungible` (`aee4a11` code / `f8bbcf6` test `TX-FVT-OF-DRAIN`, 7 assertions):
 >   tracker-clear only (no rollup/anchor).
-> - **Collectable (SF/NF)** — `Cp_BatchDrainCollectable` (`aee4a11` / `4d5c577` test `TX-FVT-NF-DRAIN`, 9
+> - **Collectable (SF/NF)** — `CCp_BatchDrainCollectable` (`aee4a11` / `4d5c577` test `TX-FVT-NF-DRAIN`, 9
 >   assertions): tracker-clear + per-leg rollup + per-leg anchor refresh (delta-based; verified the anchor
 >   refresh never writes the per-user deb, so it's safe before the last-drain Bank). Proven for a **ghost
 >   nonce** (0-score) — occupancy via `unn`, the #FP1 point `nzs` misses.
@@ -195,7 +195,7 @@ per-user finalize cost.
 - (per-user) `unn:integer` — user-nonces-in-pool, and a `settled-generation` mark — §4.
 
 **Reused, already built:** `nns` (now universal, #FP1), `URH_Vacate*Inventory` readers,
-`URC_PoolFullyVacated` (nns-based) as the Phase-B gate, the existing `unclaimed`/`C_Collect` path.
+`URC_PoolFullyVacated` (nns-based) as the Phase-B gate, the existing `unclaimed`/`CC_Collect` path.
 
 **New entrypoints:**
 - `Cp_BatchDrain{TrueFungible,Collectable}` (+ Talos wiring) — Phase-A drain defuns (per asset family, like

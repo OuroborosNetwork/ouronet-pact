@@ -16,8 +16,8 @@ Three public paths by **asset mechanics** (not by pool class alone). LP uses TF 
 
 | Function | Asset | Stake args (high level) | Unstake beneficiary |
 |----------|-------|-------------------------|---------------------|
-| Talos `C_StakeTrueFungible` / `C_UnstakeTrueFungible` → **`FVT::C_TrueFungibleStakeFlow`** | DPTF + native\|F\| LP | `patron pool owner beneficiary dptf-id amount` (+ `direction` in FVT) | **Required** on unstake (balance buckets per owner+beneficiary) |
-| `C_StakeOrtoFungible` / `C_UnstakeOrtoFungible` | DPOF (native, Z\|, H\|, Z\| LP) | `patron pool owner beneficiary dpof-id nonces` | **Unstake:** beneficiary read from tracker row per nonce |
+| Talos `CC_StakeTrueFungible` / `CC_UnstakeTrueFungible` → **`FVT::CC_TrueFungibleStakeFlow`** | DPTF + native\|F\| LP | `patron pool owner beneficiary dptf-id amount` (+ `direction` in FVT) | **Required** on unstake (balance buckets per owner+beneficiary) |
+| `CC_StakeOrtoFungible` / `CC_UnstakeOrtoFungible` | DPOF (native, Z\|, H\|, Z\| LP) | `patron pool owner beneficiary dpof-id nonces` | **Unstake:** beneficiary read from tracker row per nonce |
 | `C_StakeCollectable` / `C_UnstakeCollectable` | DPSF / DPNF | `patron pool owner beneficiary collectable-id son nonces amounts` | **Omitted** — read from tracker row per nonce |
 
 **Also:** `C_Vacate*` batch vacate (pool-owner forced unstake — UI multi-tx; see [`README_VACATE_UI.md`](README_VACATE_UI.md)), `C_SyncTrueFungibleAnchors` (pool-agnostic ANK repair — see below), **`C_DisablePoolStake` / `C_EnablePoolStake`** (owner stake pause/resume).
@@ -49,7 +49,7 @@ Three public paths by **asset mechanics** (not by pool class alone). LP uses TF 
 ### Orto fungible rules (settled, partial impl)
 
 - **Whole-nonce only:** stake/unstake always uses `DPOF::C_Transfer` with full nonce supply (`UR_NoncesSupplies`). No `C_Transmit` / partial segmentation on the stake path (collection may still segment elsewhere).
-- Talos **`C_StakeOrtoFungible`** / **`C_UnstakeOrtoFungible`** omit `nonce-amounts` — amounts resolved from `DPOF::UR_NoncesSupplies` before the `@event` cap.
+- Talos **`CC_StakeOrtoFungible`** / **`CC_UnstakeOrtoFungible`** omit `nonce-amounts` — amounts resolved from `DPOF::UR_NoncesSupplies` before the `@event` cap.
 - **No ANK phase** on OF stake — anchors are **DPTF / DPSF / DPNF only**; staking DPOF does not change anchor promile balances.
 - **No `BeneficiaryDpofTotal` rollup** — per-pool `AQP|T|DPOFTracker` (per nonce) is sufficient; unlike DPTF there is no cross-pool O(1) read for anchor sync.
 
@@ -196,23 +196,23 @@ Seven slots per pool. Stake updates **every** employed score (skip `BAR`).
 | `C_AddScore` | Implemented |
 | `C_RevokeScore` | Implemented |
 | `C_VacateTrueFungible` / `C_VacateOrtoFungibleBatch` / collectable via Semi+NonFungible Talos shells | **AQP-VCT** recipes; see [`README_VACATE_UI.md`](README_VACATE_UI.md) |
-| TF stake/unstake | **FVT::C_TrueFungibleStakeFlow** (direction); Talos client shell only |
-| OF stake/unstake | **FVT::C_OrtoFungibleStakeFlow** (direction); Talos ×4 Transfer/Transmit shells |
+| TF stake/unstake | **FVT::CC_TrueFungibleStakeFlow** (direction); Talos client shell only |
+| OF stake/unstake | **FVT::CC_OrtoFungibleStakeFlow** (direction); Talos ×4 Transfer/Transmit shells |
 | `C_StakeCollectable` / `C_UnstakeCollectable` | Stub |
 | `C_SyncTrueFungibleAnchors` | Stub (table + UR ready) |
 
 ---
 
-## C_StakeTrueFungible — FVT recipe + Talos client shell
+## CC_StakeTrueFungible — FVT recipe + Talos client shell
 
-**Sovereign recipe:** **`FVT::C_TrueFungibleStakeFlow`** (`direction=true` stake, `false` unstake) — orchestrates five **`XE_*`** phases, returns concatenated **`OutputCumulator`**.
+**Sovereign recipe:** **`FVT::CC_TrueFungibleStakeFlow`** (`direction=true` stake, `false` unstake) — orchestrates five **`XE_*`** phases, returns concatenated **`OutputCumulator`**.
 
-**Talos:** **`AQP-POOL|C_StakeTrueFungible`** / **`C_UnstakeTrueFungible`** — **`@event`** cap + **`IGNIS::C_Collect patron`** + result text only.
+**Talos:** **`AQP-POOL|CC_StakeTrueFungible`** / **`CC_UnstakeTrueFungible`** — **`@event`** cap + **`IGNIS::C_Collect patron`** + result text only.
 
 **Capability model (see `.cursor/skills/ouronet-talos-orchestrator-events/SKILL.md`):**
 
 - **Talos client `@event`:** `AQP|C>STAKE-TRUE-FUNGIBLE` / `C>UNSTAKE-TRUE-FUNGIBLE` (incl. `patron`) — **`compose-capability (P|TS)` only**.
-- **FVT `C_TrueFungibleStakeFlow`:** `UEV_IMC` + `FVT|C>TRUE-FUNGIBLE-STAKE-FLOW` + phase **`XE_*`** calls.
+- **FVT `CC_TrueFungibleStakeFlow`:** `UEV_IMC` + `FVT|C>TRUE-FUNGIBLE-STAKE-FLOW` + phase **`XE_*`** calls.
 - **AQP-POOL:** phase 1 only (`XE_TrueFungible*` legs; TFT/DPOF inlined in `XE_*`); no monolithic TF **`C_*`**.
 
 Result text uses **`UC_ShortAccount`** and branches self-stake vs beneficiary stake.
@@ -253,9 +253,9 @@ Talos is **orchestrator only**: each phase **`XE_*` returns `OutputCumulator`** 
 
 ---
 
-## C_OrtoFungibleStakeFlow — FVT recipe + Talos client shell
+## CC_OrtoFungibleStakeFlow — FVT recipe + Talos client shell
 
-**Sovereign recipe:** **`FVT::C_OrtoFungibleStakeFlow`** — same phase skeleton as TF; **1.3** and **3.x** are comment-only in the ICO list. See [`README_STAKE_PHASES.md`](README_STAKE_PHASES.md).
+**Sovereign recipe:** **`FVT::CC_OrtoFungibleStakeFlow`** — same phase skeleton as TF; **1.3** and **3.x** are comment-only in the ICO list. See [`README_STAKE_PHASES.md`](README_STAKE_PHASES.md).
 
 | Step | Module | Function | UrStoa ≡ | Status |
 |------|--------|----------|----------|--------|
@@ -282,7 +282,7 @@ Talos is **orchestrator only**: each phase **`XE_*` returns `OutputCumulator`** 
 
 | Prefix | Scope | Examples |
 |--------|--------|----------|
-| **`C_*`** | Sovereign client/recipe entry | `FVT::C_TrueFungibleStakeFlow` |
+| **`C_*`** | Sovereign client/recipe entry | `FVT::CC_TrueFungibleStakeFlow` |
 | **`XE_*`** | Cross-module forward (on interface) | `AQP::XE_TrueFungible*` legs, `AQP::XE_SetVacateJobState` / `AQP::XE_ZeroDptfTrackerSlot` (VCT-only), `SCR::XE_Apply*`, `ANK::XE_UpdateTrueFungibleUserAnchorValues` (C_Sync) |
 | **`XB_*`** | Home `C_*` + cross-module shared write | `AQP::XB_SetPoolStakeEnabled`, `AQP::XB_SetBenDptfAnkSyncCount`, `AQP::XB_SetBenCollectableAnkSyncCount` |
 | **`XI_*`** | Same-module internal only (tiered `XI_*` → `XI_1\|*` → `XI_2\|*`) | `FVT::XI_RpsPreScore`, `POOL::XI_1\|WriteDptfTrackerSlot`, `SCR::XI_2\|ApplySingularUserScoreDelta`, `ANK::XI_1\|UpdateTrueFungibleUserAnchorValues` |

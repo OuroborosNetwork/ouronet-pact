@@ -194,7 +194,7 @@
                                 true
                             )
                             (print (format "<(C_StakeNonFungible DHBunnies KBN nonce {})> => \"{}\"" [auryn-rain-nonce
-                                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable
+                                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
                                     patron bunnies-pool owner owner kbn-id [auryn-rain-nonce]
                                 )
                             ]))
@@ -204,8 +204,8 @@
                     (enforce (> (ref-ANK::UR_UB|AggregatePromile owner silver-score) 0.0)
                         "HET needs SilverSnakePower promile - Auryn Rain KBN stake on DHBunnies")
                 )
-                (print (format "<(C_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
-                    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+                (print (format "<(CC_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
+                    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
                 ]))
                 ;; ---------------------------------------------------------------------------------
                 ;; PROOF 1 - default mode is HOMOGENEOUS
@@ -234,14 +234,14 @@
                 )
                 ;; PROOF 3 - inject then collect => WHOLE payout as OURO; Auryn/Elite ZERO
                 (print "--- [TX-HET-01 - 02 - inject + collect: expect pure OURO] ---")
-                (ref-TS02-C3::AQP-FVT|C_Inject patron farm-id ouro-id inject-amt)
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron farm-id ouro-id inject-amt)
                 (let
                     (
                         (ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id owner))
                         (auryn-pre:decimal (ref-DPTF::UR_AccountSupply auryn-id owner))
                         (elite-pre:decimal (ref-DPTF::UR_AccountSupply elite-auryn-id owner))
                     )
-                    (ref-TS02-C3::AQP-FVT|C_Collect owner farm-id 3 triplet-id ouro-id)
+                    (ref-TS02-C3::AQP-FVT|CC_Collect owner farm-id 3 triplet-id ouro-id)
                     (let
                         (
                             (pay-ouro:decimal (- (ref-DPTF::UR_AccountSupply ouro-id owner) ouro-pre))
@@ -261,14 +261,14 @@
                 ;; PROOF 4 - O(1) reprice to all-to-token1 [0 1000 0] => next collect is pure Auryn (Coil leg)
                 (print "--- [TX-HET-01 - 03 - reprice all-to-Auryn [0 1000 0] + inject/collect] ---")
                 (ref-TS02-C3::AQP-FVT|C_SetQualitySplit patron farm-id ouro-id "HETEROGENEOUS" [0 1000 0] [0 1000 0] [0 1000 0])
-                (ref-TS02-C3::AQP-FVT|C_Inject patron farm-id ouro-id inject-amt)
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron farm-id ouro-id inject-amt)
                 (let
                     (
                         (ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id owner))
                         (auryn-pre:decimal (ref-DPTF::UR_AccountSupply auryn-id owner))
                         (elite-pre:decimal (ref-DPTF::UR_AccountSupply elite-auryn-id owner))
                     )
-                    (ref-TS02-C3::AQP-FVT|C_Collect owner farm-id 3 triplet-id ouro-id)
+                    (ref-TS02-C3::AQP-FVT|CC_Collect owner farm-id 3 triplet-id ouro-id)
                     (let
                         (
                             (pay-ouro:decimal (- (ref-DPTF::UR_AccountSupply ouro-id owner) ouro-pre))

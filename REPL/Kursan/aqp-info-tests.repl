@@ -187,7 +187,7 @@
             (i-scent:object (AQP-INFO.AQP-FVT|INFO_AddScoreEntity anhd "FVT-x" 3 "T-x"))
             (i-rwd:object (AQP-INFO.AQP-FVT|INFO_AddRewardLink anhd "FVT-x" "OURO-x" false "BAR"))
             (i-qs:object (AQP-INFO.AQP-FVT|INFO_SetQualitySplit anhd "FVT-x" "OURO-x" "HOMOGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0]))
-            (i-inj:object (AQP-INFO.AQP-FVT|INFO_Inject anhd "FVT-x" "OURO-x" 100.0))
+            (i-inj:object (AQP-INFO.AQP-FVT|INFO_CC_Inject anhd "FVT-x" "OURO-x" 100.0))
             (i-col:object (AQP-INFO.AQP-FVT|INFO_Collect anhd "FVT-x" 3 "T-x" "OURO-x"))
             (i-unst:object (AQP-INFO.AQP-FVT|INFO_UnstaleMyScores anhd ["FVT-x"]))
             (i-fix:object (AQP-INFO.AQP-FVT|INFO_CCp_InjectFixChunk anhd "FVT-x" "OURO-x" 10))

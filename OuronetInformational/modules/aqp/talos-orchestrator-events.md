@@ -42,7 +42,7 @@ See **`1_SOVEREIGN/STAGE_02/2_Core/03_AQP/README_STAKE_PHASES.md`**.
 
 ### OrtoFungible (DPOF)
 
-Talos: **`C_StakeOrtoFungible`**, **`C_UnstakeOrtoFungible`**. Recipe **`FVT::C_OrtoFungibleStakeFlow`** — same phase skeleton; **1.3** and **3.x** comment-only. No DPOF anchor leg.
+Talos: **`CC_StakeOrtoFungible`**, **`CC_UnstakeOrtoFungible`**. Recipe **`FVT::CC_OrtoFungibleStakeFlow`** — same phase skeleton; **1.3** and **3.x** comment-only. No DPOF anchor leg.
 
 ---
 

@@ -58,14 +58,14 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 
 | Prefix | Class | Meaning | Colour family |
 |--------|-------|---------|---------------|
-| `A_`   | admin | Admin-key mutation recipe — **standard** (no heavy read inside) | **RECIPE** |
-| `AA_`  | admin·heavy | Admin recipe that **contains a heavy read** (`URH_*`); self-contained single transaction | **RECIPE** |
-| `Ap_`  | admin·parallel | **Hydra** parallel-slice admin — fed one slice of a `URH_*` dirty-read plan, order-independent, retryable, fired in parallel; **carries NO heavy read** | **RECIPE** |
-| `AAp_` | admin·heavy·parallel | Hydra parallel-slice admin that still holds a heavy read internally (tolerated; hoist the read into the preflight and demote to `Ap_` when possible) | **RECIPE** |
-| `C_`   | client | Client entrypoint — builds IGNIS cumulators, returns `OutputCumulator`; **cannot be invoked from its own module**; **standard** (no heavy read inside) | **RECIPE** |
-| `CC_`  | client·heavy | Client recipe that **contains a heavy read** (`URH_*`); self-contained single transaction (e.g. an enforced-fresh whole-set pass) | **RECIPE** |
-| `Cp_`  | client·parallel | **Hydra** parallel-slice client — fed one slice of a `URH_*` dirty-read plan, order-independent, retryable, fired in parallel; **carries NO heavy read** | **RECIPE** |
-| `CCp_` | client·heavy·parallel | Hydra parallel-slice client that still holds a heavy read internally (tolerated; prefer to demote to `Cp_`) | **RECIPE** |
+| `A_`   | admin | Admin-key mutation recipe — **standard** (its execution tree hits **no** heavy read) | **RECIPE** |
+| `AA_`  | admin·heavy | Admin recipe whose **execution tree hits a heavy scan somewhere** (`URH_*`/`URHC_*`/`URD_*`), **at any depth** — see the transitive rule below | **RECIPE** |
+| `Ap_`  | admin·parallel | **Hydra** parallel-slice admin — fed one slice of a `URH_*` dirty-read plan, order-independent, retryable, fired in parallel; its own tree hits **no** heavy read | **RECIPE** |
+| `AAp_` | admin·heavy·parallel | Hydra parallel-slice admin whose tree still hits a heavy read (tolerated; hoist the read into the preflight and demote to `Ap_` when possible) | **RECIPE** |
+| `C_`   | client | Client entrypoint — builds IGNIS cumulators, returns `OutputCumulator`; **cannot be invoked from its own module**; **standard** (its execution tree hits **no** heavy read) | **RECIPE** |
+| `CC_`  | client·heavy | Client recipe whose **execution tree hits a heavy scan somewhere** (`URH_*`/`URHC_*`/`URD_*`), **at any depth** — see the transitive rule below | **RECIPE** |
+| `Cp_`  | client·parallel | **Hydra** parallel-slice client — fed one slice of a `URH_*` dirty-read plan, order-independent, retryable, fired in parallel; its own tree hits **no** heavy read | **RECIPE** |
+| `CCp_` | client·heavy·parallel | Hydra parallel-slice client whose tree still hits a heavy read (tolerated; prefer to demote to `Cp_`) | **RECIPE** |
 | `XI_` | protected·internal | Internal-only protected write/orchestration | **PROTECTED** |
 | `XE_` | protected·external | For **external** modules only (forward-module entrypoint; opens `UEV_IMC`) | **PROTECTED** |
 | `XB_` | protected·both | Both internal and external | **PROTECTED** |
@@ -73,8 +73,12 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 > **Recipe axes — weight × mode (two orthogonal notations, so they never blur).** A user recipe (`C_`
 > client / `A_` admin) carries two independent properties, each with its **own** notation so the base
 > letter stays stable and the band still reads as a band:
-> - **weight** → **letter-doubling**: `C`→`CC`, `A`→`AA`. Single = **standard** (no heavy read inside);
->   doubled = **heavy** (the body itself contains a `URH_*` scan).
+> - **weight** → **letter-doubling**: `C`→`CC`, `A`→`AA`. Single = **standard**; doubled = **heavy**.
+>   **Canonical (transitive) rule:** a recipe is **heavy** iff **anywhere in its executing tree — at any
+>   depth, in any callee (`XI_`/`XE_`/`XB_`/nested `C_`/…) — a heavy scan (`URH_*` / `URHC_*` / `URD_*` /
+>   `URDC_*`) is hit.** The value of `CC_` is exactly this at-a-glance signal: you see the doubled letter and
+>   know a heavy read is reached *somewhere* in the execution, without opening the tree. (It is **not** a
+>   textual "does this body literally call `URH_`" test — it is the whole reachable call graph.)
 > - **mode** → a lowercase **`p` suffix**, present **only** when the recipe is a **Hydra parallel slice**:
 >   `Cp_`, `CCp_`, `Ap_`, `AAp_`. Absent = solo/standalone.
 >

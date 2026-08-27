@@ -82,7 +82,7 @@
                   (lambda (n:integer)
                       (if (contains n anhd-unstaked)
                           (print (format "<(C_StakeNonFungible DHBunnies nonce {})> => \"{}\"" [n
-                              (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable
+                              (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
                                   patron bunnies-pool owner owner kbn-id [n]
                               )
                           ]))
@@ -102,8 +102,8 @@
                   (format "<(EliteAurynRain per-anchor promile)> => \"{}\"" [(ref-ANK::UR_ANK-U|Promile owner (ref-U|DALOS::UDC_Makeid "EliteAurynRain"))])
               ]
           )
-          (print (format "<(C_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
-              (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+          (print (format "<(CC_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
+              (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
           ]))
           (map print
               [

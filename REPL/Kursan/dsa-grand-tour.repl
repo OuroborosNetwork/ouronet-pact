@@ -273,8 +273,8 @@
             (gsid:string (ref-U|DALOS::UDC_Makeid (concat ["GtAgency" "Golden"])))
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
-            (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable emma pool-id emma emma dhoc [-2])
-            (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable lumy pool-id lumy lumy dhoc [-2])
+            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable emma pool-id emma emma dhoc [-2])
+            (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable lumy pool-id lumy lumy dhoc [-2])
             (ref-TS02-C3::AQP-DSA|A_SetOracleAuth anhd fvt-id (read-keyset "dsa-oracle"))
             (ref-TS02-C3::AQP-DSA|A_OracleWrite anhd fvt-id triplet-id 10 1000)
             (map print
@@ -328,14 +328,14 @@
             ;; transfer, so the exact two-track fee amounts are assertable while the hetero branch is exercised.
             (ref-TS02-C3::AQP-FVT|C_SetQualitySplit anhd fvt-id ouro "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0])
             (expect "<<GT-05>> mode is HETEROGENEOUS on the agency reward" "HETEROGENEOUS" (ref-FVT::UR_FVT-QS|Mode fvt-id ouro))
-            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 5000.0)
+            (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id ouro 5000.0)
             ;; OPERATOR collects FIRST, independently of any delegator
             (let ((op0:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))
-                (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 3 triplet-id ouro)
+                (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 3 triplet-id ouro)
                 (let ((op-got:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) op0)) (em0:decimal (ref-DPTF::UR_AccountSupply ouro emma)))
-                    (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 3 triplet-id ouro)
+                    (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 3 triplet-id ouro)
                     (let ((em-got:decimal (- (ref-DPTF::UR_AccountSupply ouro emma) em0)) (lu0:decimal (ref-DPTF::UR_AccountSupply ouro lumy)))
-                        (ref-TS02-C3::AQP-FVT|C_Collect lumy fvt-id 3 triplet-id ouro)
+                        (ref-TS02-C3::AQP-FVT|CC_Collect lumy fvt-id 3 triplet-id ouro)
                         (let ((lu-got:decimal (- (ref-DPTF::UR_AccountSupply ouro lumy) lu0)))
                             (print (format "<(op / emma / lumy OURO)> => {} / {} / {}" [op-got em-got lu-got]))
                             (map print
@@ -388,15 +388,15 @@
         )
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
             (ref-TS02-C3::AQP-FVT|C_SetQualitySplit anhd fvt-id ouro "HETEROGENEOUS" [0 1000 0] [0 1000 0] [0 1000 0])
-            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 5000.0)
+            (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id ouro 5000.0)
             (let
                 (
                     (op-o0:decimal (ref-DPTF::UR_AccountSupply ouro anhd)) (op-a0:decimal (ref-DPTF::UR_AccountSupply auryn anhd))
                     (em-a0:decimal (ref-DPTF::UR_AccountSupply auryn emma)) (lu-a0:decimal (ref-DPTF::UR_AccountSupply auryn lumy))
                 )
-                (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 3 triplet-id ouro)
-                (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 3 triplet-id ouro)
-                (ref-TS02-C3::AQP-FVT|C_Collect lumy fvt-id 3 triplet-id ouro)
+                (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 3 triplet-id ouro)
+                (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 3 triplet-id ouro)
+                (ref-TS02-C3::AQP-FVT|CC_Collect lumy fvt-id 3 triplet-id ouro)
                 (let
                     (
                         (op-ouro:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) op-o0))
@@ -457,13 +457,13 @@
         (let ((triplet-id:string (ref-SCR::UC_ComputeTripletId bsid ssid gsid)))
             (ref-TS02-C3::AQP-FVT|C_SetQualitySplit anhd fvt-id ouro "HETEROGENEOUS" [1000 0 0] [1000 0 0] [1000 0 0])
             (ref-TS02-C3::AQP-DSA|A_SetAgencyFee anhd fvt-id triplet-id 200)
-            (ref-TS02-C3::AQP-FVT|C_Inject anhd fvt-id ouro 5000.0)
+            (ref-TS02-C3::AQP-FVT|CC_Inject anhd fvt-id ouro 5000.0)
             (let ((op0:decimal (ref-DPTF::UR_AccountSupply ouro anhd)))
-                (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 3 triplet-id ouro)
+                (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 3 triplet-id ouro)
                 (let ((op-got:decimal (- (ref-DPTF::UR_AccountSupply ouro anhd) op0)) (em0:decimal (ref-DPTF::UR_AccountSupply ouro emma)))
-                    (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 3 triplet-id ouro)
+                    (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 3 triplet-id ouro)
                     (let ((em-got:decimal (- (ref-DPTF::UR_AccountSupply ouro emma) em0)) (lu0:decimal (ref-DPTF::UR_AccountSupply ouro lumy)))
-                        (ref-TS02-C3::AQP-FVT|C_Collect lumy fvt-id 3 triplet-id ouro)
+                        (ref-TS02-C3::AQP-FVT|CC_Collect lumy fvt-id 3 triplet-id ouro)
                         (let ((lu-got:decimal (- (ref-DPTF::UR_AccountSupply ouro lumy) lu0)))
                             (print (format "<(20%% op / emma / lumy)> => {} / {} / {}" [op-got em-got lu-got]))
                             (map print

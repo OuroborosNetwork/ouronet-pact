@@ -27,7 +27,7 @@ Owner-approved approach: **read-only reconstruction**, adding a small `URC_…Ig
 patron's IGNIS (GAS-98c486052a51) balance delta, and assert it equals `info.ignis-need`.
 
 ### stake/unstake (POOL wrappers `C_Stake*`/`C_Unstake*`, TF/OF/SF/NF)
-The flow `C_TrueFungibleStakeFlow` (and OF/SF/NF siblings) concatenates these costed legs — **all but one
+The flow `CC_TrueFungibleStakeFlow` (and OF/SF/NF siblings) concatenates these costed legs — **all but one
 already have read-only cost-readers**, so reconstruct the total by summing:
 - preflight bundle: `URHC_BuildStakeSettleBundle pool-id beneficiary-id` → `{settle-scores, distinct-fvts,
   settle-plans, …}`.
@@ -50,7 +50,7 @@ Two info shapes:
 - `AQP-POOL|INFO_BatchVacate…(same slice args as the CC_ execution)` → that batch's exact cost from its own
   leg list.
 The vacate cost is `bulk custody transfer + finalize base + per-leg increment × leg-count`. Determine the
-per-leg unit from `Cp_BatchVacateTrueFungible`'s cumulator construction (tracker-ocs + score-ocs +
+per-leg unit from `CCp_BatchVacateTrueFungible`'s cumulator construction (tracker-ocs + score-ocs +
 unwind/bulk-oc, ~line 1900-2130 of `05_VCT.pact`); **add `URC_Vacate…IgnisUnit` on VCT if a clean unit isn't
 already exposed**, and route the flow's own cost through it for drift-proofing.
 - `C_AbortVacate` = empty cumulator (free); `C_FinalizeVacate` = `ignis|medium` tier (already a fixed-cost —

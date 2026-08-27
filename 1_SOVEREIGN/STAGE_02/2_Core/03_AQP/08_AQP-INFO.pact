@@ -638,26 +638,13 @@
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_Inject:object{OuronetInfoV1.ClientInfo}
-        (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
-        @doc "Cost preview for AQP-FVT|C_Inject. IGNIS GAS|INJECT; STOA none (reward-DPTF is a custody transfer)."
-        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Inject reward tokens into an FVT (naive, current divisor)."
-                 (format "You also transfer {} of reward token {} into custody." [amount reward-dptf-id])
-                 "Executes via TS02-C3.AQP-FVT|C_Inject."]
-                [(format "Injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
-                [amount]))
-    )
     (defun AQP-FVT|INFO_InjectStream:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
-        @doc "Cost preview for AQP-FVT|C_InjectStream. IGNIS GAS|INJECT; STOA none (custody transfer)."
+        @doc "Cost preview for AQP-FVT|CC_InjectStream. IGNIS GAS|INJECT; STOA none (custody transfer)."
         (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Inject reward tokens as a linear time-stream over the given duration."
-                 "Executes via TS02-C3.AQP-FVT|C_InjectStream."]
+                 "Executes via TS02-C3.AQP-FVT|CC_InjectStream."]
                 [(format "Streaming {} of {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
@@ -715,10 +702,10 @@
     )
     (defun AQP-FVT|INFO_UnstaleMyScores:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-ids:[string])
-        @doc "Cost preview for AQP-FVT|C_UnstaleMyScores. IGNIS GAS|UNSTALE; no STOA."
+        @doc "Cost preview for AQP-FVT|CC_UnstaleMyScores. IGNIS GAS|UNSTALE; no STOA."
         (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
             (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Self-service deb-unstale of your own scores across FVTs." "Executes via TS02-C3.AQP-FVT|C_UnstaleMyScores."]
+                ["Operation: Self-service deb-unstale of your own scores across FVTs." "Executes via TS02-C3.AQP-FVT|CC_UnstaleMyScores."]
                 [(format "Unstaled your scores across {} FVTs." [(length fvt-ids)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|UNSTALE))
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
@@ -726,13 +713,13 @@
     )
     (defun AQP-FVT|INFO_Collect:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-        @doc "Cost preview for AQP-FVT|C_Collect. IGNIS GAS|COLLECT base; STOA none. For a MULTIPLET_BASE triplet \
+        @doc "Cost preview for AQP-FVT|CC_Collect. IGNIS GAS|COLLECT base; STOA none. For a MULTIPLET_BASE triplet \
             \ reward the payout also fires ATS Coil/Curl ladder legs (added at execution)."
         (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Collect your claimable reward from this FVT membership."
                  "Base IGNIS shown; a triplet MULTIPLET reward adds ladder (Coil/Curl) legs at execution."
-                 "Executes via TS02-C3.AQP-FVT|C_Collect."]
+                 "Executes via TS02-C3.AQP-FVT|CC_Collect."]
                 [(format "Collected reward token {} from score-entity {}." [reward-dptf-id score-entity-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|COLLECT))
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
@@ -751,27 +738,27 @@
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_C_SweepBegin:object{OuronetInfoV1.ClientInfo}
+    (defun AQP-FVT|INFO_CC_SweepBegin:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string)
-        @doc "Cost preview for AQP-FVT|C_SweepBegin. Gas-station subsidised — no IGNIS/STOA to the patron."
+        @doc "Cost preview for AQP-FVT|CC_SweepBegin. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Open a paginated re-score sweep (freeze + swept-revoke + cursor)."
                  "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|C_SweepBegin."]
+                 "Executes via TS02-C3.AQP-FVT|CC_SweepBegin."]
                 [(format "Opened sweep on anchor {}." [anchor-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 []))
     )
-    (defun AQP-FVT|INFO_Cp_SweepRecomputeChunk:object{OuronetInfoV1.ClientInfo}
+    (defun AQP-FVT|INFO_CCp_SweepRecomputeChunk:object{OuronetInfoV1.ClientInfo}
         (patron:string anchor-id:string chunk:integer)
-        @doc "Cost preview for AQP-FVT|Cp_SweepRecomputeChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
+        @doc "Cost preview for AQP-FVT|CCp_SweepRecomputeChunk. Gas-station subsidised — no IGNIS/STOA to the patron."
         (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Page a re-score sweep (recompute the next `chunk` holders; final page unfreezes)."
                  "Gas-station subsidised — costs you nothing."
-                 "Executes via TS02-C3.AQP-FVT|Cp_SweepRecomputeChunk."]
+                 "Executes via TS02-C3.AQP-FVT|CCp_SweepRecomputeChunk."]
                 [(format "Recomputed up to {} holders on anchor {}'s sweep." [chunk anchor-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)

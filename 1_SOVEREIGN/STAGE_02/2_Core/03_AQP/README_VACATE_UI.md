@@ -144,17 +144,17 @@ plan  = URHC_BuildVacateSlicePlan pool-id asset-id kind N
 slice = (at i (at "slices" plan))
 
 # TF — per-leg amount MUST equal the live tracker balance (URC_VacateTfLegBalancesOk)
-AQP-POOL|Cp_BatchVacateTrueFungible
+AQP-POOL|CCp_BatchVacateTrueFungible
   patron pool-id dptf-id
   (at "owner-ids" slice) (at "beneficiary-ids" slice) (at "amounts" slice)
 
 # OF — whole-nonce; amounts resolved on-chain from the tracker (UI passes NO amounts)
-AQP-POOL|Cp_BatchVacateOrtoFungible
+AQP-POOL|CCp_BatchVacateOrtoFungible
   patron pool-id dpof-id
   (at "owner-ids" slice) (at "beneficiary-ids" slice) (at "nonces-array" slice)
 
 # DPSF (son=true) / DPNF (son=false)
-AQP-POOL|Cp_BatchVacateCollectables
+AQP-POOL|CCp_BatchVacateCollectables
   patron pool-id collectable-id son
   (at "owner-ids" slice) (at "beneficiary-ids" slice)
   (at "nonces-array" slice) (at "amounts-array" slice)
@@ -221,8 +221,8 @@ UI reads (URD / URDC / UC)
 
 | Test | Variant |
 |------|---------|
-| `[6.2.4]_AQP-FVT-OF.repl` TX-FVT-07 / 08 | `Cp_BatchVacateOrtoFungible` / `CC_FullVacate` |
-| `[6.2.4]_AQP-FVT-DC.repl` TX-FVT-DC-04 / 05 | `CC_FullVacate` / `Cp_BatchVacateCollectables` |
+| `[6.2.4]_AQP-FVT-OF.repl` TX-FVT-07 / 08 | `CCp_BatchVacateOrtoFungible` / `CC_FullVacate` |
+| `[6.2.4]_AQP-FVT-DC.repl` TX-FVT-DC-04 / 05 | `CC_FullVacate` / `CCp_BatchVacateCollectables` |
 | `[6.2.5]_AQP-VCT.repl` | `CC_FullVacate` + `XB_Vacate*` + `Cp_BatchVacate*` (multi-batch, partial, split-beneficiary) + Abort + rejects |
 | `[6.2.6]_AQP-VCT-GAS.repl` | `Cp_BatchVacate*` chunk-gas ceilings |
 | `REPL/aqp-deploy-gate.repl` | Z + VCT gate |

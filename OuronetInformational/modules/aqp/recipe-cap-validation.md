@@ -80,5 +80,5 @@ Reference: **`AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY`** ↔ **`XE_TrueFungibleTransfe
 
 ## Reference files
 
-- **`04_FVT.pact`** — **`FVT|C>TRUE-FUNGIBLE-STAKE-FLOW`**, **`C_TrueFungibleStakeFlow`**
+- **`04_FVT.pact`** — **`FVT|C>TRUE-FUNGIBLE-STAKE-FLOW`**, **`CC_TrueFungibleStakeFlow`**
 - **`03_AQP.pact`** — **`AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY`**, **`XE_TrueFungibleTransfer`**

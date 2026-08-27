@@ -186,7 +186,7 @@ degenerate case — reconstruct the 2 ATS legs via `ref-ATS::URC_RewardBearingTo
 `post-text` still names the state-dependent portion.
 
 ### 4e. Subsidised / gas-station-paid op
-`CC_*FixChunk`, `CCp_UnstaleAll`, the sweep pages (`C_SweepBegin/RecomputeChunk`) charge the patron
+`CC_*FixChunk`, `CCp_UnstaleAll`, the sweep pages (`CC_SweepBegin/RecomputeChunk`) charge the patron
 nothing (gas-station subsidised). → `OI|UDC_NoIgnisCosts` + `OI|UDC_NoKadenaCosts`, and say so in text.
 
 ### 4f. Admin `A_` returning `:string` (GOV switches)
@@ -199,7 +199,7 @@ info exists only to render "governance action, no gas."
 
 - **`pre-text`** — one or more strings: an `"Operation: <plain description of what it does>."` line, then a
   line naming the **execution function** the button must call, e.g.
-  `"Executes via TS02-C3.AQP-FVT|C_Collect."`. (Descriptive text is left to the author's judgement — you
+  `"Executes via TS02-C3.AQP-FVT|CC_Collect."`. (Descriptive text is left to the author's judgement — you
   know what each function does; be accurate and user-facing.)
 - **`post-text`** — the success sentence the user sees after (use `OI|UC_ShortAccount` for accounts).
 - **`output`** — the machine-consumable preview payload: computed values the caller/UI needs *before*
@@ -301,7 +301,7 @@ execution** op, snapshot again, and assert the charged delta equals the info's a
 ```
 (let ((ign0 (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))
       (info (AQP-FVT|INFO_Collect patron fvt-id 3 triplet-id ouro)))
-  (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 3 triplet-id ouro)
+  (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 3 triplet-id ouro)
   (expect "billed IGNIS == INFO ignis-need"
     (at "ignis-need" (at "ignis" info))
     (- ign0 (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))))
@@ -316,14 +316,14 @@ run means every AQP button's cost preview provably matches its execution.
 
 ## 9. Worked example — `AQP-FVT|INFO_Collect`
 
-Execution: `TS02-C3.AQP-FVT|C_Collect(patron, fvt-id, score-entity-type, score-entity-id, reward-dptf-id)`
-→ core `AQP-FVT.C_Collect` bills `GAS|COLLECT (=500.0)`, custody payout only (no STOA). The claimable
+Execution: `TS02-C3.AQP-FVT|CC_Collect(patron, fvt-id, score-entity-type, score-entity-id, reward-dptf-id)`
+→ core `AQP-FVT.CC_Collect` bills `GAS|COLLECT (=500.0)`, custody payout only (no STOA). The claimable
 amount is `AQP-FVT.URC_CollectClaimableRewards`.
 
 ```
 (defun AQP-FVT|INFO_Collect:object{OuronetInfoV1.ClientInfo}
     (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
-    @doc "Cost preview for AQP-FVT|C_Collect: collect a reward DPTF from an FVT membership."
+    @doc "Cost preview for AQP-FVT|CC_Collect: collect a reward DPTF from an FVT membership."
     (let
         (
             (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
@@ -336,7 +336,7 @@ amount is `AQP-FVT.URC_CollectClaimableRewards`.
         )
         (ref-I|OURONET::OI|UDC_ClientInfo
             ["Operation: Collect your claimable reward from this FVT membership."
-             "Executes via TS02-C3.AQP-FVT|C_Collect."]
+             "Executes via TS02-C3.AQP-FVT|CC_Collect."]
             [(format "Collected {} of reward token {}."
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount claimable) reward-dptf-id])]
             (if (ref-IGNIS::URC_IsVirtualGasZero)
@@ -346,7 +346,7 @@ amount is `AQP-FVT.URC_CollectClaimableRewards`.
             [(ref-I|OURONET::OI|UC_FormatTokenAmount claimable)])))   ;; output: previewed payout
 ```
 Test (source-equality): assert `ignis-full == AQP-FVT.GAS|COLLECT` and `kadena-full == 0.0`; optionally the
-ground-truth delta after a real `AQP-FVT|C_Collect`.
+ground-truth delta after a real `AQP-FVT|CC_Collect`.
 
 ---
 

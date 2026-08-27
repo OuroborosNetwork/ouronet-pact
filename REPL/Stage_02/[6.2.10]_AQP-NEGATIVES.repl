@@ -107,7 +107,7 @@
 ;;
 (begin-tx "TX-AQP-NEG-STATE - stake into a stake-DISABLED pool must fail")
 (print "")
-(print "=== TX-AQP-NEG-STATE — C_StakeTrueFungible into a disabled pool rejected =====")
+(print "=== TX-AQP-NEG-STATE — CC_StakeTrueFungible into a disabled pool rejected =====")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
@@ -132,7 +132,7 @@
             (expect (format "<<TX-AQP-NEG-STATE>> pool now stake-disabled got={}" [(ref-AQP::UR_AQP|PoolStakeEnabled pool-id)]) false (ref-AQP::UR_AQP|PoolStakeEnabled pool-id))
             (expect-failure
                 (format "<<TX-AQP-NEG-STATE>> stake into a DISABLED pool rejected (URC_PoolStakeAdmissionOk)" [])
-                (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 10.0))
+                (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id 10.0))
         ]
     )
 )

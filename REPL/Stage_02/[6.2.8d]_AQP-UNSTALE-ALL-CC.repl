@@ -6,7 +6,7 @@
 ;;         FVT|C>UNSTALE-ALL), 3_Talos/04_TS02-C3.pact (AQP-FVT|CCp_UnstaleAll).
 ;; REPL tests: deb-staleness-unstale-all-cc.repl.
 ;;
-;; WHAT THIS PROVES — the owner-side counterpart to [6.2.8b] C_UnstaleMyScores: the FVT
+;; WHAT THIS PROVES — the owner-side counterpart to [6.2.8b] CC_UnstaleMyScores: the FVT
 ;; entity OWNER force-unstales EVERY present staker to make the entity injection-ready,
 ;; WITHOUT injecting (the inject's fix-phase decoupled). Contrast [6.2.8b]:
 ;;   (a) OWNER-GATED — a non-owner (Emma) is refused (CAP_EnforceAccountOwnership on the

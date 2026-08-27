@@ -411,7 +411,7 @@ globally sweeps the tier-2 remainder; both vaults drain to exactly 0.
   spot as the global one.
 - **Dual sweep:** `URC_CollectClaimableRewards` → `gc==1 → global.available ; mc==1 → member.available ; else
   floored` (gc==1 ⟹ mc==1, so global precedence is correct). Also implements the never-built global Tier-2 sweep.
-- **Both vaults decremented** in `C_Collect` (global exact; member clamped at 0 for the global-sweep case).
+- **Both vaults decremented** in `CC_Collect` (global exact; member clamped at 0 for the global-sweep case).
 - Existing reward math unchanged (the sweep only changes what the *last* claimant receives; multi-staker
   collects with gc>1/mc>1 stay on the floored path — golden CL04 unchanged).
 
@@ -513,13 +513,13 @@ Z **225/0**. **Part 1 COMPLETE.**
 - **2b collect-backstop (DONE, green):** SCORE `XE_RefreshUserScoreDeb(account,pool,score)` = `UEV_IMC` then, iff
   `URC_U-SCR|UserScoreDebStale`, `(with-capability (SCR|XE>REFRESH-USER-SCORE-DEB …) (XI_2|ApplySingularUserScoreDelta
   … 0.0))` — 0-base-delta recomputes deb-score + score totals at the **live** Elite-DEB; no-op when fresh; cap composes
-  `SECURE` (same shape as `XE_ApplyTrueFungibleStakeDelta`). FVT `C_Collect` gains **PHASE 6** after phase 4: refreshes
+  `SECURE` (same shape as `XE_ApplyTrueFungibleStakeDelta`). FVT `CC_Collect` gains **PHASE 6** after phase 4: refreshes
   the collected entity's score(s) (triplet → B/S/G via `map`; singular → the one score) **after** the patron's pending
   is banked/paid at the OLD deb and last-rps advanced (RPS settle-before-weight-change preserved). Interface decls
   added both sides. No-op in current suites (deb static) but both branches load + exercise. golden 33/0, Z 225/0.
 - **#12 STILL OPEN — Part 1 + 2a done; 2b written but unproven; 2c/2d/2e not built.** (An earlier attempt to close
   #12 on Part 1 + 2a + 2b was RETRACTED — owner wants the full subsystem, and 2b was found defective.)
-- **2b REBUILT + PROVEN (green, discriminating test):** `C_Collect` PHASE 6 now mirrors the stake path's phase-4.5
+- **2b REBUILT + PROVEN (green, discriminating test):** `CC_Collect` PHASE 6 now mirrors the stake path's phase-4.5
   contract exactly — snapshot the member `pre-deb` (`URC_ScoreEntityMemberDebWeight`), refresh the patron's SCORE
   deb-score(s) (`ref-SCR::XE_RefreshUserScoreDeb`), then **`XI_SyncFvtTotalDebMirrors`** to push `(new−pre)` into the
   FVT `total-deb-score` mirror. TRUE triplets are guarded out (weight = base×promile lanes, deb-independent → their
@@ -619,7 +619,7 @@ Z **225/0**. **Part 1 COMPLETE.**
   `UR_FVT-FFC|Count` / `WU_FvtForcedFixCount|Add|Zero`. The enforced-inject fix path `XI_FixUserFvtDebPenalized`
   (used by `CC_Inject` PHASE 0 and the defpact's `XE_FvtFixUserChunk`, now carrying `reward-dptf-id`) records
   `URC_FvtUserStaleMemberCount` (members fixed) per (fvt, lane, user); the collect-backstop self-fix (`XI_FixUserFvtDeb`)
-  is NOT penalized, so self-fixing stays cheaper. `C_Collect` PHASE 7: charge `count × RATE` (`CT_FORCED_FIX_RATE=10`,
+  is NOT penalized, so self-fixing stays cheaper. `CC_Collect` PHASE 7: charge `count × RATE` (`CT_FORCED_FIX_RATE=10`,
   governance placeholder) as **non-discountable** IGNIS via gross-up `penalty / URC_IgnisGasDiscount(patron)` (the
   uniform prime-time discount cancels it back to full price), then zero the count. Reward payout untouched.
   **Proven (deb-proof DEB07):** CC_Inject recorded 2 forced fixes for ANHD; his next auryn collect paid the reward
@@ -724,9 +724,9 @@ beneficiary through both legs and was the reference.
 **Fix (mirror TF end-to-end):** thread `beneficiary-id` through the whole OF/SF/NF unstake chain and delete the self-key
 derivation.
 1. **Talos** (`04_TS02-C3.pact`): added `beneficiary-id` to the three unstake interface decls + wrappers
-   (`C_UnstakeOrtoFungible` / `C_UnstakeSemiFungibleCollectable` / `C_UnstakeNonFungibleCollectable`) and their `@event`
+   (`CC_UnstakeOrtoFungible` / `CC_UnstakeSemiFungibleCollectable` / `CC_UnstakeNonFungibleCollectable`) and their `@event`
    caps; wrappers now pass the real `beneficiary-id` to the flow (was `BAR`).
-2. **FVT** (`04_FVT.pact`): `C_OrtoFungibleStakeFlow` / `C_CollectableStakeFlow` set `settle-beneficiary = beneficiary-id`
+2. **FVT** (`04_FVT.pact`): `CC_OrtoFungibleStakeFlow` / `CC_CollectableStakeFlow` set `settle-beneficiary = beneficiary-id`
    both directions (no derivation); the two flow caps drop the `= BAR` enforce and validate the beneficiary account
    unconditionally (mirror `FVT|C>TRUE-FUNGIBLE-STAKE-FLOW`).
 3. **POOL** (`03_AQP.pact`): custody caps pass `beneficiary-id` to the sufficiency readers and call
@@ -740,7 +740,7 @@ derivation.
 to the owner, and the beneficiary is only the row-lookup key — exactly TF's model. All existing self-stake call sites
 (tests) updated to pass `beneficiary = owner`.
 
-**Proven (`[6.2.4]` — runs in Z):** `TX-FVT-06b` (OF) and `TX-FVT-DC-03b` (SF, the shared `C_CollectableStakeFlow`; NF is
+**Proven (`[6.2.4]` — runs in Z):** `TX-FVT-06b` (OF) and `TX-FVT-DC-03b` (SF, the shared `CC_CollectableStakeFlow`; NF is
 the son=false twin): owner **ANHD** stakes for foreign beneficiary **EMMA** → row at `(owner, EMMA)` holds the stake, the
 self-key `(owner, owner)` row is **empty** (where the old code stranded), **EMMA** earns the deb and **ANHD earns nothing**;
 unstake naming the wrong beneficiary (owner) **fails**; unstake naming **EMMA** clears the row, removes EMMA's weight, and
@@ -958,20 +958,20 @@ negative SF definition value; `[6.1]` rejects a negative DPDC nonce score (full 
 **Z 242/0**, comprehensive 260/0, deb-proof 121/0. The def-change asymmetry (mutable def between stake/unstake) is
 still handled by the `applied-def-revision-nonce` resync — separate from this sentinel/negative fix.
 
-## Fix #21 — L10 · FVT: double member-settle in C_Collect — already resolved by #12; removed the dead scaffolding  ✅ DONE
+## Fix #21 — L10 · FVT: double member-settle in CC_Collect — already resolved by #12; removed the dead scaffolding  ✅ DONE
 
-**The finding morphed.** ROUND-01 flagged that `C_Collect` settled the member Tier-2 **twice** (a bare pre-settle
+**The finding morphed.** ROUND-01 flagged that `CC_Collect` settled the member Tier-2 **twice** (a bare pre-settle
 plus a second settle inside the PHASE-0 farm ghost-TVL sync) — traced harmless (2nd = no-op) but wasted work +
 ordering inconsistency vs the stake flow.
 
 **Current reality (post-#12):** the double-settle is **already gone.** The #12 2b split-at-inject redesign removed
-the farm ghost-TVL sync from `C_Collect`'s PHASE 0 (see the `04_FVT.pact` comment: *"farm ghost-TVL sync REMOVED …
-the pre-settle above still flushes parked pending"*). `C_Collect` now settles the member **exactly once** — the
+the farm ghost-TVL sync from `CC_Collect`'s PHASE 0 (see the `04_FVT.pact` comment: *"farm ghost-TVL sync REMOVED …
+the pre-settle above still flushes parked pending"*). `CC_Collect` now settles the member **exactly once** — the
 bare `XI_2|SettleMemberTier2` (farm-only, `FvtClass 0`). The second-settle path was **orphaned**:
-- `XI_CollectRpsPreScore` — zero real callers (only a doc-comment named it in the C_Collect call-tree map).
+- `XI_CollectRpsPreScore` — zero real callers (only a doc-comment named it in the CC_Collect call-tree map).
 - `XI_1|CollectSettleAndBank` — called **only** by the dead `XI_CollectRpsPreScore`.
 - `URDC_BuildCollectScorePlan` — built the ghost-TVL plan **only** for `XI_CollectRpsPreScore` (its `@doc` even
-  said "ghost TVL sync scope for C_Collect").
+  said "ghost TVL sync scope for CC_Collect").
 
 Both jobs of the dead pair are covered live: **settle** → the bare `XI_2|SettleMemberTier2`; **bank pending** →
 `XI_1|BankScorePendingRewards` (the active score-pending bank path).

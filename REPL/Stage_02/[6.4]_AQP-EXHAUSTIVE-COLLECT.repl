@@ -34,7 +34,7 @@
     (enforce (= fvt-class 1) "CodingDivisionTreasury must be vault class 1")
     (enforce (> deb-user 0.0) "CL01 needs Coding Division deb — run RPS TX-AQP-R01 or stake DHCD")
     (print (format "<(C_Inject Wstoa {})> => \"{}\"" [inject-amt
-        (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id wstoa-id inject-amt)
+        (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id wstoa-id inject-amt)
     ]))
     (let
         (
@@ -44,8 +44,8 @@
         )
         (print (format "<(claimable-pre vault G)> => \"{}\"" [claimable]))
         (expect (format "<<TX-AQP-CL01>> claimable>0 got={}" [claimable]) true (> claimable 0.0))
-        (print (format "<(C_Collect vault Wstoa)> => \"{}\"" [
-            (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id wstoa-id)
+        (print (format "<(CC_Collect vault Wstoa)> => \"{}\"" [
+            (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id wstoa-id)
         ]))
         (let
             (
@@ -99,7 +99,7 @@
     (enforce (= fvt-class 1) "SubsidiaryTreasury must be vault/treasury class 1")
     (enforce (> (length dhwc-nonces) 0) "CL02 needs DHWC nonces for WonderCoach stake")
     (print (format "<(C_StakeSemiFungible DHWC)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_StakeSemiFungibleCollectable
+        (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable
             patron pool-id owner-id beneficiary-id dhwc-id [(at 0 dhwc-nonces)]
         )
     ]))
@@ -113,7 +113,7 @@
                 (g-pre:decimal (ref-FVT::UR_FVT-RG|CurrentRps fvt-id auryn-id))
             )
             (print (format "<(C_Inject Auryn {})> => \"{}\"" [inject-amt
-                (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id auryn-id inject-amt)
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id auryn-id inject-amt)
             ]))
             (let
                 (
@@ -123,8 +123,8 @@
                 )
                 (expect (format "<<TX-AQP-CL02>> G increased got={} pre={}" [g-post g-pre]) true (> g-post g-pre))
                 (print (format "<(claimable-pre treasury G)> => \"{}\"" [claimable]))
-                (print (format "<(C_Collect treasury Auryn)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id auryn-id)
+                (print (format "<(CC_Collect treasury Auryn)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id auryn-id)
                 ]))
                 (let
                     (
@@ -248,7 +248,7 @@
                                 true
                             )
                             (print (format "<(C_StakeNonFungible DHBunnies KBN nonce {})> => \"{}\"" [auryn-rain-nonce
-                                (ref-TS02-C3::AQP-POOL|C_StakeNonFungibleCollectable
+                                (ref-TS02-C3::AQP-POOL|CC_StakeNonFungibleCollectable
                                     patron bunnies-pool owner owner kbn-id [auryn-rain-nonce]
                                 )
                             ]))
@@ -263,8 +263,8 @@
                         (enforce (> prom-post 0.0) "CL03 needs SilverSnakePower promile — Auryn Rain KBN stake on DHBunnies")
                     )
                 )
-                (print (format "<(C_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
-                    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
+                (print (format "<(CC_StakeTrueFungible DHOuroLp LP {})> => \"{}\"" [stake-amt
+                    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner owner lp-id stake-amt)
                 ]))
                 (let
                     (
@@ -286,7 +286,7 @@
                     (expect (format "<<TX-AQP-CL03>> farm ghost S>0 got={}" [ghost-s]) true (> ghost-s 0.0))
                     (expect (format "<<TX-AQP-CL03>> inject denom>0 got={}" [denom]) true (> denom 0.0))
                     (print (format "<(C_Inject OURO farm {})> => \"{}\"" [inject-amt
-                        (ref-TS02-C3::AQP-FVT|C_Inject patron farm-id ouro-id inject-amt)
+                        (ref-TS02-C3::AQP-FVT|CC_Inject patron farm-id ouro-id inject-amt)
                     ]))
                     (let
                         (
@@ -302,8 +302,8 @@
                         ;; (MemberDebRps) at inject, NOT a global G — so g-post is legitimately 0 for a farm. Assert
                         ;; the member index advanced (the real farm analog of the old "G>0").
                         (expect (format "<<TX-AQP-CL03>> farm L_i advanced (split-at-inject) got={} g-post={}" [li-pre g-post]) true (> li-pre 0.0))
-                        (print (format "<(C_Collect farm triplet OURO)> => \"{}\"" [
-                            (ref-TS02-C3::AQP-FVT|C_Collect owner farm-id 3 triplet-id ouro-id)
+                        (print (format "<(CC_Collect farm triplet OURO)> => \"{}\"" [
+                            (ref-TS02-C3::AQP-FVT|CC_Collect owner farm-id 3 triplet-id ouro-id)
                         ]))
                         (let
                             (

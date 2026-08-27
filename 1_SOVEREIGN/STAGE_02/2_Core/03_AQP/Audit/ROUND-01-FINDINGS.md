@@ -208,7 +208,7 @@ Ex: amt=1000, promile=500, stake 2500 → README **1000**, code **1250** (no cap
   trailing `pool-id`/`fvt-id` after the write; interface return types require a string — harmless. `[PLAUSIBLE]` · _verdict pending_
 - **L9 · VCT** — `VACATE-MAX-LEGS`=16 + `URC_VacateBatchLegParityOk` (1255) are defined but never called (nonce-total
   gas cap dominates); vestigial. `[PLAUSIBLE]` · _verdict pending_
-- **L10 · FVT** — `C_Collect` settles the member Tier-2 twice (2751 bare + 2758 inside phase-0 sync); traced
+- **L10 · FVT** — `CC_Collect` settles the member Tier-2 twice (2751 bare + 2758 inside phase-0 sync); traced
   harmless (second settle is a no-op) but wasted work + ordering inconsistency vs stake flow. `[CONFIRMED]` · _verdict pending_
 
 ---

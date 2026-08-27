@@ -137,7 +137,7 @@ Custody moves asset ↔ `AQP|SC_NAME`. FVT recipe phases unwind/apply SCORE, ANK
 ### Inject / collect
 
 - **Inject:** patron → vault custody; advance RPS `G` (farm: `G += R/S` when `S>0`).
-- **Collect:** `C_Collect(patron, fvt-id, score-entity-type, score-entity-id, reward-dptf-id)` — type **1** = single score, **3** = triplet family member path.
+- **Collect:** `CC_Collect(patron, fvt-id, score-entity-type, score-entity-id, reward-dptf-id)` — type **1** = single score, **3** = triplet family member path.
 
 ### Ghost TVL (farms)
 

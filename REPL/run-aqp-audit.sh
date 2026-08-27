@@ -24,7 +24,7 @@ SUITES=(
   "AQP-comprehensive.repl|functional + full AQP-BOOT mainnet-sim + RPS/collect/DPNF/ANK-LP/triplet-diag/FVT-admin + [6.3] golden paths"
   "AQP-core-vct.repl|core [6.2.1-4] ANK/SCORE/POOL/FVT stake+unstake+inject+collect + [6.2.5] VCT vacate (all asset kinds)"
   "deb-staleness-proof.repl|deb-staleness conservation (M3 #12) + CC_Inject + MTX|2|C_Inject & MTX|2|C_SweepRevokeAnchor defpacts + sweep"
-  "deb-staleness-sweep-cc.repl|sweep CC-batch (defun+gate) + self-service unstale — C_SweepBegin/RecomputeChunk retire AurynRain to the SWEEP01 end-state; C_UnstaleMyScores non-penalized refresh"
+  "deb-staleness-sweep-cc.repl|sweep CC-batch (defun+gate) + self-service unstale — CC_SweepBegin/RecomputeChunk retire AurynRain to the SWEEP01 end-state; CC_UnstaleMyScores non-penalized refresh"
   "deb-staleness-inject-cc.repl|enforced-fresh inject CC-batch (defun+gate) — CCp_InjectFixChunk pages the stale set, CC_InjectFinalize gates on zero-stale then injects"
   "triplet-collect-golden.repl|farm multiplet triplet collect fairness + dual-stream vacate"
   "Kursan/AQP-stream-tests.repl|streamed inject (linear vesting): late-staker 180/60 + superposition (D4) + zero-weight->zombie (D9) + guard bounds + vault drip gas + farm (class-0) drip"

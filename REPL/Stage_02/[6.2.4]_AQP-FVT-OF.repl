@@ -96,9 +96,9 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-FVT-05 - C_StakeOrtoFungible end-to-end")
+(begin-tx "TX-FVT-05 - CC_StakeOrtoFungible end-to-end")
 (print "")
-(print "=== TX-FVT-05 — C_StakeOrtoFungible (phases 1–5 recipe) =====================")
+(print "=== TX-FVT-05 — CC_StakeOrtoFungible (phases 1–5 recipe) =====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -143,9 +143,9 @@
             (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
             true
         )
-        (print "--- [TX-FVT-05 · 02 · C_StakeOrtoFungible] ---")
-        (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible
+        (print "--- [TX-FVT-05 · 02 · CC_StakeOrtoFungible] ---")
+        (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible
                 patron pool-id owner-id beneficiary-id dpof-id [stake-nonce]
             )
         ]))
@@ -190,9 +190,9 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-FVT-06 - C_UnstakeOrtoFungible round-trip")
+(begin-tx "TX-FVT-06 - CC_UnstakeOrtoFungible round-trip")
 (print "")
-(print "=== TX-FVT-06 — C_UnstakeOrtoFungible (ico1..ico5 recipe) ====================")
+(print "=== TX-FVT-06 — CC_UnstakeOrtoFungible (ico1..ico5 recipe) ====================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -224,9 +224,9 @@
     (enforce (> (length staked-nonces) 0) "AQP vault must hold staked MVST nonce from TX-FVT-05")
     (print (format "<(unstake-nonce stake-amount vault-konto)> => {} / {} / {}" [stake-nonce stake-amount vault-konto]))
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print "--- [TX-FVT-06 · 01 · C_UnstakeOrtoFungible] ---")
-    (print (format "<(TS02-C3.AQP-POOL|C_UnstakeOrtoFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_UnstakeOrtoFungible patron pool-id owner-id owner-id dpof-id [stake-nonce])
+    (print "--- [TX-FVT-06 · 01 · CC_UnstakeOrtoFungible] ---")
+    (print (format "<(TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron pool-id owner-id owner-id dpof-id [stake-nonce])
     ]))
     (print "--- [TX-FVT-06 · 02 · post-unstake reads + expect] ---")
     (let
@@ -308,7 +308,7 @@
             )
             ;;==== TX-FVT-06b · 01 · owner ANHD stakes FOR foreign beneficiary EMMA ====
             (print "--- [TX-FVT-06b · 01 · stake owner=ANHD, beneficiary=EMMA] ---")
-            (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id foreign-ben dpof-id [stake-nonce])
+            (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id foreign-ben dpof-id [stake-nonce])
             (let
                 (
                     (ben-bal:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id foreign-ben stake-nonce))
@@ -359,12 +359,12 @@
                 [
                     (expect-failure
                         "<<TX-FVT-06b>> unstake naming beneficiary=owner (the OLD self-key) finds NO row → must fail"
-                        (ref-TS02-C3::AQP-POOL|C_UnstakeOrtoFungible patron pool-id owner-id owner-id dpof-id [stake-nonce]))
+                        (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron pool-id owner-id owner-id dpof-id [stake-nonce]))
                 ]
             )
             ;;==== TX-FVT-06b · 03 · unstake naming the REAL beneficiary EMMA restores state ====
             (print "--- [TX-FVT-06b · 03 · unstake owner=ANHD, beneficiary=EMMA] ---")
-            (ref-TS02-C3::AQP-POOL|C_UnstakeOrtoFungible patron pool-id owner-id foreign-ben dpof-id [stake-nonce])
+            (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron pool-id owner-id foreign-ben dpof-id [stake-nonce])
             (let
                 (
                     (ben-bal-after:decimal (ref-AQP::UR_AQP|DPOFTrackerBalance pool-id dpof-id owner-id foreign-ben stake-nonce))
@@ -393,9 +393,9 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-(begin-tx "TX-FVT-07 - Cp_BatchVacateOrtoFungible (UI-sliced batch vacate)")
+(begin-tx "TX-FVT-07 - CCp_BatchVacateOrtoFungible (UI-sliced batch vacate)")
 (print "")
-(print "=== TX-FVT-07 — Cp_BatchVacateOrtoFungible (single batch drains → auto-finalize) ===")
+(print "=== TX-FVT-07 — CCp_BatchVacateOrtoFungible (single batch drains → auto-finalize) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -428,8 +428,8 @@
         (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
         true
     )
-    (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible
+    (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible
             patron pool-id owner-id beneficiary-id dpof-id [stake-nonce]
         )
     ]))
@@ -443,9 +443,9 @@
         )
         (enforce (> vacate-amount 0.0) "tracker must hold stake before vacate")
         (print (format "<(vacate-nonce vacate-amount)> => {} / {}" [stake-nonce vacate-amount]))
-        (print "--- [TX-FVT-07 · 02 · Cp_BatchVacateOrtoFungible (single batch drains → auto-finalize)] ---")
-        (print (format "<(TS02-C3.AQP-POOL|Cp_BatchVacateOrtoFungible)> => \"{}\"" [
-            (ref-TS02-C3::AQP-POOL|Cp_BatchVacateOrtoFungible
+        (print "--- [TX-FVT-07 · 02 · CCp_BatchVacateOrtoFungible (single batch drains → auto-finalize)] ---")
+        (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateOrtoFungible)> => \"{}\"" [
+            (ref-TS02-C3::AQP-POOL|CCp_BatchVacateOrtoFungible
                 patron pool-id dpof-id
                 (at "owner-ids" slice0)
                 (at "beneficiary-ids" slice0)
@@ -526,8 +526,8 @@
         (ref-TS01-C1::DPOF|C_ToggleFreezeAccount patron dpof-id owner-id false)
         true
     )
-    (print (format "<(TS02-C3.AQP-POOL|C_StakeOrtoFungible)> => \"{}\"" [
-        (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible
+    (print (format "<(TS02-C3.AQP-POOL|CC_StakeOrtoFungible)> => \"{}\"" [
+        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible
             patron pool-id owner-id beneficiary-id dpof-id [stake-nonce]
         )
     ]))
@@ -610,13 +610,13 @@
                 (nonce:integer (at 0 owned))
                 (nns0:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                 (unn0:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
-                (x:string (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce]))
+                (x:string (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce]))
             )
             (let
                 (
                     (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                     (unn1:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
-                    (y:string (ref-TS02-C3::AQP-POOL|C_UnstakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce]))
+                    (y:string (ref-TS02-C3::AQP-POOL|CC_UnstakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce]))
                 )
                 (let ((nns2:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                       (unn2:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id)))
@@ -645,7 +645,7 @@
 (print "")
 (begin-tx "TX-FVT-OF-DRAIN - vacate-v2 OF fast-drain: nonce back + score UNTOUCHED + not finalized")
 (print "")
-(print "=== TX-FVT-OF-DRAIN — v2 Cp_BatchDrainOrtoFungible: return nonce + preserve rewards, NO score delta ==")
+(print "=== TX-FVT-OF-DRAIN — v2 CCp_BatchDrainOrtoFungible: return nonce + preserve rewards, NO score delta ==")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;; DEDICATED class-2 OF pool (so the drain's freeze is isolated from OfStakePool, which [6.2.5] reuses). Stake
@@ -710,7 +710,7 @@
                 (x:string
                     (let ((z:integer 0))
                         (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-                        (ref-TS02-C3::AQP-POOL|C_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce])
+                        (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id owner-id beneficiary-id dpof-id [nonce])
                     )
                 )
             )
@@ -719,7 +719,7 @@
                     (base-pre:decimal (ref-SCR::UR_U-SCR|UserScoreBaseScore beneficiary-id pool-id score-id))
                     (nns1:integer (ref-AQP::UR_AQP|PoolNns pool-id))
                     (unn1:integer (ref-AQP::UR_AQP|UserUnn pool-id beneficiary-id))
-                    (y:string (ref-TS02-C3::AQP-POOL|Cp_BatchDrainOrtoFungible patron pool-id dpof-id [owner-id] [beneficiary-id] [[nonce]]))
+                    (y:string (ref-TS02-C3::AQP-POOL|CCp_BatchDrainOrtoFungible patron pool-id dpof-id [owner-id] [beneficiary-id] [[nonce]]))
                 )
                 (let
                     (

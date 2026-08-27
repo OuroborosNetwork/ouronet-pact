@@ -404,7 +404,7 @@
     (defschema AQP|BenDptfTotal
         @doc "Cross-pool rollup: total DPTF staked by one beneficiary on one exact dptf-id leg \
             \ (native X and F|X are separate rows). Maintained on every TF stake/unstake POOL leg \
-            \ (FVT::C_TrueFungibleStakeFlow → XE_TrueFungible* legs → XI bump). Input to \
+            \ (FVT::CC_TrueFungibleStakeFlow → XE_TrueFungible* legs → XI bump). Input to \
             \ ANK::XE_UpdateTrueFungibleUserAnchorValues without scanning AQP|T|DPTFTracker keys. \
             \ last-ank-sync-count stores AQP-ANK::UR_AA|AnchorsActive(dptf-id) after the last successful \
             \ anchor refresh; URC_BenDptfAnchorsNeedSync compares it to the live count so the UI can \
@@ -587,7 +587,7 @@
     )
     (defcap AQP|XE>TRUE-FUNGIBLE-POOL-CUSTODY
         (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
-        @doc "Forward-only (FVT::C_TrueFungibleStakeFlow phase 1]): validation for XE_TrueFungibleTransfer. \
+        @doc "Forward-only (FVT::CC_TrueFungibleStakeFlow phase 1]): validation for XE_TrueFungibleTransfer. \
             \ Pool/beneficiary/tracker/rollup rules here; dptf-id/amount/debit via TFT::C_Transfer. \
             \ CAP_StakeOwner (owner wallet); compose P|AQP|CALLER (TFT IMC); compose AQP|GOV (AQP|SC_NAME smart account — \
             \ send and receive both require governor proof). XI_* writers have no enforce. Not @event — UEV_IMC on XE entry."
@@ -622,7 +622,7 @@
             nonce-amounts:[decimal]
             direction:bool
         )
-        @doc "Forward-only (FVT::C_OrtoFungibleStakeFlow phase 1]): validation for XE_OrtoFungibleTransfer. \
+        @doc "Forward-only (FVT::CC_OrtoFungibleStakeFlow phase 1]): validation for XE_OrtoFungibleTransfer. \
             \ Whole-nonce DPOF::C_Transfer only. CAP_StakeOwner; compose P|AQP|CALLER + AQP|GOV for vault custody."
         (let
             (
@@ -682,7 +682,7 @@
             nonce-amounts:[integer]
             direction:bool
         )
-        @doc "Forward-only (FVT::C_CollectableStakeFlow phase 1]): DPDC::C_Transfer + tracker validation. \
+        @doc "Forward-only (FVT::CC_CollectableStakeFlow phase 1]): DPDC::C_Transfer + tracker validation. \
             \ son=true DPSF (class-3 pool); son=false DPNF (class-4 pool)."
         (let
             (
@@ -732,7 +732,7 @@
     )
     (defcap AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC
         (beneficiary-id:string dptf-id:string)
-        @doc "Backward-only (FVT::C_TrueFungibleStakeFlow phase 2.2]): stamp last-ank-sync-count on BenDptfTotal. \
+        @doc "Backward-only (FVT::CC_TrueFungibleStakeFlow phase 2.2]): stamp last-ank-sync-count on BenDptfTotal. \
             \ beneficiary/dptf validation here; full stake rules in FVT|C>TRUE-FUNGIBLE-STAKE-FLOW. \
             \ Composes SECURE for XE write body. Not @event — UEV_IMC on XE entry."
         (UEV_StakeBeneficiaryAccount beneficiary-id)
@@ -2950,7 +2950,7 @@
     ;;
     (defun XB_SetBenDptfAnkSyncCount:object{IgnisCollectorV1.OutputCumulator}
         (beneficiary-id:string dptf-id:string)
-        @doc "Backward (FVT::C_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BenDptfTotal \
+        @doc "Backward (FVT::CC_TrueFungibleStakeFlow phase 2.2]): set last-ank-sync-count on BenDptfTotal \
             \ (:= AQP-ANK::UR_AA|AnchorsActive dptf-id); preserve total-balance. UEV_IMC + AQP|XE>SET-BENEFICIARY-DPTF-ANK-SYNC. \
             \ Same-module C_SyncTrueFungibleAnchors and cross-module FVT::XI_RefreshTrueFungibleStakeAnchors call here."
         (UEV_IMC)

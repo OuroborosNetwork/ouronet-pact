@@ -30,7 +30,7 @@ When a **`let`** binds **module references** and **local variables** together:
 
 ## Reference
 
-- **`04_FVT.pact`** — **`URC_StoaValue`**, **`C_TrueFungibleStakeFlow`**
+- **`04_FVT.pact`** — **`URC_StoaValue`**, **`CC_TrueFungibleStakeFlow`**
 - **`02_SCORE.pact`** — **`URC_SingularUserScoreDeltaFromSignedUserBase`**
 - **`03_AQP.pact`** — **`XI_WriteDptfTracker`**, **`C_IssuePool`**
 

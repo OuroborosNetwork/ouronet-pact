@@ -177,7 +177,7 @@ mechanism (`G stays 0` + `L_i advanced`).
 ## 12. Stage 2b — partial: dead sync removed from hot reward paths ✅; residual documented
 
 **Done (verified green — golden farm 28/0, fast Z.repl 225/0):**
-- Removed the farm ghost-TVL **sync from the two hot reward paths** — `C_Inject` phase-0.1 and `C_Collect`
+- Removed the farm ghost-TVL **sync from the two hot reward paths** — `C_Inject` phase-0.1 and `CC_Collect`
   phase-0. Farms now touch no cache on inject/collect; `L_i` is advanced by split-at-inject. Kept the collect
   pre-settle (flushes parked pending; at `G=0` it never reads dead machinery).
 

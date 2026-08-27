@@ -236,10 +236,10 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-;; TX-FVT-03 — Stake OURO through Talos → FVT::C_TrueFungibleStakeFlow
-(begin-tx "TX-FVT-03 - C_StakeTrueFungible end-to-end")
+;; TX-FVT-03 — Stake OURO through Talos → FVT::CC_TrueFungibleStakeFlow
+(begin-tx "TX-FVT-03 - CC_StakeTrueFungible end-to-end")
 (print "")
-(print "=== TX-FVT-03 — C_StakeTrueFungible (full ico1..ico5 recipe) =================")
+(print "=== TX-FVT-03 — CC_StakeTrueFungible (full ico1..ico5 recipe) =================")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -268,10 +268,10 @@
     (print "--- [TX-FVT-03 · 01 · pre-stake OURO balance] ---")
     (print (format "<(DPTF|UR_AccountSupply OURO owner)> pre-stake => \"{}\"" [pre-ouro]))
     (enforce (>= pre-ouro stake-amount) "patron needs OURO balance for stake test")
-    ;;==== TX-FVT-03 · 02 · env-sigs + C_StakeTrueFungible — REPL =================
-    (print "--- [TX-FVT-03 · 02 · env-sigs + C_StakeTrueFungible] ---")
+    ;;==== TX-FVT-03 · 02 · env-sigs + CC_StakeTrueFungible — REPL =================
+    (print "--- [TX-FVT-03 · 02 · env-sigs + CC_StakeTrueFungible] ---")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-POOL|C_StakeTrueFungible amount={})> => \"{}\"" [stake-amount (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)]))
+    (print (format "<(TS02-C3.AQP-POOL|CC_StakeTrueFungible amount={})> => \"{}\"" [stake-amount (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id stake-amount)]))
     ;;==== TX-FVT-03 · 03 · post-stake reads + expect — REPL =======================
     (print "--- [TX-FVT-03 · 03 · post-stake reads + expect] ---")
     (let
@@ -410,8 +410,8 @@
     (print "--- [TX-FVT-05 · 01 · inject OURO into vault] ---")
     (enforce (>= ouro-pre inject-amt) "TX-FVT-05: patron needs OURO for inject")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(TS02-C3.AQP-FVT|C_Inject amount={})> => \"{}\"" [inject-amt
-        (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id ouro-id inject-amt)
+    (print (format "<(TS02-C3.AQP-FVT|CC_Inject amount={})> => \"{}\"" [inject-amt
+        (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id ouro-id inject-amt)
     ]))
     (let
         (
@@ -429,8 +429,8 @@
             ]
         )
         (print "--- [TX-FVT-05 · 02 · collect once] ---")
-        (print (format "<(TS02-C3.AQP-FVT|C_Collect type=1)> => \"{}\"" [
-            (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id ouro-id)
+        (print (format "<(TS02-C3.AQP-FVT|CC_Collect type=1)> => \"{}\"" [
+            (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)
         ]))
         (let
             (
@@ -458,8 +458,8 @@
                 (
                     (ouro-before-2:decimal (ref-DPTF::UR_AccountSupply ouro-id patron))
                 )
-                (print (format "<(TS02-C3.AQP-FVT|C_Collect second)> => \"{}\"" [
-                    (ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id ouro-id)
+                (print (format "<(TS02-C3.AQP-FVT|CC_Collect second)> => \"{}\"" [
+                    (ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)
                 ]))
                 (let
                     (
@@ -488,12 +488,12 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 ;;
-;; TX-FVT-05b — Streamed inject (linear vesting) smoke: C_InjectStream 240 OURO over 24h; the sole staker (ANHD)
+;; TX-FVT-05b — Streamed inject (linear vesting) smoke: CC_InjectStream 240 OURO over 24h; the sole staker (ANHD)
 ;;   collects ~half at +12h and the exact remainder at +24h (finish flush → stream pruned). Proves the drip's
 ;;   time-based release, the exact-remainder flush, and compaction. Block-time driven via env-chain-data.
 (begin-tx "TX-FVT-05b - streamed inject linear vesting smoke")
 (print "")
-(print "=== TX-FVT-05b — C_InjectStream 240 OURO / 24h → collect @12h (~120) + @24h (~120) ===")
+(print "=== TX-FVT-05b — CC_InjectStream 240 OURO / 24h → collect @12h (~120) + @24h (~120) ===")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (let
@@ -509,11 +509,11 @@
         (t0:time (time "2026-09-01T00:00:00Z"))
     )
     ;;==== TX-FVT-05b · 01 · inject stream at T0 ====
-    (print "--- [TX-FVT-05b · 01 · C_InjectStream 240 / 24h @ T0] ---")
+    (print "--- [TX-FVT-05b · 01 · CC_InjectStream 240 / 24h @ T0] ---")
     (env-chain-data { "block-time": t0 })
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
-        (print (format "<(AQP-FVT|C_InjectStream)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_InjectStream patron fvt-id ouro-id 240.0 86400)]))
+        (print (format "<(AQP-FVT|CC_InjectStream)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_InjectStream patron fvt-id ouro-id 240.0 86400)]))
         (map print
             [ (expect "<<05b>> stream-count = 1 after inject" 1 (AQP-FVT.UR_FVT-RG|StreamCount fvt-id ouro-id))
               (expect "<<05b>> stream-unreleased = 240 after inject" 240.0 (AQP-FVT.UR_FVT-RG|StreamUnreleased fvt-id ouro-id))
@@ -531,7 +531,7 @@
             [ (format "<<05b>> URC_LiveClaimable @12h (pre-collect) = {}" [live])
               (expect (format "<<05b>> URC_LiveClaimable projects ~120 @12h got={}" [live]) true (and (> live 119.99) (< live 120.01))) ]))
     (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
-        (print (format "<(C_Collect @12h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id ouro-id)]))
+        (print (format "<(CC_Collect @12h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)]))
         (let ((payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-pre)))
             (map print
                 [ (format "<<05b>> payout @12h = {}" [payout])
@@ -543,7 +543,7 @@
     (env-chain-data { "block-time": (add-time t0 86400) })
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let ((ouro-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id patron)))
-        (print (format "<(C_Collect @24h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|C_Collect patron fvt-id 1 score-id ouro-id)]))
+        (print (format "<(CC_Collect @24h)> => \"{}\"" [(ref-TS02-C3::AQP-FVT|CC_Collect patron fvt-id 1 score-id ouro-id)]))
         (let
             (
                 (payout:decimal (- (ref-DPTF::UR_AccountSupply ouro-id patron) ouro-pre))
@@ -657,7 +657,7 @@
 (print "")
 ;;
 ;; TX-FVT-07 — Partial then full TF unstake: tracker/rollup/SCORE/RPS cleanup
-(begin-tx "TX-FVT-07 - Partial + full C_UnstakeTrueFungible")
+(begin-tx "TX-FVT-07 - Partial + full CC_UnstakeTrueFungible")
 (print "")
 (print "=== TX-FVT-07 — TF unstake (partial 40 then full remainder) =================")
 (namespace "ouronet-ns")
@@ -688,8 +688,8 @@
     (print "--- [TX-FVT-07 · 01 · partial unstake 40] ---")
     (enforce (>= tracker-pre 100.0) "TX-FVT-07 expects ≥100 staked from TX-FVT-03")
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
-    (print (format "<(AQP-POOL|C_UnstakeTrueFungible {})> => \"{}\"" [partial-amt
-        (ref-TS02-C3::AQP-POOL|C_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id partial-amt)
+    (print (format "<(AQP-POOL|CC_UnstakeTrueFungible {})> => \"{}\"" [partial-amt
+        (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id partial-amt)
     ]))
     (let
         (
@@ -714,8 +714,8 @@
             ]
         )
         (print "--- [TX-FVT-07 · 02 · full remainder unstake] ---")
-        (print (format "<(AQP-POOL|C_UnstakeTrueFungible remainder {})> => \"{}\"" [remain
-            (ref-TS02-C3::AQP-POOL|C_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id remain)
+        (print (format "<(AQP-POOL|CC_UnstakeTrueFungible remainder {})> => \"{}\"" [remain
+            (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id remain)
         ]))
         (let
             (
@@ -922,11 +922,11 @@
         ]))
         true
     )
-    (print (format "<(C_StakeTrueFungible ANHD {})> => \"{}\"" [stake-a
-        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id anhd anhd ouro-id stake-a)
+    (print (format "<(CC_StakeTrueFungible ANHD {})> => \"{}\"" [stake-a
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id anhd anhd ouro-id stake-a)
     ]))
-    (print (format "<(C_StakeTrueFungible EMMA {})> => \"{}\"" [stake-e
-        (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id emma emma ouro-id stake-e)
+    (print (format "<(CC_StakeTrueFungible EMMA {})> => \"{}\"" [stake-e
+        (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id emma emma ouro-id stake-e)
     ]))
     (let
         (
@@ -949,13 +949,13 @@
                 (ouro-e-pre:decimal (ref-DPTF::UR_AccountSupply ouro-id emma))
             )
             (print (format "<(C_Inject {})> => \"{}\"" [inject-amt
-                (ref-TS02-C3::AQP-FVT|C_Inject patron fvt-id ouro-id inject-amt)
+                (ref-TS02-C3::AQP-FVT|CC_Inject patron fvt-id ouro-id inject-amt)
             ]))
-            (print (format "<(C_Collect ANHD)> => \"{}\"" [
-                (ref-TS02-C3::AQP-FVT|C_Collect anhd fvt-id 1 score-id ouro-id)
+            (print (format "<(CC_Collect ANHD)> => \"{}\"" [
+                (ref-TS02-C3::AQP-FVT|CC_Collect anhd fvt-id 1 score-id ouro-id)
             ]))
-            (print (format "<(C_Collect EMMA)> => \"{}\"" [
-                (ref-TS02-C3::AQP-FVT|C_Collect emma fvt-id 1 score-id ouro-id)
+            (print (format "<(CC_Collect EMMA)> => \"{}\"" [
+                (ref-TS02-C3::AQP-FVT|CC_Collect emma fvt-id 1 score-id ouro-id)
             ]))
             (let
                 (
@@ -1032,7 +1032,7 @@
     (ref-TS02-C3::AQP-POOL|C_EnablePoolStake patron pool-id)
     ;;==== TX-FVT-10 · 01 · owner ANHD stakes FOR foreign beneficiary EMMA ====
     (print "--- [TX-FVT-10 · 01 · stake owner=ANHD, beneficiary=EMMA] ---")
-    (ref-TS02-C3::AQP-POOL|C_StakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
+    (ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
     (let
         (
             (post-ben-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id foreign-ben))
@@ -1050,7 +1050,7 @@
     )
     ;;==== TX-FVT-10 · 02 · non-self unstake removes EMMA's weight + clears the foreign row ====
     (print "--- [TX-FVT-10 · 02 · unstake owner=ANHD, beneficiary=EMMA] ---")
-    (ref-TS02-C3::AQP-POOL|C_UnstakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
+    (ref-TS02-C3::AQP-POOL|CC_UnstakeTrueFungible patron pool-id owner-id foreign-ben ouro-id stake-amount)
     (let
         (
             (post2-ben-bal:decimal (ref-AQP::UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id foreign-ben))

@@ -269,7 +269,7 @@ W_user   = lane_b + lane_s + lane_g
 
 Only lanes with weight `> 0` participate in split (re-normalize over active lanes).
 
-**Collect** `C_Collect(patron, fvt-id, anchor-id, reward-dptf-id)`:
+**Collect** `CC_Collect(patron, fvt-id, anchor-id, reward-dptf-id)`:
 
 ```
 global = RPS|Global(fvt, reward-dptf-id)
@@ -338,9 +338,9 @@ Stake/unstake settles pending on **each** enabled Global where the user has weig
 
 **Inject 100 OURO:** Tier-2 assigns ~80 index units to triplet tranche, ~20 to score-X tranche.
 
-**User A** (triplet LP only): collects via `C_Collect(patron, farm, T|…, OURO)` → lane split → OURO + Auryn + Elite.
+**User A** (triplet LP only): collects via `CC_Collect(patron, farm, T|…, OURO)` → lane split → OURO + Auryn + Elite.
 
-**User B** (score-X only): collects via `C_Collect(patron, farm, score-X, OURO)` → plain OURO only (even though Global is TRIPLET_BASE, **anchor** is a score → PLAIN branch for that anchor).
+**User B** (score-X only): collects via `CC_Collect(patron, farm, score-X, OURO)` → plain OURO only (even though Global is TRIPLET_BASE, **anchor** is a score → PLAIN branch for that anchor).
 
 **User C** (both): two user rows, two collects (or one Talos composite tx).
 
@@ -357,7 +357,7 @@ Total OURO received = OURO leg from triplet collect + full amount from score col
 | LP / vault stake, employ scores | AQP-POOL |
 | Lane promile | ANK (read by FVT `URC_*`) |
 | Coil / Curl at collect | ATSU (called from FVT via cap composition) |
-| Client entry | Talos `AQP-FVT|C_AddRewardLink` (triplet-family-id BAR or F\|…) · `C_Collect` |
+| Client entry | Talos `AQP-FVT|C_AddRewardLink` (triplet-family-id BAR or F\|…) · `CC_Collect` |
 
 ---
 
@@ -376,7 +376,7 @@ Step 10: C_AddRewardLink(farm, VESTA, …, BAR)           — plain side token
          optional plain links alongside triplet-base
 ```
 
-Existing `C_Collect` vault/treasury paths and ScoreLink-only farms remain valid.
+Existing `CC_Collect` vault/treasury paths and ScoreLink-only farms remain valid.
 
 ---
 
@@ -392,7 +392,7 @@ One delivery — no deferred “v2”. Suggested **build order** within that pha
 | 4 | FVT: RPS `anchor-id` keys (Member/User); Tier-2 `S` over all TripletLinks + ScoreLinks |
 | 5 | FVT: Tier-2 by class — farm `W_i`; vault/treasury `D_triplet` = sum of three `total-deb-score` |
 | 6 | FVT: lane `URC_*`; settle/checkpoint paths for triplet anchors |
-| 7 | FVT: `C_Collect` TRIPLET_BASE branch + ATSU Coil/Curl; PLAIN path unchanged for score anchors |
+| 7 | FVT: `CC_Collect` TRIPLET_BASE branch + ATSU Coil/Curl; PLAIN path unchanged for score anchors |
 | 8 | Multi-family `Global` rows (PLAIN + TRIPLET_BASE on same FVT) |
 | 9 | Boot migration (`C_AddTriplet`, OURO `TRIPLET_BASE`) + REPL golden paths (farm, vault, treasury) |
 | 10 | Talos wrappers (per-anchor collect; optional composite tx if desired) |
