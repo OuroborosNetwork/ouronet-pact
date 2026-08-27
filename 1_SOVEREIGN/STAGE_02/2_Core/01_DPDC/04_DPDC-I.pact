@@ -6,8 +6,10 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_DeployAccountSFT (account:string id:string))
-    (defun C_DeployAccountNFT (account:string id:string))
+    ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: standalone deployment, reachable via a public
+    ;; Talos entrypoint with no ownership check, let any signer force any existing account to associate
+    ;; with any collection. Real auto-association always calls DPDC::XB_DeployAccountSFT/NFT directly,
+    ;; module-to-module (see DPDC-C/DPDC-F/DPDC-R/DPDC-S and this module's own Issue flow below).
     (defun C_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator}
         (
             patron:string son:bool
@@ -118,6 +120,13 @@
     )
     ;;{C2}
     (defcap DPDC-I|C>ISSUE (owner-account:string creator-account:string collection-name:string collection-ticker:string iz-special:bool)
+        @doc "DPDC Audit #53L: <creator-account> is intentionally NOT ownership-checked, unlike \
+            \ <owner-account> (real CAP_EnforceAccountOwnership below). The collection owner is meant \
+            \ to be able to freely designate any account -- e.g. a trusted associate -- as the \
+            \ collection's creator without that account's separate consent/signature, the same way an \
+            \ owner has complete dominion over their own collection's admin structure elsewhere in this \
+            \ module family (#4C/#17H/#20H/#25M). Only the type/prefix is validated \
+            \ (UEV_EnforceAccountType) so <creator-account> is at least a real, well-formed account."
         @event
         (let
             (
@@ -145,24 +154,7 @@
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
-    (defun C_DeployAccountSFT (account:string id:string)
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (f:bool false)
-            )
-            (ref-DPDC::XB_DeployAccountSFT account id f f f f f f f f f f f)
-        )
-    )
-    (defun C_DeployAccountNFT (account:string id:string)
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (f:bool false)
-            )
-            (ref-DPDC::XB_DeployAccountNFT account id f f f f f f f f f f)
-        )
-    )
+    ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: see interface-side removal note above.
     (defun C_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator}
         (
             patron:string son:bool
@@ -188,7 +180,7 @@
                     (kda-cost:decimal
                         (if son
                             (ref-DALOS::UR_UsagePrice "dpsf")
-                            (ref-DALOS::UR_UsagePrice "dpsf")
+                            (ref-DALOS::UR_UsagePrice "dpnf")
                         )
                     )
                     (id:string
@@ -279,13 +271,13 @@
                         )
                         (ref-DPDC::XB_DeployAccountNFT owner-account id
                             false   ;;frozen
-                            false   ;;role-exemption
+                            true    ;;role-exemption
                             true    ;;role-nft-burn
                             true    ;;role-nft-create
                             true    ;;role-nft-recreate
                             true    ;;role-nft-update
-                            false   ;;role-modify-creator
-                            false   ;;role-modify-royalties
+                            true    ;;role-modify-creator
+                            true    ;;role-modify-royalties
                             true    ;;role-set-new-uri
                             false   ;;role-transfer
                         )

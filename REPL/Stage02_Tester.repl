@@ -41,6 +41,16 @@
 ;;SOVEREIGN EXECUTOR (DPDC IMC policies + DH collection issue — no mass mint)
 (load "Stage_02/[4.0]_Sovereign-Executor.repl")
 
+;;EQUITY (shareholder package shares) — DPDC Audit #22H: first real, reachable, asserted coverage.
+(load "Stage_02/[6.1.1]_EQUITY.repl")
+
+;;DPDC-F fragmentation (Make/Merge/Repurpose) — DPDC Audit #27M: first real, reachable, asserted coverage.
+(load "Stage_02/[6.1.2]_DPDC-FRAGMENTS.repl")
+
+;;DPDC-S sets (Primordial/Composite/Hybrid/NFT Make+Break, admin mutations) — DPDC Audit #39L: first real,
+;;reachable, asserted coverage.
+(load "Stage_02/[6.1.3]_DPDC-S.repl")
+
 ;;SLAVE DEPLOYER + EXECUTOR
 ;;FULL> Populate scripts — mass DPNF mint; ~minutes each (Nosferatu + Bloodshed worst offenders)
 ;(load "Stage_02/[5.1]_PopulateNosferatu.repl")

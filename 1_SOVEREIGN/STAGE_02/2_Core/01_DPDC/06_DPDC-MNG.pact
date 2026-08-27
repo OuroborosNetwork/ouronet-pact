@@ -297,10 +297,37 @@
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
                 (l1:integer (length nonces))
                 (l2:integer (length amounts))
+                (zd:object{DpdcUdcV1.DPDC|NonceData} (ref-DPDC-UDC::UDC_ZeroNonceData))
             )
             (enforce (= l1 l2) "Invalid Nonces and Amount for Class Zero Nonce Removal")
+            ;; DPDC Audit #5C follow-up: the DPDC system account is only protected from burn/wipe when
+            ;; the nonce being removed is currently backing an outstanding fragment claim -- that's the
+            ;; actual invariant #5C protects (burning collateral out from under fragment holders). EQUITY
+            ;; legitimately uses <dpdc> as a same-transaction escrow for its Convert/Break package-share
+            ;; flows (transfer in, burn old tier, credit new tier, transfer out) -- never fragmentation --
+            ;; and must not be blocked by this check. This capability only ever handles Class-0 nonces
+            ;; (enforced below, via the composed DPDC-MNG|C>IZ-CLASS-ZERO), so "is it fragmented" reduces
+            ;; to "does it have non-zero split-data" — checked directly here, without needing a forward
+            ;; reference to DPDC-F (which deploys after this module and cannot be referenced by interface
+            ;; type this early — confirmed live: referencing module{DpdcFragmentsV1} here throws "Cannot
+            ;; find module" at DPDC-MNG's own deploy step).
+            (if (= account (ref-DPDC::GOV|DPDC|SC_NAME))
+                (enforce
+                    (not
+                        (fold (or) false
+                            (map
+                                (lambda (n:integer) (!= (ref-DPDC::UR_SplitNonceData id son n) zd))
+                                nonces
+                            )
+                        )
+                    )
+                    "Not allowed for the DPDC system account when backing outstanding fragments"
+                )
+                true
+            )
             (map
                 (lambda
                     (idx:integer)

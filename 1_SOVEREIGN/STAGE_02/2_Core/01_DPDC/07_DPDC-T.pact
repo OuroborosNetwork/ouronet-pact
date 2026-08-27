@@ -303,6 +303,7 @@
             (enforce (<= ta read-gas) "Insufficient IGNIS for Debiting")
             (ref-DALOS::UEV_EnforceAccountExists sender)
             (ref-DALOS::UEV_EnforceAccountType sender false)
+            (ref-DALOS::CAP_EnforceAccountOwnership sender)
             (compose-capability (P|DPDC-T|CALLER))
         )
     )
@@ -480,7 +481,10 @@
                 (ref-DPDC:module{DpdcV1} DPDC)
                 (trc:bool (URC_TransferRoleChecker id son sender))
                 (s:bool (ref-DPDC::UR_CA|R-Transfer id son sender))
-                (r:bool (ref-DPDC::UR_CA|R-Transfer id son sender))
+                ;; DPDC Audit #16H: was reading <sender> twice (copy-paste) — the receiver-side check
+                ;; needs the receiver's own role, matching DPOF's correct sibling pattern
+                ;; (UEV_MoveRoleCheck, 06_DPOF.pact:1618-1619).
+                (r:bool (ref-DPDC::UR_CA|R-Transfer id son receiver))
             )
             (UEV_TransferRoleChecker trc s r)
         )

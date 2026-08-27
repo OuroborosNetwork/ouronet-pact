@@ -148,6 +148,7 @@
                     (do
                         (ref-DPDC-C::UEV_NonceDataForCreation (at idx new-nonces-data))
                         (UEV_NonceDataUpdater id son account (at idx nosc) nos nost)
+                        (UEV_NotSetInstance id son (at idx nosc) nost)     ;; DPDC Audit #12Hc
                     )
                 )
                 (enumerate 0 (- l1 1))
@@ -182,16 +183,28 @@
         )
     )
     (defcap DPDC-N|C>SET-NAME
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool)
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool name:string)
         @doc "[3] Controls Nonce Name Updating"
         @event
-        (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::UEV_Name name)     ;; DPDC Audit #12Hb
+            (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
+        )
     )
     (defcap DPDC-N|C>SET-DESCRIPTION
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool)
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool description:string)
         @doc "[4] Controls Nonce Description Updating"
         @event
-        (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::UEV_Description description)     ;; DPDC Audit #12Hb
+            (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
+        )
     )
     (defcap DPDC-N|C>SET-SCORE
         (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal)
@@ -201,18 +214,38 @@
         (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
     )
     (defcap DPDC-N|C>SET-META-DATA
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool)
+        (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object)
         @doc "[6] Controls Nonce Meta-Data Updating"
         @event
-        (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::UEV_MetaDataBag meta-data)     ;; DPDC Audit #12Hb
+            (compose-capability (DPDC-N|C>UPDATE id son account nosc nos nost))
+        )
     )
-    
+
     (defcap DPDC-N|C>SET-URI
-        (id:string son:bool account:string nosc:integer nos:bool nost:bool)
+        (
+            id:string son:bool account:string nosc:integer nos:bool nost:bool
+            ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data}
+            u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}
+        )
         @doc "[7] Controls Nonce Uri Updating"
         @event
-        (UEV_RoleSetNewUriON id son account)
-        (compose-capability (DPDC-N|C>DATA id son account nosc nos nost))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (UEV_RoleSetNewUriON id son account)
+            ;; DPDC Audit #12Hb
+            (ref-DPDC::UEV_AssetType ay)
+            (ref-DPDC::UEV_UriData u1)
+            (ref-DPDC::UEV_UriData u2)
+            (ref-DPDC::UEV_UriData u3)
+            (compose-capability (DPDC-N|C>DATA id son account nosc nos nost))
+        )
     )
     ;;
     (defcap DPDC-N|C>UPDATE 
@@ -228,6 +261,7 @@
                 (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
             )
             (UEV_NonceDataUpdater id son account nosc nos nost)
+            (UEV_NotSetInstance id son nosc nost)     ;; DPDC Audit #12Hc
             (ref-DALOS::CAP_EnforceAccountOwnership account)
             (compose-capability (P|SECURE-CALLER))
         )
@@ -287,6 +321,28 @@
                     true
                 )
             )
+        )
+    )
+    (defun UEV_NotSetInstance (id:string son:bool nosc:integer nost:bool)
+        @doc "Blocks direct edits to an already-minted NFT Set instance's own NonceData. NFT Set \
+            \ instances are individually unique combinations — each Make can combine different \
+            \ constituent nonces, so each instance carries its own composition record that must \
+            \ stay fixed once minted; only the Set-Class definition/template (the <nost=false> \
+            \ Sets path) may be touched afterward. SFT Sets are unaffected: an SFT set-class has \
+            \ exactly one shared nonce, never re-derived per Make, so its data legitimately stays \
+            \ editable. See DPDC Audit #12Hc."
+        (if (and nost (not son))
+            (let
+                (
+                    (ref-DPDC:module{DpdcV1} DPDC)
+                )
+                (enforce
+                    (= (ref-DPDC::UR_NonceClass id son nosc) 0)
+                    "NFT Set instance nonces cannot have their data directly modified — edit the \
+                        \ Set-Class definition instead"
+                )
+            )
+            true
         )
     )
     (defun UEV_RoleNftRecreateON (id:string son:bool account:string)
@@ -369,7 +425,9 @@
     )
     (defun C_UpdateNonceRoyalty
         (id:string son:bool account:string nosc:integer nos:bool nost:bool royalty-value:decimal)
-        @doc "[1] Updates Nonce Native Royalty Value"
+        @doc "[1] Updates Nonce Native Royalty Value. This field is a forward-looking hook for the \
+            \ upcoming Escrow/NFT marketplace (not yet built) — no on-chain consumer reads it today; \
+            \ confirmed intentional, not dead/unfinished code. See DPDC Audit #26M."
         (UEV_IMC)
         (let
             (
@@ -403,7 +461,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
-            (with-capability (DPDC-N|C>SET-NAME id son account nosc nos nost)
+            (with-capability (DPDC-N|C>SET-NAME id son account nosc nos nost name)
                 (XI_U|NonceNoD id son account nosc nos nost true name)
                 (ref-IGNIS::UDC_SmallCumulator account)
             )
@@ -417,7 +475,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
-            (with-capability (DPDC-N|C>SET-DESCRIPTION id son account nosc nos nost)
+            (with-capability (DPDC-N|C>SET-DESCRIPTION id son account nosc nos nost description)
                 (XI_U|NonceNoD id son account nosc nos nost false description)
                 (ref-IGNIS::UDC_SmallCumulator account)
             )
@@ -445,7 +503,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
-            (with-capability (DPDC-N|C>SET-META-DATA id son account nosc nos nost)
+            (with-capability (DPDC-N|C>SET-META-DATA id son account nosc nos nost meta-data)
                 (XI|U_NonceMetaData id son account nosc nos nost meta-data)
                 (ref-IGNIS::UDC_SmallCumulator account)
             )
@@ -462,7 +520,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
             )
-            (with-capability (DPDC-N|C>SET-URI id son account nosc nos nost)
+            (with-capability (DPDC-N|C>SET-URI id son account nosc nos nost ay u1 u2 u3)
                 (XI_U|NonceUri id son account nosc nos nost ay u1 u2 u3)
                 (ref-IGNIS::UDC_SmallCumulator account)
             )

@@ -117,7 +117,10 @@
     (ref-TS02-C1::DPSF|C_ToggleAddQuantityRole patron id emma t)
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma t)
     (ref-TS02-C1::DPSF|C_ToggleFreezeAccount patron id emma f)
-    (ref-TS02-C1::DPSF|C_DeployAccount patron orbr id)
+    ;;DPSF|C_DeployAccount removed — DPDC Audit #35M (standalone deploy, no ownership check). This file
+    ;;is already disabled/unreachable from the active pipeline (see file header); noted here only so a
+    ;;future resurrection attempt doesn't hit a silent "undefined function" surprise on this line.
+    ;(ref-TS02-C1::DPSF|C_DeployAccount patron orbr id)
     (ref-TS02-C1::DPSF|C_ToggleExemptionRole patron id orbr t)
     (ref-TS02-C1::DPSF|C_ToggleExemptionRole patron id orbr f)
     (ref-TS02-C1::DPSF|C_ToggleBurnRole patron id emma t)
@@ -361,7 +364,7 @@
             (ref-DPDC::UR_N|Description (ref-DPDC::UR_NonceData id true 1))
 
             (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NativeNonceData id true 1))
-            (ref-DPDC-S::UR_N|Score id true 1)
+            (ref-DPDC-S::URC_N|Score id true 1)
 
             (ref-DPDC::UR_N|MetaData (ref-DPDC::UR_NonceData id true 1))
             (ref-DPDC::UR_NonceValue id true 1)
@@ -381,7 +384,7 @@
             (ref-DPDC::UR_N|Description (ref-DPDC::UR_NonceData id true -1))
 
             (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NonceData id true -1))
-            (ref-DPDC-S::UR_N|Score id true 1)
+            (ref-DPDC-S::URC_N|Score id true 1)
 
             (ref-DPDC::UR_N|MetaData (ref-DPDC::UR_NonceData id true -1))
             (ref-DPDC::UR_NonceValue id true (abs -1))

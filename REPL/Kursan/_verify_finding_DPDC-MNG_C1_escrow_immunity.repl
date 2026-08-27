@@ -1,0 +1,74 @@
+;; Verification for DPDC Audit finding #5C (DPDC-MNG · C1): "burn/wipe has zero fragmentation-awareness —
+;; wiping/burning the dpdc escrow account's collateral orphans every outstanding fragment holder."
+;; Fix (owner-approved, single chokepoint): DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES (composed by BOTH burn and
+;; wipe caps) now rejects `account = GOV|DPDC|SC_NAME` (the dpdc escrow account) outright.
+;; This probe proves BOTH halves: burn (which never checked freeze at all) and wipe (which does), plus a
+;; control that ordinary, non-escrow burn/wipe still works.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-C5 - fragment nonce 4 (moves collateral into dpdc escrow) + grant dpdc the burn role")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHOC-98c486052a51")
+        (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+    )
+    (print (format "dpdc account = {}" [dpdc]))
+    (print (format "BEFORE anhd nonce4 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 3)]))
+    (print (format "MAKE FRAGMENTS RESULT = {}"
+        [(ref-TS02-C1::DPSF|C_MakeFragments KST.ANHD KST.ANHD id 3 100)]))
+    (print (format "dpdc nonce4 (escrowed collateral) supply = {}" [(ref-DPDC::UR_AccountNonceSupply dpdc id true 3)]))
+    ;; Prove burn's real precondition is just the burn ROLE, nothing about freeze — grant it to dpdc,
+    ;; simulating an accidental/malicious role grant, and deliberately do NOT freeze dpdc.
+    (print (format "GRANT BURN ROLE TO dpdc RESULT = {}"
+        [(ref-TS02-C1::DPSF|C_ToggleBurnRole KST.ANHD id dpdc true)]))
+)
+(commit-tx)
+
+(begin-tx "PROBE-C5 - control: legit burn on an ORDINARY (non-escrow) account must still work")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHOC-98c486052a51")
+    )
+    (print (format "BEFORE anhd nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
+    ;; ANHD already holds the burn role by default (owner==creator at genesis) — no need to grant it.
+    (print (format "LEGIT BURN RESULT = {}"
+        [(ref-TS02-C1::DPSF|C_Burn KST.ANHD id KST.ANHD 1 50)]))
+    (print (format "AFTER legit burn: anhd nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
+)
+(commit-tx)
+
+;;|| NEXT >
+;; The exploit, half 1: BURN dpdc's escrowed collateral directly, no freeze involved at all (burn never
+;; checked freeze, only the role — which we just granted). Submitted as its own real, uncaught transaction.
+;; EXPECTED: hard rejection at the new check in DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES.
+(begin-tx "PROBE-C5 - exploit half 1: burn dpdc's escrowed collateral, no freeze required")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHOC-98c486052a51")
+        (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+    )
+    (ref-TS02-C1::DPSF|C_Burn KST.ANHD id dpdc 3 50)
+)
+(commit-tx)

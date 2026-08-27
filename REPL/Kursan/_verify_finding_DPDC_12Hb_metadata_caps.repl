@@ -1,0 +1,142 @@
+;; Verification for DPDC Audit finding #12Hb: name/description/meta-data/asset-type/uri-* fields on
+;; DpdcUdcV1.DPDC|NonceData had zero content validation anywhere (creation or update). Fix added five new
+;; shared validators (DPDC::UEV_Name/UEV_Description/UEV_MetaDataBag/UEV_AssetType/UEV_UriData), wired into
+;; the single creation chokepoint (DPDC-C::UEV_NonceDataForCreation) and each DPDC-N per-field update defcap.
+;; This script proves both the creation path and the per-field update path enforce every new cap.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-12Hb - issue a fresh NFT collection, exercise every new metadata cap at creation + update")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (owner:string KST.ANHD)
+        (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
+        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpnf-price))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+)
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (owner:string KST.ANHD)
+        (creator:string KST.ANHD)
+        (name256:string (fold (+) "" (make-list 256 "x")))
+        (name257:string (fold (+) "" (make-list 257 "x")))
+        (uri2048:string (fold (+) "" (make-list 2048 "u")))
+        (uri2049:string (fold (+) "" (make-list 2049 "u")))
+        (word257:string (fold (+) "" (make-list 257 "w")))
+        (big-meta-value:string (fold (+) "" (make-list 8200 "m")))
+    )
+    (print (format "ISSUE RESULT = {}"
+        [(ref-TS02-C2::DPNF|C_Issue owner owner creator "MetaCapsProbeNFT" "MCPN"
+            true true true true true true true true)]))
+    (let ((id:string "MCPN-98c486052a51"))
+        ;; ==================== CREATION-PATH CAPS ====================
+        ;; #1 name > 256 chars rejected
+        (print (expect-failure "<<12Hb-1>> name of 257 chars rejected at creation"
+            (ref-TS02-C2::DPNF|C_Create owner id
+                [(ref-DPDC-UDC::UDC_NonceData
+                    0.0 0.0 name257 "d" (ref-DPDC-UDC::UDC_NoMetaData)
+                    (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                    (ref-DPDC-UDC::UDC_URI|Data "ipfs://a" "" "" "" "" "" "")
+                    (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                )]
+            )))
+        ;; #5 asset-type all-false rejected
+        (print (expect-failure "<<12Hb-2>> all-false asset-type rejected at creation"
+            (ref-TS02-C2::DPNF|C_Create owner id
+                [(ref-DPDC-UDC::UDC_NonceData
+                    0.0 0.0 "ok" "d" (ref-DPDC-UDC::UDC_NoMetaData)
+                    (ref-DPDC-UDC::UDC_ZeroURI|Type)
+                    (ref-DPDC-UDC::UDC_URI|Data "ipfs://a" "" "" "" "" "" "")
+                    (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                )]
+            )))
+        ;; #6/7/8 uri string > 2048 chars rejected
+        (print (expect-failure "<<12Hb-3>> uri-primary.image of 2049 chars rejected at creation"
+            (ref-TS02-C2::DPNF|C_Create owner id
+                [(ref-DPDC-UDC::UDC_NonceData
+                    0.0 0.0 "ok" "d" (ref-DPDC-UDC::UDC_NoMetaData)
+                    (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                    (ref-DPDC-UDC::UDC_URI|Data uri2049 "" "" "" "" "" "")
+                    (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                )]
+            )))
+        ;; Boundary + legit case: name at exactly 256 chars, real asset-type, real link -> succeeds
+        (print (format "<<12Hb-4>> CREATE at boundary (name=256, uri=2048) RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_Create owner id
+                [(ref-DPDC-UDC::UDC_NonceData
+                    0.0 0.0 name256 "d" (ref-DPDC-UDC::UDC_NoMetaData)
+                    (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                    (ref-DPDC-UDC::UDC_URI|Data uri2048 "" "" "" "" "" "")
+                    (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                )]
+            )]))
+        ;; ==================== UPDATE-PATH CAPS (nonce 1, just created above) ====================
+        ;; #1 name > 256 chars rejected on update too
+        (print (expect-failure "<<12Hb-5>> C_UpdateNonceName rejects 257-char name"
+            (ref-TS02-C2::DPNF|C_UpdateNonceName owner id owner 1 true name257)))
+        ;; name update at cap succeeds
+        (print (format "<<12Hb-6>> C_UpdateNonceName at exactly 256 chars RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_UpdateNonceName owner id owner 1 true name256)]))
+        ;; #2 description: single word > 256 chars rejected
+        (print (expect-failure "<<12Hb-7>> C_UpdateNonceDescription rejects a single 257-char word"
+            (ref-TS02-C2::DPNF|C_UpdateNonceDescription owner id owner 1 true word257)))
+        ;; description legit multi-word update succeeds
+        (print (format "<<12Hb-8>> C_UpdateNonceDescription legit RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_UpdateNonceDescription owner id owner 1 true "a short legit description")]))
+        ;; #4 meta-data blob > 8192 serialized chars rejected
+        (print (expect-failure "<<12Hb-9>> C_UpdateNonceMetaData rejects an oversized trait blob"
+            (ref-TS02-C2::DPNF|C_UpdateNonceMetaData owner id owner 1 true {"trait-key" : big-meta-value})))
+        ;; meta-data legit trait write succeeds
+        (print (format "<<12Hb-10>> C_UpdateNonceMetaData legit trait RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_UpdateNonceMetaData owner id owner 1 true {"rarity" : "legendary"})]))
+        ;; #5/#6/7/8 C_UpdateNonceURI: all-false asset-type rejected, oversized uri rejected, legit succeeds
+        (print (expect-failure "<<12Hb-11>> C_UpdateNonceURI rejects all-false asset-type"
+            (ref-TS02-C2::DPNF|C_UpdateNonceURI owner id owner 1 true
+                (ref-DPDC-UDC::UDC_ZeroURI|Type)
+                (ref-DPDC-UDC::UDC_URI|Data "ipfs://a" "" "" "" "" "" "")
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data))))
+        (print (expect-failure "<<12Hb-12>> C_UpdateNonceURI rejects an oversized link string"
+            (ref-TS02-C2::DPNF|C_UpdateNonceURI owner id owner 1 true
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_URI|Data uri2049 "" "" "" "" "" "")
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data))))
+        (print (format "<<12Hb-13>> C_UpdateNonceURI legit RESULT = {}"
+            [(ref-TS02-C2::DPNF|C_UpdateNonceURI owner id owner 1 true
+                (ref-DPDC-UDC::UDC_URI|Type true true false false false false false)
+                (ref-DPDC-UDC::UDC_URI|Data "ipfs://bafyNormal" "" "" "" "" "" "")
+                (ref-DPDC-UDC::UDC_URI|Data "" "ipfs://bafyAudioMirror" "" "" "" "" "")
+                (ref-DPDC-UDC::UDC_ZeroURI|Data))]))
+        ""
+    )
+)
+(commit-tx)

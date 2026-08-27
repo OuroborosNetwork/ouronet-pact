@@ -18,10 +18,14 @@
     (defun UR_CSD:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}] (id:string son:bool set-class:integer))
     (defun UR_SetNonceData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool set-class:integer))
     (defun UR_SetSplitData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool set-class:integer))
-    (defun UR_N|Score:decimal (id:string son:bool nonce:integer))
     ;;
     ;;  [URC]
     ;;
+    ;; URC_N|Score renamed from UR_N|Score — DPDC Audit #19H follow-up: it reads UR_NonceClass/
+    ;; UR_N|RawScore/UR_SetMultiplier and derives a computed "cooked" value from them (sentinel
+    ;; check, multiply, fragment-divide), which is the URC_* ("read + derive") contract, not a
+    ;; plain UR_* table read. Zero callers anywhere, so the rename touches no call site.
+    (defun URC_N|Score:decimal (id:string son:bool nonce:integer))
     (defun URC_PrimordialOrComposite:[bool] (id:string son:bool set-class:integer))
     (defun URC_NoncesSummedScore:decimal (id:string son:bool nonces:[integer]))
     (defun URC_SemiFungibleConstituents:[integer] (id:string set-class:integer))
@@ -64,6 +68,14 @@
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
     )
+    (defun C_DefineHybridSet:object{IgnisCollectorV1.OutputCumulator}
+        (
+            id:string son:bool set-name:string score-multiplier:decimal
+            primordial-sd:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
+            composite-sd:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
+            ind:object{DpdcUdcV1.DPDC|NonceData}
+        )
+    )
     (defun C_EnableSetClassFragmentation:object{IgnisCollectorV1.OutputCumulator}
         (
             id:string son:bool set-class:integer
@@ -72,7 +84,9 @@
     )
     (defun C_ToggleSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer toggle:bool))
     (defun C_RenameSet:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer new-name:string))
-    (defun C_UpdateSetMultiplier:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer new-multiplier:decimal))
+    ;; C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is now immutable after Define,
+    ;; matching the Set-Class recipe's own immutability. A wrong multiplier means disabling that
+    ;; Set-Class and defining a new one, same recovery path as a wrong recipe.
     ;;
     (defun XB_U|NonceOrSplitData (id:string son:bool set-class:integer nos:bool nd:object{DpdcUdcV1.DPDC|NonceData}))
 )
@@ -181,6 +195,12 @@
     (defun CT_EmptyCumulator ()     (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::DALOS|EmptyOutputCumulatorV2)))
     (defconst BAR                   (CT_Bar))
     (defconst EOC                   (CT_EmptyCumulator))
+    ;;DPDC Audit #51L: a Primordial/Composite set-definition must have at least 1 position (an empty
+    ;;list previously crashed with an opaque out-of-bounds error, since (enumerate 0 -1) returns [0 -1],
+    ;;not [] -- see UEV_PrimordialSetDefinition/UEV_CompositeSetDefinition) and at most this many, so an
+    ;;unreasonably large definition can't push Make/Break gas past the practical ceiling and permanently
+    ;;brick that set-class for its owner.
+    (defconst MAX_SET_DEFINITION_SIZE 20)
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -191,19 +211,20 @@
     ;;{C2}
     ;;{C3}
     ;;{C4}
-    (defcap DPDC-S|C>MAKE (id:string son:bool nonces:[integer] set-class:integer)
+    (defcap DPDC-S|C>MAKE (id:string son:bool nonces:[integer] set-class:integer how-many-sets:integer)
         @event
         (let
             (
                 (iz-active:bool (UR_IzSetActive id son set-class))
             )
             (enforce iz-active (format "Set-Class {} is not active for Set Composition" [set-class]))
+            (enforce (> how-many-sets 0) "How-Many-Sets must be a positive, non-zero integer")
             (UEV_NoncesForSetClass id son nonces set-class)
             (compose-capability (P|DPDC-S|CALLER))
             (compose-capability (P|DPDC-S|REMOTE-GOV))
         )
     )
-    (defcap DPDC-S|C>BREAK (id:string son:bool nonce:integer)
+    (defcap DPDC-S|C>BREAK (id:string son:bool nonce:integer how-many-sets:integer)
         @event
         (let
             (
@@ -212,33 +233,36 @@
             )
             ;;Nonces of Inactive Sets can still be broken down.
             (enforce (!= nonce-class 0) "Only Class Non-0 Nonces can be broken Down")
+            (enforce (> how-many-sets 0) "How-Many-Sets must be a positive, non-zero integer")
             (compose-capability (P|DPDC-S|CALLER))
             (compose-capability (P|DPDC-S|REMOTE-GOV))
         )
     )
-    (defcap DPDC-S|C>DEFINE-PRIMORDIAL 
+    (defcap DPDC-S|C>DEFINE-PRIMORDIAL
         (
-            id:string son:bool
+            id:string son:bool score-multiplier:decimal
             set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
         @event
         (UEV_PrimordialSetDefinition id son set-definition)
+        (UEV_ScoreMultiplier score-multiplier)     ;; DPDC Audit #15H
         (compose-capability (DPDC-S|CX>DEFINE id son ind))
     )
-    (defcap DPDC-S|C>DEFINE-COMPOSITE 
+    (defcap DPDC-S|C>DEFINE-COMPOSITE
         (
-            id:string son:bool
+            id:string son:bool score-multiplier:decimal
             set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
         @event
         (UEV_CompositeSetDefinition id son set-definition)
+        (UEV_ScoreMultiplier score-multiplier)     ;; DPDC Audit #15H
         (compose-capability (DPDC-S|CX>DEFINE id son ind))
     )
-    (defcap DPDC-S|C>DEFINE-HYBRID 
+    (defcap DPDC-S|C>DEFINE-HYBRID
         (
-            id:string son:bool
+            id:string son:bool score-multiplier:decimal
             primordial-sd:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
             composite-sd:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
@@ -246,6 +270,7 @@
         @event
         (UEV_PrimordialSetDefinition id son primordial-sd)
         (UEV_CompositeSetDefinition id son composite-sd)
+        (UEV_ScoreMultiplier score-multiplier)     ;; DPDC Audit #15H
         (compose-capability (DPDC-S|CX>DEFINE id son ind))
     )
     (defcap DPDC-S|CX>DEFINE (id:string son:bool ind:object{DpdcUdcV1.DPDC|NonceData})
@@ -273,6 +298,9 @@
             )
             (enforce (not iz-fragmented) "Set Class must not be fragmented in order to enable fragmentation for it !")
             (UEV_SetClass id son set-class)
+            ;;DPDC Audit #30M: require the set-class be active, consistent with its C>TOGGLE/C>RENAME
+            ;;siblings — this was the only one of the owner-gated set mutations that skipped the check.
+            (UEV_SetActiveState id son set-class true)
             (ref-DPDC::CAP_Owner id son)
             (ref-DPDC-C::UEV_NonceDataForCreation fragmentation-ind)
             (compose-capability (SECURE))
@@ -302,28 +330,7 @@
             (compose-capability (SECURE))
         )
     )
-    (defcap DPDC-S|C>MULTIPLIER (id:string son:bool set-class:integer new-multiplier:decimal)
-        @event
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (current-multiplier:string (UR_SetMultiplier id son set-class))
-            )
-            ;;Multiplier Precision Check, maximum 3 Precision for Set Multiplier
-            (enforce
-                (= (floor new-multiplier 3) new-multiplier)
-                (format "Input Set-Multiplier of {} is not conform with its designed precision of only 3 decimals" [new-multiplier])
-            )
-            (enforce 
-                (!= new-multiplier current-multiplier) 
-                (format "The Set Multiplier of <{}> must be different from the current Set Multiplier of <{}> for operation" [new-multiplier current-multiplier])
-            )
-            (UEV_SetActiveState id son set-class true)
-            (ref-DPDC::CAP_Owner id son)
-            (compose-capability (SECURE))
-        )
-    )
-
+    ;; DPDC-S|C>MULTIPLIER removed — DPDC Audit #15H: score-multiplier is immutable after Define.
     ;;
     ;;<=======>
     ;;FUNCTIONS
@@ -370,32 +377,38 @@
     (defun UR_SetSplitData:object{DpdcUdcV1.DPDC|NonceData} (id:string son:bool set-class:integer)
         (at "split-data" (UR_Set id son set-class))
     )
-    ;;
-    ;;Score Read for Nonce
-    (defun UR_N|Score:decimal (id:string son:bool nonce:integer)
+    ;;{F1}  [URC]
+    ;;Score Read for Nonce — renamed from UR_N|Score, DPDC Audit #19H follow-up: reads
+    ;;UR_NonceClass/UR_N|RawScore/UR_SetMultiplier and derives a computed value from them
+    ;;(sentinel check, multiply, fragment-divide) — the URC_* contract, not a plain UR_* read.
+    (defun URC_N|Score:decimal (id:string son:bool nonce:integer)
+        @doc "Cooked score reader: applies the Set-Class multiplier (for Set-member nonces) and the \
+            \ 1/1000 fragment split (for negative/fragment nonces) to a nonce's raw stored score. \
+            \ DPDC Audit #19H: the -1.0 <unscored> sentinel is now checked once, on the untouched raw \
+            \ value, before any multiply/divide — the previous per-branch checks either omitted the \
+            \ check entirely (fragment arms) or compared against the wrong constant (-1000.0 instead \
+            \ of -1.0, a copy-paste leftover), letting the sentinel leak through as a real negative \
+            \ score in 3 of the 4 branches."
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
                 (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
                 (raw-nonce-score:decimal (ref-DPDC::UR_N|RawScore (ref-DPDC::UR_NativeNonceData id son (abs nonce))))
             )
-            (if (= nonce-class 0)
-                (if (< nonce 0)
-                    (/ raw-nonce-score 1000.0)
-                    (if (= raw-nonce-score -1.0)
-                        0.0
+            (if (= raw-nonce-score -1.0)
+                0.0
+                (if (= nonce-class 0)
+                    (if (< nonce 0)
+                        (/ raw-nonce-score 1000.0)
                         raw-nonce-score
                     )
-                )
-                (let
-                    (
-                        (multiplier:decimal (UR_SetMultiplier id son nonce-class))
-                        (multiplied-score:decimal (* raw-nonce-score multiplier))
-                    )
-                    (if (< nonce 0)
-                        (/ multiplied-score 1000.0)
-                        (if (= multiplied-score -1000.0)
-                            0.0
+                    (let
+                        (
+                            (multiplier:decimal (UR_SetMultiplier id son nonce-class))
+                            (multiplied-score:decimal (* raw-nonce-score multiplier))
+                        )
+                        (if (< nonce 0)
+                            (/ multiplied-score 1000.0)
                             multiplied-score
                         )
                     )
@@ -403,7 +416,6 @@
             )
         )
     )
-    ;;{F1}  [URC]
     ;:Requires rethinking
     (defun URC_PrimordialOrComposite:[bool] (id:string son:bool set-class:integer)
         (UEV_SetClass id son set-class)
@@ -413,6 +425,15 @@
         ]
     )
     (defun URC_NoncesSummedScore:decimal (id:string son:bool nonces:[integer])
+        @doc "Bakes a new NFT set instance's own raw score from the RAW (unmultiplied) scores of its \
+            \ constituent nonces -- deliberately via UR_N|RawScore, not the multiplier-applying \
+            \ URC_N|Score. DPDC Audit #52L: confirmed intentional design, owner-verified against real \
+            \ mainnet Bloodshed set-NFT scores. A set-class's own score-multiplier is meant to apply \
+            \ exactly once, at that set's own level, when ITS score is later read (via URC_N|Score) -- \
+            \ not per-constituent here at Make-time. For a Composite/Hybrid set whose constituent is \
+            \ itself a previously-Made, already-multiplied set instance from another set-class, this \
+            \ correctly sums that constituent's pre-multiplier raw value, so multipliers don't compound \
+            \ across nested sets."
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
@@ -461,8 +482,13 @@
                 (if (= l-csd 0)
                     ;;Primordial Set
                     (URCX|PSD_FirstNoncesList psd)
-                    ;;Hybrid Set
-                    (+ (URCX|CSD_NonceList id csd) (URCX|PSD_FirstNoncesList psd))
+                    ;;Hybrid Set — DPDC Audit #32M: order must be [primordial..., composite...], matching
+                    ;;the Make-time convention in UEV_NoncesForSetClass's hybrid branch below (which does
+                    ;;(take l-psd nonces) for primordial, (drop l-psd nonces) for composite). The two were
+                    ;;previously reversed relative to each other — harmless today only because every leg
+                    ;;gets the same uniform <how-many-sets> scalar, but a future non-uniform per-position
+                    ;;quantity would silently misattribute between legs. Keep both in this same order.
+                    (+ (URCX|PSD_FirstNoncesList psd) (URCX|CSD_NonceList id csd))
                 )
             )
         )
@@ -527,9 +553,15 @@
     )
     ;;{F2}  [UEV]
     (defun UEV_PrimordialSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}])
+        ;;DPDC Audit #51L: reject empty/oversized definitions with a clear message before any
+        ;;enumerate-based fold runs (an empty list would otherwise crash with an opaque
+        ;;out-of-bounds error several lines below).
+        (enforce
+            (and (> (length set-definition) 0) (<= (length set-definition) MAX_SET_DEFINITION_SIZE))
+            (format "Set-Definition length must be between 1 and {} positions" [MAX_SET_DEFINITION_SIZE])
+        )
         (let
             (
-                (ref-U|INT:module{OuronetIntegersV1} U|INT)
                 (ref-DPDC:module{DpdcV1} DPDC)
                 (nonces-used-in-set-definition:[integer]
                     (fold
@@ -541,10 +573,24 @@
                         (enumerate 0 (- (length set-definition) 1))
                     )
                 )
-                (max:integer (ref-U|INT::UC_MaxInteger (distinct nonces-used-in-set-definition)))
                 (nu:integer (ref-DPDC::UR_NoncesUsed id son))
             )
-            (enforce (<= max nu) "Invalid Set-Definition for a Primordial Set with non existent Nonces")
+            ;;DPDC Audit #31M: check every individual allowed-nonce value, not just the running max of
+            ;;the whole list (the old (<= max nu) check let an out-of-range negative "fragment" value
+            ;;hide behind any legitimately-small value elsewhere in the same definition, since a large
+            ;;negative number is always <= a small positive max). A value is only plausible if it
+            ;;references an existing native nonce (positive, 1..nu) or a fragment encoding of one
+            ;;(negative, magnitude 1..nu) -- 0 is never valid either way.
+            (enforce
+                (fold (and) true
+                    (map
+                        (lambda (n:integer) (and (> (abs n) 0) (<= (abs n) nu)))
+                        nonces-used-in-set-definition
+                    )
+                )
+                (format "Invalid Set-Definition for a Primordial Set: every allowed-nonce must reference \
+                    \ an existing native nonce (magnitude 1-{}) or its fragment encoding" [nu])
+            )
             (map
                 (lambda
                     (idx:integer)
@@ -567,6 +613,11 @@
         )
     )
     (defun UEV_CompositeSetDefinition (id:string son:bool set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}])
+        ;;DPDC Audit #51L: same empty/oversized-definition guard as UEV_PrimordialSetDefinition above.
+        (enforce
+            (and (> (length set-definition) 0) (<= (length set-definition) MAX_SET_DEFINITION_SIZE))
+            (format "Set-Definition length must be between 1 and {} positions" [MAX_SET_DEFINITION_SIZE])
+        )
         (let
             (
                 (ref-U|INT:module{OuronetIntegersV1} U|INT)
@@ -583,6 +634,10 @@
                 )
                 (max:integer (ref-U|INT::UC_MaxInteger (distinct set-classes-used-in-set-definition)))
                 (scu:integer (ref-DPDC::UR_SetClassesUsed id son))
+            )
+            (enforce
+                (fold (and) true (map (lambda (sc:integer) (> sc 0)) set-classes-used-in-set-definition))
+                "Invalid Set-Definition: allowed-sclass must be greater than 0 for every position (0 is reserved)"
             )
             (enforce (<= max scu) "Invalid Set-Definition for a Composite Set with non existent Set-Classes")
         )
@@ -623,6 +678,23 @@
             (enforce (= x state) (format "Set Class {} of {} ID {} must be set to {} for operation" [set-class (if son "SFT" "NFT") id state]))
         )
     )
+    (defun UEV_ScoreMultiplier (new-multiplier:decimal)
+        @doc "Bounds a Set-Class score-multiplier: max 3 decimals precision (unchanged from the \
+            \ original Update-time check), and a [1.0, 100.0] magnitude range — a multiplier can \
+            \ boost a score (up to 100x) or leave it unchanged (1.0, the neutral no-op value), but \
+            \ never reduce it below the raw score — to prevent an unbounded, instantly-retroactive \
+            \ re-pricing of every outstanding member of the Set-Class. Enforced only at Define \
+            \ (Primordial/Composite/Hybrid) — score-multiplier is immutable thereafter, see #15H \
+            \ follow-up (Fix #14). See DPDC Audit #15H."
+        (enforce
+            (= (floor new-multiplier 3) new-multiplier)
+            (format "Input Set-Multiplier of {} is not conform with its designed precision of only 3 decimals" [new-multiplier])
+        )
+        (enforce
+            (and (>= new-multiplier 1.0) (<= new-multiplier 100.0))
+            (format "Set-Multiplier of {} must be between 1.0 and 100.0 inclusive" [new-multiplier])
+        )
+    )
     ;;
     (defun UEV_NoncesForSetClass (id:string son:bool nonces:[integer] set-class:integer)
         (let
@@ -654,7 +726,10 @@
                 (if (= l-csd 0)
                     ;;Primordial Set
                     (UEV_Primordial nonces psd)
-                    ;;Hybrid Set
+                    ;;Hybrid Set — expects <nonces> ordered [primordial..., composite...]. DPDC Audit
+                    ;;#32M: URC_SemiFungibleConstituents's hybrid branch (Break-time reconstruction,
+                    ;;above in [F1]) must keep the same ordering convention if either function's order
+                    ;;ever changes.
                     (do
                         (UEV_Primordial (take l-psd nonces) psd)
                         (UEV_Composite id son (drop l-psd nonces) csd)
@@ -730,8 +805,8 @@
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool true)
             )
-            (with-capability (DPDC-S|C>MAKE id son nonces set-class)
-                ;;1]SFT Set Nonce is already created with the Set Definition, 
+            (with-capability (DPDC-S|C>MAKE id son nonces set-class how-many-sets)
+                ;;1]SFT Set Nonce is already created with the Set Definition,
                 ;;it only needs a quantity of <how-many-sets> to be added to target <account>
                 (ref-DPDC-C::XB_CreditSFT-Nonce account id (UR_NonceOfSet id set-class) how-many-sets)
                 ;;2]Transfer <nonces> to <dpdc> last to return the cumulator.
@@ -751,14 +826,14 @@
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool true)
             )
-            (with-capability (DPDC-S|C>BREAK id son nonce)
+            (with-capability (DPDC-S|C>BREAK id son nonce how-many-sets)
                 (let
                     (
                         (ico1:object{IgnisCollectorV1.OutputCumulator}
                             ;;1]Transfer the SFT Sets from <account> to <dpdc>
                             (ref-DPDC-T::C_Transfer [id] [son] account dpdc [[nonce]] [[how-many-sets]] true)
                         )
-                        (constituents:[integer] 
+                        (constituents:[integer]
                             (URC_SemiFungibleConstituents id (ref-DPDC::UR_NonceClass id son nonce))
                         )
                         (ico2:object{IgnisCollectorV1.OutputCumulator}
@@ -786,7 +861,7 @@
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool false)
             )
-            (with-capability (DPDC-S|C>MAKE id son nonces set-class)
+            (with-capability (DPDC-S|C>MAKE id son nonces set-class 1)
                 (let
                     (
                         (ico1:object{IgnisCollectorV1.OutputCumulator}
@@ -835,7 +910,7 @@
                 (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
                 (son:bool false)
             )
-            (with-capability (DPDC-S|C>BREAK id son nonce)
+            (with-capability (DPDC-S|C>BREAK id son nonce 1)
                 (let
                     (
                         (ico1:object{IgnisCollectorV1.OutputCumulator}
@@ -865,7 +940,7 @@
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
         (UEV_IMC)
-        (with-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son set-definition ind)
+        (with-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son score-multiplier set-definition ind)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -897,7 +972,7 @@
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
         (UEV_IMC)
-        (with-capability (DPDC-S|C>DEFINE-COMPOSITE id son set-definition ind)
+        (with-capability (DPDC-S|C>DEFINE-COMPOSITE id son score-multiplier set-definition ind)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -930,7 +1005,7 @@
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
         (UEV_IMC)
-        (with-capability (DPDC-S|C>DEFINE-HYBRID id son primordial-sd composite-sd ind)
+        (with-capability (DPDC-S|C>DEFINE-HYBRID id son score-multiplier primordial-sd composite-sd ind)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -1002,19 +1077,7 @@
             )
         )
     )
-    (defun C_UpdateSetMultiplier:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool set-class:integer new-multiplier:decimal)
-        (UEV_IMC)
-        (with-capability (DPDC-S|C>MULTIPLIER id son set-class new-multiplier)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC:module{DpdcV1} DPDC)
-                )
-                (XI_Multiplier id son set-class new-multiplier)
-                (ref-IGNIS::UDC_SmallestCumulator (ref-DPDC::UR_CreatorKonto id son))
-            )
-        )
-    )
+    ;; C_UpdateSetMultiplier removed — DPDC Audit #15H.
     ;;{F7}  [X]
     (defun XI_PrimordialSet:integer
         (
@@ -1022,7 +1085,7 @@
             set-definition:[object{DpdcUdcV1.DPDC|AllowedNonceForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
-        (require-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son set-definition ind))
+        (require-capability (DPDC-S|C>DEFINE-PRIMORDIAL id son score-multiplier set-definition ind))
         (let
             (
                 (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
@@ -1062,7 +1125,7 @@
             set-definition:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
-        (require-capability (DPDC-S|C>DEFINE-COMPOSITE id son set-definition ind))
+        (require-capability (DPDC-S|C>DEFINE-COMPOSITE id son score-multiplier set-definition ind))
         (let
             (
                 (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
@@ -1103,7 +1166,7 @@
             composite-sd:[object{DpdcUdcV1.DPDC|AllowedClassForSetPosition}]
             ind:object{DpdcUdcV1.DPDC|NonceData}
         )
-        (require-capability (DPDC-S|C>DEFINE-HYBRID id son primordial-sd composite-sd ind))
+        (require-capability (DPDC-S|C>DEFINE-HYBRID id son score-multiplier primordial-sd composite-sd ind))
         (let
             (
                 (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
@@ -1150,10 +1213,7 @@
         (require-capability (DPDC-S|C>RENAME id son set-class new-name))
         (XI_U|SetName id son set-class new-name)
     )
-    (defun XI_Multiplier (id:string son:bool set-class:integer new-multiplier:decimal)
-        (require-capability (DPDC-S|C>MULTIPLIER id son set-class new-multiplier))
-        (XI_U|SetMultiplier id son set-class new-multiplier)
-    )
+    ;; XI_Multiplier removed — DPDC Audit #15H.
     ;;
     ;; [<SetsTable> Writings] [3]
     (defun XI_I|CollectionSet (id:string son:bool set-class:integer set:object{DpdcUdcV1.DPDC|Set})
@@ -1191,13 +1251,7 @@
             (update DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"set-name" : new-name})
         )
     )
-    (defun XI_U|SetMultiplier (id:string son:bool set-class:integer new-multiplier:decimal)
-        (require-capability (SECURE))
-        (if son
-            (update DPSF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"set-score-multiplier" : new-multiplier})
-            (update DPNF|SetsTable (concat [id BAR (format "{}" [set-class])]) {"set-score-multiplier" : new-multiplier})
-        )
-    )
+    ;; XI_U|SetMultiplier removed — DPDC Audit #15H: score-multiplier is write-once, at Define.
 )
 
 (create-table P|T)

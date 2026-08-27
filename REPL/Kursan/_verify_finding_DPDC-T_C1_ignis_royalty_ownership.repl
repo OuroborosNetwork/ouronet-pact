@@ -1,0 +1,82 @@
+;; Scratch / adversarial-verification for DPDC Audit finding #2C (DPDC-T · C1):
+;; "C_IgnisRoyaltyCollector debits `patron`'s IGNIS with no ownership check anywhere in the call chain."
+;; Fix (defense-in-depth, owner-approved): 07_DPDC-T.pact's IGNIS|C>DEBIT now calls
+;; (ref-DALOS::CAP_EnforceAccountOwnership sender) — "sender" here is bound to `patron`, the royalty payer.
+;;
+;; IGNIS gas collection is already ON by this point (Stage01's [4.0]_Sovereign-Executor.repl turns it on
+;; unconditionally) — no separate toggle needed here, confirmed by direct read below.
+;;
+;; URC_SummedIgnisRoyalty exempts the creator from paying themselves a royalty (`if sender=creator, 0.0`),
+;; so a self-transfer never actually exercises the debit path — need sender != creator for a real,
+;; nonzero royalty. ANHD is DHOC's creator, so: ANHD -> Emma (self-transfer, no royalty, just sets up
+;; Emma holding real supply) then Emma -> Lumy (sender=Emma != creator=ANHD, real royalty applies).
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-C2 - baseline + set Emma up holding real DHOC nonce1 supply")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHOC-98c486052a51")
+    )
+    (print (format "virtual gas toggle = {}" [(ref-DALOS::UR_VirtualToggle)]))
+    (print (format "nonce1 ignis-royalty (per unit) = {}" [(ref-DPDC::UR_N|IgnisRoyalty (ref-DPDC::UR_NonceData id true 1))]))
+    (print (format "nonce1 creator konto = {}" [(ref-DPDC::UR_CreatorKonto id true)]))
+    (print (format "ANHD == creator? = {}" [(= KST.ANHD (ref-DPDC::UR_CreatorKonto id true))]))
+    ;; ANHD (the creator) -> Emma: self-creator exemption, no royalty, just seeds Emma's balance.
+    (print (format "SETUP TRANSFER (ANHD->Emma, self-creator, no royalty expected) = {}"
+        [(ref-TS02-C1::DPSF|C_TransferNonce KST.ANHD id KST.ANHD KST.EMMA 1 25 false)]))
+    (print (format "emma nonce1 supply after setup = {}" [(ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 1)]))
+    (print (format "emma IGNIS after setup = {}" [(ref-DALOS::UR_TF_AccountSupply KST.EMMA false)]))
+    (print (format "anhd IGNIS (creator) after setup = {}" [(ref-DALOS::UR_TF_AccountSupply KST.ANHD false)]))
+)
+(commit-tx)
+
+(begin-tx "PROBE-C2 - legit: Emma pays her OWN real royalty transferring to Lumy (sender=Emma != creator)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHOC-98c486052a51")
+    )
+    (print (format "LEGIT RESULT (patron=Emma, Emma signs, Emma pays her own real royalty) = {}"
+        [(ref-TS02-C1::DPSF|C_TransferNonce KST.EMMA id KST.EMMA KST.LUMY 1 10 false)]))
+    (print (format "emma IGNIS after real royalty paid = {}" [(ref-DALOS::UR_TF_AccountSupply KST.EMMA false)]))
+    (print (format "anhd IGNIS (creator, should have grown by the royalty) = {}" [(ref-DALOS::UR_TF_AccountSupply KST.ANHD false)]))
+)
+(commit-tx)
+
+;;|| NEXT >
+;; The illegitimate attempt: LUMY (who does not own/control Emma's account or guard) tries to name Emma as
+;; `patron` for a further transfer LUMY signs and directs to himself — attempting to make EMMA (not LUMY)
+;; pay the real, nonzero royalty this transfer would owe. Submitted as its own real, uncaught transaction
+;; (no expect-failure — matching how an attacker would actually submit it). EXPECTED: hard rejection now,
+;; at CAP_EnforceAccountOwnership inside IGNIS|C>DEBIT — reached before C_Collect's own patron check even
+;; runs, since royalty collection happens earlier in the same call.
+(begin-tx "PROBE-C2 - illegitimate patron, submitted as a real uncaught transaction")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_Lumy", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHOC-98c486052a51")
+    )
+    ;; LUMY signs, but names EMMA as patron — LUMY does not own/control Emma's account.
+    (ref-TS02-C1::DPSF|C_TransferNonce KST.EMMA id KST.LUMY KST.LUMY 1 5 false)
+)
+(commit-tx)

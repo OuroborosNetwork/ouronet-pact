@@ -1,0 +1,20 @@
+;; Verify Fix for DPDC Audit #35M — DPSF|C_DeployAccount/DPNF|C_DeployAccount (standalone Talos
+;; entrypoints, no ownership check on <account>) removed. Their one real internal caller,
+;; TS02-DPAD::A_RegisterAssetToLaunchpad, was redirected to call DPDC::XB_DeployAccountSFT/NFT directly,
+;; module-to-module -- the same pattern every other legitimate internal caller already used.
+;;
+;; This full end-to-end run of the real launchpad scenario ([5.3]_Launchpad.repl, which registers a real
+;; SFT/EQUITY collection to the launchpad via that exact call) is what caught a real regression the
+;; redirect introduced on the first attempt: TS02-DPAD's OWN P|TALOS-SUMMONER guard had never been
+;; registered as a trusted DPDC IMC peer (only TS02-C1's/TS02-C2's was, via the now-removed Talos
+;; wrapper's call chain) -- so the direct call failed UEV_IMC with "None of the guards passed" the first
+;; time this was tried. Fixed by adding TS02-DPAD's own guard to DPDC's registered peers in
+;; 03_TS02-DPAD.pact's P|A_Define (the same "Talos module needs its own IMC registration into the core
+;; module it calls directly" pattern already fixed once in the AQP audit -- see
+;; STAGE_02/2_Core/03_AQP/Audit/ROUND-02-FIXES.md's "Reverse IMC" note -- and once in the ATS audit's
+;; #34N/Fix #17). A "just compiles" check would NOT have caught this; only this full scenario run did.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage00a_StoaTests.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage02_Tester.repl")
+(load "../Stage_02/[5.3]_Launchpad.repl")

@@ -98,6 +98,7 @@
     (defun UEV_CanAddSpecialRoleON (id:string son:bool))
     (defun UEV_ToggleSpecialRole (id:string son:bool toggle:bool))
     (defun UEV_CanFreezeON (id:string son:bool))
+    (defun UEV_CanWipeON (id:string son:bool))
     (defun UEV_PauseState (id:string son:bool state:bool))
     (defun UEV_AccountAddQuantityState (id:string account:string state:bool))
     (defun UEV_AccountFreezeState (id:string son:bool account:string state:bool))
@@ -112,6 +113,11 @@
     (defun UEV_AccountSetUriState (id:string son:bool account:string state:bool))
     (defun UEV_Royalty (royalty:decimal))
     (defun UEV_IgnisRoyalty (royalty:decimal))
+    (defun UEV_Name (name:string))
+    (defun UEV_Description (description:string))
+    (defun UEV_MetaDataBag (meta-data:object))
+    (defun UEV_AssetType (asset-type:object{DpdcUdcV1.URI|Type}))
+    (defun UEV_UriData (u:object{DpdcUdcV1.URI|Data}))
     (defun UEV_NftNonceExistance (id:string nonce:integer existance:bool))
     (defun UEV_NonceQuantityInclusion (account:string id:string son:bool nonce:integer amount:integer))
     (defun UEV_NonceQuantityInclusionMapper (account:string id:string son:bool nonces:[integer] amounts:[integer]))
@@ -124,6 +130,7 @@
     ;;
     (defun CAP_Owner (id:string son:bool))
     (defun CAP_Creator (id:string son:bool))
+    (defun CAP_OwnerOrCreator (id:string son:bool))
     ;;
     ;;  [X]
     ;;
@@ -344,7 +351,9 @@
         )
     )
     ;;{F0}  [UR]
-    (defun UR_AS-KEYS:[string] (son:bool)
+    ;;DPDC Audit #55L: renamed from UR_AS-KEYS -- a full (keys ...) table scan belongs under the URD_
+    ;;prefix (dirty/scan-tier reads), not UR_ (point reads); matches this file's other URD_* scans.
+    (defun URD_AS-Keys:[string] (son:bool)
         (keys (if son DPSF|T|AccountSupplies DPNF|T|AccountSupplies))
     )
     ;;
@@ -438,6 +447,9 @@
     ;;
     ;; [2.1] - [Generic Nonce-Data Read]
     (defun UR_N|Royalty:decimal (n:object{DpdcUdcV1.DPDC|NonceData})
+        @doc "Forward-looking hook for the upcoming Escrow/NFT marketplace (not yet built) — no on-chain \
+            \ consumer reads this today, unlike UR_N|IgnisRoyalty below, which DPDC-T's transfer pricing \
+            \ actively consumes. Confirmed intentional, not dead/unfinished code. DPDC Audit #26M."
         (at "royalty" n)
     )
     (defun UR_N|IgnisRoyalty:decimal (n:object{DpdcUdcV1.DPDC|NonceData})
@@ -716,8 +728,11 @@
                     )
                 )
             )
-            (if (= (length results) 0) 
-                [{}] 
+            ;;DPDC Audit #34M: was [{}] (a 1-element list of an empty object with no "nonce"/"supply"
+            ;;keys) -- a phantom result that inflates any caller's (length ...) count by 1 for an
+            ;;account holding zero nonces. Mirror URD_AccountNonces's correct [] for the empty case.
+            (if (= (length results) 0)
+                []
                 (filter (lambda (x) (> (at "supply" x) 0)) results)
             )
         )
@@ -925,6 +940,80 @@
                 (= (floor royalty ignis-pr) royalty)
                 (format "The Ignis input amount of {} is not conform with its precision" [royalty])
             )
+        )
+    )
+    (defun UEV_Name (name:string)
+        @doc "Bounds a nonce's free-text name. See DPDC Audit #12Hb."
+        (enforce
+            (<= (length name) 256)
+            (format "Nonce name cannot exceed 256 characters (got {})" [(length name)])
+        )
+    )
+    (defun UEV_Description (description:string)
+        @doc "Bounds a nonce's free-text description: max 1024 words, max 256 characters per \
+            \ word. See DPDC Audit #12Hb."
+        (let*
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (words:[string]
+                    (if (= (length description) 0)
+                        []
+                        (ref-U|LST::UC_SplitString " " description)
+                    )
+                )
+                (word-count:integer (length words))
+            )
+            (enforce
+                (<= word-count 1024)
+                (format "Nonce description cannot exceed 1024 words (got {})" [word-count])
+            )
+            (enforce
+                (fold (and) true (map (lambda (w:string) (<= (length w) 256)) words))
+                "Every word in a nonce description must be 256 characters or fewer"
+            )
+        )
+    )
+    (defun UEV_MetaDataBag (meta-data:object)
+        @doc "Coarse anti-bloat ceiling on the free-form NFT trait bag consumed by AQP-ANK/AQP-SCORE \
+            \ for trait scoring — total serialized size, since Pact cannot enumerate an untyped \
+            \ object's keys for a precise per-key/per-value check. See DPDC Audit #12Hb."
+        (enforce
+            (<= (length (format "{}" [meta-data])) 8192)
+            "Nonce meta-data is too large (8192 character serialized ceiling)"
+        )
+    )
+    (defun UEV_AssetType (asset-type:object{DpdcUdcV1.URI|Type})
+        @doc "At least one of the 7 asset-type flags must be set; any combination up to all 7 \
+            \ simultaneously is valid. See DPDC Audit #12Hb."
+        (enforce
+            (fold (or) false
+                [
+                    (at "image" asset-type)    (at "audio" asset-type)
+                    (at "video" asset-type)    (at "document" asset-type)
+                    (at "archive" asset-type)  (at "model" asset-type)
+                    (at "exotic" asset-type)
+                ]
+            )
+            "At least one asset-type flag must be set"
+        )
+    )
+    (defun UEV_UriData (u:object{DpdcUdcV1.URI|Data})
+        @doc "Bounds every link string in a URI|Data bundle (uri-primary/secondary/tertiary each \
+            \ carry one — primary/high-res/thumbnail tiers of the same element) to 2048 characters — \
+            \ generous for any real link/CID, blocks raw payloads hiding in a link field. \
+            \ See DPDC Audit #12Hb."
+        (enforce
+            (fold (and) true
+                (map (lambda (l:string) (<= (length l) 2048))
+                    [
+                        (at "image" u)    (at "audio" u)
+                        (at "video" u)    (at "document" u)
+                        (at "archive" u)  (at "model" u)
+                        (at "exotic" u)
+                    ]
+                )
+            )
+            "A URI link string exceeds the 2048 character limit"
         )
     )
     (defun UEV_NftNonceExistance (id:string nonce:integer existance:bool)
@@ -1513,7 +1602,7 @@
             (compose-capability (SECURE))
         )
     )
-    ;;get keys with (UR_AS-KEYS son)
+    ;;get keys with (URD_AS-Keys son)
     (defun AUP_SFTs (kis:[string])
         (with-capability (AHU)
             (let

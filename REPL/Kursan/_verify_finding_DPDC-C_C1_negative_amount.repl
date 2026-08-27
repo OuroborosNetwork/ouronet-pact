@@ -1,0 +1,80 @@
+;;
+;; REPL/Kursan/_verify_finding_DPDC-C_C1_negative_amount.repl
+;; Scratch / adversarial-verification script for DPDC Audit finding #1C (DPDC-C · C1):
+;;   "no floor/sign check on `amount` in Credit/Debit — a negative amount mints supply from nothing."
+;; Not a canonical test — see REPL/Kursan/README.md.
+;;
+;; Fix (single chokepoint, per owner decision): DPDC-C::UEV_Amount, called from the one function every
+;; SFT/fragment credit or debit in the whole DPDC family funnels through — CreditOrDebitDPDC
+;; (03_DPDC-C.pact). DPDC-T carries no amount-positivity check of its own; it doesn't need one.
+;;
+;; IMPORTANT test-methodology note: the exploit attempt below is submitted as its OWN begin-tx/commit-tx,
+;; deliberately UNCAUGHT (no `expect-failure`) — this matches how a real transaction is actually executed
+;; on chain: if it throws anywhere, the whole submitted transaction is rejected atomically before it ever
+;; reaches commit, and nothing it did persists. An earlier draft of this script wrapped the exploit call in
+;; `expect-failure` for convenience; that is a REPL TEST-ONLY construct that catches the error and lets the
+;; script keep running — it does NOT model real transaction atomicity, and it left a misleading partial
+;; write behind (the legit leg of a multi-leg call had already written before the bad leg threw, and
+;; `expect-failure` doesn't undo that). Structuring it as its own real transaction, below, avoids that
+;; artifact entirely: the script is EXPECTED to end in "Load failed" / exit 1 — that IS the proof.
+;;
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-C1 - baseline read")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (id:string "DHOC-98c486052a51")
+    )
+    (print (format "BASELINE anhd nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
+    (print (format "BASELINE anhd nonce2 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 2)]))
+    (print (format "BASELINE emma nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 1)]))
+    (print (format "BASELINE emma nonce2 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 2)]))
+)
+(commit-tx)
+
+(begin-tx "PROBE-C1 - control: a normal, fully-legit transfer must still work post-fix")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHOC-98c486052a51")
+    )
+    (print (format "LEGIT TRANSFER RESULT = {}"
+        [(ref-TS02-C1::DPSF|C_TransferNonce KST.ANHD id KST.ANHD KST.EMMA 1 25 false)]))
+    (print (format "AFTER legit transfer anhd nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.ANHD id true 1)]))
+    (print (format "AFTER legit transfer emma nonce1 supply = {}" [(ref-DPDC::UR_AccountNonceSupply KST.EMMA id true 1)]))
+)
+(commit-tx)
+
+;;|| NEXT >
+;; The exploit, submitted for real: one ordinary-looking DPSF|C_TransferNonces call, one legit leg
+;; (nonce1=100, included only to keep the tx's own aggregate IGNIS fee positive — an unrelated, separate
+;; guard) + one malicious leg (nonce2=-50). Deliberately NOT wrapped in expect-failure — this is exactly
+;; how an attacker would submit it. EXPECTED OUTCOME: this whole script now terminates with "Load failed"
+;; / a non-zero exit code, because the transaction throws inside UEV_Amount before ever reaching
+;; commit-tx. That hard failure — not a clean printed result — IS the proof: nothing after the throw runs,
+;; so nothing it attempted (including the legit-looking nonce1 leg) is ever committed.
+(begin-tx "PROBE-C1 - the exploit, submitted as a real uncaught transaction")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHOC-98c486052a51")
+    )
+    (ref-TS02-C1::DPSF|C_TransferNonces KST.ANHD id KST.ANHD KST.EMMA [1 2] [100 -50] false)
+)
+(commit-tx)

@@ -224,7 +224,8 @@
     (defcap DPSF|C>CREDIT-FRAGMENT-NONCE (id:string nonce:integer)
         (compose-capability (DPDC-C|C>SINGLE-CREDIT id true nonce true))
     )
-    (defcap DPNF|C>CREDIT-FRAGMENT-NONCE (id:string nonce:integer)
+    (defcap DPNF|C>CREDIT-FRAGMENT-NONCE (id:string nonce:integer amount:integer)
+        (UEV_FragmentCreditAmount amount)
         (compose-capability (DPDC-C|C>SINGLE-CREDIT id false nonce true))
     )
     (defcap DPSF|C>CREDIT-NONCE (id:string nonce:integer)
@@ -249,6 +250,7 @@
         (compose-capability (DPDC-C|C>MULTI-CREDIT id true nonces amounts true))
     )
     (defcap DPNF|C>CREDIT-FRAGMENT-NONCES (id:string nonces:[integer] amounts:[integer])
+        (map (lambda (a:integer) (UEV_FragmentCreditAmount a)) amounts)
         (compose-capability (DPDC-C|C>MULTI-CREDIT id false nonces amounts true))
     )
     (defcap DPSF|C>CREDIT-NONCES (id:string nonces:[integer] amounts:[integer])
@@ -268,6 +270,20 @@
         (compose-capability (DPDC|C>HYBRID-MULTI-CREDIT id true nonces amounts))
     )
     (defcap DPNF|C>CREDIT-HYBRID-NONCES (id:string nonces:[integer] amounts:[integer])
+        ;; DPDC Audit #24M: only the fragment (negative) legs carry a real, amount-driven credit —
+        ;; the native (positive) legs are unaffected by <amounts> here (MappedUpdateOwnerNFT hardcodes
+        ;; native NFT supply to 1 regardless of the input value), so only the fragment legs need the
+        ;; positive-multiple-of-1000 check.
+        (map
+            (lambda
+                (idx:integer)
+                (if (< (at idx nonces) 0)
+                    (UEV_FragmentCreditAmount (at idx amounts))
+                    true
+                )
+            )
+            (enumerate 0 (- (length nonces) 1))
+        )
         (compose-capability (DPDC|C>HYBRID-MULTI-CREDIT id false nonces amounts))
     )
     (defcap DPDC|C>HYBRID-MULTI-CREDIT (id:string son:bool nonces:[integer] amounts:[integer])
@@ -395,6 +411,14 @@
             (enforce (!= empty-data-dc ind) "Incorrect Fragmentation Data")
             (ref-DPDC::UEV_Royalty royalty)     ;; Royalty can be set at -1.0 enabling Volumetric Royalty Fee.
             (ref-DPDC::UEV_IgnisRoyalty ignis)
+            ;; DPDC Audit #12Hb — bound the previously-unvalidated free-text/metadata fields.
+            (ref-DPDC::UEV_Name (at "name" ind))
+            (ref-DPDC::UEV_Description (at "description" ind))
+            (ref-DPDC::UEV_MetaDataBag (at "meta-data" (at "meta-data" ind)))
+            (ref-DPDC::UEV_AssetType (at "asset-type" ind))
+            (ref-DPDC::UEV_UriData (at "uri-primary" ind))
+            (ref-DPDC::UEV_UriData (at "uri-secondary" ind))
+            (ref-DPDC::UEV_UriData (at "uri-tertiary" ind))
         )
     )
     ;;
@@ -427,6 +451,23 @@
             )
             (enforce (and (!= l3 0) (!= l4 0)) (format "Nonces {} are invalid Hybrid Nonces" [nonces]))
             split-nonces
+        )
+    )
+    (defun UEV_Amount (amount:integer)
+        @doc "Floor for every SFT/fragment credit or debit quantity. Zero is legal (nonce-creation \
+            \ genesis supply, e.g. EQUITY's zero-initial-supply tier nonces) — negative is never legal, \
+            \ it inverts the credit/debit direction in CreditOrDebitDPDC. See DPDC Audit #1C."
+        (enforce (>= amount 0) "Amount cannot be negative")
+    )
+    (defun UEV_FragmentCreditAmount (amount:integer)
+        @doc "An NFT itself is always quantity 1, but its fragments exist in units of 1000 per whole \
+            \ NFT (see DPDC-F::C_MakeFragments' <f-amount = 1000 * amount>) — every NFT fragment \
+            \ credit amount must be a positive multiple of 1000. Today's only caller (C_MakeFragments) \
+            \ can only ever produce exactly 1000 (forced by the upstream native amount=1 rule), so this \
+            \ is a defense-in-depth backstop, not a live-exploit fix. See DPDC Audit #24M."
+        (enforce
+            (and (> amount 0) (= (mod amount 1000) 0))
+            (format "NFT fragment credit amount of {} must be a positive multiple of 1000" [amount])
         )
     )
     ;;{F3}  [UDC]
@@ -467,7 +508,7 @@
     )
     (defun XE_CreditNFT-FragmentNonce (account:string id:string nonce:integer amount:integer)
         (UEV_IMC)
-        (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id nonce)
+        (with-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id nonce amount)
             (XI_CreditNFT account id [nonce] [amount])
         )
     )
@@ -639,7 +680,7 @@
                 ((UC_AndTruths [isg (not inn) (not cod) (not son)])                 (require-capability (DPNF|C>DEBIT-NONCE account id n0 a0 wipe-mode)))
                 ;;Fragment Nonce
                 ((UC_AndTruths [isg inn cod son])                                   (require-capability (DPSF|C>CREDIT-FRAGMENT-NONCE id n0)))
-                ((UC_AndTruths [isg inn cod (not son)])                             (require-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id n0)))
+                ((UC_AndTruths [isg inn cod (not son)])                             (require-capability (DPNF|C>CREDIT-FRAGMENT-NONCE id n0 a0)))
                 ((UC_AndTruths [isg inn (not cod) son])                             (require-capability (DPSF|C>DEBIT-FRAGMENT-NONCE account id n0 a0 wipe-mode)))
                 ((UC_AndTruths [isg inn (not cod) (not son)])                       (require-capability (DPNF|C>DEBIT-FRAGMENT-NONCE account id n0 a0 wipe-mode)))
                 ;;
@@ -659,7 +700,11 @@
                 ((UC_AndTruths [(not isg) (not ong) (not onp) cod (not son)])       (require-capability (DPNF|C>CREDIT-HYBRID-NONCES id nonces amounts)))
                 ((UC_AndTruths [(not isg) (not ong) (not onp) (not cod) son])       (require-capability (DPSF|C>DEBIT-HYBRID-NONCES account id nonces amounts)))
                 ((UC_AndTruths [(not isg) (not ong) (not onp) (not cod) (not son)]) (require-capability (DPNF|C>DEBIT-HYBRID-NONCES account id nonces amounts)))
-                true
+                ;; DPDC Audit #23M: fail closed, not open. The 16 branches above are exhaustive given
+                ;; today's upstream invariants (UEV_NonceType/UEV_NonceTypeMapper) — this default only
+                ;; fires if a future change weakens that guarantee, and it must hard-abort rather than
+                ;; silently skip every require-capability check above and fall through to the write.
+                (enforce false (format "Unreachable nonce/amount shape for {} {}" [nonces amounts]))
             )
             (if cod
                 (ref-DPDC::XE_DeployAccountWNE account id son)
@@ -887,6 +932,7 @@
                     )
                 )
             )
+            (UEV_Amount amount)
             (if (= current-supply 0)
                 (enforce cod "Cannot Debit 0 Amounts!")
                 true

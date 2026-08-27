@@ -1,0 +1,54 @@
+;; Verify finding #38M — UDC_NoPrimordialSet ([N [0]]) / UDC_NoCompositeSet ([C -1]) sentinels are
+;; structurally indistinguishable from a real, user-supplied definition matching the same values. Checking
+;; whether this is already closed as a side effect of #31M (primordial per-element bound) plus the
+;; pre-existing composite per-element bound (both reject the exact sentinel values).
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage00a_StoaTests.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage02_Tester.repl")
+
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+
+(begin-tx "PROBE-38M - user-supplied definitions matching the sentinel values are rejected")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (owner:string KST.ANHD)
+        (id:string "DHCD-98c486052a51")
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "SentinelProbeSet" "Set matching an internal sentinel value"
+                (ref-DPDC-UDC::UDC_NoMetaData)
+                (ref-DPDC-UDC::UDC_URI|Type true false false false false false false)
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (print
+        (expect-failure
+            "<<PROBE-38M>> user-supplied Primordial position [0] (matches UDC_NoPrimordialSet's sentinel) is rejected"
+            (ref-TS02-C1::DPSF|C_DefinePrimordialSet
+                owner id "PrimordialSentinelProbe" 1.0
+                [(ref-DPDC-UDC::N [0])]
+                nd
+            )
+        )
+    )
+    (print
+        (expect-failure
+            "<<PROBE-38M>> user-supplied Composite position -1 (matches UDC_NoCompositeSet's sentinel) is rejected"
+            (ref-TS02-C1::DPSF|C_DefineCompositeSet
+                owner id "CompositeSentinelProbe" 1.0
+                [(ref-DPDC-UDC::C -1)]
+                nd
+            )
+        )
+    )
+)
+(commit-tx)

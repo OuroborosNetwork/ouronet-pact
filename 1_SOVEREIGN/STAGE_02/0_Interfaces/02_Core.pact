@@ -45,7 +45,9 @@
         split-data:object{DPDC|NonceData}   ;;Data of the Nonce Fragment Elements
     )
     (defschema DPDC|NonceData
-        royalty:decimal
+        royalty:decimal   ;;Forward-looking hook for the upcoming Escrow/NFT marketplace (not yet built) —
+                          ;;no on-chain consumer reads this today, unlike its sibling <ignis> below, which
+                          ;;is actively consumed by DPDC-T's transfer pricing. DPDC Audit #26M.
         ignis:decimal
         name:string
         description:string
@@ -109,7 +111,7 @@
     )
     ;;DPNF
     (defschema DPNF|AccountRoles
-        @doc "Key = <account> + BAR + <DPNF-id>"
+        @doc "Key = <DPNF-id> + BAR + <account>"
         roles:object{AccountRoles}
         ;;
         ;;ForSelect, store Key Make-up
@@ -241,9 +243,13 @@
     ;;
     ;;  [2]
     (defun UDC_ZeroNonceElement:object{DPDC|NonceElement} ())
+    (defun UDC_ZeroNonceData:object{DPDC|NonceData} ())
     (defun UDC_NoMetaData:object{NonceMetaData} ())
     (defun UDC_MetaData:object{NonceMetaData} (meta-data:object))
-    (defun UDC_ScoreMetaData:object{NonceMetaData} (score:decimal meta-data:object))
+    ;; UDC_ScoreMetaData removed — DPDC Audit #45L: dead code, zero callers. The real score-mutation
+    ;; path (DPDC-N::XI_U|NonceScore) correctly preserves an existing nonce's composition via a targeted
+    ;; merge; this constructor hardcoded composition=[0], which would have silently reset a real set
+    ;; instance's composition if ever wired in as originally suggested — removal, not rewiring, is safe.
     (defun UDC_ZeroURI|Type:object{URI|Type} ())
     (defun UDC_ZeroURI|Data:object{URI|Data} ())
     ;;  [6]

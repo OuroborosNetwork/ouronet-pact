@@ -1,0 +1,52 @@
+;; Same finding (#5C, DPDC-MNG · C1), wipe half specifically: freeze dpdc, then attempt to wipe its
+;; escrowed collateral. Must still be rejected at the same single chokepoint
+;; (DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES), proving one check closes both burn and wipe.
+(load "../Stage00_Sanboxes.repl")
+(load "../Stage01_Tester.repl")
+(load "../Stage_02/[0.1]_Interfaces.repl")
+(load "../Stage_02/[2.1]_DpdcCore.repl")
+(load "../Stage_02/[2.2]_DemiPad.repl")
+(load "../Stage_02/[2.3]_EarningPools.repl")
+(load "../Stage_02/[3]_Talos.repl")
+(load "../Stage_02/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "PROBE-C5-WIPE - fragment nonce 3 + enable wipe + freeze dpdc")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHOC-98c486052a51")
+        (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+    )
+    (print (format "MAKE FRAGMENTS RESULT = {}"
+        [(ref-TS02-C1::DPSF|C_MakeFragments KST.ANHD KST.ANHD id 3 100)]))
+    (print (format "dpdc nonce3 (escrowed collateral) supply = {}" [(ref-DPDC::UR_AccountNonceSupply dpdc id true 3)]))
+    ;; enable can-wipe on the collection (cw=true), matching what the real wipe path requires
+    (print (format "ENABLE CAN-WIPE RESULT = {}"
+        [(ref-TS02-C1::DPSF|C_Control KST.ANHD id true true true true true true true true)]))
+    (print (format "FREEZE dpdc RESULT = {}"
+        [(ref-TS02-C1::DPSF|C_ToggleFreezeAccount KST.ANHD id dpdc true)]))
+)
+(commit-tx)
+
+;;|| NEXT >
+;; The exploit, half 2: WIPE dpdc's escrowed collateral now that it's frozen and can-wipe is on — the two
+;; real preconditions the legitimate wipe path requires. Submitted as its own real, uncaught transaction.
+;; EXPECTED: still rejected at the same DPDC-MNG|C>REMOVE-CLASS-ZERO-NONCES chokepoint.
+(begin-tx "PROBE-C5-WIPE - exploit half 2: wipe dpdc's escrowed collateral")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (id:string "DHOC-98c486052a51")
+        (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+    )
+    (ref-TS02-C1::DPSF|C_WipeNonce KST.ANHD id dpdc 3)
+)
+(commit-tx)

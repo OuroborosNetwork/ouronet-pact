@@ -21,7 +21,10 @@
     ;;
     ;;  [4] DPDC-I
     ;;
-    (defun DPNF|C_DeployAccount (patron:string account:string id:string))
+    ;; DPNF|C_DeployAccount removed — DPDC Audit #35M: standalone deployment let any signer force any
+    ;; existing account to associate with any collection, with no ownership check. Real auto-association
+    ;; (on transfer, role-toggle, Issue, set-fragmentation) always calls DPDC::XB_DeployAccountNFT
+    ;; directly, module-to-module, bypassing this public entrypoint entirely.
     (defun DPNF|C_Issue:string
         (
             patron:string 
@@ -99,7 +102,7 @@
     )
     (defun DPNF|C_ToggleSet (patron:string id:string set-class:integer toggle:bool))
     (defun DPNF|C_RenameSet (patron:string id:string set-class:integer new-name:string))
-    (defun DPNF|C_UpdateSetMultiplier (patron:string id:string set-class:integer new-multiplier:decimal))
+    ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H: score-multiplier is immutable after Define.
     ;;
     (defun DPNF|C_UpdateSetNonce                (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData}))
     (defun DPNF|C_UpdateSetNonces               (patron:string id:string account:string set-classes:[integer] nos:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}]))
@@ -350,21 +353,7 @@
     ;;
     ;;  [4] DPDC-I
     ;;
-    (defun DPNF|C_DeployAccount (patron:string account:string id:string)
-        @doc "Deploys a DPNF Account. Stand Alone Deployment costs 3 IGNIS"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-I:module{DpdcIssueV1} DPDC-I)
-                )
-                (ref-DPDC-I::C_DeployAccountNFT account id)
-                (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_MediumCumulator account)
-                )
-            )
-        )
-    )
+    ;; DPNF|C_DeployAccount removed — DPDC Audit #35M: see interface-side removal note above.
     (defun DPNF|C_Issue:string
         (
             patron:string 
@@ -950,21 +939,7 @@
             )
         )
     )
-    (defun DPNF|C_UpdateSetMultiplier (patron:string id:string set-class:integer new-multiplier:decimal)
-        @doc "Updates an NFT Set Multiplier"
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-                )
-                (ref-IGNIS::C_Collect patron
-                    (ref-DPDC-S::C_UpdateSetMultiplier id false set-class new-multiplier)
-                )
-                (format "NFT {} Set Score Multiplier {} succesfuly updated to <{}>" [id set-class new-multiplier])
-            )
-        )
-    )
+    ;; DPNF|C_UpdateSetMultiplier removed — DPDC Audit #15H.
     ;;
     (defun DPNF|C_UpdateSetNonce 
         (patron:string id:string account:string set-class:integer nos:bool new-nonce-data:object{DpdcUdcV1.DPDC|NonceData})
