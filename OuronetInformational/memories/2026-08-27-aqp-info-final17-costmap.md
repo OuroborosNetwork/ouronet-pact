@@ -145,6 +145,23 @@ that both exec and info call (cleanest, owner-sanctioned). Resolve with a ground
 - STILL PENDING: ground-truth for OF/SF/NF (needs staked OF/SF/NF fixtures — [6.2.4] provides
   them; extend [6.5.1] with OF/SF/NF stake+delta asserts), then vacate ×7 (variant A).
 
+## UPDATE (2026-08-27, later-2): collectable unstake nonce-amounts FIXED + fixtures found
+- FIX (commit f2c9606): CC_Unstake{Semi,Non}FungibleCollectable take nonce-amounts:[integer]
+  explicitly; for UNSTAKE the vault (not owner) holds the staked nonces so deriving amounts from
+  DPDC.UR_AccountNoncesSupplies owner-id reads 0 → mis-prices the DPDC-T transfer. URC_Collectable
+  StakeFlowIfp now takes nonce-amounts as a param (stake derives from owner supply; unstake gets
+  it from the caller). All 10 stake/unstake compile green (95 asserts).
+- OF/SF/NF fixture ids (in the [6.2.4] sub-suites; patron=owner=ben=KST.ANHD):
+  OF pool "OfStakePool", dpof "MVST-98c486052a51"; SF pool "SfStakePool", dpsf "DHCD-98c486052a51";
+  NF pool "NfSyncPool", dpnf "DHB-98c486052a51".
+- ⚠ GOTCHA for OF/SF/NF ground-truth: [6.2.4]_AQP-FVT-OF/DC/NF run their OWN vacate tests, so those
+  pools end VACATED + stake-DISABLED. Cannot naively restake into them (unlike TfStakePool which
+  [6.2.5] proves restakeable). The OF/SF/NF ground-truth needs a DEDICATED FRESH fixture: mint fresh
+  MVST/DHCD/DHB to ANHD + issue a fresh score + fresh pool + enable-stake + add-score, then stake
+  with the INFO cost-equality assert. Model the fixture on the top of each [6.2.4] sub-suite
+  (issue-score → issue-pool → add-score → enable-pool-stake) but with fresh names so no vacate collision.
+  Alternatively insert the assert INSIDE [6.2.4] right BEFORE its vacate section (lower-churn but edits a reference suite).
+
 ## NEXT STEPS (ordered)
 1. TF ground-truth: full-boot staked pool → `INFO_StakeTrueFungible.ignis-need` == real IGNIS
    (token GAS-98c486052a51) balance delta of `AQP-POOL|CC_StakeTrueFungible`. Prove the TF pattern
