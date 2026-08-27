@@ -58,12 +58,45 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 
 | Prefix | Class | Meaning | Colour family |
 |--------|-------|---------|---------------|
-| `A_`  | admin | Admin-key mutation | **RECIPE** |
-| `C_`  | client | Client entrypoint — builds IGNIS cumulators, returns `OutputCumulator`; **cannot be invoked from its own module** | **RECIPE** |
-| `CC_` | client·single-tx | Single-transaction enforced-fresh client variant of a `C_` | **RECIPE** |
+| `A_`   | admin | Admin-key mutation recipe — **standard** (no heavy read inside) | **RECIPE** |
+| `AA_`  | admin·heavy | Admin recipe that **contains a heavy read** (`URH_*`); self-contained single transaction | **RECIPE** |
+| `Ap_`  | admin·parallel | **Hydra** parallel-slice admin — fed one slice of a `URH_*` dirty-read plan, order-independent, retryable, fired in parallel; **carries NO heavy read** | **RECIPE** |
+| `AAp_` | admin·heavy·parallel | Hydra parallel-slice admin that still holds a heavy read internally (tolerated; hoist the read into the preflight and demote to `Ap_` when possible) | **RECIPE** |
+| `C_`   | client | Client entrypoint — builds IGNIS cumulators, returns `OutputCumulator`; **cannot be invoked from its own module**; **standard** (no heavy read inside) | **RECIPE** |
+| `CC_`  | client·heavy | Client recipe that **contains a heavy read** (`URH_*`); self-contained single transaction (e.g. an enforced-fresh whole-set pass) | **RECIPE** |
+| `Cp_`  | client·parallel | **Hydra** parallel-slice client — fed one slice of a `URH_*` dirty-read plan, order-independent, retryable, fired in parallel; **carries NO heavy read** | **RECIPE** |
+| `CCp_` | client·heavy·parallel | Hydra parallel-slice client that still holds a heavy read internally (tolerated; prefer to demote to `Cp_`) | **RECIPE** |
 | `XI_` | protected·internal | Internal-only protected write/orchestration | **PROTECTED** |
 | `XE_` | protected·external | For **external** modules only (forward-module entrypoint; opens `UEV_IMC`) | **PROTECTED** |
 | `XB_` | protected·both | Both internal and external | **PROTECTED** |
+
+> **Recipe axes — weight × mode (two orthogonal notations, so they never blur).** A user recipe (`C_`
+> client / `A_` admin) carries two independent properties, each with its **own** notation so the base
+> letter stays stable and the band still reads as a band:
+> - **weight** → **letter-doubling**: `C`→`CC`, `A`→`AA`. Single = **standard** (no heavy read inside);
+>   doubled = **heavy** (the body itself contains a `URH_*` scan).
+> - **mode** → a lowercase **`p` suffix**, present **only** when the recipe is a **Hydra parallel slice**:
+>   `Cp_`, `CCp_`, `Ap_`, `AAp_`. Absent = solo/standalone.
+>
+> Read order is `[C|CC][p]_` (weight, then mode): `CCp_` = "heavy client, parallel". Bare `C_`/`CC_`/`A_`/`AA_`
+> are unchanged, so the change is additive.
+>
+> **The Hydra pattern** (a first-class execution shape, distinct from `defpact`). A `defpact` is a
+> **sequential** many-transaction op (ordered continuation state). A **Hydra** op is the **parallel**
+> counterpart — work too big for one transaction that decomposes into **order-independent** slices fired
+> concurrently. Anatomy:
+> 1. **Preflight** — a `URH_*` / `URHC_*` dirty-read (run off-chain by the UI) enumerates + partitions the
+>    total work into capacity-bounded slices. This is the **only** heavy read in a well-formed Hydra flow,
+>    and its sliced output is the *input* to the slice functions.
+> 2. **Slices** — `Cp_` / `Ap_` (or `CCp_` / `AAp_` if a slice still needs an internal heavy read). Each is
+>    fed one slice as arguments, is idempotent-per-slice and retryable, and is submitted **in parallel**.
+> 3. **Bracket (optional)** — a `C_`/`CC_` **begin** (freeze state) and **finalize** (nuke / unfreeze); these
+>    are single ordered transactions, not slices.
+>
+> Canonical Hydra families: deb-unstale, anchor-sweep, vacate/drain. Migration candidates: wipes and
+> oversized multi-transfers (a transfer whose leg set exceeds one tx). The **cost preview** falls out for
+> free: each Hydra op gets `…|INFO_<Op>Full` (from the preflight plan → grand total + slice breakdown) and
+> `…|INFO_<Op>Slice` (from the slice's own args → that batch's exact cost).
 
 ### Writers (raw persistence — one write site each, gated on a home `SECURE`)
 
@@ -125,7 +158,7 @@ their base, optionally **dimmed / desaturated / italic** to signal "specializati
 | **CONSTRUCT**  | `UDC_ UDCx_` | object builders |
 | **CONSTANT**   | `CT_` | constant accessors — muted |
 | **WRITE**      | `WI_ WU_ WU2_ WU3_ WU4_ WW_` | persistence — distinct write hue |
-| **RECIPE**     | `A_ C_ CC_` | client/admin entrypoints — strong/bold |
+| **RECIPE**     | `A_ AA_ Ap_ AAp_ C_ CC_ Cp_ CCp_` | client/admin entrypoints — strong/bold |
 | **PROTECTED**  | `XI_ XE_ XB_` | protected orchestration — distinct band |
 | **STRUCTURAL** | `GOV GOV\|* P\|* SECURE UEV_IMC` | standardized boilerplate — dim/grey |
 
@@ -170,7 +203,8 @@ culminates in its **public recipes**. Five blocks:
    `UC / UCk` → `UR / URC / URU` → `URH / URHC` → `UEV` → `CAP` → `UDC` → **`W` (`WU / WU2-4 / WW / WI`)**.
    `W` is **last** in this block; each `…x` auxiliary sits directly beneath its base function.
 4. **X — auxiliary orchestration**: `XI` → `XE` → `XB` (sub-tiering observed).
-5. **User functions** (the complete/final recipes — **LAST**): `A_ / AA_` → `C_ / CC_`
+5. **User functions** (the complete/final recipes — **LAST**): `A_ / AA_ / Ap_ / AAp_` → `C_ / CC_ / Cp_ / CCp_`
+   (weight by letter-doubling, mode by `p` suffix; within a base, solo before parallel)
    (admin = a user fn needing admin rights; client = a user fn anyone may call).
 
 The **interface mirrors this order**, dropping the four excluded kinds (§5):
