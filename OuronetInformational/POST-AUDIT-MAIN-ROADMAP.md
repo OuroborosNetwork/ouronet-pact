@@ -69,6 +69,40 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
 
 ---
 
+## AUDIT CARRY-OVER — deferred items each merged audit brings
+**Standing rule:** every audit worktree carries its OWN deferred list (open owner-decisions,
+test gaps, doc debt, live-diffs) in its `…/Audit/<MODULE>/` folder. **When an audit merges to
+main, fold its deferred list into this section.** SWP / DPDC / DPTF-DPOF will each add a block
+here at merge (their `ISSUES-RANKED.md` / `ROUND-02-FIXES.md` are the source).
+
+### ATS audit — carried over (MERGED to main; source: `1_SOVEREIGN/STAGE_01/2_Core/Audit/ATS/`)
+Verified on main: the two live fixes landed — `P|A_Define` IMP registration
+(`3_Talos/01_TS01-A.pact:165-166`) and `C_HOT-RBT|Repurpose` `UR_NonceMetaData` arity fix
+(`08_ATS.pact:1919`). Remaining:
+- [ ] **Open owner-decisions (don't close without asking):**
+      - `#26L` — `C_KickStart` `rt-amounts` trusted by position, no name-match vs pool's reward list. Guard now vs defer to module rehaul?
+      - `#28L` — dead StoicTag fns in `09_U_ATS.pact` (`UC_IzStoicTagIndex*`/`UEV_StoicTagIndex`) — verified dead; confirm deletion.
+      - `#31L` — Talos `C_SetHotRecoveryFee` (singular) vs core `C_SetHotRecoveryFees` (plural); rename needs no interface bump — approve rename?
+      - The `can-change-owner` / `syphoning` / `hibernate` + 3 recovery on/off switches — still-open findings, not ruled on.
+- [ ] **`#22L` test wiring:** `[6.6]_ATS.repl` exists (ported, 159 KB) but is **commented out** of
+      `Stage01_Tester.repl` (dup-MVST collision with the AQP Stage-2 path, #12a). Resolve so ATS
+      config coverage actually runs in the gate (standalone ATS suite, or deconflict the MVST re-issue).
+      Then update ATS `README.md` `#22L` status → FIXED.
+- [ ] **New structural finding `P|A_Define`** — fixed live but **not yet logged** as its own numbered
+      finding / documented in the 4 ATS audit docs. Owner: log as `#33N`-style? Then write up.
+- [ ] **Scratch cleanup:** remove `REPL/_cov_draft.repl`, `_baseline_66_check.repl` (+ `_iso_check`,
+      `_probe2/3` if present) — throwaway, must not ship.
+- [ ] **Live-vs-local diff:** `U_ATS` + `U_DPTF` not yet diffed against live (Pythia keyless recipe in
+      `OuronetInformational/pythia-dirty-read-access.md`). ATS/ATSU already diffed (live behind local on V1).
+- [ ] **Final consolidated ATS audit write-up** (owner-requested) — after `#22L`/`#26L`/`#28L`/`#31L` +
+      `P|A_Define` are all closed.
+
+### SWP audit — TO FOLD AT MERGE (worktree `swp`; `…/Audit/SWP/ISSUES-RANKED.md`, `ROUND-02-FIXES.md`)
+### DPDC audit — TO FOLD AT MERGE (worktree `dpdc`; `…/Audit/DPDC-*` + audit commits `#27M`–`#39L`)
+### DPTF-DPOF audit — TO FOLD AT MERGE (worktree `dptf-dpof`)
+
+---
+
 ## Standing invariants
 - REPL testing uses **pact 5.4.1** (`~/.local/bin/pact`; old = `pact-5.4`). Never test on 5.4.
 - Commit granularity per phase; never `git add -A` (stage explicit paths).
