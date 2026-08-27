@@ -162,6 +162,19 @@ that both exec and info call (cleanest, owner-sanctioned). Resolve with a ground
   (issue-score → issue-pool → add-score → enable-pool-stake) but with fresh names so no vacate collision.
   Alternatively insert the assert INSIDE [6.2.4] right BEFORE its vacate section (lower-churn but edits a reference suite).
 
+
+## UPDATE (2026-08-27, later-3): STAKE/UNSTAKE SURFACE FULLY GROUND-TRUTH PROVEN
+Ground-truth run #3 (REPL/aqp-info-groundtruth.repl + [6.5.1]) — all EXACT vs live GAS delta:
+  TF stake 23.32==23.3200 · TF unstake 23.32==23.3200 · OF stake 15.9==15.9000 ·
+  SF stake 551.2==551.2000 (full collectable helper). 0 fail.
+SF proves the whole collectable helper (DPDC-T transfer + tracker×|n| + rollup×|n| + flat
+anchor medium+biggest + class-filter [3] + amount-derivation) → NF certified by the SAME
+helper (son=false/class-4). All 8 stake/unstake reconstructions validated.
+Fresh-fixture recipe (SF): issue class-3 score (C_IssueSemiFungibleScore ... 3 true) + C_Issue
+class-3 pool + C_AddScore + REPL_BootstrapVault; query owned nonces via (DPDC:module{DpdcV1})
+URD_AccountNonces owner id true. Same for OF (class-2, C_IssueOrtoFungibleScore, DPOF.URD_AccountNonces).
+REMAINING: only the 7 batch vacate/drain + FullVacate via VARIANT A.
+
 ## NEXT STEPS (ordered)
 1. TF ground-truth: full-boot staked pool → `INFO_StakeTrueFungible.ignis-need` == real IGNIS
    (token GAS-98c486052a51) balance delta of `AQP-POOL|CC_StakeTrueFungible`. Prove the TF pattern
