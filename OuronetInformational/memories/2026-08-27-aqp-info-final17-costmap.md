@@ -91,3 +91,49 @@ data-dependent drain subset. Three ways to make the 6 batch + FullVacate exact:
       not one exact IGNIS total. Cheapest, honest, still UI-useful.
 Recommendation: build stake/unstake + Finalize + Abort now (all exact, no core change);
 take (A) for the batch vacate/drain if exactness required, else (C).
+
+## OWNER DECISION (2026-08-27): VARIANT A is the standing principle
+"Where things get complicated, write ONE function used by BOTH the execute and info
+functions → zero drift + shorter code." Apply to the vacate/drain family: add shared
+`URC_*VacateCost` estimator(s) on AQP-VCT; refactor the exec to BILL through them; the info
+fn calls the same. Reserve for the complicated cases — stake/unstake already reuse the
+shared pricers (URC_SettleStakePendingIgnis, UsagePrice tiers, transfer ctors) so their
+parallel reconstruction is acceptable.
+
+## BUILT SO FAR (committed 3348179) — 4 of 17, compiling green
+`AQP-POOL|INFO_StakeTrueFungible` / `INFO_UnstakeTrueFungible` (via URC_TrueFungibleStakeFlowIfp
++ URC_StakeScoreDeltaSum), `AQP-POOL|INFO_FinalizeVacate` (SIP|URC_Medium),
+`AQP-POOL|INFO_AbortVacate` (NoIgnisCosts). Loads green in light aqp-info-tests (95 asserts).
+NOT yet ground-truth-verified (needs full-boot staked pool).
+
+## OF / SF / NF transfer-leg ctors (for the next 6 stake/unstake fns)
+All flip owner↔vault by direction (vault = AQP-POOL.AQP|SC_NAME), reconstruct IFP via
+`OI|UC_IfpFromOutputCumulator (<ctor>)` wrapped in SIP|URC_Fixed:
+- OF  (CC_OrtoFungibleStakeFlow FVT:6478): `DPOF.UC_MoveCumulator dpof-id nonces false`
+  (interface 06_DPOF:23) — NOTE direction-INDEPENDENT (no sender/receiver in the ctor).
+  Legs: transfer + tracker(SIP|URC_Medium × |nonces|) + RPS + score-delta + book + checkpoint.
+  NO 1.3 rollup, NO anchor.
+- SF/NF (CC_CollectableStakeFlow FVT:6544, son=true SF / false NF):
+  `DPDC-T.UDC_MultiTransferCumulator [collectable-id] [son] sender receiver [nonces] [nonce-amounts]`
+  (interface 07_DPDC-T:30) — direction-DEPENDENT. Legs: transfer + tracker(medium×|nonces|)
+  + rollup(medium×|nonces|) + RPS + anchor(FLAT SIP|URC_Medium + SIP|URC_Biggest) + score-delta
+  + book + checkpoint.
+
+## ⚠ GOTCHA — OF/SF/NF phase-4 score-delta is CLASS-MATCHED (do NOT reuse URC_StakeScoreDeltaSum as-is)
+TF phase 4 = clean Σ URC_StakeScoreDeltaIgnisUnit over ALL URC_PoolActiveScoreIds. But the OF
+apply (XE_ApplyOrtoFungibleStakeDelta) emits 0.0 for class-2 non-special scores (SCORE:3453),
+and the collectable apply emits 0.0 for scores whose class ≠ target (3 SF / 4 NF) (SCORE:3504).
+So a naive full sum OVER-counts for OF/SF/NF. Options: (a) filter PoolActiveScoreIds by the
+matching class before summing (need a per-score class reader), or (b) VARIANT A — extract the
+exact charged sum used by XE_Apply*StakeDelta into a shared `URC_*StakeScoreDeltaIgnis(pool-id,…)`
+that both exec and info call (cleanest, owner-sanctioned). Resolve with a ground-truth test.
+
+## NEXT STEPS (ordered)
+1. TF ground-truth: full-boot staked pool → `INFO_StakeTrueFungible.ignis-need` == real IGNIS
+   (token GAS-98c486052a51) balance delta of `AQP-POOL|CC_StakeTrueFungible`. Prove the TF pattern
+   (clean, no class-match subtlety) FIRST. Dedicated [6.x] scenario appended to a full boot; do
+   NOT edit the reference exhaustive suites.
+2. OF/SF/NF stake/unstake ×6 — using the ctors above; resolve the class-matched score-delta via
+   variant A (shared reader) or class-filter; ground-truth each family.
+3. Vacate/drain ×7 via VARIANT A: shared URC_*VacateCost on AQP-VCT, exec bills through it, info
+   calls it. Two-map concat + drain UserUnn==0 subset (see the VACATE section above).
