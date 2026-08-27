@@ -365,26 +365,37 @@
         )
     )
     (defcap SWPU|C>SMART-SWAP-WITH-SLIPPAGE
-        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV2.Slippage})
+        (
+            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            slippage-bounds:object{SwapperUsageV2.Slippage} h-obj:object{SwapperIssueV3.Hopper}
+        )
         @event
-        (compose-capability (SWPU|X>SMART-SWAP account input-id input-amount output-id))
+        (compose-capability (SWPU|X>SMART-SWAP account input-id input-amount output-id h-obj))
     )
     (defcap SWPU|C>SMART-SWAP-NO-SLIPPAGE
-        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal)
+        (
+            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            h-obj:object{SwapperIssueV3.Hopper}
+        )
         @event
-        (compose-capability (SWPU|X>SMART-SWAP account input-id input-amount output-id))
+        (compose-capability (SWPU|X>SMART-SWAP account input-id input-amount output-id h-obj))
     )
-    (defcap SWPU|X>SMART-SWAP (account:string input-id:string input-amount:decimal output-id:string)
+    (defcap SWPU|X>SMART-SWAP
+        (account:string input-id:string input-amount:decimal output-id:string h-obj:object{SwapperIssueV3.Hopper})
+        @doc "#65L fix: <h-obj> (the BFS path search) is now computed exactly ONCE by the \
+            \ caller (CC_SmartSwap) and passed in here, instead of this defcap \
+            \ independently re-running SWPI::URC_HopperActive's full-graph search and \
+            \ XI_SmartSwapRouter running the same search again right after — a genuine \
+            \ double-heavy-read, against the rule that a defcap must never repeat a heavy \
+            \ read the function body also performs. Mirrors \
+            \ SWPU|X>SMART-SWAP-EXPLICIT-ROUTE's own pattern of validating an \
+            \ already-known route instead of searching twice."
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-SWP:module{SwapperV3} SWP)
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
                 (all-pool-tokens:[string] (ref-SWP::URC_AllPoolTokens))
-                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
                 (edges:[string] (at "edges" h-obj))
-                (nodes:[string] (at "nodes" h-obj))
             )
             (enforce (!= input-id output-id) "Input and Output tokens must differ")
             (enforce (contains input-id all-pool-tokens) (format "Input token {} does not exist in any Swap Pool" [input-id]))
@@ -795,14 +806,23 @@
             \ When slippage == -1.0, pass a dummy object (e.g. UDC_Slippage 0.0 0 0.0). \
             \ #34 Phase 8: renamed from C_SmartSwap — this is the self-searching (BFS in-transaction) \
             \ variant, kept for comparison/fallback. The bundle-based, dirty-read-injected variant \
-            \ takes the freed C_SmartSwap name."
+            \ takes the freed C_SmartSwap name. \
+            \ #65L fix: the BFS path search (<h-obj>) is computed exactly ONCE here and \
+            \ threaded through the defcap and XI_SmartSwapRouter, instead of each \
+            \ independently re-running SWPI::URC_HopperActive's full-graph search."
         (UEV_IMC)
-        (if (!= slippage -1.0)
-            (with-capability (SWPU|C>SMART-SWAP-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds)
-                (XI_SmartSwapRouter account input-id input-amount output-id slippage kda-pid slippage-bounds)
+        (let
+            (
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
             )
-            (with-capability (SWPU|C>SMART-SWAP-NO-SLIPPAGE account input-id input-amount output-id slippage)
-                (XI_SmartSwapRouter account input-id input-amount output-id slippage kda-pid slippage-bounds)
+            (if (!= slippage -1.0)
+                (with-capability (SWPU|C>SMART-SWAP-WITH-SLIPPAGE account input-id input-amount output-id slippage slippage-bounds h-obj)
+                    (XI_SmartSwapRouter account input-id input-amount output-id slippage kda-pid slippage-bounds h-obj)
+                )
+                (with-capability (SWPU|C>SMART-SWAP-NO-SLIPPAGE account input-id input-amount output-id slippage h-obj)
+                    (XI_SmartSwapRouter account input-id input-amount output-id slippage kda-pid slippage-bounds h-obj)
+                )
             )
         )
     )
@@ -942,13 +962,17 @@
     )
     ;;{F7}
     (defun XI_SmartSwapRouter:object{IgnisCollectorV1.OutputCumulator}
-        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal kda-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage})
-        @doc "Routes Smart Swap: performs slippage check using fee-less multi-hop output, then executes."
+        (
+            account:string input-id:string input-amount:decimal output-id:string slippage:decimal
+            kda-pid:decimal slippage-bounds:object{SwapperUsageV2.Slippage} h-obj:object{SwapperIssueV3.Hopper}
+        )
+        @doc "Routes Smart Swap: performs slippage check using fee-less multi-hop output, then executes. \
+            \ #65L fix: <h-obj> is now supplied by the caller (CC_SmartSwap), computed \
+            \ once and shared with the defcap — this function no longer re-runs \
+            \ SWPI::URC_HopperActive's full-graph search a second time."
         (require-capability (SECURE))
         (let
             (
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
-                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
                 (nodes:[string] (at "nodes" h-obj))
                 (edges:[string] (at "edges" h-obj))
                 (ovs:[decimal] (at "output-values" h-obj))

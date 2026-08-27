@@ -529,7 +529,15 @@ both renames (`URC_Swap` → `URCv_Swap`, `URC_InverseSwap` → `URCv_InverseSwa
 StoicSyntax refactor sweep after all module audits finish — same treatment as L58. No code change. Full
 writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L64*
 
-#65L **[SWPU]** `URC_Hopper` is computed twice for the same Smart Swap transaction (wasted gas only).
+#65L **[SWPU]** ~~`URC_Hopper` is computed twice for the same Smart Swap transaction (wasted gas
+only).~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-27** (`ROUND-02-FIXES.md` Fix #38). Confirmed real: a genuine
+double-heavy-read in `CC_SmartSwap` — `URC_HopperActive`'s full-graph BFS ran once in the
+`SWPU|X>SMART-SWAP` defcap for validation, then again in `XI_SmartSwapRouter` for execution. Against
+StoicSyntax's rule that a defcap must never repeat a heavy read the function body also performs.
+Restructured so `h-obj` is computed exactly once by `CC_SmartSwap` and threaded through the defcap chain
+and `XI_SmartSwapRouter`, mirroring the bundle-based path's own already-established pattern. Measured, not
+just asserted: real gas dropped from 5,094,054 → 4,593,400 (~9.8%) on the same P2-scale checkpoint. Full
+writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *L65*
 
 #66L **[SWPU]** Failure-branch `OutputCumulator` objects are hand-built instead of via a `UDC_*` constructor.
 

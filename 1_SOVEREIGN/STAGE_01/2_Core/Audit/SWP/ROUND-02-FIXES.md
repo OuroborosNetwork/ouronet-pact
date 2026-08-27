@@ -1540,3 +1540,27 @@ Full suite (`[6.2]`+`[6.3]`): exit 0, 0 `FAILURE`. Default `Z.repl` pipeline (`[
 0, 0 `FAILURE`, `Stage01_Tester.repl` reverted with zero drift. No `.pact` source touched.
 
 **Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #38 — L65 (#65L): eliminated `CC_SmartSwap`'s double `URC_HopperActive` computation
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact`:** `CC_SmartSwap`'s defcap chain ran
+`SWPI::URC_HopperActive` (full-graph BFS) once for path validation, then `XI_SmartSwapRouter` ran the same
+search again for execution — a genuine double-heavy-read, against StoicSyntax's rule that a defcap must
+never repeat a heavy read the function body also performs. Restructured to mirror the bundle-based path's
+own already-established pattern (validate an already-known route instead of searching twice):
+`CC_SmartSwap` now computes `h-obj` exactly once, before `with-capability`, and threads it through
+`SWPU|C>SMART-SWAP-WITH/NO-SLIPPAGE` → `SWPU|X>SMART-SWAP` (now validates against the supplied `h-obj`
+instead of recomputing) and into `XI_SmartSwapRouter` (now reads `h-obj` instead of recomputing). Pure
+read (`URC_*`, no writes), nothing mutates state between the original two calls, so computing it once
+earlier in the same transaction is provably equivalent — no correctness risk. Also dropped two pre-existing
+dead bindings found while rewriting the defcap. Blast radius contained entirely to this one file.
+
+**Measured, not just asserted:** stashed the fix, reran to capture real pre-fix gas at `SWP|TX 032z2`'s
+P2-scale checkpoint: 5,094,054 KDA gas. Restored, reran: 4,593,400 KDA gas — a genuine 500,654 gas
+reduction (~9.8%) for the identical call. Full suite (`[6.2]`+`[6.3]`): exit 0, 0 `FAILURE`. Default
+`Z.repl` pipeline (`[6.2+3]` issuance-only): exit 0, 0 `FAILURE`, `Stage01_Tester.repl` reverted with zero
+drift.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.

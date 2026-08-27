@@ -2684,3 +2684,42 @@ as L58's `KDA-PID` → `STOA-PID` deferral.
 doesn't have to rediscover scope or intent. — *L64*
 
 ---
+
+## L65 (#65L, SWPU — `URC_HopperActive` is computed twice for the same self-searching Smart Swap tx, defcap + execution) — **CONFIRMED, FIXED, PROVEN**
+
+**Traced the double computation before proposing anything:** `CC_SmartSwap`'s defcap chain
+(`SWPU|C>SMART-SWAP-WITH-SLIPPAGE`/`NO-SLIPPAGE` → `SWPU|X>SMART-SWAP`) ran `SWPI::URC_HopperActive`
+(a full-graph BFS path search) once for validation (path exists, every hop's pool has swap active), then
+`XI_SmartSwapRouter` ran the exact same search again right after, purely to get the output amounts for
+the slippage check. No writes happen between the two, so it's a real gas waste, not a correctness bug —
+but a genuine one: the same expensive read running twice in the same transaction.
+
+**First raised as a DESIGN-accepted call** (self-searching `CC_SmartSwap` is explicitly kept, per its own
+`@doc` and the REPL's own comments, as the naive/unoptimized baseline specifically so its gas cost can be
+A/B-compared against the newer bundle-based `C_SmartSwap` path — "for direct gas comparison"). **Owner
+overruled:** running a heavy read inside a capability and then running it again in the function body is a
+StoicSyntax violation regardless of the module's benchmarking intent — a real, different formula had to be
+found to remove the double gas usage, not accepted as deliberate overhead.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact`:** mirrors the pattern the bundle-based path
+(`SWPU|X>SMART-SWAP-EXPLICIT-ROUTE`) already established in this exact file — validate an already-known
+route instead of searching for one. `CC_SmartSwap` now computes `h-obj` (the `Hopper` object: nodes,
+edges, output-values) exactly once, before `with-capability`, and threads it through as an explicit
+parameter: `SWPU|C>SMART-SWAP-WITH-SLIPPAGE`/`NO-SLIPPAGE` → `SWPU|X>SMART-SWAP` (now validates against
+the supplied `h-obj.edges` instead of recomputing) and into `XI_SmartSwapRouter` (now reads `h-obj`
+instead of recomputing). Since `URC_HopperActive` is a pure read (`URC_*`, no writes) and nothing mutates
+state between the original two calls, computing it once earlier in the same transaction is provably
+equivalent — no correctness risk from the reordering. Also dropped two pre-existing dead bindings
+(`ref-U|SWP`, `nodes`) inside the defcap that were declared but never used, found while rewriting the
+block. Blast radius contained entirely to `19_SWPU.pact` — none of the touched defcaps/functions are
+interface-declared or called from any other file.
+
+**Measured, not just asserted:** stashed the fix, reran the full suite to capture the real pre-fix gas at
+`SWP|TX 032z2`'s P2-scale checkpoint (~102 active pools): **5,094,054** KDA gas. Restored the fix, reran:
+**4,593,400** KDA gas — a genuine **500,654 gas reduction (~9.8%)** for the exact same self-searching
+Smart Swap call. Full suite (`[6.2]`+`[6.3]`): exit 0, 0 `FAILURE`. Default `Z.repl` pipeline (`[6.2+3]`
+issuance-only): exit 0, 0 `FAILURE`, `Stage01_Tester.repl` reverted with zero drift.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #38. Awaiting Round III re-verify. — *L65*
+
+---
