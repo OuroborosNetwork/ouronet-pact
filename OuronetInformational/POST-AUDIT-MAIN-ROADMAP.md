@@ -90,6 +90,25 @@ to main. This phase closes the coverage gap repo-wide AND lands the single-compr
       pre-state; fold info/stream/DSA inline bodies). Spec: `memories/2026-08-27-aqp-full-unified-test.md`.
       End state: **one command tests the entire system top-to-bottom.**
 
+## PHASE 6 — UI incorporation (CAPSTONE; workstream #2; spec: `UI-INCORPORATION-PLAN.md`; task #80)
+The second major workstream: a **document of incorporation** an AI agent (OuronetUI) follows to
+implement the ENTIRE Ouronet functionality onto the web UI — every client/admin function, every
+asset type (7), every role — derived from the **final Pact shape**, not built button-by-button.
+- [ ] **6.0 Hard dependency:** all of Phases 1-5 done + a **fresh top-to-bottom redeploy** of Stage
+      1 + 2 (final entrypoint set). The UI enumerates the finalized, total client/admin/INFO surface.
+- [ ] **6.1** Extend the **repo-wide entrypoint-surface catalog** (from Phase 2.3) into the UI input:
+      per entrypoint → role + asset-type + domain + INFO fn + readers + input form. This catalog IS
+      the machine-readable UI spec (every action, its cost, its state).
+- [ ] **6.2** Write the incorporation document: page/menu map on **role × asset-type × domain** axes;
+      per page the displayed metrics (readers), buttons (client fns), per button exec fn + INFO fn +
+      inputs/validation; navigation per role; **mobile-first** (build on the existing partial UI).
+- [ ] **6.3** Hand to the OuronetUI agent to implement page-by-page against the deterministic map.
+
+**Why #1 enables #2:** the completed INFO surface + entrypoint catalog is already ~80% of a UI spec
+(button = client fn; preview = INFO; metrics = readers; form = wrapper sig). Finalizing INFO
+coverage (Phase 2.3) is literally the bridge to the UI. Manual build: 10-20 yrs solo / 2-4 yrs
+human+AI; scoped to an agent following the plan: **weeks**.
+
 ---
 
 ## AUDIT CARRY-OVER — deferred items each merged audit brings
@@ -135,3 +154,4 @@ Verified on main: the two live fixes landed — `P|A_Define` IMP registration
 #21 SWP audit · #23 ATS audit → **Phase 0**. #77 URCi → **Phase 1-2**. #74 vacate INFO → **Phase 2.2**.
 #78 complete-all-INFO → **Phase 2.3**. #76 re-price → **Phase 3**. #75 FVT split → **Phase 4**.
 #79 REPL coverage completion → **Phase 5.2**. #71/#72/#73 whole-codebase single run → **Phase 5.3**.
+#80 UI incorporation (capstone) → **Phase 6**.
