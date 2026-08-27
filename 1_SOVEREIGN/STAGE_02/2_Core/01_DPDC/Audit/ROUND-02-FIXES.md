@@ -1457,3 +1457,45 @@ version bump — pre-mainnet, `V1` stays freely editable per `CLAUDE.md` policy.
 compiler-enforced) applies to the *whole* codebase, not just DPDC — worth a note in
 `OuronetInformational` so a future comprehensive StoicSyntax sweep knows to check for this pattern
 everywhere, not just re-derive it from scratch.
+
+## Fix #33 — DPDC-S · L1 (#39L) — new canonical REPL suite for the entire DPDC-S set family
+
+**Owner-approved 2026-08-27.** Owner: "yes build the full suite please."
+
+**What the finding asked for:** DPDC-S (Primordial/Composite/Hybrid/NFT Sets) had zero REPL coverage
+anywhere reachable from any active pipeline for its core mechanics — Make/Break round trips and admin
+mutations. Round I's own auditor note ties this directly to two now-fixed CRITICAL findings (#6C, #7C)
+that shipped completely undetected specifically because nothing ever exercised these code paths.
+
+**New file:** `REPL/Stage_02/[6.1.3]_DPDC-S.repl` (canonical layout, mirrors `[6.1.1]_EQUITY.repl`/
+`[6.1.2]_DPDC-FRAGMENTS.repl`), 7 transactions, 40 assertions, built and verified incrementally in a
+Kursan scratch draft before finalizing:
+- `TX-SET-001` — Issue a fresh SFT collection (10 native nonces, 1000 units each) and a fresh NFT
+  collection (4 native nonces).
+- `TX-SET-002` — Define SC1 (Primordial: nonce 1 + nonce 2), SC2 (Composite: references SC1), SC3
+  (Hybrid: primordial nonce 3 + composite SC1), and an NFT Primordial set (position choices `[1 2]`/
+  `[3 4]`). Asserts each set-class's own auto-assigned set-token nonce (11/12/13).
+- `TX-SET-003` — Primordial Make→Break round trip: Make 5 SC1 sets (nonce 1/2 debited by 5 each, SC1
+  token credited 5), Break them (exact restoration to 1000/1000/0).
+- `TX-SET-004` — Composite Make→Break round trip, built on top of SC1 units: Make 3 SC2 sets from 3 of 5
+  SC1 units (2 SC1 remain, 3 SC2 credited), Break the SC2 sets (SC1 restored to 5), then break the
+  remaining SC1 (full circle back to 1000/1000/0).
+- `TX-SET-005` — Hybrid Make→Break round trip, doubling as live regression coverage for #32M's
+  constituent-ordering fix: Make 2 SC3 sets with `nonces=[3 11]` (primordial-first, matching the Make-time
+  convention), asserts nonce 3 and SC1 (nonce 11) both debited correctly, Break restores everything
+  including the underlying SC1 units, full circle back to 1000/1000/1000/0.
+- `TX-SET-006` — NFT Primordial Make→Break round trip: choose nonce 1 (of allowed `[1 2]`) and nonce 3
+  (of allowed `[3 4]`) for the two positions, spawn instance nonce 5, Break restores both constituents and
+  burns the instance.
+- `TX-SET-007` — Admin mutations, also re-proving #30M live: `C_ToggleSet` off correctly makes
+  `C_EnableSetClassFragmentation` fail (`expect-failure`), toggle back on, `C_RenameSet`, then
+  `C_EnableSetClassFragmentation` succeeds on the now-active set-class.
+
+**Wired into the active pipeline:** `REPL/Stage02_Tester.repl` — one new line,
+`(load "Stage_02/[6.1.3]_DPDC-S.repl")`, right after the DPDC-F fragments suite load.
+
+**Proof:** `cd REPL && pact Z.repl` — clean, `Load successful`, zero `FAILURE` lines anywhere in the full
+pipeline log. All 40 new assertions print `"Expect: success ..."` / `"Expect failure: Success: ..."` —
+none silently skipped.
+
+**Interface implication:** none — new REPL test file only, no `.pact` source changed.

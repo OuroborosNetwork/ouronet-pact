@@ -1,0 +1,688 @@
+;;
+;; REPL/Stage_02/[6.1.3]_DPDC-S.repl — source layout mirrors console
+;;   Inter-tx:   ;;|| NEXT >  (same three lines as REPL/Stage_01/[2.2]_Core.repl)
+;;   Intra-tx:   ;;==== TXnnn · mm · <slug> ====  pairs with (print "--- [TXnnn · mm · …] ---") (mm = group within that begin-tx, 01..)
+;;   format "{}": only from Talos C_* return, ref-DPDC/ref-DPDC-S UR_*/URC_* return, expect/expect-failure doc, or (env-gas).
+;;   REPL tests: (expect …) / (expect-failure …) return strings — collect in a list and (map print …) so every assertion line appears in the REPL; no nested format wrapping expect.
+;;
+;; DPDC Audit #39L: DPDC-S (Primordial/Composite/Hybrid/NFT Sets) had zero REPL coverage anywhere
+;; reachable from any active pipeline for its core mechanics — Make/Break round trips and admin
+;; mutations (C_ToggleSet/C_RenameSet/C_EnableSetClassFragmentation). Round I's own auditor note ties
+;; this directly to two now-fixed CRITICAL findings (#6C, #7C) that shipped completely undetected
+;; specifically because nothing ever exercised these code paths. This file is the first real, reachable,
+;; asserted DPDC-S coverage — same pattern as [6.1.1]_EQUITY.repl and [6.1.2]_DPDC-FRAGMENTS.repl.
+;;
+;; Also doubles as regression coverage for #6C (composite allowed-sclass=0 rejection), #30M (active-state
+;; gate on EnableSetClassFragmentation), #31M (primordial per-element bounds), and #32M (Hybrid
+;; constituent ordering, exercised live in TX-SET-005's full Make->Break round trip).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.1.3]_DPDC-S.repl")
+(print "================================================================")
+(print "Legend (terminal observability):")
+(print "  <<…>>     expect / expect-failure doc (format …) — REPL logs pass/fail")
+(print "  <(TS02-C1/C2.DPSF|DPNF|C_…)> => \"…\"      Talos client -> DPDC-S write (return value)")
+(print "  <(DPDC.UR_…)> / <(DPDC-S.UR_…)> => \"…\"    ref-module utility read (return value)")
+(print "  <(REPL|env-gas)> …               gas after tx (env-gas)")
+(print "")
+(print "Source: ;;|| NEXT > between txs; ;;==== TXnnn · mm · … ==== before each REPL group banner (mm = intra-tx group).")
+(print "REPL tests: (map print [(expect (format \"<<TX…>> …\" […]) expected actual) …]) — expect / expect-failure return strings; map print surfaces each line.")
+(print "")
+(print "===================Initialise DPDC-S TX Block==========================")
+
+(begin-tx "TX-SET-001 - Issue + Create fresh SFT (10 nonces) and NFT (4 nonces) collections")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-001 · 01 · env-sigs (caps) ====
+(print "--- [TX-SET-001 · 01 · env-sigs (caps)] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (owner:string KST.ANHD)
+        (dpsf-price:decimal (ref-DALOS::UR_UsagePrice "dpsf"))
+        (dpnf-price:decimal (ref-DALOS::UR_UsagePrice "dpnf"))
+        (split-dpsf:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpsf-price))
+        (split-dpnf:[decimal] (ref-DALOS::URC_SplitKDAPrices owner dpnf-price))
+        (t0:decimal (+ (at 0 split-dpsf) (at 0 split-dpnf)))
+        (t1:decimal (+ (at 1 split-dpsf) (at 1 split-dpnf)))
+        (t2:decimal (+ (at 2 split-dpsf) (at 2 split-dpnf)))
+        (t3:decimal (+ (at 3 split-dpsf) (at 3 split-dpnf)))
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" t2)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" t0)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" t3)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" t1)
+                ]
+            }
+        ]
+    )
+)
+;;==== TX-SET-001 · 02 · Issue SFT/NFT + Create native nonces ====
+(print "--- [TX-SET-001 · 02 · issue + create native nonces] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (owner:string KST.ANHD)
+        (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_Issue TestSetsSFT/TSFS)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Issue owner owner owner "TestSetsSFT" "TSFS" true true true true true true true true)])
+            (format "<(TS02-C2.DPNF|C_Issue TestSetsNFT/TSFN)> => \"{}\""
+                [(ref-TS02-C2::DPNF|C_Issue owner owner owner "TestSetsNFT" "TSFN" true true true true true true true true)])
+        ]
+    )
+    (let
+        (
+            (sft-id:string "TSFS-98c486052a51")
+            (nft-id:string "TSFN-98c486052a51")
+            (nd:object{DpdcUdcV1.DPDC|NonceData}
+                (ref-DPDC-UDC::UDC_NonceData
+                    0.0 0.0 "N" "N" (ref-DPDC-UDC::UDC_NoMetaData) type
+                    (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+                )
+            )
+        )
+        (map print
+            [
+                (format "<(TS02-C1.DPSF|C_Create 10 SFT nonces)> => \"{}\""
+                    [(ref-TS02-C1::DPSF|C_Create owner sft-id (make-list 10 1000) (make-list 10 nd))])
+                (format "<(TS02-C2.DPNF|C_Create 4 NFT nonces)> => \"{}\""
+                    [(ref-TS02-C2::DPNF|C_Create owner nft-id (make-list 4 nd))])
+            ]
+        )
+        (map print
+            [
+                (expect "<<TX-SET-001>> SFT nonce 1 holds the full 1,000 units at creation"
+                    1000
+                    (ref-DPDC::UR_AccountNonceSupply owner sft-id true 1)
+                )
+                (expect "<<TX-SET-001>> NFT has exactly 4 native nonces created"
+                    4
+                    (ref-DPDC::UR_NoncesUsed nft-id false)
+                )
+            ]
+        )
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-SET-001 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-002 - Define Primordial/Composite/Hybrid SFT sets + NFT Primordial set")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-002 · 01 · env-sigs (caps) ====
+(print "--- [TX-SET-002 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-SET-002 · 02 · Define SC1 Primordial, SC2 Composite, SC3 Hybrid, NFT-SC1 Primordial ====
+(print "--- [TX-SET-002 · 02 · define SC1 Primordial / SC2 Composite / SC3 Hybrid / NFT-SC1 Primordial] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (owner:string KST.ANHD)
+        (sft-id:string "TSFS-98c486052a51")
+        (nft-id:string "TSFN-98c486052a51")
+        (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "N" "N" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (map print
+        [
+            ;;SC1: Primordial, positions = nonce 1, nonce 2 -> nonce-of-set = 11
+            (format "<(TS02-C1.DPSF|C_DefinePrimordialSet SC1: nonce1+nonce2)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_DefinePrimordialSet owner sft-id "SC1-Primordial" 1.0
+                    [(ref-DPDC-UDC::N [1]) (ref-DPDC-UDC::N [2])] nd)])
+            ;;SC2: Composite, position = set-class 1 -> nonce-of-set = 12
+            (format "<(TS02-C1.DPSF|C_DefineCompositeSet SC2: set-class 1)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_DefineCompositeSet owner sft-id "SC2-Composite" 1.0
+                    [(ref-DPDC-UDC::C 1)] nd)])
+            ;;SC3: Hybrid, primordial position = nonce 3, composite position = set-class 1 -> nonce-of-set = 13
+            (format "<(TS02-C1.DPSF|C_DefineHybridSet SC3: nonce3 + set-class 1)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_DefineHybridSet owner sft-id "SC3-Hybrid" 1.0
+                    [(ref-DPDC-UDC::N [3])] [(ref-DPDC-UDC::C 1)] nd)])
+            ;;NFT SC1: Primordial, position1 = choice of [1 2], position2 = choice of [3 4]
+            (format "<(TS02-C2.DPNF|C_DefinePrimordialSet NFT-SC1: [1 2]/[3 4])> => \"{}\""
+                [(ref-TS02-C2::DPNF|C_DefinePrimordialSet owner nft-id "NFT-SC1-Primordial" 1.0
+                    [(ref-DPDC-UDC::N [1 2]) (ref-DPDC-UDC::N [3 4])] nd)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-002>> 3 SFT set-classes now defined (SC1/SC2/SC3)"
+                3
+                (ref-DPDC::UR_SetClassesUsed sft-id true)
+            )
+            (expect "<<TX-SET-002>> SC1's own SFT set-token is nonce 11"
+                11
+                (ref-DPDC-S::UR_NonceOfSet sft-id 1)
+            )
+            (expect "<<TX-SET-002>> SC2's own SFT set-token is nonce 12"
+                12
+                (ref-DPDC-S::UR_NonceOfSet sft-id 2)
+            )
+            (expect "<<TX-SET-002>> SC3's own SFT set-token is nonce 13"
+                13
+                (ref-DPDC-S::UR_NonceOfSet sft-id 3)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-SET-002 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-003 - Primordial SFT Make -> Break round trip, exact conservation")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-003 · 01 · env-sigs (caps) ====
+(print "--- [TX-SET-003 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-SET-003 · 02 · Make 5 SC1 sets from nonce 1 + nonce 2 ====
+(print "--- [TX-SET-003 · 02 · Make 5 SC1 (Primordial) sets from nonce 1 + nonce 2] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (sft-id:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_Make SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Make owner owner sft-id [1 2] 1 5)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-003>> Make: nonce 1 debited by exactly 5 (1000 -> 995)"
+                995
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 1)
+            )
+            (expect "<<TX-SET-003>> Make: nonce 2 debited by exactly 5 (1000 -> 995)"
+                995
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 2)
+            )
+            (expect "<<TX-SET-003>> Make: SC1 set-token (nonce 11) credited with exactly 5"
+                5
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 11)
+            )
+        ]
+    )
+    ""
+)
+;;==== TX-SET-003 · 03 · Break the 5 SC1 sets, full-circle conservation ====
+(print "--- [TX-SET-003 · 03 · Break the 5 SC1 sets; full-circle conservation] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (sft-id:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_Break SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 11 5)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-003>> Break: nonce 1 restored to the full 1,000 (exact conservation)"
+                1000
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 1)
+            )
+            (expect "<<TX-SET-003>> Break: nonce 2 restored to the full 1,000 (exact conservation)"
+                1000
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 2)
+            )
+            (expect "<<TX-SET-003>> Break: SC1 set-token (nonce 11) fully drained back to 0"
+                0
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 11)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-SET-003 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-004 - Composite SFT Make -> Break round trip (built on SC1 units), exact conservation")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-004 · 01 · env-sigs (caps) ====
+(print "--- [TX-SET-004 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-SET-004 · 02 · Re-make 5 SC1 units, then Make 3 SC2 (Composite) sets from 3 of them ====
+(print "--- [TX-SET-004 · 02 · re-make 5 SC1 units; Make 3 SC2 (Composite) sets from 3 of them] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (sft-id:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_Make SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Make owner owner sft-id [1 2] 1 5)])
+            (format "<(TS02-C1.DPSF|C_Make SC2 x3 from SC1)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Make owner owner sft-id [11] 2 3)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-004>> Make: SC1 (nonce 11) debited by 3, leaving 2 (5 - 3)"
+                2
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 11)
+            )
+            (expect "<<TX-SET-004>> Make: SC2 set-token (nonce 12) credited with exactly 3"
+                3
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 12)
+            )
+        ]
+    )
+    ""
+)
+;;==== TX-SET-004 · 03 · Break the 3 SC2 sets; then break the remaining 5 SC1, full-circle ====
+(print "--- [TX-SET-004 · 03 · Break 3 SC2 sets, then remaining 5 SC1; full-circle conservation] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (sft-id:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_Break SC2 x3)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 12 3)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-004>> Break: SC1 (nonce 11) restored to 5 (2 + 3)"
+                5
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 11)
+            )
+            (expect "<<TX-SET-004>> Break: SC2 set-token (nonce 12) fully drained back to 0"
+                0
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 12)
+            )
+        ]
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_Break SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 11 5)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-004>> Full circle: nonce 1 restored to the full 1,000"
+                1000
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 1)
+            )
+            (expect "<<TX-SET-004>> Full circle: nonce 2 restored to the full 1,000"
+                1000
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 2)
+            )
+            (expect "<<TX-SET-004>> Full circle: SC1 set-token (nonce 11) back to 0"
+                0
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 11)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-SET-004 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-005 - Hybrid SFT Make -> Break round trip (primordial nonce 3 + composite SC1)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-005 · 01 · env-sigs (caps) ====
+(print "--- [TX-SET-005 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-SET-005 · 02 · Re-make 5 SC1 units; Make 2 SC3 (Hybrid) sets ====
+(print "--- [TX-SET-005 · 02 · re-make 5 SC1 units; Make 2 SC3 (Hybrid: nonce 3 + SC1) sets] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (sft-id:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_Make SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Make owner owner sft-id [1 2] 1 5)])
+            ;;DPDC Audit #32M regression coverage: nonces ordered [primordial (3), composite (11)]
+            (format "<(TS02-C1.DPSF|C_Make SC3 x2 [nonce3, SC1])> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Make owner owner sft-id [3 11] 3 2)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-005>> Make: nonce 3 (primordial leg) debited by exactly 2 (1000 -> 998)"
+                998
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 3)
+            )
+            (expect "<<TX-SET-005>> Make: SC1 (composite leg, nonce 11) debited by 2, leaving 3 (5 - 2)"
+                3
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 11)
+            )
+            (expect "<<TX-SET-005>> Make: SC3 set-token (nonce 13) credited with exactly 2"
+                2
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 13)
+            )
+        ]
+    )
+    ""
+)
+;;==== TX-SET-005 · 03 · Break the 2 SC3 sets; then break the remaining 5 SC1, full-circle ====
+(print "--- [TX-SET-005 · 03 · Break 2 SC3 sets, then remaining 5 SC1; full-circle conservation] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (sft-id:string "TSFS-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_Break SC3 x2)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 13 2)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-005>> Break: nonce 3 restored to the full 1,000 (exact conservation)"
+                1000
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 3)
+            )
+            (expect "<<TX-SET-005>> Break: SC1 (nonce 11) restored to 5 (3 + 2)"
+                5
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 11)
+            )
+            (expect "<<TX-SET-005>> Break: SC3 set-token (nonce 13) fully drained back to 0"
+                0
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 13)
+            )
+        ]
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_Break SC1 x5)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_Break owner owner sft-id 11 5)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-005>> Full circle: nonce 1 restored to the full 1,000"
+                1000
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 1)
+            )
+            (expect "<<TX-SET-005>> Full circle: nonce 2 restored to the full 1,000"
+                1000
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 2)
+            )
+            (expect "<<TX-SET-005>> Full circle: nonce 3 restored to the full 1,000"
+                1000
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 3)
+            )
+            (expect "<<TX-SET-005>> Full circle: SC1 set-token (nonce 11) back to 0"
+                0
+                (ref-DPDC::UR_AccountNonceSupply owner sft-id true 11)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-SET-005 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-006 - Primordial NFT Make -> Break round trip, exact conservation")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-006 · 01 · env-sigs (caps) ====
+(print "--- [TX-SET-006 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-SET-006 · 02 · Make: choose nonce 1 (of [1 2]) + nonce 3 (of [3 4]) ====
+(print "--- [TX-SET-006 · 02 · Make: choose nonce 1 (of [1 2]) + nonce 3 (of [3 4])] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (owner:string KST.ANHD)
+        (nft-id:string "TSFN-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C2.DPNF|C_Make [1 3])> => \"{}\""
+                [(ref-TS02-C2::DPNF|C_Make owner owner nft-id [1 3] 1)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-006>> Make: nonce 1 (position 1 choice) consumed, supply drops to 0"
+                0
+                (ref-DPDC::UR_AccountNonceSupply owner nft-id false 1)
+            )
+            (expect "<<TX-SET-006>> Make: nonce 3 (position 2 choice) consumed, supply drops to 0"
+                0
+                (ref-DPDC::UR_AccountNonceSupply owner nft-id false 3)
+            )
+            (expect "<<TX-SET-006>> Make: new NFT set instance spawned at nonce 5, quantity 1"
+                1
+                (ref-DPDC::UR_AccountNonceSupply owner nft-id false 5)
+            )
+        ]
+    )
+    ""
+)
+;;==== TX-SET-006 · 03 · Break the spawned instance, exact conservation ====
+(print "--- [TX-SET-006 · 03 · Break the spawned instance (nonce 5); exact conservation] ---")
+(let
+    (
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
+        (owner:string KST.ANHD)
+        (nft-id:string "TSFN-98c486052a51")
+    )
+    (map print
+        [
+            (format "<(TS02-C2.DPNF|C_Break nonce 5)> => \"{}\""
+                [(ref-TS02-C2::DPNF|C_Break owner owner nft-id 5)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-006>> Break: nonce 1 returned, supply restored to 1"
+                1
+                (ref-DPDC::UR_AccountNonceSupply owner nft-id false 1)
+            )
+            (expect "<<TX-SET-006>> Break: nonce 3 returned, supply restored to 1"
+                1
+                (ref-DPDC::UR_AccountNonceSupply owner nft-id false 3)
+            )
+            (expect "<<TX-SET-006>> Break: spawned instance (nonce 5) fully burned back to 0"
+                0
+                (ref-DPDC::UR_AccountNonceSupply owner nft-id false 5)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-SET-006 ==================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+
+(begin-tx "TX-SET-007 - Admin mutations: ToggleSet / RenameSet / EnableSetClassFragmentation")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-SET-007 · 01 · env-sigs (caps) ====
+(print "--- [TX-SET-007 · 01 · env-sigs (caps)] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;;==== TX-SET-007 · 02 · ToggleSet off -> EnableFragmentation rejected (#30M) -> ToggleSet on ====
+(print "--- [TX-SET-007 · 02 · ToggleSet off rejects EnableFragmentation (#30M); ToggleSet back on] ---")
+(let
+    (
+        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (sft-id:string "TSFS-98c486052a51")
+        (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "FragSC1" "Fragmentation marker" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_ToggleSet SC1 off)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_ToggleSet owner sft-id 1 false)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-007>> SC1 active-state is false after toggling off"
+                false
+                (ref-DPDC-S::UR_IzSetActive sft-id true 1)
+            )
+            (expect-failure
+                "<<TX-SET-007>> EnableSetClassFragmentation on a deactivated set-class is rejected (DPDC Audit #30M)"
+                (ref-TS02-C1::DPSF|C_EnableSetClassFragmentation owner sft-id 1 nd)
+            )
+        ]
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_ToggleSet SC1 on)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_ToggleSet owner sft-id 1 true)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-007>> SC1 active-state is true after toggling back on"
+                true
+                (ref-DPDC-S::UR_IzSetActive sft-id true 1)
+            )
+        ]
+    )
+    ""
+)
+;;==== TX-SET-007 · 03 · RenameSet then EnableSetClassFragmentation (now active) succeeds ====
+(print "--- [TX-SET-007 · 03 · RenameSet; EnableSetClassFragmentation on the now-active SC1 succeeds] ---")
+(let
+    (
+        (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+        (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+        (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
+        (owner:string KST.ANHD)
+        (sft-id:string "TSFS-98c486052a51")
+        (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+        (nd:object{DpdcUdcV1.DPDC|NonceData}
+            (ref-DPDC-UDC::UDC_NonceData
+                0.0 0.0 "FragSC1" "Fragmentation marker" (ref-DPDC-UDC::UDC_NoMetaData) type
+                (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data) (ref-DPDC-UDC::UDC_ZeroURI|Data)
+            )
+        )
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_RenameSet SC1)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_RenameSet owner sft-id 1 "SC1-Renamed")])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-007>> SC1's name is updated after rename"
+                "SC1-Renamed"
+                (ref-DPDC-S::UR_SetName sft-id true 1)
+            )
+        ]
+    )
+    (map print
+        [
+            (format "<(TS02-C1.DPSF|C_EnableSetClassFragmentation SC1)> => \"{}\""
+                [(ref-TS02-C1::DPSF|C_EnableSetClassFragmentation owner sft-id 1 nd)])
+        ]
+    )
+    (map print
+        [
+            (expect "<<TX-SET-007>> SC1 reads as fragmented after enabling fragmentation"
+                true
+                (ref-DPDC-S::UEV_IzSetClassFragmented sft-id true 1)
+            )
+        ]
+    )
+    ""
+)
+(commit-tx)
+(print "")
+(print "=== END TX-SET-007 ==================================================")
+(print "")
+(print "=== END FILE [6.1.3]_DPDC-S.repl ========================================")
+(print "")

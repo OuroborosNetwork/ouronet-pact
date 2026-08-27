@@ -460,8 +460,13 @@ sentinel values are now genuinely unreachable by any real definition. No code ch
 
 ## LOW
 
-#39L **[DPDC-S]** Zero REPL coverage for the entire Make/Break round trip and every admin mutation in this
-module — directly explains why #6C and #7C shipped undetected. — *DPDC-S·L1*
+#39L **[DPDC-S]** ~~Zero REPL coverage for the entire Make/Break round trip and every admin mutation in this
+module — directly explains why #6C and #7C shipped undetected.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-27**
+(`ROUND-02-FIXES.md` Fix #33) — new canonical suite `REPL/Stage_02/[6.1.3]_DPDC-S.repl`, wired into
+`Stage02_Tester.repl`: Primordial/Composite/Hybrid SFT Make→Break round trips, NFT Primordial Make→Break,
+and `C_ToggleSet`/`C_RenameSet`/`C_EnableSetClassFragmentation` admin mutations, 40 assertions total.
+Doubles as regression coverage for #6C, #30M, #31M, and #32M (Hybrid round trip exercises the
+constituent-ordering fix live). Full Z.repl green, zero `FAILURE` lines. — *DPDC-S·L1*
 
 #40L **[DPDC-MNG]** The escalating-scope `Wipe*` family (`Heavy`/`Pure`/`Clean`/`Dirty`) has zero REPL test
 coverage — the checked-in "TX 005b -- Wipe Tests" transaction is entirely commented out — directly explains

@@ -117,7 +117,23 @@ one at a time in `ISSUES-RANKED.md` order and this table is updated in place as 
 | M14 (#36M) | MED | DPDC | `AUP_Account`/`AUP_Property` slice composite keys via hardcoded offsets | **REFUTED 2026-08-24** — owner: "there are no non-162-char accounts." Confirmed: `GLYPH|UEV_ApolloAccountCheck`/`GLYPH|UEV_ApolloAccount` hard-`enforce` account length `= 162` for every valid DALOS account; the `k:`/`c:` strings used elsewhere in this audit are unrelated raw Kadena coin addresses, never valid `account` values here. No bug. No code change |
 | M15 (#37M) | MED | DPDC-UDC | `UDC_ZeroNonceData` called cross-module via typed ref but absent from that interface | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #32)** — verified live in an isolated Pact 5.4 test that this pattern isn't compiler-enforced at all (interface membership is discipline-only). Fixed `UDC_ZeroNonceData`, then swept the whole DPDC family for the same pattern per owner request: found 3 more real instances (`DpdcV1` missing `CAP_OwnerOrCreator`/`UEV_CanWipeON`, `DpdcSetsV1` missing `C_DefineHybridSet`). All 4 added, zero behavior change. Z.repl green |
 | M16 (#38M) | MED | DPDC-UDC/DPDC-S | `UDC_NoPrimordialSet`/`NoCompositeSet` sentinels structurally indistinguishable from real data | **ALREADY CLOSED BY FIX #27 (#31M) — LIVE-PROVEN 2026-08-26** — both sentinel values (`[0]` primordial, `-1` composite) tested directly and confirmed rejected today: composite blocked by a pre-existing `sc > 0` check, primordial blocked by #31M's `0 < abs(n) <= nu` bound. No code change needed |
-| L1-L17 | LOW | various | See `ISSUES-RANKED.md` #39L-#55L (+1 unnumbered doc-only note) | OPEN |
+| L1 (#39L) | LOW | DPDC-S | Zero REPL coverage for Make/Break round trip and admin mutations | **FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #33)** — new canonical suite `REPL/Stage_02/[6.1.3]_DPDC-S.repl`, wired into `Stage02_Tester.repl`. Covers Primordial/Composite/Hybrid SFT + NFT Make→Break round trips and `C_ToggleSet`/`C_RenameSet`/`C_EnableSetClassFragmentation`, 40 assertions. Doubles as regression coverage for #6C/#30M/#31M/#32M. Z.repl green |
+| L2 (#40L) | LOW | DPDC-MNG | `Wipe*` family (`Heavy`/`Pure`/`Clean`/`Dirty`) has zero REPL coverage — the checked-in "Wipe Tests" tx is commented out | OPEN |
+| L3 (#41L) | LOW | DPDC | Branding functions untested; stark SFT-vs-NFT test asymmetry | OPEN |
+| L4 (#42L) | LOW | DPDC-R | No negative-path coverage for the ownership gate across all 12 role functions | OPEN |
+| L5 (#43L) | LOW | DPDC-C | `XI_RegisterCollectionElement` returns a formatted string instead of ending on a write | OPEN |
+| L6 (#44L) | LOW | DPDC-T | Dual `implements DpdcTransferV1`+`V2` deviates from "latest-version-only" cascade policy | OPEN |
+| L7 (#45L) | LOW | DPDC-UDC | `UDC_ScoreMetaData` is dead code — real score-mutation path bypasses it | OPEN |
+| L8 (#46L) | LOW | DPDC-UDC | Several constructors take 5-8 same-typed positional params in a row (transposition risk) | OPEN |
+| L9 (#47L) | LOW | DPDC-F | `C_RepurposeCollectableFragments` Multi Mode has no `length>0` guard | OPEN |
+| L10 (#48L) | LOW | DPDC-F | `DPDC-F\|C>MERGE` omits `id`/`son` from cap params; missing `@event` on 2 caps | OPEN |
+| L11 (#49L) | LOW | EQUITY | Make/Break reimplements DPDC-S's pattern with a bespoke, divergent mechanism | OPEN |
+| L12 (#50L) | LOW | EQUITY | `URC_SingleSharePerMillions` has no declared return type | OPEN |
+| L13 (#51L) | LOW | DPDC-S | Empty set-definitions crash with opaque `Array index out of bounds` instead of a clean `enforce` | OPEN |
+| L14 (#52L) | LOW | DPDC-S | `URC_NoncesSummedScore` silently discards a nested set's own multiplier | OPEN |
+| L15 (#53L) | LOW | DPDC-I | `creator-account` bound with no ownership/consent check (unlike `owner-account`) | OPEN |
+| L16 (#54L) | LOW | DPDC-I | `C_DeployAccountSFT`/`NFT` carry no `UEV_IMC`/cap/`@doc` (traced non-exploitable) | OPEN |
+| L17 (#55L) | LOW | DPDC | `UR_AS-KEYS` is a full table scan but named with the point-read `UR_` prefix | OPEN |
 
 ## Live-vs-local (Pythia) status
 

@@ -779,3 +779,17 @@ primordial side is blocked by our own #31M fix's `0 < abs(n) <= nu` per-element 
 `> 0`). Neither fix targeted #38M specifically, but between them both sentinel values are now genuinely
 unreachable by any real definition. Since the fix direction was an either/or (fix the validators, or
 export detector predicates) and the validator side is fully closed, no further code change needed.
+
+## #39L · DPDC-S · L1 — zero REPL coverage for the entire Make/Break round trip and admin mutations
+
+**Verdict: CONFIRMED, FIXED (2026-08-27).** Owner: "yes build the full suite please" (after weighing
+scoping it down to save time, but chose the full suite).
+
+**FIXED ✅ AND PROVEN ✅ (`ROUND-02-FIXES.md` Fix #33)** — new canonical suite
+`REPL/Stage_02/[6.1.3]_DPDC-S.repl`, wired into `Stage02_Tester.repl`. Covers Primordial/Composite/Hybrid
+SFT Make→Break round trips, NFT Primordial Make→Break, and admin mutations
+(`C_ToggleSet`/`C_RenameSet`/`C_EnableSetClassFragmentation`), with 40 assertions total. Built and
+verified incrementally in a Kursan draft first (every stage individually confirmed exact before
+finalizing into the canonical file). Doubles as regression coverage for #6C, #30M, #31M, and #32M (the
+Hybrid round trip specifically exercises the constituent-ordering fix live). Full `Z.repl` green, zero
+`FAILURE` lines anywhere in the pipeline.
