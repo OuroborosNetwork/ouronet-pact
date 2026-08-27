@@ -90,6 +90,46 @@
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
             (UC|GasPrice (ref-DALOS::UR_UsagePrice "smart") (ref-IGNIS::URC_IsNativeGasZero)))
     )
+    ;;{F2.5} [URC]  — multi-leg stake/unstake flow IFP reconstructors (mirror CC_*StakeFlow byte-for-byte).
+    ;;              Each leg is summed already gated by the virtual-gas toggle (SIP|URC_*), so the sum is
+    ;;              the toggled total (toggle-on → every leg 0 → 0). Leg map: memories/2026-08-27-aqp-info-final17-costmap.md
+    (defun URC_StakeScoreDeltaSum:decimal (pool-id:string)
+        @doc "Phase-4 leg: Σ SCORE.URC_StakeScoreDeltaIgnisUnit over POOL.URC_PoolActiveScoreIds (raw, ungated)."
+        (fold (+) 0.0
+            (map (lambda (sid:string) (AQP-SCORE.URC_StakeScoreDeltaIgnisUnit sid))
+                 (AQP-POOL.URC_PoolActiveScoreIds pool-id)))
+    )
+    (defun URC_TrueFungibleStakeFlowIfp:decimal
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "Toggled total IGNIS IFP of CC_TrueFungibleStakeFlow (04_FVT.pact:6412). Legs: transfer + tracker \
+            \ + rollup + RPS-settle + anchor-refresh(ANK per-unit + XB flat) + score-delta + book + checkpoint. \
+            \ direction=true stake (owner→vault), false unstake (vault→owner)."
+        (let*
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (bundle           (AQP-FVT.URHC_BuildStakeSettleBundle pool-id beneficiary-id))
+                (settle-scores:[string] (at "settle-scores" bundle))
+                (distinct-fvts:[string] (at "distinct-fvts" bundle))
+                (vault:string     AQP-POOL.AQP|SC_NAME)
+                (sender:string    (if direction owner-id vault))
+                (receiver:string  (if direction vault owner-id))
+                (xfer-type:integer (at "type" (TFT.URC_TransferClasses dptf-id sender receiver amount)))
+                (n-live:integer   (length (AQP-ANK.UR_ANK|AnchorsForAsset dptf-id)))
+            )
+            (fold (+) 0.0
+                [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 custody transfer
+                      (TFT.UDC_TransferCumulator xfer-type dptf-id sender receiver)))
+                  (SIP|URC_Medium)                                                                 ;; 1.2 pool tracker (medium ×1)
+                  (SIP|URC_Biggest)                                                                ;; 1.3 ben rollup   (biggest ×1)
+                  (SIP|URC_Fixed (AQP-FVT.URC_SettleStakePendingIgnis settle-scores distinct-fvts));; 2   RPS settle
+                  (SIP|URC_Fixed (AQP-ANK.URC_TrueFungibleStakeAnchorRefreshIgnis n-live))         ;; 3.1a ANK anchor refresh
+                  (SIP|URC_Biggest)                                                                ;; 3.1b XB sync-count (biggest ×1)
+                  (SIP|URC_Fixed (URC_StakeScoreDeltaSum pool-id))                                 ;; 4   score delta
+                  (SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis distinct-fvts))              ;; 5.1 book unclaimed
+                  (SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis))                            ;; 5.2 checkpoint
+                ])
+        )
+    )
     ;;{F3}  [INFO]  — one per AQP user/admin entrypoint, grouped by source module
     ;;
     ;;<====================>
@@ -510,6 +550,61 @@
                  "Executes via TS02-C3.AQP-POOL|C_SyncNonFungibleAnchors."]
                 [(format "NF anchors synced for {} on DPNF {}." [beneficiary-id dpnf-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|SYNC-COLLECTABLE-ANCHORS))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    ;;<---- stake / unstake (multi-leg reconstructed cost) ---->
+    (defun AQP-POOL|INFO_StakeTrueFungible:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Cost preview for AQP-POOL|CC_StakeTrueFungible. Full multi-leg IGNIS (transfer + tracker + rollup \
+            \ + RPS + anchor + score-delta + book + checkpoint); no STOA. Cost reconstructed byte-for-byte."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stake a True-Fungible amount into the pool for a beneficiary."
+                 "Executes via TS02-C3.AQP-POOL|CC_StakeTrueFungible."]
+                [(format "Staked {} of {} into pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_TrueFungibleStakeFlowIfp pool-id owner-id beneficiary-id dptf-id amount true))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [amount]))
+    )
+    (defun AQP-POOL|INFO_UnstakeTrueFungible:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal)
+        @doc "Cost preview for AQP-POOL|CC_UnstakeTrueFungible. Same legs as stake with the custody transfer \
+            \ reversed (vault→owner); no STOA. Cost reconstructed byte-for-byte."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Unstake a True-Fungible amount from the pool."
+                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeTrueFungible."]
+                [(format "Unstaked {} of {} from pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_TrueFungibleStakeFlowIfp pool-id owner-id beneficiary-id dptf-id amount false))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [amount]))
+    )
+    ;;<---- vacate lifecycle (fixed-cost endpoints) ---->
+    (defun AQP-POOL|INFO_FinalizeVacate:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string)
+        @doc "Cost preview for AQP-POOL|C_FinalizeVacate. IGNIS one flat 'ignis|medium' tier (05_VCT:3016); no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Finalize a vacate — nuke employed scores, unfreeze FVTs, re-enable stake."
+                 "Executes via TS02-C3.AQP-POOL|C_FinalizeVacate."]
+                [(format "Finalized vacate on pool {}." [pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
+    (defun AQP-POOL|INFO_AbortVacate:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string)
+        @doc "Cost preview for AQP-POOL|C_AbortVacate. Empty cumulator (05_VCT:2989) — costs you nothing."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Abort an in-progress vacate (clear the in-progress flag; stake stays disabled)."
+                 "Costs you nothing."
+                 "Executes via TS02-C3.AQP-POOL|C_AbortVacate."]
+                [(format "Aborted vacate on pool {}." [pool-id])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 []))
     )
