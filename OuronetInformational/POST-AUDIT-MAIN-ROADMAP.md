@@ -121,13 +121,20 @@ brain-dead button listing (see the plan doc).
 - [ ] **8.1** Extend the **repo-wide entrypoint-surface catalog** (from Phase 2.3) into UI input: per
       entrypoint → role + asset-type + domain + INFO fn + readers + input form. The machine-readable
       substrate (every action, its cost, its state) — the *raw material*, not the design.
-- [ ] **8.2** Write the incorporation document as an **intelligent architecture**: role-based control
-      panels (e.g. a DPTF issuer's control panel — tweak token, grant/revoke roles, freeze/wipe/
-      unfreeze, mint/burn), **role-grant-driven UI** (accounts granted a role get UI to act on it),
-      and **workflow-oriented flows** (autostake: browse pools, participate, coil/curl, combine with
-      vesting, create special tokens). Group by **user intent/journey**, not mechanical fn→button.
-      Mobile-first; build on the existing partial UI. Miss nothing that's been built.
-- [ ] **8.3** Hand to the OuronetUI agent to implement, against the intelligent blueprint.
+- [ ] **8.2 Study the existing "pantheonic architecture."** The UI is NOT greenfield — it recently
+      migrated to the owner's pantheonic architecture + has real partial implementation. Learn its
+      conventions + what's already built from the current OuronetUI codebase; the derived design
+      **grafts onto it**, extending its patterns — not a parallel structure.
+- [ ] **8.3 (Stage 8A — desktop) Write the incorporation document as an INTELLIGENT architecture**
+      grafted onto the pantheonic patterns: role-based control panels, role-grant-driven (permission-
+      aware) surfaces, workflow/journey flows — grouped by user intent, not mechanical fn→button.
+      The examples in the plan doc are ILLUSTRATIONS of caliber, not a spec — derive the full
+      structure from the code. Miss nothing built. Then hand to the OuronetUI agent to implement.
+- [ ] **8.4 (Stage 8B — mobile) Secondary refinement: lossless mobile translation.** Bring the entire
+      desktop implementation into a mobile-friendly format — everything visible/doable on desktop
+      translated **without loss** to the smallest screen. Driven by the existing OuronetUI dashboard's
+      **custom responsive port** as the blueprint. A colossal effort in its own right; a distinct
+      stage, not an afterthought. (task #84)
 
 **Why #1 enables #2:** the completed INFO surface + entrypoint catalog is ~80% of the *substrate*
 (button = client fn; preview = INFO; metrics = readers; form = wrapper sig). Phase 2.3 is the bridge.
@@ -180,4 +187,4 @@ Verified on main: the two live fixes landed — `P|A_Define` IMP registration
 #78 complete-all-INFO → **Phase 2.3**. #76 re-price → **Phase 3**. #75 FVT split → **Phase 4**.
 #79 REPL coverage completion → **Phase 5.2**. #71/#72/#73 whole-codebase single run → **Phase 5.3**.
 #81 red team attack → **Phase 6.1**. #82 Audit Book → **Phase 6.2**. #83 redeploy → **Phase 7**.
-#80 UI incorporation (capstone) → **Phase 8**.
+#80 UI incorporation desktop (grafted onto pantheonic) → **Phase 8A**. #84 mobile translation → **Phase 8B**.

@@ -91,8 +91,25 @@ journey**, not mechanically one-button-per-function.
 
 So the deliverable is a **designed information+interaction architecture** over the code's full
 capability set — the best way to present everything — with the enumeration underneath as the
-completeness guarantee. Some scaffolding already exists (the owner's partial UI, incl. a
-mobile-friendly page) — build on it, don't discard it.
+completeness guarantee.
+
+### Graft onto the existing "pantheonic architecture" (NOT greenfield)
+The UI is not a blank slate. The current OuronetUI has an established architecture — the owner's
+**"pantheonic architecture"**, which it was **recently migrated to** — plus real partial
+implementation/scaffolding already built against it. The derived design must be **grafted onto that
+existing pantheonic architecture**, extending its patterns — not invented as a parallel structure.
+So the agent's first move is to **study the current OuronetUI codebase** to learn (a) the pantheonic
+architecture's conventions and (b) what's already implemented, then express every new page/panel/flow
+in those terms. Build on it; don't discard or fork it.
+
+### Secondary stage: mobile translation (its own colossal effort, with an existing blueprint)
+Desktop-complete comes first. Then a **secondary refinement stage** brings the *entire* thing into a
+**mobile-friendly format** — everything the user sees and can do on a desktop screen is translated
+**without loss** down to the smallest mobile screen. There is already a **working blueprint** for
+this: the current OuronetUI dashboard, a **custom responsive port** of how the UI morphs and moulds
+to different mobile screen sizes. Given the scope of the desktop implementation, this lossless
+desktop→mobile translation is a **colossal effort in its own right** — treat it as a distinct stage
+(Phase 8B), driven by the existing dashboard's port as the model, not an afterthought bolted on.
 
 ## Scope + stakes (why this is worth doing right)
 Full implementation opens Ouronet to users: create tokens of any kind, open autostake pools, make
