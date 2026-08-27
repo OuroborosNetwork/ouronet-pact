@@ -47,18 +47,29 @@ empty cumulators; the `C_` attaches one cumulator from `URCi_flow`). True single
 billing everywhere down to AQP + Stage 1 = top-to-bottom rehaul. Migrate toward it leaf-by-leaf only
 if the purity is ever judged worth it; never a prerequisite.
 
-## 4. INFO consolidation (the big win)
+## 4. INFO consolidation + placement (the big win)
 Once INFO functions are **thin `URCi` callers** (call the composer `URCi` + wrap in `ClientInfo`
 pre/post text), each shrinks to a few lines. Consequences:
 - **Keep the INFO modules** (so the current UI keeps working — same `INFO_*` names/return shape),
   just gut the reconstruction bodies down to `URCi` calls.
-- **Consolidate**: one INFO module **per stage** (Stage-1 INFO, Stage-2 INFO), each deployed **LAST
-  in its stage's deploy order** (an INFO module may only reference modules already deployed, and now
-  it references every core module's `URCi`). Small line count makes one-module-per-stage feasible.
-  (A single all-stages INFO is possible but must deploy dead-last, which breaks independent Stage-1
-  testing — prefer per-stage.)
+- **Consolidate**: one INFO module **per stage** (Stage-1 INFO, Stage-2 INFO). Small line count
+  makes one-module-per-stage feasible. (A single all-stages INFO is possible but must deploy
+  dead-last, which breaks independent Stage-1 testing — prefer per-stage.)
 - **Size-rule (B) synergy:** `INFO-ONE` is already terribly big because it re-derives cost inline;
   the `URCi` refactor shrinks it dramatically. A and B help each other here.
+
+### Placement (owner, 2026-08-27): INFO modules are LAST, after `3_Talos`
+INFO is a **pure read-only presentation layer** — it only *calls* core `URCi`s + reads state, and
+**nothing references it via `module{}`** (leaf; never triggers the interface cascade rule). So each
+stage's INFO module deploys **last in that stage's order, after `3_Talos`** — its own slot, e.g.
+`1_SOVEREIGN/STAGE_0N/4_Info/` (paralleling `0_Interfaces / 1_Utilities / 2_Core / 3_Talos`). This
+is the same "read-only goes last" architecture the slave `Stage_Z` modules already follow
+(`2_SLAVE/Stage_Z/01_DPL-UR.pact`, EXPLORER) — those are purely read functions placed dead-last.
+INFO stays **sovereign** (it's the official preview API), just positioned last. Deploying after
+everything it references means zero forward-reference risk, and being a leaf means editing it
+only ever redeploys the (small) INFO module.
+- **Relocation:** the consolidated per-stage INFO moves out of `2_Core` (where `INFO-ONE` /
+  `AQP-INFO` live today) into `4_Info/`, deployed after Talos.
 
 ## 5. CI drift-gate (makes "changes apply to both" true without Option B)
 Promote the ground-truth harness (`REPL/aqp-info-groundtruth.repl` + `[6.5.1]`, pattern: preview
