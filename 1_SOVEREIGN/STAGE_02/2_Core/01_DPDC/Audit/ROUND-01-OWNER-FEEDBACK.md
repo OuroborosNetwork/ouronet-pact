@@ -793,3 +793,12 @@ verified incrementally in a Kursan draft first (every stage individually confirm
 finalizing into the canonical file). Doubles as regression coverage for #6C, #30M, #31M, and #32M (the
 Hybrid round trip specifically exercises the constituent-ordering fix live). Full `Z.repl` green, zero
 `FAILURE` lines anywhere in the pipeline.
+
+## #40L · DPDC-MNG · L1 — zero REPL coverage for the `Wipe*` family
+
+**Verdict: DEFERRED (2026-08-27).** Owner: the `Wipe*` family (`C_WipeHeavy`/`C_WipePure`/`C_WipeClean`/
+`C_WipeDirty`) itself needs renaming/rethinking as part of an upcoming broader StoicSyntax architecture
+pass — building test coverage for names/shapes that are about to change is premature. Deferred, to be
+handled together with that rename/rethink pass (done separately, with extra steps on `main`, not as part
+of this audit branch). Will be carried forward into the final consolidated audit report rather than
+closed here. No code or test change made in this session.

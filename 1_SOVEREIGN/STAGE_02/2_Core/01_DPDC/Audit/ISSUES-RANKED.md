@@ -470,7 +470,11 @@ constituent-ordering fix live). Full Z.repl green, zero `FAILURE` lines. — *DP
 
 #40L **[DPDC-MNG]** The escalating-scope `Wipe*` family (`Heavy`/`Pure`/`Clean`/`Dirty`) has zero REPL test
 coverage — the checked-in "TX 005b -- Wipe Tests" transaction is entirely commented out — directly explains
-why #5C and the `M1` in-module `C_→C_` call pattern went unnoticed. — *DPDC-MNG·L1*
+why #5C and the `M1` in-module `C_→C_` call pattern went unnoticed. — **⏸ DEFERRED 2026-08-27** — owner:
+the `Wipe*` family itself needs renaming/rethinking as part of an upcoming StoicSyntax architecture pass;
+building coverage for names/shapes about to change is premature. To be handled together with that
+rename/rethink pass (separate follow-up on `main`, outside this audit branch) and carried into the final
+consolidated audit report. No code or test change made here. — *DPDC-MNG·L1*
 
 #41L **[DPDC]** Test-coverage gaps: branding functions (zero calls anywhere, exactly why #9H was never
 caught) and stark SFT-vs-NFT asymmetry — `DPNF|C_*` gets one exercised call in the entire suite vs. dozens
