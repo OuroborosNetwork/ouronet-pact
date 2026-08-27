@@ -128,6 +128,23 @@ matching class before summing (need a per-score class reader), or (b) VARIANT A 
 exact charged sum used by XE_Apply*StakeDelta into a shared `URC_*StakeScoreDeltaIgnis(pool-id,…)`
 that both exec and info call (cleanest, owner-sanctioned). Resolve with a ground-truth test.
 
+## UPDATE (2026-08-27, later): TF PROVEN + OF/SF/NF built + class rule CORRECTED
+- TF stake/unstake ground-truth EXACT: predicted 23.32 == real GAS delta 23.3200 (both dirs),
+  0 fail. Harness: REPL/aqp-info-groundtruth.repl + Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl
+  (commit aab1531). The multi-leg approach is certified.
+- OF/SF/NF stake+unstake (6) BUILT + compiling green (light boot, 95 asserts). Helpers:
+  URC_OrtoFungibleStakeFlowIfp, URC_CollectableStakeFlowIfp, URC_StakeScoreDeltaSumForClasses.
+- CLASS-MATCH RULE (read from SCORE:3405/3467, corrects the earlier mapping agent):
+  OF charges scores whose ScoreClass ∈ {0,2} (sc==2 ALWAYS charges — the "class-2 non-special
+  → 0" claim was WRONG; only sc∉{0,2} skips). SF charges class==3, NF charges class==4.
+  Filter: URC_StakeScoreDeltaSumForClasses pool-id [classes] over URC_PoolActiveScoreIds,
+  filtered by AQP-SCORE.UR_SCR|ScoreClass.
+- Transfer ctors used: OF `DPOF.UC_MoveCumulator dpof-id nonces false` (dir-indep);
+  collectable `DPDC-T.UDC_MultiTransferCumulator [id][son] sender receiver [nonces][amts]`,
+  amts via `DPDC.UR_AccountNoncesSupplies owner-id id son nonces`.
+- STILL PENDING: ground-truth for OF/SF/NF (needs staked OF/SF/NF fixtures — [6.2.4] provides
+  them; extend [6.5.1] with OF/SF/NF stake+delta asserts), then vacate ×7 (variant A).
+
 ## NEXT STEPS (ordered)
 1. TF ground-truth: full-boot staked pool → `INFO_StakeTrueFungible.ignis-need` == real IGNIS
    (token GAS-98c486052a51) balance delta of `AQP-POOL|CC_StakeTrueFungible`. Prove the TF pattern

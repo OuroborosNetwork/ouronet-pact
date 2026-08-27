@@ -130,6 +130,72 @@
                 ])
         )
     )
+    (defun URC_StakeScoreDeltaSumForClasses:decimal (pool-id:string classes:[integer])
+        @doc "Class-matched phase-4 leg (OF/SF/NF): Σ SCORE.URC_StakeScoreDeltaIgnisUnit over the pool's \
+            \ employed scores whose SCORE.UR_SCR|ScoreClass ∈ classes — mirrors XE_Apply{OrtoFungible, \
+            \ Collectable}StakeDelta, which emit 0.0 for non-matching classes (OF: {0,2}; SF: {3}; NF: {4})."
+        (fold (+) 0.0
+            (map (lambda (sid:string) (AQP-SCORE.URC_StakeScoreDeltaIgnisUnit sid))
+                 (filter (lambda (sid:string) (contains (AQP-SCORE.UR_SCR|ScoreClass sid) classes))
+                         (AQP-POOL.URC_PoolActiveScoreIds pool-id))))
+    )
+    (defun URC_OrtoFungibleStakeFlowIfp:decimal
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] direction:bool)
+        @doc "Toggled total IGNIS IFP of CC_OrtoFungibleStakeFlow (04_FVT.pact:6478). Legs: transfer(DPOF, \
+            \ direction-INDEPENDENT) + tracker(medium × |nonces|) + RPS-settle + score-delta(class ∈ {0,2}) + \
+            \ book + checkpoint. NO 1.3 rollup, NO anchor leg."
+        (let*
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (bundle           (AQP-FVT.URHC_BuildStakeSettleBundle pool-id beneficiary-id))
+                (settle-scores:[string] (at "settle-scores" bundle))
+                (distinct-fvts:[string] (at "distinct-fvts" bundle))
+                (nn:decimal       (dec (length nonces)))
+            )
+            (fold (+) 0.0
+                [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 transfer (dir-indep)
+                      (DPOF.UC_MoveCumulator dpof-id nonces false)))
+                  (* (SIP|URC_Medium) nn)                                                          ;; 1.2 tracker (medium × |nonces|)
+                  (SIP|URC_Fixed (AQP-FVT.URC_SettleStakePendingIgnis settle-scores distinct-fvts));; 2   RPS settle
+                  (SIP|URC_Fixed (URC_StakeScoreDeltaSumForClasses pool-id [0 2]))                 ;; 4   score delta (class ∈ {0,2})
+                  (SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis distinct-fvts))              ;; 5.1 book unclaimed
+                  (SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis))                            ;; 5.2 checkpoint
+                ])
+        )
+    )
+    (defun URC_CollectableStakeFlowIfp:decimal
+        (pool-id:string owner-id:string beneficiary-id:string collectable-id:string son:bool nonces:[integer] direction:bool)
+        @doc "Toggled total IGNIS IFP of CC_CollectableStakeFlow (04_FVT.pact:6544; SF son=true class-3 / NF \
+            \ son=false class-4). Legs: transfer(DPDC-T, direction-dependent) + tracker(medium × |nonces|) + \
+            \ rollup(medium × |nonces|) + RPS-settle + anchor(FLAT medium + biggest) + score-delta(class == son?3:4) \
+            \ + book + checkpoint. nonce-amounts derived like the wrapper (DPDC.UR_AccountNoncesSupplies)."
+        (let*
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (bundle           (AQP-FVT.URHC_BuildStakeSettleBundle pool-id beneficiary-id))
+                (settle-scores:[string] (at "settle-scores" bundle))
+                (distinct-fvts:[string] (at "distinct-fvts" bundle))
+                (vault:string     AQP-POOL.AQP|SC_NAME)
+                (sender:string    (if direction owner-id vault))
+                (receiver:string  (if direction vault owner-id))
+                (nonce-amounts:[integer] (DPDC.UR_AccountNoncesSupplies owner-id collectable-id son nonces))
+                (nn:decimal       (dec (length nonces)))
+                (tgt-class:integer (if son 3 4))
+            )
+            (fold (+) 0.0
+                [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 transfer (dir-dep)
+                      (DPDC-T.UDC_MultiTransferCumulator [collectable-id] [son] sender receiver [nonces] [nonce-amounts])))
+                  (* (SIP|URC_Medium) nn)                                                          ;; 1.2 tracker (medium × |nonces|)
+                  (* (SIP|URC_Medium) nn)                                                          ;; 1.3 rollup  (medium × |nonces|)
+                  (SIP|URC_Fixed (AQP-FVT.URC_SettleStakePendingIgnis settle-scores distinct-fvts));; 2   RPS settle
+                  (SIP|URC_Medium)                                                                 ;; 3 anchor flat medium
+                  (SIP|URC_Biggest)                                                                ;; 3 anchor flat biggest
+                  (SIP|URC_Fixed (URC_StakeScoreDeltaSumForClasses pool-id [tgt-class]))           ;; 4 score delta (class == son?3:4)
+                  (SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis distinct-fvts))              ;; 5.1 book unclaimed
+                  (SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis))                            ;; 5.2 checkpoint
+                ])
+        )
+    )
     ;;{F3}  [INFO]  — one per AQP user/admin entrypoint, grouped by source module
     ;;
     ;;<====================>
@@ -581,6 +647,87 @@
                     (URC_TrueFungibleStakeFlowIfp pool-id owner-id beneficiary-id dptf-id amount false))
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 [amount]))
+    )
+    (defun AQP-POOL|INFO_StakeOrtoFungible:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer])
+        @doc "Cost preview for AQP-POOL|CC_StakeOrtoFungible. Multi-leg IGNIS (transfer + tracker×|nonces| + RPS \
+            \ + class-matched score-delta + book + checkpoint); no STOA. Reconstructed byte-for-byte."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stake whole Orto-Fungible nonces into the pool for a beneficiary."
+                 "Executes via TS02-C3.AQP-POOL|CC_StakeOrtoFungible."]
+                [(format "Staked {} nonces of {} into pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_OrtoFungibleStakeFlowIfp pool-id owner-id beneficiary-id dpof-id nonces true))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [(length nonces)]))
+    )
+    (defun AQP-POOL|INFO_UnstakeOrtoFungible:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer])
+        @doc "Cost preview for AQP-POOL|CC_UnstakeOrtoFungible. Same legs as OF stake; no STOA. Reconstructed byte-for-byte."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Unstake whole Orto-Fungible nonces from the pool."
+                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeOrtoFungible."]
+                [(format "Unstaked {} nonces of {} from pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_OrtoFungibleStakeFlowIfp pool-id owner-id beneficiary-id dpof-id nonces false))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [(length nonces)]))
+    )
+    (defun AQP-POOL|INFO_StakeSemiFungibleCollectable:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
+        @doc "Cost preview for AQP-POOL|CC_StakeSemiFungibleCollectable (DPSF, son=true / class-3). Multi-leg IGNIS \
+            \ (transfer + tracker×|nonces| + rollup×|nonces| + RPS + flat anchor + class-3 score-delta + book + checkpoint); no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stake Semi-Fungible collectable nonces (DPSF) into the pool for a beneficiary."
+                 "Executes via TS02-C3.AQP-POOL|CC_StakeSemiFungibleCollectable."]
+                [(format "Staked {} DPSF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id true nonces true))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [(length nonces)]))
+    )
+    (defun AQP-POOL|INFO_UnstakeSemiFungibleCollectable:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
+        @doc "Cost preview for AQP-POOL|CC_UnstakeSemiFungibleCollectable (DPSF, son=true / class-3). Same legs as SF stake; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Unstake Semi-Fungible collectable nonces (DPSF) from the pool."
+                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeSemiFungibleCollectable."]
+                [(format "Unstaked {} DPSF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id true nonces false))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [(length nonces)]))
+    )
+    (defun AQP-POOL|INFO_StakeNonFungibleCollectable:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
+        @doc "Cost preview for AQP-POOL|CC_StakeNonFungibleCollectable (DPNF, son=false / class-4). Multi-leg IGNIS \
+            \ (transfer + tracker×|nonces| + rollup×|nonces| + RPS + flat anchor + class-4 score-delta + book + checkpoint); no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Stake Non-Fungible collectable nonces (DPNF) into the pool for a beneficiary."
+                 "Executes via TS02-C3.AQP-POOL|CC_StakeNonFungibleCollectable."]
+                [(format "Staked {} DPNF nonces of {} into pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id false nonces true))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [(length nonces)]))
+    )
+    (defun AQP-POOL|INFO_UnstakeNonFungibleCollectable:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string owner-id:string beneficiary-id:string collectable-id:string nonces:[integer])
+        @doc "Cost preview for AQP-POOL|CC_UnstakeNonFungibleCollectable (DPNF, son=false / class-4). Same legs as NF stake; no STOA."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Unstake Non-Fungible collectable nonces (DPNF) from the pool."
+                 "Executes via TS02-C3.AQP-POOL|CC_UnstakeNonFungibleCollectable."]
+                [(format "Unstaked {} DPNF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id false nonces false))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                [(length nonces)]))
     )
     ;;<---- vacate lifecycle (fixed-cost endpoints) ---->
     (defun AQP-POOL|INFO_FinalizeVacate:object{OuronetInfoV1.ClientInfo}
