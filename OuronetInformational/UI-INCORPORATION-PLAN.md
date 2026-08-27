@@ -64,7 +64,13 @@ deterministic page/button map — reviewable before a line of frontend is writte
 ## ⚠ This is an INTELLIGENT blueprint, NOT a button listing (owner, 2026-08-27)
 The enumeration above is necessary but NOT sufficient. The document must apply **UX intelligence**
 to determine how this monster of a codebase is *best* presented — grouped by **user intent and
-journey**, not mechanically one-button-per-function. Concretely:
+journey**, not mechanically one-button-per-function.
+
+> **The patterns below are ILLUSTRATIONS of the caliber of design expected — not an exhaustive
+> spec and not a ceiling.** They convey the *kind* of thinking required. The actual, complete
+> interaction architecture (which panels, which flows, which groupings, which affordances, for
+> every module and asset type) is for the agent to **derive from the final code**, discovering the
+> right structure per surface. Do not treat these four bullets as "everything there is."
 
 - **Role-based control panels.** A DPTF issuer gets a **token control panel**: tweak the token,
   grant/revoke roles, freeze / wipe / unfreeze accounts, mint / burn, manage supply — all the
