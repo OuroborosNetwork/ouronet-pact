@@ -166,6 +166,22 @@ brain-dead button listing (see the plan doc).
 But 8.2 is where **intelligence** turns that substrate into the best possible UX. Manual build:
 10-20 yrs solo / 2-4 yrs human+AI; scoped to an agent following an intelligent plan: **weeks**.
 
+## PHASE 9 — Comprehensive Documentation + website publication (capstone #3; spec: `DOCUMENTATION-PLAN.md`; task #86)
+A FULL written documentation of everything the code does — every module, function, shape, purpose;
+why it's complex; why it costs so much; advantages vs industry standards; what a user can achieve —
+so a brand-new reader understands what Ouronet is. Published with the Audit Book in the site's
+**Documentation + Audit region**. Can run in parallel with Phase 8 (both need the final shape).
+- [ ] **9.0 Hard dependency:** Phase 7 done (final shape redeployed) — every prior piecemeal attempt
+      failed because new code kept arriving; this only works on the settled shape.
+- [ ] **9.1 Observe the existing website** at `d:\_Claude\OuroborosNetwork\websites\ouronetwork-website\`
+      to see first-hand how incomplete the current docs are vs. what's required. Do NOT trust them.
+- [ ] **9.2 Write the comprehensive documentation** — walk the final codebase module-by-module
+      (purpose, schemas/tables, every function's role/how/why), grouped for a reader; the 7 asset
+      types + what users achieve; the cost story (from INFO/`URCi`); advantages vs industry standards;
+      and a first-class **StoicSyntax methodology** chapter (how the prefix discipline made the code
+      semi-self-auditing — "half-audited code"). Cross-ref the entrypoint catalog so nothing is missed.
+- [ ] **9.3 Publish** the documentation + the Audit Book into the site's Documentation + Audit region.
+
 ---
 
 ## AUDIT CARRY-OVER — deferred items each merged audit brings
@@ -232,3 +248,4 @@ Remaining (4 deferred LOW — map onto our phases):
 #81 red team attack → **Phase 6.1**. #82 Audit Book → **Phase 6.2**. #85 interface version bump +
 cascade → **Phase 7.1-7.2**. #83 redeploy → **Phase 7.3-7.4**.
 #80 UI incorporation desktop (grafted onto pantheonic) → **Phase 8A**. #84 mobile translation → **Phase 8B**.
+#86 comprehensive documentation + website publication → **Phase 9**.

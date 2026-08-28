@@ -29,6 +29,9 @@ code (CONFIRMED/REFUTED/STYLISTIC) → fix → re-test → document. Vulnerabili
 Assembled at **Phase 6.2**, after the red team completes and before the **Phase 7 redeploy**.
 Consolidate the three parts into one book (index, per-module chapters, cross-references, the
 StoicSyntax/architecture rules that came out of the audits). Publishable alongside the deployed code.
+**Published together with the comprehensive Documentation** (`DOCUMENTATION-PLAN.md`, roadmap Phase 9)
+in the Ouronet Website's **Documentation + Audit region** — the Audit Book is the "how we made it
+sound" half; the Documentation is the "what it is and does" half.
 
 ## Why it gates the redeploy
 The redeploy (Phase 7) ships the *final shape*. The book is the evidence that shape is sound —
