@@ -1670,6 +1670,83 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard · 01 · env-sigs (caps)] ---")
+(env-sigs [])
+;;==== SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard · 02 · let / invocation ====
+(print "--- [SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard · 02 · let / invocation] ---")
+;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #C2 — UC_ComputeInverseY is C2's still-open inverse-
+;;direction sibling (SWP|TX 015 above fixed the direct direction only). <xo-minus = xo -
+;;output-amount> feeds <P-Prime> as a plain factor: at <output-amount> == <xo>, <P-Prime> == 0.0,
+;;dividing by zero inside <UC_YNext>'s `c` term — an uncatchable-via-`try` native crash (confirmed
+;;live pre-fix). Past that (<output-amount> > <xo>), <xo-minus> goes negative, flipping the sign on
+;;every downstream coefficient — the solver does NOT crash, it silently returns a plausible-looking
+;;but meaningless number (confirmed live pre-fix: asking for 1.01x/1.5x/5x a pool's real reserve
+;;returned ~1.01x/~1.5x/~5x back as the "input needed," when no finite input can ever buy more than
+;;100% of a pool's own reserve). Fixed by rejecting <output-amount> >= <xo> before <xo-minus>/
+;;<P-Prime> are ever computed — reads pool7's own live state (no hardcoded reserve figures), same
+;;fixture as SWP|TX 015's own C2 proof.
+(let
+    (
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+        (pool7:string "S|BUSD-98c486052a51|TUSD-98c486052a51|USDT-98c486052a51|USDC-98c486052a51|USDD-98c486052a51|AUSD-98c486052a51|CUSD-98c486052a51")
+        (busd:string "BUSD-98c486052a51")
+        (tusd:string "TUSD-98c486052a51")
+        (A:decimal (ref-SWP::UR_Amplifier pool7))
+        (X:[decimal] (ref-SWP::UR_PoolTokenSupplies pool7))
+        (w:[decimal] (ref-SWP::UR_Weigths pool7))
+        (ip:integer (ref-SWP::UR_PoolTokenPosition pool7 busd))
+        (op:integer (ref-SWP::UR_PoolTokenPosition pool7 tusd))
+        (i-prec:integer (at ip (ref-SWP::UR_PoolTokenPrecisions pool7)))
+        (xo:decimal (at op X))
+        ;;request sizes relative to the live output reserve <xo>, not hardcoded absolutes:
+        ;;  in-domain      : a normal, well-within-bounds withdrawal request (must still work)
+        ;;  at-boundary    : output-amount == xo — pre-fix: uncatchable native crash
+        ;;  over-boundary  : output-amount > xo (1.01x/1.5x/5x) — pre-fix: silent corrupted output
+        (in-domain-input:decimal
+            (ref-U|SWP::UC_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 0.5) op ip i-prec w))
+        )
+        (at-boundary-rejected:bool
+            (try true (let ((r:decimal (ref-U|SWP::UC_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X xo op ip i-prec w)))) false))
+        )
+        (just-over-rejected:bool
+            (try true (let ((r:decimal (ref-U|SWP::UC_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 1.01) op ip i-prec w)))) false))
+        )
+        (well-over-rejected:bool
+            (try true (let ((r:decimal (ref-U|SWP::UC_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 1.5) op ip i-prec w)))) false))
+        )
+        (extreme-over-rejected:bool
+            (try true (let ((r:decimal (ref-U|SWP::UC_ComputeInverseY (ref-U|SWP::UDC_InverseRawSwapInput A X (* xo 5.0) op ip i-prec w)))) false))
+        )
+    )
+    (map print
+        [
+            (expect "#72C regression — in-domain inverse quote (output=0.5x reserve) is positive" true (> in-domain-input 0.0))
+            (expect (format "#72C regression — in-domain inverse quote stays a sane fraction of live reserve {}" [xo]) true (< in-domain-input xo))
+            (expect "#72C regression — at-boundary request (output-amount == xo) is cleanly rejected (pre-fix: uncatchable native crash)" true at-boundary-rejected)
+            (expect "#72C regression — over-boundary request (1.01x reserve) is cleanly rejected (pre-fix: silently returned ~1.01x back as a fake 'input needed')" true just-over-rejected)
+            (expect "#72C regression — over-boundary request (1.5x reserve) is cleanly rejected (pre-fix: silently returned ~1.5x back as a fake 'input needed')" true well-over-rejected)
+            (expect "#72C regression — over-boundary request (5x reserve) is cleanly rejected (pre-fix: silently returned ~5x back as a fake 'input needed')" true extreme-over-rejected)
+        ]
+    )
+)
+(print "")
+(print "")
+;;==== SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard · 03 · gas echo ====
+(print "--- [SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 015b #72C Regression ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 (begin-tx "SWP|TX 016 - C1 Reproduction: SmartSwap Best-Edge Selection")
 (namespace "ouronet-ns")

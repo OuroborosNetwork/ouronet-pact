@@ -188,11 +188,79 @@ in-progress, uncommitted work from a separate session (`05_VCT.pact` and friends
 untouched by this fix. SWP's own Stage-1 run (including the new TX 015) completes and passes well before
 that point in every run above.
 
-**Status:** FIXED ✅ AND PROVEN ✅ — narrowed to stable pools only (per owner's correct prediction),
-computation-level fix (per owner's correct requirement), no pre-transfer sanity check needed (per owner's
-correct prediction, now that the solver is provably correct at the source). `UC_ComputeInverseY`'s sibling
-issue is explicitly **not** covered by this fix and remains open. Full diff summary:
+**Status (original scope):** FIXED ✅ AND PROVEN ✅ — narrowed to stable pools only (per owner's correct
+prediction), computation-level fix (per owner's correct requirement), no pre-transfer sanity check needed
+(per owner's correct prediction, now that the solver is provably correct at the source). `UC_ComputeInverseY`'s
+sibling issue was explicitly **not** covered by this fix and was left open. Full diff summary:
 `ROUND-02-FIXES.md` Fix #1. Awaiting Round III re-verify.
+
+**Sibling gap closed — #72C, `UC_ComputeInverseY` (2026-08-28):** this sat open exactly as recorded above
+("should be split out before Round III re-verify closes C2") — never picked back up, because Round III
+re-verify was itself explicitly ruled out of scope for this branch (2026-08-27, deferred to `main`). That
+deferral was meant for routine double-checking of already-closed findings; C2 was never actually fully
+closed, only the direct-swap half was, and the distinction got lost in the general deferral. Surfaced again
+when the owner asked, unrelated to any audit-cycle work, whether the direct/inverse swap math was verified
+correct — went back into the audit trail instead of assuming it was fine, found this note.
+
+**Reproduced live before touching anything**, same discipline as the original C2 fix — no REPL proof
+existed for the inverse direction, so one was built first, on the same live `pool7` fixture `SWP|TX 015`
+already uses:
+- `output-amount = 0.5 × xo` (in-domain): correct, sane output.
+- `output-amount = xo` exactly: **uncatchable native crash** — `Arithmetic exception: div by zero, decimal`,
+  inside `UC_YNext`'s `c` term, not even caught by wrapping the call in `try`. `xo-minus = xo -
+  output-amount` is a plain *factor* of `P-Prime` (not just an addend), so it hits `P-Prime == 0.0` and the
+  solver's `c = D^(n+1) / (nn * P-Prime * A * nn)` divides by zero.
+- `output-amount = 1.01× / 1.5× / 5× xo` (over the pool's real reserve — impossible requests, no finite
+  input can ever buy more than 100% of a pool's own token reserve): **no crash** — the solver silently
+  returned `~1.01×`, `~1.5×`, `~5×` xo back as the "input needed," a plausible-looking, monotonically
+  scaling, entirely fabricated number. This is the more dangerous of the two failure modes: nothing about
+  the returned value looks wrong at a glance.
+
+**Why the C2 fix (reseeding `y0`) doesn't transfer:** `UC_ComputeY`'s bug was a bad *starting guess* —
+reseeding to `D` worked because the physical root exists for *any* positive input (the curve asymptotes
+toward but never reaches the reserve ceiling). `UC_ComputeInverseY`'s bug is upstream of Newton entirely —
+the *coefficients themselves* (`S-Prime`/`P-Prime`) are invalid before iteration ever starts, for a request
+that has no valid answer by construction (you cannot compute "the input required to withdraw more than the
+pool has," any more than you can floor-divide by a number that doesn't exist). No seed choice fixes invalid
+coefficients. The correct fix is rejecting the request outright, before those coefficients are computed.
+
+**Blast-radius check before fixing (traced every real caller, not assumed):** `UC_ComputeInverseY` is
+reachable two ways that share **no** common validating choke point — confirmed this matters, since it rules
+out fixing this in a caller-side `UEV_*` instead: (1) `URC_InverseSwap`'s `validation:bool` param
+(`16_SWPI.pact:848-849`) can skip its own `UEV_InverseSwapData` gate entirely, and that gate only checks
+token membership + amount well-formedness, never `output-amount` against the live reserve; (2)
+`UC_InverseBareboneSwapWithFeez` (`16_SWPI.pact:562`) is a `UC_*` function with zero validation anywhere in
+its chain, called directly by both `SWPL` (sovereign) *and* `2_SLAVE/Stage_Z/01_DPL-UR.pact` (a slave
+module) — no shared gate exists on this path at all. The fix has to live inside `UC_ComputeInverseY` itself.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact`, `UC_ComputeInverseY`:** added
+`(enforce (< output-amount xo) "UC_ComputeInverseY: output-amount must be strictly less than the pool's
+current output-token reserve")`, sequenced between `xo`/`xi` and `xo-minus` so it runs *before*
+`xo-minus`/`P-Prime` are ever computed (Pact evaluates `let` bindings in declared order, and a failed
+`enforce` aborts immediately — confirmed empirically, not assumed). This is a direct, load-bearing `enforce`
+inside a nominally `UC_*` function — StoicSyntax §6.1 already documents this exact function as carrying
+this kind of computation-intrinsic bounds guard (via the `U|LST` helpers it already calls), so this stays
+consistent with existing, already-accepted precedent rather than introducing a new exception. `UC_ComputeY`
+untouched.
+
+**Adversarially proven, live:** built the reproduction as a permanent REPL proof first (`SWP|TX 015b`,
+below), confirmed it failed correctly pre-fix (crashed the whole load exactly like the raw reproduction
+did), applied the fix, confirmed all 6 assertions pass, then `git stash`'d `12_U_SWP.pact` back to the
+pre-fix code and reran — the suite crashed again with the identical `div by zero` at the identical location,
+proving the test and the fix are both doing real work. Restored the fix (`git stash pop`), diffed against a
+pre-stash backup copy to confirm byte-identical restoration, reran clean.
+
+**New permanent REPL proof — `REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `SWP|TX 015b - #72C
+Regression: Stable-Swap Inverse Newton Domain Guard`** (immediately after `SWP|TX 015`, same `pool7`
+fixture, no hardcoded reserve figures): asserts the in-domain case still returns a sane positive value, and
+that the at-boundary and all three over-boundary cases are now cleanly, catchably rejected (`try`-wrapped —
+catchable is itself part of what changed, the pre-fix at-boundary crash was NOT `try`-catchable).
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean** (exit
+0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status (sibling, #72C):** FIXED ✅ AND PROVEN ✅. C2 is now fully closed, both directions. See
+`ROUND-02-FIXES.md` Fix #48.
 
 ---
 

@@ -28,6 +28,29 @@ can return more output than the pool actually holds.~~ — **FIXED ✅ AND PROVE
 to fail pre-fix, pass post-fix. `UC_ComputeInverseY`'s sibling issue (different failure mode) explicitly
 **not** covered by this fix — still open. — *C2*
 
+#72C **[U|SWP]** ~~`UC_ComputeInverseY` — C2's still-open inverse-direction sibling: no domain guard on
+`output-amount` vs. the pool's live output-token reserve `xo`.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-28**
+(`ROUND-02-FIXES.md` Fix #48) — sat open since 2026-08-17 (C2's own fix explicitly deferred it, "should be
+split out before Round III re-verify"), never picked back up once Round III re-verify was itself ruled out
+of scope for this branch. Surfaced again when the owner asked directly whether the swap math was verified —
+checked the audit trail instead of assuming, found the breadcrumb. Reproduced live before fixing: at
+`output-amount == xo`, `xo-minus`'s role as a plain factor of `P-Prime` (not just an addend) makes
+`P-Prime == 0.0`, an **uncatchable-via-`try` native crash** (`Arithmetic exception: div by zero, decimal`);
+past `xo`, `xo-minus` goes negative and the solver silently returns a plausible-looking, monotonically
+scaling, entirely fabricated "input needed" (confirmed live: 1.01x/1.5x/5x requests returned ~1.01x/1.5x/5x
+back) — the more dangerous failure mode, since nothing about the number looks wrong. C2's own reseed fix
+doesn't transfer (that bug was a bad starting guess; this one is invalid coefficients computed before
+Newton even starts, for a request with no valid answer by construction). Traced every real caller first —
+`UC_ComputeInverseY` is reachable via two paths sharing no common validating choke point
+(`URC_InverseSwap`'s skippable `validation:bool`, and `UC_InverseBareboneSwapWithFeez`, a zero-validation
+`UC_*` called directly by both `SWPL` and the `DPL-UR` slave module) — ruling out a caller-side `UEV_*` fix.
+Fixed with a direct `enforce (< output-amount xo)` sequenced before the invalid coefficients are computed
+(consistent with StoicSyntax §6.1's existing documented exception for this function). Adversarially proven:
+new permanent proof `SWP|TX 015b` confirmed failing pre-fix (crashed identically to the raw repro),
+`git stash`-reverted the fix and reconfirmed the crash reproduces byte-for-byte, restored. C2 is now fully
+closed, both directions. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`'s `C2` entry (sibling addendum). —
+*C2 sibling*
+
 #4C **[SWPU]** ~~`C_ToggleSwapCapability` has no ownership check anywhere in its call chain — any account
 can disable swapping on any pool, a free, unauthenticated, protocol-wide DoS.~~ — **REFUTED 2026-08-17.**
 The write path (`SWP::C_ToggleAddOrSwap` → `XE_CanAddOrSwapToggle`) is gated by `SWP|C>ADD-OR-SWAP`, which

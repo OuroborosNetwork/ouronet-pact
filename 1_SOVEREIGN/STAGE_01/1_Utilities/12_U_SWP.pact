@@ -121,6 +121,25 @@
                 (n:decimal (dec (length X)))
                 (xo:decimal (at op X))
                 (xi:decimal (at ip X))
+                ;;#72C fix (C2's still-open sibling): <xo-minus> feeds <P-Prime> as a plain factor
+                ;;(not just an addend), so at <output-amount> == <xo> it is exactly 0.0, making
+                ;;<P-Prime> == 0.0 and dividing by zero inside <UC_YNext>'s `c` term — an ugly,
+                ;;uncatchable-via-`try` native crash (confirmed live). Past that (<output-amount>
+                ;;> <xo>) <xo-minus> goes negative, flips the sign on every coefficient chained off
+                ;;<P-Prime>/<S-Prime>, and the solver does NOT crash — it silently converges to a
+                ;;plausible-looking but mathematically meaningless number (confirmed live: asking
+                ;;for 1.01x/1.5x/5x a pool's real output reserve returned ~1.01x/~1.5x/~5x back as
+                ;;the "required input," when no finite input can ever buy more than 100% of a
+                ;;pool's own reserve of a token). Unlike <UC_ComputeY>'s C2 fix (a reseed was
+                ;;enough there, because the physical root exists for ANY positive input), no seed
+                ;;choice can fix this: the coefficients themselves are invalid before Newton ever
+                ;;starts, for a request that has no valid answer by construction. Rejecting it here,
+                ;;before <xo-minus>/<P-Prime> are computed, is the only correct fix — mirrors the
+                ;;same load-bearing, computation-intrinsic bounds-guard treatment StoicSyntax §6.1
+                ;;already documents for this exact function (the <U|LST> bounds-guard exception).
+                (domain-guard:bool
+                    (enforce (< output-amount xo)
+                        "UC_ComputeInverseY: output-amount must be strictly less than the pool's current output-token reserve"))
                 (xo-minus:decimal (- xo output-amount))
                 (X1:[decimal] (ref-U|LST::UC_ReplaceAt X op xo-minus))
                 (X2:[decimal] (ref-U|LST::UC_ReplaceAt X1 ip -1.0))
