@@ -5,17 +5,18 @@
 All 32 LOW findings closed first (per the owner's 2026-08-27 sequencing), then this got its own
 dedicated design-and-implementation pass, the same way `#34` (`ISSUES-RANKED.md`/`M2`) got its own
 multi-phase handoff once it outgrew a single-row fix — see `HANDOFF-swp-exhaustive-path-search.md`
-for the precedent this deliberately mirrors. Six phases were scoped; 5 shipped, 1 was investigated,
+for the precedent this deliberately mirrors. Seven phases were scoped; 6 shipped, 1 was investigated,
 measured, and deliberately NOT shipped after the real data contradicted the design intent. Real,
 measured cumulative result on the established P2-scale benchmark (`SWP|TX 032z2`, `CC_SmartSwap`,
-~102 active pools), cold (zero cache) worst case: **5,094,054 → 1,837,000 gas, a 63.9% reduction**
+~102 active pools), cold (zero cache) worst case: **5,094,054 → 1,687,556 gas, a 66.9% reduction**
 from the pre-`#65L` baseline — the worst-of-the-worst-case scenario this codebase can construct now
 fits **under** the real ~2,000,000 gas ceiling, which it did not before this work. With the cache
 warmed by prior bundle-based (dirty-read) swap activity for the same pair — the realistic steady-state
 once the system's been running — the same self-searching call drops further to **1,143,255 gas, a
-77.6% reduction** from the original baseline.
+77.6% reduction** from the original baseline (unaffected by Phase 7 — the bundle-based flow never
+calls the repricing loop's own self-searching code path).
 
-## Final outcome — all 6 phases
+## Final outcome — all 7 phases
 
 | Phase | What | Result |
 |---|---|---|
@@ -25,6 +26,7 @@ once the system's been running — the same self-searching call drops further to
 | **4 (Tier 2)** | Share ONE raw-graph fetch across the STOA-repricing loop's multiple distinct-pool queries (Talos layer), not just within one query's own best-of-3 attempts — enabled by `SWPT::UC_MakeGraphNodes` being provably input/output-independent (one fetch against a given `swpairs` universe is valid for every query against that universe) | **Shipped.** Measured: 2,216,311 → 2,129,569 gas, a further **3.9%**. Correctness proven directly: `URC_PoolValueFromRaw` (shared fetch) returns byte-identical output to the original `URC_PoolValue` (self-fetch) for a real pool, adversarially proven (corrupted the expectation, got a genuine `FAILURE`, restored). |
 | **5** | Is best-of-3 still earning its cost at this codebase's real scale? Measured first-found vs best-of-3 directly against the real, organically-grown ~102-pool topology (not a hand-engineered one) across 7 representative pairs (1-8 hops) — best-of-3 beat first-found in zero of them. Switched the live default (`URCX_Hopper`/`URCX_HopperFromRaw`) to first-found only | **Shipped.** Caught and fixed a real bug before shipping: the first attempt used the original, never-Phase-2-optimized self-fetching `URC_ComputeGraphPath` instead of the raw-graph-once path, measured as briefly *more* expensive than best-of-3 — isolated, confirmed, corrected. `SWPT::URC_ComputeAlternateRoutes`/`FromRaw` kept, not deleted, just no longer the default. Original `#34M/M2` adversarial proof (`SWP\|TX 032g`) updated to honestly show the live path now takes the worse route on that deliberately-engineered topology, while a direct call to `URC_ComputeAlternateRoutes` still finds the better one. Measured: 2,129,569 → 1,837,000 gas, a further **13.7%**. |
 | **6** | The dirty-read/bundle-based UI flow warms `SWPT\|PathCache` for `boost-path`/`stoa-paths` but NEVER the main `swap-route` — a real, existing gap, not something this session introduced. Owner: the writer wasn't properly set up; it should cache every path it detects and update on a real topology change. `SwapRoute`'s own original doc said it could never be safely cached (best-of-3 was value-comparing, hence amount-sensitive) — checked whether Phase 5 changed that: `SWPT::URC_ComputeGraphPath` takes no amount parameter at all, so the structural first-found route is now provably amount-independent, resolving the original concern | **Shipped.** `XI_RegisterBundlePaths` now also registers `swap-route` (`input-id→output-id`), same version-checked-refresh machinery as the other two categories, correctness re-validated via `URC_ValidatePathActive` before every write. Measured: a self-search for the same pair, after a prior bundle-based swap warmed the cache, dropped from 1,352,614 gas (partial warmth — only the repricing loop benefited) to **1,143,255 gas** once the main route was cached too. Adversarially proven the cache hit returns exactly the cached path. |
+| **7** | Owner asked about the repricing loop's own per-pool search cost, observing that a pool's first token is either a Principal itself (`W`/`P` pools, structural) or one hop from *some* Principal (`S` pools, `UEV_Issue`'s `contains-principals` check) — so first-token→DWK searches should usually be short. Checked against the actual P0.5 worst-case topology first: the guarantee bounds Principal *adjacency*, not a Principal's own distance to DWK (Principals aren't required to connect to each other — still-open `P0.3` below), and P0.5's own topology proves this bites (the whole 6-hop chain reaches DWK through one narrow bridge, making `W7`'s repricing search *longer* than the main route) — a Principal-adjacency shortcut wasn't safe to assume in general. Investigating this surfaced a real, assumption-free win instead: `SWPT::UC_BFS`'s cost scales with full graph size regardless of true path depth, and the repricing loop's `URC_PoolValueFromRaw` was rebuilding `SWPT::UC_MakeGraphFromRaw`'s `[GraphNode]` graph (input/output-independent, same as `UC_MakeGraphNodes` underneath it) from scratch on every one of its N distinct-pool queries, despite byte-identical output every time | **Shipped.** Added `URC_ComputeGraphPathFromGraph`/`URC_ShortestChainPerNodeFromGraph` (`SWPT`) and `URCX_HopperFromGraph`/`URC_HopperFromGraph`/`URC_WorthDWKFromGraph`/`URC_PoolValueFromGraph` (`SWPI`) — the `...FromRaw` family, one layer deeper, sourced from an already-built graph. `04_TS01-C3.pact`'s repricing loop builds the graph once, reused across every pool. Correctness adversarially proven byte-identical against `URC_PoolValue`. Measured via controlled before/after (`git stash`): 965,197 → 931,103 gas (**3.5%**) on the P0.5 37-token scenario; 1,837,000 → **1,687,556 gas (8.1% further)** on the P2-scale checkpoint — larger shared universe, bigger win, consistent with the mechanism. Phase 6's warm-cache number is unaffected (bundle-based flow never touches this code path). |
 
 ## New functions/tables shipped
 
@@ -34,23 +36,30 @@ once the system's been running — the same self-searching call drops further to
   `URC_ReadPathCacheFresh`; `RawGraphNode` schema; `URC_FetchRawGraph`; `UC_MakeGraphFromRaw`;
   `URC_ShortestChainPerNodeFromRaw`; `URC_ComputeGraphPathFromRaw`; `URC_ComputeAlternateRoutesFromRaw`
   (`URC_ComputeAlternateRoutes` is now a thin wrapper over it, kept but no longer the live default).
+  Phase 7: `URC_ShortestChainPerNodeFromGraph`; `URC_ComputeGraphPathFromGraph` — same shape as the
+  `...FromRaw` pair, sourced from an already-built `[GraphNode]` graph instead.
 - `16_SWPI.pact`: `URCX_HopperFromRaw`; `URC_HopperFromRaw`; `URC_WorthDWKFromRaw`;
   `URC_PoolValueFromRaw`. `URCX_Hopper`/`URCX_HopperFromRaw` switched from best-of-3
   (`URC_ComputeAlternateRoutes`/`FromRaw`) to single-shot (`URC_ComputeGraphPath`/`FromRaw`) — Phase
   5. Explicit `@doc` caveat added: per-hop greedy edge selection is locally optimal, not a guarantee
-  of a globally-optimal path — always true, not introduced by Phase 5.
+  of a globally-optimal path — always true, not introduced by Phase 5. Phase 7:
+  `URCX_HopperFromGraph`; `URC_HopperFromGraph`; `URC_WorthDWKFromGraph`; `URC_PoolValueFromGraph` —
+  the `...FromRaw` family one layer deeper, sourced from an already-built graph.
 - `04_TS01-C3.pact`: `SWP|CC_SmartSwap{With,No}Slippage`'s STOA-repricing loop fetches the raw graph
-  once and calls `URC_PoolValueFromRaw` per pool instead of `URC_PoolValue`.
+  once and calls `URC_PoolValueFromRaw` per pool instead of `URC_PoolValue` (Phase 4). Phase 7: also
+  builds the `[GraphNode]` graph once (`SWPT::UC_MakeGraphFromRaw`) alongside the raw-graph fetch and
+  calls `URC_PoolValueFromGraph` instead.
 - `19_SWPU.pact` (Phase 6): `XI_RegisterBundlePaths` gained an `input-id` parameter and now also
   registers the bundle's `swap-route` into `SWPT|PathCache` (validated via
   `SWPI::URC_ValidatePathActive`, same version-checked-refresh path as `boost-path`/`stoa-paths`).
   `SwapRoute`'s own interface doc updated — the original "never cached, amount-sensitive" reasoning
   is now explicitly marked superseded, with the Phase 5 reasoning that resolves it recorded inline.
 - `REPL/Stage_01/[6.3]_SWP.repl`: `SWP|TX 032z6b` (Phase 1 warm-cache proof), `SWP|TX 032z6c`
-  (Phase 4 correctness proof), `SWP|TX 032z6d` (Phase 6 swap-route cache proof), all adversarially
-  proven and kept permanently. `SWP|TX 032g` (`#34M/M2`'s original adversarial proof) updated, not
-  removed, to honestly assert Phase 5's real tradeoff on that deliberately-engineered topology, plus
-  a direct proof `URC_ComputeAlternateRoutes` still finds the better route when called explicitly.
+  (Phase 4 correctness proof), `SWP|TX 032z6d` (Phase 6 swap-route cache proof), `SWP|TX 032z6e`
+  (Phase 7 correctness proof), all adversarially proven and kept permanently. `SWP|TX 032g`
+  (`#34M/M2`'s original adversarial proof) updated, not removed, to honestly assert Phase 5's real
+  tradeoff on that deliberately-engineered topology, plus a direct proof `URC_ComputeAlternateRoutes`
+  still finds the better route when called explicitly.
 
 **UI-design note recorded for the capstone phase** (not a code change in this repo): part of the
 reasoning for Phase 5 was that a meaningful share of SmartSwap's real traffic is arguably direct,

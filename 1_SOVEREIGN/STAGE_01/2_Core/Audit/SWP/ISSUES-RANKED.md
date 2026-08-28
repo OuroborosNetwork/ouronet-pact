@@ -558,7 +558,7 @@ engine.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-28** (`ROUND-02-FIXES.md` Fix #
 (widen the search — raise K, "search 10k") was investigated and refuted with hard evidence before any
 code changed: Pact 5 has no per-transaction read cache, marginal gas per additional attempt is roughly
 linear until the route set is structurally exhausted, and a flat wide search would blow 10-100x past the
-real ~2,000,000 gas ceiling on any topology with real route diversity. 6-phase design instead, 5 shipped:
+real ~2,000,000 gas ceiling on any topology with real route diversity. 7-phase design instead, 6 shipped:
 **Phase 1** wired `URCX_Hopper` to the pre-existing-but-unused `SWPT|PathCache` (plus a
 topology-versioning fix — was insert-only, permanently unrefreshable), measured 477,825→11,491 gas
 (~41.6x) on a warm cache. **Phase 2** stopped the best-of-3 routing search re-reading the same graph rows
@@ -575,16 +575,32 @@ path instead of the raw-graph-once one, making it briefly cost *more*, corrected
 updated the original `#34M/M2` adversarial proof (`SWP|TX 032g`) to honestly show the live path now takes
 the worse route on that deliberately-engineered topology, while `SWPT::URC_ComputeAlternateRoutes` itself
 (kept, not deleted) still finds the better one when called directly — measured 2,129,569→1,837,000 gas
-(13.7% further). **Cumulative (cold, zero cache): 5,094,054→1,837,000 gas, 63.9% reduction** from the
-pre-`#65L` baseline — the worst-of-the-worst-case scenario now fits UNDER the real 2,000,000 gas
-ceiling. **Phase 6**: owner flagged the cache writer wasn't properly set up — it warmed `boost-path`/
-`stoa-paths` but never the main `swap-route`. Checked why (`SwapRoute`'s own doc: best-of-3 was
-value-comparing, hence amount-sensitive) and confirmed Phase 5 resolved that concern (the structural
-first-found route takes no amount parameter, so it's now provably amount-independent).
-`XI_RegisterBundlePaths` now also registers `swap-route`, same version-checked-refresh as the other two
-categories. Measured: self-search after a prior bundle swap warmed the cache dropped from 1,352,614 gas
-(partial, repricing-only) to 1,143,255 gas once the route was cached too — a **77.6% reduction** from
-the original baseline in the realistic steady-state. Full writeup in `ROUND-01-OWNER-FEEDBACK.md` and
+(13.7% further). **Interim cumulative (through Phase 5): 5,094,054→1,837,000 gas, 63.9% reduction** —
+the worst-of-the-worst-case scenario now fits UNDER the real 2,000,000 gas ceiling. **Phase 6**: owner
+flagged the cache writer wasn't properly set up — it warmed `boost-path`/`stoa-paths` but never the main
+`swap-route`. Checked why (`SwapRoute`'s own doc: best-of-3 was value-comparing, hence amount-sensitive)
+and confirmed Phase 5 resolved that concern (the structural first-found route takes no amount parameter,
+so it's now provably amount-independent). `XI_RegisterBundlePaths` now also registers `swap-route`, same
+version-checked-refresh as the other two categories. Measured: self-search after a prior bundle swap
+warmed the cache dropped from 1,352,614 gas (partial, repricing-only) to 1,143,255 gas once the route was
+cached too — a **77.6% reduction** from the original baseline in the realistic steady-state. **Phase 7**:
+owner asked about the repricing loop's own per-pool cost. Investigated whether the principal-anchoring
+guarantee (`UEV_Issue`'s `contains-principals`/`iz-principal` checks) bounds each pool's first-token
+distance to DWK — it doesn't, principals aren't required to connect to each other (confirmed via the
+deliberately-adversarial P0.5 topology itself, where the chain only reaches DWK through one narrow
+bridge). Found a better, assumption-free win instead: `SWPT::UC_MakeGraphFromRaw` (the graph-BUILD step
+BFS runs against, itself input/output-independent, same as `UC_MakeGraphNodes`) was being rebuilt from
+scratch on every one of the repricing loop's N distinct-pool queries despite always producing
+byte-identical output for the same universe — and `UC_BFS`'s own cost scales with full graph size
+regardless of true path depth, so N rebuilds multiplied that cost N times for nothing. Built once, shared
+across the loop (new `URC_PoolValueFromGraph`/`URC_WorthDWKFromGraph`/`URC_HopperFromGraph`/
+`URCX_HopperFromGraph` + `SWPT::URC_ComputeGraphPathFromGraph`/`URC_ShortestChainPerNodeFromGraph`,
+mirroring Phase 4's raw-graph-sharing shape one layer deeper), correctness adversarially proven
+byte-identical against the original. Measured: 965,197→931,103 gas (3.5%) on the P0.5 37-token worst
+case, 1,837,000→1,687,556 gas (8.1% further) on the P2-scale checkpoint. **Cumulative (cold, zero cache):
+5,094,054→1,687,556 gas, a 66.9% reduction** from the pre-`#65L` baseline; warm-cache steady-state
+unaffected (still 1,143,255 gas, 77.6%, since the bundle-based flow never touched this code path). Full
+writeup in `ROUND-01-OWNER-FEEDBACK.md` and
 `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`. — *#65bL*
 
 #66L **[SWPU]** ~~Failure-branch `OutputCumulator` objects are hand-built instead of via a `UDC_*`

@@ -1612,11 +1612,11 @@ pipeline both exit 0, 0 `FAILURE`.
 
 ---
 
-## Fix #42 — #65bL: 6-phase graph-search engine optimization, 63.9% cold / 77.6% warm-cache cumulative gas reduction
+## Fix #42 — #65bL: 7-phase graph-search engine optimization, 66.9% cold / 77.6% warm-cache cumulative gas reduction
 
 **Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`, `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`,
 `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact`, `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`,
-`REPL/Stage_01/[6.3]_SWP.repl`:** 6 phases, scoped and measured independently, 5 shipped:
+`REPL/Stage_01/[6.3]_SWP.repl`:** 7 phases, scoped and measured independently, 6 shipped:
 
 - **Phase 1:** wired `URCX_Hopper` to the pre-existing-but-unused `SWPT|PathCache` (write-only in
   the live code until now) via a new `URC_ReadPathCacheFresh`. Required fixing the cache's own
@@ -1688,20 +1688,53 @@ pipeline both exit 0, 0 `FAILURE`.
   itself is also warm (a bundle-assisted swap ran first, then a plain `URC_HopperActive` call reused
   the fully warm cache end to end).
 
-**Cumulative: 5,094,054 → 1,837,000 gas cold (zero cache), a 63.9% reduction, and 5,094,054 →
+- **Phase 7:** owner asked directly about the repricing loop's own per-pool search cost, observing
+  that `W`/`P`-pool first tokens are Principals directly (structural, `UEV_Issue`'s `iz-principal`
+  check) and `S`-pool first tokens must be one hop from *some* Principal (`contains-principals`
+  check), so first-token→DWK searches should usually be short — asked whether that's exploitable.
+  Checked the premise against the actual worst-case REPL topology before building anything: the
+  guarantee bounds adjacency to *some* Principal, not that Principal's own distance to DWK
+  (Principals aren't required to connect to each other — `HANDOFF-swp-exhaustive-path-search.md`'s
+  still-open `P0.3`), and the P0.5 topology itself proves this bites in practice — `W1`/`W4`/`W7` are
+  Principals, but the whole 6-hop chain only reaches DWK through one deliberately narrow bridge pool
+  (`OURO-W1`), making `W7`'s own repricing search *longer* than the main route. A Principal-adjacency
+  shortcut would have been unsafe to assume in general — not shipped.
+
+  Investigating this surfaced a better, assumption-free win: `SWPT::UC_BFS`'s traversal cost scales
+  with the full graph size regardless of true path depth (its outer fold runs once per node in the
+  whole universe), and the repricing loop's `URC_PoolValueFromRaw` was still triggering a fresh
+  `SWPT::UC_MakeGraphFromRaw` rebuild (the linear-scan-per-node graph-BUILD step feeding that BFS) on
+  every one of its N distinct-pool queries in one transaction, despite that rebuild being
+  input/output-independent (same as `UC_MakeGraphNodes` underneath it, Phase 4's own finding) and
+  therefore byte-identical every time for the same `raw-graph`/`swpairs` universe. Added
+  `URC_ComputeGraphPathFromGraph`/`URC_ShortestChainPerNodeFromGraph` (`SWPT`) and
+  `URCX_HopperFromGraph`/`URC_HopperFromGraph`/`URC_WorthDWKFromGraph`/`URC_PoolValueFromGraph`
+  (`SWPI`) — the same `...FromRaw` family Phase 4 built, one layer deeper, sourced from an
+  ALREADY-BUILT `[GraphNode]` graph instead of an already-fetched raw-graph. `04_TS01-C3.pact`'s
+  repricing loop now builds that graph once, right alongside its existing shared raw-graph fetch, and
+  every pool in the loop reuses it. Correctness adversarially proven byte-identical against the
+  original `URC_PoolValue` (`SWP|TX 032z6e`). Measured via a controlled before/after (`git stash` the
+  change, remeasure, restore): 965,197 → 931,103 gas (3.5%) on the P0.5 37-token/6-hop scenario;
+  1,837,000 → 1,687,556 gas (8.1% further) on the P2-scale ~102-pool checkpoint — the larger the
+  shared universe, the more the redundant rebuilds were costing. The warm-cache steady-state (Phase
+  6's 1,143,255 gas) is unaffected — the bundle-based flow prices pools via dirty-read-supplied
+  paths and never calls `URC_PoolValue{FromRaw,FromGraph}`.
+
+**Cumulative: 5,094,054 → 1,687,556 gas cold (zero cache), a 66.9% reduction, and 5,094,054 →
 1,143,255 gas with a fully warm cache (swap-route included), a 77.6% reduction** — from the
-pre-`#65L` baseline, all 6 phases combined (5 shipped). The worst-of-the-worst-case scenario now
+pre-`#65L` baseline, all 7 phases combined (6 shipped). The worst-of-the-worst-case scenario now
 fits **under** the real ~2,000,000 gas ceiling even cold — it did not before this work — and drops
 further still once the cache is warm.
 
 **Adversarially proven:** Phase 1's cache-hit path (returns exactly the cached node path, not an
 independently recomputed one), Phase 4's correctness (byte-identical to the original function),
 Phase 5's honestly-updated adversarial proof (live default genuinely takes the worse route on the
-engineered topology, direct `URC_ComputeAlternateRoutes` call still finds the better one), and
+engineered topology, direct `URC_ComputeAlternateRoutes` call still finds the better one),
 Phase 6's warm swap-route proof (`SWP|TX 032z6d` — after a bundle-based swap runs,
 `URC_HopperActive` on the same pair returns exactly the now-cached 7-node route, corrupted-and-
-restored to confirm the assertion is genuine, not a vacuous pass) all
-verified with real, printed numbers, not just passing assertions. Full suite (`[6.2]`+`[6.3]`) and
+restored to confirm the assertion is genuine, not a vacuous pass), and Phase 7's correctness proof
+(`SWP|TX 032z6e` — `URC_PoolValueFromGraph` matches `URC_PoolValue` byte-identically, corrupted-and-
+restored) all verified with real, printed numbers, not just passing assertions. Full suite (`[6.2]`+`[6.3]`) and
 default issuance-only (`[6.2+3]`) pipelines both exit 0, 0 `FAILURE` throughout every phase,
 `Stage01_Tester.repl` reverted to its default afterward (zero drift).
 

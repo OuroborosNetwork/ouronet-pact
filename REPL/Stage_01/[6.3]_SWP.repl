@@ -5362,6 +5362,54 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z6e - #65bL Phase 7 Shared Graph-Build URC_PoolValueFromGraph Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z6e - #65bL Phase 7 Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 032z6e - #65bL Phase 7 Proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;#65bL Phase 7 fix: the STOA-repricing loop in SWP|CC_SmartSwap{With,No}Slippage
+;;(04_TS01-C3.pact) now also builds ONE [GraphNode] graph (SWPT::UC_MakeGraphFromRaw)
+;;alongside the shared raw-graph fetch (Phase 4), and calls SWPI::URC_PoolValueFromGraph
+;;for every distinct pool touched, instead of each pool's own URC_PoolValueFromRaw call
+;;independently re-deriving the identical [GraphNode] graph from the shared raw-graph.
+;;Proves the shared-graph-build version produces EXACTLY the same result as the
+;;original, unchanged URC_PoolValue for a real pool — correctness preserved, not just
+;;"still runs."
+;;==== SWP|TX 032z6e - #65bL Phase 7 Proof · 02 · direct comparison ====
+(print "--- [SWP|TX 032z6e - #65bL Phase 7 Proof · 02 · direct comparison] ---")
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+        (test-pool:string "P|OURO-98c486052a51|VST-98c486052a51")
+        (all-swpairs:[string] (ref-SWP::URC_Swpairs))
+        (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes SWPT.BAR SWPT.BAR all-swpairs))
+        (raw-graph:[object{SwapTracerV2.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+        (graph:[object{BreadthFirstSearchV1.GraphNode}]
+            (ref-SWPT::UC_MakeGraphFromRaw SWPT.BAR SWPT.BAR all-swpairs raw-graph)
+        )
+        (original-result:[decimal] (ref-SWPI::URC_PoolValue test-pool))
+        (from-graph-result:[decimal] (ref-SWPI::URC_PoolValueFromGraph test-pool graph))
+    )
+    (print
+        (expect "#65bL Phase 7: URC_PoolValueFromGraph(shared graph) == URC_PoolValue(self-fetch), byte-identical"
+            original-result
+            from-graph-result
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "SWP|TX 032z7 - #34 Phase 8 Boost-Path Cache Registration Proof (Short Path) (Permanent)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

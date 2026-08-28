@@ -863,7 +863,13 @@
             \ it. Safe per SWPT::UC_MakeGraphNodes being input/output-independent — \
             \ one fetch against the full <all-swpairs> universe covers every distinct \
             \ pool's own first-token->DWK query, not just the one it happened to be \
-            \ fetched for (see URCX_HopperFromRaw's own doc)."
+            \ fetched for (see URCX_HopperFromRaw's own doc). \
+            \ #65bL Phase 7 fix: also builds the [GraphNode] graph itself \
+            \ (SWPT::UC_MakeGraphFromRaw) ONCE, alongside <raw-graph> — every \
+            \ URC_PoolValueFromGraph call below now reuses that same built graph \
+            \ instead of each one independently re-deriving it from <raw-graph> \
+            \ (a linear scan per node in the whole topology), same reasoning one \
+            \ layer deeper (see URC_HopperFromGraph's own doc)."
         (with-capability (P|TS)
             (let
                 (
@@ -896,11 +902,17 @@
                     (all-swpairs:[string] (ref-SWP::URC_Swpairs))
                     (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes BAR BAR all-swpairs))
                     (raw-graph:[object{SwapTracerV2.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+                    ;;#65bL Phase 7: built ONCE here too — every URC_PoolValueFromGraph
+                    ;;call below reused to share the graph-BUILD step, not just the raw
+                    ;;read Phase 4 already shared. See URC_HopperFromGraph's own doc.
+                    (graph:[object{BreadthFirstSearchV1.GraphNode}]
+                        (ref-SWPT::UC_MakeGraphFromRaw BAR BAR all-swpairs raw-graph)
+                    )
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (map
                     (lambda (sp:string)
-                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromRaw sp raw-graph)))
+                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromGraph sp graph)))
                     )
                     (at 3 out)
                 )
@@ -919,8 +931,9 @@
         @doc "Executes a Smart Swap from <input-id> to <output-id> without slippage protection. \
             \ Path is traced automatically via BFS across all pool bases. \
             \ #34 Phase 8: renamed from SWP|C_SmartSwapNoSlippage. \
-            \ #65bL Phase 4 fix: see SWP|CC_SmartSwapWithSlippage's own doc — same \
-            \ shared-raw-graph STOA-repricing-loop fix, mirrored here."
+            \ #65bL Phase 4/7 fix: see SWP|CC_SmartSwapWithSlippage's own doc — same \
+            \ shared-raw-graph/shared-graph-build STOA-repricing-loop fixes, \
+            \ mirrored here."
         (with-capability (P|TS)
             (let
                 (
@@ -959,11 +972,17 @@
                     (all-swpairs:[string] (ref-SWP::URC_Swpairs))
                     (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes BAR BAR all-swpairs))
                     (raw-graph:[object{SwapTracerV2.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+                    ;;#65bL Phase 7: built ONCE here too — every URC_PoolValueFromGraph
+                    ;;call below reused to share the graph-BUILD step, not just the raw
+                    ;;read Phase 4 already shared. See URC_HopperFromGraph's own doc.
+                    (graph:[object{BreadthFirstSearchV1.GraphNode}]
+                        (ref-SWPT::UC_MakeGraphFromRaw BAR BAR all-swpairs raw-graph)
+                    )
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (map
                     (lambda (sp:string)
-                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromRaw sp raw-graph)))
+                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromGraph sp graph)))
                     )
                     (at 3 out)
                 )

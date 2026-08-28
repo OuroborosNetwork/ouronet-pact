@@ -92,6 +92,23 @@
     (defun URC_ComputeGraphPathFromRaw:[string]
         (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
     )
+    ;;#65bL Phase 7: one layer deeper than Phase 2's raw-fetch/pure-filter split — a
+    ;;caller making MULTIPLE Hopper queries against the SAME <swpairs> universe in one
+    ;;transaction (the STOA-repricing loop: one query per distinct pool touched, each a
+    ;;different source token but the same DWK destination) was still calling
+    ;;UC_MakeGraphFromRaw (a linear-scan-per-node graph BUILD) fresh on every query,
+    ;;even though that build's output is byte-identical every time for the same
+    ;;<raw-graph>/<swpairs> universe (UC_MakeGraphFromRaw is input/output-independent,
+    ;;same as UC_MakeGraphNodes underneath it — Phase 4's own finding). These let a
+    ;;caller build the [GraphNode] graph ONCE (UC_MakeGraphFromRaw) and reuse it across
+    ;;every query — only the BFS traversal itself (genuinely <input>-dependent) still
+    ;;runs per query.
+    (defun URC_ShortestChainPerNodeFromGraph:[[string]]
+        (input:string graph:[object{BreadthFirstSearchV1.GraphNode}])
+    )
+    (defun URC_ComputeGraphPathFromGraph:[string]
+        (input:string output:string graph:[object{BreadthFirstSearchV1.GraphNode}])
+    )
     ;;#34M/M2 fix: additive — finds up to 3 edge-disjoint candidate routes instead
     ;;of just the single first-found one; see the defun's own @doc for the full
     ;;rationale.
@@ -781,6 +798,70 @@
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (shortest-chains:[[string]]
                     (URC_ShortestChainPerNodeFromRaw input output swpairs raw-graph)
+                )
+            )
+            (if (!= shortest-chains [[BAR]])
+                (let
+                    (
+                        (fp:[[string]]
+                            (fold
+                                (lambda
+                                    (acc:[[string]] idx:integer)
+                                    (let
+                                        (
+                                            (e:[string] (at idx shortest-chains))
+                                            (l:string (at 0 (take -1 e)))
+                                            (check:bool (= l output))
+                                        )
+                                        (if (not check)
+                                            (ref-U|LST::UC_RemoveItem acc e)
+                                            acc
+                                        )
+                                    )
+                                )
+                                shortest-chains
+                                (enumerate 0 (- (length shortest-chains) 1))
+                            )
+                        )
+                    )
+                    (if (> (length fp) 0) (at 0 fp) [BAR])
+                )
+                [BAR]
+            )
+        )
+    )
+    (defun URC_ShortestChainPerNodeFromGraph:[[string]]
+        (input:string graph:[object{BreadthFirstSearchV1.GraphNode}])
+        @doc "#65bL Phase 7: <URC_ShortestChainPerNodeFromRaw>, sourcing an \
+            \ ALREADY-BUILT <graph> (<UC_MakeGraphFromRaw>) instead of building it \
+            \ fresh from <raw-graph>/<swpairs> on every call — for a caller making \
+            \ MULTIPLE Hopper queries against the SAME <swpairs> universe in one \
+            \ transaction (the STOA-repricing loop), who builds the graph ONCE and \
+            \ reuses it across every query. Safe per the same input/output- \
+            \ independence <UC_MakeGraphFromRaw>'s own doc records — one graph \
+            \ built against a given <swpairs> universe is valid for EVERY query \
+            \ against that same universe, not just the one it happened to be built \
+            \ for. Only the BFS traversal itself (genuinely <input>-dependent) \
+            \ still runs per query."
+        (let
+            (
+                (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
+                (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFS graph input))
+            )
+            (at "chains" bfs-obj)
+        )
+    )
+    (defun URC_ComputeGraphPathFromGraph:[string]
+        (input:string output:string graph:[object{BreadthFirstSearchV1.GraphNode}])
+        @doc "#65bL Phase 7: <URC_ComputeGraphPathFromRaw>, sourcing its graph via \
+            \ <URC_ShortestChainPerNodeFromGraph> (an already-built <graph>) \
+            \ instead of rebuilding it from <raw-graph>/<swpairs> on every call — \
+            \ same post-filter-down-to-<output> logic, unchanged."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (shortest-chains:[[string]]
+                    (URC_ShortestChainPerNodeFromGraph input graph)
                 )
             )
             (if (!= shortest-chains [[BAR]])
