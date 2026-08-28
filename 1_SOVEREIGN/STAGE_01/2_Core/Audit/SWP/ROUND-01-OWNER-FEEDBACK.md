@@ -2973,6 +2973,39 @@ branch). — *#65bL*
 
 ---
 
+## #65cL (off-cycle naming-consistency note, surfaced during `#65bL` Phase 7 — `URC_WorthDWK` family should be renamed to Stoa-based naming) — **FILED, deferred to `main`**
+
+**Owner's direction (2026-08-28):** the `URC_WorthDWK`/`URC_SingleWorthDWK`/`URC_WorthDWKFromRaw`/
+`URC_WorthDWKFromGraph` function family (`16_SWPI.pact`, declared on the `SwapperIssueV3` interface)
+names itself after `DWK` (wrapped-STOA) — inconsistent with the "Stoa"-based vocabulary already used
+everywhere else in the same code paths: `XE_UpdateStoaValue`, `URC_PoolStoaValueFromPath`, the
+"STOA-repricing loop" this whole `#65bL` effort has been optimizing. Rename the family to a
+Stoa-based name (e.g. `URC_WorthStoa`) so the naming matches the rest of the vocabulary — recorded as
+a note for whoever picks this up on `main`, not done in this branch.
+
+**Scope, checked so this isn't a surprise for whoever does it:** pure rename, no behavior change —
+but every one of these four functions is declared on `SwapperIssueV3` (an interface, not just an
+internal module detail), so the rename touches:
+- The interface declaration itself (`16_SWPI.pact`'s `SwapperIssueV3` interface block).
+- Every internal call site: `16_SWPI.pact` (the functions call each other, and `URC_PoolValue`/
+  `URC_PoolValueFromRaw`/`URC_PoolValueFromGraph` all call into this family), `04_TS01-C3.pact`'s
+  STOA-repricing loop, and doc-only references in `19_SWPU.pact` (comments, not live calls).
+- At least one **slave-module consumer**: `2_SLAVE/Stage_Z/01_DPL-UR.pact` calls
+  `ref-SWPI::URC_SingleWorthDWK` directly, twice — confirmed via grep, not assumed. This makes the
+  rename a genuinely breaking API change for an existing third-party-style integrator, not just an
+  internal cleanup — whoever does this needs to update that slave module too, in the same pass.
+- REPL references in `[6.2+3]_DPTF-SWP_Issuance-Only.repl` and `[6.3]_SWP.repl`.
+
+No interface version bump needed under current policy (`V1` is edited freely pre-mainnet,
+`CLAUDE.md`'s interface-versioning section) — this is a same-version signature edit, not a cascade,
+but it's an "update every caller in the same commit" job since Pact has no deprecated-alias mechanism
+to soften it.
+
+**Status:** FILED — no verdict, no code change here. Deferred to whoever next works this file on
+`main`, matching `#32bM`'s own precedent for off-cycle notes filed but not actioned mid-audit. — *#65cL*
+
+---
+
 ## #32bM (off-cycle correction to M11/M12 — the "MTX-SWP has zero Talos wiring" premise was wrong) — **FILED, deferred to `main`, verdicts unchanged**
 
 **Surfaced during L67's investigation.** M11 (#32M) and M12 (#33M) were both closed 2026-08-19 as

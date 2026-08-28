@@ -603,6 +603,20 @@ unaffected (still 1,143,255 gas, 77.6%, since the bundle-based flow never touche
 writeup in `ROUND-01-OWNER-FEEDBACK.md` and
 `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`. — *#65bL*
 
+#65cL **[SWPI]** Off-cycle naming-consistency note, surfaced during `#65bL` Phase 7: the
+`URC_WorthDWK`/`URC_SingleWorthDWK`/`URC_WorthDWKFromRaw`/`URC_WorthDWKFromGraph` family (`16_SWPI.pact`,
+declared on `SwapperIssueV3`) names itself after `DWK` (wrapped-STOA), inconsistent with the
+"Stoa"-based vocabulary already used throughout the same code paths (`XE_UpdateStoaValue`,
+`URC_PoolStoaValueFromPath`, the "STOA-repricing loop" comments). Owner: rename to a Stoa-based name
+(e.g. `URC_WorthStoa`) for consistency. — **FILED, deferred to `main` (owner, 2026-08-28).** Pure
+rename, no behavior change — but these are interface-declared functions (`SwapperIssueV3`), so it
+touches the interface declaration plus every call site: internal (`16_SWPI.pact` itself,
+`04_TS01-C3.pact`'s repricing loop, doc references in `19_SWPU.pact`) AND at least one slave-module
+consumer (`2_SLAVE/Stage_Z/01_DPL-UR.pact` calls `URC_SingleWorthDWK` directly, twice) — a genuinely
+breaking API change for existing third-party integrators, not just an internal cleanup. No version
+bump needed per policy (`V1` edited freely pre-mainnet), but every caller across sovereign, slave, and
+REPL needs updating in the same pass. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *#65cL*
+
 #66L **[SWPU]** ~~Failure-branch `OutputCumulator` objects are hand-built instead of via a `UDC_*`
 constructor.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-27** (`ROUND-02-FIXES.md` Fix #39). Confirmed
 `UDC_ConstructOutputCumulator 0.0 BAR true [msg]` reproduces all 3 hand-built failure objects exactly,
