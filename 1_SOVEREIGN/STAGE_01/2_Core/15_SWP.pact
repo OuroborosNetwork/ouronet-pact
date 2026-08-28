@@ -62,6 +62,12 @@
     (defun UR_SpecialFeeTargets:[string] (swpair:string))
     (defun UR_SpecialFeeTargetsProportions:[decimal] (swpair:string))
     ;;
+    ;;#65eL: "major" principal = currently a member of the primordial pool's own
+    ;;token list (always exactly OURO/DWK/DLK in practice, enforced at
+    ;;A_DefinePrimordialPool's own capability gate) — fixed, never
+    ;;removable/rotatable via A_UpdatePrincipal/A_RotatePrincipal. Any other
+    ;;principal is "minor" and unaffected by this distinction.
+    (defun URC_IsMajorPrincipal:bool (token:string))
     (defun URC_LpCapacity:decimal (swpair:string))
     (defun URC_CheckID:bool (swpair:string))
     (defun URC_PoolTotalFee:decimal (swpair:string))
@@ -533,8 +539,12 @@
             \ storage is principal-agnostic (#21H), so removal itself is safe; the \
             \ floor exists so issuance-time principal-anchoring validation \
             \ (SWPI::UEV_Issue) always has somewhere real to anchor a new W/P pool. \
-            \ Gated by the same GOV|SWP_ADMIN admin capability as \
-            \ SWP|C>ROTATE-PRINCIPAL."
+            \ #65eL: removal also rejects a 'major' principal (currently a member \
+            \ of the primordial pool — URC_IsMajorPrincipal) outright, regardless \
+            \ of the floor — major principals are fixed, retirable only by \
+            \ redefining the primordial pool itself (SWP|C>DEFINE-PRIMORDIAL-POOL), \
+            \ never by this function. A 'minor' principal is unaffected. Gated by \
+            \ the same GOV|SWP_ADMIN admin capability as SWP|C>ROTATE-PRINCIPAL."
         @event
         (let
             (
@@ -550,7 +560,10 @@
                 )
                 (and
                     (enforce (contains principal current) (format "{} is not currently a principal" [principal]))
-                    (enforce (> current-count 2) (format "Cannot remove principal — at least 2 must remain defined ({} currently)" [current-count]))
+                    (and
+                        (enforce (> current-count 2) (format "Cannot remove principal — at least 2 must remain defined ({} currently)" [current-count]))
+                        (enforce (not (URC_IsMajorPrincipal principal)) (format "{} is a major (primordial-pool) principal — cannot be removed" [principal]))
+                    )
                 )
             )
             (compose-capability (GOV|SWP_ADMIN))
@@ -560,11 +573,14 @@
         @doc "Validates an atomic principal replacement. Each rejection reason gets \
             \ its own distinct enforce, not a combined boolean, since they're \
             \ separate concerns with separate causes: <old> must currently be a \
-            \ principal, <new> must not already be one, and rotating a principal \
-            \ into itself is never allowed regardless of whether it's already a \
-            \ principal (it always would be, since <old> = <new>). Count-preserving \
-            \ — never interacts with the 7-principal cap. Gated by the same \
-            \ GOV|SWP_ADMIN admin capability as SWP|C>PRINCIPAL."
+            \ principal, <old> must not be a 'major' (primordial-pool) principal \
+            \ (#65eL — majors are fixed, retirable only by redefining the \
+            \ primordial pool itself, never by rotation), <new> must not already \
+            \ be one, and rotating a principal into itself is never allowed \
+            \ regardless of whether it's already a principal (it always would be, \
+            \ since <old> = <new>). Count-preserving — never interacts with the \
+            \ 7-principal cap. Gated by the same GOV|SWP_ADMIN admin capability as \
+            \ SWP|C>PRINCIPAL."
         @event
         (let
             (
@@ -574,6 +590,7 @@
             )
             (ref-DPTF::UEV_id new)
             (ref-U|LST::UEV_StringPresence old current)
+            (enforce (not (URC_IsMajorPrincipal old)) (format "{} is a major (primordial-pool) principal — cannot be rotated" [old]))
             (enforce (!= old new) "Cannot rotate a principal into itself")
             (enforce (not (contains new current)) (format "{} is already a principal" [new]))
             (compose-capability (GOV|SWP_ADMIN))
@@ -919,6 +936,28 @@
         (at "swpair" (read SWP|LP lp-id ["swpair"]))
     )
     ;;{F1}
+    (defun URC_IsMajorPrincipal:bool (token:string)
+        @doc "True if <token> is currently a member of the primordial pool's own \
+            \ token list — the 'major principal' concept: fixed, always exactly \
+            \ OURO/DWK/DLK in practice (A_DefinePrimordialPool's own capability \
+            \ gate enforces exactly these 3 tokens, always, regardless of which \
+            \ physical pool backs it), never removable or rotatable-away via \
+            \ A_UpdatePrincipal/A_RotatePrincipal — as opposed to any other \
+            \ ('minor') principal, which both freely allow. Returns false (never \
+            \ major) if no primordial pool has been defined yet, or if <token> \
+            \ isn't currently a member of the one that has been — this doesn't \
+            \ require <token> to already be a registered principal at all, callers \
+            \ combine that check separately where it matters."
+        (let
+            (
+                (pp:string (UR_PrimordialPool))
+            )
+            (if (= pp BAR)
+                false
+                (contains token (UR_PoolTokens pp))
+            )
+        )
+    )
     (defun URC_LpCapacity:decimal (swpair:string)
         @doc "Computes the LP Capacity of a Given Swap Pair"
         (let
@@ -1218,11 +1257,17 @@
     ;;{F5}
     (defun A_UpdatePrincipal (principal:string add-or-remove:bool)
         @doc "Adds <principal> (while under the 7 maximum) or removes it (while at \
-            \ least 2 would remain defined). SWPT's storage is principal-agnostic \
-            \ (#21H), so removal is safe — it only affects future \
-            \ SWPI::UEV_Issue principal-anchoring validation, never existing \
-            \ routing. A_RotatePrincipal remains available as an atomic, \
-            \ count-preserving alternative that never touches the floor or cap."
+            \ least 2 would remain defined, AND <principal> isn't currently a \
+            \ 'major' principal — #65eL, URC_IsMajorPrincipal). SWPT's storage is \
+            \ principal-agnostic (#21H), so removal of a minor principal is safe \
+            \ — it only affects future SWPI::UEV_Issue principal-anchoring \
+            \ validation, never existing routing. Major principals (currently a \
+            \ member of the primordial pool — always OURO/DWK/DLK in practice) are \
+            \ never removable here regardless of the floor; retiring one requires \
+            \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool). \
+            \ A_RotatePrincipal remains available as an atomic, count-preserving \
+            \ alternative for minor principals — it never touches the floor or \
+            \ cap, but is equally blocked from rotating a major principal away."
         (UEV_IMC)
         (let
             (
@@ -1261,9 +1306,13 @@
             \ removal was disabled entirely, stale since that fix — #65dL). Never \
             \ interacts with the 7-principal cap either way. Safe with respect to \
             \ SWPT's routing graph (#21H fix) — SWPT's storage is principal-agnostic, \
-            \ so rotating (or removing) a principal never orphans anything there; \
-            \ the only effect is on future SWPI::UEV_Issue principal-anchoring \
-            \ validation."
+            \ so rotating (or removing) a MINOR principal never orphans anything \
+            \ there; the only effect is on future SWPI::UEV_Issue principal- \
+            \ anchoring validation. <old> being a 'major' principal (currently a \
+            \ member of the primordial pool — always OURO/DWK/DLK in practice) is \
+            \ rejected outright regardless of everything else (#65eL, \
+            \ URC_IsMajorPrincipal) — majors are fixed, retirable only by \
+            \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool)."
         (UEV_IMC)
         (with-read SWP|Properties SWP|INFO
             { "principals" := pp }

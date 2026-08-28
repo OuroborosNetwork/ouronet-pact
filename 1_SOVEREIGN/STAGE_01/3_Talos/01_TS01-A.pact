@@ -491,13 +491,19 @@
     ;;  [SWP_Administrator]
     (defun SWP|A_UpdatePrincipal (principal:string add-or-remove:bool)
         @doc "Adds <principal> (while under the 7 maximum) or removes it (while at \
-        \ least 2 would remain defined). A principal is a token that must exist \
-        \ once in every W or P Swpiar, on the first position. Also, the S Pools, \
-        \ must have at least one Token dtied directly to a principal Token. \
-        \ SWPT's storage is principal-agnostic (#21H), so removal is safe — it \
+        \ least 2 would remain defined, and <principal> isn't a 'major' principal \
+        \ — #65eL). A principal is a token that must exist once in every W or P \
+        \ Swpiar, on the first position. Also, the S Pools, must have at least \
+        \ one Token dtied directly to a principal Token. SWPT's storage is \
+        \ principal-agnostic (#21H), so removal of a minor principal is safe — it \
         \ only affects future pool-issuance principal-anchoring validation, never \
-        \ existing routing. SWP|A_RotatePrincipal remains available as an atomic, \
-        \ count-preserving alternative that never touches the floor or cap."
+        \ existing routing. A major principal (currently a member of the \
+        \ primordial pool — always OURO/DWK/DLK in practice) can never be removed \
+        \ this way; retiring one requires redefining the primordial pool itself \
+        \ (SWP|A_DefinePrimordialPool). SWP|A_RotatePrincipal remains available as \
+        \ an atomic, count-preserving alternative for minor principals — it never \
+        \ touches the floor or cap, but is equally blocked from rotating a major \
+        \ principal away."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
@@ -513,7 +519,11 @@
         \ SWPT's routing graph (#21H fix): SWPT's storage is principal-agnostic, \
         \ so this never orphans anything there — the only effect is on future \
         \ pool-issuance principal-anchoring validation. Rejects rotating a \
-        \ principal into itself, and rejects <new> already being a principal."
+        \ principal into itself, rejects <new> already being a principal, and \
+        \ rejects <old> being a 'major' principal (currently a member of the \
+        \ primordial pool — always OURO/DWK/DLK in practice, #65eL) — majors are \
+        \ fixed, retirable only by redefining the primordial pool itself \
+        \ (SWP|A_DefinePrimordialPool)."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (

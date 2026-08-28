@@ -1776,3 +1776,47 @@ restore, the fix doesn't change any computed value or control flow). Full suite 
 
 **Status:** FIXED ✅. See `ROUND-01-OWNER-FEEDBACK.md`'s `H3` entry (addendum) for the full
 re-verification writeup.
+
+---
+
+## Fix #44 — #65eL: major vs. minor principal distinction enforced (H3/#21H third follow-up)
+
+**Owner direction:** define a "major" principal as one currently a member of the primordial pool
+(always OURO/DWK/DLK in practice, not a separately-registered category) and make majors permanently
+fixed — never removable or rotatable — while minor principals keep working exactly as before. Even
+though `#65dL` proved rotation/removal can't break existing routing, there's no legitimate reason to
+ever retire OURO/DWK/DLK from the principals list, so block it outright.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`, `1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact`:**
+- New `URC_IsMajorPrincipal(token):bool` (`15_SWP.pact`): checks live membership in
+  `UR_PoolTokens(UR_PrimordialPool())`, `false` if no primordial pool is defined yet. Checked before
+  building: `SWP|C>DEFINE-PRIMORDIAL-POOL` already enforces the primordial pool is always a 3-token `W`
+  pool containing exactly OURO/DWK/DLK, and `H6`/`#18H` already confirmed a duplicate-token-set pool is
+  structurally impossible to issue — so this reduces to "is `token` one of OURO/DWK/DLK," derived
+  live rather than hardcoded, staying correct even if the primordial pool is ever redefined to a
+  different physical pool instance.
+- `SWP|C>PRINCIPAL`'s removal branch and `SWP|C>ROTATE-PRINCIPAL`: each gained one additional, distinct
+  enforce rejecting a major principal outright — for removal, independent of and in addition to the
+  existing 2-minimum floor; for rotation, independent of the existing 3 rejection reasons.
+- `@doc`s updated throughout (both defcaps, both `A_*` defuns, both Talos wrappers) to describe the new
+  distinction.
+
+**Adversarially proven, live — `SWP|TX 035a` (new, `[6.2+3]_DPTF-SWP_Issuance-Only.repl`):**
+`URC_IsMajorPrincipal` correctly flags OURO/DLK/DWK as major (DWK checked even though genesis never
+registers it as a principal — proving the check is about primordial-pool membership, not principal
+status) and a genuine minor principal as not major. At 7 principals defined (well above the floor),
+removing/rotating OURO are both rejected outright. A minor principal is removed-then-restored in the
+same test, proving the guard doesn't over-block. Each guard reverted **in isolation** (one neutralized
+at a time, not both together) and re-run: caught and fixed a real test-design flaw along the way — an
+initial attempt used a nonexistent token as the rotate target (fails `A_RotatePrincipal`'s own `UEV_id`
+check regardless of this guard, a vacuous test) and didn't isolate the two guards from each other (the
+removal guard's own real side effect, once neutralized, changes state the rotate test then runs
+against) — fixed by using a real non-principal token and reverting one guard at a time; both now show
+a genuine "expected failure, got result" independently when their own guard is removed, confirmed, then
+restored.
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅. See `ROUND-01-OWNER-FEEDBACK.md`'s `H3` entry (third follow-up) for
+the full writeup.

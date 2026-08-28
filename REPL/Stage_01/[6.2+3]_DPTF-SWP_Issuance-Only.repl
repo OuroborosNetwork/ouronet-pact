@@ -3100,6 +3100,69 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "SWP|TX 035a - #65eL Major-Principal Protection Reproduction")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 035a - Major-Principal Protection · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(print "--- [SWP|TX 035a - Major-Principal Protection · 02 · let / invocation] ---")
+;;Audit ref: #65eL — owner: a "major" principal (currently a member of the primordial pool —
+;;always OURO/DWK/DLK in practice, enforced at A_DefinePrimordialPool's own capability gate) must
+;;be fixed, never removable/rotatable, unlike any other ("minor") principal. Proves: (1)
+;;URC_IsMajorPrincipal correctly identifies OURO/DLK/DWK as major (DWK checked even though it
+;;isn't currently a registered principal — the check is about primordial-pool membership, not
+;;principal status) and a genuine minor principal as not major; (2) removing/rotating a major
+;;principal is rejected outright, at 7 principals defined (well above the floor, so this is
+;;genuinely the NEW major-principal guard firing, not the pre-existing floor guard); (3) a minor
+;;principal is completely unaffected — removed then restored, mirroring TX033's own
+;;drain-then-restore pattern so later tests' dependencies (TI/PD/OS/IR/PT all still principals)
+;;are unchanged afterward.
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ouro:string "OURO-98c486052a51")
+        (dlk:string (ref-DALOS::UR_SilverStoaID))
+        (dwk:string (ref-DALOS::UR_WrappedStoaID))
+        (minor:string "PD-98c486052a51")
+        ;;A real, already-issued, non-principal token (from TX034/035's P|HG|TE pool) — using a
+        ;;nonexistent token here would fail A_RotatePrincipal's own UEV_id validation regardless
+        ;;of the major-principal guard, making the adversarial proof below vacuous.
+        (real-non-principal:string "TE-98c486052a51")
+        (before-count:integer (length (ref-SWP::UR_Principals)))
+    )
+    (map print
+        [
+            (expect "#65eL — OURO is a major principal (primordial-pool member)" true (ref-SWP::URC_IsMajorPrincipal ouro))
+            (expect "#65eL — DLK is a major principal (primordial-pool member)" true (ref-SWP::URC_IsMajorPrincipal dlk))
+            (expect "#65eL — DWK is major by primordial-pool membership, even though not currently a registered principal" true (ref-SWP::URC_IsMajorPrincipal dwk))
+            (expect "#65eL — a genuine minor principal is NOT major" false (ref-SWP::URC_IsMajorPrincipal minor))
+            (expect "#65eL — principal count is well above the floor (7), so the next 2 checks genuinely test the NEW major-principal guard, not the pre-existing floor guard" true (> before-count 2))
+            (expect-failure "#65eL — removing a major principal (OURO) is rejected outright, even with headroom above the floor" (ref-TS01-A::SWP|A_UpdatePrincipal ouro false))
+            (expect-failure "#65eL — rotating a major principal (OURO) away is rejected outright" (ref-TS01-A::SWP|A_RotatePrincipal ouro real-non-principal))
+        ]
+    )
+    (ref-TS01-A::SWP|A_UpdatePrincipal minor false)
+    (print (format "#65eL — minor principal removal still works (count {} -> {})" [before-count (length (ref-SWP::UR_Principals))]))
+    (ref-TS01-A::SWP|A_UpdatePrincipal minor true)
+    (print
+        (expect "#65eL — minor principal restored, count back to baseline, later tests' dependencies unaffected"
+            before-count
+            (length (ref-SWP::UR_Principals))
+        )
+    )
+)
+(print "")
+(print "--- [SWP|TX 035a - Major-Principal Protection · 03 · gas echo] ---")
+(format "<<<<<<<SWP|TX 035a Major-Principal Protection ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 036 - #24H Reproduction: UC_ComputeD Newton Convergence")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

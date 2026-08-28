@@ -154,7 +154,11 @@ structurally impossible. Migration utility `SWPI::A_RebuildGraph` added and prov
 prior #13C/#19H/#20H/#11C proof re-confirmed byte-identical post-redesign. **Re-verified 2026-08-28
 (`#65dL`):** owner independently re-raised the same concern; confirmed via a fresh grep of every
 `UR_Principals` consumer that the fix still holds — no code gap, one small stale `@doc` corrected
-(`ROUND-02-FIXES.md` Fix #43). — *H3*
+(`ROUND-02-FIXES.md` Fix #43). **Extended 2026-08-28 (`#65eL`, `ROUND-02-FIXES.md` Fix #44):** a
+"major" principal (currently a member of the primordial pool, always OURO/DWK/DLK) is now permanently
+fixed — removal/rotation rejected outright, independent of the existing floor/rotation checks; minors
+unaffected. New `URC_IsMajorPrincipal` reader, adversarially proven live with each guard reverted and
+reconfirmed in isolation. — *H3*
 
 #22H **[SWPL]** ~~Two independent, unreconciled asymmetric-deficit pricing models both fire for Standard-mode
 liquidity adds — possible double-charging honest depositors.~~ — **DESIGN, confirmed intentional

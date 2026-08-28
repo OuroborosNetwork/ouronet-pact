@@ -1,4 +1,11 @@
-# Principal & primordial-pool architecture — what actually exists, and why rotating a principal is safe (2026-08-28)
+# Principal & primordial-pool architecture — what actually exists, why rotation was already safe, and the major/minor policy layer added on top (2026-08-28)
+
+**Update (`#65eL`, same day, below):** the "no major/minor tier" section right below describes the
+state as of the first two rounds of this investigation (`#65dL`) — still true of the *safety*
+argument, but a real major/minor **policy** layer was added shortly after (see the final section) at
+the owner's explicit request, once the safety re-verification confirmed rotation/removal was safe but
+still pointless-to-ever-do for OURO/DWK/DLK specifically. Read both — the safety argument explains
+*why* a tier wasn't load-bearing; the policy layer explains what now exists anyway, by choice.
 
 **Owner raised a sharp, independent concern:** if principals can be added/removed/rotated, and
 existing pools were anchored to a principal at issuance time, doesn't rotating that principal break
@@ -77,3 +84,47 @@ While re-verifying, found `A_RotatePrincipal`'s own `@doc` still claimed "standa
 at 2) and this doc comment was never updated to match. Corrected in `15_SWP.pact` — pure doc change,
 no behavior touched, full regression re-run clean. See `ROUND-01-OWNER-FEEDBACK.md`'s `H3` entry
 (addendum) and `ROUND-02-FIXES.md` for the fix write-up.
+
+## The major/minor policy layer, added on top (`#65eL`)
+
+Once the safety re-verification above landed, the owner proposed an actual rule rather than leaving
+things "safe but unrestricted": a **"major" principal is now defined as one currently a member of the
+primordial pool** (live membership check, not a hardcoded list — see `URC_IsMajorPrincipal` below) —
+in practice always exactly OURO/DWK/DLK, since `SWP|C>DEFINE-PRIMORDIAL-POOL`'s own capability gate
+already enforces that whatever pool is designated primordial contains exactly those 3 tokens (and
+`H6`/`#18H` already confirmed a second pool sharing that exact token set is structurally impossible to
+issue). Majors are now **permanently fixed** — `A_UpdatePrincipal` (remove) and `A_RotatePrincipal`
+both reject them outright, independent of and in addition to the pre-existing floor/rotation checks.
+Any other ("minor") principal is completely unaffected — add/remove/rotate all work exactly as before.
+
+This is a genuinely new rule, not a rediscovery — the code did not have this distinction before
+`#65eL`; the section above ("no two-tier system") described the state accurately *at the time it was
+written*, a few hours earlier in the same day. The rule exists for a different reason than the
+`#65dL` safety question: even though rotating/removing any principal (major or minor) can't corrupt
+existing routing, there's no legitimate operational reason to ever retire OURO/DWK/DLK specifically —
+blocking it outright removes a whole class of admin mistakes (fat-fingering the wrong token into
+`A_UpdatePrincipal`/`A_RotatePrincipal`) for free, at zero cost to anything that was actually using
+the flexibility.
+
+**What was built** (`1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`, `1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact`):
+- `URC_IsMajorPrincipal(token):bool` — `contains token (UR_PoolTokens (UR_PrimordialPool))`, `false`
+  if no primordial pool is defined yet (never crashes pre-bootstrap; `SWP|Properties` always has the
+  `BAR` sentinel inserted at genesis). Doesn't require `token` to already be a registered principal —
+  callers check that separately where it matters.
+- `SWP|C>PRINCIPAL`'s removal branch and `SWP|C>ROTATE-PRINCIPAL` each gained one additional, distinct
+  `enforce` rejecting a major principal, on top of their existing checks.
+- Adversarially proven live (`SWP|TX 035a`, `[6.2+3]_DPTF-SWP_Issuance-Only.repl`): confirms
+  `URC_IsMajorPrincipal` correctly flags OURO/DLK/DWK (DWK checked even though it isn't currently a
+  registered principal at all, per genesis — proving the check is about pool membership, not
+  principal-list membership), confirms a minor principal reports `false`, confirms removing/rotating
+  OURO is rejected at 7 principals defined (well above the floor, isolating the new guard from the old
+  one), confirms a minor principal is completely unaffected (removed then restored in the same test).
+  Both new guards reverted **in isolation** (one neutralized at a time) and re-run — each shows a
+  genuine "expected failure, got result" independently, not a shared/confounded proof. (First attempt
+  at this proof had two real flaws, caught and fixed before landing: a nonexistent token as the rotate
+  target failed a different, unrelated check regardless of the guard being tested; and reverting both
+  guards together let the removal test's real side effect — OURO actually leaving the list once
+  unprotected — contaminate the rotate test running right after it on the same token.)
+
+Full detail: `ROUND-01-OWNER-FEEDBACK.md`'s `H3` entry (third follow-up) and `ROUND-02-FIXES.md`
+Fix #44.
