@@ -66,6 +66,9 @@ Experimental probes and one-off tests: **`REPL/Kursan/`**. See **`kursan/README.
 | Khronoton flush service (calendar day + :58 schedule) | `HANDOFF-pythia-khronoton-flush.md` |
 | PYTHIA dual-Apollo keys | `HANDOFF-pythia-dual-apollo.md` |
 | PYTHIA ledger flush implementation | `modules/stage01/pythia-ledger-flush.md` |
+| SWP #34 exhaustive-path-search — full history, every design decision (13-phase plan) | `HANDOFF-swp-exhaustive-path-search.md` |
+| SWP SmartSwap bundle — finished-mechanism + client orchestration guide | `HANDOFF-swp-smartswap-bundle-architecture.md` |
+| SWP graph-search engine optimization — parked, pre-design, evidence + rejected alternatives | `HANDOFF-swp-graph-search-engine-optimization.md` |
 
 ## Maintenance rule
 

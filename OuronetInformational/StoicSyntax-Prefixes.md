@@ -17,6 +17,16 @@ A name is `PREFIX_Name` (or `PREFIX_Scope|Name`). The prefix is read left-to-rig
 - **lowercase letters = a specialization role** appended to the class:
   - `k` → the compute produces a **composite table Key** (`concat` fields with `BAR`).
   - `x` → the function is an **auxiliary** (a private helper of the function directly ABOVE it).
+  - `v` → **validating** — the function's `enforce` is an intrinsic, unavoidable part of its own single
+    job (a shape/domain guard on the computation itself — e.g. "these amounts must sum positive and none
+    may be negative" as part of computing whether they're balanced), **not** business/client validation
+    that belongs in a separate `UEV_*`/defcap. Legitimate on `UC_`/`URC_`/`URDC_` — `UCv_`/`URCv_`/
+    `URDCv_` — where every other real caller does not already guarantee the property, so the check is
+    reachable and not tautological (deleting it would be wrong), but relocating it to a caller-side
+    `UEV_*` would mean duplicating the identical check at every real call site instead of once, in the
+    one place all real paths already share. Introduced 2026-08-24 (SWP audit L56) — retroactively also
+    covers the `U|LST` bounds-guard exception from v1.9.0/§6.1 (L41), now a named category instead of an
+    ad-hoc carve-out.
   - lowercase markers may stack (rare): `UCkx_` = a key-building auxiliary.
 - **`|` = a module/table scope** inside the *name* part, not the prefix
   (`UR_SCR|ScoreOwnerKonto` = a `UR_` reader scoped to the `SCR` tables;
@@ -37,12 +47,14 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 
 | Prefix | Class | Meaning | On execution path? | Colour family |
 |--------|-------|---------|--------------------|---------------|
-| `UC_`   | compute | Pure compute on arguments only — **no table reads, no `enforce`** | yes | **COMPUTE** |
+| `UC_`   | compute | Pure compute on arguments only — **no table reads, no `enforce`**\* | yes | **COMPUTE** |
 | `UCk_`  | compute·key | Pure compute that builds a **composite table key** (`concat […BAR…]`) | yes | **COMPUTE** |
 | `UCx_`  | compute·aux | Pure-compute **auxiliary** of the function above it | yes | **COMPUTE** (dim) |
+| `UCv_`  | compute·validating | `UC_` whose `enforce` is intrinsic to its own computation (§1 `v`) — not business validation | yes | **COMPUTE** |
 | `UR_`   | read | **Point** read (single row/field by key) | yes | **READ** |
 | `URC_`  | read+compute | Point read **+ derive** (no `enforce`) | yes | **READ** |
 | `URCx_` | read+compute·aux | `URC_` **auxiliary** | yes | **READ** (dim) |
+| `URCv_` | read+compute·validating | `URC_` whose `enforce` is intrinsic to its own computation (§1 `v`) | yes | **READ** |
 | `URU_`  | read·upgrade | Read helper for **version-upgrade / migration** paths | admin only | **READ** (dim) |
 | `URH_`  | heavy-read | **Scan** read (`select` / `keys`) — expensive/unbounded | **NO — off-path only** | **HEAVY-READ ⚠** |
 | `URHx_` | heavy-read·aux | `URH_` **auxiliary** | **NO** | **HEAVY-READ ⚠** (dim) |
@@ -58,6 +70,7 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 
 | Prefix | Class | Meaning | Colour family |
 |--------|-------|---------|---------------|
+| `AU_` | admin·update | **Admin Update** — schema/data migration only (force existing rows onto a newly-added field), admin-mode only; placed immediately before `A_`. Codifies the pre-existing `AHU`/`AUP_*` pattern (see `StoicSyntax.md` § 6.2, v1.10.0) | **RECIPE** |
 | `A_`   | admin | Admin-key mutation recipe — **standard** (its execution tree hits **no** heavy read) | **RECIPE** |
 | `AA_`  | admin·heavy | Admin recipe whose **execution tree hits a heavy scan somewhere** (`URH_*`/`URHC_*`/`URD_*`), **at any depth** — see the transitive rule below | **RECIPE** |
 | `Ap_`  | admin·parallel | **Hydra** parallel-slice admin — fed one slice of a `URH_*` dirty-read plan, order-independent, retryable, fired in parallel; its own tree hits **no** heavy read | **RECIPE** |
@@ -119,6 +132,11 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 | `SECURE` | The home secure-compose leaf capability (guards writers) | **STRUCTURAL** (dim) |
 | `UEV_IMC` | The inter-module-call gate (special `UEV_`; opens every `C_`/`CC_`/`X` entrypoint) | **STRUCTURAL** (dim) |
 
+> \* **Documented exception (StoicSyntax.md § 6.1, v1.9.0):** `U|LST`'s bounds-guard helpers
+> (`UC_ReplaceAt`, `UC_RemoveItemAt`, `UC_LE`, `UC_FE`) and any `UC_*` calling them stay `UC_*` and are
+> excluded from renaming — their `enforce` guards the computation's own list/string shape (index-in-
+> bounds, not-empty), not a business/domain decision.
+
 > **Not prefixes — module/table scopes.** Tokens like `DPTF`, `DPOF`, `DPSF`, `DPNF`, `DPDC`,
 > `DALOS`, `SWP`, `ATS`, `VST`, `AQP`, `ANK`, `SCR`, `FVT`, `MTX`, `IGNIS`, `DEMIPAD`, `PYTHIA`,
 > `CODEX`, `GLYPH`, … are **module / table names**, not function classes. They appear after a `|`
@@ -162,7 +180,7 @@ their base, optionally **dimmed / desaturated / italic** to signal "specializati
 | **CONSTRUCT**  | `UDC_ UDCx_` | object builders |
 | **CONSTANT**   | `CT_` | constant accessors — muted |
 | **WRITE**      | `WI_ WU_ WU2_ WU3_ WU4_ WW_` | persistence — distinct write hue |
-| **RECIPE**     | `A_ AA_ Ap_ AAp_ C_ CC_ Cp_ CCp_` | client/admin entrypoints — strong/bold |
+| **RECIPE**     | `AU_ A_ AA_ Ap_ AAp_ C_ CC_ Cp_ CCp_` | client/admin entrypoints — strong/bold |
 | **PROTECTED**  | `XI_ XE_ XB_` | protected orchestration — distinct band |
 | **STRUCTURAL** | `GOV GOV\|* P\|* SECURE UEV_IMC` | standardized boilerplate — dim/grey |
 

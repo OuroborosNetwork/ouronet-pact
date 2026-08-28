@@ -92,6 +92,30 @@ atomically). The single-tx path + any `defpact` are kept as **comparison oracles
 drain (`Cp_BatchDrain*`), sweep (`CC_SweepBegin`/`CCp_SweepRecomputeChunk`), inject
 (`CCp_InjectFixChunk`/`CC_InjectFinalize`). Design of record: `03_AQP/Audit/{SWEEP-VACATE,VACATE-V2,M3-DEB}-DESIGN.md`.
 
+### Why Stage 1 has separate Utility modules, and why Stage 2 doesn't
+
+- **Stage 1's Utility layer (`U|CT`, `U|G`, `U|LST`, `U|INT`, `U|SWP`, `U|BFS`, `U|DALOS`, `U|DPTF`, `U|ATS`,
+  …) exists because of Kadena's ~150k gas/deploy-size cap.** Core modules couldn't hold all their own
+  `UC_*` compute functions inline and stay under that limit, so compute got split out into standalone
+  Utility modules deployed separately.
+- **Two distinct kinds of content live there, both legitimately:**
+  - **Fully generic compute**, usable by any module regardless of domain — `U|LST` (string processing),
+    `U|INT` (integer/array processing), `U|G` (guard computation), `U|CT` (shared constants), `U|BFS`
+    (breadth-first search).
+  - **Module-family-tied compute** — not fully generic, but too much for the individual modules in one
+    family to each hold their own copy, so it's centralized once per family. `U|SWP` is the example: it
+    holds compute used across the whole SWP module family (`SWP`, `SWPI`, `SWPT`, `SWPL`, `SWPU`,
+    `MTX-SWP`), not because the logic is domain-generic, but because splitting it further would exceed
+    the deploy-size budget per module.
+- **Stage 2 dropped this pattern entirely.** Stage 2 deploys on StoaChain under a **~2,000,000 gas**
+  ceiling (see `MODULE_ARCHITECTURE.md` / the SWP audit's own #34 handoff docs for the real measured
+  numbers), which removes the deploy-size pressure that motivated Stage 1's Utility layer. Stage 2 never
+  created an equivalent module (no `U|DPDC`, no `U|AQP`, etc.) — every Stage 2 module keeps its own
+  `UC_*` compute functions inline, since Stage 2 modules are smaller anyway and there's ample headroom
+  under the higher cap. **Do not propose splitting Stage 2 `UC_*` functions into a new Utility module** —
+  that would be reintroducing a pattern the project deliberately moved away from once the size pressure
+  that justified it went away.
+
 ### DPMF historical note
 
 - `DPMF` is the original **Meta Fungible** module kept for historical/migration context.

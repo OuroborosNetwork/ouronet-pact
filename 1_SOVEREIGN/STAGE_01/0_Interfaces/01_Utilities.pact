@@ -536,4 +536,7 @@
     )
     ;;
     (defun UC_BFS:object{BFS} (graph:[object{GraphNode}] in:string))
+    ;;#65hL: UC_BFS, with an early-exit once <target> has been reached — see the
+    ;;defun's own doc for the full rationale. Additive, not a replacement.
+    (defun UC_BFSTargeted:object{BFS} (graph:[object{GraphNode}] in:string target:string))
 )

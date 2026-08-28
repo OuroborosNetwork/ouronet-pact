@@ -73,8 +73,8 @@
     ;;POLICY
     ;;{P1}
     ;;{P2}
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P3}
     (defcap P|MTX-SWP|CALLER ()
         true
@@ -136,6 +136,11 @@
                 (ref-P|SWPT:module{OuronetPolicyV1} SWPT)
                 (ref-P|SWP:module{OuronetPolicyV1} SWP)
                 (ref-P|SWPL:module{OuronetPolicyV1} SWPL)
+                ;;#36M/M5 fix: MTX-SWP now calls SWPI::XE_IssueWrite (UEV_IMC-gated)
+                ;;directly from MTX|C_Issue's Step 3, so MTX-SWP must register itself
+                ;;as an approved IMC caller on SWPI too — same as every other module
+                ;;it already calls into below.
+                (ref-P|SWPI:module{OuronetPolicyV1} SWPI)
                 (mg:guard (create-capability-guard (P|MTX-SWP|CALLER)))
             )
             (ref-P|VST::P|A_Add
@@ -155,6 +160,7 @@
             (ref-P|SWPT::P|A_AddIMP mg)
             (ref-P|SWP::P|A_AddIMP mg)
             (ref-P|SWPL::P|A_AddIMP mg)
+            (ref-P|SWPI::P|A_AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -860,7 +866,7 @@
                             (with-capability (P|DT)
                                 (ref-ORBR::C_Fuel)
                             )
-                            (format "{} IGNIS and {} KDA collected (raising DLK Index) succesfully; 2|3" [sum-ignis kda-costs])
+                            (format "{} IGNIS and {} KDA collected (raising SSTOA Index) succesfully; 2|3" [sum-ignis kda-costs])
                         )
                         (format "{} IGNIS collected, with {} KDA collected (in reserves) succesfully; 2|3" [sum-ignis kda-costs])
                     )
@@ -877,34 +883,21 @@
             )
         )
         ;;Step 3 Issuance
+        ;;#36M/M5 fix: the write sequence itself (mint/transfer/tracker) now lives in
+        ;;SWPI::XE_IssueWrite — the shared forward-module entrypoint SWPI::C_Issue also
+        ;;calls, instead of this step independently reimplementing it. Billing already
+        ;;happened in Step 2, above, so only swpair/token-lp (indices 0/1) are needed
+        ;;here — the sub-cumulators XE_IssueWrite also returns are for C_Issue's own
+        ;;aggregation, not relevant to this already-billed path.
         (step
             (with-capability (MTX-SWP|C>ISSUE p)
                 (let
                     (
-                        (ref-DALOS:module{OuronetDalosV1} DALOS)
-                        (ref-BRD:module{BrandingV1} BRD)
-                        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                        (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                        (ref-SWPT:module{SwapTracerV1} SWPT)
-                        (ref-SWP:module{SwapperV3} SWP)
-                        ;;
-                        (principals:[string] (ref-SWP::UR_Principals))
-                        (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
-                        (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
-                        (lp-name-ticker:[string] (ref-SWP::URC_LpComposer pool-tokens weights amp))
-                        (lp-name:string (at 0 lp-name-ticker))
-                        (lp-ticker:string (at 1 lp-name-ticker))
-                        (ico:object{IgnisCollectorV1.OutputCumulator}
-                            (ref-DPTF::XE_IssueLP lp-name lp-ticker)
-                        )
-                        (token-lp:string (at 0 (at "output" ico)))
-                        (swpair:string (ref-SWP::XE_Issue account pool-tokens token-lp fee-lp weights amp p))
+                        (ref-SWPI:module{SwapperIssueV3} SWPI)
+                        (write-result:list (ref-SWPI::XE_IssueWrite account pool-tokens fee-lp weights amp p))
+                        (swpair:string (at 0 write-result))
+                        (token-lp:string (at 1 write-result))
                     )
-                    (ref-BRD::XE_Issue swpair)
-                    (ref-TFT::C_MultiTransfer pool-token-ids account SWP|SC_NAME pool-token-amounts true)
-                    (ref-DPTF::C_Mint token-lp SWP|SC_NAME 10000000.0 true)
-                    (ref-TFT::C_Transfer token-lp SWP|SC_NAME account 10000000.0 true)
-                    (ref-SWPT::XE_MultiPathTracer swpair principals)
                     (format "Swpair with ID {} and LP Token {} ID created succesfully" [swpair token-lp])
                 )
             )

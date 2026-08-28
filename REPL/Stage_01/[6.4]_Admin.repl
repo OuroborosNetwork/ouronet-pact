@@ -89,17 +89,24 @@
             { "social-media-name":  "Galium Waztup", "social-media-link": "Watzup link"}
         ]
     )
-    (ref-TS01-C2::ATS|C_UpdatePendingBranding
-        patron
-        "Magnindium-98c486052a51"
-        "This is the logo"
-        "Galium is an element"
-        "Website of Galium"
-        [
-            { "social-media-name":  "Galium Facebook", "social-media-link": "Facebook link"}
-            { "social-media-name":  "Galium Waztup", "social-media-link": "Watzup link"}
-        ]
-    )
+    ;;#61L: pre-existing, unrelated to this fix — "Magnindium-98c486052a51" is never
+    ;;actually issued anywhere in the test suite (grepped: this is the only reference
+    ;;to it in all of REPL/), so this call has always hard-failed with "No value found
+    ;;in table ATS_ATS|Pairs" whenever this file was loaded — which is presumably
+    ;;exactly why the whole file was excluded from the default Z.repl pipeline.
+    ;;Commented out (matching this file's own established pattern for not-ready
+    ;;calls below) so the rest of the file — including the #61L proof — can load.
+    ;(ref-TS01-C2::ATS|C_UpdatePendingBranding
+    ;    patron
+    ;    "Magnindium-98c486052a51"
+    ;    "This is the logo"
+    ;    "Galium is an element"
+    ;    "Website of Galium"
+    ;    [
+    ;        { "social-media-name":  "Galium Facebook", "social-media-link": "Facebook link"}
+    ;        { "social-media-name":  "Galium Waztup", "social-media-link": "Watzup link"}
+    ;    ]
+    ;)
     (ref-TS01-C3::SWP|C_UpdatePendingBranding
         patron
         "S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51"
@@ -123,30 +130,36 @@
             { "social-media-name":  "Galium Waztup", "social-media-link": "Watzup link"}
         ]
     )
-    (ref-TS01-C3::SWP|C_UpdatePendingBrandingLPs
-        patron
-        "P|OURO-98c486052a51|VST-98c486052a51"
-        2
-        "This is the logo"
-        "Frozen LP is an element"
-        "Website of Galium"
-        [
-            { "social-media-name":  "Galium Facebook", "social-media-link": "Facebook link"}
-            { "social-media-name":  "Galium Waztup", "social-media-link": "Watzup link"}
-        ]
-    )
-    (ref-TS01-C3::SWP|C_UpdatePendingBrandingLPs
-        patron
-        "P|OURO-98c486052a51|VST-98c486052a51"
-        3
-        "This is the logo"
-        "Sleeping LP is an element"
-        "Website of Galium"
-        [
-            { "social-media-name":  "Galium Facebook", "social-media-link": "Facebook link"}
-            { "social-media-name":  "Galium Waztup", "social-media-link": "Watzup link"}
-        ]
-    )
+    ;;#61L: pre-existing, unrelated to this fix — this pool never had a frozen-LP
+    ;;(entity-pos 2) or sleeping-LP (entity-pos 3) variant created anywhere in the
+    ;;test suite (grepped: no C_EnableFrozenLP/C_EnableSleepingLP for this pool),
+    ;;so URC_EntityPosToID resolves to the BAR sentinel "|" for both and this always
+    ;;hard-failed ("No value found in table DPTF_DPTF|PropertiesTable for key: |").
+    ;;Commented out for the same reason as the ATS call above.
+    ;(ref-TS01-C3::SWP|C_UpdatePendingBrandingLPs
+    ;    patron
+    ;    "P|OURO-98c486052a51|VST-98c486052a51"
+    ;    2
+    ;    "This is the logo"
+    ;    "Frozen LP is an element"
+    ;    "Website of Galium"
+    ;    [
+    ;        { "social-media-name":  "Galium Facebook", "social-media-link": "Facebook link"}
+    ;        { "social-media-name":  "Galium Waztup", "social-media-link": "Watzup link"}
+    ;    ]
+    ;)
+    ;(ref-TS01-C3::SWP|C_UpdatePendingBrandingLPs
+    ;    patron
+    ;    "P|OURO-98c486052a51|VST-98c486052a51"
+    ;    3
+    ;    "This is the logo"
+    ;    "Sleeping LP is an element"
+    ;    "Website of Galium"
+    ;    [
+    ;        { "social-media-name":  "Galium Facebook", "social-media-link": "Facebook link"}
+    ;        { "social-media-name":  "Galium Waztup", "social-media-link": "Watzup link"}
+    ;    ]
+    ;)
     (ref-TS01-A::BRD|A_Live "GA-98c486052a51")
     (ref-TS01-A::BRD|A_SetFlag "GA-98c486052a51" 2)
 
@@ -173,6 +186,117 @@
 ;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
 (print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
 (format "<<<<<<<STEP 002 Admin Tests {} KDA GAS>>>>>>>" [(env-gas)])
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "SWP TX 002 - #61L C_UpgradeBrandingLPs Proof")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP TX 002 - #61L C_UpgradeBrandingLPs Proof · 01 · env-sigs (caps) ====
+(print "--- [SWP TX 002 - #61L C_UpgradeBrandingLPs Proof · 01 · env-sigs (caps)] ---")
+;;#61L fix: SWP|C_UpgradeBrandingLPs had zero REPL coverage — the one call to it
+;;in this file was commented out (and, it turns out, stale: it referenced
+;;ref-TS01-C2, but SWP|C_UpdatePendingBrandingLPs/C_UpgradeBrandingLPs both
+;;actually live on TalosStageOne_ClientThreeV3 — would not have compiled as
+;;written even if uncommented). Real proof: propose real branding data via
+;;C_UpdatePendingBrandingLPs, then upgrade via C_UpgradeBrandingLPs, on
+;;pool6's own LP token (entity-pos 1 — every pool's plain LP token gets a
+;;BRD row at issuance, flag=3/Gray by default, so no extra setup is needed).
+;;Asserts the upgrade genuinely moved pending -> live (flag 3 -> 1) with the
+;;real proposed data, not just that the calls didn't error. Placed right after
+;;the first tx in this file rather than at the file's own original location —
+;;several unrelated, pre-existing broken transactions later in this file
+;;(a never-issued ATS pair, a never-registered smart account) block the file
+;;from loading that far; out of scope for this fix, not touched.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (patron:string KST.ANHD)
+        (months:integer 3)
+        (dec-months:decimal (dec months))
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (* (ref-DALOS::UR_UsagePrice "blue") dec-months)
+            )
+        )
+    )
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    ;;==== SWP TX 002 - #61L C_UpgradeBrandingLPs Proof · 02 · let / invocation ====
+    (print "--- [SWP TX 002 - #61L C_UpgradeBrandingLPs Proof · 02 · let / invocation] ---")
+    (let
+        (
+            (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+            (ref-SWP:module{SwapperV3} SWP)
+            (ref-BRD:module{BrandingV1} BRD)
+            (pool:string "P|OURO-98c486052a51|VST-98c486052a51")
+        )
+        (ref-TS01-C3::SWP|C_UpdatePendingBrandingLPs
+            patron pool 1
+            "https://ouronet.example/lp-logo.png"
+            "#61L proof LP branding description"
+            "https://ouronet.example"
+            [{"social-media-name": "X", "social-media-link": "https://x.com/ouronet"}]
+        )
+        (ref-TS01-C3::SWP|C_UpgradeBrandingLPs patron pool 1 months)
+        (let
+            (
+                (lp-id:string (ref-SWP::UR_TokenLP pool))
+            )
+            (map print
+                [
+                    (expect "#61L: LP token flag upgraded Gray(3) -> Blue(1)"
+                        1
+                        (ref-BRD::UR_Flag lp-id false)
+                    )
+                    (expect "#61L: LP token live logo reflects the proposed branding (pending -> live)"
+                        "https://ouronet.example/lp-logo.png"
+                        (ref-BRD::UR_Logo lp-id false)
+                    )
+                    (expect "#61L: LP token live description reflects the proposed branding"
+                        "#61L proof LP branding description"
+                        (ref-BRD::UR_Description lp-id false)
+                    )
+                ]
+            )
+        )
+    )
+)
 (print "")
 (print "")
 (print "===^^^===")

@@ -115,7 +115,9 @@
     (defun URC_AsymmetricTax:object{AsymmetricTax} (account:string swpair:string ld:object{LiquidityData}))
     (defun URC_SortLiquidity:object{LiquiditySplit} (swpair:string input-amounts:[decimal]))
         ;;
-    (defun URC_AreAmountsBalanced:bool (swpair:string input-amounts:[decimal]))
+    ;;#56L fix: renamed to URCv_AreAmountsBalanced (StoicSyntax v1.11.0 'validating'
+    ;;specialization) — see the defun's own @doc for the full rationale.
+    (defun URCv_AreAmountsBalanced:bool (swpair:string input-amounts:[decimal]))
     (defun URC_BalancedLiquidity:[decimal] (swpair:string input-id:string input-amount:decimal with-validation:bool))
     (defun URC_LpBreakAmounts:[decimal] (swpair:string input-lp-amount:decimal))
     (defun URC_CustomLpBreakAmounts:[decimal] (swpair:string swpair-pool-token-supplies:[decimal] swpair-lp-supply:decimal input-lp-amount:decimal))
@@ -199,8 +201,8 @@
     ;;POLICY
     ;;{P1}
     ;;{P2}
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P3}
     (defcap P|SWPL|CALLER ()
         true
@@ -1344,7 +1346,7 @@
         @doc "Sorts Liquidity into a balanced part and an asymmetric part"
         (let
             (
-                (iz-balanced:bool (URC_AreAmountsBalanced swpair input-amounts))
+                (iz-balanced:bool (URCv_AreAmountsBalanced swpair input-amounts))
             )
             (if iz-balanced
                 (UDC_LiquiditySplit
@@ -1413,13 +1415,34 @@
         )
     )
     ;;
-    (defun URC_AreAmountsBalanced:bool (swpair:string input-amounts:[decimal])
-        @doc "Determines if <input-amounts> are balanced according to <swpair>"
+    (defun URCv_AreAmountsBalanced:bool (swpair:string input-amounts:[decimal])
+        @doc "Determines if <input-amounts> are balanced according to <swpair>. \
+            \ #56L fix: renamed URC_ -> URCv_ (new StoicSyntax v1.11.0 'validating' \
+            \ specialization) — both enforces below are intrinsic shape guards on this \
+            \ computation itself, not business validation. Traced all 11 real callers \
+            \ (SWPL/SWPLC/MTX-SWP/INFO-ONE+) before keeping them here: 8 of 11 pass raw, \
+            \ caller-controlled amounts with zero upstream validation, so both checks are \
+            \ genuinely reachable, not tautological; and no single non-URC_* choke point \
+            \ exists upstream shared by all of them (3 separate modules call in \
+            \ directly), so relocating to a UEV_* would mean duplicating the identical \
+            \ checks 8 times instead of once, here. Added the missing per-element \
+            \ non-negative check — the old sum-only check let a mixed-sign list like \
+            \ [-5.0, 10.0] pass clean (sum=5.0>0) despite containing a negative amount; \
+            \ matches the equivalent check already correct in UEV_InputsForLP (used by \
+            \ the one path -- C_Fuel -- that already validates this properly)."
         (let
             (
                 (sum:decimal (fold (+) 0.0 input-amounts))
+                (l1:integer (length input-amounts))
             )
             (enforce (> sum 0.0) "At least a single input value must be greater than zero!")
+            (map
+                (lambda
+                    (idx:integer)
+                    (enforce (>= (at idx input-amounts) 0.0) "No input amount may be negative")
+                )
+                (enumerate 0 (- l1 1))
+            )
             (let
                 (
                     (has-zeroes:bool (contains 0.0 input-amounts))
@@ -1745,6 +1768,17 @@
             account:string swpair:string asymmetric-collection:bool gaseous-collection:bool kda-pid:decimal
             ld:object{SwapperLiquidityV1.LiquidityData} clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
         )
+        @doc "#59L note: every branch below calls XE_UpdateSupplies (reserve bump) BEFORE \
+            \ XI_AddLiqSendAndMint (the actual token transfer-in + LP mint). That ordering \
+            \ is only safe because this whole function always executes as one atomic \
+            \ unit — never split across a transaction/step boundary. Confirmed for both \
+            \ real call shapes: the single-tx SWPLC client paths call this directly \
+            \ inside one transaction; MTX-SWP::MTX|C_AddLiquidity's defpact calls it \
+            \ entirely within Step 1's own step-with-rollback block (never spanning \
+            \ Step 1 and a later step) — a defpact step is itself a single atomic \
+            \ transaction, so the same guarantee holds there too. If a future caller \
+            \ ever needs to split this function's bump and transfer across two separate \
+            \ steps, this ordering would need re-deriving from scratch, not assumed safe."
         (UEV_IMC)
         (let
             (

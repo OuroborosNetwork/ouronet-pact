@@ -2,9 +2,9 @@
 
 | | |
 |--|--|
-| **Version** | **1.7.0** |
+| **Version** | **1.11.0** |
 | **Status** | Published discipline — rules Ouronet follows; offered for any Pact builder |
-| **Date** | 2026-08-11 |
+| **Date** | 2026-08-24 |
 | **Home** | Ouronet (this repository) — the codebase that practices and proves the method |
 
 **What StoicSyntax is.** A **discipline and set of rules** for writing Pact: how to name and place functions, where validation lives, how writes are isolated, how modules authorize each other **without borrowing each other’s capabilities**, and how one module can safely **compose calls across many modules** into auditable client flows.
@@ -480,6 +480,44 @@ Top of a StoicSyntax module (reference skeleton: ModuleSample):
 
 **Auxiliary depth:** `URCX_` / `URDCX_` under parent URC/URDC blocks (same read-depth rules).
 
+**`v` — validating (new prefix, SWP L56, 2026-08-24):** a stackable lowercase specialization role (same
+mechanism as `StoicSyntax-Prefixes.md` § 1's `x`/`k`) marking a `UC_`/`URC_`/`URDC_` function whose
+`enforce` is an **intrinsic, unavoidable part of its own single job** — a shape/domain guard on the
+computation itself (e.g. "these amounts must sum positive, and no individual amount may be negative," as
+part of computing whether a liquidity split is balanced) — **not** business/client validation that
+belongs in a separate `UEV_*`/defcap. `UCv_`/`URCv_`/`URDCv_` may `enforce`; everything else about their
+allowed-callee contract is unchanged from the base tier. Legitimate **only** when: (1) every real caller
+does not already guarantee the property (so the check is reachable, not tautological — deleting it would
+be wrong), **and** (2) there is no single non-`UC_`/`URC_`/`URDC_` choke point upstream shared by every
+real caller — relocating the check to a caller-side `UEV_*` would mean duplicating the identical check at
+every real call site instead of once, in the one place all real paths already share. If a genuine single
+non-tier choke point exists (a shared defcap, a shared `UEV_*` entrypoint every real caller already
+composes), the check belongs there instead — `v` is for when it doesn't.
+
+**Documented instances:**
+- **`U|LST`'s bounds-guard helpers (SWP L41, 2026-08-23 — retroactively named `UCv_`/`URCv_` here):**
+  `UC_ReplaceAt`, `UC_RemoveItemAt`, `UC_LE`, `UC_FE` (and `UEV_NotEmpty` where they call it) `enforce`
+  on a list's own shape — index-in-bounds, list-not-empty — before indexing into it, preventing a bare
+  out-of-bounds crash mid-computation. Any `UC_*` elsewhere that calls these specific helpers (e.g.
+  `U|SWP`'s `UC_ComputeY`/`UC_ComputeInverseY`/`UC_AddSupply`/`UC_RemoveSupply`) is excluded from any
+  StoicSyntax rename/reclassification sweep for this reason — the existing instances are **not**
+  required to actually rename to `UCv_`/`URCv_` right now (same "known pattern, deferred to the full
+  post-merge sweep" treatment as L54's `AU_`), this note just formally names the category they already
+  belong to.
+- **`SWPL::URC_AreAmountsBalanced` → `URCv_AreAmountsBalanced` (SWP L56, 2026-08-24):** validates that
+  liquidity-add amounts sum positive and no individual amount is negative, as an intrinsic part of
+  computing whether the amounts are balanced. Traced all 11 real callers (across `SWPL`, `SWPLC`,
+  `MTX-SWP`, `INFO-ONE+`) before keeping this — 8 of 11 pass raw, caller-controlled amounts with zero
+  upstream validation, so the check is genuinely reachable, not tautological; and no single
+  non-`URC_*` choke point exists upstream shared by all of them (three separate modules call in
+  directly), so relocating to a `UEV_*` would mean duplicating the identical check 8 times instead of
+  once. Renamed to `URCv_*` and actually renamed in source (unlike `U|LST`'s deferred instances above),
+  since this is the second real example of the category and the rename was in scope for this finding.
+
+A `UC_*`/`URC_*` calling into real business validation (an owner check, a balance check, a domain-rule
+enforce) is still a genuine violation and **not** covered by `v` — `v` is narrowly for shape/domain
+guards intrinsic to the computation, never for gating an application-level decision.
+
 **Migration signals**
 
 - `UC_` that calls `UR_` / `read` → rename **`URC_`**  
@@ -490,6 +528,7 @@ Top of a StoicSyntax module (reference skeleton: ModuleSample):
 
 | Prefix | Who | Role |
 |--------|-----|------|
+| **AU_** | Admin keys, admin-mode only | **Admin Update** — schema/data migration functions only (e.g. force existing rows to pick up a newly-added field). Distinct from `A_`'s live-business-mutation role; placed immediately before `A_` in the FUNCTIONS block (§7). Introduced 2026-08-24 from the SWP audit (L54) — codifies the pre-existing `AHU`/`AUP_*` pattern already used across `01_DALOS`, `05_DPTF`, `06_DPOF`, `08_ATS`, `15_SWP`, `02_DPDC` as the forward-going standard name. |
 | **A_** | Admin keys | Administrator recipes |
 | **C_** | Client / via Aggregator | Client recipes; may wire optional fee cumulators (Ouronet: IGNIS) |
 | **XI_** | This module only | Internal orchestration → `W_*` |
@@ -535,8 +574,9 @@ Under **FUNCTIONS**, group in this order (AQP reference: `05_VCT.pact`):
 | 8 | **URDC_** | Scan+compute |
 | 9 | **UEV_** | Validation |
 | 10 | **C_** | Client recipes |
-| 11 | **A_** | Admin recipes |
-| 12 | **X** (`XI_` / `XE_` / `XB_`) | Orchestration / cross-module writes — inside XI: **all tier 0, then all tier 1, then all tier 2…** (§ 12.1) |
+| 11 | **AU_** | Admin Update — schema/data migration functions only (§6.2), placed immediately before `A_` |
+| 12 | **A_** | Admin recipes |
+| 13 | **X** (`XI_` / `XE_` / `XB_`) | Orchestration / cross-module writes — inside XI: **all tier 0, then all tier 1, then all tier 2…** (§ 12.1) |
 
 **CAP_** helpers sit with **UEV_** or just before **C_** per module habit.
 
@@ -1514,13 +1554,43 @@ value**, its `@doc` **must state what it outputs and why** ("returns the new non
 bundle for the caller"). Only the IGNIS `OutputCumulator` return is *also* reflected in the **name** (R1
 `-cm`); every other return is documented in `@doc` but keeps the plain prefix.
 
-### 19.5 Consolidation index (R5) — other Ouronet-specifics already in this handbook
+### 19.5 `;;Key = <...>` — every `deftable` documents its own row key (R6)
+
+Introduced by the AQP modules (`1_SOVEREIGN/STAGE_02/2_Core/03_AQP/`), formalized here after being applied
+retroactively to the SWP-family modules. Every `deftable` — **domain table or policy table (`P|T`/`P|MT`)
+alike, no exceptions** — carries a trailing inline comment on the **same line** stating what value(s) the
+table is actually `read`/`insert`/`with-default-read` keyed by:
+
+```pact
+(deftable SWP|Pairs:{SWP|PairsSchemaV3})                    ;;Key = <swpair>
+(deftable SWPT|PathCache:{SwapTracerV2.PathCacheRow})        ;;Key = <token-a>|<token-b> (insertion-order, reversed-lookup at read time)
+(deftable P|T:{OuronetPolicyV1.P|S})                         ;;Key = <policy-name>
+(deftable P|MT:{OuronetPolicyV1.P|MS})                       ;;Key = P|I (module-identity singleton constant)
+```
+
+1. Format is `;;Key = <...>` — a `<placeholder>` per key component, `|` between composite-key pieces
+   (matching how the key string is actually built, e.g. `(+ (+ token-a "|") token-b)`), free text in
+   parentheses when the key has a non-obvious property (insertion order, a singleton constant, a fixed
+   sentinel) worth flagging for the next reader.
+2. This documents the table's **own primary row key** — distinct from **§10.3's `;;Select Keys`**, which
+   denormalizes *filterable dimensions inside the schema* for `select`/`where` inventory queries. A table
+   can have both: one `;;Key = <...>` (what `read` takes) and, if it's ever scanned, a `;;Select Keys`
+   block inside its `defschema` (what `where` can filter on).
+3. **`P|T`/`P|MT` are not exempt.** Every module implementing `OuronetPolicyV1` gets the identical pair —
+   `P|T` keyed by `<policy-name>`, `P|MT` keyed by the module's own `P|I` singleton constant — so the
+   comment is boilerplate-identical across modules, but still required; a reader auditing one module in
+   isolation should never have to cross-reference another to know what a table's key shape is.
+4. Applies retroactively: when touching a module for other reasons and its tables are missing this
+   comment, add it as part of that pass rather than leaving it for a dedicated sweep.
+
+### 19.6 Consolidation index (R5) — other Ouronet-specifics already in this handbook
 
 These stay explained in context; this is the single index of what is Ouronet-specific (not generic):
 - **IGNIS as optional-MUST metering** on the Talos blessed path — §2, §2.3a.
 - **Talos = the Aggregator**; the gas-station allowlist targets Talos, not an unbounded core set — §2, §2.4.
 - **Prefix universe** — `UC / UCK / UR / URD / URC / URDC / UDC / UEV / CAP` and
   `A / C / CC / AA / XI / XE / XB` (+ `-cm`) — §6, §7, and §19.1 / §19.3 here.
+- **Every `deftable` documents its own row key** — `;;Key = <...>`, §19.5 (R6).
 - **Deep inventory** of how Ouronet applies all the above — §18.
 
 ---
@@ -1546,6 +1616,10 @@ These stay explained in context; this is the single index of what is Ouronet-spe
 | **1.6.6** | 2026-08-01 | **§ 13.0**: indentation / visual observability discipline for human scan |
 | **1.6.7** | 2026-08-01 | **§ 12.1**: X source order = all tier 0, then all tier 1, then all tier 2… (no interleaved stacks) |
 | **1.7.0** | 2026-08-11 | **§ 19 Ouronet-specific rules** (new chapter): `X-cm_` naming for X funcs that emit an IGNIS cumulator (R1); multi-table X allowed (R2); `CC_`/`AA_` HEAVY prefixes for `C_`/`A_` that unavoidably scan (R3); X `@doc` output rule (R4); Ouronet-specifics consolidation index (R5). From AQP audit Round I owner feedback. |
+| **1.8.0** | 2026-08-21 | **§ 19.5 `;;Key = <...>`** (new rule, R6): every `deftable` — domain or `P|T`/`P|MT` policy table alike, no exceptions — carries an inline comment stating its own row key. Introduced by the AQP modules, formalized here after being applied retroactively across the SWP-family modules (owner reminder, #34 session). |
+| **1.9.0** | 2026-08-23 | **§ 6.1 documented exception**: `U|LST`'s bounds-guard `enforce` helpers (`UC_ReplaceAt`, `UC_RemoveItemAt`, `UC_LE`, `UC_FE`) and any `UC_*` calling them stay `UC_*` and are excluded from renaming/reclassification — the `enforce` guards the computation's own list/string shape (index-in-bounds, not-empty), not a business/domain decision. From SWP audit Round I, finding L41 (owner direction, 2026-08-23). |
+| **1.10.0** | 2026-08-24 | **§ 6.2 / § 7 new prefix `AU_`** (Admin Update): admin-mode-only functions whose sole purpose is schema/data migration (force existing rows to pick up a newly-added field), distinct from `A_`'s live-business-mutation role; placed immediately before `A_` in the FUNCTIONS block order. Codifies the pre-existing `AHU`/`AUP_*` pattern already used across `01_DALOS`, `05_DPTF`, `06_DPOF`, `08_ATS`, `15_SWP`, `02_DPDC` as the forward-going standard name — existing instances are a known, deliberate, shared pattern intentionally left unrenamed for now, deferred to the full post-merge StoicSyntax sweep as one coordinated cross-module rename rather than touched piecemeal. From SWP audit Round I, finding L54 (owner direction, 2026-08-24). |
+| **1.11.0** | 2026-08-24 | **§ 6.1 new stackable specialization `v`** (validating): marks a `UC_`/`URC_`/`URDC_` function whose `enforce` is intrinsic to its own computation (a shape/domain guard, never business validation) — legitimate only when the check is genuinely reachable (not tautological) *and* no single non-tier choke point exists upstream shared by every real caller (otherwise the check belongs in a `UEV_*` there instead). `UCv_`/`URCv_`/`URDCv_`. Retroactively formalizes the `U|LST` bounds-guard exception from v1.9.0/L41 as a named category (existing instances still deferred, not renamed); first fresh application is `SWPL::URC_AreAmountsBalanced` → `URCv_AreAmountsBalanced`, renamed in source. From SWP audit Round I, finding L56 (owner direction, 2026-08-24). |
 
 **Bump rules**
 

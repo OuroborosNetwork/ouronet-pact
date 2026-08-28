@@ -62,6 +62,12 @@
     (defun UR_SpecialFeeTargets:[string] (swpair:string))
     (defun UR_SpecialFeeTargetsProportions:[decimal] (swpair:string))
     ;;
+    ;;#65eL: "major" principal = currently a member of the primordial pool's own
+    ;;token list (always exactly OURO/WSTOA/SSTOA in practice, enforced at
+    ;;A_DefinePrimordialPool's own capability gate) — fixed, never
+    ;;removable/rotatable via A_UpdatePrincipal/A_RotatePrincipal. Any other
+    ;;principal is "minor" and unaffected by this distinction.
+    (defun URC_IsMajorPrincipal:bool (token:string))
     (defun URC_LpCapacity:decimal (swpair:string))
     (defun URC_CheckID:bool (swpair:string))
     (defun URC_PoolTotalFee:decimal (swpair:string))
@@ -86,6 +92,7 @@
     ;;
     ;;
     (defun A_UpdatePrincipal (principal:string add-or-remove:bool))
+    (defun A_RotatePrincipal (old:string new:string))
     (defun A_UpdateLimit (limit:decimal spawn:bool))
     (defun A_UpdateLiquidBoost (new-boost-variable:bool))
     (defun A_DefinePrimordialPool (primordial-pool:string))
@@ -149,8 +156,8 @@
     ;;
     ;;{P1}
     ;;{P2}
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P3}
     (defcap P|SWP|CALLER ()
         true
@@ -527,17 +534,65 @@
         )
     )
     (defcap SWP|C>PRINCIPAL (principal:string add-or-remove:bool)
+        @doc "Adds are capped at 7 total and must not duplicate an existing \
+            \ principal. Removes must leave at least 2 principals defined — SWPT's \
+            \ storage is principal-agnostic (#21H), so removal itself is safe; the \
+            \ floor exists so issuance-time principal-anchoring validation \
+            \ (SWPI::UEV_Issue) always has somewhere real to anchor a new W/P pool. \
+            \ #65eL: removal also rejects a 'major' principal (currently a member \
+            \ of the primordial pool — URC_IsMajorPrincipal) outright, regardless \
+            \ of the floor — major principals are fixed, retirable only by \
+            \ redefining the primordial pool itself (SWP|C>DEFINE-PRIMORDIAL-POOL), \
+            \ never by this function. A 'minor' principal is unaffected. Gated by \
+            \ the same GOV|SWP_ADMIN admin capability as SWP|C>ROTATE-PRINCIPAL."
+        @event
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (current:[string] (UR_Principals))
+                (current-count:integer (if (= current [BAR]) 0 (length current)))
+            )
+            (ref-DPTF::UEV_id principal)
+            (if add-or-remove
+                (and
+                    (enforce (not (contains principal current)) (format "{} is already a principal" [principal]))
+                    (enforce (< current-count 7) (format "Cannot add principal — {} of 7 maximum already defined" [current-count]))
+                )
+                (and
+                    (enforce (contains principal current) (format "{} is not currently a principal" [principal]))
+                    (and
+                        (enforce (> current-count 2) (format "Cannot remove principal — at least 2 must remain defined ({} currently)" [current-count]))
+                        (enforce (not (URC_IsMajorPrincipal principal)) (format "{} is a major (primordial-pool) principal — cannot be removed" [principal]))
+                    )
+                )
+            )
+            (compose-capability (GOV|SWP_ADMIN))
+        )
+    )
+    (defcap SWP|C>ROTATE-PRINCIPAL (old:string new:string)
+        @doc "Validates an atomic principal replacement. Each rejection reason gets \
+            \ its own distinct enforce, not a combined boolean, since they're \
+            \ separate concerns with separate causes: <old> must currently be a \
+            \ principal, <old> must not be a 'major' (primordial-pool) principal \
+            \ (#65eL — majors are fixed, retirable only by redefining the \
+            \ primordial pool itself, never by rotation), <new> must not already \
+            \ be one, and rotating a principal into itself is never allowed \
+            \ regardless of whether it's already a principal (it always would be, \
+            \ since <old> = <new>). Count-preserving — never interacts with the \
+            \ 7-principal cap. Gated by the same GOV|SWP_ADMIN admin capability as \
+            \ SWP|C>PRINCIPAL."
         @event
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (current:[string] (UR_Principals))
             )
-            (ref-DPTF::UEV_id principal)
-            (if (not add-or-remove)
-                (ref-U|LST::UEV_StringPresence principal (UR_Principals))
-                true
-            )
+            (ref-DPTF::UEV_id new)
+            (ref-U|LST::UEV_StringPresence old current)
+            (enforce (not (URC_IsMajorPrincipal old)) (format "{} is a major (primordial-pool) principal — cannot be rotated" [old]))
+            (enforce (!= old new) "Cannot rotate a principal into itself")
+            (enforce (not (contains new current)) (format "{} is already a principal" [new]))
             (compose-capability (GOV|SWP_ADMIN))
         )
     )
@@ -564,12 +619,21 @@
     )
     (defcap SWP|C>ENABLE-FROZEN (swpair:string)
         @event
+        ;;#31M/M7 fix: was missing CAP_Owner — any caller routed through
+        ;;P|GOVERNING-CALLER could permanently enable Frozen LP on any pool,
+        ;;not just their own. Only the pool's own owner may trigger this
+        ;;(and it's irreversible by design — no XI ever writes it back to
+        ;;false).
         (UEV_FrozenLP swpair false)
+        (CAP_Owner swpair)
         (compose-capability (P|GOVERNING-CALLER))
     )
     (defcap SWP|C>ENABLE-SLEEPING (swpair:string)
         @event
+        ;;#31M/M7 fix: same as SWP|C>ENABLE-FROZEN above — owner-only,
+        ;;irreversible.
         (UEV_SleepingLP swpair false)
+        (CAP_Owner swpair)
         (compose-capability (P|GOVERNING-CALLER))
     )
     (defcap SWP|C>DEFINE-PRIMORDIAL-POOL (primordial-pool:string)
@@ -753,18 +817,22 @@
     (defun UR_StoaValue:decimal (swpair:string)
         @doc "STOA pool ledger scalar. Same row existence semantics as other UR_* on SWP|Pairs: \
             \ <read SWP|Pairs swpair …> fails if <swpair> is not a pool. Legacy V2 rows without \
-            \ stoa-value are updated to 0.0 on first read (narrow read returns {})."
+            \ stoa-value (narrow read returns {}) return 0.0 directly, computed fresh on every \
+            \ read — never persisted here. \
+            \ #50L fix: this used to backfill 0.0 into storage on first read as a migration \
+            \ artifact/optimization — a real ungated write as a side effect of a nominal UR_* \
+            \ read, at the caller's own gas expense. Confirmed safe to drop: traced every read \
+            \ of \"stoa-value\" anywhere in the codebase (including cross-module, AQP's FVT) — \
+            \ this function is the only one that ever reads the field directly, so nothing \
+            \ depends on it being physically present in storage. A real price update \
+            \ (<XE_UpdateStoaValue>) still writes the genuine value whenever one actually \
+            \ occurs; genesis pools already seed the field from day one, so this only ever \
+            \ applied to pre-V3 legacy rows anyway."
         (let
             (
                 (temp (read SWP|Pairs swpair ["stoa-value"]))
-                (needs-populate:bool (= temp {}))
-                (v:decimal (if needs-populate 0.0 (at "stoa-value" temp)))
             )
-            (if needs-populate
-                (update SWP|Pairs swpair {"stoa-value": 0.0})
-                true
-            )
-            v
+            (if (= temp {}) 0.0 (at "stoa-value" temp))
         )
     )
     (defun UR_Pools:[string] (pool-category:string)
@@ -868,6 +936,28 @@
         (at "swpair" (read SWP|LP lp-id ["swpair"]))
     )
     ;;{F1}
+    (defun URC_IsMajorPrincipal:bool (token:string)
+        @doc "True if <token> is currently a member of the primordial pool's own \
+            \ token list — the 'major principal' concept: fixed, always exactly \
+            \ OURO/WSTOA/SSTOA in practice (A_DefinePrimordialPool's own capability \
+            \ gate enforces exactly these 3 tokens, always, regardless of which \
+            \ physical pool backs it), never removable or rotatable-away via \
+            \ A_UpdatePrincipal/A_RotatePrincipal — as opposed to any other \
+            \ ('minor') principal, which both freely allow. Returns false (never \
+            \ major) if no primordial pool has been defined yet, or if <token> \
+            \ isn't currently a member of the one that has been — this doesn't \
+            \ require <token> to already be a registered principal at all, callers \
+            \ combine that check separately where it matters."
+        (let
+            (
+                (pp:string (UR_PrimordialPool))
+            )
+            (if (= pp BAR)
+                false
+                (contains token (UR_PoolTokens pp))
+            )
+        )
+    )
     (defun URC_LpCapacity:decimal (swpair:string)
         @doc "Computes the LP Capacity of a Given Swap Pair"
         (let
@@ -1051,6 +1141,14 @@
         )
     )
     (defun UEV_PoolFee (fee:decimal)
+        @doc "Enforces <fee> is a valid pool fee amount. \
+            \ #53L fix: units are per-mille (parts per 1000) — the actual swap math \
+            \ (16_SWPI.pact's <fselp>/<ofs>) treats 1000.0 as the full-fee basis, so \
+            \ e.g. fee=10.0 means 1%. The 320.0 max (32%) is deliberate, not arbitrary: \
+            \ this same bound gates all three fee components a pool can carry — LP fee, \
+            \ special-target fee, and liquid-boost fee — mirrored to the identical cap, \
+            \ so their combined worst case is 320.0*3 = 960 promille, always leaving at \
+            \ least 40 promille (4%) of every swap that fees can never fully consume."
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
@@ -1158,6 +1256,18 @@
     ;;
     ;;{F5}
     (defun A_UpdatePrincipal (principal:string add-or-remove:bool)
+        @doc "Adds <principal> (while under the 7 maximum) or removes it (while at \
+            \ least 2 would remain defined, AND <principal> isn't currently a \
+            \ 'major' principal — #65eL, URC_IsMajorPrincipal). SWPT's storage is \
+            \ principal-agnostic (#21H), so removal of a minor principal is safe \
+            \ — it only affects future SWPI::UEV_Issue principal-anchoring \
+            \ validation, never existing routing. Major principals (currently a \
+            \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) are \
+            \ never removable here regardless of the floor; retiring one requires \
+            \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool). \
+            \ A_RotatePrincipal remains available as an atomic, count-preserving \
+            \ alternative for minor principals — it never touches the floor or \
+            \ cap, but is equally blocked from rotating a major principal away."
         (UEV_IMC)
         (let
             (
@@ -1175,19 +1285,45 @@
                                 {"principals" : (ref-U|LST::UC_AppL pp principal)}
                             )
                         )
-                        (if (= 1 (length pp))
-                            (update SWP|Properties SWP|INFO
-                                {"principals" : [BAR]}
+                        (let
+                            (
+                                (pp-position:integer (at 0 (ref-U|LST::UC_Search pp principal)))
                             )
-                            (let
-                                (
-                                    (pp-position:integer (at 0 (ref-U|LST::UC_Search (UR_Principals) principal)))
-                                )
-                                (update SWP|Properties SWP|INFO
-                                    {"principals" : (ref-U|LST::UC_RemoveItem pp (at pp-position pp))}
-                                )
+                            (update SWP|Properties SWP|INFO
+                                {"principals" : (ref-U|LST::UC_RemoveItem pp (at pp-position pp))}
                             )
                         )
+                    )
+                )
+            )
+        )
+    )
+    (defun A_RotatePrincipal (old:string new:string)
+        @doc "Atomically replaces principal <old> with <new> in one call — the \
+            \ count-preserving alternative to a separate remove-then-add via \
+            \ A_UpdatePrincipal (Fix #14/#21H second follow-up re-allowed standalone \
+            \ removal, floor-gated at 2 remaining; this doc previously claimed \
+            \ removal was disabled entirely, stale since that fix — #65dL). Never \
+            \ interacts with the 7-principal cap either way. Safe with respect to \
+            \ SWPT's routing graph (#21H fix) — SWPT's storage is principal-agnostic, \
+            \ so rotating (or removing) a MINOR principal never orphans anything \
+            \ there; the only effect is on future SWPI::UEV_Issue principal- \
+            \ anchoring validation. <old> being a 'major' principal (currently a \
+            \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) is \
+            \ rejected outright regardless of everything else (#65eL, \
+            \ URC_IsMajorPrincipal) — majors are fixed, retirable only by \
+            \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool)."
+        (UEV_IMC)
+        (with-read SWP|Properties SWP|INFO
+            { "principals" := pp }
+            (with-capability (SWP|C>ROTATE-PRINCIPAL old new)
+                (let
+                    (
+                        (ref-U|LST:module{StringProcessorV1} U|LST)
+                        (pos:integer (at 0 (ref-U|LST::UC_Search pp old)))
+                    )
+                    (update SWP|Properties SWP|INFO
+                        {"principals" : (ref-U|LST::UC_ReplaceAt pp pos new)}
                     )
                 )
             )
@@ -1387,6 +1523,19 @@
     )
     (defun C_ToggleAddOrSwap:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string toggle:bool add-or-swap:bool)
+        @doc "#71L: called directly (cross-module C_->C_) by SWPU::C_ToggleSwapCapability and \
+            \ SWPLC::C_ToggleAddLiquidity, instead of through an XE_* forward entrypoint — \
+            \ intentional, DESIGN-accepted, not an oversight. This function is not a plain \
+            \ toggle write: it bills real IGNIS (ico0), bootstraps LP burn/mint/fee-exemption \
+            \ roles the first time add-liquidity is enabled (ico1-ico4), and — critically — is \
+            \ the ONLY place in this call chain that enforces pool ownership, via \
+            \ SWP|C>ADD-OR-SWAP's composed CAP_Owner. The existing XE_CanAddOrSwapToggle does \
+            \ none of that (only UEV_IMC + a raw update, no ownership check) and would need to \
+            \ replicate all of the above to be a safe drop-in replacement for either caller — \
+            \ neither SWPU::SPWU|C>TOGGLE-SWAP nor SWPLC::P|SWPLC|CALLER re-derives ownership \
+            \ independently, so rerouting through the bare XE_* today would silently strip \
+            \ authorization. Left as-is; a properly-capped XE_* replacement is real design work, \
+            \ not a mechanical rename — deferred, not attempted here."
         (UEV_IMC)
         (let
             (
@@ -1578,6 +1727,11 @@
         )
     )
     (defun XE_Issue:string (account:string pool-tokens:[object{SwapperV3.PoolTokens}] token-lp:string fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @doc "Forward writer: inserts the new SWP|Pairs row, registers the LP tracker \
+            \ (C9 fix), saves the pool, and deploys token accounts. \
+            \ #52L fix (R4): returns the newly-constructed <swpair> ID — callers \
+            \ (e.g. SWPI::C_Issue, MTX-SWP::MTX|C_Issue) need it back to finish \
+            \ building their own response/continue the issuance flow."
         (UEV_IMC)
         (let
             (
@@ -1643,16 +1797,14 @@
         )
     )
     (defun XE_CanAddOrSwapToggle (swpair:string toggle:bool add-or-swap:bool)
+        @doc "#55L fix: removed a redundant second guard check that used to sit here — \
+            \ it re-ran UEV_Any against [local-guard] + (P|UR_IMP), the exact same list \
+            \ UEV_IMC (above) already checked, plus one extra local guard. Since UEV_IMC \
+            \ is a bare statement (not wrapped in try) and aborts the whole tx on \
+            \ failure, reaching this point already proves (P|UR_IMP) alone contains a \
+            \ passing guard — adding local-guard to an already-guaranteed-passing OR-set \
+            \ can never change the outcome. Pure dead weight, safely removed."
         (UEV_IMC)
-        (let
-            (
-                (ref-U|G:module{OuronetGuardsV1} U|G)
-                (local-guard:guard (create-capability-guard (SWP|C>ADD-OR-SWAP swpair toggle add-or-swap)))
-                (mg:[guard] (P|UR_IMP))
-                (ag:[guard] (+ [local-guard] mg))
-            )
-            (ref-U|G::UEV_Any ag)
-        )
         (if add-or-swap
             (update SWP|Pairs swpair
                 {"can-add"                      : toggle}
@@ -1720,6 +1872,12 @@
         )
     )
     (defun XI_ToggleFeeLock:[decimal] (swpair:string toggle:bool)
+        @doc "Writes the new fee-lock state. \
+            \ #52L fix (R4): returns [virtual-gas-cost(IGNIS) native-gas-cost(KDA)] — \
+            \ [0.0 0.0] when locking (toggle=true, free); the real ATS unlock price \
+            \ (U|ATS::UC_UnlockPrice) when unlocking (toggle=false), scaled by this \
+            \ pool's current <UR_FeeUnlocks> count. The caller (C_ToggleFeeLock) bills \
+            \ this back to the patron."
         (require-capability (SWP|C>TG_FEE-LOCK swpair toggle))
         (let
             (

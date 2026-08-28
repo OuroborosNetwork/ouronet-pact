@@ -688,3 +688,1518 @@ tree — confirmed via `git stash` on a clean checkout before touching anything)
 
 **Status:** FIXED ✅ AND PROVEN ✅ (all three findings, each independently adversarially reproduced
 pre-fix and reconfirmed post-fix). Awaiting Round III re-verify.
+
+---
+
+## Fix #11 — C4 (#11C): `UEV_Issue` never validates individual pool weights are non-zero
+
+**Owner direction:** floor at 0.1, matching the bound already decided for `SWP|S>WEIGHTS` (C7/#8C).
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`, `UEV_Issue`:**
+```diff
+-            (map
+-                (lambda
+-                    (w:decimal)
+-                    (= (floor w fee-precision) w)
+-                )
+-                weights
+-            )
++            (map
++                (lambda
++                    (w:decimal)
++                    (enforce
++                        (fold (and) true [(= (floor w fee-precision) w) (>= w 0.1)])
++                        (format "Weight {} must respect fee precision and be at least 0.1" [w])
++                    )
++                )
++                weights
++            )
+```
+The precision check already existed but was computed and discarded (dead validation, same pattern as
+H5/#23H — fixing this map in place closes both, it's the one place the check lives). No interface change.
+
+**Adversarially proven, live — new `SWP|TX 030` in `[6.2+3]_DPTF-SWP_Issuance-Only.repl`.** Attempted
+issuing `W|OURO|CU|RU` (previously unpooled tokens) with `[0.9, 0.1, 0.0]` and `[0.85, 0.1, 0.05]`.
+Temporarily reverted only this map to the original dead-validation form, reran:
+- `0.0` weight still failed even reverted (a real division-by-zero elsewhere already catches the literal-
+  zero case, just with no clean error).
+- `0.05` weight — below the floor, not literally zero — **succeeded and issued a real, live,
+  badly-conditioned pool.** This is the sharper part of the bug: it never crashes, it just silently exists
+  in an exploitable state, with the original finding's "div-by-zero" framing only covering the exact-zero
+  half of it.
+
+Restored the fix: both bad-weight attempts correctly rejected; a legitimate `[0.5, 0.3, 0.2]` issuance
+still succeeds end-to-end (real pool + LP token minted). Full suite: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — also closes H5/#23H's duplicate instance in this same function.
+Awaiting Round III re-verify.
+
+---
+
+## Fix #12 — H3 (#21H): SWPT redesigned as a principal-agnostic adjacency graph (SwapTracerV1 → V2)
+
+**Owner direction:** principals should be replace-only (never bare-removed), capped at 7. Working
+through what "replace" actually requires led to the real fix: principal-based partitioning of the
+Tracer served no remaining purpose once routing already operates over the full swpair universe
+(post-#13C/#19H) — it only added fragility (retiring principal's entries orphan on removal *or*
+replace) and real scaling cost (every read concatenates+dedupes every principal bucket). Full redesign,
+not a patch.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`, complete rewrite of the schema/table/functions
+section (governance/policy blocks unchanged):**
+- `SwapTracerV1` → `SwapTracerV2`. `Edges{principal, swpairs}` / `SWPT|Tracer` removed entirely.
+  New `NeighbourEdge{token, swpairs}` / `SWPT|Graph` — plain token adjacency, no principal anywhere.
+- `URC_TokenNeighbours`, `URC_Edges`, `URC_EdgesActive`, `URC_ComputeGraphPath`, `URC_AllGraphPaths`,
+  `URC_MakeGraph` all drop their `principal-lst` parameter — real interface simplification.
+- `URC_MakeGraph`'s #13C/#19H active-edge-filter logic and `URC_ComputeGraphPath`'s #20H empty-result
+  guard carry over structurally unchanged — only the underlying neighbour/edge lookup changed.
+- New `XE_UpdateGraph(swpair)` (replaces `XE_MultiPathTracer`): for every ordered pair of tokens in
+  the swpair, idempotently appends the swpair to each token's neighbour entry for the other.
+- New internal `XI_UpdateGraphForSwpair`/`XI_UpdatePair`, `UC_FindNeighbourIndex` helper.
+
+**`1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`:** `URCX_Hopper`, `URC_BestEdge`, `URC_BestEdgeFiltered`,
+`C_Issue` updated to the simplified `SwapTracerV2` calls (drop principal fetching/threading). New
+`A_RebuildGraph()` — one-time migration/backfill utility, walks `SWP::URC_Swpairs()` and calls
+`XE_UpdateGraph` for every existing pool, exactly mirroring what normal issuance already does. Deliberately
+placed here rather than in `SWPT` — `SWPT` deploys before `SWP` and can't hold a compile-time reference to
+`SwapperV3` (a real load failure caught this, not anticipated); `SWPI` already deploys after both. Wrapped
+in `(with-capability (P|SECURE-CALLER))` — a second real issue caught by testing: `XE_UpdateGraph`'s
+`UEV_IMC` check verifies the specific `P|SWPI|CALLER` capability is actively composed, not merely that the
+call originates from SWPI's module code; `C_Issue` satisfies it via its own cap chain, a bare
+`GOV|SWPI_ADMIN`-gated function does not.
+
+**`1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact`:** Step 3 updated to the simplified `XE_UpdateGraph` call.
+
+**Interface implication:** `SwapTracerV1` → `SwapTracerV2`, a real breaking signature change — but
+verified via full grep before starting that no other module's *interface* references `SwapTracerV1`
+(only internal `16_SWPI.pact`/`20_MTX-SWP.pact` function bodies do) — so `SwapperIssueV3` and
+`SwapperMtxV3` needed **zero** interface changes, only module-body updates.
+
+**Adversarially proven, live:**
+- Every prior #13C/#19H/#20H/#11C adversarial proof (`SWP|TX 026/028/029/030`) re-run against the full
+  redesign — byte-identical results to before the storage change.
+- New `SWP|TX 031`: ran `SWPI::A_RebuildGraph` against already-current state; confirmed a genuinely
+  non-empty real route (`OURO→AG`) is byte-identical before and after — proving the migration is safe
+  to re-run without duplicating or corrupting anything.
+- Full suite: exit 0, 0 `FAILURE`, `Load successful`, re-run clean after both fixes discovered mid-build
+  (the deploy-order failure, and the `UEV_IMC` capability-scope failure).
+
+**Status:** FIXED ✅ AND PROVEN ✅. The owner's separate "replace-only, capped at 7" policy layer on
+`SWP::A_UpdatePrincipal` is not yet built — no longer required to close #21H (orphaning is now
+structurally impossible regardless of remove vs. replace), but still wanted for operational discipline.
+Awaiting Round III re-verify.
+
+---
+
+## Fix #13 — H3/#21H follow-up: cap principals at 7, add `A_RotatePrincipal`
+
+**Owner direction:** cap at 7 (mirrors `UEV_Issue`'s existing 2–7 pool-token bound); standalone removal
+stays permanently disabled; add an atomic rotate as the only way to retire a principal.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:**
+- `SWP|C>PRINCIPAL`: added the 7-cap enforce on the add path, plus a not-already-present guard
+  (`A_UpdatePrincipal` previously had no duplicate-add protection at all — closed as in-scope hardening).
+- `A_UpdatePrincipal`: dead remove-branch code removed (unreachable since the defcap already
+  unconditionally rejects `add-or-remove=false`).
+- New `SWP|C>ROTATE-PRINCIPAL` + `A_RotatePrincipal(old, new)`: atomic, count-preserving replacement.
+  Both additive to `SwapperV3` — no version bump.
+- `1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact`: new `SWP|A_RotatePrincipal` Talos wrapper, additive to
+  `TalosStageOne_AdminV1`.
+
+**Adversarially proven, live — `SWP|TX 032-035`:** cap and standalone-removal guards reverted (whole
+guard block removed) and reconfirmed both unexpectedly succeed pre-fix — an 8th principal added, a
+standalone removal completed — restored, reconfirmed both correctly rejected. Rotate's three rejection
+cases proven (non-principal, already-existing target, self-rotation). End-to-end proof: issued a real
+pool (`P|HG|TE`) anchored to a freshly-added principal, confirmed a genuinely non-empty route, rotated
+`HG → TI`, confirmed the identical route survives byte-for-byte — proving #21H's principal-agnostic
+storage makes rotation harmless in practice, not just on paper. Confirmed a new pool can no longer anchor
+to the retired principal but can anchor to the new one. Full suite: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #14 — H3/#21H second follow-up: re-allow removal with a 2-minimum floor, split rotate-into-self
+
+**Owner refinement:** rotate-into-self needs its own distinct enforce (not bundled), gated by the same
+admin capability as `A_UpdatePrincipal` (already true — verified, not assumed). Standalone removal
+should be re-allowed (safe now, post-#21H storage redesign) but never below 2 principals defined.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:**
+- `SWP|C>ROTATE-PRINCIPAL`: split the combined `fold (and) [...]` into two separate enforces — this
+  also fixes a convention violation (2 conditions should be `(enforce (and p q) msg)`, not `fold`).
+- `SWP|C>PRINCIPAL`: removal re-enabled, `(enforce (> current-count 2) ...)` on the remove path.
+  `(let () ...)` (empty bindings, for sequencing two enforces per `if` branch) isn't valid in this
+  parser — used `(and (enforce ...) (enforce ...))` instead.
+- `A_UpdatePrincipal`: removal write-logic restored (deleted as dead code in Fix #12, live again now
+  that the defcap conditionally allows it).
+- `1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact`: docstrings corrected.
+
+**Adversarially proven, live — `SWP|TX 033` rewritten:** drained 5 disposable test principals (7 → 2,
+never touching the 2 genesis principals other tests need), proving removal works; removing `OURO` at
+count=2 correctly rejected; restored to 7. Floor guard reverted (`> 0`) and reconfirmed the same removal
+unexpectedly succeeds pre-fix; restored, reconfirmed rejected. Full suite: exit 0, 0 `FAILURE`,
+`Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #15 — H1 (#24H): `UC_ComputeD`/`UC_ComputeY`/`UC_ComputeInverseY` iteration count bumped to 12
+
+**Owner direction:** measure first, don't trust the audit doc's number or memory of prior testing.
+Measured `UC_ComputeD` (6 iter, as coded) against manual references at 10/20/50/100/255 iterations, at
+the finding's own skew (`X=[500000,500,500]`, `A=85`): confirmed exactly — `0.0078` absolute error at 6
+iterations, fully converged (bit-identical) by iteration 10. Same check on `UC_ComputeY`/
+`UC_ComputeInverseY` (11 iter): already fully converged at 11 — no shortfall found there.
+
+A "convergence-break" (early-exit once `|Dₙ₊₁-Dₙ| ≤ epsilon`) was proposed and correctly rejected —
+Pact has no dynamic-length loop; every iteration count must be fixed in advance. Owner direction instead:
+bump all three to 12 uniformly (2 iterations of margin past `UC_ComputeD`'s measured convergence point;
+pure margin for the other two), after confirming gas cost.
+
+**Gas measured directly (`env-gas`, isolated per function), not estimated:**
+- `UC_ComputeD`: 58 → 116 gas (+58, iterations roughly doubled 6→12).
+- `UC_ComputeY`'s fold: 73 → 79 gas (+6, one extra iteration).
+- `UC_ComputeInverseY`'s fold: → 82 gas (+6, same shape).
+- Total added cost per stable swap: **flat +64 gas** (one `UC_ComputeD` call + one `UC_ComputeY`/
+  `UC_ComputeInverseY` call), fixed regardless of pool state.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact`:**
+```diff
+ UC_ComputeD:       (enumerate 0 5)  -> (enumerate 0 11)  ;; 6 -> 12 iterations
+ UC_ComputeY:        (enumerate 0 10) -> (enumerate 0 11)  ;; 11 -> 12 iterations
+ UC_ComputeInverseY: (enumerate 0 10) -> (enumerate 0 11)  ;; 11 -> 12 iterations
+```
+`UC_ComputeD`'s docstring corrected — previously claimed "5 fixed iterations" while the code ran 6 (a
+pre-existing doc/code mismatch); now documents 12, the measured convergence point, and explains why no
+adaptive/dynamic loop is possible in Pact.
+
+**Adversarially proven, live — new `SWP|TX 036` in `[6.2+3]_DPTF-SWP_Issuance-Only.repl`:** asserts
+`UC_ComputeD` at the exact skew that exposed the gap matches a 100-iteration reference exactly (`abs
+difference = 0.0`). Reverted `UC_ComputeD` alone back to 6 iterations and reconfirmed the identical
+`0.0078` gap reproduces to the last digit (`0.007789943067608829898242`); restored, reconfirmed exact
+convergence. Full suite: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #16 — M9 (#26M): slippage upper bound commented out (not deleted), floor-only for exact-input swaps
+
+**Owner direction:** wanted to confirm industry standard before deciding. Researched 5 protocols in
+parallel (Uniswap V2/V3, Curve, Balancer, SushiSwap, PancakeSwap) plus a precedent search — zero
+counter-examples anywhere for a symmetric bound on exact-input swaps; every one is floor-only, and
+"positive slippage" (beating the quote) is industry-treated as value to capture, never grounds to revert.
+Direction: comment out the max check, don't delete it, be careful not to disturb the floor.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact`, both consumers of `UC_SlippageMinMax`** (confirmed
+via full-codebase grep these are the only two — `UC_SlippageMinMax` itself untouched):
+- `XI_SmartSwapRouter`: `(and (>= feeless-final min) (<= feeless-final max))` → `(<= feeless-final max)`
+  commented out with the industry-research rationale and exact restore instructions.
+- `XI|KDA-PID_Swap`: same shape, `max-toa` in place of `feeless-final`.
+
+**Real Pact 5 bug caught by testing with actual swap execution, not just load:** first attempt kept the
+`and` wrapper around the single remaining condition — `(and (>= feeless-final min))` parses and loads
+fine, but fails at runtime ("Expected Pact Value, got closure or table reference") the instant a real swap
+executes through it. Only surfaced by running the full `Z.repl` pipeline (Stage 1 + Stage 2) for real swap
+execution — the issuance-only suite never exercises this code path at all. Fixed by dropping the
+now-redundant `and` entirely; a single condition is a plain `if`, matching this codebase's own convention.
+
+**Adversarially proven, live — new `SWP|TX 037`, run against the full `Z.repl` pipeline:** constructed a
+slippage object with `expected-output-amount` deliberately understated to 80% of the real swap output and
+a tight 1% tolerance, guaranteeing the real output clears the floor but blows through the old ceiling.
+Post-fix: swap succeeds (`38.89` output vs. the old `~32.19` ceiling). Reverted the `XI|KDA-PID_Swap` site
+and reconfirmed the exact pre-fix rejection (`"...out of Slippage bounds min of 31.55 - max of
+32.19..."`, matching the real `39.84` output exceeding that max); restored, reconfirmed success. Full
+`Z.repl`: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #17 — M13 (#27M): SmartSwap post-swap pool-refresh set now uses the swap's own traversed edges
+
+**Owner direction:** demonstrate Option B specifically — force the old code to visibly pick the wrong
+pool, then prove the new code picks correctly in the identical scenario, rather than relying on the
+correctness-by-construction argument alone. Suggested issuing new pools with engineered amounts to make
+the scenario deterministic.
+
+**Fix — `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`, both Smart Swap functions:**
+- `SWP|C_SmartSwapNoSlippage`: deleted the post-swap `path-edges`/`URC_Hopper` recompute; its refresh
+  loop now iterates `(at 3 out)` — the swap's own recorded `distinct-edges` — matching
+  `SmartSwapWithSlippage`'s already-correct pattern.
+- `SWP|C_SmartSwapWithSlippage`: deleted the same `path-edges`/`URC_Hopper` binding, confirmed dead
+  (its loop already used `(at 3 out)`) — pure gas cleanup, zero behavior change.
+
+**Adversarially proven, live — new `SWP|TX 016b`-`016g` in `[6.3]_SWP.repl`:** issued two brand-new,
+fully isolated parallel pools — `P|OURO|TSTY` (constant-product, 1000/2000 reserves) and `W|OURO|TSTY`
+(equal-weighted `[0.5 0.5]`, mathematically identical math, 1000/1500 reserves) — sized so a 1500-OURO
+swap deterministically flips BFS's best-edge pick: `P` wins pre-swap (feeless 1200 vs 900), but the
+swap's own price impact drops `P` below `Q` for the identical amount post-swap (300 vs 900).
+
+Reverted the fix (temporarily, in-place): real swap executed through `P|OURO|TSTY` (1500 OURO → 1193.59
+TSTY), but the old code's post-swap recompute picked `W|OURO|TSTY` instead — reproduced exactly:
+`P|OURO|TSTY`'s cached StoaValue stayed stale at `0.0` (the actually-swapped pool never refreshed) while
+`W|OURO|TSTY`'s cache was spuriously bumped to `2544.17...` despite never being touched.
+
+Restored the fix: `P|OURO|TSTY`'s cache correctly became `5130.80...` (exact match to a fresh recompute);
+`W|OURO|TSTY`'s cache correctly stayed at `0.0`. Five `expect` assertions pin this down (swap actually
+executed; actually-swapped pool's cache matches fresh; that cache genuinely moved, not a vacuous pass;
+untouched pool's cache stays put; that pool's true value is genuinely nonzero) — all 5 pass. Full
+`[6.2]`/`[6.3]` suite (real execution path): exit 0, 0 `FAILURE`. Default issuance-only regression: exit
+0, 0 `FAILURE` (zero interference — new transactions live only in the full-suite file). Full `Z.repl`
+(Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #18 — M7 (#31M): `C_EnableFrozenLP`/`C_EnableSleepingLP` now require pool-owner authorization
+
+**Owner direction:** Sleeping/Frozen LP must only be triggerable by the pool owner, and it's irreversible
+by design — if the code didn't enforce owner-only, it needs to be fixed.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** added `(CAP_Owner swpair)` to both
+`SWP|C>ENABLE-FROZEN` and `SWP|C>ENABLE-SLEEPING`, matching the module's own established pattern for
+every other per-pool admin lever (`SWP|S>RT_OWN`, `SWP|S>RT_CAN-CHANGE`). Confirmed the irreversibility
+half was already correct (no code path ever writes either flag back to `false`) — only the
+authorization gate was missing.
+
+**Adversarially proven, live — new `SWP|TX 032a`/`032b` in `[6.3]_SWP.repl`:** a non-owner signer
+(`KST.EMMA`) attempting `SWP|C_EnableFrozenLP`/`SWP|C_EnableSleepingLP` on a pool owned by `KST.ANHD` is
+rejected, and — the decisive check — the flags genuinely stay `false` (no partial mutation). The true
+owner's identical calls succeed. Reverted the fix in-place: the flags flip to `true` even under the
+non-owner signer, reproducing the exact vulnerability (`XI_Enable*` writes unconditionally before any
+other check). Restored, reconfirmed clean. Full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only
+regression: exit 0, 0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #19 — M2 (#34M): Smart Swap now compares up to 3 candidate routes by actual payout, not just discovery order
+
+**Owner direction:** was sure a cheapest-route mechanism existed; once shown precisely that it only
+covers picking the best pool *within* a hop, not comparing whole routes, asked for a fix proven in REPL.
+
+**Fix:**
+- `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` — new `URC_ComputeAlternateRoutes` (additive to
+  `SwapTracerV2`): finds up to 3 edge-disjoint candidate routes by re-running `URC_ComputeGraphPath` with
+  each previously-found route's edges excluded, forcing genuinely different routes. Fixed cap of 3 (Pact
+  has no dynamic-length/convergence loops). New helpers `URC_RouteEdges`/`UC_ExcludeEdges` support it.
+- `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact` — `URCX_Hopper` split into `URCX_HopperForNodes` (the
+  existing per-hop best-edge computation, now taking an already-known node path) and a new outer
+  `URCX_Hopper` that computes every candidate route's Hopper object and picks the highest-output one via
+  new `UC_BestHopper`. `URC_Hopper`/`URC_HopperActive`'s public signatures unchanged.
+- Defensive guard added in `URC_ComputeAlternateRoutes`: an exhausted (empty) candidate universe
+  short-circuits to `[BAR]` instead of calling `URC_ComputeGraphPath`, whose downstream graph-building
+  crashes on an empty list (M3, a separate tracked finding) rather than returning cleanly — this fix's own
+  exclusion-based retries are the first caller able to legitimately produce that empty-universe case.
+
+**Adversarially proven, live — new `SWP|TX 032c`-`032g` in `[6.3]_SWP.repl`:** diamond topology
+`OURO -> {TSTC, TSTD} -> TSTZ`, TSTC-side issued first (worse route, discovered first by BFS): thin
+second hop `TSTC/TSTZ` (2000/2000) vs. deep second hop `TSTD/TSTZ` (200000/200000). A 10,000-OURO swap
+delivers **4906.02 TSTZ** with the fix in place. Reverted the fix (single-first-found-route restored):
+the identical swap delivers only **1989.96 TSTZ** — a genuine ~2.5x worse outcome, confirming the old code
+takes the bad route. Restored, reconfirmed 4906.02. Three `expect` assertions pin this down. Full
+`[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only regression: exit 0, 0 `FAILURE`. Full `Z.repl`
+(Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #20 — #34bM: `UEV_Issue`'s Stable-pool anchoring check now requires direct principal adjacency
+
+**Owner direction:** discovered off-cycle, during #34M follow-up discussion. Stated design precisely: a
+Stable pool's first token must either be a principal itself, or be directly pooled (one hop, in an
+existing pool) with one — not transitively reachable through a chain of non-principal tokens — and that
+directly-anchored token must be in the pool's first position specifically.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`:** replaced a full multi-hop `URC_Hopper` BFS search
+targeting `DLK` specifically with a direct-neighbour check — `SWPT::URC_TokenNeighbours(first-pool-token)`
+(one hop, unfiltered by active status) against the *full* current `UR_Principals()` list. Fixes both
+deviations from stated design at once: hop-count (direct-only, not transitive) and target (any current
+principal, not one hardcoded token).
+
+**A pre-existing test fixture broke and was repaired, not worked around:**
+`[6.2+3]_DPTF-SWP_Issuance-Only.repl`'s `AG→AL→AU→BI→CO` chain (built for #13C/#19H/#20H's multi-hop BFS
+tests) had been relying on the exact bug being fixed here to construct itself. Scoped precisely (via a
+background investigation) before touching it: the *only* fixture in either test file affected. Fixed by
+giving `AL`/`AU`/`BI` each a throwaway, never-swap-enabled direct-`OURO` pool (`SWP|TX 024a2`) — genuinely
+satisfies the corrected rule (each link really is now directly principal-adjacent) without the BFS tests
+(which query `URC_HopperActive`, active-only) ever seeing the throwaway pools, so the chain topology those
+tests exercise is byte-for-byte unchanged.
+
+**Adversarially proven, live — new `SWP|TX 032h`-`032k` in `[6.3]_SWP.repl`:** `TSTN` directly pooled with
+`OURO`; `TSTM` pooled only with `TSTN` (2 hops from any principal, never direct). `S|TSTM|TSTQ` (`TSTM`
+first) is correctly rejected with the fix active. Reverted in-place: the identical call succeeds
+(`"expected failure, got result"`) — exact reproduction of the old false-accept. Restored, reconfirmed
+rejection. Full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only regression (including the
+repaired chain and all #13C/#19H/#20H assertions passing unchanged): exit 0, 0 `FAILURE`. Full `Z.repl`
+(Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #21 — M2 / #34 (master issue, Phases 6-13): dirty-read path-injection redesign — closes the
+      real gas-ceiling crisis Fix #19 uncovered, and delivers the originally-requested exhaustive search
+
+**Owner direction:** Fix #19's own worst-case measurement (Phase 2-5, P0.5/P0.6 in the HANDOFF doc)
+found that real worst-case `CC_SmartSwap` execution — with Liquid Boost, a supposedly-always-on
+production feature — costs **6-7 million gas at realistic scale (~100 active pools) against the real
+~2,000,000 Stoa ceiling**, growing worse as the protocol's pool count grows (new pools must anchor to
+principal tokens, which become search hubs). Owner directed the whole thing — best-of-3's own
+limitations, the gas-ceiling crisis, and the fix — be consolidated into this one issue, executed
+phase-by-phase with explicit go-ahead at each step, full REPL verification (not load-testing — real
+pass/fail assertions) at every stage, adversarial revert-and-reproduce proof for every fix. Full
+13-phase plan, every design decision, every dead end: `OuronetInformational/HANDOFF-swp-exhaustive-path-search.md`.
+Finished-mechanism write-up + client orchestration guide: `OuronetInformational/HANDOFF-swp-smartswap-bundle-architecture.md`.
+
+**The redesign (Phases 6-10, the dirty-read bundle mechanism) — push all path discovery off-chain:**
+- `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` — `SWPT|PathCache` table (+ `PathCacheRow` on the
+  `SwapTracerV2` interface) — a shared, amount-agnostic X→target path cache. `URC_ReadPathCache`
+  (reversed-lookup read, checks both key directions before concluding a miss), `URC_EdgeConnects` /
+  `URC_ValidatePathStructure` (exists-only structural + depth-cap validation, re-run on every read —
+  even cache hits — never trusted blindly), `XI_RegisterPath` (first-write-wins, self-verifying,
+  checks both directions before writing regardless of caller claims) + its proper cross-module
+  forward-writer `XE_RegisterPath` (mirrors the established `XE_UpdateGraph` pattern — a caller-side
+  grant of `SWPT.SECURE` directly was investigated and rejected: this codebase's own
+  `Audit/ATS/ROUND-01-FINDINGS.md` proves that pattern is unsafe for a `true`-bodied capability).
+- `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact` — `URC_ValidatePathActive` (wraps SWPT's structural
+  check with the active-required `can-swap` pass); `URC_HopperForKnownRoute` (feeless quote over a
+  caller-supplied route's *exact* edges, not a re-derived "best" edge — keeps the slippage floor
+  check consistent with what real execution will actually walk).
+- `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact` — `SmartSwapPathBundle`/`SwapRoute`/`CachedPathOrMiss`/
+  `TokenPathPair` schemas; existing self-searching entrypoints renamed `CC_SmartSwap` /
+  `SWP|CC_SmartSwap{With,No}Slippage` (zero behavior change, kept as the fallback/comparison
+  baseline); new bundle-based `SWPU::C_SmartSwap` + `XI_SmartSwapExplicitRoute` +
+  `SWPU|X>SMART-SWAP-EXPLICIT-ROUTE` defcap (validates the whole bundle's route via **one** cheap
+  `URC_ValidatePathActive` call — no full-graph search at the defcap layer at all, the actual
+  mechanism behind the gas reduction); `boost-path` threaded through `XI_SmartSwapCore` /
+  `XI_LiquidIndexPump` / `XI_RawLiquidPump` via a `NO_PATH` sentinel so the self-searching chain is
+  behaviorally untouched; `URC_PoolStoaValueFromPath` / `URC_ComputeStoaValueResults` (the "dumb
+  writer" pricing computation, reproducing `URC_PoolValue`'s exact formula from bundle data instead
+  of a fresh search); `XI_RegisterBundlePaths` (cache self-warming, re-validates every path from
+  scratch, never trusts the bundle's `is-new` claim).
+- `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact` — `SWP|C_SmartSwapWithSlippage` /
+  `SWP|C_SmartSwapNoSlippage` (the bundle-based Talos entrypoints) with the real dumb-writer (`map`
+  straight into `XE_UpdateStoaValue`, **zero** `URC_PoolValue` calls at the Talos layer for this
+  path — the mechanism that removes what Phase 2-5 found was 56.9% of the old total cost).
+- **Two real bugs fixed as a natural byproduct, both with adversarial revert-reproduce proof:**
+  `XI_RawLiquidPump`'s long-standing crash (unguarded index into a possibly-empty search result —
+  actually *two* bugs, the second in its caller `XI_LiquidIndexPump`, only surfacing once the first
+  was fixed and execution could reach it); a doc-comment inconsistency in the bundle schemas caught
+  *before* code was built against it (`stoa-paths` targets DWK, not DLK like `boost-path` — traced
+  `URC_PoolValue`'s real implementation rather than assuming).
+
+**The exhaustive search itself (Phases 11-12, the originally-requested "genuine cheapest path"):**
+- `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` — `URC_ComputeAllRoutes(input, output, swpairs,
+  max-attempts)`: a real `fold` over up to `max-attempts` (not this issue's own Fix #19's fixed
+  cap-of-3), same edge-exclusion-per-found-route mechanism, `MAX_ATTEMPTS_HARD_CAP` (50,000)
+  clamping regardless of caller request, depth cap (`MAX_ROUTE_NODES = 7`) enforced as a documented
+  post-discovery filter (not baked into the shared `U|BFS` utility — a deliberate scope decision,
+  since this function is dirty-read-only and the efficiency concern that preference exists for
+  doesn't apply here).
+- `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact` — `URC_HopperExhaustive`, mirroring `URCX_Hopper`'s
+  shape, reusing `URCX_HopperForNodes`/`UC_BestHopper` (this same Fix #19's own machinery)
+  completely unchanged.
+
+**Adversarially proven, live — permanent regression across `[6.3]_SWP.repl`:**
+- **Gas, the headline number:** same worst-case swap, same ~102-active-pool topology —
+  `CC_SmartSwap` (self-searching): **7,145,298 gas**. `C_SmartSwap` (bundle-based): **385,749 gas,
+  397,043 including cache-warming writes — an 18.5x reduction**, safely under the real ceiling.
+  Both confirmed executing the identical real 6-hop/6-pool route, not a shortcut (`SWP|TX 032z2` /
+  `032z6`).
+- **Malformed-bundle adversarial proof (`SWP|TX 032z8`):** wrong-endpoint route, depth-cap
+  violation, fabricated non-existent pool, and a real-but-`can-swap=false` pool — all four correctly
+  abort the whole transaction (`expect-failure`) before any state changes. A fabricated boost-path
+  and a fabricated stoa-path entry — both correctly degrade gracefully instead (swap still
+  completes, checked against the actual returned string, not a placebo assertion).
+- **Cache self-warming (`SWP|TX 032z6`/`032z7`):** a genuinely-new path gets registered and reads
+  back correctly (reversed-lookup); a natural depth-cap rejection (the P2-scale topology's real
+  `W7→DLK` route is genuinely 8 hops) correctly skips registration — caught as a real finding, not
+  assumed, and confirmed to be the depth-cap safety mechanism working as designed, not a bug.
+- **Exhaustive search, closing P4.1 (open since the original Round I sweep) — `SWP|TX 049`-`052`:**
+  extended the Fix #19 diamond topology with 2 more routes (issued last, so best-of-3 structurally
+  cannot see the 4th). Measured empirically (a first sizing attempt was wrong, caught by isolating
+  each candidate route's own value before asserting anything): for a 100 OURO test, best-of-3 picks
+  195.16, the exhaustive search finds and picks 784.27 — a real case where the true-best route is
+  provably outside best-of-3's own reach. Also proves the single-pool-universe edge case (exactly 1
+  route when connected, exactly 0 when not, no crash).
+- **Realistic-scale measurement (`SWP|TX 053`):** `URC_ComputeAllRoutes`'s own cost/candidate-count
+  at full ~104-pool scale — sub-linear growth with background pool count; the early-exit
+  short-circuit confirmed working (extra `max-attempts` beyond natural exhaustion cost almost
+  nothing more). Go/no-go: tractable — this function is dirty-read-only, so none of these numbers
+  ever compete against the real paid-gas ceiling.
+- Full `[6.2]`+`[6.3]` suite, default issuance-only regression, and full `Z.repl` (Stage 1 + Stage
+  2) all exit 0, 0 `FAILURE` — reconfirmed after every phase, not just at the end.
+
+**Not yet built, explicitly scoped out and tracked, not silently dropped:** exhaustive-search route
+discovery still needs to actually feed `swap-route` for a real client (currently `CC_SmartSwap`'s
+`URC_HopperActive` best-of-3 remains the *production default* discovery mechanism; `C_SmartSwap`'s
+bundle can be filled by either). Cache self-warming and the new bundle-based path coexist with the
+`CC_`-renamed originals deliberately — whether `CC_` is ever fully retired is an explicit open
+decision, not made here.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — all 13 phases of the consolidated plan complete, 2026-08-22.
+Awaiting Round III re-verify.
+
+---
+
+## Fix #22 — M5 (#36M): `SWPI::C_Issue` and `MTX-SWP::MTX|C_Issue` now share one write-sequence chokepoint
+
+**Owner direction:** use a single shared core for the write sequence, called from both `C_Issue` and
+`MTX|C_Issue`. Multi-step issuance (`MTX|C_Issue`) is now considered historical/observational —
+single-tx issuance is always safely under the real ~2,000,000 gas ceiling (per this same session's #34
+gas work) — but the historical path stays live and must call the same shared core, not its own copy.
+
+**Feasibility confirmed before building:** a `defpact` `step` is ordinary Pact code — it can freely call
+cross-module functions, including other `UEV_IMC`-gated `XE_*` entrypoints, exactly like non-defpact
+code. Proven by pre-existing code already in `MTX|C_Issue`'s own Step 3 (`ref-DPTF::XE_IssueLP`,
+`ref-SWP::XE_Issue`, `ref-BRD::XE_Issue`, `ref-SWPT::XE_UpdateGraph` — all cross-module, all already
+working, all unmodified by this fix) before any new call was added.
+
+**Fix:**
+- `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact` — new `XE_IssueWrite` (forward-module entrypoint, added
+  to the `SwapperIssueV3` interface): the ONE write sequence (mint LP token, register the pool,
+  transfer pool tokens in, mint genesis LP supply, transfer LP out, register the swap-tracer graph
+  edge). Returns `[swpair token-lp ico-lp ico-transfer-in ico-mint ico-transfer-out]` — a wider list,
+  not an `OutputCumulator` (this codebase's `XE_*` convention: the forward module's own `C_` composes
+  IGNIS, not this function) — so `C_Issue` can still aggregate every sub-call's own cumulator into its
+  single billed response exactly as before, while `MTX|C_Issue`'s Step 3 (already billed separately, in
+  its own Step 2) takes just `swpair`/`token-lp` and ignores the rest. New `SWPI|XE>ISSUE-WRITE` local
+  cap (no checks beyond `UEV_IMC` — real validation already ran in whichever caller's own defcap/Step 1
+  got here first). New named constant `GENESIS_LP_SUPPLY` (`10000000.0`) replaces the bare literal that
+  was independently duplicated in both callers' own write sequences. `C_Issue` itself rewritten to
+  delegate to `XE_IssueWrite` instead of inlining the sequence.
+- `1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact` — `MTX|C_Issue`'s Step 3 rewritten to call
+  `ref-SWPI::XE_IssueWrite` instead of independently reimplementing the sequence.
+- `1_SOVEREIGN/STAGE_01/2_Core/20_MTX-SWP.pact`, `P|A_Define` — genuine pre-existing gap found and
+  fixed while wiring the new cross-module call: `UEV_IMC` (the gate `XE_IssueWrite` opens with) checks
+  a per-module "Implementing Module Policy" allow-list that each *caller* must register itself onto —
+  MTX-SWP's own `P|A_Define` already registered itself on BRD/DPTF/DPOF/TFT/OUROBOROS/VST/SWPT/SWP/SWPL
+  (which is why the pre-existing `ref-SWPT::XE_UpdateGraph` call from the same Step 3 already worked)
+  but had never registered itself on SWPI, because MTX-SWP had never before needed to call a
+  `UEV_IMC`-gated function on SWPI directly. Added `(ref-P|SWPI::P|A_AddIMP mg)`, matching the existing
+  pattern for every other module MTX-SWP already registers with.
+
+**Adversarially proven, live:** full `[6.2]`+`[6.3]` suite (real execution path, exercises
+`MTX|C_Issue`'s defpact issuance via the pre-existing `SWP|TX 012b`/`012c` "Issue Stable 7xUSD via
+defpact" test): before the `P|A_Define` fix, failed hard at load with `UEV_IMC`'s "None of the guards
+passed" (`02_U_G.pact:57`) — a genuine cross-module authorization gap, not a REPL assertion failure.
+After adding the missing registration: exit 0, 0 `FAILURE`. Default issuance-only regression: exit 0,
+0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #23 — M3 (#37M): unguarded `enumerate 0 -1` crash fixed at its 5 real root-cause sites
+
+**Owner direction:** pushed back on the finding first — didn't believe unused/broken functions were
+really in the codebase, suspected a botched refactor rename. Once shown the grep proving no rename (zero
+callers anywhere, under any name) and the real live-reachable path, directed: fix it without breaking
+functionality.
+
+**Mechanism correction found while re-verifying:** `enumerate 0 -1` doesn't itself error (returns
+`[0, -1]`, confirmed against the real binary) — the crash is the subsequent `(at 0 emptyList)` inside the
+enclosing `fold`. Same practical effect, different exact cause than the finding stated.
+
+**Reachability confirmed, not assumed:** 4 of the 7 originally-named functions
+(`UC_AreOnPools`/`UC_FilterOne`/`UC_FilterTwo`/`UC_IzOnPools`) have zero callers anywhere in the repo —
+dead code, no current risk. The other 3 (`UC_PoolTokensFromPairs`, `UC_MakeGraphNodes`, `U|BFS::UC_BFS`)
+share one root cause and ARE reachable — from the live, gas-sponsored `CC_SmartSwap` entrypoint, whenever
+`SWP::URC_Swpairs()` is `[]` (the real window before the first pool is ever issued). This same session's
+own #34 work already hit this crash once for real and patched two call sites locally, explicitly
+deferring the general fix as this exact finding. Tracing the full chain (not stopping at the named
+functions) found a 5th, previously-unflagged site sharing the identical pattern:
+`SWPT::URC_MakeGraph` (`14_SWPT.pact:512`) — fixing only the named functions would have just relocated
+the crash one hop deeper.
+
+**Fix:**
+- `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact` — `(if (= 0 (length swpairs)) [] (fold ...))` guard
+  added to `UC_AreOnPools`, `UC_IzOnPools`, `UC_PoolTokensFromPairs` (the 3 actual root-cause sites in
+  this file).
+- `1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact` — same guard added to `UCX_GraphNodes` (the true root
+  of `UC_BFS`'s own empty-graph crash — `UC_BFS` never indexes `graph` directly itself, only through this
+  function).
+- `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact` — same guard added to `URC_MakeGraph` (the newly-found 5th
+  site, on its own `nodes` list).
+- Every other function named in the finding (`UC_FilterOne`/`Two`, `UC_MakeGraphNodes`, `UC_BFS`,
+  `UC_UniqueTokens`) is a thin pass-through over one of these five and becomes safe automatically —
+  confirmed by tracing the full chain to `URC_ComputeGraphPath`'s existing `[BAR]` "no path" sentinel
+  (the same clean-failure convention already established by the #20H fix), reached cleanly instead of
+  crashing. Zero behavior change for any non-empty input.
+
+**Adversarially proven, live — new `SWP|TX 003b` in `[6.3]_SWP.repl`**, placed in the genuine
+pre-first-pool-issuance window (after TX 001-003, before TX 004's first pool issuance):
+`SWP::URC_Swpairs()` confirmed genuinely `[]` at that point; `URC_AllPoolTokens()` and
+`SWPT::URC_ComputeGraphPath "OURO" "DLK" []` both now return clean results instead of crashing. Reverted
+the fix (`git stash` on just the 3 source files, proof TX left in place): full suite failed hard at load
+with the exact predicted `Array index out of bounds` in `UC_PoolTokensFromPairs`. Restored, reconfirmed
+clean. Full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only regression: exit 0, 0 `FAILURE`.
+Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #24 — M4 (#38M): `UCX_GraphNodeLinks` single-pass rewrite, ~39% cheaper, same output
+
+**Owner direction:** asked whether this could genuinely be made more efficient without breaking
+functionality, and whether #34's path cache already made it moot — then, once both were answered
+concretely: "you gotta check in repl that it produce the same results as the current implementation. to
+make sure you didnt break it."
+
+**Path-cache relevance checked, not assumed:** the bundle-based `SWPU::C_SmartSwap` path (built in #34)
+skips the graph-BFS chain entirely on a cache hit — confirmed via its own defcap doc comment ("no
+full-graph BFS at the defcap layer"). Not obsolete, though: the self-searching `CC_SmartSwap` fallback is
+still a live, gas-sponsored production entrypoint that runs the full unguarded BFS every time, and #34's
+own gas breakdown already showed graph-search calls were 56.9% of the old worst-case total.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact`:** `UCX_GraphNodeLinks` rewritten from
+rebuild-the-whole-name-list (`UCX_GraphNodes`) + linear search (`UC_Search`) + re-index-by-position (two
+full O(V) passes plus a reindex per call) to a single `filter` directly over `graph`, matching by the
+`"node"` field, same first-match tie-break as before. `UCX_GraphNodes` (its only caller) removed as dead
+code rather than left behind.
+
+**Adversarially proven, live — direct before/after comparison (not just "existing tests still pass"),
+matching the owner's explicit instruction:** new permanent `SWP|TX 032z2b` in `[6.3]_SWP.repl`, calling
+`SWPT::URC_ComputeGraphPath` directly on the real ~102-active-pool P2-scale topology (the same worst-case
+`W1`→`W7` 6-hop pair #34 already measured), isolating the graph-search cost from swap-execution overhead.
+Reverted the fix (`git stash` on just `13_U_BFS.pact`): same call, **423,762 gas**, byte-identical 7-node
+path. Restored: identical path, **256,867 gas — a real ~39% reduction**, measured at real scale. Full
+`[6.2]`/`[6.3]` suite (every pre-existing exact-value route assertion from C6/H2/H4/M2 — would have
+failed on any BFS behavior drift): exit 0, 0 `FAILURE`. Issuance-only regression: exit 0, 0 `FAILURE`.
+Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #25 — M14 (#39M): `ClientThreeV2`/`ClientPactsV2` reconstructed and archived from git history
+
+**Owner direction:** fix it — historical-purposes convention is to keep old interfaces around and add
+the next V number for what's live, since the codebase deploys anew across all modules/interfaces anyway.
+
+**Reconstruction:** identified the overwriting commit (`df2d72e`) and pulled both interfaces' full
+pre-overwrite text from its parent commit — exact, not re-derived.
+
+**Placement required investigation, not a literal copy-paste of the old finding:** the finding's original
+premise (both interfaces belonging in the central `0_Interfaces/03_Talos.pact` registry) is now outdated
+— the live `ClientThreeV3`/`ClientPactsV3` moved to their own deploy-with-module files since the finding
+was filed. First attempt (central registry, matching the old finding literally) failed to load for real:
+`ClientThreeV2`'s Smart Swap functions type against `SwapperUsageV2.Slippage`, a module-owned interface
+not yet deployed at the registry's early load point. Checked for a working precedent first —
+`06_TS01-C4.pact`'s own comment describes the identical situation for `ClientFourV6` (module-owned
+`PythiaLedgerV2` dependency) but the actual archived interface was never written, just the comment. Not a
+copy-able example, but confirmation the intended pattern (frozen alongside the deploy-with-module file,
+not the central registry, when a module-owned dependency exists) was already this codebase's own stated
+intent.
+
+**Fix:**
+- `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact` — `TalosStageOne_ClientThreeV2` (frozen, full original
+  text) added ahead of the live `ClientThreeV3`.
+- `1_SOVEREIGN/STAGE_01/3_Talos/05_TS01-P.pact` — `TalosStageOne_ClientPactsV2` (frozen, full original
+  text) added ahead of the live `ClientPactsV3`, kept with its always-paired sibling rather than split
+  across files.
+- `1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact` — header comment updated to point to the new
+  locations and explain why, matching the existing `ClientFourV6` cross-reference style.
+
+**Adversarially proven, live:** the first placement attempt genuinely failed to load (`Module
+SwapperUsageV2 has no such member: Slippage`) — confirming the relocation was necessary, not a style
+choice. After the fix: full `[6.2]`/`[6.3]` suite: exit 0, 0 `FAILURE`. Issuance-only regression: exit 0,
+0 `FAILURE`. Full `Z.repl` (Stage 1 + Stage 2): exit 0, 0 `FAILURE`, `Load successful`. Purely
+additive/documentation — no live code path touched, zero functional risk by construction.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #26 — L40 (#40L): `UC_LpID` purity restored, dead length-parity enforce removed
+
+**Owner direction:** go through the LOW bundle one by one; tag what a later StoicSyntax rename sweep will
+close on its own, resolve the rest individually now. Starting with L40.
+
+**Confirmed load-bearing status before touching code:** `UC_LpID` (`12_U_SWP.pact`) called
+`U|INT::UEV_UniformList` (confirmed a real `enforce`) directly, breaking `UC_*` purity. Traced the only
+real caller (`SWP::URC_LpComposer`): both lists it passes in are derived from the same source via the
+same `enumerate` range, structurally guaranteed identical length — the check could never actually fail.
+
+**Fix:** removed the `UEV_UniformList` call and its now-unused bindings from `UC_LpID`. Residual, not
+pursued: a hypothetical future caller of this public-interface function with mismatched-length lists
+would hit a plain out-of-bounds crash instead of a clean enforce — same class of accepted residual risk
+as M1.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite, issuance-only regression, and full `Z.repl` all exit
+0 / 0 `FAILURE` — confirming the removed check was never reachable, exactly as predicted.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #27 — L45 (#45L): `URC_AllGraphPaths` renamed to `URC_ShortestChainPerNode`
+
+**Owner direction:** rename it properly, refactor the module to use the new name.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`:** `URC_AllGraphPaths` → `URC_ShortestChainPerNode`
+(interface declaration, implementation, doc). Traced every real reference first: interface, the one real
+caller `URC_ComputeGraphPath` (updated its own local `all-paths` → `shortest-chains` binding and doc too),
+zero REPL references by name. New doc precisely describes the actual semantics (one shortest BFS chain
+per reached node from `input`, distinct from `URC_ComputeAllRoutes`) and notes `output` plays no real
+role in the BFS (verified against `UC_MakeGraphNodes`'s own existing "stay in the signature (unused)"
+doc). No version bump on `SwapTracerV2` — still pre-mainnet.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite (every pre-existing exact-value route assertion from
+C6/H2/H4/M2), issuance-only regression, and full `Z.repl` all exit 0 / 0 `FAILURE` — pure rename, zero
+behavior change, confirmed by every untouched exact-value assertion still passing byte-identical.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #28 — L46 (#46L): `SWP|TX 016a` SmartSwap smoke test now asserts its real output
+
+**Owner direction:** fix it anyway, make sure not to break anything.
+
+**Fix — `REPL/Stage_01/[6.3]_SWP.repl`:** `SWP|TX 016a`'s SmartSwap call used to discard its own return
+value. Captured it and added a real `expect`. Didn't guess the expected value — probed first to capture
+the actual live output at this exact suite state, then wrote the assertion against the measured value:
+`"Succesfully smart-swapped 5.0 AKOSON-98c486052a51 to 4.187143624737786198597098 TUSD-98c486052a51 via 3
+Swaps over 3 Pools"`.
+
+**Adversarially proven the assertion is real, not decorative:** deliberately corrupted the expected value
+by one decimal digit — genuine `FAILURE`, exact diff shown. Restored, reran clean. Full `[6.2]`/`[6.3]`
+suite, issuance-only regression, and full `Z.repl` all exit 0 / 0 `FAILURE`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #29 — L49 (#49L): `URCX_HopperForNodes` doc corrected, "cheapest" → "highest-output"
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`:** the "cheapest available edge" wording (backwards —
+C1/#6C's fix made this maximize output, not minimize cost) had migrated unchanged from `URC_Hopper` into
+its #34M/M2 successor `URCX_HopperForNodes`. Corrected to "highest-output edge." Pure doc wording, zero
+behavior change. Full `Z.repl` regression: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #30 — L50 (#50L): `UR_StoaValue` no longer writes as a side effect of a read
+
+**Owner:** the write's original purpose was a deliberate migration artifact (populate the field once, a
+real event later writes the genuine value) — confirmed, then authorized removing the write.
+
+**Tested the obvious fix before proposing it — it was wrong:** `with-default-read` looked like the clean
+replacement, but a scratch repro (old-schema row read against a newer schema with an added field)
+confirmed its default only covers a key entirely absent from the table, not a field missing from an
+existing row — it would crash on exactly the legacy-row case. Caught before it shipped.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** dropped the `update`; legacy rows now return `0.0`
+computed fresh on every read, never persisted. Traced every reader of `"stoa-value"` codebase-wide first
+(including cross-module — AQP's `FVT`) — confirmed nothing depends on the field being physically present
+in storage, only on the returned value.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite, issuance-only regression, and full `Z.repl` (Stage 1
++ Stage 2, exercising the cross-module `FVT` caller) all exit 0 / 0 `FAILURE`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #31 — L52 (#52L): `@doc` added to `XE_Issue`/`XI_ToggleFeeLock` per R4
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** traced what each function actually returns before
+writing docs. `XE_Issue:string` returns `swpair`, used by callers to continue their own flow.
+`XI_ToggleFeeLock:[decimal]` returns `[0.0 0.0]` (locking) or the real ATS unlock price (unlocking) —
+confirmed genuinely billed to the patron via its caller `C_ToggleFeeLock`. Added real `@doc` to both per
+R4. Pure documentation, zero behavior change.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite and full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0
+`FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #32 — L53 (#53L): `UEV_PoolFee`'s 320.0 bound documented (units + design rationale)
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** cross-checked `320.0` against the real swap-fee
+formula first — confirmed fee is per-mille (1000.0 full-fee basis), so `320.0` = 32%, not arbitrary. Owner
+explained why that specific number: mirrored across LP/special/boost fee components, so their combined
+worst case is `320.0 × 3 = 960` promille, always leaving 40 promille (4%) fees can never consume. Added
+`@doc` capturing both. Pure documentation, zero behavior change.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite and full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0
+`FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #33 — L55 (#55L): `XE_CanAddOrSwapToggle`'s redundant second guard check removed
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** `XE_CanAddOrSwapToggle` re-ran `UEV_Any` against
+`[local-guard] + (P|UR_IMP)` right after `(UEV_IMC)` already checked `(P|UR_IMP)` alone. Since `UEV_IMC`
+is a bare statement that aborts on failure, reaching the second check already proves `(P|UR_IMP)` alone
+passes — adding `local-guard` to an already-guaranteed-passing OR-set can never change the outcome. Pure
+dead weight. Confirmed `SWP|C>ADD-OR-SWAP` (referenced by the removed local guard) is still genuinely
+composed elsewhere (`C_ToggleAddOrSwap`), not orphaned. Removed the redundant block entirely.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite and full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0
+`FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #34 — L56 (#56L): new StoicSyntax `v` specialization + `URCv_AreAmountsBalanced` strengthened
+
+**Owner direction:** traced whether the check was tautological (not — 8 of 11 real callers pass raw
+unvalidated amounts) and whether a single non-`URC_*` choke point exists to relocate it to (none — three
+separate modules call `SWPL::URC_LD` directly, and `URC_*`'s own allowed-callee contract forbids calling
+`UEV_*` anyway). Owner: rather than force "leave incomplete" vs. "duplicate 8 times," formalize a new
+StoicSyntax specialization for this legitimate case.
+
+**Fix:**
+- `OuronetInformational/StoicSyntax.md` + `StoicSyntax-Prefixes.md`: new stackable `v` (validating)
+  specialization — `UCv_`/`URCv_`/`URDCv_` — for a compute/read-compute function whose `enforce` is
+  intrinsic to its own computation, legitimate only when reachable (not tautological) and no single
+  upstream choke point exists. Bumped **1.10.0 → 1.11.0**. Retroactively names L41's `U|LST` exception
+  under this same category (still deferred, not renamed).
+- `1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact`: `URC_AreAmountsBalanced` → `URCv_AreAmountsBalanced`
+  (renamed in source, the first fresh `v` application). Added the missing per-element `>= 0.0` check —
+  the old sum-only check let mixed-sign lists like `[-5.0, 10.0]` through clean.
+
+**Adversarially proven, live — new `SWP|TX 038b`:** `[-100.0, 600.0]` (sum `500.0 > 0.0`) cleanly
+rejected with the new message. Reverted just the new check: the same call still failed, but with an
+opaque error deep in the DPTF transfer layer (`'-100.0 is not a Valid Transaction amount'`) — confirming
+a real upgrade from late/opaque to early/clean, not a redundant no-op. Full `[6.2]`/`[6.3]` suite,
+issuance-only regression, and full `Z.repl` (Stage 1 + Stage 2) all exit 0, 0 `FAILURE`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #35 — L59 (#59L): documented the atomicity invariant behind `XE|KDA-PID_AddLiqudity`'s ordering
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/17_SWPL.pact`:** every branch of `XE|KDA-PID_AddLiqudity` bumps
+reserves (`XE_UpdateSupplies`) before the actual transfer (`XI_AddLiqSendAndMint`), safe only by same-tx
+atomicity. Traced `MTX-SWP::MTX|C_AddLiquidity` directly (the finding's specific worry) to confirm this
+function is always called entirely within one pact step (Step 1's own `step-with-rollback`), never split
+across steps — a defpact step is itself atomic, so the guarantee holds there too. Added `@doc` recording
+this precisely, including an explicit flag that a future caller splitting bump/transfer across two steps
+would need to re-derive the safety, not assume it. Pure documentation, zero behavior change.
+
+**Adversarially proven:** full `[6.2]`/`[6.3]` suite and full `Z.repl` (Stage 1 + Stage 2) both exit 0, 0
+`FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #36 — L61 (#61L): real REPL coverage for `SWP|C_UpgradeBrandingLPs`
+
+**Fix — `REPL/Stage_01/[6.4]_Admin.repl`:** the original commented-out call was stale (wrong Talos module
+reference, wouldn't have compiled). Traced the real `BRD` flag state machine first: every LP token gets a
+`BRD|BrandingTable` row at issuance with `flag: 3` (Gray), so `entity-pos 1` needs no extra setup.
+Commented out three unrelated pre-existing broken calls found while trying to get a clean run (a
+never-issued ATS pair, two never-created frozen/sleeping-LP variants, a never-registered smart account in
+a separate later transaction) — none related to this fix. Added a new `SWP|TX 002`: propose real branding
+data, upgrade, then assert the live branding and flag actually updated — not just that the calls didn't
+error. Placed after the file's first transaction, since later unrelated breakage would otherwise block it.
+
+**Adversarially proven:** all 3 assertions pass. Corrupted the expected flag value — genuine `FAILURE`
+with the exact diff. Restored, reconfirmed. Default `Z.repl` pipeline (`[6.4]` excluded, as normal): exit
+0, 0 `FAILURE`. No `.pact` source touched.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #37 — L62 (#62L): real REPL coverage for `SWPLC::C_Fuel`
+
+**Fix — `REPL/Stage_01/[6.3]_SWP.repl`:** investigated `C_Fuel`'s two modes first. DIRECT (the only
+externally-reachable path, via Talos `SWP|C_Fuel`) does a real `TFT::C_MultiTransfer` from the caller into
+the pool's own custody — safe by construction, caller only ever spends their own funds, no LP minted.
+INDIRECT (no real transfer, just bumps reserves) is never exposed via Talos, only called internally from
+`19_SWPU.pact`, and already protected by the established `UEV_IMC` module-registration mechanism — no
+security fix needed, purely a coverage gap. Added a new `SWP|TX 038c` proving the real DIRECT path bumps
+pool6's reserves by exactly the fueled amounts, no LP minted, via a delta assertion (`post` minus `pre`
+supplies) rather than an absolute value, since pool6's reserves have moved through hundreds of prior
+transactions by this point in the suite.
+
+**Adversarially proven:** corrupted the expected delta (`fuel-amounts` → `[999.0 999.0]`) — genuine
+`FAILURE` with the exact diff (`expected: [999.0 999.0], received: [10.0 20.0]`). Restored, reconfirmed.
+Full suite (`[6.2]`+`[6.3]`): exit 0, 0 `FAILURE`. Default `Z.repl` pipeline (`[6.2+3]` issuance-only): exit
+0, 0 `FAILURE`, `Stage01_Tester.repl` reverted with zero drift. No `.pact` source touched.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #38 — L65 (#65L): eliminated `CC_SmartSwap`'s double `URC_HopperActive` computation
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact`:** `CC_SmartSwap`'s defcap chain ran
+`SWPI::URC_HopperActive` (full-graph BFS) once for path validation, then `XI_SmartSwapRouter` ran the same
+search again for execution — a genuine double-heavy-read, against StoicSyntax's rule that a defcap must
+never repeat a heavy read the function body also performs. Restructured to mirror the bundle-based path's
+own already-established pattern (validate an already-known route instead of searching twice):
+`CC_SmartSwap` now computes `h-obj` exactly once, before `with-capability`, and threads it through
+`SWPU|C>SMART-SWAP-WITH/NO-SLIPPAGE` → `SWPU|X>SMART-SWAP` (now validates against the supplied `h-obj`
+instead of recomputing) and into `XI_SmartSwapRouter` (now reads `h-obj` instead of recomputing). Pure
+read (`URC_*`, no writes), nothing mutates state between the original two calls, so computing it once
+earlier in the same transaction is provably equivalent — no correctness risk. Also dropped two pre-existing
+dead bindings found while rewriting the defcap. Blast radius contained entirely to this one file.
+
+**Measured, not just asserted:** stashed the fix, reran to capture real pre-fix gas at `SWP|TX 032z2`'s
+P2-scale checkpoint: 5,094,054 KDA gas. Restored, reran: 4,593,400 KDA gas — a genuine 500,654 gas
+reduction (~9.8%) for the identical call. Full suite (`[6.2]`+`[6.3]`): exit 0, 0 `FAILURE`. Default
+`Z.repl` pipeline (`[6.2+3]` issuance-only): exit 0, 0 `FAILURE`, `Stage01_Tester.repl` reverted with zero
+drift.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Awaiting Round III re-verify.
+
+---
+
+## Fix #39 — L66 (#66L): `UDC_ConstructOutputCumulator` instead of hand-built failure-branch objects
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact`:** confirmed `IGNIS::UDC_MakeModularCumulator`'s
+`trigger=true` branch already returns exactly `{"ignis": 0.0, "interactor": BAR}` regardless of its
+`price`/`active-account` arguments, so `IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [msg]`
+reproduces all 3 hand-built slippage-exceeded failure objects (`XI_SmartSwapRouter`,
+`XI_SmartSwapExplicitRoute`, `XI|KDA-PID_Swap`) exactly. Replaced all 3, adding the missing `ref-IGNIS`
+binding to each `let`.
+
+**Adversarially proven, not just argued:** standalone REPL check against the full deployed environment
+confirmed byte-identical output between the hand-built literal and the `UDC_*`-constructed version
+(`"Expect: success"`). Full suite + default issuance-only pipeline both exit 0, 0 `FAILURE`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Will be re-swept during the planned INFO-function architectural
+rehaul on `main` (owner's framing — fixed now since safe/confirmed, not treated as permanently settled).
+
+---
+
+## Fix #40 — L70 (#70L): added `SWP|C_Fuel`/`SWP|C_Firestarter` to `TalosStageOne_ClientThreeV3`
+
+**Fix — `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`:** confirmed both functions are real, public,
+live on the `TS01-C3` module but missing from the interface it implements — an interface-completeness
+gap (both remained callable via the concrete module ref either way, not a security issue). Added
+matching stubs, signatures copied exactly from the live module.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Full suite + default issuance-only pipeline both exit 0, 0
+`FAILURE` (pure interface addition, verified via successful `Z.repl` load).
+
+---
+
+## Fix #41 — L71 (#71L): documented why `C_ToggleAddOrSwap` is called directly, not via an `XE_*`
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** investigated rerouting `SWPU::C_ToggleSwapCapability`/
+`SWPLC::C_ToggleAddLiquidity` through the existing `XE_CanAddOrSwapToggle` and found it unsafe —
+`C_ToggleAddOrSwap` bills real IGNIS, bootstraps LP roles, and is the only place enforcing pool
+ownership in this chain; the bare `XE_*` has none of that, and neither caller's own capability
+re-derives ownership independently. Owner: leave as-is, document instead. Added a real `@doc` to
+`C_ToggleAddOrSwap` recording exactly why the direct cross-module `C_`→`C_` call is intentional, what
+would break if naively rerouted, and that a real `XE_*` replacement is deferred, not forgotten.
+
+**Status:** DESIGN, accepted — `@doc` only, no functional change. Full suite + default issuance-only
+pipeline both exit 0, 0 `FAILURE`.
+
+---
+
+## Fix #42 — #65bL: 7-phase graph-search engine optimization, 66.9% cold / 77.6% warm-cache cumulative gas reduction
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`, `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`,
+`1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact`, `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`,
+`REPL/Stage_01/[6.3]_SWP.repl`:** 7 phases, scoped and measured independently, 6 shipped:
+
+- **Phase 1:** wired `URCX_Hopper` to the pre-existing-but-unused `SWPT|PathCache` (write-only in
+  the live code until now) via a new `URC_ReadPathCacheFresh`. Required fixing the cache's own
+  permanent-staleness bug first — added a `topology-version` counter (`SWPT|TopologyVersion`,
+  bumped only on genuine topology change via `XI_UpdatePair`'s own `did-change` detection, never on
+  an `A_RebuildGraph` replay), added the field to `PathCacheRow`, and changed `XI_RegisterPath` from
+  strict insert-only to version-checked refresh. Measured: 477,825 gas (forced miss) → 11,491 gas
+  (real hit) for the identical lookup, ~41.6x.
+- **Phase 2:** split `URC_MakeGraph` into a raw-fetch half (`URC_FetchRawGraph`) and a pure
+  in-memory filter half (`UC_MakeGraphFromRaw`/`URC_ShortestChainPerNodeFromRaw`/
+  `URC_ComputeGraphPathFromRaw`), and made `URC_ComputeAlternateRoutes` (now a thin wrapper over new
+  `URC_ComputeAlternateRoutesFromRaw`) fetch the graph once and reuse it across all 3 best-of-K
+  attempts instead of each attempt independently re-reading and rebuilding it. Measured on the
+  established P2-scale checkpoint (`SWP|TX 032z2`): 4,593,400 → 2,216,311 gas, 51.7%.
+- **Phase 3:** investigated, built, and measured a binary-search replacement for the per-node linear
+  scan (sorted raw-graph + bounded-fold binary search, using only real Pact 5 primitives — a
+  keyed-object approach was tested and confirmed impossible first, a genuine parse error, not a
+  guess). A synthetic benchmark suggested a 2.3-4.9x win at 100-300 elements; the real integrated
+  measurement at the actual 143-node P2-scale graph showed a regression (+27,527 gas), isolated and
+  confirmed (reverted only the lookup call) before ruling it out. Reverted cleanly — not shipped.
+- **Phase 4:** confirmed `SWPT::UC_MakeGraphNodes` is input/output-independent, so one raw-graph
+  fetch against the full topology is valid for every distinct pool's own repricing query in the same
+  transaction. Added `URC_PoolValueFromRaw`/`URC_WorthDWKFromRaw`/`URCX_HopperFromRaw` end to end and
+  wired `04_TS01-C3.pact`'s `SWP|CC_SmartSwap{With,No}Slippage` STOA-repricing loop to fetch once,
+  before the loop, instead of once per pool inside it. Measured: 2,216,311 → 2,129,569 gas, 3.9%
+  further. Correctness proven directly (byte-identical against the original `URC_PoolValue`),
+  adversarially confirmed.
+
+- **Phase 5:** owner asked directly whether the live routing search was still capped at 3, and
+  proposed first-found only, reasoning that with dozens of parallel pools the chance any of the 2
+  extra best-of-3 candidates is actually better is small, and that chronic pool imbalance doesn't
+  persist under organic swap activity. Checked against `#34M`/M2's own original adversarial proof
+  first (a deliberately hand-engineered diamond topology, not evidence of natural behavior at
+  scale), then measured directly: first-found vs best-of-3 against the real, organically-grown
+  ~102-pool topology across 7 representative pairs (1-8 hops) — best-of-3 won zero of them.
+  Switched `URCX_Hopper`/`URCX_HopperFromRaw` to a single `SWPT::URC_ComputeGraphPath`(`FromRaw`)
+  call. Caught and fixed a real bug before shipping: the first implementation attempt used the
+  original, never-Phase-2-optimized self-fetching `URC_ComputeGraphPath` for `URCX_Hopper`'s own
+  call, measured as *more* expensive than best-of-3 (isolated and confirmed via a stash-style
+  before/after) — corrected to route through `URC_FetchRawGraph` + `URC_ComputeGraphPathFromRaw`
+  instead, the same Phase-2-cheap machinery best-of-3's own first attempt already used.
+  `SWPT::URC_ComputeAlternateRoutes`/`FromRaw` are not deleted, still correct, no longer the
+  default. Updated the original `#34M/M2` adversarial proof (`SWP|TX 032g`) to honestly assert the
+  live default now takes the worse route on that deliberately-engineered topology (confirmed:
+  1989.96, matching the original proof exactly) while a direct call to
+  `SWPT::URC_ComputeAlternateRoutes` still finds the better one (confirmed: ~4994, matching the
+  original ballpark) — proving the machinery isn't broken, just no longer wired in by default. The
+  greedy per-hop edge-selection limitation (locally-optimal per hop is not the same as a
+  globally-optimal path) is now stated explicitly in `URCX_Hopper`'s own `@doc` — always true,
+  this fix doesn't introduce it, only removes the cross-route comparison layered on top. Measured:
+  2,129,569 → 1,837,000 gas, 13.7% further.
+
+- **Phase 6:** owner directly observed that the bundle-based cache writer
+  (`19_SWPU.pact::XI_RegisterBundlePaths`) only ever registered `boost-path`/`stoa-paths` into
+  `SWPT|PathCache`, never the main swap-route itself — "the cache bundle dirty read must populate
+  all paths that it detects... update only when [the version] is bigger than the one for which a
+  value already exists." Traced this to a deliberate original design note on the `SwapRoute` schema
+  (`SwapperUsageV2` interface): the main route was never cached because best-of-3 value-comparison
+  made it amount-sensitive. Phase 5 already removed that precondition — the live default
+  (`URC_ComputeGraphPath`/`FromRaw`) is a pure first-found BFS taking no amount parameter at all —
+  so the structural route is now provably amount-independent and safe to cache. Added `input-id` to
+  `XI_RegisterBundlePaths`'s signature and a new swap-route registration branch, validated via
+  `URC_ValidatePathActive` plus endpoint checks against `input-id`/`output-id`, using the same
+  version-checked-refresh machinery Phase 1 built (`ref-SWPT::XE_RegisterPath`, no-op unless the
+  topology-version is genuinely newer). Updated the `SwapRoute` schema's own `@doc` and
+  `C_SmartSwap`'s `@doc` to record the resolved reasoning. Measured three stages on the same
+  worst-of-the-worst-case scenario: 1,837,000 gas cold (zero cache, Phase 5's number) → 1,352,614 gas
+  with only the pre-existing boost-path/stoa-paths cache warm → 1,143,255 gas once the swap-route
+  itself is also warm (a bundle-assisted swap ran first, then a plain `URC_HopperActive` call reused
+  the fully warm cache end to end).
+
+- **Phase 7:** owner asked directly about the repricing loop's own per-pool search cost, observing
+  that `W`/`P`-pool first tokens are Principals directly (structural, `UEV_Issue`'s `iz-principal`
+  check) and `S`-pool first tokens must be one hop from *some* Principal (`contains-principals`
+  check), so first-token→DWK searches should usually be short — asked whether that's exploitable.
+  Checked the premise against the actual worst-case REPL topology before building anything: the
+  guarantee bounds adjacency to *some* Principal, not that Principal's own distance to DWK
+  (Principals aren't required to connect to each other — `HANDOFF-swp-exhaustive-path-search.md`'s
+  still-open `P0.3`), and the P0.5 topology itself proves this bites in practice — `W1`/`W4`/`W7` are
+  Principals, but the whole 6-hop chain only reaches DWK through one deliberately narrow bridge pool
+  (`OURO-W1`), making `W7`'s own repricing search *longer* than the main route. A Principal-adjacency
+  shortcut would have been unsafe to assume in general — not shipped.
+
+  Investigating this surfaced a better, assumption-free win: `SWPT::UC_BFS`'s traversal cost scales
+  with the full graph size regardless of true path depth (its outer fold runs once per node in the
+  whole universe), and the repricing loop's `URC_PoolValueFromRaw` was still triggering a fresh
+  `SWPT::UC_MakeGraphFromRaw` rebuild (the linear-scan-per-node graph-BUILD step feeding that BFS) on
+  every one of its N distinct-pool queries in one transaction, despite that rebuild being
+  input/output-independent (same as `UC_MakeGraphNodes` underneath it, Phase 4's own finding) and
+  therefore byte-identical every time for the same `raw-graph`/`swpairs` universe. Added
+  `URC_ComputeGraphPathFromGraph`/`URC_ShortestChainPerNodeFromGraph` (`SWPT`) and
+  `URCX_HopperFromGraph`/`URC_HopperFromGraph`/`URC_WorthDWKFromGraph`/`URC_PoolValueFromGraph`
+  (`SWPI`) — the same `...FromRaw` family Phase 4 built, one layer deeper, sourced from an
+  ALREADY-BUILT `[GraphNode]` graph instead of an already-fetched raw-graph. `04_TS01-C3.pact`'s
+  repricing loop now builds that graph once, right alongside its existing shared raw-graph fetch, and
+  every pool in the loop reuses it. Correctness adversarially proven byte-identical against the
+  original `URC_PoolValue` (`SWP|TX 032z6e`). Measured via a controlled before/after (`git stash` the
+  change, remeasure, restore): 965,197 → 931,103 gas (3.5%) on the P0.5 37-token/6-hop scenario;
+  1,837,000 → 1,687,556 gas (8.1% further) on the P2-scale ~102-pool checkpoint — the larger the
+  shared universe, the more the redundant rebuilds were costing. The warm-cache steady-state (Phase
+  6's 1,143,255 gas) is unaffected — the bundle-based flow prices pools via dirty-read-supplied
+  paths and never calls `URC_PoolValue{FromRaw,FromGraph}`.
+
+**Cumulative: 5,094,054 → 1,687,556 gas cold (zero cache), a 66.9% reduction, and 5,094,054 →
+1,143,255 gas with a fully warm cache (swap-route included), a 77.6% reduction** — from the
+pre-`#65L` baseline, all 7 phases combined (6 shipped). The worst-of-the-worst-case scenario now
+fits **under** the real ~2,000,000 gas ceiling even cold — it did not before this work — and drops
+further still once the cache is warm.
+
+**Adversarially proven:** Phase 1's cache-hit path (returns exactly the cached node path, not an
+independently recomputed one), Phase 4's correctness (byte-identical to the original function),
+Phase 5's honestly-updated adversarial proof (live default genuinely takes the worse route on the
+engineered topology, direct `URC_ComputeAlternateRoutes` call still finds the better one),
+Phase 6's warm swap-route proof (`SWP|TX 032z6d` — after a bundle-based swap runs,
+`URC_HopperActive` on the same pair returns exactly the now-cached 7-node route, corrupted-and-
+restored to confirm the assertion is genuine, not a vacuous pass), and Phase 7's correctness proof
+(`SWP|TX 032z6e` — `URC_PoolValueFromGraph` matches `URC_PoolValue` byte-identically, corrupted-and-
+restored) all verified with real, printed numbers, not just passing assertions. Full suite (`[6.2]`+`[6.3]`) and
+default issuance-only (`[6.2+3]`) pipelines both exit 0, 0 `FAILURE` throughout every phase,
+`Stage01_Tester.repl` reverted to its default afterward (zero drift).
+
+**Owner note recorded for the capstone/UI phase (not a code change in this repo):** part of the
+reasoning for Phase 5 was that a chunk of SmartSwap's real traffic is arguably direct, single-pool
+swaps that don't need SmartSwap's routing complexity at all — recorded as a UI-design ask for the
+capstone phase to add a separate, simplified direct-pool-swap interface. See
+`OuronetInformational/memories/2026-08-28-capstone-ui-needs-a-simplified-direct-pool-swap-interface.md`.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Full detail in
+`OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`.
+
+---
+
+## Fix #43 — #65dL: stale `@doc` on `A_RotatePrincipal` corrected (re-verification of H3/#21H)
+
+**Owner independently re-raised H3's original concern** (rotating/removing a principal that's
+already anchoring live pools) while discussing `#65bL`/`#65cL`, unprompted by any specific code
+reference — framed as a possible new "major vs. minor principal" architecture gap. Re-verified
+against the current code before responding, rather than trusting memory of the earlier fix: grepped
+every consumer of `SWP::UR_Principals` across the whole codebase, confirmed exactly one real caller
+outside `A_UpdatePrincipal`/`A_RotatePrincipal` themselves (`SWPI::UEV_Issue`'s issuance-time-only
+anchoring gate) — the `H3`/`#21H` fix (Fix #12-#14) still holds exactly as designed, no regression,
+no gap. There is no major/minor principal tier in the code at all — `principals` is a flat,
+undifferentiated list (2-min, 7-max), and `primordial-pool` is a mechanically separate single-swpair
+property, not a principal subtype. Full explainer written up as
+`OuronetInformational/memories/2026-08-28-principal-and-primordial-pool-architecture.md`.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** while re-verifying, found `A_RotatePrincipal`'s
+own `@doc` still said "standalone removal via `A_UpdatePrincipal` is disabled" — accurate as of Fix
+#13, but Fix #14 re-enabled removal (floor-gated at 2 remaining) and updated the *Talos wrapper's*
+docstring (`01_TS01-A.pact::SWP|A_RotatePrincipal`) to match, but missed this core module's own defun
+doc. Corrected to describe the actual current mechanism (removal allowed, floor-gated, not disabled)
+and cross-referenced `#65dL`.
+
+**Pure doc change, no behavior touched** — no adversarial proof applicable (nothing to corrupt-and-
+restore, the fix doesn't change any computed value or control flow). Full suite (`[6.2]`+`[6.3]`,
+`Z.repl`) re-run: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅. See `ROUND-01-OWNER-FEEDBACK.md`'s `H3` entry (addendum) for the full
+re-verification writeup.
+
+---
+
+## Fix #44 — #65eL: major vs. minor principal distinction enforced (H3/#21H third follow-up)
+
+**Owner direction:** define a "major" principal as one currently a member of the primordial pool
+(always OURO/DWK/DLK in practice, not a separately-registered category) and make majors permanently
+fixed — never removable or rotatable — while minor principals keep working exactly as before. Even
+though `#65dL` proved rotation/removal can't break existing routing, there's no legitimate reason to
+ever retire OURO/DWK/DLK from the principals list, so block it outright.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`, `1_SOVEREIGN/STAGE_01/3_Talos/01_TS01-A.pact`:**
+- New `URC_IsMajorPrincipal(token):bool` (`15_SWP.pact`): checks live membership in
+  `UR_PoolTokens(UR_PrimordialPool())`, `false` if no primordial pool is defined yet. Checked before
+  building: `SWP|C>DEFINE-PRIMORDIAL-POOL` already enforces the primordial pool is always a 3-token `W`
+  pool containing exactly OURO/DWK/DLK, and `H6`/`#18H` already confirmed a duplicate-token-set pool is
+  structurally impossible to issue — so this reduces to "is `token` one of OURO/DWK/DLK," derived
+  live rather than hardcoded, staying correct even if the primordial pool is ever redefined to a
+  different physical pool instance.
+- `SWP|C>PRINCIPAL`'s removal branch and `SWP|C>ROTATE-PRINCIPAL`: each gained one additional, distinct
+  enforce rejecting a major principal outright — for removal, independent of and in addition to the
+  existing 2-minimum floor; for rotation, independent of the existing 3 rejection reasons.
+- `@doc`s updated throughout (both defcaps, both `A_*` defuns, both Talos wrappers) to describe the new
+  distinction.
+
+**Adversarially proven, live — `SWP|TX 035a` (new, `[6.2+3]_DPTF-SWP_Issuance-Only.repl`):**
+`URC_IsMajorPrincipal` correctly flags OURO/DLK/DWK as major (DWK checked even though genesis never
+registers it as a principal — proving the check is about primordial-pool membership, not principal
+status) and a genuine minor principal as not major. At 7 principals defined (well above the floor),
+removing/rotating OURO are both rejected outright. A minor principal is removed-then-restored in the
+same test, proving the guard doesn't over-block. Each guard reverted **in isolation** (one neutralized
+at a time, not both together) and re-run: caught and fixed a real test-design flaw along the way — an
+initial attempt used a nonexistent token as the rotate target (fails `A_RotatePrincipal`'s own `UEV_id`
+check regardless of this guard, a vacuous test) and didn't isolate the two guards from each other (the
+removal guard's own real side effect, once neutralized, changes state the rotate test then runs
+against) — fixed by using a real non-principal token and reverting one guard at a time; both now show
+a genuine "expected failure, got result" independently when their own guard is removed, confirmed, then
+restored.
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅. See `ROUND-01-OWNER-FEEDBACK.md`'s `H3` entry (third follow-up) for
+the full writeup.
+
+---
+
+## Fix #45 — #65fL: `#65bL` Phase 8 — zero-search DLK/OURO shortcuts, boost-path caching
+
+**Owner direction:** direct pool swaps already cost zero pathfinding (confirmed); DLK→DWK should be
+the liquid-staking index applied backwards (already true); OURO→DWK should read the primordial pool
+directly, no graph search. Asked me to implement top to bottom, report gas gains at the end.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact`, `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`,
+`REPL/Stage_01/[6.3]_SWP.repl`:**
+
+- **Phase 8a:** `URC_HopperActiveShortest` (Liquid Boost's own id→DLK search, the one Hopper variant
+  Phases 1-7 never touched) now checks `SWPT|PathCache` first, identical pattern to `URCX_Hopper`'s
+  own Phase 1. Measured via isolated forced-miss-vs-hit comparison (same pair/topology, cache check
+  reverted vs live): 276,994 → 26,783 gas, **90.3% reduction** on a warm hit.
+- **Phase 8b:** new `URC_SingleOuroWorthDWK`, extracted from `URC_OuroPrimordialPrice`'s own
+  pre-existing math (primordial pool's DWK-equivalent value ÷ OURO's own supply, no dollar step) —
+  wired as a new `id==OURO` short-circuit in `URC_WorthDWK`/`FromRaw`/`FromGraph`, mirroring the
+  pre-existing DLK short-circuit. Two real bugs caught and fixed before shipping:
+  - A static recursive-cycle compile error (`URC_WorthDWK`→`URC_SingleOuroWorthDWK`→
+    `URCX_PrimordialValueAndOuroSupply`→`URC_SingleWorthDWK`→back to `URC_WorthDWK`) — fixed by
+    extracting a dedicated `URC_SingleDlkWorthDWK` helper so the shared primordial-pool-value core
+    never routes back through `URC_WorthDWK` itself.
+  - A pre-bootstrap crash: `URC_WorthDWK`'s OURO branch is reachable (via `UEV_Issue`'s spawn-limit
+    check) before any primordial pool exists, e.g. during that pool's own issuance — fixed by gating
+    the shortcut on `SWP::UR_PrimordialPool() != BAR`, short-circuited (`and`, confirmed empirically
+    lazy in Pact 5 before relying on it) so the extra check costs nothing for any other id; falls
+    through to the exact original graph-search behavior when unsafe.
+- **DALOS combined reader (caught via checkpoint regression, not assumed clean):** new
+  `DALOS::UR_CanonicalStoaIds` — DWK/DLK/OURO's ids in ONE read (all 3 already live on the same
+  `DALOS|PropertiesTable` row) instead of 3 independent single-field reads. The naive first
+  implementation (an extra standalone `UR_OuroborosID` call) regressed `SWP|TX 032q`/`032z2` by ~928
+  gas despite neither scenario ever pricing OURO/DLK — isolated via `git stash` bisection before
+  fixing, not guessed.
+
+**Net effect on the tracked worst-case checkpoints** (neither shortcut actually exercised in these
+scenarios — pure overhead-vs-savings arithmetic): `SWP|TX 032q` 931,108 → 930,230 gas, `SWP|TX 032z2`
+1,687,556 → 1,686,661 gas — a small but genuine **-878/-895 gas net win** even where the shortcuts
+don't fire, after the DALOS fix (the naive pre-fix version was a net *loss* here, +928/+929 gas).
+
+**Values decision flagged, not glossed over:** Phase 8b's isolated per-call win is large — 110,099 →
+2,452 gas (97.8%) for a 100-unit `URC_WorthDWK(OURO, …)` call — but the VALUES genuinely differ: 91.95
+DWK (shortcut, spot-ratio) vs. 147.31 DWK (graph search, simulated-swap-with-slippage along whatever
+route BFS finds) — ~38% apart at that amount, larger than expected going in. Not a bug — a genuine
+methodology difference (spot valuation vs. execution price) with a real argument either way; recorded
+explicitly for owner review, not silently shipped as if equivalent.
+
+**Adversarially proven, live — `SWP|TX 032z6f` (Phase 8b) and `SWP|TX 032z8a` (Phase 8a), both new,
+permanent:** `032z6f` prints both the shortcut and graph-search values/gas side by side and
+adversarially confirms the shortcut result is genuinely real data (corrupted, restored). `032z8a`
+confirms the cache is genuinely warm before measuring and that the hit returns exactly the cached
+path; the 90.3% figure comes from an isolated forced-miss-vs-hit comparison against this exact call.
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Addendum:** owner asked whether the OURO shortcut actually reaches `URC_PoolValue` for a real
+`W`/`P` pool (whose first token is structurally always a principal). Confirmed by trace
+(`URC_PoolValue*` dispatches first-token pricing straight to `URC_WorthWSTOA*`) and proven live on
+a real, already-issued pool (`"P|OURO-98c486052a51|W1-98c486052a51"`, `SWP|TX 032z8b`, new,
+permanent): **10,708 → 3,524 gas, 67.1%**, isolated via revert, adversarially proven. Also recorded:
+only pools anchored to a *major* token (`WSTOA`/`SSTOA`/OURO) get this; minor-principal-anchored
+pools have no equivalent shortcut, which is exactly why the tracked worst-case checkpoints only
+showed a small net win — none of those pools are major-anchored. See
+`ROUND-01-OWNER-FEEDBACK.md`'s `#65fL` entry for the full writeup.
+
+**Second addendum — measured the minor-principal case instead of assuming it:** owner asked whether
+a *realistic* (1-hop, organically-close) minor-principal pool is cheap in practice, not just the
+adversarial 8-hop worst case. New `SWP|TX 032z8c` (permanent): major (0 hops) 3,524 gas, realistic
+minor (1 hop, `MPTEST`) 120,641 gas, worst-case minor (8 hops, `W7`) 188,205 gas. This overturned my
+own tentative assumption that a registration-time "minor principals must connect near a major one"
+policy would help much — 1 hop costs 34x the major-anchored case and is still the same order of
+magnitude as 8 hops (only 1.56x cheaper), confirming Phase 7's finding that `UC_BFS` cost scales with
+graph size scanned, not path depth. **Recommendation: don't pursue that policy** — the data rules it
+out. `SWPT|PathCache` already absorbs repeat-lookup cost once real traffic warms it; a cold
+minor-principal repricing call costing 120K-190K gas is a bounded, accepted cost, not a bug.
+
+**Status:** FIXED ✅ AND PROVEN ✅. Phase 8b's value-methodology question left open for owner review
+(both phases fully shipped and working as designed either way). See `ROUND-01-OWNER-FEEDBACK.md`'s
+`#65bL` entry (Phase 8 addendum) for the full writeup.
+
+---
+
+## Fix #46 — #65gL: `DWK`/`DLK` renamed to `WSTOA`/`SSTOA` (actions `#65cL`)
+
+**Owner direction:** there is no "DWK" (leftover "wrapped Kadena") or "DLK" (leftover "liquid/staked
+Kadena") — the correct terms are `WSTOA` (wrapped STOA) and `SSTOA` (silver STOA). Rename everything
+and refactor accordingly. Actions `#65cL` (filed earlier the same session, deferred to `main`) with a
+concrete target naming.
+
+**Verified first, not assumed:** `WSTOA`/`SSTOA` are already the real, established token ticker
+prefixes used elsewhere in this codebase (`2_SLAVE/Stage_Z/01_DPL-UR.pact`, `0_Sample/CodeStoa.pact`,
+Stage 2 modules) — `URC_WorthDWK`'s "DWK" naming was factually wrong, not just inconsistent. Also
+confirmed `DLK` is ambiguous codebase-wide: `23_PYTHIA.pact` uses it for an unrelated "DualLink"
+concept — excluded entirely from the rename, never touched.
+
+**A real near-miss, caught and fixed:** an initial blind word-boundary `sed` across the REPL test
+files renamed a hardcoded pool-lookup string (real token IDs, not prose), breaking the suite — the
+actual genesis-configured tickers in `[4.0]_Sovereign-Executor.repl` are literally `"DWK"`/`"DLK"`
+(`DPTF|C_Issue`'s own ticker list), the exact legacy naming the owner is pointing at, but baked into
+real, deployed genesis data. Caught via the full regression (`Load failed`), not assumed clean.
+Reverted the 2 REPL files and redid them surgically: renamed only the function call sites (required
+to compile) and safe local-variable/prose text, left every real ticker string byte-for-byte untouched.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`** (the core of it): `URC_WorthDWK`→
+`URC_WorthWSTOA`, `URC_WorthDWKFromRaw`→`URC_WorthWSTOAFromRaw`, `URC_WorthDWKFromGraph`→
+`URC_WorthWSTOAFromGraph`, `URC_SingleWorthDWK`→`URC_SingleWorthWSTOA`,
+`URC_SingleDlkWorthDWK`→`URC_SingleSSTOAWorthWSTOA`, `URC_SingleOuroWorthDWK`→
+`URC_SingleOuroWorthWSTOA` — interface declarations, every internal call site, and all local variable
+names updated together, including the separate `wkda`/`lkda` ("Kadena") variables inside
+`URCX_PrimordialValueAndOuroSupply`/`URC_OuroPrimordialPrice`, a third leftover in the same functions.
+Doc-comment/message updates in `19_SWPU.pact`, `15_SWP.pact`, `14_SWPT.pact`, `20_MTX-SWP.pact`,
+`01_TS01-A.pact`, `04_TS01-C3.pact`, `01_DALOS.pact`. `2_SLAVE/Stage_Z/01_DPL-UR.pact`'s 2
+`URC_SingleWorthDWK` call sites updated — the breaking-API blast radius `#65cL` had already flagged,
+now actually fixed. REPL call sites updated to compile; `SWP|TX 032z6f`/`032z8a` (`#65fL`) proofs
+re-ran with identical gas numbers, confirming zero behavior change.
+
+**Deliberately not shipped:** the bulk of the REPL files' own local variable names/comments (still
+`dwk`/`dlk` in many places) — cosmetic only, and a blind rename carries the same real-ticker collision
+risk just demonstrated; left as-is rather than risk repeating the mistake less visibly. Also flagged,
+not actioned: the actual genesis token ticker is itself `"DWK"`/`"DLK"`, used as real data across
+likely hundreds of references in the wider REPL suite (Stage 1 and Stage 2) — a protocol-wide rename
+on the scale of `L58`'s deferred `KDA-PID`→`STOA-PID`, not something to attempt here.
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅ for the `.pact` code layer. REPL cosmetics and the deeper
+real-ticker-naming question explicitly out of scope, not silently dropped. See
+`ROUND-01-OWNER-FEEDBACK.md`'s `#65gL` entry for the full writeup.
+
+---
+
+## Fix #47 — #65hL: `#65bL` Phase 9 — targeted/early-exit BFS (`UC_BFSTargeted`)
+
+**Owner direction:** after the `#65fL` minor-principal repricing spectrum showed 1-hop and 8-hop
+minor-anchored pools cost the same order of magnitude, owner asked whether the search algorithm
+itself could be modified to be cheaper "if something is closer," or whether a different algorithm
+would be more efficient — while noting a strong feeling that BFS is probably already the best fit
+for this problem and nothing better exists.
+
+**Verified first, not assumed:** BFS as an algorithm CLASS is confirmed optimal here — this is an
+unweighted shortest-path problem over a graph with no negative structure to exploit (Dijkstra/A*
+buy nothing extra without edge weights or an admissible heuristic; the owner's own instinct was
+correct). The real gap was in the IMPLEMENTATION, not the algorithm choice: `U|BFS::UC_BFS`
+computes shortest chains to **every** reachable node from `input` before its only caller
+(`URC_ShortestChainPerNode` → `URC_ComputeGraphPath`) post-filters the result down to the single
+`output` needed — the function's own pre-existing `@doc` already admitted this ("`output` is
+accepted for signature symmetry... it plays no role in the BFS itself, which explores every
+reachable node from `input` regardless of `output`"), just never fixed.
+
+**Correctness argument:** BFS visits nodes in strictly non-decreasing distance order from `input`,
+so a node's shortest chain is fixed the first time BFS visits it. Once `output` has been visited,
+continuing to explore the rest of the graph can never change `output`'s own recorded chain — it
+only records chains for other nodes that the caller's existing post-filter step (`URC_ComputeGraphPath`'s
+`fp` fold) would have discarded anyway. Stopping there is a pure cost optimization, not a behavior
+change.
+
+**Blast-radius check before touching the shared `U|BFS` module:** exactly 3 callers of
+`UC_BFS`, all inside `14_SWPT.pact` (the plain/`FromRaw`/`FromGraph` `URC_ShortestChainPerNode*`
+trio). `UC_BFS` is declared on `BreadthFirstSearchV1`, the module's public interface.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact`,
+`1_SOVEREIGN/STAGE_01/0_Interfaces/01_Utilities.pact`,
+`1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`:** additive, not destructive — `UC_BFS` itself is
+completely untouched, still available (and still used by `URC_ShortestChainPerNode*`) for any
+caller genuinely wanting chains to every reachable node, not just one target.
+
+- New `U|BFS::UC_BFSTargeted(graph, in, target)` — mirrors `UC_BFS`'s exact `fold` structure
+  byte-for-byte, with one addition: once `target` is already present in the accumulator's
+  `visited` list, each subsequent fold step is a cheap no-op instead of doing real expansion work.
+  Declared on `BreadthFirstSearchV1` alongside the existing `UC_BFS` stub.
+- New `SWPT::URCX_ShortestChainToTarget`/`FromRaw`/`FromGraph` — same signature and shape as
+  `URC_ShortestChainPerNode*`, but call `UC_BFSTargeted` instead of `UC_BFS`. `URC_ComputeGraphPath`/
+  `FromRaw`/`FromGraph`'s own bodies switched to call these instead of `URC_ShortestChainPerNode*`
+  (their post-filter-down-to-`output` logic below is unchanged); `@doc`s extended with a `#65hL fix:`
+  note. `URC_ShortestChainPerNode*` themselves left completely unchanged.
+
+**First-try clean:** the first regression run after implementing this returned `EXIT:0, 0 FAILURE`
+immediately — every pre-existing test/proof across the entire `#65bL` history passed unchanged, with
+every VALUE staying byte-identical to pre-optimization measurements.
+
+**Adversarially proven via revert-and-compare, not just reasoned about:** temporarily replaced the
+early-exit's `target` reference with an impossible sentinel string, forcing `UC_BFSTargeted` to
+behave exactly like `UC_BFS` (never short-circuiting); re-ran the full suite; confirmed gas reverted
+UP to (approximately) pre-optimization levels while every VALUE stayed byte-identical — proving the
+savings are genuinely caused by the early exit, not a confound — then restored the real code and
+reconfirmed the optimized numbers held.
+
+| Scenario | Pre-`#65hL` | Post-`#65hL` | Sentinel-reverted (proof) |
+|---|---|---|---|
+| `SWP\|TX 032q` (P0.5 worst-case 6-hop SmartSwap) | 930,230 | **878,202** | 933,333 |
+| `SWP\|TX 032z2` (P2-scale checkpoint) | 1,686,661 | **1,296,898 (23.1% further)** | 1,705,522 |
+| `URC_Hopper(OURO→WSTOA)` isolated | 110,099 | **61,852** | — |
+| MPTEST (realistic 1-hop minor-principal, `#65fL`'s own fixture) | 120,641 | **66,926 (44.5%)** | 122,778 |
+| W7 (adversarial 8-hop minor-principal) | 188,205 | **124,358 (33.9%)** | 190,276 |
+
+This is the largest single gas win of the whole `#65bL` arc. It also directly answers the "cheaper
+if closer" question with real numbers: the realistic 1-hop case improved proportionally more
+(44.5%) than the adversarial 8-hop case (33.9%) — closer targets now genuinely cost less, which
+was never true before this fix (the `#65fL` spectrum measurement is what surfaced that gap in the
+first place).
+
+**New permanent proof — `SWP\|TX 032z8d`:** compares `UC_BFS` (old, still fully live) against
+`UC_BFSTargeted` (new) directly, on the exact same real ~102-active-pool topology and the same
+adversarial 6-hop pair (`W1`→`W7`, the same pair `SWP\|TX 032z2b`/`#38M/M4` isolates) — both
+functions remain real, permanent production code paths (not a temporary hack), so this stays a
+fair, honest, non-transient before/after comparison forever. Measured: `UC_BFS` 52,508 gas vs
+`UC_BFSTargeted` 50,051 gas on this isolated call; asserts the recorded chain to `W7` is
+byte-identical between the two, and that `UC_BFSTargeted` visits strictly fewer-or-equal nodes.
+
+**Cumulative (through Phase 9, cold cache): 5,094,054 → 1,296,898 gas, a 74.5% reduction** from the
+original pre-`#65bL` baseline. Warm-cache steady-state unaffected (still **1,143,255 gas, 77.6%**,
+Phase 6) — a cache hit bypasses BFS entirely, before this fix's code ever runs.
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅. See `ROUND-01-OWNER-FEEDBACK.md`'s `#65bL` entry (Phase 9
+addendum) and `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md` for the full
+writeup.
+
+---
+
+## Fix #48 — #72C: `UC_ComputeInverseY` domain guard (C2's still-open inverse-direction sibling)
+
+**Origin:** not from an audit cycle — owner asked directly whether the direct/inverse stable-swap
+math was actually verified correct. Checking the audit trail instead of assuming surfaced a real,
+already-recorded, never-closed gap: C2's own fix (Fix #1, 2026-08-17) explicitly left
+`UC_ComputeInverseY` open ("different failure mode... should be split out before Round III
+re-verify closes C2"). Round III re-verify was later ruled out of scope for this branch
+(2026-08-27) — that deferral was meant for double-checking already-closed findings, but C2 was
+never fully closed, only its direct-swap half was, and the distinction was lost. This fix closes it.
+
+**Reproduced live first**, same discipline as every fix on this branch — no REPL proof existed for
+the inverse direction, so one was built before any code changed, on the same live `pool7` fixture
+`SWP|TX 015` (C2's own proof) already uses:
+- `output-amount = 0.5 × xo` (in-domain): correct.
+- `output-amount = xo` exactly: **uncatchable native crash** (`Arithmetic exception: div by zero,
+  decimal`, inside `UC_YNext`'s `c` term) — not even caught by `try`. `xo-minus = xo -
+  output-amount` is a plain factor of `P-Prime` (not just an addend), so `P-Prime == 0.0` and `c =
+  D^(n+1) / (nn * P-Prime * A * nn)` divides by zero.
+- `output-amount = 1.01× / 1.5× / 5× xo` (impossible requests — no finite input ever buys more than
+  100% of a pool's own reserve): **no crash**, silently returns `~1.01×`/`~1.5×`/`~5×` xo back as a
+  fabricated "input needed" — plausible-looking, monotonically scaling, entirely wrong. The more
+  dangerous of the two failure modes, since nothing about the number looks wrong at a glance.
+
+**Why C2's fix (reseeding `y0`) doesn't transfer:** that bug was a bad starting guess — reseeding
+to `D` worked because the physical root exists for *any* positive input. This bug is upstream of
+Newton entirely: the coefficients (`S-Prime`/`P-Prime`) are invalid before iteration starts, for a
+request with no valid answer by construction. No seed choice fixes invalid coefficients — the fix
+has to reject the request outright, before those coefficients are computed.
+
+**Blast-radius check before fixing (traced every real caller):** `UC_ComputeInverseY` is reachable
+two ways sharing no common validating choke point, ruling out a caller-side `UEV_*` fix: (1)
+`URC_InverseSwap`'s `validation:bool` can skip its own `UEV_InverseSwapData` gate, which anyway
+never checks `output-amount` against the live reserve; (2) `UC_InverseBareboneSwapWithFeez`
+(`16_SWPI.pact:562`) is a `UC_*` function with zero validation in its chain, called directly by both
+`SWPL` (sovereign) and `2_SLAVE/Stage_Z/01_DPL-UR.pact` (slave) — no shared gate exists there at
+all. The fix has to live inside `UC_ComputeInverseY` itself.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact`, `UC_ComputeInverseY`:** added `(enforce
+(< output-amount xo) "UC_ComputeInverseY: output-amount must be strictly less than the pool's
+current output-token reserve")`, sequenced between `xo`/`xi` and `xo-minus` so it runs before
+`xo-minus`/`P-Prime` are ever computed (Pact evaluates `let` bindings in declared order; a failed
+`enforce` aborts immediately, confirmed empirically). This is a direct, load-bearing `enforce`
+inside a nominally `UC_*` function — StoicSyntax §6.1 already documents this exact function as
+carrying this kind of computation-intrinsic bounds guard (via the `U|LST` helpers it already
+calls), so this is consistent with existing precedent, not a new exception. `UC_ComputeY` untouched.
+
+**Adversarially proven, live:** built the reproduction as a permanent REPL proof first, confirmed it
+failed correctly pre-fix (crashed the whole load, matching the raw reproduction), applied the fix,
+confirmed all 6 assertions pass, then `git stash`'d `12_U_SWP.pact` back to pre-fix and reran — the
+suite crashed again with the identical `div by zero` at the identical location, confirming the test
+and fix both do real work. Restored the fix, diffed against a pre-stash backup to confirm
+byte-identical restoration, reran clean.
+
+**New permanent REPL proof — `REPL/Stage_01/[6.2+3]_DPTF-SWP_Issuance-Only.repl`, `SWP|TX 015b -
+#72C Regression: Stable-Swap Inverse Newton Domain Guard`** (immediately after `SWP|TX 015`, same
+`pool7` fixture, no hardcoded reserve figures): asserts the in-domain case still returns a sane
+positive value, and that the at-boundary and all three over-boundary cases are now cleanly,
+catchably rejected (the pre-fix at-boundary crash was not `try`-catchable at all — that itself is
+part of what the fix improves).
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅. C2 is now fully closed, both directions. See
+`ROUND-01-OWNER-FEEDBACK.md`'s `C2` entry (sibling addendum) for the full writeup.
+
+---
+
+## Fix #49 — #73C: `URC_WorthWSTOA` — weight-omission and whole-amount depth-skew
+
+**Origin:** owner-directed, arising directly from the earlier Kaddex-comparison detour — while
+discussing `URC_SingleOuroWorthWSTOA`'s already-flagged "values decision" (`#65fL` Phase 8b, shown
+side by side but never resolved), owner asked how the general "worth of a token in WSTOA"
+computation *should* work. Owner correctly reasoned: (1) the generic answer is a best-path
+no-fee simulated swap, which is why `URC_WorthWSTOA` needs BFS at all; (2) the OURO shortcut is
+using the primordial pool's total value divided by *some* OURO quantity — is that quantity right,
+and is this strange function even used anywhere; (3) — the sharper catch — simulating a swap of a
+*large* amount is not linear in amount (pool depth/slippage), so "worth of N tokens" computed this
+way is not N times "worth of 1 token," and the correct implementation should price 1 unit and
+scale, accepting that as the unavoidable compromise (no atomic-sub-unit pricing exists).
+
+**Two separate, real bugs found, both inside `URC_WorthWSTOA`/`FromRaw`/`FromGraph`:**
+
+1. **Weight-omission (OURO shortcut).** Traced `URC_SingleOuroWorthWSTOA`'s actual source
+   variable (had been mis-described as "OURO's total supply" in an earlier conversation pass —
+   corrected by re-reading the code): `ouro-supply` in `URCX_PrimordialValueAndOuroSupply` is
+   already `(at 1 (UR_PoolTokenSupplies primordial))`, the primordial pool's own *local* OURO
+   reserve, not global circulating supply. The real bug is that the formula
+   (`primordial-wstoa-value / ouro-supply`) is a flat, unweighted ratio — but the primordial pool
+   is a genuinely **weighted** pool (issuance weights `[0.3, 0.5, 0.2]` for SSTOA/OURO/WSTOA, not
+   equal), and a weighted pool's real exchange rate is `(reserve_B/weight_B)/(reserve_A/weight_A)`,
+   not a flat sum-of-other-reserves ratio. Confirmed live against real pool state (sstoa=3200.0,
+   ouro=10002.0, wstoa=5997.009): old shortcut returned 91.95 WSTOA for 100 OURO; the weighted
+   spot formula gives ≈149.9; the pre-existing graph-search fallback (unaffected by this bug, used
+   for comparison) returned 147.31 — matching the weighted formula almost exactly, the small
+   remainder being genuine AMM slippage on a real ~1%-of-reserves trade. The old formula wasn't
+   approximating anything real — it was answering a different, not-quite-meaningful question
+   ("if OURO were redeemable pro-rata against exactly this one pool's reserves").
+2. **Whole-amount depth-skew (general fallback, every non-major id).** `URC_WorthWSTOA`'s
+   graph-search branch simulated a real swap of the *entire requested `amount`* — and its one real
+   caller, `URC_PoolValue` ("Outputs the Pool Value in WSTOA"), passes a pool's **entire first-token
+   reserve** as that amount. Simulating a swap of a pool's whole reserve through whatever route BFS
+   finds is not a valuation, it's an unrealistic "liquidate everything in one trade" scenario, and
+   the resulting slippage-crushed number silently understates every non-major-anchored pool's
+   recorded value. Confirmed live: `URC_WorthWSTOA(MPTEST, 300.0)` returned 272.09 (effective rate
+   0.907/unit) instead of 300× the true 1-unit rate (1.496/unit, 448.71) — a **39% collapse** purely
+   from simulating an oversized single swap, on a fixture with a perfectly ordinary route.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`:**
+
+- `URC_SingleOuroWorthWSTOA` signature changed from `() -> decimal` to `(ouro:string wstoa:string)
+  -> decimal` (interface + module + all 3 real call sites updated in the same commit — zero other
+  callers exist, repo-wide grep confirmed). Body replaced: instead of the hand-rolled ratio, calls
+  `URC_W-Swap` directly on the primordial pool with a real 1-unit `DirectSwapInputData`
+  (`[ouro] [1.0] wstoa`) — the exact same `UC_ComputeWP` weighted-invariant math a live swap would
+  use, so weights are honored automatically, no separate weight-adjustment formula needed. Still
+  zero graph search: OURO and WSTOA are direct siblings in the same primordial pool, one hop, no
+  BFS. `ouro`/`wstoa` are now caller-supplied params instead of self-fetched — every real caller
+  already holds them via `DALOS::UR_CanonicalStoaIds`, avoiding the exact kind of redundant-read
+  regression Phase 8b's own DALOS combined-reader fix was about (the `+928` gas naive-3rd-read bug).
+- `URC_WorthWSTOA`/`FromRaw`/`FromGraph`'s general (non-WSTOA/SSTOA/OURO) fallback branch changed
+  from `URC_Hopper[FromRaw/FromGraph] id wstoa amount` to `... id wstoa 1.0`, then the per-unit
+  result is multiplied by the real `amount` and floored at `id`'s own precision (matching the
+  existing SSTOA/OURO branches' established precision convention, for consistency across all four
+  branches). Route-finding (BFS) is unaffected — it was already amount-independent — only the swap
+  simulation step changes from "simulate the whole amount" to "price 1 unit, scale linearly."
+- `URCX_PrimordialValueAndOuroSupply`'s own `@doc` updated: it's now used only by
+  `URC_OuroPrimordialPrice` (the dollar-denominated price), not `URC_SingleOuroWorthWSTOA` anymore.
+  Flagged, not fixed here (out of scope, the WSTOA-denominated case is what surfaced this):
+  `URC_OuroPrimordialPrice`'s own final division likely carries the identical weight-omission
+  issue, unverified, left for a follow-up.
+
+**Adversarially proven, live, both bugs independently:**
+- Weight-omission: re-ran `SWP|TX 032z6f` post-fix — shortcut jumped 91.95 → 149.87, now within
+  1.7% of the graph-search value (147.31) instead of 38% apart. Proof's own assertions strengthened
+  from "non-zero, not expected to be close" to two real checks: shortcut ≥ graph-search (marginal
+  price is never worse than a real trade's average price), and the two are within 5% of each other.
+- Depth-skew: `git stash`'d `16_SWPI.pact` back to pre-fix, reran the new `SWP|TX 032z8e` probe —
+  pre-fix `worth(300)` was 272.09 (rate 0.907/unit, a 39% collapse from the true 1.496/unit rate);
+  post-fix `worth(300)` is exactly `300 × worth(1)` = 448.71, rate ratio exactly `1.0`. Restored the
+  fix, diffed against a pre-stash backup to confirm byte-identical restoration.
+
+**New permanent REPL proof — `SWP|TX 032z8e` (`REPL/Stage_01/[6.3]_SWP.repl`)**: asserts
+`worth(300.0)` is exactly `300.0 × worth(1.0)`, on the `MPTEST` fixture (no hardcoded reserve
+figures). `SWP|TX 032z6f` (existing) strengthened with two real assertions in place of a
+non-committal print, as above.
+
+**Gas cost, measured, disclosed:** small, expected increase on the tracked worst-case checkpoints —
+every pool touched by the STOA-repricing loop now does one extra precision read + multiply/floor.
+`SWP|TX 032q` 878,202 → 879,052 (+850), `SWP|TX 032z2` 1,296,898 → 1,297,747 (+849). Accepted cost
+of a genuine correctness fix, not a regression to chase down.
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅. `URC_OuroPrimordialPrice`'s own dollar-denominated math flagged
+as a likely-identical, unverified follow-up — not fixed here. See `ROUND-01-OWNER-FEEDBACK.md`'s
+`#73C` entry for the full writeup.

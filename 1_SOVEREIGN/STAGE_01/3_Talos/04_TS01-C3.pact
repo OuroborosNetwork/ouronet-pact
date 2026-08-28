@@ -1,12 +1,67 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact
+;; #39M/M14 fix: prior live ClientThreeV2 frozen here, not in the central registry above —
+;; V2's Smart Swap functions type against SwapperUsageV2.Slippage, a module-owned interface
+;; (declared in 19_SWPU.pact) that isn't resolvable yet at the registry's early Interfaces-
+;; load point (mirrors the same reason ClientFourV6 was left undocumented-in-full there, per
+;; that file's own comment — module-owned-type dependency, not resolvable in the early registry).
+;;
+(interface TalosStageOne_ClientThreeV2
+    @doc "Frozen — pre-V3 surface; Issue/fee-target functions typed against \
+        \ SwapperV2.PoolTokens/SwapperV2.FeeSplit (superseded when SwapperV3 shipped, \
+        \ interface bump per versioning rule — no functional surface change). \
+        \ V2: Added Smart Swap entry points - SWP|C_SmartSwapWithSlippage and \
+        \ SWP|C_SmartSwapNoSlippage for multi-hop token swaps across the entire pool \
+        \ base using BFS path tracing."
+    ;;
+    ;;SWP (Swap-Pair) Functions
+    (defun SWP|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun SWP|C_UpgradeBranding (patron:string entity-id:string months:integer))
+    (defun SWP|C_UpdatePendingBrandingLPs (patron:string swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
+    (defun SWP|C_UpgradeBrandingLPs (patron:string swpair:string entity-pos:integer months:integer))
+    ;;
+    (defun SWP|C_ChangeOwnership (patron:string swpair:string new-owner:string))
+    (defun SWP|C_EnableFrozenLP:string (patron:string swpair:string))
+    (defun SWP|C_EnableSleepingLP:string (patron:string swpair:string))
+    ;;Issue
+    (defun SWP|C_IssueStable:list (patron:string account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun SWP|C_IssueStandard:list (patron:string account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal p:bool))
+    (defun SWP|C_IssueWeighted:list (patron:string account:string pool-tokens:[object{SwapperV2.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    ;;Management
+    (defun SWP|C_ModifyCanChangeOwner (patron:string swpair:string new-boolean:bool))
+    (defun SWP|C_ModifyWeights (patron:string swpair:string new-weights:[decimal]))
+    (defun SWP|C_ToggleAddLiquidity (patron:string swpair:string toggle:bool))
+    (defun SWP|C_ToggleSwapCapability (patron:string swpair:string toggle:bool))
+    (defun SWP|C_ToggleFeeLock (patron:string swpair:string toggle:bool))
+    (defun SWP|C_UpdateAmplifier (patron:string swpair:string amp:decimal))
+    (defun SWP|C_UpdateFee (patron:string swpair:string new-fee:decimal lp-or-special:bool))
+    (defun SWP|C_UpdateSpecialFeeTargets (patron:string swpair:string targets:[object{SwapperV2.FeeSplit}]))
+    ;;Liquidity
+    (defun SWP|C_AddLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddIcedLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddGlacialLiquidity:string (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_AddFrozenLiquidity:string (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal))
+    (defun SWP|C_AddSleepingLiquidity:string (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
+    (defun SWP|C_RemoveLiquidity (patron:string account:string swpair:string lp-amount:decimal))
+    ;;Smart Swap
+    (defun SWP|C_SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun SWP|C_SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))
+    ;;Swap
+    (defun SWP|C_SingleSwapWithSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun SWP|C_SingleSwapNoSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
+    (defun SWP|C_MultiSwapWithSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun SWP|C_MultiSwapNoSlippage (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
+)
 ;;
 (interface TalosStageOne_ClientThreeV3
     @doc "Exposes Ouronet Stage One Third Batch of Client Functions \
         \ Modules: SWP are included in the Second Batch\
-        \ V2: Added Smart Swap entry points - SWP|C_SmartSwapWithSlippage and SWP|C_SmartSwapNoSlippage \
+        \ V2: Added Smart Swap entry points - SWP|CC_SmartSwapWithSlippage and SWP|CC_SmartSwapNoSlippage \
         \ for multi-hop token swaps across the entire pool base using BFS path tracing. \
-        \ V3: Issue and fee-target surfaces use SwapperV3.PoolTokens / SwapperV3.FeeSplit (interface bump per versioning rule)."
+        \ V3: Issue and fee-target surfaces use SwapperV3.PoolTokens / SwapperV3.FeeSplit (interface bump per versioning rule). \
+        \ #34 Phase 8: SWP|C_SmartSwap{With,No}Slippage renamed to SWP|CC_SmartSwap{With,No}Slippage \
+        \ (self-searching BFS variant); SWP|C_SmartSwap{With,No}Slippage is reserved for the \
+        \ bundle-based, dirty-read-injected variant."
     ;;
     ;;SWP (Swap-Pair) Functions
     (defun SWP|C_UpdatePendingBranding (patron:string entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}]))
@@ -37,9 +92,24 @@
     (defun SWP|C_AddFrozenLiquidity:string (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal))
     (defun SWP|C_AddSleepingLiquidity:string (patron:string account:string swpair:string sleeping-dpof:string nonce:integer))
     (defun SWP|C_RemoveLiquidity (patron:string account:string swpair:string lp-amount:decimal))
+    ;;#70L fix: SWP|C_Fuel/SWP|C_Firestarter are real, public functions on the TS01-C3
+    ;;module below but were missing from this interface (interface-completeness gap,
+    ;;not a security issue — both were still reachable via the concrete module ref).
+    (defun SWP|C_Fuel (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun SWP|C_Firestarter (fire-starter:string))
     ;;Smart Swap
-    (defun SWP|C_SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
-    (defun SWP|C_SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))
+    (defun SWP|CC_SmartSwapWithSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun SWP|CC_SmartSwapNoSlippage (patron:string account:string input-id:string input-amount:decimal output-id:string))
+    ;;#34 Phase 8: bundle-based, dirty-read-injected Smart Swap — built alongside, not
+    ;;replacing, SWP|CC_SmartSwap{With,No}Slippage above, for direct gas comparison.
+    (defun SWP|C_SmartSwapWithSlippage
+        (patron:string account:string input-id:string input-amount:decimal output-id:string
+         slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+    )
+    (defun SWP|C_SmartSwapNoSlippage
+        (patron:string account:string input-id:string input-amount:decimal output-id:string
+         bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+    )
     ;;Swap
     (defun SWP|C_SingleSwapWithSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
     (defun SWP|C_SingleSwapNoSlippage (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
@@ -67,8 +137,8 @@
     ;;POLICY
     ;;{P1}
     ;;{P2}
-    (deftable P|T:{OuronetPolicyV1.P|S})
-    (deftable P|MT:{OuronetPolicyV1.P|MS})
+    (deftable P|T:{OuronetPolicyV1.P|S})                        ;;Key = <policy-name>
+    (deftable P|MT:{OuronetPolicyV1.P|MS})                      ;;Key = P|I (module-identity singleton constant)
     ;;{P3}
     (defcap P|TS ()
         (let
@@ -774,7 +844,7 @@
             )
         )
     )
-    (defun SWP|C_SmartSwapWithSlippage
+    (defun SWP|CC_SmartSwapWithSlippage
         (
             patron:string
             account:string
@@ -784,7 +854,22 @@
             slippage-bounds:object{SwapperUsageV2.Slippage}
         )
         @doc "Executes a Smart Swap from <input-id> to <output-id> with slippage protection. \
-            \ Path is traced automatically via BFS across all pool bases."
+            \ Path is traced automatically via BFS across all pool bases. \
+            \ #34 Phase 8: renamed from SWP|C_SmartSwapWithSlippage. \
+            \ #65bL Phase 4 fix: the STOA-repricing loop below (one URC_PoolValue call \
+            \ per distinct pool touched) now fetches the whole topology's raw graph \
+            \ ONCE via URC_PoolValueFromRaw's shared <raw-graph>, instead of each \
+            \ pool's own URC_PoolValue call independently re-reading and rebuilding \
+            \ it. Safe per SWPT::UC_MakeGraphNodes being input/output-independent — \
+            \ one fetch against the full <all-swpairs> universe covers every distinct \
+            \ pool's own first-token->WSTOA query, not just the one it happened to be \
+            \ fetched for (see URCX_HopperFromRaw's own doc). \
+            \ #65bL Phase 7 fix: also builds the [GraphNode] graph itself \
+            \ (SWPT::UC_MakeGraphFromRaw) ONCE, alongside <raw-graph> — every \
+            \ URC_PoolValueFromGraph call below now reuses that same built graph \
+            \ instead of each one independently re-deriving it from <raw-graph> \
+            \ (a linear scan per node in the whole topology), same reasoning one \
+            \ layer deeper (see URC_HopperFromGraph's own doc)."
         (with-capability (P|TS)
             (let
                 (
@@ -793,25 +878,163 @@
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-SWPT:module{SwapTracerV2} SWPT)
+                    (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                     (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPU::C_SmartSwap
+                        (ref-SWPU::CC_SmartSwap
                             account input-id input-amount output-id
                             slippage kda-pid slippage-bounds
                         )
                     )
                     (out:list (at "output" ico))
-                    (path-edges:[string] (at "edges" (ref-SWPI::URC_Hopper input-id output-id input-amount)))
+                    ;;#27M/M13 fix: removed the dead `path-edges` binding that used to
+                    ;;shadow-recompute this via a fresh `URC_Hopper` BFS call (unused here —
+                    ;;this loop already correctly used <at 3 out>, the swap's own recorded
+                    ;;`distinct-edges`). Pure gas cleanup, no behavior change.
+                    ;;
+                    ;;#65bL Phase 4: fetched ONCE, shared across every distinct pool
+                    ;;below — this is TOPOLOGY only (SWPT|Graph), unaffected by the
+                    ;;swap's own reserve changes, so nothing depends on fetching it
+                    ;;before or after the swap. Each pool's own reserve-dependent reads
+                    ;;still happen live, inside the loop, per pool, as before.
+                    (all-swpairs:[string] (ref-SWP::URC_Swpairs))
+                    (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes BAR BAR all-swpairs))
+                    (raw-graph:[object{SwapTracerV2.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+                    ;;#65bL Phase 7: built ONCE here too — every URC_PoolValueFromGraph
+                    ;;call below reused to share the graph-BUILD step, not just the raw
+                    ;;read Phase 4 already shared. See URC_HopperFromGraph's own doc.
+                    (graph:[object{BreadthFirstSearchV1.GraphNode}]
+                        (ref-SWPT::UC_MakeGraphFromRaw BAR BAR all-swpairs raw-graph)
+                    )
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (map
                     (lambda (sp:string)
-                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValue sp)))
+                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromGraph sp graph)))
                     )
                     (at 3 out)
                 )
                 (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+            )
+        )
+    )
+    (defun SWP|CC_SmartSwapNoSlippage
+        (
+            patron:string
+            account:string
+            input-id:string
+            input-amount:decimal
+            output-id:string
+        )
+        @doc "Executes a Smart Swap from <input-id> to <output-id> without slippage protection. \
+            \ Path is traced automatically via BFS across all pool bases. \
+            \ #34 Phase 8: renamed from SWP|C_SmartSwapNoSlippage. \
+            \ #65bL Phase 4/7 fix: see SWP|CC_SmartSwapWithSlippage's own doc — same \
+            \ shared-raw-graph/shared-graph-build STOA-repricing-loop fixes, \
+            \ mirrored here."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-SWPI:module{SwapperIssueV3} SWPI)
+                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (ref-SWPT:module{SwapTracerV2} SWPT)
+                    (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (slippage-bounds:object{SwapperUsageV2.Slippage}
+                        (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0)
+                    )
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-SWPU::CC_SmartSwap
+                            account input-id input-amount output-id
+                            -1.0 kda-pid slippage-bounds
+                        )
+                    )
+                    (out:list (at "output" ico))
+                    ;;#27M/M13 fix: was a post-swap `URC_Hopper` BFS recompute (`path-edges`)
+                    ;;used to pick which pools get refreshed below — wrong, because it re-runs
+                    ;;BFS against reserves the swap itself just mutated, so it can pick a
+                    ;;different route than the one actually swapped (missed/stale refreshes,
+                    ;;or spurious refreshes of untouched pools). Fixed to use <at 3 out>, the
+                    ;;`distinct-edges` list XI_SmartSwap already recorded as the real traversed
+                    ;;pools (19_SWPU.pact XI_SmartSwap) — matches SmartSwapWithSlippage's
+                    ;;(already-correct) pattern above.
+                    ;;
+                    ;;#65bL Phase 4: fetched ONCE, shared across every distinct pool
+                    ;;below — this is TOPOLOGY only (SWPT|Graph), unaffected by the
+                    ;;swap's own reserve changes, so nothing depends on fetching it
+                    ;;before or after the swap. Each pool's own reserve-dependent reads
+                    ;;still happen live, inside the loop, per pool, as before.
+                    (all-swpairs:[string] (ref-SWP::URC_Swpairs))
+                    (all-nodes:[string] (ref-U|SWP::UC_MakeGraphNodes BAR BAR all-swpairs))
+                    (raw-graph:[object{SwapTracerV2.RawGraphNode}] (ref-SWPT::URC_FetchRawGraph all-nodes))
+                    ;;#65bL Phase 7: built ONCE here too — every URC_PoolValueFromGraph
+                    ;;call below reused to share the graph-BUILD step, not just the raw
+                    ;;read Phase 4 already shared. See URC_HopperFromGraph's own doc.
+                    (graph:[object{BreadthFirstSearchV1.GraphNode}]
+                        (ref-SWPT::UC_MakeGraphFromRaw BAR BAR all-swpairs raw-graph)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (map
+                    (lambda (sp:string)
+                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValueFromGraph sp graph)))
+                    )
+                    (at 3 out)
+                )
+                (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+            )
+        )
+    )
+    (defun SWP|C_SmartSwapWithSlippage
+        (
+            patron:string
+            account:string
+            input-id:string
+            input-amount:decimal
+            output-id:string
+            slippage-bounds:object{SwapperUsageV2.Slippage}
+            bundle:object{SwapperUsageV2.SmartSwapPathBundle}
+        )
+        @doc "#34 Phase 8: bundle-based Smart Swap with slippage protection — the route, \
+            \ boost-path and stoa-paths are all supplied by <bundle> (assembled \
+            \ client-side via dirty reads, HANDOFF doc P3.7), zero internal searching. \
+            \ P3.4's dumb-writer: <stoa-results> (precomputed by \
+            \ SWPU::URC_ComputeStoaValueResults inside SWPU::C_SmartSwap) is mapped \
+            \ straight into XE_UpdateStoaValue below — no URC_PoolValue re-derivation \
+            \ at the Talos layer at all, unlike SWP|CC_SmartSwapWithSlippage above."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-SWP:module{SwapperV3} SWP)
+                    (ref-SWPU:module{SwapperUsageV2} SWPU)
+                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (slippage:decimal (at "slippage-percent" slippage-bounds))
+                    (result:list
+                        (ref-SWPU::C_SmartSwap
+                            account input-id input-amount output-id
+                            slippage kda-pid slippage-bounds bundle
+                        )
+                    )
+                    (ico:object{IgnisCollectorV1.OutputCumulator} (at 0 result))
+                    (stoa-results:list (at 1 result))
+                    (out:list (at "output" ico))
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (map
+                    (lambda (pv:object) (ref-SWP::XE_UpdateStoaValue (at "pool" pv) (at "stoa-value" pv)))
+                    stoa-results
+                )
+                (if (= (length out) 4)
+                    (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+                    (format "Smart Swap not executed: {}" [(at 0 out)])
+                )
             )
         )
     )
@@ -822,38 +1045,41 @@
             input-id:string
             input-amount:decimal
             output-id:string
+            bundle:object{SwapperUsageV2.SmartSwapPathBundle}
         )
-        @doc "Executes a Smart Swap from <input-id> to <output-id> without slippage protection. \
-            \ Path is traced automatically via BFS across all pool bases."
+        @doc "#34 Phase 8: bundle-based Smart Swap without slippage protection. Unlike \
+            \ SWP|CC_SmartSwapNoSlippage above, the dummy slippage-bounds object is built \
+            \ via SWPU::UDC_Slippage directly (not UDC_SpawnSmartSwapSlippageBounds, \
+            \ which itself performs a live URC_HopperActive search — defeating the whole \
+            \ point of the bundle-based path)."
         (with-capability (P|TS)
             (let
                 (
                     (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWP:module{SwapperV3} SWP)
-                    (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
                     (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
-                    (slippage-bounds:object{SwapperUsageV2.Slippage}
-                        (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0)
-                    )
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (slippage-bounds:object{SwapperUsageV2.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
+                    (result:list
                         (ref-SWPU::C_SmartSwap
                             account input-id input-amount output-id
-                            -1.0 kda-pid slippage-bounds
+                            -1.0 kda-pid slippage-bounds bundle
                         )
                     )
+                    (ico:object{IgnisCollectorV1.OutputCumulator} (at 0 result))
+                    (stoa-results:list (at 1 result))
                     (out:list (at "output" ico))
-                    (path-edges:[string] (at "edges" (ref-SWPI::URC_Hopper input-id output-id input-amount)))
                 )
                 (ref-IGNIS::C_Collect patron ico)
                 (map
-                    (lambda (sp:string)
-                        (ref-SWP::XE_UpdateStoaValue sp (at 0 (ref-SWPI::URC_PoolValue sp)))
-                    )
-                    (distinct path-edges)
+                    (lambda (pv:object) (ref-SWP::XE_UpdateStoaValue (at "pool" pv) (at "stoa-value" pv)))
+                    stoa-results
                 )
-                (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+                (if (= (length out) 4)
+                    (format "Succesfully smart-swapped {} {} to {} {} via {} Swaps over {} Pools" [input-amount input-id (at 0 out) output-id (at 1 out) (at 2 out)])
+                    (format "Smart Swap not executed: {}" [(at 0 out)])
+                )
             )
         )
     )

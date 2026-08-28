@@ -83,11 +83,15 @@
                                     (prev-y:decimal (at idx y-values))
                                     (y-value:decimal (UC_YNext prev-y A D n S-Prime P-Prime))
                                 )
-                                (ref-U|LST::UC_AppL y-values y-value)               
+                                (ref-U|LST::UC_AppL y-values y-value)
                             )
                         )
                         [y0]
-                        (enumerate 0 10)
+                        ;;#24H fix: 11 -> 12 iterations, for uniformity with UC_ComputeD's bumped
+                        ;;count (owner direction) — measured fully converged at 11 already (proven
+                        ;;via a 255-iteration reference at 1000x reserve skew), so this is pure
+                        ;;margin, not a measured shortfall like UC_ComputeD's was.
+                        (enumerate 0 11)
                     )
                 )
             )
@@ -117,6 +121,25 @@
                 (n:decimal (dec (length X)))
                 (xo:decimal (at op X))
                 (xi:decimal (at ip X))
+                ;;#72C fix (C2's still-open sibling): <xo-minus> feeds <P-Prime> as a plain factor
+                ;;(not just an addend), so at <output-amount> == <xo> it is exactly 0.0, making
+                ;;<P-Prime> == 0.0 and dividing by zero inside <UC_YNext>'s `c` term — an ugly,
+                ;;uncatchable-via-`try` native crash (confirmed live). Past that (<output-amount>
+                ;;> <xo>) <xo-minus> goes negative, flips the sign on every coefficient chained off
+                ;;<P-Prime>/<S-Prime>, and the solver does NOT crash — it silently converges to a
+                ;;plausible-looking but mathematically meaningless number (confirmed live: asking
+                ;;for 1.01x/1.5x/5x a pool's real output reserve returned ~1.01x/~1.5x/~5x back as
+                ;;the "required input," when no finite input can ever buy more than 100% of a
+                ;;pool's own reserve of a token). Unlike <UC_ComputeY>'s C2 fix (a reseed was
+                ;;enough there, because the physical root exists for ANY positive input), no seed
+                ;;choice can fix this: the coefficients themselves are invalid before Newton ever
+                ;;starts, for a request that has no valid answer by construction. Rejecting it here,
+                ;;before <xo-minus>/<P-Prime> are computed, is the only correct fix — mirrors the
+                ;;same load-bearing, computation-intrinsic bounds-guard treatment StoicSyntax §6.1
+                ;;already documents for this exact function (the <U|LST> bounds-guard exception).
+                (domain-guard:bool
+                    (enforce (< output-amount xo)
+                        "UC_ComputeInverseY: output-amount must be strictly less than the pool's current output-token reserve"))
                 (xo-minus:decimal (- xo output-amount))
                 (X1:[decimal] (ref-U|LST::UC_ReplaceAt X op xo-minus))
                 (X2:[decimal] (ref-U|LST::UC_ReplaceAt X1 ip -1.0))
@@ -135,11 +158,12 @@
                                     (prev-y:decimal (at idx y-values))
                                     (y-value:decimal (UC_ZNext prev-y A D n S-Prime P-Prime))
                                 )
-                                (ref-U|LST::UC_AppL y-values y-value)               
+                                (ref-U|LST::UC_AppL y-values y-value)
                             )
                         )
                         [y0]
-                        (enumerate 0 10)
+                        ;;#24H fix: 11 -> 12 iterations, mirroring UC_ComputeY (see its comment).
+                        (enumerate 0 11)
                     )
                 )
             )
@@ -215,7 +239,17 @@
     )
     (defun UC_ComputeD:decimal (A:decimal X:[decimal])
         @doc "Computes D Parameter given an amplifier <A> and a value of Pool Tokens \
-        \ Uses <UC_DNext> for aproximation over 5 fixed iterations"
+        \ Uses <UC_DNext> for aproximation over 12 fixed iterations. \
+        \ #24H fix: was 6 (docstring claimed 5, itself a doc/code mismatch) — measured \
+        \ directly against a 255-iteration reference at 1000x reserve skew \
+        \ (X=[500000,500,500], A=85, a legally reachable pool state): 6 iterations left \
+        \ D off by 0.0078 absolute, while the same computation is already fully \
+        \ converged (bit-identical to 255 iterations) by iteration 10. Pact has no \
+        \ dynamic-length loop / early-exit-on-convergence construct (Turing-incomplete — \
+        \ the iteration count must be a fixed number decided in advance, not runtime- \
+        \ dependent), so the fix is a plain static bump, not an adaptive break: 12 \
+        \ gives 2 iterations of margin past the measured convergence point, for a small, \
+        \ fixed, uniform gas cost on every call regardless of pool state."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
@@ -232,7 +266,7 @@
                             )
                         )
                         [(fold (+) 0.0 X)]
-                        (enumerate 0 5)
+                        (enumerate 0 11)
                     )
                 )
             )
@@ -460,20 +494,27 @@
         )
     )
     (defun UC_LpID:[string] (token-names:[string] token-tickers:[string] weights:[decimal] amp:decimal)
-        @doc "Creates a LP Id from input sources"
+        @doc "Creates a LP Id from input sources. \
+            \ #40L fix: dropped the cross-module UEV_UniformList length-parity enforce \
+            \ that used to live here — a UC_* purity violation (UC_* may not enforce, \
+            \ even transitively via another module's UEV_*). Confirmed dead defense, \
+            \ not load-bearing: the only real caller (SWP::URC_LpComposer) builds both \
+            \ <token-names> and <token-tickers> from the exact same source list via the \
+            \ exact same enumerate range, so they can never actually differ in length. \
+            \ Residual, not pursued: UC_LpID is declared on the public UtilitySwpV1 \
+            \ interface, so a hypothetical future caller passing mismatched-length \
+            \ lists would hit a plain out-of-bounds crash inside the folds below \
+            \ instead of a clean enforce message — same class of residual risk as M1's \
+            \ own write-up, not a live path today."
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|INT:module{OuronetIntegersV1} U|INT)
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (prefix:string (UC_Prefix weights amp))
                 (l1:integer (length token-names))
-                (l2:integer (length token-tickers))
-                (lengths:[integer] [l1 l2])
                 (minus:string "-")
                 (caron:string "^")
             )
-            (ref-U|INT::UEV_UniformList lengths)
             (let
                 (
                     (lp-name-elements:[string]
@@ -597,27 +638,32 @@
     )
     ;;
     (defun UC_AreOnPools:[bool] (id1:string id2:string swpairs:[string])
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-            )
-            (fold
-                (lambda
-                    (acc:[bool] idx:integer)
-                    (ref-U|LST::UC_AppL
-                        acc
-                        (let*
-                            (
-                                (pool-tokens:[string] (UC_TokensFromSwpairString (at idx swpairs)))
-                                (iz-id1:bool (contains id1 pool-tokens))
-                                (iz-id2:bool (contains id2 pool-tokens))
+        ;;#37M/M3 fix: empty <swpairs> short-circuits to [] instead of the
+        ;;<enumerate 0 -1> / <at 0 []> "Array index out of bounds" crash.
+        (if (= 0 (length swpairs))
+            []
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
+                )
+                (fold
+                    (lambda
+                        (acc:[bool] idx:integer)
+                        (ref-U|LST::UC_AppL
+                            acc
+                            (let*
+                                (
+                                    (pool-tokens:[string] (UC_TokensFromSwpairString (at idx swpairs)))
+                                    (iz-id1:bool (contains id1 pool-tokens))
+                                    (iz-id2:bool (contains id2 pool-tokens))
+                                )
+                                (and iz-id1 iz-id2)
                             )
-                            (and iz-id1 iz-id2)
                         )
                     )
+                    []
+                    (enumerate 0 (- (length swpairs) 1))
                 )
-                []
-                (enumerate 0 (- (length swpairs) 1))
             )
         )
     )
@@ -647,20 +693,25 @@
         (contains id (UC_TokensFromSwpairString swpair))
     )
     (defun UC_IzOnPools:[bool] (id:string swpairs:[string])
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-            )
-            (fold
-                (lambda
-                    (acc:[bool] idx:integer)
-                    (ref-U|LST::UC_AppL
-                        acc
-                        (UC_IzOnPool id (at idx swpairs))
-                    )
+        ;;#37M/M3 fix: empty <swpairs> short-circuits to [] instead of the
+        ;;<enumerate 0 -1> / <at 0 []> "Array index out of bounds" crash.
+        (if (= 0 (length swpairs))
+            []
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
                 )
-                []
-                (enumerate 0 (- (length swpairs) 1))
+                (fold
+                    (lambda
+                        (acc:[bool] idx:integer)
+                        (ref-U|LST::UC_AppL
+                            acc
+                            (UC_IzOnPool id (at idx swpairs))
+                        )
+                    )
+                    []
+                    (enumerate 0 (- (length swpairs) 1))
+                )
             )
         )
     )
@@ -672,8 +723,8 @@
             \ \
             \ #13C fix: previously this only kept swpairs directly touching \
             \ <input-id> or <output-id> (<=1 hop from either end), while \
-            \ <SWPT::URC_TokenNeighbours>/<URC_TokenSwpairs> read the FULL \
-            \ unrestricted <swpairs> for each node's links — a node envelope \
+            \ <SWPT::URC_TokenNeighbours> (post-#21H: reads SWPT|Graph directly) \
+            \ read the FULL unrestricted set for each node's links — a node envelope \
             \ narrower than the live edge-set, so BFS could expand into a token \
             \ with no <GraphNode> entry and corrupt/lose the chain. Building nodes \
             \ from the full <swpairs> list makes the envelope equal to the \
@@ -691,20 +742,28 @@
         )
     )
     (defun UC_PoolTokensFromPairs:[[string]] (swpairs:[string])
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-            )
-            (fold
-                (lambda
-                    (acc:[[string]] idx:integer)
-                    (ref-U|LST::UC_AppL
-                        acc
-                        (UC_TokensFromSwpairString (at idx swpairs))
-                    )
+        ;;#37M/M3 fix: empty <swpairs> short-circuits to [] instead of the
+        ;;<enumerate 0 -1> / <at 0 []> "Array index out of bounds" crash. Real,
+        ;;live path: SWPU|X>SMART-SWAP's defcap calls this (via UC_UniqueTokens
+        ;;-> URC_AllPoolTokens) unconditionally, and <swpairs> is genuinely []
+        ;;before the first pool is ever issued.
+        (if (= 0 (length swpairs))
+            []
+            (let
+                (
+                    (ref-U|LST:module{StringProcessorV1} U|LST)
                 )
-                []
-                (enumerate 0 (- (length swpairs) 1))
+                (fold
+                    (lambda
+                        (acc:[[string]] idx:integer)
+                        (ref-U|LST::UC_AppL
+                            acc
+                            (UC_TokensFromSwpairString (at idx swpairs))
+                        )
+                    )
+                    []
+                    (enumerate 0 (- (length swpairs) 1))
+                )
             )
         )
     )
