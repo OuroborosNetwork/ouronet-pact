@@ -5410,6 +5410,55 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z6f - #65fL Phase 8b OURO Shortcut Gas + Correctness Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 032z6f - #65fL Phase 8b Proof · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;#65fL Phase 8b: URC_WorthDWK's own id==OURO shortcut (URC_SingleOuroWorthDWK, straight off
+;;the primordial pool's own reserves) vs the OLD graph-search path (URC_Hopper ouro->DWK,
+;;reproduced directly here for comparison, exactly what URC_WorthDWK used to fall through to
+;;unconditionally for OURO before this fix). NOT expected to be byte-identical — the shortcut
+;;is spot-price/ratio-based, the graph search is a simulated swap with real AMM slippage; this
+;;proof shows both the real gas win and the real (small, expected) value difference honestly,
+;;not a false byte-identical claim.
+(print "--- [SWP|TX 032z6f - #65fL Phase 8b Proof · 02 · direct comparison] ---")
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ouro:string "OURO-98c486052a51")
+        (dwk:string (ref-DALOS::UR_WrappedStoaID))
+        (amount:decimal 100.0)
+    )
+    (env-gas 0)
+    (let
+        (
+            (shortcut-result:decimal (ref-SWPI::URC_WorthDWK ouro amount))
+        )
+        (print (format "#65fL Phase 8b: URC_WorthDWK(OURO, {}) via shortcut = {}, gas: {}" [amount shortcut-result (env-gas)]))
+        (env-gas 0)
+        (let
+            (
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper ouro dwk amount))
+                (ovs:[decimal] (at "output-values" h-obj))
+                (graph-search-result:decimal (if (= (length ovs) 0) 0.0 (at 0 (take -1 ovs))))
+            )
+            (print (format "#65fL Phase 8b: URC_Hopper(OURO->DWK, {}) via graph search = {}, gas: {}" [amount graph-search-result (env-gas)]))
+            (map print
+                [
+                    (expect "#65fL Phase 8b: shortcut result is genuinely non-zero (real primordial-pool data, not an empty fallback)" true (> shortcut-result 0.0))
+                    (format "#65fL Phase 8b: value difference (shortcut - graph search) = {}" [(- shortcut-result graph-search-result)])
+                ]
+            )
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "SWP|TX 032z7 - #34 Phase 8 Boost-Path Cache Registration Proof (Short Path) (Permanent)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
@@ -5497,6 +5546,55 @@
     )
 )
 (let ((ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)) (ref-TS01-A::SWP|A_UpdateLiquidBoost false))
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z8a - #65fL Phase 8a URC_HopperActiveShortest Warm-Cache Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 032z8a - #65fL Phase 8a Proof · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;#65fL Phase 8a: URC_HopperActiveShortest (Liquid Boost's own id->DLK search) now checks
+;;SWPT|PathCache first. SWP|TX 032z7 (immediately above) already proved boost-path
+;;OURO->DLK genuinely registers (in-depth-cap, unlike 032z6's deliberately-8-hop W7->DLK
+;;negative case) — this proves a fresh URC_HopperActiveShortest call for that SAME pair
+;;hits the warm cache, and measures the real gas cost of that hit for comparison against
+;;the same call with Phase 8a's own cache check reverted (forced live search).
+(print "--- [SWP|TX 032z8a - #65fL Phase 8a Proof · 02 · warm-cache call] ---")
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ouro:string "OURO-98c486052a51")
+        (dlk:string (ref-DALOS::UR_SilverStoaID))
+        (cached-row:object{SwapTracerV2.PathCacheRow} (ref-SWPT::URC_ReadPathCache ouro dlk))
+        (cached-nodes:[string] (at "nodes" cached-row))
+    )
+    (print
+        (expect "#65fL Phase 8a: cache is genuinely warm for OURO->DLK before this proof starts"
+            true
+            (!= cached-nodes [SWPT.BAR])
+        )
+    )
+    (env-gas 0)
+    (let
+        (
+            (h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActiveShortest ouro dlk 1.0))
+        )
+        (map print
+            [
+                (expect "#65fL Phase 8a: URC_HopperActiveShortest(OURO,DLK) on a warm cache returns EXACTLY the cached node path"
+                    cached-nodes
+                    (at "nodes" h)
+                )
+                (format "#65fL Phase 8a: URC_HopperActiveShortest(OURO,DLK) WARM cache gas: {}" [(env-gas)])
+            ]
+        )
+    )
+)
 (env-sigs [])
 (commit-tx)
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>

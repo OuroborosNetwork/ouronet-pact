@@ -1820,3 +1820,63 @@ restored.
 
 **Status:** FIXED ✅ AND PROVEN ✅. See `ROUND-01-OWNER-FEEDBACK.md`'s `H3` entry (third follow-up) for
 the full writeup.
+
+---
+
+## Fix #45 — #65fL: `#65bL` Phase 8 — zero-search DLK/OURO shortcuts, boost-path caching
+
+**Owner direction:** direct pool swaps already cost zero pathfinding (confirmed); DLK→DWK should be
+the liquid-staking index applied backwards (already true); OURO→DWK should read the primordial pool
+directly, no graph search. Asked me to implement top to bottom, report gas gains at the end.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/01_DALOS.pact`, `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`,
+`REPL/Stage_01/[6.3]_SWP.repl`:**
+
+- **Phase 8a:** `URC_HopperActiveShortest` (Liquid Boost's own id→DLK search, the one Hopper variant
+  Phases 1-7 never touched) now checks `SWPT|PathCache` first, identical pattern to `URCX_Hopper`'s
+  own Phase 1. Measured via isolated forced-miss-vs-hit comparison (same pair/topology, cache check
+  reverted vs live): 276,994 → 26,783 gas, **90.3% reduction** on a warm hit.
+- **Phase 8b:** new `URC_SingleOuroWorthDWK`, extracted from `URC_OuroPrimordialPrice`'s own
+  pre-existing math (primordial pool's DWK-equivalent value ÷ OURO's own supply, no dollar step) —
+  wired as a new `id==OURO` short-circuit in `URC_WorthDWK`/`FromRaw`/`FromGraph`, mirroring the
+  pre-existing DLK short-circuit. Two real bugs caught and fixed before shipping:
+  - A static recursive-cycle compile error (`URC_WorthDWK`→`URC_SingleOuroWorthDWK`→
+    `URCX_PrimordialValueAndOuroSupply`→`URC_SingleWorthDWK`→back to `URC_WorthDWK`) — fixed by
+    extracting a dedicated `URC_SingleDlkWorthDWK` helper so the shared primordial-pool-value core
+    never routes back through `URC_WorthDWK` itself.
+  - A pre-bootstrap crash: `URC_WorthDWK`'s OURO branch is reachable (via `UEV_Issue`'s spawn-limit
+    check) before any primordial pool exists, e.g. during that pool's own issuance — fixed by gating
+    the shortcut on `SWP::UR_PrimordialPool() != BAR`, short-circuited (`and`, confirmed empirically
+    lazy in Pact 5 before relying on it) so the extra check costs nothing for any other id; falls
+    through to the exact original graph-search behavior when unsafe.
+- **DALOS combined reader (caught via checkpoint regression, not assumed clean):** new
+  `DALOS::UR_CanonicalStoaIds` — DWK/DLK/OURO's ids in ONE read (all 3 already live on the same
+  `DALOS|PropertiesTable` row) instead of 3 independent single-field reads. The naive first
+  implementation (an extra standalone `UR_OuroborosID` call) regressed `SWP|TX 032q`/`032z2` by ~928
+  gas despite neither scenario ever pricing OURO/DLK — isolated via `git stash` bisection before
+  fixing, not guessed.
+
+**Net effect on the tracked worst-case checkpoints** (neither shortcut actually exercised in these
+scenarios — pure overhead-vs-savings arithmetic): `SWP|TX 032q` 931,108 → 930,230 gas, `SWP|TX 032z2`
+1,687,556 → 1,686,661 gas — a small but genuine **-878/-895 gas net win** even where the shortcuts
+don't fire, after the DALOS fix (the naive pre-fix version was a net *loss* here, +928/+929 gas).
+
+**Values decision flagged, not glossed over:** Phase 8b's isolated per-call win is large — 110,099 →
+2,452 gas (97.8%) for a 100-unit `URC_WorthDWK(OURO, …)` call — but the VALUES genuinely differ: 91.95
+DWK (shortcut, spot-ratio) vs. 147.31 DWK (graph search, simulated-swap-with-slippage along whatever
+route BFS finds) — ~38% apart at that amount, larger than expected going in. Not a bug — a genuine
+methodology difference (spot valuation vs. execution price) with a real argument either way; recorded
+explicitly for owner review, not silently shipped as if equivalent.
+
+**Adversarially proven, live — `SWP|TX 032z6f` (Phase 8b) and `SWP|TX 032z8a` (Phase 8a), both new,
+permanent:** `032z6f` prints both the shortcut and graph-search values/gas side by side and
+adversarially confirms the shortcut result is genuinely real data (corrupted, restored). `032z8a`
+confirms the cache is genuinely warm before measuring and that the hit returns exactly the cached
+path; the 90.3% figure comes from an isolated forced-miss-vs-hit comparison against this exact call.
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅. Phase 8b's value-methodology question left open for owner review
+(both phases fully shipped and working as designed either way). See `ROUND-01-OWNER-FEEDBACK.md`'s
+`#65bL` entry (Phase 8 addendum) for the full writeup.

@@ -115,6 +115,14 @@
     (defun URC_BestEdgeFiltered:string (ia:decimal i:string o:string swpairs:[string]))
         ;;
     (defun URC_OuroPrimordialPrice:decimal ())
+    ;;#65fL Phase 8b: OURO's own worth in DWK, per unit, straight off the primordial
+    ;;pool's own reserves — zero graph search. Used by URC_WorthDWK's own id==OURO
+    ;;shortcut (see that function's own doc).
+    (defun URC_SingleOuroWorthDWK:decimal ())
+    ;;#65fL Phase 8b: DLK's own worth in DWK, per unit, via the ATS autostake index
+    ;;— extracted so URC_WorthDWK's own id==DLK branch and URCX_PrimordialValueAndOuroSupply
+    ;;share it without a static recursive-cycle compile error (see the defun's own doc).
+    (defun URC_SingleDlkWorthDWK:decimal ())
     (defun URC_TokenDollarPrice (id:string kda-pid:decimal))
     (defun URC_SingleWorthDWK (id:string))
     (defun URC_WorthDWK (id:string amount:decimal))
@@ -1401,14 +1409,35 @@
             \ alternate-route search real swap execution uses multiplies cost by \
             \ hop-count x 3 for no pricing benefit worth the gas. Do not use this for \
             \ any live user-facing quote/execution path — those must keep using \
-            \ <URC_HopperActive> so users still get the best available route."
+            \ <URC_HopperActive> so users still get the best available route. \
+            \ #65fL Phase 8a fix: this was the one Hopper variant left completely \
+            \ untouched by #65bL Phases 1-7 — no PathCache check, no shared \
+            \ raw-graph. Now checks SWPT|PathCache first (URC_ReadPathCacheFresh), \
+            \ identically to URCX_Hopper's own Phase 1 pattern — on a fresh hit, \
+            \ skips the live BFS entirely and uses the cached node-path as the \
+            \ sole candidate, safe for the same reason Phase 1 established (the \
+            \ real per-hop edge is always re-derived live downstream in \
+            \ URCX_HopperForNodes against the <swpairs> active-only universe, \
+            \ regardless of where the node-path came from). Especially valuable \
+            \ here since this targets exactly the pair a bundle-assisted swap's \
+            \ own <boost-path> already warms in this same cache (#65bL Phase 6) — \
+            \ a self-searching swap running after one for the same input token \
+            \ gets this for free. On a miss, falls through to the unchanged live \
+            \ search."
         (let
             (
                 (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPT:module{SwapTracerV2} SWPT)
                 (swpairs:[string] (ref-SWP::URC_ActiveSwpairs))
+                (cached:object{SwapTracerV2.PathCacheRow}
+                    (ref-SWPT::URC_ReadPathCacheFresh hopper-input-id hopper-output-id)
+                )
+                (cached-nodes:[string] (at "nodes" cached))
                 (nodes:[string]
-                    (ref-SWPT::URC_ComputeGraphPath hopper-input-id hopper-output-id swpairs)
+                    (if (!= cached-nodes [BAR])
+                        cached-nodes
+                        (ref-SWPT::URC_ComputeGraphPath hopper-input-id hopper-output-id swpairs)
+                    )
                 )
             )
             (URCX_HopperForNodes nodes hopper-input-amount swpairs)
@@ -1507,18 +1536,52 @@
         )
     )
     ;;Value Computations
-    (defun URC_OuroPrimordialPrice:decimal ()
+    (defun URC_SingleDlkWorthDWK:decimal ()
+        @doc "#65fL Phase 8b: DLK's own worth in DWK terms, per unit — the ATS \
+            \ autostake index (the 'liquid staking conversion, backwards'), zero \
+            \ graph search. Extracted as its own function, mirroring \
+            \ <URC_SingleOuroWorthDWK>, so <URCX_PrimordialValueAndOuroSupply> can \
+            \ call it directly instead of going through <URC_SingleWorthDWK>/ \
+            \ <URC_WorthDWK> — routing through those would create a genuine STATIC \
+            \ recursive cycle at compile time (URC_WorthDWK's own id==OURO branch \
+            \ calls into URCX_PrimordialValueAndOuroSupply), caught by Pact 5's own \
+            \ cycle detector when this was first wired that way — even though the \
+            \ actual runtime call chain (always DLK's own id here, which never \
+            \ re-enters the OURO branch) would never truly recurse. <URC_WorthDWK>'s \
+            \ own id==DLK branch also uses this now, instead of its own inline copy \
+            \ of the same lookup."
         (let
             (
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (dlk:string (ref-DALOS::UR_SilverStoaID))
+                (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk))
+                (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
+            )
+            (ref-ATS::URC_Index kdaliquindex)
+        )
+    )
+    (defun URCX_PrimordialValueAndOuroSupply:[decimal] ()
+        @doc "#65fL Phase 8b: shared core extracted from <URC_OuroPrimordialPrice> — \
+            \ [<primordial-wkda-value> <ouro-supply>], where <primordial-wkda-value> \
+            \ is the primordial pool's total value in DWK-equivalent terms (native \
+            \ DWK reserve plus the DLK reserve converted via its own cheap \
+            \ index-based shortcut, URC_SingleDlkWorthDWK — zero graph search either \
+            \ way). Both <URC_OuroPrimordialPrice> (dollar-denominated) and \
+            \ <URC_SingleOuroWorthDWK> (DWK-denominated) build their own final \
+            \ division from this SAME pair — extracted so neither duplicates the \
+            \ primordial-pool read or re-reads <UR_PoolTokenSupplies> twice for \
+            \ the one call that needs both values. Internal only, not on the \
+            \ public interface — callers use the two public wrappers instead."
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-SWP:module{SwapperV3} SWP)
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
                 ;;
                 (primordial:string (ref-SWP::UR_PrimordialPool))
                 (pts:[decimal] (ref-SWP::UR_PoolTokenSupplies primordial))
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
                 ;;
                 (lkda:string (ref-DALOS::UR_SilverStoaID))
                 (lkda-supply:decimal (at 0 pts))
@@ -1526,12 +1589,51 @@
                 (wkda-supply:decimal (at 2 pts))
                 ;;
                 (lkda-prec:integer (ref-DPTF::UR_Decimals lkda))
-                (lkda-in-wkda:decimal (URC_SingleWorthDWK lkda))
+                (lkda-in-wkda:decimal (URC_SingleDlkWorthDWK))
                 (lkda-in-wkda-value (floor (* lkda-supply lkda-in-wkda) lkda-prec))
                 (primordial-wkda-value:decimal (+ wkda-supply lkda-in-wkda-value))
+            )
+            [primordial-wkda-value ouro-supply]
+        )
+    )
+    (defun URC_OuroPrimordialPrice:decimal ()
+        @doc "#65fL Phase 8b fix: sources the shared primordial-pool read via \
+            \ URCX_PrimordialValueAndOuroSupply instead of its own inline copy — \
+            \ pure extraction, computation order and rounding UNCHANGED (still \
+            \ sum-in-DWK -> convert-to-dollar -> divide-by-ouro-supply, same 2 \
+            \ floor calls at the same precision, in the same order), verified \
+            \ byte-identical before/after."
+        (let
+            (
+                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (pv:[decimal] (URCX_PrimordialValueAndOuroSupply))
+                (primordial-wkda-value:decimal (at 0 pv))
+                (ouro-supply:decimal (at 1 pv))
                 (primordial-wkda-value-in-dollarz:decimal (floor (* primordial-wkda-value kda-pid) 24))
             )
             (floor (/ primordial-wkda-value-in-dollarz ouro-supply) 24)
+        )
+    )
+    (defun URC_SingleOuroWorthDWK:decimal ()
+        @doc "#65fL Phase 8b: OURO's own worth in DWK terms, per unit — the \
+            \ primordial pool's own DWK-equivalent value (URCX_PrimordialValueAndOuroSupply, \
+            \ same shared core URC_OuroPrimordialPrice itself uses) divided by \
+            \ OURO's own supply, with NO dollar conversion step — zero graph \
+            \ search either way. Spot-price/ratio-based, not simulated-swap-based \
+            \ — the same shape of approximation URC_WorthDWK's existing DLK \
+            \ branch already makes (index-based, not a simulated multi-hop swap): \
+            \ for very large amounts this can differ from what a full \
+            \ graph-search-and-simulate would produce, since no AMM slippage is \
+            \ modeled — accepted for the same reason DLK's shortcut already is. \
+            \ Used by URC_WorthDWK/FromRaw/FromGraph's own id==OURO shortcut."
+        (let
+            (
+                (pv:[decimal] (URCX_PrimordialValueAndOuroSupply))
+                (primordial-wkda-value:decimal (at 0 pv))
+                (ouro-supply:decimal (at 1 pv))
+            )
+            (floor (/ primordial-wkda-value ouro-supply) 24)
         )
     )
     (defun URC_TokenDollarPrice (id:string kda-pid:decimal)
@@ -1553,11 +1655,32 @@
         (URC_WorthDWK id 1.0)
     )
     (defun URC_WorthDWK (id:string amount:decimal)
+        @doc "#65fL Phase 8b fix: added an id==OURO short-circuit (URC_SingleOuroWorthDWK, \
+            \ straight off the primordial pool's own reserves), zero graph search — same \
+            \ shape as the pre-existing id==DLK short-circuit below. DWK/DLK/OURO are the \
+            \ only tokens with a canonical zero-search pricing mechanism; every other id \
+            \ still falls through to the graph-search branch. The OURO shortcut only fires \
+            \ when a primordial pool has actually been defined (SWP::UR_PrimordialPool != \
+            \ BAR, checked via a short-circuited `and` so this extra read only happens for \
+            \ id==OURO, never for any other id) — SAFETY, not a guess: caught live, a real \
+            \ pre-bootstrap crash reading an unset primordial pool during that very pool's \
+            \ OWN issuance (UEV_Issue's spawn-limit check prices the first token before any \
+            \ primordial pool could exist yet). Falls through to the exact original \
+            \ graph-search behavior when unsafe — matches pre-Phase-8b behavior byte for \
+            \ byte in that edge case, not a new approximation. Fetches DWK/DLK/OURO via \
+            \ DALOS::UR_CanonicalStoaIds — ONE read for all 3, instead of 3 independent \
+            \ reads of the same DALOS row — caught live: adding a naive 3rd standalone \
+            \ UR_OuroborosID call regressed the P0.5/P2-scale worst-case checkpoints \
+            \ (measured +928 gas) despite neither pool ever pricing OURO/DLK in that \
+            \ scenario, isolated via git-stash bisection before this fix, not guessed."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (dwk:string (ref-DALOS::UR_WrappedStoaID))
-                (dlk:string (ref-DALOS::UR_SilverStoaID))
+                (ref-SWP:module{SwapperV3} SWP)
+                (ids:object{OuronetDalosV1.CanonicalStoaIds} (ref-DALOS::UR_CanonicalStoaIds))
+                (dwk:string (at "wrapped-stoa-id" ids))
+                (dlk:string (at "silver-stoa-id" ids))
+                (ouro:string (at "gas-source-id" ids))
             )
             (if (= id dwk)
                 amount
@@ -1565,22 +1688,29 @@
                     (let
                         (
                             (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                            (ref-ATS:module{AutostakeV2} ATS)
-                            (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk))
-                            (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
-                            (index-value:decimal (ref-ATS::URC_Index kdaliquindex))
+                            (index-value:decimal (URC_SingleDlkWorthDWK))
                             (dlk-prec:integer (ref-DPTF::UR_Decimals dlk))
                         )
                         (floor (* amount index-value) dlk-prec)
                     )
-                    (let
-                        (
-                            (h-obj:object{SwapperIssueV3.Hopper} (URC_Hopper id dwk amount))
-                            (ovs:[decimal] (at "output-values" h-obj))
+                    (if (and (= id ouro) (!= (ref-SWP::UR_PrimordialPool) BAR))
+                        (let
+                            (
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthDWK))
+                                (ouro-prec:integer (ref-DPTF::UR_Decimals ouro))
+                            )
+                            (floor (* amount ouro-worth-per-unit) ouro-prec)
                         )
-                        (if (= (length ovs) 0)
-                            0.0
-                            (at 0 (take -1 ovs))
+                        (let
+                            (
+                                (h-obj:object{SwapperIssueV3.Hopper} (URC_Hopper id dwk amount))
+                                (ovs:[decimal] (at "output-values" h-obj))
+                            )
+                            (if (= (length ovs) 0)
+                                0.0
+                                (at 0 (take -1 ovs))
+                            )
                         )
                     )
                 )
@@ -1592,12 +1722,20 @@
             \ via an ALREADY-FETCHED <raw-graph> (<URC_HopperFromRaw>) instead of a \
             \ fresh self-fetch — see <URCX_HopperFromRaw>'s own doc for the full \
             \ rationale (repricing-loop sharing). The DWK/DLK short-circuit branches \
-            \ never needed a graph search to begin with and stay unchanged."
+            \ never needed a graph search to begin with and stay unchanged. \
+            \ #65fL Phase 8b fix: added the same id==OURO short-circuit \
+            \ <URC_WorthDWK> gained (URC_SingleOuroWorthDWK) — also never needed a \
+            \ graph search. Same pre-bootstrap safety guard too: only fires when \
+            \ a primordial pool has actually been defined, see <URC_WorthDWK>'s \
+            \ own doc for the crash this closes."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (dwk:string (ref-DALOS::UR_WrappedStoaID))
-                (dlk:string (ref-DALOS::UR_SilverStoaID))
+                (ref-SWP:module{SwapperV3} SWP)
+                (ids:object{OuronetDalosV1.CanonicalStoaIds} (ref-DALOS::UR_CanonicalStoaIds))
+                (dwk:string (at "wrapped-stoa-id" ids))
+                (dlk:string (at "silver-stoa-id" ids))
+                (ouro:string (at "gas-source-id" ids))
             )
             (if (= id dwk)
                 amount
@@ -1605,22 +1743,29 @@
                     (let
                         (
                             (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                            (ref-ATS:module{AutostakeV2} ATS)
-                            (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk))
-                            (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
-                            (index-value:decimal (ref-ATS::URC_Index kdaliquindex))
+                            (index-value:decimal (URC_SingleDlkWorthDWK))
                             (dlk-prec:integer (ref-DPTF::UR_Decimals dlk))
                         )
                         (floor (* amount index-value) dlk-prec)
                     )
-                    (let
-                        (
-                            (h-obj:object{SwapperIssueV3.Hopper} (URC_HopperFromRaw id dwk amount raw-graph))
-                            (ovs:[decimal] (at "output-values" h-obj))
+                    (if (and (= id ouro) (!= (ref-SWP::UR_PrimordialPool) BAR))
+                        (let
+                            (
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthDWK))
+                                (ouro-prec:integer (ref-DPTF::UR_Decimals ouro))
+                            )
+                            (floor (* amount ouro-worth-per-unit) ouro-prec)
                         )
-                        (if (= (length ovs) 0)
-                            0.0
-                            (at 0 (take -1 ovs))
+                        (let
+                            (
+                                (h-obj:object{SwapperIssueV3.Hopper} (URC_HopperFromRaw id dwk amount raw-graph))
+                                (ovs:[decimal] (at "output-values" h-obj))
+                            )
+                            (if (= (length ovs) 0)
+                                0.0
+                                (at 0 (take -1 ovs))
+                            )
                         )
                     )
                 )
@@ -1633,12 +1778,20 @@
             \ rebuilding it from <raw-graph> per call — see \
             \ <URCX_HopperFromGraph>'s own doc for the full rationale (repricing- \
             \ loop graph-build sharing). The DWK/DLK short-circuit branches never \
-            \ needed a graph search to begin with and stay unchanged."
+            \ needed a graph search to begin with and stay unchanged. \
+            \ #65fL Phase 8b fix: added the same id==OURO short-circuit \
+            \ <URC_WorthDWK> gained (URC_SingleOuroWorthDWK) — also never needed a \
+            \ graph search. Same pre-bootstrap safety guard too: only fires when \
+            \ a primordial pool has actually been defined, see <URC_WorthDWK>'s \
+            \ own doc for the crash this closes."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (dwk:string (ref-DALOS::UR_WrappedStoaID))
-                (dlk:string (ref-DALOS::UR_SilverStoaID))
+                (ref-SWP:module{SwapperV3} SWP)
+                (ids:object{OuronetDalosV1.CanonicalStoaIds} (ref-DALOS::UR_CanonicalStoaIds))
+                (dwk:string (at "wrapped-stoa-id" ids))
+                (dlk:string (at "silver-stoa-id" ids))
+                (ouro:string (at "gas-source-id" ids))
             )
             (if (= id dwk)
                 amount
@@ -1646,22 +1799,29 @@
                     (let
                         (
                             (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                            (ref-ATS:module{AutostakeV2} ATS)
-                            (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk))
-                            (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
-                            (index-value:decimal (ref-ATS::URC_Index kdaliquindex))
+                            (index-value:decimal (URC_SingleDlkWorthDWK))
                             (dlk-prec:integer (ref-DPTF::UR_Decimals dlk))
                         )
                         (floor (* amount index-value) dlk-prec)
                     )
-                    (let
-                        (
-                            (h-obj:object{SwapperIssueV3.Hopper} (URC_HopperFromGraph id dwk amount graph))
-                            (ovs:[decimal] (at "output-values" h-obj))
+                    (if (and (= id ouro) (!= (ref-SWP::UR_PrimordialPool) BAR))
+                        (let
+                            (
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthDWK))
+                                (ouro-prec:integer (ref-DPTF::UR_Decimals ouro))
+                            )
+                            (floor (* amount ouro-worth-per-unit) ouro-prec)
                         )
-                        (if (= (length ovs) 0)
-                            0.0
-                            (at 0 (take -1 ovs))
+                        (let
+                            (
+                                (h-obj:object{SwapperIssueV3.Hopper} (URC_HopperFromGraph id dwk amount graph))
+                                (ovs:[decimal] (at "output-values" h-obj))
+                            )
+                            (if (= (length ovs) 0)
+                                0.0
+                                (at 0 (take -1 ovs))
+                            )
                         )
                     )
                 )

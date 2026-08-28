@@ -3049,6 +3049,70 @@ detail, mirroring `HANDOFF-swp-exhaustive-path-search.md`'s own role for `#34`. 
 re-verify (though per the owner's later direction, Round III itself is out of scope for this
 branch). — *#65bL*
 
+**Addendum — Phase 8 (`#65fL`, tracked separately since `#65bL`/Fix #42 was already closed):**
+owner asked directly about direct-pool-swap costs (already zero pathfinding, confirmed — a direct
+swap always names an explicit `swpair`, no BFS involved either way) and proposed that DLK→DWK and
+OURO→DWK conversions "shouldn't be a question of pathracing" — DLK via the liquid-staking index
+backwards (already true, `URC_WorthDWK`'s existing DLK branch), OURO by reading the primordial pool
+directly. Confirmed: `URC_WorthDWK` never special-cased OURO, always fell through to the full graph
+search. Also found, unprompted, that `URC_HopperActiveShortest` (Liquid Boost's own id→DLK search)
+was the one Hopper variant completely untouched by Phases 1-7 — no cache check at all.
+
+- **Phase 8a:** wired `URC_HopperActiveShortest` to `SWPT|PathCache` first, identical pattern to
+  `URCX_Hopper`'s own Phase 1. Measured via isolated forced-miss-vs-real-hit comparison (same pair,
+  same topology, cache-check reverted vs live): **276,994 → 26,783 gas, a 90.3% reduction** on a warm
+  hit. Especially valuable since Phase 6's own bundle-swap cache-warming already populates exactly
+  this category (`boost-path`) for real traffic.
+- **Phase 8b:** extracted `URC_SingleOuroWorthDWK` from `URC_OuroPrimordialPrice`'s own pre-existing
+  math (the primordial pool's DWK-equivalent value divided by OURO's own supply, no dollar
+  conversion) and added an `id==OURO` short-circuit to `URC_WorthDWK`/`FromRaw`/`FromGraph`, mirroring
+  the pre-existing DLK short-circuit. Caught and fixed a real static recursive-cycle compile error
+  along the way (`URC_WorthDWK`→`URC_SingleOuroWorthDWK`→`URCX_PrimordialValueAndOuroSupply`→
+  `URC_SingleWorthDWK`→back to `URC_WorthDWK`) by extracting a dedicated `URC_SingleDlkWorthDWK`
+  helper so the shared primordial-pool-value core never routes back through `URC_WorthDWK` itself.
+  Caught and fixed a real pre-bootstrap crash too — `URC_WorthDWK`'s OURO branch could fire (via
+  `UEV_Issue`'s spawn-limit check) *before* any primordial pool exists, e.g. during that very pool's
+  own issuance; the shortcut now only fires when `SWP::UR_PrimordialPool() != BAR`, short-circuited so
+  the extra check costs nothing for any other id, falling through to the exact original graph-search
+  behavior otherwise — not a new approximation in that edge case, byte-for-byte the old path.
+
+  **Caught a real regression via the tracked worst-case checkpoints, not assumed clean:** the naive
+  first implementation fetched OURO's id via its own `UR_OuroborosID` call, a 3rd independent read of
+  the same DALOS row `UR_WrappedStoaID`/`UR_SilverStoaID` already read — regressed `SWP|TX 032q`/
+  `032z2` by ~928 gas even though neither scenario ever prices OURO/DLK, isolated via `git stash`
+  bisection (not guessed). Fixed by adding `DALOS::UR_CanonicalStoaIds` — DWK/DLK/OURO's ids in ONE
+  read instead of 3 independent reads of the same row — which nets the checkpoints **below** their
+  pre-Phase-8 baseline despite neither shortcut being exercised: `932,063→930,230` (032q) and
+  `1,688,512→1,686,661` (032z2) after the DALOS fix, vs. `931,108`/`1,687,556` before Phase 8 at all —
+  a small net **-878/-895 gas** even in the worst case that doesn't touch either shortcut.
+
+  **Honestly flagged, not glossed over — this is a real values decision, not just a gas one:**
+  measured Phase 8b's own isolated win directly: **110,099 → 2,452 gas (97.8% reduction)** for a
+  100-unit `URC_WorthDWK(OURO, …)` call. But the VALUES differ meaningfully at that same amount —
+  91.95 DWK (shortcut, spot-ratio off the primordial pool) vs. 147.31 DWK (graph search, a real
+  simulated swap with AMM slippage along whatever route BFS finds) — a ~38% difference, larger than
+  anticipated when this was proposed. This isn't a bug: the graph-search value reflects one specific
+  route's execution price (which may not even be the primordial pool itself, if BFS finds a
+  differently-priced alternate route elsewhere in the graph); the shortcut reflects the primordial
+  pool's own spot ratio. For `URC_PoolValue`'s actual purpose (STOA-value accounting/reporting, not
+  executing a real trade) a spot-price valuation is arguably the more methodologically appropriate of
+  the two — but this is genuinely the owner's call, not a default assumption. Shipped as designed,
+  flagged here explicitly for review rather than silently accepted.
+
+**Adversarially proven, live — `SWP|TX 032z6f` (Phase 8b) and `SWP|TX 032z8a` (Phase 8a), both new,
+permanent:** `032z6f` confirms the shortcut result is genuinely non-zero real data (corrupted the
+threshold to an impossible bound, got a genuine `FAILURE`, restored) and prints both values/gas costs
+side by side, undisguised. `032z8a` confirms the cache is genuinely warm before measuring (via a
+direct `URC_ReadPathCache` check) and that the warm-cache call returns exactly the cached path; the
+90.3% figure itself comes from an isolated forced-miss-vs-hit comparison against this exact same call
+(reverted the cache-check, remeasured, restored). Full suite (`[6.2]`+`[6.3]`) and default
+issuance-only (`[6.2+3]`) pipelines both verified clean (exit 0, 0 `FAILURE`), `Stage01_Tester.repl`
+reverted to default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #45. Phase 8b's value-methodology
+question left open for owner review (not blocking — both phases fully shipped and working as
+designed either way). — *#65fL*
+
 ---
 
 ## #65cL (off-cycle naming-consistency note, surfaced during `#65bL` Phase 7 — `URC_WorthDWK` family should be renamed to Stoa-based naming) — **FILED, deferred to `main`**

@@ -610,6 +610,23 @@ unaffected (still 1,143,255 gas, 77.6%, since the bundle-based flow never touche
 writeup in `ROUND-01-OWNER-FEEDBACK.md` and
 `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`. — *#65bL*
 
+**Phase 8 addendum (`#65fL`, `ROUND-02-FIXES.md` Fix #45):** owner asked about direct-pool-swap costs
+(confirmed already zero pathfinding) and proposed DLK/OURO get zero-search worth shortcuts — DLK
+already did (index-based); OURO didn't (fell through to the full graph search). 8a: wired
+`URC_HopperActiveShortest` (Liquid Boost's own DLK search, the one Hopper variant Phases 1-7 missed)
+to `SWPT|PathCache` — measured 276,994→26,783 gas (90.3%) on an isolated warm hit. 8b: new
+`URC_SingleOuroWorthDWK` (off the primordial pool's own reserves), wired as a new `id==OURO`
+short-circuit in `URC_WorthDWK`/`FromRaw`/`FromGraph`. Caught and fixed a real static recursive-cycle
+compile error and a real pre-bootstrap crash (the OURO branch is reachable via `UEV_Issue` before any
+primordial pool exists) before shipping. Caught a real ~928 gas regression on the tracked worst-case
+checkpoints via `git stash` bisection — a naive extra `UR_OuroborosID` read tripled the number of
+independent reads against the same DALOS row — fixed with new `DALOS::UR_CanonicalStoaIds` (DWK/DLK/
+OURO in ONE read). Net effect on `SWP|TX 032q`/`032z2` (neither shortcut exercised there): **-878/-895
+gas**. Isolated 8b win: 110,099→2,452 gas (97.8%) — but the shortcut (spot-ratio) and graph-search
+(simulated-swap) values genuinely differ (~38% apart at a 100-unit test amount), flagged explicitly
+for owner review as a real values decision, not hidden as if equivalent. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`'s `#65bL` entry (Phase 8 addendum). — *#65fL*
+
 #65cL **[SWPI]** Off-cycle naming-consistency note, surfaced during `#65bL` Phase 7: the
 `URC_WorthDWK`/`URC_SingleWorthDWK`/`URC_WorthDWKFromRaw`/`URC_WorthDWKFromGraph` family (`16_SWPI.pact`,
 declared on `SwapperIssueV3`) names itself after `DWK` (wrapped-STOA), inconsistent with the
