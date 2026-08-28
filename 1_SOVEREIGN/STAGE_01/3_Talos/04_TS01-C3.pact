@@ -862,7 +862,7 @@
             \ pool's own URC_PoolValue call independently re-reading and rebuilding \
             \ it. Safe per SWPT::UC_MakeGraphNodes being input/output-independent — \
             \ one fetch against the full <all-swpairs> universe covers every distinct \
-            \ pool's own first-token->DWK query, not just the one it happened to be \
+            \ pool's own first-token->WSTOA query, not just the one it happened to be \
             \ fetched for (see URCX_HopperFromRaw's own doc). \
             \ #65bL Phase 7 fix: also builds the [GraphNode] graph itself \
             \ (SWPT::UC_MakeGraphFromRaw) ONCE, alongside <raw-graph> — every \

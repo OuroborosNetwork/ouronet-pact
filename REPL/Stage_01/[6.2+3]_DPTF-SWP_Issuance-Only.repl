@@ -2931,7 +2931,7 @@
             (te:string "TE-98c486052a51")
             (pool
                 ;;p=true (admin path): HG is a brand-new principal with zero existing
-                ;;routes, so URC_WorthDWK can't price it yet (chicken-and-egg) — the
+                ;;routes, so URC_WorthWSTOA can't price it yet (chicken-and-egg) — the
                 ;;p=false spawn-limit worth check is irrelevant to what this test is
                 ;;actually proving, so skip it via the admin path.
                 (ref-TS01-C3::SWP|C_IssueStandard

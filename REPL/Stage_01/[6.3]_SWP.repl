@@ -2375,23 +2375,23 @@
         (pool8:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
 
         (pts:[decimal] (ref-SWP::UR_PoolTokenSupplies pool1))
-        (dlk-amount:decimal (at 0 pts))
-        (dlk-amount-is-worth:decimal (ref-SWPI::URC_WorthDWK "DLK-98c486052a51" dlk-amount))
+        (sstoa-amount:decimal (at 0 pts))
+        (sstoa-amount-is-worth:decimal (ref-SWPI::URC_WorthWSTOA "DLK-98c486052a51" sstoa-amount))
 
-        (dlk-id:string (ref-DALOS::UR_SilverStoaID))
-        (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk-id))
-        (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
+        (sstoa-id:string (ref-DALOS::UR_SilverStoaID))
+        (ats-pairs-with-sstoa-id:[string] (ref-DPTF::UR_RewardBearingToken sstoa-id))
+        (kdaliquindex:string (at 0 ats-pairs-with-sstoa-id))
         (index-value:decimal (ref-ATS::URC_Index kdaliquindex))
 
     )
     [
-        (format "DLK in first pool is {}" [dlk-amount])
-        (format "This amount is worth {} DWK" [dlk-amount-is-worth])
+        (format "DLK in first pool is {}" [sstoa-amount])
+        (format "This amount is worth {} WSTOA" [sstoa-amount-is-worth])
         (format "Because KDA-Liquid-Index is {}" [index-value])
 
-        (format "OURO-98c486052a51 is worth {} DWK" [(ref-SWPI::URC_SingleWorthDWK "OURO-98c486052a51")])
-        (format "Pool 1 is worth {} DWK" [(at 0 (ref-SWPI::URC_PoolValue pool1))])
-        (format "Pool 2 is worth {} DWK" [(at 0 (ref-SWPI::URC_PoolValue pool2))])
+        (format "OURO-98c486052a51 is worth {} WSTOA" [(ref-SWPI::URC_SingleWorthWSTOA "OURO-98c486052a51")])
+        (format "Pool 1 is worth {} WSTOA" [(at 0 (ref-SWPI::URC_PoolValue pool1))])
+        (format "Pool 2 is worth {} WSTOA" [(at 0 (ref-SWPI::URC_PoolValue pool2))])
         (format "Pool 3 is worth {} DWK" [(at 0 (ref-SWPI::URC_PoolValue pool3))])
         (format "Pool 4 is worth {} DWK" [(at 0 (ref-SWPI::URC_PoolValue pool4))])
         (format "Pool 5 is worth {} DWK" [(at 0 (ref-SWPI::URC_PoolValue pool5))])
@@ -4295,7 +4295,7 @@
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 ;;#34bM/P0.5 note: URC_PoolValue prices a pool using only its FIRST token's DWK
-;;worth (URC_WorthDWK -> URC_Hopper(token, DWK, amount) — a real swap-reachability
+;;worth (URC_WorthWSTOA -> URC_Hopper(token, DWK, amount) — a real swap-reachability
 ;;search), and SWP|C_ToggleSwapCapability requires that worth clear an
 ;;inactive-limit floor. The isolated W1-W7 chain has zero path to DWK on its own.
 ;;This one small OURO|W1 pool (never referenced by the intended swap route) gives
@@ -5106,7 +5106,7 @@
         (boost-h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActiveShortest output-id dlk 1.0))
         ;;3) stoa-paths: one deduped entry per DISTINCT first-token among the route's
         ;;own distinct pools, each first-token -> DWK, exists-only universe (matching
-        ;;URC_WorthDWK's own unfiltered URC_Hopper call, not URC_HopperActive).
+        ;;URC_WorthWSTOA's own unfiltered URC_Hopper call, not URC_HopperActive).
         (distinct-pools:[string] (distinct route-edges))
         (first-tokens:[string] (distinct (map (lambda (sp:string) (at 0 (ref-SWP::UR_PoolTokens sp))) distinct-pools)))
         (stoa-paths:list
@@ -5415,9 +5415,9 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (print "--- [SWP|TX 032z6f - #65fL Phase 8b Proof · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
-;;#65fL Phase 8b: URC_WorthDWK's own id==OURO shortcut (URC_SingleOuroWorthDWK, straight off
+;;#65fL Phase 8b: URC_WorthWSTOA's own id==OURO shortcut (URC_SingleOuroWorthWSTOA, straight off
 ;;the primordial pool's own reserves) vs the OLD graph-search path (URC_Hopper ouro->DWK,
-;;reproduced directly here for comparison, exactly what URC_WorthDWK used to fall through to
+;;reproduced directly here for comparison, exactly what URC_WorthWSTOA used to fall through to
 ;;unconditionally for OURO before this fix). NOT expected to be byte-identical — the shortcut
 ;;is spot-price/ratio-based, the graph search is a simulated swap with real AMM slippage; this
 ;;proof shows both the real gas win and the real (small, expected) value difference honestly,
@@ -5434,9 +5434,9 @@
     (env-gas 0)
     (let
         (
-            (shortcut-result:decimal (ref-SWPI::URC_WorthDWK ouro amount))
+            (shortcut-result:decimal (ref-SWPI::URC_WorthWSTOA ouro amount))
         )
-        (print (format "#65fL Phase 8b: URC_WorthDWK(OURO, {}) via shortcut = {}, gas: {}" [amount shortcut-result (env-gas)]))
+        (print (format "#65fL Phase 8b: URC_WorthWSTOA(OURO, {}) via shortcut = {}, gas: {}" [amount shortcut-result (env-gas)]))
         (env-gas 0)
         (let
             (
@@ -7010,7 +7010,7 @@
         (format "Emma OURO Supply is {}" [(ref-DPTF::UR_AccountSupply ouro emma)])
         (format "Ouro Supply is {}" [(ref-DPTF::UR_Supply ouro)])
         (format "Minimum Treasury Dispo is {}" [(ref-DPTF::URC_TreasuryLowestDispo)])
-        (format "Ouro is worth DWK {}" [(ref-SWPI::URC_WorthDWK ouro 1.0)])
+        (format "Ouro is worth WSTOA {}" [(ref-SWPI::URC_WorthWSTOA ouro 1.0)])
     ]
 )
 

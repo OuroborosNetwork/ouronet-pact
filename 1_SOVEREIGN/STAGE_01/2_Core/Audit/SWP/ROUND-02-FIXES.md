@@ -1880,3 +1880,53 @@ path; the 90.3% figure comes from an isolated forced-miss-vs-hit comparison agai
 **Status:** FIXED ✅ AND PROVEN ✅. Phase 8b's value-methodology question left open for owner review
 (both phases fully shipped and working as designed either way). See `ROUND-01-OWNER-FEEDBACK.md`'s
 `#65bL` entry (Phase 8 addendum) for the full writeup.
+
+---
+
+## Fix #46 — #65gL: `DWK`/`DLK` renamed to `WSTOA`/`SSTOA` (actions `#65cL`)
+
+**Owner direction:** there is no "DWK" (leftover "wrapped Kadena") or "DLK" (leftover "liquid/staked
+Kadena") — the correct terms are `WSTOA` (wrapped STOA) and `SSTOA` (silver STOA). Rename everything
+and refactor accordingly. Actions `#65cL` (filed earlier the same session, deferred to `main`) with a
+concrete target naming.
+
+**Verified first, not assumed:** `WSTOA`/`SSTOA` are already the real, established token ticker
+prefixes used elsewhere in this codebase (`2_SLAVE/Stage_Z/01_DPL-UR.pact`, `0_Sample/CodeStoa.pact`,
+Stage 2 modules) — `URC_WorthDWK`'s "DWK" naming was factually wrong, not just inconsistent. Also
+confirmed `DLK` is ambiguous codebase-wide: `23_PYTHIA.pact` uses it for an unrelated "DualLink"
+concept — excluded entirely from the rename, never touched.
+
+**A real near-miss, caught and fixed:** an initial blind word-boundary `sed` across the REPL test
+files renamed a hardcoded pool-lookup string (real token IDs, not prose), breaking the suite — the
+actual genesis-configured tickers in `[4.0]_Sovereign-Executor.repl` are literally `"DWK"`/`"DLK"`
+(`DPTF|C_Issue`'s own ticker list), the exact legacy naming the owner is pointing at, but baked into
+real, deployed genesis data. Caught via the full regression (`Load failed`), not assumed clean.
+Reverted the 2 REPL files and redid them surgically: renamed only the function call sites (required
+to compile) and safe local-variable/prose text, left every real ticker string byte-for-byte untouched.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`** (the core of it): `URC_WorthDWK`→
+`URC_WorthWSTOA`, `URC_WorthDWKFromRaw`→`URC_WorthWSTOAFromRaw`, `URC_WorthDWKFromGraph`→
+`URC_WorthWSTOAFromGraph`, `URC_SingleWorthDWK`→`URC_SingleWorthWSTOA`,
+`URC_SingleDlkWorthDWK`→`URC_SingleSSTOAWorthWSTOA`, `URC_SingleOuroWorthDWK`→
+`URC_SingleOuroWorthWSTOA` — interface declarations, every internal call site, and all local variable
+names updated together, including the separate `wkda`/`lkda` ("Kadena") variables inside
+`URCX_PrimordialValueAndOuroSupply`/`URC_OuroPrimordialPrice`, a third leftover in the same functions.
+Doc-comment/message updates in `19_SWPU.pact`, `15_SWP.pact`, `14_SWPT.pact`, `20_MTX-SWP.pact`,
+`01_TS01-A.pact`, `04_TS01-C3.pact`, `01_DALOS.pact`. `2_SLAVE/Stage_Z/01_DPL-UR.pact`'s 2
+`URC_SingleWorthDWK` call sites updated — the breaking-API blast radius `#65cL` had already flagged,
+now actually fixed. REPL call sites updated to compile; `SWP|TX 032z6f`/`032z8a` (`#65fL`) proofs
+re-ran with identical gas numbers, confirming zero behavior change.
+
+**Deliberately not shipped:** the bulk of the REPL files' own local variable names/comments (still
+`dwk`/`dlk` in many places) — cosmetic only, and a blind rename carries the same real-ticker collision
+risk just demonstrated; left as-is rather than risk repeating the mistake less visibly. Also flagged,
+not actioned: the actual genesis token ticker is itself `"DWK"`/`"DLK"`, used as real data across
+likely hundreds of references in the wider REPL suite (Stage 1 and Stage 2) — a protocol-wide rename
+on the scale of `L58`'s deferred `KDA-PID`→`STOA-PID`, not something to attempt here.
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅ for the `.pact` code layer. REPL cosmetics and the deeper
+real-ticker-naming question explicitly out of scope, not silently dropped. See
+`ROUND-01-OWNER-FEEDBACK.md`'s `#65gL` entry for the full writeup.

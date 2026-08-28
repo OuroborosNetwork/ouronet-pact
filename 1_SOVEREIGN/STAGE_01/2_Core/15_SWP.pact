@@ -63,7 +63,7 @@
     (defun UR_SpecialFeeTargetsProportions:[decimal] (swpair:string))
     ;;
     ;;#65eL: "major" principal = currently a member of the primordial pool's own
-    ;;token list (always exactly OURO/DWK/DLK in practice, enforced at
+    ;;token list (always exactly OURO/WSTOA/SSTOA in practice, enforced at
     ;;A_DefinePrimordialPool's own capability gate) — fixed, never
     ;;removable/rotatable via A_UpdatePrincipal/A_RotatePrincipal. Any other
     ;;principal is "minor" and unaffected by this distinction.
@@ -939,7 +939,7 @@
     (defun URC_IsMajorPrincipal:bool (token:string)
         @doc "True if <token> is currently a member of the primordial pool's own \
             \ token list — the 'major principal' concept: fixed, always exactly \
-            \ OURO/DWK/DLK in practice (A_DefinePrimordialPool's own capability \
+            \ OURO/WSTOA/SSTOA in practice (A_DefinePrimordialPool's own capability \
             \ gate enforces exactly these 3 tokens, always, regardless of which \
             \ physical pool backs it), never removable or rotatable-away via \
             \ A_UpdatePrincipal/A_RotatePrincipal — as opposed to any other \
@@ -1262,7 +1262,7 @@
             \ principal-agnostic (#21H), so removal of a minor principal is safe \
             \ — it only affects future SWPI::UEV_Issue principal-anchoring \
             \ validation, never existing routing. Major principals (currently a \
-            \ member of the primordial pool — always OURO/DWK/DLK in practice) are \
+            \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) are \
             \ never removable here regardless of the floor; retiring one requires \
             \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool). \
             \ A_RotatePrincipal remains available as an atomic, count-preserving \
@@ -1309,7 +1309,7 @@
             \ so rotating (or removing) a MINOR principal never orphans anything \
             \ there; the only effect is on future SWPI::UEV_Issue principal- \
             \ anchoring validation. <old> being a 'major' principal (currently a \
-            \ member of the primordial pool — always OURO/DWK/DLK in practice) is \
+            \ member of the primordial pool — always OURO/WSTOA/SSTOA in practice) is \
             \ rejected outright regardless of everything else (#65eL, \
             \ URC_IsMajorPrincipal) — majors are fixed, retirable only by \
             \ redefining the primordial pool itself (SWP|A_DefinePrimordialPool)."

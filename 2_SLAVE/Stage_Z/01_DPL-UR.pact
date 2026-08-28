@@ -1053,7 +1053,7 @@
                         (/ 0.01 stoa-pid)
                         (if (= token-worth-in-dollarz 0.0)
                             0.0
-                            (ref-SWPI::URC_SingleWorthDWK dptf-id)
+                            (ref-SWPI::URC_SingleWorthWSTOA dptf-id)
                         )
                     )
                 )
@@ -1205,7 +1205,7 @@
                 (token-worth-in-stoa:decimal
                     (if (= token-worth-in-dollarz 0.0)
                         0.0
-                        (ref-SWPI::URC_SingleWorthDWK dptf-id)
+                        (ref-SWPI::URC_SingleWorthWSTOA dptf-id)
                     )
                 )
                 (wallet-worth-in-stoa:decimal (floor (* wallet-supply token-worth-in-stoa) 12))

@@ -95,7 +95,7 @@
     ;;#65bL Phase 7: one layer deeper than Phase 2's raw-fetch/pure-filter split — a
     ;;caller making MULTIPLE Hopper queries against the SAME <swpairs> universe in one
     ;;transaction (the STOA-repricing loop: one query per distinct pool touched, each a
-    ;;different source token but the same DWK destination) was still calling
+    ;;different source token but the same WSTOA destination) was still calling
     ;;UC_MakeGraphFromRaw (a linear-scan-per-node graph BUILD) fresh on every query,
     ;;even though that build's output is byte-identical every time for the same
     ;;<raw-graph>/<swpairs> universe (UC_MakeGraphFromRaw is input/output-independent,

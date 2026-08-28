@@ -22,9 +22,9 @@
         account:string
     )
     (defschema CanonicalStoaIds
-        @doc "#65fL Phase 8b: OURO/DWK/DLK's canonical token ids, all 3 read together \
+        @doc "#65fL Phase 8b: OURO/WSTOA/SSTOA's canonical token ids, all 3 read together \
             \ in ONE table read (all 3 live on the same DALOS|PropertiesTable row) — \
-            \ for a caller (SWPI::URC_WorthDWK and its FromRaw/FromGraph siblings) that \
+            \ for a caller (SWPI::URC_WorthWSTOA and its FromRaw/FromGraph siblings) that \
             \ previously needed all 3 identities via 3 separate UR_OuroborosID/ \
             \ UR_WrappedStoaID/UR_SilverStoaID calls, each independently re-reading the \
             \ same row. Field names match DALOS|PropertiesSchema's own field names \
@@ -84,7 +84,7 @@
     (defun UR_EliteAurynID:string ())
     (defun UR_WrappedStoaID:string ())
     (defun UR_SilverStoaID:string ())
-    ;;#65fL Phase 8b: OURO/DWK/DLK together, one read instead of 3 — see the
+    ;;#65fL Phase 8b: OURO/WSTOA/SSTOA together, one read instead of 3 — see the
     ;;CanonicalStoaIds schema's own doc.
     (defun UR_CanonicalStoaIds:object{CanonicalStoaIds} ())
     (defun UR_GoldenStoaID:string ())
@@ -689,9 +689,9 @@
         (at "silver-stoa-id" (read DALOS|PropertiesTable DALOS|INFO ["silver-stoa-id"]))
     )
     (defun UR_CanonicalStoaIds:object{CanonicalStoaIds} ()
-        @doc "#65fL Phase 8b: OURO/DWK/DLK together in ONE read, for a caller that \
+        @doc "#65fL Phase 8b: OURO/WSTOA/SSTOA together in ONE read, for a caller that \
             \ needs all 3 identities to check against a single <id> (e.g. \
-            \ SWPI::URC_WorthDWK's 3-way DWK/DLK/OURO shortcut dispatch) — replaces \
+            \ SWPI::URC_WorthWSTOA's 3-way WSTOA/SSTOA/OURO shortcut dispatch) — replaces \
             \ 3 independent single-field reads of the same row with 1 multi-field \
             \ read of it."
         (read DALOS|PropertiesTable DALOS|INFO ["gas-source-id" "wrapped-stoa-id" "silver-stoa-id"])

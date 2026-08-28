@@ -2,6 +2,16 @@
 
 ## Status: **CLOSED — implemented, measured, proven (2026-08-28); Phase 8 addendum shipped same day, tracked as `#65fL`**
 
+**Naming note (`#65gL`, same day, after Phase 8):** every `DWK`/`DLK` reference below (including
+function names like `URC_WorthDWK`) describes the code **as it was at the time each phase shipped** —
+left as-is, not rewritten, per this repo's append-only audit convention. The actual current names
+in `16_SWPI.pact` are `URC_WorthWSTOA`/`URC_WorthWSTOAFromRaw`/`URC_WorthWSTOAFromGraph`/
+`URC_SingleWorthWSTOA`/`URC_SingleSSTOAWorthWSTOA`/`URC_SingleOuroWorthWSTOA` — `DWK`/`DLK` were a
+leftover "wrapped/liquid Kadena" naming, renamed to `WSTOA`/`SSTOA` (wrapped/silver STOA, the
+already-established real ticker prefixes elsewhere in this codebase). See `ROUND-02-FIXES.md` Fix #46
+and `ROUND-01-OWNER-FEEDBACK.md`'s `#65gL` entry for the full writeup, including a real near-miss
+(a hardcoded genesis ticker string almost got renamed by mistake) caught before it shipped.
+
 All 32 LOW findings closed first (per the owner's 2026-08-27 sequencing), then this got its own
 dedicated design-and-implementation pass, the same way `#34` (`ISSUES-RANKED.md`/`M2`) got its own
 multi-phase handoff once it outgrew a single-row fix — see `HANDOFF-swp-exhaustive-path-search.md`

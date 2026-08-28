@@ -866,7 +866,7 @@
                             (with-capability (P|DT)
                                 (ref-ORBR::C_Fuel)
                             )
-                            (format "{} IGNIS and {} KDA collected (raising DLK Index) succesfully; 2|3" [sum-ignis kda-costs])
+                            (format "{} IGNIS and {} KDA collected (raising SSTOA Index) succesfully; 2|3" [sum-ignis kda-costs])
                         )
                         (format "{} IGNIS collected, with {} KDA collected (in reserves) succesfully; 2|3" [sum-ignis kda-costs])
                     )

@@ -498,7 +498,7 @@
         \ principal-agnostic (#21H), so removal of a minor principal is safe — it \
         \ only affects future pool-issuance principal-anchoring validation, never \
         \ existing routing. A major principal (currently a member of the \
-        \ primordial pool — always OURO/DWK/DLK in practice) can never be removed \
+        \ primordial pool — always OURO/WSTOA/SSTOA in practice) can never be removed \
         \ this way; retiring one requires redefining the primordial pool itself \
         \ (SWP|A_DefinePrimordialPool). SWP|A_RotatePrincipal remains available as \
         \ an atomic, count-preserving alternative for minor principals — it never \
@@ -521,7 +521,7 @@
         \ pool-issuance principal-anchoring validation. Rejects rotating a \
         \ principal into itself, rejects <new> already being a principal, and \
         \ rejects <old> being a 'major' principal (currently a member of the \
-        \ primordial pool — always OURO/DWK/DLK in practice, #65eL) — majors are \
+        \ primordial pool — always OURO/WSTOA/SSTOA in practice, #65eL) — majors are \
         \ fixed, retirable only by redefining the primordial pool itself \
         \ (SWP|A_DefinePrimordialPool)."
         (with-capability (P|ADMINISTRATIVE-SUMMONER)

@@ -632,14 +632,33 @@ for owner review as a real values decision, not hidden as if equivalent. Full wr
 declared on `SwapperIssueV3`) names itself after `DWK` (wrapped-STOA), inconsistent with the
 "Stoa"-based vocabulary already used throughout the same code paths (`XE_UpdateStoaValue`,
 `URC_PoolStoaValueFromPath`, the "STOA-repricing loop" comments). Owner: rename to a Stoa-based name
-(e.g. `URC_WorthStoa`) for consistency. — **FILED, deferred to `main` (owner, 2026-08-28).** Pure
-rename, no behavior change — but these are interface-declared functions (`SwapperIssueV3`), so it
-touches the interface declaration plus every call site: internal (`16_SWPI.pact` itself,
-`04_TS01-C3.pact`'s repricing loop, doc references in `19_SWPU.pact`) AND at least one slave-module
-consumer (`2_SLAVE/Stage_Z/01_DPL-UR.pact` calls `URC_SingleWorthDWK` directly, twice) — a genuinely
-breaking API change for existing third-party integrators, not just an internal cleanup. No version
-bump needed per policy (`V1` edited freely pre-mainnet), but every caller across sovereign, slave, and
-REPL needs updating in the same pass. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`. — *#65cL*
+(e.g. `URC_WorthStoa`) for consistency. — **SUPERSEDED (2026-08-28) — actioned, not deferred.** Owner
+gave the concrete target naming (`WSTOA`/`SSTOA`, not a placeholder) shortly after this was filed and
+asked for the rename directly. See `#65gL` below (`ROUND-02-FIXES.md` Fix #46) — this note's own scope
+check (interface, internal call sites, the `DPL-UR` slave-module consumer, REPL references) was used
+directly as the work list, and turned out accurate. — *#65cL*
+
+#65gL **[SWPI + 01_DALOS/19_SWPU/15_SWP/14_SWPT/20_MTX-SWP/01_TS01-A/04_TS01-C3 + 2_SLAVE/Stage_Z/01_DPL-UR]**
+Off-cycle, actions `#65cL`: owner: there is no "DWK" (leftover "wrapped Kadena") or "DLK" (leftover
+"liquid/staked Kadena") — the correct terms are `WSTOA` (wrapped STOA) and `SSTOA` (silver STOA);
+rename everything and refactor accordingly. — **FIXED ✅ AND PROVEN ✅ (owner, 2026-08-28,
+`ROUND-02-FIXES.md` Fix #46).** Verified first: `WSTOA`/`SSTOA` are already the real, established
+ticker prefixes elsewhere in this codebase (`DPL-UR`, `CodeStoa.pact`, Stage 2 modules) — the old
+naming was factually wrong, not just inconsistent. Confirmed `DLK` is ambiguous codebase-wide
+(`23_PYTHIA.pact`'s unrelated "DualLink" concept) — excluded entirely, never touched. **Caught a real
+near-miss before it shipped:** a blind word-boundary `sed` first pass renamed a hardcoded REPL
+pool-lookup string — real token IDs, not prose — breaking the suite, because the actual
+genesis-configured tickers (`[4.0]_Sovereign-Executor.repl`'s own `DPTF|C_Issue` list) are literally
+`"DWK"`/`"DLK"`, the exact legacy naming the owner is pointing at, but baked into real, deployed
+genesis data. Caught via full regression (`Load failed`), reverted the 2 REPL files, redone
+surgically — function call sites and safe prose only, every real ticker string left untouched.
+Renamed `URC_WorthDWK` family + internal `wkda`/`lkda` ("Kadena") variables in `16_SWPI.pact`,
+doc/message updates across 7 more files, `DPL-UR`'s 2 breaking-API call sites fixed. `SWP|TX
+032z6f`/`032z8a` (`#65fL`) proofs re-ran post-rename with identical gas numbers, confirming zero
+behavior change. **Deliberately not shipped:** the REPL files' own bulk local-variable/comment
+cosmetics (same collision risk) and the deeper real-genesis-ticker rename itself (protocol-wide,
+`L58`-scale, flagged not actioned). Full suite + default issuance-only both clean. Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`. — *#65gL*
 
 #66L **[SWPU]** ~~Failure-branch `OutputCumulator` objects are hand-built instead of via a `UDC_*`
 constructor.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-27** (`ROUND-02-FIXES.md` Fix #39). Confirmed

@@ -45,11 +45,11 @@
         @doc "An amount-agnostic X->target path (P3.0) — reused for two DIFFERENT cacheable \
             \ pricing targets, NOT the same token (caught 2026-08-21, before Phase 8 built \
             \ against this, while tracing URC_PoolValue's real implementation): \
-            \ <boost-path> targets DLK (DALOS::UR_SilverStoaID — matches XI_RawLiquidPump's \
+            \ <boost-path> targets SSTOA (DALOS::UR_SilverStoaID — matches XI_RawLiquidPump's \
             \ existing URC_HopperActiveShortest id->lkda call); each <stoa-paths> entry \
-            \ targets DWK (DALOS::UR_WrappedStoaID — matches URC_PoolValue's own \
-            \ URC_WorthDWK first-token->dwk call, per its own \"Outputs the Pool Value in \
-            \ DWK\" doc). Same schema shape, different destination token per field — callers \
+            \ targets WSTOA (DALOS::UR_WrappedStoaID — matches URC_PoolValue's own \
+            \ URC_WorthWSTOA first-token->wstoa call, per its own \"Outputs the Pool Value in \
+            \ WSTOA\" doc). Same schema shape, different destination token per field — callers \
             \ must supply/validate the correct one for each. <nodes>=[BAR] is the sentinel \
             \ for 'genuinely no path exists anywhere' (handled gracefully, not a crash — \
             \ this is also what finally closes the long-standing XI_RawLiquidPump crash \
@@ -66,8 +66,8 @@
         @doc "One deduped entry in a bundle's <stoa-paths> list — one per DISTINCT first \
             \ token among all pools a swap actually touches, not one per pool (#34 Phase \
             \ 5 found today's per-pool loop redundantly re-traces identical paths when \
-            \ pools share a first token). <path> targets DWK, matching URC_PoolValue's \
-            \ own URC_WorthDWK target — NOT DLK (see CachedPathOrMiss's doc)."
+            \ pools share a first token). <path> targets WSTOA, matching URC_PoolValue's \
+            \ own URC_WorthWSTOA target — NOT SSTOA (see CachedPathOrMiss's doc)."
         first-token:string
         path:object{CachedPathOrMiss}
     )
@@ -75,7 +75,7 @@
         @doc "The full dirty-read-discovered input to the bundle-based SmartSwap entrypoint \
             \ (Phase 8, C_ prefix) — replaces all internal on-chain searching. Assembled \
             \ entirely client-side per P3.7's orchestration sequence. <boost-path> targets \
-            \ DLK, <stoa-paths> entries target DWK — different destination tokens, see \
+            \ SSTOA, <stoa-paths> entries target WSTOA — different destination tokens, see \
             \ CachedPathOrMiss's doc."
         swap-route:object{SwapRoute}
         boost-path:object{CachedPathOrMiss}
@@ -288,7 +288,7 @@
                 )
                 (enforce
                     (> pool-worth inactive-limit)
-                    (format "Pool {} cannot have its Swap Functionality turned on because its worth is {} DWK, and a {} DWK Value is required for swap" [swpair pool-worth inactive-limit])
+                    (format "Pool {} cannot have its Swap Functionality turned on because its worth is {} WSTOA, and a {} WSTOA Value is required for swap" [swpair pool-worth inactive-limit])
                 )
             )
             true
@@ -553,14 +553,14 @@
     )
     (defun URC_PoolStoaValueFromPath:decimal (swpair:string stoa-paths:[object{TokenPathPair}])
         @doc "#34 Phase 8 — the 'dumb-writer' replacement for URC_PoolValue's own \
-            \ URC_WorthDWK(first-token, first-token-supply) call. Reproduces \
+            \ URC_WorthWSTOA(first-token, first-token-supply) call. Reproduces \
             \ URC_PoolValue's EXACT pool-worth formula (same current-lp-supply/genesis \
             \ branch, same per-pool-type math), but sources <first-worth> from the \
-            \ bundle's <stoa-paths> instead of a fresh first-token->DWK search — that \
+            \ bundle's <stoa-paths> instead of a fresh first-token->WSTOA search — that \
             \ search is the actual redundant cost this whole helper exists to remove \
             \ (P0.6: 56.9% of the 102-pool worst-case total, more than 3x routing+boost \
-            \ combined). Target is DWK (DALOS::UR_WrappedStoaID), matching \
-            \ URC_PoolValue's own doc ('Outputs the Pool Value in DWK') — NOT DLK (see \
+            \ combined). Target is WSTOA (DALOS::UR_WrappedStoaID), matching \
+            \ URC_PoolValue's own doc ('Outputs the Pool Value in WSTOA') — NOT SSTOA (see \
             \ CachedPathOrMiss's doc, caught 2026-08-21 before this was built). \
             \ Returns -1.0 (impossible pool-worth, easy sentinel) when the bundle didn't \
             \ supply a usable path for this pool's first token — same graceful-degrade \
@@ -568,7 +568,7 @@
             \ pool's stoa-value doesn't get refreshed this round, never a crash or an \
             \ aborted swap. Every path is re-validated here regardless of the bundle's \
             \ own <is-new> claim (P3.1: even a cache hit always re-validates) — \
-            \ exists-only (SWPT::URC_ValidatePathStructure), matching URC_WorthDWK's own \
+            \ exists-only (SWPT::URC_ValidatePathStructure), matching URC_WorthWSTOA's own \
             \ URC_Hopper (unfiltered universe, not URC_HopperActive) — pricing paths were \
             \ never required to route over can-swap=true pools only."
         (let*
@@ -580,8 +580,8 @@
                 (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPT:module{SwapTracerV2} SWPT)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
-                (dwk:string (ref-DALOS::UR_WrappedStoaID))
-                (dlk:string (ref-DALOS::UR_SilverStoaID))
+                (wstoa:string (ref-DALOS::UR_WrappedStoaID))
+                (sstoa:string (ref-DALOS::UR_SilverStoaID))
                 (current-lp-supply:decimal (ref-SWP::URC_LpCapacity swpair))
                 (pool-token-supplies:[decimal]
                     (if (= current-lp-supply 0.0)
@@ -602,21 +602,21 @@
                 (first-token-supply:decimal (at 0 pool-token-supplies))
                 (first-token-precision:integer (ref-DPTF::UR_Decimals first-token))
                 (first-weigth:decimal (at 0 w))
-                ;;Same dwk/dlk short-circuits URC_WorthDWK already has — no path tracing
-                ;;needed or possible for these two (dlk<->dwk is a fixed protocol-level
+                ;;Same wstoa/sstoa short-circuits URC_WorthWSTOA already has — no path tracing
+                ;;needed or possible for these two (sstoa<->wstoa is a fixed protocol-level
                 ;;ATS liquid-index conversion, not a swap-pool route).
                 (first-worth:decimal
-                    (if (= first-token dwk)
+                    (if (= first-token wstoa)
                         first-token-supply
-                        (if (= first-token dlk)
+                        (if (= first-token sstoa)
                             (let
                                 (
-                                    (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk))
-                                    (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
+                                    (ats-pairs-with-sstoa-id:[string] (ref-DPTF::UR_RewardBearingToken sstoa))
+                                    (kdaliquindex:string (at 0 ats-pairs-with-sstoa-id))
                                     (index-value:decimal (ref-ATS::URC_Index kdaliquindex))
-                                    (dlk-prec:integer (ref-DPTF::UR_Decimals dlk))
+                                    (sstoa-prec:integer (ref-DPTF::UR_Decimals sstoa))
                                 )
-                                (floor (* first-token-supply index-value) dlk-prec)
+                                (floor (* first-token-supply index-value) sstoa-prec)
                             )
                             (let*
                                 (
@@ -631,7 +631,7 @@
                                                 (ref-SWPT::URC_ValidatePathStructure nodes edges)
                                                 (and
                                                     (= (at 0 nodes) first-token)
-                                                    (= (at (- le 1) nodes) dwk)
+                                                    (= (at (- le 1) nodes) wstoa)
                                                 )
                                             )
                                         )
@@ -843,8 +843,8 @@
         @doc "#34 Phase 8 — the bundle-based, dirty-read-injected SmartSwap: performs \
             \ ZERO internal searching. <bundle> (SmartSwapPathBundle) is assembled \
             \ entirely client-side per the exhaustive-path-search HANDOFF doc's P3.7 \
-            \ orchestration sequence — swap-route (A->B), boost-path (B->DLK) and \
-            \ stoa-paths (each distinct pool's first-token->DWK) are all dirty-read \
+            \ orchestration sequence — swap-route (A->B), boost-path (B->SSTOA) and \
+            \ stoa-paths (each distinct pool's first-token->WSTOA) are all dirty-read \
             \ off-chain before this transaction is ever submitted. Built ALONGSIDE, not \
             \ replacing, CC_SmartSwap (the original self-searching variant) for direct \
             \ A/B gas comparison (P3.5.2) — same slippage/no-slippage split, same \
@@ -1112,7 +1112,7 @@
                 (ref-SWPT:module{SwapTracerV2} SWPT)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 (lkda:string (ref-DALOS::UR_SilverStoaID))
-                (dwk:string (ref-DALOS::UR_WrappedStoaID))
+                (wstoa:string (ref-DALOS::UR_WrappedStoaID))
                 (swap-route:object{SwapRoute} (at "swap-route" bundle))
                 (route-nodes:[string] (at "nodes" swap-route))
                 (route-edges:[string] (at "edges" swap-route))
@@ -1169,14 +1169,14 @@
                                         [
                                             (ref-SWPT::URC_ValidatePathStructure nodes edges)
                                             (= (at 0 nodes) ft)
-                                            (= (at (- le 1) nodes) dwk)
+                                            (= (at (- le 1) nodes) wstoa)
                                         ]
                                     )
                                 )
                             )
                         )
                         (if eligible
-                            (ref-SWPT::XE_RegisterPath ft dwk nodes edges)
+                            (ref-SWPT::XE_RegisterPath ft wstoa nodes edges)
                             "stoa-path not registered (not new, invalid, or sentinel)"
                         )
                     )
@@ -1247,7 +1247,7 @@
         )
         @doc "#34 Phase 8: <boost-path> — NO_PATH sentinel (self-searching caller, \
             \ XI_LiquidIndexPump searches internally as before) or a real bundle-supplied \
-            \ id->DLK path (new dirty-read-injected caller) — passed through unchanged to \
+            \ id->SSTOA path (new dirty-read-injected caller) — passed through unchanged to \
             \ whichever XI_LiquidIndexPump call the last hop below fires (closure-captured \
             \ from this outer let, not threaded through the fold's own accumulator, since \
             \ it's a constant for the whole call, not something that varies per hop). \
@@ -1261,7 +1261,7 @@
             \ forward. Only the LAST hop actually prices-and-burns, via <XI_LiquidIndexPump>, against \
             \ the single accumulated total — one graph search per SmartSwap instead of one per hop. \
             \ This intentionally does NOT reproduce the old per-hop totals (it follows the swap's own \
-            \ route instead of each hop's individually-best route to DLK) — acceptable since this is \
+            \ route instead of each hop's individually-best route to SSTOA) — acceptable since this is \
             \ internal index-pump accounting, not user-facing swap output. \
             \ Returns [final-netto all-icos-list ...] — callers (<XI_SmartSwap>) only read indices \
             \ 0/1; the fold's own accumulator carries further elements (running carried-boost, and \
@@ -1655,7 +1655,7 @@
             )
             ;;Bug fix, #34 (found while fixing XI_RawLiquidPump's own crash — that fix
             ;;makes it legitimately return EOC, whose "output" is [], when <id> has no
-            ;;active route to DLK; this caller's own unguarded (at 0 ...) into that
+            ;;active route to SSTOA; this caller's own unguarded (at 0 ...) into that
             ;;empty list would then crash the same way, just one level up). Nothing to
             ;;pump/report when there's nothing there — skip the event+pumpdate, return
             ;;<ico> (EOC) as-is. XI_Pumpdate already tolerates non-5-length input safely
@@ -1683,10 +1683,10 @@
             \ <URC_HopperActive> (best-of-3 alternate-route search) — this fires once \
             \ per SmartSwap hop, so the best-of-3 search's cost was being multiplied \
             \ by hop-count x 3 to price a residual fee slice that only needs *a* \
-            \ valid route to DLK, not the optimal one. \
+            \ valid route to SSTOA, not the optimal one. \
             \ #34 Phase 8: <boost-path> is NO_PATH (the [BAR]-nodes sentinel) for the \
             \ self-searching CC_SmartSwap caller (searches internally, as above) or a \
-            \ real bundle-supplied id->DLK path for the new dirty-read-injected caller \
+            \ real bundle-supplied id->SSTOA path for the new dirty-read-injected caller \
             \ (validated here — active-required, same standard <URC_HopperActiveShortest> \
             \ already enforced — before being trusted; an invalid or malformed supplied \
             \ path degrades to 'no boost pumped this time', same graceful EOC fallback \
@@ -1752,10 +1752,10 @@
                     )
                     ;;Bug fix, #34 (SWP exhaustive-path-search HANDOFF doc, flagged during
                     ;;P0.5, fixed now): <ovs> is legitimately empty whenever <id> has no
-                    ;;*active* route to DLK at all (EMPTY_HOPPER's own output-values is
+                    ;;*active* route to SSTOA at all (EMPTY_HOPPER's own output-values is
                     ;;[]) — the original `(at 0 (take -1 ovs))` crashed with an
                     ;;out-of-bounds error in that case instead of failing cleanly. A
-                    ;;token with no route to DLK simply doesn't get its boost pumped this
+                    ;;token with no route to SSTOA simply doesn't get its boost pumped this
                     ;;time (EOC, no burn) — not a corruption, not a lost swap, the rest of
                     ;;the transaction is unaffected. Adversarially proven (SWP|TX 032z5):
                     ;;reverted this fix, confirmed the exact "Array index out of bounds.
@@ -1788,7 +1788,7 @@
             (let
                 (
                     (ref-SWP:module{SwapperV3} SWP)
-                    (path-to-dlk:[string] (at 1 raw-liquid-pump-data))
+                    (path-to-sstoa:[string] (at 1 raw-liquid-pump-data))
                     (edges:[string] (at 2 raw-liquid-pump-data))
                     (ovs:[decimal] (at 3 raw-liquid-pump-data))
                     (amount:decimal (at 4 raw-liquid-pump-data))
@@ -1799,8 +1799,8 @@
                         (idx:integer)
                         (let
                             (
-                                (first-id:string (at idx path-to-dlk))
-                                (second-id:string (at (+ idx 1) path-to-dlk))
+                                (first-id:string (at idx path-to-sstoa))
+                                (second-id:string (at (+ idx 1) path-to-sstoa))
                                 (hop:string (at idx edges))
                                 (first-amount:decimal
                                     (if (= idx 0)

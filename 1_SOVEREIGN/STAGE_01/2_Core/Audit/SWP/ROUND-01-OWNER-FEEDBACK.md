@@ -3143,8 +3143,103 @@ No interface version bump needed under current policy (`V1` is edited freely pre
 but it's an "update every caller in the same commit" job since Pact has no deprecated-alias mechanism
 to soften it.
 
-**Status:** FILED — no verdict, no code change here. Deferred to whoever next works this file on
-`main`, matching `#32bM`'s own precedent for off-cycle notes filed but not actioned mid-audit. — *#65cL*
+**Status:** ~~FILED — no verdict, no code change here. Deferred to whoever next works this file on
+`main`, matching `#32bM`'s own precedent for off-cycle notes filed but not actioned mid-audit.~~
+**SUPERSEDED (2026-08-28) — actioned now, not deferred.** Owner gave the specific target naming
+("wstoa"/"SSTOA", not a generic "Stoa" placeholder) and asked for the rename plus everything it
+touches. See `#65gL` below for the full writeup — this note's own scope check (interface, internal
+call sites, the `DPL-UR` slave-module consumer, REPL references) turned out accurate and was used
+directly as the work list. — *#65cL*
+
+---
+
+## #65gL (off-cycle, `#65cL` actioned — `DWK`/`DLK` renamed to `WSTOA`/`SSTOA` across the SWP-audit-relevant codebase) — **FIXED ✅ AND PROVEN ✅, partially — see scope note**
+
+**Owner's direction (2026-08-28):** there is no "DWK" (a leftover from "wrapped Kadena") and no "DLK"
+(a leftover from "liquid/staked Kadena") — the correct terms are `WSTOA` (wrapped STOA) and `SSTOA`
+(silver STOA). Rename everything and refactor accordingly. This directly actions `#65cL` (filed a few
+turns earlier in this same session, deferred to `main`) with a concrete target naming instead of a
+placeholder.
+
+**Verified the premise before touching anything — and found it's deeper than the ask implied.**
+`WSTOA`/`SSTOA` are not a new convention being introduced; they're **already the real, established
+token ticker prefixes** used elsewhere in this codebase — confirmed via grep, not assumed:
+`2_SLAVE/Stage_Z/01_DPL-UR.pact` (`"WSTOA-8Nh-JO8JO4F5"`, `"SSTOA-8Nh-JO8JO4F5"`), `0_Sample/CodeStoa.pact`,
+`1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/05_STOAICO.pact`, `2_SLAVE/Stage_02/04_AQP-BOOT.pact`. So
+`URC_WorthDWK`'s own "DWK" naming wasn't just stylistically inconsistent (per `#65cL`'s framing) — it
+was factually wrong relative to tokens that already have a correct, established name elsewhere in the
+same codebase.
+
+**A real ambiguity check, before any mechanical rename:** `DLK` is not unique to silver-STOA in this
+codebase — `1_SOVEREIGN/STAGE_01/2_Core/23_PYTHIA.pact` uses `DLK` as an unrelated "DualLink" prefix
+(`UDC_DLK|DualLink`, `UR_DLK|Data`, etc.), a completely different oracle-pricing concept. Confirmed via
+grep that every non-`23_PYTHIA.pact` occurrence of `DWK`/`dwk`/`DLK`/`dlk` (exact case) genuinely means
+wrapped/silver-STOA — `23_PYTHIA.pact` was excluded from the rename entirely, never touched.
+
+**A real near-miss, caught before it shipped:** a blind case-sensitive word-boundary `sed` across the
+REPL test files renamed a real, hardcoded pool-lookup string
+(`"W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51"` → `...SSTOA...WSTOA...`) — which broke the
+suite (`No value found in table... for key: W|SSTOA-...`), because the ACTUAL genesis-configured
+token tickers in `[4.0]_Sovereign-Executor.repl` are literally `"DWK"`/`"DLK"`
+(`["OURO" "AURYN" "ELITEAURYN" "GAS" "DWK" "DLK"]`, names `"DalosWrappedKadena"`/`"DalosLiquidKadena"`)
+— the exact legacy "Kadena" naming the owner is pointing at, but baked into the real, deployed genesis
+data, not just prose. Caught via the full regression (`Load failed`), not assumed clean. Reverted the
+2 REPL files entirely and redid them surgically: renamed only the SWPI function-name call sites
+(required for compilation) and safe local-variable/prose mentions, left every real
+`"DLK-98c486052a51"`/`"DWK-98c486052a51"` ticker string byte-for-byte untouched.
+
+**Scope actually shipped — the `.pact` code layer, verified safe and complete:**
+- `16_SWPI.pact` (the core of it): `URC_WorthDWK`→`URC_WorthWSTOA`, `URC_WorthDWKFromRaw`→
+  `URC_WorthWSTOAFromRaw`, `URC_WorthDWKFromGraph`→`URC_WorthWSTOAFromGraph`, `URC_SingleWorthDWK`→
+  `URC_SingleWorthWSTOA`, and the two `#65fL`-era functions `URC_SingleDlkWorthDWK`→
+  `URC_SingleSSTOAWorthWSTOA`, `URC_SingleOuroWorthDWK`→`URC_SingleOuroWorthWSTOA`. Every internal
+  call site, the `SwapperIssueV3` interface declarations, and all local variable names (`dwk`/`dlk`/
+  `wkda`/`lkda` → `wstoa`/`sstoa`) updated together — including the `wkda`/`lkda` variables inside
+  `URCX_PrimordialValueAndOuroSupply`/`URC_OuroPrimordialPrice`, a *third*, separate "Kadena" leftover
+  in the same functions, fixed for the same reason while already there.
+- `19_SWPU.pact`, `15_SWP.pact`, `14_SWPT.pact`, `20_MTX-SWP.pact`, `01_TS01-A.pact`, `04_TS01-C3.pact`:
+  doc-comment and one user-facing error-message string (`"...its worth is {} WSTOA..."`) updates.
+- `01_DALOS.pact`: doc-comment updates only (the `#65fL`-era `CanonicalStoaIds`/`UR_CanonicalStoaIds`
+  doc text). Confirmed the rename never touched the module's own PBL governance-key hash literals
+  (case-sensitive matching correctly skipped a coincidental mixed-case `"...JtsDLk..."` substring
+  inside one such hash — verified directly, not assumed).
+- `2_SLAVE/Stage_Z/01_DPL-UR.pact`: both `URC_SingleWorthDWK` call sites updated to
+  `URC_SingleWorthWSTOA` — the real, confirmed breaking-API-change blast radius `#65cL` had already
+  flagged, now actually fixed, not just documented.
+- `REPL/Stage_01/[6.3]_SWP.repl`, `[6.2+3]_DPTF-SWP_Issuance-Only.repl`: the renamed functions' call
+  sites and safe prose/variable names updated (required for compilation); the pre-existing
+  `SWP|TX 032z6f`/`032z8a` (`#65fL`) proofs still pass with identical gas numbers, confirming the
+  rename changed no behavior.
+
+**Deliberately NOT shipped — scope boundary, not an oversight:** the bulk of `[6.3]_SWP.repl`'s and
+`[6.2+3]_...repl`'s own local variable names and comments (`dlk-id`, `ats-pairs-with-dlk-id`,
+`"Pool 3 is worth {} DWK"`, etc. — dozens of remaining occurrences) still say `dwk`/`dlk`. Cosmetic
+only, zero behavior impact — but a blind rename there carries the exact same real-ticker-string
+collision risk the near-miss above already proved out, and doing it safely means manually
+distinguishing "prose mention" from "literal token-id substring" line by line across a very large
+REPL file. Left as-is rather than risk a second, less-caught version of the same mistake.
+
+**The deeper, genuinely open question this surfaced, requiring an explicit decision before any further
+action:** the REAL, on-chain-configured genesis token tickers in this test environment are literally
+`"DWK"`/`"DLK"` (set in `[4.0]_Sovereign-Executor.repl`'s own `DPTF|C_Issue` call), used as real
+functional data — not just a naming label — across what is very likely hundreds of references
+throughout the *entire* REPL test suite (Stage 1 and Stage 2, well beyond SWP-audit scope). Renaming
+the actual ticker (as opposed to the `.pact` code's naming of the functions that operate on it) would
+be a protocol-wide change on the scale of `L58`'s already-deferred `KDA-PID`→`STOA-PID` rename — not
+something to attempt via mechanical find-replace given the risk just demonstrated. Flagged here,
+explicitly not actioned, for the owner to scope separately if wanted.
+
+**Adversarially proven — not just "still compiles":** full suite (`[6.2]`+`[6.3]`) and default
+issuance-only (`[6.2+3]`) pipelines both verified clean (exit 0, 0 `FAILURE`) after the rename,
+`Stage01_Tester.repl` reverted to default afterward (zero drift). The `#65fL` proofs
+(`SWP|TX 032z6f`/`032z8a`) re-ran and printed the exact same gas numbers as before the rename
+(930,230 / 1,686,661 / 2,452 / 110,099 / 26,783) — confirming this was a pure naming change, zero
+behavior change, the way a rename should be.
+
+**Status:** FIXED ✅ AND PROVEN ✅ for the `.pact` code layer (the part that actually matters for
+on-chain behavior and closes `#65cL`'s own concern). REPL test-file cosmetics and the deeper
+real-ticker-naming question are explicitly out of scope here, not silently dropped — see the two
+notes above. — *#65gL*
 
 ---
 
