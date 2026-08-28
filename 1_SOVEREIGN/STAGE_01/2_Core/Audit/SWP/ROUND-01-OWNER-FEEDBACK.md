@@ -3109,6 +3109,36 @@ direct `URC_ReadPathCache` check) and that the warm-cache call returns exactly t
 issuance-only (`[6.2+3]`) pipelines both verified clean (exit 0, 0 `FAILURE`), `Stage01_Tester.repl`
 reverted to default afterward (zero drift).
 
+**Addendum — does the OURO shortcut actually reach the STOA-repricing loop for a real pool?**
+Owner asked directly: since `W`/`P` pools structurally must have a principal as their first token
+(`UEV_Issue`'s `iz-principal` check), shouldn't *every* such pool's repricing get dramatically
+cheaper when that principal is a major one (OURO/`WSTOA`/`SSTOA`)? Confirmed by code trace first:
+`URC_PoolValue`/`FromRaw`/`FromGraph` all dispatch their first-token pricing straight to
+`URC_WorthWSTOA`(`FromRaw`/`FromGraph`) — the shortcut is reached automatically, no separate wiring
+needed. Then proven live, not just traced: `"P|OURO-98c486052a51|W1-98c486052a51"` (issued at
+`SWP|TX 032o2`, still live in the suite) is a real, already-existing pool whose first token
+genuinely is OURO. `SWP|TX 032z8b` (new, permanent) measures `URC_PoolValue` on it directly:
+**10,708 gas without the shortcut (isolated revert) → 3,524 gas with it, a 67.1% reduction** — a
+real number for a real pool, not an extrapolation from the standalone `URC_WorthWSTOA` proof.
+(Smaller absolute savings than `032z6f`'s 107,647 gas, because this pool sits earlier in the file
+at a much smaller topology — the shortcut's *relative* win holds regardless of scale, but its
+*absolute* size grows with the graph the fallback would otherwise have to search, consistent with
+the mechanism.) Adversarially proven (corrupted the non-zero-worth assertion, got a genuine
+`FAILURE`, restored).
+
+**The other half of the owner's question — minor principals — has no equivalent shortcut.**
+Only pools whose first token is literally one of the 3 major tokens (`WSTOA`/`SSTOA`/OURO) get the
+zero-search treatment. A `W`/`P` pool anchored to a *minor* principal (any other registered
+principal — up to 5 more, under the 7-cap) still relies on `SWPT|PathCache` (warm if a
+bundle-assisted swap recently searched that pair) or a live graph search otherwise — no special
+casing exists for that category, and per `#65dL`'s own finding, minor principals aren't guaranteed
+to be *close* to a major one. This is exactly why the tracked worst-case checkpoints
+(`SWP|TX 032q`/`032z2`) only showed a small net win (-878/-895 gas) despite Phase 8b's large
+per-call win: none of those specific pools are anchored to a major token — the P0.5 chain's
+anchors (`W1`/`W4`/`W7`) and the P2-scale topology's issued tokens are all minor-principal- or
+new-token-anchored, not major-anchored, by the deliberate design of those adversarial test
+topologies.
+
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #45. Phase 8b's value-methodology
 question left open for owner review (not blocking — both phases fully shipped and working as
 designed either way). — *#65fL*

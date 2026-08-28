@@ -5600,6 +5600,53 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z8b - #65fL Phase 8b Real OURO-Anchored Pool Repricing Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 032z8b - #65fL Phase 8b Real Pool Proof · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;#65fL Phase 8b: owner asked directly whether the OURO/SSTOA shortcut actually reaches the
+;;STOA-repricing loop (URC_PoolValue*) for a REAL pool whose first token literally IS a major
+;;principal — W/P pools structurally must have a principal as their first token (UEV_Issue's
+;;iz-principal check), and "P|OURO-98c486052a51|W1-98c486052a51" (issued at SWP|TX 032o2, still
+;;live in this suite) is exactly that case: a real, live P-type pool with OURO as its first
+;;token. URC_PoolValueFromGraph/FromRaw/URC_PoolValue all dispatch their first-token pricing to
+;;URC_WorthWSTOA(FromRaw/FromGraph) — this proves that dispatch reaches the id==OURO shortcut for
+;;a REAL pool-value call, not just the standalone URC_WorthWSTOA proof (SWP|TX 032z6f) — and
+;;measures the real, isolated gas cost against what the SAME pool would have cost pre-Phase-8b
+;;(the shortcut's own guard reverted, forcing the graph-search fallback).
+(print "--- [SWP|TX 032z8b - #65fL Phase 8b Real Pool Proof · 02 · direct measurement] ---")
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWP:module{SwapperV3} SWP)
+        (real-pool:string "P|OURO-98c486052a51|W1-98c486052a51")
+        (first-token:string (at 0 (ref-SWP::UR_PoolTokens real-pool)))
+    )
+    (print
+        (expect "#65fL Phase 8b: sanity — this real pool's first token genuinely is OURO, not assumed"
+            "OURO-98c486052a51"
+            first-token
+        )
+    )
+    (env-gas 0)
+    (let
+        (
+            (pool-worth:[decimal] (ref-SWPI::URC_PoolValue real-pool))
+        )
+        (map print
+            [
+                (expect "#65fL Phase 8b: real OURO-anchored pool's worth is genuinely non-zero (real primordial-pool data, not an empty fallback)" true (> (at 0 pool-worth) 0.0))
+                (format "#65fL Phase 8b: URC_PoolValue(real OURO-anchored pool) = {}, gas: {}" [pool-worth (env-gas)])
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "SWP|TX 032z8 - #34 Phase 10 Adversarial Malformed-Bundle Proof (Permanent)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

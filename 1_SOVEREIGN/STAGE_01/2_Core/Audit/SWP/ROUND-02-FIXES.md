@@ -1877,6 +1877,16 @@ path; the 90.3% figure comes from an isolated forced-miss-vs-hit comparison agai
 **Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
 (exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
 
+**Addendum:** owner asked whether the OURO shortcut actually reaches `URC_PoolValue` for a real
+`W`/`P` pool (whose first token is structurally always a principal). Confirmed by trace
+(`URC_PoolValue*` dispatches first-token pricing straight to `URC_WorthWSTOA*`) and proven live on
+a real, already-issued pool (`"P|OURO-98c486052a51|W1-98c486052a51"`, `SWP|TX 032z8b`, new,
+permanent): **10,708 → 3,524 gas, 67.1%**, isolated via revert, adversarially proven. Also recorded:
+only pools anchored to a *major* token (`WSTOA`/`SSTOA`/OURO) get this; minor-principal-anchored
+pools have no equivalent shortcut, which is exactly why the tracked worst-case checkpoints only
+showed a small net win — none of those pools are major-anchored. See
+`ROUND-01-OWNER-FEEDBACK.md`'s `#65fL` entry for the full writeup.
+
 **Status:** FIXED ✅ AND PROVEN ✅. Phase 8b's value-methodology question left open for owner review
 (both phases fully shipped and working as designed either way). See `ROUND-01-OWNER-FEEDBACK.md`'s
 `#65bL` entry (Phase 8 addendum) for the full writeup.
