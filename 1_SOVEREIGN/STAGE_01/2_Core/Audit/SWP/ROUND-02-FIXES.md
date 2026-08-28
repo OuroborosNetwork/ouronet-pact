@@ -2110,3 +2110,96 @@ part of what the fix improves).
 
 **Status:** FIXED ✅ AND PROVEN ✅. C2 is now fully closed, both directions. See
 `ROUND-01-OWNER-FEEDBACK.md`'s `C2` entry (sibling addendum) for the full writeup.
+
+---
+
+## Fix #49 — #73C: `URC_WorthWSTOA` — weight-omission and whole-amount depth-skew
+
+**Origin:** owner-directed, arising directly from the earlier Kaddex-comparison detour — while
+discussing `URC_SingleOuroWorthWSTOA`'s already-flagged "values decision" (`#65fL` Phase 8b, shown
+side by side but never resolved), owner asked how the general "worth of a token in WSTOA"
+computation *should* work. Owner correctly reasoned: (1) the generic answer is a best-path
+no-fee simulated swap, which is why `URC_WorthWSTOA` needs BFS at all; (2) the OURO shortcut is
+using the primordial pool's total value divided by *some* OURO quantity — is that quantity right,
+and is this strange function even used anywhere; (3) — the sharper catch — simulating a swap of a
+*large* amount is not linear in amount (pool depth/slippage), so "worth of N tokens" computed this
+way is not N times "worth of 1 token," and the correct implementation should price 1 unit and
+scale, accepting that as the unavoidable compromise (no atomic-sub-unit pricing exists).
+
+**Two separate, real bugs found, both inside `URC_WorthWSTOA`/`FromRaw`/`FromGraph`:**
+
+1. **Weight-omission (OURO shortcut).** Traced `URC_SingleOuroWorthWSTOA`'s actual source
+   variable (had been mis-described as "OURO's total supply" in an earlier conversation pass —
+   corrected by re-reading the code): `ouro-supply` in `URCX_PrimordialValueAndOuroSupply` is
+   already `(at 1 (UR_PoolTokenSupplies primordial))`, the primordial pool's own *local* OURO
+   reserve, not global circulating supply. The real bug is that the formula
+   (`primordial-wstoa-value / ouro-supply`) is a flat, unweighted ratio — but the primordial pool
+   is a genuinely **weighted** pool (issuance weights `[0.3, 0.5, 0.2]` for SSTOA/OURO/WSTOA, not
+   equal), and a weighted pool's real exchange rate is `(reserve_B/weight_B)/(reserve_A/weight_A)`,
+   not a flat sum-of-other-reserves ratio. Confirmed live against real pool state (sstoa=3200.0,
+   ouro=10002.0, wstoa=5997.009): old shortcut returned 91.95 WSTOA for 100 OURO; the weighted
+   spot formula gives ≈149.9; the pre-existing graph-search fallback (unaffected by this bug, used
+   for comparison) returned 147.31 — matching the weighted formula almost exactly, the small
+   remainder being genuine AMM slippage on a real ~1%-of-reserves trade. The old formula wasn't
+   approximating anything real — it was answering a different, not-quite-meaningful question
+   ("if OURO were redeemable pro-rata against exactly this one pool's reserves").
+2. **Whole-amount depth-skew (general fallback, every non-major id).** `URC_WorthWSTOA`'s
+   graph-search branch simulated a real swap of the *entire requested `amount`* — and its one real
+   caller, `URC_PoolValue` ("Outputs the Pool Value in WSTOA"), passes a pool's **entire first-token
+   reserve** as that amount. Simulating a swap of a pool's whole reserve through whatever route BFS
+   finds is not a valuation, it's an unrealistic "liquidate everything in one trade" scenario, and
+   the resulting slippage-crushed number silently understates every non-major-anchored pool's
+   recorded value. Confirmed live: `URC_WorthWSTOA(MPTEST, 300.0)` returned 272.09 (effective rate
+   0.907/unit) instead of 300× the true 1-unit rate (1.496/unit, 448.71) — a **39% collapse** purely
+   from simulating an oversized single swap, on a fixture with a perfectly ordinary route.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`:**
+
+- `URC_SingleOuroWorthWSTOA` signature changed from `() -> decimal` to `(ouro:string wstoa:string)
+  -> decimal` (interface + module + all 3 real call sites updated in the same commit — zero other
+  callers exist, repo-wide grep confirmed). Body replaced: instead of the hand-rolled ratio, calls
+  `URC_W-Swap` directly on the primordial pool with a real 1-unit `DirectSwapInputData`
+  (`[ouro] [1.0] wstoa`) — the exact same `UC_ComputeWP` weighted-invariant math a live swap would
+  use, so weights are honored automatically, no separate weight-adjustment formula needed. Still
+  zero graph search: OURO and WSTOA are direct siblings in the same primordial pool, one hop, no
+  BFS. `ouro`/`wstoa` are now caller-supplied params instead of self-fetched — every real caller
+  already holds them via `DALOS::UR_CanonicalStoaIds`, avoiding the exact kind of redundant-read
+  regression Phase 8b's own DALOS combined-reader fix was about (the `+928` gas naive-3rd-read bug).
+- `URC_WorthWSTOA`/`FromRaw`/`FromGraph`'s general (non-WSTOA/SSTOA/OURO) fallback branch changed
+  from `URC_Hopper[FromRaw/FromGraph] id wstoa amount` to `... id wstoa 1.0`, then the per-unit
+  result is multiplied by the real `amount` and floored at `id`'s own precision (matching the
+  existing SSTOA/OURO branches' established precision convention, for consistency across all four
+  branches). Route-finding (BFS) is unaffected — it was already amount-independent — only the swap
+  simulation step changes from "simulate the whole amount" to "price 1 unit, scale linearly."
+- `URCX_PrimordialValueAndOuroSupply`'s own `@doc` updated: it's now used only by
+  `URC_OuroPrimordialPrice` (the dollar-denominated price), not `URC_SingleOuroWorthWSTOA` anymore.
+  Flagged, not fixed here (out of scope, the WSTOA-denominated case is what surfaced this):
+  `URC_OuroPrimordialPrice`'s own final division likely carries the identical weight-omission
+  issue, unverified, left for a follow-up.
+
+**Adversarially proven, live, both bugs independently:**
+- Weight-omission: re-ran `SWP|TX 032z6f` post-fix — shortcut jumped 91.95 → 149.87, now within
+  1.7% of the graph-search value (147.31) instead of 38% apart. Proof's own assertions strengthened
+  from "non-zero, not expected to be close" to two real checks: shortcut ≥ graph-search (marginal
+  price is never worse than a real trade's average price), and the two are within 5% of each other.
+- Depth-skew: `git stash`'d `16_SWPI.pact` back to pre-fix, reran the new `SWP|TX 032z8e` probe —
+  pre-fix `worth(300)` was 272.09 (rate 0.907/unit, a 39% collapse from the true 1.496/unit rate);
+  post-fix `worth(300)` is exactly `300 × worth(1)` = 448.71, rate ratio exactly `1.0`. Restored the
+  fix, diffed against a pre-stash backup to confirm byte-identical restoration.
+
+**New permanent REPL proof — `SWP|TX 032z8e` (`REPL/Stage_01/[6.3]_SWP.repl`)**: asserts
+`worth(300.0)` is exactly `300.0 × worth(1.0)`, on the `MPTEST` fixture (no hardcoded reserve
+figures). `SWP|TX 032z6f` (existing) strengthened with two real assertions in place of a
+non-committal print, as above.
+
+**Gas cost, measured, disclosed:** small, expected increase on the tracked worst-case checkpoints —
+every pool touched by the STOA-repricing loop now does one extra precision read + multiply/floor.
+`SWP|TX 032q` 878,202 → 879,052 (+850), `SWP|TX 032z2` 1,296,898 → 1,297,747 (+849). Accepted cost
+of a genuine correctness fix, not a regression to chase down.
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅. `URC_OuroPrimordialPrice`'s own dollar-denominated math flagged
+as a likely-identical, unverified follow-up — not fixed here. See `ROUND-01-OWNER-FEEDBACK.md`'s
+`#73C` entry for the full writeup.

@@ -51,6 +51,29 @@ new permanent proof `SWP|TX 015b` confirmed failing pre-fix (crashed identically
 closed, both directions. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`'s `C2` entry (sibling addendum). —
 *C2 sibling*
 
+#73C **[SWPI]** ~~`URC_WorthWSTOA` — two real bugs: the OURO shortcut ignored the primordial pool's own
+weights, and the general fallback simulated a swap of the entire requested amount instead of pricing 1
+unit and scaling, causing real depth-skew.~~ — **FIXED ✅ AND PROVEN ✅ 2026-08-29** (`ROUND-02-FIXES.md`
+Fix #49) — grew out of an owner-directed design discussion on what "worth of a token in WSTOA" should
+mean, following up on `#65fL` Phase 8b's own never-resolved "values decision." Owner reasoned through the
+correct generic design unprompted (best-path no-fee simulated swap, price 1 unit then scale) and caught
+both bugs. Bug 1 (weight-omission): the primordial pool is genuinely weighted at issuance (SSTOA 0.3 /
+OURO 0.5 / WSTOA 0.2) — the old shortcut's flat `primordial-wstoa-value / ouro-supply` ratio silently
+assumed equal weighting; confirmed live against real reserves, old shortcut returned 91.95 WSTOA for 100
+OURO, the correct weighted-pool formula gives ≈149.9, matching the pre-existing (unaffected) graph-search
+fallback's 147.31 almost exactly. Bug 2 (depth-skew): `URC_PoolValue` passes a pool's entire first-token
+reserve as the `amount` to `URC_WorthWSTOA`, and the graph-search fallback simulated a swap of that whole
+amount — confirmed live on `MPTEST`: `worth(300)` came back as 272.09 instead of 300× the true 1.496/unit
+rate (448.71), a 39% collapse. Fixed by reusing real weighted-pool swap math (`URC_W-Swap`, 1-unit) for
+the OURO shortcut instead of a hand-rolled ratio, and by pricing 1 unit + scaling linearly in the general
+fallback across all three `URC_WorthWSTOA`/`FromRaw`/`FromGraph` siblings. Adversarially proven both bugs
+independently: weight-omission via re-running `SWP|TX 032z6f` (now within 1.7% instead of 38% apart, its
+own assertions strengthened from a non-committal print to two real checks); depth-skew via `git stash`
+revert-and-compare (pre-fix reproduced the exact 39% collapse, post-fix confirmed exact linearity, new
+permanent proof `SWP|TX 032z8e`). Small, disclosed gas cost on the tracked checkpoints (+850/+849).
+`URC_OuroPrimordialPrice`'s dollar-denominated math flagged as a likely-identical, unverified follow-up,
+out of scope here. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`'s `#73C` entry. — *#73C*
+
 #4C **[SWPU]** ~~`C_ToggleSwapCapability` has no ownership check anywhere in its call chain — any account
 can disable swapping on any pool, a free, unauthenticated, protocol-wide DoS.~~ — **REFUTED 2026-08-17.**
 The write path (`SWP::C_ToggleAddOrSwap` → `XE_CanAddOrSwapToggle`) is gated by `SWP|C>ADD-OR-SWAP`, which

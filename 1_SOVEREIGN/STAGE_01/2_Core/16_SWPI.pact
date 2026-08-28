@@ -115,10 +115,15 @@
     (defun URC_BestEdgeFiltered:string (ia:decimal i:string o:string swpairs:[string]))
         ;;
     (defun URC_OuroPrimordialPrice:decimal ())
-    ;;#65fL Phase 8b: OURO's own worth in WSTOA, per unit, straight off the primordial
-    ;;pool's own reserves — zero graph search. Used by URC_WorthWSTOA's own id==OURO
-    ;;shortcut (see that function's own doc).
-    (defun URC_SingleOuroWorthWSTOA:decimal ())
+    ;;#73C fix: OURO's own worth in WSTOA, per unit — a real 1-unit weighted-pool swap
+    ;;through the primordial pool (URC_W-Swap), not the old hand-rolled reserve ratio
+    ;;(which silently ignored the pool's own weights). Still zero graph search — OURO
+    ;;and WSTOA sit in the same primordial pool, one hop. <ouro>/<wstoa> are accepted
+    ;;as params instead of self-fetched, so callers that already hold them (every real
+    ;;caller does, via DALOS::UR_CanonicalStoaIds) don't pay for a redundant read — the
+    ;;exact regression Phase 8b's own DALOS combined-reader fix was about avoiding.
+    ;;Used by URC_WorthWSTOA's own id==OURO shortcut (see that function's own doc).
+    (defun URC_SingleOuroWorthWSTOA:decimal (ouro:string wstoa:string))
     ;;#65fL Phase 8b: SSTOA's own worth in WSTOA, per unit, via the ATS autostake index
     ;;— extracted so URC_WorthWSTOA's own id==SSTOA branch and URCX_PrimordialValueAndOuroSupply
     ;;share it without a static recursive-cycle compile error (see the defun's own doc).
@@ -1568,12 +1573,17 @@
             \ is the primordial pool's total value in WSTOA-equivalent terms (native \
             \ WSTOA reserve plus the SSTOA reserve converted via its own cheap \
             \ index-based shortcut, URC_SingleSSTOAWorthWSTOA — zero graph search either \
-            \ way). Both <URC_OuroPrimordialPrice> (dollar-denominated) and \
-            \ <URC_SingleOuroWorthWSTOA> (WSTOA-denominated) build their own final \
-            \ division from this SAME pair — extracted so neither duplicates the \
-            \ primordial-pool read or re-reads <UR_PoolTokenSupplies> twice for \
-            \ the one call that needs both values. Internal only, not on the \
-            \ public interface — callers use the two public wrappers instead."
+            \ way). \
+            \ #73C fix, scope note: originally shared by BOTH <URC_OuroPrimordialPrice> \
+            \ (dollar-denominated) and <URC_SingleOuroWorthWSTOA> (WSTOA-denominated) — \
+            \ the WSTOA-denominated side moved to a real 1-unit weighted-pool swap \
+            \ instead (see <URC_SingleOuroWorthWSTOA>'s own doc for why: this helper's \
+            \ ratio ignores the primordial pool's own weights, undervaluing OURO). \
+            \ <URC_OuroPrimordialPrice> is the only remaining caller. Flagged, not \
+            \ fixed here (out of scope — the WSTOA-denominated case is what surfaced \
+            \ this): <URC_OuroPrimordialPrice>'s own final division likely has the \
+            \ identical weight-omission issue, unverified, left for a follow-up. \
+            \ Internal only, not on the public interface."
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -1615,25 +1625,35 @@
             (floor (/ primordial-wstoa-value-in-dollarz ouro-supply) 24)
         )
     )
-    (defun URC_SingleOuroWorthWSTOA:decimal ()
-        @doc "#65fL Phase 8b: OURO's own worth in WSTOA terms, per unit — the \
-            \ primordial pool's own WSTOA-equivalent value (URCX_PrimordialValueAndOuroSupply, \
-            \ same shared core URC_OuroPrimordialPrice itself uses) divided by \
-            \ OURO's own supply, with NO dollar conversion step — zero graph \
-            \ search either way. Spot-price/ratio-based, not simulated-swap-based \
-            \ — the same shape of approximation URC_WorthWSTOA's existing SSTOA \
-            \ branch already makes (index-based, not a simulated multi-hop swap): \
-            \ for very large amounts this can differ from what a full \
-            \ graph-search-and-simulate would produce, since no AMM slippage is \
-            \ modeled — accepted for the same reason SSTOA's shortcut already is. \
-            \ Used by URC_WorthWSTOA/FromRaw/FromGraph's own id==OURO shortcut."
+    (defun URC_SingleOuroWorthWSTOA:decimal (ouro:string wstoa:string)
+        @doc "#73C fix: OURO's own worth in WSTOA, per unit — a real 1-unit swap \
+            \ through the primordial pool's own weighted-pool math (URC_W-Swap, the \
+            \ exact same UC_ComputeWP invariant a live swap would use), instead of the \
+            \ old hand-rolled <primordial-wstoa-value / ouro-supply> ratio. The old \
+            \ formula was mathematically wrong for THIS pool, not just approximate: it \
+            \ implicitly assumed every token in the primordial pool carries equal \
+            \ weight, but the pool is genuinely weighted (SSTOA 0.3 / OURO 0.5 / WSTOA \
+            \ 0.2 at issuance) — a weighted pool's real exchange rate depends on \
+            \ reserve/weight ratios, not a flat sum-of-other-reserves-over-own-reserve \
+            \ ratio. Confirmed live: the old formula returned 91.95 WSTOA for 100 OURO \
+            \ against real reserves [sstoa=3200.0 ouro=10002.0 wstoa=5997.009] and \
+            \ weights [0.3 0.5 0.2], while the weighted spot formula \
+            \ ((wstoa/wstoa_w)/(ouro/ouro_w)) gives ~149.9, matching the pre-existing \
+            \ graph-search fallback's 147.31 (the small remainder being real, correctly \
+            \ modeled AMM slippage from an actual ~1%-of-reserves trade — see \
+            \ URC_WorthWSTOA's own doc for why THAT part is now handled at the caller, \
+            \ not here). Still zero graph search: OURO and WSTOA are direct pool \
+            \ siblings in the SAME primordial pool, this is one single-hop direct-pool \
+            \ swap computation, not a BFS route search. <ouro>/<wstoa> passed in by the \
+            \ caller (not self-fetched) — every real caller already holds them via \
+            \ DALOS::UR_CanonicalStoaIds, so this adds no new read."
         (let
             (
-                (pv:[decimal] (URCX_PrimordialValueAndOuroSupply))
-                (primordial-wstoa-value:decimal (at 0 pv))
-                (ouro-supply:decimal (at 1 pv))
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-SWP:module{SwapperV3} SWP)
+                (primordial:string (ref-SWP::UR_PrimordialPool))
             )
-            (floor (/ primordial-wstoa-value ouro-supply) 24)
+            (URC_W-Swap primordial (ref-U|SWP::UDC_DirectSwapInputData [ouro] [1.0] wstoa))
         )
     )
     (defun URC_TokenDollarPrice (id:string kda-pid:decimal)
@@ -1672,7 +1692,13 @@
             \ reads of the same DALOS row — caught live: adding a naive 3rd standalone \
             \ UR_OuroborosID call regressed the P0.5/P2-scale worst-case checkpoints \
             \ (measured +928 gas) despite neither pool ever pricing OURO/SSTOA in that \
-            \ scenario, isolated via git-stash bisection before this fix, not guessed."
+            \ scenario, isolated via git-stash bisection before this fix, not guessed. \
+            \ #73C fix: the graph-search fallback below now prices ONE unit and scales \
+            \ linearly, instead of simulating a swap of the full <amount> — see the \
+            \ fallback branch's own comment for why (depth-skew: 'worth of N tokens' is \
+            \ not N times 'worth of 1 token' once a simulated swap eats meaningfully into \
+            \ pool depth, and URC_PoolValue's own caller passes an ENTIRE pool reserve as \
+            \ <amount>, not a small swap-sized figure)."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -1697,20 +1723,32 @@
                         (let
                             (
                                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthWSTOA))
+                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthWSTOA ouro wstoa))
                                 (ouro-prec:integer (ref-DPTF::UR_Decimals ouro))
                             )
                             (floor (* amount ouro-worth-per-unit) ouro-prec)
                         )
+                        ;;#73C fix: price ONE unit via the real route (URC_Hopper amount=1.0,
+                        ;;not <amount>), then scale linearly — never simulate a swap of the
+                        ;;full requested <amount>, since a real swap of a large amount eats
+                        ;;into pool depth (AMM slippage), so "worth of N" would come out
+                        ;;systematically LESS than N times "worth of 1," most severely
+                        ;;exactly where this function is actually called from
+                        ;;(URC_PoolValue prices a pool's ENTIRE first-token reserve this
+                        ;;way). "1 unit" is an accepted, unavoidable approximation of the
+                        ;;true marginal/instantaneous spot price (an exact closed-form
+                        ;;derivative isn't implemented anywhere in this codebase and isn't
+                        ;;worth building for this) — computing at a smaller-than-1 amount
+                        ;;isn't meaningful once atomic-unit precision is reached.
                         (let
                             (
-                                (h-obj:object{SwapperIssueV3.Hopper} (URC_Hopper id wstoa amount))
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                                (h-obj:object{SwapperIssueV3.Hopper} (URC_Hopper id wstoa 1.0))
                                 (ovs:[decimal] (at "output-values" h-obj))
+                                (per-unit-worth:decimal (if (= (length ovs) 0) 0.0 (at 0 (take -1 ovs))))
+                                (id-prec:integer (ref-DPTF::UR_Decimals id))
                             )
-                            (if (= (length ovs) 0)
-                                0.0
-                                (at 0 (take -1 ovs))
-                            )
+                            (floor (* amount per-unit-worth) id-prec)
                         )
                     )
                 )
@@ -1752,20 +1790,22 @@
                         (let
                             (
                                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthWSTOA))
+                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthWSTOA ouro wstoa))
                                 (ouro-prec:integer (ref-DPTF::UR_Decimals ouro))
                             )
                             (floor (* amount ouro-worth-per-unit) ouro-prec)
                         )
+                        ;;#73C fix: price ONE unit, scale linearly — see URC_WorthWSTOA's
+                        ;;own comment on this same branch for the full rationale.
                         (let
                             (
-                                (h-obj:object{SwapperIssueV3.Hopper} (URC_HopperFromRaw id wstoa amount raw-graph))
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                                (h-obj:object{SwapperIssueV3.Hopper} (URC_HopperFromRaw id wstoa 1.0 raw-graph))
                                 (ovs:[decimal] (at "output-values" h-obj))
+                                (per-unit-worth:decimal (if (= (length ovs) 0) 0.0 (at 0 (take -1 ovs))))
+                                (id-prec:integer (ref-DPTF::UR_Decimals id))
                             )
-                            (if (= (length ovs) 0)
-                                0.0
-                                (at 0 (take -1 ovs))
-                            )
+                            (floor (* amount per-unit-worth) id-prec)
                         )
                     )
                 )
@@ -1808,20 +1848,22 @@
                         (let
                             (
                                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthWSTOA))
+                                (ouro-worth-per-unit:decimal (URC_SingleOuroWorthWSTOA ouro wstoa))
                                 (ouro-prec:integer (ref-DPTF::UR_Decimals ouro))
                             )
                             (floor (* amount ouro-worth-per-unit) ouro-prec)
                         )
+                        ;;#73C fix: price ONE unit, scale linearly — see URC_WorthWSTOA's
+                        ;;own comment on this same branch for the full rationale.
                         (let
                             (
-                                (h-obj:object{SwapperIssueV3.Hopper} (URC_HopperFromGraph id wstoa amount graph))
+                                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                                (h-obj:object{SwapperIssueV3.Hopper} (URC_HopperFromGraph id wstoa 1.0 graph))
                                 (ovs:[decimal] (at "output-values" h-obj))
+                                (per-unit-worth:decimal (if (= (length ovs) 0) 0.0 (at 0 (take -1 ovs))))
+                                (id-prec:integer (ref-DPTF::UR_Decimals id))
                             )
-                            (if (= (length ovs) 0)
-                                0.0
-                                (at 0 (take -1 ovs))
-                            )
+                            (floor (* amount per-unit-worth) id-prec)
                         )
                     )
                 )

@@ -5410,19 +5410,24 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-(begin-tx "SWP|TX 032z6f - #65fL Phase 8b OURO Shortcut Gas + Correctness Proof (Permanent)")
+(begin-tx "SWP|TX 032z6f - #65fL Phase 8b / #73C OURO Shortcut Gas + Correctness Proof (Permanent)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-(print "--- [SWP|TX 032z6f - #65fL Phase 8b Proof · 01 · env-sigs (caps)] ---")
+(print "--- [SWP|TX 032z6f - #65fL Phase 8b / #73C Proof · 01 · env-sigs (caps)] ---")
 (env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
-;;#65fL Phase 8b: URC_WorthWSTOA's own id==OURO shortcut (URC_SingleOuroWorthWSTOA, straight off
-;;the primordial pool's own reserves) vs the OLD graph-search path (URC_Hopper ouro->DWK,
-;;reproduced directly here for comparison, exactly what URC_WorthWSTOA used to fall through to
-;;unconditionally for OURO before this fix). NOT expected to be byte-identical — the shortcut
-;;is spot-price/ratio-based, the graph search is a simulated swap with real AMM slippage; this
-;;proof shows both the real gas win and the real (small, expected) value difference honestly,
-;;not a false byte-identical claim.
-(print "--- [SWP|TX 032z6f - #65fL Phase 8b Proof · 02 · direct comparison] ---")
+;;#65fL Phase 8b: URC_WorthWSTOA's own id==OURO shortcut (URC_SingleOuroWorthWSTOA) vs the
+;;graph-search path (URC_Hopper ouro->DWK, reproduced directly here for comparison) — the exact
+;;fallback URC_WorthWSTOA uses for every id that isn't WSTOA/SSTOA/OURO.
+;;#73C fix (owner-directed, 2026-08-29): originally this proof only asserted the shortcut was
+;;non-zero and printed the diff, honestly flagged as NOT expected to be close (the shortcut's old
+;;<primordial-wstoa-value / ouro-supply> ratio silently ignored the primordial pool's own weights
+;;— SSTOA 0.3 / OURO 0.5 / WSTOA 0.2, genuinely unequal — undervaluing OURO by ~38% against a
+;;real weighted-pool swap). Fixed by sourcing the shortcut from a real 1-unit weighted-pool swap
+;;(URC_W-Swap) instead of the hand-rolled ratio. Now the two SHOULD agree closely: the shortcut is
+;;the pure marginal/spot price (no slippage), the graph search is a real simulated swap of the
+;;full <amount> (genuine AMM slippage for that trade size) — shortcut should be >= graph search,
+;;by a small amount reflecting only honest slippage, not a large, silent methodology error.
+(print "--- [SWP|TX 032z6f - #65fL Phase 8b / #73C Proof · 02 · direct comparison] ---")
 (let*
     (
         (ref-SWPI:module{SwapperIssueV3} SWPI)
@@ -5443,12 +5448,17 @@
                 (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_Hopper ouro dwk amount))
                 (ovs:[decimal] (at "output-values" h-obj))
                 (graph-search-result:decimal (if (= (length ovs) 0) 0.0 (at 0 (take -1 ovs))))
+                (abs-diff:decimal (- shortcut-result graph-search-result))
             )
             (print (format "#65fL Phase 8b: URC_Hopper(OURO->DWK, {}) via graph search = {}, gas: {}" [amount graph-search-result (env-gas)]))
             (map print
                 [
                     (expect "#65fL Phase 8b: shortcut result is genuinely non-zero (real primordial-pool data, not an empty fallback)" true (> shortcut-result 0.0))
-                    (format "#65fL Phase 8b: value difference (shortcut - graph search) = {}" [(- shortcut-result graph-search-result)])
+                    (expect "#73C: shortcut (marginal spot price) is now >= graph search (real execution price with slippage) — the marginal price is always at least as good as the average price paid on a real trade"
+                        true (>= shortcut-result graph-search-result))
+                    (expect "#73C: shortcut and graph search now agree within honest slippage (< 5% apart) — NOT the pre-fix ~38% weight-omission gap"
+                        true (< abs-diff (* graph-search-result 0.05)))
+                    (format "#65fL/#73C: value difference (shortcut - graph search) = {}" [abs-diff])
                 ]
             )
         )
@@ -5920,6 +5930,52 @@
                 )
             ]
         )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z8e - #73C Depth-Skew Proportionality Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 032z8e - #73C Depth-Skew Proportionality Proof · 01 · env-sigs (caps)] ---")
+(env-sigs [])
+;;#73C: owner's own finding — "worth of a big amount" computed by simulating a REAL swap
+;;of that whole amount is NOT proportional to "worth of 1 unit" x amount, once the amount
+;;is large enough to eat into real pool depth (AMM slippage). URC_WorthWSTOA's graph-search
+;;fallback used to do exactly that (simulate a swap of the FULL requested amount) — and
+;;URC_PoolValue's own real caller passes a POOL'S ENTIRE reserve as that amount, so this
+;;wasn't a hypothetical edge case, it was the function's actual, everyday call pattern.
+;;Fixed by pricing exactly 1 unit through the real route, then scaling linearly — this
+;;proof asserts the fixed behavior is now EXACTLY proportional (by construction), and the
+;;adversarial revert (recorded in ROUND-02-FIXES.md, not repeated as a live test here)
+;;confirmed the pre-fix code was NOT: worth(300) came back as 272.09 (rate 0.907/unit)
+;;instead of 300 x the true 1-unit rate (1.496/unit, worth=448.71) — a 39% collapse purely
+;;from an unrealistic "swap the whole holding in one shot" simulation.
+(print "--- [SWP|TX 032z8e - #73C Depth-Skew Proportionality Proof · 02 · direct comparison] ---")
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (mptest:string "MPTEST-98c486052a51")
+        (small:decimal 1.0)
+        (large:decimal 300.0)
+        (worth-small:decimal (ref-SWPI::URC_WorthWSTOA mptest small))
+        (worth-large:decimal (ref-SWPI::URC_WorthWSTOA mptest large))
+        (rate-small:decimal (/ worth-small small))
+        (rate-large:decimal (/ worth-large large))
+    )
+    (map print
+        [
+            (expect "#73C: worth(1 unit) is genuinely non-zero (real route, not an empty fallback)" true (> worth-small 0.0))
+            (expect (format "#73C: worth({}) is EXACTLY {} x worth(1) — no depth-skew, by construction" [large large])
+                (floor (* large worth-small) 24)
+                worth-large
+            )
+            (format "#73C: worth({})={}, rate={} | worth({})={}, rate={} | rate ratio={}"
+                [small worth-small rate-small large worth-large rate-large (/ rate-large rate-small)])
+        ]
     )
 )
 (env-sigs [])
