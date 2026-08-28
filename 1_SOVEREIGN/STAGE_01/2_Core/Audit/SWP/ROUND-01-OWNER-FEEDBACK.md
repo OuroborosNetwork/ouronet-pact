@@ -3174,6 +3174,73 @@ correctness problem, just an accepted cold-start cost for that category of pool.
 question left open for owner review (not blocking — both phases fully shipped and working as
 designed either way). — *#65fL*
 
+**Follow-up, owner-directed: can the algorithm itself be made cheaper, or is there something better
+than BFS?** Owner's question, verbatim: given `#65fL`'s spectrum showed 1-hop and 8-hop
+minor-anchored pools cost the same order of magnitude, "cant we modify somehow the algorithm to
+also be cheaper somehow if something is closer... or is there some other algorithm that might be
+more efficient... i do however have a feeling that BFS is probably the best sorting algorithm we
+can implement... i dont think there is something better."
+
+**Checked the owner's own instinct before touching anything — confirmed correct.** BFS is the
+provably optimal algorithm CLASS for unweighted shortest-path search; Dijkstra/A* need edge weights
+or an admissible heuristic to buy anything over plain BFS, neither of which this graph has. No
+algorithm swap was on the table. But "is the algorithm right" and "is the implementation exploiting
+everything the algorithm gives you" are different questions — checked the second one and found a
+real gap: `U|BFS::UC_BFS` computes shortest chains to **every** reachable node before its only
+caller (`URC_ComputeGraphPath`, via `URC_ShortestChainPerNode`) throws away everything except the
+one target's chain. The function's own pre-existing `@doc` already said as much ("`output`...
+plays no role in the BFS itself, which explores every reachable node from `input` regardless of
+`output`") — a self-documented inefficiency that had just never been fixed. This is exactly the
+"cheaper if closer" lever the owner was asking about: BFS visits nodes in non-decreasing distance
+order, so a target 1 hop away is found (and can stop) far sooner than one 8 hops away — the old
+implementation threw that structural advantage away every single time by continuing to the end of
+the graph regardless.
+
+**Correctness argument, checked before shipping:** a node's shortest chain in BFS is fixed the
+first time it's visited (distance-order guarantee). So once `output` has been visited, nothing
+further BFS does can change `output`'s own recorded chain — continued exploration only produces
+chains for other nodes that `URC_ComputeGraphPath`'s existing post-filter step already discards.
+Stopping there is provably a cost-only change.
+
+**Shipped additive, not destructive** (per this session's standing convention — never modify a
+working function's behavior, add a new one alongside it): new `U|BFS::UC_BFSTargeted(graph, in,
+target)`, `UC_BFS` itself completely untouched; new `SWPT::URCX_ShortestChainToTarget`/`FromRaw`/
+`FromGraph` wired into `URC_ComputeGraphPath`/`FromRaw`/`FromGraph`, `URC_ShortestChainPerNode*`
+themselves completely untouched (still there for any caller genuinely wanting the full reachable
+set). Blast radius checked first: exactly 3 callers of `UC_BFS`, all local to `14_SWPT.pact`.
+
+**Adversarially proven, not just reasoned about:** neutralized the early-exit with an impossible
+sentinel target, re-ran, watched gas revert UP to pre-fix levels while every VALUE stayed
+byte-identical — proving the win is genuinely the early exit, not a confound — then restored. New
+permanent proof (`SWP|TX 032z8d`) compares live `UC_BFS` against live `UC_BFSTargeted` on the same
+real ~102-pool topology, same adversarial 6-hop pair as `SWP|TX 032z2b`/`#38M/M4`: 52,508 → 50,051
+gas, chains byte-identical, `UC_BFSTargeted` visiting strictly fewer-or-equal nodes — both
+functions remain live production code, so the comparison stays valid permanently, not just for
+this session.
+
+**Real numbers, directly answering "cheaper if closer":**
+
+| Scenario | Before | After | Change |
+|---|---|---|---|
+| `SWP|TX 032q` (P0.5 worst-case 6-hop) | 930,230 | 878,202 | -5.6% |
+| `SWP|TX 032z2` (P2-scale checkpoint) | 1,686,661 | **1,296,898** | **-23.1%** |
+| MPTEST (realistic 1-hop minor) | 120,641 | 66,926 | **-44.5%** |
+| W7 (adversarial 8-hop minor) | 188,205 | 124,358 | -33.9% |
+
+The 1-hop case now genuinely improves more than the 8-hop case (44.5% vs 33.9%) — before this fix,
+`#65fL`'s own spectrum showed hop distance barely mattered (1 hop was only 1.56x cheaper than 8
+hops); it now matters in the direction the owner expected, because the implementation finally
+exploits it. This is the largest single gas win of the whole `#65bL` arc, and cumulative reduction
+from the original pre-`#65bL` baseline is now **74.5%** (cold cache; warm-cache steady-state
+unaffected at 77.6%, since a cache hit bypasses BFS entirely).
+
+**Bottom line for the owner's question:** yes, the algorithm could be (and now is) made cheaper for
+closer targets — not by switching algorithms, but by finally letting BFS stop once it has the
+answer it was asked for. No algorithm better than BFS exists for this problem, confirming the
+owner's own instinct; the win was entirely in the implementation, not the algorithm choice.
+
+**Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #47. — *#65hL*
+
 ---
 
 ## #65cL (off-cycle naming-consistency note, surfaced during `#65bL` Phase 7 — `URC_WorthDWK` family should be renamed to Stoa-based naming) — **FILED, deferred to `main`**

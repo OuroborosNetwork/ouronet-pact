@@ -1951,3 +1951,94 @@ on the scale of `L58`'s deferred `KDA-PID`→`STOA-PID`, not something to attemp
 **Status:** FIXED ✅ AND PROVEN ✅ for the `.pact` code layer. REPL cosmetics and the deeper
 real-ticker-naming question explicitly out of scope, not silently dropped. See
 `ROUND-01-OWNER-FEEDBACK.md`'s `#65gL` entry for the full writeup.
+
+---
+
+## Fix #47 — #65hL: `#65bL` Phase 9 — targeted/early-exit BFS (`UC_BFSTargeted`)
+
+**Owner direction:** after the `#65fL` minor-principal repricing spectrum showed 1-hop and 8-hop
+minor-anchored pools cost the same order of magnitude, owner asked whether the search algorithm
+itself could be modified to be cheaper "if something is closer," or whether a different algorithm
+would be more efficient — while noting a strong feeling that BFS is probably already the best fit
+for this problem and nothing better exists.
+
+**Verified first, not assumed:** BFS as an algorithm CLASS is confirmed optimal here — this is an
+unweighted shortest-path problem over a graph with no negative structure to exploit (Dijkstra/A*
+buy nothing extra without edge weights or an admissible heuristic; the owner's own instinct was
+correct). The real gap was in the IMPLEMENTATION, not the algorithm choice: `U|BFS::UC_BFS`
+computes shortest chains to **every** reachable node from `input` before its only caller
+(`URC_ShortestChainPerNode` → `URC_ComputeGraphPath`) post-filters the result down to the single
+`output` needed — the function's own pre-existing `@doc` already admitted this ("`output` is
+accepted for signature symmetry... it plays no role in the BFS itself, which explores every
+reachable node from `input` regardless of `output`"), just never fixed.
+
+**Correctness argument:** BFS visits nodes in strictly non-decreasing distance order from `input`,
+so a node's shortest chain is fixed the first time BFS visits it. Once `output` has been visited,
+continuing to explore the rest of the graph can never change `output`'s own recorded chain — it
+only records chains for other nodes that the caller's existing post-filter step (`URC_ComputeGraphPath`'s
+`fp` fold) would have discarded anyway. Stopping there is a pure cost optimization, not a behavior
+change.
+
+**Blast-radius check before touching the shared `U|BFS` module:** exactly 3 callers of
+`UC_BFS`, all inside `14_SWPT.pact` (the plain/`FromRaw`/`FromGraph` `URC_ShortestChainPerNode*`
+trio). `UC_BFS` is declared on `BreadthFirstSearchV1`, the module's public interface.
+
+**Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/13_U_BFS.pact`,
+`1_SOVEREIGN/STAGE_01/0_Interfaces/01_Utilities.pact`,
+`1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`:** additive, not destructive — `UC_BFS` itself is
+completely untouched, still available (and still used by `URC_ShortestChainPerNode*`) for any
+caller genuinely wanting chains to every reachable node, not just one target.
+
+- New `U|BFS::UC_BFSTargeted(graph, in, target)` — mirrors `UC_BFS`'s exact `fold` structure
+  byte-for-byte, with one addition: once `target` is already present in the accumulator's
+  `visited` list, each subsequent fold step is a cheap no-op instead of doing real expansion work.
+  Declared on `BreadthFirstSearchV1` alongside the existing `UC_BFS` stub.
+- New `SWPT::URCX_ShortestChainToTarget`/`FromRaw`/`FromGraph` — same signature and shape as
+  `URC_ShortestChainPerNode*`, but call `UC_BFSTargeted` instead of `UC_BFS`. `URC_ComputeGraphPath`/
+  `FromRaw`/`FromGraph`'s own bodies switched to call these instead of `URC_ShortestChainPerNode*`
+  (their post-filter-down-to-`output` logic below is unchanged); `@doc`s extended with a `#65hL fix:`
+  note. `URC_ShortestChainPerNode*` themselves left completely unchanged.
+
+**First-try clean:** the first regression run after implementing this returned `EXIT:0, 0 FAILURE`
+immediately — every pre-existing test/proof across the entire `#65bL` history passed unchanged, with
+every VALUE staying byte-identical to pre-optimization measurements.
+
+**Adversarially proven via revert-and-compare, not just reasoned about:** temporarily replaced the
+early-exit's `target` reference with an impossible sentinel string, forcing `UC_BFSTargeted` to
+behave exactly like `UC_BFS` (never short-circuiting); re-ran the full suite; confirmed gas reverted
+UP to (approximately) pre-optimization levels while every VALUE stayed byte-identical — proving the
+savings are genuinely caused by the early exit, not a confound — then restored the real code and
+reconfirmed the optimized numbers held.
+
+| Scenario | Pre-`#65hL` | Post-`#65hL` | Sentinel-reverted (proof) |
+|---|---|---|---|
+| `SWP\|TX 032q` (P0.5 worst-case 6-hop SmartSwap) | 930,230 | **878,202** | 933,333 |
+| `SWP\|TX 032z2` (P2-scale checkpoint) | 1,686,661 | **1,296,898 (23.1% further)** | 1,705,522 |
+| `URC_Hopper(OURO→WSTOA)` isolated | 110,099 | **61,852** | — |
+| MPTEST (realistic 1-hop minor-principal, `#65fL`'s own fixture) | 120,641 | **66,926 (44.5%)** | 122,778 |
+| W7 (adversarial 8-hop minor-principal) | 188,205 | **124,358 (33.9%)** | 190,276 |
+
+This is the largest single gas win of the whole `#65bL` arc. It also directly answers the "cheaper
+if closer" question with real numbers: the realistic 1-hop case improved proportionally more
+(44.5%) than the adversarial 8-hop case (33.9%) — closer targets now genuinely cost less, which
+was never true before this fix (the `#65fL` spectrum measurement is what surfaced that gap in the
+first place).
+
+**New permanent proof — `SWP\|TX 032z8d`:** compares `UC_BFS` (old, still fully live) against
+`UC_BFSTargeted` (new) directly, on the exact same real ~102-active-pool topology and the same
+adversarial 6-hop pair (`W1`→`W7`, the same pair `SWP\|TX 032z2b`/`#38M/M4` isolates) — both
+functions remain real, permanent production code paths (not a temporary hack), so this stays a
+fair, honest, non-transient before/after comparison forever. Measured: `UC_BFS` 52,508 gas vs
+`UC_BFSTargeted` 50,051 gas on this isolated call; asserts the recorded chain to `W7` is
+byte-identical between the two, and that `UC_BFSTargeted` visits strictly fewer-or-equal nodes.
+
+**Cumulative (through Phase 9, cold cache): 5,094,054 → 1,296,898 gas, a 74.5% reduction** from the
+original pre-`#65bL` baseline. Warm-cache steady-state unaffected (still **1,143,255 gas, 77.6%**,
+Phase 6) — a cache hit bypasses BFS entirely, before this fix's code ever runs.
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status:** FIXED ✅ AND PROVEN ✅. See `ROUND-01-OWNER-FEEDBACK.md`'s `#65bL` entry (Phase 9
+addendum) and `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md` for the full
+writeup.

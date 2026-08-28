@@ -5844,6 +5844,89 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z8d - #65hL Targeted-BFS Early-Exit Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 032z8d - Targeted-BFS Early-Exit Proof · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;#65hL: owner asked whether the search algorithm itself could be made
+;;cheaper "if something is closer" — BFS as an algorithm CLASS was already
+;;optimal for this unweighted shortest-path problem, but the IMPLEMENTATION
+;;never exploited BFS's own early-termination property: <UC_BFS> always
+;;computed shortest chains to EVERY reachable node before the caller
+;;post-filtered down to the one target needed. <UC_BFSTargeted> stops once
+;;<target> is first visited — correct because BFS visits nodes in
+;;strictly non-decreasing distance order, so a node's shortest chain is
+;;fixed the first time it's seen; nothing recorded for <target> can change
+;;by continuing to explore other nodes afterward. This proof compares the
+;;OLD, still-fully-intact <UC_BFS> (used unchanged by
+;;<URC_ShortestChainPerNode> for any caller wanting chains to every
+;;reachable node) against the NEW <UC_BFSTargeted> (used by
+;;<URC_ComputeGraphPath> via <URCX_ShortestChainToTarget>) on the exact
+;;same real ~102-active-pool topology and the same deliberately-adversarial
+;;6-hop pair (W1 -> W7, the same pair SWP|TX 032z2b/#38M/M4 isolates) —
+;;both functions remain real, permanent production code paths, so this
+;;stays a fair, honest, non-transient before/after comparison forever.
+(print "--- [SWP|TX 032z8d - Targeted-BFS Early-Exit Proof · 02 · UC_BFS vs UC_BFSTargeted, same graph] ---")
+(let*
+    (
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
+        (active-swpairs:[string] (ref-SWP::URC_ActiveSwpairs))
+        (graph:[object{BreadthFirstSearchV1.GraphNode}]
+            (ref-SWPT::URC_MakeGraph "W1-98c486052a51" "W7-98c486052a51" active-swpairs))
+    )
+    (env-gas 0)
+    (let
+        (
+            (old-bfs:object{BreadthFirstSearchV1.BFS}
+                (ref-U|BFS::UC_BFS graph "W1-98c486052a51"))
+        )
+        (print (format "#65hL: OLD UC_BFS (full reachable-set expansion) gas: {}" [(env-gas)]))
+    )
+    (env-gas 0)
+    (let
+        (
+            (new-bfs:object{BreadthFirstSearchV1.BFS}
+                (ref-U|BFS::UC_BFSTargeted graph "W1-98c486052a51" "W7-98c486052a51"))
+        )
+        (print (format "#65hL: NEW UC_BFSTargeted (stops once W7 first visited) gas: {}" [(env-gas)]))
+    )
+    (let
+        (
+            (old-chains:[[string]] (at "chains" (ref-U|BFS::UC_BFS graph "W1-98c486052a51")))
+            (new-chains:[[string]] (at "chains" (ref-U|BFS::UC_BFSTargeted graph "W1-98c486052a51" "W7-98c486052a51")))
+            (target-chain-old:[string]
+                (at 0
+                    (filter (lambda (c:[string]) (= (at 0 (take -1 c)) "W7-98c486052a51")) old-chains)
+                )
+            )
+            (target-chain-new:[string]
+                (at 0
+                    (filter (lambda (c:[string]) (= (at 0 (take -1 c)) "W7-98c486052a51")) new-chains)
+                )
+            )
+        )
+        (map print
+            [
+                (expect "#65hL: UC_BFSTargeted's own recorded chain to W7 is byte-identical to UC_BFS's — early-exit changes cost, never correctness"
+                    target-chain-old
+                    target-chain-new
+                )
+                (expect "#65hL: UC_BFSTargeted visits strictly fewer-or-equal nodes than the full UC_BFS scan (it stops once W7 is found instead of exploring the whole graph)"
+                    true
+                    (<= (length new-chains) (length old-chains))
+                )
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "SWP|TX 032z8 - #34 Phase 10 Adversarial Malformed-Bundle Proof (Permanent)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

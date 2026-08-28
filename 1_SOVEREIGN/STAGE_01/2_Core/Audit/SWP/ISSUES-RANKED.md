@@ -627,6 +627,26 @@ gas**. Isolated 8b win: 110,099→2,452 gas (97.8%) — but the shortcut (spot-r
 for owner review as a real values decision, not hidden as if equivalent. Full writeup in
 `ROUND-01-OWNER-FEEDBACK.md`'s `#65bL` entry (Phase 8 addendum). — *#65fL*
 
+**Phase 9 addendum (`#65hL`, `ROUND-02-FIXES.md` Fix #47):** owner asked whether the search
+algorithm itself could be made cheaper "if something is closer," or whether a better algorithm than
+BFS exists. Confirmed BFS as an algorithm CLASS is already optimal (no edge weights/heuristic for
+Dijkstra/A* to exploit) — but found the IMPLEMENTATION never used BFS's own early-termination
+property: `U|BFS::UC_BFS` computed shortest chains to every reachable node before the caller
+post-filtered down to the one target needed, a gap the function's own `@doc` already admitted.
+Correctness argument: BFS visits nodes in non-decreasing distance order, so a node's shortest chain
+is fixed the first time it's visited — stopping once the target is found can't change the target's
+own chain. Shipped additive: new `U|BFS::UC_BFSTargeted` alongside the untouched `UC_BFS`, new
+`SWPT::URCX_ShortestChainToTarget`/`FromRaw`/`FromGraph` wired into `URC_ComputeGraphPath`/`FromRaw`/
+`FromGraph`, `URC_ShortestChainPerNode*` themselves untouched. Adversarially proven via sentinel
+revert-and-compare (gas reverted UP, values stayed byte-identical, then restored) and a new
+permanent proof (`SWP|TX 032z8d`) comparing live `UC_BFS` vs `UC_BFSTargeted` on the real
+~102-pool topology. Measured: `SWP|TX 032q` 930,230→878,202, `SWP|TX 032z2` **1,686,661→1,296,898
+(23.1% further, the largest single win of the `#65bL` arc)**, MPTEST (1-hop) 120,641→66,926
+(44.5%), W7 (8-hop) 188,205→124,358 (33.9%) — closer targets now genuinely cost proportionally
+less, confirming the fix and the owner's own instinct that nothing beats BFS here. **Cumulative
+(cold cache): 5,094,054→1,296,898 gas, a 74.5% reduction.** Full writeup in
+`ROUND-01-OWNER-FEEDBACK.md`'s `#65bL` entry (Phase 9 addendum). — *#65hL*
+
 #65cL **[SWPI]** Off-cycle naming-consistency note, surfaced during `#65bL` Phase 7: the
 `URC_WorthDWK`/`URC_SingleWorthDWK`/`URC_WorthDWKFromRaw`/`URC_WorthDWKFromGraph` family (`16_SWPI.pact`,
 declared on `SwapperIssueV3`) names itself after `DWK` (wrapped-STOA), inconsistent with the

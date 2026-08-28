@@ -376,17 +376,41 @@
             \ unchanged by the #21H storage redesign."
         (filter (lambda (swpair:string) (contains swpair whitelist)) (URC_Edges t1 t2))
     )
+    (defun URCX_ShortestChainToTarget:[[string]] (input:string output:string swpairs:[string])
+        @doc "#65hL: <URC_ShortestChainPerNode>, but stops doing real BFS-expansion \
+            \ work once <output> is reached, via <U|BFS::UC_BFSTargeted> — see that \
+            \ function's own doc for the full rationale and correctness argument \
+            \ (a node's shortest chain is fixed the first time BFS visits it, so \
+            \ stopping early never changes <output>'s own chain, only skips \
+            \ recording chains for nodes the caller's post-filter would have \
+            \ discarded anyway). Internal only, used exclusively by \
+            \ <URC_ComputeGraphPath> — <URC_ShortestChainPerNode> itself is \
+            \ unchanged, still available for any caller genuinely wanting chains to \
+            \ every reachable node, not just one target."
+        (let
+            (
+                (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
+                (graph:[object{BreadthFirstSearchV1.GraphNode}] (URC_MakeGraph input output swpairs))
+                (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
+            )
+            (at "chains" bfs-obj)
+        )
+    )
     (defun URC_ComputeGraphPath:[string] (input:string output:string swpairs:[string])
         @doc "Computes the path between an <input> and <output> using BFS via \
         \ <URC_ShortestChainPerNode> from a passed down list of existing <swpairs>. \
         \ #20H fix: returns the clean [BAR] sentinel — never a bare out-of-bounds \
         \ <at> crash — whenever no chain reaches <output>, including the case of a \
         \ genuinely disconnected pair once <swpairs> has been narrowed upstream \
-        \ (e.g. to active-only pools, #19H)."
+        \ (e.g. to active-only pools, #19H). \
+        \ #65hL fix: sources its chains via <URCX_ShortestChainToTarget> instead of \
+        \ <URC_ShortestChainPerNode> — same post-filter-down-to-<output> logic \
+        \ below, unchanged, just fed from a BFS that stops once <output> is \
+        \ actually found instead of exploring the whole reachable set first."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (shortest-chains:[[string]] (URC_ShortestChainPerNode input output swpairs))
+                (shortest-chains:[[string]] (URCX_ShortestChainToTarget input output swpairs))
 
             )
             (if (!= shortest-chains [[BAR]])
@@ -787,17 +811,39 @@
             (at "chains" bfs-obj)
         )
     )
+    (defun URCX_ShortestChainToTargetFromRaw:[[string]]
+        (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
+        @doc "#65hL: <URCX_ShortestChainToTarget>, sourcing its graph via an \
+            \ ALREADY-FETCHED <raw-graph> instead of a fresh self-fetch — same \
+            \ early-exit-on-<output> shape as <UC_BFSTargeted>, mirroring \
+            \ <URC_ShortestChainPerNodeFromRaw>'s own raw-graph sourcing. Internal \
+            \ only, used exclusively by <URC_ComputeGraphPathFromRaw>."
+        (let
+            (
+                (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
+                (graph:[object{BreadthFirstSearchV1.GraphNode}]
+                    (UC_MakeGraphFromRaw input output swpairs raw-graph)
+                )
+                (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
+            )
+            (at "chains" bfs-obj)
+        )
+    )
     (defun URC_ComputeGraphPathFromRaw:[string]
         (input:string output:string swpairs:[string] raw-graph:[object{RawGraphNode}])
         @doc "#65bL Phase 2: <URC_ComputeGraphPath>, sourcing its graph via \
             \ <URC_ShortestChainPerNodeFromRaw> instead of \
             \ <URC_ShortestChainPerNode> — same post-filter-down-to-<output> logic, \
-            \ unchanged, just fed from an already-fetched raw graph."
+            \ unchanged, just fed from an already-fetched raw graph. \
+            \ #65hL fix: now sources its chains via \
+            \ <URCX_ShortestChainToTargetFromRaw> instead — same raw-graph sourcing, \
+            \ but stops once <output> is actually found instead of exploring the \
+            \ whole reachable set first."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (shortest-chains:[[string]]
-                    (URC_ShortestChainPerNodeFromRaw input output swpairs raw-graph)
+                    (URCX_ShortestChainToTargetFromRaw input output swpairs raw-graph)
                 )
             )
             (if (!= shortest-chains [[BAR]])
@@ -851,17 +897,36 @@
             (at "chains" bfs-obj)
         )
     )
+    (defun URCX_ShortestChainToTargetFromGraph:[[string]]
+        (input:string output:string graph:[object{BreadthFirstSearchV1.GraphNode}])
+        @doc "#65hL: <URCX_ShortestChainToTargetFromRaw>, sourcing an ALREADY-BUILT \
+            \ <graph> instead of rebuilding it from <raw-graph>/<swpairs> — same \
+            \ early-exit-on-<output> shape, mirroring \
+            \ <URC_ShortestChainPerNodeFromGraph>'s own already-built-graph sourcing. \
+            \ Internal only, used exclusively by <URC_ComputeGraphPathFromGraph>."
+        (let
+            (
+                (ref-U|BFS:module{BreadthFirstSearchV1} U|BFS)
+                (bfs-obj:object{BreadthFirstSearchV1.BFS} (ref-U|BFS::UC_BFSTargeted graph input output))
+            )
+            (at "chains" bfs-obj)
+        )
+    )
     (defun URC_ComputeGraphPathFromGraph:[string]
         (input:string output:string graph:[object{BreadthFirstSearchV1.GraphNode}])
         @doc "#65bL Phase 7: <URC_ComputeGraphPathFromRaw>, sourcing its graph via \
             \ <URC_ShortestChainPerNodeFromGraph> (an already-built <graph>) \
             \ instead of rebuilding it from <raw-graph>/<swpairs> on every call — \
-            \ same post-filter-down-to-<output> logic, unchanged."
+            \ same post-filter-down-to-<output> logic, unchanged. \
+            \ #65hL fix: now sources its chains via \
+            \ <URCX_ShortestChainToTargetFromGraph> instead — same already-built- \
+            \ graph sourcing, but stops once <output> is actually found instead of \
+            \ exploring the whole reachable set first."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (shortest-chains:[[string]]
-                    (URC_ShortestChainPerNodeFromGraph input graph)
+                    (URCX_ShortestChainToTargetFromGraph input output graph)
                 )
             )
             (if (!= shortest-chains [[BAR]])
