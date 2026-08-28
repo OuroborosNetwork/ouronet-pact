@@ -41,7 +41,10 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
 - [ ] **1.4 StoicSyntax renames carried over from audits** (do during the per-module walk):
       **DPDC #40L** — `Wipe*` family (Heavy/Pure/Clean/Dirty) rename/rethink; **ATS #31L** — Talos
       `C_SetHotRecoveryFee` (singular) vs core `C_SetHotRecoveryFees` (plural), rename (no interface
-      bump needed, pre-mainnet). Add more as SWP/DPTF-DPOF land.
+      bump needed, pre-mainnet); **SWP** — `KDA-PID`→`STOA-PID` (L58), `URC_Swap`/`URC_InverseSwap`→
+      `URCv_Swap`/`URCv_InverseSwap` (L64), `UC_ComputeInverseY`→`v`-specialization, and rename the
+      existing `AHU`/`AUP_*` instances to the new `AU_` prefix (the audit added `AU_` to StoicSyntax).
+      Add more as DPTF-DPOF lands.
 
 ## PHASE 2 — INFO rehaul: COMPLETE coverage + consolidate (not just AQP)
 The INFO rehaul is **total** — every client/admin entrypoint across the WHOLE codebase gets an INFO
@@ -115,6 +118,12 @@ attack on ALL modules** to expose vulnerabilities. Its findings + fixes become P
       gas-station exploitation, sentinel/collision. Synthesize + **adversarially verify** each
       candidate finding against code (CONFIRMED/REFUTED), fix, re-test. Same rigor as the initial
       audits, adversarial framing.
+- [ ] **6.1a Carried-over leads for the red team** (audits explicitly filed these for main's red-team pass):
+      **SWP `#32bM`** (M11/M12 reachability — MTX-SWP fee-before-gate ordering / no-TTL rollback; verdicts
+      unchanged, re-examine now that TS01-CP wiring is known-reachable); **SWP `URC_OuroPrimordialPrice`**
+      (16_SWPI.pact — likely the same weight-omission bug fixed on the WSTOA side #73C; unconfirmed,
+      15-min trace + live check); **SWP Round III re-verify** (systematic re-check of every closed SWP
+      finding — the adversarial pass subsumes it). Fold DPTF-DPOF leads in at merge.
 - [ ] **6.2 Assemble the Audit Book** (expected hundreds of pages) — spec: `AUDIT-BOOK.md`:
       - **Part I** — initial module audits (ATS, SWP, DPDC, DPTF-DPOF, AQP) — the `…/Audit/*` trees.
       - **Part II** — the whole main-work round (Phases 1-5): every URCi/INFO/re-price/split/REPL
@@ -231,7 +240,29 @@ Remaining (4 deferred LOW — map onto our phases):
 - [ ] Optional cleanup: the `REPL/Kursan/_verify_finding_*` scratch files came in with the merge
       (audit evidence) — keep or prune per owner.
 
-### SWP audit — TO FOLD AT MERGE (worktree `swp`; `…/Audit/SWP/ISSUES-RANKED.md`, `ROUND-02-FIXES.md`)
+### SWP audit — carried over (MERGED to main, `cc230d5`; source: `1_SOVEREIGN/STAGE_01/2_Core/Audit/SWP/`)
+Full SWP family (SWP/SWPI/SWPT/SWPL/SWPLC/SWPU/MTX-SWP + U|SWP). ALL closed: 13 CRIT, 12 HIGH,
+14 MED, 32 LOW + the `#65bL` gas master-issue (worst-case now under the 2M ceiling, ~74% cold-cache
+reduction). Big structural fixes: SwapTracer `V1→V2` (H3 principal-orphan redesign), ClientThree/
+ClientPacts `→V2` (M14), `SwapperV3` gained `URC_ActiveSwpairs`, DWK/DLK→WSTOA/SSTOA rename (#65gL).
+The audit **introduced the `AU_` (Admin Update) prefix** — already merged into `StoicSyntax-Prefixes.md`.
+Signatures Stage-2 (DSA `A_Fuel(swpair)`) calls into SWP verified intact (11/11 resolve). Deferred:
+- [ ] **StoicSyntax naming sweep → Phase 1.4:** `KDA-PID`→`STOA-PID` (L58), `URC_Swap`/`URC_InverseSwap`
+      →`URCv_Swap`/`URCv_InverseSwap` (L64), `UC_ComputeInverseY`→`v`-specialization, and rename the
+      existing `AHU`/`AUP_*` instances to the new `AU_` prefix.
+- [ ] **`#32bM` → Phase 6.1 (red team):** M11/M12 reachability correction (MTX-SWP fee-before-gate
+      ordering, no-TTL rollback) — verdicts left as-is; owner filed it explicitly for main's red-team pass.
+- [ ] **Round III re-verify → Phase 6.1:** systematic re-check of every closed finding (owner: this
+      branch's job was the initial fix; re-verify is main's — the adversarial red-team pass covers it).
+- [ ] **⚠ `URC_OuroPrimordialPrice` lead → Phase 6.1 (15-min trace):** `16_SWPI.pact` dollar-denominated
+      math *likely* carries the same weight-omission bug just fixed on the WSTOA side (#73C) — NOT
+      confirmed, shares the exact math shape. Worth a trace + live check before the red team assumes it's fine.
+- [ ] **Interface versions (informs Phase 0.4/7):** SWP is on `SwapperV3` / `SwapTracerV2` /
+      `ClientThreeV2` / `ClientPactsV2` → live-version map inputs; a `SwapperV3`→`V4` bump was left as a
+      separate decision (ROUND-02-FIXES.md).
+- [ ] Optional (unscheduled): router direct-pair fast-path — `URC_HopperActive` builds the full graph
+      even when a direct A→B pool exists (Kaddex short-circuits); pure gas optimization, not a bug.
+- [ ] Moot: live-vs-local Pythia diff — ruled moot by owner (full redeploy planned anyway).
 ### DPTF-DPOF audit — TO FOLD AT MERGE (worktree `dptf-dpof`; watch for the DeployAccount no-ownership-check shape flagged by DPDC)
 
 ---
