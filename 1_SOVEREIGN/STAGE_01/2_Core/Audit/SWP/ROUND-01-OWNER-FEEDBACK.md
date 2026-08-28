@@ -3139,6 +3139,37 @@ anchors (`W1`/`W4`/`W7`) and the P2-scale topology's issued tokens are all minor
 new-token-anchored, not major-anchored, by the deliberate design of those adversarial test
 topologies.
 
+**Follow-up, owner-directed: measured the minor-principal case instead of guessing at it.** Owner
+asked directly whether a *realistic* (organically-close) minor-principal pool is actually cheap in
+practice, since I'd only measured the two extremes (major-anchored best case; the deliberately
+adversarial 8-hop worst case buried inside a much bigger transaction). Built a clean, isolated,
+non-adversarial test — `MPTEST`, a fresh minor principal connected 1 hop to OURO (the cheapest shape
+a minor principal's reachability can realistically take), pool `P|MPTEST-98c486052a51|OURO-98c486052a51`
+— and measured `URC_PoolValue` on it directly (`SWP|TX 032z8c`, new, permanent, alongside an isolated
+re-measurement of the existing worst-case `W7` pool for a clean 3-point comparison):
+
+| Case | First-token distance to a major token | `URC_PoolValue` gas |
+|---|---|---|
+| Major-anchored (`SWP|TX 032z8b`) | 0 hops (shortcut) | **3,524** |
+| Realistic minor (`MPTEST`, new) | 1 hop | **120,641** |
+| Worst-case minor (`W7`, existing) | 8 hops | **188,205** |
+
+**This overturned my own tentative assumption, caught by measuring instead of reasoning from the
+mechanism alone.** Going in, the expectation (mine, not stated as fact) was that a registration-time
+policy requiring new minor principals to connect near a major one (closing `#65dL`'s still-open
+"P0.3") would meaningfully cut this cost, since 1 hop is so much shorter than 8. The real numbers say
+otherwise: 1 hop costs **34x** the major-anchored case, and is still within the *same order of
+magnitude* as the 8-hop worst case (only 1.56x cheaper) — not proportionally cheap at all. This is
+consistent with, and now directly confirms for this call site, Phase 7's own established finding:
+`SWPT::UC_BFS`'s cost scales with the *full graph size it has to scan*, not the true path depth to
+the target — so a proximity policy would barely move the needle here, while adding real issuance-time
+friction. **Recommendation: don't pursue a registration-distance policy for this reason** — it was
+the more obvious-looking fix and the data rules it out. The two levers that actually matter are
+already in place: `SWPT|PathCache` (Phase 1/6) absorbs the *repeat*-lookup cost once real
+bundle-assisted swap traffic warms it, and 120K-190K gas for a single *cold* minor-principal
+repricing call is a bounded, known cost that comfortably fits within the transaction — not a
+correctness problem, just an accepted cold-start cost for that category of pool.
+
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #45. Phase 8b's value-methodology
 question left open for owner review (not blocking — both phases fully shipped and working as
 designed either way). — *#65fL*

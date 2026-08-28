@@ -5647,6 +5647,203 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z8c1 - Issue+Mint MPTEST (Minor-Principal Repricing Proof Setup)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;#65fL: owner asked how a REALISTIC minor-principal-anchored pool prices, as a middle data
+;;point between the major-anchored 3,524 gas (SWP|TX 032z8b) and the deliberately-adversarial
+;;worst case (W7, 8 hops, buried inside SWP|TX 032q's own total). MPTEST is a fresh minor
+;;principal, connected 1 hop to OURO (organic, not adversarial) — the cheapest realistic shape
+;;a minor principal's own reachability can take.
+(print "--- [SWP|TX 032z8c1 - MPTEST Setup · 01 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (ref-DALOS::UR_UsagePrice "dptf")
+            )
+        )
+    )
+(print "--- [SWP|TX 032z8c1 - MPTEST Setup · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        )
+        (ref-TS01-C1::DPTF|C_Issue
+            patron patron
+            ["MinorPrincipalTest"] ["MPTEST"] (make-list 1 24)
+            (make-list 1 true) (make-list 1 true) (make-list 1 true)
+            (make-list 1 false) (make-list 1 false) (make-list 1 true)
+        )
+    )
+)
+(print "")
+(format "<<<<<<<SWP|TX 032z8c1 Issue MPTEST ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z8c2 - Mint MPTEST + Register as Minor Principal + Issue [MPTEST,OURO] Anchor Pool")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 032z8c2 - MPTEST Anchor Setup · 01 · let / invocation] ---")
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                patron
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+(print "--- [SWP|TX 032z8c2 - MPTEST Anchor Setup · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (let
+        (
+            (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+            (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+            (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+            (ref-SWP:module{SwapperV3} SWP)
+        )
+    (ref-TS01-C1::DPTF|C_Mint patron "MPTEST-98c486052a51" patron 10000.0 true)
+    (ref-TS01-A::SWP|A_UpdatePrincipal "MPTEST-98c486052a51" true)
+    (print (format "Principal count after adding MPTEST: {}" [(length (ref-SWP::UR_Principals))]))
+    ;;P-type pool, MPTEST first (the pool WILL fail issuance if MPTEST weren't already a
+    ;;principal — proves the anchoring, not just claims it), OURO second — a genuine 1-hop
+    ;;organic connection, permissioned bypass (p=true) since MPTEST has no trading history yet.
+    (ref-TS01-C3::SWP|C_IssueStandard patron patron
+        [
+            { "token-id": "MPTEST-98c486052a51", "token-supply": 500.0}
+            { "token-id": "OURO-98c486052a51", "token-supply": 500.0}
+        ]
+        25.0 true
+    )
+    )
+)
+(print "")
+(format "<<<<<<<SWP|TX 032z8c2 MPTEST Anchor Pool ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z8c - #65fL Minor-Principal Pool Repricing Spectrum Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 032z8c - Minor-Principal Repricing Spectrum · 01 · env-sigs (caps)] ---")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+;;#65fL: completes the spectrum owner asked for — major-anchored (SWP|TX 032z8b, 3,524 gas,
+;;zero search) vs a REALISTIC minor-principal-anchored pool (MPTEST, 1 hop from OURO — the
+;;cheapest shape a minor principal's own reachability can realistically take) vs the
+;;deliberately-adversarial worst case (W7, 8 hops — the SAME real pool SWP|TX 032q's own
+;;6-hop worst-case scenario already depends on, measured here in ISOLATION instead of buried
+;;inside that whole transaction's total).
+(print "--- [SWP|TX 032z8c - Minor-Principal Repricing Spectrum · 02 · direct measurement] ---")
+(let*
+    (
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-SWP:module{SwapperV3} SWP)
+        (realistic-minor-pool:string "P|MPTEST-98c486052a51|OURO-98c486052a51")
+        (worstcase-minor-pool:string "S|W7-98c486052a51|W6-98c486052a51|W6A-98c486052a51|W6B-98c486052a51|W6C-98c486052a51|W6D-98c486052a51|W6E-98c486052a51")
+        (realistic-first-token:string (at 0 (ref-SWP::UR_PoolTokens realistic-minor-pool)))
+        (worstcase-first-token:string (at 0 (ref-SWP::UR_PoolTokens worstcase-minor-pool)))
+    )
+    (map print
+        [
+            (expect "#65fL: sanity — realistic-minor pool's first token genuinely is MPTEST" "MPTEST-98c486052a51" realistic-first-token)
+            (expect "#65fL: sanity — worst-case-minor pool's first token genuinely is W7 (the same adversarially-far principal SWP|TX 032q depends on)" "W7-98c486052a51" worstcase-first-token)
+        ]
+    )
+    (env-gas 0)
+    (let
+        (
+            (realistic-worth:[decimal] (ref-SWPI::URC_PoolValue realistic-minor-pool))
+        )
+        (print (format "#65fL: URC_PoolValue(realistic minor-principal pool, MPTEST 1-hop-from-OURO) = {}, gas: {}" [realistic-worth (env-gas)]))
+    )
+    (env-gas 0)
+    (let
+        (
+            (worstcase-worth:[decimal] (ref-SWPI::URC_PoolValue worstcase-minor-pool))
+        )
+        (map print
+            [
+                (expect "#65fL: worst-case-minor pool's worth is genuinely non-zero (real reachability via the sole OURO-W1 bridge, not an empty fallback)" true (> (at 0 worstcase-worth) 0.0))
+                (format "#65fL: URC_PoolValue(worst-case minor-principal pool, W7 8-hops-from-DWK) = {}, gas: {}" [worstcase-worth (env-gas)])
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "SWP|TX 032z8 - #34 Phase 10 Adversarial Malformed-Bundle Proof (Permanent)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

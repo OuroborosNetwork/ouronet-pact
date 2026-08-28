@@ -1887,6 +1887,17 @@ pools have no equivalent shortcut, which is exactly why the tracked worst-case c
 showed a small net win — none of those pools are major-anchored. See
 `ROUND-01-OWNER-FEEDBACK.md`'s `#65fL` entry for the full writeup.
 
+**Second addendum — measured the minor-principal case instead of assuming it:** owner asked whether
+a *realistic* (1-hop, organically-close) minor-principal pool is cheap in practice, not just the
+adversarial 8-hop worst case. New `SWP|TX 032z8c` (permanent): major (0 hops) 3,524 gas, realistic
+minor (1 hop, `MPTEST`) 120,641 gas, worst-case minor (8 hops, `W7`) 188,205 gas. This overturned my
+own tentative assumption that a registration-time "minor principals must connect near a major one"
+policy would help much — 1 hop costs 34x the major-anchored case and is still the same order of
+magnitude as 8 hops (only 1.56x cheaper), confirming Phase 7's finding that `UC_BFS` cost scales with
+graph size scanned, not path depth. **Recommendation: don't pursue that policy** — the data rules it
+out. `SWPT|PathCache` already absorbs repeat-lookup cost once real traffic warms it; a cold
+minor-principal repricing call costing 120K-190K gas is a bounded, accepted cost, not a bug.
+
 **Status:** FIXED ✅ AND PROVEN ✅. Phase 8b's value-methodology question left open for owner review
 (both phases fully shipped and working as designed either way). See `ROUND-01-OWNER-FEEDBACK.md`'s
 `#65bL` entry (Phase 8 addendum) for the full writeup.
