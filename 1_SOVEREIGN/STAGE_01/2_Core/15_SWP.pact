@@ -1254,13 +1254,16 @@
         )
     )
     (defun A_RotatePrincipal (old:string new:string)
-        @doc "Atomically replaces principal <old> with <new> — the only supported \
-            \ way to retire a principal (#21H design decision; standalone removal \
-            \ via A_UpdatePrincipal is disabled). Count-preserving, so this never \
-            \ interacts with the 7-principal cap. Safe with respect to SWPT's \
-            \ routing graph (#21H fix) — SWPT's storage is principal-agnostic, so \
-            \ rotating a principal never orphans anything there; the only effect is \
-            \ on future SWPI::UEV_Issue principal-anchoring validation."
+        @doc "Atomically replaces principal <old> with <new> in one call — the \
+            \ count-preserving alternative to a separate remove-then-add via \
+            \ A_UpdatePrincipal (Fix #14/#21H second follow-up re-allowed standalone \
+            \ removal, floor-gated at 2 remaining; this doc previously claimed \
+            \ removal was disabled entirely, stale since that fix — #65dL). Never \
+            \ interacts with the 7-principal cap either way. Safe with respect to \
+            \ SWPT's routing graph (#21H fix) — SWPT's storage is principal-agnostic, \
+            \ so rotating (or removing) a principal never orphans anything there; \
+            \ the only effect is on future SWPI::UEV_Issue principal-anchoring \
+            \ validation."
         (UEV_IMC)
         (with-read SWP|Properties SWP|INFO
             { "principals" := pp }

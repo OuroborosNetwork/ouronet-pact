@@ -151,7 +151,10 @@ resync path exists anywhere in the module.~~ — **FIXED ✅ AND PROVEN ✅ 2026
 Fix #12): full redesign, not a patch — `SwapTracerV1`→`V2`, principal-keyed storage replaced with plain
 token-adjacency (`SWPT|Graph`); nothing is keyed by principal identity anymore, so orphaning is
 structurally impossible. Migration utility `SWPI::A_RebuildGraph` added and proven idempotent; every
-prior #13C/#19H/#20H/#11C proof re-confirmed byte-identical post-redesign. — *H3*
+prior #13C/#19H/#20H/#11C proof re-confirmed byte-identical post-redesign. **Re-verified 2026-08-28
+(`#65dL`):** owner independently re-raised the same concern; confirmed via a fresh grep of every
+`UR_Principals` consumer that the fix still holds — no code gap, one small stale `@doc` corrected
+(`ROUND-02-FIXES.md` Fix #43). — *H3*
 
 #22H **[SWPL]** ~~Two independent, unreconciled asymmetric-deficit pricing models both fire for Standard-mode
 liquidity adds — possible double-charging honest depositors.~~ — **DESIGN, confirmed intentional

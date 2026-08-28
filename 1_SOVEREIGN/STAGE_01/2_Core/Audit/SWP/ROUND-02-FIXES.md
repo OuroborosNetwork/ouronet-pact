@@ -1746,3 +1746,33 @@ capstone phase to add a separate, simplified direct-pool-swap interface. See
 
 **Status:** FIXED ✅ AND PROVEN ✅. Full detail in
 `OuronetInformational/HANDOFF-swp-graph-search-engine-optimization.md`.
+
+---
+
+## Fix #43 — #65dL: stale `@doc` on `A_RotatePrincipal` corrected (re-verification of H3/#21H)
+
+**Owner independently re-raised H3's original concern** (rotating/removing a principal that's
+already anchoring live pools) while discussing `#65bL`/`#65cL`, unprompted by any specific code
+reference — framed as a possible new "major vs. minor principal" architecture gap. Re-verified
+against the current code before responding, rather than trusting memory of the earlier fix: grepped
+every consumer of `SWP::UR_Principals` across the whole codebase, confirmed exactly one real caller
+outside `A_UpdatePrincipal`/`A_RotatePrincipal` themselves (`SWPI::UEV_Issue`'s issuance-time-only
+anchoring gate) — the `H3`/`#21H` fix (Fix #12-#14) still holds exactly as designed, no regression,
+no gap. There is no major/minor principal tier in the code at all — `principals` is a flat,
+undifferentiated list (2-min, 7-max), and `primordial-pool` is a mechanically separate single-swpair
+property, not a principal subtype. Full explainer written up as
+`OuronetInformational/memories/2026-08-28-principal-and-primordial-pool-architecture.md`.
+
+**Fix — `1_SOVEREIGN/STAGE_01/2_Core/15_SWP.pact`:** while re-verifying, found `A_RotatePrincipal`'s
+own `@doc` still said "standalone removal via `A_UpdatePrincipal` is disabled" — accurate as of Fix
+#13, but Fix #14 re-enabled removal (floor-gated at 2 remaining) and updated the *Talos wrapper's*
+docstring (`01_TS01-A.pact::SWP|A_RotatePrincipal`) to match, but missed this core module's own defun
+doc. Corrected to describe the actual current mechanism (removal allowed, floor-gated, not disabled)
+and cross-referenced `#65dL`.
+
+**Pure doc change, no behavior touched** — no adversarial proof applicable (nothing to corrupt-and-
+restore, the fix doesn't change any computed value or control flow). Full suite (`[6.2]`+`[6.3]`,
+`Z.repl`) re-run: exit 0, 0 `FAILURE`, `Load successful`.
+
+**Status:** FIXED ✅. See `ROUND-01-OWNER-FEEDBACK.md`'s `H3` entry (addendum) for the full
+re-verification writeup.

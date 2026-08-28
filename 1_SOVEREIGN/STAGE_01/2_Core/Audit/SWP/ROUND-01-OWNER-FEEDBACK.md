@@ -1201,6 +1201,24 @@ rejected. Full suite: exit 0, 0 `FAILURE`, `Load successful`.
 
 **Status:** FIXED ✅ AND PROVEN ✅ — see `ROUND-02-FIXES.md` Fix #14. Awaiting Round III re-verify.
 
+**Addendum (`#65dL`, 2026-08-28):** owner independently re-raised this exact concern — if principals
+can be rotated/removed, doesn't that break the routing infrastructure existing pools depend on? —
+while discussing `#65bL`/`#65cL`. Re-verified against the current code rather than assuming this
+finding still covers it: grepped every consumer of `SWP::UR_Principals` across the whole codebase,
+confirmed it has exactly one real caller outside `A_UpdatePrincipal`/`A_RotatePrincipal` themselves —
+`SWPI::UEV_Issue`'s issuance-time-only anchoring gate. Nothing in `SWPT`'s graph, `SWPI`'s value
+computation, or live trading reads current principal status — the H3/#21H fix still holds exactly as
+designed; rotating or removing a principal cannot affect any already-issued pool's routing, pricing,
+or tradability. Also corrected the owner's "major vs. minor principal" framing: no such tier exists
+in the code — `principals` is a flat, undifferentiated list, and `primordial-pool` is a mechanically
+separate single-swpair property, not a principal subtype. Full explainer written up as
+`OuronetInformational/memories/2026-08-28-principal-and-primordial-pool-architecture.md`. Found one
+small, genuinely missed leftover while re-verifying: `A_RotatePrincipal`'s own `@doc` in
+`15_SWP.pact` still said "standalone removal via `A_UpdatePrincipal` is disabled" — accurate as of
+Fix #13, but Fix #14 re-enabled removal (floor-gated) and updated the *Talos wrapper's* docstring
+(`01_TS01-A.pact`) to match, but missed the core module's own defun doc. Corrected — pure doc change,
+no behavior touched, full regression re-run clean. See `ROUND-02-FIXES.md` Fix #43.
+
 ---
 
 ## H7 (#22H, two unreconciled asymmetric-deficit pricing models stack in Standard mode) — **DESIGN, confirmed intentional**
