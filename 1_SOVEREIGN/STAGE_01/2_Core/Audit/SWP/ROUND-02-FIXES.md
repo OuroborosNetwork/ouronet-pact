@@ -1612,11 +1612,11 @@ pipeline both exit 0, 0 `FAILURE`.
 
 ---
 
-## Fix #42 — #65bL: 5-phase graph-search engine optimization, 63.9% cumulative gas reduction
+## Fix #42 — #65bL: 6-phase graph-search engine optimization, 63.9% cold / 77.6% warm-cache cumulative gas reduction
 
 **Fix — `1_SOVEREIGN/STAGE_01/2_Core/14_SWPT.pact`, `1_SOVEREIGN/STAGE_01/2_Core/16_SWPI.pact`,
-`1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`, `REPL/Stage_01/[6.3]_SWP.repl`:** 5 phases, scoped
-and measured independently, 4 shipped:
+`1_SOVEREIGN/STAGE_01/2_Core/19_SWPU.pact`, `1_SOVEREIGN/STAGE_01/3_Talos/04_TS01-C3.pact`,
+`REPL/Stage_01/[6.3]_SWP.repl`:** 6 phases, scoped and measured independently, 5 shipped:
 
 - **Phase 1:** wired `URCX_Hopper` to the pre-existing-but-unused `SWPT|PathCache` (write-only in
   the live code until now) via a new `URC_ReadPathCacheFresh`. Required fixing the cache's own
@@ -1669,14 +1669,38 @@ and measured independently, 4 shipped:
   this fix doesn't introduce it, only removes the cross-route comparison layered on top. Measured:
   2,129,569 → 1,837,000 gas, 13.7% further.
 
-**Cumulative: 5,094,054 → 1,837,000 gas, a 63.9% reduction** from the pre-`#65L` baseline, all 5
-phases combined. The worst-of-the-worst-case scenario now fits **under** the real ~2,000,000 gas
-ceiling — it did not before this work.
+- **Phase 6:** owner directly observed that the bundle-based cache writer
+  (`19_SWPU.pact::XI_RegisterBundlePaths`) only ever registered `boost-path`/`stoa-paths` into
+  `SWPT|PathCache`, never the main swap-route itself — "the cache bundle dirty read must populate
+  all paths that it detects... update only when [the version] is bigger than the one for which a
+  value already exists." Traced this to a deliberate original design note on the `SwapRoute` schema
+  (`SwapperUsageV2` interface): the main route was never cached because best-of-3 value-comparison
+  made it amount-sensitive. Phase 5 already removed that precondition — the live default
+  (`URC_ComputeGraphPath`/`FromRaw`) is a pure first-found BFS taking no amount parameter at all —
+  so the structural route is now provably amount-independent and safe to cache. Added `input-id` to
+  `XI_RegisterBundlePaths`'s signature and a new swap-route registration branch, validated via
+  `URC_ValidatePathActive` plus endpoint checks against `input-id`/`output-id`, using the same
+  version-checked-refresh machinery Phase 1 built (`ref-SWPT::XE_RegisterPath`, no-op unless the
+  topology-version is genuinely newer). Updated the `SwapRoute` schema's own `@doc` and
+  `C_SmartSwap`'s `@doc` to record the resolved reasoning. Measured three stages on the same
+  worst-of-the-worst-case scenario: 1,837,000 gas cold (zero cache, Phase 5's number) → 1,352,614 gas
+  with only the pre-existing boost-path/stoa-paths cache warm → 1,143,255 gas once the swap-route
+  itself is also warm (a bundle-assisted swap ran first, then a plain `URC_HopperActive` call reused
+  the fully warm cache end to end).
+
+**Cumulative: 5,094,054 → 1,837,000 gas cold (zero cache), a 63.9% reduction, and 5,094,054 →
+1,143,255 gas with a fully warm cache (swap-route included), a 77.6% reduction** — from the
+pre-`#65L` baseline, all 6 phases combined (5 shipped). The worst-of-the-worst-case scenario now
+fits **under** the real ~2,000,000 gas ceiling even cold — it did not before this work — and drops
+further still once the cache is warm.
 
 **Adversarially proven:** Phase 1's cache-hit path (returns exactly the cached node path, not an
-independently recomputed one), Phase 4's correctness (byte-identical to the original function), and
+independently recomputed one), Phase 4's correctness (byte-identical to the original function),
 Phase 5's honestly-updated adversarial proof (live default genuinely takes the worse route on the
-engineered topology, direct `URC_ComputeAlternateRoutes` call still finds the better one) all
+engineered topology, direct `URC_ComputeAlternateRoutes` call still finds the better one), and
+Phase 6's warm swap-route proof (`SWP|TX 032z6d` — after a bundle-based swap runs,
+`URC_HopperActive` on the same pair returns exactly the now-cached 7-node route, corrupted-and-
+restored to confirm the assertion is genuine, not a vacuous pass) all
 verified with real, printed numbers, not just passing assertions. Full suite (`[6.2]`+`[6.3]`) and
 default issuance-only (`[6.2+3]`) pipelines both exit 0, 0 `FAILURE` throughout every phase,
 `Stage01_Tester.repl` reverted to its default afterward (zero drift).

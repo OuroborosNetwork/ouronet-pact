@@ -5303,6 +5303,65 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032z6d - #65bL swap-route cache registration + reuse proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;;==== SWP|TX 032z6d - swap-route cache proof · 01 · env-sigs (caps) ====
+(print "--- [SWP|TX 032z6d - swap-route cache proof · 01 · env-sigs (caps)] ---")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+    ]
+)
+;;#65bL fix: XI_RegisterBundlePaths now also registers the bundle's own <swap-route>
+;;(input-id->output-id), not just boost-path/stoa-paths. SWP|TX 032z6 (above) already
+;;ran a bundle-based swap for W1->W7 — this proves that swap ALSO registered the main
+;;6-hop route into SWPT|PathCache (previously never happened at all), and that a fresh
+;;self-searching call for the same pair now hits that cache instead of re-scanning.
+;;==== SWP|TX 032z6d - swap-route cache proof · 02 · direct comparison ====
+(print "--- [SWP|TX 032z6d - swap-route cache proof · 02 · direct comparison] ---")
+(let*
+    (
+        (ref-SWPT:module{SwapTracerV2} SWPT)
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (input-id:string "W1-98c486052a51")
+        (output-id:string "W7-98c486052a51")
+        (cached-row:object{SwapTracerV2.PathCacheRow} (ref-SWPT::URC_ReadPathCache input-id output-id))
+        (cached-nodes:[string] (at "nodes" cached-row))
+    )
+    (map print
+        [
+            (expect "#65bL: swap-route (W1->W7) is now genuinely cached after the bundle-based swap ran"
+                true
+                (!= cached-nodes [SWPT.BAR])
+            )
+            (expect "#65bL: cached swap-route is the real 6-hop chain (7 nodes)"
+                7
+                (length cached-nodes)
+            )
+        ]
+    )
+    (env-gas 0)
+    (let
+        (
+            (h:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id 10.0))
+        )
+        (map print
+            [
+                (expect "#65bL: URC_HopperActive on a warm swap-route cache returns EXACTLY the cached path"
+                    cached-nodes
+                    (at "nodes" h)
+                )
+                (format "#65bL: URC_HopperActive(W1,W7) WARM swap-route cache gas: {}" [(env-gas)])
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "SWP|TX 032z7 - #34 Phase 8 Boost-Path Cache Registration Proof (Short Path) (Permanent)")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

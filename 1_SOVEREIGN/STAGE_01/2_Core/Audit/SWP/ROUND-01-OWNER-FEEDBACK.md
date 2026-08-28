@@ -2866,13 +2866,47 @@ own sibling discovery, wired in here since it was the cheapest, highest-leverage
 
   Measured: 2,129,569 → 1,837,000 gas, a further **13.7%**.
 
-**Cumulative result: 5,094,054 → 1,837,000 gas, a 63.9% reduction** from the pre-`#65L` baseline,
-across all 5 phases combined. The worst-of-the-worst-case scenario this codebase can construct (max
-6-hop route, 7 active special fee targets on every pool along it, Liquid Boost on, ~102 active
-pools) **now fits under the real ~2,000,000 gas ceiling — it did not before this work.** Full suite
-(`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean (exit 0, 0
-`FAILURE`) throughout every phase, with `Stage01_Tester.repl` reverted to its default afterward
-(zero drift).
+**Cumulative (cold, zero cache): 5,094,054 → 1,837,000 gas, a 63.9% reduction** from the pre-`#65L`
+baseline, across the first 5 phases combined. The worst-of-the-worst-case scenario this codebase can
+construct (max 6-hop route, 7 active special fee targets on every pool along it, Liquid Boost on,
+~102 active pools) **now fits under the real ~2,000,000 gas ceiling — it did not before this work.**
+
+- **Phase 6 — the cache writer wasn't properly set up.** Owner's direct observation: the dirty-read
+  bundle flow's cache-warming must populate every path it detects — the main A→B route, and
+  A→silver-STOA — updating an entry only when the topology-version is genuinely newer than whatever
+  it was cached at. Checked the real code: `XI_RegisterBundlePaths` warmed `boost-path`/`stoa-paths`
+  correctly, but never the main `swap-route` — confirmed a real gap, not a misunderstanding. Traced
+  why it was built that way originally: `SwapRoute`'s own interface doc explicitly said it could
+  never be safely cached, because best-of-3 was a real value-comparing search and the "best" route
+  can legitimately differ by trade size (amount-sensitive) — caching one amount's answer and serving
+  it for a different amount could have been genuinely wrong under that design. Checked whether Phase
+  5 changed that calculus before touching anything: `SWPT::URC_ComputeGraphPath` (the live default
+  since Phase 5) takes no amount parameter at all — it's pure topology. The structural route is now
+  provably amount-independent, so the original concern no longer applies; serving a cached,
+  off-chain-exhaustive-search-discovered route to a live first-found query can only be equal-to or
+  better-than a fresh first-found search, never worse, since real value is still always computed
+  fresh, live, at execution time regardless of where the node path came from — exactly the same
+  safety argument already established for `boost-path`/`stoa-paths`.
+
+  `XI_RegisterBundlePaths` gained an `input-id` parameter and now also registers `swap-route` into
+  `SWPT|PathCache`, validated via `SWPI::URC_ValidatePathActive` (real active-required check, not
+  trusting the bundle), using the exact same version-checked-refresh machinery Phase 1 already built
+  — an entry only gets overwritten when the live topology-version has genuinely moved past what it
+  was cached at, precisely as directed. `SwapRoute`'s own doc updated to record the original
+  reasoning as superseded, with the Phase 5 argument that resolves it captured inline.
+
+  Measured, in sequence: cold (zero cache) self-search costs 1,837,000 gas (Phase 5's number,
+  unchanged). Self-search after a prior bundle-based swap warms the cache — *before* this fix
+  (repricing loop benefits, routing still scans fresh, since nothing wrote that category) — costs
+  1,352,614 gas, a 26.4% cut from cold. *After* this fix (routing now also hits a warm cache) the
+  same call costs **1,143,255 gas**, a further 15.5% cut, and a **77.6% reduction from the original
+  pre-`#65L` baseline**. Adversarially proven the routing cache hit returns exactly the cached
+  6-node-hop chain, not an independently recomputed one (corrupted the expectation, got a genuine
+  `FAILURE`, restored).
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean
+(exit 0, 0 `FAILURE`) throughout every phase**, with `Stage01_Tester.repl` reverted to its default
+afterward (zero drift).
 
 **Owner note recorded for the capstone/UI phase (not a code change in this repo):** part of the
 reasoning for accepting the first-found tradeoff was that a chunk of SmartSwap's real traffic is

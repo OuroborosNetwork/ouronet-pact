@@ -22,11 +22,20 @@
     ;;settled shape instead of improvising one mid-implementation.
     (defschema SwapRoute
         @doc "The swap's own A->B route (nodes incl. both endpoints, edges one shorter). \
-            \ Deliberately NOT the same shape as <CachedPathOrMiss> below — this is never \
-            \ cached (P3.0: amount-sensitive, must be freshly discovered every time by \
-            \ the exhaustive search, Phase 11), so there is no <is-new> concept for it. \
-            \ Carries no value/output data either — the real transaction always computes \
-            \ actual hop outputs fresh from live reserves, exactly as it does today; \
+            \ Deliberately NOT the same shape as <CachedPathOrMiss> below — no <is-new> \
+            \ concept, because eligibility for caching is decided independently by the \
+            \ writer (XI_RegisterBundlePaths), not signaled by the caller here. \
+            \ #34 Phase 6 (original doc, now superseded): this was 'never cached... \
+            \ amount-sensitive, must be freshly discovered every time' — true UNDER \
+            \ best-of-3 (a real value-comparing search legitimately can prefer a \
+            \ different structural route for a different trade size). \
+            \ #65bL Phase 5+ (current): the live on-chain default dropped best-of-3 to \
+            \ first-found-only, which is PURE topology (SWPT::URC_ComputeGraphPath takes \
+            \ no amount parameter) — the structural route is now provably \
+            \ amount-independent, so XI_RegisterBundlePaths DOES now cache <swap-route> \
+            \ into SWPT|PathCache, the same as <boost-path>/<stoa-paths>. Carries no \
+            \ value/output data either way — the real transaction always computes actual \
+            \ hop outputs fresh from live reserves, exactly as it does today; \
             \ off-chain-estimated outputs are only ever used to pick the best candidate \
             \ route before submission, never trusted for real execution numbers."
         nodes:[string]
@@ -848,11 +857,14 @@
             \ maps it straight into XE_UpdateStoaValue with no URC_PoolValue re-derivation \
             \ at all, for every pool this call actually priced. \
             \ Cache self-warming: after a real execution, XI_RegisterBundlePaths \
-            \ registers whichever of <boost-path>/<stoa-paths> are genuinely new, valid, \
+            \ registers whichever of <swap-route>/<boost-path>/<stoa-paths> are valid \
             \ and actually used this round — via SWPT::XE_RegisterPath (the proper \
             \ forward-module writer), never a caller-side grant of SWPT's own SECURE \
             \ cap directly (see XE_RegisterPath's own doc for why that would be unsafe — \
             \ confirmed against this codebase's own ATS audit findings before landing). \
+            \ #65bL fix: <swap-route> registration is new — see SwapRoute's own doc for \
+            \ why it's now safe to cache (Phase 5 dropped the live default from best-of-3 \
+            \ to first-found, making the structural route amount-independent). \
             \ Runs INSIDE the with-capability block below via XI_SmartSwapAndRegister — \
             \ a granted capability's scope is its own dynamic extent, not the rest of \
             \ the transaction (confirmed the hard way: 'require-capability: not granted' \
@@ -899,7 +911,7 @@
                 )
             )
             (if (= (length out) 4)
-                (XI_RegisterBundlePaths output-id (at 3 out) bundle)
+                (XI_RegisterBundlePaths input-id output-id (at 3 out) bundle)
                 "no registration — swap did not execute"
             )
             [ico stoa-results]
@@ -1062,7 +1074,7 @@
             )
         )
     )
-    (defun XI_RegisterBundlePaths (output-id:string distinct-edges:[string] bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+    (defun XI_RegisterBundlePaths (input-id:string output-id:string distinct-edges:[string] bundle:object{SwapperUsageV2.SmartSwapPathBundle})
         @doc "#34 Phase 8: cache self-warming — registers a bundle's <boost-path> and \
             \ each <stoa-paths> entry into SWPT|PathCache, ONLY when (a) the bundle \
             \ claims <is-new>=true AND (b) re-validated here from scratch (never trusting \
@@ -1074,8 +1086,25 @@
             \ SWPT::XE_RegisterPath (the forward-module writer, UEV_IMC + internal \
             \ SECURE composition) — never a caller-side grant of SWPT's own SECURE cap \
             \ directly (see XE_RegisterPath's own doc for why that would be unsafe). \
-            \ XI_RegisterPath's own first-write-wins self-check makes every call here \
-            \ safe to no-op on if another caller already won the race for the same pair."
+            \ XI_RegisterPath's own version-checked-refresh (#65bL Phase 1) makes every \
+            \ call here safe regardless of whether an entry already exists. \
+            \ #65bL fix: also registers the bundle's own <swap-route> (input-id-> \
+            \ output-id) — previously never cached at all (see SwapRoute's own doc for \
+            \ the ORIGINAL reason, and why #65bL's Phase 5 resolved it): the concern was \
+            \ that the 'best' route is amount-sensitive (a real, value-comparing search \
+            \ could legitimately prefer a different route for a different trade size), \
+            \ so caching one amount's answer and serving it for another's could have been \
+            \ wrong. Phase 5 already removed value-comparison from the live on-chain \
+            \ default (best-of-3 -> first-found) — first-found is PURE topology \
+            \ (SWPT::URC_ComputeGraphPath takes no amount parameter at all), so the \
+            \ structural route itself is now provably amount-independent regardless of \
+            \ which amount it was originally discovered for. Serving a cached, \
+            \ off-chain-exhaustive-search-discovered route to a live first-found query is \
+            \ therefore never WORSE than a fresh first-found search (same structural \
+            \ validity for any amount) and is very plausibly better (a genuine exhaustive \
+            \ search found it, not a first-hit BFS) — real value is still always computed \
+            \ fresh, live, at execution time regardless, exactly as every other cached \
+            \ entry already works."
         (require-capability (SECURE))
         (let*
             (
@@ -1084,6 +1113,22 @@
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 (lkda:string (ref-DALOS::UR_SilverStoaID))
                 (dwk:string (ref-DALOS::UR_WrappedStoaID))
+                (swap-route:object{SwapRoute} (at "swap-route" bundle))
+                (route-nodes:[string] (at "nodes" swap-route))
+                (route-edges:[string] (at "edges" swap-route))
+                (route-le:integer (length route-nodes))
+                (route-eligible:bool
+                    (if (= route-nodes [BAR])
+                        false
+                        (fold (and) true
+                            [
+                                (ref-SWPI::URC_ValidatePathActive route-nodes route-edges)
+                                (= (at 0 route-nodes) input-id)
+                                (= (at (- route-le 1) route-nodes) output-id)
+                            ]
+                        )
+                    )
+                )
                 (boost-path:object{CachedPathOrMiss} (at "boost-path" bundle))
                 (boost-nodes:[string] (at "nodes" boost-path))
                 (boost-edges:[string] (at "edges" boost-path))
@@ -1100,6 +1145,10 @@
                         )
                     )
                 )
+            )
+            (if route-eligible
+                (ref-SWPT::XE_RegisterPath input-id output-id route-nodes route-edges)
+                "swap-route not registered (invalid or sentinel)"
             )
             (if boost-eligible
                 (ref-SWPT::XE_RegisterPath output-id lkda boost-nodes boost-edges)
