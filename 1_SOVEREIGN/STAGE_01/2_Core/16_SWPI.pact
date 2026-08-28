@@ -2204,6 +2204,25 @@
     )
     (defun UEV_Issue
         (account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
+        @doc "#74 note (2026-08-29): deliberately does NOT enforce that <pool-tokens>' \
+            \ token IDs are distinct — that protection already exists, composed for \
+            \ free, one layer down. Both real issuance paths (this function, via \
+            \ XI_IssueWrite's SWPI|C>ISSUE, and MTX-SWP's defpact issuance) collect the \
+            \ caller's genesis deposits through the SAME shared XE_IssueWrite chokepoint \
+            \ (Fix #22/M5), which calls TFT::C_MultiTransfer — and C_MultiTransfer's own \
+            \ U|LST::UC_IzUnique check already rejects a repeated token ID in the \
+            \ transfer list ('Unique Items Required, duplicate item found: <id>'), for \
+            \ its own unrelated reason (a batched multi-transfer can't sensibly resolve \
+            \ two different amounts for the same ID). Confirmed live, not assumed: \
+            \ issuing [OURO, OURO, W1] as a nominal 3-token pool reverts cleanly \
+            \ (whole-tx atomicity, no partial/orphaned pool state) at \
+            \ TFT|C>MULTI-TRANSFER, before this function's own writes ever run. \
+            \ Duplicating that check HERE would be pure redundant gas cost for a \
+            \ property a composed dependency already guarantees on every real call \
+            \ path — the same 'no single non-tier choke point exists, OR one already \
+            \ does and it's downstream' reasoning StoicSyntax's `v`-specialization rule \
+            \ asks for before adding an intrinsic bounds guard (§6.1) applies in \
+            \ reverse here: the choke point already exists, just not in this module."
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)

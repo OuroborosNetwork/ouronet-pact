@@ -3680,3 +3680,54 @@ since this whole investigation started from the WSTOA-denominated case, not the 
 callers). See `ROUND-02-FIXES.md` Fix #49. — *#73C*
 
 ---
+
+## #74 (`UEV_Issue` — duplicate token ID within a single pool's own token list) — **VERIFIED SAFE, DESIGN, documented**
+
+**Origin.** Left over from the Kaddex comparison sweep — flagged then as "unconfirmed, needs a
+10-minute trace": nothing in `UEV_Issue` checks that a caller's `pool-tokens` list has no internal
+repeat (e.g. issuing a nominal 3-token pool as `[OURO, OURO, W1]`). Owner asked directly what
+actually happens if you try it.
+
+**Checked live, not assumed — two attempts:**
+1. First attempt (100 units each token) hit an unrelated wall: the pre-existing `spawn-limit` check
+   ("More liquidity is needed to open a new pool!") — nothing to do with duplicates, deposit was just
+   too small. Bumped to 5000 units each.
+2. Second attempt: **rejected**, cleanly, whole-transaction-atomic (no partial pool, no orphaned
+   state) — but the enforce that fires is `U|LST::UC_IzUnique`, called from
+   `TFT::C_MultiTransfer`/`DPTF|C>MULTI-TRANSFER`, called from `SWPI::XE_IssueWrite` — **not** from
+   anywhere inside `UEV_Issue` or `16_SWPI.pact`'s own validation at all. Exact trace:
+   `SWPI.XE_IssueWrite → TFT.C_MultiTransfer → DPTF|C>MULTI-TRANSFER → U|LST.UC_IzUnique`, error
+   `"Unique Items Required, duplicate item found: OURO-98c486052a51"`.
+
+**Owner's own explanation, worth recording verbatim in spirit:** this was intentional — no local
+check was ever added in `UEV_Issue` *because* the owner already knew `C_MultiTransfer` wouldn't
+allow a repeated token ID in its transfer list, so the protection genuinely exists, just one layer
+down, composed for free. Deliberately not duplicating a check that a composed dependency already
+guarantees on every real call path is the efficient design choice — it's the same principle behind
+every StoicSyntax layering rule in this codebase (don't validate twice what a shared chokepoint
+already validates once), just applied here by design up front rather than found and fixed after
+the fact.
+
+**Verified this composition is genuine, not incidental to one path:** `XE_IssueWrite` is the shared
+write chokepoint for *both* real issuance paths — `SWPI::C_Issue` (single-tx) and `MTX-SWP::C_Issue`
+(defpact-based) — unified specifically for this reason back at Fix #22 (M5). Since both route
+through the same `C_MultiTransfer` call, the protection covers both, not just the one path tested.
+
+**What's still worth having on record (why this got a doc comment, not just a closed note):** the
+guarantee depends on an implementation detail of a different module — *how* deposits happen to be
+collected today. If `XE_IssueWrite` were ever refactored to move deposits a different way (e.g.
+individual `C_Transfer` calls instead of one batched `C_MultiTransfer`), this protection would
+silently disappear with no local signal in `SWPI` that anything changed. Documented, not left
+implicit: added a `@doc` to `UEV_Issue` itself (`16_SWPI.pact`) recording exactly where this
+protection actually lives and why it isn't duplicated locally, plus a new permanent REPL proof
+(`SWP|TX 032o3`) reproducing the live rejection — if a future refactor ever breaks the composed
+guarantee, this test catches it immediately instead of the gap going unnoticed until a malformed
+pool actually gets issued.
+
+**Full suite (`[6.2]`+`[6.3]`) and default issuance-only (`[6.2+3]`) pipelines both verified clean**
+(exit 0, 0 `FAILURE`), `Stage01_Tester.repl` reverted to default afterward (zero drift).
+
+**Status:** VERIFIED SAFE — working as intended, by design, not by accident. Doc-only change (plus
+one new permanent regression proof); no functional code touched. — *#74*
+
+---

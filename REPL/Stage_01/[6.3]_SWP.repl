@@ -4381,6 +4381,87 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "SWP|TX 032o3 - #74 Duplicate-Token Issuance Rejection Proof (Permanent)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [SWP|TX 032o3 - #74 Duplicate-Token Issuance Rejection Proof · 01 · env-sigs (caps)] ---")
+;;#74: owner asked whether issuing a pool with a repeated token ID (e.g. a nominal
+;;3-token pool as [OURO, OURO, W1]) is rejected. Confirmed live: yes — but not from
+;;UEV_Issue's own validation, which deliberately has no distinctness check (see that
+;;defun's own @doc). The rejection comes from TFT::C_MultiTransfer's own
+;;U|LST::UC_IzUnique guard, one layer down — issuance collects genesis deposits
+;;through the SAME shared XE_IssueWrite chokepoint (Fix #22/M5) both real issuance
+;;paths (SWPI::C_Issue and MTX-SWP's defpact issuance) already use, and that
+;;chokepoint calls C_MultiTransfer, which refuses a repeated ID in its own transfer
+;;list for its own unrelated reason (ambiguous per-ID amount in a batch). This proof
+;;exists to catch a future refactor that changes HOW deposits are collected (e.g.
+;;away from C_MultiTransfer) and silently drops this composed protection without
+;;anyone adding a replacement.
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices
+                KST.ANHD
+                (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
+            )
+        )
+    )
+    (print "--- [SWP|TX 032o3 - #74 Duplicate-Token Issuance Rejection Proof · 02 · env-sigs (caps)] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda)
+                    )
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda)
+                    )
+                ]
+            }
+        ]
+    )
+    (print "--- [SWP|TX 032o3 - #74 Duplicate-Token Issuance Rejection Proof · 03 · rejection] ---")
+    (print
+        (expect-failure
+            "#74: issuing [OURO, OURO, W1] (duplicate token ID) is rejected — composed protection from TFT::C_MultiTransfer's own uniqueness guard, not UEV_Issue"
+            (ref-TS01-C3::SWP|C_IssueWeighted KST.ANHD KST.ANHD
+                [
+                    { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
+                    { "token-id": "OURO-98c486052a51", "token-supply": 5000.0}
+                    { "token-id": "W1-98c486052a51", "token-supply": 5000.0}
+                ]
+                25.0 [0.3 0.3 0.4] false
+            )
+        )
+    )
+)
+(print "")
+(print "")
+(print "===^^^===")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 (begin-tx "SWP|TX 032p - 7 Special Fee Targets + Enable Swap on All 6 Pools (P0.5)")
 (namespace "ouronet-ns")

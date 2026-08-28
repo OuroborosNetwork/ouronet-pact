@@ -74,6 +74,24 @@ permanent proof `SWP|TX 032z8e`). Small, disclosed gas cost on the tracked check
 `URC_OuroPrimordialPrice`'s dollar-denominated math flagged as a likely-identical, unverified follow-up,
 out of scope here. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`'s `#73C` entry. — *#73C*
 
+#74 **[SWPI]** `UEV_Issue` has no check that a caller's `pool-tokens` list contains no repeated token ID
+(e.g. issuing a nominal 3-token pool as `[OURO, OURO, W1]`) — **VERIFIED SAFE, DESIGN, documented
+2026-08-29.** Checked live, not assumed: issuing `[OURO, OURO, W1]` is cleanly rejected
+(whole-transaction-atomic, no partial pool state) — but the enforce that fires is
+`U|LST::UC_IzUnique`, reached via `SWPI::XE_IssueWrite → TFT::C_MultiTransfer`, **not** anything
+inside `UEV_Issue`/`16_SWPI.pact` itself. Deliberate design, confirmed directly by the owner: no
+local check was ever added because `C_MultiTransfer`'s own uniqueness guard on its transfer list
+already makes one redundant — composed protection, not an oversight, and the efficient choice
+(don't re-validate what a shared dependency already guarantees). Verified this isn't incidental to
+one path: `XE_IssueWrite` is the shared chokepoint for both real issuance routes (`SWPI::C_Issue`
+single-tx and `MTX-SWP::C_Issue` defpact-based, unified at Fix #22/M5), so the protection covers
+both. Documented rather than left implicit, since the guarantee depends on an implementation detail
+one module down that could silently change: added a `@doc` to `UEV_Issue` recording exactly where
+the protection lives and why, plus a new permanent regression proof (`SWP|TX 032o3`) reproducing
+the live rejection so a future refactor of how deposits are collected can't quietly drop it
+unnoticed. No functional code changed. Full writeup in `ROUND-01-OWNER-FEEDBACK.md`'s `#74` entry. —
+*#74*
+
 #4C **[SWPU]** ~~`C_ToggleSwapCapability` has no ownership check anywhere in its call chain — any account
 can disable swapping on any pool, a free, unauthenticated, protocol-wide DoS.~~ — **REFUTED 2026-08-17.**
 The write path (`SWP::C_ToggleAddOrSwap` → `XE_CanAddOrSwapToggle`) is gated by `SWP|C>ADD-OR-SWAP`, which
