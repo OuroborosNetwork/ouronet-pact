@@ -1204,7 +1204,7 @@
                     [12953 12954 12955 12956 12957 12958 12959 12960]
                     37
                 )
-                (format "Score with built in Multiplier is {}" [(ref-DPDC-S::UR_N|Score id false 12961)]) ;;2199718.99236
+                (format "Score with built in Multiplier is {}" [(ref-DPDC-S::URC_N|Score id false 12961)]) ;;2199718.99236
             )
             (do
                 (ouronet-ns.TS02-C2.DPNF|C_Make
@@ -1242,7 +1242,7 @@
                     [12953 12954 12955 12956]
                     38
                 )
-                (format "Score with built in Multiplier is {}" [(ref-DPDC-S::UR_N|Score id false 12957)]) ;;2199718.99236
+                (format "Score with built in Multiplier is {}" [(ref-DPDC-S::URC_N|Score id false 12957)]) ;;2199718.99236
             )
         )
         

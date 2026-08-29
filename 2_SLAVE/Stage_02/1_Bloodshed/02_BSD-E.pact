@@ -268,7 +268,7 @@
                                     IR-L
                                     (format "Bloodshed Epic #{}" [p])
                                     d-l
-                                    (ref-DPDC-UDC::UDC_ScoreMetaData (ES p) (E-x p))
+                                    (ref-DPDC-UDC::UDC_NonceMetaData (ES p) [0] (E-x p))
                                     type
                                     (ref-DPDC-UDC::UDC_URI|Data (EpicLink p true) b b b b b b)
                                     (ref-DPDC-UDC::UDC_URI|Data (EpicLink p false) b b b b b b)

@@ -335,7 +335,7 @@
                                     IR-L
                                     (format "Bloodshed Legendary #{}" [p])
                                     d-l
-                                    (ref-DPDC-UDC::UDC_ScoreMetaData (LS p) (L-x p))
+                                    (ref-DPDC-UDC::UDC_NonceMetaData (LS p) [0] (L-x p))
                                     type
                                     (ref-DPDC-UDC::UDC_URI|Data (LegendaryLink p true) b b b b b b)
                                     (ref-DPDC-UDC::UDC_URI|Data (LegendaryLink p false) b b b b b b)

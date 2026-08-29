@@ -52,9 +52,13 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
       `AQP-FVT|INFO_SetSplitMode`; interface declares the reader + setter. Full `Z.repl` green (542 asserts).
       Switch-mechanism test `REPL/Stage_02/[6.2.11]_AQP-SPLIT-MODE.repl` (default pipeline): default mode,
       free bidirectional switch, invalid-mode + farm-only guards — 5 asserts green. Commits 78553c9, 1f3e3ed.
-    - **DEFERRED: economic-flip proof** (same-member W_i STAKED vs TVL on the real `OuroLpFarm`) — blocked by
-      the citizen-drift below (all full-boot runners are red). Ready-made TX preserved in
-      `03_AQP/Audit/SPLIT-MODE-ECONOMIC-PROOF-DEFERRED.md`; re-add to `[6.2.9]` once the boot is green.
+    - **Non-farm sentinel (owner 2026-08-29):** `C_Issue` takes no split-mode arg (auto-set). Farms →
+      `SPLIT|STAKED` default; vaults/treasuries → `"|"` (`CT_SPLIT_MODE_NA`) sentinel — never read, and
+      `C_SetSplitMode` rejects non-farms.
+    - **Economic-flip proof: DONE + green** — `[6.2.9]` `TX-BOOT-13-SPLIT` on the real `OuroLpFarm` triplet
+      member: same member, W_i = **0** under `SPLIT|STAKED` (no LP staked yet) vs **7920.17** under
+      `SPLIT|TVL` (= whole-pool `UR_StoaValue`); restoring STAKED returns the staked weight. Unblocked by
+      fixing the 0.3a citizen-drift. `AQP-comprehensive.repl` green (371+44 asserts).
 
 - [x] **D2 — Heir System — SETTLED: DEFERRED to STAGE 3** (owner 2026-08-29). Not part of this plan;
       handled after everything here ships. See the STAGE 3 section below. Background retained:
@@ -85,16 +89,17 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
       `bash REPL/run-aqp-audit.sh` (15 suites) + `pact Z.repl` (Stage 00/01/02) +
       `pact aqp-info-groundtruth.repl` (TF/OF/SF cost-equality) + `pact AQP-FULL.repl`
       (non-destructive core). Everything must be green before touching anything else.
-- [ ] **0.3a ⚠ DISCOVERED DEFECT (2026-08-29, found during task #89): Bloodshed citizen-module drift
-      blocks every full-boot suite.** The Bloodshed modules call `DPDC-UDC::UDC_ScoreMetaData`, which
-      **DPDC audit #45L REMOVED** (the `NonceMetaData` model dropped the score field). 4 sites:
-      `2_SLAVE/Stage_02/1_Bloodshed/{01_BSD-L:338, 02_BSD-E:271, 03_BSD-R:295, 04_BSD-C:370}.pact`. Any
-      runner that boots the full `OuroLpFarm` (`AQP-comprehensive`, `AQP-FULL`, `aqp-info-groundtruth`,
-      `triplet-*`, `deb-staleness-*`) dies at `[5.2]_PopulateBloodshed` (Nosferatu populate likely also
-      affected — probe cascaded). **This is why Phase 0.3's `aqp-info-groundtruth`/`AQP-FULL` gates are
-      currently red.** Migration = a Bloodshed/DPDC design call (what post-#45L metadata should be), not a
-      mechanical rename → a **citizen-module fix** (fold into Phase 1.5 / DPDC carry-over). Must be fixed
-      before 0.3's full-boot gates pass; it also unblocks the deferred #89 economic-flip proof.
+- [x] **0.3a ✅ FIXED (2026-08-29): full-boot-suite drift from DPDC audit renames.** Two pre-existing
+      citizen/test drifts that blocked every `OuroLpFarm` boot, found + fixed during task #89:
+      (1) **Bloodshed** called `DPDC-UDC::UDC_ScoreMetaData`, which **DPDC #45L removed** — but the audit
+      wrongly believed it had zero callers (it missed the 4 citizen callers). Fix is behavior-identical:
+      inline its old one-liner `UDC_NonceMetaData score [0] meta` at
+      `2_SLAVE/Stage_02/1_Bloodshed/{01_BSD-L, 02_BSD-E, 03_BSD-R, 04_BSD-C}.pact` (audit-respecting: the
+      `composition=[0]` footgun stays out of sovereign; `[0]` is correct for Bloodshed's mint path).
+      (2) **`[5.2]_PopulateBloodshed.repl`** called `DPDC-S::UR_N|Score`, renamed to `URC_N|Score` by
+      DPDC #19H (2 active refs). `AQP-comprehensive.repl` now green (371+44 asserts). **Lesson for the
+      citizen-migration work (Phase 1.5): DPDC audits only checked sovereign callers — sweep 2_SLAVE +
+      test files for every renamed/removed DPDC symbol.**
 - [ ] **0.4 Discover LIVE interface versions (early — informs the Phase 7 bump).** Read the currently
       **deployed** Ouronet modules on-chain (Pythia keyless dirty-read —
       `OuronetInformational/pythia-dirty-read-access.md`) and record which interface version each live

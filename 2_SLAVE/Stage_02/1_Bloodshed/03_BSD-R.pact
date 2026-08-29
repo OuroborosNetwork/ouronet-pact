@@ -292,7 +292,7 @@
                                     IR-L
                                     (format "Bloodshed Rare #{}" [p])
                                     d-l
-                                    (ref-DPDC-UDC::UDC_ScoreMetaData (RS p) (R-x p))
+                                    (ref-DPDC-UDC::UDC_NonceMetaData (RS p) [0] (R-x p))
                                     type
                                     (ref-DPDC-UDC::UDC_URI|Data (RareLink p true) b b b b b b)
                                     (ref-DPDC-UDC::UDC_URI|Data (RareLink p false) b b b b b b)

@@ -361,8 +361,8 @@
         mosaic:bool                                             ;;[Mu]  mix score + triplet entities when true
         membership-mode:string                                  ;;[Mu]  BAR | SCORE | TRUE-TRIPLET | STANDARD-TRIPLET
         oracle-on:bool                                          ;;[M]   DSA: node/uptime oracle governs capture (off ⇒ capture = units, uptime ≡ 1000, no expiry). Default false.
-        split-mode:string                                       ;;[M]   Farm reward-split (D1-G2): SPLIT|STAKED (participation, default) | SPLIT|TVL (pool-size). The
-        ;;                                                              Level-2 W_i source at inject. Farm (class 0) only; vault/treasury store the default but never consult it.
+        split-mode:string                                       ;;[M]   Farm reward-split (D1-G2): SPLIT|STAKED (participation, farm default) | SPLIT|TVL (pool-size). The
+        ;;                                                              Level-2 W_i source at inject. Farm (class 0) only; vault/treasury store the "|" (CT_SPLIT_MODE_NA) sentinel, never consulted.
         ;;
         ;;Select Keys
         fvt-id:string
@@ -724,8 +724,9 @@
     (defconst CT_MEMBERSHIP_MODE_TRUE_TRIPLET                   "TRUE-TRIPLET")
     (defconst CT_MEMBERSHIP_MODE_STANDARD_TRIPLET               "STANDARD-TRIPLET")
     ;; Farm reward-split modes (D1-G2). Level-2 W_i source at inject; per-farm, freely mutable.
-    (defconst CT_SPLIT_MODE_STAKED                             "SPLIT|STAKED") ;; Variant 1 — participation (default): W_i = member STAKED value (URC_MemberStakedStoaValue)
+    (defconst CT_SPLIT_MODE_STAKED                             "SPLIT|STAKED") ;; Variant 1 — participation (farm default): W_i = member STAKED value (URC_MemberStakedStoaValue)
     (defconst CT_SPLIT_MODE_TVL                                "SPLIT|TVL")    ;; Variant 2 — pool-size: W_i = whole swpair TVL (UR_StoaValue)
+    (defconst CT_SPLIT_MODE_NA                                 "|")            ;; sentinel — split-mode is farm-only; vaults/treasuries store this and never consult it
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -3774,7 +3775,9 @@
         (WI_Fvt fvt-id
             (UDC_FVT|Schema
                 fvt-class owner-konto true true common-denominator
-                0.0 0.0 0.0 0.0 0 0 0 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_STAKED fvt-id
+                0.0 0.0 0.0 0.0 0 0 0 true CT_MEMBERSHIP_MODE_BAR false
+                ;; split-mode: farm (class 0) default participation; vault/treasury get the "|" sentinel (never read)
+                (if (= fvt-class 0) CT_SPLIT_MODE_STAKED CT_SPLIT_MODE_NA) fvt-id
             )
         )
     )
@@ -6716,7 +6719,7 @@
             (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_STAKED fvt-id)
+                        (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
@@ -6739,7 +6742,7 @@
             (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 2 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_STAKED fvt-id)
+                        (UDC_FVT|Schema 2 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_NA fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)

@@ -367,7 +367,7 @@
                                     IR-L
                                     (format "Bloodshed Common #{}" [p])
                                     d-l
-                                    (ref-DPDC-UDC::UDC_ScoreMetaData (CS p) (C-x p))
+                                    (ref-DPDC-UDC::UDC_NonceMetaData (CS p) [0] (C-x p))
                                     type
                                     (ref-DPDC-UDC::UDC_URI|Data (CommonLink p true) b b b b b b)
                                     (ref-DPDC-UDC::UDC_URI|Data (CommonLink p false) b b b b b b)

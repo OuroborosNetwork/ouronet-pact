@@ -522,4 +522,57 @@
 (env-sigs [])
 (commit-tx)
 (print "")
+;;
+(begin-tx "TX-BOOT-13-SPLIT - dual reward-split ECONOMIC flip on OuroLpFarm (task #89 / D1-G2)")
+(print "")
+(print "=== TX-BOOT-13-SPLIT — the SAME member's W_i flips STAKED<->TVL on the real LP farm ==")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; The OuroLpFarm has a live LP triplet member (Step11) on a seeded swpair (Step08b, StoaValue > 0).
+;; URC_MemberLevel2Weight is the mode-aware Level-2 W_i: SPLIT|STAKED => member staked value;
+;; SPLIT|TVL => whole-pool TVL. Proven here on ONE real member: the weight changes with the mode,
+;; TVL mode == UR_StoaValue, and restoring STAKED returns the staked weight (switch re-weights only
+;; future injects). let* binds run in order, so the two C_SetSplitMode writes sequence the reads.
+(let*
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "OuroLpFarm"))
+        (members:[string] (ref-FVT::URH_FvtEnabledScoreEntityIdsForFvt farm-id))
+        (m:string (at 0 members))
+        (mtype:integer (ref-FVT::UR_FVT-SEL|ScoreEntityType farm-id m))
+        (swp:string (ref-FVT::UR_FVT-SEL|Swpair farm-id m))
+        (tvl:decimal (ref-SWP::UR_StoaValue swp))
+        ;; default mode (SPLIT|STAKED) — member staked value
+        (w-staked:decimal (ref-FVT::URC_MemberLevel2Weight farm-id mtype m swp))
+        ;; flip to SPLIT|TVL — whole-pool TVL
+        (set-tvl:string (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "SPLIT|TVL"))
+        (w-tvl:decimal (ref-FVT::URC_MemberLevel2Weight farm-id mtype m swp))
+        ;; restore SPLIT|STAKED
+        (set-staked:string (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "SPLIT|STAKED"))
+        (w-restored:decimal (ref-FVT::URC_MemberLevel2Weight farm-id mtype m swp))
+    )
+    (map print
+        [
+            (format "<(farm member)> => {} type={} swpair={}" [m mtype swp])
+            (format "<(URC_MemberLevel2Weight)> STAKED={} TVL={} (StoaValue={})" [w-staked w-tvl tvl])
+            (expect
+                (format "<<TX-BOOT-13-SPLIT>> seeded swpair TVL > 0 got={}" [tvl]) true (> tvl 0.0))
+            (expect
+                (format "<<TX-BOOT-13-SPLIT>> SPLIT|TVL W_i == whole-pool TVL got={} expected={}" [w-tvl tvl]) tvl w-tvl)
+            (expect
+                (format "<<TX-BOOT-13-SPLIT>> SAME member W_i differs by mode (STAKED {} != TVL {})" [w-staked w-tvl]) true (!= w-staked w-tvl))
+            (expect
+                (format "<<TX-BOOT-13-SPLIT>> restoring SPLIT|STAKED returns the staked W_i got={} expected={}" [w-restored w-staked]) w-staked w-restored)
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-BOOT-13-SPLIT ==================================================")
+(print "")
 (print "=== END [6.2.9]_AQP-BOOT-FULL.repl =========================================")
