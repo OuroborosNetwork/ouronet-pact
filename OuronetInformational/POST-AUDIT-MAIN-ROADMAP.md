@@ -47,6 +47,14 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
       numerator (line 2286): `(if (= split-mode SPLIT|TVL) URC_ResolveScoreEntityGhostWeight
       URC_MemberStakedStoaValue)`. Task #89 must ALSO reconcile the fresh-vs-cached-S defcap-gate wrinkle
       (NOTE 1849–1853) for BOTH modes. The reward preview (INFO) reports the mode.
+    - **STATUS (2026-08-29): IMPLEMENTED + green.** `04_FVT.pact` (schema field, `URC_MemberLevel2Weight`
+      routing all 3 W_i sites, `C_SetSplitMode`/cap/XI/WU/GAS), Talos `AQP-FVT|C_SetSplitMode`, INFO
+      `AQP-FVT|INFO_SetSplitMode`; interface declares the reader + setter. Full `Z.repl` green (542 asserts).
+      Switch-mechanism test `REPL/Stage_02/[6.2.11]_AQP-SPLIT-MODE.repl` (default pipeline): default mode,
+      free bidirectional switch, invalid-mode + farm-only guards — 5 asserts green. Commits 78553c9, 1f3e3ed.
+    - **DEFERRED: economic-flip proof** (same-member W_i STAKED vs TVL on the real `OuroLpFarm`) — blocked by
+      the citizen-drift below (all full-boot runners are red). Ready-made TX preserved in
+      `03_AQP/Audit/SPLIT-MODE-ECONOMIC-PROOF-DEFERRED.md`; re-add to `[6.2.9]` once the boot is green.
 
 - [x] **D2 — Heir System — SETTLED: DEFERRED to STAGE 3** (owner 2026-08-29). Not part of this plan;
       handled after everything here ships. See the STAGE 3 section below. Background retained:
@@ -77,6 +85,16 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
       `bash REPL/run-aqp-audit.sh` (15 suites) + `pact Z.repl` (Stage 00/01/02) +
       `pact aqp-info-groundtruth.repl` (TF/OF/SF cost-equality) + `pact AQP-FULL.repl`
       (non-destructive core). Everything must be green before touching anything else.
+- [ ] **0.3a ⚠ DISCOVERED DEFECT (2026-08-29, found during task #89): Bloodshed citizen-module drift
+      blocks every full-boot suite.** The Bloodshed modules call `DPDC-UDC::UDC_ScoreMetaData`, which
+      **DPDC audit #45L REMOVED** (the `NonceMetaData` model dropped the score field). 4 sites:
+      `2_SLAVE/Stage_02/1_Bloodshed/{01_BSD-L:338, 02_BSD-E:271, 03_BSD-R:295, 04_BSD-C:370}.pact`. Any
+      runner that boots the full `OuroLpFarm` (`AQP-comprehensive`, `AQP-FULL`, `aqp-info-groundtruth`,
+      `triplet-*`, `deb-staleness-*`) dies at `[5.2]_PopulateBloodshed` (Nosferatu populate likely also
+      affected — probe cascaded). **This is why Phase 0.3's `aqp-info-groundtruth`/`AQP-FULL` gates are
+      currently red.** Migration = a Bloodshed/DPDC design call (what post-#45L metadata should be), not a
+      mechanical rename → a **citizen-module fix** (fold into Phase 1.5 / DPDC carry-over). Must be fixed
+      before 0.3's full-boot gates pass; it also unblocks the deferred #89 economic-flip proof.
 - [ ] **0.4 Discover LIVE interface versions (early — informs the Phase 7 bump).** Read the currently
       **deployed** Ouronet modules on-chain (Pythia keyless dirty-read —
       `OuronetInformational/pythia-dirty-read-access.md`) and record which interface version each live
