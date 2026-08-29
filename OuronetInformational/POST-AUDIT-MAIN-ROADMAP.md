@@ -39,7 +39,9 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
 - [ ] **1.2** Walk modules **in deploy order, Stage-1 module #1 first**. Per module: extract each
       cost-emitting `XE_`/`XI_`'s cumulator into a **leaf `URCi_*`** the leaf returns; add a
       **composer `URCi_*`** per `C_`/`CC_`/`A_`. Token modules (TFT/DPOF/DPDC-T) already have
-      cost ctors → formalize as `URCi`.
+      cost ctors → formalize as `URCi`. **Any `URCi_*` called CROSS-MODULE gets an interface declaration in the same edit** (modref
+      resolution is dynamic — undeclared works but loses load-time safety; see memories/2026-08-29-
+      modref-interface-semantics.md). Internal-only leaves stay out.
 - [ ] **1.3** Keep a running line-count check per module (rule B) as `URCi`s are added.
 - [ ] **1.4 StoicSyntax renames carried over from audits** (do during the per-module walk):
       **DPDC #40L** — `Wipe*` family (Heavy/Pure/Clean/Dirty) rename/rethink; **ATS #31L** — Talos
@@ -143,7 +145,10 @@ after all code is final — never repeatedly. Spec: `ARCHITECTURE/INTERFACE_VERS
 - [ ] **7.2 Cascade refactor (BIG — whole codebase; task #85).** Per the cascade rule: every interface
       that names a bumped one (`module{B}` / `object{B.Schema}`) must itself bump, and EVERY consumer
       updates its `ref-`/`implements` to the new version, **in lockstep**. Interfaces are pervasive, so
-      this touches most of the codebase — a distinct large refactor. Mechanical (rename + rewire), so it
+      this touches most of the codebase — a distinct large refactor. (NB the cascade is triggered by
+      interface CHANGES — added members + interface-owned schema/type refs — NOT by every function; a
+      modref call resolves dynamically. Policy: declare per cross-module fn, bump per interface, ONCE
+      here. See memories/2026-08-29-modref-interface-semantics.md.) Mechanical (rename + rewire), so it
       lands after the red team (logic is final); do it, then re-gate.
 - [ ] **7.3 Deploy-ready gate:** whole-codebase single run (5.3) green + all audits closed + book
       assembled + every module within the deploy ceiling (rule B; FVT split done) + version bump green.
