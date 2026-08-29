@@ -7,12 +7,15 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
 - **`main`** already contains this session's work: AQP-INFO (10/17 stake-unstake+finalize/abort,
   ground-truth-proven), the unified single-boot test seed (`AQP-FULL.repl`), the transitive-heavy
   reclassification (`CC_`/`CCp_`) + `C_Inject` deletion, pact-5.4.1 note, and all the design docs.
-- **Audit worktrees to merge:** `dpdc`, `dptf-dpof`, `swp`, and `ats` (tasks #21 SWP, #23 ATS).
+- **Audit worktrees:** ✅ ALL MERGED to main + reconciled + green — `ats`, `dpdc` (`7efe386`),
+  `swp` (`cc230d5`), `dptf-dpof`/DALOS (`07556e1`). All worktrees archived (branches preserved).
+  Each audit's carry-over folded into the AUDIT CARRY-OVER section + placed in its phases. **Phase 0.1
+  complete.** Remaining Phase 0: 0.4 (discover live interface versions — do anytime) then start Phase 1.
 
 ---
 
 ## PHASE 0 — Merge audits + reconcile + green-gate  ⟵ START HERE
-- [ ] **0.1** Merge `dpdc`, `dptf-dpof`, `swp`, `ats` worktrees → `main` (one at a time).
+- [x] **0.1** Merge `dpdc`, `dptf-dpof`, `swp`, `ats` worktrees → `main` (one at a time). ✅ ALL DONE.
 - [ ] **0.2** ⚠ **Reconcile conflicts.** The DPDC / DPTF-DPOF / SWP audits touch the SAME token
       modules my on-main work references: the AQP-INFO transfer-leg reconstruction calls
       `TFT.UDC_TransferCumulator` / `URC_TransferClasses`, `DPOF.UC_MoveCumulator`,
