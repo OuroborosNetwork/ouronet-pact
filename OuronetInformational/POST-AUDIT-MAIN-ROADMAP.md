@@ -31,9 +31,22 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
     - **`SPLIT|TVL`** (Variant 2, *pool-size* — the Vesta/MultiversX model): `W_i` = the swpair TVL
       (`SWP::UR_StoaValue` — already stored + refreshed on pool events, captured at inject). Bigger pools
       capture bigger slices. E.g. pools 1M/250k/150k → 1.0/1.4, 0.25/1.4, 0.15/1.4.
-    - **What's built:** Variant 2 ≈ current impl. Variant 1 needs the per-pool staked-value aggregate
-      (the H5 staked-amount total is most of the plumbing). Names pending final owner confirm. The INFO/
-      reward preview reports which mode a farm uses.
+    - **What's built (verified in code 2026-08-29):** the AQP LP-redesign audit HARD-SWITCHED the live
+      inject to Variant 1 — `URC_FarmInjectDenominatorFresh` (1693) sums `URC_MemberStakedStoaValue`
+      (1784) = staked-portion value, computed FRESH at inject (no cache; base-dependent). Variant 2's
+      formula still exists as `URC_ResolveScoreEntityGhostWeight` (1854) = `UR_StoaValue` (whole-pool
+      TVL) but is DORMANT — only seeds the legacy `total-ghost-tvl-weight` cache the defcap gate reads.
+      So today = single-mode Variant 1; **no toggle was ever built.** The variants never coexisted —
+      the audit *replaced* TVL to fix the negative-score bug (#7) + a cache-timing bug (S synced at
+      stake-2.1, before base updated at 4 → stale defcap S).
+    - **MECHANISM — settled (owner 2026-08-29):** a **per-farm (`FVT|T`) flag**, **freely mutable** via
+      a setter (`C_SetSplitMode` + Talos wrapper + cap + gas + INFO), **default `SPLIT|STAKED`** (= current
+      live behavior). No cooldown — switching only affects FUTURE injects (RPS is checkpoint-based; past
+      rewards untouched); transparency is the mitigant (staker sees the farm's current mode in its params).
+      Since W_i is fresh-at-inject, wiring is one branch in `URC_FarmInjectDenominatorFresh` + the matching
+      numerator (line 2286): `(if (= split-mode SPLIT|TVL) URC_ResolveScoreEntityGhostWeight
+      URC_MemberStakedStoaValue)`. Task #89 must ALSO reconcile the fresh-vs-cached-S defcap-gate wrinkle
+      (NOTE 1849–1853) for BOTH modes. The reward preview (INFO) reports the mode.
 
 - [x] **D2 — Heir System — SETTLED: DEFERRED to STAGE 3** (owner 2026-08-29). Not part of this plan;
       handled after everything here ships. See the STAGE 3 section below. Background retained:
