@@ -44,7 +44,7 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
       bump needed, pre-mainnet); **SWP** — `KDA-PID`→`STOA-PID` (L58), `URC_Swap`/`URC_InverseSwap`→
       `URCv_Swap`/`URCv_InverseSwap` (L64), `UC_ComputeInverseY`→`v`-specialization, and rename the
       existing `AHU`/`AUP_*` instances to the new `AU_` prefix (the audit added `AU_` to StoicSyntax).
-      Add more as DPTF-DPOF lands.
+      **DALOS** — a repeated shape flagged for a dedicated sweep (Audit/DALOS README "Downstream plan" phase 3b).
 
 ## PHASE 2 — INFO rehaul: COMPLETE coverage + consolidate (not just AQP)
 The INFO rehaul is **total** — every client/admin entrypoint across the WHOLE codebase gets an INFO
@@ -100,7 +100,7 @@ to main. This phase closes the coverage gap repo-wide AND lands the single-compr
       entrypoint, in the required layout (`REPL_AND_TESTS.md`). Untested code ships bugs — this is
       correctness, not polish. **Carried-over coverage gaps to fold in:** ATS `#22L` (12 config
       `C_`/`A_` fns; wire `[6.6]_ATS.repl` past the #12a dup-MVST block), DPDC `#41L/#42L` (branding +
-      ownership-gate); + SWP/DPTF-DPOF gaps as they land.
+      ownership-gate); DALOS **H16** + PYTHIA `#49M` (flush-gas-probe broken batch sizes) + other DALOS ROUND-02 coverage gaps.
 - [ ] **5.3** **Single comprehensive run — the whole codebase, one boot.** Generalize `AQP-FULL.repl`
       from AQP to **everything**: one hermetic run that boots once and exercises ALL Pact code (Stage 1
       + Stage 2 + slaves + `Z_Reads` INFO). Requires the hermetic fixture isolation from the AQP
@@ -263,7 +263,27 @@ Signatures Stage-2 (DSA `A_Fuel(swpair)`) calls into SWP verified intact (11/11 
 - [ ] Optional (unscheduled): router direct-pair fast-path — `URC_HopperActive` builds the full graph
       even when a direct A→B pool exists (Kaddex short-circuits); pure gas optimization, not a bug.
 - [ ] Moot: live-vs-local Pythia diff — ruled moot by owner (full redeploy planned anyway).
-### DPTF-DPOF audit — TO FOLD AT MERGE (worktree `dptf-dpof`; watch for the DeployAccount no-ownership-check shape flagged by DPDC)
+### DALOS / "rest of Stage 1" audit (the `dptf-dpof` worktree) — carried over (MERGED, `07556e1`; source: `1_SOVEREIGN/STAGE_01/2_Core/Audit/DALOS/`)
+Broad audit of **everything in Stage 1 not claimed by ATS/SWP** — DALOS, DPTF/DPOF/TFT, IGNIS,
+ELITE, DPMF, ELITE, utilities (U_CT/LST/INT/DEC/DALOS/VST), OUROBOROS, CODEX/PYTHIA, TS01 Talos,
++ the interface cascade. All CRIT/HIGH/MED/LOW closed (fixed/refuted/finalized) except the deferrals
+below. Added `DPTF|A_DeployAccount` / `DPOF|A_DeployAccount` admin variants (no ownership check on
+`<account>`, for system-account deploys). Seam (TFT/DPOF/DPTF/IGNIS signatures my AQP-INFO calls)
+verified intact. Deferrals:
+- [ ] **⚠ REVIEW: TS02-DPAD DeployAccount reconciliation** — the merge combined *two* audits' fixes
+      (dptf-dpof `#N2` admin-variant for tf/of + DPDC `#35M` direct-`XB` for sf/nf). Correct by my
+      analysis (alternatives unbound / wrong-ownership) but it's a judgment merge — worth an owner glance.
+- [ ] **H11 → Phase 2 (INFO):** deferred to the main-branch INFO-function project. **The audit
+      independently scoped OUR Phase 2** (its README "INFO-function coverage project" downstream phase +
+      `memories/2026-08-24-info-functions-are-ui-facing-not-dead-code.md`) — strong validation of task #78.
+- [ ] **H16 + REPL-coverage gaps → Phase 5.2:** deferred to the main-branch REPL test-infra phase
+      (e.g. PYTHIA `#49M` flush-gas-probe broken batch sizes; other coverage gaps flagged in ROUND-02).
+- [ ] **H17 → Phase 7 (redeploy):** finalized as a status note, folded into the redeploy phase.
+- [ ] **Pattern sweep → Phase 1:** a repeated shape flagged for a dedicated main-branch sweep
+      (README "Downstream plan" phase 3b) rather than piecemeal fixes.
+- [ ] Note: oracle (Aletheia) wiring explicitly deferred until an oracle is available (future feature;
+      ties to SWP's `KDA-PID`→`STOA-PID`). DALOS-family interfaces are pre-mainnet V1/V7, edited freely
+      (no bump) — informs the Phase 0.4/7 version map (ATS/SWP interface versions were out of this audit's scope).
 
 ---
 
