@@ -1,0 +1,177 @@
+;;
+;; REPL/Stage_02/[6.2.11]_AQP-SPLIT-MODE.repl — AQP-FVT dual reward-split mode (D1-G2, task #89).
+;; Proves the per-farm SPLIT|STAKED / SPLIT|TVL toggle: the default mode, FREE (no-cooldown)
+;; bidirectional switching, the UR_FVT|SplitMode reader, and the two feature-specific guards
+;; (farm-class-0 only; the mode value must be SPLIT|STAKED or SPLIT|TVL). Switching only ever
+;; re-weights FUTURE injects (RPS is checkpoint-based), so a bare class-0 farm proves the switch
+;; mechanism + validation deterministically. The economic W_i flip (member staked value vs whole-pool
+;; TVL) rides on URC_MemberLevel2Weight, exercised by the full-boot farm inject path.
+;; Source: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/04_FVT.pact (C_SetSplitMode / FVT|C>SET-SPLIT-MODE /
+;;         URC_MemberLevel2Weight); Talos 3_Talos/04_TS02-C3.pact (AQP-FVT|C_SetSplitMode).
+;; Loaded by REPL/Stage_02/[6.2]_AQP.repl after [6.2.10]. Assumes the [6.2.1-5] entities exist
+;; (the class-1 vault "TfStakeVault" is reused for the farm-only rejection).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_02/[6.2.11]_AQP-SPLIT-MODE.repl")
+(print "================================================================")
+(print "Legend: <<TX-SPLIT-*>> — split-mode setter / reader / guard assertions.")
+(print "")
+;;
+(begin-tx "TX-SPLIT-01 - issue bare class-0 farm; default split-mode = SPLIT|STAKED")
+(print "")
+(print "=== TX-SPLIT-01 — issue class-0 farm + default-mode reader ======================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD)
+        (owner-konto:string KST.ANHD)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (farm-name:string "SplitModeFarm")
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "SplitModeFarm"))
+        ;; a class-0 farm's common-denominator must be a real DPTF (FVT|C>ISSUE-FVT runs UEV_id);
+        ;; a members-less farm never consults it, so the existing OURO token is a valid placeholder.
+        (denominator-id:string "OURO-98c486052a51")
+        (split-kda:[decimal]
+            (ref-DALOS::URC_SplitKDAPrices patron (* 3.0 (ref-DALOS::UR_UsagePrice "smart"))))
+    )
+    ;;==== TX-SPLIT-01 · 01 · env-sigs (KDA fuel for FVT issue — smart fee split) ====
+    (print "--- [TX-SPLIT-01 · 01 · env-sigs + smart fee split] ---")
+    (env-sigs
+        [
+            { "key": "PK_AncientHodler", "caps": [] }
+            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+              "caps":
+                [
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                        (at 2 split-kda))
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                        (at 0 split-kda))
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                        (at 3 split-kda))
+                    (coin.TRANSFER
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                        (at 1 split-kda))
+                ]
+            }
+        ]
+    )
+    ;;==== TX-SPLIT-01 · 02 · issue bare class-0 farm ====
+    (print "--- [TX-SPLIT-01 · 02 · issue class-0 farm] ---")
+    (print (format "<(AQP-FVT|C_Issue class=0 SplitModeFarm)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|C_Issue patron farm-name owner-konto 0 denominator-id)]))
+    ;;==== TX-SPLIT-01 · 03 · default split-mode reader ====
+    (print "--- [TX-SPLIT-01 · 03 · default split-mode] ---")
+    (let ((mode:string (ref-FVT::UR_FVT|SplitMode farm-id)))
+        (map print
+            [
+                (format "<(AQP-FVT|UR_FVT|SplitMode)> => \"{}\"" [mode])
+                (expect
+                    (format "<<TX-SPLIT-01 expect>> default split-mode got={} expected=SPLIT|STAKED" [mode])
+                    "SPLIT|STAKED" mode)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-SPLIT-01 =====================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-SPLIT-02 - free bidirectional switch STAKED <-> TVL (no cooldown)")
+(print "")
+(print "=== TX-SPLIT-02 — switch to SPLIT|TVL, then back to SPLIT|STAKED (freely) =========")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "SplitModeFarm"))
+    )
+    ;;==== TX-SPLIT-02 · 01 · switch to SPLIT|TVL ====
+    (print "--- [TX-SPLIT-02 · 01 · set SPLIT|TVL] ---")
+    (print (format "<(AQP-FVT|C_SetSplitMode SPLIT|TVL)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "SPLIT|TVL")]))
+    (let ((mode-tvl:string (ref-FVT::UR_FVT|SplitMode farm-id)))
+        (map print
+            [
+                (format "<(AQP-FVT|UR_FVT|SplitMode)> after set TVL => \"{}\"" [mode-tvl])
+                (expect
+                    (format "<<TX-SPLIT-02 expect>> split-mode got={} expected=SPLIT|TVL" [mode-tvl])
+                    "SPLIT|TVL" mode-tvl)
+            ]
+        )
+    )
+    ;;==== TX-SPLIT-02 · 02 · switch back to SPLIT|STAKED (no cooldown — immediate) ====
+    (print "--- [TX-SPLIT-02 · 02 · set SPLIT|STAKED again] ---")
+    (print (format "<(AQP-FVT|C_SetSplitMode SPLIT|STAKED)> => \"{}\""
+        [(ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "SPLIT|STAKED")]))
+    (let ((mode-staked:string (ref-FVT::UR_FVT|SplitMode farm-id)))
+        (map print
+            [
+                (format "<(AQP-FVT|UR_FVT|SplitMode)> after set STAKED => \"{}\"" [mode-staked])
+                (expect
+                    (format "<<TX-SPLIT-02 expect>> split-mode got={} expected=SPLIT|STAKED (free re-switch)" [mode-staked])
+                    "SPLIT|STAKED" mode-staked)
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-SPLIT-02 =====================================================")
+(print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-SPLIT-03 - guards: invalid mode value + farm-class-0-only rejected")
+(print "")
+(print "=== TX-SPLIT-03 — set-split-mode guards (invalid value; non-farm) ================")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (farm-id:string (ref-U|DALOS::UDC_Makeid "SplitModeFarm"))
+        ;; class-1 vault from [6.2.4] — owner = ANHD (so ownership passes; farm-only is the isolated cause)
+        (vault-id:string (ref-U|DALOS::UDC_Makeid "TfStakeVault"))
+    )
+    (map print
+        [
+            ;;==== TX-SPLIT-03 · 01 · invalid mode value rejected ====
+            (expect-failure
+                (format "<<TX-SPLIT-03>> invalid split-mode value 'BOGUS' rejected (must be SPLIT|STAKED/SPLIT|TVL)" [])
+                (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron farm-id "BOGUS"))
+            ;;==== TX-SPLIT-03 · 02 · non-farm (class-1 vault) rejected ====
+            (expect-failure
+                (format "<<TX-SPLIT-03>> split-mode on a class-1 vault rejected (farm-class-0 only)" [])
+                (ref-TS02-C3::AQP-FVT|C_SetSplitMode patron vault-id "SPLIT|TVL"))
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END TX-SPLIT-03 =====================================================")
+(print "")
+(print "=== END FILE [6.2.11]_AQP-SPLIT-MODE.repl ====================================")
+(print "")
