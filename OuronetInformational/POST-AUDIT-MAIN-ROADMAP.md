@@ -17,7 +17,8 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
 ## PRE-PHASE DECISIONS — settle before starting the list
 Surfaced from the audit-folder scan. Resolve, then their outcome folds into the phases.
 
-- [ ] **D1 — AQP LP-scoring (`03_AQP/Audit/LP-SCORING-REDESIGN.md`).**
+- [x] **D1 — AQP LP-scoring — SETTLED (names confirmed 2026-08-29).** Both modes, per-farm toggle;
+      `SPLIT|STAKED` / `SPLIT|TVL` names confirmed by owner. Detail below → task #89.
   - **§6.2 negative-score fix: DONE** (Fix #7) — LP Level-1 score is now `lp-amount × mx` (amount,
     not fluctuating STOA value), so a full unstake nets to 0, no negative, no clamp. Only leftover: the
     dead `URC_LpAmountToLpDenominatorEquivalent` fn (uncalled) → **retire it in Phase 1 cleanup**. No decision.
@@ -34,7 +35,9 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
       (the H5 staked-amount total is most of the plumbing). Names pending final owner confirm. The INFO/
       reward preview reports which mode a farm uses.
 
-- [ ] **D2 — Heir System (`01_DPDC/Audit/HEIR-SYSTEM-PONDERING.md`).** Background: `repurpose` moves a
+- [x] **D2 — Heir System — SETTLED: DEFERRED to STAGE 3** (owner 2026-08-29). Not part of this plan;
+      handled after everything here ships. See the STAGE 3 section below. Background retained:
+      `repurpose` moves a
   holder's tokens to a new account **without their signature** — a deliberate account-recovery tool
   (stolen account / owner death → admin moves holdings to an account the owner/heirs control; admin-gated
   + event-logged, by design). The tension: every token-owner power (freeze/wipe/unfreeze/remint/burn/
@@ -259,6 +262,19 @@ so a brand-new reader understands what Ouronet is. Published with the Audit Book
       and a first-class **StoicSyntax methodology** chapter (how the prefix discipline made the code
       semi-self-auditing — "half-audited code"). Cross-ref the entrypoint catalog so nothing is missed.
 - [ ] **9.3 Publish** the documentation + the Audit Book into the site's Documentation + Audit region.
+
+---
+
+## STAGE 3 — future development (AFTER this entire plan ships)
+Beyond the scope of this roadmap (which finalizes + deploys Stage 1 + 2 and builds the UI/docs).
+Stage 3 is the next development stage, taken up **after everything here is done**. Owner-named scope:
+- **Heir System** — proactive heir designation + dead-man's inactivity switch (the D2 deferral;
+  detail in `01_DPDC/Audit/HEIR-SYSTEM-PONDERING.md`; consider DALOS-account-layer + guard-based).
+- **NFT Marketplace** — trade collectables (DPSF/DPNF) on Ouronet.
+- **Order-based exchange** — an order-book DEX (complements the AMM SWP pools).
+- **Lending Platform** — borrow/lend against Ouronet assets.
+Each is a new sovereign feature-set built on the finalized Stage-1/2 primitives; they'll get their own
+plans when Stage 3 begins. Captured here so the horizon isn't lost.
 
 ---
 
