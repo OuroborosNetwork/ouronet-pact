@@ -28,16 +28,15 @@
     ;;{G2}
     (defcap GOV ()                          (compose-capability (GOV|ELITE_ADMIN)))
     (defcap GOV|ELITE_ADMIN ()              (enforce-guard GOV|MD_ELITE))
-    (defcap GOV|ELITE_ADMIN-CALLER ()
-        (compose-capability (GOV|ELITE_ADMIN))
-        (compose-capability (P|ELITE|CALLER))
-    )
+    ;;#56L fix: removed GOV|ELITE_ADMIN-CALLER (defcap) and GOV|CollectiblesKey (defun,
+    ;;referencing an unrelated "dpdc-keyset") - two vestigial boilerplate items copied from the
+    ;;module sample template, confirmed zero references anywhere in the repo (including from
+    ;;other modules via ref-ELITE::). No functional change.
     ;;{G3}
     (defun GOV|Demiurgoi ()                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     ;;
     ;; [Keys]
     (defun GOV|NS_Use ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_NS_USE)))
-    (defun GOV|CollectiblesKey ()           (+ (GOV|NS_Use) ".dh_sc_dpdc-keyset"))
     ;;
     ;;<====>
     ;;POLICY

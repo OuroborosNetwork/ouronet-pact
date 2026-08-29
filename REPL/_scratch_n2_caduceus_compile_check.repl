@@ -1,0 +1,25 @@
+;;
+;; REPL/_scratch_n2_caduceus_compile_check.repl — DALOS-audit #N2 fix: CADUCEUS structural check
+;;
+;; CADUCEUS has ZERO REPL coverage anywhere in this repo (confirmed via grep - no .repl file loads
+;; it), so a full live functional proof of A_ProvisionBridgeDptfRoles isn't feasible without building
+;; a whole new harness (GOV keys, config table, bridge account deployment, etc.) from scratch. This
+;; is a compile/load-only structural check: confirms the #N2-edited file still parses and deploys
+;; cleanly against the real TS01-A/TS01-C1 module refs it now depends on (ref-TS01-A binding, the
+;; new DPTF|A_DeployAccount call signature). Disclosed as a real limitation, not a full live proof.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage00a_StoaTests.repl")
+(load "Stage01_Tester.repl")
+(load "Stage_02/[0.1]_Interfaces.repl")
+(load "Stage_02/[2.1]_DpdcCore.repl")
+(load "Stage_02/[2.2]_DemiPad.repl")
+(load "Stage_02/[2.3]_EarningPools.repl")
+(load "Stage_02/[3]_Talos.repl")
+
+(begin-tx "N2 CADUCEUS compile check")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": [] } ])
+(load "../2_SLAVE/Stage_02/03_CADUCEUS.pact")
+(print "CADUCEUS module loaded/deployed successfully with the #N2-redirected A_ProvisionBridgeDptfRoles.")
+(commit-tx)

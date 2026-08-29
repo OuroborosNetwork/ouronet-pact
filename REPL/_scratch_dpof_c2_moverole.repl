@@ -1,0 +1,176 @@
+;;
+;; REPL/Kursan/_scratch_dpof_c2_moverole.repl — DALOS-audit #2C fix proof (DPOF C_MoveCreateRole)
+;; Audit-only scratch, not part of the canonical suite. Run from REPL/: `pact Kursan/_scratch_dpof_c2_moverole.repl`
+;;
+;; Reproduces (pre-fix) / proves (post-fix) that C_MoveCreateRole's "move" only ever GRANTS the
+;; create role to the new holder and never REVOKES it from the actual previous holder, because
+;; XI_SwitchCreateRole re-derives "who's the old holder" via (UR_Verum4 id) AFTER
+;; XI_UpdateVerum4 has already overwritten that same value to the new holder.
+;;
+;; Test shape: issue a fresh DPOF id owned by `emma`, with can-transfer-oft-create-role=true.
+;;   Move 1: emma (owner) -> aoz         (sanity: aoz is legitimately granted the role)
+;;   Move 2: aoz -> patron (ANHD)        (THE TEST: aoz is the real previous holder here, and
+;;                                        is NOT the token's owner-konto, so UR_R-Create(id, aoz)
+;;                                        is NOT masked by the "account == owner" OR-clause in
+;;                                        UR_R-Create — this is the one case that actually proves
+;;                                        the bug, per DALOS-audit Cluster 4 / #2C.)
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+
+(begin-tx "C2 REPRO - chain data setup")
+(namespace "ouronet-ns")
+(env-chain-data
+    {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
+     "block-time": TV.TIME00}
+)
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "C2 REPRO - issue a fresh DPOF id, owner=emma, can-transfer-oft-create-role=TRUE")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_Emma", "caps": [] }
+        { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" ,
+          "caps":
+            [
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                    (at 2 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                    (at 0 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                    (at 3 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                    (at 1 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (emma:string KST.EMMA)
+        (ids:list
+            (ref-TS01-C1::DPOF|C_Issue
+                emma
+                emma
+                ["AuditC2Test"]
+                ["AC2T"]
+                [12]    ;;precision
+                [true]  ;;can-upgrade
+                [true]  ;;can-change-owner
+                [true]  ;;can-add-special-role
+                [true]  ;;can-transfer-oft-create-role  <- MUST be true or C_MoveCreateRole rejects outright
+                [false] ;;can-freeze
+                [false] ;;can-wipe
+                [true]  ;;can-pause
+            )
+        )
+    )
+    (print (format "Issued id(s): {}" [ids]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "C2 REPRO - sanity: initial Verum4 is emma (owner), UR_R-Create(id, emma) is true")
+(namespace "ouronet-ns")
+(let
+    (
+        (id:string "AC2T-98c486052a51")
+        (emma:string KST.EMMA)
+    )
+    (map print
+        [
+            (format "UR_Verum4 at issuance (expect emma): {}" [(DPOF.UR_Verum4 id)])
+            (expect "owner (emma) has create role at issuance (via account==owner OR-clause, not the flag)"
+                true
+                (DPOF.UR_R-Create id emma)
+            )
+        ]
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "C2 REPRO - Move 1: emma (owner) -> aoz")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (id:string "AC2T-98c486052a51")
+        (emma:string KST.EMMA)
+        (aoz:string KST.AOZT)
+    )
+    (ref-TS01-C1::DPOF|C_MoveCreateRole emma id aoz)
+    (map print
+        [
+            (format "UR_Verum4 after Move 1 (expect aoz): {}" [(DPOF.UR_Verum4 id)])
+            (expect "aoz is legitimately granted the create role after Move 1 (granting works, not the buggy half)"
+                true
+                (DPOF.UR_R-Create id aoz)
+            )
+        ]
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "C2 REPRO - Move 2: aoz -> patron(ANHD) - THE TEST (aoz must lose the role, it is NOT the owner)")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (id:string "AC2T-98c486052a51")
+        (emma:string KST.EMMA)
+        (aoz:string KST.AOZT)
+        (patron:string KST.ANHD)
+    )
+    (ref-TS01-C1::DPOF|C_MoveCreateRole emma id patron)
+    (map print
+        [
+            (format "UR_Verum4 after Move 2 (expect patron): {}" [(DPOF.UR_Verum4 id)])
+            (format "UR_R-Create(id, patron) after Move 2 (expect true - newly granted): {}" [(DPOF.UR_R-Create id patron)])
+            (format "UR_R-Create(id, aoz) after Move 2 (THE BUG: must be false - aoz was moved AWAY from; pre-fix this stays true): {}" [(DPOF.UR_R-Create id aoz)])
+        ]
+    )
+    (expect "patron is legitimately granted the create role after Move 2"
+        true
+        (DPOF.UR_R-Create id patron)
+    )
+    ;; THE ACTUAL PROOF: aoz (a non-owner, real previous holder) must NOT retain the create role
+    ;; after being moved away from. Pre-fix: FAILS (aoz's role-oft-create flag was never cleared).
+    ;; Post-fix: PASSES.
+    (expect "aoz (previous holder, non-owner, moved AWAY from) must NOT retain create role - #2C"
+        false
+        (DPOF.UR_R-Create id aoz)
+    )
+)
+(commit-tx)

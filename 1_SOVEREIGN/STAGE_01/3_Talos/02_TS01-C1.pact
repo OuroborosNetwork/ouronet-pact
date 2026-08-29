@@ -657,15 +657,20 @@
     )
     ;;
     (defun DPTF|C_DeployAccount (patron:string id:string account:string)
-        @doc "Deploys a DPTF Account"
+        @doc "Deploys a DPTF Account. Self-service activation only - the caller must own \
+            \ <account> (DALOS|CAP_EnforceAccountOwnership). System/infrastructure account \
+            \ setup (a smart account governed by another module) must use the admin variant \
+            \ DPTF|A_DeployAccount in TS01-A instead."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
+                (ref-DALOS::CAP_EnforceAccountOwnership account)
                 (ref-DPTF::C_DeployAccount id account)
                 (ref-IGNIS::C_Collect patron
                     (ref-IGNIS::UDC_SmallCumulator account)
@@ -1054,31 +1059,41 @@
         )
     )
     (defun DPOF|C_TogglePause (patron:string id:string toggle:bool)
+        ;;#35M fix: removed a dead ref-TS01-A binding (copy-paste leftover, never used) and
+        ;;added the CLAUDE.md-mandated format result string, mirroring the correct DPTF sibling.
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPOF::C_TogglePause id toggle)
+                )
+                (if toggle
+                    (format "ID {} succesfully pauses" [id])
+                    (format "ID {} succesfully unpauses" [id])
                 )
             )
         )
     )
     ;;
     (defun DPOF|C_DeployAccount (patron:string id:string account:string)
-        @doc "Similar to its DPTF Variant"
+        @doc "Similar to its DPTF Variant. Self-service activation only - the caller must \
+            \ own <account> (DALOS|CAP_EnforceAccountOwnership). System/infrastructure \
+            \ account setup (a smart account governed by another module) must use the \
+            \ admin variant DPOF|A_DeployAccount in TS01-A instead."
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                    (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
+                (ref-DALOS::CAP_EnforceAccountOwnership account)
                 (ref-DPOF::C_DeployAccount id account)
                 (ref-IGNIS::C_Collect patron
                     (ref-IGNIS::UDC_SmallCumulator account)
@@ -1088,16 +1103,23 @@
         )
     )
     (defun DPOF|C_ToggleFreezeAccount (patron:string id:string account:string toggle:bool)
+        ;;#35M fix: removed a dead ref-TS01-A binding (copy-paste leftover, never used) and
+        ;;added the CLAUDE.md-mandated format result string, mirroring the correct DPTF sibling.
         @doc "Similar to its DPTF Variant"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-DPOF::C_ToggleFreezeAccount id account toggle)
+                )
+                (if toggle
+                    (format "Account {} succesfully frozen for {}" [sa id])
+                    (format "Account {} succesfuly unfrozen for {}" [sa id])
                 )
             )
         )

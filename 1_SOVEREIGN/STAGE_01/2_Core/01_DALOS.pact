@@ -613,6 +613,15 @@
             (compose-capability (SECURE))
         )
     )
+    ;;#26M fix: dedicated client cap for the admin (fee-free) deploy path, composing the shared
+    ;;validation above rather than duplicating it - keeps A_DeploySmartAccount's own admin gate
+    ;;(GOV|DALOS_ADMIN) distinct from C_DeploySmartAccount's, while both funnel into the same
+    ;;single definition of the account-format/guard validation.
+    (defcap DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT (account:string guard:guard kadena:string sovereign:string)
+        @event
+        (compose-capability (GOV|DALOS_ADMIN))
+        (compose-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard kadena sovereign))
+    )
     (defcap DALOS|C>ROTATE-OA_GOVERNOR (account:string governor:guard)
         @event
         (UEV_EnforceGuardProtocol governor false)
@@ -1117,7 +1126,7 @@
         )
     )
     (defun A_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string)
-        (with-capability (SECURE-ADMIN)
+        (with-capability (DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT account guard kadena sovereign)
             (XI_DeploySmartAccount account guard kadena sovereign public)
         )
     )
@@ -1157,9 +1166,14 @@
             )
         )
     )
+    ;;#53L fix: added a non-negative bound check on <new-price> - defense-in-depth for an
+    ;;admin-only fat-finger, not a security gate (GOV|DALOS_ADMIN already fully trusted). A
+    ;;stray 0/negative price here was flagged as a contributing cause of #8H (IGNIS C_Collect's
+    ;;since-fixed zero-leg abort) - purely additive, no change to the existing valid-price path.
     (defun A_UpdateUsagePrice (action:string new-price:decimal)
         (UEV_IMC)
         (with-capability (GOV|DALOS_ADMIN)
+            (enforce (> new-price 0.0) "New price must be a positive amount")
             (let
                 (
                     (ref-U|CT:module{OuronetConstantsV1} U|CT)
@@ -1181,7 +1195,7 @@
     )
     (defun C_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string)
         (UEV_IMC)
-        (with-capability (SECURE)
+        (with-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard kadena sovereign)
             (XI_DeploySmartAccount account guard kadena sovereign public)
         )
     )
@@ -1209,9 +1223,17 @@
         (account:string kadena:string)
         (UEV_IMC)
         (with-capability (DALOS|C>ROTATE-OA-KADENA account)
-            (XI_RotateKadena account kadena)
-            (XI_UpdateKadenaLedger (UR_AccountKadena account) account false)
-            (XI_UpdateKadenaLedger kadena account true)
+            ;;#25M fix: read the OLD kadena address before XI_RotateKadena overwrites it -
+            ;;otherwise UR_AccountKadena returns the already-rotated NEW address, the ledger
+            ;;cleanup targets the wrong key, and the old address's ledger row is orphaned forever.
+            (let
+                (
+                    (old-kadena:string (UR_AccountKadena account))
+                )
+                (XI_RotateKadena account kadena)
+                (XI_UpdateKadenaLedger old-kadena account false)
+                (XI_UpdateKadenaLedger kadena account true)
+            )
         )
     )
     (defun C_RotateSovereign
@@ -1226,28 +1248,31 @@
     ;;
     ;;      [X-A]
     (defun XI_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string)
-        (require-capability (SECURE))
-        (with-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard kadena sovereign)
-            (insert DALOS|AccountTable account
-                { "public"                      : public
-                , "guard"                       : guard
-                , "kadena-konto"                : kadena
-                , "sovereign"                   : sovereign
-                , "governor"                    : guard
-                ;;
-                , "smart-contract"              : true
-                , "payable-as-smart-contract"   : false
-                , "payable-by-smart-contract"   : false
-                , "payable-by-method"           : true
-                ;;
-                , "nonce"                       : 0
-                , "elite"                       : DALOS|PLEB
-                , "ouroboros"                   : (UDC_BlankTrueFungible account)
-                , "ignis"                       : (UDC_BlankTrueFungible account)
-                }
-            )
-            (XI_UpdateKadenaLedger kadena account true)
+        ;;#26M fix: validation now happens in the caller's own client cap
+        ;;(A_DeploySmartAccount composes DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT,
+        ;;C_DeploySmartAccount composes DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT directly) - this
+        ;;writer only requires the shared validating cap is already active, it doesn't compose
+        ;;or enforce anything itself.
+        (require-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard kadena sovereign))
+        (insert DALOS|AccountTable account
+            { "public"                      : public
+            , "guard"                       : guard
+            , "kadena-konto"                : kadena
+            , "sovereign"                   : sovereign
+            , "governor"                    : guard
+            ;;
+            , "smart-contract"              : true
+            , "payable-as-smart-contract"   : false
+            , "payable-by-smart-contract"   : false
+            , "payable-by-method"           : true
+            ;;
+            , "nonce"                       : 0
+            , "elite"                       : DALOS|PLEB
+            , "ouroboros"                   : (UDC_BlankTrueFungible account)
+            , "ignis"                       : (UDC_BlankTrueFungible account)
+            }
         )
+        (XI_UpdateKadenaLedger kadena account true)
     )
     (defun XI_DeployStandardAccount (account:string guard:guard kadena:string public:string)
         (require-capability (SECURE))

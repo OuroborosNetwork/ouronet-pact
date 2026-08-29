@@ -249,6 +249,7 @@
         (ref-P|DALOS:module{OuronetPolicyV1} DALOS)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
         (ref-AOZ:module{AgeOfZalmoxis} AOZ)
         (ref-P|DSP:module{OuronetPolicyV1} DSP)
         (ref-DSP:module{Dispenser} DSP)
@@ -283,9 +284,10 @@
     ;;4]Toggle Mint Role for Ouro on Dispenser
     (ref-TS01-C1::DPTF|C_ToggleMintRole patron OuroID standard-dispenser true)
     ;;5]Toggle Mint Role for Primordial, Esoteric, and Ancient Kosons on Dispenser
-    (ref-TS01-C1::DPTF|C_DeployAccount patron PrimordialKosonID standard-dispenser)
-    (ref-TS01-C1::DPTF|C_DeployAccount patron EsothericKosonID standard-dispenser)
-    (ref-TS01-C1::DPTF|C_DeployAccount patron AncientKosonID standard-dispenser)
+    ;;#N2 fix: standard-dispenser is a system smart account (not self-owned) - admin variant
+    (ref-TS01-A::DPTF|A_DeployAccount patron PrimordialKosonID standard-dispenser)
+    (ref-TS01-A::DPTF|A_DeployAccount patron EsothericKosonID standard-dispenser)
+    (ref-TS01-A::DPTF|A_DeployAccount patron AncientKosonID standard-dispenser)
     ;;
     (ref-TS01-C1::DPTF|C_ToggleMintRole patron PrimordialKosonID standard-dispenser true)
     (ref-TS01-C1::DPTF|C_ToggleMintRole patron EsothericKosonID standard-dispenser true)

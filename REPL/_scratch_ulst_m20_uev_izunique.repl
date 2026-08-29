@@ -1,0 +1,28 @@
+;;
+;; REPL/_scratch_ulst_m20_uev_izunique.repl — DALOS-audit #44M fix confirmation
+;; (U_LST::UC_IzUnique renamed to UEV_IzUnique, same root cause as #43M's UC_-prefix-enforces
+;; violation. Confirms the rename preserved behavior exactly: unique lists succeed, duplicates
+;; still abort via enforce, same as before.)
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+
+(begin-tx "M20 CHECK - UEV_IzUnique preserves behavior after the rename")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-U|LST:module{StringProcessorV1} U|LST)
+    )
+    (map print
+        [
+            (format "UEV_IzUnique on a unique list => {}" [(ref-U|LST::UEV_IzUnique ["a" "b" "c"])])
+            (expect-failure
+                "UEV_IzUnique must still abort on a duplicate, same as UC_IzUnique did before the rename"
+                (ref-U|LST::UEV_IzUnique ["a" "b" "a"])
+            )
+        ]
+    )
+)
+(commit-tx)

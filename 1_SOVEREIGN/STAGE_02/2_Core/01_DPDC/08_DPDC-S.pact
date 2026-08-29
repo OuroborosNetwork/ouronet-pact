@@ -632,7 +632,7 @@
                         (enumerate 0 (- (length set-definition) 1))
                     )
                 )
-                (max:integer (ref-U|INT::UC_MaxInteger (distinct set-classes-used-in-set-definition)))
+                (max:integer (ref-U|INT::UEV_MaxInteger (distinct set-classes-used-in-set-definition)))
                 (scu:integer (ref-DPDC::UR_SetClassesUsed id son))
             )
             (enforce

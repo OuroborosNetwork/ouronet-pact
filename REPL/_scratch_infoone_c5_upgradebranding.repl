@@ -1,0 +1,23 @@
+;;
+;; REPL/_scratch_infoone_c5_upgradebranding.repl — DALOS-audit #5C fix proof (INFO-ONE doubled-prefix typo)
+;; Audit-only scratch, not part of the canonical suite. Run from REPL/: `pact _scratch_infoone_c5_upgradebranding.repl`
+;;
+;; DPOF|INFO_UpgradeBranding (21_INFO-ONE+.pact:1328) calls ref-I|OURONET::OI|OI|UDC_DynamicKadenaCost
+;; (doubled "OI|" prefix) — OuronetInfoV1 only declares OI|UDC_DynamicKadenaCost (single prefix). Every
+;; other call site in the file (including the structurally identical DPTF|INFO_UpgradeBranding right
+;; above it) gets the single prefix right. INFO-ONE has no capabilities/tables — this is a plain,
+;; ungated defun, so it can be called directly with no setup beyond genesis price seeding.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "C5 TEST - DPOF|INFO_UpgradeBranding")
+(namespace "ouronet-ns")
+(print (INFO-ONE.DPOF|INFO_UpgradeBranding "patron" "some-dpof-id" 3))
+(commit-tx)

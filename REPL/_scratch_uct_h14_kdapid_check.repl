@@ -1,0 +1,14 @@
+;;
+;; REPL/_scratch_uct_h14_kdapid_check.repl — DALOS-audit #19H fix confirmation
+;; (U_CT::UR|KDA-PID had no live oracle wired up yet, hardcoded to 1.0. Owner: mainnet's
+;; approximate KDA/USD price is 0.1 - use that as an interim placeholder until a real oracle is
+;; available.)
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(begin-tx "H14 CHECK - UR|KDA-PID reflects the interim 0.1 placeholder")
+(namespace "ouronet-ns")
+(print (format "U|CT::UR|KDA-PID => {} (expected 0.1)" [(U|CT.UR|KDA-PID)]))
+(commit-tx)

@@ -1,0 +1,60 @@
+;;
+;; REPL/_scratch_low_batch_53_75.repl — DALOS-audit LOW-batch confirmation
+;; Covers the two fixes in this batch that change enforcement behavior:
+;; #53L (DALOS::A_UpdateUsagePrice bound check) and #75L (U_LST::UEV_StringPresence real-[]
+;; message). The other LOW-batch fixes (#56L/#58L/#61L/#68L/#73L/#74L/#72L) are pure dead-code
+;; removal / doc-text / tautology-simplification with no behavioral surface to test here -
+;; verified instead by the full Z.repl regression pass.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+
+(begin-tx "LOW-batch CHECK - UEV_StringPresence real-empty-list message")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-U|LST:module{StringProcessorV1} U|LST)
+    )
+    (map print
+        [
+            ;; Happy path unaffected.
+            (ref-U|LST::UEV_StringPresence "a" ["a" "b"])
+            (expect-failure
+                "UEV_StringPresence on [bar] sentinel still gives the specific empty-list message"
+                (ref-U|LST::UEV_StringPresence "x" ["|"])
+            )
+            (expect-failure
+                "UEV_StringPresence on a real [] now ALSO gives the specific empty-list message"
+                (ref-U|LST::UEV_StringPresence "x" [])
+            )
+        ]
+    )
+)
+(commit-tx)
+
+(begin-tx "LOW-batch CHECK - A_UpdateUsagePrice bound check")
+(namespace "ouronet-ns")
+(env-sigs [{"key": "ouronet-ns.dh_master-keyset", "caps": []}])
+(env-data {"ouronet-ns.dh_master-keyset": ["dh_master-keyset"]})
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+    )
+    (map print
+        [
+            (expect-failure
+                "A_UpdateUsagePrice must reject a non-positive new-price"
+                (ref-DALOS::A_UpdateUsagePrice "ignis" 0.0)
+            )
+            (expect-failure
+                "A_UpdateUsagePrice must reject a negative new-price"
+                (ref-DALOS::A_UpdateUsagePrice "ignis" -1.0)
+            )
+        ]
+    )
+)
+(commit-tx)

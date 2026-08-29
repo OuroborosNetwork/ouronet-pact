@@ -1,0 +1,21 @@
+;;
+;; REPL/_scratch_n2_demipad_launchpad_regression.repl — DALOS-audit #N2 fix regression check
+;;
+;; #N2's fix adds `(ref-DALOS::CAP_EnforceAccountOwnership account)` to
+;; TS01-C1::DPTF|C_DeployAccount/DPOF|C_DeployAccount. The one known real Stage-2 dependency on
+;; these Talos entrypoints is TS02-DPAD::A_RegisterAssetToLaunchpad, which deploys DEMIPAD's own
+;; launchpad smart account (`lpad`) onto a newly-registered TF/OF asset. This driver runs the full
+;; real Launchpad scenario ([5.3]_Launchpad.repl, normally commented out of the default
+;; Stage02_Tester.repl profile) end-to-end to confirm the fix doesn't break that legitimate,
+;; admin-gated, self-account-targeting flow.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage00a_StoaTests.repl")
+(load "Stage01_Tester.repl")
+(load "Stage_02/[0.1]_Interfaces.repl")
+(load "Stage_02/[2.1]_DpdcCore.repl")
+(load "Stage_02/[2.2]_DemiPad.repl")
+(load "Stage_02/[2.3]_EarningPools.repl")
+(load "Stage_02/[3]_Talos.repl")
+(load "Stage_02/[4.0]_Sovereign-Executor.repl")
+(load "Stage_02/[5.3]_Launchpad.repl")

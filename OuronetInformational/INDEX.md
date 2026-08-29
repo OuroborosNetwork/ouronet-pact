@@ -30,6 +30,7 @@
 | **Index / checklist** | `ouronet/conventions/index.md` |
 | **UR layout** | `ouronet/conventions/ur-layout.md` |
 | **UR + W + XI** | `ouronet/conventions/ur-and-w-writes.md` |
+| **Schema-field backfill hidden in a `UR_*` read (anti-pattern + retirement)** | `ouronet/conventions/schema-field-backfill-on-read.md` |
 | **W writes (WI/WU/WW)** | `ouronet/conventions/w-writes.md` |
 | **X guards + caps** | `ouronet/conventions/x-function-guards.md` |
 | **XB + IMC** | `ouronet/conventions/xb-imc-cross-module.md` |

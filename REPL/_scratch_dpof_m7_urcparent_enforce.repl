@@ -1,0 +1,38 @@
+;;
+;; REPL/_scratch_dpof_m7_urcparent_enforce.repl — DALOS-audit #31M fix proof
+;; (DPOF::URC_Parent contained a direct enforce, violating the URC_* "no enforce" contract -
+;; a shared read/derive helper that any caller must be able to treat as non-aborting. The
+;; enforce was needed by UEV_ParentOwnership (which legitimately enforces) but was hurting the
+;; read-context caller DPL-UR::URC_0009a_OrtoFungibleEntry, a wallet-listing helper with no
+;; try/error-handling around its fold. Fix: moved the enforce into UEV_ParentOwnership, made
+;; URC_Parent a pure derive (the existing "Z|" branch already handles this id shape correctly).
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+
+(begin-tx "M7 TEST - URC_Parent must NOT abort (pure derive); UEV_ParentOwnership must still reject")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        ;; A synthetic id whose 4th char is BAR ("|"), same shape the enforce checked, chosen
+        ;; with a first-two that doesn't match "V|"/"Z|"/"H|" so it falls to URC_Parent's
+        ;; existing default branch (returns the id unchanged) without needing a real backing
+        ;; DPOF|T|Properties row - isolates the enforce/no-enforce behavior cleanly.
+        (fourth-char-bar-id:string "ABC|restofid")
+    )
+    (map print
+        [
+            (format "URC_Parent('{}') => {} (must succeed now - pure derive, no abort)" [fourth-char-bar-id (ref-DPOF::URC_Parent fourth-char-bar-id)])
+            (expect-failure
+                "UEV_ParentOwnership must still reject a 4th-char-BAR id (enforce moved here, not removed)"
+                (ref-DPOF::UEV_ParentOwnership fourth-char-bar-id)
+            )
+        ]
+    )
+)
+(commit-tx)

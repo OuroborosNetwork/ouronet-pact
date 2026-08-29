@@ -26,7 +26,12 @@
     (defun C_UnwrapStoa:object{IgnisCollectorV1.OutputCumulator} (unwrapper:string amount:decimal))
     (defun C_WrapStoa:object{IgnisCollectorV1.OutputCumulator} (wrapper:string amount:decimal))
     ;;
-    (defun C_RegisterOuronetAccountForUrstoaHoldings (ouronet-account:string guard:guard))
+    ;;#13H fix: C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - it took a
+    ;;caller-supplied <guard> for an arbitrary <ouronet-account> with no ownership check
+    ;;(account-hijacking risk). Account creation for wrapping/unwrapping UrStoa is instead
+    ;;handled by UI-constructed Pact code using the real signer's own (read-keyset "ks"), the
+    ;;same established pattern already used for native Stoa unwrap - see
+    ;;OuronetInformational/memories/2026-08-27-urstoa-account-creation-is-ui-constructed.md.
     (defun C_UnwrapUrStoa:object{IgnisCollectorV1.OutputCumulator} (unwrapper:string amount:decimal))
     (defun C_WrapUrStoa:object{IgnisCollectorV1.OutputCumulator} (wrapper:string amount:decimal))
 )
@@ -362,26 +367,14 @@
             )
         )
     )
-    ;;
-    (defun C_RegisterOuronetAccountForUrstoaHoldings
-        (ouronet-account:string guard:guard)
-        
-        (UEV_IMC)
-        (let
-            (
-                (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (kadena-patron:string (ref-DALOS::UR_AccountKadena ouronet-account))
-            )
-            (ref-ur-coin::C_UR|CreateAccount kadena-patron guard)
-        )
-    )
     (defun C_UnwrapUrStoa:object{IgnisCollectorV1.OutputCumulator}
         (unwrapper:string amount:decimal)
         @doc "Unwrapper is the Ouronet Account doing the Unwrapping. \
-            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work \
-            \ If its not registered there yet, its account must be created with \
-            \ <C_RegisterOuronetAccountForUrstoaHoldings>"
+            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work. \
+            \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
+            \ account with the real signer's own (read-keyset \"ks\") immediately before this \
+            \ call, the same pattern already used for native Stoa unwrap - there is no \
+            \ standalone Pact function for this (see #13H, ROUND-02-FIXES.md)."
         (UEV_IMC)
         (let
             (
@@ -420,9 +413,11 @@
     (defun C_WrapUrStoa:object{IgnisCollectorV1.OutputCumulator}
         (wrapper:string amount:decimal)
         @doc "Wrapper is the Ouronet Account doing the Wrapping. \
-            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work \
-            \ If its not registered there yet, its account must be created with \
-            \ <C_RegisterOuronetAccountForUrstoaHoldings>"
+            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work. \
+            \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
+            \ account with the real signer's own (read-keyset \"ks\") immediately before this \
+            \ call, the same pattern already used for native Stoa unwrap - there is no \
+            \ standalone Pact function for this (see #13H, ROUND-02-FIXES.md)."
         (UEV_IMC)
         (let
             (

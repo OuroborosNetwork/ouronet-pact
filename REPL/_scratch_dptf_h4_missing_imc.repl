@@ -1,0 +1,160 @@
+;;
+;; REPL/_scratch_dptf_h4_missing_imc.repl — DALOS-audit #9H fix proof (DPTF missing UEV_IMC)
+;; Audit-only scratch, not part of the canonical suite. Run from REPL/: `pact _scratch_dptf_h4_missing_imc.repl`
+;;
+;; C_ToggleBurnRole/C_ToggleMintRole/C_ToggleFeeExemptionRole were missing (UEV_IMC) as their first
+;; statement, unlike their two siblings (C_ToggleFreezeAccount/C_ToggleTransferRole) and unlike every
+;; other C_* in this file. The only real callers anywhere in the repo are cross-module
+;; ref-DPTF::C_Toggle*Role calls from the Talos wrapper (TS01-C1) — confirmed via repo-wide grep, zero
+;; internal/home-module calls exist. Pre-fix, this let the token owner call these three DIRECTLY on the
+;; core DPTF module, bypassing Talos (and therefore Global Administrative Pause + IGNIS billing)
+;; entirely, since the only other gate was plain token ownership. This file, run against the CURRENT
+;; (fixed) source, is the permanent regression artifact proving the fix — expressed as
+;; `expect-failure` so it works as a standing check, not just a one-time pre/post comparison.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+
+(begin-tx "H4 TEST - issue a fresh DPTF id, owner=emma, can-add-special-role=true")
+(namespace "ouronet-ns")
+(env-sigs
+    [
+        { "key": "PK_Emma", "caps": [] }
+        { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" ,
+          "caps":
+            [
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                    (at 2 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dptf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                    (at 0 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dptf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                    (at 3 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dptf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                    (at 1 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dptf")))
+                )
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (emma:string KST.EMMA)
+        (ids:list
+            (ref-TS01-C1::DPTF|C_Issue
+                emma
+                emma
+                ["AuditH4Test"]
+                ["AH4T"]
+                [12]    ;;precision
+                [true]  ;;can-change-owner (Talos param slot 1 — note: swapped vs core's own order, harmless here since both are true)
+                [true]  ;;can-upgrade (Talos param slot 2)
+                [true]  ;;can-add-special-role
+                [false] ;;can-freeze
+                [false] ;;can-wipe
+                [true]  ;;can-pause
+            )
+        )
+    )
+    (print (format "Issued id(s): {}" [ids]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;; Pre-fix, both of the calls below succeeded outright (reproduced live and logged in
+;; ROUND-02-FIXES.md before the fix landed: burn-role and mint-role state both flipped to `true` via
+;; a direct core-module call, no Talos involvement, no GAP check, no IGNIS billing — only CAP_Owner +
+;; role-state checks gated the call at all). Post-fix (current source), the identical calls must now
+;; be rejected outright by (UEV_IMC), before ever reaching any of those checks.
+(begin-tx "H4 TEST - direct core-module call to C_ToggleBurnRole must now be rejected (was a bypass pre-fix)")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (id:string "AH4T-98c486052a51")
+        (emma:string KST.EMMA)
+    )
+    (print (expect-failure "direct core-module C_ToggleBurnRole call must be rejected by UEV_IMC (#9H) — pre-fix this succeeded outright, bypassing Talos entirely"
+        (DPTF.C_ToggleBurnRole id emma true)
+    ))
+    (print (format "burn-role state for emma, unchanged by the rejected call (expect false): {}" [(DPTF.UR_AccountRoleBurn id emma)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "H4 TEST - direct core-module call to C_ToggleMintRole must now be rejected (was a bypass pre-fix)")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (id:string "AH4T-98c486052a51")
+        (emma:string KST.EMMA)
+    )
+    (print (expect-failure "direct core-module C_ToggleMintRole call must be rejected by UEV_IMC (#9H) — pre-fix this succeeded outright, bypassing Talos entirely"
+        (DPTF.C_ToggleMintRole id emma true)
+    ))
+    (print (format "mint-role state for emma, unchanged by the rejected call (expect false): {}" [(DPTF.UR_AccountRoleMint id emma)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;; C_ToggleFeeExemptionRole: its defcap additionally requires the target `account` to be a
+;; genuinely-deployed Smart DALOS account (unlike Burn/Mint role toggles) — an unrelated precondition,
+;; not part of #9H, and no such fixture was readily available in this harness's boot chain to
+;; live-reproduce the pre-fix bypass. Confirmed by direct code read that this function was missing
+;; (UEV_IMC) in exactly the same way as its two siblings above (byte-for-byte identical structure
+;; otherwise). Using a plain account here (emma) means (UEV_IMC) — now the FIRST statement — must
+;; reject the call before that unrelated smart-account check is ever reached, proving the fix landed
+;; on this function too without needing a separate smart-account fixture.
+(begin-tx "H4 TEST - direct core-module call to C_ToggleFeeExemptionRole must now be rejected")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (id:string "AH4T-98c486052a51")
+        (emma:string KST.EMMA)
+    )
+    (print (expect-failure "direct core-module C_ToggleFeeExemptionRole call must be rejected by UEV_IMC (#9H), before ever reaching its separate smart-account-type check"
+        (DPTF.C_ToggleFeeExemptionRole id emma true)
+    ))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "H4 REGRESSION - the real Talos-routed path still works for all three")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (id:string "AH4T-98c486052a51")
+        (emma:string KST.EMMA)
+    )
+    (ref-TS01-C1::DPTF|C_ToggleBurnRole emma id emma true)
+    (print (format "PROOF: legitimate Talos-routed C_ToggleBurnRole still works — burn-role state: {}" [(DPTF.UR_AccountRoleBurn id emma)]))
+    (ref-TS01-C1::DPTF|C_ToggleMintRole emma id emma true)
+    (print (format "PROOF: legitimate Talos-routed C_ToggleMintRole still works — mint-role state: {}" [(DPTF.UR_AccountRoleMint id emma)]))
+)
+(commit-tx)

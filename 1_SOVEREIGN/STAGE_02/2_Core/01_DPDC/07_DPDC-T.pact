@@ -217,7 +217,7 @@
                 ;;
                 (l:integer (length receiver-lst))
             )
-            (ref-U|LST::UC_IzUnique receiver-lst)
+            (ref-U|LST::UEV_IzUnique receiver-lst)
             (ref-DPDC::UEV_PauseState id son false)
             (ref-DPDC::UEV_AccountFreezeState id son sender false)
             (map

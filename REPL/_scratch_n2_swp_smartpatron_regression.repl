@@ -1,0 +1,22 @@
+;;
+;; REPL/_scratch_n2_swp_smartpatron_regression.repl — DALOS-audit #N2 fix regression check
+;;
+;; [6.3]_SWP.repl:2143 does (ref-TS01-C1::DPTF|C_DeployAccount patron ROuroID smart-patron), where
+;; `smart-patron` is patron's OWN smart-account variant (same underlying principal, "Σ." prefix
+;; instead of "Ѻ."), not a different system smart account. This should PASS the new
+;; CAP_EnforceAccountOwnership gate naturally (self-service), unlike the DemiPad/CADUCEUS/
+;; ats/liquid/swp/dispenser cases. Confirms that call site needs no redirect.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage00a_StoaTests.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+(load "Stage_01/[5.2]_Dispenser+.repl")
+(load "Stage_01/[6.2]_DPTF.repl")
+(load "Stage_01/[6.3]_SWP.repl")

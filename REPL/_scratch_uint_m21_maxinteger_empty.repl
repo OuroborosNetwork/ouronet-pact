@@ -1,0 +1,30 @@
+;;
+;; REPL/_scratch_uint_m21_maxinteger_empty.repl — DALOS-audit #45M confirmation
+;; (U_INT::UC_MaxInteger crashes uncatchably on an empty list — verify live before presenting,
+;; per standing instruction.)
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+
+(begin-tx "M21 CHECK - UEV_MaxInteger post-fix: same non-empty behavior, clean enforce on empty")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-U|INT:module{OuronetIntegersV1} U|INT)
+    )
+    (map print
+        [
+            ;; Same non-empty-list behavior as the old UC_MaxInteger, byte-identical result.
+            (format "UEV_MaxInteger on [3 1 4 1 5] => {}" [(ref-U|INT::UEV_MaxInteger [3 1 4 1 5])])
+            ;; The old crash on [] is now a clean, catchable enforce failure instead of a raw
+            ;; uncatchable array-bounds error.
+            (expect-failure
+                "UEV_MaxInteger must cleanly reject an empty list via enforce, not crash"
+                (ref-U|INT::UEV_MaxInteger [])
+            )
+        ]
+    )
+)
+(commit-tx)

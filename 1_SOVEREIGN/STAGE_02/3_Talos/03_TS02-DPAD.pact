@@ -184,7 +184,7 @@
         (with-capability (P|TALOS-SUMMONER)
             (let
                 (
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                     (ref-DPDC:module{DpdcV1} DPDC)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                     (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
@@ -195,14 +195,17 @@
                     (f:bool false)
                 )
                 (ref-DEMIPAD::A_RegisterAssetToLaunchpad patron asset-id fungibility)
-                ;;DPDC Audit #35M: DPSF|C_DeployAccount/DPNF|C_DeployAccount (the public Talos
-                ;;entrypoints) were removed — they let any signer force any account to associate with
-                ;;any collection, no ownership check. This call to DPDC::XB_DeployAccountSFT/NFT
-                ;;directly, module-to-module, is exactly the pattern every other legitimate internal
-                ;;caller (DPDC-C/DPDC-F/DPDC-R/DPDC-S) already uses.
+                ;;Reconciles two audits' DeployAccount hardening (dptf-dpof #N2 + DPDC #35M):
+                ;; #N2: lpad is DEMIPAD's own system smart account (not patron's) — tf/of use the ADMIN
+                ;;   variant (TS01-A, no ownership check on <account>); the self-service C_ variant now
+                ;;   requires the caller to own <account>, which they don't for lpad.
+                ;; #35M: the public DPSF|C_DeployAccount/DPNF|C_DeployAccount Talos wrappers were REMOVED
+                ;;   (any signer could force any account onto any collection); sf/nf now call
+                ;;   DPDC::XB_DeployAccountSFT/NFT directly, module-to-module — the pattern every
+                ;;   legitimate internal caller (DPDC-C/DPDC-F/DPDC-R/DPDC-S) already uses.
                 (cond
-                    ((= fungibility tf) (ref-TS01-C1::DPTF|C_DeployAccount patron asset-id lpad))
-                    ((= fungibility of) (ref-TS01-C1::DPOF|C_DeployAccount patron asset-id lpad))
+                    ((= fungibility tf) (ref-TS01-A::DPTF|A_DeployAccount patron asset-id lpad))
+                    ((= fungibility of) (ref-TS01-A::DPOF|A_DeployAccount patron asset-id lpad))
                     ((= fungibility sf) (ref-DPDC::XB_DeployAccountSFT lpad asset-id f f f f f f f f f f f))
                     ((= fungibility nf) (ref-DPDC::XB_DeployAccountNFT lpad asset-id f f f f f f f f f f))
                     true

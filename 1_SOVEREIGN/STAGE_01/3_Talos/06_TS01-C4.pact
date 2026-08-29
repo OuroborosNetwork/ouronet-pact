@@ -49,6 +49,11 @@
     (defun PYTHIA|A_RevokeLink:string (dual-link-key:string))
     (defun PYTHIA|A_Flush:string
         (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}]))
+    ;;#17H fix: PYTHIA|A_UpdateDeployPrice/A_UpdateRenamePrice were never wired into any Talos
+    ;;module - the core PYTHIA functions (GOV|PYTHIA_ADMIN-gated) existed but had no reachable
+    ;;client path, permanently frozen at their hardcoded defaults for anyone, even the admin.
+    (defun PYTHIA|A_UpdateDeployPrice:string (new-price:decimal))
+    (defun PYTHIA|A_UpdateRenamePrice:string (new-price:decimal))
 )
 ;;
 (module TS01-C4 GOV
@@ -364,11 +369,27 @@
         (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}])
         @doc "Khronoton batch Pyth ledger flush (order-independent day entries; no fee)."
         (with-capability (P|TS)
-            (let 
+            (let
                 (
                     (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
                 )
                 (ref-LEDGER::A_Flush entries)
+            )
+        )
+    )
+    (defun PYTHIA|A_UpdateDeployPrice:string (new-price:decimal)
+        @doc "Updates the PYTHIA Codex/Apollo deploy price (no fee)."
+        (with-capability (P|TS)
+            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
+                (ref-PYTHIA::A_UpdateDeployPrice new-price)
+            )
+        )
+    )
+    (defun PYTHIA|A_UpdateRenamePrice:string (new-price:decimal)
+        @doc "Updates the PYTHIA Codex/Apollo rename price (no fee)."
+        (with-capability (P|TS)
+            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
+                (ref-PYTHIA::A_UpdateRenamePrice new-price)
             )
         )
     )

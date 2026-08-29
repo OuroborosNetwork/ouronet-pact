@@ -52,7 +52,7 @@
                 (times:[time] [first-time])
             )
             (if (= milestones 1)
-                [(add-time present-time duration)]
+                [(add-time first-time duration)]
                 (fold
                     (lambda
                         (acc:[time] idx:integer)
@@ -80,7 +80,8 @@
                 (split:decimal (floor (/ amount (dec milestones)) precision))
                 (multiply:integer (- milestones 1))
             )
-            (enforce (> split 0.0) (format "Amount {} to small to split into {} milestones" [amount milestones]))
+            ;;#74L fix: typo "to small" -> "too small" (message text only, no logic change).
+            (enforce (> split 0.0) (format "Amount {} too small to split into {} milestones" [amount milestones]))
             (let*
                 (
                     (big-chunk:decimal (floor (* split (dec multiply)) precision))
@@ -143,6 +144,10 @@
     (defun UEV_MilestoneWithTime (offset:integer duration:integer milestones:integer upper-limit-in-seconds:integer)
         @doc "Validates Milestone duration to be lower than 25 years"
         (UEV_Milestone milestones)
+        (enforce
+            (and (>= offset 0) (>= duration 0))
+            "Offset and Duration cannot be negative"
+        )
         (enforce
             (<= (+ (* milestones duration ) offset) upper-limit-in-seconds)
             "Upper Lock Time Exceeded"

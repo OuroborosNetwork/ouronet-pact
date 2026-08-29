@@ -69,25 +69,33 @@
                     )
                 )
             )
-            (map
-                (lambda
-                    (i)
-                    (fold
-                        (+)
-                        0.0
-                        (map
-                            (lambda
-                                (inner-lst)
-                                (if (< i (length inner-lst))
-                                    (at i inner-lst)
-                                    0.0
+            ;;#20H fix: empty <lists> (or a set of all-empty inner lists) makes maxl=0, and
+            ;;(enumerate 0 -1) returns [0 -1] rather than [], not [] as one might assume - the
+            ;;same enumerate/negative-range footgun class as #N2's IGNIS UC_FindKeyIndex fix.
+            ;;Guarded explicitly rather than touching the (already-correct, per every real
+            ;;caller) non-empty path below.
+            (if (= maxl 0)
+                []
+                (map
+                    (lambda
+                        (i)
+                        (fold
+                            (+)
+                            0.0
+                            (map
+                                (lambda
+                                    (inner-lst)
+                                    (if (< i (length inner-lst))
+                                        (at i inner-lst)
+                                        0.0
+                                    )
                                 )
+                                lists
                             )
-                            lists
                         )
                     )
+                    (enumerate 0 (- maxl 1))
                 )
-                (enumerate 0 (- maxl 1))
             )
         )
     )

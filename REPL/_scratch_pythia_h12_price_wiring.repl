@@ -1,0 +1,39 @@
+;;
+;; REPL/_scratch_pythia_h12_price_wiring.repl — DALOS-audit #17H fix proof
+;; (PYTHIA|A_UpdateDeployPrice/A_UpdateRenamePrice existed at the core layer, properly gated by
+;; the real GOV|PYTHIA_ADMIN keyset check, but were never wired into any Talos module - the only
+;; registered PYTHIA implementer, TS01-C4, never wrapped either function, so even the legitimate
+;; admin had no reachable client path. Fixed by adding PYTHIA|A_UpdateDeployPrice/A_UpdateRenamePrice
+;; to TS01-C4's interface + module, mirroring the existing PYTHIA|A_Link/A_RevokeLink pattern.)
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "H12 TEST - admin updates PYTHIA deploy/rename price via the (newly wired) Talos path")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
+        (ref-PYTHIA:module{PythiaV4} PYTHIA)
+        (deploy-before:decimal (ref-PYTHIA::UR_DeployPrice))
+        (rename-before:decimal (ref-PYTHIA::UR_RenamePrice))
+    )
+    (map print
+        [
+            (format "PYTHIA deploy-price BEFORE: {} / rename-price BEFORE: {}" [deploy-before rename-before])
+            (format "<(TS01-C4.PYTHIA|A_UpdateDeployPrice)> => \"{}\"" [(ref-TS01-C4::PYTHIA|A_UpdateDeployPrice 999.0)])
+            (format "<(TS01-C4.PYTHIA|A_UpdateRenamePrice)> => \"{}\"" [(ref-TS01-C4::PYTHIA|A_UpdateRenamePrice 888.0)])
+            (format "PYTHIA deploy-price AFTER: {} (expected 999.0) / rename-price AFTER: {} (expected 888.0)"
+                [(ref-PYTHIA::UR_DeployPrice) (ref-PYTHIA::UR_RenamePrice)]
+            )
+        ]
+    )
+)
+(commit-tx)

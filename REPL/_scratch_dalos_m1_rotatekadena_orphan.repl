@@ -1,0 +1,42 @@
+;;
+;; REPL/_scratch_dalos_m1_rotatekadena_orphan.repl — DALOS-audit #25M investigation/proof
+;; (DALOS::C_RotateKadena overwrites the account's kadena-konto BEFORE reading it back to clean
+;; up the old kadena address's reverse-index ledger row - so UR_AccountKadena, called after the
+;; overwrite, returns the NEW address, and the ledger cleanup targets the wrong key. The OLD
+;; address's ledger row is never touched and keeps listing the account forever.)
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "M1 TEST - C_RotateKadena must clean up the OLD kadena address's ledger row")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (patron:string KST.ANHD)
+        (old-kadena:string (DALOS.UR_AccountKadena KST.ANHD))
+        (new-kadena:string "k:brand-new-test-kadena-address-for-m1-proof")
+    )
+    (map print
+        [
+            (format "old-kadena = {}" [old-kadena])
+            (format "OLD kadena's ledger row BEFORE rotation: {} (expected to contain patron)" [(DALOS.UR_KadenaLedger old-kadena)])
+        ]
+    )
+    (ref-TS01-C1::DALOS|C_RotateKadena patron patron new-kadena)
+    (map print
+        [
+            (format "NEW kadena's ledger row AFTER rotation: {} (expected to contain patron - this part should work)" [(DALOS.UR_KadenaLedger new-kadena)])
+            (format "OLD kadena's ledger row AFTER rotation: {} (THE CLAIMED BUG: if patron is still listed here, the old row was never cleaned up)" [(DALOS.UR_KadenaLedger old-kadena)])
+            (format "Account's kadena-konto AFTER rotation: {} (expected new-kadena)" [(DALOS.UR_AccountKadena patron)])
+        ]
+    )
+)
+(commit-tx)

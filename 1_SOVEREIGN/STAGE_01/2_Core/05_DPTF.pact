@@ -558,8 +558,8 @@
                 (lengths:[integer] [l1 l2 l3 l4 l5 l6 l7 l8 l9])
             )
             (ref-U|INT::UEV_UniformList lengths)
-            (ref-U|LST::UC_IzUnique name)
-            (ref-U|LST::UC_IzUnique ticker)
+            (ref-U|LST::UEV_IzUnique name)
+            (ref-U|LST::UEV_IzUnique ticker)
             (ref-DALOS::CAP_EnforceAccountOwnership account)
             (compose-capability (P|SECURE-CALLER))
         )
@@ -972,20 +972,21 @@
         (at "sleeping-link" (read DPTF|PropertiesTable id ["sleeping-link"]))
     )
     (defun UR_Hibernation:string (id:string)
+        ;;#30M fix: was a "read" that silently backfilled a missing hibernation-link with a
+        ;;live table `update` - a read/write-separation violation of the UR_* prefix contract.
+        ;;Confirmed via a live StoaChain dirty-read (2026-08-28, see
+        ;;OuronetInformational/memories/2026-08-28-querying-live-stoachain-via-pythia-dirty-read.md)
+        ;;that every one of the 18 real deployed DPTF tokens already has this field populated -
+        ;;the backfill branch was fully dead code, so no migration step was needed. The write is
+        ;;removed; the in-memory default-value fallback (for any future schema-incomplete row)
+        ;;is kept, so the return value is unchanged for every caller.
         (let
             (
                 (default-value:string BAR)
                 (temp (read DPTF|PropertiesTable id ["hibernation-link"]))
                 (needs-populate:bool (= temp {}))
-                (link:string (if needs-populate default-value (at "hibernation-link" temp)))
             )
-            (if needs-populate
-                (update DPTF|PropertiesTable id 
-                    {"hibernation-link": default-value}
-                )
-                true  ; No-op if already populated
-            )
-            link
+            (if needs-populate default-value (at "hibernation-link" temp))
         )
     )
     (defun UR_Frozen:string (id:string)
@@ -1895,6 +1896,7 @@
     (defun C_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string toggle:bool)
         @doc "Toggle Verum 2"
+        (UEV_IMC)
         (with-capability (DPTF|C>TOGGLE-BURN-ROLE id account toggle)
             (let
                 (
@@ -1917,6 +1919,7 @@
     (defun C_ToggleMintRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string toggle:bool)
         @doc "Toggle Verum 3"
+        (UEV_IMC)
         (with-capability (DPTF|C>TOGGLE-MINT-ROLE id account toggle)
             (let
                 (
@@ -1940,6 +1943,7 @@
     (defun C_ToggleFeeExemptionRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string toggle:bool)
         @doc "Toggle Verum 4"
+        (UEV_IMC)
         (with-capability (DPTF|C>TOGGLE-FEE-EXEMPTION-ROLE id account toggle)
             (let
                 (

@@ -1,0 +1,37 @@
+;;
+;; REPL/_scratch_uvst_h13_milestone1_offset.repl — DALOS-audit #18H fix proof
+;; (U_VST::UC_MakeVestingDateList silently drops the caller-supplied `offset` when
+;; milestones=1: it returned present-time+duration instead of present-time+offset+duration,
+;; releasing earlier than specified whenever a cliff (`offset`) was combined with a single
+;; lump-sum milestone.)
+;;
+;; UC_MakeVestingDateList is a plain U|VST module function with no capability gating, so it's
+;; directly callable here without needing the full C_Vest token-issuance setup.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+
+(begin-tx "H13 TEST - milestones=1 must honor a nonzero offset (cliff)")
+(namespace "ouronet-ns")
+(env-chain-data { "block-time": (time "2026-08-27T00:00:00Z") })
+(let
+    (
+        (ref-U|VST:module{UtilityVstV1} U|VST)
+        (with-offset:[time] (ref-U|VST::UC_MakeVestingDateList 100000 500000 1))
+        (no-offset:[time] (ref-U|VST::UC_MakeVestingDateList 0 500000 1))
+    )
+    (map print
+        [
+            (format "milestones=1, offset=100000 (cliff), duration=500000 => {}" [with-offset])
+            (format "milestones=1, offset=0, duration=500000 => {} (common case, e.g. C_Sleep - must be unaffected)" [no-offset])
+            (expect
+                "with-offset's release date must be exactly 100000 seconds (the offset) later than no-offset's - proving offset is now honored, not silently dropped"
+                100000
+                (round (diff-time (at 0 with-offset) (at 0 no-offset)))
+            )
+        ]
+    )
+)
+(commit-tx)
