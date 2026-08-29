@@ -78,3 +78,35 @@ ownership. ~6-line cap + 4 one-line composes.
 (NF transmit mis-wired to the SF cap); the gate is on all four caps so it's correct once #7M lands. The
 transmit functions themselves are `UEV_IMC`-gated and marked "to be made after Upgrade" — their Talos
 wiring is separate (out of #2H scope).
+
+---
+
+## #3H + #4H — Custodians `C_Acquire` unguarded + broken availability reader → FIXED + PROVEN (2026-08-29)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/03_Custodians.pact` · proof
+`REPL/Stage_02/[5.3]_Launchpad.repl` (TX-3H4H). Fixed together — they're coupled (the cap's reader is #4H).
+
+**Bug:** Custodians is a half-wired copy of Snakes. (#3H) `C_Acquire` dropped straight into its `let` and
+never opened `CUSTODIANS|ACQUIRE`, so the per-nonce supply cap (`enforce amount <= available`), the
+`P|CUSTODIANS|CALLER`/`REMOTE-GOV` policy composes, and the `@event` were all skipped. (#4H) the cap's
+`UR_NonceSaleAvailability` read the non-existent `GOV|LAUNCHPAD|SC_NAME` → runtime "Unbound free
+variable" (latent; no test exercised it). So adding the cap without fixing #4H would just crash.
+
+**Fix:** (#3H) wrap the body in `(with-capability (CUSTODIANS|ACQUIRE nonce amount) …)`, mirroring
+Snakes:284. (#4H) `GOV|LAUNCHPAD|SC_NAME` → `GOV|DEMIPAD|SC_NAME` (the real member Snakes uses).
+
+**Proof (`[5.3]` TX-3H4H, deployed stack):**
+- **Fix green (exit 0):** `UR_NonceSaleAvailability(-1)` resolves to `-1` (pad holds none; no crash) —
+  #4H · an over-supply Custodian acquire (`amount 999999999`) is **rejected** with "Insufficient Assets
+  for Acquisiton" — #3H (the cap's supply enforce now fires).
+- **Bug reproduced (exit 1):** reverting #4H to `GOV|LAUNCHPAD|SC_NAME` → `Unbound free variable …
+  DEMIPAD.GOV|LAUNCHPAD|SC_NAME` at Custodians:193 through `UR_NonceSaleAvailability`. Restored, re-run
+  green. Full `Z.repl` green.
+
+**KDA→STOA naming (owner 2026-08-29):** NOT touched here. Per the settled SWP-audit L58 decision, the
+Kadena→STOA rename (`kda-pid→stoa-pid`, `wkda→wstoa`, labels/comments; the oracle is already the STOA
+price hardcoded at $0.10 pending the Aletheia Oracle) is **one dedicated protocol-wide sweep after all
+audits — never piecemeal**. Broadened + logged on the roadmap (Phase 1.4).
+
+**Still-open Custodians divergences (own turns):** #9M (`UC_NonceQuintessence` enforces), #10M
+(`UR_NonceSaleAvailability` enforces where Snakes doesn't), #15L (missing `UEV_IMC`).

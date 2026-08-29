@@ -368,9 +368,19 @@ reduction). Big structural fixes: SwapTracer `V1→V2` (H3 principal-orphan rede
 ClientPacts `→V2` (M14), `SwapperV3` gained `URC_ActiveSwpairs`, DWK/DLK→WSTOA/SSTOA rename (#65gL).
 The audit **introduced the `AU_` (Admin Update) prefix** — already merged into `StoicSyntax-Prefixes.md`.
 Signatures Stage-2 (DSA `A_Fuel(swpair)`) calls into SWP verified intact (11/11 resolve). Deferred:
-- [ ] **StoicSyntax naming sweep → Phase 1.4:** `KDA-PID`→`STOA-PID` (L58), `URC_Swap`/`URC_InverseSwap`
+- [ ] **StoicSyntax naming sweep → Phase 1.4:** `URC_Swap`/`URC_InverseSwap`
       →`URCv_Swap`/`URCv_InverseSwap` (L64), `UC_ComputeInverseY`→`v`-specialization, and rename the
       existing `AHU`/`AUP_*` instances to the new `AU_` prefix.
+- [ ] **Kadena → STOA rename (codebase-wide) → Phase 1.4:** owner (2026-08-29): *"there is no Kadena
+      anymore, there is STOA — remove all Kadena naming and move to STOA."* Everything was priced/named
+      in KDA pre-migration; the payment token is now STOA (wrapped-STOA), and the `KDA-PID` oracle is
+      already the STOA price **hardcoded at $0.10** (pending the future **Aletheia Oracle** for real STOA
+      pricing) — so this is a **pure naming rename, zero logic change**. Scope (~1,097 `kda`/`kadena`
+      refs in `1_SOVEREIGN`; the SWP L58 count was 308 `KDA-PID` across 17 files incl. the whole DemiPad
+      family): `KDA-PID`→`STOA-PID`, local `kda-pid`/`wkda-id`/`wkda-prec`→`stoa-pid`/`wstoa-id`/`wstoa-prec`,
+      the `WKDA`/`LKDA` labels + type discriminators, and all "Native KDA / WKDA" comments/@doc.
+      **Owner-established sequencing: ONE dedicated protocol-wide pass AFTER all audits — never piecemeal
+      mid-audit** (so the DEMIPAD audit fixes #3H/#4H/etc leave the KDA naming untouched; it's swept here).
 - [ ] **`#32bM` → Phase 6.1 (red team):** M11/M12 reachability correction (MTX-SWP fee-before-gate
       ordering, no-TTL rollback) — verdicts left as-is; owner filed it explicitly for main's red-team pass.
 - [ ] **Round III re-verify → Phase 6.1:** systematic re-check of every closed finding (owner: this

@@ -10,8 +10,8 @@ Status: `OPEN` (not yet discussed) · `DISCUSSING` · `AGREED` (fix locked, not 
 |---|-----|--------|-------|----|--------|
 | **#1C** | CRITICAL | STOAICO | `C_Collect` is drainable — non-idempotent + `unclaimed-count==1` pays the whole vault | D#1 | **FIXED** |
 | **#2H** | HIGH | Demipad | `retrieval` toggle is dead state — the anti-rug lock is never enforced | D#2 | **FIXED** |
-| **#3H** | HIGH | Custodians | `C_Acquire` never opens `CUSTODIANS|ACQUIRE` — supply cap + policy caps dropped | D#3 | OPEN |
-| **#4H** | HIGH | Custodians | calls non-existent `GOV|LAUNCHPAD|SC_NAME` → runtime unbound (should be `GOV|DEMIPAD|SC_NAME`) | D#4 | OPEN |
+| **#3H** | HIGH | Custodians | `C_Acquire` never opens `CUSTODIANS|ACQUIRE` — supply cap + policy caps dropped | D#3 | **FIXED** |
+| **#4H** | HIGH | Custodians | calls non-existent `GOV|LAUNCHPAD|SC_NAME` → runtime unbound (should be `GOV|DEMIPAD|SC_NAME`) | D#4 | **FIXED** |
 | **#5M** | MEDIUM | STOAICO | `A_Inject` div-by-`vault-score` no zero-guard (+ floor-to-0 under-distribution) | D#5 | OPEN |
 | **#6M** | MEDIUM | STOAICO | urSTOA double-credited across stake rounds (re-mints claimed urSTOA, over-spends cap) | D#7 | OPEN |
 | **#7M** | MEDIUM | Demipad | NF transmit guarded by the SF cap (NF can't move; SF-as-NF type mismatch) | D#8 | OPEN |

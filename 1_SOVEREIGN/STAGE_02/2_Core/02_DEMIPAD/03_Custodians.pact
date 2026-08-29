@@ -189,7 +189,8 @@
             (
                 (ref-DPDC:module{DpdcV1} DPDC)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
-                (lpad:string (ref-DEMIPAD::GOV|LAUNCHPAD|SC_NAME))
+                ;;#4H: was the non-existent GOV|LAUNCHPAD|SC_NAME → the real member (matches Snakes twin)
+                (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
                 (asset:string (UR_AssetID))
             )
             (ref-DPDC::UR_AccountNonceSupply lpad asset true nonce)
@@ -312,29 +313,34 @@
     ;;{F6}  [C]
     (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool)
         @doc "Only Nonce -3 -2 -1 can be used, and these are Bronze/Silver/Golden Fragment Nonces"
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
-                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
-                ;;
-                (asset:string (UR_AssetID))
-                (costs:object{DemiourgosLaunchpadV1.Costs} (URC_NonceAmountCosts nonce amount))
-                (pid:decimal (at "pid" costs))
-                (type:integer (if iz-native 0 1))
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-DEMIPAD::C_Deposit buyer asset pid type false)
+        ;;#3H: open CUSTODIANS|ACQUIRE (was missing — the twin Snakes wraps SNAKES|ACQUIRE). This restores
+        ;;    the per-nonce supply cap (enforce amount <= available) + composes the P|CUSTODIANS caller
+        ;;    policies the downstream DPDC-T transfer needs, and fires the @event.
+        (with-capability (CUSTODIANS|ACQUIRE nonce amount)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    ;;
+                    (asset:string (UR_AssetID))
+                    (costs:object{DemiourgosLaunchpadV1.Costs} (URC_NonceAmountCosts nonce amount))
+                    (pid:decimal (at "pid" costs))
+                    (type:integer (if iz-native 0 1))
+                    (ico1:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DEMIPAD::C_Deposit buyer asset pid type false)
+                    )
+                    (ico2:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DPDC-T::C_Transfer [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)
+                    )
+                    (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
                 )
-                (ico2:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-DPDC-T::C_Transfer [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)
+                (ref-IGNIS::C_Collect patron
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [])
                 )
-                (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
+                (format "User {} succesfuly acquired {} Nonce {} {} SFTs" [sb amount nonce asset])
             )
-            (ref-IGNIS::C_Collect patron
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [])
-            )
-            (format "User {} succesfuly acquired {} Nonce {} {} SFTs" [sb amount nonce asset])
         )
     )
     ;;{F7}  [X]

@@ -525,6 +525,38 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-3H4H - Custodians #3H (supply cap enforced) + #4H (availability reader resolves)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-3H/4H — Custodians acquire now guarded: #3H supply cap enforced + #4H reader fixed ===")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+(let
+    (
+        (buyer:string KST.EMMA)
+    )
+    (map print
+        [
+            ;; #4H: UR_NonceSaleAvailability now RESOLVES. Pre-fix it read the non-existent
+            ;;      GOV|LAUNCHPAD|SC_NAME → runtime "Unbound free variable". -1 = the pad holds none of
+            ;;      nonce -1 yet (collection not fueled), which is a valid resolved value (not a crash).
+            (format "<<TX-4H>> UR_NonceSaleAvailability(-1) => {}" [(DEMIPAD-CUSTODIANS.UR_NonceSaleAvailability -1)])
+            (expect "#4H: UR_NonceSaleAvailability resolves (>= -1, no unbound crash)"
+                true (>= (DEMIPAD-CUSTODIANS.UR_NonceSaleAvailability -1) -1))
+            ;; #3H: C_Acquire now OPENS CUSTODIANS|ACQUIRE, so the per-nonce supply cap fires — an
+            ;;      over-supply acquire is rejected. Pre-fix the cap was never opened, so this enforce
+            ;;      was skipped entirely and the acquire proceeded past it (oversell / unguarded).
+            (expect-failure "#3H: over-supply Custodian acquire REJECTED by the CUSTODIANS|ACQUIRE supply cap"
+                "Insufficient Assets for Acquisiton"
+                (DEMIPAD-CUSTODIANS.C_Acquire buyer buyer -1 999999999 false))
+            ""
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
 
 
 
