@@ -32,6 +32,12 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
       module implements. The next version for any interface that changes = **live + 1** (so we know if
       a new interface is V2 or V3). Record the **live→target(+1) map**. NB: local dev has already moved
       ahead of live for some (e.g. ATS on `V2` while live is `V1`) — target is relative to **live**, not local.
+- [x] **0.5a Checkpoint push** — all merges + session work pushed to `origin/main` (`3cf31ae`). ✅
+- [ ] **0.5 DEMIPAD audit (on main — the LAST unaudited module).** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/`
+      (DEMIPAD, Spark, Snakes, Custodians, StoicPay, STOAICO) is the only Stage-1/2 surface no audit
+      covered. Do it **here on main** (no worktree — nothing to parallelize). Mirror the other audits'
+      rigor (findings → owner verdicts → fixes-with-proof → tracker); produces its own carry-over to
+      fold + becomes part of Audit Book Part I. Green-gate after.
 
 ## PHASE 1 — URCi cost architecture (spec: `URCI-COST-ARCHITECTURE.md`; task #77)
 - [ ] **1.0 DECISION (settle before the walk): interface-richness policy.** Fully informed now by the
@@ -52,6 +58,12 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
       resolution is dynamic — undeclared works but loses load-time safety; see memories/2026-08-29-
       modref-interface-semantics.md). Internal-only leaves stay out.
 - [ ] **1.3** Keep a running line-count check per module (rule B) as `URCi`s are added.
+- [ ] **1.5 Rename `2_SLAVE` → `2_CITIZEN` (terminology alignment with the website).** Ouronet's site
+      names the two module classes **Sovereign** (canonical core) and **Citizen** (built by anyone, on
+      top of sovereign public APIs — never adds core capabilities). "Slave" is the old internal name for
+      the same thing. Rename the folder + update every reference: `../2_SLAVE/` load paths in the REPL
+      pipeline, `CLAUDE.md`, `MODULE-INDEX.md`, docs, deploy sequence, and "sovereign vs slave" wording
+      → "sovereign vs citizen". Mechanical; do it as one coordinated sweep. (task #87)
 - [ ] **1.4 StoicSyntax renames carried over from audits** (do during the per-module walk):
       **DPDC #40L** — `Wipe*` family (Heavy/Pure/Clean/Dirty) rename/rethink; **ATS #31L** — Talos
       `C_SetHotRecoveryFee` (singular) vs core `C_SetHotRecoveryFees` (plural), rename (no interface
@@ -315,7 +327,7 @@ verified intact. Deferrals:
 - FVT-over-ceiling (4.1) is a **hard gate before any mainnet deploy** — cannot ship/upgrade FVT until split.
 
 ## Quick task map
-#21 SWP audit · #23 ATS audit → **Phase 0**. #77 URCi → **Phase 1-2**. #74 vacate INFO → **Phase 2.2**.
+#88 DEMIPAD audit → **Phase 0.5**. #87 Slave→Citizen rename → **Phase 1.5**. #21 SWP · #23 ATS audit → **Phase 0** (done). #77 URCi → **Phase 1-2**. #74 vacate INFO → **Phase 2.2**.
 #78 complete-all-INFO → **Phase 2.3**. #76 re-price → **Phase 3**. #75 FVT split → **Phase 4**.
 #79 REPL coverage completion → **Phase 5.2**. #71/#72/#73 whole-codebase single run → **Phase 5.3**.
 #81 red team attack → **Phase 6.1**. #82 Audit Book → **Phase 6.2**. #85 interface version bump +

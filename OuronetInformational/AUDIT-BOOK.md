@@ -8,6 +8,7 @@ The per-module audits already done, from their `…/Audit/<MODULE>/` trees:
 - **ATS** (`1_SOVEREIGN/STAGE_01/2_Core/Audit/ATS/`) — merged to main.
 - **SWP** (`…/Audit/SWP/`), **DPDC** (`…/Audit/DPDC*`), **DPTF-DPOF** — in worktrees, merging.
 - **AQP** (`1_SOVEREIGN/STAGE_02/2_Core/03_AQP/Audit/`).
+- **DEMIPAD** (`1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/` — done on main, the last unaudited module).
 Each: findings (ranked), owner verdicts, ROUND-02 fixes with diffs + proofs. Frozen historical record.
 
 ## Part II — The main-work round (Phases 1-5)
