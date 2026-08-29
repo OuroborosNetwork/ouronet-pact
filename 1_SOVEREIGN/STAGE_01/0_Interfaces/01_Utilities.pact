@@ -153,7 +153,6 @@
     (defun UC_FE (in:list))
     (defun UC_InsertFirst:list (in:list item))
     (defun UC_IsNotEmpty:bool (x:list))
-    (defun UC_IzUnique (lst:[string]))
     (defun UC_LE (in:list))
     (defun UC_RemoveItem:list (in:list item))
     (defun UC_RemoveItemAt:list (in:list position:integer))
@@ -165,6 +164,8 @@
     ;;
     (defun UEV_NotEmpty:bool (x:list))
     (defun UEV_StringPresence (item:string item-lst:[string]))
+    ;;#44M fix: moved from [UC] - was UC_IzUnique, enforces (violates UC_ contract), renamed.
+    (defun UEV_IzUnique (lst:[string]))
 )
 ;;
 ;;  [6]      [U|INT]
@@ -182,7 +183,6 @@
         positive:[integer]
     )
     ;;
-    (defun UC_MaxInteger:integer (lst:[integer]))
     (defun UC_SplitAuxiliaryIntegerList:object{SplitIntegers} (primary:[integer] auxiliary:[integer]))
     (defun UC_SplitIntegerList:object{SplitIntegers} (input:[integer]))
     (defun UC_NonceSplitter:object{NonceSplitter} (nonces:[integer] amounts:[integer]))
@@ -190,6 +190,12 @@
     (defun UEV_ContainsAll:bool (l1:[integer] l2:[integer]))
     (defun UEV_PositionalVariable (integer-to-validate:integer positions:integer message:string))
     (defun UEV_UniformList (input:[integer]))
+    ;;#45M fix: moved from [UC] - was UC_MaxInteger, crashed uncatchably (raw array-bounds
+    ;;error, not even `try`-catchable) on an empty list via `(at 0 lst)`. There is no safe
+    ;;benign default for "max of nothing" (unlike #20H/Fix #18's HybridArray sum-of-nothing=[]
+    ;;case), so the correct fix is a real `enforce`, not a silent default - same root cause/fix
+    ;;shape as #44M's UC_IzUnique -> UEV_IzUnique rename.
+    (defun UEV_MaxInteger:integer (lst:[integer]))
     ;;
     (defun UDC_SplitIntegers:object{SplitIntegers} (neg:[integer] pos:[integer]))
     (defun UDC_NonceSplitter:object{NonceSplitter} (a:[integer] b:[integer] c:[integer] d:[integer]))

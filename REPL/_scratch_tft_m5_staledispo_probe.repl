@@ -1,0 +1,34 @@
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+
+(begin-tx "M5 PROBE")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-TFT:module{TrueFungibleTransferV1} TFT)
+        (ref-U|DPTF:module{UtilityDptfV1} U|DPTF)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (patron:string KST.ANHD)
+        (ea-id:string (ref-DALOS::UR_EliteAurynID))
+        (ouro-id:string (ref-DALOS::UR_OuroborosID))
+        (dispo-before:object{UtilityDptfV1.DispoData} (ref-TFT::UDC_GetDispoData patron))
+    )
+    (map print
+        [
+            (format "patron EA holdings: {}" [(ref-DPTF::UR_AccountSupply ea-id patron)])
+            (format "patron elite tier major/minor: {}" [(DALOS.UR_Elite patron)])
+            (format "dispo-before full object: {}" [dispo-before])
+            (format "patron OuroDispo (max overdraft allowed) BEFORE any EA reduction: {}" [(ref-U|DPTF::UC_OuroDispo dispo-before)])
+            (format "patron current OURO balance: {}" [(ref-DPTF::UR_AccountSupply ouro-id patron)])
+        ]
+    )
+)
+(commit-tx)

@@ -99,7 +99,8 @@
     ;;LQD (Liquid-Staking KDA) Functions
     (defun LQD|C_UnwrapStoa (patron:string unwrapper:string amount:decimal))
     (defun LQD|C_WrapStoa (patron:string wrapper:string amount:decimal))
-    (defun LQD|C_RegisterOuronetAccountForUrstoaHoldings (ouronet-account:string guard:guard))
+    ;;#13H fix: LQD|C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - see
+    ;;12_LIQUID.pact's matching note; account creation is UI-constructed, not a Pact function.
     (defun LQD|C_UnwrapUrStoa (patron:string unwrapper:string amount:decimal))
     (defun LQD|C_WrapUrStoa (patron:string wrapper:string amount:decimal))
     ;;
@@ -1645,29 +1646,13 @@
             )
         )
     )
-    ;;
-    (defun LQD|C_RegisterOuronetAccountForUrstoaHoldings (ouronet-account:string guard:guard)
-        @doc "Registers the <ouronet-account> attached Kadena Address, using its principal-guard \
-            \ in the UrStoa Ledger; the chosen <guard> must match the <ouronet-account> attached Kadena Address Principal \
-            \ This prepares the <ouronet-account> for wrapping and unwrapping UrStoa \
-            \ This functions is used by Ouronet Account Users that need to wrap unwrap UrStoa."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
-                    (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
-                    (sw:string (ref-I|OURONET::OI|UC_ShortAccount ouronet-account))
-                )
-                (ref-LIQUID::C_RegisterOuronetAccountForUrstoaHoldings ouronet-account guard)
-                (format "Succesfully registered Ouronet Account {} for UrStoaHoldings" [sw])
-            )
-        )
-    )
     (defun LQD|C_UnwrapUrStoa (patron:string unwrapper:string amount:decimal)
         @doc "Unwrapper is the Ouronet Account doing the Unwrapping. \
-            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work \
-            \ If its not registered there yet, its account must be created with \
-            \ <LQD|C_RegisterOuronetAccountForUrstoaHoldings> \
+            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work. \
+            \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
+            \ account with the real signer's own (read-keyset \"ks\") immediately before this \
+            \ call, the same pattern already used for native Stoa unwrap - there is no \
+            \ standalone Pact function for this (see #13H, ROUND-02-FIXES.md). \
             \ \
             \ Its register status can be verified with <LIQUID.UR_IzOuronetAccountRegisteredForUrstoaHoldings>"
         (with-capability (P|TS)
@@ -1687,9 +1672,11 @@
     )
     (defun LQD|C_WrapUrStoa (patron:string wrapper:string amount:decimal)
         @doc "Wrapper is the Ouronet Account doing the Wrapping. \
-            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work \
-            \ If its not registered there yet, its account must be created with \
-            \ <C_RegisterOuronetAccountForUrstoaHoldings>\ 
+            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work. \
+            \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
+            \ account with the real signer's own (read-keyset \"ks\") immediately before this \
+            \ call, the same pattern already used for native Stoa unwrap - there is no \
+            \ standalone Pact function for this (see #13H, ROUND-02-FIXES.md). \
             \ \
             \ Its register status can be verified with <LIQUID.UR_IzOuronetAccountRegisteredForUrstoaHoldings>"
         (with-capability (P|TS)

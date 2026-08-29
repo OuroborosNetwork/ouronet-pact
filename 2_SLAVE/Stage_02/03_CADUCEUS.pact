@@ -232,13 +232,19 @@
             (let
                 (
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                     (patron:string (UR_Patron))
                     (dptf-id:string (UR_DptfId))
                     (bridge-account:string (UR_BridgeAccount))
                 )
                 (UEV_Ready)
                 [
-                    (ref-TS01-C1::DPTF|C_DeployAccount patron dptf-id bridge-account)
+                    ;;#N2 fix: bridge-account is CADUCEUS's own system smart account (not
+                    ;;patron's) - admin variant (TS01-A, no ownership check on <account>),
+                    ;;replaces the self-service DPTF|C_DeployAccount (TS01-C1), which now
+                    ;;requires the caller to own <account>. Running this still requires
+                    ;;holding both GOV|CADUCEUS_ADMIN and TS01-A's own admin keyset.
+                    (ref-TS01-A::DPTF|A_DeployAccount patron dptf-id bridge-account)
                     (ref-TS01-C1::DPTF|C_ToggleMintRole patron dptf-id bridge-account true)
                     (ref-TS01-C1::DPTF|C_ToggleBurnRole patron dptf-id bridge-account true)
                     (ref-TS01-C1::DPTF|C_ToggleTransferRole patron dptf-id bridge-account true)

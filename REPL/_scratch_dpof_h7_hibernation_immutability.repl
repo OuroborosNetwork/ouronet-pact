@@ -1,0 +1,92 @@
+;;
+;; REPL/_scratch_dpof_h7_hibernation_immutability.repl — DALOS-audit #12H fix proof
+;; (DPOF|C>UPDATE-SPECIAL's immutability guard has a duplicated cond branch: vzh-tag 2 tested
+;; twice instead of 2 then 3, so the Hibernation branch on the MAIN token side never matches -
+;; main-special-id always falls through to BAR for vzh-tag=3, silently bypassing the
+;; "Special Orto Fungible Links ... are immutable !" enforce for Hibernation links.)
+;;
+;; Proof plan: issue a fresh DPTF owned by patron (can-add-special-role=true), create a
+;; Hibernating Link for it via VST|C_CreateHibernatingLink (the real Talos client path), record
+;; the resulting hibernation-link id, then call VST|C_CreateHibernatingLink AGAIN for the SAME
+;; DPTF. Pre-fix: the second call should succeed (bug) and silently re-point the hibernation-link
+;; to a brand-new DPOF, orphaning the first one. Post-fix: the second call must be rejected with
+;; the "immutable!" enforce message, and the hibernation-link must stay unchanged.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+
+(begin-tx "H7 TEST - first Hibernating Link create (must succeed), second (THE BUG: also succeeds pre-fix)")
+(namespace "ouronet-ns")
+;; Generous flat grants (well above what a single-token issue + 2 hibernation-link creates could
+;; need) to the same 4 fixed KDA-split destinations [6.2]_DPTF.repl uses, avoiding the need to
+;; compute exact per-call splits across 3 separate fee events (issue + 2x VST create).
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+          "caps":
+            [
+                (coin.TRANSFER
+                    "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                    100.0
+                )
+                (coin.TRANSFER
+                    "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                    100.0
+                )
+                (coin.TRANSFER
+                    "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                    100.0
+                )
+                (coin.TRANSFER
+                    "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                    100.0
+                )
+            ]
+        }
+    ]
+)
+(let*
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (patron:string KST.ANHD)
+        (dptf-id:string
+            (at 0
+                (ref-TS01-C1::DPTF|C_Issue
+                    patron patron
+                    ["H7TestCoin"] ["H7TC"] [12]
+                    [true] [true] [true]
+                    [false] [false] [true]
+                )
+            )
+        )
+        (before:string (ref-DPTF::UR_Hibernation dptf-id))
+        (call1 (ref-TS01-C2::VST|C_CreateHibernatingLink patron dptf-id))
+        (first-link:string (ref-DPTF::UR_Hibernation dptf-id))
+        (call2 (ref-TS01-C2::VST|C_CreateHibernatingLink patron dptf-id))
+        (after:string (ref-DPTF::UR_Hibernation dptf-id))
+    )
+    (map print
+        [
+            (format "hibernation-link BEFORE any create: {} (expected BAR/empty)" [before])
+            (format "<(VST|C_CreateHibernatingLink)> #1 => {}" [call1])
+            (format "hibernation-link AFTER first create: {} (expected a real id, not BAR)" [first-link])
+            (format "<(VST|C_CreateHibernatingLink)> #2 (SAME dptf, should be rejected as immutable) => {}" [call2])
+            (format "hibernation-link AFTER second create: {} (THE BUG pre-fix: differs from first-link '{}' above / FIXED: call #2 above should have aborted the whole tx before reaching this line)" [after first-link])
+        ]
+    )
+)
+(commit-tx)

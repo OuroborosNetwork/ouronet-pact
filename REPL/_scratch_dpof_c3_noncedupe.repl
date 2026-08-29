@@ -1,0 +1,195 @@
+;;
+;; REPL/_scratch_dpof_c3_noncedupe.repl — DALOS-audit #3C fix proof (DPOF nonce-uniqueness)
+;; Audit-only scratch, not part of the canonical suite. Run from REPL/: `pact _scratch_dpof_c3_noncedupe.repl`
+;;
+;; Reproduces (pre-fix) / proves (post-fix) both sub-mechanisms of #3C. Uses `expect-failure` around
+;; each duplicated-nonce call rather than a bare call, so the same file runs cleanly against BOTH the
+;; pre-fix and post-fix source: pre-fix, `expect-failure` reports "FAILURE: expected failure, got
+;; result ..." (non-fatal, the call actually succeeded) and the balance reads right after show the
+;; fabricated/corrupted values; post-fix, `expect-failure` reports success (the call was rejected) and
+;; the balance reads right after show nothing changed.
+;;
+;;   (a) C_Transfer with a duplicated whole-nonce list fabricates total-account-supply
+;;       (XI_TransferWholeNonces sums the nonce's supply once per list entry, but the
+;;       nonce itself only "moves" once).
+;;   (b) C_Transmit (-> DPOF|C>DEBIT -> XI_DebitNonces) with a duplicated nonce in the
+;;       debit list drives a single nonce's own supply negative, because each debit
+;;       leg re-reads (UR_NonceSupply) fresh at write time instead of accumulating
+;;       across the whole batch first.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+
+(begin-tx "C3 REPRO - chain data setup")
+(namespace "ouronet-ns")
+(env-chain-data
+    {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
+     "block-time": TV.TIME00}
+)
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "C3 REPRO - issue a fresh DPOF id, owner=emma")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_Emma", "caps": [] }
+        { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" ,
+          "caps":
+            [
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                    (at 2 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                    (at 0 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                    (at 3 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                    (at 1 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (emma:string KST.EMMA)
+        (ids:list
+            (ref-TS01-C1::DPOF|C_Issue
+                emma
+                emma
+                ["AuditC3Test"]
+                ["AC3T"]
+                [12]    ;;precision
+                [true]  ;;can-upgrade
+                [true]  ;;can-change-owner
+                [true]  ;;can-add-special-role
+                [true]  ;;can-transfer-oft-create-role
+                [false] ;;can-freeze
+                [false] ;;can-wipe
+                [true]  ;;can-pause
+            )
+        )
+    )
+    (print (format "Issued id(s): {}" [ids]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "C3 REPRO - turn segmentation ON (needed for C_Transmit) + mint two nonces to emma (owner)")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (id:string "AC3T-98c486052a51")
+        (emma:string KST.EMMA)
+    )
+    ;; Turn segmentation ON (last "sg" param), keep every other Control param as issued.
+    (ref-TS01-C1::DPOF|C_Control emma id true true true true false false true true)
+    ;; emma is the owner-konto so already has create-role implicitly (UR_R-Create's
+    ;; account==owner clause); still needs add-quantity role toggled on explicitly.
+    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole emma id emma true)
+    ;; Nonce #1: 100.0 to emma - used for test (a), whole-nonce transfer duplication.
+    (ref-TS01-C1::DPOF|C_Mint emma id emma 100.0 [])
+    ;; Nonce #2: 50.0 to emma - used for test (b), Transmit/Debit duplication.
+    (ref-TS01-C1::DPOF|C_Mint emma id emma 50.0 [])
+    (map print
+        [
+            (format "emma total-account-supply after both mints (expect 150.0): {}" [(DPOF.UR_AccountSupply id emma)])
+            (format "nonce 2 supply after mint (expect 50.0): {}" [(DPOF.UR_NonceSupply id 2)])
+        ]
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "C3 TEST (a) - C_Transfer with duplicated nonce [1,1], emma -> aoz")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (id:string "AC3T-98c486052a51")
+        (emma:string KST.EMMA)
+        (aoz:string KST.AOZT)
+    )
+    (print (expect-failure "C_Transfer with duplicated nonce [1,1] must be rejected outright (#3C) - pre-fix this line reports FAILURE (the call actually succeeds)"
+        (ref-TS01-C1::DPOF|C_Transfer emma id [1, 1] emma aoz false)
+    ))
+    (map print
+        [
+            (format "emma total-account-supply AFTER duplicated-nonce transfer attempt (pre-fix: fabricated to -50.0 = 150-200; post-fix: unchanged 150.0, call was rejected): {}" [(DPOF.UR_AccountSupply id emma)])
+            (format "aoz total-account-supply AFTER duplicated-nonce transfer attempt (pre-fix: fabricated to 200.0 instead of the real 100.0 nonce value; post-fix: unchanged 0.0): {}" [(DPOF.UR_AccountSupply id aoz)])
+        ]
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "C3 TEST (b) - C_Transmit with duplicated nonce [2,2], amounts [30.0, 30.0], emma -> aoz")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (id:string "AC3T-98c486052a51")
+        (emma:string KST.EMMA)
+        (aoz:string KST.AOZT)
+    )
+    ;; Nonce #2 has real supply 50.0. amounts=[30.0, 30.0] each individually pass the
+    ;; pre-write (<= amount nonce-supply) check (30 <= 50 both times, checked against the
+    ;; SAME stale pre-write value) - but 30+30=60 > 50, the real supply. Pre-fix: at write
+    ;; time XI_DebitNonces re-reads nonce-supply per-iteration (now reflecting the first
+    ;; debit), so the second debit computes 20.0 - 30.0 = -10.0 and WRITES it - no floor
+    ;; check anywhere in XI_UpdateNonceSupply.
+    (print (expect-failure "C_Transmit with duplicated nonce [2,2] must be rejected outright (#3C) - pre-fix this line reports FAILURE (the call actually succeeds)"
+        (ref-TS01-C1::DPOF|C_Transmit emma id [2, 2] [30.0, 30.0] emma aoz false)
+    ))
+    (print (format "nonce 2 supply AFTER duplicated Transmit attempt (real supply was 50.0 - structurally impossible to go negative; pre-fix: silently -10.0; post-fix: unchanged 50.0, call was rejected): {}" [(DPOF.UR_NonceSupply id 2)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "C3 REGRESSION - legitimate (non-duplicated) whole-nonce transfer must still work")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (id:string "AC3T-98c486052a51")
+        (emma:string KST.EMMA)
+        (aoz:string KST.AOZT)
+    )
+    ;; Only meaningful post-fix (pre-fix, emma's balance/nonce-1-holder state is already
+    ;; corrupted by TEST (a) above - that's expected and not part of what this block proves).
+    (ref-TS01-C1::DPOF|C_Transfer emma id [1] emma aoz false)
+    (print (format "PROOF: legitimate (non-duplicated) C_Transfer [1] still works — emma supply now: {}" [(DPOF.UR_AccountSupply id emma)]))
+    (print (format "PROOF: legitimate transfer credited aoz correctly (real 100.0 nonce value, not fabricated) — aoz supply now: {}" [(DPOF.UR_AccountSupply id aoz)]))
+)
+(commit-tx)

@@ -253,7 +253,7 @@
                 (
                     (ref-U|LST:module{StringProcessorV1} U|LST)
                     (ref-U|INT:module{OuronetIntegersV1} U|INT)
-                    (max-precision:integer (ref-U|INT::UC_MaxInteger rt-precisions))
+                    (max-precision:integer (ref-U|INT::UEV_MaxInteger rt-precisions))
                     (max-pp:integer (at 0 (ref-U|LST::UC_Search rt-precisions max-precision)))
                     (indexed-rbt:decimal (floor (* rbt-amount index) max-precision))
                     (resident-sum:decimal (fold (+) 0.0 resident-amounts))

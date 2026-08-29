@@ -1,4 +1,6 @@
-;; REPL/Stage_01/[6.10b]_PYTHIA-ledger-v2.repl — PythiaLedgerV2 batch A_Flush (load after [6.10] TX007)
+;; REPL/Stage_01/[6.10b]_PYTHIA-ledger-v2.repl — PythiaLedgerV2 batch A_Flush (load after [6.10] TX008)
+;; #72L fix: header previously said "TX007" - stale, [6.10]_PYTHIA.repl's real last tx is TX008
+;; (TX007a/b/c were added after this header was originally written). Doc-only, no code change.
 ;;
 (begin-tx "TX009 - A_Flush batch day 82 incomplete")
 (namespace "ouronet-ns")

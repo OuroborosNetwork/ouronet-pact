@@ -57,6 +57,15 @@
     ;; [URC]
     (defun URC_AWT|LatestUpload:object (codex-id:string))
     ;;
+    ;;#24H fix: these four were already live/actively-called via TS01-C4's module{CodexV1}-typed
+    ;;ref, but missing from the interface itself. Added here, purely additive - the module already
+    ;;implements all four with matching signatures.
+    ;; [C]
+    (defun C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard))
+    (defun C_RecordArweaveUpload:string (codex-id:string arweave-tx-id:string uploaded-bytes:integer))
+    (defun C_RegisterStoicTag:string (tag-name:string account-address:string))
+    (defun C_ReleaseStoicTag:string (tag-name:string))
+    ;;
     ;; [INFO] UI previews — register: STOA always (KDA|C_CollectWT false); release: IGNIS per virtual-gas rules
     (defun CODEX|INFO_RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
         (patron:string tag-name:string account-address:string))

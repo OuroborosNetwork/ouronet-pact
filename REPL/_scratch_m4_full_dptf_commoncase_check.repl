@@ -1,0 +1,31 @@
+;;
+;; REPL/_scratch_m4_full_dptf_commoncase_check.repl — DALOS-audit #28M fix regression check
+;;
+;; C_ClearDispo's COMMON case (account not pre-frozen) has zero coverage in the default Z.repl
+;; pipeline - only the full, non-default [6.2]_DPTF.repl exercises it, via its own
+;; "Dispo 2|x Clear Dispo Test" on emma. This driver runs that real, unmodified fixture directly
+;; to confirm the #28M fix doesn't break the common (not-pre-frozen) unfreeze-at-the-end behavior.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+(load "Stage_01/[5.2]_Dispenser+.repl")
+(load "Stage_01/[6.2]_DPTF.repl")
+
+(begin-tx "M4 REGRESSION CHECK - emma's EA must be unfrozen after ClearDispo (common, not-pre-frozen case)")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (receiver:string KST.EMMA)
+        (ea-id:string "ELITEAURYN-98c486052a51")
+    )
+    (print (format "Emma's EA frozen-state after the real [6.2]_DPTF.repl ClearDispo test ran (common case, not pre-frozen - must be false): {}" [(ref-DPTF::UR_AccountFrozenState ea-id receiver)]))
+)
+(commit-tx)

@@ -40,7 +40,13 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun UC_MaxInteger:integer (lst:[integer])
+    ;;#45M fix: renamed UC_MaxInteger -> UEV_MaxInteger (was a UC_-prefixed function that crashed
+    ;;uncatchably - a raw array-bounds runtime error, not even `try`-catchable - on an empty
+    ;;list via `(at 0 lst)`). There's no safe benign default for "max of an empty list," so the
+    ;;fix is a real `enforce` converting the crash into a clean, catchable rejection - same
+    ;;root-cause/fix shape as #44M. Body below the enforce is byte-for-byte unchanged.
+    (defun UEV_MaxInteger:integer (lst:[integer])
+        (enforce (> (length lst) 0) "UEV_MaxInteger: list cannot be empty")
         (fold
             (lambda
                 (acc:integer element:integer)

@@ -179,7 +179,7 @@
         (with-capability (P|TALOS-SUMMONER)
             (let
                 (
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                     (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
                     (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
@@ -190,9 +190,13 @@
                     (nf:[bool] [false false])
                 )
                 (ref-DEMIPAD::A_RegisterAssetToLaunchpad patron asset-id fungibility)
+                ;;#N2 fix: lpad is DEMIPAD's own system smart account (not patron's) - the
+                ;;admin variant (TS01-A, no ownership check on <account>) replaces the
+                ;;self-service DPTF|C_DeployAccount/DPOF|C_DeployAccount (TS01-C1), which now
+                ;;require the caller to own <account>.
                 (cond
-                    ((= fungibility tf) (ref-TS01-C1::DPTF|C_DeployAccount patron asset-id lpad))
-                    ((= fungibility of) (ref-TS01-C1::DPOF|C_DeployAccount patron asset-id lpad))
+                    ((= fungibility tf) (ref-TS01-A::DPTF|A_DeployAccount patron asset-id lpad))
+                    ((= fungibility of) (ref-TS01-A::DPOF|A_DeployAccount patron asset-id lpad))
                     ((= fungibility sf) (ref-TS02-C1::DPSF|C_DeployAccount patron lpad asset-id))
                     ((= fungibility nf) (ref-TS02-C2::DPNF|C_DeployAccount patron lpad asset-id))
                     true

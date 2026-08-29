@@ -306,7 +306,9 @@
     (defconst PYTHIA|APOLLO-SMART:string                "Π")
     (defconst PYTHIA|MAX-DAILY-RANGE:integer            365)
     (defconst PYTHIA|MAX-FLUSH-BATCH:integer            1000)
-    (defconst PYTHIA|FLUSH-GAS-TARGET:integer           2000000)
+    ;;#68L fix: removed PYTHIA|FLUSH-GAS-TARGET - dead constant, confirmed zero references
+    ;;anywhere; likely a leftover from an earlier gas-based batching design later replaced by
+    ;;the count-based PYTHIA|MAX-FLUSH-BATCH cap. No functional change.
     ;;
     ;;<==========>
     ;;CAPABILITIES

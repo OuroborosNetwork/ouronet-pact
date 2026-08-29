@@ -29,12 +29,13 @@
     ;;{1}
     ;;{2}
     ;;{3}
+    ;;#73L fix: removed the tautological `or` - `(NS_TEST)` is itself defined as
+    ;;`(at 0 ["free"])` = "free" (line 10), so `(= (CT_NS_USE) (NS_TEST))` and
+    ;;`(= (CT_NS_USE) "free")` were checking the exact same condition twice. Kept the named
+    ;;`(NS_TEST)` form (clearer, doesn't hardcode the literal). No behavioral change.
     (defun CT_DPTF-FeeLock ()
         (if
-            (or
-                (= (CT_NS_USE) (NS_TEST))
-                (= (CT_NS_USE) "free")
-            )
+            (= (CT_NS_USE) (NS_TEST))
             1.0
             10000.0
         )
@@ -164,7 +165,10 @@
     ;;{F1}  [URC]
     (defun UR|KDA-PID:decimal ()
         ;;(at "value" (n_bfb76eab37bf8c84359d6552a1d96a309e030b71.dia-oracle.get-value "KDA/USD"))
-        1.0
+        ;;#19H: no live oracle wired up yet - hardcoded to mainnet's approximate KDA/USD price
+        ;;(owner, 2026-08-27) as an interim placeholder. Wire the real oracle call above once
+        ;;one is available, and remove this stub.
+        0.1
     )
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]

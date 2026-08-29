@@ -1,0 +1,36 @@
+;;
+;; REPL/_scratch_udec_h15_hybridarray_emptyinput.repl — DALOS-audit #20H fix proof
+;; (U_DEC::UC_AddHybridArray crashes/produces bogus output on empty input: maxl=0 makes
+;; (enumerate 0 -1) return [0 -1] instead of [], and (at -1 ...)/(at 0 []) then misbehaves or
+;; hard-crashes. Owner: never seen it crash in production - every real caller always passes a
+;; non-empty column set, so the fix must be purely additive and not touch that path at all.)
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+
+(begin-tx "H15 TEST - empty input must return [] cleanly, normal input must be byte-identical")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)
+    )
+    (map print
+        [
+            (format "UC_AddHybridArray([]) => {} (must be [], not crash/garbage)" [(ref-U|DEC::UC_AddHybridArray [])])
+            (format "UC_AddHybridArray([[] [] []]) => {} (all-empty inner lists - must be [], not crash/garbage)" [(ref-U|DEC::UC_AddHybridArray [[] [] []])])
+            (expect
+                "normal/realistic input (unequal-length inner lists, matching real ATSU callers' shape) must be unaffected by the fix"
+                [4.0 2.0]
+                (ref-U|DEC::UC_AddHybridArray [[1.0 2.0] [3.0]])
+            )
+            (expect
+                "8-column ATSU-shaped input (c0..c7 pattern) with realistic non-empty values must be unaffected"
+                [3.0 6.0 9.0]
+                (ref-U|DEC::UC_AddHybridArray [[1.0 2.0 3.0] [1.0 2.0 3.0] [1.0 2.0 3.0] [] [] [] [] []])
+            )
+        ]
+    )
+)
+(commit-tx)

@@ -1,0 +1,46 @@
+;;
+;; REPL/_scratch_tft_n2_deployaccount_ownership.repl — DALOS-audit #N2 fix proof
+;; (TS01-C1::DPTF|C_DeployAccount / DPOF|C_DeployAccount ungated public entrypoints)
+;; Audit-only scratch, not part of the canonical suite. Run from REPL/: `pact _scratch_tft_n2_deployaccount_ownership.repl`
+;;
+;; Pre-fix: TS01-C1::DPTF|C_DeployAccount/DPOF|C_DeployAccount are gated only by `(with-capability
+;; (P|TS))`, a bare-true cap chain (no ownership check on <account>) - any signer can force any
+;; existing account to associate with any token id. This test has an unrelated attacker (`byta`)
+;; force-deploy AurynID onto a victim (`lumy`) who never asked for it and never signed anything
+;; related to `lumy`'s own account.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+
+(begin-tx "N2 TEST - unrelated attacker force-deploys AurynID onto a victim account")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let*
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (byta:string KST.ANHD)     ;; "attacker" - pays gas, controls nothing about `lumy`; the
+                                   ;; identity doesn't matter, the bug is that NO relationship
+                                   ;; to the target account is required at all
+        (lumy:string KST.LUMY)     ;; victim - never touched AurynID, never signed this tx
+        (auryn-id:string (DALOS.UR_AurynID))
+        (before-assoc:bool (DPTF.UR_IzAccount auryn-id lumy))
+    )
+    (map print
+        [
+            (format "victim (lumy) already associated with AurynID before the attack? {} (expected false)" [before-assoc])
+            (expect-failure
+                (format "attacker ({}) force-deploying AurynID onto victim ({})'s account must be rejected (CAP_EnforceAccountOwnership)" [byta lumy])
+                (ref-TS01-C1::DPTF|C_DeployAccount byta auryn-id lumy)
+            )
+            (format "victim (lumy) associated with AurynID AFTER the rejected attack? {} (must stay false - the rejected call must not have partially applied)" [(DPTF.UR_IzAccount auryn-id lumy)])
+        ]
+    )
+)
+(commit-tx)

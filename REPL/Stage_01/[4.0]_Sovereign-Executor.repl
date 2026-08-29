@@ -823,10 +823,11 @@
         (ref-TS01-A::DALOS|A_IgnisToggle false true)
         (ref-TS01-A::DALOS|A_IgnisToggle true true)
         ;;
-        (ref-TS01-C1::DPTF|C_DeployAccount patron AurynID ats)
-        (ref-TS01-C1::DPTF|C_DeployAccount patron EliteAurynID ats)
-        (ref-TS01-C1::DPTF|C_DeployAccount patron WrappedKadenaID liquid)
-        (ref-TS01-C1::DPTF|C_DeployAccount patron StakedKadenaID liquid)
+        ;;#N2 fix: system smart accounts (not self-owned) - admin variant, not self-service C_
+        (ref-TS01-A::DPTF|A_DeployAccount patron AurynID ats)
+        (ref-TS01-A::DPTF|A_DeployAccount patron EliteAurynID ats)
+        (ref-TS01-A::DPTF|A_DeployAccount patron WrappedKadenaID liquid)
+        (ref-TS01-A::DPTF|A_DeployAccount patron StakedKadenaID liquid)
         ;;Set Token Roles Part III
         (ref-TS01-C1::DPTF|C_SetFee patron StakedKadenaID -1.0)
         (ref-TS01-C1::DPTF|C_ToggleFee patron StakedKadenaID true)
@@ -1292,11 +1293,12 @@
     (ref-TS01-A::SWP|A_UpdatePrincipal p1 true)
     (ref-TS01-A::SWP|A_UpdatePrincipal p2 true)
 
-    (ref-TS01-C1::DPTF|C_DeployAccount patron p1 swp)
+    ;;#N2 fix: swp is a system smart account (not self-owned) - admin variant
+    (ref-TS01-A::DPTF|A_DeployAccount patron p1 swp)
     ;(ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron p1 swp true)
     ;(ref-TS01-C1::DPTF|C_ToggleBurnRole patron p1 swp true)
 
-    (ref-TS01-C1::DPTF|C_DeployAccount patron p2 swp)
+    (ref-TS01-A::DPTF|A_DeployAccount patron p2 swp)
     ;(ref-TS01-C1::DPTF|C_ToggleFeeExemptionRole patron p2 swp true)
 )
 

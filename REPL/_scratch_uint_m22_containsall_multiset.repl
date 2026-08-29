@@ -1,0 +1,31 @@
+;;
+;; REPL/_scratch_uint_m22_containsall_multiset.repl — DALOS-audit #46M confirmation
+;; (U_INT::UEV_ContainsAll checks set membership, not multiset containment — verify live before
+;; presenting, per standing instruction. Sole live consumer is DPMF, permanently out of scope
+;; per owner's #36M/#37M ruling.)
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+
+(begin-tx "M22 CHECK - UEV_ContainsAll multiset gap")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-U|INT:module{OuronetIntegersV1} U|INT)
+    )
+    (map print
+        [
+            ;; l1 has two 1s, l2 only has one 1 available - a true multiset-containment check
+            ;; would say false (l2 can't cover two 1s with only one), but this returns true.
+            (format "UEV_ContainsAll [1 1] [1] => {} (multiset-correct answer would be false)"
+                [(ref-U|INT::UEV_ContainsAll [1 1] [1])])
+            (format "UEV_ContainsAll [1 2] [1 2] => {} (true either way - sanity check)"
+                [(ref-U|INT::UEV_ContainsAll [1 2] [1 2])])
+            (format "UEV_ContainsAll [1 2 3] [1 2] => {} (correctly false either way)"
+                [(ref-U|INT::UEV_ContainsAll [1 2 3] [1 2])])
+        ]
+    )
+)
+(commit-tx)

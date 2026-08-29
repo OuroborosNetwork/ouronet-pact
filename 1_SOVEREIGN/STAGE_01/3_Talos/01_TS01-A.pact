@@ -26,6 +26,10 @@
     (defun DPTF|A_UpdateTreasuryDispoParameters (type:integer tdp:decimal tds:decimal))
     (defun DPTF|A_WipeTreasuryDebt ())
     (defun DPTF|A_WipeTreasuryDebtPartial (debt-to-be-wiped:decimal))
+    (defun DPTF|A_DeployAccount (patron:string id:string account:string))
+    ;;
+    ;;DPOF Functions
+    (defun DPOF|A_DeployAccount (patron:string id:string account:string))
     ;;
     ;;ATS Functions
     (defun ATS|A_RemoveSecondary (patron:string remover:string ats:string reward-token:string accounts-with-ats-data:[string]))
@@ -424,6 +428,54 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 )
                 (ref-DPTF::A_WipeTreasuryDebtPartial debt-to-be-wiped)
+            )
+        )
+    )
+    (defun DPTF|A_DeployAccount (patron:string id:string account:string)
+        @doc "Administrative variant of DPTF|C_DeployAccount (TS01-C1) - deploys a DPTF \
+            \ Account for <account> with no ownership check on <account>. For \
+            \ system/infrastructure account setup only (a smart account governed by \
+            \ another module, e.g. a pool/vault/dispenser account), where the caller \
+            \ legitimately cannot hold <account>'s own guard. End-user self-service \
+            \ activation must use the ownership-gated DPTF|C_DeployAccount instead."
+        (with-capability (P|ADMINISTRATIVE-SUMMONER)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                )
+                (ref-DPTF::C_DeployAccount id account)
+                (ref-IGNIS::C_Collect patron
+                    (ref-IGNIS::UDC_SmallCumulator account)
+                )
+                (format "DPTF {} added to {} Ouronet Account succesfully! (admin)" [id sa])
+            )
+        )
+    )
+    ;;
+    ;;  [DPOF_Administrator]
+    (defun DPOF|A_DeployAccount (patron:string id:string account:string)
+        @doc "Administrative variant of DPOF|C_DeployAccount (TS01-C1) - deploys a DPOF \
+            \ Account for <account> with no ownership check on <account>. For \
+            \ system/infrastructure account setup only (a smart account governed by \
+            \ another module, e.g. a pool/vault/dispenser account), where the caller \
+            \ legitimately cannot hold <account>'s own guard. End-user self-service \
+            \ activation must use the ownership-gated DPOF|C_DeployAccount instead."
+        (with-capability (P|ADMINISTRATIVE-SUMMONER)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                )
+                (ref-DPOF::C_DeployAccount id account)
+                (ref-IGNIS::C_Collect patron
+                    (ref-IGNIS::UDC_SmallCumulator account)
+                )
+                (format "Succesfully deployed a New DPOF Account for DPOF {} on Ouronet Account {} (admin)" [id sa])
             )
         )
     )

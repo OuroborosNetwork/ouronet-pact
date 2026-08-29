@@ -1,0 +1,36 @@
+;;
+;; REPL/_scratch_ts01a_n3_treasury_gate_check.repl — DALOS-audit #N3 investigation
+;;
+;; TS01-A::DPTF|A_UpdateTreasuryDispoParameters/A_WipeTreasuryDebt/A_WipeTreasuryDebtPartial are
+;; gated only by bare-true P|TS at the Talos layer (no P|ADMINISTRATIVE-SUMMONER, unlike every
+;; sibling admin function in the same file). Before concluding this is exploitable like #N2, check
+;; whether the CORE layer (05_DPTF.pact::A_UpdateTreasury/A_WipeTreasuryDebt/A_WipeTreasuryDebtPartial)
+;; has its own independent real gate. Reading the source shows each composes GOV|WIPE_ALL-TREASURY-DEBT
+;; / GOV|WIPE_PARTIAL-TREASURY-DEBT / GOV|SET_TREASURY-DISPO, which all further compose GOV|DPTF_ADMIN
+;; - a real enforce-one[DPTF module-def keyset, patron's own account guard] check, not a rubber stamp.
+;; This test confirms that live: an unrelated unauthenticated signer must be REJECTED.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "N3 TEST - unrelated unauthenticated signer attempts to wipe Treasury Debt via the weak TS01-A gate")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Lumy", "caps": [] } ])
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+    )
+    (print
+        (expect-failure
+            "unrelated signer (lumy, no DPTF module-def key, no patron account guard) must be rejected by the real GOV|DPTF_ADMIN check inside A_WipeTreasuryDebtPartial, despite the weak TS01-A P|TS Talos-layer gate"
+            (ref-TS01-A::DPTF|A_WipeTreasuryDebtPartial 1.0)
+        )
+    )
+)
+(commit-tx)

@@ -503,7 +503,7 @@
                 ;;
                 (l:integer (length receiver-lst))
             )
-            (ref-U|LST::UC_IzUnique receiver-lst)
+            (ref-U|LST::UEV_IzUnique receiver-lst)
             (UEV_PauseState id false)
             (UEV_AccountFreezeState id sender false)
             (map
@@ -562,8 +562,8 @@
                     (length can-pause)
                 ]
             )
-            (ref-U|LST::UC_IzUnique name)
-            (ref-U|LST::UC_IzUnique ticker)
+            (ref-U|LST::UEV_IzUnique name)
+            (ref-U|LST::UEV_IzUnique ticker)
             (ref-DALOS::CAP_EnforceAccountOwnership account)
             (compose-capability (P|SECURE-CALLER))
         )
@@ -635,10 +635,16 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|LST:module{StringProcessorV1} U|LST)
                 (l1:integer (length nonces))
-                (l2:integer (length amounts))    
+                (l2:integer (length amounts))
             )
             (enforce (= l1 l2) "Invalid Inputs for Debitation")
+            ;;A repeated nonce would let each index's pre-write <= nonce-supply check pass against the
+            ;;same stale supply value, then debit it more than once at write time — supply-negative
+            ;;corruption (DALOS audit #3C). Single shared gate for C_Transmit/C_WipePure/C_WipeClean/etc.
+            ;;UEV_IzUnique is [string]-typed; nonces are integers, so stringify first.
+            (ref-U|LST::UEV_IzUnique (map (lambda (n:integer) (int-to-str 10 n)) nonces))
             (map
                 (lambda
                     (idx:integer)
@@ -747,7 +753,7 @@
                 (input-nonces:[integer] (at "input-nonces" td))
                 (input-amounts:[decimal] (at "input-amounts" td))
                 (output-nonces:[integer] (at "output-nonces" td))
-                (meta-data-array:[[object]] (at "meta-data" td))
+                (meta-data-array:[[object]] (at "meta-data-array" td))
             )
             (UEV_SegmentationState id true)
             (compose-capability (DPOF|C>DEBIT sender id input-nonces input-amounts false))
@@ -760,8 +766,13 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|LST:module{StringProcessorV1} U|LST)
             )
             (ref-DALOS::CAP_EnforceAccountOwnership sender)
+            ;;A repeated nonce would let XI_TransferWholeNonces sum its supply more than once into
+            ;;sender/receiver total-account-supply while only moving the nonce itself once — fabricated
+            ;;supply inflation/deflation (DALOS audit #3C). UEV_IzUnique is [string]-typed; stringify first.
+            (ref-U|LST::UEV_IzUnique (map (lambda (n:integer) (int-to-str 10 n)) nonces))
             (UEV_NoncesToAccount id sender nonces)
             (UEV_NoncesCirculating id nonces)
             (compose-capability (DPOF|S>MOVE id sender receiver method))
@@ -775,6 +786,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|LST:module{StringProcessorV1} U|LST)
                 ;;
                 (l:integer (length receiver-lst))
                 (all-nonces:[integer] (UC_FlattenNoncesArray nonces-array))
@@ -790,6 +802,11 @@
                 )
                 "Invalid DPOF bulk transfer: receiver/nonces legs or nonce list"
             )
+            ;;Uniqueness across the FULL flattened set — blocks both a duplicate within one receiver's
+            ;;own leg and the same nonce appearing in two different receivers' legs (each leg calls
+            ;;XI_TransferWholeNonces independently; either case fabricates supply — DALOS audit #3C).
+            ;;UEV_IzUnique is [string]-typed; stringify first.
+            (ref-U|LST::UEV_IzUnique (map (lambda (n:integer) (int-to-str 10 n)) all-nonces))
             (UEV_NoncesToAccount id sender all-nonces)
             (UEV_NoncesCirculating id all-nonces)
             (compose-capability (DPOF|S>BULK-MOVE id sender receiver-lst method))
@@ -805,7 +822,7 @@
                     (cond
                         ((= vzh-tag 1) (ref-DPTF::UR_Vesting main-dptf))
                         ((= vzh-tag 2) (ref-DPTF::UR_Sleeping main-dptf))
-                        ((= vzh-tag 2) (ref-DPTF::UR_Hibernation main-dptf))
+                        ((= vzh-tag 3) (ref-DPTF::UR_Hibernation main-dptf))
                         BAR
                     )
                 )
@@ -1295,23 +1312,22 @@
         )
     )
     (defun URC_Parent:string (dpof:string)
+        ;;#31M fix: dropped the "Sleeping LP Tokens not allowed" enforce (moved to
+        ;;UEV_ParentOwnership, the only caller that actually needs it - see its own @doc). A
+        ;;URC_* must never enforce; the read-context caller (DPL-UR's wallet-listing helper)
+        ;;needs a pure derivation and the existing "Z|" branch below already handles a
+        ;;Sleeping-LP-shaped id correctly, same as any other Sleeping token.
         @doc "Computes <dpof> parent"
         (let
             (
-                (fourth:string (drop 3 (take 4 dpof)))
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (first-two:string (take 2 dpof))
             )
-            (enforce (!= fourth BAR) "Sleeping LP Tokens not allowed for this operation")
-            (let
-                (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (first-two:string (take 2 dpof))
-                )
-                (cond
-                    ((= first-two "V|") (UR_Vesting dpof))
-                    ((= first-two "Z|") (UR_Sleeping dpof))
-                    ((= first-two "H|") (UR_Hibernation dpof))
-                    dpof
-                )
+            (cond
+                ((= first-two "V|") (UR_Vesting dpof))
+                ((= first-two "Z|") (UR_Sleeping dpof))
+                ((= first-two "H|") (UR_Hibernation dpof))
+                dpof
             )
         )
     )
@@ -1396,8 +1412,12 @@
         (let
             (
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (fourth:string (drop 3 (take 4 id)))
                 (parent:string (URC_Parent id))
             )
+            ;;#31M fix: moved here from URC_Parent, which must never enforce - this is the only
+            ;;caller that actually needs this rejection (per this function's own @doc).
+            (enforce (!= fourth BAR) "Sleeping LP Tokens not allowed for this operation")
             (if (= parent id)
                 (CAP_Owner id)
                 (ref-DPTF::CAP_Owner parent)
@@ -1902,10 +1922,14 @@
                 )
                 ;;Deploy WNE
                 (XB_DeployAccountWNE receiver id)
+                ;;Update Account Roles — MUST run before Verum Roles below: XI_SwitchCreateRole
+                ;;reads the CURRENT (pre-write) Verum4 internally to find the account to revoke.
+                ;;Running XI_UpdateVerum4 first would overwrite that value to <receiver> before
+                ;;XI_SwitchCreateRole ever reads it, so the real previous holder would never be
+                ;;revoked (DALOS audit #2C).
+                (XI_SwitchCreateRole id receiver)
                 ;;Update Verum Roles
                 (XI_UpdateVerum4 id receiver)
-                ;;Update Account Roles
-                (XI_SwitchCreateRole id receiver)
                 ;;Output
                 (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
             )
@@ -2637,6 +2661,16 @@
     )
     ;;
     ;;{F8}  [AUP - Admin Update Functions]
+    ;;#33M (audit note, 2026-08-28): AHU/AUP_OrtoFungible(s)/AUP_OrtoFungibleAccount(s) are a
+    ;;HISTORICAL, one-time migration utility used during the DPMF -> DPOF (meta-fungible to
+    ;;orto-fungible) migration, to batch-repair "id"/"account" key fields on rows carried over
+    ;;from that migration. Not a general-purpose admin backdoor: the hardcoded account (AH,
+    ;;"AncientHodler"/patron) was intentionally scoped to that one-time historical operation,
+    ;;which is now complete - not a substitute for GOV|DPOF_ADMIN and not meant to be a
+    ;;permanent alternate admin path. Owner (2026-08-28): "It's that way by design, and I think
+    ;;everything is migrated anyway... this was used when migrating from meta to orto fungible."
+    ;;Kept for historical reference, same retention rationale as DPMF itself (see #1C). No
+    ;;functional change made - documentation only.
     ;;
     (defcap AHU ()
         (let

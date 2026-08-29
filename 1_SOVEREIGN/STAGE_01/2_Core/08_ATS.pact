@@ -584,7 +584,7 @@
                 (lengths:[integer] [l1 l2 l3 l4 l5 l6])
             )
             (ref-U|INT::UEV_UniformList lengths)
-            (ref-U|LST::UC_IzUnique atspair)
+            (ref-U|LST::UEV_IzUnique atspair)
             (ref-DALOS::CAP_EnforceAccountOwnership account)
             (map
                 (lambda
@@ -1235,7 +1235,7 @@
                 (syphon:decimal (UR_Syphon atspair))
                 (resident-amounts:[decimal] (UR_RewardTokenRUR atspair 1))
                 (precisions:[integer] (UR_RtPrecisions atspair))
-                (max-precision:integer (ref-U|INT::UC_MaxInteger precisions))
+                (max-precision:integer (ref-U|INT::UEV_MaxInteger precisions))
                 (max-pp:integer (at 0 (ref-U|LST::UC_Search precisions max-precision)))
                 (pair-rbt-supply:decimal (URC_PairRBTSupply atspair))
             )

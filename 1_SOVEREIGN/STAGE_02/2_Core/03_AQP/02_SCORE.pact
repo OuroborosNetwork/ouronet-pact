@@ -662,7 +662,7 @@
                 (precision:integer (UR_SCR|ScorePrecision score-id))
                 (l1:integer (length nonces))
                 (l2:integer (length nonce-score-values))
-                (max-input-nonce:integer (if (> l1 0) (ref-U|INT::UC_MaxInteger nonces) 0))
+                (max-input-nonce:integer (if (> l1 0) (ref-U|INT::UEV_MaxInteger nonces) 0))
                 (nonces-used:integer (ref-DPDC::UR_NoncesUsed dpsf-id true))
             )
             (enforce

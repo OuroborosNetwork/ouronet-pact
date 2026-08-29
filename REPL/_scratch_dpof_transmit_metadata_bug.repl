@@ -1,0 +1,133 @@
+;;
+;; REPL/_scratch_dpof_transmit_metadata_bug.repl — DALOS-audit fix proof (DPOF C_Transmit broken)
+;; Audit-only scratch, not part of the canonical suite. Run from REPL/: `pact _scratch_dpof_transmit_metadata_bug.repl`
+;;
+;; Discovered while building the #3C REPL proof: DPOF|C>TRANSMIT's defcap reads (at "meta-data" td),
+;; but the TransmitData schema's real field is meta-data-array (confirmed both in the defschema and
+;; in the UDCX_TransmitData constructor, which correctly builds "meta-data-array"). Every call to
+;; C_Transmit — core or via the Talos TS01-C1::DPOF|C_Transmit wrapper — crashes immediately with
+;; `Key "meta-data" not found`, for ANY input, not just duplicated nonces. Deliberately uses a plain,
+;; ordinary, non-duplicated nonce list here to isolate this bug from #3C (proven separately).
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+
+(begin-tx "TRANSMIT-BUG - chain data setup")
+(namespace "ouronet-ns")
+(env-chain-data
+    {"prev-block-hash": "98c486052a5147fdd30fa43cc6d67e0a4e680c856c37f9157cb788cd67d58006",
+     "block-time": TV.TIME00}
+)
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TRANSMIT-BUG - issue a fresh DPOF id, owner=emma")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs
+    [
+        { "key": "PK_Emma", "caps": [] }
+        { "key": "ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" ,
+          "caps":
+            [
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                    (at 2 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                    (at 0 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                    (at 3 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+                (coin.TRANSFER
+                    "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                    (at 1 (DALOS.URC_SplitKDAPrices KST.EMMA (DALOS.UR_UsagePrice "dpmf")))
+                )
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (emma:string KST.EMMA)
+        (ids:list
+            (ref-TS01-C1::DPOF|C_Issue
+                emma
+                emma
+                ["AuditTransmitTest"]
+                ["ATMT"]
+                [12]    ;;precision
+                [true]  ;;can-upgrade
+                [true]  ;;can-change-owner
+                [true]  ;;can-add-special-role
+                [true]  ;;can-transfer-oft-create-role
+                [false] ;;can-freeze
+                [false] ;;can-wipe
+                [true]  ;;can-pause
+            )
+        )
+    )
+    (print (format "Issued id(s): {}" [ids]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TRANSMIT-BUG - turn segmentation ON + mint one plain nonce to emma")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (id:string "ATMT-98c486052a51")
+        (emma:string KST.EMMA)
+    )
+    (ref-TS01-C1::DPOF|C_Control emma id true true true true false false true true)
+    (ref-TS01-C1::DPOF|C_ToggleAddQuantityRole emma id emma true)
+    (ref-TS01-C1::DPOF|C_Mint emma id emma 100.0 [])
+    (print (format "emma total-account-supply after mint (expect 100.0): {}" [(DPOF.UR_AccountSupply id emma)]))
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TRANSMIT-BUG - THE TEST: a plain, ordinary, non-duplicated C_Transmit call")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (id:string "ATMT-98c486052a51")
+        (emma:string KST.EMMA)
+        (aoz:string KST.AOZT)
+    )
+    ;; Nonce #1 has real supply 100.0. Transmit 40.0 of it to aoz — an entirely ordinary,
+    ;; single-nonce, non-duplicated call. This should just work. Pre-fix: crashes with
+    ;; `Key "meta-data" not found` regardless. Post-fix: succeeds, splits nonce 1 correctly.
+    (ref-TS01-C1::DPOF|C_Transmit emma id [1] [40.0] emma aoz false)
+    (map print
+        [
+            (format "PROOF: C_Transmit succeeded. emma remaining nonce-1 supply (expect 60.0): {}" [(DPOF.UR_NonceSupply id 1)])
+            (format "PROOF: emma total-account-supply (expect 60.0): {}" [(DPOF.UR_AccountSupply id emma)])
+            (format "PROOF: aoz total-account-supply (expect 40.0, newly-created nonce via Transmit's output-nonces): {}" [(DPOF.UR_AccountSupply id aoz)])
+        ]
+    )
+)
+(commit-tx)

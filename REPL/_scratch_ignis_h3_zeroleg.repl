@@ -1,0 +1,60 @@
+;;
+;; REPL/_scratch_ignis_h3_zeroleg.repl — DALOS-audit #8H fix proof (IGNIS C_Collect zero-leg abort)
+;; Audit-only scratch, not part of the canonical suite. Run from REPL/: `pact _scratch_ignis_h3_zeroleg.repl`
+;;
+;; C_Collect loops over every primed (interactor, amount) leg unconditionally and tries to collect
+;; each one; IGNIS|C>TRANSFER hard-enforces (> ta 0.0). A bundled cumulator-chain containing one
+;; legitimately-free (0.0) leg to interactor A alongside a normally-priced leg to a DIFFERENT
+;; interactor B must not abort the whole batch — the free leg should just be skipped.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+
+(begin-tx "H3 TEST - C_Collect with a mixed zero-leg + real-leg cumulator-chain")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_Emma", "caps": [] } ])
+(let*
+    (
+        (emma:string KST.EMMA)
+        ;; IGNIS|C>COLLECT's own defcap requires interactor = BAR (routes to the system "tanker"
+        ;; account) OR a Sigma-prefixed smart account — an ordinary standard account (like aoz/patron)
+        ;; is rejected as an interactor outright, so two DISTINCT valid interactors are needed here
+        ;; (same interactor on both legs would let compression MERGE them into one entry, defeating
+        ;; the whole point of this test).
+        ;; Two DISTINCT non-BAR smart-account interactors. Priming applies its smart/tanker-cut
+        ;; split to each COMPRESSED entry independently (own amount * discount, split between
+        ;; itself and the BAR/principal bucket) — routing the zero leg through BAR would let the
+        ;; OTHER leg's redirected tanker-cut land on the exact same BAR entry and turn it non-zero
+        ;; again post-priming, accidentally masking the bug. Two distinct non-BAR interactors avoid
+        ;; that cross-contamination: the zero leg's own primed amount is 0.0*anything = 0.0 no
+        ;; matter what the other leg does.
+        (zero-interactor:string (DALOS.GOV|VST|SC_NAME))
+        (real-interactor:string (DALOS.GOV|ATS|SC_NAME))
+        (before-emma:decimal (DALOS.UR_TF_AccountSupply emma false))
+        (before-zero:decimal (DALOS.UR_TF_AccountSupply zero-interactor false))
+        (before-real:decimal (DALOS.UR_TF_AccountSupply real-interactor false))
+        (mixed-cumulator:object{IgnisCollectorV1.OutputCumulator}
+            {
+                "cumulator-chain":
+                    [
+                        {"ignis": 0.0, "interactor": zero-interactor}
+                        {"ignis": 5.0, "interactor": real-interactor}
+                    ],
+                "output": []
+            }
+        )
+    )
+    (IGNIS.C_Collect emma mixed-cumulator)
+    (print (format "PROOF: mixed zero-leg + real-leg C_Collect succeeded (was a hard abort pre-fix)" []))
+    (print (format "emma IGNIS balance delta (should be -5.0, only the real leg charged): {}" [(- (DALOS.UR_TF_AccountSupply emma false) before-emma)]))
+    (print (format "zero-interactor IGNIS balance delta (should be 0.0 - free leg correctly skipped, not credited): {}" [(- (DALOS.UR_TF_AccountSupply zero-interactor false) before-zero)]))
+    (print (format "real-interactor IGNIS balance delta (should be its smart-cut of the 5.0 leg, nonzero - the paid leg still collects normally): {}" [(- (DALOS.UR_TF_AccountSupply real-interactor false) before-real)]))
+)
+(commit-tx)

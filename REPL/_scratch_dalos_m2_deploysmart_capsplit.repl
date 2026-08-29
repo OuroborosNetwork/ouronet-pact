@@ -1,0 +1,114 @@
+;;
+;; REPL/_scratch_dalos_m2_deploysmart_capsplit.repl — DALOS-audit #26M fix proof
+;; (Smart-account deploy validation moved from the internal XI_DeploySmartAccount writer up into
+;; the client-facing caps: A_DeploySmartAccount now composes a new DALOS|A>DEPLOY-SMART-OURONET-
+;; ACCOUNT cap (GOV|DALOS_ADMIN + the shared validation), C_DeploySmartAccount composes the shared
+;; DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT cap directly, and XI_DeploySmartAccount is now a pure
+;; require-capability writer with no validation of its own. This is a refactor for StoicSyntax
+;; placement, not a behavior change - so the proof here is behavioral EQUIVALENCE: both the admin
+;; (fee-free) and client (paying) paths must still (a) succeed for a well-formed Sigma-prefixed
+;; account+matching guard, and (b) still reject a malformed account, exactly as before.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "M2 TEST - admin path (A_) and client path (C_): valid deploy succeeds, malformed account rejected")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-U|CT:module{OuronetConstantsV1} U|CT)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (patron:string KST.ANHD)
+        (nsuse:string (ref-U|CT::CT_NS_USE))
+        (ah-key (+ nsuse ".dh_ah-keyset"))
+        (admin-account:string "Σ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+        (client-account:string "Σ.W∇ЦwÏξБØnζΦψÕłěîбηжÛśTã∇țâĆã4ЬĚIŽȘØíÕlÛřбΩцμCšιÄиMkλ€УщшàфGřÞыÎäY8È₳BDÏÚmßOozBτòÊŸŹjПкцğ¥щóиś4h4ÑþююqςA9ÆúÛȚβжéÑψéУoЭπÄЩψďşõшżíZtZuψ4ѺËxЖψУÌбЧλüșěđΔjÈt0ΛŽZSÿΞЩŠ")
+        (malformed-account:string "NotASigmaPrefixedAccount")
+        (fake-kda:string "k:9e39cd9be5877f719cadb2ac3d0cf9198b298a629cd2df0f10eebd8b7a4ac86b")
+        (fake-pbl:string "9G.CgcAjiI89ICnk45mxx63hwkBe5G71sIqfEta0ugkzF7EB6cy55BtzlFa27jDGE7Kn7ChljCmkcIsrDw9JwzJECieGLB5Jlkz9Blo6iJct6uxIA1u64Hr7HKa93EAiCwJJBBKAojJtwupEsvspH1jjGxKyFsb8fbfnJm1rAKxcIzcFILmmdHFaICfFpnbJG6tJu0HM9JCJ7MBCE7C2LiqvE6Fc1hqCeAdGHxDp7sGquI0wl2l08aa6wlKvwu44jgqF8mqDnCyjpxHuttEqjs4h9IJ28kmB53ppwoznt16rjzeMl21n3rwfI2es56rp5xavCabDacyCuonniz72L5d7dq3ptIEiuggEyLIIGe9sadH6eaMyitcmKaH7orgFz6d9kL9FKorBr06owFg328wFhCIlCFpwIzokmo47xKKt5kBzhyodBAjhCqayuHBue4oDhoA21A2H9ut9gApMuxokcmsi7Bd1kitrfJAy1GkrGiBK5dvlhgshcnGaG3vhkCm6dI5idCGjDEodivvDbgyI6zaajHvIMdBtrGvuKnxvsBulkbaDbk2wIdKwrK")
+    )
+    (map print
+        [
+            ;;1] Admin path (fee-free) - valid account must succeed
+            (format "<(TS01-A.DALOS|A_DeploySmartAccount valid)> => {}"
+                [(ref-TS01-A::DALOS|A_DeploySmartAccount admin-account (keyset-ref-guard ah-key) fake-kda patron fake-pbl)]
+            )
+            (format "admin-account deployed and is smart-contract type: {}" [(ref-DALOS::UR_AccountType admin-account)])
+            ;;2] Admin path - malformed account must still be rejected
+            (expect-failure
+                "A_DeploySmartAccount must still reject a non-Sigma-prefixed account (validation must still fire from the caller's own cap)"
+                (ref-TS01-A::DALOS|A_DeploySmartAccount malformed-account (keyset-ref-guard ah-key) fake-kda patron fake-pbl)
+            )
+        ]
+    )
+)
+(commit-tx)
+
+(begin-tx "M2 TEST part 2 - client path (C_): valid deploy succeeds, malformed account rejected")
+(namespace "ouronet-ns")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
+          "caps":
+            [
+                (coin.TRANSFER
+                    "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
+                    10.0
+                )
+                (coin.TRANSFER
+                    "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
+                    10.0
+                )
+                (coin.TRANSFER
+                    "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
+                    10.0
+                )
+                (coin.TRANSFER
+                    "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
+                    10.0
+                )
+            ]
+        }
+    ]
+)
+(let
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-U|CT:module{OuronetConstantsV1} U|CT)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (patron:string KST.ANHD)
+        (nsuse:string (ref-U|CT::CT_NS_USE))
+        (ah-key (+ nsuse ".dh_ah-keyset"))
+        (client-account:string "Σ.XéødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî")
+        (malformed-account:string "AlsoNotSigmaPrefixed")
+        (fake-kda:string "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263")
+        (fake-pbl:string "9G.CgcAjiI89ICnk45mxx63hwkBe5G71sIqfEta0ugkzF7EB6cy55BtzlFa27jDGE7Kn7ChljCmkcIsrDw9JwzJECieGLB5Jlkz9Blo6iJct6uxIA1u64Hr7HKa93EAiCwJJBBKAojJtwupEsvspH1jjGxKyFsb8fbfnJm1rAKxcIzcFILmmdHFaICfFpnbJG6tJu0HM9JCJ7MBCE7C2LiqvE6Fc1hqCeAdGHxDp7sGquI0wl2l08aa6wlKvwu44jgqF8mqDnCyjpxHuttEqjs4h9IJ28kmB53ppwoznt16rjzeMl21n3rwfI2es56rp5xavCabDacyCuonniz72L5d7dq3ptIEiuggEyLIIGe9sadH6eaMyitcmKaH7orgFz6d9kL9FKorBr06owFg328wFhCIlCFpwIzokmo47xKKt5kBzhyodBAjhCqayuHBue4oDhoA21A2H9ut9gApMuxokcmsi7Bd1kitrfJAy1GkrGiBK5dvlhgshcnGaG3vhkCm6dI5idCGjDEodivvDbgyI6zaajHvIMdBtrGvuKnxvsBulkbaDbk2wIdKwrK")
+    )
+    (map print
+        [
+            (format "<(TS01-C1.DALOS|C_DeploySmartAccount valid)> => {}"
+                [(ref-TS01-C1::DALOS|C_DeploySmartAccount client-account (keyset-ref-guard ah-key) fake-kda patron fake-pbl)]
+            )
+            (format "client-account deployed and is smart-contract type: {}" [(ref-DALOS::UR_AccountType client-account)])
+            (expect-failure
+                "C_DeploySmartAccount must still reject a non-Sigma-prefixed account (validation must still fire from the caller's own cap)"
+                (ref-TS01-C1::DALOS|C_DeploySmartAccount malformed-account (keyset-ref-guard ah-key) fake-kda patron fake-pbl)
+            )
+        ]
+    )
+)
+(commit-tx)

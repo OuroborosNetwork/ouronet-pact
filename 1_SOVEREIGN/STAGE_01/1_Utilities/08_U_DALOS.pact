@@ -378,10 +378,10 @@
                         (
                             (checkup:bool (contains (at idx str-lst) DALOS|CHARSET))
                         )
-                        (or acc checkup)
+                        (and acc checkup)
                     )
                 )
-                false
+                true
                 (enumerate 0 (- (length str-lst) 1))
             )
         )

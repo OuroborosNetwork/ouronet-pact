@@ -196,6 +196,23 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    (defun UC_FindKeyIndex:integer (key-lst:[string] key:string)
+        @doc "First index of key in key-lst, or -1 if absent. Single linear scan, local to the \
+            \ compress/prime pipeline below (UDC_CompressOutputCumulator/UDC_PrimeIgnisCumulator) \
+            \ only — NOT a general-purpose replacement for U|LST::UC_Search, whose documented \
+            \ contract (return every matching index) is different and untouched by this helper."
+        (if (= (length key-lst) 0)
+            -1
+            (fold
+                (lambda
+                    (found:integer idx:integer)
+                    (if (and (= found -1) (= (at idx key-lst) key)) idx found)
+                )
+                -1
+                (enumerate 0 (- (length key-lst) 1))
+            )
+        )
+    )
     ;;{F0}  [UR]
     ;;{F1}  [URC]
     (defun URC_Exception (account:string)
@@ -449,145 +466,134 @@
     )
     (defun UDC_CompressOutputCumulator:object{IgnisCollectorV1.CompressedCumulator}
         (input-output-cumulator:object{IgnisCollectorV1.OutputCumulator})
+        @doc "Merges same-interactor legs of a cumulator-chain into one (interactor, summed-ignis) \
+            \ entry each. Optimized (DALOS audit, post-#8H): uses the local single-pass \
+            \ UC_FindKeyIndex instead of U|LST::UC_Search (which does ~4x the traversals for a \
+            \ question this caller only ever needs one index for), and folds the accumulator as a \
+            \ bare object instead of a throwaway 1-element list, dropping a UC_ReplaceAt/UC_Chain \
+            \ call every iteration. Output is provably identical to the prior implementation — see \
+            \ REPL/_scratch_ignis_compress_prime_optimization.repl."
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (cumulator-chain-input:[object{IgnisCollectorV1.ModularCumulator}] 
+                (cumulator-chain-input:[object{IgnisCollectorV1.ModularCumulator}]
                     (at "cumulator-chain" input-output-cumulator)
                 )
-                (folded-obj:[object{IgnisCollectorV1.CompressedCumulator}]
+                (folded-obj:object{IgnisCollectorV1.CompressedCumulator}
                     (fold
                         (lambda
-                            (acc:[object{IgnisCollectorV1.CompressedCumulator}] idx:integer)
-                            (ref-U|LST::UC_ReplaceAt
-                                acc
-                                0
-                                (let
-                                    (
-                                        (read-ignis-price:decimal (at "ignis" (at idx cumulator-chain-input)))
-                                        (read-interactor:string (at "interactor" (at idx cumulator-chain-input)))
-                                        (interactor-search:[integer] (ref-U|LST::UC_Search (at "interactors" (at 0 acc)) read-interactor))
-                                        (iz-new:bool 
-                                            (if (= (length interactor-search) 0)
-                                                true
-                                                false
-                                            )
+                            (acc:object{IgnisCollectorV1.CompressedCumulator} idx:integer)
+                            (let
+                                (
+                                    (read-ignis-price:decimal (at "ignis" (at idx cumulator-chain-input)))
+                                    (read-interactor:string (at "interactor" (at idx cumulator-chain-input)))
+                                    (interactor-position:integer (UC_FindKeyIndex (at "interactors" acc) read-interactor))
+                                )
+                                (if (= interactor-position -1)
+                                    {
+                                        "ignis-prices"  : (ref-U|LST::UC_AppL (at "ignis-prices" acc) read-ignis-price),
+                                        "interactors"   : (ref-U|LST::UC_AppL (at "interactors" acc) read-interactor)
+                                    }
+                                    (let
+                                        (
+                                            (ignis-amount-in-acc:decimal (at interactor-position (at "ignis-prices" acc)))
+                                            (updated-ignis-amount:decimal (+ read-ignis-price ignis-amount-in-acc))
                                         )
-                                    )
-                                    (if iz-new
                                         {
-                                            "ignis-prices"  : (ref-U|LST::UC_AppL (at "ignis-prices" (at 0 acc)) read-ignis-price),
-                                            "interactors"   : (ref-U|LST::UC_AppL (at "interactors" (at 0 acc)) read-interactor)
+                                            "ignis-prices"  : (ref-U|LST::UC_ReplaceAt (at "ignis-prices" acc) interactor-position updated-ignis-amount),
+                                            "interactors"   : (at "interactors" acc)
                                         }
-                                        (let
-                                            (
-                                                (interactor-position-in-acc:integer (at 0 interactor-search))
-                                                (ignis-amount-in-acc:decimal (at interactor-position-in-acc (at "ignis-prices" (at 0 acc))))
-                                                (updated-ignis-amount:decimal (+ read-ignis-price ignis-amount-in-acc))
-                                            )
-                                            {
-                                                "ignis-prices"  : (ref-U|LST::UC_ReplaceAt (at "ignis-prices" (at 0 acc)) interactor-position-in-acc updated-ignis-amount),
-                                                "interactors"   : (at "interactors" (at 0 acc))
-                                            }
-                                        )
                                     )
                                 )
                             )
                         )
-                        EMPTY_CC
+                        (at 0 EMPTY_CC)
                         (enumerate 0 (- (length cumulator-chain-input) 1))
                     )
                 )
             )
-            (at 0 folded-obj)
+            folded-obj
         )
     )
     (defun UDC_PrimeIgnisCumulator:object{IgnisCollectorV1.PrimedCumulator}
         (patron:string input:object{IgnisCollectorV1.CompressedCumulator})
+        @doc "Splits each compressed leg into a smart-account cut and a principal/BAR cut per the \
+            \ GAS_QUARTER fee-share. Optimized (DALOS audit, post-#8H) the same way as \
+            \ UDC_CompressOutputCumulator above — see that function's @doc."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (fll:integer (length (at "ignis-prices" input)))
                 (ignis-discount:decimal (ref-DALOS::URC_IgnisGasDiscount patron))
-                (folded-obj:[object{IgnisCollectorV1.CompressedCumulator}]
+                (folded-obj:object{IgnisCollectorV1.CompressedCumulator}
                     (fold
                         (lambda
-                            (acc:[object{IgnisCollectorV1.CompressedCumulator}] idx:integer)
-                            (ref-U|LST::UC_ReplaceAt
-                                acc
-                                0
-                                (let
-                                    (
-                                        (input-ignis-price:decimal (at idx (at "ignis-prices" input)))
-                                        (input-ignis-price-discounted:decimal (* input-ignis-price ignis-discount))
-                                        (input-interactor:string (at idx (at "interactors" input)))
-                                        (iz-interactor-principal:bool
-                                            (if (= input-interactor BAR)
-                                                true
-                                                false
-                                            )
-                                        )
-                                        (smart-ignis-amount:decimal
-                                            (if iz-interactor-principal
-                                                0.0
-                                                (* GAS_QUARTER input-ignis-price-discounted)
-                                            )
-                                        )
-                                        (prime-ignis-amount:decimal (- input-ignis-price-discounted smart-ignis-amount))
-                                        ;;
-                                        (principal-interactor-search:[integer] (ref-U|LST::UC_Search (at "interactors" (at 0 acc)) BAR))
-                                        (principal-interactor-exists:bool 
-                                            (if (= (length principal-interactor-search) 0)
-                                                false
-                                                true
-                                            )
+                            (acc:object{IgnisCollectorV1.CompressedCumulator} idx:integer)
+                            (let
+                                (
+                                    (input-ignis-price:decimal (at idx (at "ignis-prices" input)))
+                                    (input-ignis-price-discounted:decimal (* input-ignis-price ignis-discount))
+                                    (input-interactor:string (at idx (at "interactors" input)))
+                                    (iz-interactor-principal:bool
+                                        (if (= input-interactor BAR)
+                                            true
+                                            false
                                         )
                                     )
-                                    (if principal-interactor-exists
-                                        ;;Wen principal interactor already exists
-                                        (let
-                                            (
-                                                (principal-interactor-position:integer (at 0 principal-interactor-search))
-                                                (principal-interactor-current-ignis-amount:decimal (at principal-interactor-position (at "ignis-prices" (at 0 acc))))
-                                                (updated-interactor-ignis-amount:decimal (+ principal-interactor-current-ignis-amount prime-ignis-amount))
-                                            )
-                                            (if iz-interactor-principal
-                                                ;;Wen interactor is principal
-                                                {
-                                                    "ignis-prices"  : (ref-U|LST::UC_ReplaceAt (at "ignis-prices" (at 0 acc)) principal-interactor-position updated-interactor-ignis-amount),
-                                                    "interactors"   : (ref-U|LST::UC_AppL (at "interactors" (at 0 acc)) input-interactor)
-                                                }
-                                                ;;Wen interactor is not principal
-                                                {
-                                                    "ignis-prices"  : (ref-U|LST::UC_AppL (ref-U|LST::UC_ReplaceAt (at "ignis-prices" (at 0 acc)) principal-interactor-position updated-interactor-ignis-amount) smart-ignis-amount),
-                                                    "interactors"   : (ref-U|LST::UC_AppL (at "interactors" (at 0 acc)) input-interactor)
-                                                }
-                                            )
+                                    (smart-ignis-amount:decimal
+                                        (if iz-interactor-principal
+                                            0.0
+                                            (* GAS_QUARTER input-ignis-price-discounted)
                                         )
-                                        ;;Wen principal interactor doesnt exit yet
+                                    )
+                                    (prime-ignis-amount:decimal (- input-ignis-price-discounted smart-ignis-amount))
+                                    ;;
+                                    (principal-interactor-position:integer (UC_FindKeyIndex (at "interactors" acc) BAR))
+                                    (principal-interactor-exists:bool (!= principal-interactor-position -1))
+                                )
+                                (if principal-interactor-exists
+                                    ;;Wen principal interactor already exists
+                                    (let
+                                        (
+                                            (principal-interactor-current-ignis-amount:decimal (at principal-interactor-position (at "ignis-prices" acc)))
+                                            (updated-interactor-ignis-amount:decimal (+ principal-interactor-current-ignis-amount prime-ignis-amount))
+                                        )
                                         (if iz-interactor-principal
                                             ;;Wen interactor is principal
                                             {
-                                                "ignis-prices"  : (ref-U|LST::UC_AppL (at "ignis-prices" (at 0 acc)) prime-ignis-amount),
-                                                "interactors"   : (ref-U|LST::UC_AppL (at "interactors" (at 0 acc)) input-interactor)
+                                                "ignis-prices"  : (ref-U|LST::UC_ReplaceAt (at "ignis-prices" acc) principal-interactor-position updated-interactor-ignis-amount),
+                                                "interactors"   : (ref-U|LST::UC_AppL (at "interactors" acc) input-interactor)
                                             }
                                             ;;Wen interactor is not principal
                                             {
-                                                "ignis-prices"  : (ref-U|LST::UC_AppL (ref-U|LST::UC_AppL (at "ignis-prices" (at 0 acc)) prime-ignis-amount) smart-ignis-amount),
-                                                "interactors"   : (ref-U|LST::UC_AppL (ref-U|LST::UC_AppL (at "interactors" (at 0 acc)) BAR) input-interactor)
+                                                "ignis-prices"  : (ref-U|LST::UC_AppL (ref-U|LST::UC_ReplaceAt (at "ignis-prices" acc) principal-interactor-position updated-interactor-ignis-amount) smart-ignis-amount),
+                                                "interactors"   : (ref-U|LST::UC_AppL (at "interactors" acc) input-interactor)
                                             }
                                         )
+                                    )
+                                    ;;Wen principal interactor doesnt exit yet
+                                    (if iz-interactor-principal
+                                        ;;Wen interactor is principal
+                                        {
+                                            "ignis-prices"  : (ref-U|LST::UC_AppL (at "ignis-prices" acc) prime-ignis-amount),
+                                            "interactors"   : (ref-U|LST::UC_AppL (at "interactors" acc) input-interactor)
+                                        }
+                                        ;;Wen interactor is not principal
+                                        {
+                                            "ignis-prices"  : (ref-U|LST::UC_AppL (ref-U|LST::UC_AppL (at "ignis-prices" acc) prime-ignis-amount) smart-ignis-amount),
+                                            "interactors"   : (ref-U|LST::UC_AppL (ref-U|LST::UC_AppL (at "interactors" acc) BAR) input-interactor)
+                                        }
                                     )
                                 )
                             )
                         )
-                        EMPTY_CC
+                        (at 0 EMPTY_CC)
                         (enumerate 0 (- fll 1))
                     )
                 )
             )
-            {"primed-cumulator" : (at 0 folded-obj)}
+            {"primed-cumulator" : folded-obj}
         )
     )
     ;;{F4}  [CAP]
@@ -636,8 +642,18 @@
                                             (interactor:string (at idx (at "interactors" primed-collector)))
                                             (amount:decimal (at idx (at "ignis-prices" primed-collector)))
                                         )
-                                        (with-capability (IGNIS|C>COLLECT patron interactor amount)
-                                            (XI_IgnisCollector patron interactor amount)
+                                        ;;A leg priced at 0.0 (or, if ever misconfigured, negative) is a
+                                        ;;legitimately free leg for THIS interactor within an otherwise-
+                                        ;;billable bundle — skip collecting it instead of hitting
+                                        ;;IGNIS|C>TRANSFER's unconditional (> ta 0.0) enforce, which would
+                                        ;;otherwise abort the whole batch over one free leg (DALOS audit
+                                        ;;#8H). Ties into the same IGNIS|S>FREE event already used for the
+                                        ;;all-free case, so a free leg is still observable on-chain.
+                                        (if (> amount 0.0)
+                                            (with-capability (IGNIS|C>COLLECT patron interactor amount)
+                                                (XI_IgnisCollector patron interactor amount)
+                                            )
+                                            (with-capability (IGNIS|S>FREE) true)
                                         )
                                     )
                                 )

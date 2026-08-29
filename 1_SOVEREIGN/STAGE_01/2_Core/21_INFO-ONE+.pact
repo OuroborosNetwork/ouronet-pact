@@ -1325,7 +1325,7 @@
                 [(format "Operation: Upgrade Branding for {} DPOF for {} month(s)" [entity-id months])]
                 [(format "DPOF {} succesfully upgraded for {} months(s)!" [entity-id months])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|OI|UDC_DynamicKadenaCost patron (SKP|URC_UpgradeBranding months))
+                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_UpgradeBranding months))
                 []
             )
         )
@@ -1739,7 +1739,7 @@
                 ;;Operation 3 - Transfer
                 (wt3:integer (at "type" (ref-TFT::URC_TransferClasses c-rbt ats-sc coiler c-rbt-amount)))
                 (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator wt3 rt coiler ats-sc)
+                    (ref-TFT::UDC_TransferCumulator wt3 c-rbt ats-sc coiler)
                 )
                 (ifp3:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico3))
                 (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3]))

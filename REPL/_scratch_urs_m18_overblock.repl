@@ -1,0 +1,28 @@
+;;
+;; REPL/_scratch_urs_m18_overblock.repl — DALOS-audit #42M investigation
+;; (U_RS::UEV_EnforceReserved treats ANY single-char-plus-colon account prefix as "reserved",
+;; not just Kadena's actual known principal-type prefixes - over-blocking legitimate custom
+;; account names that merely happen to look like a principal.)
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+
+(begin-tx "M18 CHECK - UEV_EnforceReserved over-blocks a legitimate non-principal custom account name")
+(namespace "ouronet-ns")
+(env-data { "ks": { "keys": ["abc123"], "pred": "keys-all" } })
+(let
+    (
+        (ref-U|RS:module{ReservedAccountsV1} U|RS)
+        (g:guard (read-keyset "ks"))
+        (legit-custom-name:string "z:legit-custom-name")
+    )
+    (print
+        (expect-failure
+            "UEV_EnforceReserved wrongly rejects a legitimate custom account name shaped like a principal (over-blocking)"
+            (ref-U|RS::UEV_EnforceReserved legit-custom-name g)
+        )
+    )
+)
+(commit-tx)

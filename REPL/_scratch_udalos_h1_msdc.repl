@@ -1,0 +1,39 @@
+;;
+;; REPL/_scratch_udalos_h1_msdc.repl — DALOS-audit #7H fix proof (GLYPH|UEV_MsDc fold inversion)
+;; Audit-only scratch, not part of the canonical suite. Run from REPL/: `pact _scratch_udalos_h1_msdc.repl`
+;;
+;; GLYPH|UEV_MsDc is supposed to enforce that EVERY character of its input is in DALOS|CHARSET (all
+;; call sites pass it a whole 160-char account body and either enforce the result directly or fold it
+;; with other whole-string checks). The fold is seeded false/or instead of true/and, so it actually
+;; returns true as soon as ANY single character matches — nearly a no-op given how broad DALOS|CHARSET
+;; is (digits + currency symbols + Latin/Greek/Cyrillic upper+lower).
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+
+(begin-tx "H1 TEST - GLYPH|UEV_MsDc should reject a string that is mostly garbage with one valid char")
+(namespace "ouronet-ns")
+(let
+    (
+        ;; 19 characters, all deliberately OUTSIDE DALOS|CHARSET (punctuation/symbols not in any of
+        ;; digits/currencies/Latin/Greek/Cyrillic), except the very last one ("5", a digit - IS in
+        ;; DALOS|CHARSET). A correct "every character must conform" check must reject this.
+        (garbage-with-one-valid-char:string "!@#$%^&*()_+-=[]{}5")
+        ;; All-valid regression case: a plausible 160-char-style body substring, every char a real
+        ;; digit/Latin letter — must still pass after the fix (not just "reject everything").
+        (all-valid:string "Abc123XYZ")
+    )
+    (print (format "Input (mostly garbage, 1 valid char): {}" [garbage-with-one-valid-char]))
+    (print (expect "GLYPH|UEV_MsDc rejects a mostly-garbage string with only one in-charset char (#7H)"
+        false
+        (U|DALOS.GLYPH|UEV_MsDc garbage-with-one-valid-char)
+    ))
+    (print (format "Input (all valid chars): {}" [all-valid]))
+    (print (expect "GLYPH|UEV_MsDc still accepts a genuinely all-valid string (regression guard)"
+        true
+        (U|DALOS.GLYPH|UEV_MsDc all-valid)
+    ))
+)
+(commit-tx)

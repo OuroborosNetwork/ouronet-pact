@@ -1,0 +1,33 @@
+;;
+;; REPL/_scratch_ulst_75l_stringpresence_empty.repl — DALOS-audit #75L confirmation
+;; (U_LST::UEV_StringPresence's [bar]-sentinel doesn't cover a real empty list [] — verify live
+;; before presenting, per standing instruction.)
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+
+(begin-tx "75L CHECK - UEV_StringPresence on a real empty list vs the [bar] sentinel")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-U|LST:module{StringProcessorV1} U|LST)
+    )
+    (map print
+        [
+            ;; The [bar]-sentinel case - correctly caught with the specific message.
+            (expect-failure
+                "UEV_StringPresence on the [bar] sentinel list gives the specific 'Empty List detected!' message"
+                (ref-U|LST::UEV_StringPresence "x" ["|"])
+            )
+            ;; A genuinely empty list [] - does it still abort (just with a different, generic
+            ;; message), or does it silently pass through (a real bug)?
+            (expect-failure
+                "UEV_StringPresence on a real empty [] still aborts, just via the generic not-present message"
+                (ref-U|LST::UEV_StringPresence "x" [])
+            )
+        ]
+    )
+)
+(commit-tx)

@@ -19,6 +19,11 @@
     (defun C_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} ())
     (defun C_Sublimate:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
+    ;;#23H fix: C_SublimateV2 was already live/actively-used (TS01-C2's ORBR|C_SublimateV2,
+    ;;TS01-C3's Firestarter path) but missing from its own interface. Cheaper alternative to
+    ;;C_Sublimate (freeze+C_WipeSlim+unfreeze instead of transfer+burn) - added here, no
+    ;;behavioral change, the module already implements this exact signature.
+    (defun C_SublimateV2:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
     (defun C_WithdrawFees:object{IgnisCollectorV1.OutputCumulator} (id:string target:string))
 )
 ;;
@@ -342,7 +347,9 @@
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                 (ignis-to-ouro:[decimal] (URC_Compress ignis-amount))
                 (ouro-remainder-amount:decimal (at 0 ignis-to-ouro))
-                (total-ouro:decimal (fold (+) 0.0 ignis-to-ouro))
+                ;;#61L fix: removed the dead `total-ouro` binding (bound, never referenced
+                ;;anywhere in the function body - only `ouro-remainder-amount`, the first
+                ;;element, is actually minted/transferred). No functional change.
             )
             (with-capability (IGNIS|C>COMPRESS client)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators

@@ -61,8 +61,15 @@
         @doc "Return true if the list is not empty"
         (< 0 (length x))
     )
-    (defun UC_IzUnique (lst:[string])
-        @doc "Ensures List is composed of unique elements"
+    ;;#44M fix: renamed UC_IzUnique -> UEV_IzUnique (was a UC_-prefixed function that enforces,
+    ;;violating the UC_ pure-compute contract - same root cause as #43M). There is no "not
+    ;;unique" case to return false for: a duplicate aborts the whole transaction via enforce,
+    ;;there is no graceful path. The old inline comment ("If all items are unique, the function
+    ;;returns true") misleadingly implied a real false-returning predicate contract that never
+    ;;existed - fixed to state the actual contract plainly.
+    (defun UEV_IzUnique (lst:[string])
+        @doc "Enforces that <lst> is composed of unique elements. Aborts the transaction on the \
+            \ first duplicate found - there is no false-returning case; always returns true."
         (let
             (
                 (unique-set
@@ -80,7 +87,7 @@
                     )
                 )
             )
-            true  ; If all items are unique, the function returns true
+            true
         )
     )
     (defun UC_LE (in:list)
@@ -158,6 +165,12 @@
         @doc "Verify and Enforces that a list is not empty"
         (enforce (UC_IsNotEmpty x) "List cannot be empty")
     )
+    ;;#75L fix: the [bar]-sentinel check alone let a genuinely empty list [] fall through to
+    ;;the generic "not present" message instead of the specific "Empty List detected!" one -
+    ;;both cases still correctly aborted the transaction either way (no functional bug), just
+    ;;with an inconsistent/less helpful message for the real-[] case. Added `(UC_IsNotEmpty
+    ;;item-lst)` to the same enforce so both the [bar] sentinel and a real [] get the specific
+    ;;message.
     (defun UEV_StringPresence (item:string item-lst:[string])
         (let
             (
@@ -165,7 +178,7 @@
                 (bar:string (ref-U|CT::CT_BAR))
                 (iz-present:bool (contains item item-lst))
             )
-            (enforce (!= item-lst [bar]) "Empty List detected!")
+            (enforce (and (!= item-lst [bar]) (UC_IsNotEmpty item-lst)) "Empty List detected!")
             (enforce iz-present (format "String {} is not present in list {}." [item item-lst]))
         )
     )

@@ -1,0 +1,53 @@
+;;
+;; REPL/_scratch_tft_h6_bulktransfer_elite.repl — DALOS-audit #11H fix proof (TFT C_MultiBulkTransfer
+;; never refreshes sender's Elite tier)
+;; Audit-only scratch, not part of the canonical suite. Run from REPL/: `pact _scratch_tft_h6_bulktransfer_elite.repl`
+;;
+;; C_MultiBulkTransfer updates the RECEIVER's Elite-tier data for elite-classified transfer types
+;; (via XI_BulkCredit's `elite` flag -> XI_BulkUpdateElite), but never calls
+;; XI_DynamicUpdateEliteAccount/XI_DirectUpdateEliteAccount for the SENDER anywhere in the function
+;; — unlike C_Transfer/C_MultiTransfer, which correctly refresh both parties. `patron` (KST.ANHD)
+;; already holds a large genesis ELITEAURYN balance, making this directly testable: bulk-transfer
+;; some of it away and check whether patron's own DALOS "elite" field reflects the reduced balance.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+
+(begin-tx "H6 TEST - bulk-transfer ELITEAURYN away from patron, check patron's own Elite tier refresh")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AncientHodler", "caps": [] } ])
+(let*
+    (
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (patron:string KST.ANHD)
+        (emma:string KST.EMMA)
+        (ea-id:string (DALOS.UR_EliteAurynID))
+        (before-supply:decimal (DPTF.UR_AccountSupply ea-id patron))
+        (before-elite:object (DALOS.UR_Elite patron))
+        ;; Transfer away a large chunk (half) of patron's ELITEAURYN, big enough that the Elite
+        ;; tier/score computed from remaining holdings should visibly differ if actually refreshed.
+        (transfer-amt:decimal (floor (/ before-supply 2.0) 4))
+    )
+    (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron [ea-id] patron [[emma]] [[transfer-amt]])
+    (let
+        (
+            (after-supply:decimal (DPTF.UR_AccountSupply ea-id patron))
+            (after-elite:object (DALOS.UR_Elite patron))
+        )
+        (map print
+            [
+                (format "patron ELITEAURYN supply before: {} / after: {} (transferred {})" [before-supply after-supply transfer-amt])
+                (format "patron DALOS 'elite' field BEFORE the bulk transfer: {}" [before-elite])
+                (format "patron DALOS 'elite' field AFTER the bulk transfer (THE BUG: pre-fix this stays IDENTICAL to before, despite losing half the EA balance): {}" [after-elite])
+            ]
+        )
+    )
+)
+(commit-tx)

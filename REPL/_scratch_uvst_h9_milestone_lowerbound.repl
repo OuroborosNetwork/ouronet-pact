@@ -1,0 +1,45 @@
+;;
+;; REPL/_scratch_uvst_h9_milestone_lowerbound.repl — DALOS-audit #14H fix proof
+;; (U_VST::UEV_MilestoneWithTime enforces only an UPPER bound on milestones*duration+offset -
+;; duration/offset can be negative, letting UC_MakeVestingDateList compute a release-date already
+;; in the past, so a Sleep/Vest lock is immediately unlockable at mint time.)
+;;
+;; Both UEV_MilestoneWithTime and UC_MakeVestingDateList are plain U|VST module functions with no
+;; capability gating, so they're directly callable here without needing the full C_Sleep/C_Vest
+;; token-issuance setup - this exercises the REAL validated logic and the REAL date-computation
+;; function, just below the Talos/C_ entrypoint layer.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+
+(begin-tx "H9 TEST - negative duration must be rejected by UEV_MilestoneWithTime")
+(namespace "ouronet-ns")
+(env-chain-data { "block-time": (time "2026-08-27T00:00:00Z") })
+(let
+    (
+        (ref-U|VST:module{UtilityVstV1} U|VST)
+    )
+    (map print
+        [
+            (format "Consequence if allowed through: UC_MakeVestingDateList(0, -500000, 3) => {} (a decreasing/past-dated schedule)"
+                [(ref-U|VST::UC_MakeVestingDateList 0 -500000 3)]
+            )
+            (expect-failure
+                "UEV_MilestoneWithTime(0, -500000, 3, 788400000) must reject a negative duration"
+                (ref-U|VST::UEV_MilestoneWithTime 0 -500000 3 788400000)
+            )
+            (expect-failure
+                "UEV_MilestoneWithTime(-100, 500000, 1, 788400000) must reject a negative offset"
+                (ref-U|VST::UEV_MilestoneWithTime -100 500000 1 788400000)
+            )
+            (expect
+                "UEV_MilestoneWithTime(100, 500000, 3, 788400000) must still accept ordinary valid inputs"
+                true
+                (ref-U|VST::UEV_MilestoneWithTime 100 500000 3 788400000)
+            )
+        ]
+    )
+)
+(commit-tx)

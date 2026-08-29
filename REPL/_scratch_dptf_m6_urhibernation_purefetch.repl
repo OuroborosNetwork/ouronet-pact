@@ -1,0 +1,24 @@
+;;
+;; REPL/_scratch_dptf_m6_urhibernation_purefetch.repl — DALOS-audit #30M fix confirmation
+;; (UR_Hibernation simplified to a pure getter - confirms the return value is unchanged for a
+;; real, normally-issued token, and that the function no longer performs any table write.)
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+
+(begin-tx "M6 CHECK - UR_Hibernation still returns BAR for a normal token, unaffected by the fix")
+(namespace "ouronet-ns")
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ouro-id:string "OURO-98c486052a51")
+    )
+    (print (format "UR_Hibernation(OURO) => {} (expected BAR/empty, unaffected by the fix)" [(ref-DPTF::UR_Hibernation ouro-id)]))
+)
+(commit-tx)

@@ -1,0 +1,70 @@
+;;
+;; REPL/_scratch_infoone_h6_coil_cost.repl — DALOS-audit #11H fix proof (ATS|INFO_Coil wrong cumulator)
+;; Audit-only scratch, not part of the canonical suite. Run from REPL/: `pact _scratch_infoone_h6_coil_cost.repl`
+;;
+;; ATS|INFO_Coil's 3rd-leg cumulator used the wrong token (rt instead of c-rbt) with reversed
+;; sender/receiver, so its predicted IGNIS cost could diverge from the REAL cost of the actual
+;; ATSU::C_Coil/ATS|C_Coil execution whenever rt and c-rbt have different transfer-fee classes.
+;; This proves the fix by comparing INFO-ONE's PREDICTED cost against the REAL cost measured from
+;; an actual live Coil execution, same patron, same inputs — per the owner's explicit ask: the INFO
+;; function must output the exact same cost as the real execution function.
+;;
+;; HONEST LIMITATION: for the "PlebeicStrength" ATS pair used here, directly checked via
+;; TFT::URC_TransferClasses that rt (PKOSON) and c-rbt (PDKOSON) both resolve to the SAME transfer
+;; class ({"type": 1}) — so this specific scenario produces the correct predicted/real match both
+;; BEFORE and AFTER the fix (confirmed by temporarily reverting the fix by hand and re-running: same
+;; result, 4.0 == 4.0). The bug is still real and the fix is still objectively correct — confirmed
+;; independently by matching the exact pattern of the correctly-implemented sibling leg in
+;; ATS|INFO_Curl — it just doesn't manifest as a numeric divergence for a reward-bearing token that
+;; happens to share its underlying reward token's fee class, which is the common case for this
+;; fixture. A pair whose reward-bearing token has a genuinely different class (e.g. Elite-Auryn or
+;; Unity-classified) would show the pre-fix bug numerically; none was readily available in this
+;; harness's existing fixtures without a separate ATS-pair setup.
+;;
+(load "Stage00_Sanboxes.repl")
+(load "Stage_01/[0.0]_Starter.repl")
+(load "Stage_01/[0.1]_Interfaces.repl")
+(load "Stage_01/[1]_Utilities.repl")
+(load "Stage_01/[2.1]_Dalos.repl")
+(load "Stage_01/[2.2]_Core.repl")
+(load "Stage_01/[3]_Talos.repl")
+(load "Stage_01/[4.0]_Sovereign-Executor.repl")
+(load "Stage_01/[5.1]_Aoz+.repl")
+
+(begin-tx "H6 TEST - predicted cost from ATS|INFO_Coil vs real cost from a live ATS|C_Coil execution")
+(namespace "ouronet-ns")
+(env-sigs [ { "key": "PK_AOZ", "caps": [] } ])
+(let*
+    (
+        (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (aoz:string KST.AOZT)
+        (ps:string "PlebeicStrength-98c486052a51")
+        (p-k:string "PKOSON-98c486052a51")
+        (coil-amount:decimal 10.0)
+        ;; PREDICTED cost from the (now-fixed) INFO function, before executing anything.
+        (predicted-info:object{OuronetInfoV1.ClientInfo} (INFO-ONE.ATS|INFO_Coil aoz aoz ps p-k coil-amount))
+        (predicted-ignis-need:decimal (at "ignis-need" (at "ignis" predicted-info)))
+        ;; REAL cost: measure aoz's actual IGNIS balance before/after a live Coil execution with the
+        ;; exact same patron/coiler/ats/rt/amount.
+        (ignis-before:decimal (ref-DALOS::UR_TF_AccountSupply aoz false))
+    )
+    (ref-TS01-C2::ATS|C_Coil aoz aoz ps p-k coil-amount)
+    (let
+        (
+            (ignis-after:decimal (ref-DALOS::UR_TF_AccountSupply aoz false))
+            (real-ignis-cost:decimal (- ignis-before ignis-after))
+        )
+        (map print
+            [
+                (format "PREDICTED IGNIS cost (from ATS|INFO_Coil, fixed): {}" [predicted-ignis-need])
+                (format "REAL IGNIS cost (measured from live ATS|C_Coil execution): {}" [real-ignis-cost])
+            ]
+        )
+        (expect "ATS|INFO_Coil's predicted cost must exactly match the real ATS|C_Coil execution cost (#11H)"
+            real-ignis-cost
+            predicted-ignis-need
+        )
+    )
+)
+(commit-tx)

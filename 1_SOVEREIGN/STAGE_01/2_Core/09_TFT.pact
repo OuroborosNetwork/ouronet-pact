@@ -332,7 +332,7 @@
             )
             ;;A]SINGLE VALIDATIONS
             ;;0]General
-            (ref-U|LST::UC_IzUnique id-lst)
+            (ref-U|LST::UEV_IzUnique id-lst)
             (enforce (= l1 l2) "Invalid Multi Transfer Lists")
             ;;1]Dispo Locker if EA is involved
             (if has-ea
@@ -426,7 +426,7 @@
             )
             ;;A]SINGLE VALIDATIONS
             ;;0]General
-            (ref-U|LST::UC_IzUnique receiver-lst)
+            (ref-U|LST::UEV_IzUnique receiver-lst)
             (enforce (= l1 l2) "Invalid Bulk Transfer Lists")
             ;;1]<id> Pause State and <sender> Frozen State
             (ref-DPTF::UEV_PauseState id false)
@@ -1206,7 +1206,8 @@
                     (a-id:string (ref-DALOS::UR_AurynID))
                     (ea-id:string (ref-DALOS::UR_EliteAurynID))
                     (ouro-amount:decimal (abs (ref-DPTF::UR_AccountSupply ouro-id account)))
-                    (account-ea-supply:decimal (ref-DPTF::UR_AccountSupply ea-id account))
+                    ;;#58L fix: removed the dead `account-ea-supply` binding (bound, never
+                    ;;referenced anywhere in the function body). No functional change.
                     (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ea-id account))
                     ;;
                     (auryndex:string (at 0 (ref-DPTF::UR_RewardToken ouro-id)))
@@ -1233,8 +1234,14 @@
                     (ico2:object{IgnisCollectorV1.OutputCumulator}
                         (ref-DPTF::C_WipeSlim ea-id account total-ea)
                     )
+                    ;;#28M fix: only unfreeze if this function was the one that froze it (mirrors
+                    ;;ico1's own condition) - otherwise a pre-existing, unrelated freeze on this
+                    ;;account gets silently lifted by ClearDispo.
                     (ico3:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DPTF::C_ToggleFreezeAccount ea-id account false)
+                        (if (not frozen-state)
+                            (ref-DPTF::C_ToggleFreezeAccount ea-id account false)
+                            EOC
+                        )
                     )
                     (ico4:object{IgnisCollectorV1.OutputCumulator}
                         (ref-DPTF::C_Burn a-id ats-sc burn-auryn-amount)
@@ -1342,7 +1349,6 @@
                     (ref-U|LST:module{StringProcessorV1} U|LST)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (dispo-data:object{UtilityDptfV1.DispoData} (UDC_GetDispoData sender))
                     (contains-eazs:bool (UC_ContainsEliteAurynz id-lst))
                     (l:integer (length id-lst))
                     (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
@@ -1359,6 +1365,13 @@
                                             (UDC_TransferCumulator what-type id sender receiver)
                                         )
                                         (iz-simple-transfer:bool (at "iz-it-simple" what-type-obj))
+                                        ;;#29M fix: recompute dispo-data fresh for EACH leg (was
+                                        ;;snapshotted once before the fold and reused for every
+                                        ;;leg) - otherwise an earlier/later leg in this same batch
+                                        ;;that reduces sender's Elite-Auryn holdings leaves this
+                                        ;;leg's OURO-overdraft check using a stale, too-generous
+                                        ;;dispo limit.
+                                        (dispo-data:object{UtilityDptfV1.DispoData} (UDC_GetDispoData sender))
                                     )
                                     ;;Debit
                                     (ref-DPTF::XB_DebitTrueFungible id sender transfer-amount dispo-data false)
@@ -1395,7 +1408,7 @@
                 (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (dispo-data:object{UtilityDptfV1.DispoData} (UDC_GetDispoData sender))
+                (contains-eazs:bool (UC_ContainsEliteAurynz id-lst))
                 (l:integer (length id-lst))
                 (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
                     (fold
@@ -1407,7 +1420,7 @@
                                     (receiver-lst:[string] (at idx receiver-array))
                                     (transfer-amount-lst:[decimal] (at idx transfer-amount-array))
                                     (size:integer (length receiver-lst))
-                                    (what-type-obj:object{TrueFungibleTransferV1.TransferClass} 
+                                    (what-type-obj:object{TrueFungibleTransferV1.TransferClass}
                                         (URC_TransferClassesForBulk id sender transfer-amount-lst)
                                     )
                                     (what-type:integer (at "type" what-type-obj))
@@ -1422,6 +1435,9 @@
                                             EOC
                                         )
                                     )
+                                    ;;#29M fix: recompute dispo-data fresh for EACH leg, same
+                                    ;;reasoning as C_MultiTransfer above.
+                                    (dispo-data:object{UtilityDptfV1.DispoData} (UDC_GetDispoData sender))
                                 )
                                 ;;Debit
                                 (with-capability (P|TFT|CALLER)
@@ -1468,6 +1484,13 @@
                         (enumerate 0 (- l 1))
                     )
                 )
+            )
+            ;;Refresh the sender's own Elite tier once, if any leg touched an Elite-Auryn
+            ;;class token — the receiver side is already refreshed per-leg inside
+            ;;XI_BulkCredit (via its `elite` flag -> XI_BulkUpdateElite).
+            (if contains-eazs
+                (XI_DynamicUpdateEliteAccount sender)
+                true
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
         )
