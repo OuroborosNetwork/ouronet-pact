@@ -124,6 +124,7 @@
         current-rps:decimal         ;;Stores current RPS decimal
         unclaimed-count:integer     ;;Stores the total number of user with unclaimed Rewards.
         distribution-round:integer  ;;#1C: monotonic distribution-round counter, ++ on every A_Inject. Gates collect eligibility (per-round idempotency) and the inject barrier (a new round opens only when unclaimed-count == 0).
+        zombie-rewards:decimal      ;;#5M: escrow-on-empty (mirrors AQP). wSTOA injected while vault-score==0 (no stakers) is parked here (not divided) and flushed by the next non-zero-score inject (eff = amount + zombie).
         ;;
         ;;IDs
         wstoa:string
@@ -319,6 +320,10 @@
         @doc "#1C: the vault distribution-round (monotonic, ++ on every A_Inject)."
         (at "distribution-round" (read STOAICO|T|General STOAICO|INFO ["distribution-round"]))
     )
+    (defun UR_Global12:decimal ()
+        @doc "#5M: escrowed zombie-rewards — wSTOA injected while the vault had no stakers, awaiting the next non-zero-score inject."
+        (at "zombie-rewards" (read STOAICO|T|General STOAICO|INFO ["zombie-rewards"]))
+    )
     ;;
     (defun UR_IzAccount:bool (account:string)
         @doc "Checks if an account exists"
@@ -417,26 +422,45 @@
                     (wSTOA-ID:string (UR_Global8))
                     ;;
                     (vault-score:decimal (UR_Global1))
-                    (gained-rps:decimal (floor (/ wstoa-amount vault-score) STOA_PREC))
-                    (current-rps:decimal (UR_Global6))
-                    (new-rps:decimal (+ current-rps gained-rps))
+                    (zombie:decimal (UR_Global12))
                 )
-                ;;#1C] Inject barrier — a new distribution-round may open ONLY when the previous one is
-                ;;     fully collected (unclaimed-count == 0). The first inject passes (count is 0 at init).
-                ;;     Stragglers are cleared by the admin flush (AA_FlushUncollected / Ap_FlushUncollectedSlice).
-                (enforce
-                    (= (UR_Global7) 0)
-                    "STOAICO: previous distribution-round not fully collected — flush the stragglers (or wait for collections) before injecting again")
-                ;;0]Move wSTOA from <account> to the D-Vault
-                (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
-                ;;1]Update D-Vault <current-rps> with new value gained form injecting <wstoa-amount>
-                (XI_UpdateVaultRPS new-rps)
-                ;;2]Update D-Vault <wstoa-supply> with <wstoa-amount>
-                (XI_UpdateVaultSupply wstoa-amount true)
-                ;;3]Reset <unclaimed-count> (set it to <nzs-count>)
-                (XI_ResetUnclaimedCount)
-                ;;4]#1C: advance the vault to the next distribution-round (opens collection for this round)
-                (XI_IncrementDistributionRound)
+                (if (> vault-score 0.0)
+                    ;;=== FLUSH — stakers present: distribute (new amount + any escrowed zombie), open next round.
+                    (let
+                        (
+                            (eff:decimal (+ wstoa-amount zombie))
+                        )
+                        ;;#1C] Inject barrier — a new distribution-round may open ONLY when the previous one is
+                        ;;     fully collected (unclaimed-count == 0). Stragglers are cleared by the admin flush.
+                        (enforce
+                            (= (UR_Global7) 0)
+                            "STOAICO: previous distribution-round not fully collected — flush the stragglers (or wait for collections) before injecting again")
+                        ;;0]Move wSTOA from <account> to the D-Vault
+                        (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
+                        ;;1]Count it in <wstoa-supply> (total held by the vault)
+                        (XI_UpdateVaultSupply wstoa-amount true)
+                        ;;2]Advance <current-rps> by the EFFECTIVE amount (new + escrowed zombie) / vault-score.
+                        ;;  vault-score > 0 here, so the reward-per-share division can never divide by zero.
+                        (XI_UpdateVaultRPS (+ (UR_Global6) (floor (/ eff vault-score) STOA_PREC)))
+                        ;;3]#5M: the escrowed zombie is fully consumed by this flush
+                        (if (> zombie 0.0) (XI_SetZombieRewards 0.0) true)
+                        ;;4]Reset <unclaimed-count> (set it to <nzs-count>)
+                        (XI_ResetUnclaimedCount)
+                        ;;5]#1C: advance the vault to the next distribution-round (opens collection for this round)
+                        (XI_IncrementDistributionRound)
+                    )
+                    ;;=== ESCROW — #5M no stakers (vault-score 0): park the amount as zombie for the NEXT non-zero
+                    ;;    inject (eff = amount + zombie). Nothing is distributed (no rps/round/unclaimed change),
+                    ;;    so the division is never reached with a zero denominator.
+                    (do
+                        ;;0]Move wSTOA from <account> to the D-Vault (held, not yet distributed)
+                        (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
+                        ;;1]Count it in <wstoa-supply> (held by the vault)
+                        (XI_UpdateVaultSupply wstoa-amount true)
+                        ;;2]Escrow: postpone distribution to the next injection when vault-score is non-zero
+                        (XI_SetZombieRewards (+ zombie wstoa-amount))
+                    )
+                )
             )
         )
     )
@@ -680,6 +704,7 @@
             ,"current-rps"      : 0.0
             ,"unclaimed-count"  : 0
             ,"distribution-round" : 0
+            ,"zombie-rewards"   : 0.0
             ,"wstoa"            : (at 0 dptf-ids)
             ,"wurstoa"          : (at 1 dptf-ids)
             ,"vusd"             : (at 2 dptf-ids)
@@ -792,6 +817,13 @@
         (require-capability (SECURE))
         (update STOAICO|T|General STOAICO|INFO
             {"distribution-round" : (+ 1 (UR_Global11))}
+        )
+    )
+    (defun XI_SetZombieRewards (amount:decimal)
+        @doc "#5M: set the escrowed zombie-rewards (escrow adds to it; a flush zeroes it)."
+        (require-capability (SECURE))
+        (update STOAICO|T|General STOAICO|INFO
+            {"zombie-rewards" : amount}
         )
     )
     ;;

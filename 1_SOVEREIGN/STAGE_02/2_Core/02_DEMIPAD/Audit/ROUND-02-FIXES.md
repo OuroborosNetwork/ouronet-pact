@@ -110,3 +110,35 @@ audits — never piecemeal**. Broadened + logged on the roadmap (Phase 1.4).
 
 **Still-open Custodians divergences (own turns):** #9M (`UC_NonceQuintessence` enforces), #10M
 (`UR_NonceSaleAvailability` enforces where Snakes doesn't), #15L (missing `UEV_IMC`).
+
+---
+
+## #5M — STOAICO `A_Inject` div-by-zero on empty vault → FIXED + PROVEN (2026-08-29)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/05_STOAICO.pact` · proof `REPL/Stage_02/[6.3]_STOAICO.repl`
+(TX-01b + TX-02).
+
+**Bug:** `gained-rps = floor(wstoa-amount / vault-score, …)` had no `vault-score > 0` guard, so an inject
+into a vault with no contributions (`vault-score == 0`) aborted with a raw div-by-zero.
+
+**Owner-agreed design — the AQP escrow-on-empty (zombie-rewards) architecture** (owner: *"same
+architecture… the zombie amount, postponed to the next injection when score is non-0"*), mirroring
+`XI_DistributeInjectAmount`:
+- Schema: `GeneralContributionSchema` += `zombie-rewards:decimal` (init 0). Reader `UR_Global12`, writer
+  `XI_SetZombieRewards`.
+- `A_Inject` branches on `vault-score`:
+  - **FLUSH (`vault-score > 0`):** `eff = wstoa-amount + zombie`; `rps += floor(eff / vault-score)`;
+    supply += amount; `zombie → 0`; #1C barrier + reset unclaimed + advance round. The division only ever
+    runs here, so a zero denominator is structurally impossible.
+  - **ESCROW (`vault-score == 0`):** move + count the amount, `zombie += amount`; nothing distributed
+    (no rps/round/unclaimed change). Distributed by the next non-zero-score inject.
+- The floor-to-0 edge is left unguarded (needs a $10¹⁹ vault; a `gained-rps>0` guard would false-reject a
+  legit small flush).
+
+**Proof (`[6.3]` TX-01b + TX-02, deployed stack):**
+- **Fix green (exit 0):** inject 3M into the empty vault → **escrows** (`zombie=3M`, `supply=3M`, `rps=0`,
+  `round=0` — no crash) · then stake + inject 7M → **FLUSH** (`zombie → 0`, `supply=10M`) · and
+  **CONSERVATION: emma + lumy wSTOA == 10,000,000** — the escrowed 3M reaches the stakers through the flush.
+- **Bug reproduced (exit 1):** forcing the FLUSH branch on the empty vault (`if true`) →
+  `Arithmetic exception: div by zero` at STOAICO:444 (`floor (/ eff vault-score)`). Restored, re-run green.
+  Full `Z.repl` green.

@@ -172,6 +172,30 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-01b - #5M escrow-on-empty: inject into the empty vault parks it as zombie")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-01b — #5M: A_Inject into a vault WITH NO STAKERS escrows (no div-by-zero) ===")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; Fresh vault, no contributions yet → vault-score == 0. Injecting 3M must NOT divide by zero — it
+;; parks the amount as zombie-rewards, to be distributed by the next non-zero-score inject.
+(STOAICO.A_Inject KST.ANHD KST.ANHD 3000000.0)
+(map print
+    [
+        (format "escrow => zombie={} supply={} rps={} round={}"
+            [(STOAICO.UR_Global12) (STOAICO.UR_Global4) (STOAICO.UR_Global6) (STOAICO.UR_Global11)])
+        (expect "#5M: 3M escrowed as zombie-rewards (no crash on empty vault)" 3000000.0 (STOAICO.UR_Global12))
+        (expect "#5M: the 3M is held in wstoa-supply" 3000000.0 (STOAICO.UR_Global4))
+        (expect "#5M: nothing distributed — current-rps still 0" 0.0 (STOAICO.UR_Global6))
+        (expect "#5M: no distribution-round opened while escrowed (still 0)" 0 (STOAICO.UR_Global11))
+        ""
+    ]
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
 (begin-tx "TX-02 - STOAICO Stake Tests")
 (namespace "ouronet-ns")
@@ -198,8 +222,16 @@
         (STOAICO.A_Stake KST.ANHD emma 341.0)
         (STOAICO.A_Stake KST.ANHD emma 2.0)
         (STOAICO.A_Stake KST.ANHD lumy 17500.0)
-        ;; Inject the 10M ICO reward — #1C: opens distribution-round 1 (unclaimed = nzs = 2).
-        (STOAICO.A_Inject KST.ANHD KST.ANHD 10000000.0)
+        ;; #5M FLUSH: inject the remaining 7M — vault-score > 0 now, so this also FLUSHES the escrowed 3M
+        ;; zombie (eff = 7M + 3M = 10M distributed). #1C: opens distribution-round 1 (unclaimed = nzs = 2).
+        (STOAICO.A_Inject KST.ANHD KST.ANHD 7000000.0)
+        (map print
+            [
+                (format "flush => zombie={} supply={}" [(STOAICO.UR_Global12) (STOAICO.UR_Global4)])
+                (expect "#5M: escrowed zombie fully consumed by the flush (0)" 0.0 (STOAICO.UR_Global12))
+                (expect "#5M: supply = escrow 3M + flush 7M = 10M total held" 10000000.0 (STOAICO.UR_Global4))
+            ]
+        )
         ;; Only EMMA self-collects; LUMY is intentionally left as a straggler so TX-03/04 can prove the
         ;; per-round idempotency, the inject barrier, and the admin flush.
         (print (format "emma collect => {}" [(STOAICO.C_Collect KST.ANHD emma)]))

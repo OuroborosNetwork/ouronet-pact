@@ -12,7 +12,7 @@ Status: `OPEN` (not yet discussed) · `DISCUSSING` · `AGREED` (fix locked, not 
 | **#2H** | HIGH | Demipad | `retrieval` toggle is dead state — the anti-rug lock is never enforced | D#2 | **FIXED** |
 | **#3H** | HIGH | Custodians | `C_Acquire` never opens `CUSTODIANS|ACQUIRE` — supply cap + policy caps dropped | D#3 | **FIXED** |
 | **#4H** | HIGH | Custodians | calls non-existent `GOV|LAUNCHPAD|SC_NAME` → runtime unbound (should be `GOV|DEMIPAD|SC_NAME`) | D#4 | **FIXED** |
-| **#5M** | MEDIUM | STOAICO | `A_Inject` div-by-`vault-score` no zero-guard (+ floor-to-0 under-distribution) | D#5 | OPEN |
+| **#5M** | MEDIUM | STOAICO | `A_Inject` div-by-`vault-score` no zero-guard (+ floor-to-0 under-distribution) | D#5 | **FIXED** |
 | **#6M** | MEDIUM | STOAICO | urSTOA double-credited across stake rounds (re-mints claimed urSTOA, over-spends cap) | D#7 | OPEN |
 | **#7M** | MEDIUM | Demipad | NF transmit guarded by the SF cap (NF can't move; SF-as-NF type mismatch) | D#8 | OPEN |
 | **#8M** | MEDIUM | Demipad | `direct-injection` credits withdrawable funds with no tokens in (phantom funds; latent) | D#9 | INTENT |
