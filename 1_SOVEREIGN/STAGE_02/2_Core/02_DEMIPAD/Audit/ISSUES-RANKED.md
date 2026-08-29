@@ -8,7 +8,7 @@ Status: `OPEN` (not yet discussed) · `DISCUSSING` · `AGREED` (fix locked, not 
 
 | # | Sev | Module | Issue | D# | Status |
 |---|-----|--------|-------|----|--------|
-| **#1C** | CRITICAL | STOAICO | `C_Collect` is drainable — non-idempotent + `unclaimed-count==1` pays the whole vault | D#1 | DISCUSSING |
+| **#1C** | CRITICAL | STOAICO | `C_Collect` is drainable — non-idempotent + `unclaimed-count==1` pays the whole vault | D#1 | **FIXED** |
 | **#2H** | HIGH | Demipad | `retrieval` toggle is dead state — the anti-rug lock is never enforced | D#2 | OPEN |
 | **#3H** | HIGH | Custodians | `C_Acquire` never opens `CUSTODIANS|ACQUIRE` — supply cap + policy caps dropped | D#3 | OPEN |
 | **#4H** | HIGH | Custodians | calls non-existent `GOV|LAUNCHPAD|SC_NAME` → runtime unbound (should be `GOV|DEMIPAD|SC_NAME`) | D#4 | OPEN |

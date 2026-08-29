@@ -57,6 +57,12 @@
             (mg:guard (create-capability-guard (TS02-DPAD.P|TALOS-SUMMONER)))
             (lpad-sc:string (ref-DPAD::GOV|DEMIPAD|SC_NAME))
         )
+        ;;Register the DEMIPAD sale-module IMC policies the governor guard references below
+        ;;(idempotent write; also performed by [5.3]_Launchpad in a full run).
+        (DEMIPAD-SPARK.P|A_Define)
+        (DEMIPAD-SNAKES.P|A_Define)
+        (DEMIPAD-CUSTODIANS.P|A_Define)
+        (DEMIPAD-STOICPAY.P|A_Define)
         ;;Backward IMC                      Sets IMC for backward Modules
         (ref-P|STOAICO::P|A_Define)
         ;;Forward IMC                       Sets IMC for forward Modules
@@ -191,23 +197,23 @@
         (STOAICO.A_Stake KST.ANHD emma 2500.0)
         (STOAICO.A_Stake KST.ANHD emma 341.0)
         (STOAICO.A_Stake KST.ANHD emma 2.0)
-        ;(STOAICO.A_Unstake KST.ANHD emma 43.0)
-        ;(STOAICO.A_Unstake KST.ANHD emma 300.0)
         (STOAICO.A_Stake KST.ANHD lumy 17500.0)
-        ;;
+        ;; Inject the 10M ICO reward — #1C: opens distribution-round 1 (unclaimed = nzs = 2).
         (STOAICO.A_Inject KST.ANHD KST.ANHD 10000000.0)
-        
-        [
+        ;; Only EMMA self-collects; LUMY is intentionally left as a straggler so TX-03/04 can prove the
+        ;; per-round idempotency, the inject barrier, and the admin flush.
+        (print (format "emma collect => {}" [(STOAICO.C_Collect KST.ANHD emma)]))
+        (map print
             [
-                (STOAICO.UR_User0 emma)
-                (STOAICO.UR_User0 lumy)
-                (STOAICO.UR_Global0)
+                (format "round={} unclaimed={} wstoa-supply={}"
+                    [(STOAICO.UR_Global11) (STOAICO.UR_Global7) (STOAICO.UR_Global4)])
+                (expect "round advanced to 1 on inject" 1 (STOAICO.UR_Global11))
+                (expect "emma stamped collected for round 1" 1 (STOAICO.UR_User5 emma))
+                (expect "lumy still uncollected (round 0)" 0 (STOAICO.UR_User5 lumy))
+                (expect "unclaimed-count = 1 (lumy outstanding)" 1 (STOAICO.UR_Global7))
+                ""
             ]
-            [
-                (STOAICO.C_Collect KST.ANHD emma)
-                (STOAICO.C_Collect KST.ANHD lumy)
-            ]
-        ]
+        )
     )
 
 (print "")
@@ -220,3 +226,88 @@
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-03 - #1C idempotency + inject barrier")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-03 — #1C: double-collect rejected + inject barrier while a straggler is outstanding ===")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_LPAD", "caps": [] }
+        { "key": "PK_Emma", "caps": [] }
+        { "key": "PK_Lumy", "caps": [] }
+    ]
+)
+(let ((emma:string KST.EMMA))
+    (map print
+        [
+            ;; THE drain-killer: a second collect in the same distribution-round is rejected outright.
+            (expect-failure
+                "#1C: emma double-collect rejected (already collected this distribution round)"
+                "has already collected this distribution round"
+                (STOAICO.C_Collect KST.ANHD emma))
+            ;; The barrier: a new inject cannot open until the previous round is fully collected.
+            (expect-failure
+                "#1C: A_Inject blocked while lumy is still uncollected (unclaimed-count != 0)"
+                "previous distribution-round not fully collected"
+                (STOAICO.A_Inject KST.ANHD KST.ANHD 1000000.0))
+            ""
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-04 - #1C admin flush: push-collect straggler, conserve, unblock")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-04 — #1C: admin flush push-collects lumy (delivered to lumy), conserves, clears barrier ===")
+(env-sigs
+    [
+        { "key": "PK_AncientHodler", "caps": [] }
+        { "key": "PK_LPAD", "caps": [] }
+        { "key": "PK_Emma", "caps": [] }
+        { "key": "PK_Lumy", "caps": [] }
+    ]
+)
+(let
+    (
+        (emma:string KST.EMMA)
+        (lumy:string KST.LUMY)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (wstoa-id:string (STOAICO.UR_Global8))
+    )
+    ;; Preflight lists exactly the straggler; the admin flush push-collects it (last => dust sweep).
+    (map print
+        [
+            (format "URH_UncollectedAccounts => {}" [(STOAICO.URH_UncollectedAccounts)])
+            (expect "URH preflight lists exactly the straggler lumy" [lumy] (STOAICO.URH_UncollectedAccounts))
+        ]
+    )
+    (print (format "flush => {}" [(STOAICO.AA_FlushUncollected KST.ANHD)]))
+    (let
+        (
+            (emma-bal:decimal (ref-DPTF::UR_AccountSupply wstoa-id emma))
+            (lumy-bal:decimal (ref-DPTF::UR_AccountSupply wstoa-id lumy))
+        )
+        (map print
+            [
+                (format "emma wSTOA={} lumy wSTOA={} vault-supply={}" [emma-bal lumy-bal (STOAICO.UR_Global4)])
+                (expect "lumy received its wSTOA via the flush (>0)" true (> lumy-bal 0.0))
+                (expect "lumy stamped collected for round 1" 1 (STOAICO.UR_User5 lumy))
+                (expect "unclaimed-count cleared to 0 (inject barrier now open)" 0 (STOAICO.UR_Global7))
+                (expect "vault wstoa-supply fully conserved to 0 (dust to the last collector)" 0.0 (STOAICO.UR_Global4))
+                (expect "CONSERVATION: emma + lumy wSTOA == 10,000,000 injected" 10000000.0 (+ emma-bal lumy-bal))
+                ""
+            ]
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END [6.3]_STOAICO.repl (with #1C proof) ===")

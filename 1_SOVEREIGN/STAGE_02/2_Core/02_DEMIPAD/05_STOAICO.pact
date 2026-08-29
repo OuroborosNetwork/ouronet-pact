@@ -107,6 +107,7 @@
         ;;v-dollarz                 ;;Stores the amount of Dollarz Contributed by Account; same as <dollarz>
         last-rps:decimal            ;;Value of the Users last RPS
         pending-rewards:decimal     ;;Amount of pending rewards the user can claim (amount of WSTOA user can still claim)
+        last-collected-round:integer ;;#1C: the distribution-round this account last collected. Collect allowed only when < the vault distribution-round (one collect per round; a new A_Inject opens the next round).
         ;;
         ;;Select Keyz
         owner-id:string             ;;Ouronet Account
@@ -122,6 +123,7 @@
         nzs-count:integer           ;;Stores the number of users with non zero score.
         current-rps:decimal         ;;Stores current RPS decimal
         unclaimed-count:integer     ;;Stores the total number of user with unclaimed Rewards.
+        distribution-round:integer  ;;#1C: monotonic distribution-round counter, ++ on every A_Inject. Gates collect eligibility (per-round idempotency) and the inject barrier (a new round opens only when unclaimed-count == 0).
         ;;
         ;;IDs
         wstoa:string
@@ -200,6 +202,12 @@
             )
             (ref-DALOS::CAP_EnforceAccountOwnership account)
             (enforce iz-account (format "Account {} cannot be redeemed" [account]))
+            ;;#1C: per-round idempotency — an account may collect at most once per distribution-round.
+            ;;     This is the guard that kills the drain (the unclaimed-count can no longer be walked
+            ;;     down to the whole-supply dust-sweep by repeated zero-value re-collects).
+            (enforce
+                (< (UR_User5 account) (UR_Global11))
+                (format "Account {} has already collected this distribution round" [account]))
             (compose-capability (SECURE))
             (compose-capability (P|PAD-STOAICO|REMOTE-GOV))
         )
@@ -208,6 +216,13 @@
         (compose-capability (GOV))
         (compose-capability (SECURE))
         (compose-capability (P|PAD-STOAICO|REMOTE-GOV))
+    )
+    (defcap STOAICO|FLUSH ()
+        @doc "#1C admin flush authorization — push-collect uncollected stragglers on their behalf (delivered \
+            \ to them). Composes STOAICO|ADMIN, so XI_CollectFor runs in the same SECURE + REMOTE-GOV context \
+            \ as a self-collect, plus admin. Evented."
+        @event
+        (compose-capability (STOAICO|ADMIN))
     )
     ;;
     ;;<=======>
@@ -219,9 +234,9 @@
                 (current-rps:decimal (UR_Global6))
             )
             (with-default-read STOAICO|T|User account
-                (UDC_UserData 0.0 0 current-rps 0.0 account)
-                {"dollarz":= d, "urstoa-earned" := ue, "last-rps" := lrps, "pending-rewards" := pr, "owner-id" := id}
-                (UDC_UserData d ue lrps pr id)
+                (UDC_UserData 0.0 0 current-rps 0.0 0 account)
+                {"dollarz":= d, "urstoa-earned" := ue, "last-rps" := lrps, "pending-rewards" := pr, "last-collected-round" := lcr, "owner-id" := id}
+                (UDC_UserData d ue lrps pr lcr id)
             )
         )   
     )
@@ -258,6 +273,14 @@
             pr
         )
     )
+    (defun UR_User5:integer (account:string)
+        @doc "#1C: the distribution-round this account last collected (0 default)."
+        (with-default-read STOAICO|T|User account
+            {"last-collected-round" : 0}
+            {"last-collected-round" := lcr}
+            lcr
+        )
+    )
     ;;
     (defun UR_Global0:object{GeneralContributionSchema} ()
         (read STOAICO|T|General STOAICO|INFO)
@@ -291,6 +314,10 @@
     )
     (defun UR_Global10:string ()
         (at "vusd" (read STOAICO|T|General STOAICO|INFO ["vusd"]))
+    )
+    (defun UR_Global11:integer ()
+        @doc "#1C: the vault distribution-round (monotonic, ++ on every A_Inject)."
+        (at "distribution-round" (read STOAICO|T|General STOAICO|INFO ["distribution-round"]))
     )
     ;;
     (defun UR_IzAccount:bool (account:string)
@@ -327,12 +354,13 @@
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]
     (defun UDC_UserData:object{UserContributionSchema}
-        (a:decimal b:integer c:decimal d:decimal e:string)
-        {"dollarz"          : a
-        ,"urstoa-earned"    : b
-        ,"last-rps"         : c
-        ,"pending-rewards"  : d
-        ,"owner-id"         : e}
+        (a:decimal b:integer c:decimal d:decimal f:integer e:string)
+        {"dollarz"              : a
+        ,"urstoa-earned"        : b
+        ,"last-rps"             : c
+        ,"pending-rewards"      : d
+        ,"last-collected-round" : f
+        ,"owner-id"             : e}
     )
     ;;{F4}  [CAP]
     ;;
@@ -393,6 +421,12 @@
                     (current-rps:decimal (UR_Global6))
                     (new-rps:decimal (+ current-rps gained-rps))
                 )
+                ;;#1C] Inject barrier — a new distribution-round may open ONLY when the previous one is
+                ;;     fully collected (unclaimed-count == 0). The first inject passes (count is 0 at init).
+                ;;     Stragglers are cleared by the admin flush (AA_FlushUncollected / Ap_FlushUncollectedSlice).
+                (enforce
+                    (= (UR_Global7) 0)
+                    "STOAICO: previous distribution-round not fully collected — flush the stragglers (or wait for collections) before injecting again")
                 ;;0]Move wSTOA from <account> to the D-Vault
                 (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
                 ;;1]Update D-Vault <current-rps> with new value gained form injecting <wstoa-amount>
@@ -401,6 +435,8 @@
                 (XI_UpdateVaultSupply wstoa-amount true)
                 ;;3]Reset <unclaimed-count> (set it to <nzs-count>)
                 (XI_ResetUnclaimedCount)
+                ;;4]#1C: advance the vault to the next distribution-round (opens collection for this round)
+                (XI_IncrementDistributionRound)
             )
         )
     )
@@ -425,7 +461,9 @@
                 (if (not (UR_IzAccount account))
                     (do
                         (insert STOAICO|T|User account
-                            (UDC_UserData 0.0 0 (UR_Global6) 0.0 account)
+                            ;;#1C: new contributor starts at the CURRENT distribution-round, so a (mis-ordered)
+                            ;;     post-inject stake is not eligible for the already-injected round.
+                            (UDC_UserData 0.0 0 (UR_Global6) 0.0 (UR_Global11) account)
                         )
                         ;;Increment Users by one
                         (update STOAICO|T|General STOAICO|INFO
@@ -489,50 +527,119 @@
             )
         )
     )
-    ;;{F6}  [C]
-    (defun C_Collect (patron:string account:string)
-        @doc "Collects from the distribution Vault \
-            \ Can only be done once, after the ICO has concluded. \
-            \ Can only be done by <account> owner."
-        (with-capability (STOAICO|REDEEM-CONTRIBUTION account)
+    ;;{F5.1} [Flush recipe — #1C]  (URH_ preflight → Ap_ parallel slice → AA_ solo/heavy)
+    (defun URH_UncollectedAccounts:[string] ()
+        @doc "#1C Hydra preflight — the ONE heavy read: every account that still holds an UNCOLLECTED \
+            \ position this distribution-round, i.e. an actual staker (dollarz > 0) whose \
+            \ last-collected-round is behind the vault distribution-round. The UI slices this list into \
+            \ capacity-bounded Ap_FlushUncollectedSlice legs; AA_FlushUncollected consumes it whole."
+        (let
+            (
+                (cur-round:integer (UR_Global11))
+            )
+            (map
+                (lambda (row:object{UserContributionSchema}) (at "owner-id" row))
+                (select STOAICO|T|User
+                    (and?
+                        (where "last-collected-round" (> cur-round))
+                        (where "dollarz" (< 0.0))
+                    )
+                )
+            )
+        )
+    )
+    (defun Ap_FlushUncollectedSlice:string (patron:string accounts:[string])
+        @doc "#1C Hydra parallel slice: the admin push-collects ONE slice of uncollected accounts, delivering \
+            \ each its OWN wSTOA + urSTOA (identical to a self-collect — not to the admin, not burned). \
+            \ Order-independent and retryable — an account already collected this round is skipped, so re-runs \
+            \ are idempotent. Drives unclaimed-count toward 0 so the next A_Inject can open the following round."
+        (with-capability (STOAICO|FLUSH)
             (let
                 (
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                    (wSTOA-supply:decimal (URC_ClaimableRewards account))
-                    (urSTOA-supply:decimal (dec (UR_User2 account)))
-                    (wSTOA-id:string (UR_Global8))
-                    (urSTOA-id:string (UR_Global9))
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                    (cur-round:integer (UR_Global11))
                 )
-                ;;1]Collect wSTOA and URSTOA Rewards
-                (ref-TS01-C1::DPTF|C_Mint patron urSTOA-id DEMIPAD|SC_NAME urSTOA-supply false)
-                (if (!= urSTOA-supply 0.0)
-                    (ref-TS01-C1::DPTF|C_MultiTransfer patron
-                        [wSTOA-id urSTOA-id] DEMIPAD|SC_NAME account 
-                        [wSTOA-supply urSTOA-supply] true
+                (map
+                    (lambda (account:string)
+                        (if (< (UR_User5 account) cur-round)
+                            (XI_CollectFor patron account)
+                            (format "Account {} already collected — skipped" [account])
+                        )
                     )
-                    (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-id DEMIPAD|SC_NAME account wSTOA-supply true)
+                    accounts
                 )
-                ;;2]Reset <pending-rewards> to 0
-                (XI_ResetPendingRewards account)
-                ;;3]Decrement <unclaimed-count>
-                (XI_UpdateUnclaimedCount false)
-                ;;4]Update <last-rps> with the D-Vault <current-rps>
-                (XI_UpdateUserRPS account (UR_Global6))
-                ;;5]Update Vault Supply
-                (XI_UpdateVaultSupply wSTOA-supply false)
-                (XI_ResetUrstoaEarned account)
-                ;;6]Return claimed amounts
-                (if (!= urSTOA-supply 0.0)
-                    (format 
-                        "Account {} succesfully claimed {} {} and {} {}"
-                        [sa wSTOA-supply wSTOA-id urSTOA-supply urSTOA-id]
-                    )
-                    (format 
-                        "Account {} succesfully claimed {} {} and no {}"
-                        [sa wSTOA-supply wSTOA-id urSTOA-id]
-                    )
+                (format "Flush slice processed {} account(s)" [(length accounts)])
+            )
+        )
+    )
+    (defun AA_FlushUncollected:string (patron:string)
+        @doc "#1C solo/heavy admin flush: push-collect ALL uncollected stragglers in one transaction (reaches \
+            \ the URH_UncollectedAccounts heavy scan — hence AA_). For large contributor sets prefer the \
+            \ parallel URH_UncollectedAccounts preflight + Ap_FlushUncollectedSlice legs. Delivers each \
+            \ straggler its own rewards and clears unclaimed-count so the next inject can proceed."
+        (with-capability (STOAICO|FLUSH)
+            (let
+                (
+                    (accounts:[string] (URH_UncollectedAccounts))
+                )
+                (map (lambda (account:string) (XI_CollectFor patron account)) accounts)
+                (format "Flushed {} uncollected account(s)" [(length accounts)])
+            )
+        )
+    )
+    ;;{F6}  [C]
+    (defun C_Collect (patron:string account:string)
+        @doc "Self-collect from the distribution Vault — once per distribution-round, by the <account> owner. \
+            \ A new A_Inject opens the next round and re-enables collection (the RPS delta since last collect)."
+        (with-capability (STOAICO|REDEEM-CONTRIBUTION account)
+            (XI_CollectFor patron account)
+        )
+    )
+    (defun XI_CollectFor:string (patron:string account:string)
+        @doc "#1C shared settle+deliver core: pays <account> its OWN wSTOA (its RPS delta, or the whole \
+            \ remaining wstoa-supply when it is the round's last unclaimed staker — the dust sweep) plus its \
+            \ urSTOA, then stamps it collected for the current distribution-round and decrements \
+            \ unclaimed-count. Used by C_Collect (self-collect, gated by STOAICO|REDEEM-CONTRIBUTION) and by \
+            \ the admin flush (push-collect on behalf of a straggler, gated by STOAICO|FLUSH). SECURE."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                (wSTOA-supply:decimal (URC_ClaimableRewards account))
+                (urSTOA-supply:decimal (dec (UR_User2 account)))
+                (wSTOA-id:string (UR_Global8))
+                (urSTOA-id:string (UR_Global9))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            ;;1]Collect wSTOA and URSTOA Rewards — delivered to <account>, the rightful owner
+            (ref-TS01-C1::DPTF|C_Mint patron urSTOA-id DEMIPAD|SC_NAME urSTOA-supply false)
+            (if (!= urSTOA-supply 0.0)
+                (ref-TS01-C1::DPTF|C_MultiTransfer patron
+                    [wSTOA-id urSTOA-id] DEMIPAD|SC_NAME account
+                    [wSTOA-supply urSTOA-supply] true
+                )
+                (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-id DEMIPAD|SC_NAME account wSTOA-supply true)
+            )
+            ;;2]Reset <pending-rewards> to 0
+            (XI_ResetPendingRewards account)
+            ;;3]Decrement <unclaimed-count>
+            (XI_UpdateUnclaimedCount false)
+            ;;4]Update <last-rps> with the D-Vault <current-rps>
+            (XI_UpdateUserRPS account (UR_Global6))
+            ;;5]Update Vault Supply
+            (XI_UpdateVaultSupply wSTOA-supply false)
+            (XI_ResetUrstoaEarned account)
+            ;;6]#1C: stamp this account as collected for the current distribution-round
+            (XI_MarkCollected account)
+            ;;7]Return claimed amounts
+            (if (!= urSTOA-supply 0.0)
+                (format
+                    "Account {} succesfully claimed {} {} and {} {}"
+                    [sa wSTOA-supply wSTOA-id urSTOA-supply urSTOA-id]
+                )
+                (format
+                    "Account {} succesfully claimed {} {} and no {}"
+                    [sa wSTOA-supply wSTOA-id urSTOA-id]
                 )
             )
         )
@@ -572,6 +679,7 @@
             ,"nzs-count"        : 0
             ,"current-rps"      : 0.0
             ,"unclaimed-count"  : 0
+            ,"distribution-round" : 0
             ,"wstoa"            : (at 0 dptf-ids)
             ,"wurstoa"          : (at 1 dptf-ids)
             ,"vusd"             : (at 2 dptf-ids)
@@ -600,6 +708,13 @@
         (require-capability (SECURE))
         (update STOAICO|T|User account
             {"last-rps" : new-rps}
+        )
+    )
+    (defun XI_MarkCollected (account:string)
+        @doc "#1C: stamp the account as having collected the CURRENT distribution-round."
+        (require-capability (SECURE))
+        (update STOAICO|T|User account
+            {"last-collected-round" : (UR_Global11)}
         )
     )
     (defun XI_UpdatePendingRewards (account:string)
@@ -670,6 +785,13 @@
         (require-capability (SECURE))
         (update STOAICO|T|General STOAICO|INFO
             {"unclaimed-count" : (UR_Global5)}
+        )
+    )
+    (defun XI_IncrementDistributionRound ()
+        @doc "#1C: advance the vault to the next distribution-round (called by A_Inject)."
+        (require-capability (SECURE))
+        (update STOAICO|T|General STOAICO|INFO
+            {"distribution-round" : (+ 1 (UR_Global11))}
         )
     )
     ;;
