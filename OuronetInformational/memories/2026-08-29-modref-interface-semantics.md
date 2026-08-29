@@ -65,6 +65,29 @@ safety net is the TESTS, not the interface.
   the declare-everything convention means an added cross-module fn = an interface edit = part of that
   interface's one bump.
 
+## Empty / marker / no-interface (verified pact 5.4.1, q1/q2/marker)
+- **Empty interface `(interface x)` = ILLEGAL** — Pact requires ≥1 member ("Expected `(`").
+- **Marker interface (one `defconst`, ZERO defuns) = VALID** and works as a modref type: a caller
+  typed `module{marker}` can call ALL the module's functions (`f`,`g`, even an `h` added later that
+  is never in the interface). Result: `["M.f","M.g","M.h-added-later"]`. So a **stable marker
+  interface never has to change as the module gains functions.**
+- **Module with NO interface = CANNOT be modref'd** — `module{}` is a syntax error and
+  `module{ModuleName}` fails (a module isn't an interface type). No interface → direct `M.f` only →
+  reintroduces deploy-order coupling. So every modref target needs ≥1 interface (even a marker).
+
+## THE CASCADE LEVER (answers "every module update → interface bump → whole-code refactor")
+- Adding functions to a module does NOT require changing its interface (dynamic dispatch) → does NOT
+  have to trigger a bump/cascade.
+- **Cascade size = how many interfaces CHANGE vs live — not how many functions you add.** You control it.
+- Marker interfaces never change → zero cascade from function growth. Rich interfaces (declare public
+  fns) change when you add fns → those bump at Phase 7 → cascade to their consumers.
+- Repo policy makes it bounded: pre-redeploy interfaces edit FREELY (no bump); the single Phase-7
+  diff-vs-live is the only bump event; cascade = updating `module{IfaceVn}` refs for the interfaces
+  that differ from live.
+- Trade-off: rich = enumeration/docs/drift-catch but more cascade; marker = zero fn-add cascade but
+  the interface tells you nothing. NB the enumeration lost with markers is already provided by the
+  entrypoint-surface catalog (Phase 2.3) + Talos layer + the REPL suite — so marker-lean is viable.
+
 ## Relevance
 Directly informs URCi (Phase 1 — new `URCi_*` composers/leaves called cross-module → declare them)
 and Phase 7 (version bump + cascade). Not "bump per function" — "declare per cross-module function,
