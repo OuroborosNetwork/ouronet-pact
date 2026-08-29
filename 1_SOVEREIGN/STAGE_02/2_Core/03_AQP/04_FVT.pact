@@ -24,6 +24,7 @@
     (defun UR_FVT|MemberLinkCount:integer (fvt-id:string))
     (defun UR_FVT|Mosaic:bool (fvt-id:string))
     (defun UR_FVT|MembershipMode:string (fvt-id:string))
+    (defun UR_FVT|SplitMode:string (fvt-id:string))
     (defun UR_FVT|OracleOn:bool (fvt-id:string))
     (defun UR_FVT|FvtId:string (fvt-id:string))
     ;;
@@ -171,6 +172,9 @@
     )
     (defun C_SetMosaic:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string mosaic:bool)
+    )
+    (defun C_SetSplitMode:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string split-mode:string)
     )
     (defun C_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
@@ -357,6 +361,8 @@
         mosaic:bool                                             ;;[Mu]  mix score + triplet entities when true
         membership-mode:string                                  ;;[Mu]  BAR | SCORE | TRUE-TRIPLET | STANDARD-TRIPLET
         oracle-on:bool                                          ;;[M]   DSA: node/uptime oracle governs capture (off ⇒ capture = units, uptime ≡ 1000, no expiry). Default false.
+        split-mode:string                                       ;;[M]   Farm reward-split (D1-G2): SPLIT|STAKED (participation, default) | SPLIT|TVL (pool-size). The
+        ;;                                                              Level-2 W_i source at inject. Farm (class 0) only; vault/treasury store the default but never consult it.
         ;;
         ;;Select Keys
         fvt-id:string
@@ -700,6 +706,7 @@
     (defconst GAS|TOGGLE-REWARD-LINK                            500.0)
     (defconst GAS|SET-QUALITY-SPLIT                             500.0)
     (defconst GAS|SET-COMMON-DENOMINATOR                        500.0)
+    (defconst GAS|SET-SPLIT-MODE                                500.0)
     (defconst GAS|INJECT                                        500.0)
     (defconst GAS|COLLECT                                       500.0)
     (defconst GAS|UNSTALE                                       500.0)
@@ -716,6 +723,9 @@
     (defconst CT_MEMBERSHIP_MODE_SCORE                          "SCORE")
     (defconst CT_MEMBERSHIP_MODE_TRUE_TRIPLET                   "TRUE-TRIPLET")
     (defconst CT_MEMBERSHIP_MODE_STANDARD_TRIPLET               "STANDARD-TRIPLET")
+    ;; Farm reward-split modes (D1-G2). Level-2 W_i source at inject; per-farm, freely mutable.
+    (defconst CT_SPLIT_MODE_STAKED                             "SPLIT|STAKED") ;; Variant 1 — participation (default): W_i = member STAKED value (URC_MemberStakedStoaValue)
+    (defconst CT_SPLIT_MODE_TVL                                "SPLIT|TVL")    ;; Variant 2 — pool-size: W_i = whole swpair TVL (UR_StoaValue)
     ;;
     ;;<==========>
     ;;CAPABILITIES
@@ -863,6 +873,27 @@
         @event
         (UEV_QualitySplitContext fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
         (compose-capability (SECURE))
+    )
+    (defcap FVT|C>SET-SPLIT-MODE (fvt-id:string split-mode:string)
+        @doc "Set the farm reward-split mode (D1-G2): SPLIT|STAKED (participation) | SPLIT|TVL (pool-size). Farm \
+            \ (class 0) only; FVT owner; FREELY mutable (no cooldown) — a change re-weights only FUTURE injects \
+            \ (RPS is checkpoint-based, past rewards untouched). Composes SECURE."
+        @event
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+            )
+            ;; 1] farm-only + valid mode value (two boolean conditions → one enforce)
+            (enforce
+                (and (= (UR_FVT|FvtClass fvt-id) 0)
+                     (or (= split-mode CT_SPLIT_MODE_STAKED) (= split-mode CT_SPLIT_MODE_TVL)))
+                "Split-mode: farm (class 0) only, value must be SPLIT|STAKED or SPLIT|TVL")
+            ;; 2] owner authorization
+            (ref-DALOS::CAP_EnforceAccountOwnership owner-konto)
+            (compose-capability (SECURE))
+        )
     )
     (defcap FVT|C>TOGGLE-REWARD-LINK (fvt-id:string reward-dptf-id:string enabled:bool)
         @doc "Toggle RPS|Global.reward-enabled; ±1 enabled-reward-count on flip. FVT owner. Composes SECURE."
@@ -1382,6 +1413,11 @@
         @doc "DSA: does the node/uptime oracle govern capture on this FVT? false ⇒ capture = units, uptime ≡ 1000, no expiry."
         (at "oracle-on" (read FVT|T fvt-id ["oracle-on"]))
     )
+    (defun UR_FVT|SplitMode:string (fvt-id:string)
+        @doc "Reads the farm reward-split mode (D1-G2): SPLIT|STAKED (participation, default) | SPLIT|TVL (pool-size). \
+            \ Farm (class 0) only consults it at inject; vault/treasury store the default but never read it."
+        (at "split-mode" (read FVT|T fvt-id ["split-mode"]))
+    )
     (defun UR_FVT|FvtId:string (fvt-id:string)
         @doc "Reads fvt-id field from FVT row."
         (at "fvt-id" (read FVT|T fvt-id ["fvt-id"]))
@@ -1705,7 +1741,8 @@
                     (lambda (score-entity-id:string)
                         (if (UR_FVT-SEL|Delegation fvt-id score-entity-id)
                             (UR_FVT-SEL|CaptureUnits fvt-id score-entity-id)
-                            (URC_MemberStakedStoaValue
+                            (URC_MemberLevel2Weight
+                                fvt-id
                                 (UR_FVT-SEL|ScoreEntityType fvt-id score-entity-id)
                                 score-entity-id
                                 (UR_FVT-SEL|Swpair fvt-id score-entity-id)
@@ -1862,6 +1899,21 @@
                 (ref-SWP::UR_StoaValue swpair)
                 0.0
             )
+        )
+    )
+    (defun URC_MemberLevel2Weight:decimal
+        (fvt-id:string score-entity-type:integer score-entity-id:string swpair:string)
+        @doc "Mode-aware Level-2 W_i for a NON-delegation farm member (D1-G2 dual reward-split). Reads the farm's \
+            \ split-mode and returns: SPLIT|STAKED (participation, default) ⇒ the member's STAKED value \
+            \ (URC_MemberStakedStoaValue = staked LP amount × per-LP STOA value); SPLIT|TVL (pool-size) ⇒ the whole \
+            \ swpair TVL (URC_ResolveScoreEntityGhostWeight at farm class 0 = SWP::UR_StoaValue). Used IDENTICALLY by \
+            \ the fresh inject denominator S (URC_FarmInjectDenominatorFresh) and the per-member numerator \
+            \ (XI_1|FarmSplitInject / URC_ProjectedIndexAdvance) so member slices always sum to the injected amount. \
+            \ A mode switch re-weights only future injects (RPS is checkpoint-based). Delegation members bypass this \
+            \ (they weight by capture, not staked value/TVL)."
+        (if (= (UR_FVT|SplitMode fvt-id) CT_SPLIT_MODE_TVL)
+            (URC_ResolveScoreEntityGhostWeight score-entity-type score-entity-id 0 swpair)
+            (URC_MemberStakedStoaValue score-entity-type score-entity-id swpair)
         )
     )
     (defun URC_ScoreEntityMemberDebWeight:decimal
@@ -2283,7 +2335,7 @@
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                     (reward-dec:integer (ref-DPTF::UR_Decimals dptf-id))
                     (s-farm:decimal (URC_FarmInjectDenominatorFresh fvt-id))
-                    (w-i:decimal (URC_MemberStakedStoaValue score-entity-type score-entity-id (UR_FVT-SEL|Swpair fvt-id score-entity-id)))
+                    (w-i:decimal (URC_MemberLevel2Weight fvt-id score-entity-type score-entity-id (UR_FVT-SEL|Swpair fvt-id score-entity-id)))
                     (member-slice:decimal (if (> s-farm 0.0) (floor (/ (* releasable w-i) s-farm) reward-dec) 0.0))
                     (total-deb:decimal (URC_ScoreEntityMemberTier2Divisor fvt-id score-entity-type score-entity-id))
                 )
@@ -3141,10 +3193,11 @@
             mosaic:bool
             membership-mode:string
             oracle-on:bool
+            split-mode:string
             fvt-id:string
         )
         @doc "Core constructor for object{FVT|Schema}. oracle-on (DSA node/uptime oracle toggle) passes through — \
-            \ false for every non-DSA FVT."
+            \ false for every non-DSA FVT. split-mode = farm reward-split (SPLIT|STAKED default | SPLIT|TVL)."
         {"fvt-class"                : fvt-class
         ,"owner-konto"              : owner-konto
         ,"can-upgrade"              : can-upgrade
@@ -3160,6 +3213,7 @@
         ,"mosaic"                   : mosaic
         ,"membership-mode"          : membership-mode
         ,"oracle-on"                : oracle-on
+        ,"split-mode"               : split-mode
         ,"fvt-id"                   : fvt-id}
     )
     (defun UDC_FVT|ScoreEntityLink:object{FVT|ScoreEntityLink}
@@ -3431,6 +3485,12 @@
         @doc "DSA: toggle the node/uptime oracle on this FVT."
         (require-capability (SECURE))
         (update FVT|T fvt-id {"oracle-on": oracle-on})
+    )
+    (defun WU_Fvt|SplitMode:string
+        (fvt-id:string split-mode:string)
+        @doc "Update the farm reward-split mode on FVT|T (C_SetSplitMode; farm-only, freely mutable)."
+        (require-capability (SECURE))
+        (update FVT|T fvt-id {"split-mode": split-mode})
     )
     ;; WU_Fvt|FvtId — select key; WU not needed.
     ;;
@@ -3714,7 +3774,7 @@
         (WI_Fvt fvt-id
             (UDC_FVT|Schema
                 fvt-class owner-konto true true common-denominator
-                0.0 0.0 0.0 0.0 0 0 0 true CT_MEMBERSHIP_MODE_BAR false fvt-id
+                0.0 0.0 0.0 0.0 0 0 0 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_STAKED fvt-id
             )
         )
     )
@@ -3722,6 +3782,11 @@
         (fvt-id:string mosaic:bool)
         @doc "Under SECURE (FVT|C>SET-MOSAIC): update mosaic; reset membership-mode to BAR."
         (WU2_Fvt|MosaicPolicy fvt-id mosaic CT_MEMBERSHIP_MODE_BAR)
+    )
+    (defun XI_SetSplitMode:string
+        (fvt-id:string split-mode:string)
+        @doc "Under SECURE (FVT|C>SET-SPLIT-MODE): update the farm reward-split mode (SPLIT|STAKED | SPLIT|TVL)."
+        (WU_Fvt|SplitMode fvt-id split-mode)
     )
     (defun XI_RotateOwnership:string
         (fvt-id:string new-owner-konto:string)
@@ -4325,7 +4390,7 @@
                                 (w-i:decimal
                                     (if delegation
                                         (URC_MemberEffectiveCapture fvt-id score-entity-id)
-                                        (URC_MemberStakedStoaValue score-entity-type score-entity-id swpair)))
+                                        (URC_MemberLevel2Weight fvt-id score-entity-type score-entity-id swpair)))
                                 ;; ideal capacity: delegation ⇒ capture-units; else == W_i (so its gap is 0)
                                 (ideal-i:decimal
                                     (if delegation (UR_FVT-SEL|CaptureUnits fvt-id score-entity-id) w-i))
@@ -5744,6 +5809,25 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-MOSAIC owner-konto trigger [fvt-id])
         )
     )
+    (defun C_SetSplitMode:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string fvt-id:string split-mode:string)
+        @doc "Set the farm reward-split mode (D1-G2): SPLIT|STAKED (participation, default) | SPLIT|TVL (pool-size). \
+            \ Farm owner; FREELY mutable (no cooldown) — a change re-weights only FUTURE injects (RPS is \
+            \ checkpoint-based, past rewards untouched). GAS|SET-SPLIT-MODE on owner."
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (owner-konto:string (UR_FVT|OwnerKonto fvt-id))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (with-capability (FVT|C>SET-SPLIT-MODE fvt-id split-mode)
+                (XI_SetSplitMode fvt-id split-mode)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-SPLIT-MODE owner-konto trigger [fvt-id split-mode])
+        )
+    )
     ;; --- Score membership (FVT|T|ScoreEntityLink) ---
     (defun C_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
@@ -6632,7 +6716,7 @@
             (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false fvt-id)
+                        (UDC_FVT|Schema 1 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_STAKED fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)
@@ -6655,7 +6739,7 @@
             (let ((ref-SCR:module{AcquisitionScoresV1} AQP-SCORE))
                 (with-capability (SECURE)
                     (WI_Fvt fvt-id
-                        (UDC_FVT|Schema 2 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false fvt-id)
+                        (UDC_FVT|Schema 2 owner-konto true true "|" 0.0 0.0 0.0 0.0 0 1 1 true CT_MEMBERSHIP_MODE_BAR false CT_SPLIT_MODE_STAKED fvt-id)
                     )
                     (WI_ScoreEntityLink fvt-id score-id
                         (UDC_FVT|ScoreEntityLink CT_SCORE_ENTITY_SCORE true "|" 0.0 0.0 false 0.0 0.0 STREAM_EPOCH fvt-id score-id)

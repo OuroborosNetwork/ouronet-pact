@@ -818,6 +818,18 @@
                 (ref-I|OURONET::OI|UDC_NoKadenaCosts)
                 []))
     )
+    (defun AQP-FVT|INFO_SetSplitMode:object{OuronetInfoV1.ClientInfo}
+        (patron:string fvt-id:string split-mode:string)
+        @doc "Cost preview for AQP-FVT|C_SetSplitMode. IGNIS GAS|SET-SPLIT-MODE; no STOA. Reports the farm's current \
+            \ reward-split mode alongside the requested one."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Set a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size)." "Executes via TS02-C3.AQP-FVT|C_SetSplitMode."]
+                [(format "Farm {} reward-split mode: {} -> {}." [fvt-id (AQP-FVT.UR_FVT|SplitMode fvt-id) split-mode])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-SPLIT-MODE))
+                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                []))
+    )
     (defun AQP-FVT|INFO_AddScoreEntity:object{OuronetInfoV1.ClientInfo}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string)
         @doc "Cost preview for AQP-FVT|C_AddScoreEntity. IGNIS GAS|ADD-SCORE-ENTITY; no STOA."

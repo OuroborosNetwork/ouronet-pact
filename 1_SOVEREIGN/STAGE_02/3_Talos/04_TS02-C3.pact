@@ -224,6 +224,9 @@
     (defun AQP-FVT|C_SetMosaic:string
         (patron:string fvt-id:string mosaic:bool)
     )
+    (defun AQP-FVT|C_SetSplitMode:string
+        (patron:string fvt-id:string split-mode:string)
+    )
     (defun AQP-FVT|CC_InjectStream:string
         (patron:string fvt-id:string reward-dptf-id:string amount:decimal duration:integer)
     )
@@ -1860,6 +1863,23 @@
                     (ref-FVT::C_SetMosaic patron fvt-id mosaic)
                 )
                 (format "Successfully set mosaic on FVT {} to {}." [fvt-id mosaic])
+            )
+        )
+    )
+    (defun AQP-FVT|C_SetSplitMode:string
+        (patron:string fvt-id:string split-mode:string)
+        @doc "Sets a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size); collects IGNIS on patron. \
+            \ Freely mutable — re-weights only future injects."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-FVT::C_SetSplitMode patron fvt-id split-mode)
+                )
+                (format "Successfully set reward-split mode on farm {} to {}." [fvt-id split-mode])
             )
         )
     )
