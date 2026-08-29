@@ -14,6 +14,23 @@ Minimal REPL proof (both `/tmp/modref_iface_test.repl` + `/tmp/modref_missing_te
 - If the concrete module is MISSING `g`, you get a **fatal RUNTIME error** (`Unbound free variable
   M2.g`), and only when that path executes — never at load.
 
+## Why you still NAME an interface in the modref (two independent roles)
+The interface in `ref:module{IfaceV1}` is NOT "the list of functions you may call." It does two
+jobs, and the function-listing is not one of the mandatory ones:
+1. **It is the ref's TYPE (required syntax).** A module-reference value must be typed against
+   interface(s); there is no untyped `module` ref.
+2. **It is the MODULE contract.** Whatever you bind must `implements IfaceV1` → it whitelists WHICH
+   MODULE is acceptable, not which function.
+3. **It decouples DEPLOY ORDER (the real architectural reason Ouronet uses modrefs).** Interfaces
+   deploy before modules; a caller written against `module{IfaceV1}` only needs IfaceV1 at ITS deploy
+   time, not the concrete module M. Calling `M.g` directly would force M to deploy before the caller
+   — the coupling modrefs exist to break. The interface is the forward-declaration stand-in.
+
+Mental model: `module{IfaceV1}` gates WHICH MODULE; `::fn` picks WHICH FUNCTION (dynamic). The named
+interface just has to be ONE the target module implements — it need NOT contain the called function.
+Name the module's primary/latest interface; declaring the specific fn there is the separate SAFETY
+choice below.
+
 ## Why it works for Ouronet
 One implementer per interface (modules `implements` only the latest version; modrefs decouple
 DEPLOY ORDER, not polymorphism). Every `ref-M::fn` targets exactly one known module that has the
