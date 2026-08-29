@@ -14,6 +14,35 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
 
 ---
 
+## PRE-PHASE DECISIONS — settle before starting the list
+Surfaced from the audit-folder scan. Resolve, then their outcome folds into the phases.
+
+- [ ] **D1 — AQP LP-scoring (`03_AQP/Audit/LP-SCORING-REDESIGN.md`).**
+  - **§6.2 negative-score fix: DONE** (Fix #7) — LP Level-1 score is now `lp-amount × mx` (amount,
+    not fluctuating STOA value), so a full unstake nets to 0, no negative, no clamp. Only leftover: the
+    dead `URC_LpAmountToLpDenominatorEquivalent` fn (uncalled) → **retire it in Phase 1 cleanup**. No decision.
+  - **G2 — OPEN DESIGN DECISION.** In the two-level reward system, Level-2 splits rewards across pools by
+    a per-pool weight `W_i`. Today `W_i = whole-pool TVL` (`SWP::UR_StoaValue(swpair)` = total value locked
+    in that swap pair). Question: should a pool's reward weight be its **whole-pool TVL** (weight by pool
+    size regardless of how much is staked for scoring) or the **value actually STAKED into the AQP pool**
+    (weight by participation)? The owner's own example implied **staked value** → the current impl may not
+    match intent. Changes reward distribution across pools + ties to G5 (one-entity-per-pool). **DECIDE.**
+
+- [ ] **D2 — Heir System (`01_DPDC/Audit/HEIR-SYSTEM-PONDERING.md`).** Background: `repurpose` moves a
+  holder's tokens to a new account **without their signature** — a deliberate account-recovery tool
+  (stolen account / owner death → admin moves holdings to an account the owner/heirs control; admin-gated
+  + event-logged, by design). The tension: every token-owner power (freeze/wipe/unfreeze/remint/burn/
+  repurpose) is total dominion; holders trust the issuer. The proposed **Heir System**: an account
+  **proactively designates an heir while in control** (signed in advance — trustless) + a **dead-man's
+  switch** (no activity for a set duration → the heir can claim/repurpose), shifting trust from "admin
+  fairness" to "owner's advance designation + an objective on-chain inactivity timer." Open sub-qs:
+  DALOS-account-layer (any account, all token types) vs per-collection; what counts as "activity";
+  coexist with admin-discretion repurpose; could it be a DALOS **guard** rather than new DPDC machinery.
+  **DECIDE: schedule it (new feature — likely its own phase + UI surface) or keep as a captured future
+  idea (post-launch)?**
+
+---
+
 ## PHASE 0 — Merge audits + reconcile + green-gate  ⟵ START HERE
 - [x] **0.1** Merge `dpdc`, `dptf-dpof`, `swp`, `ats` worktrees → `main` (one at a time). ✅ ALL DONE.
 - [ ] **0.2** ⚠ **Reconcile conflicts.** The DPDC / DPTF-DPOF / SWP audits touch the SAME token
