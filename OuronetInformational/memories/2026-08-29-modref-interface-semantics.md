@@ -37,15 +37,25 @@ DEPLOY ORDER, not polymorphism). Every `ref-M::fn` targets exactly one known mod
 function → dynamic resolution always succeeds. The "missing fn" failure only arises with real
 polymorphism (multiple implementers), which Ouronet does not use.
 
-## What declaring in the interface still buys (why we keep the convention)
-1. **Load-time safety** — a typo / wired-but-missing fn becomes a LOAD error instead of a runtime
-   "Unbound free variable" that ships silently until the path runs (the exact "forgot to add it" bug).
-2. **Signature pinning** — `(implements Iface)` checks each member matches signature; catches arg/
-   return drift.
-3. **Docs** — the interface is the declared public API (CLAUDE.md).
+## What declaring in the interface ACTUALLY buys (measured — corrects an earlier over-claim)
+Verified pact 5.4.1 (t_a/t_b/t_c):
+- TEST A — wrong-arg call to an INTERFACE MEMBER via modref → **Load successful** (NOT caught).
+- TEST B — wrong-arg call to a NON-member via modref → **Load successful** (NOT caught).
+- TEST C — module drops a DECLARED member → **Load FAILED** ("does not implement interface member").
+So modref calls are **dynamically dispatched AND dynamically typed regardless of interface
+membership** — the CALLER side gets ZERO load-time checking either way (no arg-type check, no
+typo catch). Declaring does NOT give call-site type safety.
+The ONE load-time guarantee declaring buys is the **module-side `implements` contract** (TEST C):
+a declared fn CANNOT be dropped/renamed/re-signatured in the module without the module failing to
+deploy → catches DRIFT at deploy instead of a caller's runtime "Unbound free variable".
+Other genuine value: (2) the interface is the **machine-readable public-API enumeration** that
+feeds the INFO catalog (Phase 2.3), UI (Phase 8), Documentation (Phase 9); (3) docs/signature intent.
+For single-implementer Ouronet with full REPL coverage + a redeploy gate, the REAL caller-side
+safety net is the TESTS, not the interface.
 
 ## SETTLED POLICY for the final shape
-- **Declare every function called CROSS-MODULE (via modref) in its interface.** Internal-only
+- **Declare cross-module functions in their interface for the enumeration + module-side drift-catch
+  — NOT as a correctness requirement** (undeclared works; tests are the caller-side safety net). Internal-only
   helpers (`XI_`/`UC_`/private) stay OUT (never called via modref).
 - Cost is low: **pre-redeploy, interfaces are edited FREELY (no per-function bump)** — add the
   interface declaration in the SAME edit as the new cross-module function. The single **Phase-7**
