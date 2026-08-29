@@ -34,6 +34,15 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
       ahead of live for some (e.g. ATS on `V2` while live is `V1`) — target is relative to **live**, not local.
 
 ## PHASE 1 — URCi cost architecture (spec: `URCI-COST-ARCHITECTURE.md`; task #77)
+- [ ] **1.0 DECISION (settle before the walk): interface-richness policy.** Fully informed now by the
+      modref tests (`memories/2026-08-29-modref-*`): `::` calls resolve dynamically AND upgrade live
+      regardless of interface membership, so declaring a function is a **choice**, not a requirement:
+      **rich** (declare cross-module fns → enumeration + module-side drift-catch, but a changed
+      interface bumps at Phase 7) vs **marker-lean** (stable minimal interface → zero cascade from fn
+      adds, but no interface-level enumeration; the Phase-2.3 catalog + Talos + tests cover
+      enumeration/safety). Pick and apply consistently through the URCi/INFO walk. *Suggested default:*
+      keep interfaces at the stable public contract; don't force churn just to declare — the catalog is
+      the enumeration source, and `::` makes upgrades bless-free either way.
 - [ ] **1.1** Register the **`URCi_*` prefix** in `StoicSyntax-Prefixes.md` + `StoicSyntax.md`
       (pure/read-only, no `enforce`, returns cost cumulator; lives IN its module).
 - [ ] **1.2** Walk modules **in deploy order, Stage-1 module #1 first**. Per module: extract each
@@ -140,6 +149,11 @@ attack on ALL modules** to expose vulnerabilities. Its findings + fixes become P
 Almost EVERY interface will carry new code by now (audits + URCi + INFO + re-price + splits +
 red-team fixes), so each changed interface must become its **next version**. Do this ONCE, here,
 after all code is final — never repeatedly. Spec: `ARCHITECTURE/INTERFACE_VERSIONING.md`.
+NB (upgrade semantics, tested — `memories/2026-08-29-modref-live-dispatch-*`): `::` modref dispatch is
+LIVE — an in-place sovereign upgrade reaches ALL `::` callers with no `bless` (this is why the repo has
+never needed it). So this redeploy is bless-free for `::`-using sovereign code; the ONLY hash-pin
+exposure is a `2_SLAVE/` third-party calling sovereign via `.` (a deliberate integrator version-pin) —
+if we upgrade a core they `.`-reference in place, we'd have to `bless` their old hash for them.
 - [ ] **7.1 Interface version bump.** For every interface whose code changed, bump its suffix to
       **live + 1** using the Phase-0.4 live→target map (`V1`→`V2`, or `V2`→`V3` where local already moved).
 - [ ] **7.2 Cascade refactor (BIG — whole codebase; task #85).** Per the cascade rule: every interface
