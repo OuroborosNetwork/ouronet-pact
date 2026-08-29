@@ -47,3 +47,34 @@ outstanding; `URH_UncollectedAccounts` lists exactly lumy; `AA_FlushUncollected`
 - INFO cost-preview functions (`INFO_FlushFull`/`INFO_FlushSlice`) deferred to the whole-codebase INFO
   phase (roadmap task #78) — STOAICO has no INFO surface yet; the `URH_` preflight already gives the UI
   everything it needs to construct the flush legs.
+
+---
+
+## #2H — Demipad `retrieval` toggle is dead state → FIXED + PROVEN (2026-08-29)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact` · proof `REPL/Stage_02/[5.3]_Launchpad.repl`
+(TX-2H..2H-e).
+
+**Bug:** `UR_Retrieval` was read in exactly one place (the no-op check inside `TOGGLE-RETRIEVAL`); the
+`RETRIEVE-*` caps (identical to the `FUEL-*` caps) gated retrieval on owner-or-admin ownership only,
+never on the flag — so the advertised anti-rug lock ("`retrieval=false` ⇒ assets only leave via a buy")
+was a no-op and the asset owner could pull deposited inventory mid-sale.
+
+**Owner-agreed design — Option A (admin override).** A new shared cap
+`DEMIPAD|C>RETRIEVAL-GATE (asset-id)` = `enforce-one [ admin-guard | (enforce (UR_Retrieval asset-id)) ]`,
+composed by all four `RETRIEVE-*` caps (FUEL untouched — deposits always allowed). Net: admin may always
+retrieve; a non-admin owner/creator may retrieve only when `retrieval=true`; others still blocked by
+ownership. ~6-line cap + 4 one-line composes.
+
+**Proof (`[5.3]` TX-2H..2H-e, run on a deployed stack):**
+- **Fix (exit 0):** admin locks retrieval → non-admin `test-capability (RETRIEVAL-GATE)` **rejected**
+  ("retrieval is LOCKED") · admin **passes** while locked (Option A) · non-admin **passes** once the
+  admin re-enables retrieval.
+- **Bug reproduced (exit 1):** with the gate body temporarily neutered to `(enforce true …)`
+  (pre-fix simulation), the non-admin BLOCK assertion fails — `expected failure, got result: ()` — i.e.
+  the non-admin passes the gate while `retrieval=false`. Gate restored, re-run green. Full `Z.repl` green.
+
+**Follow-up (logged):** the NF variant (`RETRIEVE-NON-FUNGIBLE`) is currently unreachable due to **#7M**
+(NF transmit mis-wired to the SF cap); the gate is on all four caps so it's correct once #7M lands. The
+transmit functions themselves are `UEV_IMC`-gated and marked "to be made after Upgrade" — their Talos
+wiring is separate (out of #2H scope).

@@ -365,20 +365,37 @@
         (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [false false]))
     )
     ;;
+    ;;#2H: the retrieval lock the launchpad advertises to buyers. A non-admin Owner/Creator may pull
+    ;;    deposited assets back out ONLY when retrieval is enabled; the Launchpad admin may always
+    ;;    retrieve. FUEL (deposit) is never gated — only RETRIEVE composes this. (Option A: admin override.)
+    (defcap DEMIPAD|C>RETRIEVAL-GATE (asset-id:string)
+        (enforce-one
+            (format "Asset {} retrieval is LOCKED (retrieval=false) — only the Launchpad admin may retrieve until a sale or an admin re-enable" [asset-id])
+            [
+                (enforce-guard GOV|MD_DEMIPAD)
+                (enforce (UR_Retrieval asset-id) "retrieval disabled")
+            ]
+        )
+    )
+    ;;
     (defcap DEMIPAD|C>RETRIEVE-TRUE-FUNGIBLE (asset-id:string)
         @event
+        (compose-capability (DEMIPAD|C>RETRIEVAL-GATE asset-id))
         (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [true true]))
     )
     (defcap DEMIPAD|C>RETRIEVE-ORTO-FUNGIBLE (asset-id:string)
         @event
+        (compose-capability (DEMIPAD|C>RETRIEVAL-GATE asset-id))
         (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [true false]))
     )
     (defcap DEMIPAD|C>RETRIEVE-SEMI-FUNGIBLE (asset-id:string)
         @event
+        (compose-capability (DEMIPAD|C>RETRIEVAL-GATE asset-id))
         (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [false true]))
     )
     (defcap DEMIPAD|C>RETRIEVE-NON-FUNGIBLE (asset-id:string)
         @event
+        (compose-capability (DEMIPAD|C>RETRIEVAL-GATE asset-id))
         (compose-capability (DEMIPAD|C>REGISTERED-ACCESS-BY-TYPE asset-id [false false]))
     )
     ;;

@@ -361,6 +361,67 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-2H - #2H retrieval-gate: admin locks retrieval")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-2H — #2H: the DEMIPAD|C>RETRIEVAL-GATE now enforces the retrieval lock ===")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (SparkID:string "SPARK-98c486052a51")
+    )
+    ;; admin locks retrieval (SparkID was enabled during setup)
+    (ref-TS02-DPAD::A_ToggleRetrieval SparkID false)
+    (map print
+        [ (expect "SparkID retrieval now LOCKED (false)" false (DEMIPAD.UR_Retrieval SparkID)) ])
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-2H-b - #2H gate decisions: block non-admin, admin override, allow on enable")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "--- [TX-2H-b · gate decisions] ---")
+;; (1) BLOCK — a NON-admin (Emma) cannot pass the retrieval gate while retrieval=false.
+;;     Pre-fix this gate did not exist, so the retrieve cap passed on ownership alone (the bug).
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(print (format "<<TX-2H-b>> non-admin gate while LOCKED => {}"
+    [(expect-failure
+        "#2H: non-admin retrieve BLOCKED while retrieval=false (RETRIEVAL-GATE)"
+        "retrieval is LOCKED"
+        (test-capability (DEMIPAD.DEMIPAD|C>RETRIEVAL-GATE "SPARK-98c486052a51")))]))
+(commit-tx)
+(begin-tx "TX-2H-c - admin override while locked")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; (2) ADMIN OVERRIDE (Option A) — the admin passes the gate even while retrieval=false.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(test-capability (DEMIPAD.DEMIPAD|C>RETRIEVAL-GATE "SPARK-98c486052a51"))
+(print "<<TX-2H-c>> PASS: admin passed the RETRIEVAL-GATE even while retrieval=false (Option A override)")
+(commit-tx)
+(begin-tx "TX-2H-d - unlock, then non-admin passes")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; admin re-enables retrieval
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let ((ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD))
+    (ref-TS02-DPAD::A_ToggleRetrieval "SPARK-98c486052a51" true))
+(commit-tx)
+(begin-tx "TX-2H-e - non-admin passes once enabled")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+;; (3) ALLOW — with retrieval=true, a non-admin owner passes the gate.
+(env-sigs [{ "key": "PK_Emma", "caps": [] }])
+(test-capability (DEMIPAD.DEMIPAD|C>RETRIEVAL-GATE "SPARK-98c486052a51"))
+(print "<<TX-2H-e>> PASS: non-admin passed the RETRIEVAL-GATE once retrieval was re-enabled")
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-01 - Initialise Shareholders")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
