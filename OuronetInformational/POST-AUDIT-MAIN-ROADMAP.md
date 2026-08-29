@@ -21,12 +21,18 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
   - **§6.2 negative-score fix: DONE** (Fix #7) — LP Level-1 score is now `lp-amount × mx` (amount,
     not fluctuating STOA value), so a full unstake nets to 0, no negative, no clamp. Only leftover: the
     dead `URC_LpAmountToLpDenominatorEquivalent` fn (uncalled) → **retire it in Phase 1 cleanup**. No decision.
-  - **G2 — OPEN DESIGN DECISION.** In the two-level reward system, Level-2 splits rewards across pools by
-    a per-pool weight `W_i`. Today `W_i = whole-pool TVL` (`SWP::UR_StoaValue(swpair)` = total value locked
-    in that swap pair). Question: should a pool's reward weight be its **whole-pool TVL** (weight by pool
-    size regardless of how much is staked for scoring) or the **value actually STAKED into the AQP pool**
-    (weight by participation)? The owner's own example implied **staked value** → the current impl may not
-    match intent. Changes reward distribution across pools + ties to G5 (one-entity-per-pool). **DECIDE.**
+  - **G2 — RESOLVED (owner 2026-08-29): implement BOTH reward-split modes, selectable per farm/entity.**
+    They differ only in the Level-2 per-pool weight `W_i`; everything else (Level-1 = staked amount, STOA
+    valuation, inject-time capture) is shared → a per-farm config flag, not a rewrite. (task #89)
+    - **`SPLIT|STAKED`** (Variant 1, *participation* — the standard default): `W_i` = the pool's total
+      **staked value** (Σ staked-LP-amount × lp-worth-in-STOA). Every staked STOA-unit earns equally;
+      pool size irrelevant. E.g. staked 120k/140k/149k → 120/409, 140/409, 149/409.
+    - **`SPLIT|TVL`** (Variant 2, *pool-size* — the Vesta/MultiversX model): `W_i` = the swpair TVL
+      (`SWP::UR_StoaValue` — already stored + refreshed on pool events, captured at inject). Bigger pools
+      capture bigger slices. E.g. pools 1M/250k/150k → 1.0/1.4, 0.25/1.4, 0.15/1.4.
+    - **What's built:** Variant 2 ≈ current impl. Variant 1 needs the per-pool staked-value aggregate
+      (the H5 staked-amount total is most of the plumbing). Names pending final owner confirm. The INFO/
+      reward preview reports which mode a farm uses.
 
 - [ ] **D2 — Heir System (`01_DPDC/Audit/HEIR-SYSTEM-PONDERING.md`).** Background: `repurpose` moves a
   holder's tokens to a new account **without their signature** — a deliberate account-recovery tool
