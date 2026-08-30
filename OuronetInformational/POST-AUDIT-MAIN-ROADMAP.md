@@ -129,8 +129,10 @@ execution cost and INFO preview move together, module by module in deploy order.
       enumeration/safety). Pick and apply consistently through the URCi/INFO walk. *Suggested default:*
       keep interfaces at the stable public contract; don't force churn just to declare — the catalog is
       the enumeration source, and `::` makes upgrades bless-free either way.
-- [ ] ❌ **1.1.1.2** Register the **`URCi_*` prefix** in `StoicSyntax-Prefixes.md` + `StoicSyntax.md`
-      (pure/read-only, no `enforce`, returns cost cumulator; lives IN its module).
+- [x] ✅ **1.1.1.2 DONE (2026-08-30)** — `URCi_` registered in `StoicSyntax-Prefixes.md`: §1 `i` marker,
+      §2 registry row, §4 + §6 own **COST** colour family (gold, distinct from HEAVY-READ). Pure/read-only,
+      no `enforce`, returns a cost cumulator (leaf) or totals a `C_`/`CC_`/`A_` (composer); the single
+      source billing + preview share. Lives in-module (or IGNIS for sub-IGNIS DALOS).
 
 #### 1.1.2 · Subphase — Per-module URCi walk
 - [x] ✅ **Foundational pass DONE (2026-08-30) — DALOS-via-IGNIS + `Z_Reads` skeleton.** The walk's

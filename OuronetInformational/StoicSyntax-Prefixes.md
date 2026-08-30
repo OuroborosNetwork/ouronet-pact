@@ -34,6 +34,11 @@ A name is `PREFIX_Name` (or `PREFIX_Scope|Name`). The prefix is read left-to-rig
     for the launchpad's no-signature ("slippage-off") payment setup — the client-side sibling of a `URC_`
     that returns cap-description strings for the UI to sign. Colour: its **own** family (CAP-INSTALL), never
     the calm READ hue, because it mutates tx state.
+  - `i` → the function **emits an IGNIS cost** — a `URCi_` cost reader (a `URC_` specialization). Pure, no
+    `enforce`; a **leaf** returns a cost cumulator (`object{IgnisCollectorV1.OutputCumulator}`) or fair-price
+    `decimal`, a **composer** totals a `C_`/`CC_`/`A_`. Unlike `cap` it has **no** side effect — it is the
+    single **cost source** both the exec path (billing) and INFO (preview) call, so the two can never drift.
+    Introduced 2026-08-30 (Phase 1.1 URCi cost architecture). Colour: its **own** family (COST).
   - lowercase markers may stack (rare): `UCkx_` = a key-building auxiliary.
 - **`|` = a module/table scope** inside the *name* part, not the prefix
   (`UR_SCR|ScoreOwnerKonto` = a `UR_` reader scoped to the `SCR` tables;
@@ -63,6 +68,7 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 | `URCx_` | read+compute·aux | `URC_` **auxiliary** | yes | **READ** (dim) |
 | `URCv_` | read+compute·validating | `URC_` whose `enforce` is intrinsic to its own computation (§1 `v`) | yes | **READ** |
 | `URCcap_` | read+compute·cap-install | `URC_` that **installs** the capabilities it derives (`install-capability`) instead of returning them — the no-signature client-side payment setup (a deliberate tx-cap **side effect**; §1 `cap`). Reachable from outside (UI-called) → belongs in the interface | yes | **CAP-INSTALL** |
+| `URCi_` | read+compute·cost | **Cost-emitting** reader (§1 `i` = IGNIS cost). Pure, **no `enforce`**; a **leaf** returns an IGNIS cost cumulator (`object{IgnisCollectorV1.OutputCumulator}`) or a native fair-price `decimal`, a **composer** totals a `C_`/`CC_`/`A_`. The single source both the exec path (billing) **and** INFO (preview) call, so they cannot drift. Cross-module ones belong in the interface | yes | **COST** |
 | `URU_`  | read·upgrade | Read helper for **version-upgrade / migration** paths | admin only | **READ** (dim) |
 | `URH_`  | heavy-read | **Scan** read (`select` / `keys`) — expensive/unbounded | **NO — off-path only** | **HEAVY-READ ⚠** |
 | `URHx_` | heavy-read·aux | `URH_` **auxiliary** | **NO** | **HEAVY-READ ⚠** (dim) |
@@ -74,11 +80,14 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 | `UDCx_` | construct·aux | `UDC_` **auxiliary** | yes | **CONSTRUCT** (dim) |
 | `CT_`   | constant | Constant accessor — wraps a shared `defconst` / utility constant | yes | **CONSTANT** |
 
-> **Reserved (not yet implemented): `URCi_`** — the **cost-emitting** reader family for the URCi cost
-> architecture (roadmap Phase 1 / task #77, spec `URCI-COST-ARCHITECTURE.md`; the `i` = IGNIS cost). A
-> leaf `URCi_` returns an IGNIS cost cumulator; a composer `URCi_` totals a `C_`/`CC_`/`A_`. Registered
-> here as reserved so the `i` slot is **not** reused (e.g. it was NOT taken for cap-install — that is
-> `URCcap_`). Full registry row lands when Phase 1 implements it.
+> **`URCi_` — IMPLEMENTED (Phase 1.1, 2026-08-30).** The **cost-emitting** reader family for the URCi
+> cost architecture (spec `URCI-COST-ARCHITECTURE.md`; the `i` = IGNIS cost). A **leaf** `URCi_` returns
+> an IGNIS cost cumulator (`object{IgnisCollectorV1.OutputCumulator}`) or a native fair-price `decimal`;
+> a **composer** `URCi_` totals a `C_`/`CC_`/`A_`. It is the **single source** both the exec path
+> (billing) and INFO (preview) call, so the two can never drift. Lives **in the module it prices** —
+> except sub-IGNIS modules (only DALOS), whose `URCi_` live in **IGNIS** (the pre-Talos cost hub, since
+> DALOS deploys below IGNIS and cannot construct cumulators). First landed: `DALOS|URCi_*` in IGNIS (9
+> client ops); rolling out module-by-module in deploy order (DPTF next). Own **COST** colour family.
 
 ### Protected (locked inside the module — reached by clients only via Talos)
 
@@ -190,6 +199,7 @@ their base, optionally **dimmed / desaturated / italic** to signal "specializati
 | **COMPUTE**    | `UC_ UCk_ UCx_` | cheap, pure, side-effect-free — calm/neutral |
 | **READ**       | `UR_ URC_ URCx_ URU_` | bounded point reads — safe read hue |
 | **CAP-INSTALL** | `URCcap_` | derives + **installs** a capability into the tx — a side effect; distinct hue (e.g. teal/violet), never the calm READ blue |
+| **COST**       | `URCi_` | the IGNIS **cost layer** — leaf/composer cumulator readers that billing and preview share; its own "money" hue (e.g. gold), distinct from the HEAVY-READ warning |
 | **HEAVY-READ ⚠** | `URH_ URHx_ URHC_ URHCx_` | **scan / expensive — must flinch**; off-path only (warning hue: amber/orange) |
 | **ENFORCE**    | `UEV_ CAP_` | can abort the tx — alert hue (red family) |
 | **CONSTRUCT**  | `UDC_ UDCx_` | object builders |
@@ -275,6 +285,7 @@ first** (e.g. `URCcap_` before `URC_`, `URHC_` before `URH_`, `CC_` before `C_`,
 | **COMPUTE**      | `UCkx_` `UCk_` `UCx_` `UCv_` `UC_` |
 | **READ**         | `URCx_` `URCv_` `URC_` `URU_` `UR_` |
 | **CAP-INSTALL**  | `URCcap_` |
+| **COST**         | `URCi_` |
 | **HEAVY-READ ⚠** | `URHCx_` `URHC_` `URHx_` `URH_` |
 | **ENFORCE**      | `UEV_IMC` (structural, see below) · `UEV_` `CAP_` |
 | **CONSTRUCT**    | `UDCx_` `UDC_` |
@@ -283,8 +294,8 @@ first** (e.g. `URCcap_` before `URC_`, `URHC_` before `URH_`, `CC_` before `C_`,
 | **RECIPE**       | `AAp_` `AA_` `Ap_` `AU_` `A_` · `CCp_` `CC_` `Cp_` `C_` |
 | **PROTECTED**    | `XI_` `XE_` `XB_` |
 | **STRUCTURAL**   | `GOV` `GOV\|` `P\|` `SECURE` `UEV_IMC` |
-| **RESERVED**     | `URCi_` (cost architecture — task #77, not yet implemented; do not reuse the `i` slot) |
 
 **Lowercase specialization markers** (appended to a class, take the base hue, usually dimmed — except
-`cap`): `k` key-build · `x` auxiliary · `v` intrinsic-validating · `cap` **installs a capability (own
-CAP-INSTALL hue)** · `p` Hydra-parallel-slice (on recipes) · doubled base letter (`CC`/`AA`) = heavy.
+`cap`/`i`): `k` key-build · `x` auxiliary · `v` intrinsic-validating · `cap` **installs a capability (own
+CAP-INSTALL hue)** · `i` **IGNIS-cost-emitting (own COST hue)** · `p` Hydra-parallel-slice (on recipes) ·
+doubled base letter (`CC`/`AA`) = heavy.
