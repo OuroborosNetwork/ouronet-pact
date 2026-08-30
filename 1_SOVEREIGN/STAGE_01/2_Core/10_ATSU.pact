@@ -12,7 +12,7 @@
     ;;
     ;;  [UDC]
     ;;
-    (defun UDC_UnlimitedUncoilCumulator:object{IgnisCollectorV1.OutputCumulator} (ats:string account:string))
+    (defun URCi_UnlimitedUncoilCumulator:object{IgnisCollectorV1.OutputCumulator} (ats:string account:string))
     ;;
     ;;  [A]
     ;;
@@ -580,7 +580,7 @@
     )
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]
-    (defun UDC_UnlimitedUncoilCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_UnlimitedUncoilCumulator:object{IgnisCollectorV1.OutputCumulator}
         (ats:string account:string)
         (let
             (
@@ -910,7 +910,7 @@
                             (ico3:object{IgnisCollectorV1.OutputCumulator}
                                 (if (!= usable-cold-recovery-position -1)
                                     EOC
-                                    (UDC_UnlimitedUncoilCumulator ats recoverer)
+                                    (URCi_UnlimitedUncoilCumulator ats recoverer)
                                 )
                             )
                             (ico4:object{IgnisCollectorV1.OutputCumulator}

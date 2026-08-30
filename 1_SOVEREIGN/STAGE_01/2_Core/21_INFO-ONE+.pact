@@ -2034,7 +2034,7 @@
                 (ico2:object{IgnisCollectorV1.OutputCumulator}
                     (if (!= usable-cold-recovery-position -1)
                         EOC
-                        (try EOC (ref-ATSU::UDC_UnlimitedUncoilCumulator ats recoverer))
+                        (try EOC (ref-ATSU::URCi_UnlimitedUncoilCumulator ats recoverer))
                     )
                 )
                 (ifp2:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico2))
