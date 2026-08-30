@@ -20,8 +20,26 @@
     (defun UC_IzSingular:bool (id:string nonces:[integer]))
     (defun UC_IzConsecutive:bool (id:string nonces:[integer]))
     (defun UC_TakePureWipe:object{DpofUdcV1.RemovableNonces} (input:object{DpofUdcV1.RemovableNonces} size:integer))
-    (defun UC_MoveCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string nonces:[integer] transmit-or-transfer:bool))
-    (defun UC_WipeCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string removable-nonces-obj:object{DpofUdcV1.RemovableNonces}))
+    (defun URCi_MoveCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string nonces:[integer] transmit-or-transfer:bool))
+    (defun URCi_WipeCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string removable-nonces-obj:object{DpofUdcV1.RemovableNonces}))
+    ;;  [URCi] composer/price cost readers — single source per op (the C_/XE_ bills them, INFO previews from them)
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_TogglePause:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_AddQuantity:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_Burn:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_UpdateSpecialOrtoFungible:object{IgnisCollectorV1.OutputCumulator} (main-dptf:string))
+    (defun URCi_Mint:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_IssueGas:decimal (token-count:integer))
+    (defun URCi_IssueKda:decimal (token-count:integer))
+    (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;
     ;;  [UR]
     ;;
@@ -936,13 +954,13 @@
             )
         )
     )
-    (defun UC_MoveCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_MoveCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string nonces:[integer] transmit-or-transfer:bool)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UCX_NoncesCumulator 
+            (URCix_NoncesCumulator 
                 id 
                 (length nonces)
                 (if transmit-or-transfer
@@ -953,13 +971,13 @@
             )
         )
     )
-    (defun UC_WipeCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_WipeCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string removable-nonces-obj:object{DpofUdcV1.RemovableNonces})
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (UCX_NoncesCumulator 
+            (URCix_NoncesCumulator 
                 id 
                 (length (at "r-nonces" removable-nonces-obj))
                 (ref-DALOS::UR_UsagePrice "ignis|small")
@@ -977,7 +995,7 @@
             nonces-array
         )
     )
-    (defun UCX_NoncesCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCix_NoncesCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string number-of-nonces:integer price-per-nonce:decimal output-obj:object)
         (let
             (
@@ -1702,6 +1720,70 @@
     )
     ;;
     ;;{F5}  [A]
+    ;;
+    ;;<======================>
+    ;;[URCi] cost readers — single cost source per op. The C_/XE_ returns/bills its URCi; Phase 1.2 INFO
+    ;;  previews from the same reader. (Per-nonce wipe/move costs are URCi_WipeCumulator/URCi_MoveCumulator.)
+    ;;<======================>
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator} (entity-id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BrandingCumulator (UR_Konto entity-id) 1.5))
+    )
+    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id)))
+    )
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_Konto id)))
+    )
+    (defun URCi_TogglePause:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_Konto id)))
+    )
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id)))
+    )
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id)))
+    )
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id)))
+    )
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id)))
+    )
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id)))
+    )
+    (defun URCi_AddQuantity:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_Konto id)))
+    )
+    (defun URCi_Burn:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_Konto id)))
+    )
+    (defun URCi_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator (UR_Konto id)))
+    )
+    (defun URCi_UpdateSpecialOrtoFungible:object{IgnisCollectorV1.OutputCumulator} (main-dptf:string)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (ref-DPTF::UR_Konto main-dptf))
+        )
+    )
+    ;;  Mint: URCi is the Medium price part; C_Mint concatenates the created-nonce output onto it.
+    (defun URCi_Mint:object{IgnisCollectorV1.OutputCumulator} (id:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_MediumCumulator (UR_Konto id)))
+    )
+    ;;  Issue/UpgradeBranding: :decimal price rails (the cumulator output/side-effect stays in the write).
+    (defun URCi_IssueGas:decimal (token-count:integer)
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|token-issue")))
+    )
+    (defun URCi_IssueKda:decimal (token-count:integer)
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "dpmf")))
+    )
+    (defun URCi_UpgradeBranding:decimal (months:integer)
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec months) (ref-DALOS::UR_UsagePrice "blue")))
+    )
     ;;{F6}  [C]
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
@@ -1713,7 +1795,7 @@
             )
             (with-capability (DPOF|C>UPDATE-BRD entity-id)
                 (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
-                (ref-IGNIS::UDC_BrandingCumulator (UR_Konto entity-id) 1.5)
+                (URCi_UpdatePendingBranding entity-id)
             )
         )
     )
@@ -1731,13 +1813,12 @@
                         (ref-DPTF::UR_Konto parent)
                     )
                 )
-                (kda-payment:decimal
-                    (with-capability (DPOF|C>UPGRADE-BRD entity-id)
-                        (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
-                    )
-                )
             )
-            (ref-IGNIS::KDA|C_CollectWT patron kda-payment false)
+            ;;Perform the branding upgrade (side effect); bill the KDA via the URCi (== XE_UpgradeBranding's price)
+            (with-capability (DPOF|C>UPGRADE-BRD entity-id)
+                (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
+            )
+            (ref-IGNIS::KDA|C_CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -1754,8 +1835,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (l1:integer (length name))
-                (mf-cost:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
-                (kda-costs:decimal (* (dec l1) mf-cost))
+                (kda-costs:decimal (URCi_IssueKda l1))
                 (iz-special:[bool] (make-list l1 false))
                 (ico:object{IgnisCollectorV1.OutputCumulator}
                     (with-capability (SECURE)
@@ -1780,7 +1860,7 @@
             )
             (with-capability (DPOF|S>ROTATE-OWNERSHIP id new-owner)
                 (XI_ChangeOwnership id new-owner)
-                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+                (URCi_RotateOwnership id)
             )
         )
     )
@@ -1793,7 +1873,7 @@
             )
             (with-capability (DPOF|S>CONTROL id)
                 (XI_Control id cu cco casr ctocr cf cw cp sg)
-                (ref-IGNIS::UDC_MediumCumulator (UR_Konto id))
+                (URCi_Control id)
             )
         )
     )
@@ -1808,7 +1888,7 @@
                 ;;Pause|Unpause <id>
                 (XI_TogglePause id toggle)
                 ;;Output
-                (ref-IGNIS::UDC_MediumCumulator (UR_Konto id))
+                (URCi_TogglePause id)
             )
         )
     )
@@ -1861,7 +1941,7 @@
                 ;;Update Account Roles
                 (XI_ToggleFreezeAccount id account toggle)
                 ;;Output
-                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+                (URCi_ToggleFreezeAccount id)
             )
         )
     )
@@ -1884,7 +1964,7 @@
                 ;;Update Account Roles
                 (XI_ToggleAddQuantityRole id account toggle)
                 ;;Output
-                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+                (URCi_ToggleAddQuantityRole id)
             )
         )
     )
@@ -1907,7 +1987,7 @@
                 ;;Update Account Roles
                 (XI_ToggleBurnRole id account toggle)
                 ;;Output
-                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+                (URCi_ToggleBurnRole id)
             )
         )
     )
@@ -1931,7 +2011,7 @@
                 ;;Update Verum Roles
                 (XI_UpdateVerum4 id receiver)
                 ;;Output
-                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+                (URCi_MoveCreateRole id)
             )
         )
     )
@@ -1954,7 +2034,7 @@
                 ;;Update Account Roles
                 (XI_ToggleTransferRole id account toggle)
                 ;;Output
-                (ref-IGNIS::UDC_BiggestCumulator (UR_Konto id))
+                (URCi_ToggleTransferRole id)
             )
         )
         
@@ -1974,7 +2054,7 @@
                 ;;Update <id> Supply
                 (XI_UpdateSupply id (+ supply amount))
                 ;;Output
-                (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+                (URCi_AddQuantity id)
             )
         )
     )
@@ -1992,7 +2072,7 @@
                 ;;Update <id> Supply
                 (XI_UpdateSupply id (- supply amount))
                 ;;Output
-                (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+                (URCi_Burn id)
             )
         )
     )
@@ -2012,8 +2092,8 @@
                 ;;Update <id> Supply
                 (XI_UpdateSupply id (+ supply amount))
                 ;;Output
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                    [(ref-IGNIS::UDC_MediumCumulator (UR_Konto id))]
+                (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                    [(URCi_Mint id)]
                     [(UR_NoncesUsed id)]
                 )
             )
@@ -2037,7 +2117,7 @@
                 ;;Update <id> Supply
                 (XI_UpdateSupply id (- supply amount))
                 ;;Output 2 IGNIS
-                (ref-IGNIS::UDC_SmallCumulator (UR_Konto id))
+                (URCi_WipeSlim id)
             )
         )
     )
@@ -2074,7 +2154,7 @@
                 ;;Update <id> Supply
                 (XI_UpdateSupply id (- supply sum))
                 ;;Output (2 IGNIS per Nonce Wiped)
-                (UC_WipeCumulator id removable-nonces-obj)
+                (URCi_WipeCumulator id removable-nonces-obj)
             )
         )
     )
@@ -2113,7 +2193,7 @@
                 ;;2]Credit receiver
                 (XI_CreditNonces receiver id output-nonces amounts meta-data-array)
                 ;;3]Output Costs 2 IGNIS per Nonce Transmitted
-                (UC_MoveCumulator id nonces true)
+                (URCi_MoveCumulator id nonces true)
             )
         )
     )
@@ -2124,7 +2204,7 @@
         (with-capability (DPOF|C>TRANSFER id nonces sender receiver method)
             (do
                 (XI_TransferWholeNonces id sender receiver nonces)
-                (UC_MoveCumulator id nonces false)
+                (URCi_MoveCumulator id nonces false)
             )
         )
     )
@@ -2150,7 +2230,7 @@
                         )
                         (enumerate 0 (- (length receiver-lst) 1))
                     )
-                    (UC_MoveCumulator id all-nonces false)
+                    (URCi_MoveCumulator id all-nonces false)
                 )
             )
         )
@@ -2212,7 +2292,7 @@
                     (ref-BRD:module{BrandingV1} BRD)
                     (ref-U|LST:module{StringProcessorV1} U|LST)
                     (l1:integer (length name))
-                    (gas-costs:decimal (* (dec l1) (ref-DALOS::UR_UsagePrice "ignis|token-issue")))
+                    (gas-costs:decimal (URCi_IssueGas l1))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (folded-lst:[string]
                         (fold
@@ -2536,7 +2616,7 @@
                     )
                     true
                 )
-                (ref-IGNIS::UDC_BiggestCumulator (ref-DPTF::UR_Konto main-dptf))
+                (URCi_UpdateSpecialOrtoFungible main-dptf)
             )
         )
     )
