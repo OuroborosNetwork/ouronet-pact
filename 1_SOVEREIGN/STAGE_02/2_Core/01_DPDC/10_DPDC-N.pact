@@ -27,6 +27,11 @@
     (defun C_UpdateNonceScore           (id:string son:bool account:string nosc:integer nos:bool nost:bool score:decimal))
     (defun C_UpdateNonceMetaData        (id:string son:bool account:string nosc:integer nos:bool nost:bool meta-data:object))
     (defun C_UpdateNonceURI             (id:string son:bool account:string nosc:integer nos:bool nost:bool ay:object{DpdcUdcV1.URI|Type} u1:object{DpdcUdcV1.URI|Data} u2:object{DpdcUdcV1.URI|Data} u3:object{DpdcUdcV1.URI|Data}))
+    ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_UpdateNonces:object{IgnisCollectorV1.OutputCumulator} (account:string count:integer))
+    (defun URCi_UpdateNonceField:object{IgnisCollectorV1.OutputCumulator} (account:string))
 )
 ;;
 (module DPDC-N GOV
@@ -402,6 +407,31 @@
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]
+    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
+    (defun URCi_UpdateNonces:object{IgnisCollectorV1.OutputCumulator}
+        (account:string count:integer)
+        @doc "Cost preview for C_UpdateNonces (count * UsagePrice ignis|smallest; \
+            \ construct with empty output list)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (price:decimal (* (dec count) (ref-DALOS::UR_UsagePrice "ignis|smallest")))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator price account (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_UpdateNonceField:object{IgnisCollectorV1.OutputCumulator}
+        (account:string)
+        @doc "Cost preview for the single-field nonce updates (Royalty, IgnisRoyalty, \
+            \ Name, Description, Score, MetaData, URI) — all flat Small(account)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (ref-IGNIS::UDC_SmallCumulator account)
+        )
+    )
     ;;{F6}  [C]
     (defun C_UpdateNonces
         (id:string son:bool account:string nosc:[integer] nos:bool nost:bool new-nonces-data:[object{DpdcUdcV1.DPDC|NonceData}])
@@ -419,7 +449,7 @@
             (with-capability (DPDC-N|C>SET-DATA id son account nosc nos nost new-nonces-data)
                 (XI_U|NoncesData id son account nosc nos nost new-nonces-data)
                 ;;Cumulator
-                (ref-IGNIS::UDC_ConstructOutputCumulator price account trigger [])
+                (URCi_UpdateNonces account (length nosc))
             )
         )
     )
@@ -435,7 +465,7 @@
             )
             (with-capability (DPDC-N|C>SET-ROYALTY id son account nosc nos nost royalty-value)
                 (XI_U|NonceRoyalty id son account nosc nos nost true royalty-value)
-                (ref-IGNIS::UDC_SmallCumulator account)
+                (URCi_UpdateNonceField account)
             )
         )
     )
@@ -449,7 +479,7 @@
             )
             (with-capability (DPDC-N|C>SET-IGNIS-ROYALTY id son account nosc nos nost royalty-value)
                 (XI_U|NonceRoyalty id son account nosc nos nost false royalty-value)
-                (ref-IGNIS::UDC_SmallCumulator account)
+                (URCi_UpdateNonceField account)
             )
         )
     )
@@ -463,7 +493,7 @@
             )
             (with-capability (DPDC-N|C>SET-NAME id son account nosc nos nost name)
                 (XI_U|NonceNoD id son account nosc nos nost true name)
-                (ref-IGNIS::UDC_SmallCumulator account)
+                (URCi_UpdateNonceField account)
             )
         )
     )
@@ -477,7 +507,7 @@
             )
             (with-capability (DPDC-N|C>SET-DESCRIPTION id son account nosc nos nost description)
                 (XI_U|NonceNoD id son account nosc nos nost false description)
-                (ref-IGNIS::UDC_SmallCumulator account)
+                (URCi_UpdateNonceField account)
             )
         )
     )
@@ -491,7 +521,7 @@
             )
             (with-capability (DPDC-N|C>SET-SCORE id son account nosc nos nost score)
                 (XI_U|NonceScore id son account nosc nos nost score)
-                (ref-IGNIS::UDC_SmallCumulator account)
+                (URCi_UpdateNonceField account)
             )
         )
     )
@@ -505,7 +535,7 @@
             )
             (with-capability (DPDC-N|C>SET-META-DATA id son account nosc nos nost meta-data)
                 (XI|U_NonceMetaData id son account nosc nos nost meta-data)
-                (ref-IGNIS::UDC_SmallCumulator account)
+                (URCi_UpdateNonceField account)
             )
         )
     )
@@ -522,7 +552,7 @@
             )
             (with-capability (DPDC-N|C>SET-URI id son account nosc nos nost ay u1 u2 u3)
                 (XI_U|NonceUri id son account nosc nos nost ay u1 u2 u3)
-                (ref-IGNIS::UDC_SmallCumulator account)
+                (URCi_UpdateNonceField account)
             )
         )
     )
