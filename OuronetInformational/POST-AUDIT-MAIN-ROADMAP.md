@@ -107,11 +107,19 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
       a new interface is V2 or V3). Record the **live→target(+1) map**. NB: local dev has already moved
       ahead of live for some (e.g. ATS on `V2` while live is `V1`) — target is relative to **live**, not local.
 - [x] **0.5a Checkpoint push** — all merges + session work pushed to `origin/main` (`3cf31ae`). ✅
-- [ ] **0.5 DEMIPAD audit (on main — the LAST unaudited module).** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/`
-      (DEMIPAD, Spark, Snakes, Custodians, StoicPay, STOAICO) is the only Stage-1/2 surface no audit
-      covered. Do it **here on main** (no worktree — nothing to parallelize). Mirror the other audits'
-      rigor (findings → owner verdicts → fixes-with-proof → tracker); produces its own carry-over to
-      fold + becomes part of Audit Book Part I. Green-gate after.
+- [x] **0.5 DEMIPAD audit — ✅ DONE (2026-08-30). All 17 findings closed, one at a time, each
+      REPL-proven + committed.** Tracker `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/Audit/` (README,
+      ROUND-01-FINDINGS, ISSUES-RANKED, ROUND-02-FIXES). Tally: 1 Critical (#1C STOAICO drain), 3 High
+      (#2H retrieval-gate, #3H/#4H Custodians), 8 Medium (#5M–#12M), 5 Low (#13L–#17L). #13L/#14L verified
+      WONTFIX (canonical AQP no-clamp / KPAY 24-dec exact); the rest fixed + proven. **Three structural
+      wins beyond bug fixes:** (i) **#12M launchpad slippage subsystem** — SWP-mirrored, uniform across
+      all sale paths, both variants (signed padded caps `URC_Acquire` + on-chain `UEV_SlippageCost` ·
+      install-path `URCcap_Acquire`); (ii) **#15M launchpad-sales-are-CITIZEN reclassification** — the
+      per-asset sales moved out of sovereign core to `2_CITIZEN/6_Launchpad/`, `2_SLAVE→2_CITIZEN`
+      restructure + folder scheme, "slave" term retired codebase-wide (closes #88 / Phase 1.5); (iii)
+      **#17L StoicSyntax `URCcap_` formalization** — new `cap` marker + CAP-INSTALL colour family + flat
+      prefix index (§6) for the highlighter + `URCi_` reserved. Full `Z.repl` green throughout. Carry-over
+      folded into the AUDIT CARRY-OVER section below. Feeds Audit Book Part I (task #82).
 
 ## PHASE 1 — URCi cost architecture (spec: `URCI-COST-ARCHITECTURE.md`; task #77)
 - [ ] **1.0 DECISION (settle before the walk): interface-richness policy.** Fully informed now by the
@@ -427,6 +435,30 @@ verified intact. Deferrals:
 - [ ] Note: oracle (Aletheia) wiring explicitly deferred until an oracle is available (future feature;
       ties to SWP's `KDA-PID`→`STOA-PID`). DALOS-family interfaces are pre-mainnet V1/V7, edited freely
       (no bump) — informs the Phase 0.4/7 version map (ATS/SWP interface versions were out of this audit's scope).
+
+### DEMIPAD audit — carried over (DONE on main 2026-08-30; source: `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/Audit/`)
+- [ ] **STOAICO folder placement (open sub-decision).** Placed under `2_CITIZEN/6_Launchpad/5_StoicIco/`
+      (staking-ICO alongside the KPAY sale). Confirm that vs a standalone citizen folder — owner call.
+- [ ] **AOZ+/DSP+ + DPL-UR/EXPLORER naming.** Kept in `2_CITIZEN/Stage_01/` + `Stage_Z/` (outside the
+      numbered `N_XMinter` scheme). Rename into the scheme later if wanted (cosmetic).
+- [ ] **AQP-royalty direct-injection (#8M follow-up) — POST-AQP feature.** `direct-injection` is
+      hard-blocked (`UEV_DirectInjection`) until built: route the `cod` royalty into an AQP injection
+      **profile** (owner design: 50% Demiurgos Holdings / 50% Coding-Division score, both Deb-free) —
+      **live inject** OR **collect-locally + daily-automaton drip**. Needs finalized redeploy → deploy the
+      profile vaults → rewrite `C_Deposit` to a forward-module/profile inject. Logged in STAGE 3.
+- [ ] **#11M deploy-gate re-sync (verify at redeploy).** Workspace `04_STOICPAY` now byte-matches the live
+      5-address / 1.5× team split (40/60); StoicPay **sale is suspended** — whether/how to resume is a
+      separate product decision. At the deploy-ready gate (Phase 7 / task #83) re-confirm the split.
+- [ ] **#12M slippage follow-ups (INFO pass, Phase 2).** Optional `…WithSlippage`/`…NoSlippage` named
+      Talos sugar (the single `max-cost` value already selects the variant); INFO functions returning the
+      **per-leg** cost breakdown so the UI can pad each `coin.TRANSFER` cap → task #78.
+- [ ] **#1C STOAICO wiring (Phase 5 / task #79).** `[6.3]_STOAICO.repl` not yet in the default `Z.repl`
+      pipeline; STOAICO INFO surface (`INFO_FlushFull`/`Slice`) deferred to the INFO pass (task #78).
+- [ ] **#2H/#7M transmit path.** The collectable transmit functions are `UEV_IMC`-gated + marked "after
+      Upgrade"; the `RETRIEVE-NON-FUNGIBLE` gate is correct once the NF transmit is Talos-wired (#7M fix
+      routes NF→NON cap). Finalize with the transmit Talos wiring.
+- [ ] **KDA→STOA naming.** DEMIPAD/StoicPay carry `kda-pid`/`wkda` naming too — part of the settled
+      protocol-wide `Kadena→STOA` sweep (Phase 1.4), never piecemeal.
 
 ---
 
