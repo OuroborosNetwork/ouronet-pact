@@ -86,6 +86,8 @@
     ;;  [URC]
     ;;
     (defun URC_Prices:object{DEMIPAD|Prices} (asset-id:string amount-in-dollars:decimal type:integer))
+    (defun URC_Acquire:[string] (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer slippage:decimal))
+    (defun URCcap_Acquire (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer))
     ;;
     ;;  [UEV]
     ;;
@@ -796,7 +798,7 @@
             \ padded cap, succeeding within tolerance and failing safely beyond it. Pass slippage 0.0 \
             \ for exact caps. The buyer's on-chain cost ceiling is enforced separately by <max-cost> in \
             \ C_Deposit; the UI sets max-cost = displayed-cost x (1 + slippage/100), slippage <= 50 by UI \
-            \ policy. The install-based, no-ceiling counterpart is URCI_Acquire (Variant 2, slippage off)."
+            \ policy. The install-based, no-ceiling counterpart is URCcap_Acquire (Variant 2, slippage off)."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -836,7 +838,7 @@
             )
         )
     )
-    (defun URCI_Acquire
+    (defun URCcap_Acquire
         (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer)
         (let
             (

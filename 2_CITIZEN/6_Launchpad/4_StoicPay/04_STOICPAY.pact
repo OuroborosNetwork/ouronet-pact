@@ -13,7 +13,7 @@
     ;;
     (defun URC_KpayAmountCosts:object{DemiourgosLaunchpadV1.Costs} (amount:integer offset:decimal))
     (defun URC_Acquire:[string] (buyer:string amount:integer iz-native:bool slippage:decimal))
-    (defun URCI_Acquire (buyer:string amount:integer iz-native:bool))
+    (defun URCcap_Acquire (buyer:string amount:integer iz-native:bool))
     (defun URC_GetMaxBuy:integer (account:string native:bool))
     ;;
     ;;  [C]
@@ -300,7 +300,7 @@
             (ref-DEMIPAD::URC_Acquire buyer KpayID pid type slippage)
         )
     )
-    (defun URCI_Acquire
+    (defun URCcap_Acquire
         (buyer:string amount:integer iz-native:bool)
         @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price; the \
             \ UI does NOT sign them and warns the buyer the mined price may differ."
@@ -311,7 +311,7 @@
                 (type:integer (if iz-native 0 1))
                 (pid:decimal (at "pid" (URC_KpayAmountCosts amount 900.0)))
             )
-            (ref-DEMIPAD::URCI_Acquire buyer KpayID pid type)
+            (ref-DEMIPAD::URCcap_Acquire buyer KpayID pid type)
         )
     )
     (defun URC_GetMaxBuy:integer (account:string native:bool)

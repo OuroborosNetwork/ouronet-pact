@@ -494,3 +494,32 @@ attempt a buy: post-fix it's rejected with the readable "**… is not open for b
 it). Bug direction proven by reverting to the no-arg form → the reject instead fires the cryptic
 `Expected Pact Value, got closure or table reference` (the format-arity error), and the `expect-failure`
 on the readable phrase goes red. Restored → green, 0 load failures.
+
+---
+
+## #17L — interface omission + `URCI_` mis-prefix → FIXED (formalized `URCcap_`, renamed, declared) (2026-08-30)
+
+**Files:** `OuronetInformational/StoicSyntax-Prefixes.md` (registry) · `00_Demipad.pact` +
+`2_CITIZEN/6_Launchpad/{1_Spark,2_Snakes,3_Custodians,4_StoicPay}/*` (rename + interface decls).
+
+**Two residuals.** (a) The sale-module interfaces + `DemiourgosLaunchpadV1` omitted `URC_Acquire` /
+`URCI_Acquire` (refuted as a blocker — `::` modref dispatch resolves them undeclared, suite green — but a
+drift-catch convention gap). (b) `URCI_` was an **improvised prefix not in StoicSyntax**, and worse it
+**breaks the read-family contract**: the whole `UR*/URC*` family is defined side-effect-free, but
+`URCI_Acquire` does `install-capability` (a tx-capability side effect) under a read-looking name.
+
+**Fix (owner-chosen: formalize a proper prefix, don't just rename ad-hoc).**
+- **StoicSyntax formalization** (`StoicSyntax-Prefixes.md`): registered the **`cap`** lowercase
+  specialization marker (§1 — the one lowercase role that introduces a side effect: installs a capability)
+  and the **`URCcap_`** prefix (§2 — "a `URC_` that installs the caps it derives"), a new **CAP-INSTALL**
+  colour family (§4, distinct hue — never the calm READ blue), the interface-membership corollary (§5 —
+  `URCcap_` is UI-called, always declared), and a **flat prefix index (§6)** enumerating every
+  prefix longest-first for the highlighting agent. Also **reserved `URCi_`** (the roadmap-#77 cost prefix,
+  `i`=IGNIS) so the `i` slot is never reused — the collision that made us pick `cap` over `i`.
+- **Rename** `URCI_Acquire → URCcap_Acquire` across DEMIPAD core + the 4 citizen sale modules (defuns,
+  cross-module `ref-DEMIPAD::` calls, StoicPay interface decl, doc comments, the `[6.1]` comment).
+- **Interface declarations** (part a): declared `URC_Acquire` + `URCcap_Acquire` in `DemiourgosLaunchpadV1`
+  and in `SparksV1` / `SaleSnakesV1` / `SaleCustodiansV1` (StoicPay's `StoicPayV2` already had both).
+
+**Green-gate.** Deploy path + full default pipeline (`Z.repl`) both green — exit 0, 0 load failures.
+Additive interface change (no cascade). Closes the DEMIPAD audit.

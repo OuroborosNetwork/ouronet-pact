@@ -27,6 +27,13 @@ A name is `PREFIX_Name` (or `PREFIX_Scope|Name`). The prefix is read left-to-rig
     one place all real paths already share. Introduced 2026-08-24 (SWP audit L56) — retroactively also
     covers the `U|LST` bounds-guard exception from v1.9.0/§6.1 (L41), now a named category instead of an
     ad-hoc carve-out.
+  - `cap` → the function **installs a capability** (`install-capability`) into the transaction — a
+    **deliberate tx-capability side effect**. This is the **one lowercase role that introduces a side
+    effect**; the base class still names the read/compute it does to *derive* the cap arguments, and `cap`
+    flags that it then installs them rather than returning them. Introduced 2026-08-30 (DEMIPAD audit #17L)
+    for the launchpad's no-signature ("slippage-off") payment setup — the client-side sibling of a `URC_`
+    that returns cap-description strings for the UI to sign. Colour: its **own** family (CAP-INSTALL), never
+    the calm READ hue, because it mutates tx state.
   - lowercase markers may stack (rare): `UCkx_` = a key-building auxiliary.
 - **`|` = a module/table scope** inside the *name* part, not the prefix
   (`UR_SCR|ScoreOwnerKonto` = a `UR_` reader scoped to the `SCR` tables;
@@ -55,6 +62,7 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 | `URC_`  | read+compute | Point read **+ derive** (no `enforce`) | yes | **READ** |
 | `URCx_` | read+compute·aux | `URC_` **auxiliary** | yes | **READ** (dim) |
 | `URCv_` | read+compute·validating | `URC_` whose `enforce` is intrinsic to its own computation (§1 `v`) | yes | **READ** |
+| `URCcap_` | read+compute·cap-install | `URC_` that **installs** the capabilities it derives (`install-capability`) instead of returning them — the no-signature client-side payment setup (a deliberate tx-cap **side effect**; §1 `cap`). Reachable from outside (UI-called) → belongs in the interface | yes | **CAP-INSTALL** |
 | `URU_`  | read·upgrade | Read helper for **version-upgrade / migration** paths | admin only | **READ** (dim) |
 | `URH_`  | heavy-read | **Scan** read (`select` / `keys`) — expensive/unbounded | **NO — off-path only** | **HEAVY-READ ⚠** |
 | `URHx_` | heavy-read·aux | `URH_` **auxiliary** | **NO** | **HEAVY-READ ⚠** (dim) |
@@ -65,6 +73,12 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 | `UDC_`  | construct | **Data constructor** — named object builder (no reads, no enforce) | yes | **CONSTRUCT** |
 | `UDCx_` | construct·aux | `UDC_` **auxiliary** | yes | **CONSTRUCT** (dim) |
 | `CT_`   | constant | Constant accessor — wraps a shared `defconst` / utility constant | yes | **CONSTANT** |
+
+> **Reserved (not yet implemented): `URCi_`** — the **cost-emitting** reader family for the URCi cost
+> architecture (roadmap Phase 1 / task #77, spec `URCI-COST-ARCHITECTURE.md`; the `i` = IGNIS cost). A
+> leaf `URCi_` returns an IGNIS cost cumulator; a composer `URCi_` totals a `C_`/`CC_`/`A_`. Registered
+> here as reserved so the `i` slot is **not** reused (e.g. it was NOT taken for cap-install — that is
+> `URCcap_`). Full registry row lands when Phase 1 implements it.
 
 ### Protected (locked inside the module — reached by clients only via Talos)
 
@@ -175,6 +189,7 @@ their base, optionally **dimmed / desaturated / italic** to signal "specializati
 |--------|----------|----------------------|
 | **COMPUTE**    | `UC_ UCk_ UCx_` | cheap, pure, side-effect-free — calm/neutral |
 | **READ**       | `UR_ URC_ URCx_ URU_` | bounded point reads — safe read hue |
+| **CAP-INSTALL** | `URCcap_` | derives + **installs** a capability into the tx — a side effect; distinct hue (e.g. teal/violet), never the calm READ blue |
 | **HEAVY-READ ⚠** | `URH_ URHx_ URHC_ URHCx_` | **scan / expensive — must flinch**; off-path only (warning hue: amber/orange) |
 | **ENFORCE**    | `UEV_ CAP_` | can abort the tx — alert hue (red family) |
 | **CONSTRUCT**  | `UDC_ UDCx_` | object builders |
@@ -204,8 +219,9 @@ interface are callable from outside the module.** Therefore:
 >
 > **Corollary — these MUST appear in the interface** (they are reachable from outside):
 > `XE_` and `XB_` (external / both), `C_` / `CC_` / `A_` recipes, and all unprotected readers/validators/
-> constructors/compute (`UR_`, `URC_`, `URH_`, `URHC_`, `UEV_`, `CAP_`, `UDC_`, `UC_`, `UCk_`) **unless**
-> they hit exclusion #4 (module-schema return).
+> constructors/compute (`UR_`, `URC_`, `URCcap_`, `URH_`, `URHC_`, `UEV_`, `CAP_`, `UDC_`, `UC_`, `UCk_`)
+> **unless** they hit exclusion #4 (module-schema return). (`URCcap_` is client-facing — the UI calls it to
+> install the payment caps — so it is always interface-declared.)
 
 So an `XE_`/`XB_` missing from the interface is a **bug** (it's callable from outside but undeclared);
 a `URH_` reader used by the UI/another module belongs in the interface (subject to #4); a `URH_` reader
@@ -245,3 +261,30 @@ The **interface mirrors this order**, dropping the four excluded kinds (§5):
    `defcap` / `C_` / `X` / writer). Amber/orange, not a quiet blue.
 2. **`…x` auxiliaries stay in their base family's hue** (dimmed) — they are not a new colour; they
    are "the helper of the coloured thing right above me."
+
+---
+
+## 6. Flat prefix index (hand-off list for the highlighter)
+
+Every function/cap prefix, grouped by colour family. `_` marks the class boundary; `|` scopes and
+module/table names are **not** prefixes (colour the class token, not the scope). Match **longest prefix
+first** (e.g. `URCcap_` before `URC_`, `URHC_` before `URH_`, `CC_` before `C_`, `AAp_` before `AA_`).
+
+| Family | Prefixes (match longest-first) |
+|--------|--------------------------------|
+| **COMPUTE**      | `UCkx_` `UCk_` `UCx_` `UCv_` `UC_` |
+| **READ**         | `URCx_` `URCv_` `URC_` `URU_` `UR_` |
+| **CAP-INSTALL**  | `URCcap_` |
+| **HEAVY-READ ⚠** | `URHCx_` `URHC_` `URHx_` `URH_` |
+| **ENFORCE**      | `UEV_IMC` (structural, see below) · `UEV_` `CAP_` |
+| **CONSTRUCT**    | `UDCx_` `UDC_` |
+| **CONSTANT**     | `CT_` |
+| **WRITE**        | `WI_` `WU4_` `WU3_` `WU2_` `WU_` `WW_` |
+| **RECIPE**       | `AAp_` `AA_` `Ap_` `AU_` `A_` · `CCp_` `CC_` `Cp_` `C_` |
+| **PROTECTED**    | `XI_` `XE_` `XB_` |
+| **STRUCTURAL**   | `GOV` `GOV\|` `P\|` `SECURE` `UEV_IMC` |
+| **RESERVED**     | `URCi_` (cost architecture — task #77, not yet implemented; do not reuse the `i` slot) |
+
+**Lowercase specialization markers** (appended to a class, take the base hue, usually dimmed — except
+`cap`): `k` key-build · `x` auxiliary · `v` intrinsic-validating · `cap` **installs a capability (own
+CAP-INSTALL hue)** · `p` Hydra-parallel-slice (on recipes) · doubled base letter (`CC`/`AA`) = heavy.

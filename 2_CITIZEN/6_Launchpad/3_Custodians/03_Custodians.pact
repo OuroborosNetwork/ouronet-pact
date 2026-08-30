@@ -15,6 +15,8 @@
     (defun URC_QuintessenceCosts:object{DemiourgosLaunchpadV1.Costs} ())
     (defun URC_NonceCosts:object{DemiourgosLaunchpadV1.Costs} (nonce:integer))
     (defun URC_NonceAmountCosts:object{DemiourgosLaunchpadV1.Costs} (nonce:integer amount:integer))
+    (defun URC_Acquire:[string] (buyer:string nonce:integer amount:integer iz-native:bool slippage:decimal))
+    (defun URCcap_Acquire (buyer:string nonce:integer amount:integer iz-native:bool))
     ;;
     ;;  [UEV]
     ;;
@@ -271,7 +273,7 @@
             (ref-DEMIPAD::URC_Acquire buyer asset-id pid type slippage)
         )
     )
-    (defun URCI_Acquire
+    (defun URCcap_Acquire
         (buyer:string nonce:integer amount:integer iz-native:bool)
         (let
             (
@@ -280,7 +282,7 @@
                 (type:integer (if iz-native 0 1))
                 (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
             )
-            (ref-DEMIPAD::URCI_Acquire buyer asset-id pid type)
+            (ref-DEMIPAD::URCcap_Acquire buyer asset-id pid type)
         )
     )
     ;;{F2}  [UEV]
