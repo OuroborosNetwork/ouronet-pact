@@ -1445,7 +1445,7 @@
         )
     )
     (defun URCi_UpgradeBranding:decimal (months:integer)
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec months) (ref-DALOS::UR_UsagePrice "blue")))
+        (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
     )
     ;;{F6}
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}

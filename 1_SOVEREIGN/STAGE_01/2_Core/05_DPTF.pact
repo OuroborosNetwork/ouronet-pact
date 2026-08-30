@@ -1782,7 +1782,7 @@
     )
     ;;  UpgradeBranding: KDA price is unconditionally months x "blue" (BRD's XE_UpgradeBranding returns the same).
     (defun URCi_UpgradeBranding:decimal (months:integer)
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec months) (ref-DALOS::UR_UsagePrice "blue")))
+        (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
     )
     ;;{F6}  [C]
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}

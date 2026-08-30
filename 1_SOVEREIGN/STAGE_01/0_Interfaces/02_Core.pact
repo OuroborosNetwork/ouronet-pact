@@ -197,6 +197,7 @@
     (defun UR_PremiumUntil:time (id:string pending:bool))
     ;;
     (defun URC_MaxBluePayment (account:string))
+    (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;
     (defun UDC_BrandingLogo:object{Schema} (input:object{Schema} logo:string))
     (defun UDC_BrandingDescription:object{Schema} (input:object{Schema} description:string))

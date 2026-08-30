@@ -197,6 +197,17 @@
             )
         )
     )
+    (defun URCi_UpgradeBranding:decimal (months:integer)
+        @doc "Blue-flag upgrade cost = months * UsagePrice(\"blue\"). Single source \
+            \ for both the XE_UpgradeBranding write (exec billing) and every module's \
+            \ C_UpgradeBranding cost preview (INFO)."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (* (dec months) (ref-DALOS::UR_UsagePrice "blue"))
+        )
+    )
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]
     (defun UDC_BrandingLogo:object{BrandingV1.Schema} (input:object{BrandingV1.Schema} logo:string)
@@ -332,7 +343,7 @@
                     (flag:integer (UR_Flag entity-id false))
                     (premium:time (UR_PremiumUntil entity-id false))
                     (seconds:decimal (fold (*) 1.0 [86400.0 30.0 (dec months)]))
-                    (payment:decimal (* (dec months) blue))
+                    (payment:decimal (URCi_UpgradeBranding months))
                     (premium-until:time (add-time premium seconds))
 
                     (as-is1:object{BrandingV1.Schema} (UDC_BrandingFlag branding 1))
