@@ -342,4 +342,35 @@
 )
 (env-sigs [])
 (commit-tx)
-(print "=== END [6.3]_STOAICO.repl (with #1C proof) ===")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-06M - #6M post-ICO stake earns NO urSTOA (ICO-phase-only)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-06M — #6M: after the ICO concludes (distribution-round >= 1) contributions earn no urSTOA ===")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; The ICO concluded at the first inject (round is now 1). A further admin stake must NOT earn urSTOA:
+;; the global urstoa-left is untouched and the contributor's urstoa-earned is not re-credited — so a
+;; later collect can never double-mint (pre-fix, this stake re-earned floor(new-score/5) urSTOA).
+(let
+    (
+        (emma:string KST.EMMA)
+        (urstoa-left-before:integer (STOAICO.UR_Global2))
+        (emma-earned-before:integer (STOAICO.UR_User2 KST.EMMA))
+    )
+    (STOAICO.A_Stake KST.ANHD emma 5000.0)
+    (map print
+        [
+            (format "round={} urstoa-left {} -> {} · emma urstoa-earned {} -> {}"
+                [(STOAICO.UR_Global11) urstoa-left-before (STOAICO.UR_Global2) emma-earned-before (STOAICO.UR_User2 emma)])
+            (expect "#6M: ICO has concluded (distribution-round >= 1)" true (>= (STOAICO.UR_Global11) 1))
+            (expect "#6M: post-ICO stake earns NO urSTOA — global urstoa-left unchanged" urstoa-left-before (STOAICO.UR_Global2))
+            (expect "#6M: post-ICO stake does not re-credit emma's urstoa-earned" emma-earned-before (STOAICO.UR_User2 emma))
+            ""
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "=== END [6.3]_STOAICO.repl (with #1C + #5M + #6M proofs) ===")

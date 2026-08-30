@@ -142,3 +142,32 @@ architecture… the zombie amount, postponed to the next injection when score is
 - **Bug reproduced (exit 1):** forcing the FLUSH branch on the empty vault (`if true`) →
   `Arithmetic exception: div by zero` at STOAICO:444 (`floor (/ eff vault-score)`). Restored, re-run green.
   Full `Z.repl` green.
+
+---
+
+## #6M — STOAICO urSTOA double-credit → FIXED + PROVEN (2026-08-29)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/05_STOAICO.pact` · proof `REPL/Stage_02/[6.3]_STOAICO.repl`
+(TX-06M).
+
+**Bug:** `C_Collect` zeroed `urstoa-earned` but `XI_UpdateUrstoaEarned` treats it as the cumulative
+entitlement `floor(score/5)` to compute the incremental `diff`. So a stake AFTER a collect saw
+`diff = floor(new-score/5) − 0` (the full entitlement, not the increment) → re-credited the already-paid
+urSTOA and over-decremented the 250k `urstoa-left` budget; a later collect double-minted.
+
+**Owner-clarified model → the correct fix is a PHASE GATE, not an accounting tracker.** urSTOA is earned
+ONLY during the ICO phase; once the ICO concludes (the inject/distribution), future contributions earn no
+urSTOA, and the unsold remainder of the 250k returns to the foundation (simply never minted). The
+`distribution-round` is the exact signal: round `0` = ICO/contribution phase; the first inject → round ≥ 1
+= concluded.
+
+**Fix:** in `A_Stake` and `A_Unstake`, gate `XI_UpdateUrstoaEarned` on `(= (UR_Global11) 0)` — earn/adjust
+urSTOA only in round 0. Post-ICO stakes skip it entirely, so `urstoa-earned` can't be re-credited and the
+budget can't be re-spent (the existing collect-time reset is now harmless — nothing re-earns after round 0).
+No new field; the foundation remainder is automatic (unearned urSTOA is never minted).
+
+**Proof (`[6.3]` TX-06M, deployed stack):**
+- **Fix green (exit 0):** after the ICO (round 1), an admin stake of $5000 earns nothing — `urstoa-left`
+  `245932 → 245932` (unchanged) and emma's `urstoa-earned 0 → 0` (not re-credited).
+- **Bug reproduced (exit 1):** removing the gate → the same stake re-earns `floor(7843/5)=1568` urSTOA
+  (emma `earned 0 → 1568`) and over-drops `urstoa-left 245932 → 244364`. Restored, re-run green. `Z.repl` green.

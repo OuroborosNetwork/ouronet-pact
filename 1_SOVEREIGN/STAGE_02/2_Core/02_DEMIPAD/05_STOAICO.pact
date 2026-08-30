@@ -505,8 +505,12 @@
                 )
                 ;;1.3]Update <last-rps> with D-Vault <current-rps>
                 (XI_UpdateUserRPS account (UR_Global6))
-                ;;1.4]Update <urstoa-earned>
-                (XI_UpdateUrstoaEarned account v-usd-amount true)
+                ;;1.4]#6M: Earn urSTOA ONLY during the ICO phase (distribution-round 0). After the ICO
+                ;;    concludes (first inject → round >= 1) contributions no longer earn urSTOA; the unsold
+                ;;    remainder of the 250k budget stays unminted (returns to the foundation).
+                (if (= (UR_Global11) 0)
+                    (XI_UpdateUrstoaEarned account v-usd-amount true)
+                    true)
                 ;;1.5]Update Vault Score and User Score
                 (XI_UpdateVaultScore v-usd-amount true)
                 (XI_UpdateUserScore account v-usd-amount true)
@@ -540,8 +544,11 @@
                 )
                 ;;1.3]Update <last-rps> with D-Vault <current-rps>
                 (XI_UpdateUserRPS account (UR_Global6))
-                ;;1.4]Update <urstoa-earned>
-                (XI_UpdateUrstoaEarned account v-usd-amount false)
+                ;;1.4]#6M: adjust urSTOA earning ONLY during the ICO phase (distribution-round 0); after the
+                ;;    ICO concludes, contributions/withdrawals no longer touch urSTOA earning.
+                (if (= (UR_Global11) 0)
+                    (XI_UpdateUrstoaEarned account v-usd-amount false)
+                    true)
                 ;;1.5]Update Vault Score and User Score
                 (XI_UpdateVaultScore v-usd-amount false)
                 (XI_UpdateUserScore account v-usd-amount false)
