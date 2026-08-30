@@ -63,7 +63,7 @@
         (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPDC:module{DpdcV1} DPDC)
                 (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
                 (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
@@ -96,7 +96,7 @@
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPDC:module{DpdcV1} DPDC)
                 (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
                 (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)

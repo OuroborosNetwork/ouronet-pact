@@ -1615,7 +1615,7 @@
     (defun UEV_MoveRoleCheck (id:string sender:string receiver:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (verum-five:[string] (UR_Verum5 id))
                 (lvf:integer (length verum-five))
                 (transfer-roles:integer

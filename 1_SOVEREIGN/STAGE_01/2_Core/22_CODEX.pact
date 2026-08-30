@@ -718,7 +718,7 @@
         @doc "ClientInfo preview for TS01-C4 CODEX|C_RegisterStoicTag — STOA from patron; Elite discount on account-address."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (stoa-fee:decimal (UC_StoicTagStoaFee tag-name))
                 (glyph-count:integer (length tag-name))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account-address))
@@ -741,7 +741,7 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (tag-fee:decimal (UC_StoicTagStoaFee tag-name))
                 (glyph-count:integer (length tag-name))
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))

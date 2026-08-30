@@ -290,7 +290,7 @@
     (defun UC_ShortAccount:string (account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )
@@ -312,7 +312,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
@@ -784,7 +784,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
@@ -802,7 +802,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
@@ -832,7 +832,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                     (ra:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
@@ -864,7 +864,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV2} DPDC-T)
                     ;;
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount sender))
@@ -915,7 +915,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                     (nonce:integer (ref-DPDC-S::UR_NonceOfSet id set-class))
@@ -934,7 +934,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DPDC:module{DpdcV1} DPDC)
                     (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
                     (set-class:integer (ref-DPDC::UR_NonceClass id true nonce))
@@ -1210,7 +1210,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DPDC-F:module{DpdcFragmentsV1} DPDC-F)
                     (sf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
@@ -1461,7 +1461,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
                     (ref-EQUITY:module{EquityV1} EQUITY)
                     ;;

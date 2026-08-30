@@ -4,6 +4,7 @@
     (implements OuronetPolicyV1)
     (implements IgnisCollectorV1)
     (implements IgnisCollectorV2)
+    (implements OuronetInfoV1)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -88,6 +89,8 @@
     ;;{3}
     (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                           (CT_Bar))
+    (defun CT_KdaPrec ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_KDA_PRECISION)))
+    (defconst KDAPREC                       (CT_KdaPrec))
     ;;
     (defconst DALOS|SC_NAME                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
     (defconst OUROBOROS|SC_NAME             (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
@@ -596,6 +599,230 @@
             {"primed-cumulator" : folded-obj}
         )
     )
+    ;;
+    ;;<======================>
+    ;;[OURONET-INFO] Functions — shared cost/format vocabulary (relocated from INFO-ZERO;
+    ;;  must live pre-Talos so Talos + all cost modules + Z_Reads presentation can reach it)
+    ;;<======================>
+    (defun OI|UC_IfpFromOutputCumulator:decimal (input:object{IgnisCollectorV1.OutputCumulator})
+        (let
+            (
+                (cc:[object{IgnisCollectorV1.ModularCumulator}] (at "cumulator-chain" input))
+            )
+            (fold
+                (lambda
+                    (acc:decimal idx:integer)
+                    (+ acc (at "ignis" (at idx cc)))
+                )
+                0.0
+                (enumerate 0 (- (length cc) 1))
+            )
+        )
+    )
+    (defun OI|UC_ShortAccount:string (account:string)
+        (concat
+            [
+                (take 5 account)
+                "..."
+                (take -3 account)
+            ]
+        )
+    )
+    (defun OI|UC_ConvertPrice:string (input-price:decimal)
+        (let
+            (
+                (number-of-decimals:integer (if (<= input-price 1.00) 3 2))
+                (converted:decimal
+                    (if (< input-price 1.00)
+                        (floor (* input-price 100.0) 3)
+                        (floor input-price 2)
+                    )
+                )
+                (s:string
+                    (if (< input-price 1.00)
+                        "¢"
+                        "$"
+                    )
+                )
+                (ss:string "<0.001¢")
+            )
+            (if (< input-price 0.00001)
+                (format "{}" [ss])
+                (format "{}{}" [converted s])
+            )
+        )
+    )
+    (defun OI|UC_FormatIndex:string (index:decimal)
+        (let
+            (
+                (fi:decimal (floor index 12))
+                (fis:string (format "{}" [fi]))
+                (l1:string (take -3 fis))
+                (l2:string (take -3 (drop -3 fis)))
+                (l3:string (take -3 (drop -6 fis)))
+                (l4:string (take -3 (drop -9 fis)))
+                (whole:string (drop -13 fis))
+            )
+            (concat
+                [whole ",[" l4 "." l3 "." l2 "." l1 "]"]
+            )
+        )
+    )
+    (defun OI|UC_FormatTokenAmount:string (amount:decimal)
+        (format "{}" [(floor amount 4)])
+    )
+    (defun OI|UR_KadenaTargets:[string] ()
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            [
+                (at 2 (ref-DALOS::UR_DemiurgoiID))
+                DALOS|SC_NAME
+                (at 1 (ref-DALOS::UR_DemiurgoiID))
+                OUROBOROS|SC_NAME
+            ]
+        )
+    )
+    (defun OI|UDC_ClientInfo:object{OuronetInfoV1.ClientInfo}
+        (a:[string] b:[string] c:object{OuronetInfoV1.ClientIgnisCosts} d:object{OuronetInfoV1.ClientKadenaCosts} e:list)
+        {"pre-text"         : a
+        ,"post-text"        : b
+        ,"ignis"            : c
+        ,"kadena"           : d
+        ,"output"           : e}
+    )
+    (defun OI|UDC_ClientIgnisCosts:object{OuronetInfoV1.ClientIgnisCosts}
+        (a:decimal b:decimal c:decimal d:string)
+        {"ignis-discount"   : a
+        ,"ignis-full"       : b
+        ,"ignis-need"       : c
+        ,"ignis-text"       : d}
+    )
+    (defun OI|UDC_ClientKadenaCosts:object{OuronetInfoV1.ClientKadenaCosts}
+        (a:decimal b:decimal c:decimal d:[decimal] e:[string] f:string)
+        {"kadena-discount"  : a
+        ,"kadena-full"      : b
+        ,"kadena-need"      : c
+        ,"kadena-split"     : d
+        ,"kadena-targets"   : e
+        ,"kadena-text"      : f}
+    )
+    (defun OI|UDC_FullKadenaCosts:object{OuronetInfoV1.ClientKadenaCosts} (kfp:decimal)
+        (let
+            (
+                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                ;;
+                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (kadena-split:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit kfp KDAPREC))
+                (kadena-targets:[string] (OI|UR_KadenaTargets))
+                (kadena-price:string (OI|UC_ConvertPrice (* kfp kda-pid)))
+                (kadena-text:string
+                    (format "Operation costs {} KDA valued at {} with no further discounts applied." [kfp kadena-price])
+                )
+            )
+            (OI|UDC_ClientKadenaCosts
+                1.0
+                kfp
+                kfp
+                kadena-split
+                kadena-targets
+                kadena-text
+            )
+        )
+    )
+    (defun OI|UDC_KadenaCosts:object{OuronetInfoV1.ClientKadenaCosts} (patron:string kfp:decimal)
+        (let
+            (
+                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
+                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (kadena-discount:decimal (ref-DALOS::URC_KadenaGasDiscount patron))
+                (discount-percent:string (format "{}%" [(* 100.0 (- 1.0 kadena-discount))]))
+                (kadena-need:decimal (floor (* kadena-discount kfp) KDAPREC))
+                (kadena-split:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit kadena-need KDAPREC))
+                (kadena-targets:[string] (OI|UR_KadenaTargets))
+                (kadena-need-price:string (OI|UC_ConvertPrice (* kadena-need kda-pid)))
+                (kadena-text:string
+                    (if (= kadena-discount 1.0)
+                        (format "Operation costs {} KDA valued at {} with no further discounts applied." [kadena-need kadena-need-price])
+                        (format "Operation costs {} KDA discounted by {} to {} KDA valued at {}"
+                            [kfp discount-percent kadena-need kadena-need-price]
+                        )
+                    )
+                )
+            )
+            (OI|UDC_ClientKadenaCosts
+                kadena-discount
+                kfp
+                kadena-need
+                kadena-split
+                kadena-targets
+                kadena-text
+            )
+        )
+    )
+    (defun OI|UDC_NoKadenaCosts:object{OuronetInfoV1.ClientKadenaCosts} ()
+        (OI|UDC_ClientKadenaCosts
+            1.0
+            0.0
+            0.0
+            [0.0]
+            [BAR]
+            "Operation is free of native Kadena (KDA)"
+        )
+    )
+    (defun OI|UDC_DynamicKadenaCost:object{OuronetInfoV1.ClientKadenaCosts} (patron:string kfp:decimal)
+        (if (= kfp 0.0)
+            (OI|UDC_NoKadenaCosts)
+            (OI|UDC_KadenaCosts patron kfp)
+        )
+    )
+    ;;
+    (defun OI|UDC_IgnisCosts:object{OuronetInfoV1.ClientIgnisCosts} (patron:string ifp:decimal)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;
+                (ignis-discount:decimal (ref-DALOS::URC_IgnisGasDiscount patron))
+                (discount-percent:string (format "{}%" [(* 100.0 (- 1.0 ignis-discount))]))
+                (ignis-need:decimal (* ignis-discount ifp))
+                (ignis-need-price (OI|UC_ConvertPrice (/ ignis-need 100.0)))
+                (ignis-text:string
+                    (if (= ignis-discount 1.0)
+                        (format "Operation costs {} IGNIS valued at {} with no further discounts applied." [ignis-need ignis-need-price])
+                        (format "Operation costs {} IGNIS discounted by {} to {} IGNIS valued at {}"
+                            [(floor ifp) discount-percent ignis-need ignis-need-price]
+                        )
+                    )
+                )
+            )
+            (OI|UDC_ClientIgnisCosts
+                ignis-discount
+                ifp
+                ignis-need
+                ignis-text
+            )
+        )
+    )
+    (defun OI|UDC_NoIgnisCosts:object{OuronetInfoV1.ClientIgnisCosts} ()
+        (OI|UDC_ClientIgnisCosts
+            1.0
+            0.0
+            0.0
+            "Operation is free of Ouronet GAS (IGNIS)"
+        )
+    )
+    (defun OI|UDC_DynamicIgnisCost:object{OuronetInfoV1.ClientIgnisCosts} (patron:string ifp:decimal)
+        (if (= ifp 0.0)
+            (OI|UDC_NoIgnisCosts)
+            (OI|UDC_IgnisCosts patron ifp)
+        )
+    )
+    ;;
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]

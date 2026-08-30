@@ -318,7 +318,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-ATS:module{AutostakeV2} ATS)
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -692,7 +692,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV1} ATSU)
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount target))
                 )
@@ -897,7 +897,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-ATSU:module{AutostakeUsageV1} ATSU)
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount syphon-target))
                 )
@@ -1219,7 +1219,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
                     (sfa:string (ref-I|OURONET::OI|UC_ShortAccount freeze-output))
                 )
@@ -1236,7 +1236,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
@@ -1270,7 +1270,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
                     (sr:string (ref-I|OURONET::OI|UC_ShortAccount reserver))
                 )
@@ -1287,7 +1287,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount unreserver))
                 )
@@ -1304,7 +1304,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
@@ -1338,7 +1338,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
                     (sv:string (ref-I|OURONET::OI|UC_ShortAccount vester))
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
@@ -1356,7 +1356,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount unvester))
                 )
@@ -1373,7 +1373,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
@@ -1393,7 +1393,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1410,7 +1410,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount unsleeper))
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1428,7 +1428,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
                     (sm:string (ref-I|OURONET::OI|UC_ShortAccount merger))
                 )
@@ -1446,7 +1446,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1466,7 +1466,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1502,7 +1502,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (sta:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
                 )
                 (ref-IGNIS::C_Collect patron
@@ -1519,7 +1519,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount awaker))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-VST::C_Awake awaker dpof nonce)
@@ -1545,7 +1545,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
                     (sm:string (ref-I|OURONET::OI|UC_ShortAccount merger))
                 )
@@ -1563,7 +1563,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1583,7 +1583,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-VST:module{VestingV1} VST)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (srf:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-from))
                     (srt:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to))
                 )
@@ -1618,7 +1618,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
                 )
@@ -1635,7 +1635,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
                     (sw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
                 )
@@ -1659,7 +1659,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
                     (su:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
                 )
@@ -1683,7 +1683,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
                     (sw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
                 )
@@ -1761,7 +1761,7 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-ORBR:module{OuroborosV1} OUROBOROS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (st:string (ref-I|OURONET::OI|UC_ShortAccount target))
                 )
                 (ref-IGNIS::C_Collect patron

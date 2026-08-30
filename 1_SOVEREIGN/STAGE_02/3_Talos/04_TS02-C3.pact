@@ -498,7 +498,7 @@
     (defun UC_ShortAccount:string (account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )

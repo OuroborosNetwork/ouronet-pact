@@ -261,7 +261,7 @@
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-DALOS::A_DeploySmartAccount account guard kadena sovereign public)
@@ -275,7 +275,7 @@
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-DALOS::A_DeployStandardAccount account guard kadena public)
@@ -339,7 +339,7 @@
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
                 (ref-DALOS::A_UpdatePublicKey account new-public)
@@ -443,7 +443,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
@@ -468,7 +468,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )

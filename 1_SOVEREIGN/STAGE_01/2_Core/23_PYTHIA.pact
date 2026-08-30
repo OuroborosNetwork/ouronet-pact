@@ -1391,7 +1391,7 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_DeployApiKey (500 STOA per half)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (deploy-fee:decimal (UR_DeployPrice))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount owner-account))
@@ -1422,7 +1422,7 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_Link (inactive dual row; no fee)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (dlk:string (UC_DualLinkKey standard-apollo smart-apollo))
                 (std-owner:string (UR_OwnerAccount standard-apollo))
@@ -1454,7 +1454,7 @@
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (revoke-fee:decimal (UC_RevokeIgnisFee))
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
@@ -1491,7 +1491,7 @@
         @doc "ClientInfo for TS01-C4 PYTHIA|C_UpdateDualConsumerLane."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (rename-fee:decimal (UR_RenamePrice))
                 (row:object{PYTHIA|S|DualLink} (UR_DLK|Data dual-link-key))

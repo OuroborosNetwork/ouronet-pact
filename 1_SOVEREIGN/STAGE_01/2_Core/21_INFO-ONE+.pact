@@ -204,7 +204,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
@@ -250,7 +250,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (primary:decimal (at "primary-lp" clad))
                 (secondary:decimal (at "secondary-lp" clad))
                 (sum:decimal (+ primary secondary))
@@ -291,7 +291,7 @@
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
@@ -643,7 +643,7 @@
         (patron:string entity-id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Update Pending Branding for {} DPTF" [entity-id])]
@@ -658,7 +658,7 @@
         (patron:string entity-id:string months:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrade Branding for {} DPTF for {} month(s)" [entity-id months])]
@@ -673,7 +673,7 @@
         (patron:string id:string account:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -690,7 +690,7 @@
         (patron:string id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Control DPTF {} Boolean Properties" [id])]
@@ -706,7 +706,7 @@
         (let
             (
                 
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -727,7 +727,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|DALOS|SC_NAME)))
             )
@@ -747,7 +747,7 @@
         (patron:string account:string name:[string])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -767,7 +767,7 @@
         (patron:string id:string account:string amount:decimal origin:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -795,7 +795,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
             )
@@ -815,7 +815,7 @@
         (patron:string id:string new-owner:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
             )
@@ -832,7 +832,7 @@
         (patron:string id:string fee:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets fee for {} to {} Promille" [id fee])]
@@ -847,7 +847,7 @@
         (patron:string id:string target:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
             )
@@ -864,7 +864,7 @@
         (patron:string id:string min-move-value:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Sets MinMove Value target for {} to {} " [id min-move-value])]
@@ -879,7 +879,7 @@
         (patron:string id:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -904,7 +904,7 @@
         (patron:string id:string toggle:bool fee-unlocks:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -929,7 +929,7 @@
         (patron:string id:string account:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -956,7 +956,7 @@
         (patron:string id:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -981,7 +981,7 @@
         (patron:string id:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -1006,7 +1006,7 @@
         (patron:string id:string account:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1033,7 +1033,7 @@
         (patron:string id:string atbw:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
             )
@@ -1050,7 +1050,7 @@
         (patron:string id:string atbw:string amtbw:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount atbw))
             )
@@ -1068,7 +1068,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 ;;
                 (what-type:integer (at "type" (ref-TFT::URC_TransferClasses id sender receiver transfer-amount)))
@@ -1118,7 +1118,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ico:object{IgnisCollectorV1.OutputCumulator}
                     (ref-TFT::UDC_MultiTransferCumulator id-lst sender receiver transfer-amount-lst)
@@ -1162,7 +1162,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 ;;
                 (ico:object{IgnisCollectorV1.OutputCumulator}
@@ -1200,7 +1200,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 ;;
                 (ico:object{IgnisCollectorV1.OutputCumulator}
@@ -1241,7 +1241,7 @@
         (patron:string account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -1304,7 +1304,7 @@
         (patron:string entity-id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Update Pending Branding for {} DPOF" [entity-id])]
@@ -1319,7 +1319,7 @@
         (patron:string entity-id:string months:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrade Branding for {} DPOF for {} month(s)" [entity-id months])]
@@ -1334,7 +1334,7 @@
         (patron:string id:string nonce:integer account:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1351,7 +1351,7 @@
         (patron:string id:string nonce:integer account:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1368,7 +1368,7 @@
         (patron:string id:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Controls DPOF {} Boolean Properties" [id])]
@@ -1383,7 +1383,7 @@
         (patron:string id:string account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1400,7 +1400,7 @@
         (patron:string id:string account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1417,7 +1417,7 @@
         (patron:string account:string name:[string])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1437,7 +1437,7 @@
         (patron:string id:string account:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (medium:decimal (SIP|URC_Medium))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
@@ -1456,7 +1456,7 @@
         (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-VST:module{VestingV1} VST)
                 (vst-sc:string (ref-VST::GOV|VST|SC_NAME))
@@ -1493,7 +1493,7 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
@@ -1566,7 +1566,7 @@
         (let
             (
                 
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
@@ -1715,7 +1715,7 @@
         (patron:string coiler:string ats:string rt:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
@@ -1769,7 +1769,7 @@
         (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
@@ -1835,7 +1835,7 @@
         (patron:string curler:string ats1:string ats2:string rt:string amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
@@ -1908,7 +1908,7 @@
         (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
@@ -1994,7 +1994,7 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
@@ -2096,7 +2096,7 @@
         (let
             (
                 (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
@@ -2150,7 +2150,7 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
@@ -2207,7 +2207,7 @@
             (
                 (ref-urcoin:module{stoa-ns.ur-stoic-fungible-v1} coin)
                 ;;
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
@@ -2244,7 +2244,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS) 
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
                 ;;
@@ -2274,7 +2274,7 @@
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
                 ;;
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
                 ;;
@@ -2310,7 +2310,7 @@
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS) 
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
                 ;;
@@ -2338,7 +2338,7 @@
         (client:string ignis-amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-ORBR:module{OuroborosV1} OUROBOROS)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 (ignis-to-ouro:[decimal] (ref-ORBR::URC_Compress ignis-amount))
@@ -2362,7 +2362,7 @@
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ORBR:module{OuroborosV1} OUROBOROS)
@@ -2402,7 +2402,7 @@
         (patron:string swpair:string new-owner:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2418,7 +2418,7 @@
         (patron:string swpair:string new-boolean:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Modifies <can-change-owner> of SWP-Pair {} to {}" [swpair new-boolean])]
@@ -2433,7 +2433,7 @@
         (patron:string swpair:string new-weights:[decimal])
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Modifies weights of SWP-Pair {} to {}" [swpair new-weights])]
@@ -2448,7 +2448,7 @@
         (patron:string swpair:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ifp:decimal (UCX_ToggleAddOrSwapIfp swpair toggle))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2474,7 +2474,7 @@
         (patron:string swpair:string toggle:bool)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ifp:decimal (UCX_ToggleAddOrSwapIfp swpair toggle))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2500,7 +2500,7 @@
         (patron:string swpair:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -2564,7 +2564,7 @@
         (patron:string swpair:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
@@ -2629,7 +2629,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-SWP:module{SwapperV3} SWP)
@@ -2679,7 +2679,7 @@
             (
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ORBR:module{OuroborosV1} OUROBOROS)
@@ -2772,7 +2772,7 @@
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
@@ -2803,7 +2803,7 @@
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
@@ -2833,7 +2833,7 @@
         (patron:string account:string swpair:string lp-amount:decimal)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
