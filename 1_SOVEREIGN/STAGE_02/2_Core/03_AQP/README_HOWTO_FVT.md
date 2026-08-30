@@ -2,7 +2,7 @@
 
 **Goal:** Top-to-bottom recipes from live Talos `TS02-C3` + sovereign modules — what to create, in what order, with which options and limits.
 
-**Related:** [README_GLOBAL.md](README_GLOBAL.md) · [README_TALOS_CATALOGUE.md](README_TALOS_CATALOGUE.md) · [README_FVT.md](README_FVT.md) · Boot: [README_AQP_BOOT.md](../../../2_SLAVE/Stage_02/README_AQP_BOOT.md)
+**Related:** [README_GLOBAL.md](README_GLOBAL.md) · [README_TALOS_CATALOGUE.md](README_TALOS_CATALOGUE.md) · [README_FVT.md](README_FVT.md) · Boot: [README_AQP_BOOT.md](../../../2_CITIZEN/4_VaultsMinter/README_AQP_BOOT.md)
 
 All client calls below are **`TS02-C3.AQP-*|C_*`** unless noted.
 

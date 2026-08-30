@@ -21,7 +21,7 @@
 | 5 | `AQP-VCT` | `05_VCT.pact` | `AcquisitionVacateV1` | [README_VACATE_UI.md](README_VACATE_UI.md) |
 
 **Talos client:** `1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact` — catalogue above.  
-**Bootstrap:** `2_SLAVE/Stage_02/04_AQP-BOOT.pact` — [README_AQP_BOOT.md](../../../2_SLAVE/Stage_02/README_AQP_BOOT.md).  
+**Bootstrap:** `2_CITIZEN/4_VaultsMinter/04_AQP-BOOT.pact` — [README_AQP_BOOT.md](../../../2_CITIZEN/4_VaultsMinter/README_AQP_BOOT.md).  
 **Deploy checklist:** [DEPLOY_TEST_MATRIX.md](DEPLOY_TEST_MATRIX.md).
 
 ## Implementation status (Aug 2026)

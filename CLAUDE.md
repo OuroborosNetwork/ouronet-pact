@@ -29,7 +29,7 @@ cd REPL && pact Stage01_Tester.repl   # Stage 1 only (deploy + scenario 6.1–6.
 cd REPL && pact Stage02_Tester.repl   # Stage 2 only (DPDC, DemiPad, AQP, Talos, scenarios)
 cd REPL && pact Stage00_Sanboxes.repl # Kadena + Stoa sandbox bootstrap
 cd REPL && pact Stage00a_StoaTests.repl # Stoa coin regression tests
-cd REPL && pact StageZZ_Tester.repl   # Deploy 2_SLAVE/Stage_Z/01_DPL-UR.pact only
+cd REPL && pact StageZZ_Tester.repl   # Deploy 2_CITIZEN/Stage_Z/01_DPL-UR.pact only
 ```
 
 Individual scenario REPLs live in `REPL/Stage_01/[*].repl` and `REPL/Stage_02/[*].repl`. The reference hand-maintained integration suites are `REPL/Stage_02/[6.2.1]_AQP-ANK.repl` and `REPL/Stage_02/[6.2.2]_AQP-SCORE.repl` — mirror these when writing new integration tests.
@@ -50,8 +50,8 @@ python3 REPL/_subdivide_repl.py          # Only the mm-banner insertion inside e
 | Path | Role |
 |------|------|
 | `1_SOVEREIGN/STAGE_01/` | `0_Interfaces/`, `1_Utilities/` (`U_*` — 13 files), `2_Core/` (DALOS, DPMF, IGNIS, DPTF, DPOF, ATS, VST, SWP family, …), `3_Talos/` (TS01-A/C1/C2/C3/P) |
-| `1_SOVEREIGN/STAGE_02/` | `0_Interfaces/`, `2_Core/01_DPDC/` (DPDC family), `2_Core/02_DEMIPAD/` (DEMIPAD, Spark, Snakes, Custodians, StoicPay, STOAICO), `2_Core/03_AQP/` (AQP, AQP-ANK, AQP-SCORE, FVT), `3_Talos/` (TS02-C1/C2/DPAD/C3) |
-| `2_SLAVE/` | Third-party modules consuming sovereign APIs: `Stage_01/` (AOZ+, Dispenser+), `Stage_02/` (Nosferatu, KBunnies, Bloodshed), `Stage_Z/01_DPL-UR.pact` |
+| `1_SOVEREIGN/STAGE_02/` | `0_Interfaces/`, `2_Core/01_DPDC/` (DPDC family), `2_Core/02_DEMIPAD/` (**DEMIPAD sovereign launchpad core only** — the per-asset sales moved to `2_CITIZEN/6_Launchpad/`), `2_Core/03_AQP/` (AQP, AQP-ANK, AQP-SCORE, FVT), `3_Talos/` (TS02-C1/C2/C3) |
+| `2_CITIZEN/` | Citizen (extension) modules consuming sovereign APIs — anyone can write one; these are Admin-authored citizen modules in `ouronet-ns`: `1_BloodshedMinter/`, `2_NosferatuMinter/`, `3_BunniesMinter/`, `4_VaultsMinter/` (AQP-BOOT + readme), `5_OuronetBridge/` (CADUCEUS), `6_Launchpad/` (per-asset sales `1_Spark`/`2_Snakes`/`3_Custodians`/`4_StoicPay`/`5_StoicIco` + `99_TS02-DPAD.pact` — the **sovereign** launchpad orchestrator, deployed last), `Stage_01/` (AOZ+, Dispenser+), `Stage_Z/` (DPL-UR, EXPLORER) |
 | `0_Sample/` | Module layout samples (`ModuleSample.pact`) |
 | `0_Stoa/genesis/` | Historical Stoa genesis tx / JSON payloads (`stoa-genesis-1` … `5`) — ordering reference for the Stoa sandbox |
 | `00_KadenaSandbox/` | Kadena-like sandbox; note `coin` is renamed to `kadena-coin` here so `coin` stays free for Stoa |
@@ -61,10 +61,10 @@ python3 REPL/_subdivide_repl.py          # Only the mm-banner insertion inside e
 
 ## High-level architecture
 
-### Sovereign vs slave
+### Sovereign vs citizen
 
-- **Sovereign** (`1_SOVEREIGN/`) — canonical Ouronet modules maintained by the project. Contain the business logic and the capability gates.
-- **Slave** (`2_SLAVE/`) — extension modules anyone can write. They call **only** into sovereign public APIs; they do not add capabilities to the core surface.
+- **Sovereign** (`1_SOVEREIGN/`) — canonical Ouronet modules maintained by the project. Contain the business logic and the capability gates. **Talos** (the orchestrator/gas boundary) is sovereign-only.
+- **Citizen** (`2_CITIZEN/`, formerly `2_SLAVE/`) — extension modules anyone can write. They call **only** into sovereign public APIs; they do not add capabilities to the core surface, and their own client functions carry no `UEV_IMC` (that sovereign inter-module gate belongs to Talos/core paths). The per-asset **launchpad sales** (Spark/Snakes/Custodians/StoicPay/StoicIco) are citizen modules that wire into the sovereign `DEMIPAD` launchpad rules; `2_CITIZEN/6_Launchpad/99_TS02-DPAD.pact` is the **sovereign** Talos orchestrator that composes those citizen sales and pays their gas (co-located with the launchpad for readability, but sovereign-role and deployed last).
 
 ### Layer cake: Utilities → Core → Talos
 

@@ -326,7 +326,7 @@
 
 ---
 
-## 6. AQP-BOOT (`2_SLAVE/Stage_02/04_AQP-BOOT.pact`)
+## 6. AQP-BOOT (`2_CITIZEN/4_VaultsMinter/04_AQP-BOOT.pact`)
 
 | ID | Scenario | Pri | Status | Evidence |
 |----|----------|-----|--------|----------|

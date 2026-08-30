@@ -4,7 +4,7 @@
 
 **Code home:** `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/`  
 **Talos client:** `1_SOVEREIGN/STAGE_02/3_Talos/04_TS02-C3.pact` (`TalosStageTwo_ClientThreeV1`)  
-**Bootstrap:** `2_SLAVE/Stage_02/04_AQP-BOOT.pact` + [README_AQP_BOOT.md](../../../2_SLAVE/Stage_02/README_AQP_BOOT.md)
+**Bootstrap:** `2_CITIZEN/4_VaultsMinter/04_AQP-BOOT.pact` + [README_AQP_BOOT.md](../../../2_CITIZEN/4_VaultsMinter/README_AQP_BOOT.md)
 
 **Companion docs**
 

@@ -17,7 +17,7 @@
 ;;                                                                              ;;
 ;;              STAGE ZZ — DPL-UR + EXPLORER (read-only / UI helpers)          ;;
 ;;                                                                              ;;
-;;  Deploys 2_SLAVE/Stage_Z/01_DPL-UR.pact and 02_EXPLORER.pact.                ;;
+;;  Deploys 2_CITIZEN/Stage_Z/01_DPL-UR.pact and 02_EXPLORER.pact.                ;;
 ;;                                                                              ;;
 ;;  Requires Stage 1 + Stage 2 (incl. DPDC for DPL-UR URC_0021–0026). Run after  ;;
 ;;  Stage02_Tester.repl (e.g. from Z.repl). Loads only — no bundled REPL tests.   ;;
@@ -35,7 +35,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 02 · load module ==== ===
 (print "--- [TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 02 · load module] ---")
-(load "../2_SLAVE/Stage_Z/01_DPL-UR.pact")
+(load "../2_CITIZEN/Stage_Z/01_DPL-UR.pact")
 ;;==== TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 03 · gas echo ==== ======
 (print "--- [TX-ZZ [Stage_Z] - DPL-UR unified module (Stage_Z/01_DPL-UR.pact) · 03 · gas echo] ---")
 (format "<<<<<<<DPL-UR (Stage_Z unified) Costs {} GAS>>>>>>>" [(env-gas)])
@@ -55,7 +55,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-ZZ [Stage_Z] - EXPLORER read module · 02 · load module ==== ===============================
 (print "--- [TX-ZZ [Stage_Z] - EXPLORER read module · 02 · load module] ---")
-(load "../2_SLAVE/Stage_Z/02_EXPLORER.pact")
+(load "../2_CITIZEN/Stage_Z/02_EXPLORER.pact")
 ;;==== TX-ZZ [Stage_Z] - EXPLORER read module · 03 · gas echo ==== =================================
 (print "--- [TX-ZZ [Stage_Z] - EXPLORER read module · 03 · gas echo] ---")
 (format "<<<<<<<EXPLORER (Stage_Z) Costs {} GAS>>>>>>>" [(env-gas)])

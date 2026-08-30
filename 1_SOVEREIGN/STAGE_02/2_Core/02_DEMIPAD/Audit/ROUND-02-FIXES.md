@@ -442,3 +442,35 @@ exactly representable at 24 decimals, so `C_MultiBulkTransfer` never rejects; te
 bug's precondition (`decimals < 2`) can't occur for this token (decimals are fixed at issuance). Adding a
 divisibility/floor guard would defend against an impossible condition — declined, consistent with the
 "trust the invariant, no unnecessary guards" reasoning applied to #13L. No code change.
+
+---
+
+## #15L — missing `UEV_IMC` → FIXED by reclassification: sale modules are CITIZEN, relocated (2026-08-30)
+
+**Insight (owner 2026-08-30).** The "missing `UEV_IMC`" on Snakes/Custodians `C_Acquire`, STOAICO
+`C_Collect`, and the Spark redemptions is **not a missing guard** — it's the audit surfacing a
+**mis-classification**. `DEMIPAD` (`00_Demipad.pact`) is the **sovereign** launchpad (the rules); the
+per-asset sales (Spark/Snakes/Custodians/StoicPay/StoicIco) are **citizen** modules that wire into those
+rules. `UEV_IMC` is the sovereign inter-module gate — citizen client functions correctly don't carry it.
+The sovereign **Talos** orchestrator (`TS02-DPAD`) composes those citizen sales and pays their gas; that
+is the correct pattern (Talos orchestrating a citizen flow is how a citizen sale becomes gas-payable). The
+real defect was **physical filing** — the sales sat under `1_SOVEREIGN/…/2_Core/02_DEMIPAD/`, making them
+look sovereign/core.
+
+**Refactor (implemented now, full repo restructure — code unchanged, only file locations + load paths):**
+- Renamed `2_SLAVE/` → `2_CITIZEN/` and reorganised into numbered citizen folders: `1_BloodshedMinter/`,
+  `2_NosferatuMinter/`, `3_BunniesMinter/`, `4_VaultsMinter/` (AQP-BOOT), `5_OuronetBridge/` (CADUCEUS),
+  `6_Launchpad/` (per-asset sales `1_Spark`/`2_Snakes`/`3_Custodians`/`4_StoicPay`/`5_StoicIco` +
+  `99_TS02-DPAD.pact` — the sovereign orchestrator, deployed last); `Stage_01/` (AOZ+/DSP+) and `Stage_Z/`
+  (DPL-UR/EXPLORER) preserved.
+- Moved the 5 launchpad sale modules out of `2_Core/02_DEMIPAD/` (now sovereign `00_Demipad` only) and
+  `TS02-DPAD` out of `3_Talos/` into `2_CITIZEN/6_Launchpad/`. `.pact` files reference each other by
+  module name (`::` modrefs), so **no Pact code changed** — only ~40 REPL `(load …)` paths + docs
+  (CLAUDE.md, README, MODULE-INDEX, CONTEXT, AQP-BOOT links) repointed. Historical Audit round-docs left
+  as accurate-when-written.
+- Deploy order preserved (TS02-DPAD still loaded from `[3]_Talos.repl`, after the citizen sales in
+  `[2.2]_DemiPad.repl`). Full default pipeline (`Z.repl`) boots green — exit 0, **0 load failures**.
+
+**Open sub-decisions (flagged):** STOAICO placed under `6_Launchpad/5_StoicIco/` (staking-ICO alongside
+the KPAY sale) — confirm vs a standalone citizen folder. AOZ+/DSP+ and DPL-UR/EXPLORER kept in
+`Stage_01/`/`Stage_Z/` (outside the numbered scheme) — rename later if desired. Closes roadmap #88.

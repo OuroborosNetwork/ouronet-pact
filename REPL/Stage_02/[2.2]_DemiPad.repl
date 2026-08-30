@@ -59,7 +59,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-01 [2] - SPARK Module · 02 · load module ==== ===========================================
 (print "--- [TX-01 [2] - SPARK Module · 02 · load module] ---")
-(load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/01_Spark.pact")
+(load "../../2_CITIZEN/6_Launchpad/1_Spark/01_Spark.pact")
 ;;==== TX-01 [2] - SPARK Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-01 [2] - SPARK Module · 03 · gas echo] ---")
 (format "<<<<<<<SPARK Costs {} GAS>>>>>>>" [(env-gas)])
@@ -79,7 +79,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-01 [2] - PAD-SH Module · 02 · load module ==== ==========================================
 (print "--- [TX-01 [2] - PAD-SH Module · 02 · load module] ---")
-(load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/02_Snakes.pact")
+(load "../../2_CITIZEN/6_Launchpad/2_Snakes/02_Snakes.pact")
 ;;==== TX-01 [2] - PAD-SH Module · 03 · gas echo ==== =============================================
 (print "--- [TX-01 [2] - PAD-SH Module · 03 · gas echo] ---")
 (format "<<<<<<<PAD-SH Costs {} GAS>>>>>>>" [(env-gas)])
@@ -99,7 +99,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-01 [2] - PAD-CUSTODIANS Module · 02 · load module ==== ==================================
 (print "--- [TX-01 [2] - PAD-CUSTODIANS Module · 02 · load module] ---")
-(load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/03_Custodians.pact")
+(load "../../2_CITIZEN/6_Launchpad/3_Custodians/03_Custodians.pact")
 ;;==== TX-01 [2] - PAD-CUSTODIANS Module · 03 · gas echo ==== =====================================
 (print "--- [TX-01 [2] - PAD-CUSTODIANS Module · 03 · gas echo] ---")
 (format "<<<<<<<PAD-CUSTODIANS Costs {} GAS>>>>>>>" [(env-gas)])
@@ -119,7 +119,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-01 [3] - STOICPAY Module (DEMIPAD-STOICPAY) · 02 · load module ==== =====================
 (print "--- [TX-01 [3] - STOICPAY Module (DEMIPAD-STOICPAY) · 02 · load module] ---")
-(load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/04_STOICPAY.pact")
+(load "../../2_CITIZEN/6_Launchpad/4_StoicPay/04_STOICPAY.pact")
 ;;==== TX-01 [3] - STOICPAY Module (DEMIPAD-STOICPAY) · 03 · gas echo ==== ========================
 (print "--- [TX-01 [3] - STOICPAY Module (DEMIPAD-STOICPAY) · 03 · gas echo] ---")
 (format "<<<<<<<STOICPAY Costs {} GAS>>>>>>>" [(env-gas)])
@@ -139,7 +139,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-01 [4] - STOAICO Module · 02 · load module ==== =========================================
 (print "--- [TX-01 [4] - STOAICO Module · 02 · load module] ---")
-(load "../../1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/05_STOAICO.pact")
+(load "../../2_CITIZEN/6_Launchpad/5_StoicIco/05_STOAICO.pact")
 ;;==== TX-01 [4] - STOAICO Module · 03 · gas echo ==== ============================================
 (print "--- [TX-01 [4] - STOAICO Module · 03 · gas echo] ---")
 (format "<<<<<<<STOAICO Costs {} GAS>>>>>>>" [(env-gas)])
