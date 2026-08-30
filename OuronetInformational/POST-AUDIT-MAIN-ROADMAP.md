@@ -133,6 +133,14 @@ execution cost and INFO preview move together, module by module in deploy order.
       (pure/read-only, no `enforce`, returns cost cumulator; lives IN its module).
 
 #### 1.1.2 · Subphase — Per-module URCi walk
+- [x] ✅ **Foundational pass DONE (2026-08-30) — DALOS-via-IGNIS + `Z_Reads` skeleton.** The walk's
+      first module. Because DALOS deploys below IGNIS, its cost readers live in IGNIS (the pre-Talos
+      cost hub): (A1–A3) relocated the shared `OI|*` cost/format vocabulary INFO-ZERO → IGNIS (233
+      bindings repointed); (A4) added `DALOS|URCi_*` single-sourcing the tier choice for all 9 DALOS
+      client ops (Talos bills through them, INFO previews from the same call — proven == prior billing);
+      (A5) severed the sole Talos→INFO coupling (9 wrappers return own `format` string), moved INFO-ZERO
+      → `1_SOVEREIGN/STAGE_01/Z_Reads/` deployed last via `[Z]_Reads.repl`. Commits `6f322dd`, `204cfbb`,
+      `015ef68`; full `Z.repl` green throughout. **Next module in deploy order: DPTF (05).**
 - [ ] ❌ **1.1.2.1** Walk modules **in deploy order, Stage-1 module #1 first**. Per module: extract each
       cost-emitting `XE_`/`XI_`'s cumulator into a **leaf `URCi_*`** the leaf returns; add a
       **composer `URCi_*`** per `C_`/`CC_`/`A_`. Token modules (TFT/DPOF/DPDC-T) already have
