@@ -228,14 +228,10 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|DALOS:module{DalosInfoV1} INFO-ZERO)
-                    (info:object{OuronetInfoV1.ClientInfo} 
-                        (ref-I|DALOS::DALOS-INFO|URC_ControlSmartAccount patron account)
-                    )
                 )
                 (ref-DALOS::C_ControlSmartAccount account payable-as-smart-contract payable-by-smart-contract payable-by-method)
                 (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_ControlSmartAccount account))
-                (at 0 (at "post-text" info))
+                (format "Smart Ouronet Account {} controlled succesfully" [account])
             )
         )
     )
@@ -247,10 +243,6 @@
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-I|DALOS:module{DalosInfoV1} INFO-ZERO)
-                    (info:object{OuronetInfoV1.ClientInfo}
-                        (ref-I|DALOS::DALOS-INFO|URC_DeploySmartAccount account)
-                    )
                 )
                 (ref-DALOS::C_DeploySmartAccount account guard kadena sovereign public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
@@ -259,7 +251,7 @@
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
-                (at 0 (at "post-text" info))
+                (format "Smart Ouronet Account {} deployed succesfully" [account])
             )
         )
     )
@@ -271,10 +263,6 @@
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-I|DALOS:module{DalosInfoV1} INFO-ZERO)
-                    (info:object{OuronetInfoV1.ClientInfo}
-                        (ref-I|DALOS::DALOS-INFO|URC_DeployStandardAccount account)
-                    )
                 )
                 (ref-DALOS::C_DeployStandardAccount account guard kadena public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
@@ -283,7 +271,7 @@
                     true
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
-                (at 0 (at "post-text" info))
+                (format "Standard Ouronet Account {} deployed succesfully" [account])
             )
         )
     )
@@ -295,14 +283,10 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|DALOS:module{DalosInfoV1} INFO-ZERO)
-                    (info:object{OuronetInfoV1.ClientInfo}
-                        (ref-I|DALOS::DALOS-INFO|URC_RotateGovernor patron account)
-                    )
                 )
                 (ref-DALOS::C_RotateGovernor account governor)
                 (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateGovernor account))
-                (at 0 (at "post-text" info))
+                (format "Ouronet Account {} Governor-Guard rotated succesfully!" [account])
             )
         )
     )
@@ -313,14 +297,10 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|DALOS:module{DalosInfoV1} INFO-ZERO)
-                    (info:object{OuronetInfoV1.ClientInfo}
-                        (ref-I|DALOS::DALOS-INFO|URC_RotateGuard patron account)
-                    )
                 )
                 (ref-DALOS::C_RotateGuard account new-guard safe)
                 (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateGuard account))
-                (at 0 (at "post-text" info))
+                (format "Ouronet Account {} Primary-Guard rotated succesfully!" [account])
             )
         )
     )
@@ -332,14 +312,10 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|DALOS:module{DalosInfoV1} INFO-ZERO)
-                    (info:object{OuronetInfoV1.ClientInfo}
-                        (ref-I|DALOS::DALOS-INFO|URC_RotateKadena patron account)
-                    )
                 )
                 (ref-DALOS::C_RotateKadena account kadena)
                 (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateKadena account))
-                (at 0 (at "post-text" info))
+                (format "Ouronet Account {} Attached Kadena-Address rotated succesfully!" [account])
             )
         )
     )
@@ -351,14 +327,10 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|DALOS:module{DalosInfoV1} INFO-ZERO)
-                    (info:object{OuronetInfoV1.ClientInfo}
-                        (ref-I|DALOS::DALOS-INFO|URC_RotateSovereign patron account)
-                    )
                 )
                 (ref-DALOS::C_RotateSovereign account new-sovereign)
                 (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateSovereign account))
-                (at 0 (at "post-text" info))
+                (format "Smart Ouronet Account {} Sovereign rotated succesfully!" [account])
             )
         )
     )
@@ -370,18 +342,14 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|DALOS:module{DalosInfoV1} INFO-ZERO)
                     (ref-ELITE:module{EliteV1} ELITE)
                     (ea-id:string (ref-DALOS::EliteAurynID))
-                    (info:object{OuronetInfoV1.ClientInfo}
-                        (ref-I|DALOS::DALOS-INFO|URC_UpdateEliteAccount patron account)
-                    )
                 )
                 (ref-ELITE::XE_UpdateEliteSingle ea-id account)
                 (ref-IGNIS::C_Collect patron
                     (ref-IGNIS::DALOS|URCi_UpdateEliteAccount patron)
                 )
-                (at 0 (at "post-text" info))
+                (format "Elite Account Data for {} updated succesfully!" [account])
             )
         )
     )
@@ -393,18 +361,14 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|DALOS:module{DalosInfoV1} INFO-ZERO)
                     (ref-ELITE:module{EliteV1} ELITE)
                     (ea-id:string (ref-DALOS::EliteAurynID))
-                    (info:object{OuronetInfoV1.ClientInfo}
-                        (ref-I|DALOS::DALOS-INFO|URC_UpdateEliteAccountSquared patron sender receiver)
-                    )
                 )
                 (ref-ELITE::XE_UpdateElite ea-id sender receiver)
                 (ref-IGNIS::C_Collect patron
                     (ref-IGNIS::DALOS|URCi_UpdateEliteAccountSquared patron)
                 )
-                (at 0 (at "post-text" info))
+                (format "Elite Account Data for {} and {} updated succesfully!" [sender receiver])
             )
         )
     )

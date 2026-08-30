@@ -34,6 +34,9 @@
 (load "Stage_01/[2.2]_Core.repl")
 (load "Stage_01/[3]_Talos.repl")
 
+;;Z_READS — read-only presentation layer, deployed LAST (after 3_Talos): INFO-ZERO
+(load "Stage_01/[Z]_Reads.repl")
+
 ;;SOVEREIGN EXECUTOR (contains executions to initialise the SOVEREIGN Functionality)
 (load "Stage_01/[4.0]_Sovereign-Executor.repl")
 
