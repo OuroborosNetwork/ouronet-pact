@@ -108,7 +108,7 @@ Kadena→STOA rename (`kda-pid→stoa-pid`, `wkda→wstoa`, labels/comments; the
 price hardcoded at $0.10 pending the Aletheia Oracle) is **one dedicated protocol-wide sweep after all
 audits — never piecemeal**. Broadened + logged on the roadmap (Phase 1.4).
 
-**Still-open Custodians divergences (own turns):** #9M (`UC_NonceQuintessence` enforces), #10M
+**Still-open Custodians divergences (own turns):** ~~#9M (`UC_NonceQuintessence` enforces)~~ FIXED, #10M
 (`UR_NonceSaleAvailability` enforces where Snakes doesn't), #15L (missing `UEV_IMC`).
 
 ---
@@ -243,3 +243,35 @@ true`) — the phantom path would proceed. Restored → 3/3 green, full boot cle
 **Follow-up (future, post-AQP):** build the real direct-injection — route `cod` to the injection profile
 (or collect-then-daily-drip) + transfer `rem` in + re-enable the seller credit. Logged in
 `POST-AUDIT-MAIN-ROADMAP.md` (STAGE 3 / post-AQP).
+
+---
+
+## #9M — Custodians `UC_NonceQuintessence` (declared pure) enforces → FIXED + PROVEN (2026-08-30)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/03_Custodians.pact` · proof
+`REPL/Stage_02/[5.3]_Launchpad.repl` (TX-9M).
+
+**What it was.** `UC_NonceQuintessence:integer (nonce validation:bool)` is prefixed `UC_` — StoicSyntax
+"pure compute on args, no table reads, no `enforce`" — yet its first line called
+`UEV_ConditionalAcquisitionNonce nonce validation`, i.e. an enforce (`UEV_AcquisitionNonce` rejects any
+nonce ∉ `[-3 -2 -1]`). The whole `validation:bool` param existed only to toggle that hidden enforce, so a
+"pure" call could abort a tx — a contract violation (and part of the "Custodians is a half-wired copy of
+Snakes" theme; Snakes has no such UC). Redundant, too: the sole caller `URC_NonceCosts` passes
+`validation=true` and is only reached from `C_Acquire` **inside** `(with-capability (CUSTODIANS|ACQUIRE …))`,
+which already validates the nonce (`UR_NonceSaleAvailability`→`UEV_AcquisitionNonce`) before any cost math.
+
+**Fix (make it genuinely pure — no behavioral change on the acquire path):**
+- `UC_NonceQuintessence:integer (nonce:integer)` — dropped the `validation` param and the `UEV_` call;
+  body is now just the pure mapping (-1→1, -2→10, else→100). Interface signature updated to match.
+- Caller `URC_NonceCosts` → `(UC_NonceQuintessence nonce)`.
+- Removed the now-dead `UEV_ConditionalAcquisitionNonce` (interface decl + def) — its only user was the UC.
+- Nonce validity on the **mutation** path is unchanged (the `CUSTODIANS|ACQUIRE` cap enforces it, post-#3H).
+  Info-read previews (`URC_*`) correctly stop enforcing — which is right, since `URC_*` must not enforce.
+- No external consumers (repo-wide grep: only the internal caller + doc references; DSA only mentions it
+  in a design note, no live call).
+
+**REPL proof (TX-9M).** Green: `UC_NonceQuintessence` returns 1/10/100 for -1/-2/-3; an out-of-range nonce
+(5) returns 100 with **no enforce/abort** (purity); and `C_Acquire … nonce=5` is still rejected with
+"Invalid Custodian Acquisition Nonce" (cap still validates). Bug direction proven by re-injecting
+`(UEV_AcquisitionNonce nonce)` into the pure UC → the out-of-range purity assertion fails (the "pure" call
+aborts). Restored → 5/5 green, full boot clean, 0 load failures.

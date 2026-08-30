@@ -2,7 +2,7 @@
     ;;
     ;;  [UC]
     ;;
-    (defun UC_NonceQuintessence:integer (nonce:integer validation:bool))
+    (defun UC_NonceQuintessence:integer (nonce:integer))
     ;;
     ;;  [UR]
     ;;
@@ -19,7 +19,6 @@
     ;;  [UEV]
     ;;
     (defun UEV_AcquisitionNonce (nonce:integer))
-    (defun UEV_ConditionalAcquisitionNonce (nonce:integer validation:bool))
     ;;
     ;;  [A+C]
     ;;
@@ -161,8 +160,10 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    (defun UC_NonceQuintessence:integer (nonce:integer validation:bool)
-        (UEV_ConditionalAcquisitionNonce nonce validation)
+    (defun UC_NonceQuintessence:integer (nonce:integer)
+        @doc "Pure nonce->quintessence mapping for the three Custodian fragment nonces: \
+            \ -1 (Bronze) = 1, -2 (Silver) = 10, -3 (Golden) = 100. No enforce: nonce validity \
+            \ is enforced by the CUSTODIANS|ACQUIRE cap on the mutation path (UEV_AcquisitionNonce)."
         (if (= nonce -1)
             1
             (if (= nonce -2)
@@ -225,7 +226,7 @@
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
                 (q-costs:object{DemiourgosLaunchpadV1.Costs} (URC_QuintessenceCosts))
-                (nonce-value-in-quintessence:integer (UC_NonceQuintessence nonce true))
+                (nonce-value-in-quintessence:integer (UC_NonceQuintessence nonce))
                 ;;
                 (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
                 (wkda-prec:integer (ref-DPTF::UR_Decimals wkda-id))
@@ -286,12 +287,6 @@
                 (iz-acquisition-nonce:bool (contains nonce acquisition-nonces))
             )
             (enforce iz-acquisition-nonce "Invalid Custodian Acquisition Nonce")
-        )
-    )
-    (defun UEV_ConditionalAcquisitionNonce (nonce:integer validation:bool)
-        (if validation
-            (UEV_AcquisitionNonce nonce)
-            true
         )
     )
     ;;{F3}  [UDC]

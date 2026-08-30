@@ -646,6 +646,44 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-9M - #9M UC_NonceQuintessence is pure (no hidden enforce); nonce validation stays on the cap")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-9M — #9M: UC_NonceQuintessence made pure; CUSTODIANS|ACQUIRE still enforces the nonce ===")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;; #9M: UC_NonceQuintessence was prefixed UC_ (pure compute, no enforce) but called
+;;      UEV_ConditionalAcquisitionNonce (an enforce) through a validation:bool arg — a contract violation
+;;      (a "pure" call could abort a tx). FIX: made it a pure nonce->quintessence mapping (no arg, no
+;;      enforce). Nonce validity was ALREADY enforced on the mutation path by the CUSTODIANS|ACQUIRE cap
+;;      (UEV_AcquisitionNonce), so no enforcement is lost. The now-dead UEV_ConditionalAcquisitionNonce
+;;      was removed.
+(let
+    (
+        (buyer:string KST.EMMA)
+    )
+    (map print
+        [
+            ;; (a) pure mapping for the three fragment nonces
+            (expect "#9M: UC_NonceQuintessence(-1 Bronze) = 1"   1   (DEMIPAD-CUSTODIANS.UC_NonceQuintessence -1))
+            (expect "#9M: UC_NonceQuintessence(-2 Silver) = 10"  10  (DEMIPAD-CUSTODIANS.UC_NonceQuintessence -2))
+            (expect "#9M: UC_NonceQuintessence(-3 Golden) = 100" 100 (DEMIPAD-CUSTODIANS.UC_NonceQuintessence -3))
+            ;; (b) purity: an out-of-range nonce returns a value and does NOT throw (pre-fix, validation=true
+            ;;     would enforce/abort here — a pure function must never do that)
+            (expect "#9M: UC_NonceQuintessence is pure — out-of-range nonce returns a value, no enforce/abort"
+                100 (DEMIPAD-CUSTODIANS.UC_NonceQuintessence 5))
+            ;; (c) validation preserved where it matters: the acquire cap still rejects an invalid nonce
+            (expect-failure "#9M: C_Acquire still validates the nonce via CUSTODIANS|ACQUIRE (invalid nonce rejected)"
+                "Invalid Custodian Acquisition Nonce"
+                (DEMIPAD-CUSTODIANS.C_Acquire buyer buyer 5 1 false))
+            ""
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-01 - Initialise Kadena Pay")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
