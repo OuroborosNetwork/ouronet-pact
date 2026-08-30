@@ -151,6 +151,13 @@ execution cost and INFO preview move together, module by module in deploy order.
       IDs stays in the write); `URCi_ToggleFeeLock` (`:OutputCumulator`, re-derived from fee-unlocks, computed
       PRE-increment in `C_`); `URCi_UpgradeBranding` (`:decimal` = months×"blue"). All proven, `Z.repl` green.
       **Next cost module in deploy order: DPMF (00) / DPOF (06).**
+- [x] ✅ **DPOF (06) — DONE (2026-08-30). Full cost surface on URCi (19 readers, commit `01bf762`).**
+      Live OrtoFungible (nonce/metadata-rich). 13 single-tier composers (Branding ×1.5; `UpdateSpecial`
+      via `ref-DPTF::UR_Konto`) + `URCi_Mint` (Medium, C_Mint concatenates the created-nonce output) +
+      3 `:decimal` price rails (`IssueGas`=token-issue, `IssueKda`=**"dpmf"**, `UpgradeBranding`=blue).
+      Formalized 2 pre-existing mis-prefixed cost helpers `UC_→URCi_WipeCumulator`/`URCi_MoveCumulator`
+      (+ aux `UCX_→URCix_NoncesCumulator`). All 17 new proven == prior; `Z.repl` green.
+      (**DPMF (00) skipped** — legacy MetaFungible, migration-only.) **Next: ELITE(07, no cost) → ATS (08).**
 - [ ] ❌ **1.1.2.1** Walk modules **in deploy order, Stage-1 module #1 first**. Per module: extract each
       cost-emitting `XE_`/`XI_`'s cumulator into a **leaf `URCi_*`** the leaf returns; add a
       **composer `URCi_*`** per `C_`/`CC_`/`A_`. Token modules (TFT/DPOF/DPDC-T) already have
