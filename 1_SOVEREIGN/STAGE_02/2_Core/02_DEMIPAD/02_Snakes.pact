@@ -16,7 +16,7 @@
     ;;  [A+C]
     ;;
     (defun A_UpdateSharePrice (price:decimal))
-    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
+    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
     ;;
 )
 (module DEMIPAD-SNAKES GOV
@@ -249,7 +249,8 @@
         )
     )
     (defun URC_Acquire:[string]
-        (buyer:string nonce:integer amount:integer iz-native:bool)
+        (buyer:string nonce:integer amount:integer iz-native:bool slippage:decimal)
+        @doc "Variant 1 (with slippage) — coin.TRANSFER caps the UI signs, padded by (1 + slippage/100)."
         (let
             (
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
@@ -257,7 +258,20 @@
                 (type:integer (if iz-native 0 1))
                 (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
             )
-            (ref-DEMIPAD::URC_Acquire buyer asset-id pid type)
+            (ref-DEMIPAD::URC_Acquire buyer asset-id pid type slippage)
+        )
+    )
+    (defun URCI_Acquire
+        (buyer:string nonce:integer amount:integer iz-native:bool)
+        @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price."
+        (let
+            (
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (asset-id:string (UR_AssetID))
+                (type:integer (if iz-native 0 1))
+                (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
+            )
+            (ref-DEMIPAD::URCI_Acquire buyer asset-id pid type)
         )
     )
     ;;{F2}  [UEV]
@@ -278,9 +292,10 @@
         )
     )
     ;;{F6}  [C]
-    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool)
+    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
         @doc "Nonce 1 are Pure Shares, Nonces 2-8 are Tier 1-7 PackageShares \
-            \ When <iz-native> is set to true, Native KDA is used for buy, which must be wrapped to WKDA"
+            \ When <iz-native> is set to true, Native KDA is used for buy, which must be wrapped to WKDA \
+            \ <max-cost> is the buyer's slippage ceiling in dollars (sentinel < 0 = slippage off)."
         (with-capability (SNAKES|ACQUIRE nonce amount)
             (let
                 (
@@ -294,7 +309,7 @@
                     (pid:decimal (at "pid" costs))
                     (type:integer (if iz-native 0 1))
                     (ico1:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DEMIPAD::C_Deposit buyer asset pid type false)
+                        (ref-DEMIPAD::C_Deposit buyer asset pid type false max-cost)
                     )
                     (ico2:object{IgnisCollectorV1.OutputCumulator}
                         (ref-DPDC-T::C_Transfer [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)

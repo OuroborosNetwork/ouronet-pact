@@ -125,7 +125,7 @@
     ;;  [C]
     ;;
     (defun C_Deposit:object{IgnisCollectorV1.OutputCumulator}
-        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
+        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
     )
     (defun C_Withdraw (patron:string asset-id:string type:integer destination:string)
     )
@@ -417,7 +417,7 @@
         (compose-capability (SECURE))
     )
     ;;Deposti and Withdrawal
-    (defcap DEMIPAD|C>DEPOSIT (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
+    (defcap DEMIPAD|C>DEPOSIT (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @event
         (let
             (
@@ -440,6 +440,9 @@
                 )
                 "Invalid Dollar Amount for Deposit"
             )
+            ;;Slippage bound (Variant 1): the live-computed dollar cost must not exceed the buyer's
+            ;;signed ceiling <max-cost>. Sentinel <max-cost> < 0 = no bound (Variant 2, slippage off).
+            (UEV_SlippageCost amount-in-dollars max-cost)
             ;;Validate <type> to be either 0, 1, 2 or 3, and that the required Token Deposit is turned on
             (enforce iz-type "Invalid Deposit type")
             (if (not (or (= type 0) (= type 1)))
@@ -553,6 +556,11 @@
                 (enumerate 0 49)
             )
         )
+    )
+    (defun UC_SlippageFactor:decimal (slippage:decimal)
+        @doc "Pure slippage multiplier: (1 + slippage/100). slippage is a percent (1.0 = 1%). Used to pad \
+            \ the signed coin.TRANSFER cap ceilings in URC_Acquire (Variant 1)."
+        (+ 1.0 (/ slippage 100.0))
     )
     (defun UC_ComputeDepositRoyalty:decimal (current-balance:decimal deposit-amount:decimal)
         @doc "Compute fee for a deposit given current balance and deposit amount"
@@ -781,29 +789,46 @@
         )
     )
     (defun URC_Acquire:[string]
-        (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer)
+        (buyer:string asset-id:string buy-amount-in-dollarz:decimal type:integer slippage:decimal)
+        @doc "Variant 1 (with slippage) — returns the coin.TRANSFER cap descriptions the UI must SIGN. \
+            \ Each leg is padded by (1 + slippage/100) so the signed managed cap is a ceiling with \
+            \ headroom: at execution the launchpad transfers the real (possibly-moved) price <= the \
+            \ padded cap, succeeding within tolerance and failing safely beyond it. Pass slippage 0.0 \
+            \ for exact caps. The buyer's on-chain cost ceiling is enforced separately by <max-cost> in \
+            \ C_Deposit; the UI sets max-cost = displayed-cost x (1 + slippage/100), slippage <= 50 by UI \
+            \ policy. The install-based, no-ceiling counterpart is URCI_Acquire (Variant 2, slippage off)."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
+                (ref-U|CT:module{OuronetConstantsV1} U|CT)
                 ;;
                 (buyer-kda:string (ref-DALOS::UR_AccountKadena buyer))
                 (lq-kda:string (ref-LIQUID::GOV|LIQUID|SC_KDA-NAME))
                 (prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} (URC_Prices asset-id buy-amount-in-dollarz type))
+                (kp:integer (ref-U|CT::CT_KDA_PRECISION))
+                (f:decimal (UC_SlippageFactor slippage))
+                ;;Slippage-padded per-leg ceilings (floored to KDA precision so the signed caps are valid)
+                (a1:decimal (floor (* (at "amount-one" prices) f) kp))
+                (a2:decimal (floor (* (at "amount-two" prices) f) kp))
+                (a3:decimal (floor (* (at "amount-three" prices) f) kp))
+                (a4:decimal (floor (* (at "amount-four" prices) f) kp))
+                (non-env:decimal (floor (* (+ (at "coding-amount" prices) (at "remainder-amount" prices)) f) kp))
+                (env-amt:decimal (floor (* (at "enviroment-amount" prices) f) kp))
                 ;;
-                (s1:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-one" prices) (at "amount-one" prices)]))
-                (s2:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-two" prices) (at "amount-two" prices)]))
-                (s3:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-three" prices) (at "amount-three" prices)]))
-                (s4:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-four" prices) (at "amount-four" prices)]))
+                (s1:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-one" prices) a1]))
+                (s2:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-two" prices) a2]))
+                (s3:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-three" prices) a3]))
+                (s4:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-four" prices) a4]))
             )
             (if (= type 0)
                 [
-                    (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda lq-kda  (+ (at "coding-amount" prices) (at "remainder-amount" prices))])
+                    (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda lq-kda non-env])
                     s1 s2 s3 s4
                 ]
                 (if (= type 1)
                     [
-                        (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [lq-kda buyer-kda (at "enviroment-amount" prices)])
+                        (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [lq-kda buyer-kda env-amt])
                         s1 s2 s3 s4
                     ]
                     [s1 s2 s3 s4]
@@ -890,6 +915,19 @@
             \ funds with no tokens in custody (phantom funds). The <UR_DirectInjection> state is \
             \ kept reserved to gate the real path when it is implemented."
         (enforce (not direct-injection) "Direct Injection is not yet available")
+    )
+    (defun UEV_SlippageCost (amount-in-dollars:decimal max-cost:decimal)
+        @doc "Slippage guard for a buy (Variant 1). The dollar cost computed live at execution \
+            \ (<amount-in-dollars>) must not exceed the buyer's signed ceiling <max-cost>, which the UI \
+            \ sets to displayed-cost x (1 + slippage/100). A sentinel <max-cost> below zero means NO \
+            \ bound — the slippage-off path (Variant 2), where the buyer accepts the live price via \
+            \ install-capability and is warned by the UI. Mirrors SWP's slippage protection, adapted to \
+            \ bound a cost instead of a min output; the 50%% tolerance ceiling is a UI policy (the \
+            \ on-chain code holds no poll-time baseline to recover the percent from)."
+        (enforce
+            (or (< max-cost 0.0) (<= amount-in-dollars max-cost))
+            (format "Slippage: live cost {} exceeds the accepted maximum {}" [amount-in-dollars max-cost])
+        )
     )
     ;;{F3}  [UDC]
     (defun UDC_Costs:object{DemiourgosLaunchpadV1.Costs} 
@@ -992,12 +1030,16 @@
     )
     ;;{F6}  [C]
     (defun C_Deposit:object{IgnisCollectorV1.OutputCumulator}
-        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
+        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Deposits Funds into the Launchpad, for a registered Asset \
             \ Type 0 = Native Kadena \
             \ Type 1 = WKDA \
             \ Type 2 = LKDA \
             \ Type 3 = OURO \
+            \ \
+            \ <max-cost> is the buyer's slippage ceiling in dollars (Variant 1): the live-computed \
+            \ <amount-in-dollars> must be <= <max-cost>. Pass a sentinel below zero for the slippage-off \
+            \ path (Variant 2). \
             \ \
             \ Outputs: \
             \ <type 0> = KDA Split ENV + WKDA for CD (needs wrapping) + WKDA for Sale (needs wrapping) \
@@ -1005,7 +1047,7 @@
             \ <type 2> = KDA Split ENV + LKDA for CD + LKDA for Sale \
             \ <type 3> = KDA Split ENV + OURO for CD + OURO for Sale "
         (UEV_IMC)
-        (with-capability (DEMIPAD|C>DEPOSIT donor asset-id amount-in-dollars type direct-injection)
+        (with-capability (DEMIPAD|C>DEPOSIT donor asset-id amount-in-dollars type direct-injection max-cost)
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV1} DALOS)

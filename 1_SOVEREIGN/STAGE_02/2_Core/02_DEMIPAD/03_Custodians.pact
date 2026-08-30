@@ -23,7 +23,7 @@
     ;;  [A+C]
     ;;
     (defun A_UpdateQuintessencePrice (price:decimal))
-    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
+    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
 )
 (module DEMIPAD-CUSTODIANS GOV
     @doc "Module defining the Sale Mechanics for Ouronet Custodians Collection"
@@ -259,7 +259,8 @@
         )       
     )
     (defun URC_Acquire:[string]
-        (buyer:string nonce:integer amount:integer iz-native:bool)
+        (buyer:string nonce:integer amount:integer iz-native:bool slippage:decimal)
+        @doc "Variant 1 (with slippage) — coin.TRANSFER caps the UI signs, padded by (1 + slippage/100)."
         (let
             (
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
@@ -267,7 +268,7 @@
                 (type:integer (if iz-native 0 1))
                 (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
             )
-            (ref-DEMIPAD::URC_Acquire buyer asset-id pid type)
+            (ref-DEMIPAD::URC_Acquire buyer asset-id pid type slippage)
         )
     )
     (defun URCI_Acquire
@@ -309,8 +310,9 @@
         )
     )
     ;;{F6}  [C]
-    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool)
-        @doc "Only Nonce -3 -2 -1 can be used, and these are Bronze/Silver/Golden Fragment Nonces"
+    (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
+        @doc "Only Nonce -3 -2 -1 can be used, and these are Bronze/Silver/Golden Fragment Nonces. \
+            \ <max-cost> is the buyer's slippage ceiling in dollars (sentinel < 0 = slippage off)."
         ;;#3H: open CUSTODIANS|ACQUIRE (was missing — the twin Snakes wraps SNAKES|ACQUIRE). This restores
         ;;    the per-nonce supply cap (enforce amount <= available) + composes the P|CUSTODIANS caller
         ;;    policies the downstream DPDC-T transfer needs, and fires the @event.
@@ -327,7 +329,7 @@
                     (pid:decimal (at "pid" costs))
                     (type:integer (if iz-native 0 1))
                     (ico1:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DEMIPAD::C_Deposit buyer asset pid type false)
+                        (ref-DEMIPAD::C_Deposit buyer asset pid type false max-cost)
                     )
                     (ico2:object{IgnisCollectorV1.OutputCumulator}
                         (ref-DPDC-T::C_Transfer [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)

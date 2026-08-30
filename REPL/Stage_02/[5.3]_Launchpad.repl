@@ -550,7 +550,7 @@
             ;;      was skipped entirely and the acquire proceeded past it (oversell / unguarded).
             (expect-failure "#3H: over-supply Custodian acquire REJECTED by the CUSTODIANS|ACQUIRE supply cap"
                 "Insufficient Assets for Acquisiton"
-                (DEMIPAD-CUSTODIANS.C_Acquire buyer buyer -1 999999999 false))
+                (DEMIPAD-CUSTODIANS.C_Acquire buyer buyer -1 999999999 false -1.0))
             ""
         ]
     )
@@ -674,7 +674,7 @@
             ;; (c) validation preserved where it matters: the acquire cap still rejects an invalid nonce
             (expect-failure "#9M: C_Acquire still validates the nonce via CUSTODIANS|ACQUIRE (invalid nonce rejected)"
                 "Invalid Custodian Acquisition Nonce"
-                (DEMIPAD-CUSTODIANS.C_Acquire buyer buyer 5 1 false))
+                (DEMIPAD-CUSTODIANS.C_Acquire buyer buyer 5 1 false -1.0))
             ""
         ]
     )
@@ -711,7 +711,7 @@
             ;; (c) validation preserved: the cap (now holding UEV_AcquisitionNonce) still rejects an invalid nonce
             (expect-failure "#10M: C_Acquire still validates the nonce via CUSTODIANS|ACQUIRE (enforce relocated to cap)"
                 "Invalid Custodian Acquisition Nonce"
-                (DEMIPAD-CUSTODIANS.C_Acquire buyer buyer 5 1 false))
+                (DEMIPAD-CUSTODIANS.C_Acquire buyer buyer 5 1 false -1.0))
             ""
         ]
     )

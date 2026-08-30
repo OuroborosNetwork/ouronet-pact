@@ -340,3 +340,61 @@ the unrelated Nosferatu/Bloodshed mass-mint Populate chain to reach the buy.)
 separate open product decision — unaffected by this code re-sync, which simply makes the workspace faithful
 to what is deployed. General lesson recorded: for "does the workspace match live" questions, pull the
 deployed `code` via Pythia and diff — the workspace may carry deliberate test simplifications.
+
+---
+
+## #12M — Launchpad slippage protection (uniform, both variants) → FIXED + PROVEN (2026-08-30)
+
+**Files:** `00_Demipad.pact` (core chokepoint) · `01_Spark.pact` · `02_Snakes.pact` · `03_Custodians.pact` ·
+`04_STOICPAY.pact` · `3_Talos/03_TS02-DPAD.pact` · proof `REPL/Stage_02/[6.1]_DPDC.repl` (TX-015 + TX-015c).
+
+**What it was.** All buys compute cost live (`admin-price × oracle-PID`); the buyer committed only to a
+token amount, no slippage/max-cost bound — an admin price change or oracle move between the UI's poll and
+the tx being mined could grief the buy (exact caps mismatch) or, with a loose wallet cap, overpay.
+
+**Owner-agreed design — mirror SWP's with/no-slippage, adapted to bound a COST (not a min output), one
+decimal, no schema.** Two variants, uniform across every sale entity, user-chosen:
+- **Variant 1 (default, with slippage).** The UI passes a single `max-cost:decimal` = displayed-cost ×
+  (1 + slippage/100) (slippage ≤ 50 by UI policy). `C_Deposit` enforces `amount-in-dollars <= max-cost`
+  via the new `UEV_SlippageCost` (sentinel `< 0` = no bound). The UI builds the signed `coin.TRANSFER`
+  caps from `URC_Acquire`, which now takes `slippage` and pads each leg by `(1 + slippage/100)` (new pure
+  `UC_SlippageFactor`) so the signed managed cap is a ceiling with headroom — execution transfers the
+  real price ≤ ceiling, succeeding within tolerance, failing safely beyond it.
+- **Variant 2 (slippage off).** `max-cost` sentinel `< 0` (no on-chain bound) + `URCI_Acquire` installs
+  the live-price caps in-code; the UI does NOT sign them and warns the buyer the mined price may differ
+  (seller price change or oracle move between display and mining). `URCI_Acquire` existed only on
+  Custodians — added uniformly to Spark/Snakes/StoicPay.
+
+Why a single decimal, not the percent (owner-reasoned): the on-chain buy holds no poll-time baseline, so
+a bare percent has nothing to apply; the absolute `max-cost` is self-contained and directly enforceable.
+The 50% tolerance ceiling is a UI policy (permissioned admin + hardcoded $0.10 STOA oracle make the
+absolute ceiling the meaningful on-chain guarantee). No separate max-cost enforce beyond the deposit cap —
+the managed `coin.TRANSFER` cap and `UEV_SlippageCost` are the bound.
+
+**Cascade (signature changes threaded in lockstep):** `C_Deposit` (+`max-cost`) + `DEMIPAD|C>DEPOSIT` +
+the `DemiourgosLaunchpadV1` interface; `URC_Acquire` (+`slippage`, padding); each sale module's
+`C_Acquire`/`C_BuyStoicPay`/`C_BuySparks` (+`max-cost`) + `URC_Acquire` (+`slippage`) + new `URCI_Acquire`
++ their interfaces; the four `TS02-DPAD` buy wrappers (+`max-cost`) + interface. Full deploy path compiles
+clean (0 errors).
+
+**REPL proof (`[6.1]` TX-015 + TX-015c, isolated boot+[5.3]+buy extraction).** Variant-1 ACCEPT: the 1400
+KPAY buy runs with `max-cost = correct-pid × 1.01` and lands the correct split (TX-015b, #11M). #12M
+(TX-015c): `URC_Acquire` returns a signable cap list; 1% padding raises the ceilings (cap set differs from
+0%); and a buy with `max-cost < live cost` is **rejected on-chain** with "Slippage" (`UEV_SlippageCost`).
+Green, 0 load failures.
+
+### UI integration (how the UI must implement it)
+1. **Poll** the live cost off-chain: `<sale>.URC_<...>Costs` / `URC_Acquire` at the moment of display.
+2. **Variant 1 (default):** let the buyer pick `slippage` (≤ 50). Compute `max-cost = displayed-cost ×
+   (1 + slippage/100)`. Call `URC_Acquire buyer … slippage` to get the **padded** `coin.TRANSFER` cap
+   strings; put them in the tx's **signature** (scoped caps). Call the Talos buy
+   (`KPAY|C_BuyStoicPay` / `SNAKES|C_Acquire` / `CUSTODIANS|C_Acquire` / `SPARK|C_BuySparks`) with
+   `max-cost`. If the price moved past tolerance the tx fails safely — re-poll and resubmit.
+3. **Variant 2 (slippage off):** call the Talos buy with `max-cost = -1.0`, build the payment via
+   `URCI_Acquire` (install-capability — the UI does **not** sign the transfer caps), and **warn** the
+   buyer the mined price may differ from the displayed one (asset-seller price change or oracle move
+   mid-flight).
+
+**Follow-up (logged, not blocking):** explicit `…WithSlippage`/`…NoSlippage` named Talos wrappers (à la
+SWP) are optional sugar — the single `max-cost` value already selects the variant. `URCI_Acquire` rename
+per #17L. INFO functions that return the per-leg breakdown for the UI belong to the INFO-pass rehaul (#78).

@@ -16,7 +16,7 @@
     ;;
     ;;  [C]
     ;;
-    (defun C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool))
+    (defun C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal))
     (defun C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string))
     (defun C_CustomRedemAllSparks (patron:string redemption-payer:string account-to-redeem:string custom-kda-pid:decimal))
     (defun C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
@@ -367,7 +367,8 @@
         )
     )
     (defun URC_Acquire:[string]
-        (buyer:string amount:integer iz-native:bool)
+        (buyer:string amount:integer iz-native:bool slippage:decimal)
+        @doc "Variant 1 (with slippage) — coin.TRANSFER caps the UI signs, padded by (1 + slippage/100)."
         (let
             (
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
@@ -375,7 +376,20 @@
                 (type:integer (if iz-native 0 1))
                 (pid:decimal (at "pid" (URC_SparkAmountCosts amount)))
             )
-            (ref-DEMIPAD::URC_Acquire buyer asset-id pid type)
+            (ref-DEMIPAD::URC_Acquire buyer asset-id pid type slippage)
+        )
+    )
+    (defun URCI_Acquire
+        (buyer:string amount:integer iz-native:bool)
+        @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price."
+        (let
+            (
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (asset-id:string (UR_SparkID))
+                (type:integer (if iz-native 0 1))
+                (pid:decimal (at "pid" (URC_SparkAmountCosts amount)))
+            )
+            (ref-DEMIPAD::URCI_Acquire buyer asset-id pid type)
         )
     )
     ;;{F2}  [UEV]
@@ -384,7 +398,8 @@
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
-    (defun C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool)
+    (defun C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
+        @doc "<max-cost> is the buyer's slippage ceiling in dollars (sentinel < 0 = slippage off)."
         (UEV_IMC)
         (with-capability (SPARK|C>BUY sparks-amount)
             (let
@@ -399,7 +414,7 @@
                     (pid:decimal (at "pid" costs))
                     (type:integer (if iz-native 0 1))
                     (ico1:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DEMIPAD::C_Deposit buyer spark-id pid type false)
+                        (ref-DEMIPAD::C_Deposit buyer spark-id pid type false max-cost)
                     )
                     (ico2:object{IgnisCollectorV1.OutputCumulator}
                         (ref-TFT::C_Transfer spark-id DEMIPAD|SC_NAME buyer (dec sparks-amount) true)

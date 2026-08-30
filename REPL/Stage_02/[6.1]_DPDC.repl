@@ -1143,7 +1143,7 @@
         (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
         (patron-wkda-balance:decimal (ref-DPTF::UR_AccountSupply wkda-id patron))
         ;;
-        (aquire-snakes:[string] (DEMIPAD-SNAKES.URC_Acquire patron 4 1 false))
+        (aquire-snakes:[string] (DEMIPAD-SNAKES.URC_Acquire patron 4 1 false 1.0))
     )
     (env-sigs
         [   
@@ -1213,7 +1213,7 @@
         [
             ;;iz native False requires unwrapping, therefore the proper transfer capability must be set
             ;;<iz-native> = false => input WKDA, which will be unwrapped to KDA to satisfz enviroment
-            (ref-TS02-DPAD::SNAKES|C_Acquire patron patron 4 1 false)
+            (ref-TS02-DPAD::SNAKES|C_Acquire patron patron 4 1 false -1.0)
             ;(ref-TS02-DPAD::SPARK|C_BuySparks patron patron 25 false)
         ]
         [
@@ -1336,7 +1336,7 @@
         ;;
         ;;
         ;;String to Set UP Capabilities (needed for setting up the function)
-        (acquire-kpay:[string] (DEMIPAD-STOICPAY.URC_Acquire patron kpay-amount native-or-wkda))
+        (acquire-kpay:[string] (DEMIPAD-STOICPAY.URC_Acquire patron kpay-amount native-or-wkda 1.0))
         ;;
         (mb1:integer (DEMIPAD-STOICPAY.URC_GetMaxBuy KST.ANHD false))       ;;wkda
         (mb2:integer (DEMIPAD-STOICPAY.URC_GetMaxBuy KST.ANHD true))        ;;kda
@@ -1416,7 +1416,7 @@
             ;(format "Before Asset State is {}" [(ref-DPAD::UR_AssetState KpayID)])
             ;(format "Left to buy {}" [(ouronet-ns.DEMIPAD-STOICPAY.UR_KpayLeft)])
             ;;
-            (ref-TS02-DPAD::KPAY|C_BuyStoicPay KST.ANHD KST.ANHD kpay-amount false)
+            (ref-TS02-DPAD::KPAY|C_BuyStoicPay KST.ANHD KST.ANHD kpay-amount false (* correct-pid 1.01))
             ;(format "Resident WKDA after buy is {}" [(ref-DPAD::UR_WKDA)])
             ;(format "After Asset State is {}" [(ref-DPAD::UR_AssetState KpayID)])
         ]
@@ -1464,6 +1464,38 @@
             (expect "#11M: VENTURE2 received 0.25x of the 1400 buy (350)"  350.0 (ref-DPTF::UR_AccountSupply kid (DEMIPAD-STOICPAY.GOV|VENTURE2)))
             (expect "#11M: VENTURE3 received 0.25x of the 1400 buy (350)"  350.0 (ref-DPTF::UR_AccountSupply kid (DEMIPAD-STOICPAY.GOV|VENTURE3)))
             (expect "#11M: VENTURE4 received 0.25x of the 1400 buy (350)"  350.0 (ref-DPTF::UR_AccountSupply kid (DEMIPAD-STOICPAY.GOV|VENTURE4)))
+            ""
+        ]
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX 015c -- #12M slippage: Variant-1 URC padding + on-chain max-cost accept/reject")
+(namespace "ouronet-ns")
+(print "=== TX 015c — #12M: launchpad slippage (mirrors SWP with/no-slippage), uniform across all sales ===")
+;; #12M: buys compute cost live; the buyer signs a slippage ceiling. Variant 1 (default, with slippage):
+;;       URC_Acquire returns coin.TRANSFER caps padded by (1 + slippage/100) which the UI signs, and
+;;       C_Deposit enforces amount-in-dollars <= max-cost (UEV_SlippageCost). Variant 2 (slippage off):
+;;       max-cost sentinel < 0 + URCI_Acquire installs the live-price caps (UI-warned). Uniform across
+;;       Spark/Snakes/Custodians/StoicPay. (The prior TX-015 buy already exercised Variant-1 ACCEPT with
+;;       max-cost = correct-pid x 1.01.)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (pid1:decimal (at "pid" (DEMIPAD-STOICPAY.URC_KpayAmountCosts 1400 0.0)))
+        (caps0:[string] (DEMIPAD-STOICPAY.URC_Acquire KST.ANHD 1400 false 0.0))
+        (caps1:[string] (DEMIPAD-STOICPAY.URC_Acquire KST.ANHD 1400 false 1.0))
+    )
+    (map print
+        [
+            (expect "#12M: URC_Acquire returns a signable cap list (Variant 1)" true (> (length caps1) 0))
+            (expect "#12M: 1% slippage padding raises the cap ceilings vs 0% (different cap set)" false (= caps0 caps1))
+            (expect-failure "#12M: buy REJECTED on-chain when max-cost < live cost (UEV_SlippageCost)"
+                "Slippage"
+                (ref-TS02-DPAD::KPAY|C_BuyStoicPay KST.ANHD KST.ANHD 1 false (* pid1 0.0000001)))
             ""
         ]
     )

@@ -25,11 +25,11 @@
     (defun DEMIPAD|C_RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
     (defun DEMIPAD|C_RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
     ;;
-    (defun SPARK|C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool))
+    (defun SPARK|C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal))
     (defun SPARK|C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string))
     (defun SPARK|C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
-    (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
-    (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
+    (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
+    (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
     ;;
 )
 ;;
@@ -383,14 +383,16 @@
     )
     ;;
     ;;
-    (defun SPARK|C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool)
+    (defun SPARK|C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
+        @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Pass a sentinel < 0 for slippage \
+            \ off (Variant 2, live price via install-capability, UI-warned)."
         (with-capability (P|TS)
             (let
                 (
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                     (ref-SPARK:module{SparksV1} DEMIPAD-SPARK)
                 )
-                (ref-SPARK::C_BuySparks patron buyer sparks-amount iz-native)
+                (ref-SPARK::C_BuySparks patron buyer sparks-amount iz-native max-cost)
                 (ref-TS01-A::XB_DynamicFuelKDA)
             )
         )
@@ -416,37 +418,40 @@
         )
     )
     ;;
-    (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool)
+    (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
+        @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
         (with-capability (P|TS)
             (let
                 (
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                     (ref-SNAKES:module{SaleSnakesV1} DEMIPAD-SNAKES)
                 )
-                (ref-SNAKES::C_Acquire patron buyer nonce amount iz-native)
+                (ref-SNAKES::C_Acquire patron buyer nonce amount iz-native max-cost)
                 (ref-TS01-A::XB_DynamicFuelKDA)
             )
         )
     )
-    (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool)
+    (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
+        @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
         (with-capability (P|TS)
             (let
                 (
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                     (ref-CUSTODIANS:module{SaleCustodiansV1} DEMIPAD-CUSTODIANS)
                 )
-                (ref-CUSTODIANS::C_Acquire patron buyer nonce amount iz-native)
+                (ref-CUSTODIANS::C_Acquire patron buyer nonce amount iz-native max-cost)
                 (ref-TS01-A::XB_DynamicFuelKDA)
             )
         )
     )
-    (defun KPAY|C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool)
+    (defun KPAY|C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal)
+        @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
         (with-capability (P|TS)
             (let
                 (
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                     (ref-KPAY:module{StoicPayV2} DEMIPAD-STOICPAY)
-                    (acquisition-text:string (ref-KPAY::C_BuyStoicPay patron buyer kpay-amount iz-native))
+                    (acquisition-text:string (ref-KPAY::C_BuyStoicPay patron buyer kpay-amount iz-native max-cost))
                 )
                 (ref-TS01-A::XB_DynamicFuelKDA)
                 acquisition-text
