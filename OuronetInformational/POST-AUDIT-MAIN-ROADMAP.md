@@ -158,6 +158,21 @@ execution cost and INFO preview move together, module by module in deploy order.
       Formalized 2 pre-existing mis-prefixed cost helpers `UC_→URCi_WipeCumulator`/`URCi_MoveCumulator`
       (+ aux `UCX_→URCix_NoncesCumulator`). All 17 new proven == prior; `Z.repl` green.
       (**DPMF (00) skipped** — legacy MetaFungible, migration-only.) **Next: ELITE(07, no cost) → ATS (08).**
+- [x] ✅ **ATS (08) — DONE (2026-08-30). 22 URCi (commit `5ed0c17`).** 16 single-tier (Branding×5, UR_OwnerKonto)
+      + 2 construct-price (`AddSecondary` token-issue [reused for `AddHotRBT` ico0] · `SetColdRecoveryFees`
+      biggest×20) + `ToggleParameterLock` (pre-increment) + Issue gas/kda + UpgradeBranding. HOT-RBT
+      branding/Repurpose forward DPOF costs. All 22 proven; `Z.repl` green.
+- [x] ✅ **TFT (09) — DONE (2026-08-30). Family rename UDC_→URCi_ (commit `7c02291`).** TFT's cost is a
+      transfer-cumulator family (`UDC_*Transfer/Transmute/BulkTransferCumulator`, reads UsagePrice → genuine
+      cost readers). Renamed the 14-fn family **cross-module** (90 sites, 7 files incl. Stage-2
+      INFO-ONE/INFO-TWO/AQP-INFO/DPDC-T + SWPL/MTX-SWP). C_ entrypoints already return them → single-sourced.
+      Pure rename, `Z.repl` green (exercises transfers + all callers).
+- [ ] ❌ **Remaining Stage-1 cost modules (triaged 2026-08-30) — NEXT SESSION.** **No cost (skip):** SWPT(14),
+      CODEX(22), PYTHIA(23). **Have cost:** ATSU(10, ~67 returns/20 ctor — big) · VST(11, ~75/21 — big) ·
+      LIQUID(12, ~12/4 — small) · OUROBOROS(13, ~12/7 — small) · SWP(15, ~26/14) · SWPI(16, ~11/2 — small) ·
+      SWPL(17, ~11/11; 3 URCi already from TFT rename) · SWPLC(18, ~39/8) · SWPU(19, ~26/7) · MTX-SWP(20,
+      ~13/12; 1 URCi already). The SWP family (15–20) is the most intricate (swap-math cumulators) — do with
+      fresh context. Pattern & tooling proven across all cost shapes; each is index→build→prove→commit like above.
 - [ ] ❌ **1.1.2.1** Walk modules **in deploy order, Stage-1 module #1 first**. Per module: extract each
       cost-emitting `XE_`/`XI_`'s cumulator into a **leaf `URCi_*`** the leaf returns; add a
       **composer `URCi_*`** per `C_`/`CC_`/`A_`. Token modules (TFT/DPOF/DPDC-T) already have
