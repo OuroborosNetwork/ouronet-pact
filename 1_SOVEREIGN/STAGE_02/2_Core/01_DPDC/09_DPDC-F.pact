@@ -22,6 +22,13 @@
             fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}
         )
     )
+    ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_RepurposeCollectableFragments:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool fragment-amounts:[integer]))
+    (defun URCi_MakeFragments:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_MergeFragments:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_EnableNonceFragmentation:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
 )
 ;;
 (module DPDC-F GOV
@@ -231,6 +238,62 @@
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]
+    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
+    (defun URCi_RepurposeCollectableFragments:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool fragment-amounts:[integer])
+        @doc "Cost preview for C_RepurposeCollectableFragments: per-fragment construct \
+            \ priced ((if son small else medium)/1000) * (1 + sum fragment-amounts), \
+            \ empty output list."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (owner:string (ref-DPDC::UR_OwnerKonto id son))
+                (s:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
+                (m:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
+                (p:decimal (/ (if son s m) 1000.0))
+                (sum-amounts:decimal (dec (fold (+) 1 fragment-amounts)))
+                (price:decimal (* p sum-amounts))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator price owner (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_MakeFragments:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_MakeFragments (Biggest on creator-konto; the internal \
+            \ transfers are not separately billed)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_CreatorKonto id son))
+        )
+    )
+    (defun URCi_MergeFragments:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_MergeFragments (Biggest on creator-konto; the internal \
+            \ transfers are not separately billed)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_CreatorKonto id son))
+        )
+    )
+    (defun URCi_EnableNonceFragmentation:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_EnableNonceFragmentation (Smallest on creator-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_SmallestCumulator (ref-DPDC::UR_CreatorKonto id son))
+        )
+    )
     ;;{F6}  [C]
     (defun C_RepurposeCollectableFragments:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool repurpose-from:string repurpose-to:string fragment-nonces:[integer] fragment-amounts:[integer])
@@ -285,7 +348,7 @@
                     )
                 )
                 ;;3]Output Cumulator
-                (ref-IGNIS::UDC_ConstructOutputCumulator price owner trigger [])
+                (URCi_RepurposeCollectableFragments id son fragment-amounts)
             )
         )
     )
@@ -313,7 +376,7 @@
                 ;;3]They are then transfered to the <account>
                 (ref-DPDC-T::C_Transfer [id] [son] dpdc account [[neg-nonce]] [[f-amount]] true)
                 ;;4]Output Cumulator
-                (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_CreatorKonto id son))
+                (URCi_MakeFragments id son)
             )
         )
     )
@@ -341,7 +404,7 @@
                 ;;3]Native <nonces> are transfered from <DPDC|SC_NAME> to <account>
                 (ref-DPDC-T::C_Transfer [id] [son] dpdc account [[pos-nonce]] [[merged-amount]] true)
                 ;;4]Output Cumulator
-                (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_CreatorKonto id son))
+                (URCi_MergeFragments id son)
             )
         )
     )
@@ -360,7 +423,7 @@
                 )
                 (XI_EnableNonceFragmentation id son nonce fragmentation-ind)
                 (ref-DPDC::XE_DeployAccountWNE dpdc id son)
-                (ref-IGNIS::UDC_SmallestCumulator (ref-DPDC::UR_CreatorKonto id son))
+                (URCi_EnableNonceFragmentation id son)
             )
         )
     )
