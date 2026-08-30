@@ -17,6 +17,20 @@
     (defun C_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
     (defun C_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
     (defun C_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool new-account:string))
+    ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
 )
 ;;
 (module DPDC-R GOV
@@ -270,6 +284,128 @@
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]
+    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
+    (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator}
+        (id:string)
+        @doc "Cost preview for C_ToggleAddQuantityRole (Big tier on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id true))
+        )
+    )
+    (defun URCi_ToggleFreezeAccount:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_ToggleFreezeAccount (Biggest tier on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+        )
+    )
+    (defun URCi_ToggleExemptionRole:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_ToggleExemptionRole (Biggest tier on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+        )
+    )
+    (defun URCi_ToggleBurnRole:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_ToggleBurnRole (Big tier on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+        )
+    )
+    (defun URCi_ToggleUpdateRole:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_ToggleUpdateRole (Big tier on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+        )
+    )
+    (defun URCi_ToggleModifyCreatorRole:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_ToggleModifyCreatorRole (Big tier on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+        )
+    )
+    (defun URCi_ToggleModifyRoyaltiesRole:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_ToggleModifyRoyaltiesRole (Big tier on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+        )
+    )
+    (defun URCi_ToggleTransferRole:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_ToggleTransferRole (Big tier on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+        )
+    )
+    (defun URCi_MoveCreateRole:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_MoveCreateRole (Biggest tier on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+        )
+    )
+    (defun URCi_MoveRecreateRole:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_MoveRecreateRole (Biggest tier on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+        )
+    )
+    (defun URCi_MoveSetUriRole:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_MoveSetUriRole (Biggest tier on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+        )
+    )
     ;;{F6}  [C]
     ;;Role Toggling
     (defun C_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator}
@@ -283,7 +419,7 @@
             (with-capability (DPDC|C>TG_ADD-QTY-R id account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id true)
                 (XI_ToggleAddQuantityRole id account toggle)
-                (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id true))
+                (URCi_ToggleAddQuantityRole id)
             )
         )
     )
@@ -298,7 +434,7 @@
             (with-capability (DPDC|C>FRZ-ACC id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
                 (XI_ToggleFreezeAccount id son account toggle)
-                (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+                (URCi_ToggleFreezeAccount id son)
             )
         )
     )
@@ -313,7 +449,7 @@
             (with-capability (DPDC|C>TG_EXEMPTION-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
                 (XI_ToggleExemptionRole id son account toggle)
-                (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+                (URCi_ToggleExemptionRole id son)
             )
         )
     )
@@ -328,7 +464,7 @@
             (with-capability (DPDC|C>TG_BURN-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
                 (XI_ToggleBurnRole id son account toggle)
-                (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+                (URCi_ToggleBurnRole id son)
             )
         )
     )
@@ -343,7 +479,7 @@
             (with-capability (DPDC|C>TG_UPDATE-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
                 (XI_ToggleUpdateRole id son account toggle)
-                (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+                (URCi_ToggleUpdateRole id son)
             )
         )
     )
@@ -358,7 +494,7 @@
             (with-capability (DPDC|C>TG_MODIFY-CREATOR-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
                 (XI_ToggleModifyCreatorRole id son account toggle)
-                (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+                (URCi_ToggleModifyCreatorRole id son)
             )
         )
     )
@@ -373,7 +509,7 @@
             (with-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
                 (XI_ToggleModifyRoyaltiesRole id son account toggle)
-                (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+                (URCi_ToggleModifyRoyaltiesRole id son)
             )
         )
     )
@@ -388,7 +524,7 @@
             (with-capability (DPDC|C>TG_TRANSFER-R id son account toggle)
                 (ref-DPDC::XE_DeployAccountWNE account id son)
                 (XI_ToggleTransferRole id son account toggle)
-                (ref-IGNIS::UDC_BigCumulator (ref-DPDC::UR_OwnerKonto id son))
+                (URCi_ToggleTransferRole id son)
             )
         )
     )
@@ -405,7 +541,7 @@
             (with-capability (DPDC|C>MV_CREATE-R id son old-account new-account)
                 (ref-DPDC::XE_DeployAccountWNE new-account id son)
                 (XI_MoveCreateRole id son old-account new-account)
-                (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+                (URCi_MoveCreateRole id son)
             )
         )
     )
@@ -421,7 +557,7 @@
             (with-capability (DPDC|C>MV_RECREATE-R id son old-account new-account)
                 (ref-DPDC::XE_DeployAccountWNE new-account id son)
                 (XI_MoveRecreateRole id son old-account new-account)
-                (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+                (URCi_MoveRecreateRole id son)
             )
         )
     )
@@ -437,7 +573,7 @@
             (with-capability (DPDC|C>MV_SET-URI-R id son old-account new-account)
                 (ref-DPDC::XE_DeployAccountWNE new-account id son)
                 (XI_MoveSetUriRole id son old-account new-account)
-                (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
+                (URCi_MoveSetUriRole id son)
             )
         )
     )
