@@ -807,6 +807,41 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-11M - #11M deploy the 5 live StoicPay team accounts (COMPANY + VENTURE1..4) for the buy-side split")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-11M — deploy live StoicPay team recipient accounts so the 1.5x buy-side split resolves ===")
+;; #11M: 04_STOICPAY now matches the deployed module exactly (5 team recipients, 1.5x total = the 40/60
+;;       split, 250M end supply). COMPANY + VENTURE1 already exist from genesis; the remaining live
+;;       recipients VENTURE2/3/4 are registered here (admin A_DeployStandardAccount, arbitrary key guard)
+;;       so the buy-side C_MultiBulkTransfer in [6.1]'s C_BuyStoicPay can credit all five. Zero divergence.
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
+        (ref-U|CT:module{OuronetConstantsV1} U|CT)
+        (ah-key:string (+ (ref-U|CT::CT_NS_USE) ".dh_ah-keyset"))
+        (fake-pbl:string "9G.CgcAjiI89ICnk45mxx63hwkBe5G71sIqfEta0ugkzF7EB6cy55BtzlFa27jDGE7Kn7ChljCmkcIsrDw9JwzJECieGLB5Jlkz9Blo6iJct6uxIA1u64Hr7HKa93EAiCwJJBBKAojJtwupEsvspH1jjGxKyFsb8fbfnJm1rAKxcIzcFILmmdHFaICfFpnbJG6tJu0HM9JCJ7MBCE7C2LiqvE6Fc1hqCeAdGHxDp7sGquI0wl2l08aa6wlKvwu44jgqF8mqDnCyjpxHuttEqjs4h9IJ28kmB53ppwoznt16rjzeMl21n3rwfI2es56rp5xavCabDacyCuonniz72L5d7dq3ptIEiuggEyLIIGe9sadH6eaMyitcmKaH7orgFz6d9kL9FKorBr06owFg328wFhCIlCFpwIzokmo47xKKt5kBzhyodBAjhCqayuHBue4oDhoA21A2H9ut9gApMuxokcmsi7Bd1kitrfJAy1GkrGiBK5dvlhgshcnGaG3vhkCm6dI5idCGjDEodivvDbgyI6zaajHvIMdBtrGvuKnxvsBulkbaDbk2wIdKwrK")
+    )
+    (map print
+        [
+            (ref-TS01-A::DALOS|A_DeployStandardAccount (DEMIPAD-STOICPAY.GOV|VENTURE2)
+                (keyset-ref-guard ah-key) "k:00000000000000000000000000000000000000000000000000000000000000c3" fake-pbl)
+            (ref-TS01-A::DALOS|A_DeployStandardAccount (DEMIPAD-STOICPAY.GOV|VENTURE3)
+                (keyset-ref-guard ah-key) "k:00000000000000000000000000000000000000000000000000000000000000c4" fake-pbl)
+            (ref-TS01-A::DALOS|A_DeployStandardAccount (DEMIPAD-STOICPAY.GOV|VENTURE4)
+                (keyset-ref-guard ah-key) "k:00000000000000000000000000000000000000000000000000000000000000c5" fake-pbl)
+            (expect "TX-11M: VENTURE4 registered as a standard (non-smart) Ouronet account"
+                false (ouronet-ns.DALOS.UR_AccountType (DEMIPAD-STOICPAY.GOV|VENTURE4)))
+            ""
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-01 - Initialise Movie Booster aka Spark")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

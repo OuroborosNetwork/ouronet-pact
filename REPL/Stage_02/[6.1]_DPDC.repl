@@ -1443,6 +1443,32 @@
 (print "")
 (print "===^^^===")
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX 015b -- #11M StoicPay team split verify (buy 1400 KPAY -> 1.5x team across 5 live accounts)")
+(namespace "ouronet-ns")
+(print "=== TX 015b — #11M: verify the buy-side 1.5x team split matches the live deployed 5-account set ===")
+;; #11M: 04_STOICPAY was re-synced to the live deployed module (5 team recipients, 1.5x total = 40/60
+;;       split, 250M end supply); the live VENTURE2/3/4 accounts are created in [5.3] TX-11M. This
+;;       asserts the TX-015 buy of 1400 KPAY credited COMPANY 0.5x (700) + VENTURE1..4 0.25x (350) each.
+(let
+    (
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (kid:string (DEMIPAD-STOICPAY.UR_KpayID))
+    )
+    (map print
+        [
+            (expect "#11M: COMPANY  received 0.50x of the 1400 buy (700)"  700.0 (ref-DPTF::UR_AccountSupply kid (DEMIPAD-STOICPAY.GOV|COMPANY)))
+            (expect "#11M: VENTURE1 received 0.25x of the 1400 buy (350)"  350.0 (ref-DPTF::UR_AccountSupply kid (DEMIPAD-STOICPAY.GOV|VENTURE1)))
+            (expect "#11M: VENTURE2 received 0.25x of the 1400 buy (350)"  350.0 (ref-DPTF::UR_AccountSupply kid (DEMIPAD-STOICPAY.GOV|VENTURE2)))
+            (expect "#11M: VENTURE3 received 0.25x of the 1400 buy (350)"  350.0 (ref-DPTF::UR_AccountSupply kid (DEMIPAD-STOICPAY.GOV|VENTURE3)))
+            (expect "#11M: VENTURE4 received 0.25x of the 1400 buy (350)"  350.0 (ref-DPTF::UR_AccountSupply kid (DEMIPAD-STOICPAY.GOV|VENTURE4)))
+            ""
+        ]
+    )
+)
+(commit-tx)
 ;;
 ;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;

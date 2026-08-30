@@ -303,3 +303,40 @@ with **no abort** (pure read; pre-fix it threw "Invalid Custodian Acquisition No
 resolves (>= -1); and `C_Acquire … nonce=5` is still rejected "Invalid Custodian Acquisition Nonce" (cap
 now holds the enforce). Bug direction proven by re-injecting `(UEV_AcquisitionNonce nonce)` into the UR →
 the pure-read assertion fails (the reader aborts). Restored → all green, full boot clean, 0 load failures.
+
+---
+
+## #11M — STOICPAY workspace diverged from the live deployed module → FIXED + PROVEN (2026-08-30)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/04_STOICPAY.pact` · fixture
+`REPL/Stage_02/[5.3]_Launchpad.repl` (TX-11M) · proof `REPL/Stage_02/[6.1]_DPDC.repl` (TX-015 buy + TX-015b verify).
+
+**Root cause — not a live bug; a workspace test-divergence.** The audit's "2× KPAY out vs `sold = 100M −
+0.4·resident`" finding was measured against the **workspace** copy, which had been simplified *for testing*
+to a 3-recipient / **1.0×** team split (COMPANY + VENTURE1/2; the live block sat commented right below).
+Pulling the **live deployed** `ouronet-ns.DEMIPAD-STOICPAY` via the Pythia dirty-read gateway
+(`describe-module` → `code`) showed the on-chain module is **correct**: a 5-recipient **1.5×** team split
+(COMPANY 0.5× + VENTURE1..4 0.25× each) — i.e. the intended **40/60** (100M to buyers = 40% of supply,
+150M team = 60%, 250M end supply). With the 1.5× team drain, resident drops 2.5× per buy and
+`sold = 100M − 0.4·resident` tracks buyer-amount **exactly** (the "20% under-count" existed only in the
+diverged 1.0× test copy). Live accounting formula == workspace formula; only the transfer split diverged.
+
+**Fix — re-sync the workspace to live, zero divergence (owner directive):**
+- `04_STOICPAY.pact`: activated the live 5-address team block (COMPANY + VENTURE1..4, the real deployed
+  IDs) and set `C_BuyStoicPay`'s `ico3` to `[twenty-p ten-p ten-p ten-p ten-p]` (= 1.5×). Now byte-equal
+  to the deployed module.
+- REPL support: `[5.3]` TX-11M deploys the live team recipient accounts so the buy-side
+  `C_MultiBulkTransfer` resolves. COMPANY + VENTURE1 already exist from genesis; VENTURE2/3/4 are
+  registered via admin `TS01-A::DALOS|A_DeployStandardAccount` (arbitrary key guard — standard-account
+  deploy validates only the `Ѻ` prefix + glyphs + key-based guard, not ID-from-guard derivation, so the
+  exact live IDs register cleanly).
+
+**REPL proof.** Boot + `[5.3]` (TX-11M green, 0 load failures) then the `[6.1]` TX-015 buy of **1400 KPAY**
+runs clean, and TX-015b asserts the split landed exactly: COMPANY **700** (0.5×) + VENTURE1..4 **350** each
+(0.25×) = **2100 = 1.5×**. (Verified via an isolated boot+[5.3]+buy-tx extraction — the full `[6.1]` needs
+the unrelated Nosferatu/Bloodshed mass-mint Populate chain to reach the buy.)
+
+**Note.** The StoicPay **sale is suspended** and its continuation (tokenomics / whether to resume) is a
+separate open product decision — unaffected by this code re-sync, which simply makes the workspace faithful
+to what is deployed. General lesson recorded: for "does the workspace match live" questions, pull the
+deployed `code` via Pythia and diff — the workspace may carry deliberate test simplifications.

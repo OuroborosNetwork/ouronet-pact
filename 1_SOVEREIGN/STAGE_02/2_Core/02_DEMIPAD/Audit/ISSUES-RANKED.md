@@ -18,7 +18,7 @@ Status: `OPEN` (not yet discussed) · `DISCUSSING` · `AGREED` (fix locked, not 
 | **#8M** | MEDIUM | Demipad | `direct-injection` credits withdrawable funds with no tokens in (phantom funds; latent) | D#9 | **FIXED** |
 | **#9M** | MEDIUM | Custodians | `UC_NonceQuintessence` (declared pure) enforces | D#10 | **FIXED** |
 | **#10M** | MEDIUM | Custodians | `UR_NonceSaleAvailability` enforces (twin Snakes does not) | D#11 | **FIXED** |
-| **#11M** | MEDIUM | STOICPAY | 2× KPAY out per sale vs `sold = 100M − 0.4·resident` accounting | D#6 | INTENT |
+| **#11M** | MEDIUM | STOICPAY | workspace diverged from live (3 addr/1.0× vs 5 addr/1.5×) — resynced | D#6 | **FIXED** |
 | **#12M** | MEDIUM | all sales | no on-chain slippage/max-cost bound on buys | D#12 | INTENT |
 | **#13L** | LOW | STOAICO | `unclaimed-count`/`nzs-count` no lower bound (mostly subsumed by #1C) | D#13 | OPEN |
 | **#14L** | LOW | STOICPAY | fractional team-split for buys not divisible by 4 (KPAY-decimals dependent) | D#14 | OPEN |
