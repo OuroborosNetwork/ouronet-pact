@@ -185,6 +185,10 @@
     (defun URCi_Burn:object{IgnisCollectorV1.OutputCumulator} (id:string account:string))
     (defun URCi_Mint:object{IgnisCollectorV1.OutputCumulator} (id:string account:string origin:bool))
     (defun URCi_UpdateSpecialTrueFungible:object{IgnisCollectorV1.OutputCumulator} (main-dptf:string))
+    (defun URCi_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (id:string toggle:bool))
+    (defun URCi_IssueGas:decimal (token-count:integer))
+    (defun URCi_IssueKda:decimal (token-count:integer))
+    (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;
     ;;  [X]
     ;;
@@ -1754,6 +1758,32 @@
     (defun URCi_UpdateSpecialTrueFungible:object{IgnisCollectorV1.OutputCumulator} (main-dptf:string)
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_BiggestCumulator (UR_Konto main-dptf)))
     )
+    ;;  Group C — pure cost readers whose cumulator/price were previously coupled to a write.
+    ;;  ToggleFeeLock: full cumulator, re-derived from fee-unlocks (must be read PRE-increment — see C_).
+    (defun URCi_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (id:string toggle:bool)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-U|DPTF:module{UtilityDptfV1} U|DPTF)
+                (unlock-costs:[decimal] (if toggle [0.0 0.0] (ref-U|DPTF::UC_UnlockPrice (UR_FeeUnlocks id))))
+                (gas-costs:decimal (+ (ref-DALOS::UR_UsagePrice "ignis|small") (at 0 unlock-costs)))
+                (output:bool (> (at 1 unlock-costs) 0.0))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs (UR_Konto id) (ref-IGNIS::URC_IsVirtualGasZero) [output])
+        )
+    )
+    ;;  Issue: two native/gas price rails per issued token; the cumulator's output (created IDs) stays in XB_IssueFree.
+    (defun URCi_IssueGas:decimal (token-count:integer)
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|token-issue")))
+    )
+    (defun URCi_IssueKda:decimal (token-count:integer)
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "dptf")))
+    )
+    ;;  UpgradeBranding: KDA price is unconditionally months x "blue" (BRD's XE_UpgradeBranding returns the same).
+    (defun URCi_UpgradeBranding:decimal (months:integer)
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec months) (ref-DALOS::UR_UsagePrice "blue")))
+    )
     ;;{F6}  [C]
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
@@ -1773,18 +1803,16 @@
         (UEV_IMC)
         (let
             (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-BRD:module{BrandingV1} BRD)
                 (parent:string (URC_Parent entity-id))
                 (parent-owner:string (UR_Konto parent))
-                (kda-payment:decimal
-                    (with-capability (DPTF|C>UPGRADE-BRD entity-id)
-                        (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
-                    )
-                )
             )
-            (ref-IGNIS::KDA|C_CollectWT patron kda-payment false)
+            ;;Perform the branding upgrade (side effect); bill the KDA via the URCi (== XE_UpgradeBranding's price)
+            (with-capability (DPTF|C>UPGRADE-BRD entity-id)
+                (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
+            )
+            (ref-IGNIS::KDA|C_CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -1797,8 +1825,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (l1:integer (length name))
                 (tl:[bool] (make-list l1 false))
-                (tf-cost:decimal (ref-DALOS::UR_UsagePrice "dptf"))
-                (kda-costs:decimal (* (dec l1) tf-cost))
+                (kda-costs:decimal (URCi_IssueKda l1))
                 (ico:object{IgnisCollectorV1.OutputCumulator}
                     (with-capability (SECURE)
                         (XB_IssueFree account name ticker decimals can-upgrade can-change-owner can-add-special-role can-freeze can-wipe can-pause tl)
@@ -1921,13 +1948,10 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (toggle-costs:[decimal] (XI_ToggleFeeLock id toggle))
-                    (g:decimal (at 0 toggle-costs))
-                    (gas-costs:decimal (+ (ref-DALOS::UR_UsagePrice "ignis|small") g))
                     (kda-costs:decimal (at 1 toggle-costs))
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (output:bool (if (> kda-costs 0.0) true false))
+                    ;;URCi computed HERE — reads fee-unlocks BEFORE XI_IncrementFeeUnlocks below mutates it
+                    (cumulator:object{IgnisCollectorV1.OutputCumulator} (URCi_ToggleFeeLock id toggle))
                 )
                 (if (> kda-costs 0.0)
                     (do
@@ -1936,7 +1960,7 @@
                     )
                     true
                 )
-                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs (UR_Konto id) trigger [output])
+                cumulator
             )
         )
     )
@@ -2197,8 +2221,7 @@
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-BRD:module{BrandingV1} BRD)
                     (l1:integer (length name))
-                    (ignis-issue-cost:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
-                    (gas-costs:decimal (* (dec l1) ignis-issue-cost))
+                    (gas-costs:decimal (URCi_IssueGas l1))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (folded-lst:[string]
                         (fold
