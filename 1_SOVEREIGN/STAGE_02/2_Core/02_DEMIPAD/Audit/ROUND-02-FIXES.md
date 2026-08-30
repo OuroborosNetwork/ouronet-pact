@@ -398,3 +398,28 @@ Green, 0 load failures.
 **Follow-up (logged, not blocking):** explicit `…WithSlippage`/`…NoSlippage` named Talos wrappers (à la
 SWP) are optional sugar — the single `max-cost` value already selects the variant. `URCI_Acquire` rename
 per #17L. INFO functions that return the per-leg breakdown for the UI belong to the INFO-pass rehaul (#78).
+
+---
+
+## #13L — STOAICO counter lower bounds → WONTFIX (subsumed by #1C; canonical AQP has no clamp) (2026-08-30)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/05_STOAICO.pact` (no change).
+
+**Finding.** `XI_UpdateUnclaimedCount` / `XI_UpdateNZS` decrement `(- x 1)` with no `(max 0 …)` floor.
+ROUND-01 flagged that under D#1's un-gated collect they could go negative and poison the sweep/reset.
+
+**Disposition (owner 2026-08-30): use the canonical AQP implementation, verified bug-free — no clamp.**
+The AQP sibling (`02_SCORE.pact` `WU_Score|NzsCount`) updates its `nzs-count` by a computed delta with
+**no floor and no enforce** — it trusts the *guarded delta* (a decrement is only ever reached on a genuine
+`nonzero → 0` transition, after a matching increment). Adding a `(max 0 …)` clamp to STOAICO would make it
+diverge from that settled pattern. Verified STOAICO already matches it and is free of the negative-counter
+bug:
+- `nzs-count`: `+1` only when `user-score == 0.0` at stake (`0 → nonzero`); `-1` only when `remaining ==
+  0.0` at unstake (`nonzero → 0`). A decrement is always preceded by a matching increment — never negative.
+- `unclaimed-count`: reset to `nzs-count` on every inject (`XI_ResetUnclaimedCount` = `UR_Global5` =
+  `nzs-count`); decremented once per collect, gated per-round by #1C (`last-collected-round <
+  distribution-round`, no double-decrement) and by the flush's uncollected-only walk. Walks `nzs-count →
+  0`, never below.
+
+Root cause (D#1's un-gated collect) was removed by #1C; the residual "clamp anyway" is declined to stay
+consistent with the canonical AQP counter. No code change.

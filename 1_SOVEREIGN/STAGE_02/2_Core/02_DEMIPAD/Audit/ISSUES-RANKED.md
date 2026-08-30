@@ -20,7 +20,7 @@ Status: `OPEN` (not yet discussed) · `DISCUSSING` · `AGREED` (fix locked, not 
 | **#10M** | MEDIUM | Custodians | `UR_NonceSaleAvailability` enforces (twin Snakes does not) | D#11 | **FIXED** |
 | **#11M** | MEDIUM | STOICPAY | workspace diverged from live (3 addr/1.0× vs 5 addr/1.5×) — resynced | D#6 | **FIXED** |
 | **#12M** | MEDIUM | all sales | no on-chain slippage/max-cost bound on buys | D#12 | **FIXED** |
-| **#13L** | LOW | STOAICO | `unclaimed-count`/`nzs-count` no lower bound (mostly subsumed by #1C) | D#13 | OPEN |
+| **#13L** | LOW | STOAICO | `unclaimed-count`/`nzs-count` no lower bound (mostly subsumed by #1C) | D#13 | **WONTFIX** (subsumed by #1C; canonical AQP has no clamp — verified balanced) |
 | **#14L** | LOW | STOICPAY | fractional team-split for buys not divisible by 4 (KPAY-decimals dependent) | D#14 | OPEN |
 | **#15L** | LOW | Snakes/Cust/STOAICO/Spark | missing `UEV_IMC` on several `C_` entrypoints | D#15 | INTENT |
 | **#16L** | LOW | Demipad | `open-for-business` reject `format` has a placeholder but no arg | D#16 | OPEN |
