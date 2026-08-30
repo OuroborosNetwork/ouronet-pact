@@ -11,7 +11,7 @@ This file ties **`OuronetInformational/ouronet/architecture/`** to **external-fa
 4. **Stage 2** — Collectables (DPDC sharded modules), DemiPad ecosystem, AQP, INFO-TWO.
 5. **Security model** — Capabilities C1–C4 naming, `P|TS` / GAP, inter-module policy guards, why `C_` is Talos-only.
 6. **Economics** — IGNIS cumulators, native KDA hooks where applicable, gas station (conceptual).
-7. **Extensibility** — Slave modules, interfaces and versioning discipline.
+7. **Extensibility** — Citizen modules, interfaces and versioning discipline.
 8. **Reference** — Link to `MODULE_ARCHITECTURE.md` and interface index files.
 
 ## Source material in-repo

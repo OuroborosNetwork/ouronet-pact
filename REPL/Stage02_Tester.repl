@@ -51,22 +51,22 @@
 ;;reachable, asserted coverage.
 (load "Stage_02/[6.1.3]_DPDC-S.repl")
 
-;;SLAVE DEPLOYER + EXECUTOR
+;;CITIZEN DEPLOYER + EXECUTOR
 ;;FULL> Populate scripts — mass DPNF mint; ~minutes each (Nosferatu + Bloodshed worst offenders)
 ;(load "Stage_02/[5.1]_PopulateNosferatu.repl")
 ;(load "Stage_02/[5.2]_PopulateBloodshed.repl")
 ;(load "Stage_02/[5.4]_PopulateBunnies.repl")
 (print "")
-(begin-tx "TX-02 [5.4a] - KBN slave module (deploy only — AQP-BOOT load prerequisite)")
+(begin-tx "TX-02 [5.4a] - KBN citizen module (deploy only — AQP-BOOT load prerequisite)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
-(print "--- [TX-02 [5.4a] - KBN slave · 01 · env-sigs] ---")
+(print "--- [TX-02 [5.4a] - KBN citizen · 01 · env-sigs] ---")
 (env-sigs
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
-(print "--- [TX-02 [5.4a] - KBN slave · 02 · load module] ---")
+(print "--- [TX-02 [5.4a] - KBN citizen · 02 · load module] ---")
 (load "../2_CITIZEN/3_BunniesMinter/02_KBunnies.pact")
-(print "--- [TX-02 [5.4a] - KBN slave · 03 · gas echo] ---")
-(format "<<<<<<<KBN slave (deploy only) Costs {} GAS>>>>>>>" [(env-gas)])
+(print "--- [TX-02 [5.4a] - KBN citizen · 03 · gas echo] ---")
+(format "<<<<<<<KBN citizen (deploy only) Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
 (print "")

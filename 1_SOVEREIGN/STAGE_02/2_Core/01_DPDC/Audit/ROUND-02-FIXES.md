@@ -681,7 +681,7 @@ account (`KST.LUMY`) on a fresh NFT collection while `can-freeze=true`, renounce
   `UR_SetMultiplier` — has **zero callers** in the whole loaded codebase. And `URC_NoncesSummedScore`
   (the function that bakes a score into a newly-Made set instance) sums constituent raw scores with no
   multiplier applied at all. AQP-SCORE reads `UR_N|RawScore` directly, bypassing both.
-- Live-checked mainnet Bloodshed (real deployed `2_SLAVE/Stage_02/1_Bloodshed` set-classes, one with a
+- Live-checked mainnet Bloodshed (real deployed `2_CITIZEN/Stage_02/1_Bloodshed` set-classes, one with a
   live 1.1x multiplier) via Pythia to see whether real on-chain scores reflect it — inconclusive from
   this side: the local REPL genesis's collection ID/owner are synthetic sandbox fixtures, not the real
   mainnet identity, and collection IDs are block-hash-derived (DPDC-I·M1), so guessing the real ID failed
@@ -1306,7 +1306,7 @@ involved beyond `string`), doc-only change, no behavior/type change possible to 
 list containing a single empty object, with none of the expected `"nonce"`/`"supply"` keys — when an
 account holds zero nonces of a collection. Its sibling `URD_AccountNonces` right above it correctly
 returns `[]` for the identical "nothing found" case. The sole known consumer,
-`2_SLAVE/Stage_Z/01_DPL-UR.pact:1968-1973`, reports `(length wallet-nonces)` directly — for a zero-nonce
+`2_CITIZEN/Stage_Z/01_DPL-UR.pact:1968-1973`, reports `(length wallet-nonces)` directly — for a zero-nonce
 account this returned `1` instead of `0`, a phantom-nonce count any wallet/marketplace UI built on it
 would surface, and the malformed `{}` element would throw for any stricter consumer indexing into it.
 
@@ -1415,7 +1415,7 @@ into a future sweep cost exactly the same.
 and their declared function sets (including cross-referencing the two Stage interface hub files, since
 `OuronetPolicyV1` lives in Stage 1's and most DPDC-specific interfaces are declared inline per-file), and
 (b) the module's own actual `defun` names. Diffed to find candidates present in the module but absent
-from every interface it implements. Then, for each candidate, searched the whole `1_SOVEREIGN`/`2_SLAVE`
+from every interface it implements. Then, for each candidate, searched the whole `1_SOVEREIGN`/`2_CITIZEN`
 tree for a real cross-module call site (`ref-<ModuleName>::function`), tracing each `ref` alias back to
 its actual `(ref-alias:module{Interface} ModuleName)` binding to confirm it's genuinely bound to *this*
 module and not a same-named function on a different module (the initial naive sweep pass produced

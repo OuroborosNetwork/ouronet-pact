@@ -979,7 +979,7 @@ Both jobs of the dead pair are covered live: **settle** → the bare `XI_2|Settl
 **Fix:** deleted the three orphaned functions (`XI_CollectRpsPreScore`, `XI_1|CollectSettleAndBank`,
 `URDC_BuildCollectScorePlan`) + scrubbed the stale doc-comment reference. **Zero behavioral change** — all three
 were unreachable. Removing them also kills a live-looking `Settle`+`Bank` scaffold a future reader could wrongly
-re-wire (the exact ordering trap L10 warned about). No interface/slave references existed.
+re-wire (the exact ordering trap L10 warned about). No interface/citizen references existed.
 
 **Proven:** golden 33/0, **Z 242/0**, comprehensive 260/0, deb-proof 121/0 — bit-identical to pre-change, as
 expected for pure dead-code removal.

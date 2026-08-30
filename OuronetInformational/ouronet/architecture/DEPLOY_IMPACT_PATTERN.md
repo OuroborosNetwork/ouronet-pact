@@ -31,7 +31,7 @@ When an interface bumps, update every typed consumer:
 - `module{InterfaceV*}`
 - `object{InterfaceV*.Schema}` (or equivalent typed references)
 
-This includes utilities, core, Talos, slave bridges, REPL typed refs, and architecture docs.
+This includes utilities, core, Talos, citizen bridges, REPL typed refs, and architecture docs.
 
 ## 4) Deployment order template
 

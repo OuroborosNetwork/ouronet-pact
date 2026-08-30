@@ -64,7 +64,7 @@ python3 REPL/_subdivide_repl.py          # Only the mm-banner insertion inside e
 ### Sovereign vs citizen
 
 - **Sovereign** (`1_SOVEREIGN/`) — canonical Ouronet modules maintained by the project. Contain the business logic and the capability gates. **Talos** (the orchestrator/gas boundary) is sovereign-only.
-- **Citizen** (`2_CITIZEN/`, formerly `2_SLAVE/`) — extension modules anyone can write. They call **only** into sovereign public APIs; they do not add capabilities to the core surface, and their own client functions carry no `UEV_IMC` (that sovereign inter-module gate belongs to Talos/core paths). The per-asset **launchpad sales** (Spark/Snakes/Custodians/StoicPay/StoicIco) are citizen modules that wire into the sovereign `DEMIPAD` launchpad rules; `2_CITIZEN/6_Launchpad/99_TS02-DPAD.pact` is the **sovereign** Talos orchestrator that composes those citizen sales and pays their gas (co-located with the launchpad for readability, but sovereign-role and deployed last).
+- **Citizen** (`2_CITIZEN/`) — extension modules anyone can write. They call **only** into sovereign public APIs; they do not add capabilities to the core surface, and their own client functions carry no `UEV_IMC` (that sovereign inter-module gate belongs to Talos/core paths). The per-asset **launchpad sales** (Spark/Snakes/Custodians/StoicPay/StoicIco) are citizen modules that wire into the sovereign `DEMIPAD` launchpad rules; `2_CITIZEN/6_Launchpad/99_TS02-DPAD.pact` is the **sovereign** Talos orchestrator that composes those citizen sales and pays their gas (co-located with the launchpad for readability, but sovereign-role and deployed last).
 
 ### Layer cake: Utilities → Core → Talos
 
@@ -113,7 +113,7 @@ Protected (locked inside their module — **not** the public integrator surface)
 | Prefix | Meaning |
 |--------|---------|
 | `A_*` / `AA_*` | Admin-key mutations. Doubled `AA_` = **heavy**: a heavy scan (`URH_*`/`URHC_*`/`URD_*`) is reached **somewhere in the whole execution tree, at any depth** (transitive). |
-| `C_*` / `CC_*` | Client entry for slave modules. Builds IGNIS cumulators and returns `OutputCumulator`. **Cannot be invoked from its own module** — clients reach it via Talos. Doubled `CC_` = **heavy** (a `URH_*`/`URHC_*`/`URD_*` scan is reached anywhere in its execution tree, at any depth). |
+| `C_*` / `CC_*` | Client entry for citizen modules. Builds IGNIS cumulators and returns `OutputCumulator`. **Cannot be invoked from its own module** — clients reach it via Talos. Doubled `CC_` = **heavy** (a `URH_*`/`URHC_*`/`URD_*` scan is reached anywhere in its execution tree, at any depth). |
 | `Cp_*` / `CCp_*` / `Ap_*` / `AAp_*` | **Hydra** parallel-slice recipes (the `p` = parallel). Fed one slice of a `URH_*` dirty-read plan, order-independent, retryable, fired **in parallel** (contrast `defpact` = sequential). `Cp_`/`Ap_` carry NO heavy read; `CCp_`/`AAp_` still do. Anatomy: `URH_*` preflight → `Cp_`/`CCp_` slices → optional `C_`/`CC_` begin/finalize. Canonical families: deb-unstale, anchor-sweep, vacate. See `OuronetInformational/StoicSyntax-Prefixes.md` § "Recipe axes". |
 | `XI_*` | Internal-only protected (this module). |
 | `XE_*` | For external modules only (forward-module entrypoints). |

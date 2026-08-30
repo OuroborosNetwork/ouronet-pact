@@ -157,7 +157,7 @@ Full writeup already given to the owner in-chat; summarized here for whoever con
    guard-evaluation callback** — it's a normal external module call, not a guard check, so H9's "no
    writes possible during guard eval" VM guarantee **would not automatically extend to it**. SWP has
    no equivalent surface today (confirmed: no `swap-callable`-style hook found in a repo-wide grep of
-   `1_SOVEREIGN`/`2_SLAVE`). Flag this as a standing constraint if flash-swap-style external
+   `1_SOVEREIGN`/`2_CITIZEN`). Flag this as a standing constraint if flash-swap-style external
    callbacks are ever proposed for SWP: re-derive H9's safety argument from scratch, don't assume it
    still holds.
 

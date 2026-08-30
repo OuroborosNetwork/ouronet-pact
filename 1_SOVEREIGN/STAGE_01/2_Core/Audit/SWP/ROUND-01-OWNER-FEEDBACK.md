@@ -230,7 +230,7 @@ out fixing this in a caller-side `UEV_*` instead: (1) `URC_InverseSwap`'s `valid
 (`16_SWPI.pact:848-849`) can skip its own `UEV_InverseSwapData` gate entirely, and that gate only checks
 token membership + amount well-formedness, never `output-amount` against the live reserve; (2)
 `UC_InverseBareboneSwapWithFeez` (`16_SWPI.pact:562`) is a `UC_*` function with zero validation anywhere in
-its chain, called directly by both `SWPL` (sovereign) *and* `2_SLAVE/Stage_Z/01_DPL-UR.pact` (a slave
+its chain, called directly by both `SWPL` (sovereign) *and* `2_CITIZEN/Stage_Z/01_DPL-UR.pact` (a citizen
 module) — no shared gate exists on this path at all. The fix has to live inside `UC_ComputeInverseY` itself.
 
 **Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact`, `UC_ComputeInverseY`:** added
@@ -1992,8 +1992,8 @@ entire repo (`.pact`/`.repl`, every directory) for the exact function names and 
 (`FilterOne`/`FilterTwo`/`AreOnPools`/`IzOnPools`) that could catch a differently-prefixed alias. Zero
 hits anywhere outside `12_U_SWP.pact` itself and its own interface declaration
 (`0_Interfaces/01_Utilities.pact`). Not a naming collision — these four are genuinely declared on the
-module's public interface (so a future slave module *could* call them) but nothing live in Core, Talos,
-or any Slave module ever does today. Read their bodies: they're coherent, correctly-written "filter a
+module's public interface (so a future citizen module *could* call them) but nothing live in Core, Talos,
+or any Citizen module ever does today. Read their bodies: they're coherent, correctly-written "filter a
 swpairs list to those touching a given token" utilities — not malformed, not a sign of a botched edit,
 just never wired into a caller.
 
@@ -2636,7 +2636,7 @@ justified by genuine 3-site reuse, not arbitrary bundling. No code change. — *
 `19_SWPU`, `20_MTX-SWP`, `16_SWPI`, `03_INFO-ZERO`, `21_INFO-ONE+`), Talos (`04_TS01-C3`, `05_TS01-P`),
 the root price reader (`01_U_CT::UR|KDA-PID`, `0_Interfaces/01_Utilities.pact`), the entire Stage 2
 DemiPad family (`00_Demipad`, `01_Spark`, `02_Snakes`, `03_Custodians`, `04_STOICPAY` — unrelated to
-SWP), a Slave module (`2_SLAVE/Stage_Z/01_DPL-UR.pact`), and REPL test references.
+SWP), a Citizen module (`2_CITIZEN/Stage_Z/01_DPL-UR.pact`), and REPL test references.
 
 **Owner explained what `KDA-PID` actually means:** Kadena price in dollars — on Kadena's chain, an Oracle
 supplied a live USD price for KDA. Post-migration to StoaChain, there's no oracle yet and no live STOA
@@ -3328,10 +3328,10 @@ internal module detail), so the rename touches:
 - Every internal call site: `16_SWPI.pact` (the functions call each other, and `URC_PoolValue`/
   `URC_PoolValueFromRaw`/`URC_PoolValueFromGraph` all call into this family), `04_TS01-C3.pact`'s
   STOA-repricing loop, and doc-only references in `19_SWPU.pact` (comments, not live calls).
-- At least one **slave-module consumer**: `2_SLAVE/Stage_Z/01_DPL-UR.pact` calls
+- At least one **citizen-module consumer**: `2_CITIZEN/Stage_Z/01_DPL-UR.pact` calls
   `ref-SWPI::URC_SingleWorthDWK` directly, twice — confirmed via grep, not assumed. This makes the
   rename a genuinely breaking API change for an existing third-party-style integrator, not just an
-  internal cleanup — whoever does this needs to update that slave module too, in the same pass.
+  internal cleanup — whoever does this needs to update that citizen module too, in the same pass.
 - REPL references in `[6.2+3]_DPTF-SWP_Issuance-Only.repl` and `[6.3]_SWP.repl`.
 
 No interface version bump needed under current policy (`V1` is edited freely pre-mainnet,
@@ -3344,7 +3344,7 @@ to soften it.
 **SUPERSEDED (2026-08-28) — actioned now, not deferred.** Owner gave the specific target naming
 ("wstoa"/"SSTOA", not a generic "Stoa" placeholder) and asked for the rename plus everything it
 touches. See `#65gL` below for the full writeup — this note's own scope check (interface, internal
-call sites, the `DPL-UR` slave-module consumer, REPL references) turned out accurate and was used
+call sites, the `DPL-UR` citizen-module consumer, REPL references) turned out accurate and was used
 directly as the work list. — *#65cL*
 
 ---
@@ -3360,8 +3360,8 @@ placeholder.
 **Verified the premise before touching anything — and found it's deeper than the ask implied.**
 `WSTOA`/`SSTOA` are not a new convention being introduced; they're **already the real, established
 token ticker prefixes** used elsewhere in this codebase — confirmed via grep, not assumed:
-`2_SLAVE/Stage_Z/01_DPL-UR.pact` (`"WSTOA-8Nh-JO8JO4F5"`, `"SSTOA-8Nh-JO8JO4F5"`), `0_Sample/CodeStoa.pact`,
-`1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/05_STOAICO.pact`, `2_SLAVE/Stage_02/04_AQP-BOOT.pact`. So
+`2_CITIZEN/Stage_Z/01_DPL-UR.pact` (`"WSTOA-8Nh-JO8JO4F5"`, `"SSTOA-8Nh-JO8JO4F5"`), `0_Sample/CodeStoa.pact`,
+`1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/05_STOAICO.pact`, `2_CITIZEN/Stage_02/04_AQP-BOOT.pact`. So
 `URC_WorthDWK`'s own "DWK" naming wasn't just stylistically inconsistent (per `#65cL`'s framing) — it
 was factually wrong relative to tokens that already have a correct, established name elsewhere in the
 same codebase.
@@ -3399,7 +3399,7 @@ data, not just prose. Caught via the full regression (`Load failed`), not assume
   doc text). Confirmed the rename never touched the module's own PBL governance-key hash literals
   (case-sensitive matching correctly skipped a coincidental mixed-case `"...JtsDLk..."` substring
   inside one such hash — verified directly, not assumed).
-- `2_SLAVE/Stage_Z/01_DPL-UR.pact`: both `URC_SingleWorthDWK` call sites updated to
+- `2_CITIZEN/Stage_Z/01_DPL-UR.pact`: both `URC_SingleWorthDWK` call sites updated to
   `URC_SingleWorthWSTOA` — the real, confirmed breaking-API-change blast radius `#65cL` had already
   flagged, now actually fixed, not just documented.
 - `REPL/Stage_01/[6.3]_SWP.repl`, `[6.2+3]_DPTF-SWP_Issuance-Only.repl`: the renamed functions' call

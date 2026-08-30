@@ -94,11 +94,11 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
       (1) **Bloodshed** called `DPDC-UDC::UDC_ScoreMetaData`, which **DPDC #45L removed** — but the audit
       wrongly believed it had zero callers (it missed the 4 citizen callers). Fix is behavior-identical:
       inline its old one-liner `UDC_NonceMetaData score [0] meta` at
-      `2_SLAVE/Stage_02/1_Bloodshed/{01_BSD-L, 02_BSD-E, 03_BSD-R, 04_BSD-C}.pact` (audit-respecting: the
+      `2_CITIZEN/Stage_02/1_Bloodshed/{01_BSD-L, 02_BSD-E, 03_BSD-R, 04_BSD-C}.pact` (audit-respecting: the
       `composition=[0]` footgun stays out of sovereign; `[0]` is correct for Bloodshed's mint path).
       (2) **`[5.2]_PopulateBloodshed.repl`** called `DPDC-S::UR_N|Score`, renamed to `URC_N|Score` by
       DPDC #19H (2 active refs). `AQP-comprehensive.repl` now green (371+44 asserts). **Lesson for the
-      citizen-migration work (Phase 1.5): DPDC audits only checked sovereign callers — sweep 2_SLAVE +
+      citizen-migration work (Phase 1.5): DPDC audits only checked sovereign callers — sweep 2_CITIZEN +
       test files for every renamed/removed DPDC symbol.**
 - [ ] **0.4 Discover LIVE interface versions (early — informs the Phase 7 bump).** Read the currently
       **deployed** Ouronet modules on-chain (Pythia keyless dirty-read —
@@ -132,12 +132,13 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
       resolution is dynamic — undeclared works but loses load-time safety; see memories/2026-08-29-
       modref-interface-semantics.md). Internal-only leaves stay out.
 - [ ] **1.3** Keep a running line-count check per module (rule B) as `URCi`s are added.
-- [ ] **1.5 Rename `2_SLAVE` → `2_CITIZEN` (terminology alignment with the website).** Ouronet's site
-      names the two module classes **Sovereign** (canonical core) and **Citizen** (built by anyone, on
-      top of sovereign public APIs — never adds core capabilities). "Slave" is the old internal name for
-      the same thing. Rename the folder + update every reference: `../2_SLAVE/` load paths in the REPL
-      pipeline, `CLAUDE.md`, `MODULE-INDEX.md`, docs, deploy sequence, and "sovereign vs slave" wording
-      → "sovereign vs citizen". Mechanical; do it as one coordinated sweep. (task #88)
+- [x] **1.5 Adopt `2_CITIZEN` as the citizen extension tree (terminology alignment with the website) — DONE (2026-08-30).**
+      Ouronet's site names the two module classes **Sovereign** (canonical core) and **Citizen** (built by
+      anyone, on top of sovereign public APIs — never adds core capabilities). Done as part of the DEMIPAD
+      audit #15L restructure: folder renamed + reorganised into numbered citizen folders, the launchpad
+      sales relocated to `2_CITIZEN/6_Launchpad/`, and the legacy terminology retired codebase-wide (word +
+      `2_CITIZEN` path token across all `.md`/`.repl`/`.pact` + the `CITIZEN_AND_SAMPLES.md` doc rename).
+      `Z.repl` green, 0 load failures. (task #88)
 - [ ] **1.4 StoicSyntax renames carried over from audits** (do during the per-module walk):
       **DPDC #40L** — `Wipe*` family (Heavy/Pure/Clean/Dirty) rename/rethink; **ATS #31L** — Talos
       `C_SetHotRecoveryFee` (singular) vs core `C_SetHotRecoveryFees` (plural), rename (no interface
@@ -162,7 +163,7 @@ and partially). This phase both *simplifies* the existing INFO and *completes* t
 - [ ] **2.4** **Consolidate to one INFO module per stage** and **relocate to a new
       `1_SOVEREIGN/STAGE_0N/Z_Reads/` slot (after `3_Talos`), deployed LAST** — read-only presentation
       layer, leaf (nothing refs it); `Z_` sorts absolutely last regardless of future numbered layers,
-      mirroring slave `Stage_Z` (`DPL-UR`/`EXPLORER`). Move out of `2_Core` (`INFO-ONE`/`AQP-INFO`);
+      mirroring citizen `Stage_Z` (`DPL-UR`/`EXPLORER`). Move out of `2_Core` (`INFO-ONE`/`AQP-INFO`);
       delete reconstruction bodies; confirm `INFO-ONE` shrinks materially.
 - [ ] **2.5** **Refactor load order:** update the REPL pipeline (`Z.repl`, `Stage01/02_Tester.repl`,
       the `[x]` loaders) **and** the on-chain deploy sequence to load each stage's `Z_Reads/` modules
@@ -203,7 +204,7 @@ to main. This phase closes the coverage gap repo-wide AND lands the single-compr
       ownership-gate); DALOS **H16** + PYTHIA `#49M` (flush-gas-probe broken batch sizes) + other DALOS ROUND-02 coverage gaps.
 - [ ] **5.3** **Single comprehensive run — the whole codebase, one boot.** Generalize `AQP-FULL.repl`
       from AQP to **everything**: one hermetic run that boots once and exercises ALL Pact code (Stage 1
-      + Stage 2 + slaves + `Z_Reads` INFO). Requires the hermetic fixture isolation from the AQP
+      + Stage 2 + citizens + `Z_Reads` INFO). Requires the hermetic fixture isolation from the AQP
       unified-test work (tasks #71/#72/#73: disjoint fixtures per destructive scenario + delta-based
       pre-state; fold info/stream/DSA inline bodies). Spec: `memories/2026-08-27-aqp-full-unified-test.md`.
       End state: **one command tests the entire system top-to-bottom.**
@@ -238,7 +239,7 @@ after all code is final — never repeatedly. Spec: `ARCHITECTURE/INTERFACE_VERS
 NB (upgrade semantics, tested — `memories/2026-08-29-modref-live-dispatch-*`): `::` modref dispatch is
 LIVE — an in-place sovereign upgrade reaches ALL `::` callers with no `bless` (this is why the repo has
 never needed it). So this redeploy is bless-free for `::`-using sovereign code; the ONLY hash-pin
-exposure is a `2_SLAVE/` third-party calling sovereign via `.` (a deliberate integrator version-pin) —
+exposure is a `2_CITIZEN/` third-party calling sovereign via `.` (a deliberate integrator version-pin) —
 if we upgrade a core they `.`-reference in place, we'd have to `bless` their old hash for them.
 - [ ] **7.1 Interface version bump.** For every interface whose code changed, bump its suffix to
       **live + 1** using the Phase-0.4 live→target map (`V1`→`V2`, or `V2`→`V3` where local already moved).
@@ -252,7 +253,7 @@ if we upgrade a core they `.`-reference in place, we'd have to `bless` their old
       lands after the red team (logic is final); do it, then re-gate.
 - [ ] **7.3 Deploy-ready gate:** whole-codebase single run (5.3) green + all audits closed + book
       assembled + every module within the deploy ceiling (rule B; FVT split done) + version bump green.
-- [ ] **7.4 Fresh top-to-bottom redeploy** of Stage 1 + Stage 2 (+ slaves). This finalized
+- [ ] **7.4 Fresh top-to-bottom redeploy** of Stage 1 + Stage 2 (+ citizens). This finalized
       entrypoint set is the shape the UI enumerates.
 
 ## PHASE 8 — UI incorporation (CAPSTONE; workstream #2; spec: `UI-INCORPORATION-PLAN.md`; task #80)
@@ -435,7 +436,7 @@ verified intact. Deferrals:
 - FVT-over-ceiling (4.1) is a **hard gate before any mainnet deploy** — cannot ship/upgrade FVT until split.
 
 ## Quick task map
-#87 DEMIPAD audit → **Phase 0.5**. #88 Slave→Citizen rename → **Phase 1.5**. #21 SWP · #23 ATS audit → **Phase 0** (done). #77 URCi → **Phase 1-2**. #74 vacate INFO → **Phase 2.2**.
+#87 DEMIPAD audit → **Phase 0.5**. #88 Citizen→Citizen rename → **Phase 1.5**. #21 SWP · #23 ATS audit → **Phase 0** (done). #77 URCi → **Phase 1-2**. #74 vacate INFO → **Phase 2.2**.
 #78 complete-all-INFO → **Phase 2.3**. #76 re-price → **Phase 3**. #75 FVT split → **Phase 4**.
 #79 REPL coverage completion → **Phase 5.2**. #71/#72/#73 whole-codebase single run → **Phase 5.3**.
 #81 red team attack → **Phase 6.1**. #82 Audit Book → **Phase 6.2**. #85 interface version bump +

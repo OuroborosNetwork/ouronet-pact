@@ -23,8 +23,8 @@ Includes: `TalosStageTwo_DemiPadV1`, `TalosStageTwo_ClientOneV1`, `TalosStageTwo
 | `01_DPDC/11_EQUITY+.pact` | `EquityV1` |
 | `INFO-TWO.pact` | `InfoTwoV1` |
 
-## Slave
+## Citizen
 
 | File | Interface |
 |------|-----------|
-| `2_SLAVE/Stage_Z/01_DPL-UR.pact` | `DeployerReadsV7` |
+| `2_CITIZEN/Stage_Z/01_DPL-UR.pact` | `DeployerReadsV7` |

@@ -520,7 +520,7 @@ nothing else needed the public Talos wrapper and it could likely be removed outr
 - `1_SOVEREIGN/STAGE_02/3_Talos/03_TS02-DPAD.pact:194-195`, inside `A_RegisterAssetToLaunchpad`
   (gated by `(with-capability (P|TALOS-SUMMONER))` at the DPAD layer), deploys DEMIPAD's own
   launchpad smart account (`lpad`, `GOV|DEMIPAD|SC_NAME`) — not an arbitrary account.
-- `2_SLAVE/Stage_02/03_CADUCEUS.pact:241`, inside `A_ProvisionBridgeDptfRoles` (gated by
+- `2_CITIZEN/Stage_02/03_CADUCEUS.pact:241`, inside `A_ProvisionBridgeDptfRoles` (gated by
   `(with-capability (GOV|CADUCEUS_ADMIN))`), deploys CADUCEUS's own bridge account
   (`bridge-account`, `UR_BridgeAccount`) — again its own infrastructure account, not a victim's.
 

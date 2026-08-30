@@ -2,7 +2,7 @@
 
 Module: `04_AQP-BOOT.pact` | Interface: `AcquisitionPoolBootV1`
 
-**Purpose:** This slave module is the **mainnet runbook** and **REPL test backbone** for AQP provisioning. Each step is one (or few) on-chain transactions. Steps are **separate** so you can pause, verify, and pass **explicit ids** into the next step.
+**Purpose:** This citizen module is the **mainnet runbook** and **REPL test backbone** for AQP provisioning. Each step is one (or few) on-chain transactions. Steps are **separate** so you can pause, verify, and pass **explicit ids** into the next step.
 
 **Canonical flow docs:** [README.md § OURO LP onboarding](../../1_SOVEREIGN/STAGE_02/2_Core/03_AQP/README.md#ouro-lp-onboarding-flow-per-lp-line) (LP + farm user path).
 

@@ -4,7 +4,7 @@ _Last updated: 2026-05-06_
 
 ## What Ouronet is
 
-**Ouronet** is a **virtual blockchain system** implemented entirely in **Pact** (Kadena’s smart-contract language). It defines its own token architecture and DeFi-style primitives, deployed in **stages**, with a split between **sovereign** (canonical architecture) and **slave** (third-party) modules.
+**Ouronet** is a **virtual blockchain system** implemented entirely in **Pact** (Kadena’s smart-contract language). It defines its own token architecture and DeFi-style primitives, deployed in **stages**, with a split between **sovereign** (canonical architecture) and **citizen** (third-party) modules.
 
 ### Token and pool vocabulary
 
@@ -24,10 +24,10 @@ _Last updated: 2026-05-06_
 - **Stage 1:** True fungibles, ortofungibles, autostake pools (ATS), SWP-pairs.
 - **Stage 2:** Collectables, **DemiPad** (Demiourgos launchpad), **AQP** acquisition pools.
 
-### Sovereign vs slave modules
+### Sovereign vs citizen modules
 
 - **Sovereign modules** — **Ouronet** modules that define the core architecture (maintained by the project author).
-- **Slave modules** — Modules **anyone** can write; they call into sovereign APIs.
+- **Citizen modules** — Modules **anyone** can write; they call into sovereign APIs.
 
 Repository layout mirrors this: **`1_SOVEREIGN/`** and **`2_CITIZEN/`**, each with subfolders **`STAGE_01`**, **`STAGE_02`**, etc.
 
@@ -40,7 +40,7 @@ Repository layout mirrors this: **`1_SOVEREIGN/`** and **`2_CITIZEN/`**, each wi
 - **REPL namespaces:** All Ouronet deploy / test `.repl` files under **`REPL/`** use **`(namespace "ouronet-ns")`** and qualified refs like **`ouronet-ns.DALOS`** (bulk migration from former `free`).
 - **`REPL/Stage00a_StoaTests.repl`:** Stoa **`coin`** regression script inline (legacy `coinn` / `free` tests adapted: root **`coin`**, foundation **`stoa-foundation`**, **`test-capability`** where genesis keys differ from the old k: foundation). Run after **`Stage00_Sanboxes.repl`**.
 - **Integration REPL suites** (scripted **`begin-tx`** / **`commit-tx`**): follow **`OuronetInformational/ouronet/architecture/REPL_AND_TESTS.md`** (*Canonical layout*) and **`OuronetInformational/ouronet/conventions/repl-integration-test-layout.md`**. Reference **`REPL/Stage_02/[6.2.1]_AQP-ANK.repl`** and **`[6.2.2]_AQP-SCORE.repl`** (`;;|| NEXT >`, **`TX… · mm ·`** group comments + matching **`(print "--- [TX… · mm · …] ---")`**, **`map print`** over **`expect`** / **`expect-failure`**, file header legend).
-- **Stage 2 AQP bootstrap (handoff):** Slave **`2_CITIZEN/4_VaultsMinter/04_AQP-BOOT.pact`** exposes **`C_Step1`**–**`C_Step6`** (discrete provisioning). **`REPL/Stage02_Tester.repl`** loads it in-namespace **before** **`[6.2]_AQP.repl`**. In **`[6.2.2]_AQP-SCORE.repl`**, **score-definition** exercises (**`TX-SCORE-11`**) must run **after** **`C_Step4`/`C_Step5`/`C_Step6`** txs (**`TX-SCORE-08`–`10`**) because **`C_Issue*ScoreDefinition`** reads existing **`SCR|T|Score`** rows — see **`ouronet/architecture/REPL_AND_TESTS.md`** § *Stage 2 AQP + AQP-BOOT*.
+- **Stage 2 AQP bootstrap (handoff):** Citizen **`2_CITIZEN/4_VaultsMinter/04_AQP-BOOT.pact`** exposes **`C_Step1`**–**`C_Step6`** (discrete provisioning). **`REPL/Stage02_Tester.repl`** loads it in-namespace **before** **`[6.2]_AQP.repl`**. In **`[6.2.2]_AQP-SCORE.repl`**, **score-definition** exercises (**`TX-SCORE-11`**) must run **after** **`C_Step4`/`C_Step5`/`C_Step6`** txs (**`TX-SCORE-08`–`10`**) because **`C_Issue*ScoreDefinition`** reads existing **`SCR|T|Score`** rows — see **`ouronet/architecture/REPL_AND_TESTS.md`** § *Stage 2 AQP + AQP-BOOT*.
 - **Genesis reference:** **`0_Stoa/genesis/`** — ordered `stoa-genesis-1` … `stoa-genesis-5` (JSON payloads for 1–4 where applicable); sandbox phases mirror this using **live** `00_StoaSandbox` Pact where it differs from frozen genesis sources.
 
 ## Goals
@@ -72,7 +72,7 @@ Repository layout mirrors this: **`1_SOVEREIGN/`** and **`2_CITIZEN/`**, each wi
 ## Conventions & naming
 
 - **DemiPad** — Demiourgos launchpad (Stage 2).
-- **`ouronet-ns`** — Namespace for Ouronet sovereign/slave modules in REPL and on StoaChain (replacing legacy **`free`** in test harnesses).
+- **`ouronet-ns`** — Namespace for Ouronet sovereign/citizen modules in REPL and on StoaChain (replacing legacy **`free`** in test harnesses).
 - **`kadena-coin`** vs **`coin`**: Kadena KDA analogue in REPL is **`kadena-coin`**; Stoa native token module is **`coin`** at root.
 
 ### Module structure, function prefixes, and Talos
@@ -130,7 +130,7 @@ drain (`Cp_BatchDrain*`), sweep (`CC_SweepBegin`/`CCp_SweepRecomputeChunk`), inj
 ## Related paths in this repo
 
 - `OuronetInformational/ouronet/MODULE_ARCHITECTURE.md` — module layout, prefixes (UC/UR/…/Talos), policies, C1–C4
-- `OuronetInformational/ouronet/architecture/` — **full inventory**: Stage 1/2 modules, interfaces, slave, REPL harness, whitepaper roadmap
+- `OuronetInformational/ouronet/architecture/` — **full inventory**: Stage 1/2 modules, interfaces, citizen, REPL harness, whitepaper roadmap
 - `OuronetInformational/` — this knowledge base
 - `REPL/Stage00_Sanboxes.repl` — Kadena sandbox + Stoa sandbox
 - `REPL/Stage00a_StoaTests.repl` — Stoa `coin` REPL tests (Stage 00a)

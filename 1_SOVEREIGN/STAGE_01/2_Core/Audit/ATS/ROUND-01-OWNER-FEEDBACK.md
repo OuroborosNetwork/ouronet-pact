@@ -313,9 +313,9 @@ observation still stands, just not acted on.
 **#31L — Talos naming asymmetry (`ATS|C_SetHotRecoveryFee` vs `C_SetHotRecoveryFees`) — LEFT AS-IS.**
 Owner initially said "fix but pay attention to Interface version bump as we are on mainet with these
 modules." Investigated before touching anything: the function is declared in the `TalosStageOne_ClientTwoV1`
-interface, which is directly consumed by two live slave modules (`2_SLAVE/Stage_01/01_AOZ+.pact` - which
+interface, which is directly consumed by two live citizen modules (`2_CITIZEN/Stage_01/01_AOZ+.pact` - which
 calls this exact function by its current name - and `02_DSP+.pact`). A safe rename would require cutting a
-new `TalosStageOne_ClientTwoV2` interface, updating `03_TS01-C2.pact` to implement it, updating both slave
+new `TalosStageOne_ClientTwoV2` interface, updating `03_TS01-C2.pact` to implement it, updating both citizen
 modules' interface references (and `01_AOZ+.pact`'s call site), and coordinating a real redeploy - not a
 same-file edit. Presented this scope to the owner, who decided: "let's let the naming sit as is." No code
 change; may be revisited as part of the planned module rehaul, where a broader interface-version pass is

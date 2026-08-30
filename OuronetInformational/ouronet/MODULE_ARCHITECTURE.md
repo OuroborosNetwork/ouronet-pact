@@ -93,7 +93,7 @@ These are **not** wrapped in admin/client locks; they are safe by construction (
 | Prefix | Meaning | Who / how |
 |--------|---------|------------|
 | **A_** | **Administrator** | Mutations restricted to **Ouronet admin** keys. |
-| **C_** | **Client** | Intended for **clients** building **slave** modules on Ouronet. |
+| **C_** | **Client** | Intended for **clients** building **citizen** modules on Ouronet. |
 | **X** | **Auxiliary** protected | **XI** — internal to **this** module only; **XE** — for **external** modules only; **XB** — **both** internal and future external call paths. |
 
 **A_** and **C_** are **locked inside** the module where they are defined: they are **not** meant as the normal public entry surface for integrators.

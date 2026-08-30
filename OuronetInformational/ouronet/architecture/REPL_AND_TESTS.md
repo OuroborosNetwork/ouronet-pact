@@ -45,9 +45,9 @@ Automated subdivision is a **baseline**; refine slugs or add **`04`**, … by ha
 
 Use this section when continuing **Stage 02** integration work on another machine or in a new chat. It records **load order**, **transaction ordering constraints**, and **fee-split expectations** that are easy to break when refactoring REPLs.
 
-### Slave module: `2_SLAVE/Stage_02/04_AQP-BOOT.pact`
+### Citizen module: `2_CITIZEN/Stage_02/04_AQP-BOOT.pact`
 
-**Handoff guide (mainnet operator + REPL):** [2_SLAVE/Stage_02/README_AQP_BOOT.md](../../2_SLAVE/Stage_02/README_AQP_BOOT.md) — id chain table, `NEXT=` fields in return strings, collection id inputs vs `UDC_Makeid` outputs.
+**Handoff guide (mainnet operator + REPL):** [2_CITIZEN/Stage_02/README_AQP_BOOT.md](../../2_CITIZEN/Stage_02/README_AQP_BOOT.md) — id chain table, `NEXT=` fields in return strings, collection id inputs vs `UDC_Makeid` outputs.
 
 **`AQP-BOOT`** implements **`AcquisitionPoolBootV1`**: discrete bootstrap steps **`C_Step1`** … **`C_Step7`**. Live deploy uses these instead of a monolithic “bootstrap everything” call. **Each step returns a formatted string** — copy ids from the tx result into the next step's arguments when running separate mainnet transactions.
 
@@ -71,7 +71,7 @@ One Farm FVT aggregates many OURO LPs via **many `FVT|T|ScoreLink` rows** (typic
 
 ### Loading `AQP-BOOT` in the REPL
 
-**`REPL/Stage02_Tester.repl`** loads **`04_AQP-BOOT.pact`** inside a deploy-style block: **`begin-tx`** → **`(namespace "ouronet-ns")`** → **`env-sigs`** → **`load "../2_SLAVE/Stage_02/04_AQP-BOOT.pact"`** → **`commit-tx`**, **before** **`[6.2]_AQP.repl`**. If **`AQP-BOOT`** loads only from a leaf REPL without that namespace/context, lookups like **`OuronetDalosV1`** can fail.
+**`REPL/Stage02_Tester.repl`** loads **`04_AQP-BOOT.pact`** inside a deploy-style block: **`begin-tx`** → **`(namespace "ouronet-ns")`** → **`env-sigs`** → **`load "../2_CITIZEN/Stage_02/04_AQP-BOOT.pact"`** → **`commit-tx`**, **before** **`[6.2]_AQP.repl`**. If **`AQP-BOOT`** loads only from a leaf REPL without that namespace/context, lookups like **`OuronetDalosV1`** can fail.
 
 ### `[6.2.1]_AQP-ANK.repl` (anchors)
 
@@ -120,7 +120,7 @@ So: **never** place “definition vector” transactions **before** **`TX-SCORE-
 | `Z.repl` | Full pipeline: Stage 00 sandboxes → Stage 00a Stoa tests → Stage 01 → Stage 02 → Stage ZZ (DPL-UR deploy only) |
 | `Stage01_Tester.repl` | Stage 1 deployment + scenario blocks (6.1–6.8) |
 | `Stage02_Tester.repl` | Stage 2 deployment + selected scenarios |
-| `StageZZ_Tester.repl` | Deploy **`2_SLAVE/Stage_Z/01_DPL-UR.pact`** only (`load` path relative to `REPL/`) |
+| `StageZZ_Tester.repl` | Deploy **`2_CITIZEN/Stage_Z/01_DPL-UR.pact`** only (`load` path relative to `REPL/`) |
 
 ## Stage 0
 
@@ -139,7 +139,7 @@ So: **never** place “definition vector” transactions **before** **`TX-SCORE-
 | `[2.1]_Dalos.repl`, `[2.2]_Core.repl` | Core deploy |
 | `[3]_Talos.repl` | Talos deploy |
 | `[4.0]_Sovereign-Executor.repl` | Sovereign executor txs |
-| `[5.1]_Aoz+.repl`, `[5.2]_Dispenser+.repl` | Slave modules |
+| `[5.1]_Aoz+.repl`, `[5.2]_Dispenser+.repl` | Citizen modules |
 | `[6.1]_Cumulator.repl` … `[6.8]_Dispenser.repl` | Long scenario suites (SWP, DPTF, ATS, VST, DPOF, dispenser, etc.) |
 | `[6.9]_CODEX.repl` | **CODEX** via **TS01-C4** (A_ / C_); see § *Stage 1 CODEX* below |
 
@@ -185,4 +185,4 @@ Detail: **`OuronetInformational/ouronet/conventions/module-load-order-and-pact-r
 ## Notes for documentation
 
 - DPL-UR-dependent reads may be **commented** in some REPLs when DPL-UR is not loaded in that chain.
-- **`StageZZ_Tester.repl`** load path for DPL-UR must be **`../2_SLAVE/...`** when CWD is `REPL/` (not `../../`).
+- **`StageZZ_Tester.repl`** load path for DPL-UR must be **`../2_CITIZEN/...`** when CWD is `REPL/` (not `../../`).

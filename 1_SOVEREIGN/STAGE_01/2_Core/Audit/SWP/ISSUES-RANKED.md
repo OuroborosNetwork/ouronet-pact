@@ -43,7 +43,7 @@ doesn't transfer (that bug was a bad starting guess; this one is invalid coeffic
 Newton even starts, for a request with no valid answer by construction). Traced every real caller first —
 `UC_ComputeInverseY` is reachable via two paths sharing no common validating choke point
 (`URC_InverseSwap`'s skippable `validation:bool`, and `UC_InverseBareboneSwapWithFeez`, a zero-validation
-`UC_*` called directly by both `SWPL` and the `DPL-UR` slave module) — ruling out a caller-side `UEV_*` fix.
+`UC_*` called directly by both `SWPL` and the `DPL-UR` citizen module) — ruling out a caller-side `UEV_*` fix.
 Fixed with a direct `enforce (< output-amount xo)` sequenced before the invalid coefficients are computed
 (consistent with StoicSyntax §6.1's existing documented exception for this function). Adversarially proven:
 new permanent proof `SWP|TX 015b` confirmed failing pre-fix (crashed identically to the raw repro),
@@ -719,10 +719,10 @@ declared on `SwapperIssueV3`) names itself after `DWK` (wrapped-STOA), inconsist
 (e.g. `URC_WorthStoa`) for consistency. — **SUPERSEDED (2026-08-28) — actioned, not deferred.** Owner
 gave the concrete target naming (`WSTOA`/`SSTOA`, not a placeholder) shortly after this was filed and
 asked for the rename directly. See `#65gL` below (`ROUND-02-FIXES.md` Fix #46) — this note's own scope
-check (interface, internal call sites, the `DPL-UR` slave-module consumer, REPL references) was used
+check (interface, internal call sites, the `DPL-UR` citizen-module consumer, REPL references) was used
 directly as the work list, and turned out accurate. — *#65cL*
 
-#65gL **[SWPI + 01_DALOS/19_SWPU/15_SWP/14_SWPT/20_MTX-SWP/01_TS01-A/04_TS01-C3 + 2_SLAVE/Stage_Z/01_DPL-UR]**
+#65gL **[SWPI + 01_DALOS/19_SWPU/15_SWP/14_SWPT/20_MTX-SWP/01_TS01-A/04_TS01-C3 + 2_CITIZEN/Stage_Z/01_DPL-UR]**
 Off-cycle, actions `#65cL`: owner: there is no "DWK" (leftover "wrapped Kadena") or "DLK" (leftover
 "liquid/staked Kadena") — the correct terms are `WSTOA` (wrapped STOA) and `SSTOA` (silver STOA);
 rename everything and refactor accordingly. — **FIXED ✅ AND PROVEN ✅ (owner, 2026-08-28,

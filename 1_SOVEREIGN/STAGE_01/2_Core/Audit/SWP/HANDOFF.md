@@ -163,7 +163,7 @@ doesn't own or need (`[6.5]_DPOF.repl`, `[6.6]_ATS.repl`) which, at various poin
 broken by the *other* concurrent sessions' in-progress work (confirmed pre-existing/unrelated via
 `git stash` on a clean checkout — before the stash-danger lesson in §0.2 was learned the hard way).
 `REPL/_swp_fix_check.repl` is a minimal scratch harness that loads exactly what SWP testing needs (Stage
-00 sandboxes → Starter/Interfaces/Utilities/Dalos/Core/Talos → Sovereign-Executor → Aoz+/Dispenser+ slaves
+00 sandboxes → Starter/Interfaces/Utilities/Dalos/Core/Talos → Sovereign-Executor → Aoz+/Dispenser+ citizens
 → the SWP issuance-only suite) and stops before DPOF/ATS. Run it from `REPL/`:
 ```
 cd REPL && pact _swp_fix_check.repl

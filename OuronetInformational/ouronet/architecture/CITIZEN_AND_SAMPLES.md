@@ -1,6 +1,6 @@
-# Slave modules and samples
+# Citizen modules and samples
 
-## 2_SLAVE
+## 2_CITIZEN
 
 | Path | Module | Notes |
 |------|--------|--------|

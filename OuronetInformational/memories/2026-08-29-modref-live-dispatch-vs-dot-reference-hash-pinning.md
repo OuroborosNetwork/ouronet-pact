@@ -20,12 +20,12 @@ This repo's StoicSyntax convention already mandates `::`/modref for all cross-mo
 `module.function` (`.`) — see `CLAUDE.md`: "Cross-module calls use module references with `::` …
 not `module.function`". This test confirms that convention is not just a style/coupling preference,
 it is **the actual mechanism** that has made `bless` unnecessary here so far: every cross-module
-call in `1_SOVEREIGN`/`2_SLAVE` that follows the convention is immune to hash-pinning breakage on
+call in `1_SOVEREIGN`/`2_CITIZEN` that follows the convention is immune to hash-pinning breakage on
 in-place upgrades, because `::` dispatch is always resolved live against whatever's currently
 deployed under that name — never pinned to a stale hash.
 
 **The one remaining exposure:** a `.`-style dot-reference from a module this project doesn't fully
-control (most plausibly a `2_SLAVE/` third-party module) into a sovereign core module that later
+control (most plausibly a `2_CITIZEN/` third-party module) into a sovereign core module that later
 gets upgraded in place. That combination — and only that combination — is where `bless` would
 actually become necessary, and where an in-place sovereign upgrade could silently break an
 already-deployed dependent with no way for that dependent to self-heal.
@@ -75,7 +75,7 @@ Full three-way comparison (pure-or-stateful × `::`/`.`/`.`+`bless`), all tested
 **Why `.` is ever legitimate, given this:** it's deliberate version pinning against upstream drift,
 not an inferior `::`. For code inside a single trust boundary (this repo's own sovereign core,
 tested and redeployed together) `::` is unambiguously correct. The one place `.` is a rational
-choice *in this ecosystem* is a `2_SLAVE/` third-party module calling into sovereign core APIs —
+choice *in this ecosystem* is a `2_CITIZEN/` third-party module calling into sovereign core APIs —
 an arms-length integrator who deployed against a specific audited version and does not want this
 project's governance silently changing their contract's behavior without their consent. If they
 reference sovereign functions via `.`, a later sovereign upgrade can't touch them unless this

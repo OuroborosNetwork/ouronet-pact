@@ -10,7 +10,7 @@
 ;;   • UDC_Makeid("<Name>") ids are deterministic from names (pool/score/anchor names).
 ;;   • Collection asset ids (DHCD-…, DHB-…, OURO-…, LP native ids) are ALWAYS inputs —
 ;;     never embedded in code; REPL examples live in ;; blocks only.
-;;   • Full step chain table: 2_SLAVE/Stage_02/README_AQP_BOOT.md
+;;   • Full step chain table: 2_CITIZEN/Stage_02/README_AQP_BOOT.md
 ;;   • OURO LP user flow: 1_SOVEREIGN/STAGE_02/2_Core/03_AQP/README.md § OURO LP onboarding
 ;;
 ;; STEP ORDER: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12
@@ -560,7 +560,7 @@
         ;;   patron, owner-konto — FVT owner (REPL: KST.ANHD)
         ;;   lp-denominator — full OURO DPTF id for OuroLpFarm; pass \"\" to skip farm (vault-only bootstrap)
         ;; OUTPUT — fvt-ids ×5 (farm skipped → echo farm=skipped)
-        ;; REPL: see 2_SLAVE/Stage_02/README_AQP_BOOT.md § Steps 8–12
+        ;; REPL: see 2_CITIZEN/Stage_02/README_AQP_BOOT.md § Steps 8–12
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (
@@ -598,7 +598,7 @@
             \ Farm OURO LP triplet is wired in Step 11."
         ;;
         ;; INPUT — fvt-ids from Step 8 output; score ids from Steps 4–5
-        ;; REPL: see 2_SLAVE/Stage_02/README_AQP_BOOT.md § Steps 8–12
+        ;; REPL: see 2_CITIZEN/Stage_02/README_AQP_BOOT.md § Steps 8–12
         (with-capability (GOV|AQP_BOOT_ADMIN)
             (let
                 (

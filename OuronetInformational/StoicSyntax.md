@@ -172,7 +172,7 @@ Result: complex functions that **span many modules and tables**, auditable piece
 ### 2.2 How protection stacks (no room for “skip the hard part”)
 
 ```
-End user / slave / gas-station
+End user / citizen / gas-station
     │
     ▼
 Aggregator                  ← only blessed client surface (Ouronet: Talos)
@@ -585,7 +585,7 @@ Under **FUNCTIONS**, group in this order (AQP reference: `05_VCT.pact`):
 ## 8. Client flow decomposition (the architecture)
 
 ```
-Talos / slave
+Talos / citizen
     → C_* / A_*          (with-capability master cap → wire; optional fee step)
         → defcap         (ALL validation; compose SECURE / GOV / XE caps)
             → XI_* / XE_* / XB_*   (orchestrate; no enforce)

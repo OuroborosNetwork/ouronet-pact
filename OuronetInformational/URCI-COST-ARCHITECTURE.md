@@ -71,7 +71,7 @@ stage's INFO module deploys **dead-last**, in a new per-stage folder
 **`1_SOVEREIGN/STAGE_0N/Z_Reads/`** (after `0_Interfaces / 1_Utilities / 2_Core / 3_Talos`).
 - **Why `Z_Reads`, not `4_Info`:** `Z_` sorts **absolutely last alphabetically regardless of how
   many numbered layers are ever added** (a future `4_`/`5_` core layer would slot *before* a `4_Info`;
-  `Z_` can never be displaced). It also mirrors the slave convention exactly — `2_SLAVE/Stage_Z`
+  `Z_` can never be displaced). It also mirrors the citizen convention exactly — `2_CITIZEN/Stage_Z`
   (read-only, last: `DPL-UR`, `EXPLORER`) ↔ sovereign `Z_Reads` (read-only, last). "Reads" is the
   right generalization: it houses pure-read presentation modules (INFO now; room for a sovereign
   explorer-style reader later), not only "info".

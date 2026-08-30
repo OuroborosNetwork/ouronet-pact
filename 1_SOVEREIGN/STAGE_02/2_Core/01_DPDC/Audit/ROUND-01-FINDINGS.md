@@ -980,7 +980,7 @@ EQUITY issuances grant to `dpdc`. So the practical exploit is currently blocked 
 role table, not by anything EQUITY itself verifies — an implicit, indirect trust chain rather than an
 owned invariant.
 
-**Failure scenario:** if a future change to `DPDC-I` (e.g. a slave wrapping `C_IssueDigitalCollection`
+**Failure scenario:** if a future change to `DPDC-I` (e.g. a citizen wrapping `C_IssueDigitalCollection`
 with a caller-chosen `owner-account`) or to `DPDC-MNG`'s role semantics ever lets a non-`dpdc` account
 acquire those roles on an `"E|"`-prefixed collection, EQUITY's gate would happily treat it as real
 shareholder equity with no independent, EQUITY-owned marker to catch the regression. (Full verification of
@@ -1474,7 +1474,7 @@ Switching `XE_W|Supply` to delta-based **would** be a breaking signature change 
 
 ### DPDC · M1 — `URD_AccountNoncesWithSupplies` returns `[{}]` instead of `[]` on empty results, producing a wrong non-zero count and malformed rows for consumers `[CONFIRMED]`
 
-**Location:** `02_DPDC.pact:705-724`. Sole consumer: `2_SLAVE/Stage_Z/01_DPL-UR.pact:1963-1976`. When an
+**Location:** `02_DPDC.pact:705-724`. Sole consumer: `2_CITIZEN/Stage_Z/01_DPL-UR.pact:1963-1976`. When an
 account holds zero nonces, returns `[{}]` (a one-element list of an empty object) instead of `[]` —
 inconsistent with the sibling `URD_AccountNonces` (680-704), which correctly returns `[]`.
 
@@ -1553,7 +1553,7 @@ execution-path/gas risk, pure naming violation).
 `:111-112` (`DPNF|AccountRoles` doc: `<account> + BAR + <DPNF-id>` — reversed). Actual key construction in
 `02_DPDC.pact` is `(concat [id BAR account])` uniformly for **both** tables. Pure documentation defect (no
 code reads the docstring to build keys) but sits in the shared interface every DPDC-* module and future
-slave integrator reads.
+citizen integrator reads.
 
 **Fix direction:** correct the `@doc` on `DPNF|AccountRoles` to match `DPSF|AccountRoles` and the real code.
 

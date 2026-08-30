@@ -135,7 +135,7 @@ verdict above). `V4` is the one open item — the parallel-safe multi-tx redesig
 
 > **All three DEFERRED to a single final pass, run immediately before the Round-III rescan.** Rationale: each is a
 > pure rename/annotation that cascades across every call site (module defun + interface decl + Talos wrappers +
-> slave callers + test REPLs + doc-comment maps). Pending logic work — the **H4 re-score-sweep / vacate rehaul**
+> citizen callers + test REPLs + doc-comment maps). Pending logic work — the **H4 re-score-sweep / vacate rehaul**
 > (which also absorbs L9/#20) — will add/modify functions that must follow the same convention; doing the renames
 > now would either miss that new code or force redundant rename bookkeeping. Freeze the logic surface first, then
 > do #22–#24 in one sweep. (Exception: if the R3 taint-scan surfaces a scan on a **daily-hot** path, that's a

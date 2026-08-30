@@ -545,8 +545,8 @@ before re-designing.
    - `1_SOVEREIGN/STAGE_02/3_Talos/03_TS02-DPAD.pact::A_RegisterAssetToLaunchpad` — `lpad`
      (DEMIPAD's own smart account); `tf`/`of` branches only (`sf`/`nf` branches, DPDC's domain, left
      untouched).
-   - `2_SLAVE/Stage_02/03_CADUCEUS.pact::A_ProvisionBridgeDptfRoles` — `bridge-account`. Note this
-     still respects the sovereign/slave boundary: CADUCEUS isn't registered as a DPTF IMC peer;
+   - `2_CITIZEN/Stage_02/03_CADUCEUS.pact::A_ProvisionBridgeDptfRoles` — `bridge-account`. Note this
+     still respects the sovereign/citizen boundary: CADUCEUS isn't registered as a DPTF IMC peer;
      running this now requires holding *both* `GOV|CADUCEUS_ADMIN` and TS01-A's own admin keyset.
 4. Left `REPL/Stage_01/[6.3]_SWP.repl:2143`'s `(ref-TS01-C1::DPTF|C_DeployAccount patron ROuroID
    smart-patron)` untouched — `smart-patron` is `patron`'s own smart-account variant (identical
@@ -823,7 +823,7 @@ resulting `map` then evaluates the inner lambda for `i = -1`, and — for a genu
 list — hits `(at -1 inner-lst)` on a zero-length list.
 
 **Verified this is a real gap, not a design choice, by checking every real caller** (`10_ATSU.pact:559`,
-`:985`, `21_INFO-ONE+.pact:2115`, `2_SLAVE/Stage_Z/01_DPL-UR.pact:1449`): every one always constructs
+`:985`, `21_INFO-ONE+.pact:2115`, `2_CITIZEN/Stage_Z/01_DPL-UR.pact:1449`): every one always constructs
 an 8-column (`c0..c7`) or otherwise non-empty outer list, and per-column contents are only empty when
 individual reward-token slots are unused (never *all* of them at once in the observed ATS-pair
 shapes) — matching the owner's own observation that it's never actually crashed in production. The
@@ -1207,7 +1207,7 @@ combination, just not yet exercised: querying live StoaChain (Pythia dirty-read)
 normal, intended flow), any caller relying on `URC_Parent` staying non-aborting would break.
 
 **The one real impact this protected against turning into a live bug:**
-`2_SLAVE/Stage_Z/01_DPL-UR.pact::URC_0009a_OrtoFungibleEntryMapper` — a wallet/portfolio-listing
+`2_CITIZEN/Stage_Z/01_DPL-UR.pact::URC_0009a_OrtoFungibleEntryMapper` — a wallet/portfolio-listing
 helper that folds `URC_Parent` (via `URC_0009a_OrtoFungibleEntry`) over every DPOF token an account
 holds, with no `try`/error-handling. Checked its actual use of the result: `dptf-id` (the
 `URC_Parent` output) is only fed into a best-effort price lookup (`SWPI::URC_TokenDollarPrice`,

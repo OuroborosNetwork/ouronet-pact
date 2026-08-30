@@ -1,6 +1,6 @@
 # Ouronet — architecture documentation (living)
 
-This folder is the **canonical map** of what exists in the repo: modules, interfaces, slave code, and REPL harnesses. It supports **whitepapers**, **external docs**, and **AI-assisted development** without re-scanning the tree from scratch each time.
+This folder is the **canonical map** of what exists in the repo: modules, interfaces, citizen code, and REPL harnesses. It supports **whitepapers**, **external docs**, and **AI-assisted development** without re-scanning the tree from scratch each time.
 
 ## How to use
 
@@ -15,7 +15,7 @@ This folder is the **canonical map** of what exists in the repo: modules, interf
 | [`STAGE_01_CODEX_ON_CHAIN_DEPLOY.md`](STAGE_01_CODEX_ON_CHAIN_DEPLOY.md) | **Deploy checklist:** CODEX + utility fixes — interface bumps vs module-only redeploys, order, executor txs |
 | [`STAGE_02_MODULES.md`](STAGE_02_MODULES.md) | Stage 2: DPDC slice, DemiPad, AQP, Talos |
 | [`STAGE_02_INTERFACES.md`](STAGE_02_INTERFACES.md) | Stage 2 DPDC/DemiPad/Talos interfaces |
-| [`SLAVE_AND_SAMPLES.md`](SLAVE_AND_SAMPLES.md) | `2_SLAVE/`, `0_Sample/` |
+| [`CITIZEN_AND_SAMPLES.md`](CITIZEN_AND_SAMPLES.md) | `2_CITIZEN/`, `0_Sample/` |
 | [`REPL_AND_TESTS.md`](REPL_AND_TESTS.md) | REPL loaders, scenario files, **canonical integration `.repl` layout**, **Stage 2 AQP-BOOT + tx ordering** |
 | [`DEEP_DIVE_ALL_MODULES.md`](DEEP_DIVE_ALL_MODULES.md) | Cross-repo module indexing: counts, prefixes, relations, functionality |
 | [`REFERENCE_URSTOA_VAULT_RPS.md`](REFERENCE_URSTOA_VAULT_RPS.md) | UrStoa Vault RPS mechanics in Stoa `coin.pact` (baseline for AQP) |

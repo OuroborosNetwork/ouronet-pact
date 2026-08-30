@@ -15,7 +15,7 @@ When an interface **B** is superseded by **B′** (for example `SwapperV2` → `
 
 2. **Single live implementation**: Implementing modules MUST `implements` only the **latest** version of each interface family in the codebase that is intended for deployment. Do not keep a module implementing both **A** and **A′**, or **B** and **B′**, for the same logical role.
 
-3. **Consumers**: Any module, Talos client, slave bridge, sample, or REPL that typed `module{A}` or `object{A.*}` must be updated to **A′** together with the interface file change, so the repository stays internally consistent.
+3. **Consumers**: Any module, Talos client, citizen bridge, sample, or REPL that typed `module{A}` or `object{A.*}` must be updated to **A′** together with the interface file change, so the repository stays internally consistent.
 
 4. **Frozen predecessors**: Older interface versions (for example `SwapperV2`) may remain in the interface namespace for **historical / chain compatibility** documentation, but new work must not add references to them where a newer version exists.
 

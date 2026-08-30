@@ -19,7 +19,7 @@
 ;;              STAGE ONE TESTER                                                ;;
 ;;              Loads Individual Repl Files                                     ;;
 ;;                                                                              ;;
-;;  Slave scenario REPLs 6.3–6.8 live here (Stage_01). Any DPL-UR-only lines stay commented in those files. ;;
+;;  Citizen scenario REPLs 6.3–6.8 live here (Stage_01). Any DPL-UR-only lines stay commented in those files. ;;
 ;;                                                                              ;;
 ;;================================================================================
 ;;
@@ -37,11 +37,11 @@
 ;;SOVEREIGN EXECUTOR (contains executions to initialise the SOVEREIGN Functionality)
 (load "Stage_01/[4.0]_Sovereign-Executor.repl")
 
-;;SLAVE DEPLOYER + EXECUTOR
+;;CITIZEN DEPLOYER + EXECUTOR
 (load "Stage_01/[5.1]_Aoz+.repl")
 (load "Stage_01/[5.2]_Dispenser+.repl")
 
-;;SLAVE TESTER
+;;CITIZEN TESTER
 ;;FULL> Cumulator scenario suite — skip for AQP-fast (Z.repl default)
 ;(load "Stage_01/[6.1]_Cumulator.repl")
     ;;

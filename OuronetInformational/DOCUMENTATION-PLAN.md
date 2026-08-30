@@ -18,7 +18,7 @@ understand "what the fuck it is we built." It must cover:
 - **Purpose / vision** — what Ouronet strives to achieve (its own virtual blockchain entity on
   StoaChain; true fungibles / ortofungibles / collectables; DeFi primitives — ATS, SWP, AQP,
   DemiPad, DSA; users creating tokens, pools, pairs, and their own modules on Ouronet token logic).
-- **Architecture** — the layer cake (Utilities → Core → Talos → `Z_Reads`), sovereign vs slave,
+- **Architecture** — the layer cake (Utilities → Core → Talos → `Z_Reads`), sovereign vs citizen,
   the module map, deploy order, the IGNIS virtual-gas + gas-station model.
 - **Every module, every function, every shape** — the role of each function, what it does, HOW it
   does it, WHY it does it, what purpose it serves. Every schema/table shape. The 7 asset types.

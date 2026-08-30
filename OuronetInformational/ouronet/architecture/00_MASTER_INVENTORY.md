@@ -7,7 +7,7 @@ _Generated from repository layout scan. Update when files are added or removed._
 | Area | `.pact` files | Notes |
 |------|----------------|--------|
 | `1_SOVEREIGN/` | 71 | Stage 1 + Stage 2 sovereign |
-| `2_SLAVE/` | 10 | AOZ, Dispenser, Bloodshed, Nosferatu, KBunnies, DPL-UR |
+| `2_CITIZEN/` | 10 | AOZ, Dispenser, Bloodshed, Nosferatu, KBunnies, DPL-UR |
 | `0_Sample/` | 5 | ModuleSample, snippets |
 | `REPL/` | 36 | Staged harness (`Z.repl`, Stage01/02, scenarios) |
 
@@ -31,10 +31,10 @@ _Generated from repository layout scan. Update when files are added or removed._
   3_Talos/          TS02-C1, TS02-C2, TS02-DPAD, TS02-C3
 ```
 
-## Slave layout
+## Citizen layout
 
 ```
-2_SLAVE/
+2_CITIZEN/
   Stage_01/         01_AOZ+.pact, 02_DSP+.pact
   Stage_02/         01_NOSFERATU, 02_KBunnies, 1_Bloodshed/* (BSD-L, E, R, C, SETS)
   Stage_Z/          01_DPL-UR.pact (unified deployer reads)

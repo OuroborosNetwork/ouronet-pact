@@ -1912,7 +1912,7 @@ and refactor accordingly. Actions `#65cL` (filed earlier the same session, defer
 concrete target naming.
 
 **Verified first, not assumed:** `WSTOA`/`SSTOA` are already the real, established token ticker
-prefixes used elsewhere in this codebase (`2_SLAVE/Stage_Z/01_DPL-UR.pact`, `0_Sample/CodeStoa.pact`,
+prefixes used elsewhere in this codebase (`2_CITIZEN/Stage_Z/01_DPL-UR.pact`, `0_Sample/CodeStoa.pact`,
 Stage 2 modules) — `URC_WorthDWK`'s "DWK" naming was factually wrong, not just inconsistent. Also
 confirmed `DLK` is ambiguous codebase-wide: `23_PYTHIA.pact` uses it for an unrelated "DualLink"
 concept — excluded entirely from the rename, never touched.
@@ -1933,7 +1933,7 @@ to compile) and safe local-variable/prose text, left every real ticker string by
 names updated together, including the separate `wkda`/`lkda` ("Kadena") variables inside
 `URCX_PrimordialValueAndOuroSupply`/`URC_OuroPrimordialPrice`, a third leftover in the same functions.
 Doc-comment/message updates in `19_SWPU.pact`, `15_SWP.pact`, `14_SWPT.pact`, `20_MTX-SWP.pact`,
-`01_TS01-A.pact`, `04_TS01-C3.pact`, `01_DALOS.pact`. `2_SLAVE/Stage_Z/01_DPL-UR.pact`'s 2
+`01_TS01-A.pact`, `04_TS01-C3.pact`, `01_DALOS.pact`. `2_CITIZEN/Stage_Z/01_DPL-UR.pact`'s 2
 `URC_SingleWorthDWK` call sites updated — the breaking-API blast radius `#65cL` had already flagged,
 now actually fixed. REPL call sites updated to compile; `SWP|TX 032z6f`/`032z8a` (`#65fL`) proofs
 re-ran with identical gas numbers, confirming zero behavior change.
@@ -2079,7 +2079,7 @@ two ways sharing no common validating choke point, ruling out a caller-side `UEV
 `URC_InverseSwap`'s `validation:bool` can skip its own `UEV_InverseSwapData` gate, which anyway
 never checks `output-amount` against the live reserve; (2) `UC_InverseBareboneSwapWithFeez`
 (`16_SWPI.pact:562`) is a `UC_*` function with zero validation in its chain, called directly by both
-`SWPL` (sovereign) and `2_SLAVE/Stage_Z/01_DPL-UR.pact` (slave) — no shared gate exists there at
+`SWPL` (sovereign) and `2_CITIZEN/Stage_Z/01_DPL-UR.pact` (citizen) — no shared gate exists there at
 all. The fix has to live inside `UC_ComputeInverseY` itself.
 
 **Fix — `1_SOVEREIGN/STAGE_01/1_Utilities/12_U_SWP.pact`, `UC_ComputeInverseY`:** added `(enforce

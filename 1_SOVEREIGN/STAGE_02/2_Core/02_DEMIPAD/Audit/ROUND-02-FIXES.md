@@ -458,7 +458,7 @@ real defect was **physical filing** — the sales sat under `1_SOVEREIGN/…/2_C
 look sovereign/core.
 
 **Refactor (implemented now, full repo restructure — code unchanged, only file locations + load paths):**
-- Renamed `2_SLAVE/` → `2_CITIZEN/` and reorganised into numbered citizen folders: `1_BloodshedMinter/`,
+- Established the `2_CITIZEN/` citizen tree (the former non-sovereign extension modules) reorganised into numbered folders: `1_BloodshedMinter/`,
   `2_NosferatuMinter/`, `3_BunniesMinter/`, `4_VaultsMinter/` (AQP-BOOT), `5_OuronetBridge/` (CADUCEUS),
   `6_Launchpad/` (per-asset sales `1_Spark`/`2_Snakes`/`3_Custodians`/`4_StoicPay`/`5_StoicIco` +
   `99_TS02-DPAD.pact` — the sovereign orchestrator, deployed last); `Stage_01/` (AOZ+/DSP+) and `Stage_Z/`

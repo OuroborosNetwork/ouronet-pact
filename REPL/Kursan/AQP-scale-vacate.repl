@@ -16,7 +16,7 @@
 (load "../Stage_02/[2.3]_EarningPools.repl")
 (load "../Stage_02/[3]_Talos.repl")
 (load "../Stage_02/[4.0]_Sovereign-Executor.repl")
-(begin-tx "SCALE-VAC-BOOT - KBN slave")
+(begin-tx "SCALE-VAC-BOOT - KBN citizen")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (env-sigs [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])

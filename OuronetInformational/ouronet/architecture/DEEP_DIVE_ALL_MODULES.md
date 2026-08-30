@@ -1,6 +1,6 @@
 # Deep Dive — all Pact modules
 
-This document indexes module-level structure across sovereign and slave code:
+This document indexes module-level structure across sovereign and citizen code:
 
 - function/cap/table/schema counts,
 - function-prefix distributions,
@@ -11,7 +11,7 @@ It is intended as a whitepaper-ready technical baseline.
 
 ## Scope and method
 
-- Included: all module files under `1_SOVEREIGN/STAGE_01`, `1_SOVEREIGN/STAGE_02`, `2_SLAVE`.
+- Included: all module files under `1_SOVEREIGN/STAGE_01`, `1_SOVEREIGN/STAGE_02`, `2_CITIZEN`.
 - Excluded from counting: interface-only files (`0_Interfaces/*`) as module implementations.
 - Caveat: files with co-located `interface` + `module` may duplicate some names at file-level scans; treat per-file prefix totals as operational indicators, not legal API contracts.
 
@@ -21,7 +21,7 @@ It is intended as a whitepaper-ready technical baseline.
 |------|-------------:|------:|-------:|---------:|----------:|
 | Stage 1 sovereign | 40 | 1937 | 449 | 76 | 22 |
 | Stage 2 sovereign | 26 | 1124 | 271 | 89 | 28 |
-| Stage 2 slave + Stage 1 slave + Stage_Z | 10 | 261 | 35 | 10 | 10 |
+| Stage 2 citizen + Stage 1 citizen + Stage_Z | 10 | 261 | 35 | 10 | 10 |
 | **Total** | **76** | **3322** | **755** | **175** | **60** |
 
 ## Prefix distribution (high-level)
@@ -50,7 +50,7 @@ Stage 2 aggregate prefix totals from scan (file-level, with caveat on co-located
 |----:|----:|-----:|-----:|-----:|-----:|-----:|-----:|---:|---:|
 | 30 | 203 | 58 | 5 | 98 | 33 | 7 | 6 | 118 | 159 |
 
-### 2_SLAVE (scenario/read and deployment helpers)
+### 2_CITIZEN (scenario/read and deployment helpers)
 
 - `URC_` concentrated in `DPL-UR`.
 - `A_` concentrated in collection deployment pipelines (`NOSFERATU`, `KBN`, Bloodshed).
@@ -91,11 +91,11 @@ Stage 2 aggregate prefix totals from scan (file-level, with caveat on co-located
    - satellites: `DEMIPAD-SPARK`, `DEMIPAD-SNAKES`, `DEMIPAD-CUSTODIANS`, `DEMIPAD-STOICPAY`, `STOAICO`
 3. `TS02-*` Talos modules route DPDC and DEMIPAD surfaces into approved client/admin paths.
 
-### Slave + Stage_Z
+### Citizen + Stage_Z
 
 1. `DPL-UR` is the unified read bundle (`DeployerReadsV7`) aggregating cross-domain UI reads.
-2. `AOZ`, `DSP` are Stage 1 slave examples tied to sovereign policy/account primitives.
-3. Stage 2 slave families (`NOSFERATU`, `KBN`, Bloodshed set) focus on DPDC-centric content pipelines.
+2. `AOZ`, `DSP` are Stage 1 citizen examples tied to sovereign policy/account primitives.
+3. Stage 2 citizen families (`NOSFERATU`, `KBN`, Bloodshed set) focus on DPDC-centric content pipelines.
 
 ## Functional domains achieved so far
 
@@ -112,7 +112,7 @@ Stage 2 aggregate prefix totals from scan (file-level, with caveat on co-located
 | Launchpad and sale satellites | `DEMIPAD*`, `STOAICO` |
 | Acquisition pools | `AQP-ANK`, `AQP-SCORE`, `AQP`, `FVT` |
 | Aggregated read layers | `INFO-ZERO`, `INFO-ONE`, `INFO-TWO`, `DPL-UR` |
-| Slave scenarios | `AOZ`, `DSP`, `NOSFERATU`, `KBN`, `BLOODSHED-*` |
+| Citizen scenarios | `AOZ`, `DSP`, `NOSFERATU`, `KBN`, `BLOODSHED-*` |
 
 ## Where to find module-by-module details
 
@@ -120,7 +120,7 @@ Stage 2 aggregate prefix totals from scan (file-level, with caveat on co-located
 - Stage 2 list and roles: `STAGE_02_MODULES.md`
 - Stage 1 interfaces: `STAGE_01_INTERFACES.md`
 - Stage 2 interfaces: `STAGE_02_INTERFACES.md`
-- Slave and sample files: `SLAVE_AND_SAMPLES.md`
+- Citizen and sample files: `CITIZEN_AND_SAMPLES.md`
 - REPL harness map: `REPL_AND_TESTS.md`
 
 ## Next deepening steps (for whitepaper chapters)

@@ -920,7 +920,7 @@ cascaded to `AutostakeV2` referencing `object{UtilityAtsV2.Awo}` — the ATS bus
 change. `URU_UpgradeAtspairToV2` (`08_ATS.pact:716-733`) is a companion migration helper consistent with a
 post-deploy version-migration event. This is the policy's documented exception case actually occurring,
 not a violation. **Stale-reference check:** zero remaining `module{AutostakeV1}`/`module{UtilityAtsV1}`
-references anywhere in `1_SOVEREIGN/`/`2_SLAVE/` — every consumer types against V2 only; V1 survives solely
+references anywhere in `1_SOVEREIGN/`/`2_CITIZEN/` — every consumer types against V2 only; V1 survives solely
 as a historical/frozen entry in the interfaces pack, per StoicSyntax.
 
 **What this means for the fix round:** C4/C5/H1/H2 are all **behavioral** fixes to `08_ATS.pact` (module

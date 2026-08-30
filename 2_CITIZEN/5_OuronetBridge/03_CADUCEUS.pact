@@ -1,5 +1,5 @@
 (module CADUCEUS GOV
-    @doc "Barebones Stage 2 Slave module scaffold for Caduceus bridge."
+    @doc "Barebones Stage 2 Citizen module scaffold for Caduceus bridge."
     ;;
     ;;<========>
     ;;GOVERNANCE
