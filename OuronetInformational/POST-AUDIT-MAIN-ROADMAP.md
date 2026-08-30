@@ -9,8 +9,10 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
   reclassification (`CC_`/`CCp_`) + `C_Inject` deletion, pact-5.4.1 note, and all the design docs.
 - **Audit worktrees:** ✅ ALL MERGED to main + reconciled + green — `ats`, `dpdc` (`7efe386`),
   `swp` (`cc230d5`), `dptf-dpof`/DALOS (`07556e1`). All worktrees archived (branches preserved).
-  Each audit's carry-over folded into the AUDIT CARRY-OVER section + placed in its phases. **Phase 0.1
-  complete.** Remaining Phase 0: 0.4 (discover live interface versions — do anytime) then start Phase 1.
+  Each audit's carry-over folded into the AUDIT CARRY-OVER section + placed in its phases. **PHASE 0
+  COMPLETE (2026-08-30)** — all audits merged (0.1), DEMIPAD audit done (0.5), reconcile + full green-gate
+  green (0.2/0.3), live interface versions snapshotted (0.4, `LIVE-INTERFACE-VERSIONS.md`). **Next: Phase 1
+  (URCi cost architecture), gated on the 1.0 interface-richness decision.**
 
 ---
 
@@ -79,16 +81,14 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
 
 ## PHASE 0 — Merge audits + reconcile + green-gate  ⟵ START HERE
 - [x] ✅ **0.1** Merge `dpdc`, `dptf-dpof`, `swp`, `ats` worktrees → `main` (one at a time). ✅ ALL DONE.
-- [ ] ❌ **0.2** ⚠ **Reconcile conflicts.** The DPDC / DPTF-DPOF / SWP audits touch the SAME token
-      modules my on-main work references: the AQP-INFO transfer-leg reconstruction calls
-      `TFT.UDC_TransferCumulator` / `URC_TransferClasses`, `DPOF.UC_MoveCumulator`,
-      `DPDC-T.UDC_MultiTransferCumulator`, `DPDC.UR_AccountNoncesSupplies`, and the reclassification
-      touched TFT/IGNIS `C_Collect`. If an audit renamed/re-signatured any of these, fix the
-      AQP-INFO call-sites + re-run the ground-truth.
-- [ ] ❌ **0.3** **Full green-gate on pact 5.4.1** after merge:
-      `bash REPL/run-aqp-audit.sh` (15 suites) + `pact Z.repl` (Stage 00/01/02) +
-      `pact aqp-info-groundtruth.repl` (TF/OF/SF cost-equality) + `pact AQP-FULL.repl`
-      (non-destructive core). Everything must be green before touching anything else.
+- [x] ✅ **0.2 Reconcile conflicts — DONE (verified 2026-08-30).** The AQP-INFO call-sites against the
+      DPDC/DPTF-DPOF/SWP renames were reconciled (the DPDC-drift half was 0.3a; the rest confirmed by the
+      ground-truth + full green-gate below passing clean). `aqp-info-groundtruth.repl` (TF/OF/SF
+      cost-equality) exit 0, 0 load-failed.
+- [x] ✅ **0.3 Full green-gate on pact 5.4.1 — DONE + ALL GREEN (2026-08-30), post-DEMIPAD-audit +
+      post-`2_CITIZEN` restructure.** `run-aqp-audit.sh` (15 suites, ~3,100 asserts, **0 fails, "ALL
+      GREEN ✓"**) + `Z.repl` (Stage 00/01/02, 0 load-fail) + `aqp-info-groundtruth.repl` (exit 0) +
+      `AQP-FULL.repl` (exit 0). Everything green before proceeding.
 - [x] ✅ **0.3a ✅ FIXED (2026-08-29): full-boot-suite drift from DPDC audit renames.** Two pre-existing
       citizen/test drifts that blocked every `OuroLpFarm` boot, found + fixed during task #89:
       (1) **Bloodshed** called `DPDC-UDC::UDC_ScoreMetaData`, which **DPDC #45L removed** — but the audit
