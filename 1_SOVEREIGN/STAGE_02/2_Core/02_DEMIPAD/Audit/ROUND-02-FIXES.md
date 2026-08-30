@@ -108,8 +108,8 @@ Kadena→STOA rename (`kda-pid→stoa-pid`, `wkda→wstoa`, labels/comments; the
 price hardcoded at $0.10 pending the Aletheia Oracle) is **one dedicated protocol-wide sweep after all
 audits — never piecemeal**. Broadened + logged on the roadmap (Phase 1.4).
 
-**Still-open Custodians divergences (own turns):** ~~#9M (`UC_NonceQuintessence` enforces)~~ FIXED, #10M
-(`UR_NonceSaleAvailability` enforces where Snakes doesn't), #15L (missing `UEV_IMC`).
+**Still-open Custodians divergences (own turns):** ~~#9M (`UC_NonceQuintessence` enforces)~~ FIXED,
+~~#10M (`UR_NonceSaleAvailability` enforces where Snakes doesn't)~~ FIXED, #15L (missing `UEV_IMC`).
 
 ---
 
@@ -275,3 +275,31 @@ which already validates the nonce (`UR_NonceSaleAvailability`→`UEV_Acquisition
 "Invalid Custodian Acquisition Nonce" (cap still validates). Bug direction proven by re-injecting
 `(UEV_AcquisitionNonce nonce)` into the pure UC → the out-of-range purity assertion fails (the "pure" call
 aborts). Restored → 5/5 green, full boot clean, 0 load failures.
+
+---
+
+## #10M — Custodians `UR_NonceSaleAvailability` enforces (twin Snakes doesn't) → FIXED + PROVEN (2026-08-30)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/03_Custodians.pact` · proof
+`REPL/Stage_02/[5.3]_Launchpad.repl` (TX-10M).
+
+**What it was.** `UR_NonceSaleAvailability:integer (nonce)` is a `UR_` (table-read prefix, must not
+`enforce`) but ran `(UEV_AcquisitionNonce nonce)` before its DPDC supply read — where the identical-shaped
+Snakes twin does not. So a `UR_` info-read could abort a tx (contract violation; the "half-wired copy of
+Snakes" tell). **Interlocks with #9M:** this is the very enforce the `CUSTODIANS|ACQUIRE` cap relied on to
+validate the nonce, so it had to be **relocated, not removed**.
+
+**Fix (identical behavior, correct home):**
+- `UR_NonceSaleAvailability` → dropped `(UEV_AcquisitionNonce nonce)`; now a pure DPDC supply read
+  (matches Snakes; honors the `UR_` contract; #4H's info-read stays clean).
+- `CUSTODIANS|ACQUIRE` cap → added `(UEV_AcquisitionNonce nonce)` as its first line, before the supply
+  read. Nonce validity + the exact "Invalid Custodian Acquisition Nonce" error stay on the mutation path.
+- Kept Custodians' explicit `[-3 -2 -1]` check (not deleted to mirror Snakes verbatim): Snakes has a
+  different nonce model (positive EQUITY tiers, implicit supply-0 rejection); Custodians' finite fragment
+  set warrants a clear error. #10M is about the prefix, not removing a legitimate check.
+
+**REPL proof (TX-10M).** Green: `UR_NonceSaleAvailability 5` returns the DPDC "holds none" sentinel `-1`
+with **no abort** (pure read; pre-fix it threw "Invalid Custodian Acquisition Nonce"); `UR_NonceSaleAvailability -1`
+resolves (>= -1); and `C_Acquire … nonce=5` is still rejected "Invalid Custodian Acquisition Nonce" (cap
+now holds the enforce). Bug direction proven by re-injecting `(UEV_AcquisitionNonce nonce)` into the UR →
+the pure-read assertion fails (the reader aborts). Restored → all green, full boot clean, 0 load failures.

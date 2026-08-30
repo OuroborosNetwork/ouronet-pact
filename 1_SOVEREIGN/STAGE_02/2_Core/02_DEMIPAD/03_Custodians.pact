@@ -148,6 +148,8 @@
     )
     (defcap CUSTODIANS|ACQUIRE (nonce:integer amount:integer)
         @event
+        ;;#10M: nonce validation is enforced HERE (was buried in the UR_ read, which must not enforce).
+        (UEV_AcquisitionNonce nonce)
         (let
             (
                 (available-supply-to-acquire:integer (UR_NonceSaleAvailability nonce))
@@ -185,7 +187,8 @@
         )
     )
     (defun UR_NonceSaleAvailability:integer (nonce:integer)
-        (UEV_AcquisitionNonce nonce)
+        ;;#10M: pure DPDC supply read (no enforce — matches the Snakes twin). Nonce validity is enforced
+        ;;      by the CUSTODIANS|ACQUIRE cap on the mutation path.
         (let
             (
                 (ref-DPDC:module{DpdcV1} DPDC)

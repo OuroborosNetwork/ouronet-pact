@@ -684,6 +684,43 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-10M - #10M UR_NonceSaleAvailability is a pure read; nonce enforce relocated to the cap")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-10M — #10M: UR_NonceSaleAvailability made a pure read; CUSTODIANS|ACQUIRE enforces the nonce ===")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] } { "key": "PK_Emma", "caps": [] }])
+;; #10M: Custodians UR_NonceSaleAvailability was a UR_ (table-read prefix, must not enforce) but ran
+;;       (UEV_AcquisitionNonce nonce) before its DPDC supply read — where the Snakes twin does not. The
+;;       enforce was RELOCATED (not removed) into the CUSTODIANS|ACQUIRE cap, so the UR is now a pure read
+;;       and nonce validation + the exact "Invalid Custodian Acquisition Nonce" error stay on the mutation
+;;       path (identical behavior). Interlocks with #9M: this is the same enforce the cap relies on.
+(let
+    (
+        (buyer:string KST.EMMA)
+    )
+    (map print
+        [
+            ;; (a) UR is now a pure read: an out-of-range nonce resolves to the DPDC "holds none" sentinel
+            ;;     (-1) with NO enforce/abort (pre-fix this UR_ threw "Invalid Custodian Acquisition Nonce"
+            ;;     on nonce 5 — a UR_ must never abort)
+            (expect "#10M: UR_NonceSaleAvailability is a pure read — out-of-range nonce returns supply sentinel (no abort)"
+                -1 (DEMIPAD-CUSTODIANS.UR_NonceSaleAvailability 5))
+            ;; (b) a valid fragment nonce also reads as a pure read (>= -1; launchpad holds none until fueled)
+            (expect "#10M: UR_NonceSaleAvailability(-1) resolves as a pure read"
+                true (>= (DEMIPAD-CUSTODIANS.UR_NonceSaleAvailability -1) -1))
+            ;; (c) validation preserved: the cap (now holding UEV_AcquisitionNonce) still rejects an invalid nonce
+            (expect-failure "#10M: C_Acquire still validates the nonce via CUSTODIANS|ACQUIRE (enforce relocated to cap)"
+                "Invalid Custodian Acquisition Nonce"
+                (DEMIPAD-CUSTODIANS.C_Acquire buyer buyer 5 1 false))
+            ""
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-01 - Initialise Kadena Pay")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
