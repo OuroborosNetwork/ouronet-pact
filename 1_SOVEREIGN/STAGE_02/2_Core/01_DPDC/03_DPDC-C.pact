@@ -30,6 +30,11 @@
         )
     )
     ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_RegisterCollectablesPrice:decimal (id:string son:bool amounts:[integer]))
+    (defun URCi_CreateNewNonces:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool amounts:[integer]))
+    ;;
     ;;  [X]
     ;;
     (defun XE_CreditSFT-FragmentNonce (account:string id:string nonce:integer amount:integer))
@@ -474,6 +479,47 @@
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]
+    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
+    (defun URCi_RegisterCollectablesPrice:decimal
+        (id:string son:bool amounts:[integer])
+        @doc "Single-source issue price for collectable creation: \
+            \ smallest * sum(amounts), with a /1000 discount for a first Elite (E|) \
+            \ SFT nonce (son & NoncesUsed = 0). Used by both the XI_RegisterCollectables \
+            \ exec write and the INFO preview."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (nu:integer (ref-DPDC::UR_NoncesUsed id son))
+                (s-amounts:integer (fold (+) 0 amounts))
+                (smallest:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
+                (ft:string (take 2 id))
+                (raw-price:decimal (* smallest (dec s-amounts)))
+            )
+            (if (fold (and) true [(= ft "E|") son (= nu 0)])
+                (/ raw-price 1000.0)
+                raw-price
+            )
+        )
+    )
+    (defun URCi_CreateNewNonces:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool amounts:[integer])
+        @doc "Cost preview for C_CreateNewNonce/C_CreateNewNonces: issue construct \
+            \ priced via URCi_RegisterCollectablesPrice on the owner-konto payer, \
+            \ empty output list (created collectable names are exec-only write products)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URCi_RegisterCollectablesPrice id son amounts)
+                (ref-DPDC::UR_OwnerKonto id son)
+                (ref-IGNIS::URC_IsVirtualGasZero)
+                []
+            )
+        )
+    )
     ;;{F6}  [C]
     (defun C_CreateNewNonce:object{IgnisCollectorV1.OutputCumulator}
         (
@@ -764,19 +810,8 @@
                     )
                 )
                 ;;
-                ;;Compute Cumulator Parameters
-                (nu:integer (ref-DPDC::UR_NoncesUsed id son))
-                (s-amounts:integer (fold (+) 0 amounts))
-                (smallest:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
-                (ft:string (take 2 id))
-                (sh:string "E|")
-                (raw-price:decimal (* smallest (dec s-amounts)))
-                (price:decimal
-                    (if (fold (and) true [(= ft sh) son (= nu 0)])
-                        (/ raw-price 1000.0)
-                        raw-price
-                    )
-                )
+                ;;Compute Cumulator Parameters (price single-sourced via URCi)
+                (price:decimal (URCi_RegisterCollectablesPrice id son amounts))
                 (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 ;;
                 ;;Computing Nonces that will be generated
