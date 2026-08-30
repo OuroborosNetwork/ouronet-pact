@@ -143,12 +143,14 @@ execution cost and INFO preview move together, module by module in deploy order.
       (A5) severed the sole Talos→INFO coupling (9 wrappers return own `format` string), moved INFO-ZERO
       → `1_SOVEREIGN/STAGE_01/Z_Reads/` deployed last via `[Z]_Reads.repl`. Commits `6f322dd`, `204cfbb`,
       `015ef68`; full `Z.repl` green throughout.
-- [ ] ❌ **DPTF (05) — Group A+B DONE (2026-08-30); Group C pending.** In-module URCi (DPTF is above IGNIS):
-      **19 clean cost readers** landed + interface-declared + `C_`/`XE_` rewired to return them (17 single-tier
-      Small/Medium/Big/Biggest/Branding + 2 construct-pure Burn/Mint), **proven == prior inline cumulator**,
-      `Z.repl` green (commit `e4c1433`). **Group C trio remaining** (write-coupled / dynamic-KDA → `:decimal`
-      price readers): issue-price (`XB_IssueFree`/`C_Issue`/`XE_IssueLP`), `C_ToggleFeeLock` (trace `g`),
-      `C_UpgradeBranding` (BRD price). Then next module in deploy order: **DPMF (00) / DPOF (06)**.
+- [x] ✅ **DPTF (05) — DONE (2026-08-30). Full cost surface on URCi (23 in-module readers).** In-module URCi
+      (DPTF is above IGNIS). **Group A+B (19, `e4c1433`):** 17 single-tier (Small/Medium/Big/Biggest/Branding)
+      + 2 construct-pure (Burn/Mint), each `C_`/`XE_` rewired to return its `URCi`, interface-declared,
+      **proven == prior inline cumulator**. **Group C (4, `937185b`):** the write-coupled trio single-sourced —
+      `URCi_IssueGas`/`URCi_IssueKda` (`:decimal`, XB_IssueFree/C_Issue bill via them, cumulator output=created
+      IDs stays in the write); `URCi_ToggleFeeLock` (`:OutputCumulator`, re-derived from fee-unlocks, computed
+      PRE-increment in `C_`); `URCi_UpgradeBranding` (`:decimal` = months×"blue"). All proven, `Z.repl` green.
+      **Next cost module in deploy order: DPMF (00) / DPOF (06).**
 - [ ] ❌ **1.1.2.1** Walk modules **in deploy order, Stage-1 module #1 first**. Per module: extract each
       cost-emitting `XE_`/`XI_`'s cumulator into a **leaf `URCi_*`** the leaf returns; add a
       **composer `URCi_*`** per `C_`/`CC_`/`A_`. Token modules (TFT/DPOF/DPDC-T) already have
