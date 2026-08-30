@@ -227,7 +227,7 @@
                 )
                 (ifp2:decimal
                     (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                        (ref-TFT::UDC_TransferCumulator 
+                        (ref-TFT::URCi_TransferCumulator 
                             (at "type" (ref-TFT::URC_TransferClasses lp-id swp-sc account native-lp-transfer-amount))
                             lp-id 
                             swp-sc 
@@ -327,7 +327,7 @@
                 (o-id-netto:decimal (at "o-id-netto" dtso))
                 ;;
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_MultiTransferCumulator input-ids account swp-sc input-amounts)
+                    (ref-TFT::URCi_MultiTransferCumulator input-ids account swp-sc input-amounts)
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 (ico2:object{IgnisCollectorV1.OutputCumulator}
@@ -345,13 +345,13 @@
                                 (adjusted-netto:decimal (+ o-id-netto retained))
                             )
                             (if (!= (length f-targets) 0)
-                                (ref-TFT::UDC_MultiBulkTransferCumulator 
+                                (ref-TFT::URCi_MultiBulkTransferCumulator 
                                     [output-id] 
                                     swp-sc
                                     [(+ [account] f-targets)] 
                                     [(+ [adjusted-netto] f-amounts)]
                                 )
-                                (ref-TFT::UDC_TransferCumulator 
+                                (ref-TFT::URCi_TransferCumulator 
                                     (at "type" (ref-TFT::URC_TransferClasses output-id swp-sc account adjusted-netto))
                                     output-id 
                                     swp-sc 
@@ -359,7 +359,7 @@
                                 )
                             )
                         )
-                        (ref-TFT::UDC_TransferCumulator 
+                        (ref-TFT::URCi_TransferCumulator 
                             (at "type" (ref-TFT::URC_TransferClasses output-id swp-sc account o-id-netto))
                             output-id 
                             swp-sc 
@@ -1073,7 +1073,7 @@
                 ;;
                 (what-type:integer (at "type" (ref-TFT::URC_TransferClasses id sender receiver transfer-amount)))
                 (ico:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator what-type id sender receiver)
+                    (ref-TFT::URCi_TransferCumulator what-type id sender receiver)
                 )
                 (receiver-amount:decimal (ref-TFT::URC_ReceiverAmount id sender receiver transfer-amount))
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
@@ -1121,7 +1121,7 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ico:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_MultiTransferCumulator id-lst sender receiver transfer-amount-lst)
+                    (ref-TFT::URCi_MultiTransferCumulator id-lst sender receiver transfer-amount-lst)
                 )
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
                 ;;
@@ -1166,7 +1166,7 @@
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 ;;
                 (ico:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_BulkTransferCumulator id sender receiver-lst transfer-amount-lst)
+                    (ref-TFT::URCi_BulkTransferCumulator id sender receiver-lst transfer-amount-lst)
                 )
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
                 (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
@@ -1204,7 +1204,7 @@
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 ;;
                 (ico:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_MultiBulkTransferCumulator id-lst sender receiver-array transfer-amount-array)
+                    (ref-TFT::URCi_MultiBulkTransferCumulator id-lst sender receiver-array transfer-amount-array)
                 )
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
                 (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
@@ -1466,7 +1466,7 @@
                 ;;Operation 2 Transfer DPTF
                 (wt2:integer (at "type" (ref-TFT::URC_TransferClasses dptf hibernator vst-sc amount)))
                 (ico2:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator wt2 dptf hibernator vst-sc)
+                    (ref-TFT::URCi_TransferCumulator wt2 dptf hibernator vst-sc)
                 )
                 (ifp2:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico2))
                 ;;Operation 3 Transfer DPOF
@@ -1532,7 +1532,7 @@
                 (ifp2:decimal (SIP|URC_Small))
                 (wt3:integer (at "type" (ref-TFT::URC_TransferClasses dptf-id vst-sc awaker remainder)))
                 (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator wt3 dptf-id vst-sc awaker)
+                    (ref-TFT::URCi_TransferCumulator wt3 dptf-id vst-sc awaker)
                 )
                 (ifp3:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico3))
                 (ifp4:decimal
@@ -1606,7 +1606,7 @@
                 (ifp4:decimal
                     (if (!= free-amount 0.0)
                         (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                            (ref-TFT::UDC_TransferCumulator 
+                            (ref-TFT::URCi_TransferCumulator 
                                 (at "type" (ref-TFT::URC_TransferClasses dptf vst-sc merger free-amount))
                                 dptf vst-sc merger
                             )
@@ -1731,7 +1731,7 @@
                 ;;Operation 1 - Transfer
                 (wt1:integer (at "type" (ref-TFT::URC_TransferClasses rt coiler ats-sc amount)))
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator wt1 rt coiler ats-sc)
+                    (ref-TFT::URCi_TransferCumulator wt1 rt coiler ats-sc)
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 ;;Operation 2 - Mint
@@ -1739,7 +1739,7 @@
                 ;;Operation 3 - Transfer
                 (wt3:integer (at "type" (ref-TFT::URC_TransferClasses c-rbt ats-sc coiler c-rbt-amount)))
                 (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator wt3 c-rbt ats-sc coiler)
+                    (ref-TFT::URCi_TransferCumulator wt3 c-rbt ats-sc coiler)
                 )
                 (ifp3:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico3))
                 (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3]))
@@ -1799,7 +1799,7 @@
                 ;;Operation 1 - Transfer
                 (wt1:integer (at "type" (ref-TFT::URC_TransferClasses rt constricter ats-sc amount)))
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator wt1 rt constricter ats-sc)
+                    (ref-TFT::URCi_TransferCumulator wt1 rt constricter ats-sc)
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 ;;Operation 2 - Mint
@@ -1861,7 +1861,7 @@
                 ;;Operation 1 - Transfer
                 (wt1:integer (at "type" (ref-TFT::URC_TransferClasses rt curler ats-sc amount)))
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator wt1 rt curler ats-sc)
+                    (ref-TFT::URCi_TransferCumulator wt1 rt curler ats-sc)
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 ;;Operation 2 - Mint
@@ -1871,7 +1871,7 @@
                 ;;Operation 4 - Transfer
                 (wt4:integer (at "type" (ref-TFT::URC_TransferClasses c-rbt2 ats-sc curler c-rbt2-amount)))
                 (ico4:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator wt4 c-rbt2 ats-sc curler)
+                    (ref-TFT::URCi_TransferCumulator wt4 c-rbt2 ats-sc curler)
                 )
                 (ifp4:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico4))
                 (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3 ifp4]))
@@ -1948,7 +1948,7 @@
                 ;;Operation 1 - Transfer
                 (wt1:integer (at "type" (ref-TFT::URC_TransferClasses rt brumator ats-sc amount)))
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator wt1 rt brumator ats-sc)
+                    (ref-TFT::URCi_TransferCumulator wt1 rt brumator ats-sc)
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 ;;Operation 2 - Mint
@@ -2041,7 +2041,7 @@
                 ;;Operation 3 - Transfer
                 (wt3:integer (at "type" (ref-TFT::URC_TransferClasses c-rbt recoverer ats-sc ra)))
                 (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator wt3 c-rbt recoverer ats-sc)
+                    (ref-TFT::URCi_TransferCumulator wt3 c-rbt recoverer ats-sc)
                 )
                 (ifp3:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico3))
                 ;;Operation 3 - Burn
@@ -2121,7 +2121,7 @@
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
                     (if (= cw empty)
                         EOC
-                        (ref-TFT::UDC_MultiTransferCumulator rt-lst ats-sc culler cw)
+                        (ref-TFT::URCi_MultiTransferCumulator rt-lst ats-sc culler cw)
                     )
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
@@ -2170,14 +2170,14 @@
                 ;;Operation 1 Transfer
                 (wt1:integer (at "type" (ref-TFT::URC_TransferClasses c-rbt recoverer ats-sc ra)))
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator wt1 c-rbt recoverer ats-sc)
+                    (ref-TFT::URCi_TransferCumulator wt1 c-rbt recoverer ats-sc)
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 ;;Operation 2 Burn DPTF
                 (ifp2:decimal (SIP|URC_Burn c-rbt ats-sc))
                 ;;Operation 3 Multi Transfer
                 (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_MultiTransferCumulator reward-tokens ats-sc recoverer release-amounts)
+                    (ref-TFT::URCi_MultiTransferCumulator reward-tokens ats-sc recoverer release-amounts)
                 )
                 (ifp3:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico3))
                 (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3]))
@@ -2218,7 +2218,7 @@
                 (w-urstoa-id:string (ref-DALOS::UR_UrStoaID))
                 (what-type:integer (at "type" (ref-TFT::URC_TransferClasses w-urstoa-id unwrapper lq-sc amount)))
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator what-type w-urstoa-id unwrapper lq-sc)
+                    (ref-TFT::URCi_TransferCumulator what-type w-urstoa-id unwrapper lq-sc)
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 (ifp2:decimal (SIP|URC_Burn w-urstoa-id lq-sc))
@@ -2252,7 +2252,7 @@
                 (w-urstoa-id:string (ref-DALOS::UR_UrStoaID))
                 (what-type:integer (at "type" (ref-TFT::URC_TransferClasses w-urstoa-id wrapper lq-sc amount)))
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator what-type w-urstoa-id wrapper lq-sc)
+                    (ref-TFT::URCi_TransferCumulator what-type w-urstoa-id wrapper lq-sc)
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 (ifp2:decimal (SIP|URC_Mint w-urstoa-id lq-sc false))
@@ -2284,7 +2284,7 @@
                 (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
                 (what-type:integer (at "type" (ref-TFT::URC_TransferClasses w-stoa-id unwrapper lq-sc amount)))
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator what-type w-stoa-id unwrapper lq-sc)
+                    (ref-TFT::URCi_TransferCumulator what-type w-stoa-id unwrapper lq-sc)
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 (ifp2:decimal (SIP|URC_Burn w-stoa-id lq-sc))
@@ -2318,7 +2318,7 @@
                 (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
                 (what-type:integer (at "type" (ref-TFT::URC_TransferClasses w-stoa-id wrapper lq-sc amount)))
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator what-type w-stoa-id wrapper lq-sc)
+                    (ref-TFT::URCi_TransferCumulator what-type w-stoa-id wrapper lq-sc)
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 (ifp2:decimal (SIP|URC_Mint w-stoa-id lq-sc false))
@@ -2651,7 +2651,7 @@
                     )
                 )
                 (ico:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_MultiTransferCumulator 
+                    (ref-TFT::URCi_MultiTransferCumulator 
                         input-ids-for-transfer account swp-sc input-amounts-for-transfer
                     )
                 )
@@ -2853,14 +2853,14 @@
                 )
                 ;;
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_TransferCumulator 
+                    (ref-TFT::URCi_TransferCumulator 
                         (at "type" (ref-TFT::URC_TransferClasses lp-id account swp-sc lp-amount))
                         lp-id account swp-sc
                     )
                 )
                 (ifp2:decimal (SIP|URC_Burn lp-id swp-sc))
                 (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::UDC_MultiTransferCumulator pool-token-ids swp-sc account pt-output-amounts)
+                    (ref-TFT::URCi_MultiTransferCumulator pool-token-ids swp-sc account pt-output-amounts)
                 )
                 (ifp:decimal 
                     (+

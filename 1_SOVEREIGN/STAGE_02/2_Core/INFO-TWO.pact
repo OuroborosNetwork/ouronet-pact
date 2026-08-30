@@ -74,7 +74,7 @@
                 (nonce:integer (ref-DPDC-S::UR_NonceOfSet id set-class))
                 (set-name:string (ref-DPDC-S::UR_SetName id son set-class))
                 (ico:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-DPDC-T::UDC_MultiTransferCumulator [id] [son] account dpdc [nonces] [(make-list (length nonces) how-many-sets)])
+                    (ref-DPDC-T::URCi_MultiTransferCumulator [id] [son] account dpdc [nonces] [(make-list (length nonces) how-many-sets)])
                 )
                 (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
             )
@@ -107,7 +107,7 @@
                 (set-name:string (ref-DPDC-S::UR_SetName id son set-class))
                 (nonce:integer (+ 1 (ref-DPDC::UR_NoncesUsed id false)))
                 (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-DPDC-T::UDC_MultiTransferCumulator [id] [son] account dpdc [nonces] [(make-list (length nonces) 1)])
+                    (ref-DPDC-T::URCi_MultiTransferCumulator [id] [son] account dpdc [nonces] [(make-list (length nonces) 1)])
                 )
                 (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
                 ;;
@@ -128,7 +128,7 @@
                 )
                 (ifp2:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico2))
                 (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-DPDC-T::UDC_MultiTransferCumulator [id] [son] dpdc account [[nonce]] [[1]])
+                    (ref-DPDC-T::URCi_MultiTransferCumulator [id] [son] dpdc account [[nonce]] [[1]])
                 )
                 (ifp3:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico3))
                 (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3]))

@@ -840,7 +840,7 @@
                         (ref-IGNIS::UDC_ConstructOutputCumulator sum-ignis SWP|SC_NAME trigger [])
                     )
                     (ico1:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-TFT::UDC_MultiTransferCumulator pool-token-ids account SWP|SC_NAME pool-token-amounts)
+                        (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account SWP|SC_NAME pool-token-amounts)
                     )
                     ;;
                     (kda-costs:decimal 

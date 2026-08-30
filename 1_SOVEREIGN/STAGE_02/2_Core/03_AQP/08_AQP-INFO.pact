@@ -118,7 +118,7 @@
             )
             (fold (+) 0.0
                 [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 custody transfer
-                      (TFT.UDC_TransferCumulator xfer-type dptf-id sender receiver)))
+                      (TFT.URCi_TransferCumulator xfer-type dptf-id sender receiver)))
                   (SIP|URC_Medium)                                                                 ;; 1.2 pool tracker (medium ×1)
                   (SIP|URC_Biggest)                                                                ;; 1.3 ben rollup   (biggest ×1)
                   (SIP|URC_Fixed (AQP-FVT.URC_SettleStakePendingIgnis settle-scores distinct-fvts));; 2   RPS settle
@@ -184,7 +184,7 @@
             )
             (fold (+) 0.0
                 [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 transfer (dir-dep)
-                      (DPDC-T.UDC_MultiTransferCumulator [collectable-id] [son] sender receiver [nonces] [nonce-amounts])))
+                      (DPDC-T.URCi_MultiTransferCumulator [collectable-id] [son] sender receiver [nonces] [nonce-amounts])))
                   (* (SIP|URC_Medium) nn)                                                          ;; 1.2 tracker (medium × |nonces|)
                   (* (SIP|URC_Medium) nn)                                                          ;; 1.3 rollup  (medium × |nonces|)
                   (SIP|URC_Fixed (AQP-FVT.URC_SettleStakePendingIgnis settle-scores distinct-fvts));; 2   RPS settle

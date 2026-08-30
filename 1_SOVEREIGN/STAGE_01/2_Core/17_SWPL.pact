@@ -615,7 +615,7 @@
                                 (secondary-amounts-for-transfer:[decimal] (ref-U|LST::UC_InsertFirst input-amounts-for-transfer ignis-swp))
                                 (ico1:object{IgnisCollectorV1.OutputCumulator}
                                     ;;For initial Transfer towards the SWP|SC_NAME of input tokens and ignis (removed Ignis additions as is always zero)
-                                    (ref-TFT::UDC_MultiTransferCumulator input-ids-for-transfer account SWP|SC_NAME input-amounts-for-transfer)
+                                    (ref-TFT::URCi_MultiTransferCumulator input-ids-for-transfer account SWP|SC_NAME input-amounts-for-transfer)
                                 )
                                 (ico2:object{IgnisCollectorV1.OutputCumulator}
                                     ;;For LP Minting (2)
@@ -759,7 +759,7 @@
                                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                                     [
                                         ico-flat ico-gaseous 
-                                        (ref-TFT::UDC_MultiTransferCumulator 
+                                        (ref-TFT::URCi_MultiTransferCumulator 
                                             input-ids-for-transfer account SWP|SC_NAME input-amounts-for-transfer
                                         )
                                         (ref-IGNIS::UDC_SmallCumulator SWP|SC_NAME)
@@ -805,7 +805,7 @@
                         (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                             [
                                 ico-flat 
-                                (ref-TFT::UDC_MultiTransferCumulator 
+                                (ref-TFT::URCi_MultiTransferCumulator 
                                     input-ids-for-transfer account SWP|SC_NAME input-amounts-for-transfer
                                 )
                                 (ref-IGNIS::UDC_SmallCumulator SWP|SC_NAME)

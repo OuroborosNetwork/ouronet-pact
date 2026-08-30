@@ -27,7 +27,7 @@
     ;;
     ;;  [UDC]
     ;;
-    (defun UDC_MultiTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]]))
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]]))
     ;;
     ;;  [C]
     ;;
@@ -40,7 +40,7 @@
 ;;
 (interface DpdcTransferV2
     @doc "Additive DPDC-T surface — opt-in per consumer; does not replace DpdcTransferV1."
-    (defun UDC_BulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
     )
     (defun C_BulkTransfer:object{IgnisCollectorV1.OutputCumulator}
@@ -530,7 +530,7 @@
         )
     )
     ;;{F3}  [UDC]
-    (defun UDC_MultiTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_MultiTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
         (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]])
         (let
             (
@@ -550,7 +550,7 @@
             )
         )
     )
-    (defun UDC_BulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_BulkTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool sender:string receiver-lst:[string] nonces-array:[[integer]] amounts-array:[[integer]])
         @doc "Single IGNIS output for bulk transfer — sum URC_TotalTransferPrice per receiver leg once."
         (let
@@ -667,7 +667,7 @@
                 )
                 (enumerate 0 (- (length ids) 1))
             )
-            (UDC_MultiTransferCumulator ids sons sender receiver nonces-array amounts-array)
+            (URCi_MultiTransferCumulator ids sons sender receiver nonces-array amounts-array)
         )
     )
     (defun C_BulkTransfer:object{IgnisCollectorV1.OutputCumulator}
@@ -691,7 +691,7 @@
                     )
                     (enumerate 0 (- (length receiver-lst) 1))
                 )
-                (UDC_BulkTransferCumulator id son sender receiver-lst nonces-array amounts-array)
+                (URCi_BulkTransferCumulator id son sender receiver-lst nonces-array amounts-array)
             )
         )
     )
