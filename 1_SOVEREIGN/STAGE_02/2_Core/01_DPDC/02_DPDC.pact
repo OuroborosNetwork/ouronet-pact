@@ -1126,6 +1126,24 @@
     )
     ;;
     ;;{F5}  [A]
+    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
+        (entity-id:string son:bool)
+        @doc "Cost preview for C_UpdatePendingBranding (Branding tier; son->4.0 else 5.0)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (owner:string (UR_OwnerKonto entity-id son))
+                (multiplier:decimal (if son 4.0 5.0))
+            )
+            (ref-IGNIS::UDC_BrandingCumulator owner multiplier)
+        )
+    )
+    (defun URCi_UpgradeBranding:decimal (months:integer)
+        @doc "Cost preview for C_UpgradeBranding (delegates to BRD single source; \
+            \ the exec path bills the same value via ref-BRD::XE_UpgradeBranding)."
+        (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
+    )
     ;;{F6}  [C]
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
         (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
@@ -1139,7 +1157,7 @@
             )
             (with-capability (DPDC|C>UPDATE-BRD entity-id son)
                 (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
-                (ref-IGNIS::UDC_BrandingCumulator owner multiplier)
+                (URCi_UpdatePendingBranding entity-id son)
             )
         )
     )
