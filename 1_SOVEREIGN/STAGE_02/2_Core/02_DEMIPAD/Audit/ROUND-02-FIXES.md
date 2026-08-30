@@ -423,3 +423,22 @@ bug:
 
 Root cause (D#1's un-gated collect) was removed by #1C; the residual "clamp anyway" is declined to stay
 consistent with the canonical AQP counter. No code change.
+
+---
+
+## #14L — STOICPAY fractional team-split → WONTFIX (non-issue; KPAY = 24 decimals) (2026-08-30)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/04_STOICPAY.pact` (no change).
+
+**Finding (decimals-dependent).** `twenty-p = 0.5·amount` / `ten-p = 0.25·amount` on an integer KPAY count
+produce fractions; "if KPAY's DPTF decimals `< 2`, `C_MultiBulkTransfer` rejects → every non-multiple buy
+reverts."
+
+**Verified precondition not met.** KPAY has **24** decimals — confirmed both in the fixture (`[5.3]` issues
+KPAY with `[24]`) and on the **live chain** via the Pythia dirty-read (`DPTF.UR_Decimals
+"STOICPAY-64EvuR4kgZHd"` → `24`). For an integer buy of `N`: `0.5·N` (≤1 dec) and `0.25·N` (≤2 dec) are
+exactly representable at 24 decimals, so `C_MultiBulkTransfer` never rejects; team total = `1.5·N`, buyer
+= `N`, resident drops `2.5·N` — all exact, zero dust, and `sold = 100M − 0.4·resident` stays exact. The
+bug's precondition (`decimals < 2`) can't occur for this token (decimals are fixed at issuance). Adding a
+divisibility/floor guard would defend against an impossible condition — declined, consistent with the
+"trust the invariant, no unnecessary guards" reasoning applied to #13L. No code change.
