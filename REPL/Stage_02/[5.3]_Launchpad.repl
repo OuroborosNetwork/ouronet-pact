@@ -557,6 +557,37 @@
 )
 (env-sigs [])
 (commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-7M - #7M collectable transmit routes to the cap matching the asset kind (SF vs NF)")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-7M — #7M: NF/SF transmit now opens the matching fungibility cap (was hardcoded SEMI) ===")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; The fix makes X_TransmitCollectables open the NON cap for son=false (NF) and the SEMI cap for son=true
+;; (SF). The cap that discriminates is UEV_AssetFungibility: SEMI enforces [false true], NON enforces
+;; [false false]. Proven on the registered SF custodians (DHOC, [false true]): the SEMI check accepts it,
+;; the NON check rejects it — so post-fix an SF routed through the NF entry (son=false → NON cap) is
+;; blocked (the pre-fix type-mismatched transfer), while the SF path (son=true → SEMI cap) still works.
+;; The NF direction is the exact mirror: a [false false] asset passes the NON cap and fails the SEMI cap,
+;; which is why the pre-fix hardcoded-SEMI path made real NF assets un-fuelable (dead feature).
+(let
+    (
+        (sf-id:string "DHOC-98c486052a51")   ;; custodians, registered Semi-Fungible [false true]
+    )
+    (map print
+        [
+            (expect "#7M: SF asset passes the Semi-Fungible cap check [false true] (son=true path)"
+                true (DEMIPAD.UEV_AssetFungibility sf-id [false true]))
+            (expect-failure "#7M: SF asset REJECTED by the Non-Fungible cap check [false false] (son=false path now blocks the type mismatch)"
+                (DEMIPAD.UEV_AssetFungibility sf-id [false false]))
+            ""
+        ]
+    )
+)
+(env-sigs [])
+(commit-tx)
 
 
 

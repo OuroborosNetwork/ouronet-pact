@@ -171,3 +171,28 @@ No new field; the foundation remainder is automatic (unearned urSTOA is never mi
   `245932 → 245932` (unchanged) and emma's `urstoa-earned 0 → 0` (not re-credited).
 - **Bug reproduced (exit 1):** removing the gate → the same stake re-earns `floor(7843/5)=1568` urSTOA
   (emma `earned 0 → 1568`) and over-drops `urstoa-left 245932 → 244364`. Restored, re-run green. `Z.repl` green.
+
+---
+
+## #7M — Demipad NF transmit guarded by the SF cap → FIXED + PROVEN (2026-08-29)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact` · proof `REPL/Stage_02/[5.3]_Launchpad.repl`
+(TX-7M).
+
+**Bug:** `X_TransmitCollectables` took `son` (true=SF, false=NF) but **hardcoded the SEMI caps** for both
+branches; the `FUEL/RETRIEVE-NON-FUNGIBLE` caps existed but were wired to nothing. Since the SEMI cap
+enforces `UEV_AssetFungibility asset [false true]`, a real NF asset (`[false false]`) could never
+fuel/retrieve (dead feature / stuck), and an SF routed through the NF entry passed the SF guard but
+transferred with `son=false` (type mismatch).
+
+**Fix:** branch the cap on `son` (2×2: fuel/retrieve × SF/NF), wiring the existing NON caps into the
+`son=false` branches. Bonus: the NF retrieve path now inherits the #2H `RETRIEVAL-GATE` (already composed
+by `RETRIEVE-NON-FUNGIBLE`).
+
+**Proof (`[5.3]` TX-7M, deployed stack — exit 0):** on the registered SF custodians (DHOC, `[false true]`),
+`UEV_AssetFungibility(DHOC, [false true])` passes (SEMI path accepts SF) and
+`UEV_AssetFungibility(DHOC, [false false])` **fails** (NON path rejects SF) — so post-fix an SF routed
+through the NF entry (son=false → NON cap) is blocked (was the type mismatch). The NF-works direction is
+the exact mirror (`[false false]` passes the NON cap / fails the SEMI cap) — the reason the pre-fix
+hardcoded-SEMI path made real NF assets un-fuelable. `Z.repl` green. (A full NF-transmit end-to-end needs
+a real DPNF collection + the `UEV_IMC`/"after-Upgrade" transmit path — same caveat as #2H.)

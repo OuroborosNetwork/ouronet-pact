@@ -1297,12 +1297,28 @@
                 (lpad:string DEMIPAD|SC_NAME)
                 (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount client))
             )
+            ;;#7M: open the capability matching the collectable KIND (son true = Semi-Fungible [false true],
+            ;;     false = Non-Fungible [false false]). Previously both branches hardcoded the SEMI cap, so a
+            ;;     real NF asset always failed UEV_AssetFungibility (dead) and an SF routed via the NF entry
+            ;;     transferred with son=false (type mismatch). The NON caps existed but were wired to nothing.
             (if fuel-or-retrieve
-                (with-capability (DEMIPAD|C>FUEL-SEMI-FUNGIBLE asset-id)
-                    (ref-DPDC-T::C_Transfer [asset-id] [son] client lpad [nonces] [amounts] true)
+                ;;FUEL — deposit collectables INTO the launchpad
+                (if son
+                    (with-capability (DEMIPAD|C>FUEL-SEMI-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer [asset-id] [son] client lpad [nonces] [amounts] true)
+                    )
+                    (with-capability (DEMIPAD|C>FUEL-NON-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer [asset-id] [son] client lpad [nonces] [amounts] true)
+                    )
                 )
-                (with-capability (DEMIPAD|C>RETRIEVE-SEMI-FUNGIBLE asset-id)
-                    (ref-DPDC-T::C_Transfer [asset-id] [son] lpad client [nonces] [amounts] true)
+                ;;RETRIEVE — withdraw collectables FROM the launchpad (NF path now also inherits the #2H lock)
+                (if son
+                    (with-capability (DEMIPAD|C>RETRIEVE-SEMI-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer [asset-id] [son] lpad client [nonces] [amounts] true)
+                    )
+                    (with-capability (DEMIPAD|C>RETRIEVE-NON-FUNGIBLE asset-id)
+                        (ref-DPDC-T::C_Transfer [asset-id] [son] lpad client [nonces] [amounts] true)
+                    )
                 )
             )
         )
