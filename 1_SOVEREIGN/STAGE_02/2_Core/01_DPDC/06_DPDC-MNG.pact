@@ -37,6 +37,17 @@
     (defun C_WipePure:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool removable-nonces-obj:object{RemovableNonces}))
     (defun C_WipeClean:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
     (defun C_WipeDirty:object{IgnisCollectorV1.OutputCumulator} (account:string id:string son:bool nonces:[integer]))
+    ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_TogglePause:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_AddQuantity:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_RespawnNFT:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_BurnSFT:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_BurnNFT:object{IgnisCollectorV1.OutputCumulator} (id:string))
+    (defun URCi_WipeNonce:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
 )
 ;;
 (module DPDC-MNG GOV
@@ -378,7 +389,7 @@
             )
         )
     )
-    (defun UC_WipeCumulator:object{IgnisCollectorV1.OutputCumulator}
+    (defun URCi_WipeCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool removable-nonces-obj:object{DpdcManagementV1.RemovableNonces})
         (let
             (
@@ -479,6 +490,98 @@
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]
+    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
+    ;;  (URCi_WipeCumulator, above, covers the multiple-debit wipe family.)
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_Control (Big if son else Biggest, on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (owner:string (ref-DPDC::UR_OwnerKonto id son))
+            )
+            (if son (ref-IGNIS::UDC_BigCumulator owner) (ref-IGNIS::UDC_BiggestCumulator owner))
+        )
+    )
+    (defun URCi_TogglePause:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_TogglePause (Medium on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_MediumCumulator (ref-DPDC::UR_OwnerKonto id son))
+        )
+    )
+    (defun URCi_AddQuantity:object{IgnisCollectorV1.OutputCumulator}
+        (id:string)
+        @doc "Cost preview for C_AddQuantity (Small on SFT owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (ref-DPDC::UR_OwnerKonto id true))
+        )
+    )
+    (defun URCi_RespawnNFT:object{IgnisCollectorV1.OutputCumulator}
+        (id:string)
+        @doc "Cost preview for C_RespawnNFT (Medium on NFT owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_MediumCumulator (ref-DPDC::UR_OwnerKonto id false))
+        )
+    )
+    (defun URCi_BurnSFT:object{IgnisCollectorV1.OutputCumulator}
+        (id:string)
+        @doc "Cost preview for C_BurnSFT (Small on SFT owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_SmallCumulator (ref-DPDC::UR_OwnerKonto id true))
+        )
+    )
+    (defun URCi_WipeSlim:object{IgnisCollectorV1.OutputCumulator}
+        (id:string)
+        @doc "Cost preview for C_WipeSlim (Smallest on SFT owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_SmallestCumulator (ref-DPDC::UR_OwnerKonto id true))
+        )
+    )
+    (defun URCi_BurnNFT:object{IgnisCollectorV1.OutputCumulator}
+        (id:string)
+        @doc "Cost preview for C_BurnNFT (Medium on NFT owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-IGNIS::UDC_MediumCumulator (ref-DPDC::UR_OwnerKonto id false))
+        )
+    )
+    (defun URCi_WipeNonce:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool)
+        @doc "Cost preview for C_WipeNonce (Small if son else Big, on owner-konto)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (owner:string (ref-DPDC::UR_OwnerKonto id son))
+            )
+            (if son (ref-IGNIS::UDC_SmallCumulator owner) (ref-IGNIS::UDC_BigCumulator owner))
+        )
+    )
     ;;{F6}  [C]
     (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
@@ -491,10 +594,7 @@
             )
             (with-capability (DPDC-MNG|S>CTRL id son)
                 (XI_Control id son cu cco ccc casr ctncr cf cw cp)
-                (if son
-                    (ref-IGNIS::UDC_BigCumulator owner)
-                    (ref-IGNIS::UDC_BiggestCumulator owner)
-                )
+                (URCi_Control id son)
             )
         )
     )
@@ -508,7 +608,7 @@
             )
             (with-capability (DPDC-MNG|S>TG_PAUSE id son toggle)
                 (XI_TogglePause id son toggle)
-                (ref-IGNIS::UDC_MediumCumulator (ref-DPDC::UR_OwnerKonto id son))
+                (URCi_TogglePause id son)
             )
         )
     )
@@ -526,7 +626,7 @@
             )
             (with-capability (DPDC-MNG|C>ADD-QUANTITY account id nonce amount)
                 (XI_IncreaseClassZeroSemiFungible account id nonce amount)
-                (ref-IGNIS::UDC_SmallCumulator (ref-DPDC::UR_OwnerKonto id true))
+                (URCi_AddQuantity id)
             )
         )
     )
@@ -542,7 +642,7 @@
             )
             (with-capability (DPDC-MNG|C>RESPAWN-NFT account id nonce)
                 (ref-DPDC-C::XB_CreditNFT-Nonce account id nonce 1)
-                (ref-IGNIS::UDC_MediumCumulator (ref-DPDC::UR_OwnerKonto id false))
+                (URCi_RespawnNFT id)
             )
         )
     )
@@ -561,7 +661,7 @@
                 ;;Burn Semifungible and Update Supplies
                 (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] false)
                 ;;Costs 2 IGNIS per Burn Event
-                (ref-IGNIS::UDC_SmallCumulator (ref-DPDC::UR_OwnerKonto id true))
+                (URCi_BurnSFT id)
             )
         )
     )
@@ -577,7 +677,7 @@
                 ;;Burn Semifungible and Update Supplies
                 (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] true)
                 ;;Costs 1 IGNIS for Partial Nonce Wipe Event
-                (ref-IGNIS::UDC_SmallestCumulator (ref-DPDC::UR_OwnerKonto id true))
+                (URCi_WipeSlim id)
             )
         )
     )
@@ -592,7 +692,7 @@
             )
             (with-capability (DPDC-MNG|C>BURN-NFT account id nonce)
                 (ref-DPDC-C::XI_DecreaseClassZeroNonFungibles id account [nonce] false)
-                (ref-IGNIS::UDC_MediumCumulator (ref-DPDC::UR_OwnerKonto id false))
+                (URCi_BurnNFT id)
             )
         )
     )
@@ -614,12 +714,12 @@
                     )
                     (with-capability (DPDC-MNG|C>WIPE-SFT-NONCE-TOTALLY account id nonce amount)
                         (XI_DecreaseClassZeroSemiFungibles account id [nonce] [amount] true)
-                        (ref-IGNIS::UDC_SmallCumulator owner)
+                        (URCi_WipeNonce id son)
                     )
                 )
                 (with-capability (DPDC-MNG|C>WIPE-NFT-NONCE account id nonce)
                     (XI_DecreaseClassZeroNonFungibles account id [nonce] true)
-                    (ref-IGNIS::UDC_BigCumulator owner)
+                    (URCi_WipeNonce id son)
                 )
             )
         )
@@ -664,7 +764,7 @@
                 )
             )
             ;;Costs 2 IGNIS per Nonce Wiped
-            (UC_WipeCumulator id son removable-nonces-obj)
+            (URCi_WipeCumulator id son removable-nonces-obj)
         )
     )
     (defun C_WipeClean:object{IgnisCollectorV1.OutputCumulator}
