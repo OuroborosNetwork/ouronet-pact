@@ -457,7 +457,7 @@
             ;;admin flag can half-enable the unfinished path (prevents phantom seller funds).
             (UEV_DirectInjection direct-injection)
             ;;<open-for-business> must be turned on to allow Deposits
-            (enforce ofb (format "{} is not open for business, to allow deposits"))
+            (enforce ofb (format "{} is not open for business, to allow deposits" [asset-id]))
             ;;Acces Capabilities
             (compose-capability (DEMIPAD|GOV))
             (compose-capability (P|SECURE-CALLER))

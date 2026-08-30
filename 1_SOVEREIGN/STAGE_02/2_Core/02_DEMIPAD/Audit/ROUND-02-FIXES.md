@@ -474,3 +474,23 @@ look sovereign/core.
 **Open sub-decisions (flagged):** STOAICO placed under `6_Launchpad/5_StoicIco/` (staking-ICO alongside
 the KPAY sale) — confirm vs a standalone citizen folder. AOZ+/DSP+ and DPL-UR/EXPLORER kept in
 `Stage_01/`/`Stage_Z/` (outside the numbered scheme) — rename later if desired. Closes roadmap #88.
+
+---
+
+## #16L — Demipad `open-for-business` reject: format placeholder, no arg → FIXED + PROVEN (2026-08-30)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact` (deposit cap) · proof
+`REPL/Stage_02/[6.1]_DPDC.repl` buy path.
+
+**Bug.** `(enforce ofb (format "{} is not open for business, to allow deposits"))` — a `{}` placeholder
+with **no arg list**. When `ofb` is false the `format` is evaluated as the enforce message and errors on
+the missing arg, masking the intended message (tx still fails; no state impact).
+
+**Fix (one line).** `(format "{} is not open for business, to allow deposits" [asset-id])` — supplies the
+asset id the message is about.
+
+**REPL proof.** Boot + `[5.3]` + the `[6.1]` KPAY buy context, then toggle KPAY `open-for-business` OFF and
+attempt a buy: post-fix it's rejected with the readable "**… is not open for business …**" (asset id in
+it). Bug direction proven by reverting to the no-arg form → the reject instead fires the cryptic
+`Expected Pact Value, got closure or table reference` (the format-arity error), and the `expect-failure`
+on the readable phrase goes red. Restored → green, 0 load failures.

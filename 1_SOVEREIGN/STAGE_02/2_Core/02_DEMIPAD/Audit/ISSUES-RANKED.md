@@ -23,7 +23,7 @@ Status: `OPEN` (not yet discussed) · `DISCUSSING` · `AGREED` (fix locked, not 
 | **#13L** | LOW | STOAICO | `unclaimed-count`/`nzs-count` no lower bound (mostly subsumed by #1C) | D#13 | **WONTFIX** (subsumed by #1C; canonical AQP has no clamp — verified balanced) |
 | **#14L** | LOW | STOICPAY | fractional team-split for buys not divisible by 4 (KPAY-decimals dependent) | D#14 | **WONTFIX** (non-issue: KPAY = 24 decimals, verified live + fixture; split is exact) |
 | **#15L** | LOW | Snakes/Cust/STOAICO/Spark | missing `UEV_IMC` on several `C_` entrypoints | D#15 | **FIXED** (reclassified: sale modules are CITIZEN — no sovereign gate; relocated to `2_CITIZEN/6_Launchpad/`) |
-| **#16L** | LOW | Demipad | `open-for-business` reject `format` has a placeholder but no arg | D#16 | OPEN |
+| **#16L** | LOW | Demipad | `open-for-business` reject `format` has a placeholder but no arg | D#16 | **FIXED** |
 | **#17L** | LOW | Demipad | interface omits `URC_Acquire`/`URCI_Acquire` (refuted as blocker) + `URCI_` mis-prefix | D#17 | OPEN |
 
 **Total: 17 issues — 1 Critical · 3 High · 8 Medium · 5 Low.**
