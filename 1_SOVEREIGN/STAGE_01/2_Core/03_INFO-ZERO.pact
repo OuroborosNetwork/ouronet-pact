@@ -136,7 +136,7 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_ControlSmartAccount account)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -156,7 +156,7 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
-                (kfp:decimal (ref-DALOS::UR_UsagePrice "smart"))
+                (kfp:decimal (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -176,7 +176,7 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
-                (kfp:decimal (ref-DALOS::UR_UsagePrice "standard"))
+                (kfp:decimal (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -196,7 +196,7 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateGovernor account)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -216,7 +216,7 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateGuard account)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -236,7 +236,7 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateKadena account)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -256,7 +256,7 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateSovereign account)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -276,7 +276,7 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|small"))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_UpdateEliteAccount patron)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -296,7 +296,7 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ifp:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_UpdateEliteAccountSquared patron)))
                 (sa1:string (ref-I|OURONET::OI|UC_ShortAccount sender))
                 (sa2:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
             )

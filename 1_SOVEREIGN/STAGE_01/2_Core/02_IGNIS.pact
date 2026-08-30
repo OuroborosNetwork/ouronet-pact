@@ -419,6 +419,40 @@
         )
     )
     ;;
+    ;;<======================>
+    ;;[DALOS-URCi] cost readers — the single source for each DALOS client op's tier choice.
+    ;;  DALOS deploys below IGNIS (cannot host these); Talos bills through them and the Z_Reads
+    ;;  presentation derives its preview from the same call, so billing and preview never drift.
+    ;;<======================>
+    (defun DALOS|URCi_ControlSmartAccount:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (UDC_SmallCumulator account)
+    )
+    (defun DALOS|URCi_RotateGovernor:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (UDC_SmallCumulator account)
+    )
+    (defun DALOS|URCi_RotateGuard:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (UDC_SmallCumulator account)
+    )
+    (defun DALOS|URCi_RotateKadena:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (UDC_SmallCumulator account)
+    )
+    (defun DALOS|URCi_RotateSovereign:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (UDC_SmallCumulator account)
+    )
+    (defun DALOS|URCi_UpdateEliteAccount:object{IgnisCollectorV1.OutputCumulator} (patron:string)
+        (UDC_SmallCumulator patron)
+    )
+    (defun DALOS|URCi_UpdateEliteAccountSquared:object{IgnisCollectorV1.OutputCumulator} (patron:string)
+        (UDC_MediumCumulator patron)
+    )
+    ;;  KDA-billed DALOS ops: the URCi returns the native fair price (the tier "key" single-sourced)
+    (defun DALOS|URCi_DeploySmartAccount:decimal ()
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::UR_UsagePrice "smart"))
+    )
+    (defun DALOS|URCi_DeployStandardAccount:decimal ()
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::UR_UsagePrice "standard"))
+    )
+    ;;
     (defun UDC_MakeModularCumulator:object{IgnisCollectorV1.ModularCumulator}
         (price:decimal active-account:string trigger:bool)
         (let

@@ -77,6 +77,19 @@
     (defun UDC_BigCumulator:object{OutputCumulator} (active-account:string))
     (defun UDC_BiggestCumulator:object{OutputCumulator} (active-account:string))
     (defun UDC_CustomCodeCumulator:object{OutputCumulator} ())
+    ;;
+    ;;  [DALOS-URCi] cost readers — single-source the tier choice for DALOS client ops.
+    ;;  DALOS deploys below IGNIS so it hosts these here; Talos bills through them and the
+    ;;  Z_Reads presentation derives its preview from the same source (kills tier-choice drift).
+    (defun DALOS|URCi_ControlSmartAccount:object{OutputCumulator} (account:string))
+    (defun DALOS|URCi_RotateGovernor:object{OutputCumulator} (account:string))
+    (defun DALOS|URCi_RotateGuard:object{OutputCumulator} (account:string))
+    (defun DALOS|URCi_RotateKadena:object{OutputCumulator} (account:string))
+    (defun DALOS|URCi_RotateSovereign:object{OutputCumulator} (account:string))
+    (defun DALOS|URCi_UpdateEliteAccount:object{OutputCumulator} (patron:string))
+    (defun DALOS|URCi_UpdateEliteAccountSquared:object{OutputCumulator} (patron:string))
+    (defun DALOS|URCi_DeploySmartAccount:decimal ())
+    (defun DALOS|URCi_DeployStandardAccount:decimal ())
         ;;
     (defun UDC_MakeModularCumulator:object{ModularCumulator} (price:decimal active-account:string trigger:bool))
     (defun UDC_MakeOutputCumulator:object{OutputCumulator} (input-modular-cumulator-chain:[object{ModularCumulator}] output-lst:list))
