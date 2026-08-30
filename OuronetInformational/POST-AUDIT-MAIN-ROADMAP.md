@@ -167,12 +167,20 @@ execution cost and INFO preview move together, module by module in deploy order.
       cost readers). Renamed the 14-fn family **cross-module** (90 sites, 7 files incl. Stage-2
       INFO-ONE/INFO-TWO/AQP-INFO/DPDC-T + SWPL/MTX-SWP). C_ entrypoints already return them → single-sourced.
       Pure rename, `Z.repl` green (exercises transfers + all callers).
-- [ ] ❌ **Remaining Stage-1 cost modules (triaged 2026-08-30) — NEXT SESSION.** **No cost (skip):** SWPT(14),
-      CODEX(22), PYTHIA(23). **Have cost:** ATSU(10, ~67 returns/20 ctor — big) · VST(11, ~75/21 — big) ·
-      LIQUID(12, ~12/4 — small) · OUROBOROS(13, ~12/7 — small) · SWP(15, ~26/14) · SWPI(16, ~11/2 — small) ·
-      SWPL(17, ~11/11; 3 URCi already from TFT rename) · SWPLC(18, ~39/8) · SWPU(19, ~26/7) · MTX-SWP(20,
-      ~13/12; 1 URCi already). The SWP family (15–20) is the most intricate (swap-math cumulators) — do with
-      fresh context. Pattern & tooling proven across all cost shapes; each is index→build→prove→commit like above.
+- [x] ✅ **ATSU (10) — composition-tier, formalized (commit `19cbdfa`).** Sub-op costs already URCi; helper
+      `UDC_UnlimitedUncoilCumulator → URCi_`. Composer URCi → 1.2.
+- [x] ✅ **SWP (15) — 9 URCi (commit `5b43d74`).** 7 single-tier + `ToggleFeeLock` (pre-increment) +
+      `UpgradeBranding`; `EnableFrozen/Sleeping/ToggleAddOrSwap` composers → 1.2. All proven; `Z.repl` green.
+- [x] ✅ **STAGE-1 EXEC-SIDE URCi WALK — SUBSTANTIVELY COMPLETE (2026-08-30).** Every module with an
+      **inline tier-construction cost surface** is done + proven + green: **DALOS**(via IGNIS, 9) · **DPTF**(23) ·
+      **DPOF**(19) · **ATS**(22) · **TFT**(14, family rename) · **SWP**(9). **No-cost (skip):** ELITE(07),
+      SWPT(14), CODEX(22), PYTHIA(23), DPMF(00 legacy). **Composition-tier — exec-side ALREADY single-sourced
+      via sub-op URCi; their per-op composer URCi (re-deriving the `Concatenate [sub-op cumulators]` + inline
+      liquidity-fee/branding sub-costs) is Phase-1.2 INFO-composer work, same tier as AQP:** ATSU(10), VST(11),
+      LIQUID(12), OUROBOROS(13), SWPI(16), SWPL(17), SWPLC(18), SWPU(19), MTX-SWP(20). A handful of clean
+      standalone single-tier ops still live in those composition modules (e.g. SWPLC `Branding×2`, SWPL
+      `Small(SC_NAME)`) — optional to hoist during the 1.2 composer pass. **Net: the exec-side walk (1.1.2) is
+      at its correct boundary; the composition composers fold into Phase 1.2 (INFO).**
 - [ ] ❌ **1.1.2.1** Walk modules **in deploy order, Stage-1 module #1 first**. Per module: extract each
       cost-emitting `XE_`/`XI_`'s cumulator into a **leaf `URCi_*`** the leaf returns; add a
       **composer `URCi_*`** per `C_`/`CC_`/`A_`. Token modules (TFT/DPOF/DPDC-T) already have
