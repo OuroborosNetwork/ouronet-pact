@@ -100,12 +100,14 @@ Surfaced from the audit-folder scan. Resolve, then their outcome folds into the 
       DPDC #19H (2 active refs). `AQP-comprehensive.repl` now green (371+44 asserts). **Lesson for the
       citizen-migration work (Phase 1.5): DPDC audits only checked sovereign callers — sweep 2_CITIZEN +
       test files for every renamed/removed DPDC symbol.**
-- [ ] **0.4 Discover LIVE interface versions (early — informs the Phase 7 bump).** Read the currently
-      **deployed** Ouronet modules on-chain (Pythia keyless dirty-read —
-      `OuronetInformational/pythia-dirty-read-access.md`) and record which interface version each live
-      module implements. The next version for any interface that changes = **live + 1** (so we know if
-      a new interface is V2 or V3). Record the **live→target(+1) map**. NB: local dev has already moved
-      ahead of live for some (e.g. ATS on `V2` while live is `V1`) — target is relative to **live**, not local.
+- [x] **0.4 Discover LIVE interface versions — ✅ DONE (2026-08-30).** Full snapshot of every deployed
+      `ouronet-ns` module's implemented interface version, via the Pythia keyless dirty-read
+      (`describe-module → interfaces` over `list-modules`). **57 modules with versioned interfaces →
+      `OuronetInformational/LIVE-INTERFACE-VERSIONS.md`** (the live→target map; target for any changed
+      interface = **live + 1**). Highlights: most cores at `…V1`; already-high live suffixes —
+      `SWP`/`MTX-SWP`/`TS01-C3`/`TS01-CP` on V3, `TS01-C4` **V7**, `PYTHIA` V4, `IGNIS` V1+V2,
+      `ATS` **AutostakeV2** (live is already V2, not V1 as previously assumed), `DEMIPAD-STOICPAY` V2,
+      `DPL-UR` DeployerReads V7+V8. Consult this file when bumping at Phase 7.
 - [x] **0.5a Checkpoint push** — all merges + session work pushed to `origin/main` (`3cf31ae`). ✅
 - [x] **0.5 DEMIPAD audit — ✅ DONE (2026-08-30). All 17 findings closed, one at a time, each
       REPL-proven + committed.** Tracker `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/Audit/` (README,
