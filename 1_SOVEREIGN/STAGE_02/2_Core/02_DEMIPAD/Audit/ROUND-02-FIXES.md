@@ -196,3 +196,50 @@ through the NF entry (son=false → NON cap) is blocked (was the type mismatch).
 the exact mirror (`[false false]` passes the NON cap / fails the SEMI cap) — the reason the pre-fix
 hardcoded-SEMI path made real NF assets un-fuelable. `Z.repl` green. (A full NF-transmit end-to-end needs
 a real DPNF collection + the `UEV_IMC`/"after-Upgrade" transmit path — same caveat as #2H.)
+
+---
+
+## #8M — Demipad `direct-injection` phantom seller funds → FIXED + PROVEN (2026-08-30)
+
+**File:** `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/00_Demipad.pact` · proof
+`REPL/Stage_02/[5.3]_Launchpad.repl` (TX-8M).
+
+**What it was.** `direct-injection` is an *unbuilt* feature. In `C_Deposit`, under
+`direct-injection=true`, the inbound token transfer `ico3` becomes `EOC` (no `cod+rem` tokens enter the
+shared launchpad account), but the seller-ledger credit `XI_DepositForAsset asset-id … rem …` still ran —
+crediting withdrawable `funds-*` with **no tokens behind it**. A later `C_Withdraw` would then pull `rem`
+out of *other* sellers' proceeds in the same custody account (drain). Doubly latent: (a) all four live
+callers (Spark/Snakes/Custodians/STOICPAY) hardcode `direct-injection=false`, and (b) the old cap only
+let `true` through when the admin flag `UR_DirectInjection` was ON — but the flag *could* be flipped, so
+it was a landmine, not dead code.
+
+**Owner design (settled).** Direct-injection only ever concerned the **`cod` (royalty)** portion — route
+it into an *injection profile* once AQP vaults are live (e.g. 50% Demiurgos Holdings / 50% Coding-Division
+score, both Deb-free), OR collect `cod` locally and let a **daily automaton drip-inject** it. The seller's
+`rem` is unaffected — it must always transfer in and always be credited. Building the real path needs:
+finalize+redeploy rehaul → deploy vaults → rewrite injection to a forward-module/profile → redeploy — not
+REPL-testable now. So: **leave a true stub, keep the working non-direct path** (the automaton gives full
+functionality without the deploy gymnastics). A silent no-op body was rejected as the stub because a
+flipped flag would then take *no payment* while the acquire flow still delivers the asset (free-asset
+hole) — the stub must make direct-injection **unreachable**, not silent.
+
+**Changes:**
+- New unprotected `UEV_DirectInjection (direct-injection:bool)` — `(enforce (not direct-injection) …)`,
+  **unconditional** (no admin flag). `DEMIPAD|C>DEPOSIT` composes it in place of the old flag-gated
+  `(if direct-injection (enforce (UR_DirectInjection) …) true)`. Extracted as a `UEV_` (mirrors
+  `UEV_AssetFungibility`) so it is directly assertable past the `UEV_IMC` gate on `C_Deposit`.
+- Removed the now-unused `read-direct-injection` let-binding from the cap.
+- Defense-in-depth: `C_Deposit`'s `XI_DepositForAsset` credit is now wrapped in
+  `(if (not direct-injection) … true)` — so even if the cap block is later loosened during the AQP build,
+  the seller credit cannot fire until the `rem` transfer is wired (no phantom funds).
+- `UR_DirectInjection` state kept **reserved** to gate the real path when built.
+
+**REPL proof (TX-8M).** With the admin flag turned **ON**: `UEV_DirectInjection true` still fails
+*"Direct Injection is not yet available"* (hard-block ignores the flag) and `UEV_DirectInjection false`
+passes. Bug direction proven by neutering `UEV_DirectInjection` back to the old flag-gated form → with the
+flag ON, `UEV_DirectInjection true` returns `true` instead of failing (`expected failure, got result:
+true`) — the phantom path would proceed. Restored → 3/3 green, full boot clean, 0 load failures.
+
+**Follow-up (future, post-AQP):** build the real direct-injection — route `cod` to the injection profile
+(or collect-then-daily-drip) + transfer `rem` in + re-enable the seller credit. Logged in
+`POST-AUDIT-MAIN-ROADMAP.md` (STAGE 3 / post-AQP).

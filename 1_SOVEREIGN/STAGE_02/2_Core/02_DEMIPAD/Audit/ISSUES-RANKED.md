@@ -15,7 +15,7 @@ Status: `OPEN` (not yet discussed) · `DISCUSSING` · `AGREED` (fix locked, not 
 | **#5M** | MEDIUM | STOAICO | `A_Inject` div-by-`vault-score` no zero-guard (+ floor-to-0 under-distribution) | D#5 | **FIXED** |
 | **#6M** | MEDIUM | STOAICO | urSTOA double-credited across stake rounds (re-mints claimed urSTOA, over-spends cap) | D#7 | **FIXED** |
 | **#7M** | MEDIUM | Demipad | NF transmit guarded by the SF cap (NF can't move; SF-as-NF type mismatch) | D#8 | **FIXED** |
-| **#8M** | MEDIUM | Demipad | `direct-injection` credits withdrawable funds with no tokens in (phantom funds; latent) | D#9 | INTENT |
+| **#8M** | MEDIUM | Demipad | `direct-injection` credits withdrawable funds with no tokens in (phantom funds; latent) | D#9 | **FIXED** |
 | **#9M** | MEDIUM | Custodians | `UC_NonceQuintessence` (declared pure) enforces | D#10 | OPEN |
 | **#10M** | MEDIUM | Custodians | `UR_NonceSaleAvailability` enforces (twin Snakes does not) | D#11 | OPEN |
 | **#11M** | MEDIUM | STOICPAY | 2× KPAY out per sale vs `sold = 100M − 0.4·resident` accounting | D#6 | INTENT |

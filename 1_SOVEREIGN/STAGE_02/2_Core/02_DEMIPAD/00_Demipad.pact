@@ -423,7 +423,6 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (iz-type:bool (contains type [0 1 2 3]))
-                (read-direct-injection:bool (UR_DirectInjection))
                 (iz-registered:bool (UR_CheckRegistration asset-id))
                 (ofb:bool (UR_OpenForBusiness asset-id))
                 (iz-lkda:bool (UR_IzLKDA asset-id))
@@ -450,11 +449,10 @@
                 )
                 true
             )
-            ;;If <direct-injection> is used, it must be turned on.
-            (if direct-injection
-                (enforce read-direct-injection "Direct Injection is not yet available")
-                true
-            )
+            ;;Direct-Injection is an unbuilt feature (routes the <cod> royalty into an
+            ;;injection profile once AQP vaults are live). It is HARD-BLOCKED here so no
+            ;;admin flag can half-enable the unfinished path (prevents phantom seller funds).
+            (UEV_DirectInjection direct-injection)
             ;;<open-for-business> must be turned on to allow Deposits
             (enforce ofb (format "{} is not open for business, to allow deposits"))
             ;;Acces Capabilities
@@ -883,6 +881,16 @@
             (enforce (= l 2) "Invalid Fungibility variable")
         )
     )
+    (defun UEV_DirectInjection (direct-injection:bool)
+        @doc "Direct-Injection is an unbuilt feature: once AQP vaults are live it will route the \
+            \ <cod> royalty portion of a deposit into an injection profile (or collect-then-drip \
+            \ once/day via an automaton). Until it is built it is HARD-BLOCKED here — this enforces \
+            \ a deposit does not request it, UNCONDITIONALLY (no admin flag can enable the \
+            \ unfinished path). This is what prevents the half-wired branch from crediting seller \
+            \ funds with no tokens in custody (phantom funds). The <UR_DirectInjection> state is \
+            \ kept reserved to gate the real path when it is implemented."
+        (enforce (not direct-injection) "Direct Injection is not yet available")
+    )
     ;;{F3}  [UDC]
     (defun UDC_Costs:object{DemiourgosLaunchpadV1.Costs} 
         (a:decimal b:decimal)
@@ -1053,7 +1061,16 @@
                     true
                 )
                     ;;2.2]Save <rem> in <DEMIPAD|T|Ledger> (so that it may be withdrawed by Asset Seller)
-                (XI_DepositForAsset asset-id amount-in-dollars rem type)
+                    ;;    Guarded on (not direct-injection): crediting the seller ledger is only
+                    ;;    valid once <rem> tokens actually enter custody (ico3 above). The cap
+                    ;;    hard-blocks direct-injection today, so this branch is unreachable; the
+                    ;;    guard stays as defense-in-depth so the future direct-injection build
+                    ;;    must wire the <rem> transfer before this credit can ever fire (no
+                    ;;    phantom funds).
+                (if (not direct-injection)
+                    (XI_DepositForAsset asset-id amount-in-dollars rem type)
+                    true
+                )
                 ;;3]Output Cumulator
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
             )

@@ -597,6 +597,55 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(begin-tx "TX-8M - #8M direct-injection is hard-blocked (no phantom funds) even with the admin flag ON")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(print "=== TX-8M — #8M: direct-injection hard-blocked at the deposit cap regardless of UR_DirectInjection ===")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; #8M: direct-injection was a flag-gated, unbuilt feature. The OLD deposit cap only rejected it
+;;      while UR_DirectInjection was OFF; flipping the admin flag ON let direct-injection=true pass
+;;      the cap, and C_Deposit then credited the seller ledger (funds-*) via XI_DepositForAsset
+;;      WITHOUT any tokens entering custody (ico3 = EOC) — phantom funds, later drainable through
+;;      C_Withdraw against OTHER sellers' proceeds in the shared launchpad account.
+;;      FIX: the block is now the unprotected UEV_DirectInjection, composed by DEMIPAD|C>DEPOSIT,
+;;      rejecting direct-injection UNCONDITIONALLY (true stub — no admin flag can enable it), and the
+;;      ledger credit (XI_DepositForAsset) is additionally guarded on (not direct-injection).
+;;      PROOF (mirrors #7M's UEV_AssetFungibility style — the C_ entry is UEV_IMC-gated so we assert
+;;      the composed check directly): turn the admin flag ON, then show UEV_DirectInjection STILL
+;;      rejects a direct-injection request, and passes a normal (non-direct) deposit.
+(let
+    (
+        (pkey:string DEMIPAD.PP)
+    )
+    [
+        ;;REPL-VARIANT: flip the admin direct-injection flag ON to prove the hard-block ignores it
+        (acquire-module-admin ouronet-ns.DEMIPAD)
+        (update DEMIPAD.DEMIPAD|T|Properties pkey {"direct-injection" : true})
+        (map print
+            [
+                (expect "#8M · precondition: admin direct-injection flag is turned ON"
+                    true (DEMIPAD.UR_DirectInjection))
+                ;; Post-fix the check is unconditional: direct-injection=true is rejected even with the
+                ;; admin flag ON — so no deposit can ever credit seller funds without tokens in custody.
+                (expect-failure
+                    "#8M: UEV_DirectInjection REJECTS a direct-injection request even with the flag ON (hard-block, no phantom funds)"
+                    "Direct Injection is not yet available"
+                    (DEMIPAD.UEV_DirectInjection true))
+                ;; Control: a normal (non-direct) deposit request passes the check untouched.
+                (expect "#8M · control: a non-direct deposit request passes UEV_DirectInjection"
+                    true (DEMIPAD.UEV_DirectInjection false))
+                ""
+            ]
+        )
+        ;;restore the flag to its initialised value
+        (update DEMIPAD.DEMIPAD|T|Properties pkey {"direct-injection" : false})
+    ]
+)
+(env-sigs [])
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (begin-tx "TX-01 - Initialise Kadena Pay")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

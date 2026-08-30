@@ -309,6 +309,17 @@ Stage 3 is the next development stage, taken up **after everything here is done*
 - **NFT Marketplace** — trade collectables (DPSF/DPNF) on Ouronet.
 - **Order-based exchange** — an order-book DEX (complements the AMM SWP pools).
 - **Lending Platform** — borrow/lend against Ouronet assets.
+- **Launchpad direct-injection (royalty → AQP profile)** — DEMIPAD audit #8M follow-up. Build the real
+  `direct-injection` deposit path: route the `cod` (royalty) portion of each buy into an *injection
+  profile* rather than local residents. Owner design: a profile is a split, not one vault — e.g. 100 `cod`
+  → 50% Demiurgos Holdings (shareholders vault) + 50% Coding-Division **score** (1 pt/node, no set bonus,
+  single treasury); both targets are Deb-free so injection is simple. Two viable modes: (a) **live**
+  inject with each user contribution, or (b) keep collecting `cod` locally and have a **daily automaton
+  drip-inject** it once/day (preferred given inject cost). `rem` (seller proceeds) always transfers in +
+  credits regardless. Build sequence: finalize+redeploy rehaul → deploy the profile vaults → rewrite
+  `C_Deposit` to a forward-module/profile inject + re-enable the seller credit → redeploy. Until then the
+  feature is **hard-blocked** (`UEV_DirectInjection`), `UR_DirectInjection` state reserved. Non-direct
+  mode + the automaton already delivers full functionality.
 Each is a new sovereign feature-set built on the finalized Stage-1/2 primitives; they'll get their own
 plans when Stage 3 begins. Captured here so the horizon isn't lost.
 
