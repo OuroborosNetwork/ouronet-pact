@@ -1,7 +1,36 @@
 # Post-audit MAIN roadmap — the master checklist
 
 The single tracker for everything queued once the audit worktrees land on `main`.
-Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
+Created 2026-08-27 · last reorganised 2026-08-30. Specs are cross-referenced.
+
+---
+
+## 📊 DASHBOARD — the whole arc at a glance
+
+**Legend:** ✅ done · ❌ not done · ⚠ open decision (blocks its phase) · 🔒 hard dependency on earlier phases · — future/out-of-scope.
+**Progress (2026-08-30): 10 ✅ / 70 ❌.** Phase 0 fully closed; Phase 1 is next.
+
+**The shape of the work.** One long **code-finalization spine** (Phases 0→7) that ends in a fresh redeploy,
+then **two capstones** that hang off the final deployed shape: the **UI** (Phase 8) and the **Documentation +
+Audit Book** (Phase 9). Everything after Phase 7 needs the code frozen first.
+
+| # | Phase | Goal (one line) | Status |
+|---|-------|-----------------|--------|
+| **0** | Merge audits + reconcile + green-gate | Land all 4 audits + DEMIPAD on `main`, reconcile, snapshot live interface versions, all-green | ✅ **COMPLETE** |
+| **1** | `URCi` cost architecture | A per-function cost reader (`URCi_`) on every client op so exec + info move together | ❌ **NEXT** — ⚠ gated on **1.0** decision |
+| **2** | INFO rehaul (complete + consolidate) | An INFO preview for **every** entrypoint (repo-wide), one `Z_Reads` INFO module per stage | ❌ |
+| **3** | Re-price IGNIS | Measure real STOA gas, re-price via `UsagePrice` tiers + heavy-read surcharge | ❌ |
+| **4** | AQP module splits | Split `04_FVT` (over the deploy ceiling) along capability seams; re-check the rest | ❌ |
+| **5** | REPL finalization + CI harden | Repo-wide coverage of every `C_`/`A_`; one-boot whole-system test; CI exec↔info gate | ❌ |
+| **6** | Red team + Audit Book | Adversarial multi-agent attack on all modules; assemble the book (Parts I/II/III) | ❌ |
+| **7** | Interface bump + cascade + redeploy | Version-bump every changed interface (live+1), cascade, deploy-ready gate, fresh redeploy | ❌ 🔒 1–6 |
+| **8** | UI incorporation (capstone) | Intelligent UX blueprint → OuronetUI agent (8A desktop, 8B mobile) | ❌ 🔒 1–7 |
+| **9** | Documentation + publish | Full written docs + the Audit Book, published on the website | ❌ 🔒 7 |
+| **S3** | Stage 3 (future) | Heir System · NFT Marketplace · Order-book DEX · Lending · launchpad direct-injection | — future |
+
+**Pre-phase decisions:** D1 (AQP dual split-mode) ✅ settled+built · D2 (Heir System) ✅ deferred to Stage 3.
+
+---
 
 ## Branch topology (as of 2026-08-27)
 - **`main`** already contains this session's work: AQP-INFO (10/17 stake-unstake+finalize/abort,
@@ -19,63 +48,23 @@ Created 2026-08-27. Check items off as they're done. Specs are cross-referenced.
 ## PRE-PHASE DECISIONS — settle before starting the list
 Surfaced from the audit-folder scan. Resolve, then their outcome folds into the phases.
 
-- [x] ✅ **D1 — AQP LP-scoring — SETTLED (names confirmed 2026-08-29).** Both modes, per-farm toggle;
-      `SPLIT|STAKED` / `SPLIT|TVL` names confirmed by owner. Detail below → task #89.
-  - **§6.2 negative-score fix: DONE** (Fix #7) — LP Level-1 score is now `lp-amount × mx` (amount,
-    not fluctuating STOA value), so a full unstake nets to 0, no negative, no clamp. Only leftover: the
-    dead `URC_LpAmountToLpDenominatorEquivalent` fn (uncalled) → **retire it in Phase 1 cleanup**. No decision.
-  - **G2 — RESOLVED (owner 2026-08-29): implement BOTH reward-split modes, selectable per farm/entity.**
-    They differ only in the Level-2 per-pool weight `W_i`; everything else (Level-1 = staked amount, STOA
-    valuation, inject-time capture) is shared → a per-farm config flag, not a rewrite. (task #89)
-    - **`SPLIT|STAKED`** (Variant 1, *participation* — the standard default): `W_i` = the pool's total
-      **staked value** (Σ staked-LP-amount × lp-worth-in-STOA). Every staked STOA-unit earns equally;
-      pool size irrelevant. E.g. staked 120k/140k/149k → 120/409, 140/409, 149/409.
-    - **`SPLIT|TVL`** (Variant 2, *pool-size* — the Vesta/MultiversX model): `W_i` = the swpair TVL
-      (`SWP::UR_StoaValue` — already stored + refreshed on pool events, captured at inject). Bigger pools
-      capture bigger slices. E.g. pools 1M/250k/150k → 1.0/1.4, 0.25/1.4, 0.15/1.4.
-    - **What's built (verified in code 2026-08-29):** the AQP LP-redesign audit HARD-SWITCHED the live
-      inject to Variant 1 — `URC_FarmInjectDenominatorFresh` (1693) sums `URC_MemberStakedStoaValue`
-      (1784) = staked-portion value, computed FRESH at inject (no cache; base-dependent). Variant 2's
-      formula still exists as `URC_ResolveScoreEntityGhostWeight` (1854) = `UR_StoaValue` (whole-pool
-      TVL) but is DORMANT — only seeds the legacy `total-ghost-tvl-weight` cache the defcap gate reads.
-      So today = single-mode Variant 1; **no toggle was ever built.** The variants never coexisted —
-      the audit *replaced* TVL to fix the negative-score bug (#7) + a cache-timing bug (S synced at
-      stake-2.1, before base updated at 4 → stale defcap S).
-    - **MECHANISM — settled (owner 2026-08-29):** a **per-farm (`FVT|T`) flag**, **freely mutable** via
-      a setter (`C_SetSplitMode` + Talos wrapper + cap + gas + INFO), **default `SPLIT|STAKED`** (= current
-      live behavior). No cooldown — switching only affects FUTURE injects (RPS is checkpoint-based; past
-      rewards untouched); transparency is the mitigant (staker sees the farm's current mode in its params).
-      Since W_i is fresh-at-inject, wiring is one branch in `URC_FarmInjectDenominatorFresh` + the matching
-      numerator (line 2286): `(if (= split-mode SPLIT|TVL) URC_ResolveScoreEntityGhostWeight
-      URC_MemberStakedStoaValue)`. Task #89 must ALSO reconcile the fresh-vs-cached-S defcap-gate wrinkle
-      (NOTE 1849–1853) for BOTH modes. The reward preview (INFO) reports the mode.
-    - **STATUS (2026-08-29): IMPLEMENTED + green.** `04_FVT.pact` (schema field, `URC_MemberLevel2Weight`
-      routing all 3 W_i sites, `C_SetSplitMode`/cap/XI/WU/GAS), Talos `AQP-FVT|C_SetSplitMode`, INFO
-      `AQP-FVT|INFO_SetSplitMode`; interface declares the reader + setter. Full `Z.repl` green (542 asserts).
-      Switch-mechanism test `REPL/Stage_02/[6.2.11]_AQP-SPLIT-MODE.repl` (default pipeline): default mode,
-      free bidirectional switch, invalid-mode + farm-only guards — 5 asserts green. Commits 78553c9, 1f3e3ed.
-    - **Non-farm sentinel (owner 2026-08-29):** `C_Issue` takes no split-mode arg (auto-set). Farms →
-      `SPLIT|STAKED` default; vaults/treasuries → `"|"` (`CT_SPLIT_MODE_NA`) sentinel — never read, and
-      `C_SetSplitMode` rejects non-farms.
-    - **Economic-flip proof: DONE + green** — `[6.2.9]` `TX-BOOT-13-SPLIT` on the real `OuroLpFarm` triplet
-      member: same member, W_i = **0** under `SPLIT|STAKED` (no LP staked yet) vs **7920.17** under
-      `SPLIT|TVL` (= whole-pool `UR_StoaValue`); restoring STAKED returns the staked weight. Unblocked by
-      fixing the 0.3a citizen-drift. `AQP-comprehensive.repl` green (371+44 asserts).
-
-- [x] ✅ **D2 — Heir System — SETTLED: DEFERRED to STAGE 3** (owner 2026-08-29). Not part of this plan;
-      handled after everything here ships. See the STAGE 3 section below. Background retained:
-      `repurpose` moves a
-  holder's tokens to a new account **without their signature** — a deliberate account-recovery tool
-  (stolen account / owner death → admin moves holdings to an account the owner/heirs control; admin-gated
-  + event-logged, by design). The tension: every token-owner power (freeze/wipe/unfreeze/remint/burn/
-  repurpose) is total dominion; holders trust the issuer. The proposed **Heir System**: an account
-  **proactively designates an heir while in control** (signed in advance — trustless) + a **dead-man's
-  switch** (no activity for a set duration → the heir can claim/repurpose), shifting trust from "admin
-  fairness" to "owner's advance designation + an objective on-chain inactivity timer." Open sub-qs:
-  DALOS-account-layer (any account, all token types) vs per-collection; what counts as "activity";
-  coexist with admin-discretion repurpose; could it be a DALOS **guard** rather than new DPDC machinery.
-  **DECIDE: schedule it (new feature — likely its own phase + UI surface) or keep as a captured future
-  idea (post-launch)?**
+- [x] ✅ **D1 — AQP LP-scoring dual split-mode — SETTLED + BUILT + GREEN (task #89, 2026-08-30).** Two
+      per-pool reward-split modes, a **freely-mutable per-farm flag** (default `SPLIT|STAKED`), differing
+      only in the Level-2 weight `W_i`:
+    - **`SPLIT|STAKED`** (default, *participation*): `W_i` = the pool's total **staked value** — every
+      staked STOA-unit earns equally, pool size irrelevant.
+    - **`SPLIT|TVL`** (*pool-size*, Vesta/MultiversX model): `W_i` = the swpair **TVL** (`SWP::UR_StoaValue`) —
+      bigger pools capture bigger slices.
+    - Built in `04_FVT.pact` (`URC_MemberLevel2Weight` routes all 3 W_i sites, `C_SetSplitMode`/cap/XI/WU/GAS
+      + Talos + INFO); non-farms get the `"|"` (`CT_SPLIT_MODE_NA`) sentinel; switching only affects future
+      injects (RPS checkpoint-based). Proven: `[6.2.11]_AQP-SPLIT-MODE.repl` + economic-flip in `[6.2.9]`
+      (W_i 0 vs 7920.17 on the real `OuroLpFarm`). Commits `78553c9`, `1f3e3ed`. Also fixed the §6.2
+      negative-score bug (LP L1 = `lp-amount × mx`, nets to 0 on full unstake). Cleanup leftover → Phase 1:
+      retire the dead `URC_LpAmountToLpDenominatorEquivalent`.
+- [x] ✅ **D2 — Heir System — DEFERRED to Stage 3** (owner 2026-08-29). A proactive heir designation +
+      dead-man's inactivity switch (trust from "admin fairness" → "owner's advance designation + on-chain
+      inactivity timer") — a new feature-set, not part of this plan. Full detail in the **STAGE 3** section
+      + `01_DPDC/Audit/HEIR-SYSTEM-PONDERING.md`.
 
 ---
 
