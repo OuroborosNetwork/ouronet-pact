@@ -43,6 +43,15 @@
     (defun C_CreateVestingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
     (defun C_CreateSleepingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
     (defun C_CreateHibernatingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
+    (defun URCi_CreateSpecialTrueFungibleLink:object{IgnisCollectorV1.OutputCumulator} (dptf:string))
+    (defun URCi_CreateSpecialOrtoFungibleLink:object{IgnisCollectorV1.OutputCumulator} (dptf:string vzh-tag:integer))
+    (defun URCi_RepurposeTrueFungible:object{IgnisCollectorV1.OutputCumulator} (dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun URCi_RepurposeOrtoFungible:object{IgnisCollectorV1.OutputCumulator} (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun URCi_MergeNonces:object{IgnisCollectorV1.OutputCumulator} (dpof:string target:string nonces:[integer] vzh-tag:integer))
+    (defun URCi_Unvest:object{IgnisCollectorV1.OutputCumulator} (unvester:string dpof:string nonce:integer))
+    (defun URCi_Awake:object{IgnisCollectorV1.OutputCumulator} (awaker:string dpof:string nonce:integer))
+    (defun URCi_Constrict:object{IgnisCollectorV1.OutputCumulator} (constricter:string ats:string rt:string amount:decimal dayz:integer))
+    (defun URCi_Brumate:object{IgnisCollectorV1.OutputCumulator} (brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
         ;;
     (defun C_Freeze:object{IgnisCollectorV1.OutputCumulator} (freezer:string freeze-output:string dptf:string amount:decimal))
     (defun URCi_Freeze:object{IgnisCollectorV1.OutputCumulator} (freezer:string freeze-output:string dptf:string amount:decimal))
@@ -730,6 +739,63 @@
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
+    (defun URCi_CreateSpecialTrueFungibleLink:object{IgnisCollectorV1.OutputCumulator}
+        (dptf:string)
+        @doc "Cost preview for C_CreateFrozenLink/C_CreateReservationLink (shared \
+            \ XI_CreateSpecialTrueFungibleLink): issue the special wrapper (gas rail, empty \
+            \ write-product output as the block-hash id is exec-only) + update-special on \
+            \ <dptf> + the unconditional transfer-role toggle on the VST-owned wrapper \
+            \ (UDC_BigCumulator on VST|SC_NAME == DPTF::URCi_ToggleTransferRole of the fresh id). \
+            \ Cost is fr-tag independent (both tags issue 1 token + toggle)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    ;;1]Issue the special DPTF wrapper (gas rail only; STOA collected separately)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-DPTF::URCi_IssueGas 1) VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    ;;2]Link <dptf> <-> special wrapper
+                    (ref-DPTF::URCi_UpdateSpecialTrueFungible dptf)
+                    ;;3]Toggle transfer-role on the VST-owned special wrapper
+                    (ref-IGNIS::UDC_BigCumulator VST|SC_NAME)
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_CreateSpecialOrtoFungibleLink:object{IgnisCollectorV1.OutputCumulator}
+        (dptf:string vzh-tag:integer)
+        @doc "Cost preview for C_CreateVestingLink(1)/C_CreateSleepingLink(2)/ \
+            \ C_CreateHibernatingLink(3) (shared XI_CreateSpecialOrtoFungibleLink): issue the \
+            \ special DPOF wrapper (gas rail, empty write-product output) + update-special on \
+            \ <dptf> + the transfer-role toggle (only for Vesting/Sleeping; Hibernating is \
+            \ transfer-free -> EOC). UDC_BiggestCumulator on VST|SC_NAME mirrors \
+            \ DPOF::URCi_ToggleTransferRole of the fresh id."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    ;;1]Issue the special DPOF wrapper (gas rail only; STOA collected separately)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (ref-DPOF::URCi_IssueGas 1) VST|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    ;;2]Link <dptf> <-> special wrapper
+                    (ref-DPOF::URCi_UpdateSpecialOrtoFungible dptf)
+                    ;;3]Toggle transfer-role only for Vesting/Sleeping wrappers
+                    (if (or (= vzh-tag 1) (= vzh-tag 2))
+                        (ref-IGNIS::UDC_BiggestCumulator VST|SC_NAME)
+                        EOC
+                    )
+                ]
+                []
+            )
+        )
+    )
     (defun C_CreateFrozenLink:object{IgnisCollectorV1.OutputCumulator}
         (patron:string dptf:string)
         (UEV_IMC)
@@ -815,6 +881,31 @@
                     ]
                     []
                 )
+            )
+        )
+    )
+    (defun URCi_RepurposeTrueFungible:object{IgnisCollectorV1.OutputCumulator}
+        (dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+        @doc "Cost preview for C_RepurposeFrozen/C_RepurposeReserved (shared \
+            \ XI_RepurposeTrueFungible): freeze <repurpose-from> + wipe + unfreeze + re-mint on \
+            \ VST + transfer the wiped supply to <repurpose-to>, re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (amount:decimal (ref-DPTF::UR_AccountSupply dptf-to-repurpose repurpose-from))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPTF::URCi_ToggleFreezeAccount dptf-to-repurpose)
+                    (ref-DPTF::URCi_Wipe dptf-to-repurpose)
+                    (ref-DPTF::URCi_ToggleFreezeAccount dptf-to-repurpose)
+                    (ref-DPTF::URCi_Mint dptf-to-repurpose VST|SC_NAME false)
+                    (ref-TFT::URCi_Transfer dptf-to-repurpose VST|SC_NAME repurpose-to amount)
+                ]
+                []
             )
         )
     )
@@ -1032,6 +1123,61 @@
             )
         )
     )
+    (defun URCi_Unvest:object{IgnisCollectorV1.OutputCumulator}
+        (unvester:string dpof:string nonce:integer)
+        @doc "Cost preview for C_Unvest: the per-object IGNIS cull price (obj-count * smallest \
+            \ / 5) + the release leg (whole-nonce transfer when nothing stays vested, else \
+            \ ready-amount transfer + re-mint of the still-vested remainder + its nonce \
+            \ transfer) + the burn leg (nonce transfer to VST + burn). Re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (culled-data:list (URC_CullMetaDataAmountWithObject dpof nonce))
+                (culled-amount:decimal (at 0 culled-data))
+                (remint-meta-data-chain:list (at 1 culled-data))
+                ;;
+                (dptf-id:string (ref-DPOF::UR_Vesting dpof))
+                (nonces-used:integer (ref-DPOF::UR_NoncesUsed dpof))
+                (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
+                (return-amount:decimal (- nonce-supply culled-amount))
+                ;;
+                (obj-l:decimal (dec (length remint-meta-data-chain)))
+                (smallest:decimal (ref-DALOS::UR_UsagePrice "ignis|smallest"))
+                (price:decimal (/ (* obj-l smallest) 5.0))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                ;;
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price VST|SC_NAME trigger []))
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (if (= return-amount 0.0)
+                        (ref-TFT::URCi_Transfer dptf-id VST|SC_NAME unvester nonce-supply)
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                            [
+                                (ref-TFT::URCi_Transfer dptf-id VST|SC_NAME unvester culled-amount)
+                                (ref-DPOF::URCi_Mint dpof)
+                                (ref-DPOF::URCi_MoveCumulator dpof [(+ 1 nonces-used)] false)
+                            ]
+                            []
+                        )
+                    )
+                )
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            (ref-DPOF::URCi_MoveCumulator dpof [nonce] false)
+                            (ref-DPOF::URCi_Burn dpof)
+                        ]
+                        []
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
+        )
+    )
     (defun C_Unvest:object{IgnisCollectorV1.OutputCumulator}
         (unvester:string dpof:string nonce:integer)
         (UEV_IMC)
@@ -1094,6 +1240,32 @@
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
                 )
+            )
+        )
+    )
+    (defun URCi_RepurposeOrtoFungible:object{IgnisCollectorV1.OutputCumulator}
+        (dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+        @doc "Cost preview for C_RepurposeVested/C_RepurposeSleeping/C_RepurposeHibernating \
+            \ (shared XI_RepurposeOrtoFungible): freeze <repurpose-from> + wipe the <nonce> + \
+            \ unfreeze + re-mint on VST + transfer the new nonce to <repurpose-to>, purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                ;;
+                (nonces-used:integer (ref-DPOF::UR_NoncesUsed dpof-to-repurpose))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPOF::URCi_ToggleFreezeAccount dpof-to-repurpose)
+                    (ref-DPOF::URCi_WipeCumulator dpof-to-repurpose
+                        (ref-DPOF::UDC_RemovableNonces [nonce]
+                            (ref-DPOF::UR_NoncesSupplies dpof-to-repurpose [nonce])))
+                    (ref-DPOF::URCi_ToggleFreezeAccount dpof-to-repurpose)
+                    (ref-DPOF::URCi_Mint dpof-to-repurpose)
+                    (ref-DPOF::URCi_MoveCumulator dpof-to-repurpose [(+ 1 nonces-used)] false)
+                ]
+                []
             )
         )
     )
@@ -1221,6 +1393,65 @@
             )
         ) 
     )
+    (defun URCi_MergeNonces:object{IgnisCollectorV1.OutputCumulator}
+        (dpof:string target:string nonces:[integer] vzh-tag:integer)
+        @doc "Cost preview for C_Merge/C_RepurposeMerge (vzh-tag 2) and C_Slumber/ \
+            \ C_RepurposeSlumber (vzh-tag 3), shared XI_MergeNonces: the per-nonce IGNIS merge \
+            \ price (count * biggest) + destroy the input nonces (freeze/wipe/unfreeze) + \
+            \ (conditional) release the free DPTF amount + (conditional) re-mint the still-locked \
+            \ remainder as a new nonce and transfer it. Output == compute-merge-all, purely."
+        (let
+            (
+                (ref-U|VST:module{UtilityVstV1} U|VST)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (dptf:string
+                    (if (= vzh-tag 2)
+                        (ref-DPOF::UR_Sleeping dpof)
+                        (ref-DPOF::UR_Hibernation dpof)
+                    )
+                )
+                (nonces-used:integer (ref-DPOF::UR_NoncesUsed dpof))
+                (nonces-supplies:[decimal] (ref-DPOF::UR_NoncesSupplies dpof nonces))
+                (how-many:decimal (dec (length nonces)))
+                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (price:decimal (* how-many biggest))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                ;;
+                (stu:[decimal] (URC_SecondsToUnlock dpof nonces))
+                (compute-merge-all:[decimal] (UC_MergeAll nonces-supplies stu))
+                (free-amount:decimal (at 0 compute-merge-all))
+                (locked-amount:decimal (at 1 compute-merge-all))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price VST|SC_NAME trigger [])
+                    (ref-DPOF::URCi_ToggleFreezeAccount dpof)
+                    (ref-DPOF::URCi_WipeCumulator dpof
+                        (ref-DPOF::UDC_RemovableNonces nonces nonces-supplies))
+                    (ref-DPOF::URCi_ToggleFreezeAccount dpof)
+                    (if (!= free-amount 0.0)
+                        (ref-TFT::URCi_Transfer dptf VST|SC_NAME target free-amount)
+                        EOC
+                    )
+                    (if (!= locked-amount 0.0)
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                            [
+                                (ref-DPOF::URCi_Mint dpof)
+                                (ref-DPOF::URCi_MoveCumulator dpof [(+ 1 nonces-used)] false)
+                            ]
+                            []
+                        )
+                        EOC
+                    )
+                ]
+                compute-merge-all
+            )
+        )
+    )
     (defun C_Merge:object{IgnisCollectorV1.OutputCumulator}
         (merger:string dpof:string nonces:[integer])
         (UEV_IMC)
@@ -1329,6 +1560,59 @@
             )
         )
     )
+    (defun URCi_Awake:object{IgnisCollectorV1.OutputCumulator}
+        (awaker:string dpof:string nonce:integer)
+        @doc "Cost preview for C_Awake: nonce transfer to VST + whole-nonce burn + remainder \
+            \ DPTF transfer back to <awaker> + (conditional) burn of the time-decayed \
+            \ hibernating fee. Output == [fee-promile remainder fee], re-derived purely."
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (dptf-id:string (ref-DPOF::UR_Hibernation dpof))
+                (precision:integer (ref-DPOF::UR_Decimals dpof))
+                (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
+                (meta-data-chain:[object] (ref-DPOF::UR_NonceMetaData dpof nonce))
+                ;;
+                (mint-time:time (at "mint-time" (at 0 meta-data-chain)))
+                (release-time:time (at "release-date" (at 0 meta-data-chain)))
+                (hibernating-period:decimal (diff-time release-time mint-time))
+                ;;
+                (present-time:time (at "block-time" (chain-data)))
+                (elapsed-time:decimal (diff-time present-time mint-time))
+                ;;
+                (hibernating-fee-promile:decimal
+                    (if (>= elapsed-time hibernating-period)
+                        0.0
+                        (floor (- 800.0 (* 800.0 (/ elapsed-time hibernating-period))) 4)
+                    )
+                )
+                (remainder:decimal
+                    (if (= hibernating-fee-promile 0.0)
+                        nonce-supply
+                        (at 0 (ref-U|ATS::UC_PromilleSplit hibernating-fee-promile nonce-supply precision))
+                    )
+                )
+                (hibernating-fee:decimal (- nonce-supply remainder))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPOF::URCi_MoveCumulator dpof [nonce] false)
+                    (ref-DPOF::URCi_Burn dpof)
+                    (ref-TFT::URCi_Transfer dptf-id VST|SC_NAME awaker remainder)
+                    (if (!= hibernating-fee 0.0)
+                        (ref-DPTF::URCi_Burn dptf-id VST|SC_NAME)
+                        EOC
+                    )
+                ]
+                [hibernating-fee-promile remainder hibernating-fee]
+            )
+        )
+    )
     (defun C_Awake:object{IgnisCollectorV1.OutputCumulator}
         (awaker:string dpof:string nonce:integer)
         @doc "Hibernated Tokens have a 80% peak awakening fee, \
@@ -1430,6 +1714,33 @@
         )
     )
     ;;
+    (defun URCi_Constrict:object{IgnisCollectorV1.OutputCumulator}
+        (constricter:string ats:string rt:string amount:decimal dayz:integer)
+        @doc "Cost preview for C_Constrict: <rt> transfer into the ATS SC + rbt mint + \
+            \ Hibernate of the rbt to <constricter>. Output == [c-rbt-amount], purely \
+            \ (the XE_UpdateRUR aggregate side-writes carry no cumulator cost)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
+                (coil-data:object{AutostakeV2.CoilData}
+                    (ref-ATS::URC_RewardBearingTokenAmountsWithHibernation ats rt amount dayz))
+                (c-rbt:string (at "rbt-id" coil-data))
+                (c-rbt-amount:decimal (at "rbt-amount" coil-data))
+                ;;
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_Transfer rt constricter ATS|SC_NAME amount))
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPTF::URCi_Mint c-rbt ATS|SC_NAME false))
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (URCi_Hibernate ATS|SC_NAME constricter c-rbt c-rbt-amount dayz))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [c-rbt-amount])
+        )
+    )
     (defun C_Constrict:object{IgnisCollectorV1.OutputCumulator}
         (constricter:string ats:string rt:string amount:decimal dayz:integer)
             @doc "Constricts the <rt> Token, autostaking it in the ATS-Pair <ats>, generating Hibernated Token \
@@ -1470,6 +1781,40 @@
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [c-rbt-amount])
             )
+        )
+    )
+    (defun URCi_Brumate:object{IgnisCollectorV1.OutputCumulator}
+        (brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
+        @doc "Cost preview for C_Brumate: <rt> transfer into the ATS SC + c-rbt1 mint (ats1) + \
+            \ c-rbt2 mint (ats2) + Hibernate of c-rbt2 to <brumator>. Output == [c-rbt2-amount], \
+            \ purely (the XE_UpdateRUR aggregate side-writes carry no cumulator cost)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
+                (coil1-data:object{AutostakeV2.CoilData}
+                    (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount))
+                (c-rbt1:string (at "rbt-id" coil1-data))
+                (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
+                ;;
+                (coil2-data:object{AutostakeV2.CoilData}
+                    (ref-ATS::URC_RewardBearingTokenAmountsWithHibernation ats2 c-rbt1 c-rbt1-amount dayz))
+                (c-rbt2:string (at "rbt-id" coil2-data))
+                (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
+                ;;
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_Transfer rt brumator ATS|SC_NAME amount))
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPTF::URCi_Mint c-rbt1 ATS|SC_NAME false))
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPTF::URCi_Mint c-rbt2 ATS|SC_NAME false))
+                (ico4:object{IgnisCollectorV1.OutputCumulator}
+                    (URCi_Hibernate ATS|SC_NAME brumator c-rbt2 c-rbt2-amount dayz))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4] [c-rbt2-amount])
         )
     )
     (defun C_Brumate:object{IgnisCollectorV1.OutputCumulator}
