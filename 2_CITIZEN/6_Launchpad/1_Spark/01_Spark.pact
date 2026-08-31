@@ -24,6 +24,11 @@
     (defun C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
     (defun C_CustomRedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal custom-stoa-pid:decimal))
     ;;
+    ;;  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
+    ;;
+    (defun URCi_BuySparks:decimal (buyer:string sparks-amount:integer iz-native:bool))
+    (defun INFO_BuySparks:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string sparks-amount:integer iz-native:bool))
+    ;;
 )
 (module DEMIPAD-SPARK GOV
     ;;
@@ -368,6 +373,51 @@
             )
         )
     )
+    (defun URCi_BuySparks:decimal (buyer:string sparks-amount:integer iz-native:bool)
+        @doc "Pure-citizen IGNIS cost preview for C_BuySparks = Sigma of the two SOVEREIGN Talos ops' \
+            \ IGNIS (each self-collects): DEMIPAD deposit + DPTF Sparks-out transfer. The deposit is \
+            \ amount-independent; the transfer cost depends only on the DPTF fee class of Sparks."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (spark-id:string (UR_SparkID))
+                (pid:decimal (at "pid" (URC_SparkAmountCosts sparks-amount)))
+                (type:integer (if iz-native 0 1))
+            )
+            (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                   (ref-DEMIPAD::URCi_Deposit buyer spark-id pid type false))
+               (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                   (ref-TFT::URCi_Transfer spark-id DEMIPAD|SC_NAME buyer (dec sparks-amount))))
+        )
+    )
+    (defun INFO_BuySparks:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string sparks-amount:integer iz-native:bool)
+        @doc "Cost preview for the SPARK|C_BuySparks pure-citizen buy (sole gas-funded path = the \
+            \ TS02-CPAD Talos wrapper). IGNIS = URCi_BuySparks (Sigma of the two Talos ops). Launchpad \
+            \ ops carry NO protocol STOA fee; the ACQUISITION cost (dollar pid + STOA wstoa) is declared \
+            \ in the description as the good being bought, not a fee-to-execute (protocol stoa = none)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (spark-id:string (UR_SparkID))
+                (costs:object{DemiourgosLaunchpadV1.Costs} (URC_SparkAmountCosts sparks-amount))
+                (pid:decimal (at "pid" costs))
+                (wstoa:decimal (at "wstoa" costs))
+                (pay:string (if iz-native "Native STOA" "OWS (Wrapped STOA)"))
+                (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [ (format "Operation: Buy {} {} Sparks for {} (pure-citizen, Sigma-billed)." [sparks-amount spark-id sb])
+                  (format "Acquisition cost: {} $ paid as {} {} (not a protocol fee)." [pid wstoa pay])
+                  "Executes via TS02-CPAD.SPARK|C_BuySparks (the sole gas-funded path)." ]
+                [ (format "Acquired {} {} Sparks." [sparks-amount spark-id]) ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (URCi_BuySparks buyer sparks-amount iz-native))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
     (defun URC_Acquire:[string]
         (buyer:string amount:integer iz-native:bool slippage:decimal)
         @doc "Variant 1 (with slippage) — coin.TRANSFER caps the UI signs, padded by (1 + slippage/100)."
@@ -401,31 +451,28 @@
     ;;{F5}  [A]
     ;;{F6}  [C]
     (defun C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
-        @doc "<max-cost> is the buyer's slippage ceiling in dollars (sentinel < 0 = slippage off)."
-        (UEV_IMC)
+        @doc "PURE CITIZEN buy. Composes two SOVEREIGN Talos ops — DEMIPAD|C_Deposit (buyer STOA -> \
+            \ Launchpad) then DPTF|C_Transfer (Sparks Launchpad -> buyer) — each self-collecting IGNIS \
+            \ on <patron>. A citizen cannot fold cumulators (no permission for the bare uncollected \
+            \ core funcs), so IGNIS is billed Sigma-wise (once per op). <max-cost> is the buyer's dollar \
+            \ slippage ceiling (sentinel < 0 = slippage off). Preview: URCi_BuySparks / INFO_BuySparks."
         (with-capability (SPARK|C>BUY sparks-amount)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
-                    (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
                     ;;
                     (spark-id:string (UR_SparkID))
                     (costs:object{DemiourgosLaunchpadV1.Costs} (URC_SparkAmountCosts sparks-amount))
                     (pid:decimal (at "pid" costs))
                     (type:integer (if iz-native 0 1))
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DEMIPAD::C_Deposit buyer spark-id pid type false max-cost)
-                    )
-                    (ico2:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-TFT::C_Transfer spark-id DEMIPAD|SC_NAME buyer (dec sparks-amount) true)
-                    )
                     (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
                 )
-                (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [])
-                )
+                ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
+                (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer spark-id pid type false max-cost)
+                ;;2] SOVEREIGN DPTF transfer Talos op — Sparks from the Launchpad SC to the buyer; self-collects IGNIS
+                (ref-TS01-C1::DPTF|C_Transfer patron spark-id DEMIPAD|SC_NAME buyer (dec sparks-amount) true)
                 (format "User {} succesfuly acquired {} {} Tokens" [sb sparks-amount spark-id])
             )
         )
