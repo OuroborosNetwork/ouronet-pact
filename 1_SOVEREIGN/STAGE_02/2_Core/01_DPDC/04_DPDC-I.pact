@@ -20,6 +20,12 @@
         )
     )
     ;;
+    ;;  [URCi]
+    ;;
+    (defun URCi_IssueCollectionPrice:decimal (son:bool))
+    (defun URCi_IssueCollectionKda:decimal (son:bool))
+    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator} (son:bool owner-account:string))
+    ;;
 )
 ;;
 (module DPDC-I GOV
@@ -153,6 +159,47 @@
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]
+    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
+    (defun URCi_IssueCollectionPrice:decimal
+        (son:bool)
+        @doc "IGNIS issue price for a digital collection: token-issue * (son?5:10). \
+            \ Single source for the exec construct and the INFO preview."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (* (ref-DALOS::UR_UsagePrice "ignis|token-issue") (if son 5.0 10.0))
+        )
+    )
+    (defun URCi_IssueCollectionKda:decimal
+        (son:bool)
+        @doc "KDA side-cost for a digital-collection issue (dpsf for SFT, dpnf for NFT). \
+            \ Single source for KDA|C_Collect and the INFO preview."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (if son (ref-DALOS::UR_UsagePrice "dpsf") (ref-DALOS::UR_UsagePrice "dpnf"))
+        )
+    )
+    (defun URCi_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator}
+        (son:bool owner-account:string)
+        @doc "Cost preview for C_IssueDigitalCollection: IGNIS construct priced via \
+            \ URCi_IssueCollectionPrice on the owner payer, empty output (the created \
+            \ collection id is an exec-only write product). The KDA side-cost previews \
+            \ separately via URCi_IssueCollectionKda."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator
+                (URCi_IssueCollectionPrice son)
+                owner-account
+                (ref-IGNIS::URC_IsVirtualGasZero)
+                []
+            )
+        )
+    )
     ;;{F6}  [C]
     ;; C_DeployAccountSFT/NFT removed — DPDC Audit #35M: see interface-side removal note above.
     (defun C_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator}
@@ -172,17 +219,10 @@
                     (ref-BRD:module{BrandingV1} BRD)
                     (ref-DPDC:module{DpdcV1} DPDC)
                     ;;
-                    (multiplier:decimal (if son 5.0 10.0))
-                    (ti:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
-                    (ignis-price:decimal (* ti multiplier))
+                    (ignis-price:decimal (URCi_IssueCollectionPrice son))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     ;;
-                    (kda-cost:decimal
-                        (if son
-                            (ref-DALOS::UR_UsagePrice "dpsf")
-                            (ref-DALOS::UR_UsagePrice "dpnf")
-                        )
-                    )
+                    (kda-cost:decimal (URCi_IssueCollectionKda son))
                     (id:string
                         (XI_IssueDigitalCollection
                             son
