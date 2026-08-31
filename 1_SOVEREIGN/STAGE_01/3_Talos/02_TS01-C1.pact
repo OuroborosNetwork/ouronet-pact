@@ -7,11 +7,11 @@
     ;;
     ;;DALOS Functions
     (defun DALOS|C_ControlSmartAccount (patron:string account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool))
-    (defun DALOS|C_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string))
-    (defun DALOS|C_DeployStandardAccount (account:string guard:guard kadena:string public:string))
+    (defun DALOS|C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
+    (defun DALOS|C_DeployStandardAccount (account:string guard:guard stoa:string public:string))
     (defun DALOS|C_RotateGovernor (patron:string account:string governor:guard))
     (defun DALOS|C_RotateGuard (patron:string account:string new-guard:guard safe:bool))
-    (defun DALOS|C_RotateKadena (patron:string account:string kadena:string))
+    (defun DALOS|C_RotateStoa (patron:string account:string stoa:string))
     (defun DALOS|C_RotateSovereign (patron:string account:string new-sovereign:string))
     (defun DALOS|C_UpdateEliteAccount (patron:string account:string))
     (defun DALOS|C_UpdateEliteAccountSquared (patron:string sender:string receiver:string))
@@ -235,8 +235,8 @@
             )
         )
     )
-    (defun DALOS|C_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string)
-        @doc "Deploys a Standard Ouronet Account, taxing for KDA"
+    (defun DALOS|C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
+        @doc "Deploys a Standard Ouronet Account, taxing for STOA"
         (with-capability (P|TS)
             (let
                 (
@@ -244,19 +244,19 @@
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
-                (ref-DALOS::C_DeploySmartAccount account guard kadena sovereign public)
+                (ref-DALOS::C_DeploySmartAccount account guard stoa sovereign public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
                 (if (not (ref-IGNIS::URC_IsNativeGasZero))
-                    (ref-IGNIS::KDA|C_Collect account (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
+                    (ref-IGNIS::STOA|C_Collect account (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
                     true
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Smart Ouronet Account {} deployed succesfully" [account])
             )
         )
     )
-    (defun DALOS|C_DeployStandardAccount (account:string guard:guard kadena:string public:string)
-        @doc "Deploys a Standard Ouronet Account, taxing for KDA"
+    (defun DALOS|C_DeployStandardAccount (account:string guard:guard stoa:string public:string)
+        @doc "Deploys a Standard Ouronet Account, taxing for STOA"
         (with-capability (P|TS)
             (let
                 (
@@ -264,13 +264,13 @@
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
-                (ref-DALOS::C_DeployStandardAccount account guard kadena public)
+                (ref-DALOS::C_DeployStandardAccount account guard stoa public)
                 ;;Collecting IGNIS is moved from DALOS here, due to IGNIS existing after DALOS
                 (if (not (ref-IGNIS::URC_IsNativeGasZero))
-                    (ref-IGNIS::KDA|C_Collect account (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
+                    (ref-IGNIS::STOA|C_Collect account (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
                     true
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Standard Ouronet Account {} deployed succesfully" [account])
             )
         )
@@ -304,18 +304,18 @@
             )
         )
     )
-    (defun DALOS|C_RotateKadena (patron:string account:string kadena:string)
-        @doc "Rotates the KDA Account attached to an Ouronet Account. \
-        \ The attached KDA Account is the account that makes KDA Payments for specific Ouronet Actions"
+    (defun DALOS|C_RotateStoa (patron:string account:string stoa:string)
+        @doc "Rotates the STOA Account attached to an Ouronet Account. \
+        \ The attached STOA Account is the account that makes STOA Payments for specific Ouronet Actions"
         (with-capability (P|TS)
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                 )
-                (ref-DALOS::C_RotateKadena account kadena)
-                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateKadena account))
-                (format "Ouronet Account {} Attached Kadena-Address rotated succesfully!" [account])
+                (ref-DALOS::C_RotateStoa account stoa)
+                (ref-IGNIS::C_Collect patron (ref-IGNIS::DALOS|URCi_RotateStoa account))
+                (format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [account])
             )
         )
     )
@@ -398,7 +398,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (ref-B|DPTF::C_UpgradeBranding patron entity-id months)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "DPTF {} succesfully upgraded for {} months(s)!" [entity-id months])
             )
         )
@@ -418,7 +418,7 @@
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at "output" ico)
             )
         )
@@ -611,7 +611,7 @@
                     (collect:bool (at 0 (at "output" ico)))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XE_ConditionalFuelKDA collect)
+                (ref-TS01-A::XE_ConditionalFuelSTOA collect)
                 (if toggle
                     (format "Fee Settings succesfully locked for {}" [id])
                     (format "Fee Settings succesfully unlocked  for {}" [id])
@@ -969,7 +969,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (ref-B|DPOF::C_UpgradeBranding patron entity-id months)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "DPOF {} succesfully upgraded for {} months(s)!" [entity-id months])
             )
         )
@@ -988,7 +988,7 @@
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at "output" ico)
             )
         )

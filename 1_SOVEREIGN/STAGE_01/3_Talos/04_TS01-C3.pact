@@ -276,7 +276,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (ref-B|SWP::C_UpgradeBranding patron entity-id months)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
     )
@@ -306,7 +306,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (ref-B|SWPLC::C_UpgradeBrandingLPs patron swpair entity-pos months)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
     )
@@ -346,7 +346,7 @@
                 (ref-IGNIS::C_Collect patron ico)
                 (if (= current-frozen-link BAR)
                     (do
-                        (ref-TS01-A::XB_DynamicFuelKDA)
+                        (ref-TS01-A::XB_DynamicFuelSTOA)
                         (format "Succesfully Issued Frozen LP {} and enabled Frozen LP Functionality on SWP-Pair {}" [issued-frozen-lp-id swpair])
                     )
                     (format 
@@ -377,7 +377,7 @@
                 (ref-IGNIS::C_Collect patron ico)
                 (if (= current-sleeping-link BAR)
                     (do
-                        (ref-TS01-A::XB_DynamicFuelKDA)
+                        (ref-TS01-A::XB_DynamicFuelSTOA)
                         (format "Succesfully Issued Sleeping LP {} and enabled Frozen LP Functionality on SWP-Pair {}" [issued-sleeping-lp-id swpair])
                     )
                     (format 
@@ -406,7 +406,7 @@
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at "output" ico)
             )
         )
@@ -434,7 +434,7 @@
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at "output" ico)
             )
         )
@@ -514,7 +514,7 @@
     )
     (defun SWP|C_ToggleFeeLock (patron:string swpair:string toggle:bool)
         @doc "Locks the SPWPair fees in place. Modifying the SWPair fees requires them to be unlocked \
-            \ Unlocking costs KDA and is financially discouraged"
+            \ Unlocking costs STOA and is financially discouraged"
         (with-capability (P|TS)
             (let
                 (
@@ -527,7 +527,7 @@
                     (collect:bool (at 0 (at "output" ico)))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XE_ConditionalFuelKDA collect)
+                (ref-TS01-A::XE_ConditionalFuelSTOA collect)
                 (format "Succesfully toggled the Fee Lock for the SWP-Pair" [swpair])
             )
         )
@@ -554,7 +554,7 @@
             \ The Special-Fee is the Fee that is collected to the Special-Fee-Targets \
             \ The Fee must be between 0.0001 - 320.0 (promile, that would be 32%) \
             \ When <liquid-boost>, an universal SWP Parameter (that can be set only by the admin) is set to true \
-            \   an amount equal to the LP-Fee is also used to boost the Liquid Kadena Index \
+            \   an amount equal to the LP-Fee is also used to boost the Liquid Stoa Index \
             \   which is why the fee must be capped at close a third of 100% (320 promile in this case)"
         (with-capability (P|TS)
             (let
@@ -623,14 +623,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPLC::C|KDA-PID_AddStandardLiquidity account swpair input-amounts kda-pid)
+                        (ref-SWPLC::C|STOA-PID_AddStandardLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -656,14 +656,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPLC::C|KDA-PID_AddIcedLiquidity account swpair input-amounts kda-pid)
+                        (ref-SWPLC::C|STOA-PID_AddIcedLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -687,14 +687,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPLC::C|KDA-PID_AddGlacialLiquidity account swpair input-amounts kda-pid)
+                        (ref-SWPLC::C|STOA-PID_AddGlacialLiquidity account swpair input-amounts stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -717,14 +717,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPLC::C|KDA-PID_AddFrozenLiquidity account swpair frozen-dptf input-amount kda-pid)
+                        (ref-SWPLC::C|STOA-PID_AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -747,14 +747,14 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-SWPLC::C|KDA-PID_AddSleepingLiquidity account swpair sleeping-dpof nonce kda-pid)
+                        (ref-SWPLC::C|STOA-PID_AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
@@ -788,11 +788,11 @@
     )
     ;;Swaps
     (defun SWP|C_Firestarter (fire-starter:string)
-        @doc "Makes IGNIS for <fire-starter> using 10 native Kadenas"
+        @doc "Makes IGNIS for <fire-starter> using 10 native Stoas"
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                     (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
@@ -818,19 +818,19 @@
                 )
                 (let
                     (
-                        (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
-                        (wkda:string (ref-DALOS::UR_WrappedStoaID))
+                        (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                        (wstoa:string (ref-DALOS::UR_WrappedStoaID))
                         (ref-SWPI:module{SwapperIssueV3} SWPI)
                         (ico1:object{IgnisCollectorV1.OutputCumulator}
                             (ref-LIQUID::C_WrapStoa fire-starter 10.0)
                         )
                         (slippage-bounds:object{SwapperUsageV2.Slippage}
-                            (ref-SWPU::UDC_SpawnSlippageBounds primordial [wkda] [10.0] ouro -1.0)
+                            (ref-SWPU::UDC_SpawnSlippageBounds primordial [wstoa] [10.0] ouro -1.0)
                         )
                         (ico2:object{IgnisCollectorV1.OutputCumulator}
                             (ref-SWPU::C_Swap 
-                                fire-starter primordial [wkda] [10.0] ouro 
-                                -1.0 kda-pid slippage-bounds
+                                fire-starter primordial [wstoa] [10.0] ouro 
+                                -1.0 stoa-pid slippage-bounds
                             )
                         )
                         (gained-ouro:decimal (at 0 (at "output" ico2)))
@@ -873,19 +873,19 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
                     (ref-SWPT:module{SwapTracerV2} SWPT)
                     (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-SWPU::CC_SmartSwap
                             account input-id input-amount output-id
-                            slippage kda-pid slippage-bounds
+                            slippage stoa-pid slippage-bounds
                         )
                     )
                     (out:list (at "output" ico))
@@ -937,21 +937,21 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
                     (ref-SWPT:module{SwapTracerV2} SWPT)
                     (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (slippage-bounds:object{SwapperUsageV2.Slippage}
                         (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0)
                     )
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-SWPU::CC_SmartSwap
                             account input-id input-amount output-id
-                            -1.0 kda-pid slippage-bounds
+                            -1.0 stoa-pid slippage-bounds
                         )
                     )
                     (out:list (at "output" ico))
@@ -1010,16 +1010,16 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (result:list
                         (ref-SWPU::C_SmartSwap
                             account input-id input-amount output-id
-                            slippage kda-pid slippage-bounds bundle
+                            slippage stoa-pid slippage-bounds bundle
                         )
                     )
                     (ico:object{IgnisCollectorV1.OutputCumulator} (at 0 result))
@@ -1055,16 +1055,16 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (slippage-bounds:object{SwapperUsageV2.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
                     (result:list
                         (ref-SWPU::C_SmartSwap
                             account input-id input-amount output-id
-                            -1.0 kda-pid slippage-bounds bundle
+                            -1.0 stoa-pid slippage-bounds bundle
                         )
                     )
                     (ico:object{IgnisCollectorV1.OutputCumulator} (at 0 result))
@@ -1097,17 +1097,17 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair [input-id] [input-amount] output-id 
-                            slippage kda-pid slippage-bounds
+                            slippage stoa-pid slippage-bounds
                         )
                     )
                 )
@@ -1130,19 +1130,19 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (slippage-bounds:object{SwapperUsageV2.Slippage}
                         (ref-SWPU::UDC_SpawnSlippageBounds swpair [input-id] [input-amount] output-id -1.0)
                     )
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair [input-id] [input-amount] output-id 
-                            -1.0 kda-pid slippage-bounds
+                            -1.0 stoa-pid slippage-bounds
                         )
                     )
                 )
@@ -1166,17 +1166,17 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (slippage:decimal (at "slippage-percent" slippage-bounds))
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair input-ids input-amounts output-id 
-                            slippage kda-pid slippage-bounds
+                            slippage stoa-pid slippage-bounds
                         )
                     )
                 )
@@ -1199,19 +1199,19 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     (ref-SWPU:module{SwapperUsageV2} SWPU)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (slippage-bounds:object{SwapperUsageV2.Slippage}
                         (ref-SWPU::UDC_SpawnSlippageBounds swpair input-ids input-amounts output-id -1.0)
                     )
                     (ico:object{IgnisCollectorV1.OutputCumulator}
                         (ref-SWPU::C_Swap 
                             account swpair input-ids input-amounts output-id 
-                            -1.0 kda-pid slippage-bounds)
+                            -1.0 stoa-pid slippage-bounds)
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)

@@ -28,9 +28,9 @@
     (defconst GOV|MD_DSP                    (keyset-ref-guard (GOV|Demiurgoi)))
     (defconst GOV|SC_DSP                    (keyset-ref-guard DSP|SC_KEY))
     ;;
-    ;; KDA Accounts
-    (defconst DSP|SC_KDA-NAME               "k:78567097b68c98bf0c86a1938e60111a3bfc0ccadb858cc7f3630bc9da9dad99")
-    (defconst CST|SC_KDA-NAME               "k:309a1052856018a954d9692560934a3b8bb6fd0f283ab6eee5fc192b61c119a7")
+    ;; STOA Accounts
+    (defconst DSP|SC_STOA-NAME               "k:78567097b68c98bf0c86a1938e60111a3bfc0ccadb858cc7f3630bc9da9dad99")
+    (defconst CST|SC_STOA-NAME               "k:309a1052856018a954d9692560934a3b8bb6fd0f283ab6eee5fc192b61c119a7")
     ;;
     ;;  Dispenser
     (defconst DSP|SC_KEY                    (GOV|DSPKey))

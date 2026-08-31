@@ -128,7 +128,7 @@
     ;;— extracted so URC_WorthWSTOA's own id==SSTOA branch and URCX_PrimordialValueAndOuroSupply
     ;;share it without a static recursive-cycle compile error (see the defun's own doc).
     (defun URC_SingleSSTOAWorthWSTOA:decimal ())
-    (defun URC_TokenDollarPrice (id:string kda-pid:decimal))
+    (defun URC_TokenDollarPrice (id:string stoa-pid:decimal))
     (defun URC_SingleWorthWSTOA (id:string))
     (defun URC_WorthWSTOA (id:string amount:decimal))
     (defun URC_PoolValue:[decimal] (swpair:string))
@@ -1562,9 +1562,9 @@
                 (ref-ATS:module{AutostakeV2} ATS)
                 (sstoa:string (ref-DALOS::UR_SilverStoaID))
                 (ats-pairs-with-sstoa-id:[string] (ref-DPTF::UR_RewardBearingToken sstoa))
-                (kdaliquindex:string (at 0 ats-pairs-with-sstoa-id))
+                (stoaliquindex:string (at 0 ats-pairs-with-sstoa-id))
             )
-            (ref-ATS::URC_Index kdaliquindex)
+            (ref-ATS::URC_Index stoaliquindex)
         )
     )
     (defun URCX_PrimordialValueAndOuroSupply:[decimal] ()
@@ -1615,12 +1615,12 @@
             \ byte-identical before/after."
         (let
             (
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 (pv:[decimal] (URCX_PrimordialValueAndOuroSupply))
                 (primordial-wstoa-value:decimal (at 0 pv))
                 (ouro-supply:decimal (at 1 pv))
-                (primordial-wstoa-value-in-dollarz:decimal (floor (* primordial-wstoa-value kda-pid) 24))
+                (primordial-wstoa-value-in-dollarz:decimal (floor (* primordial-wstoa-value stoa-pid) 24))
             )
             (floor (/ primordial-wstoa-value-in-dollarz ouro-supply) 24)
         )
@@ -1656,19 +1656,19 @@
             (URC_W-Swap primordial (ref-U|SWP::UDC_DirectSwapInputData [ouro] [1.0] wstoa))
         )
     )
-    (defun URC_TokenDollarPrice (id:string kda-pid:decimal)
-        @doc "Retrieves Token Price in Dollars, via DIA Oracle that outputs KDA Price"
-        ;;<kda-pid> or <kda-price-in-dollars> can be retrieved prior to the function call with:
-        ;;(at "value" (n_bfb76eab37bf8c84359d6552a1d96a309e030b71.dia-oracle.get-value "KDA/USD"))
+    (defun URC_TokenDollarPrice (id:string stoa-pid:decimal)
+        @doc "Retrieves Token Price in Dollars, via DIA Oracle that outputs STOA Price"
+        ;;<stoa-pid> or <stoa-price-in-dollars> can be retrieved prior to the function call with:
+        ;;(at "value" (n_bfb76eab37bf8c84359d6552a1d96a309e030b71.dia-oracle.get-value "STOA/USD"))
         ;;This function is structured like this, to allow price retrieval from any source.
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (id-in-kda:decimal (URC_SingleWorthWSTOA id))
+                (id-in-stoa:decimal (URC_SingleWorthWSTOA id))
                 (id-precision:integer (ref-DPTF::UR_Decimals id))
             )
-            (floor (* id-in-kda kda-pid) id-precision)
+            (floor (* id-in-stoa stoa-pid) id-precision)
         )
     )
     (defun URC_SingleWorthWSTOA (id:string)
@@ -2459,9 +2459,9 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (kda-dptf-cost:decimal (ref-DALOS::UR_UsagePrice "dptf"))
-                    (kda-swp-cost:decimal (ref-DALOS::UR_UsagePrice "swp"))
-                    (kda-costs:decimal (+ kda-dptf-cost kda-swp-cost))
+                    (stoa-dptf-cost:decimal (ref-DALOS::UR_UsagePrice "dptf"))
+                    (stoa-swp-cost:decimal (ref-DALOS::UR_UsagePrice "swp"))
+                    (stoa-costs:decimal (+ stoa-dptf-cost stoa-swp-cost))
                     (gas-swp-cost:decimal (ref-DALOS::UR_UsagePrice "ignis|swp-issue"))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     (write-result:list (XE_IssueWrite account pool-tokens fee-lp weights amp p))
@@ -2475,7 +2475,7 @@
                         (ref-IGNIS::UDC_ConstructOutputCumulator gas-swp-cost SWP|SC_NAME trigger [])
                     )
                 )
-                (ref-IGNIS::KDA|C_Collect patron kda-costs)
+                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [swpair token-lp])
             )
         )

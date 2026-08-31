@@ -156,7 +156,7 @@
         true
     )
     (defcap SWP|NATIVE-AUTOMATIC ()
-        @doc "Autonomic management of <kadena-konto> of SWAPPER Smart Account"
+        @doc "Autonomic management of <stoa-konto> of SWAPPER Smart Account"
         true
     )
     ;;
@@ -655,20 +655,20 @@
                 (primality:bool (UR_Primality primordial-pool))
                 (pt:[string] (UR_PoolTokens primordial-pool))
                 (ouro:string (ref-DALOS::UR_OuroborosID))
-                (wkda:string (ref-DALOS::UR_WrappedStoaID))
-                (lkda:string (ref-DALOS::UR_SilverStoaID))
+                (wstoa:string (ref-DALOS::UR_WrappedStoaID))
+                (sstoa:string (ref-DALOS::UR_SilverStoaID))
                 (pool-type:string (ref-U|SWP::UC_PoolType primordial-pool))
                 (iz-weigthed:bool (= pool-type "W"))
                 (has-ouro:bool (contains ouro pt))
-                (has-wkda:bool (contains wkda pt))
-                (has-lkda:bool (contains lkda pt))
+                (has-wstoa:bool (contains wstoa pt))
+                (has-sstoa:bool (contains sstoa pt))
                 (iz-three:bool (= (length pt) 3))
             )
             ;;H6 fix: <primality> was bound above but never included in this fold, so the only checks
             ;;actually enforced were the 5 composable "does it look like the right shape" conditions —
             ;;the issuance-time eligibility flag that's supposed to gate this (owner: also means exempt
             ;;from low-liquidity gates / never autonomously disabled) was read and silently unused.
-            (enforce (fold (and) true [iz-weigthed has-ouro has-wkda has-lkda iz-three primality]) "Pool is not the primordial pool")
+            (enforce (fold (and) true [iz-weigthed has-ouro has-wstoa has-sstoa iz-three primality]) "Pool is not the primordial pool")
             (compose-capability (GOV|SWP_ADMIN))
         )
     )
@@ -1470,11 +1470,11 @@
                 (ref-BRD:module{BrandingV1} BRD)
                 (owner:string (UR_OwnerKonto entity-id))
             )
-            ;;Perform the branding upgrade (side effect); bill the KDA via the URCi (== XE_UpgradeBranding's price)
+            ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
             (with-capability (SWP|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id owner months)
             )
-            (ref-IGNIS::KDA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -1667,14 +1667,14 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (toggle-costs:[decimal] (XI_ToggleFeeLock swpair toggle))
-                    (kda-costs:decimal (at 1 toggle-costs))
+                    (stoa-costs:decimal (at 1 toggle-costs))
                     ;;URCi computed HERE — reads fee-unlocks BEFORE XI_IncrementFeeUnlocks below mutates it
                     (cumulator:object{IgnisCollectorV1.OutputCumulator} (URCi_ToggleFeeLock swpair toggle))
                 )
-                (if (> kda-costs 0.0)
+                (if (> stoa-costs 0.0)
                     (do
                         (XI_IncrementFeeUnlocks swpair)
-                        (ref-IGNIS::KDA|C_Collect patron kda-costs)
+                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                     )
                     true
                 )
@@ -1918,7 +1918,7 @@
     )
     (defun XI_ToggleFeeLock:[decimal] (swpair:string toggle:bool)
         @doc "Writes the new fee-lock state. \
-            \ #52L fix (R4): returns [virtual-gas-cost(IGNIS) native-gas-cost(KDA)] — \
+            \ #52L fix (R4): returns [virtual-gas-cost(IGNIS) native-gas-cost(STOA)] — \
             \ [0.0 0.0] when locking (toggle=true, free); the real ATS unlock price \
             \ (U|ATS::UC_UnlockPrice) when unlocking (toggle=false), scaled by this \
             \ pool's current <UR_FeeUnlocks> count. The caller (C_ToggleFeeLock) bills \

@@ -267,7 +267,7 @@
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid "M1Probe"))
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     ;; issue the model-1 (definition-mode) class-4 NF score on KBN, precision 6 (STOA smart fee → coin caps)

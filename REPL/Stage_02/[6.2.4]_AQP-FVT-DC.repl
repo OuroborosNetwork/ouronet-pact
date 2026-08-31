@@ -31,7 +31,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (aqp-class:integer 3)
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     (print "--- [TX-FVT-DC-01 · 01 · env-sigs + issue class-3 score/pool] ---")
@@ -213,7 +213,7 @@
         (aa-pre:integer (ref-ANK::UR_AA|AnchorsActive dpsf-id))
         (need-pre:bool (ref-AQP::URC_BenDpsfAnchorsNeedSync beneficiary-id dpsf-id))
         (split-std:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "standard")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "standard")))
         )
     )
     (print "--- [TX-FVT-DC-02b · 01 · issue SF anchor on DHCD nonce 1] ---")

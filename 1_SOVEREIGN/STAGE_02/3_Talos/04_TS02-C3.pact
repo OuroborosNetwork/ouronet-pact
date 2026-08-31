@@ -670,7 +670,7 @@
                     (anchor-id:string (at 0 out))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (if acnoi
                     (format "Successfully issued TrueFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dptf-id])
                     (format "Successfully issued TrueFungible Anchor {} for {}." [anchor-id dptf-id])
@@ -696,7 +696,7 @@
                     (anchor-id:string (at 0 out))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (if acnoi
                     (format "Successfully issued SemiFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpsf-id])
                     (format "Successfully issued SemiFungible Anchor {} for {}." [anchor-id dpsf-id])
@@ -722,7 +722,7 @@
                     (anchor-id:string (at 0 out))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (if acnoi
                     (format "Successfully issued NonFungible Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpnf-id])
                     (format "Successfully issued NonFungible Anchor {} for {}." [anchor-id dpnf-id])
@@ -748,7 +748,7 @@
                     (anchor-id:string (at 0 out))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (if acnoi
                     (format "Successfully issued NonFungible Set Anchor {} (new BoostClass {}) for {}." [anchor-id (at 1 out) dpnf-id])
                     (format "Successfully issued NonFungible Set Anchor {} for {}." [anchor-id dpnf-id])
@@ -1055,7 +1055,7 @@
                     (pool-id:string (at 0 out))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully issued Acquisition Pool {} (class {} for asset {})." [pool-id aqp-class asset-id])
             )
         )
@@ -1073,7 +1073,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-AQP::C_AddScore patron pool-id score-id)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully assigned Score {} to Pool {}." [score-id pool-id])
             )
         )
@@ -1091,7 +1091,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-AQP::C_RevokeScore patron pool-id score-id)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully revoked Score {} from Pool {}." [score-id pool-id])
             )
         )
@@ -1109,7 +1109,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-AQP::C_DisablePoolStake patron pool-id)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully disabled staking on Pool {}." [pool-id])
             )
         )
@@ -1127,7 +1127,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-AQP::C_EnablePoolStake patron pool-id)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully enabled staking on Pool {}." [pool-id])
             )
         )
@@ -1673,7 +1673,7 @@
                     (fvt-id:string (at 0 out))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully issued FVT {} (class {})." [fvt-id fvt-class])
             )
         )
@@ -1703,7 +1703,7 @@
                     (family-id:string (at 0 out))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully issued MultipletFamily {}." [family-id])
             )
         )
@@ -1721,7 +1721,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_AddScoreEntity patron fvt-id score-entity-type score-entity-id)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully added score-entity type {} id {} to FVT {}."
                     [score-entity-type score-entity-id fvt-id]
                 )
@@ -1741,7 +1741,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_AddRewardLink patron fvt-id reward-dptf-id segmentation multiplet-family-id)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully added reward link {} on FVT {} (family={})."
                     [reward-dptf-id fvt-id multiplet-family-id]
                 )
@@ -1845,7 +1845,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::C_SetCommonDenominator patron fvt-id common-denominator)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully set common-denominator on FVT {} to {}." [fvt-id common-denominator])
             )
         )
@@ -1899,7 +1899,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_InjectStream patron fvt-id reward-dptf-id amount duration)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully streamed {} {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])
             )
         )
@@ -1920,7 +1920,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_Inject patron fvt-id reward-dptf-id amount)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully FRESH-injected {} {} into FVT {}." [amount reward-dptf-id fvt-id])
             )
         )
@@ -1938,7 +1938,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (let ((r:string (ref-FVT::CCp_InjectFixChunk patron fvt-id reward-dptf-id chunk)))
-                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
             )
@@ -1959,7 +1959,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_InjectFinalize patron fvt-id reward-dptf-id amount)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Successfully FRESH-injected {} {} into FVT {} (paginated)." [amount reward-dptf-id fvt-id])
             )
         )
@@ -1978,7 +1978,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (let ((r:string (ref-FVT::CCp_UnstaleAll patron fvt-id reward-dptf-id chunk)))
-                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
             )
@@ -1996,7 +1996,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (let ((r:string (ref-MTX-AQP::C_2|Inject patron fvt-id reward-dptf-id amount)))
-                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
             )
@@ -2015,7 +2015,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (let ((r:string (ref-MTX-AQP::C_2|SweepRevokeAnchor patron anchor-id)))
-                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
             )
@@ -2033,7 +2033,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (let ((r:string (ref-FVT::CC_SweepRevokeAnchor patron anchor-id)))
-                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
             )
@@ -2051,7 +2051,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (let ((r:string (ref-FVT::CC_SweepBegin patron anchor-id)))
-                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
             )
@@ -2069,7 +2069,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (let ((r:string (ref-FVT::CCp_SweepRecomputeChunk patron anchor-id chunk)))
-                    (ref-TS01-A::XB_DynamicFuelKDA)
+                    (ref-TS01-A::XB_DynamicFuelSTOA)
                     r
                 )
             )
@@ -2091,7 +2091,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_UnstaleMyScores patron fvt-ids)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (format "Refreshed your stale scores across {} FVT(s)." [(length fvt-ids)])
             )
         )
@@ -2111,7 +2111,7 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-FVT::CC_Collect patron fvt-id score-entity-type score-entity-id reward-dptf-id)
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (let
                     (
                         (bal-after:decimal (ref-DPTF::UR_AccountSupply reward-dptf-id patron))

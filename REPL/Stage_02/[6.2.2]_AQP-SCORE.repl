@@ -13,7 +13,7 @@
 (print "  <<…>>     expect doc (format …) — REPL logs pass/fail")
 (print "  <(TS02-C3.AQP-SCR|C_…)> => \"…\"   Talos client → AQP-SCR write (return value)")
 (print "  <(AQP-SCORE|UR_SCR|…)> => \"…\"   ref-SCR utility read (return value)")
-(print "  <(U|DALOS|…)> / <(DALOS|…)>       UDC_Makeid, URC_SplitKDAPrices, …")
+(print "  <(U|DALOS|…)> / <(DALOS|…)>       UDC_Makeid, URC_SplitSTOAPrices, …")
 (print "  <(REPL|env-gas)> …               gas after tx (env-gas)")
 (print "")
 (print "Requires prior Stage 02 loads: interfaces, DALOS, DPDC, SCORE module, TS02-C3, KST (e.g. [6.2]_AQP.repl after [6.2.1]).")
@@ -22,7 +22,7 @@
 (print "Source: ;;|| NEXT > between txs; ;;==== TX-SCORE-nn · mm · … ==== before each REPL group banner (mm = intra-tx group).")
 (print "REPL tests: (map print [(expect (format \"<<TX-SCORE-nn>> …\" […]) expected actual) …]) — expect returns strings; map print surfaces each line.")
 (print "")
-(print "https://docs.kadena.io/pact-5/repl — expect records pass/fail.")
+(print "https://docs.stoa.io/pact-5/repl — expect records pass/fail.")
 (print "")
 (print "===================AQP-SCORE TX Block==========================")
 (begin-tx "TX-SCORE-01 - Issue SemiFungible score BootPhaseProbe (class 3, equal SFT weights)")
@@ -40,14 +40,14 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-SCR:module{AcquisitionScoresV1} AQP-SCORE)
         (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (ref-DALOS::UR_UsagePrice "smart"))
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices patron (ref-DALOS::UR_UsagePrice "smart"))
         )
     )
-    ;;==== TX-SCORE-01 · 01 · U|DALOS UDC_Makeid + DALOS URC_SplitKDAPrices — REPL ====
+    ;;==== TX-SCORE-01 · 01 · U|DALOS UDC_Makeid + DALOS URC_SplitSTOAPrices — REPL ====
     (print "--- [TX-SCORE-01 · 01 · UDC_Makeid + DALOS fee split (smart)] ---")
     (print (format "<(U|DALOS|UDC_Makeid BootPhaseProbe)> => \"{}\"" [score-id]))
-    (print (format "<(DALOS|URC_SplitKDAPrices smart)> => \"{}\"" [split-kda]))
+    (print (format "<(DALOS|URC_SplitSTOAPrices smart)> => \"{}\"" [split-stoa]))
     ;;==== TX-SCORE-01 · 02 · env-sigs + Talos C_IssueSemiFungibleScore — REPL =========
     (print "--- [TX-SCORE-01 · 02 · env-sigs + C_IssueSemiFungibleScore (class 3)] ---")
     (env-sigs
@@ -59,22 +59,22 @@
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ]
             }
@@ -286,20 +286,20 @@
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart"))))
+        (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart"))))
     )
     (print "--- [TX-SCORE-08 · 01 · env-sigs (4 issuances × smart fee)] ---")
-    (print (format "<(DALOS|URC_SplitKDAPrices 4×smart)> => \"{}\"" [split-kda]))
+    (print (format "<(DALOS|URC_SplitSTOAPrices 4×smart)> => \"{}\"" [split-stoa]))
     (env-sigs
         [
             { "key": "PK_AncientHodler", "caps": [] }
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -330,20 +330,20 @@
         (patron:string KST.ANHD)
         (owner-konto:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices patron (* 5.0 (ref-DALOS::UR_UsagePrice "smart"))))
+        (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices patron (* 5.0 (ref-DALOS::UR_UsagePrice "smart"))))
     )
     (print "--- [TX-SCORE-09 · 01 · env-sigs (5 issuances × smart fee)] ---")
-    (print (format "<(DALOS|URC_SplitKDAPrices 5×smart)> => \"{}\"" [split-kda]))
+    (print (format "<(DALOS|URC_SplitSTOAPrices 5×smart)> => \"{}\"" [split-stoa]))
     (env-sigs
         [
             { "key": "PK_AncientHodler", "caps": [] }
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]

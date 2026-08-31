@@ -490,7 +490,7 @@
         (dptf-price:decimal (ref-DALOS::UR_UsagePrice "dptf"))
         (dpmf-price:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
         (split-sleep:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (fold (+) 0.0 [dptf-price dpmf-price]))
+            (ref-DALOS::URC_SplitSTOAPrices patron (fold (+) 0.0 [dptf-price dpmf-price]))
         )
     )
     (env-sigs

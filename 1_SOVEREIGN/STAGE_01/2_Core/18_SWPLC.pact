@@ -35,11 +35,11 @@
     (defun C_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool))
         ;;
-    (defun C|KDA-PID_AddStandardLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
-    (defun C|KDA-PID_AddIcedLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
-    (defun C|KDA-PID_AddGlacialLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
-    (defun C|KDA-PID_AddFrozenLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal kda-pid:decimal))
-    (defun C|KDA-PID_AddSleepingLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer kda-pid:decimal))
+    (defun C|STOA-PID_AddStandardLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun C|STOA-PID_AddIcedLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun C|STOA-PID_AddGlacialLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun C|STOA-PID_AddFrozenLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun C|STOA-PID_AddSleepingLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
         ;;
     (defun C_RemoveLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string lp-amount:decimal))
 )
@@ -464,13 +464,13 @@
                 (ref-SWP:module{SwapperV3} SWP)
                 (owner:string (ref-SWP::UR_OwnerKonto swpair))
                 (entity-id:string (URC_EntityPosToID swpair entity-pos))
-                (kda-payment:decimal
+                (stoa-payment:decimal
                     (with-capability (SWPLC|C>UPGRADE-BRD swpair)
                         (ref-BRD::XE_UpgradeBranding entity-id owner months)
                     )
                 )
             )
-            (ref-IGNIS::KDA|C_CollectWT patron kda-payment false)
+            (ref-IGNIS::STOA|C_CollectWT patron stoa-payment false)
         )
     )
     ;;LQ Functions
@@ -531,8 +531,8 @@
             )
         )
     )
-    (defun C|KDA-PID_AddStandardLiquidity:object{IgnisCollectorV1.OutputCumulator}
-        (account:string swpair:string input-amounts:[decimal] kda-pid:decimal)
+    (defun C|STOA-PID_AddStandardLiquidity:object{IgnisCollectorV1.OutputCumulator}
+        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (UEV_IMC)
         (let
             (
@@ -553,7 +553,7 @@
                         ;;
                         ;;Compute Liquidity Addition Data
                         (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC|KDA-PID_CLAD account swpair ld true true kda-pid)
+                            (ref-SWPL::URC|STOA-PID_CLAD account swpair ld true true stoa-pid)
                         )
                         ;;
                         (ico1:object{IgnisCollectorV1.OutputCumulator}
@@ -561,7 +561,7 @@
                         )
                         (native-lp-transfer-amount:decimal (at "primary-lp" clad))
                     )
-                    (ref-SWPL::XE|KDA-PID_AddLiqudity account swpair true true kda-pid ld clad)
+                    (ref-SWPL::XE|STOA-PID_AddLiqudity account swpair true true stoa-pid ld clad)
                     (let
                         (
                             (ico2:object{IgnisCollectorV1.OutputCumulator}
@@ -579,8 +579,8 @@
             )
         )
     )
-    (defun C|KDA-PID_AddIcedLiquidity:object{IgnisCollectorV1.OutputCumulator}
-        (account:string swpair:string input-amounts:[decimal] kda-pid:decimal)
+    (defun C|STOA-PID_AddIcedLiquidity:object{IgnisCollectorV1.OutputCumulator}
+        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (UEV_IMC)
         (let
             (
@@ -601,7 +601,7 @@
                         ;;
                         ;;Compute Liquidity Addition Data
                         (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC|KDA-PID_CLAD account swpair ld false true kda-pid)
+                            (ref-SWPL::URC|STOA-PID_CLAD account swpair ld false true stoa-pid)
                         )
                         ;;
                         (ico1:object{IgnisCollectorV1.OutputCumulator}
@@ -611,7 +611,7 @@
                         (native-lp-transfer-amount:decimal (at "primary-lp" clad))
                         (frozen-lp-transfer-amount:decimal (at "secondary-lp" clad))
                     )
-                    (ref-SWPL::XE|KDA-PID_AddLiqudity account swpair false true kda-pid ld clad)
+                    (ref-SWPL::XE|STOA-PID_AddLiqudity account swpair false true stoa-pid ld clad)
                     (let
                         (
                             (ico2:object{IgnisCollectorV1.OutputCumulator}
@@ -632,8 +632,8 @@
             )
         )
     )
-    (defun C|KDA-PID_AddGlacialLiquidity:object{IgnisCollectorV1.OutputCumulator}
-        (account:string swpair:string input-amounts:[decimal] kda-pid:decimal)
+    (defun C|STOA-PID_AddGlacialLiquidity:object{IgnisCollectorV1.OutputCumulator}
+        (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (UEV_IMC)
         (let
             (
@@ -654,7 +654,7 @@
                         ;;
                         ;;Compute Liquidity Addition Data
                         (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC|KDA-PID_CLAD account swpair ld false false kda-pid)
+                            (ref-SWPL::URC|STOA-PID_CLAD account swpair ld false false stoa-pid)
                         )
                         ;;
                         (ico1:object{IgnisCollectorV1.OutputCumulator}
@@ -664,7 +664,7 @@
                         (native-lp-transfer-amount:decimal (at "primary-lp" clad))
                         (frozen-lp-transfer-amount:decimal (at "secondary-lp" clad))
                     )
-                    (ref-SWPL::XE|KDA-PID_AddLiqudity account swpair false false kda-pid ld clad)
+                    (ref-SWPL::XE|STOA-PID_AddLiqudity account swpair false false stoa-pid ld clad)
                     (let
                         (
                             (ico2:object{IgnisCollectorV1.OutputCumulator}
@@ -688,8 +688,8 @@
             )
         )
     )
-    (defun C|KDA-PID_AddFrozenLiquidity:object{IgnisCollectorV1.OutputCumulator}
-        (account:string swpair:string frozen-dptf:string input-amount:decimal kda-pid:decimal)
+    (defun C|STOA-PID_AddFrozenLiquidity:object{IgnisCollectorV1.OutputCumulator}
+        (account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         (UEV_IMC)
         (let
             (
@@ -727,7 +727,7 @@
                         ;;
                         ;;Compute CLAD
                         (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC|KDA-PID_CLAD vst-sc swpair ld false false kda-pid)
+                            (ref-SWPL::URC|STOA-PID_CLAD vst-sc swpair ld false false stoa-pid)
                         )
                         ;;
                         (ico3:object{IgnisCollectorV1.OutputCumulator}
@@ -735,7 +735,7 @@
                         )
                         (frozen-lp-transfer-amount:decimal (at "secondary-lp" clad))
                     )
-                    (ref-SWPL::XE|KDA-PID_AddLiqudity vst-sc swpair false false kda-pid ld clad)
+                    (ref-SWPL::XE|STOA-PID_AddLiqudity vst-sc swpair false false stoa-pid ld clad)
                     (let
                         (
                             (ico4:object{IgnisCollectorV1.OutputCumulator}
@@ -753,8 +753,8 @@
             )
         )
     )
-    (defun C|KDA-PID_AddSleepingLiquidity:object{IgnisCollectorV1.OutputCumulator}
-        (account:string swpair:string sleeping-dpof:string nonce:integer kda-pid:decimal)
+    (defun C|STOA-PID_AddSleepingLiquidity:object{IgnisCollectorV1.OutputCumulator}
+        (account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         (UEV_IMC)
         (let
             (
@@ -799,7 +799,7 @@
                         ;;
                         ;;Compute CLAD
                         (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                            (ref-SWPL::URC|KDA-PID_CLAD vst-sc swpair ld true true kda-pid)
+                            (ref-SWPL::URC|STOA-PID_CLAD vst-sc swpair ld true true stoa-pid)
                         )
                         ;;
                         ;;MOVE IGNIS to vst-sc, paying for the ignis-tax
@@ -812,7 +812,7 @@
                         )
                         (sleeping-lp-transfer-amount:decimal (at "primary-lp" clad))
                     )
-                    (ref-SWPL::XE|KDA-PID_AddLiqudity vst-sc swpair true true kda-pid ld clad)
+                    (ref-SWPL::XE|STOA-PID_AddLiqudity vst-sc swpair true true stoa-pid ld clad)
                     (let
                         (
                             (ico5:object{IgnisCollectorV1.OutputCumulator}

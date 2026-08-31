@@ -1360,11 +1360,11 @@
                     )
                 )
                 (special-dptf:string (at 0 (at "output" ico0)))
-                (kda-costs:decimal (ref-DALOS::UR_UsagePrice "dptf"))
+                (stoa-costs:decimal (ref-DALOS::UR_UsagePrice "dptf"))
             )
             ;;Create DPTF Account
             (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
-            (ref-IGNIS::KDA|C_Collect patron kda-costs)
+            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ico0 
@@ -1423,11 +1423,11 @@
                     )
                 )
                 (special-dpof:string (at 0 (at "output" ico0)))
-                (kda-costs:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
+                (stoa-costs:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
             )
             ;;Create DPTF Account 
             (ref-DPTF::C_DeployAccount dptf VST|SC_NAME)
-            (ref-IGNIS::KDA|C_Collect patron kda-costs)
+            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
             (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                 [
                     ico0 

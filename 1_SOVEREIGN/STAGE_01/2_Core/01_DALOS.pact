@@ -36,7 +36,7 @@
     ;;
     ;;  [GOV]
     ;;
-    (defun GOV|DALOS|SC_KDA-NAME ())
+    (defun GOV|DALOS|SC_STOA-NAME ())
     (defun GOV|DALOS|GUARD ())
     ;;
     (defun GOV|Demiurgoi ())
@@ -71,8 +71,8 @@
     ;;
     ;;  [UR]
     ;;
-    ;;  [0]     DALOS|KadenaLedger:{DALOS|KadenaSchema}
-    (defun UR_KadenaLedger:[string] (kadena:string))
+    ;;  [0]     DALOS|StoaLedger:{DALOS|StoaSchema}
+    (defun UR_StoaLedger:[string] (stoa:string))
     ;;  [1]     DALOS|PropertiesTable:{DALOS|PropertiesSchema}
     (defun UR_GAP:bool ())
     (defun UR_DemiurgoiID:[string] ())
@@ -105,7 +105,7 @@
     ;; [4]      DALOS|AccountTable:{DALOS|AccountSchema}
     (defun UR_AccountPublicKey:string (account:string))
     (defun UR_AccountGuard:guard (account:string))
-    (defun UR_AccountKadena:string (account:string))
+    (defun UR_AccountStoa:string (account:string))
     (defun UR_AccountSovereign:string (account:string))
     (defun UR_AccountGovernor:guard (account:string))
     (defun UR_AccountProperties:[bool] (account:string))
@@ -135,9 +135,9 @@
     ;;  [URC]
     ;;
     (defun URC_IgnisGasDiscount:decimal (account:string))
-    (defun URC_KadenaGasDiscount:decimal (account:string))
+    (defun URC_StoaGasDiscount:decimal (account:string))
     (defun URC_GasDiscount:decimal (account:string native:bool))
-    (defun URC_SplitKDAPrices:[decimal] (account:string kda-price:decimal))
+    (defun URC_SplitSTOAPrices:[decimal] (account:string stoa-price:decimal))
     (defun URC_Transferability:bool (sender:string receiver:string method:bool))
     ;;
     ;;  [UEV]
@@ -150,7 +150,7 @@
     (defun UEV_EnforceTransferability (sender:string receiver:string method:bool))
     (defun UEV_SenderWithReceiver (sender:string receiver:string))
         ;;
-    (defun UEV_KadenaCollectionState (state:bool))
+    (defun UEV_StoaCollectionState (state:bool))
     (defun UEV_IgnisCollectionState (state:bool))
     (defun UEV_IgnisCollectionRequirements ())
         ;;
@@ -169,11 +169,11 @@
     ;;
     ;;  [A]
     ;;
-    (defun A_MigrateLiquidFunds:decimal (migration-target-kda-account:string))
+    (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
     (defun A_ToggleOAPU (oapu:bool))
     (defun A_ToggleGAP (gap:bool))
-    (defun A_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string))
-    (defun A_DeployStandardAccount (account:string guard:guard kadena:string public:string))
+    (defun A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
+    (defun A_DeployStandardAccount (account:string guard:guard stoa:string public:string))
     (defun A_ToggleGasCollection (native:bool toggle:bool))
     (defun A_SetIgnisSourcePrice (price:decimal))
     (defun A_SetAutoFueling (toggle:bool))
@@ -185,11 +185,11 @@
     (defun C_ControlSmartAccount
         (account:string payable-as-smart-contract:bool payable-by-smart-contract:bool payable-by-method:bool)
     )
-    (defun C_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string))
-    (defun C_DeployStandardAccount (account:string guard:guard kadena:string public:string))
+    (defun C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
+    (defun C_DeployStandardAccount (account:string guard:guard stoa:string public:string))
     (defun C_RotateGovernor (account:string governor:guard))
     (defun C_RotateGuard (account:string new-guard:guard safe:bool))
-    (defun C_RotateKadena (account:string kadena:string))
+    (defun C_RotateStoa (account:string stoa:string))
     (defun C_RotateSovereign (account:string new-sovereign:string))
     ;;
     ;;  [X]
@@ -298,7 +298,7 @@
     ;;
     (defconst DALOS|SC_KEY                  (GOV|DalosKey))
     (defconst DALOS|SC_NAME                 (GOV|DALOS|SC_NAME))
-    (defconst DALOS|SC_KDA-NAME             (GOV|DALOS|SC_KDA-NAME))
+    (defconst DALOS|SC_STOA-NAME             (GOV|DALOS|SC_STOA-NAME))
     ;;{G2}
     (defcap GOV ()                          (compose-capability (GOV|DALOS_ADMIN)))
     (defcap GOV|DALOS_ADMIN ()
@@ -322,11 +322,11 @@
         )
     )
     (defcap DALOS|NATIVE-AUTOMATIC  ()
-        @doc "Autonomic management of <kadena-konto> of the DALOS Smart Ouronet Account"
+        @doc "Autonomic management of <stoa-konto> of the DALOS Smart Ouronet Account"
         true
     )
     ;;{G3}
-    (defun GOV|DALOS|SC_KDA-NAME ()         (create-principal (GOV|DALOS|GUARD)))
+    (defun GOV|DALOS|SC_STOA-NAME ()         (create-principal (GOV|DALOS|GUARD)))
     (defun GOV|DALOS|GUARD ()               (create-capability-guard (DALOS|NATIVE-AUTOMATIC)))
     ;;
     ;; [Keys]
@@ -415,7 +415,7 @@
     ;;<======================>
     ;;SCHEMAS-TABLES-CONSTANTS
     ;;{1}
-    (defschema DALOS|KadenaSchema
+    (defschema DALOS|StoaSchema
         dalos:[string]
     )
     (defschema DALOS|PropertiesSchema
@@ -453,7 +453,7 @@
         @doc "Schema that stores Ouronet (DALOS) Account Information"
         public:string
         guard:guard
-        kadena-konto:string
+        stoa-konto:string
         sovereign:string
         governor:guard
         ;;
@@ -474,7 +474,7 @@
         deb:decimal
     )
     ;;{2}
-    (deftable DALOS|KadenaLedger:{DALOS|KadenaSchema})              ;;Key = <k:account>
+    (deftable DALOS|StoaLedger:{DALOS|StoaSchema})              ;;Key = <k:account>
     (deftable DALOS|PropertiesTable:{DALOS|PropertiesSchema})       ;;Key = DALOS|INFO
     (deftable DALOS|GasManagementTable:{DALOS|GasManagementSchema}) ;;Key = DALOS|VGD
     (deftable DALOS|PricesTable:{DALOS|PricesSchema})               ;;Key = <action>
@@ -546,16 +546,16 @@
         (UEV_EnforceAccountType account true)
     )
     ;;{C4}
-    (defcap GOV|MIGRATE (migration-target-kda-account:string)
+    (defcap GOV|MIGRATE (migration-target-stoa-account:string)
         @event
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
-                (target-balance:decimal (ref-coin::get-balance migration-target-kda-account))
+                (target-balance:decimal (ref-coin::get-balance migration-target-stoa-account))
                 (gap:bool (UR_GAP))
             )
             (enforce gap (format "Migration can only be executed when Global Administrative Pause is offline"))
-            (enforce (= target-balance 0.0) "Migration can only be executed to an empty kda account")
+            (enforce (= target-balance 0.0) "Migration can only be executed to an empty stoa account")
             (compose-capability (GOV|DALOS_ADMIN))
             (compose-capability (DALOS|NATIVE-AUTOMATIC))
         )
@@ -563,7 +563,7 @@
     (defcap DALOS|C>TOGGLE-GAS-COLLECTION (native:bool toggle:bool)
         (compose-capability (GOV|DALOS_ADMIN))
         (if native
-            (UEV_KadenaCollectionState (not toggle))
+            (UEV_StoaCollectionState (not toggle))
             (UEV_IgnisCollectionState (not toggle))
         )
     )
@@ -572,7 +572,7 @@
         (compose-capability (DALOS|F>GOV account))
         (enforce (= (or (or pasc pbsc) pbm) true) "At least one Smart DALOS Account parameter must be true")
     )
-    (defcap DALOS|C>DEPLOY-STANDARD-OURONET-ACCOUNT (account:string guard:guard kadena:string)
+    (defcap DALOS|C>DEPLOY-STANDARD-OURONET-ACCOUNT (account:string guard:guard stoa:string)
         @event
         (let
             (
@@ -592,7 +592,7 @@
             (compose-capability (SECURE))
         )
     )
-    (defcap DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT (account:string guard:guard kadena:string sovereign:string)
+    (defcap DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT (account:string guard:guard stoa:string sovereign:string)
         @event
         (let
             (
@@ -617,10 +617,10 @@
     ;;validation above rather than duplicating it - keeps A_DeploySmartAccount's own admin gate
     ;;(GOV|DALOS_ADMIN) distinct from C_DeploySmartAccount's, while both funnel into the same
     ;;single definition of the account-format/guard validation.
-    (defcap DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT (account:string guard:guard kadena:string sovereign:string)
+    (defcap DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT (account:string guard:guard stoa:string sovereign:string)
         @event
         (compose-capability (GOV|DALOS_ADMIN))
-        (compose-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard kadena sovereign))
+        (compose-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard stoa sovereign))
     )
     (defcap DALOS|C>ROTATE-OA_GOVERNOR (account:string governor:guard)
         @event
@@ -637,7 +637,7 @@
         (compose-capability (SECURE))
         (compose-capability (DALOS|F>OWNER account))
     )
-    (defcap DALOS|C>ROTATE-OA-KADENA (account:string)
+    (defcap DALOS|C>ROTATE-OA-STOA (account:string)
         @event
         (compose-capability (SECURE))
         (compose-capability (DALOS|F>OWNER account))
@@ -655,9 +655,9 @@
             [(length (keys DALOS|AccountTable))]
         )
     )
-    ;;[0]   DALOS|KadenaLedger:{DALOS|KadenaSchema}
-    (defun UR_KadenaLedger:[string] (kadena:string)
-        (with-default-read DALOS|KadenaLedger kadena
+    ;;[0]   DALOS|StoaLedger:{DALOS|StoaSchema}
+    (defun UR_StoaLedger:[string] (stoa:string)
+        (with-default-read DALOS|StoaLedger stoa
             { "dalos"    : [BAR] }
             { "dalos"    := d }
             d
@@ -762,8 +762,8 @@
     (defun UR_AccountGuard:guard (account:string)
         (at "guard" (read DALOS|AccountTable account ["guard"]))
     )
-    (defun UR_AccountKadena:string (account:string)
-        (at "kadena-konto" (read DALOS|AccountTable account ["kadena-konto"]))
+    (defun UR_AccountStoa:string (account:string)
+        (at "stoa-konto" (read DALOS|AccountTable account ["stoa-konto"]))
     )
     (defun UR_AccountSovereign:string (account:string)
         (at "sovereign" (read DALOS|AccountTable account ["sovereign"]))
@@ -879,8 +879,8 @@
         @doc "Computes the Discount for Ignis Gas Costs. A value of 1.00 means no discount"
         (URC_GasDiscount account false)
     )
-    (defun URC_KadenaGasDiscount:decimal (account:string)
-        @doc "Computes the Discount for Kadena Gas Costs. A value of 1.00 means no discount"
+    (defun URC_StoaGasDiscount:decimal (account:string)
+        @doc "Computes the Discount for Stoa Gas Costs. A value of 1.00 means no discount"
         (URC_GasDiscount account true)
     )
     (defun URC_GasDiscount:decimal (account:string native:bool)
@@ -894,7 +894,7 @@
             (ref-U|DALOS::UC_GasCost 1.00 major minor native)
         )
     )
-    (defun URC_SplitKDAPrices:[decimal] (account:string kda-price:decimal)
+    (defun URC_SplitSTOAPrices:[decimal] (account:string stoa-price:decimal)
         @doc "Computes the STOA Split required for Native Gas Collection \
           \ This is 10% 20% 30% and 40% split, outputed as 4 element list \
           \ Takes in consideration the Discounted STOA for <account>"
@@ -902,11 +902,11 @@
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
-                (kda-discount:decimal (URC_KadenaGasDiscount account))
-                (discounted-kda:decimal (* kda-discount kda-price))
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
+                (stoa-discount:decimal (URC_StoaGasDiscount account))
+                (discounted-stoa:decimal (* stoa-discount stoa-price))
             )
-            (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit discounted-kda kda-prec)
+            (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit discounted-stoa stoa-prec)
         )
     )
     (defun URC_Transferability:bool (sender:string receiver:string method:bool)
@@ -1021,7 +1021,7 @@
         (UEV_EnforceAccountExists receiver)
         (enforce (!= sender receiver) "Sender and Receiver must be different")
     )
-    (defun UEV_KadenaCollectionState (state:bool)
+    (defun UEV_StoaCollectionState (state:bool)
         (let
             (
                 (t:bool (UR_NativeToggle))
@@ -1094,18 +1094,18 @@
     )
     ;;
     ;;{F5}  [A]
-    (defun A_MigrateLiquidFunds:decimal (migration-target-kda-account:string)
+    (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
         (UEV_IMC)
-        (with-capability (GOV|MIGRATE migration-target-kda-account)
+        (with-capability (GOV|MIGRATE migration-target-stoa-account)
             (let
                 (
                     (ref-coin:module{stoa-ns.fungible-v1} coin)    
-                    (dalos-kda:string DALOS|SC_KDA-NAME)
-                    (present-kda-balance:decimal (ref-coin::get-balance dalos-kda))
+                    (dalos-stoa:string DALOS|SC_STOA-NAME)
+                    (present-stoa-balance:decimal (ref-coin::get-balance dalos-stoa))
                 )
-                (install-capability (ref-coin::TRANSFER dalos-kda migration-target-kda-account present-kda-balance))
-                (ref-coin::transfer dalos-kda migration-target-kda-account present-kda-balance)
-                present-kda-balance
+                (install-capability (ref-coin::TRANSFER dalos-stoa migration-target-stoa-account present-stoa-balance))
+                (ref-coin::transfer dalos-stoa migration-target-stoa-account present-stoa-balance)
+                present-stoa-balance
             )
         )
     )
@@ -1125,19 +1125,19 @@
             )
         )
     )
-    (defun A_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string)
-        (with-capability (DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT account guard kadena sovereign)
-            (XI_DeploySmartAccount account guard kadena sovereign public)
+    (defun A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
+        (with-capability (DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT account guard stoa sovereign)
+            (XI_DeploySmartAccount account guard stoa sovereign public)
         )
     )
-    (defun A_DeployStandardAccount (account:string guard:guard kadena:string public:string)
+    (defun A_DeployStandardAccount (account:string guard:guard stoa:string public:string)
         (with-capability (SECURE-ADMIN)
-            (XI_DeployStandardAccount account guard kadena public)
+            (XI_DeployStandardAccount account guard stoa public)
         )
     )
     (defun A_ToggleGasCollection (native:bool toggle:bool)
         @doc "Enables or disable GAS Collection. \
-            \ <native> true reffers to KADENA Collection \
+            \ <native> true reffers to STOA Collection \
             \ <native> false reffers to IGNIS Collection"
         (UEV_IMC)
         (with-capability (DALOS|C>TOGGLE-GAS-COLLECTION native toggle)
@@ -1177,10 +1177,10 @@
             (let
                 (
                     (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                    (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
+                    (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 )
                 (write DALOS|PricesTable action
-                    {"price"     : (floor new-price kda-prec)}
+                    {"price"     : (floor new-price stoa-prec)}
                 )
             )
         )
@@ -1193,16 +1193,16 @@
             (XI_UpdateSmartAccountParameters account payable-as-smart-contract payable-by-smart-contract payable-by-method)
         )
     )
-    (defun C_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string)
+    (defun C_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
         (UEV_IMC)
-        (with-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard kadena sovereign)
-            (XI_DeploySmartAccount account guard kadena sovereign public)
+        (with-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard stoa sovereign)
+            (XI_DeploySmartAccount account guard stoa sovereign public)
         )
     )
-    (defun C_DeployStandardAccount (account:string guard:guard kadena:string public:string)
+    (defun C_DeployStandardAccount (account:string guard:guard stoa:string public:string)
         (UEV_IMC)
         (with-capability (SECURE)
-            (XI_DeployStandardAccount account guard kadena public)
+            (XI_DeployStandardAccount account guard stoa public)
         )
     )
     (defun C_RotateGovernor
@@ -1219,20 +1219,20 @@
             (XI_RotateGuard account new-guard safe)
         )
     )
-    (defun C_RotateKadena
-        (account:string kadena:string)
+    (defun C_RotateStoa
+        (account:string stoa:string)
         (UEV_IMC)
-        (with-capability (DALOS|C>ROTATE-OA-KADENA account)
-            ;;#25M fix: read the OLD kadena address before XI_RotateKadena overwrites it -
-            ;;otherwise UR_AccountKadena returns the already-rotated NEW address, the ledger
+        (with-capability (DALOS|C>ROTATE-OA-STOA account)
+            ;;#25M fix: read the OLD stoa address before XI_RotateStoa overwrites it -
+            ;;otherwise UR_AccountStoa returns the already-rotated NEW address, the ledger
             ;;cleanup targets the wrong key, and the old address's ledger row is orphaned forever.
             (let
                 (
-                    (old-kadena:string (UR_AccountKadena account))
+                    (old-stoa:string (UR_AccountStoa account))
                 )
-                (XI_RotateKadena account kadena)
-                (XI_UpdateKadenaLedger old-kadena account false)
-                (XI_UpdateKadenaLedger kadena account true)
+                (XI_RotateStoa account stoa)
+                (XI_UpdateStoaLedger old-stoa account false)
+                (XI_UpdateStoaLedger stoa account true)
             )
         )
     )
@@ -1247,17 +1247,17 @@
     ;;{F7}  [X]
     ;;
     ;;      [X-A]
-    (defun XI_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string)
+    (defun XI_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
         ;;#26M fix: validation now happens in the caller's own client cap
         ;;(A_DeploySmartAccount composes DALOS|A>DEPLOY-SMART-OURONET-ACCOUNT,
         ;;C_DeploySmartAccount composes DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT directly) - this
         ;;writer only requires the shared validating cap is already active, it doesn't compose
         ;;or enforce anything itself.
-        (require-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard kadena sovereign))
+        (require-capability (DALOS|C>DEPLOY-SMART-OURONET-ACCOUNT account guard stoa sovereign))
         (insert DALOS|AccountTable account
             { "public"                      : public
             , "guard"                       : guard
-            , "kadena-konto"                : kadena
+            , "stoa-konto"                : stoa
             , "sovereign"                   : sovereign
             , "governor"                    : guard
             ;;
@@ -1272,15 +1272,15 @@
             , "ignis"                       : (UDC_BlankTrueFungible account)
             }
         )
-        (XI_UpdateKadenaLedger kadena account true)
+        (XI_UpdateStoaLedger stoa account true)
     )
-    (defun XI_DeployStandardAccount (account:string guard:guard kadena:string public:string)
+    (defun XI_DeployStandardAccount (account:string guard:guard stoa:string public:string)
         (require-capability (SECURE))
-        (with-capability (DALOS|C>DEPLOY-STANDARD-OURONET-ACCOUNT account guard kadena)
+        (with-capability (DALOS|C>DEPLOY-STANDARD-OURONET-ACCOUNT account guard stoa)
             (insert DALOS|AccountTable account
                 { "public"                      : public
                 , "guard"                       : guard
-                , "kadena-konto"                : kadena
+                , "stoa-konto"                : stoa
                 , "sovereign"                   : account
                 , "governor"                    : guard
                 ;;
@@ -1295,7 +1295,7 @@
                 , "ignis"                       : (UDC_BlankTrueFungible account)
                 }
             )
-            (XI_UpdateKadenaLedger kadena account true)
+            (XI_UpdateStoaLedger stoa account true)
         )
     )
     (defun XI_GasToggle (native:bool toggle:bool)
@@ -1344,20 +1344,20 @@
             )
         )
     )
-    (defun XI_RotateKadena (account:string kadena:string)
-        @doc "Under DALOS|C>ROTATE-OA-KADENA: update kadena-konto only. Write only."
-        (require-capability (DALOS|C>ROTATE-OA-KADENA account))
+    (defun XI_RotateStoa (account:string stoa:string)
+        @doc "Under DALOS|C>ROTATE-OA-STOA: update stoa-konto only. Write only."
+        (require-capability (DALOS|C>ROTATE-OA-STOA account))
         (update DALOS|AccountTable account
-            {"kadena-konto"                  : kadena}
+            {"stoa-konto"                  : stoa}
         )
     )
-    (defun XI_UpdateKadenaLedger (kadena:string dalos:string direction:bool)
+    (defun XI_UpdateStoaLedger (stoa:string dalos:string direction:bool)
         (require-capability (SECURE))
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
             )
-            (with-default-read DALOS|KadenaLedger kadena
+            (with-default-read DALOS|StoaLedger stoa
                 { "dalos"    : [BAR] }
                 { "dalos"    := d }
                 (let
@@ -1381,10 +1381,10 @@
                         )
                     )
                     (if direction
-                        (write DALOS|KadenaLedger kadena
+                        (write DALOS|StoaLedger stoa
                             { "dalos" : add-lst}
                         )
-                        (write DALOS|KadenaLedger kadena
+                        (write DALOS|StoaLedger stoa
                             { "dalos" : rmv-lst}
                         )
                     )
@@ -1591,4 +1591,4 @@
 (create-table DALOS|GasManagementTable)
 (create-table DALOS|PricesTable)
 (create-table DALOS|AccountTable)
-(create-table DALOS|KadenaLedger)
+(create-table DALOS|StoaLedger)

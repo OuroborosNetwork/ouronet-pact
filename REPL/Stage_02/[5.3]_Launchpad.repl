@@ -76,8 +76,8 @@
         ;;(acquire-module-admin n_7d40ccda457e374d8eb07b658fd38c282c545038.DEMIPAD)
         (insert DEMIPAD.DEMIPAD|T|Properties pkey
             {"direct-injection" : false
-            ,"resident-wkda"    : 0.0
-            ,"resident-lkda"    : 0.0
+            ,"resident-wstoa"    : 0.0
+            ,"resident-sstoa"    : 0.0
             ,"resident-ouro"    : 0.0}
         )
         ;;IMC
@@ -134,8 +134,8 @@
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
             (ref-DALOS:module{OuronetDalosV1} DALOS)
-            (split-kda:[decimal]
-                (ref-DALOS::URC_SplitKDAPrices
+            (split-stoa:[decimal]
+                (ref-DALOS::URC_SplitSTOAPrices
                     KST.ANHD
                     (* (ref-DALOS::UR_UsagePrice "dptf") 2.0)
                 )
@@ -151,22 +151,22 @@
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                            (at 2 split-kda)
+                            (at 2 split-stoa)
                         )
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                            (at 0 split-kda)
+                            (at 0 split-stoa)
                         )
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                            (at 3 split-kda)
+                            (at 3 split-stoa)
                         )
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                            (at 1 split-kda)
+                            (at 1 split-stoa)
 
                         )
                     ]
@@ -219,8 +219,8 @@
         (
             (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
             (ref-DALOS:module{OuronetDalosV1} DALOS)
-            (split-kda:[decimal]
-                (ref-DALOS::URC_SplitKDAPrices
+            (split-stoa:[decimal]
+                (ref-DALOS::URC_SplitSTOAPrices
                     KST.ANHD
                     (* (ref-DALOS::UR_UsagePrice "dptf") 2.0)
                 )
@@ -237,22 +237,22 @@
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                            (at 2 split-kda)
+                            (at 2 split-stoa)
                         )
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                            (at 0 split-kda)
+                            (at 0 split-stoa)
                         )
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                            (at 3 split-kda)
+                            (at 3 split-stoa)
                         )
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                            (at 1 split-kda)
+                            (at 1 split-stoa)
 
                         )
                     ]
@@ -291,8 +291,8 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (* (ref-DALOS::UR_UsagePrice "dptf") 2.0)
             )
@@ -721,11 +721,11 @@
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
-(begin-tx "TX-01 - Initialise Kadena Pay")
+(begin-tx "TX-01 - Initialise Stoa Pay")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
-;;==== TX-01 - Initialise Kadena Pay · 01 · env-sigs (caps) ==== ==================================
-(print "--- [TX-01 - Initialise Kadena Pay · 01 · env-sigs (caps)] ---")
+;;==== TX-01 - Initialise Stoa Pay · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-01 - Initialise Stoa Pay · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -733,14 +733,14 @@
     ]
 )
 
-;;==== TX-01 - Initialise Kadena Pay · 02 · let / invocation ==== =================================
-(print "--- [TX-01 - Initialise Kadena Pay · 02 · let / invocation] ---")
+;;==== TX-01 - Initialise Stoa Pay · 02 · let / invocation ==== =================================
+(print "--- [TX-01 - Initialise Stoa Pay · 02 · let / invocation] ---")
     (let
         (
             (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
             (ref-DALOS:module{OuronetDalosV1} DALOS)
-            (split-kda:[decimal]
-                (ref-DALOS::URC_SplitKDAPrices
+            (split-stoa:[decimal]
+                (ref-DALOS::URC_SplitSTOAPrices
                     KST.ANHD
                     (ref-DALOS::UR_UsagePrice "dptf")
                 )
@@ -757,22 +757,22 @@
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                            (at 2 split-kda)
+                            (at 2 split-stoa)
                         )
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                            (at 0 split-kda)
+                            (at 0 split-stoa)
                         )
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                            (at 3 split-kda)
+                            (at 3 split-stoa)
                         )
                         (coin.TRANSFER
                             "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                             "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                            (at 1 split-kda)
+                            (at 1 split-stoa)
 
                         )
                     ]
@@ -796,8 +796,8 @@
     
 (print "")
 (print "")
-;;==== TX-01 - Initialise Kadena Pay · 03 · gas echo ==== =========================================
-(print "--- [TX-01 - Initialise Kadena Pay · 03 · gas echo] ---")
+;;==== TX-01 - Initialise Stoa Pay · 03 · gas echo ==== =========================================
+(print "--- [TX-01 - Initialise Stoa Pay · 03 · gas echo] ---")
 (format "<<<<<<<Init Kpay Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
@@ -858,8 +858,8 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (ref-DALOS::UR_UsagePrice "dptf")
             )

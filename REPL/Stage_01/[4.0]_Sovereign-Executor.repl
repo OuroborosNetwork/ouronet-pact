@@ -223,7 +223,7 @@
         (lqd:string (ref-LIQUID::LIQUID|Info))
     )
     [
-        ;;Kadena Prices (Main-Net Prices x1000)
+        ;;Stoa Prices (Main-Net Prices x1000)
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "standard"      0.01)
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "smart"         0.02)
         (ref-TS01-A::DALOS|A_UpdateUsagePrice "ats"            0.1)
@@ -354,7 +354,7 @@
             ;;Dalos Smart Ouronet Account
             dalos-sc
             (keyset-ref-guard (ref-DALOS::GOV|DalosKey)) 
-            (ref-DALOS::GOV|DALOS|SC_KDA-NAME)
+            (ref-DALOS::GOV|DALOS|SC_STOA-NAME)
             patron 
             (ref-DALOS::GOV|DALOS|PBL)
         )
@@ -378,7 +378,7 @@
             ;;Liquid-Staking Smart Ouronet Account
             liquid-sc
             (keyset-ref-guard (ref-DALOS::GOV|LiquidKey)) 
-            (ref-LIQUID::GOV|LIQUID|SC_KDA-NAME)
+            (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME)
             patron 
             (ref-DALOS::GOV|LIQUID|PBL)
         )
@@ -386,7 +386,7 @@
             ;;Ouroboros Smart Ouronet Account
             ouroboros-sc 
             (keyset-ref-guard (ref-DALOS::GOV|OuroborosKey)) 
-            (ref-ORBR::GOV|ORBR|SC_KDA-NAME)
+            (ref-ORBR::GOV|ORBR|SC_STOA-NAME)
             patron 
             (ref-DALOS::GOV|OUROBOROS|PBL)
         )
@@ -466,17 +466,17 @@
             )
         )
         ;;
-        ;;Deploy Kadena Account
+        ;;Deploy Stoa Account
         (ref-coin::create-account 
-            (ref-DALOS::GOV|DALOS|SC_KDA-NAME) 
+            (ref-DALOS::GOV|DALOS|SC_STOA-NAME) 
             (ref-DALOS::GOV|DALOS|GUARD)
         )
         (ref-coin::create-account 
-            (ref-ORBR::GOV|ORBR|SC_KDA-NAME) 
+            (ref-ORBR::GOV|ORBR|SC_STOA-NAME) 
             (ref-ORBR::GOV|ORBR|GUARD)
         )
         (ref-coin::create-account 
-            (ref-LIQUID::GOV|LIQUID|SC_KDA-NAME)
+            (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME)
             (ref-LIQUID::GOV|LIQUID|GUARD)
         )
     ]
@@ -520,7 +520,7 @@
             (ref-TS01-C1::DPTF|C_Issue
                 patron
                 dalos
-                ["Ouroboros" "Auryn" "EliteAuryn" "Ignis" "DalosWrappedKadena" "DalosLiquidKadena"]
+                ["Ouroboros" "Auryn" "EliteAuryn" "Ignis" "DalosWrappedStoa" "DalosLiquidStoa"]
                 ["OURO" "AURYN" "ELITEAURYN" "GAS" "DWK" "DLK"]
                 [24 24 24 24 12 24]
                 [true true true true true true]         ;;can change owner
@@ -535,8 +535,8 @@
         (AurynID:string (at 1 ids))
         (EliteAurynID:string (at 2 ids))
         (GasID:string (at 3 ids))
-        (WrappedKadenaID:string (at 4 ids))
-        (StakedKadenaID:string (at 5 ids))
+        (WrappedStoaID:string (at 4 ids))
+        (StakedStoaID:string (at 5 ids))
         ;;
         (treasury-sc:string (ref-DALOS::GOV|DHV2|SC_NAME))        
     )
@@ -551,8 +551,8 @@
             , "gas-id"                  : GasID
             , "ats-gas-source-id"       : AurynID
             , "elite-ats-gas-source-id" : EliteAurynID
-            , "wrapped-stoa-id"          : WrappedKadenaID
-            , "silver-stoa-id"           : StakedKadenaID
+            , "wrapped-stoa-id"          : WrappedStoaID
+            , "silver-stoa-id"           : StakedStoaID
             }
         )
         ;;Set Token Roles Part I
@@ -652,23 +652,23 @@
         (OuroID:string (ref-DALOS::UR_OuroborosID))
         (AurynID:string (ref-DALOS::UR_AurynID))
         (EliteAurynID:string (ref-DALOS::UR_EliteAurynID))
-        (WrappedKadenaID:string (ref-DALOS::UR_WrappedStoaID))
-        (StakedKadenaID:string (ref-DALOS::UR_SilverStoaID))
+        (WrappedStoaID:string (ref-DALOS::UR_WrappedStoaID))
+        (StakedStoaID:string (ref-DALOS::UR_SilverStoaID))
         (ats-ids:list
             (ref-TS01-C2::ATS|C_Issue
                 patron
                 patron
-                ["Auryndex" "EliteAuryndex" "KdaLiquindex"]
+                ["Auryndex" "EliteAuryndex" "StoaLiquindex"]
                 [24 24 24]
-                [OuroID AurynID WrappedKadenaID]
+                [OuroID AurynID WrappedStoaID]
                 [true true false]
-                [AurynID EliteAurynID StakedKadenaID]
+                [AurynID EliteAurynID StakedStoaID]
                 [false true true]
             )
         )
         (Auryndex:string (at 0 ats-ids))
         (Elite-Auryndex:string (at 1 ats-ids))
-        (Kadena-Liquid-Index:string (at 2 ats-ids))            
+        (Stoa-Liquid-Index:string (at 2 ats-ids))            
     )
     [
         ;;Set Up <Auryndex> 4795
@@ -691,10 +691,10 @@
         (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron Elite-Auryndex false 360 24)
         (ref-TS01-C2::ATS|C_ToggleElite patron Elite-Auryndex true)
         (ref-TS01-C2::ATS|C_SwitchColdRecovery patron Elite-Auryndex true)
-        ;;Set Up <KdaLiquindex>
-        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron Kadena-Liquid-Index -1 [0.0] [[0.0]])
-        (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron Kadena-Liquid-Index false 12 6)
-        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron Kadena-Liquid-Index true)
+        ;;Set Up <StoaLiquindex>
+        (ref-TS01-C2::ATS|C_SetColdRecoveryFees patron Stoa-Liquid-Index -1 [0.0] [[0.0]])
+        (ref-TS01-C2::ATS|C_SetColdRecoveryDuration patron Stoa-Liquid-Index false 12 6)
+        (ref-TS01-C2::ATS|C_SwitchColdRecovery patron Stoa-Liquid-Index true)
         ats-ids
     ]
 )
@@ -790,20 +790,20 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX-10 [4.1.10] - Dalos INIT [10]: Setup WKDA and LKDA")
+(begin-tx "TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
-;;==== TX-10 [4.1.10] - Dalos INIT [10]: Setup WKDA and LKDA · 01 · env-sigs (caps) ==== ==========
-(print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WKDA and LKDA · 01 · env-sigs (caps)] ---")
+;;==== TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 01 · env-sigs (caps) ==== ==========
+(print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
-;;==== TX-10 [4.1.10] - Dalos INIT [10]: Setup WKDA and LKDA · 02 · let / invocation ==== =========
-(print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WKDA and LKDA · 02 · let / invocation] ---")
+;;==== TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 02 · let / invocation ==== =========
+(print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -813,8 +813,8 @@
         (patron:string KST.ANHD)
         (AurynID:string (ref-DALOS::UR_AurynID))
         (EliteAurynID:string (ref-DALOS::UR_EliteAurynID))
-        (WrappedKadenaID:string (ref-DALOS::UR_WrappedStoaID))
-        (StakedKadenaID:string (ref-DALOS::UR_SilverStoaID))
+        (WrappedStoaID:string (ref-DALOS::UR_WrappedStoaID))
+        (StakedStoaID:string (ref-DALOS::UR_SilverStoaID))
         ;;
         (ats:string (ref-DALOS::GOV|ATS|SC_NAME))
         (liquid:string (ref-DALOS::GOV|LIQUID|SC_NAME))
@@ -826,20 +826,20 @@
         ;;#N2 fix: system smart accounts (not self-owned) - admin variant, not self-service C_
         (ref-TS01-A::DPTF|A_DeployAccount patron AurynID ats)
         (ref-TS01-A::DPTF|A_DeployAccount patron EliteAurynID ats)
-        (ref-TS01-A::DPTF|A_DeployAccount patron WrappedKadenaID liquid)
-        (ref-TS01-A::DPTF|A_DeployAccount patron StakedKadenaID liquid)
+        (ref-TS01-A::DPTF|A_DeployAccount patron WrappedStoaID liquid)
+        (ref-TS01-A::DPTF|A_DeployAccount patron StakedStoaID liquid)
         ;;Set Token Roles Part III
-        (ref-TS01-C1::DPTF|C_SetFee patron StakedKadenaID -1.0)
-        (ref-TS01-C1::DPTF|C_ToggleFee patron StakedKadenaID true)
-        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron StakedKadenaID true)
-        ;(ref-TS01-C1::DPTF|C_ToggleBurnRole patron WrappedKadenaID liquid true)
-        ;(ref-TS01-C1::DPTF|C_ToggleMintRole patron WrappedKadenaID liquid true)
+        (ref-TS01-C1::DPTF|C_SetFee patron StakedStoaID -1.0)
+        (ref-TS01-C1::DPTF|C_ToggleFee patron StakedStoaID true)
+        (ref-TS01-C1::DPTF|C_ToggleFeeLock patron StakedStoaID true)
+        ;(ref-TS01-C1::DPTF|C_ToggleBurnRole patron WrappedStoaID liquid true)
+        ;(ref-TS01-C1::DPTF|C_ToggleMintRole patron WrappedStoaID liquid true)
     ]
     
 )
 
-;;==== TX-10 [4.1.10] - Dalos INIT [10]: Setup WKDA and LKDA · 03 · gas echo ==== =================
-(print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WKDA and LKDA · 03 · gas echo] ---")
+;;==== TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 03 · gas echo ==== =================
+(print "--- [TX-10 [4.1.10] - Dalos INIT [10]: Setup WSTOA and SSTOA · 03 · gas echo] ---")
 (format "<<<<<<<Dalos INIT [10] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -848,12 +848,12 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX-11 [4.1.11] - Dalos INIT [11]: Wrap Kadena")
+(begin-tx "TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
-;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Kadena · 01 · env-sigs (caps) ==== ==================
-(print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Kadena · 01 · env-sigs (caps)] ---")
+;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 01 · env-sigs (caps) ==== ==================
+(print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
@@ -869,8 +869,8 @@
     ]
 )
 
-;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Kadena · 02 · let / invocation ==== =================
-(print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Kadena · 02 · let / invocation] ---")
+;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 02 · let / invocation ==== =================
+(print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 02 · let / invocation] ---")
 (let
     (
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
@@ -879,8 +879,8 @@
     (ref-TS01-C2::LQD|C_WrapStoa patron patron 1.0)
 )
 
-;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Kadena · 03 · gas echo ==== =========================
-(print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Kadena · 03 · gas echo] ---")
+;;==== TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 03 · gas echo ==== =========================
+(print "--- [TX-11 [4.1.11] - Dalos INIT [11]: Wrap Stoa · 03 · gas echo] ---")
 (format "<<<<<<<Dalos INIT [11] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -889,20 +889,20 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Kadena")
+(begin-tx "TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
-;;==== TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Kadena · 01 · env-sigs (caps) ==== ==========
-(print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Kadena · 01 · env-sigs (caps)] ---")
+;;==== TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 01 · env-sigs (caps) ==== ==========
+(print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 01 · env-sigs (caps)] ---")
 (env-sigs
     [
         { "key": "PK_AncientHodler", "caps": [] }
     ]
 )
 
-;;==== TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Kadena · 02 · let / invocation ==== =========
-(print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Kadena · 02 · let / invocation] ---")
+;;==== TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 02 · let / invocation ==== =========
+(print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 02 · let / invocation] ---")
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -920,8 +920,8 @@
     )
 )
 
-;;==== TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Kadena · 03 · gas echo ==== =================
-(print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Kadena · 03 · gas echo] ---")
+;;==== TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 03 · gas echo ==== =================
+(print "--- [TX-12 [4.1.12] - Dalos INIT [12]: Coil Wrapped Stoa · 03 · gas echo] ---")
 (format "<<<<<<<Dalos INIT [12] Costs {} GAS>>>>>>>" [(env-gas)])
 (print "")
 (commit-tx)
@@ -1102,8 +1102,8 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (* (ref-DALOS::UR_UsagePrice "dptf") 3.0) (ref-DALOS::UR_UsagePrice "dpmf"))
             )
@@ -1118,22 +1118,22 @@
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ]
             }
@@ -1329,8 +1329,8 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (fold (+) 0.0 
                     [
@@ -1341,7 +1341,7 @@
                 )
             )
         )
-        (kadena-wrap-amount:decimal 100000.0)
+        (stoa-wrap-amount:decimal 100000.0)
     )
     (env-sigs
         [   
@@ -1354,7 +1354,7 @@
                     (coin.TRANSFER 
                     "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                     "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI"
-                    kadena-wrap-amount)
+                    stoa-wrap-amount)
                     ;;
                     ;;
                     ;;
@@ -1363,25 +1363,25 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                     ;;<amount-two> to <receiver-two>
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     ;;<amount-three> to <receiver-three>
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     ;;<amount-four> to <receiver-four>
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                 ]
             }
@@ -1401,18 +1401,18 @@
             (ref-ATS:module{AutostakeV2} ATS)
             ;;
             (patron:string KST.ANHD)
-            (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
-            (patron-kda-balance:decimal (ref-coin::get-balance patron-kda))
-            (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
-            (lkda-id:string (ref-DALOS::UR_SilverStoaID))
-            (patron-wkda-balance:decimal (ref-DPTF::UR_AccountSupply wkda-id patron))
+            (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
+            (patron-stoa-balance:decimal (ref-coin::get-balance patron-stoa))
+            (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+            (sstoa-id:string (ref-DALOS::UR_SilverStoaID))
+            (patron-wstoa-balance:decimal (ref-DPTF::UR_AccountSupply wstoa-id patron))
             ;;
             (ids:list
                 (ref-TS01-C1::DPTF|C_Issue
                     patron
                     patron
-                    ["PensionKadena"]
-                    ["PKDA"]
+                    ["PensionStoa"]
+                    ["PSTOA"]
                     [24]
                     [true]  ;;can change owner
                     [true]  ;;can upgrade
@@ -1433,7 +1433,7 @@
                         patron
                         ["KORIndex" ]
                         [24]
-                        [lkda-id]
+                        [sstoa-id]
                         [false]
                         [PensionID ]
                         [false]
@@ -1444,21 +1444,21 @@
         (acquire-module-admin ouronet-ns.DPTF)
         [
             [
-                (format "Cumulated Resident on Kori is {}" [(ref-ATS::UR_SingleRewardTokenRUR KoriID lkda-id 1)])
-                (format "Cumulated Unbonding on Kori is {}" [(ref-ATS::UR_SingleRewardTokenRUR KoriID lkda-id 2)])
-                (format "Cumulated Royalty on Kori is {}" [(ref-ATS::UR_SingleRewardTokenRUR KoriID lkda-id 3)])
+                (format "Cumulated Resident on Kori is {}" [(ref-ATS::UR_SingleRewardTokenRUR KoriID sstoa-id 1)])
+                (format "Cumulated Unbonding on Kori is {}" [(ref-ATS::UR_SingleRewardTokenRUR KoriID sstoa-id 2)])
+                (format "Cumulated Royalty on Kori is {}" [(ref-ATS::UR_SingleRewardTokenRUR KoriID sstoa-id 3)])
             ]
             [
-                (ref-TS01-C2::LQD|C_WrapStoa patron patron kadena-wrap-amount)
-                (ref-TS01-C2::ATS|C_Coil patron patron "KdaLiquindex-98c486052a51" wkda-id 98000.0)
-                ;(format "Account AH existence for WKDA is {}" [(ref-DPTF::UR_IzAccount wkda-id patron)])
-                ;(format "Read is {}" [(read DPTF.DPTF|BalanceTable (ref-DPTF::UC_IdAccount wkda-id patron))])
+                (ref-TS01-C2::LQD|C_WrapStoa patron patron stoa-wrap-amount)
+                (ref-TS01-C2::ATS|C_Coil patron patron "StoaLiquindex-98c486052a51" wstoa-id 98000.0)
+                ;(format "Account AH existence for WSTOA is {}" [(ref-DPTF::UR_IzAccount wstoa-id patron)])
+                ;(format "Read is {}" [(read DPTF.DPTF|BalanceTable (ref-DPTF::UC_IdAccount wstoa-id patron))])
             ]
             [
-                (format "AH has Native Kadena {}" [(ref-coin::get-balance patron-kda)])
-                (format "AH has WKDA {}" [(ref-DPTF::UR_AccountSupply wkda-id patron)])
-                (format "AH has LKDA {}" [(ref-DPTF::UR_AccountSupply lkda-id patron)])
-                (ref-TS01-C1::DPTF|C_Transfer patron lkda-id patron KST.EMMA 2000.0 false)
+                (format "AH has Native Stoa {}" [(ref-coin::get-balance patron-stoa)])
+                (format "AH has WSTOA {}" [(ref-DPTF::UR_AccountSupply wstoa-id patron)])
+                (format "AH has SSTOA {}" [(ref-DPTF::UR_AccountSupply sstoa-id patron)])
+                (ref-TS01-C1::DPTF|C_Transfer patron sstoa-id patron KST.EMMA 2000.0 false)
             ]
             [
                 PensionID HibernatedPensionID KoriID

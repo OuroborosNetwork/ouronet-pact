@@ -3021,7 +3021,7 @@
                     (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::KDA|C_Collect patron smart-price)
+                (ref-IGNIS::STOA|C_Collect patron smart-price)
                 (XI_IssuePool pool-id aqp-class asset-id)
                 (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-POOL AQP|SC_NAME trigger [pool-id])
             )

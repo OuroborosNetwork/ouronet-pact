@@ -203,7 +203,7 @@
     (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} ())
     (defun URCi_ToggleParameterLock:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
     (defun URCi_IssueGas:decimal (token-count:integer))
-    (defun URCi_IssueKda:decimal (token-count:integer))
+    (defun URCi_IssueStoa:decimal (token-count:integer))
     (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;
     ;;  [X]
@@ -1957,7 +1957,7 @@
     (defun URCi_IssueGas:decimal (token-count:integer)
         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|ats-issue")))
     )
-    (defun URCi_IssueKda:decimal (token-count:integer)
+    (defun URCi_IssueStoa:decimal (token-count:integer)
         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ats")))
     )
     (defun URCi_UpgradeBranding:decimal (months:integer)
@@ -1986,11 +1986,11 @@
                 (ref-BRD:module{BrandingV1} BRD)
                 (owner:string (UR_OwnerKonto entity-id))
             )
-            ;;Perform the branding upgrade (side effect); bill the KDA via the URCi (== XE_UpgradeBranding's price)
+            ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
             (with-capability (ATS|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id owner months)
             )
-            (ref-IGNIS::KDA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;Hot RBT Management
@@ -2076,12 +2076,12 @@
                     (l1:integer (length atspair))
                     (gas-costs:decimal (URCi_IssueGas l1))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (kda-costs:decimal (URCi_IssueKda l1))
+                    (stoa-costs:decimal (URCi_IssueStoa l1))
                     (ats-ids:[string]
                         (XI_FoldedIssue account atspair index-decimals reward-token rt-nfr reward-bearing-token rbt-nfr)
                     )
                 )
-                (ref-IGNIS::KDA|C_Collect patron kda-costs)
+                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                 (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs ATS|SC_NAME trigger ats-ids)
                 
             )
@@ -2162,14 +2162,14 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (toggle-costs:[decimal] (XI_ToggleParameterLock atspair toggle))
-                    (kda-costs:decimal (at 1 toggle-costs))
+                    (stoa-costs:decimal (at 1 toggle-costs))
                     ;;URCi computed HERE — reads unlocks BEFORE XI_IncrementParameterUnlocks below mutates it
                     (cumulator:object{IgnisCollectorV1.OutputCumulator} (URCi_ToggleParameterLock atspair toggle))
                 )
-                (if (> kda-costs 0.0)
+                (if (> stoa-costs 0.0)
                     (do
                         (XI_IncrementParameterUnlocks atspair)
-                        (ref-IGNIS::KDA|C_Collect patron kda-costs)
+                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                     )
                     true
                 )

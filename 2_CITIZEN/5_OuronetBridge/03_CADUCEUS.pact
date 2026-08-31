@@ -90,7 +90,7 @@
     ;;{1}
     (defschema CADUCEUS|ConfigSchema
         bridge-account:string
-        bridge-kadena:string
+        bridge-stoa:string
         bridge-sovereign:string
         bridge-public:string
         dptf-id:string
@@ -178,7 +178,7 @@
     (defun A_SetBridgeConfig
         (
             bridge-account:string
-            bridge-kadena:string
+            bridge-stoa:string
             bridge-sovereign:string
             bridge-public:string
             dptf-id:string
@@ -190,7 +190,7 @@
             (write CADUCEUS|ConfigTable CFG_KEY
                 {
                     "bridge-account"   : bridge-account
-                    ,"bridge-kadena"   : bridge-kadena
+                    ,"bridge-stoa"   : bridge-stoa
                     ,"bridge-sovereign": bridge-sovereign
                     ,"bridge-public"   : bridge-public
                     ,"dptf-id"         : dptf-id
@@ -219,7 +219,7 @@
                 (ref-TS01-C1::DALOS|C_DeploySmartAccount
                     (UR_BridgeAccount)
                     guard
-                    (at "bridge-kadena" (read CADUCEUS|ConfigTable CFG_KEY ["bridge-kadena"]))
+                    (at "bridge-stoa" (read CADUCEUS|ConfigTable CFG_KEY ["bridge-stoa"]))
                     (at "bridge-sovereign" (read CADUCEUS|ConfigTable CFG_KEY ["bridge-sovereign"]))
                     (at "bridge-public" (read CADUCEUS|ConfigTable CFG_KEY ["bridge-public"]))
                 )

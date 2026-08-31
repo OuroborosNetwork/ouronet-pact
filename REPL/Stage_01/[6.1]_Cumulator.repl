@@ -103,7 +103,7 @@
 (print "")
 ;;==== DPTF Tx 001 Cumulator Tests · 03 · gas echo ==== ===========================================
 (print "--- [DPTF Tx 001 Cumulator Tests · 03 · gas echo] ---")
-(format "<<<<<<<STEP 001 Cumulator Tests costs {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<STEP 001 Cumulator Tests costs {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -229,7 +229,7 @@
 (print "")
 ;;==== LOL Tests · 03 · gas echo ==== =============================================================
 (print "--- [LOL Tests · 03 · gas echo] ---")
-(format "<<<<<<<LOL Tests costs {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<LOL Tests costs {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")

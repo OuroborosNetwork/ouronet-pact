@@ -278,7 +278,7 @@
     )
     (defun UC_UnlockPrice:[decimal] (unlocks:integer)
         @doc "Computes  ATS unlock price \
-            \ Outputs [virtual-gas-costs (IGNIS) native-gas-cost(KDA)]"
+            \ Outputs [virtual-gas-costs (IGNIS) native-gas-cost(STOA)]"
         (let
             (
                 (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)

@@ -5739,7 +5739,7 @@
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::KDA|C_Collect patron smart-price)
+                (ref-IGNIS::STOA|C_Collect patron smart-price)
                 (XI_IssueFvt fvt-id fvt-class owner-konto common-denominator)
                 (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-FVT owner-konto trigger [fvt-id])
             )

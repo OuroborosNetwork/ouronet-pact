@@ -66,7 +66,7 @@
     (defun C_RegisterStoicTag:string (tag-name:string account-address:string))
     (defun C_ReleaseStoicTag:string (tag-name:string))
     ;;
-    ;; [INFO] UI previews — register: STOA always (KDA|C_CollectWT false); release: IGNIS per virtual-gas rules
+    ;; [INFO] UI previews — register: STOA always (STOA|C_CollectWT false); release: IGNIS per virtual-gas rules
     (defun CODEX|INFO_RegisterStoicTag:object{OuronetInfoV1.ClientInfo}
         (patron:string tag-name:string account-address:string))
     (defun CODEX|INFO_ReleaseStoicTag:object{OuronetInfoV1.ClientInfo}
@@ -75,7 +75,7 @@
 
 (module CODEX GOV
     @doc "On-chain Codex Identity registry, Arweave upload audit log, and StoicTag \
-         \ name registry. Apollo cosign is off-chain only; chain enforces Kadena guards."
+         \ name registry. Apollo cosign is off-chain only; chain enforces Stoa guards."
     ;;
     (implements CodexV1)
     (implements OuronetPolicyV1)
@@ -158,7 +158,7 @@
         codex-id-smart:string               ;;[.]   Apollo Smart half (Π. + 160 charset chars, len 162)
         public-standard:string              ;;[.]   Canonical Standard Apollo pubkey material
         public-smart:string                 ;;[.]   Canonical Smart Apollo pubkey material
-        codex-guard:guard                   ;;[M]   Kadena CodexGuard keyset (rotatable)
+        codex-guard:guard                   ;;[M]   Stoa CodexGuard keyset (rotatable)
         registered-at:time                  ;;[.]   Block time at registration
         registered-by:string                ;;[.]   Operator observability string
         ;;
@@ -730,7 +730,7 @@
                 ]
                 [(format "StoicTag §{} registered to account {}." [tag-name account-address])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_KadenaCosts account-address stoa-fee)
+                (ref-I|OURONET::OI|UDC_StoaCosts account-address stoa-fee)
                 []
             )
         )
@@ -756,7 +756,7 @@
                     (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                     (ref-I|OURONET::OI|UDC_IgnisCosts patron tag-fee)
                 )
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )

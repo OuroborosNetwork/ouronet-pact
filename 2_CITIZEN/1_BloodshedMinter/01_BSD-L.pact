@@ -91,7 +91,7 @@
     (defconst OH5                   "Howler")
     ;;
     (defconst NAME                  "Bloodshed")
-    (defconst DS                    "A Collection of 12928 NFTs depicting 272 unique Dacian Warriors, representing Bloodshed.gg, a gaming Guild within Age of Zalmoxis - a Web3 MMORPG, spawned on Ouronet, powered by Kadena")
+    (defconst DS                    "A Collection of 12928 NFTs depicting 272 unique Dacian Warriors, representing Bloodshed.gg, a gaming Guild within Age of Zalmoxis - a Web3 MMORPG, spawned on Ouronet, powered by Stoa")
 )
 ;;
 (module BLOODSHED-L GOV

@@ -196,20 +196,20 @@
     (defun URC_ShareCosts:object{DemiourgosLaunchpadV1.Costs} ()
         (let
             (
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
                 (share-pid:decimal (UR_DollarSharePrice))
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 ;;
-                (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wkda-prec:integer (ref-DPTF::UR_Decimals wkda-id))
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
             )
             (ref-DEMIPAD::UDC_Costs
                 share-pid
-                (floor (/ share-pid kda-pid) wkda-prec)
+                (floor (/ share-pid stoa-pid) wstoa-prec)
             )
         )
     )
@@ -223,12 +223,12 @@
                 (share-costs:object{DemiourgosLaunchpadV1.Costs} (URC_ShareCosts))
                 (nonce-value-in-shares:integer (URC_NonceValueInShares nonce))
                 ;;
-                (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wkda-prec:integer (ref-DPTF::UR_Decimals wkda-id))
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
             )
             (ref-DEMIPAD::UDC_Costs
                 (floor (* (at "pid" share-costs) (dec nonce-value-in-shares)) 2)
-                (floor (* (at "wkda" share-costs) (dec nonce-value-in-shares)) wkda-prec)
+                (floor (* (at "wstoa" share-costs) (dec nonce-value-in-shares)) wstoa-prec)
             )
         )
     )
@@ -241,12 +241,12 @@
                 ;;
                 (nonce-costs:object{DemiourgosLaunchpadV1.Costs} (URC_NonceCosts nonce))
                 ;;
-                (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wkda-prec:integer (ref-DPTF::UR_Decimals wkda-id))
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
             )
             (ref-DEMIPAD::UDC_Costs
                 (floor (* (at "pid" nonce-costs) (dec amount)) 2)
-                (floor (* (at "wkda" nonce-costs) (dec amount)) wkda-prec)
+                (floor (* (at "wstoa" nonce-costs) (dec amount)) wstoa-prec)
             )
         )
     )
@@ -296,7 +296,7 @@
     ;;{F6}  [C]
     (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
         @doc "Nonce 1 are Pure Shares, Nonces 2-8 are Tier 1-7 PackageShares \
-            \ When <iz-native> is set to true, Native KDA is used for buy, which must be wrapped to WKDA \
+            \ When <iz-native> is set to true, Native STOA is used for buy, which must be wrapped to WSTOA \
             \ <max-cost> is the buyer's slippage ceiling in dollars (sentinel < 0 = slippage off)."
         (with-capability (SNAKES|ACQUIRE nonce amount)
             (let

@@ -52,8 +52,8 @@
         ;(ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
         ;(patron:string KST.ANHD)
         (emma:string KST.EMMA)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 emma
                 (ref-DALOS::UR_UsagePrice "dpmf")
             )
@@ -71,22 +71,22 @@
                     (coin.TRANSFER 
                         "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ]
             }
@@ -112,7 +112,7 @@
 (print "")
 ;;==== SWP TX 01 - Issue DPMF Test · 03 · gas echo ==== ===========================================
 (print "--- [SWP TX 01 - Issue DPMF Test · 03 · gas echo] ---")
-(format "<<<<<<<STEP 001 Issue DPMF Costs {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<STEP 001 Issue DPMF Costs {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -248,7 +248,7 @@
 (print "")
 ;;==== STEP 002 DPMF Tests · 03 · gas echo ==== ===================================================
 (print "--- [STEP 002 DPMF Tests · 03 · gas echo] ---")
-(format "<<<<<<<STEP 002 DPMF Tests {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<STEP 002 DPMF Tests {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")

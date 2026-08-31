@@ -89,8 +89,8 @@
     ;;{3}
     (defun CT_Bar ()                        (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_BAR)))
     (defconst BAR                           (CT_Bar))
-    (defun CT_KdaPrec ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_KDA_PRECISION)))
-    (defconst KDAPREC                       (CT_KdaPrec))
+    (defun CT_StoaPrec ()                    (let ((ref-U|CT:module{OuronetConstantsV1} U|CT)) (ref-U|CT::CT_STOA_PRECISION)))
+    (defconst STOAPREC                       (CT_StoaPrec))
     ;;
     (defconst DALOS|SC_NAME                 (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|DALOS|SC_NAME)))
     (defconst OUROBOROS|SC_NAME             (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
@@ -433,7 +433,7 @@
     (defun DALOS|URCi_RotateGuard:object{IgnisCollectorV1.OutputCumulator} (account:string)
         (UDC_SmallCumulator account)
     )
-    (defun DALOS|URCi_RotateKadena:object{IgnisCollectorV1.OutputCumulator} (account:string)
+    (defun DALOS|URCi_RotateStoa:object{IgnisCollectorV1.OutputCumulator} (account:string)
         (UDC_SmallCumulator account)
     )
     (defun DALOS|URCi_RotateSovereign:object{IgnisCollectorV1.OutputCumulator} (account:string)
@@ -445,7 +445,7 @@
     (defun DALOS|URCi_UpdateEliteAccountSquared:object{IgnisCollectorV1.OutputCumulator} (patron:string)
         (UDC_MediumCumulator patron)
     )
-    ;;  KDA-billed DALOS ops: the URCi returns the native fair price (the tier "key" single-sourced)
+    ;;  STOA-billed DALOS ops: the URCi returns the native fair price (the tier "key" single-sourced)
     (defun DALOS|URCi_DeploySmartAccount:decimal ()
         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::UR_UsagePrice "smart"))
     )
@@ -705,7 +705,7 @@
     (defun OI|UC_FormatTokenAmount:string (amount:decimal)
         (format "{}" [(floor amount 4)])
     )
-    (defun OI|UR_KadenaTargets:[string] ()
+    (defun OI|UR_StoaTargets:[string] ()
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -719,11 +719,11 @@
         )
     )
     (defun OI|UDC_ClientInfo:object{OuronetInfoV1.ClientInfo}
-        (a:[string] b:[string] c:object{OuronetInfoV1.ClientIgnisCosts} d:object{OuronetInfoV1.ClientKadenaCosts} e:list)
+        (a:[string] b:[string] c:object{OuronetInfoV1.ClientIgnisCosts} d:object{OuronetInfoV1.ClientStoaCosts} e:list)
         {"pre-text"         : a
         ,"post-text"        : b
         ,"ignis"            : c
-        ,"kadena"           : d
+        ,"stoa"           : d
         ,"output"           : e}
     )
     (defun OI|UDC_ClientIgnisCosts:object{OuronetInfoV1.ClientIgnisCosts}
@@ -733,86 +733,86 @@
         ,"ignis-need"       : c
         ,"ignis-text"       : d}
     )
-    (defun OI|UDC_ClientKadenaCosts:object{OuronetInfoV1.ClientKadenaCosts}
+    (defun OI|UDC_ClientStoaCosts:object{OuronetInfoV1.ClientStoaCosts}
         (a:decimal b:decimal c:decimal d:[decimal] e:[string] f:string)
-        {"kadena-discount"  : a
-        ,"kadena-full"      : b
-        ,"kadena-need"      : c
-        ,"kadena-split"     : d
-        ,"kadena-targets"   : e
-        ,"kadena-text"      : f}
+        {"stoa-discount"  : a
+        ,"stoa-full"      : b
+        ,"stoa-need"      : c
+        ,"stoa-split"     : d
+        ,"stoa-targets"   : e
+        ,"stoa-text"      : f}
     )
-    (defun OI|UDC_FullKadenaCosts:object{OuronetInfoV1.ClientKadenaCosts} (kfp:decimal)
+    (defun OI|UDC_FullStoaCosts:object{OuronetInfoV1.ClientStoaCosts} (kfp:decimal)
         (let
             (
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                 ;;
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
-                (kadena-split:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit kfp KDAPREC))
-                (kadena-targets:[string] (OI|UR_KadenaTargets))
-                (kadena-price:string (OI|UC_ConvertPrice (* kfp kda-pid)))
-                (kadena-text:string
-                    (format "Operation costs {} KDA valued at {} with no further discounts applied." [kfp kadena-price])
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-split:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit kfp STOAPREC))
+                (stoa-targets:[string] (OI|UR_StoaTargets))
+                (stoa-price:string (OI|UC_ConvertPrice (* kfp stoa-pid)))
+                (stoa-text:string
+                    (format "Operation costs {} STOA valued at {} with no further discounts applied." [kfp stoa-price])
                 )
             )
-            (OI|UDC_ClientKadenaCosts
+            (OI|UDC_ClientStoaCosts
                 1.0
                 kfp
                 kfp
-                kadena-split
-                kadena-targets
-                kadena-text
+                stoa-split
+                stoa-targets
+                stoa-text
             )
         )
     )
-    (defun OI|UDC_KadenaCosts:object{OuronetInfoV1.ClientKadenaCosts} (patron:string kfp:decimal)
+    (defun OI|UDC_StoaCosts:object{OuronetInfoV1.ClientStoaCosts} (patron:string kfp:decimal)
         (let
             (
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 ;;
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
-                (kadena-discount:decimal (ref-DALOS::URC_KadenaGasDiscount patron))
-                (discount-percent:string (format "{}%" [(* 100.0 (- 1.0 kadena-discount))]))
-                (kadena-need:decimal (floor (* kadena-discount kfp) KDAPREC))
-                (kadena-split:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit kadena-need KDAPREC))
-                (kadena-targets:[string] (OI|UR_KadenaTargets))
-                (kadena-need-price:string (OI|UC_ConvertPrice (* kadena-need kda-pid)))
-                (kadena-text:string
-                    (if (= kadena-discount 1.0)
-                        (format "Operation costs {} KDA valued at {} with no further discounts applied." [kadena-need kadena-need-price])
-                        (format "Operation costs {} KDA discounted by {} to {} KDA valued at {}"
-                            [kfp discount-percent kadena-need kadena-need-price]
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (stoa-discount:decimal (ref-DALOS::URC_StoaGasDiscount patron))
+                (discount-percent:string (format "{}%" [(* 100.0 (- 1.0 stoa-discount))]))
+                (stoa-need:decimal (floor (* stoa-discount kfp) STOAPREC))
+                (stoa-split:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit stoa-need STOAPREC))
+                (stoa-targets:[string] (OI|UR_StoaTargets))
+                (stoa-need-price:string (OI|UC_ConvertPrice (* stoa-need stoa-pid)))
+                (stoa-text:string
+                    (if (= stoa-discount 1.0)
+                        (format "Operation costs {} STOA valued at {} with no further discounts applied." [stoa-need stoa-need-price])
+                        (format "Operation costs {} STOA discounted by {} to {} STOA valued at {}"
+                            [kfp discount-percent stoa-need stoa-need-price]
                         )
                     )
                 )
             )
-            (OI|UDC_ClientKadenaCosts
-                kadena-discount
+            (OI|UDC_ClientStoaCosts
+                stoa-discount
                 kfp
-                kadena-need
-                kadena-split
-                kadena-targets
-                kadena-text
+                stoa-need
+                stoa-split
+                stoa-targets
+                stoa-text
             )
         )
     )
-    (defun OI|UDC_NoKadenaCosts:object{OuronetInfoV1.ClientKadenaCosts} ()
-        (OI|UDC_ClientKadenaCosts
+    (defun OI|UDC_NoStoaCosts:object{OuronetInfoV1.ClientStoaCosts} ()
+        (OI|UDC_ClientStoaCosts
             1.0
             0.0
             0.0
             [0.0]
             [BAR]
-            "Operation is free of native Kadena (KDA)"
+            "Operation is free of native Stoa (STOA)"
         )
     )
-    (defun OI|UDC_DynamicKadenaCost:object{OuronetInfoV1.ClientKadenaCosts} (patron:string kfp:decimal)
+    (defun OI|UDC_DynamicStoaCost:object{OuronetInfoV1.ClientStoaCosts} (patron:string kfp:decimal)
         (if (= kfp 0.0)
-            (OI|UDC_NoKadenaCosts)
-            (OI|UDC_KadenaCosts patron kfp)
+            (OI|UDC_NoStoaCosts)
+            (OI|UDC_StoaCosts patron kfp)
         )
     )
     ;;
@@ -933,37 +933,37 @@
             )
         )
     )
-    (defun KDA|C_Collect (sender:string amount:decimal)
-        (KDA|C_CollectWT sender amount (URC_IsNativeGasZero))
+    (defun STOA|C_Collect (sender:string amount:decimal)
+        (STOA|C_CollectWT sender amount (URC_IsNativeGasZero))
     )
-    (defun KDA|C_CollectWT (sender:string amount:decimal trigger:bool)
-        (KDA|C_CollectWTEx sender sender amount trigger)
+    (defun STOA|C_CollectWT (sender:string amount:decimal trigger:bool)
+        (STOA|C_CollectWTEx sender sender amount trigger)
     )
-    (defun KDA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool)
-        @doc "Collect native STOA from payer Kadena account; Elite split from discount-account."
+    (defun STOA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool)
+        @doc "Collect native STOA from payer Stoa account; Elite split from discount-account."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (split-discounted-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices discount-account amount))
-                (am0:decimal (at 0 split-discounted-kda))
-                (am1:decimal (at 1 split-discounted-kda))
-                (am2:decimal (at 2 split-discounted-kda))
-                (am3:decimal (at 3 split-discounted-kda))
-                (kda-sender:string (ref-DALOS::UR_AccountKadena payer))
+                (split-discounted-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices discount-account amount))
+                (am0:decimal (at 0 split-discounted-stoa))
+                (am1:decimal (at 1 split-discounted-stoa))
+                (am2:decimal (at 2 split-discounted-stoa))
+                (am3:decimal (at 3 split-discounted-stoa))
+                (stoa-sender:string (ref-DALOS::UR_AccountStoa payer))
                 (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
-                (kda-cto:string (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)))
-                (kda-hov:string (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)))
-                (kda-ouroboros:string (ref-DALOS::UR_AccountKadena OUROBOROS|SC_NAME))
-                (kda-dalos:string (ref-DALOS::UR_AccountKadena DALOS|SC_NAME))
+                (stoa-cto:string (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)))
+                (stoa-hov:string (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)))
+                (stoa-ouroboros:string (ref-DALOS::UR_AccountStoa OUROBOROS|SC_NAME))
+                (stoa-dalos:string (ref-DALOS::UR_AccountStoa DALOS|SC_NAME))
             )
             (if (not trigger)
                 (do
-                    (C_TransferDalosFuel kda-sender kda-hov am0)          ;;10% to Demiourgos.Holdings
-                    (C_TransferDalosFuel kda-sender kda-cto am2)          ;;30% to Ouronet Maintenance
-                    (C_TransferDalosFuel kda-sender kda-ouroboros am3)    ;;40% to KDA-Ouroboros (as Pitstop for LiquidKadenaIndex fueling)
-                    (C_TransferDalosFuel kda-sender kda-dalos am1)        ;;20% to KDA-Dalos (Ouronet Gas Station)
+                    (C_TransferDalosFuel stoa-sender stoa-hov am0)          ;;10% to Demiourgos.Holdings
+                    (C_TransferDalosFuel stoa-sender stoa-cto am2)          ;;30% to Ouronet Maintenance
+                    (C_TransferDalosFuel stoa-sender stoa-ouroboros am3)    ;;40% to STOA-Ouroboros (as Pitstop for LiquidStoaIndex fueling)
+                    (C_TransferDalosFuel stoa-sender stoa-dalos am1)        ;;20% to STOA-Dalos (Ouronet Gas Station)
                 )
-                (format "While Kadena Collection is {}, the {} KDA could not be collected" [trigger amount])
+                (format "While Stoa Collection is {}, the {} STOA could not be collected" [trigger amount])
             )
         )
     )

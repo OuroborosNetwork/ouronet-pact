@@ -494,7 +494,7 @@
         (drop (+ PYTHIA|APOLLO-LEN (length BAR)) dual-link-key)
     )
     (defun UC_ChainEpoch:integer (block-height:integer)
-        @doc "Kadena chain epoch: block-height / 120 (int div) — matches explorer (e.g. 378734 → 3156)."
+        @doc "Stoa chain epoch: block-height / 120 (int div) — matches explorer (e.g. 378734 → 3156)."
         (/ block-height PYTHIA|EPOCH-BLOCKS)
     )
     (defun UC_CurrentChainEpoch:integer ()
@@ -1408,7 +1408,7 @@
                 ]
                 [(format "Pythia {} Apollo half registered (unlinked)." [kind])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_KadenaCosts (UC_FeeDiscountAnchor) deploy-fee)
+                (ref-I|OURONET::OI|UDC_StoaCosts (UC_FeeDiscountAnchor) deploy-fee)
                 []
             )
         )
@@ -1440,7 +1440,7 @@
                 ]
                 [(format "Pythia dual link {} created for lane {} (inactive)." [dlk consumer-lane])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -1477,7 +1477,7 @@
                     (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                     (ref-I|OURONET::OI|UDC_IgnisCosts patron revoke-fee)
                 )
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -1510,7 +1510,7 @@
                 ]
                 [(format "Pythia dual link lane renamed to {}." [new-name])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_KadenaCosts (UC_FeeDiscountAnchor) rename-fee)
+                (ref-I|OURONET::OI|UDC_StoaCosts (UC_FeeDiscountAnchor) rename-fee)
                 []
             )
         )

@@ -74,7 +74,7 @@
         (aqp-class:integer 4)
         (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     (print "--- [TX-FVT-NF-01 · 01 · issue NF score + class-4 pool + vault] ---")
@@ -188,7 +188,7 @@
         (aa-pre:integer (ref-ANK::UR_AA|AnchorsActive dpnf-id))
         (need-pre:bool (ref-AQP::URC_BenDpnfAnchorsNeedSync beneficiary-id dpnf-id))
         (split-std:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "standard")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "standard")))
         )
     )
     (print "--- [TX-FVT-NF-02 · 01 · issue NF set-class anchor on DHB class 0] ---")
@@ -488,7 +488,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -600,7 +600,7 @@
         (ref-TS02-C2:module{TalosStageTwo_ClientTwoV1} TS02-C2)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 8.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 8.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     ;; issuance sigs (ANHD + Emma source + Lumy pool-owner + gas station)
@@ -712,7 +712,7 @@
         (anhd-kbn:[integer] (ref-DPDC::URD_AccountNonces owner-id kbn-id false))
         (emma-kbn:[integer] (ref-DPDC::URD_AccountNonces source kbn-id false))
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 4.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     (print (format "<(KBN ownership)> ANHD={} EMMA={}" [(length anhd-kbn) (length emma-kbn)]))

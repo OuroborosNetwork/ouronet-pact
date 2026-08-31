@@ -41,8 +41,8 @@
         (patron:string KST.ANHD)
         (kbn-id:string "KBN-98c486052a51")
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 7.0))
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 7.0))
         )
     )
     (env-sigs
@@ -51,10 +51,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -75,8 +75,8 @@
         (patron:string KST.ANHD)
         (kbn-id:string "KBN-98c486052a51")
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 14.0))
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 14.0))
         )
     )
     (env-sigs
@@ -85,10 +85,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -119,7 +119,7 @@
             ]
         )
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 9.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 9.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -157,7 +157,7 @@
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (ref-SWP:module{SwapperV3} SWP)
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 8.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 8.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
         (swpair:string "W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
         (ouro-lp-asset-id:string (ref-SWP::UR_TokenLP swpair))
@@ -234,7 +234,7 @@
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 6.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 6.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
         (pool-bloodshed:string (ref-U|DALOS::UDC_Makeid "DHBloodshed"))
         (pool-nosferatu:string (ref-U|DALOS::UDC_Makeid "DHNosferatu"))
@@ -291,7 +291,7 @@
             )
         )
         (split-smart:[decimal]
-            (DALOS.URC_SplitKDAPrices patron (* 5.0 (DALOS.UR_UsagePrice "smart")))
+            (DALOS.URC_SplitSTOAPrices patron (* 5.0 (DALOS.UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -372,7 +372,7 @@
         (snakes-score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosSnakes"))
         (shares-score-id:string (ref-U|DALOS::UDC_Makeid "DemiourgosShareholder"))
         (split-smart:[decimal]
-            (DALOS.URC_SplitKDAPrices patron (* 5.0 (DALOS.UR_UsagePrice "smart")))
+            (DALOS.URC_SplitSTOAPrices patron (* 5.0 (DALOS.UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -410,7 +410,7 @@
         (ats-0-1-id:string "Auryndex-98c486052a51")
         (ats-1-2-id:string "EliteAuryndex-98c486052a51")
         (split-smart:[decimal]
-            (DALOS.URC_SplitKDAPrices patron (* 3.0 (DALOS.UR_UsagePrice "smart")))
+            (DALOS.URC_SplitSTOAPrices patron (* 3.0 (DALOS.UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -459,7 +459,7 @@
             )
         )
         (split-smart:[decimal]
-            (DALOS.URC_SplitKDAPrices patron (* 5.0 (DALOS.UR_UsagePrice "smart")))
+            (DALOS.URC_SplitSTOAPrices patron (* 5.0 (DALOS.UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -500,7 +500,7 @@
         (ouroboros-id:string (ref-DALOS::UR_OuroborosID))
         (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
         (split-smart:[decimal]
-            (DALOS.URC_SplitKDAPrices patron (* 5.0 (DALOS.UR_UsagePrice "smart")))
+            (DALOS.URC_SplitSTOAPrices patron (* 5.0 (DALOS.UR_UsagePrice "smart")))
         )
     )
     (env-sigs

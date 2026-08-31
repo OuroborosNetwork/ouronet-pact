@@ -79,11 +79,11 @@
     (defun SWP|INFO_ModifyWeights:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-weights:[decimal]))
     (defun SWP|INFO_ToggleAddLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string toggle:bool))
     (defun SWP|INFO_ToggleSwapCapability:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string toggle:bool))
-    (defun SWP|INFO_AddLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
-    (defun SWP|INFO_IcedLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
-    (defun SWP|INFO_GlacialLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
-    (defun SWP|INFO_FrozenLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal kda-pid:decimal))
-    (defun SWP|INFO_SleepingLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string sleeping-dpof:string nonce:integer kda-pid:decimal))
+    (defun SWP|INFO_AddLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun SWP|INFO_IcedLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun SWP|INFO_GlacialLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun SWP|INFO_FrozenLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun SWP|INFO_SleepingLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
 )
 ;;LIQUID|INFO_UnwrapStoa
 ;;LIQUID|INFO_WrapStoa
@@ -199,7 +199,7 @@
     (defun UCX_AddLiquidity:object{OuronetInfoV1.ClientInfo} 
         (
             patron:string account:string swpair:string input-amounts:[decimal]
-            asymmetric-collection:bool gaseous-collection:bool kda-pid:decimal
+            asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
         )
         (let
             (
@@ -217,7 +217,7 @@
                 ;;
                 ;;Compute Liquidity Addition Data
                 (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                    (ref-SWPL::URC|KDA-PID_CLAD account swpair ld asymmetric-collection gaseous-collection kda-pid)
+                    (ref-SWPL::URC|STOA-PID_CLAD account swpair ld asymmetric-collection gaseous-collection stoa-pid)
                 )
                 (native-lp-transfer-amount:decimal (at "primary-lp" clad))
                 (ifp1:decimal 
@@ -280,7 +280,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -301,7 +301,7 @@
                 (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                 (ref-SWPU:module{SwapperUsageV2} SWPU)
                 ;;
-                (lkda:string (ref-DALOS::UR_SilverStoaID))
+                (sstoa:string (ref-DALOS::UR_SilverStoaID))
                 (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))
                 (input-ids:[string] (at "input-ids" dsid))
                 (input-amounts:[decimal] (at "input-amounts" dsid))
@@ -370,7 +370,7 @@
                 (ifp2:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico2))
                     (ifp3:decimal
                         (if (!= o-id-liquid 0.0)
-                            (SIP|URC_Burn lkda swp-sc)
+                            (SIP|URC_Burn sstoa swp-sc)
                             0.0
                         )
                     )
@@ -390,7 +390,7 @@
                     (format "Succesfully swapped {} {} to {} {}" [input-amounts input-ids o-id-netto-str output-id])
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -586,7 +586,7 @@
         )
     )
     ;;
-    ;;  [SKP|URC] - Simple Kadena Price 
+    ;;  [SKP|URC] - Simple Stoa Price 
     ;;
     (defun SKP|URC_UpgradeBranding (months:integer)
         @doc "<DPTF|C_UpgradeBranding>"
@@ -649,7 +649,7 @@
                 [(format "Operation: Update Pending Branding for {} DPTF" [entity-id])]
                 [(format "Pending Branding for DPTF {} updated succesfully" [entity-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_UpdatePendingBranding 1.0))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -664,7 +664,7 @@
                 [(format "Operation: Upgrade Branding for {} DPTF for {} month(s)" [entity-id months])]
                 [(format "DPTF {} succesfully upgraded for {} months(s)!" [entity-id months])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_UpgradeBranding months))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_UpgradeBranding months))
                 []
             )
         )
@@ -681,7 +681,7 @@
                 [(format "Operation: Burn {} {} on Account {}" [amount id sa])]
                 [(format "Succesfully burned {} {} on Account {}" [amount id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Burn id account))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]
             )
         )
@@ -696,7 +696,7 @@
                 [(format "Operation: Control DPTF {} Boolean Properties" [id])]
                 [(format "Succesfully controlled Properties of {}" [id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -717,7 +717,7 @@
                 ]
                 [(format "DPTF {} added to {} Ouronet Account succesfully!" [id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -738,7 +738,7 @@
                 ]
                 [(format "Fee Collection succesfully set to {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -758,7 +758,7 @@
                 ]
                 [(format "DPTF Issuance of {} succesfully completed" [name])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Issue name))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Issue name true))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Issue name true))
                 []
             )
         )
@@ -785,7 +785,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Mint id account origin))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]
             )
         )
@@ -806,7 +806,7 @@
                 ]
                 [(format "Fee Collection succesfully set to {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -823,7 +823,7 @@
                 [(format "Operation: Changes Ownership for {} to {}" [id sa])]
                 [(format "ID {} Ownership succesfully set to {}" [id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -838,7 +838,7 @@
                 [(format "Operation: Sets fee for {} to {} Promille" [id fee])]
                 [(format "Fee Promille succesfully set to {} Promille for {}" [fee id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [fee]
             )
         )
@@ -855,7 +855,7 @@
                 [(format "Operation: Sets fee target for {} to {} " [id sa])]
                 [(format "Fee Target succesfully set for {} to {}" [id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [target]
             )
         )
@@ -870,7 +870,7 @@
                 [(format "Operation: Sets MinMove Value target for {} to {} " [id min-move-value])]
                 [(format "MinMove Value succesfully set for {} to {}" [id min-move-value])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [min-move-value]
             )
         )
@@ -895,7 +895,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [toggle]
             )
         )
@@ -920,7 +920,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_ToggleFeeLock id toggle fee-unlocks))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_ToggleFeeLock id toggle fee-unlocks))
                 [toggle]
             )
         )
@@ -947,7 +947,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [toggle]
             )
         )
@@ -972,7 +972,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [toggle]
             )
         )
@@ -997,7 +997,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [toggle]
             )
         )
@@ -1024,7 +1024,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [toggle]
             )
         )
@@ -1041,7 +1041,7 @@
                 [(format "Operation: Wipes all {} from account {}" [id sa])]
                 [(format "Succesfully wiped all {} from account {}" [id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [atbw]
             )
         )
@@ -1058,7 +1058,7 @@
                 [(format "Operation: Wipes {} {} from account {}" [amtbw id sa])]
                 [(format "Succesfully wiped {} {} from account {}" [amtbw id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [atbw amtbw]
             )
         )
@@ -1108,7 +1108,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount receiver-amount)]
             )
         )
@@ -1152,7 +1152,7 @@
                 
                 [(format "Succesfully multi-transfered {} DPTFs from {} to {}" [(length id-lst) sa-s sa-r])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [id-lst transfer-amount-lst]
             )
         )
@@ -1190,7 +1190,7 @@
                 )
                 [(format "Succesfully bulk-transfered {} DPTF from {} to {} Receivers" [id sa-s (length receiver-lst)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [receiver-lst transfer-amount-lst]
             )
         )
@@ -1232,7 +1232,7 @@
                 )
                 [(format "Succesfully multi-bulk-transfered {} DPTFs from Sender {} to {} Individual Receiver Lists" [(length id-lst) sa-s (length receiver-array)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [id-lst receiver-array transfer-amount-array]
             )
         )
@@ -1293,7 +1293,7 @@
                     ]
                     [(format "Succesfully cleared negative {} using {} {}" [ouro-id total-ea ea-id])]
                     (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                    (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                    (ref-I|OURONET::OI|UDC_NoStoaCosts)
                     []
                 )
             )
@@ -1310,7 +1310,7 @@
                 [(format "Operation: Update Pending Branding for {} DPOF" [entity-id])]
                 [(format "Pending Branding for DPOF {} updated succesfully" [entity-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_UpdatePendingBranding 1.5))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -1325,7 +1325,7 @@
                 [(format "Operation: Upgrade Branding for {} DPOF for {} month(s)" [entity-id months])]
                 [(format "DPOF {} succesfully upgraded for {} months(s)!" [entity-id months])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_UpgradeBranding months))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_UpgradeBranding months))
                 []
             )
         )
@@ -1342,7 +1342,7 @@
                 [(format "Operation: Adds {} to DPOF {} Nonce {} on Account {}" [amount id nonce sa])]
                 [(format "Succesfully increased DPOF {} nonce {} quantity on Account {} by {}" [id nonce sa amount])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]
             )
         )
@@ -1359,7 +1359,7 @@
                 [(format "Operation: Burns {} Units of DPOF {} Nonce {} on Account {}" [amount id nonce sa])]
                 [(format "Succesfully burned {} Units of DPOF {} Nonce {} on Account {}" [amount id nonce sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]
             )
         )
@@ -1374,7 +1374,7 @@
                 [(format "Operation: Controls DPOF {} Boolean Properties" [id])]
                 [(format "Succesfully controlled DPOF {} Boolean Properties" [id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -1391,7 +1391,7 @@
                 [(format "Operation: Creates a new Batch for the DPOF {} without quantity on Account {}" [id sa])]
                 [(format "Succesfully created a new Batch for DPOF {} on Account {}" [id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -1408,7 +1408,7 @@
                 [(format "Operation: Deploy a DPOF Account for DPOF {} on Ouronet Account {}" [id sa])]
                 [(format "Succesfully deployed a New DPOF Account for DPOF {} on Ouronet Account {}" [id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -1428,7 +1428,7 @@
                 ]
                 [(format "DPOF Issuance of {} succesfully completed" [name])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Issue name))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Issue name false))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Issue name false))
                 []
             )
         )
@@ -1446,7 +1446,7 @@
                 [(format "Operation: Mint {} {} on Account {}, on a new Nonce" [amount id sa])]
                 [(format "Succesfully minted {} {} on Account {}, on a new Nonce" [amount id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron medium)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)]
             )
         )
@@ -1483,7 +1483,7 @@
                     (format "Sucesfully hibernated {} {} on Account {} for a Duration of {} days." [amount dptf sa-hibernator dayz])
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount amount) dayz]
             )
         )
@@ -1556,7 +1556,7 @@
                     (format "Succesfully awakend {} Nonce {} returning {} {}." [dpof nonce dptf-id remainder])
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -1650,7 +1650,7 @@
                     (format "Succesfully merged Hibernated DPOF {} Nonces {} to Account {}" [dpof nonces sm])
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -1760,7 +1760,7 @@
                     (format "Succesfully coiled {} {} on ATS-Pair {} generating {} {} on {} Account." [amount rt ats c-rbt-amount c-rbt sa-coiler])
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt-amount)]
             )
         )
@@ -1826,7 +1826,7 @@
                     (format "Succesfully constricted {} {} on ATS-Pair {} generating {} {} on {} Account." [amount rt ats c-rbt-amount ht sa-constricter])
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt-amount)]
             )
         )
@@ -1899,7 +1899,7 @@
                     (format "Succesfully curled {} {} on ATS-Pairs {} and {} generating {} {} on {} Account." [amount rt ats1 ats2 c-rbt2-amount c-rbt2 sa-curler])
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt2-amount)]
             )
         )
@@ -1984,7 +1984,7 @@
                     (format "Succesfully brumated {} {} on ATS-Pairs {} and {} generating {} {} on {} Account." [amount rt ats1 ats2 c-rbt2-amount ht sa-brumator])
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt2-amount)]
             )
         )
@@ -2086,7 +2086,7 @@
                     (format "Succesfully placed {} {} ATS-Pair RBT into Cold Recovery" [ra ats])
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount ra)]
             )
         )
@@ -2140,7 +2140,7 @@
                     (format "Succesfully Culled {} RT(s) Tokens with amounts of {} from ATS-Pair {}" [how-many-tokens cw ats])
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(map (ref-I|OURONET::OI|UC_FormatTokenAmount) cw)]
             )
         )
@@ -2195,7 +2195,7 @@
                     (format "Succesfully recovered directly {} RBT Token on ATS-Pair" [ra ats])
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(map (ref-I|OURONET::OI|UC_FormatTokenAmount) release-amounts)]
             )
         )
@@ -2212,7 +2212,7 @@
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
                 ;;
-                (trial (try false (ref-urcoin::UR_UR|Balance (ref-DALOS::UR_AccountKadena unwrapper))))
+                (trial (try false (ref-urcoin::UR_UR|Balance (ref-DALOS::UR_AccountStoa unwrapper))))
                 (iz-target-unregistered (= (typeof trial) "bool"))
                 (lq-sc:string (ref-DALOS::GOV|LIQUID|SC_NAME))
                 (w-urstoa-id:string (ref-DALOS::UR_UrStoaID))
@@ -2234,7 +2234,7 @@
                 [(format "Operation: Unwraps {} UrStoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 [(format "Succesfully unwrapped {} UrStoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron final-ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -2262,7 +2262,7 @@
                 [(format "Operation: Wraps {} UrStoa to the Payment Key of the Wrapper {}" [amount uw])]
                 [(format "Succesfully wrapped {} UrStoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -2278,7 +2278,7 @@
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
                 ;;
-                (trial (try false (ref-coin::get-balance (ref-DALOS::UR_AccountKadena unwrapper))))
+                (trial (try false (ref-coin::get-balance (ref-DALOS::UR_AccountStoa unwrapper))))
                 (iz-target-unregistered (= (typeof trial) "bool"))
                 (lq-sc:string (ref-DALOS::GOV|LIQUID|SC_NAME))
                 (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
@@ -2300,7 +2300,7 @@
                 [(format "Operation: Unwraps {} Stoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 [(format "Succesfully unwrapped {} Stoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron final-ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -2328,7 +2328,7 @@
                 [(format "Operation: Wraps {} Stoa to the Payment Key of the Wrapper {}" [amount uw])]
                 [(format "Succesfully wrapped {} Stoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -2352,7 +2352,7 @@
                 ]
                 [(format "Succesfully compressed {} Ignis GAS generating {} Ouroboros on {}" [ignis-amount ouro-remainder-amount sa])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -2392,7 +2392,7 @@
                    
                 ]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -2409,7 +2409,7 @@
                 [(format "Operation: Changes Ownership of SWP-Pair {} to {}" [swpair sa])]
                 [(format "Succesfully changed ownership of SWP-Pair {} to {}" [swpair sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -2424,7 +2424,7 @@
                 [(format "Operation: Modifies <can-change-owner> of SWP-Pair {} to {}" [swpair new-boolean])]
                 [(format "Succesfully updated <can-change-owner> of SWP-Pair {} to {}" [swpair new-boolean])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -2439,7 +2439,7 @@
                 [(format "Operation: Modifies weights of SWP-Pair {} to {}" [swpair new-weights])]
                 [(format "Succesfully updated SWP-Pair {} weights to {}" [swpair new-weights])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -2465,7 +2465,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [toggle]
             )
         )
@@ -2491,7 +2491,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [toggle]
             )
         )
@@ -2555,7 +2555,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron kfp)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron kfp)
                 []
             )
         )
@@ -2619,7 +2619,7 @@
                     )
                 ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron kfp)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron kfp)
                 []
             )
         )
@@ -2668,7 +2668,7 @@
                 ]
                 [(format "Succesfully fueled SWP-Pair {} with Token Amounts {}" [swpair input-amounts])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -2723,7 +2723,7 @@
                 ["Operation: Uses 10 Native Stoa as Fuel to create Ignis GAS"]
                 [(format "Succesfully used 10 Stoa to generate {} IGNIS with no IGNIS Costs" [ignis-amount])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -2755,19 +2755,19 @@
     )
     ;;
     (defun SWP|INFO_AddLiquidity:object{OuronetInfoV1.ClientInfo}
-        (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal)
-        (UCX_AddLiquidity patron account swpair input-amounts true true kda-pid)
+        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (UCX_AddLiquidity patron account swpair input-amounts true true stoa-pid)
     )
     (defun SWP|INFO_IcedLiquidity:object{OuronetInfoV1.ClientInfo}
-        (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal)
-        (UCX_AddLiquidity patron account swpair input-amounts false true kda-pid)
+        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (UCX_AddLiquidity patron account swpair input-amounts false true stoa-pid)
     )
     (defun SWP|INFO_GlacialLiquidity:object{OuronetInfoV1.ClientInfo}
-        (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal)
-        (UCX_AddLiquidity patron account swpair input-amounts false false kda-pid)
+        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (UCX_AddLiquidity patron account swpair input-amounts false false stoa-pid)
     )
     (defun SWP|INFO_FrozenLiquidity:object{OuronetInfoV1.ClientInfo}
-        (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal kda-pid:decimal)
+        (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
@@ -2786,7 +2786,7 @@
                 ;;
                 ;;Compute Liquidity Addition Data
                 (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                    (ref-SWPL::URC|KDA-PID_CLAD account swpair ld false false kda-pid)
+                    (ref-SWPL::URC|STOA-PID_CLAD account swpair ld false false stoa-pid)
                 )
                 (ifp:decimal 
                     (ref-I|OURONET::OI|UC_IfpFromOutputCumulator 
@@ -2798,7 +2798,7 @@
         )
     )
     (defun SWP|INFO_SleepingLiquidity:object{OuronetInfoV1.ClientInfo}
-        (patron:string account:string swpair:string sleeping-dpof:string nonce:integer kda-pid:decimal)
+        (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         (let
             (
                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
@@ -2818,7 +2818,7 @@
                 ;;
                 ;;Compute Liquidity Addition Data
                 (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                    (ref-SWPL::URC|KDA-PID_CLAD account swpair ld true true kda-pid)
+                    (ref-SWPL::URC|STOA-PID_CLAD account swpair ld true true stoa-pid)
                 )
                 (ifp:decimal 
                     (ref-I|OURONET::OI|UC_IfpFromOutputCumulator 
@@ -2880,7 +2880,7 @@
                 ]
                 [(format "Removed {} LP Tokens from SWP-Pair {}, yielding {} of all Pool Tokens" [lp-amount swpair pt-output-amounts])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )

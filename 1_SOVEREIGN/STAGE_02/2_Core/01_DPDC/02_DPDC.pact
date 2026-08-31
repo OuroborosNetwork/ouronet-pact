@@ -205,7 +205,7 @@
     ;;
     (defconst DPDC|SC_KEY                   (GOV|CollectiblesKey))
     (defconst DPDC|SC_NAME                  (GOV|DPDC|SC_NAME))
-    (defconst DPDC|SC_KDA-NAME              "k:xxx")
+    (defconst DPDC|SC_STOA-NAME              "k:xxx")
     ;;{G2}
     (defcap GOV ()                          (compose-capability (GOV|DPDC_ADMIN)))
     (defcap GOV|DPDC_ADMIN ()               (enforce-guard GOV|MD_DPDC))
@@ -1169,13 +1169,13 @@
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-BRD:module{BrandingV1} BRD)
                 (owner:string (UR_OwnerKonto entity-id son))
-                (kda-payment:decimal
+                (stoa-payment:decimal
                     (with-capability (DPDC|C>UPGRADE-BRD entity-id son)
                         (ref-BRD::XE_UpgradeBranding entity-id owner months)
                     )
                 )
             )
-            (ref-IGNIS::KDA|C_CollectWT patron kda-payment false)
+            (ref-IGNIS::STOA|C_CollectWT patron stoa-payment false)
         )
     )
     ;;

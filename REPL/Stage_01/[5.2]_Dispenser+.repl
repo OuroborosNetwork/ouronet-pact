@@ -110,9 +110,9 @@
             "KEY_SC_Custodians"     : { "keys": [KC2.DPTS_PBKY_b]},
             ;"KEY_SC_DHVault"        : { "keys": [KC2.DPTS_PBKY_c]},
 
-            "KEY_KDA_Dispenser"     : { "keys": [KC2.KADN_PBKY_a]},
-            "KEY_KDA_Custodians"    : { "keys": [KC2.KADN_PBKY_b]},
-            "KEY_KDA_DHVault"       : { "keys": [KC2.KADN_PBKY_c]}
+            "KEY_STOA_Dispenser"     : { "keys": [KC2.KADN_PBKY_a]},
+            "KEY_STOA_Custodians"    : { "keys": [KC2.KADN_PBKY_b]},
+            "KEY_STOA_DHVault"       : { "keys": [KC2.KADN_PBKY_c]}
         }
     )
 
@@ -143,16 +143,16 @@
 
         )
         ;;Issue
-        (ref-coin::create-account KC2.KADN_NAME_a (read-keyset "KEY_KDA_Dispenser"))
-        (ref-coin::create-account KC2.KADN_NAME_b (read-keyset "KEY_KDA_Custodians"))
-        (ref-coin::create-account KC2.KADN_NAME_c (read-keyset "KEY_KDA_DHVault"))
+        (ref-coin::create-account KC2.KADN_NAME_a (read-keyset "KEY_STOA_Dispenser"))
+        (ref-coin::create-account KC2.KADN_NAME_b (read-keyset "KEY_STOA_Custodians"))
+        (ref-coin::create-account KC2.KADN_NAME_c (read-keyset "KEY_STOA_DHVault"))
         ;;Fuel
         (ref-coin::transfer "alice" KC2.KADN_NAME_a 100.0)
         (ref-coin::transfer "alice" KC2.KADN_NAME_b 100.0)
         (ref-coin::transfer "alice" KC2.KADN_NAME_c 100.0)
     )
 
-    ;;3]Issue Standard and Smart Ouronet Accounts in Admin Mode (to not have to applies KDA Transfer Capabilities)
+    ;;3]Issue Standard and Smart Ouronet Accounts in Admin Mode (to not have to applies STOA Transfer Capabilities)
     (env-sigs 
         [ 
             { "key": "PK_AncientHodler", "caps": [] }

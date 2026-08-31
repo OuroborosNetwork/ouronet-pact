@@ -10,7 +10,7 @@
     (defun CT_DPTF-FeeLock ())
     (defun CT_ATS-FeeLock ())
     ;;
-    (defun CT_KDA_PRECISION ())
+    (defun CT_STOA_PRECISION ())
     (defun CT_MIN_PRECISION ())
     (defun CT_MAX_PRECISION ())
     (defun CT_FEE_PRECISION ())
@@ -94,10 +94,10 @@
     (defun CT_N76 ())
     (defun CT_N77 ())
 )
-(interface DiaKdaPidV1
-    @doc "Exposes the UR Function that Reads KDA Price in Dollars (KDA-PID) via Dia Oracle on Chain 2"
+(interface DiaStoaPidV1
+    @doc "Exposes the UR Function that Reads STOA Price in Dollars (STOA-PID) via Dia Oracle on Chain 2"
     ;;
-    (defun UR|KDA-PID:decimal ())
+    (defun UR|STOA-PID:decimal ())
 )
 ;;
 ;;  [2]      [U|G]
@@ -422,12 +422,12 @@
                                     ;;Contains 0.0 for Pool Token IDs not involved in the Input.
         o-id:string                 ;;Output-ID of the Direct-Swap
         o-id-special:decimal        ;;Output-ID-amount that goes to Special-Targets
-        o-id-liquid:decimal         ;;Output-ID-amount that is used for Kadena Liquid Staking Boost
+        o-id-liquid:decimal         ;;Output-ID-amount that is used for Stoa Liquid Staking Boost
         o-id-netto:decimal          ;;Output-ID-amount resulted after the Direct Taxed Swap (END-RESULT)
     )
     (defschema InverseTaxedSwapOutput
         ;;Reverse Taxed Swap starts from <Netto Output-ID Amount>:decimal and yields
-        o-id-liquid:decimal         ;;Output-ID-amount that would be used by Kadena Liquid Staking
+        o-id-liquid:decimal         ;;Output-ID-amount that would be used by Stoa Liquid Staking
         o-id-special:decimal        ;;Output-ID-amount that would go to Special-Targets
         lp-fuel:[decimal]           ;;Since the Inverse Swap can be computed for a single Input,
                                     ;;Contains the <Input-ID-Amount> of the Pool Token the Reverse Swap computes for
@@ -470,7 +470,7 @@
         ;;Swap-Results - use <v-tokens> ID Order
         fuel:[decimal]              ;;Stores the Amounts that would go as Fuel for the Pool, boosting LP Token Value
         special:[decimal]           ;;Stores the Amounts that would go to the Pool Special Targets
-        boost:[decimal]             ;;Stores the Amounts that would go to Kadena Liquid Staking Boost
+        boost:[decimal]             ;;Stores the Amounts that would go to Stoa Liquid Staking Boost
         ;;
         ;;Virtual Swap Chains
         swaps:[object{DirectSwapInputData}] ;;Stores the Data of the Swaps in a Chain

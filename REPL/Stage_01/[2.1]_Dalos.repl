@@ -51,8 +51,8 @@
             "KEY_SC_DalosSwapper": { "keys": [KC.DPTS_PBKY_0000]},
             "KEY_SC_DHVault": { "keys": [KC.DPTS_PBKY_0007]},
 
-            "KEY_KDA_DalosAutostake": { "keys": [KC.KADN_PBKY_0004]},
-            "KEY_KDA_DalosVesting": { "keys": [KC.KADN_PBKY_0005]}
+            "KEY_STOA_DalosAutostake": { "keys": [KC.KADN_PBKY_0004]},
+            "KEY_STOA_DalosVesting": { "keys": [KC.KADN_PBKY_0005]}
         }
     )
 
@@ -68,7 +68,7 @@
     (define-keyset "ouronet-ns.codex-keyset" (read-keyset "DemiourgosSithMasters"))
     (define-keyset "ouronet-ns.pythia-cronoton-keyset" (read-keyset "DemiourgosSithMasters"))
 
-    ;;Create Autostake and Vesting KDA Accounts (for use in Repl)
+    ;;Create Autostake and Vesting STOA Accounts (for use in Repl)
 ;;==== TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation ==== ============
 (print "--- [TX-01 [1.1] - Define Keys Used in the DALOS Module · 02 · let / invocation] ---")
     (let
@@ -76,8 +76,8 @@
             (ref-coin:module{stoa-ns.fungible-v1} coin)
 
         )
-        (ref-coin::create-account KC.KADN_NAME_0004 (read-keyset "KEY_KDA_DalosAutostake"))
-        (ref-coin::create-account KC.KADN_NAME_0005 (read-keyset "KEY_KDA_DalosVesting"))
+        (ref-coin::create-account KC.KADN_NAME_0004 (read-keyset "KEY_STOA_DalosAutostake"))
+        (ref-coin::create-account KC.KADN_NAME_0005 (read-keyset "KEY_STOA_DalosVesting"))
     )
 
 (env-gas)
@@ -87,12 +87,12 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-(begin-tx "TX-02 [1.2] - Kadena Account Creation and Fuel of 1st Account")
+(begin-tx "TX-02 [1.2] - Stoa Account Creation and Fuel of 1st Account")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 
-;;==== TX-02 [1.2] - Kadena Account Creation and Fuel of 1st Account · 01 · env-sigs (caps) ==== ==
-(print "--- [TX-02 [1.2] - Kadena Account Creation and Fuel of 1st Account · 01 · env-sigs (caps)] ---")
+;;==== TX-02 [1.2] - Stoa Account Creation and Fuel of 1st Account · 01 · env-sigs (caps) ==== ==
+(print "--- [TX-02 [1.2] - Stoa Account Creation and Fuel of 1st Account · 01 · env-sigs (caps)] ---")
 (env-sigs [])
 (env-gas)
 (commit-tx)

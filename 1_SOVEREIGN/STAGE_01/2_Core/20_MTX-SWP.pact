@@ -13,11 +13,11 @@
     (defun C_IssueWeightedPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
     (defun C_IssueStandardPool (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
     ;;
-    (defun C_AddStandardLiquidity (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
-    (defun C_AddIcedLiquidity (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
-    (defun C_AddGlacialLiquidity (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal))
-    (defun C_AddFrozenLiquidity (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal kda-pid:decimal))
-    (defun C_AddSleepingLiquidity (patron:string account:string swpair:string sleeping-dpof:string nonce:integer kda-pid:decimal))
+    (defun C_AddStandardLiquidity (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun C_AddIcedLiquidity (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun C_AddGlacialLiquidity (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun C_AddFrozenLiquidity (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun C_AddSleepingLiquidity (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
     ;;
 )
 ;;
@@ -272,8 +272,8 @@
             (compose-capability (P|DT))
         )
     )
-    (defcap MTX-SWP|S>ADD-LQ (kda-pid:decimal)
-        @doc "Records the KDA-PID the MTX was initiated with"
+    (defcap MTX-SWP|S>ADD-LQ (stoa-pid:decimal)
+        @doc "Records the STOA-PID the MTX was initiated with"
         @event
         true
     )
@@ -341,45 +341,45 @@
     )
     ;;
     (defun C_AddStandardLiquidity
-        (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal)
+        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (UEV_IMC)
-        (with-capability (MTX-SWP|S>ADD-LQ kda-pid)
-            (MTX|C_AddLiquidity patron account swpair input-amounts true true kda-pid)
+        (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
+            (MTX|C_AddLiquidity patron account swpair input-amounts true true stoa-pid)
         )
     )
     (defun C_AddIcedLiquidity
-        (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal)
+        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (UEV_IMC)
-        (with-capability (MTX-SWP|S>ADD-LQ kda-pid)
-            (MTX|C_AddLiquidity patron account swpair input-amounts false true kda-pid)
+        (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
+            (MTX|C_AddLiquidity patron account swpair input-amounts false true stoa-pid)
         )
     )
     (defun C_AddGlacialLiquidity
-        (patron:string account:string swpair:string input-amounts:[decimal] kda-pid:decimal)
+        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
         (UEV_IMC)
-        (with-capability (MTX-SWP|S>ADD-LQ kda-pid)
-            (MTX|C_AddLiquidity patron account swpair input-amounts false false kda-pid)
+        (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
+            (MTX|C_AddLiquidity patron account swpair input-amounts false false stoa-pid)
         )
     )
     (defun C_AddFrozenLiquidity
-        (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal kda-pid:decimal)
+        (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         (UEV_IMC)
-        (with-capability (MTX-SWP|S>ADD-LQ kda-pid)
-            (MTX|C_AddFrozenLiquidity patron account swpair frozen-dptf input-amount kda-pid)
+        (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
+            (MTX|C_AddFrozenLiquidity patron account swpair frozen-dptf input-amount stoa-pid)
         )
     )
     (defun C_AddSleepingLiquidity
-        (patron:string account:string swpair:string sleeping-dpof:string nonce:integer kda-pid:decimal)
+        (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         (UEV_IMC)
-        (with-capability (MTX-SWP|S>ADD-LQ kda-pid)
-            (MTX|C_AddSleepingLiquidity patron account swpair sleeping-dpof nonce kda-pid)
+        (with-capability (MTX-SWP|S>ADD-LQ stoa-pid)
+            (MTX|C_AddSleepingLiquidity patron account swpair sleeping-dpof nonce stoa-pid)
         )
     )
     ;;{F6.P}  [MTX|C]
     (defpact MTX|C_AddLiquidity 
         (
             patron:string account:string swpair:string input-amounts:[decimal] 
-            asymmetric-collection:bool gaseous-collection:bool kda-pid:decimal
+            asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
         )
         ;;Adds Standard,Iced or Glacial Liquidity, as an MTX in 3 steps
         ;;
@@ -397,12 +397,12 @@
                         (ref-SWPL::URC_LD swpair input-amounts)
                     )
                     (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                        (ref-SWPL::URC|KDA-PID_CLAD 
-                            account swpair ld asymmetric-collection gaseous-collection kda-pid
+                        (ref-SWPL::URC|STOA-PID_CLAD 
+                            account swpair ld asymmetric-collection gaseous-collection stoa-pid
                         )
                     )
                 )
-                (require-capability (MTX-SWP|S>ADD-LQ kda-pid))
+                (require-capability (MTX-SWP|S>ADD-LQ stoa-pid))
                 (yield
                     {"pool-state"   : pool-state
                     ,"ld"           : ld
@@ -441,21 +441,21 @@
                     (if (and asymmetric-collection gaseous-collection)
                         (with-capability (MTX-SWP|C>ADD-STANDARD-LQ swpair ld)
                             ;;<asymmetric-collection=true> <gaseous-collection=true>
-                            (ref-SWPL::XE|KDA-PID_AddLiqudity 
-                                account swpair asymmetric-collection gaseous-collection kda-pid ld clad
+                            (ref-SWPL::XE|STOA-PID_AddLiqudity 
+                                account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
                             )
                         )
                         (if gaseous-collection
                             (with-capability (MTX-SWP|C>ADD-ICED-LQ swpair ld)
                                 ;;<asymmetric-collection=false> <gaseous-collection=true>
-                                (ref-SWPL::XE|KDA-PID_AddLiqudity 
-                                    account swpair asymmetric-collection gaseous-collection kda-pid ld clad
+                                (ref-SWPL::XE|STOA-PID_AddLiqudity 
+                                    account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
                                 )
                             )
                             (with-capability (MTX-SWP|C>ADD-GLACIAL-LQ swpair ld)
                                 ;;<asymmetric-collection=false> <gaseous-collection=false>
-                                (ref-SWPL::XE|KDA-PID_AddLiqudity 
-                                    account swpair asymmetric-collection gaseous-collection kda-pid ld clad
+                                (ref-SWPL::XE|STOA-PID_AddLiqudity 
+                                    account swpair asymmetric-collection gaseous-collection stoa-pid ld clad
                                 )
                             )
                         )
@@ -525,7 +525,7 @@
         )
     )
     (defpact MTX|C_AddFrozenLiquidity
-        (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal kda-pid:decimal)
+        (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
         ;;Adds Frozen Liquidity, as an MTX in 3 Steps
         ;;
         ;:Step 0, Computation and Validation
@@ -549,10 +549,10 @@
                         (ref-SWPL::URC_LD swpair lq-lst)
                     )
                     (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                        (ref-SWPL::URC|KDA-PID_CLAD account swpair ld false false kda-pid)
+                        (ref-SWPL::URC|STOA-PID_CLAD account swpair ld false false stoa-pid)
                     )
                 )
-                (require-capability (MTX-SWP|S>ADD-LQ kda-pid))
+                (require-capability (MTX-SWP|S>ADD-LQ stoa-pid))
                 (yield
                     {"pool-state"   : pool-state
                     ,"ld"           : ld
@@ -607,7 +607,7 @@
                                     [ico1 ico2 ico3] []
                                 )
                             )
-                            (ref-SWPL::XE|KDA-PID_AddLiqudity vst-sc swpair false false kda-pid ld clad)
+                            (ref-SWPL::XE|STOA-PID_AddLiqudity vst-sc swpair false false stoa-pid ld clad)
                             (yield
                                 {"secondary-lp-amount"  : secondary}
                             )
@@ -654,7 +654,7 @@
         )
     )
     (defpact MTX|C_AddSleepingLiquidity
-        (patron:string account:string swpair:string sleeping-dpof:string nonce:integer kda-pid:decimal)
+        (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
         ;;Adds Frozen Liquidity, as an MTX in 3 Steps
         ;;
         ;:Step 0, Computation and Validation
@@ -679,10 +679,10 @@
                         (ref-SWPL::URC_LD swpair lq-lst)
                     )
                     (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                        (ref-SWPL::URC|KDA-PID_CLAD account swpair ld true true kda-pid)
+                        (ref-SWPL::URC|STOA-PID_CLAD account swpair ld true true stoa-pid)
                     )
                 )
-                (require-capability (MTX-SWP|S>ADD-LQ kda-pid))
+                (require-capability (MTX-SWP|S>ADD-LQ stoa-pid))
                 (yield
                     {"pool-state"   : pool-state
                     ,"ld"           : ld
@@ -751,7 +751,7 @@
                                     [ico1 ico2 ico3 ico4] []
                                 )
                             )
-                            (ref-SWPL::XE|KDA-PID_AddLiqudity vst-sc swpair true true kda-pid ld clad)
+                            (ref-SWPL::XE|STOA-PID_AddLiqudity vst-sc swpair true true stoa-pid ld clad)
                             (yield
                                 {"primary-lp-amount"    : primary
                                 ,"time-diff"            : dt}
@@ -813,7 +813,7 @@
                 (ref-SWPI::UEV_Issue account pool-tokens fee-lp weights amp p)
             )
         )
-        ;;Step 2 Ignis Collection and KDA Fuel Processing
+        ;;Step 2 Ignis Collection and STOA Fuel Processing
         (step-with-rollback
             (let
                 (
@@ -843,7 +843,7 @@
                         (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account SWP|SC_NAME pool-token-amounts)
                     )
                     ;;
-                    (kda-costs:decimal 
+                    (stoa-costs:decimal 
                         (+ 
                             (ref-DALOS::UR_UsagePrice "dptf")
                             (ref-DALOS::UR_UsagePrice "swp")
@@ -854,8 +854,8 @@
                 (ref-IGNIS::C_Collect patron
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
                 )
-                ;;Collect KDA for Issuance
-                (ref-IGNIS::KDA|C_Collect patron kda-costs)
+                ;;Collect STOA for Issuance
+                (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                 (let
                     (
                         (ref-ORBR:module{OuroborosV1} OUROBOROS)
@@ -866,9 +866,9 @@
                             (with-capability (P|DT)
                                 (ref-ORBR::C_Fuel)
                             )
-                            (format "{} IGNIS and {} KDA collected (raising SSTOA Index) succesfully; 2|3" [sum-ignis kda-costs])
+                            (format "{} IGNIS and {} STOA collected (raising SSTOA Index) succesfully; 2|3" [sum-ignis stoa-costs])
                         )
-                        (format "{} IGNIS collected, with {} KDA collected (in reserves) succesfully; 2|3" [sum-ignis kda-costs])
+                        (format "{} IGNIS collected, with {} STOA collected (in reserves) succesfully; 2|3" [sum-ignis stoa-costs])
                     )
                 )
             )
@@ -879,7 +879,7 @@
                 (ref-IGNIS::C_Collect patron 
                     (ref-IGNIS::UDC_ConstructOutputCumulator 100.0 SWP|SC_NAME false [])
                 )
-                (format "Insufficient IGNIS and KDA for Collection; Stepped rolled back{} 2|3" [";"])
+                (format "Insufficient IGNIS and STOA for Collection; Stepped rolled back{} 2|3" [";"])
             )
         )
         ;;Step 3 Issuance

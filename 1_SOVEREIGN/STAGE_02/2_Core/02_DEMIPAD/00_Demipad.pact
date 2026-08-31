@@ -4,25 +4,25 @@
     ;;
     (defschema Costs
         pid:decimal
-        wkda:decimal
+        wstoa:decimal
     )
     ;;
     (defschema DEMIPAD|Properties
         direct-injection:bool
-        resident-wkda:decimal
-        resident-lkda:decimal
+        resident-wstoa:decimal
+        resident-sstoa:decimal
         resident-ouro:decimal
     )
     (defschema DEMIPAD|Holdings
         total-dollarz-raised:decimal
-        total-wkda-raised:decimal
-        total-lkda-raised:decimal
+        total-wstoa-raised:decimal
+        total-sstoa-raised:decimal
         total-ouro-raised:decimal
-        funds-wkda:decimal
-        funds-lkda:decimal
+        funds-wstoa:decimal
+        funds-sstoa:decimal
         funds-ouro:decimal
         ;;
-        iz-lkda:bool
+        iz-sstoa:bool
         iz-ouro:bool
         ;;
         fungibility:[bool]
@@ -56,26 +56,26 @@
     (defun UC_Type:string (asset-id:string fungibility:[bool]))
     (defun UC_GenerateRoyaltyIntervals:[object{RoyaltyInterval}] ())
     (defun UC_ComputeDepositRoyalty:decimal (current-balance:decimal deposit-amount:decimal))
-    (defun UC_LaunchpadEnviromentSplit:[decimal] (amount-in-kda:decimal))
+    (defun UC_LaunchpadEnviromentSplit:[decimal] (amount-in-stoa:decimal))
     ;;
     ;;  [UR]
     ;;
     (defun UR_LaunchpadState:object{DEMIPAD|Properties} ())
     (defun UR_DirectInjection:bool ())
-    (defun UR_WKDA:decimal ())
-    (defun UR_LKDA:decimal ())
+    (defun UR_WSTOA:decimal ())
+    (defun UR_SSTOA:decimal ())
     (defun UR_OURO:decimal ())
         ;;
     (defun UR_AssetState:object{DEMIPAD|Holdings} (asset-id:string))
     (defun UR_TotalDollarzRaised:decimal (asset-id:string))
-    (defun UR_TotalWKDARaised:decimal (asset-id:string))
-    (defun UR_TotalLKDARaised:decimal (asset-id:string))
+    (defun UR_TotalWSTOARaised:decimal (asset-id:string))
+    (defun UR_TotalSSTOARaised:decimal (asset-id:string))
     (defun UR_TotalOURORaised:decimal (asset-id:string))
-    (defun UR_WKDA|Funds:decimal (asset-id:string))
-    (defun UR_LKDA|Funds:decimal (asset-id:string))
+    (defun UR_WSTOA|Funds:decimal (asset-id:string))
+    (defun UR_SSTOA|Funds:decimal (asset-id:string))
     (defun UR_OURO|Funds:decimal (asset-id:string))
         ;;
-    (defun UR_IzLKDA:bool (asset-id:string))
+    (defun UR_IzSSTOA:bool (asset-id:string))
     (defun UR_IzOURO:bool (asset-id:string))
     (defun UR_Fungibility:[bool] (asset-id:string))
     (defun UR_OpenForBusiness:bool (asset-id:string))
@@ -150,20 +150,20 @@
         \ The Launchpad Admin registers an Asset for Sale, this Asset is then Permanently registered to the Launchpad \
         \ Sale is executed via Functions, in Modules created by Demiourgos Holdings, specific to each Asset \
         \ \
-        \ For Sale, both Native KDA and WKDA are accepted, but also LKDA or OURO \
+        \ For Sale, both Native STOA and WSTOA are accepted, but also SSTOA or OURO \
         \ \
         \ From the incoming funds, The Launchpad Retains a Royalty Fee. This starts at 15%. \
         \ The Royalty Decreases going as low as 0.3% the more an asset sales for. \
-        \ One THIRD of Royalty goes to the Enviroment as Native KDA (Unwrap would be executed if WKDA Input is used): \
+        \ One THIRD of Royalty goes to the Enviroment as Native STOA (Unwrap would be executed if WSTOA Input is used): \
         \       = 10% to Ouronet Gas Station \
         \       = 20% to Demiourgos.Holdings Treasury \
         \       = 30$ to Launchpad Maintanance \
         \       = 40% to Liquid Staking \
         \ TWO THIRDS is injected to Coding Division Pot (half to Coding Division Collection, half to Shareholders Collection) \
         \       when acquisitions pool are coming Live \
-        \       Until then, it will be retained in the Pool as Resident WKDA, LKDA or OURO \
+        \       Until then, it will be retained in the Pool as Resident WSTOA, SSTOA or OURO \
         \ \
-        \ If Assets are Sold for LKDA or OURO, then a third of the Royalty Fee, must be supplied as Native Kadena to satisfy the Enviroment \
+        \ If Assets are Sold for SSTOA or OURO, then a third of the Royalty Fee, must be supplied as Native Stoa to satisfy the Enviroment \
         \ \
         \ Remaining Tokens (after Royalty deduction) can be withdrawn by Asset Owner or Creator (for SFTs and NFTs), or Launchpad Admin \
         \ \
@@ -192,7 +192,7 @@
     ;;
     (defconst DEMIPAD|SC_KEY                (GOV|LaunchpadKey))
     (defconst DEMIPAD|SC_NAME               (GOV|DEMIPAD|SC_NAME))
-    (defconst MB|SC_KDA-NAME                "k:xxx")
+    (defconst MB|SC_STOA-NAME                "k:xxx")
     ;;{G2}
     (defcap GOV ()                          (compose-capability (GOV|DEMIPAD_ADMIN)))
     (defcap GOV|DEMIPAD_ADMIN ()            (enforce-guard GOV|MD_DEMIPAD))
@@ -427,7 +427,7 @@
                 (iz-type:bool (contains type [0 1 2 3]))
                 (iz-registered:bool (UR_CheckRegistration asset-id))
                 (ofb:bool (UR_OpenForBusiness asset-id))
-                (iz-lkda:bool (UR_IzLKDA asset-id))
+                (iz-sstoa:bool (UR_IzSSTOA asset-id))
                 (iz-ouro:bool (UR_IzOURO asset-id))
             )
             ;;Validate <donor> to be Standard Ouronet Account
@@ -449,8 +449,8 @@
             (enforce iz-type "Invalid Deposit type")
             (if (not (or (= type 0) (= type 1)))
                 (if (= type 2)
-                    (enforce iz-lkda "LKDA Deposits must be turned on for exec")
-                    (enforce iz-ouro "LKDA Deposits must be turned on for exec")
+                    (enforce iz-sstoa "SSTOA Deposits must be turned on for exec")
+                    (enforce iz-ouro "SSTOA Deposits must be turned on for exec")
                 )
                 true
             )
@@ -481,7 +481,7 @@
                     [
                         asset-id
                         type
-                        (if (= type 1) "WKDA" (if (= type 2) "LKDA" "OURO"))
+                        (if (= type 1) "WSTOA" (if (= type 2) "SSTOA" "OURO"))
                     ]
                 )
             )
@@ -620,16 +620,16 @@
             )
         )
     )
-    (defun UC_LaunchpadEnviromentSplit:[decimal] (amount-in-kda:decimal)
+    (defun UC_LaunchpadEnviromentSplit:[decimal] (amount-in-stoa:decimal)
         @doc "Outputs the Launchpad Enviroment Split, whic is a \
         \ 10%, 20%, 30%, 40% Split, outputed as a 4 element list."
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
             )
-            (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit amount-in-kda kda-prec)
+            (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit amount-in-stoa stoa-prec)
         )
     )
     ;;{F0}  [UR]
@@ -639,11 +639,11 @@
     (defun UR_DirectInjection:bool ()
         (at "direct-injection" (UR_LaunchpadState))
     )
-    (defun UR_WKDA:decimal ()
-        (at "resident-wkda" (UR_LaunchpadState))
+    (defun UR_WSTOA:decimal ()
+        (at "resident-wstoa" (UR_LaunchpadState))
     )
-    (defun UR_LKDA:decimal ()
-        (at "resident-lkda" (UR_LaunchpadState))
+    (defun UR_SSTOA:decimal ()
+        (at "resident-sstoa" (UR_LaunchpadState))
     )
     (defun UR_OURO:decimal ()
         (at "resident-ouro" (UR_LaunchpadState))
@@ -658,8 +658,8 @@
     (defun UR_TotalRaised:decimal (asset-id:string type:integer)
         (enforce (contains type [1 2 3]) "Invalid Read Type")
         (cond
-            ((= type 1) (UR_TotalWKDARaised asset-id))
-            ((= type 2) (UR_TotalLKDARaised asset-id))
+            ((= type 1) (UR_TotalWSTOARaised asset-id))
+            ((= type 2) (UR_TotalSSTOARaised asset-id))
             ((= type 3) (UR_TotalOURORaised asset-id))
             0.0
         )
@@ -667,33 +667,33 @@
     (defun UR_Funds:decimal (asset-id:string type:integer)
         (enforce (contains type [1 2 3]) "Invalid Read Type")
         (cond
-            ((= type 1) (UR_WKDA|Funds asset-id))
-            ((= type 2) (UR_LKDA|Funds asset-id))
+            ((= type 1) (UR_WSTOA|Funds asset-id))
+            ((= type 2) (UR_SSTOA|Funds asset-id))
             ((= type 3) (UR_OURO|Funds asset-id))
             0.0
         )
     )
-    (defun UR_TotalWKDARaised:decimal (asset-id:string)
-        (at "total-wkda-raised" (read DEMIPAD|T|Ledger asset-id ["total-wkda-raised"]))
+    (defun UR_TotalWSTOARaised:decimal (asset-id:string)
+        (at "total-wstoa-raised" (read DEMIPAD|T|Ledger asset-id ["total-wstoa-raised"]))
     )
-    (defun UR_TotalLKDARaised:decimal (asset-id:string)
-        (at "total-lkda-raised" (read DEMIPAD|T|Ledger asset-id ["total-lkda-raised"]))
+    (defun UR_TotalSSTOARaised:decimal (asset-id:string)
+        (at "total-sstoa-raised" (read DEMIPAD|T|Ledger asset-id ["total-sstoa-raised"]))
     )
     (defun UR_TotalOURORaised:decimal (asset-id:string)
         (at "total-ouro-raised" (read DEMIPAD|T|Ledger asset-id ["total-ouro-raised"]))
     )
-    (defun UR_WKDA|Funds:decimal (asset-id:string)
-        (at "funds-wkda" (read DEMIPAD|T|Ledger asset-id ["funds-wkda"]))
+    (defun UR_WSTOA|Funds:decimal (asset-id:string)
+        (at "funds-wstoa" (read DEMIPAD|T|Ledger asset-id ["funds-wstoa"]))
     )
-    (defun UR_LKDA|Funds:decimal (asset-id:string)
-        (at "funds-lkda" (read DEMIPAD|T|Ledger asset-id ["funds-lkda"]))
+    (defun UR_SSTOA|Funds:decimal (asset-id:string)
+        (at "funds-sstoa" (read DEMIPAD|T|Ledger asset-id ["funds-sstoa"]))
     )
     (defun UR_OURO|Funds:decimal (asset-id:string)
         (at "funds-ouro" (read DEMIPAD|T|Ledger asset-id ["funds-ouro"]))
     )
     ;;
-    (defun UR_IzLKDA:bool (asset-id:string)
-        (at "iz-lkda" (read DEMIPAD|T|Ledger asset-id ["iz-lkda"]))
+    (defun UR_IzSSTOA:bool (asset-id:string)
+        (at "iz-sstoa" (read DEMIPAD|T|Ledger asset-id ["iz-sstoa"]))
     )
     (defun UR_IzOURO:bool (asset-id:string)
         (at "iz-ouro" (read DEMIPAD|T|Ledger asset-id ["iz-ouro"]))
@@ -725,17 +725,17 @@
         (asset-id:string amount-in-dollars:decimal type:integer)
         (let
             (
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
-                (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
-                (lkda-id:string (ref-DALOS::UR_SilverStoaID))
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                (sstoa-id:string (ref-DALOS::UR_SilverStoaID))
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 ;;
-                (wkda-prec:integer (ref-DPTF::UR_Decimals wkda-id))
-                (lkda-prec:integer (ref-DPTF::UR_Decimals lkda-id))
+                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
+                (sstoa-prec:integer (ref-DPTF::UR_Decimals sstoa-id))
                 (ouro-prec:integer (ref-DPTF::UR_Decimals ouro-id))
                 ;;
                 (total-dollarz-raised:decimal (UR_TotalDollarzRaised asset-id))
@@ -745,46 +745,46 @@
                 (remainder-percent-dollarz:decimal (- amount-in-dollars deposit-royalty))
 
                 ;;
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
-                (wkda-pid:decimal (ref-SWPI::URC_TokenDollarPrice wkda-id kda-pid))
-                (lkda-pid:decimal (ref-SWPI::URC_TokenDollarPrice lkda-id kda-pid))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
+                (wstoa-pid:decimal (ref-SWPI::URC_TokenDollarPrice wstoa-id stoa-pid))
+                (sstoa-pid:decimal (ref-SWPI::URC_TokenDollarPrice sstoa-id stoa-pid))
                 (ouro-pid:decimal (ref-SWPI::URC_OuroPrimordialPrice))
                 ;;
-                (five-percent-dollarz-as-kda:decimal (floor (/ five-percent-dollarz wkda-pid) wkda-prec))
-                (env-split:[decimal] (UC_LaunchpadEnviromentSplit five-percent-dollarz-as-kda))
+                (five-percent-dollarz-as-stoa:decimal (floor (/ five-percent-dollarz wstoa-pid) wstoa-prec))
+                (env-split:[decimal] (UC_LaunchpadEnviromentSplit five-percent-dollarz-as-stoa))
                 ;;
                 (type-pid:decimal 
                     (if (or (= type 0) (= type 1))
-                        wkda-pid
+                        wstoa-pid
                         (if (= type 2)
-                            lkda-pid
+                            sstoa-pid
                             ouro-pid
                         )
                     )
                 )
                 (type-prec:integer
                     (if (or (= type 0) (= type 1))
-                        wkda-prec
+                        wstoa-prec
                         (if (= type 2)
-                            lkda-prec
+                            sstoa-prec
                             ouro-prec
                         )
                     )
                 )
             )
             (UDC_LaunchpadPrices
-                ;;Enviroment Split with native KDA amounts
-                (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME))      ;;Gas-Station 10%
-                (ref-DALOS::UR_AccountKadena (at 2 (ref-DALOS::UR_DemiurgoiID)))  ;;HOV 20%
-                (ref-DALOS::UR_AccountKadena (at 1 (ref-DALOS::UR_DemiurgoiID)))  ;;CTO 30%
-                (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME))  ;;Liquid Staking 40%
+                ;;Enviroment Split with native STOA amounts
+                (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME))      ;;Gas-Station 10%
+                (ref-DALOS::UR_AccountStoa (at 2 (ref-DALOS::UR_DemiurgoiID)))  ;;HOV 20%
+                (ref-DALOS::UR_AccountStoa (at 1 (ref-DALOS::UR_DemiurgoiID)))  ;;CTO 30%
+                (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME))  ;;Liquid Staking 40%
                 (at 0 env-split)
                 (at 1 env-split)
                 (at 2 env-split)
                 (at 3 env-split)
-                ;;Total Enviroment Amount in native KDA
-                five-percent-dollarz-as-kda
-                ;;CodingDivision and Remainder Split in WKDA, LKDA or OURO, depending on <type>
+                ;;Total Enviroment Amount in native STOA
+                five-percent-dollarz-as-stoa
+                ;;CodingDivision and Remainder Split in WSTOA, SSTOA or OURO, depending on <type>
                 (floor (/ ten-percent-dollarz type-pid) type-prec)
                 (floor (/ remainder-percent-dollarz type-pid) type-prec)
             )
@@ -805,12 +805,12 @@
                 (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
                 ;;
-                (buyer-kda:string (ref-DALOS::UR_AccountKadena buyer))
-                (lq-kda:string (ref-LIQUID::GOV|LIQUID|SC_KDA-NAME))
+                (buyer-stoa:string (ref-DALOS::UR_AccountStoa buyer))
+                (lq-stoa:string (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME))
                 (prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} (URC_Prices asset-id buy-amount-in-dollarz type))
-                (kp:integer (ref-U|CT::CT_KDA_PRECISION))
+                (kp:integer (ref-U|CT::CT_STOA_PRECISION))
                 (f:decimal (UC_SlippageFactor slippage))
-                ;;Slippage-padded per-leg ceilings (floored to KDA precision so the signed caps are valid)
+                ;;Slippage-padded per-leg ceilings (floored to STOA precision so the signed caps are valid)
                 (a1:decimal (floor (* (at "amount-one" prices) f) kp))
                 (a2:decimal (floor (* (at "amount-two" prices) f) kp))
                 (a3:decimal (floor (* (at "amount-three" prices) f) kp))
@@ -818,19 +818,19 @@
                 (non-env:decimal (floor (* (+ (at "coding-amount" prices) (at "remainder-amount" prices)) f) kp))
                 (env-amt:decimal (floor (* (at "enviroment-amount" prices) f) kp))
                 ;;
-                (s1:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-one" prices) a1]))
-                (s2:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-two" prices) a2]))
-                (s3:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-three" prices) a3]))
-                (s4:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda (at "receiver-four" prices) a4]))
+                (s1:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-stoa (at "receiver-one" prices) a1]))
+                (s2:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-stoa (at "receiver-two" prices) a2]))
+                (s3:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-stoa (at "receiver-three" prices) a3]))
+                (s4:string (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-stoa (at "receiver-four" prices) a4]))
             )
             (if (= type 0)
                 [
-                    (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-kda lq-kda non-env])
+                    (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [buyer-stoa lq-stoa non-env])
                     s1 s2 s3 s4
                 ]
                 (if (= type 1)
                     [
-                        (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [lq-kda buyer-kda env-amt])
+                        (format "<(coin.TRANSFER \"{}\" \"{}\" {})>" [lq-stoa buyer-stoa env-amt])
                         s1 s2 s3 s4
                     ]
                     [s1 s2 s3 s4]
@@ -846,8 +846,8 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
                 ;;
-                (buyer-kda:string (ref-DALOS::UR_AccountKadena buyer))
-                (lq-kda:string (ref-LIQUID::GOV|LIQUID|SC_KDA-NAME))
+                (buyer-stoa:string (ref-DALOS::UR_AccountStoa buyer))
+                (lq-stoa:string (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME))
                 (prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} (URC_Prices asset-id buy-amount-in-dollarz type))
                 ;;
 
@@ -865,26 +865,26 @@
             )
             (if (= type 0)
                 (do
-                    (install-capability (ref-coin::TRANSFER buyer-kda lq-kda (+ coding remainder)))
-                    (install-capability (ref-coin::TRANSFER buyer-kda r1 a1))
-                    (install-capability (ref-coin::TRANSFER buyer-kda r2 a2))
-                    (install-capability (ref-coin::TRANSFER buyer-kda r3 a3))
-                    (install-capability (ref-coin::TRANSFER buyer-kda r4 a4))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa lq-stoa (+ coding remainder)))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
+                    (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
 
                 )
                 (if (= type 1)
                     (do
-                        (install-capability (ref-coin::TRANSFER lq-kda buyer-kda enviroment))
-                        (install-capability (ref-coin::TRANSFER buyer-kda r1 a1))
-                        (install-capability (ref-coin::TRANSFER buyer-kda r2 a2))
-                        (install-capability (ref-coin::TRANSFER buyer-kda r3 a3))
-                        (install-capability (ref-coin::TRANSFER buyer-kda r4 a4))
+                        (install-capability (ref-coin::TRANSFER lq-stoa buyer-stoa enviroment))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
                     )
                     (do
-                        (install-capability (ref-coin::TRANSFER buyer-kda r1 a1))
-                        (install-capability (ref-coin::TRANSFER buyer-kda r2 a2))
-                        (install-capability (ref-coin::TRANSFER buyer-kda r3 a3))
-                        (install-capability (ref-coin::TRANSFER buyer-kda r4 a4))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r1 a1))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r2 a2))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r3 a3))
+                        (install-capability (ref-coin::TRANSFER buyer-stoa r4 a4))
                     )
                 )
             )
@@ -935,7 +935,7 @@
     (defun UDC_Costs:object{DemiourgosLaunchpadV1.Costs} 
         (a:decimal b:decimal)
         {"pid"  : a
-        ,"wkda" : b}
+        ,"wstoa" : b}
     )
     (defun UDC_DEMIPAD|Holdings:object{DemiourgosLaunchpadV1.DEMIPAD|Holdings}
         (
@@ -945,14 +945,14 @@
             j:[bool] k:bool l:object m:bool
         )
         {"total-dollarz-raised"         : a
-        ,"total-wkda-raised"            : b
-        ,"total-lkda-raised"            : c
+        ,"total-wstoa-raised"            : b
+        ,"total-sstoa-raised"            : c
         ,"total-ouro-raised"            : d
-        ,"funds-wkda"                   : e
-        ,"funds-lkda"                   : f
+        ,"funds-wstoa"                   : e
+        ,"funds-sstoa"                   : f
         ,"funds-ouro"                   : g
         ;;
-        ,"iz-lkda"                      : h
+        ,"iz-sstoa"                      : h
         ,"iz-ouro"                      : i
         ;;
         ,"fungibility"                  : j
@@ -1034,9 +1034,9 @@
     (defun C_Deposit:object{IgnisCollectorV1.OutputCumulator}
         (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Deposits Funds into the Launchpad, for a registered Asset \
-            \ Type 0 = Native Kadena \
-            \ Type 1 = WKDA \
-            \ Type 2 = LKDA \
+            \ Type 0 = Native Stoa \
+            \ Type 1 = WSTOA \
+            \ Type 2 = SSTOA \
             \ Type 3 = OURO \
             \ \
             \ <max-cost> is the buyer's slippage ceiling in dollars (Variant 1): the live-computed \
@@ -1044,10 +1044,10 @@
             \ path (Variant 2). \
             \ \
             \ Outputs: \
-            \ <type 0> = KDA Split ENV + WKDA for CD (needs wrapping) + WKDA for Sale (needs wrapping) \
-            \ <type 1> = KDA Split ENV (needs unwrapping) + WKDA for CD + WKDA for Sale \
-            \ <type 2> = KDA Split ENV + LKDA for CD + LKDA for Sale \
-            \ <type 3> = KDA Split ENV + OURO for CD + OURO for Sale "
+            \ <type 0> = STOA Split ENV + WSTOA for CD (needs wrapping) + WSTOA for Sale (needs wrapping) \
+            \ <type 1> = STOA Split ENV (needs unwrapping) + WSTOA for CD + WSTOA for Sale \
+            \ <type 2> = STOA Split ENV + SSTOA for CD + SSTOA for Sale \
+            \ <type 3> = STOA Split ENV + OURO for CD + OURO for Sale "
         (UEV_IMC)
         (with-capability (DEMIPAD|C>DEPOSIT donor asset-id amount-in-dollars type direct-injection max-cost)
             (let
@@ -1095,7 +1095,7 @@
                         )
                     )
                 )
-                ;;1]Satisfy Enviroment (Kadena was Unwraped prior if <type> = 1)
+                ;;1]Satisfy Enviroment (Stoa was Unwraped prior if <type> = 1)
                 (XI_SatisfyEnviroment donor prices)
                 ;;2]Update Internal Launchpad with deposit Data
                     ;;2.1]When (not direct-injection) save <cod> amount in Launchpad Properties
@@ -1123,8 +1123,8 @@
     (defun C_Withdraw
         (patron:string asset-id:string type:integer destination:string)
         @doc "Withdraws all cumulated Tokens in the Launchpad, gathered through sale \
-        \ Type 1 = WKDA \
-        \ Type 2 = LKDA \
+        \ Type 1 = WSTOA \
+        \ Type 2 = SSTOA \
         \ Type 3 = OURO "
         (UEV_IMC)
         (let
@@ -1231,40 +1231,40 @@
     )
     (defun XI_U|TotalRaised (asset-id:string value:decimal type:integer)
         (cond
-            ((= type 1) (XI_U|TotalWKDARaised asset-id value))
-            ((= type 2) (XI_U|TotalLKDARaised asset-id value))
+            ((= type 1) (XI_U|TotalWSTOARaised asset-id value))
+            ((= type 2) (XI_U|TotalSSTOARaised asset-id value))
             ((= type 3) (XI_U|TotalOURORaised asset-id value))
             true
         )
     )
     (defun XI_U|Funds (asset-id:string value:decimal type:integer)
         (cond
-            ((= type 1) (XI_U|FundsWKDA asset-id value))
-            ((= type 2) (XI_U|FundsLKDA asset-id value))
+            ((= type 1) (XI_U|FundsWSTOA asset-id value))
+            ((= type 2) (XI_U|FundsSSTOA asset-id value))
             ((= type 3) (XI_U|FundsOURO asset-id value))
             true
         )
     )
-    (defun XI_U|TotalWKDARaised (asset-id:string value:decimal)
+    (defun XI_U|TotalWSTOARaised (asset-id:string value:decimal)
         (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"total-wkda-raised" : value})
+        (update DEMIPAD|T|Ledger asset-id {"total-wstoa-raised" : value})
     )
-    (defun XI_U|TotalLKDARaised (asset-id:string value:decimal)
+    (defun XI_U|TotalSSTOARaised (asset-id:string value:decimal)
         (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"total-lkda-raised" : value})
+        (update DEMIPAD|T|Ledger asset-id {"total-sstoa-raised" : value})
     )
     (defun XI_U|TotalOURORaised (asset-id:string value:decimal)
         (require-capability (SECURE))
         (update DEMIPAD|T|Ledger asset-id {"total-ouro-raised" : value})
     )
     
-    (defun XI_U|FundsWKDA (asset-id:string value:decimal)
+    (defun XI_U|FundsWSTOA (asset-id:string value:decimal)
         (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"funds-wkda" : value})
+        (update DEMIPAD|T|Ledger asset-id {"funds-wstoa" : value})
     )
-    (defun XI_U|FundsLKDA (asset-id:string value:decimal)
+    (defun XI_U|FundsSSTOA (asset-id:string value:decimal)
         (require-capability (SECURE))
-        (update DEMIPAD|T|Ledger asset-id {"funds-lkda" : value})
+        (update DEMIPAD|T|Ledger asset-id {"funds-sstoa" : value})
     )
     (defun XI_U|FundsOURO (asset-id:string value:decimal)
         (require-capability (SECURE))
@@ -1288,13 +1288,13 @@
         (require-capability (SECURE))
         (update DEMIPAD|T|Properties PP {"direct-injection" : value})
     )
-    (defun XI_U|WKDA (value:decimal)
+    (defun XI_U|WSTOA (value:decimal)
         (require-capability (SECURE))
-        (update DEMIPAD|T|Properties PP {"resident-wkda" : value})
+        (update DEMIPAD|T|Properties PP {"resident-wstoa" : value})
     )
-    (defun XI_U|LKDA (value:decimal)
+    (defun XI_U|SSTOA (value:decimal)
         (require-capability (SECURE))
-        (update DEMIPAD|T|Properties PP {"resident-lkda" : value})
+        (update DEMIPAD|T|Properties PP {"resident-sstoa" : value})
     )
     (defun XI_U|OURO (value:decimal)
         (require-capability (SECURE))
@@ -1308,12 +1308,12 @@
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 ;;
-                (donor-kda:string (ref-DALOS::UR_AccountKadena donor))
+                (donor-stoa:string (ref-DALOS::UR_AccountStoa donor))
             )
-            (ref-coin::transfer donor-kda (at "receiver-one" prices)    (at "amount-one" prices))       ;;for GasStation
-            (ref-coin::transfer donor-kda (at "receiver-two" prices)    (at "amount-two" prices))       ;;for HOV
-            (ref-coin::transfer donor-kda (at "receiver-three" prices)  (at "amount-three" prices))     ;;for CTO
-            (ref-coin::transfer donor-kda (at "receiver-four" prices)   (at "amount-four" prices))      ;;for LQ-St
+            (ref-coin::transfer donor-stoa (at "receiver-one" prices)    (at "amount-one" prices))       ;;for GasStation
+            (ref-coin::transfer donor-stoa (at "receiver-two" prices)    (at "amount-two" prices))       ;;for HOV
+            (ref-coin::transfer donor-stoa (at "receiver-three" prices)  (at "amount-three" prices))     ;;for CTO
+            (ref-coin::transfer donor-stoa (at "receiver-four" prices)   (at "amount-four" prices))      ;;for LQ-St
         )
     )
     (defun XI_DepositResidents (prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} type:integer)
@@ -1322,14 +1322,14 @@
             (let
                 (
                     (v0:decimal (at "coding-amount" prices))
-                    (v1:decimal (UR_WKDA))
-                    (v2:decimal (UR_LKDA))
+                    (v1:decimal (UR_WSTOA))
+                    (v2:decimal (UR_SSTOA))
                     (v3:decimal (UR_OURO))
                 )
                 (if (or (= type 0) (= type 1))
-                    (XI_U|WKDA (+ v0 v1))
+                    (XI_U|WSTOA (+ v0 v1))
                     (if (= type 2)
-                        (XI_U|LKDA (+ v0 v2))
+                        (XI_U|SSTOA (+ v0 v2))
                         (XI_U|OURO (+ v0 v3))
                     )
                 )

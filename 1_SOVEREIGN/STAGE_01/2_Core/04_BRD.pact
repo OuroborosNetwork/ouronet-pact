@@ -310,10 +310,10 @@
         )
     )
     (defun XE_UpgradeBranding:decimal (entity-id:string entity-owner-account:string months:integer)
-        @doc "Upgrades Branding for <entity-id> to Blue Flag; Initial Cost set at 25 KDA per Month \
-            \ KDA Cost may be adjusted in the future reflecting KDA Value \
+        @doc "Upgrades Branding for <entity-id> to Blue Flag; Initial Cost set at 25 STOA per Month \
+            \ STOA Cost may be adjusted in the future reflecting STOA Value \
             \ Number of months can be 1, 2 or 3, depending on <entity-owner-account> Major Elite Tier \
-            \ Returns the value in KDA that is due to be collected \
+            \ Returns the value in STOA that is due to be collected \
             \ \
             \ \
             \ Upgrading a <4> Red Flag is not possible \

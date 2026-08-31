@@ -271,18 +271,18 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 ;;
                 (KpayID:string (UR_KpayID))
                 (Kpay-price:decimal (UR_KpayPID offset))
             )
             (ref-DEMIPAD::UDC_Costs
                 (* (dec amount) Kpay-price)
-                (floor (* (/ Kpay-price kda-pid) (dec amount)) kda-prec)
+                (floor (* (/ Kpay-price stoa-pid) (dec amount)) stoa-prec)
             )
         )
     )
@@ -324,17 +324,17 @@
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
 
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
                 ;;
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 ;;
-                (k-account:string (ref-DALOS::UR_AccountKadena account))
-                (wkda:string (ref-DALOS::UR_WrappedStoaID))
+                (k-account:string (ref-DALOS::UR_AccountStoa account))
+                (wstoa:string (ref-DALOS::UR_WrappedStoaID))
                 (KpayID:string (UR_KpayID))
                 (future-ten-minute-price:decimal (UR_KpayPID 600.0))
                 (present-price:decimal (UR_KpayPID 0.0))
@@ -346,17 +346,17 @@
                 )
                 (still-for-sale:integer (floor (UR_KpayLeft)))
                 ;;
-                (client-kadena-supply:decimal
+                (client-stoa-supply:decimal
                     (if native
                         (ref-coin::get-balance k-account)
-                        (ref-DPTF::UR_AccountSupply wkda account)
+                        (ref-DPTF::UR_AccountSupply wstoa account)
                     )
                 )
-                (client-kadena-value-in-dollarz:decimal (floor (* client-kadena-supply kda-pid) 2))
+                (client-stoa-value-in-dollarz:decimal (floor (* client-stoa-supply stoa-pid) 2))
                 (can-buy-with-client-supply:integer 
                     (if (= kpay-price -1.0)
                         0
-                        (floor (/ client-kadena-value-in-dollarz kpay-price))
+                        (floor (/ client-stoa-value-in-dollarz kpay-price))
                     )
                 )
                 (period:integer (UR_GetPeriod))
@@ -408,7 +408,7 @@
                     )
                     (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
                     (present-kpay-price:decimal (UR_KpayPID 0.0))
-                    (paid:decimal (at "wkda" costs))
+                    (paid:decimal (at "wstoa" costs))
                 )
                 (ref-IGNIS::C_Collect patron
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])

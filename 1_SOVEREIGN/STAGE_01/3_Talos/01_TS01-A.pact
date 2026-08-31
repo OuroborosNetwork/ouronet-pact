@@ -5,11 +5,11 @@
     @doc "Exposes Ouronet Administrative Functions"
     ;;
     ;;DALOS Functions
-    (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-kda-account:string))
+    (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
     (defun DALOS|A_ToggleOAPU (oapu:bool))
     (defun DALOS|A_ToggleGAP (gap:bool))
-    (defun DALOS|A_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string))
-    (defun DALOS|A_DeployStandardAccount (account:string guard:guard kadena:string public:string))
+    (defun DALOS|A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string))
+    (defun DALOS|A_DeployStandardAccount (account:string guard:guard stoa:string public:string))
     (defun DALOS|A_IgnisToggle (native:bool toggle:bool))
     (defun DALOS|A_SetIgnisSourcePrice (price:decimal))
     (defun DALOS|A_SetAutoFueling (toggle:bool))
@@ -36,7 +36,7 @@
     (defun ATS|A_KickStart (patron:string kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     ;;
     ;;LIQUID Functions
-    (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-kda-account:string))
+    (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
     ;;
     ;;
     ;;ORBR Functions
@@ -53,8 +53,8 @@
     ;;
     ;;
     ;;Fueling Functions
-    (defun XB_DynamicFuelKDA ())
-    (defun XE_ConditionalFuelKDA (condition:bool))
+    (defun XB_DynamicFuelSTOA ())
+    (defun XE_ConditionalFuelSTOA (condition:bool))
 )
 ;;
 (module TS01-A GOV
@@ -211,8 +211,8 @@
     ;;
     ;;{F5}  [A]
     ;;  [DALOS_Administrator]
-    (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-kda-account:string)
-        @doc "Migrates Ouronet Gas Station Funds, to another kda adress, \
+    (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
+        @doc "Migrates Ouronet Gas Station Funds, to another stoa adress, \
         \ if needed due to a migration to a new namespace and new module code \
         \ Outputs the migrated amount"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
@@ -220,8 +220,8 @@
                 (
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
                 )
-                (ref-DALOS::A_MigrateLiquidFunds migration-target-kda-account)
-                (format "Liquid Funds succesfuly migrated to {}" [migration-target-kda-account])
+                (ref-DALOS::A_MigrateLiquidFunds migration-target-stoa-account)
+                (format "Liquid Funds succesfuly migrated to {}" [migration-target-stoa-account])
             )
         )
     )
@@ -255,8 +255,8 @@
             )
         )
     )
-    (defun DALOS|A_DeploySmartAccount (account:string guard:guard kadena:string sovereign:string public:string)
-        @doc "Deploys a Smart Ouronet Account in Administrator Mode, without collection KDA"
+    (defun DALOS|A_DeploySmartAccount (account:string guard:guard stoa:string sovereign:string public:string)
+        @doc "Deploys a Smart Ouronet Account in Administrator Mode, without collection STOA"
         (with-capability (P|TS)
             (let
                 (
@@ -264,13 +264,13 @@
                     (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-DALOS::A_DeploySmartAccount account guard kadena sovereign public)
+                (ref-DALOS::A_DeploySmartAccount account guard stoa sovereign public)
                 (format "Succesfuly deployed Smart Account {} in Admin Mode!" [sa])
             )
         )
     )
-    (defun DALOS|A_DeployStandardAccount (account:string guard:guard kadena:string public:string)
-        @doc "Deploys a Standard Ouronet Account in Administrator Mode, without collection KDA"
+    (defun DALOS|A_DeployStandardAccount (account:string guard:guard stoa:string public:string)
+        @doc "Deploys a Standard Ouronet Account in Administrator Mode, without collection STOA"
         (with-capability (P|TS)
             (let
                 (
@@ -278,14 +278,14 @@
                     (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
                 )
-                (ref-DALOS::A_DeployStandardAccount account guard kadena public)
+                (ref-DALOS::A_DeployStandardAccount account guard stoa public)
                 (format "Succesfuly deployed Standard Account {} in Admin Mode!" [sa])
             )
         )
     )
     (defun DALOS|A_IgnisToggle (native:bool toggle:bool)
         @doc "Toggles Ouronet Gas Collection \
-        \ <native> true is KDA Collection for Specific Usage Actions \
+        \ <native> true is STOA Collection for Specific Usage Actions \
         \ <native> false is IGNIS Collection for Client Functions"
         (with-capability (P|TS)
             (let
@@ -295,8 +295,8 @@
                 (ref-DALOS::A_ToggleGasCollection native toggle)
                 (if native
                     (if toggle
-                        "KDA Collection succesfully turned ON"
-                        "KDA Collection succesfully turned OFF"
+                        "STOA Collection succesfully turned ON"
+                        "STOA Collection succesfully turned OFF"
                     )
                     (if toggle
                         "IGNIS Collection succesfully turned ON"
@@ -319,7 +319,7 @@
         )
     )
     (defun DALOS|A_SetAutoFueling (toggle:bool)
-        @doc "Sets Automatic fueling of Collected KDA for the Increase of the <KdaLiquindex>"
+        @doc "Sets Automatic fueling of Collected STOA for the Increase of the <StoaLiquindex>"
         (with-capability (P|TS)
             (let
                 (
@@ -348,7 +348,7 @@
         )
     )
     (defun DALOS|A_UpdateUsagePrice (action:string new-price:decimal)
-        @doc "Updates specific Usage Price in KDA"
+        @doc "Updates specific Usage Price in STOA"
         (with-capability (P|TS)
             (let
                 (
@@ -513,8 +513,8 @@
         )
     )
     ;;  [LIQUID_Administrator]
-    (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-kda-account:string)
-        @doc "Migrates Kadena Liquid Staking KDA Funds, to another kda adress, \
+    (defun LIQUID|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
+        @doc "Migrates Stoa Liquid Staking STOA Funds, to another stoa adress, \
         \ if needed due to a migration to a new namespace and new module code \
         \ Outputs the migrated amount"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
@@ -522,22 +522,22 @@
                 (
                     (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
                 )
-                (ref-LIQUID::A_MigrateLiquidFunds migration-target-kda-account)
+                (ref-LIQUID::A_MigrateLiquidFunds migration-target-stoa-account)
             )
         )
     )
     ;;  [OUROBOROS_Administrator]
     (defun ORBR|A_Fuel ()
-        @doc "Uses up all collected Native KDA on the Ouroboros Account, wraps it, and fuels the Kadena Liquid Index \
+        @doc "Uses up all collected Native STOA on the Ouroboros Account, wraps it, and fuels the Stoa Liquid Index \
             \ Transaction fee must be paid for by the Ouronet Gas Station, so that all available balance may be used. \
-            \ Is Part of all the Functions that collect native KDA as fee, \
-            \ boosting the KDA Liquid Index, from 40% of the collected KDA \
+            \ Is Part of all the Functions that collect native STOA as fee, \
+            \ boosting the STOA Liquid Index, from 40% of the collected STOA \
             \ As Stand-Alone Function, can only be used by the Admin. \
-            \ In normal condition, there is no need for using it on itself, as all collected KDA is automatically used up \
-            \ by implementing this function at the end of those funtions that collect the KDA. \
+            \ In normal condition, there is no need for using it on itself, as all collected STOA is automatically used up \
+            \ by implementing this function at the end of those funtions that collect the STOA. \
             \ Dalos-Patron is the only gass"
         (with-capability (SECURE)
-            (XI_DirectFuelKDA)
+            (XI_DirectFuelSTOA)
         )
     )
     ;;  [SWP_Administrator]
@@ -587,8 +587,8 @@
     )
     (defun SWP|A_UpdateLimit (limit:decimal spawn:bool)
         @doc "Updates either the <spawn-limit> or <inactive-limit> for the SWP Module \
-        \ The <spawn-limit> is the minimum number in KDA that a pool must be created with, in order to be opened for swap \
-        \ The <inactive-limit> is the minimum number in KDA as total pool liquidity value, that trigger autonomic disable of the swap mechanism"
+        \ The <spawn-limit> is the minimum number in STOA that a pool must be created with, in order to be opened for swap \
+        \ The <inactive-limit> is the minimum number in STOA as total pool liquidity value, that trigger autonomic disable of the swap mechanism"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
@@ -599,7 +599,7 @@
         )
     )
     (defun SWP|A_UpdateLiquidBoost (new-boost-variable:bool)
-        @doc "Updates Liquid Boost switch. When set to true, every swap is set to pump the Index for Kadena Liquid Staking"
+        @doc "Updates Liquid Boost switch. When set to true, every swap is set to pump the Index for Stoa Liquid Staking"
         (with-capability (P|ADMINISTRATIVE-SUMMONER)
             (let
                 (
@@ -634,7 +634,7 @@
     ;;{F6}  [C]
     ;;{F7}  [X]
     ;;  [Fueling Functions]
-    (defun XB_DynamicFuelKDA ()
+    (defun XB_DynamicFuelSTOA ()
         (UEV_IMC)
         (let
             (
@@ -642,24 +642,24 @@
             )
             (if (ref-DALOS::UR_AutoFuel)
                 (with-capability (SECURE)
-                    (XI_DirectFuelKDA)
+                    (XI_DirectFuelSTOA)
                 )
                 true
             )
         )
     )
     ;;
-    (defun XE_ConditionalFuelKDA (condition:bool)
+    (defun XE_ConditionalFuelSTOA (condition:bool)
         (UEV_IMC)
         (if condition
             (with-capability (SECURE)
-                (XB_DynamicFuelKDA)
+                (XB_DynamicFuelSTOA)
             )
             true
         )
     )
     ;;
-    (defun XI_DirectFuelKDA ()
+    (defun XI_DirectFuelSTOA ()
         (require-capability (SECURE))
         (let
             (

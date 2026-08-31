@@ -363,7 +363,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (ref-DPDC::C_UpgradeBranding patron entity-id true months)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
     )
@@ -414,7 +414,7 @@
             can-transfer-nft-create-role:bool can-freeze:bool can-wipe:bool can-pause:bool
         )
         @doc "Issues a new DPSF (Demiourgos Pact Semi-Fungible) Digital Collection: <SFT> \
-            \ Costs 5x<ignis|token-issue> = 2500 IGNIS and 400 KDA"
+            \ Costs 5x<ignis|token-issue> = 2500 IGNIS and 400 STOA"
         (with-capability (P|TS)
             (let
                 (
@@ -432,7 +432,7 @@
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at 0 (at "output" ico))
             )
         )
@@ -1448,7 +1448,7 @@
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at 0 (at "output" ico))
             )
         )

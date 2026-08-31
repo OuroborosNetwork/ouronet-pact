@@ -113,7 +113,7 @@
     (defun UC_UnlockPrice:[decimal] (unlocks:integer dptf-or-ats:bool)
         @doc "Computes  ATS or DPTF unlock price \
         \ Outputs [virtual-gas-costs native-gas-cost] \
-        \ Virtual Gas Token = IGNIS; Native Gas Token = KADENA"
+        \ Virtual Gas Token = IGNIS; Native Gas Token = STOA"
         (let*
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)

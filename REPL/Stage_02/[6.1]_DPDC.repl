@@ -60,12 +60,12 @@
         (lumy:string KST.LUMY)
     )
     [
-        ;(format "ANHD Kadena is {}" [(ref-DALOS::UR_AccountKadena KST.ANHD)])
-        ;(format "CTO is {}" [(ref-DALOS::UR_AccountKadena (at 0 (ref-DALOS::UR_DemiurgoiID)))])
-        ;(format "HOV is {}" [(ref-DALOS::UR_AccountKadena (at 1 (ref-DALOS::UR_DemiurgoiID)))])
-        ;(format "OUROBOROS is {}" [(ref-DALOS::UR_AccountKadena ouroboros)])
-        ;(format "DALOS is {}" [(ref-DALOS::UR_AccountKadena dalos)])
-        ;(format "LIQUID is {}" [(ref-DALOS::UR_AccountKadena liquid)])
+        ;(format "ANHD Stoa is {}" [(ref-DALOS::UR_AccountStoa KST.ANHD)])
+        ;(format "CTO is {}" [(ref-DALOS::UR_AccountStoa (at 0 (ref-DALOS::UR_DemiurgoiID)))])
+        ;(format "HOV is {}" [(ref-DALOS::UR_AccountStoa (at 1 (ref-DALOS::UR_DemiurgoiID)))])
+        ;(format "OUROBOROS is {}" [(ref-DALOS::UR_AccountStoa ouroboros)])
+        ;(format "DALOS is {}" [(ref-DALOS::UR_AccountStoa dalos)])
+        ;(format "LIQUID is {}" [(ref-DALOS::UR_AccountStoa liquid)])
         (format "Emma has CD Account {}" [(ref-DPDC::UR_IzAccount emma id true)])
         (format "Lumy has CD Account {}" [(ref-DPDC::UR_IzAccount lumy id true)])
     ]
@@ -1014,7 +1014,7 @@
         (ouro:string "OURO-98c486052a51")
         (id:string "E|DH-98c486052a51")
         (dhoc:string "DHOC-98c486052a51")
-        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (lpad:string ouronet-ns.DEMIPAD.DEMIPAD|SC_NAME)
     )
     [
@@ -1129,19 +1129,19 @@
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
         (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
         ;;
-        (total-kadena-amount:decimal 5000.0)
+        (total-stoa-amount:decimal 5000.0)
         ;;
         (id:string "E|DH-98c486052a51")
         (type:integer 1)
         (prices-obj:object{DemiourgosLaunchpadV1.DEMIPAD|Prices}
-            (ref-DPAD::URC_Prices id total-kadena-amount 1)
+            (ref-DPAD::URC_Prices id total-stoa-amount 1)
         )
         ;;
         (patron:string KST.ANHD)
-        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
-        (patron-kda-balance:decimal (ref-coin::get-balance patron-kda))
-        (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
-        (patron-wkda-balance:decimal (ref-DPTF::UR_AccountSupply wkda-id patron))
+        (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
+        (patron-stoa-balance:decimal (ref-coin::get-balance patron-stoa))
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+        (patron-wstoa-balance:decimal (ref-DPTF::UR_AccountSupply wstoa-id patron))
         ;;
         (aquire-snakes:[string] (DEMIPAD-SNAKES.URC_Acquire patron 4 1 false 1.0))
     )
@@ -1156,15 +1156,15 @@
                     ;(coin.TRANSFER 
                     ;    "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                     ;    "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI"
-                    ;    total-kadena-amount
+                    ;    total-stoa-amount
                     ;)
                     ;;
                     ;;
-                    ;;for C_Acquire with <iz-native> = false, which will unwrap WKDA to KDA
+                    ;;for C_Acquire with <iz-native> = false, which will unwrap WSTOA to STOA
                     (coin.TRANSFER 
                         "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI"
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
-                        2500.0       ;;total-kadena-amount
+                        2500.0       ;;total-stoa-amount
                     )
                     ;;
                     ;;
@@ -1204,21 +1204,21 @@
             (format "Acquire String LIST is {}" [aquire-snakes])
         ]
         ;[
-        ;    (ref-TS01-C2::LQD|C_WrapStoa patron patron total-kadena-amount)
+        ;    (ref-TS01-C2::LQD|C_WrapStoa patron patron total-stoa-amount)
         ;]
         [
-            (format "AH has Native Kadena {}" [(ref-coin::get-balance patron-kda)])
-            (format "AH has WKDA {}" [(ref-DPTF::UR_AccountSupply wkda-id patron)])
+            (format "AH has Native Stoa {}" [(ref-coin::get-balance patron-stoa)])
+            (format "AH has WSTOA {}" [(ref-DPTF::UR_AccountSupply wstoa-id patron)])
         ]
         [
             ;;iz native False requires unwrapping, therefore the proper transfer capability must be set
-            ;;<iz-native> = false => input WKDA, which will be unwrapped to KDA to satisfz enviroment
+            ;;<iz-native> = false => input WSTOA, which will be unwrapped to STOA to satisfz enviroment
             (ref-TS02-DPAD::SNAKES|C_Acquire patron patron 4 1 false -1.0)
             ;(ref-TS02-DPAD::SPARK|C_BuySparks patron patron 25 false)
         ]
         [
-            (format "AH has Native Kadena after purchse {}" [(ref-coin::get-balance patron-kda)])
-            (format "AH has WKDA after purchase {}" [(ref-DPTF::UR_AccountSupply wkda-id patron)])
+            (format "AH has Native Stoa after purchse {}" [(ref-coin::get-balance patron-stoa)])
+            (format "AH has WSTOA after purchase {}" [(ref-DPTF::UR_AccountSupply wstoa-id patron)])
         ]
         [
             (format "Launchpad Properties after Buy are {}" [(ref-DPAD::UR_LaunchpadState)])
@@ -1228,14 +1228,14 @@
         ;; DPL-UR not loaded in this REPL chain — exercise URC_0030 only after deploying DPL-UR (e.g. StageZZ).
         ;(ouronet-ns.DPL-UR.URC_0030_StoicPay KST.ANHD)
         [
-            ;(ref-TS01-C1::DPTF|C_Transfer patron wkda-id patron KST.EMMA 
+            ;(ref-TS01-C1::DPTF|C_Transfer patron wstoa-id patron KST.EMMA 
             ;    2500.0
             ;    false
             ;)
             ;(ref-TS02-DPAD::SPARK|C_RedemAllSparks
             ;    patron KST.EMMA patron
             ;)
-            (format "AH should have no WKDA {}" [(ref-DPTF::UR_AccountSupply wkda-id patron)])
+            (format "AH should have no WSTOA {}" [(ref-DPTF::UR_AccountSupply wstoa-id patron)])
         ]
     ]
 
@@ -1290,21 +1290,21 @@
         
         
 
-        ;;\ Type 0 = Native Kadena \
-        ;;\ Type 1 = WKDA \
-        ;;\ Type 2 = LKDA \
+        ;;\ Type 0 = Native Stoa \
+        ;;\ Type 1 = WSTOA \
+        ;;\ Type 2 = SSTOA \
         ;;\ Type 3 = OURO \
 
         
         ;;
         (patron:string KST.ANHD)
-        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
-        (patron-kda-balance:decimal (ref-coin::get-balance patron-kda))
-        (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
-        (patron-wkda-balance:decimal (ref-DPTF::UR_AccountSupply wkda-id patron))
+        (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
+        (patron-stoa-balance:decimal (ref-coin::get-balance patron-stoa))
+        (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+        (patron-wstoa-balance:decimal (ref-DPTF::UR_AccountSupply wstoa-id patron))
         ;;
         ;;
-        (native-or-wkda:bool false)                                      ;; true = KDA | false = WKDA
+        (native-or-wstoa:bool false)                                      ;; true = STOA | false = WSTOA
         ;;
         ;;
         ;;Function to get the Actual Prices
@@ -1315,9 +1315,9 @@
         (KpayCosts:object{DemiourgosLaunchpadV1.Costs} 
             (ref-DPAD-KPAY::URC_KpayAmountCosts kpay-amount 0.0)
         )
-        ;;2]Get <PID-Price in Dollars> and <Price in WKDA>
+        ;;2]Get <PID-Price in Dollars> and <Price in WSTOA>
         (correct-pid:decimal (at "pid" KpayCosts))
-        (correct-wkda:decimal (at "wkda" KpayCosts))
+        (correct-wstoa:decimal (at "wstoa" KpayCosts))
         ;;3]Get Complete Prices using the <pid>
         (prices-obj:object{DemiourgosLaunchpadV1.DEMIPAD|Prices}
             (ref-DPAD::URC_Prices KpayID correct-pid 1)
@@ -1336,10 +1336,10 @@
         ;;
         ;;
         ;;String to Set UP Capabilities (needed for setting up the function)
-        (acquire-kpay:[string] (DEMIPAD-STOICPAY.URC_Acquire patron kpay-amount native-or-wkda 1.0))
+        (acquire-kpay:[string] (DEMIPAD-STOICPAY.URC_Acquire patron kpay-amount native-or-wstoa 1.0))
         ;;
-        (mb1:integer (DEMIPAD-STOICPAY.URC_GetMaxBuy KST.ANHD false))       ;;wkda
-        (mb2:integer (DEMIPAD-STOICPAY.URC_GetMaxBuy KST.ANHD true))        ;;kda
+        (mb1:integer (DEMIPAD-STOICPAY.URC_GetMaxBuy KST.ANHD false))       ;;wstoa
+        (mb2:integer (DEMIPAD-STOICPAY.URC_GetMaxBuy KST.ANHD true))        ;;stoa
     )
     (env-sigs
         [   
@@ -1412,12 +1412,12 @@
             )
             [env-amount a1 a2 a3 a4]
             [mb1 mb2]
-            ;(format "Resident WKDA before buy is {}" [(ref-DPAD::UR_WKDA)])
+            ;(format "Resident WSTOA before buy is {}" [(ref-DPAD::UR_WSTOA)])
             ;(format "Before Asset State is {}" [(ref-DPAD::UR_AssetState KpayID)])
             ;(format "Left to buy {}" [(ouronet-ns.DEMIPAD-STOICPAY.UR_KpayLeft)])
             ;;
             (ref-TS02-DPAD::KPAY|C_BuyStoicPay KST.ANHD KST.ANHD kpay-amount false (* correct-pid 1.01))
-            ;(format "Resident WKDA after buy is {}" [(ref-DPAD::UR_WKDA)])
+            ;(format "Resident WSTOA after buy is {}" [(ref-DPAD::UR_WSTOA)])
             ;(format "After Asset State is {}" [(ref-DPAD::UR_AssetState KpayID)])
         ]
         [

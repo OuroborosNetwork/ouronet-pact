@@ -53,9 +53,9 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
         (ref-PYTHIA:module{PythiaV4} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
-        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
-        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) deploy-fee))
+        (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) deploy-fee))
     )
     (print (format "<(PYTHIA|UC_DeployPrice)> => \"{}\" STOA" [deploy-fee]))
     (env-sigs
@@ -64,10 +64,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)) (at 2 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)) (at 0 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split-kda))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)) (at 2 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)) (at 0 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split-stoa))
                 ]
             }
         ]
@@ -102,9 +102,9 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
         (ref-PYTHIA:module{PythiaV4} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
-        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
-        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) deploy-fee))
+        (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) deploy-fee))
     )
     (env-sigs
         [
@@ -112,10 +112,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)) (at 2 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)) (at 0 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split-kda))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)) (at 2 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)) (at 0 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split-stoa))
                 ]
             }
         ]
@@ -243,9 +243,9 @@
         (ref-PYTHIA:module{PythiaV4} PYTHIA)
         (dlk:string (ref-PYTHIA::UC_DualLinkKey apollo-std apollo-smt))
         (rename-fee:decimal (ref-PYTHIA::UC_RenamePrice))
-        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
-        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) rename-fee))
+        (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) rename-fee))
     )
     (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
     (let ((react-msg:string (ref-TS01-C4::PYTHIA|A_Link apollo-std apollo-smt)))
@@ -258,10 +258,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)) (at 2 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)) (at 0 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split-kda))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)) (at 2 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)) (at 0 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split-stoa))
                 ]
             }
         ]
@@ -323,9 +323,9 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
         (ref-PYTHIA:module{PythiaV4} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
-        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
-        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) deploy-fee))
+        (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) deploy-fee))
     )
     (env-sigs
         [
@@ -333,10 +333,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)) (at 2 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)) (at 0 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split-kda))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)) (at 2 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)) (at 0 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split-stoa))
                 ]
             }
         ]
@@ -372,9 +372,9 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
         (ref-PYTHIA:module{PythiaV4} PYTHIA)
         (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
-        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
-        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) deploy-fee))
+        (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices (ref-PYTHIA::UC_FeeDiscountAnchor) deploy-fee))
     )
     (env-sigs
         [
@@ -382,10 +382,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)) (at 2 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)) (at 0 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split-kda))
-                    (coin.TRANSFER patron-kda (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split-kda))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)) (at 2 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)) (at 0 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME)) (at 3 split-stoa))
+                    (coin.TRANSFER patron-stoa (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)) (at 1 split-stoa))
                 ]
             }
         ]

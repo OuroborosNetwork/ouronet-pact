@@ -33,7 +33,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (aqp-class:integer 2)
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     (print "--- [TX-FVT-04 · 01 · env-sigs + issue class-2 score/pool] ---")
@@ -674,7 +674,7 @@
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (owned:[integer] (ref-DPOF::URD_AccountNonces owner-id dpof-id))
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     (if (= (length owned) 0)

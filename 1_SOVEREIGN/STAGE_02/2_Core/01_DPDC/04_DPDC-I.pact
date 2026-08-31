@@ -23,7 +23,7 @@
     ;;  [URCi]
     ;;
     (defun URCi_IssueCollectionPrice:decimal (son:bool))
-    (defun URCi_IssueCollectionKda:decimal (son:bool))
+    (defun URCi_IssueCollectionStoa:decimal (son:bool))
     (defun URCi_IssueDigitalCollection:object{IgnisCollectorV1.OutputCumulator} (son:bool owner-account:string))
     ;;
 )
@@ -171,10 +171,10 @@
             (* (ref-DALOS::UR_UsagePrice "ignis|token-issue") (if son 5.0 10.0))
         )
     )
-    (defun URCi_IssueCollectionKda:decimal
+    (defun URCi_IssueCollectionStoa:decimal
         (son:bool)
-        @doc "KDA side-cost for a digital-collection issue (dpsf for SFT, dpnf for NFT). \
-            \ Single source for KDA|C_Collect and the INFO preview."
+        @doc "STOA side-cost for a digital-collection issue (dpsf for SFT, dpnf for NFT). \
+            \ Single source for STOA|C_Collect and the INFO preview."
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -186,8 +186,8 @@
         (son:bool owner-account:string)
         @doc "Cost preview for C_IssueDigitalCollection: IGNIS construct priced via \
             \ URCi_IssueCollectionPrice on the owner payer, empty output (the created \
-            \ collection id is an exec-only write product). The KDA side-cost previews \
-            \ separately via URCi_IssueCollectionKda."
+            \ collection id is an exec-only write product). The STOA side-cost previews \
+            \ separately via URCi_IssueCollectionStoa."
         (let
             (
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
@@ -222,7 +222,7 @@
                     (ignis-price:decimal (URCi_IssueCollectionPrice son))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                     ;;
-                    (kda-cost:decimal (URCi_IssueCollectionKda son))
+                    (stoa-cost:decimal (URCi_IssueCollectionStoa son))
                     (id:string
                         (XI_IssueDigitalCollection
                             son
@@ -323,7 +323,7 @@
                         )
                     )
                 )
-                (ref-IGNIS::KDA|C_Collect patron kda-cost)
+                (ref-IGNIS::STOA|C_Collect patron stoa-cost)
                 (ref-IGNIS::UDC_ConstructOutputCumulator ignis-price owner-account trigger [id])
             )
         )

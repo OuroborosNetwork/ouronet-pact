@@ -5,11 +5,11 @@
 (interface OuroborosV1
     @doc "Exposes Functions related to the OUROBOROS Module"
     ;;
-    (defun GOV|ORBR|SC_KDA-NAME ())
+    (defun GOV|ORBR|SC_STOA-NAME ())
     (defun GOV|ORBR|GUARD ())
     ;;
     ;;
-    (defun URC_ProjectedKdaLiquindex:[decimal] ())
+    (defun URC_ProjectedStoaLiquindex:[decimal] ())
     (defun URC_Compress:[decimal] (ignis-amount:decimal))
     (defun URC_Sublimate:decimal (ouro-amount:decimal))
     ;;
@@ -41,7 +41,7 @@
     ;;
     (defconst ORBR|SC_KEY           (GOV|OuroborosKey))
     (defconst ORBR|SC_NAME          (GOV|ORBR|SC_NAME))
-    (defconst ORBR|SC_KDA-NAME      (GOV|ORBR|SC_KDA-NAME))
+    (defconst ORBR|SC_STOA-NAME      (GOV|ORBR|SC_STOA-NAME))
     ;;{G2}
     (defcap GOV ()                  (compose-capability (GOV|ORBR_ADMIN)))
     (defcap GOV|ORBR_ADMIN ()
@@ -58,14 +58,14 @@
         true
     )
     (defcap ORBR|NATIVE-AUTOMATIC ()
-        @doc "Autonomic management of <kadena-konto> of OUROBOROS Smart Account"
+        @doc "Autonomic management of <stoa-konto> of OUROBOROS Smart Account"
         true
     )
     ;;{G3}
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     (defun GOV|OuroborosKey ()      (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|OuroborosKey)))
     (defun GOV|ORBR|SC_NAME ()      (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
-    (defun GOV|ORBR|SC_KDA-NAME ()  (create-principal (GOV|ORBR|GUARD)))
+    (defun GOV|ORBR|SC_STOA-NAME ()  (create-principal (GOV|ORBR|GUARD)))
     (defun GOV|ORBR|GUARD ()        (create-capability-guard (ORBR|NATIVE-AUTOMATIC)))
     ;;
     ;;<====>
@@ -235,8 +235,8 @@
     ;;FUNCTIONS
     ;;{F0}  [UR]
     ;;{F1}  [URC]
-    (defun URC_ProjectedKdaLiquindex:[decimal] ()
-        @doc "Computes the Projected KDA Liquindex, considering KDA amount in reserves ready to be used as Fuel"
+    (defun URC_ProjectedStoaLiquindex:[decimal] ()
+        @doc "Computes the Projected STOA Liquindex, considering STOA amount in reserves ready to be used as Fuel"
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
@@ -244,15 +244,15 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
                 (orb-sc ORBR|SC_NAME)
-                (present-kda-balance:decimal (ref-coin::get-balance (ref-DALOS::UR_AccountKadena orb-sc)))
-                (w-kda:string (ref-DALOS::UR_WrappedStoaID))
-                (w-kda-as-rt:[string] (ref-DPTF::UR_RewardToken w-kda))
-                (liquid-idx:string (at 0 w-kda-as-rt))
+                (present-stoa-balance:decimal (ref-coin::get-balance (ref-DALOS::UR_AccountStoa orb-sc)))
+                (w-stoa:string (ref-DALOS::UR_WrappedStoaID))
+                (w-stoa-as-rt:[string] (ref-DPTF::UR_RewardToken w-stoa))
+                (liquid-idx:string (at 0 w-stoa-as-rt))
                 (present-index-value:decimal (ref-ATS::URC_Index liquid-idx))
 
                 (p:integer (ref-ATS::UR_IndexDecimals liquid-idx))
                 (rs:decimal (ref-ATS::URC_ResidentSum liquid-idx))
-                (projected-sum:decimal (+ rs present-kda-balance))
+                (projected-sum:decimal (+ rs present-stoa-balance))
                 (rbt-supply:decimal (ref-ATS::URC_PairRBTSupply liquid-idx))
                 (projected-index-value:decimal
                     (if
@@ -262,7 +262,7 @@
                     )
                 )
             )
-            [present-index-value projected-index-value present-kda-balance]
+            [present-index-value projected-index-value present-stoa-balance]
         )
     )
     (defun URC_Compress:[decimal] (ignis-amount:decimal)
@@ -426,24 +426,24 @@
                 (ref-ATSU:module{AutostakeUsageV1} ATSU)
                 (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
                 (orb-sc ORBR|SC_NAME)
-                (orb-kda ORBR|SC_KDA-NAME)
-                (lq-kda (ref-LIQUID::GOV|LIQUID|SC_KDA-NAME))
-                (present-kda-balance:decimal (ref-coin::get-balance (ref-DALOS::UR_AccountKadena orb-sc)))
-                (w-kda:string (ref-DALOS::UR_WrappedStoaID))
+                (orb-stoa ORBR|SC_STOA-NAME)
+                (lq-stoa (ref-LIQUID::GOV|LIQUID|SC_STOA-NAME))
+                (present-stoa-balance:decimal (ref-coin::get-balance (ref-DALOS::UR_AccountStoa orb-sc)))
+                (w-stoa:string (ref-DALOS::UR_WrappedStoaID))
             )
-            (if (!= w-kda BAR)
+            (if (!= w-stoa BAR)
                 (let
                     (
-                        (w-kda-as-rt:[string] (ref-DPTF::UR_RewardToken w-kda))
-                        (liquid-idx:string (at 0 w-kda-as-rt))
+                        (w-stoa-as-rt:[string] (ref-DPTF::UR_RewardToken w-stoa))
+                        (liquid-idx:string (at 0 w-stoa-as-rt))
                     )
-                    (if (> present-kda-balance 0.0)
+                    (if (> present-stoa-balance 0.0)
                         (with-capability (LIQUIDFUEL|C>ADMIN_FUEL)
-                            (install-capability (ref-coin::TRANSFER orb-kda lq-kda present-kda-balance))
+                            (install-capability (ref-coin::TRANSFER orb-stoa lq-stoa present-stoa-balance))
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (ref-LIQUID::C_WrapStoa orb-sc present-kda-balance)
-                                    (ref-ATSU::C_Fuel orb-sc liquid-idx w-kda present-kda-balance)
+                                    (ref-LIQUID::C_WrapStoa orb-sc present-stoa-balance)
+                                    (ref-ATSU::C_Fuel orb-sc liquid-idx w-stoa present-stoa-balance)
                                 ]
                                 []
                             )

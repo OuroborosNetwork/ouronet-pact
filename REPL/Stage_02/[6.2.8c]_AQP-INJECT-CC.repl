@@ -69,7 +69,7 @@
 ;;|| CC_InjectFinalize refuses, CCp_InjectFixChunk pages the fix, then finalize injects.
 ;;
 ;; NOTE: each Talos client call is its OWN tx — that IS how a paginated inject runs on chain (fix chunks and the
-;; finalize are separate submissions). One gas-station settlement (XB_DynamicFuelKDA) per tx.
+;; finalize are separate submissions). One gas-station settlement (XB_DynamicFuelSTOA) per tx.
 (begin-tx "TX-INJECT-CC02 - the enforced-fresh GATE: CC_InjectFinalize refuses while stale stakers remain")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)

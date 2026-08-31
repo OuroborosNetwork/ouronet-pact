@@ -1281,13 +1281,13 @@
                         (ref-DPTF::UR_Konto parent)
                     )
                 )
-                (kda-payment:decimal
+                (stoa-payment:decimal
                     (with-capability (DPMF|C>UPGRADE-BRD entity-id)
                         (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
                     )
                 )
             )
-            (ref-DALOS::KDA|C_CollectWT patron kda-payment false)
+            (ref-DALOS::STOA|C_CollectWT patron stoa-payment false)
         )
     )
     ;;
@@ -1393,7 +1393,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (l1:integer (length name))
                 (mf-cost:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
-                (kda-costs:decimal (* (dec l1) mf-cost))
+                (stoa-costs:decimal (* (dec l1) mf-cost))
                 (iz-special:[bool] (make-list l1 false))
                 (ico:object{IgnisCollectorV1.OutputCumulator}
                     (with-capability (SECURE)
@@ -1401,7 +1401,7 @@
                     )
                 )
             )
-            (ref-DALOS::KDA|C_Collect patron kda-costs)
+            (ref-DALOS::STOA|C_Collect patron stoa-costs)
             ico
         )
     )

@@ -38,7 +38,7 @@
     (defun URCi_UpdateSpecialOrtoFungible:object{IgnisCollectorV1.OutputCumulator} (main-dptf:string))
     (defun URCi_Mint:object{IgnisCollectorV1.OutputCumulator} (id:string))
     (defun URCi_IssueGas:decimal (token-count:integer))
-    (defun URCi_IssueKda:decimal (token-count:integer))
+    (defun URCi_IssueStoa:decimal (token-count:integer))
     (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;
     ;;  [UR]
@@ -1778,7 +1778,7 @@
     (defun URCi_IssueGas:decimal (token-count:integer)
         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|token-issue")))
     )
-    (defun URCi_IssueKda:decimal (token-count:integer)
+    (defun URCi_IssueStoa:decimal (token-count:integer)
         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "dpmf")))
     )
     (defun URCi_UpgradeBranding:decimal (months:integer)
@@ -1814,11 +1814,11 @@
                     )
                 )
             )
-            ;;Perform the branding upgrade (side effect); bill the KDA via the URCi (== XE_UpgradeBranding's price)
+            ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
             (with-capability (DPOF|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
             )
-            (ref-IGNIS::KDA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -1835,7 +1835,7 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (l1:integer (length name))
-                (kda-costs:decimal (URCi_IssueKda l1))
+                (stoa-costs:decimal (URCi_IssueStoa l1))
                 (iz-special:[bool] (make-list l1 false))
                 (ico:object{IgnisCollectorV1.OutputCumulator}
                     (with-capability (SECURE)
@@ -1847,7 +1847,7 @@
                     )
                 )
             )
-            (ref-IGNIS::KDA|C_Collect patron kda-costs)
+            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
             ico
         )
     )

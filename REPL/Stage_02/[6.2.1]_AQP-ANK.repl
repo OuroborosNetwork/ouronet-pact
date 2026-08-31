@@ -60,16 +60,16 @@
         (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
         (core-class-name:string "CoreBoostTFa")
         (core-class-id:string "CoreBoostTFa-98c486052a51")
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 patron
                 (* (ref-DALOS::UR_UsagePrice "standard") 20.0)
             )
         )
     )
-    ;;==== TX001 · 02 · DALOS URC_SplitKDAPrices ×20 — REPL banner follows ===========
+    ;;==== TX001 · 02 · DALOS URC_SplitSTOAPrices ×20 — REPL banner follows ===========
     (print "--- [TX001 · 02 · DALOS fee split ×20] ---")
-    (print (format "<(DALOS|URC_SplitKDAPrices)> patron standard×20 => \"{}\"" [split-kda]))
+    (print (format "<(DALOS|URC_SplitSTOAPrices)> patron standard×20 => \"{}\"" [split-stoa]))
     ;;==== TX001 · 03 · env-sigs + coin caps for issuance — REPL banner follows ======
     (print "--- [TX001 · 03 · env-sigs + coin caps for issuance] ---")
     (env-sigs
@@ -81,22 +81,22 @@
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ]
             }
@@ -198,16 +198,16 @@
         (temp-class-name:string "TempClassTF")
         (temp-class-id:string "TempClassTF-98c486052a51")
         (class07-id:string "CoreBoostTFg-98c486052a51")
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 patron
                 (* (ref-DALOS::UR_UsagePrice "standard") 2.0)
             )
         )
     )
-    ;;==== TX002 · 02 · DALOS URC_SplitKDAPrices ×2 — REPL banner follows ============
+    ;;==== TX002 · 02 · DALOS URC_SplitSTOAPrices ×2 — REPL banner follows ============
     (print "--- [TX002 · 02 · DALOS fee split ×2] ---")
-    (print (format "<(DALOS|URC_SplitKDAPrices)> patron standard×2 => \"{}\"" [split-kda]))
+    (print (format "<(DALOS|URC_SplitSTOAPrices)> patron standard×2 => \"{}\"" [split-stoa]))
     ;;==== TX002 · 03 · env-sigs + coin caps — REPL banner follows ====================
     (print "--- [TX002 · 03 · env-sigs + coin caps] ---")
     (env-sigs
@@ -219,22 +219,22 @@
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ]
             }
@@ -541,8 +541,8 @@
 ;        (patron:string KST.ANHD)
 ;        (kbn-id:string "KBN-98c486052a51")
 ;        (ref-DALOS:module{OuronetDalosV1} DALOS)
-;        (split-kda:[decimal]
-;            (ref-DALOS::URC_SplitKDAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 7.0))
+;        (split-stoa:[decimal]
+;            (ref-DALOS::URC_SplitSTOAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 7.0))
 ;        )
 ;    )
 ;    (env-sigs
@@ -551,10 +551,10 @@
 ;            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
 ;              "caps":
 ;                [
-;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
 ;                ]
 ;            }
 ;        ]
@@ -580,8 +580,8 @@
 ;        (patron:string KST.ANHD)
 ;        (kbn-id:string "KBN-98c486052a51")
 ;        (ref-DALOS:module{OuronetDalosV1} DALOS)
-;        (split-kda:[decimal]
-;            (ref-DALOS::URC_SplitKDAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 14.0))
+;        (split-stoa:[decimal]
+;            (ref-DALOS::URC_SplitSTOAPrices patron (* (ref-DALOS::UR_UsagePrice "standard") 14.0))
 ;        )
 ;    )
 ;    (env-sigs
@@ -590,10 +590,10 @@
 ;            { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
 ;              "caps":
 ;                [
-;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+;                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
 ;                ]
 ;            }
 ;        ]

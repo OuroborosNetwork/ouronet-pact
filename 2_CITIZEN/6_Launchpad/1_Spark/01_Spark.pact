@@ -20,9 +20,9 @@
     ;;
     (defun C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal))
     (defun C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string))
-    (defun C_CustomRedemAllSparks (patron:string redemption-payer:string account-to-redeem:string custom-kda-pid:decimal))
+    (defun C_CustomRedemAllSparks (patron:string redemption-payer:string account-to-redeem:string custom-stoa-pid:decimal))
     (defun C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
-    (defun C_CustomRedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal custom-kda-pid:decimal))
+    (defun C_CustomRedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal custom-stoa-pid:decimal))
     ;;
 )
 (module DEMIPAD-SPARK GOV
@@ -244,11 +244,11 @@
             ,"sparks-supply"    : (ref-DPTF::UR_Supply spark-id)
             ,"f-sparks-supply"  : (ref-DPTF::UR_Supply f-spark-id)
             ;;
-            ,"kda-spark-cost"   : (URC_SparkCost)
+            ,"stoa-spark-cost"   : (URC_SparkCost)
             ,"redemption-value" : (URC_SparkRedemptionCost)
             ;;
             ,"native-max"       : (URC_GetMaxBuy account true)
-            ,"wkda-max"         : (URC_GetMaxBuy account false)
+            ,"wstoa-max"         : (URC_GetMaxBuy account false)
             ;;
             ,"account-ignis"    : (ref-DPTF::UR_AccountSupply (ref-DALOS::UR_IgnisID) account)
             ,"ignis-collection" : (ref-DALOS::UR_VirtualToggle)}
@@ -262,28 +262,28 @@
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 ;;
-                (k-account:string (ref-DALOS::UR_AccountKadena account))
-                (wkda:string (ref-DALOS::UR_WrappedStoaID))
+                (k-account:string (ref-DALOS::UR_AccountStoa account))
+                (wstoa:string (ref-DALOS::UR_WrappedStoaID))
                 (spark-id:string (UR_SparkID))
                 (spark-price:decimal (at "pid" (ref-DEMIPAD::UR_Price spark-id)))
                 (still-for-sale:decimal (ref-DPTF::UR_AccountSupply spark-id DEMIPAD|SC_NAME))
                 ;;
-                (client-kadena-supply:decimal
+                (client-stoa-supply:decimal
                     (if native
                         (ref-coin::get-balance k-account)
-                        (ref-DPTF::UR_AccountSupply wkda account)
+                        (ref-DPTF::UR_AccountSupply wstoa account)
                     )
                 )
-                (client-kadena-value-in-dollarz:decimal (floor (* client-kadena-supply kda-pid) 2))
-                (can-buy-with-client-supply:decimal (floor (/ client-kadena-value-in-dollarz spark-price)))
+                (client-stoa-value-in-dollarz:decimal (floor (* client-stoa-supply stoa-pid) 2))
+                (can-buy-with-client-supply:decimal (floor (/ client-stoa-value-in-dollarz spark-price)))
             )
             (floor
                 (if (<= can-buy-with-client-supply still-for-sale)
@@ -294,45 +294,45 @@
         )
     )
     (defun URC_SparkCost:decimal ()
-        @doc "Returns the amount of KDA that is needed to pay for one Token"
+        @doc "Returns the amount of STOA that is needed to pay for one Token"
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 ;;
                 (spark-id:string (UR_SparkID))
                 (spark-price:decimal (at "pid" (ref-DEMIPAD::UR_Price spark-id)))
             )
-            (floor (/ spark-price kda-pid) kda-prec)
+            (floor (/ spark-price stoa-pid) stoa-prec)
         )
     )
     (defun URC_SparkRedemptionCost:decimal ()
-        @doc "Returns the amount of KDA|WKDA a single Token can be redeemed for."
+        @doc "Returns the amount of STOA|WSTOA a single Token can be redeemed for."
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 (boost:decimal (UR_BoostPromille))
             )
-            (floor (/ (+ 1.0 (/ boost 1000.0)) kda-pid) kda-prec)
+            (floor (/ (+ 1.0 (/ boost 1000.0)) stoa-pid) stoa-prec)
         )
     )
-    (defun URC_CustomSparkRedemptionCost:decimal (custom-kda-pid:decimal)
-        @doc "Returns the amount of KDA|WKDA a single Token can be redeemed for."
+    (defun URC_CustomSparkRedemptionCost:decimal (custom-stoa-pid:decimal)
+        @doc "Returns the amount of STOA|WSTOA a single Token can be redeemed for."
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 (boost:decimal (UR_BoostPromille))
             )
-            (floor (/ (+ 1.0 (/ boost 1000.0)) custom-kda-pid) kda-prec)
+            (floor (/ (+ 1.0 (/ boost 1000.0)) custom-stoa-pid) stoa-prec)
         )
     )
     (defun URC_AccountRedemptionAmount:decimal (account:string)
@@ -343,28 +343,28 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (spark-id:string (UR_SparkID))
                 (supply:decimal (ref-DPTF::UR_AccountSupply spark-id account))
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 (rc:decimal (URC_SparkRedemptionCost))
             )
-            (floor (* supply rc) kda-prec)
+            (floor (* supply rc) stoa-prec)
         )
     )
     (defun URC_SparkAmountCosts:object{DemiourgosLaunchpadV1.Costs} (amount:integer)
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 ;;
                 (spark-id:string (UR_SparkID))
                 (spark-price:decimal (at "pid" (ref-DEMIPAD::UR_Price spark-id)))
             )
             (ref-DEMIPAD::UDC_Costs
                 (* (dec amount) spark-price)
-                (floor (* (/ spark-price kda-pid) (dec amount)) kda-prec)
+                (floor (* (/ spark-price stoa-pid) (dec amount)) stoa-prec)
             )
         )
     )
@@ -442,7 +442,7 @@
             )
         )
     )
-    (defun C_CustomRedemAllSparks (patron:string redemption-payer:string account-to-redeem:string custom-kda-pid:decimal)
+    (defun C_CustomRedemAllSparks (patron:string redemption-payer:string account-to-redeem:string custom-stoa-pid:decimal)
         (with-capability (SPARK|C>REEDEM-ALL account-to-redeem)
             (let
                 (
@@ -450,7 +450,7 @@
                     (spark-id:string (UR_SparkID))
                     (supply:decimal (ref-DPTF::UR_AccountSupply spark-id account-to-redeem))
                 )
-                (XI_CustomRedeemSparks patron redemption-payer account-to-redeem supply custom-kda-pid)
+                (XI_CustomRedeemSparks patron redemption-payer account-to-redeem supply custom-stoa-pid)
             )
         )
     )
@@ -459,9 +459,9 @@
             (XI_RedeemSparks patron redemption-payer account-to-redeem redemption-quantity)
         )
     )
-    (defun C_CustomRedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal custom-kda-pid:decimal)
+    (defun C_CustomRedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal custom-stoa-pid:decimal)
         (with-capability (SPARK|C>REEDEM-FEW account-to-redeem redemption-quantity)
-            (XI_CustomRedeemSparks patron redemption-payer account-to-redeem redemption-quantity custom-kda-pid)
+            (XI_CustomRedeemSparks patron redemption-payer account-to-redeem redemption-quantity custom-stoa-pid)
         )
     )
     ;;{F7}  [X]
@@ -477,19 +477,19 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-VST:module{VestingV1} VST)
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 ;;
                 (spark-id:string (UR_SparkID))
                 (spark-redemption-cost:decimal (URC_SparkRedemptionCost))
-                (redemption-value:decimal (floor (* spark-redemption-cost redemption-quantity) kda-prec))
-                (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
+                (redemption-value:decimal (floor (* spark-redemption-cost redemption-quantity) stoa-prec))
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
                 (sa-atr:string (ref-I|OURONET::OI|UC_ShortAccount account-to-redeem))
             )
             (ref-IGNIS::C_Collect patron
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                     [
-                        ;;1]Move Wrapped Kadena to Target
-                        (ref-TFT::C_Transfer wkda-id redemption-payer account-to-redeem redemption-value true)
+                        ;;1]Move Wrapped Stoa to Target
+                        (ref-TFT::C_Transfer wstoa-id redemption-payer account-to-redeem redemption-value true)
                         ;;2]Freeze <account-to-redeem>
                         (ref-DPTF::C_ToggleFreezeAccount spark-id account-to-redeem true)
                         ;;3]Partial Wipe <spark-id>
@@ -505,12 +505,12 @@
                 )
             )
             (format "Succesfully Redeemed {} {} for {} {} on Account {}"
-                [redemption-quantity spark-id redemption-value wkda-id sa-atr]
+                [redemption-quantity spark-id redemption-value wstoa-id sa-atr]
             )
         )
     )
     (defun XI_CustomRedeemSparks 
-        (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal custom-kda-pid:decimal)
+        (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal custom-stoa-pid:decimal)
         (require-capability (SECURE))
         (let
             (
@@ -521,19 +521,19 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-VST:module{VestingV1} VST)
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 ;;
                 (spark-id:string (UR_SparkID))
-                (spark-redemption-cost:decimal (URC_CustomSparkRedemptionCost custom-kda-pid))
-                (redemption-value:decimal (floor (* spark-redemption-cost redemption-quantity) kda-prec))
-                (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
+                (spark-redemption-cost:decimal (URC_CustomSparkRedemptionCost custom-stoa-pid))
+                (redemption-value:decimal (floor (* spark-redemption-cost redemption-quantity) stoa-prec))
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
                 (sa-atr:string (ref-I|OURONET::OI|UC_ShortAccount account-to-redeem))
             )
             (ref-IGNIS::C_Collect patron
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                     [
-                        ;;1]Move Wrapped Kadena to Target
-                        (ref-TFT::C_Transfer wkda-id redemption-payer account-to-redeem redemption-value true)
+                        ;;1]Move Wrapped Stoa to Target
+                        (ref-TFT::C_Transfer wstoa-id redemption-payer account-to-redeem redemption-value true)
                         ;;2]Freeze <account-to-redeem>
                         (ref-DPTF::C_ToggleFreezeAccount spark-id account-to-redeem true)
                         ;;3]Partial Wipe <spark-id>
@@ -549,7 +549,7 @@
                 )
             )
             (format "Succesfully Redeemed {} {} for {} {} on Account {}"
-                [redemption-quantity spark-id redemption-value wkda-id sa-atr]
+                [redemption-quantity spark-id redemption-value wstoa-id sa-atr]
             )
         )
     )

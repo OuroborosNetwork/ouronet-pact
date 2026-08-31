@@ -252,18 +252,18 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
         (ref-CODEX:module{CodexV1} CODEX)
         (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
-        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
-        (kda-hov:string (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)))
-        (kda-cto:string (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)))
-        (kda-ouroboros:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
-        (kda-dalos:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)))
-        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices account-address stoa-fee))
+        (stoa-hov:string (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)))
+        (stoa-cto:string (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)))
+        (stoa-ouroboros:string (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+        (stoa-dalos:string (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)))
+        (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices account-address stoa-fee))
     )
     ;;==== TX004 · 01 · STOA fee echo ====
     (print "--- [TX004 · 01 · STOA fee (1 per glyph, 10/20/30/40 split)] ---")
     (print (format "<(CODEX|UC_StoicTagStoaFee)> tag len {} => \"{}\" STOA" [(length tag-name) stoa-fee]))
-    (print (format "<(DALOS|URC_SplitKDAPrices)> => \"{}\"" [split-kda]))
+    (print (format "<(DALOS|URC_SplitSTOAPrices)> => \"{}\"" [split-stoa]))
     ;;==== TX004 · 02 · env-sigs (DALOS owner + four STOA transfers) ====
     (print "--- [TX004 · 02 · env-sigs (DALOS owner + STOA 10/20/30/40)] ---")
     (env-sigs
@@ -272,10 +272,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
-                    (coin.TRANSFER patron-kda kda-cto (at 2 split-kda))
-                    (coin.TRANSFER patron-kda kda-hov (at 0 split-kda))
-                    (coin.TRANSFER patron-kda kda-ouroboros (at 3 split-kda))
-                    (coin.TRANSFER patron-kda kda-dalos (at 1 split-kda))
+                    (coin.TRANSFER patron-stoa stoa-cto (at 2 split-stoa))
+                    (coin.TRANSFER patron-stoa stoa-hov (at 0 split-stoa))
+                    (coin.TRANSFER patron-stoa stoa-ouroboros (at 3 split-stoa))
+                    (coin.TRANSFER patron-stoa stoa-dalos (at 1 split-stoa))
                 ]
             }
         ]
@@ -424,18 +424,18 @@
         (ref-TS01-C4:module{TalosStageOne_ClientFourV7} TS01-C4)
         (ref-CODEX:module{CodexV1} CODEX)
         (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
-        (patron-kda:string (ref-DALOS::UR_AccountKadena patron))
+        (patron-stoa:string (ref-DALOS::UR_AccountStoa patron))
         (demiurgoi:[string] (ref-DALOS::UR_DemiurgoiID))
-        (kda-hov:string (ref-DALOS::UR_AccountKadena (at 2 demiurgoi)))
-        (kda-cto:string (ref-DALOS::UR_AccountKadena (at 1 demiurgoi)))
-        (kda-ouroboros:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
-        (kda-dalos:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)))
-        (split-kda:[decimal] (ref-DALOS::URC_SplitKDAPrices account-address stoa-fee))
+        (stoa-hov:string (ref-DALOS::UR_AccountStoa (at 2 demiurgoi)))
+        (stoa-cto:string (ref-DALOS::UR_AccountStoa (at 1 demiurgoi)))
+        (stoa-ouroboros:string (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+        (stoa-dalos:string (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)))
+        (split-stoa:[decimal] (ref-DALOS::URC_SplitSTOAPrices account-address stoa-fee))
     )
     ;;==== TX006 · 01 · STOA fee echo ====
     (print "--- [TX006 · 01 · STOA fee (re-register released tag, 10/20/30/40 split)] ---")
     (print (format "<(CODEX|UC_StoicTagStoaFee)> tag len {} => \"{}\" STOA" [(length tag-name) stoa-fee]))
-    (print (format "<(DALOS|URC_SplitKDAPrices)> => \"{}\"" [split-kda]))
+    (print (format "<(DALOS|URC_SplitSTOAPrices)> => \"{}\"" [split-stoa]))
     ;;==== TX006 · 02 · env-sigs ====
     (print "--- [TX006 · 02 · env-sigs (DALOS owner + STOA 10/20/30/40)] ---")
     (env-sigs
@@ -444,10 +444,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
               "caps":
                 [
-                    (coin.TRANSFER patron-kda kda-cto (at 2 split-kda))
-                    (coin.TRANSFER patron-kda kda-hov (at 0 split-kda))
-                    (coin.TRANSFER patron-kda kda-ouroboros (at 3 split-kda))
-                    (coin.TRANSFER patron-kda kda-dalos (at 1 split-kda))
+                    (coin.TRANSFER patron-stoa stoa-cto (at 2 split-stoa))
+                    (coin.TRANSFER patron-stoa stoa-hov (at 0 split-stoa))
+                    (coin.TRANSFER patron-stoa stoa-ouroboros (at 3 split-stoa))
+                    (coin.TRANSFER patron-stoa stoa-dalos (at 1 split-stoa))
                 ]
             }
         ]

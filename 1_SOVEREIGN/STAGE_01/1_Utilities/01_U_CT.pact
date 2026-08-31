@@ -1,7 +1,7 @@
 (module U|CT GOV
     ;;
     (implements OuronetConstantsV1)
-    (implements DiaKdaPidV1)
+    (implements DiaStoaPidV1)
     ;;
     ;;<========>
     ;;GOVERNANCE
@@ -43,7 +43,7 @@
     (defun CT_ATS-FeeLock ()
         (/ (CT_DPTF-FeeLock) 10.0)
     )
-    (defun CT_KDA_PRECISION () 12)
+    (defun CT_STOA_PRECISION () 12)
     (defun CT_MIN_PRECISION () 2)
     (defun CT_MAX_PRECISION () 24)
     (defun CT_FEE_PRECISION () 4)
@@ -163,9 +163,9 @@
     ;;FUNCTIONS
     ;;{F0}  [UR]
     ;;{F1}  [URC]
-    (defun UR|KDA-PID:decimal ()
-        ;;(at "value" (n_bfb76eab37bf8c84359d6552a1d96a309e030b71.dia-oracle.get-value "KDA/USD"))
-        ;;#19H: no live oracle wired up yet - hardcoded to mainnet's approximate KDA/USD price
+    (defun UR|STOA-PID:decimal ()
+        ;;(at "value" (n_bfb76eab37bf8c84359d6552a1d96a309e030b71.dia-oracle.get-value "STOA/USD"))
+        ;;#19H: no live oracle wired up yet - hardcoded to mainnet's approximate STOA/USD price
         ;;(owner, 2026-08-27) as an interim placeholder. Wire the real oracle call above once
         ;;one is available, and remove this stub.
         0.1

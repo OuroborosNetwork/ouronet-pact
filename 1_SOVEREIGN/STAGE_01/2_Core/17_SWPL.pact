@@ -100,12 +100,12 @@
     ;;
     ;;  [URC] Functions
     ;;
-    (defun URC|KDA-PID_LpToIgnis:decimal (swpair:string amount:decimal kda-pid:decimal))
-    (defun URC|KDA-PID_TokenToIgnis (id:string amount:decimal kda-pid:decimal))
-    (defun URC|KDA-PID_CLAD:object{CompleteLiquidityAdditionData}
+    (defun URC|STOA-PID_LpToIgnis:decimal (swpair:string amount:decimal stoa-pid:decimal))
+    (defun URC|STOA-PID_TokenToIgnis (id:string amount:decimal stoa-pid:decimal))
+    (defun URC|STOA-PID_CLAD:object{CompleteLiquidityAdditionData}
         (
             account:string swpair:string ld:object{LiquidityData} 
-            asymmetric-collection:bool gaseous-collection:bool kda-pid:decimal
+            asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
         )
     )
     (defun URC_TokenPrecision (id:string))
@@ -398,7 +398,7 @@
     )
     (defcap SWPL|S>ASYMMETRIC-LQ-LQBOOST-TAX (text:string)
         @doc "ASYMMETRIC-LQ-LQBOOST-TAX \
-        \   PURPOSE     Enhances the LiquidIndex of the LKDA Token, during asymmetric liqudity Additions \
+        \   PURPOSE     Enhances the LiquidIndex of the SSTOA Token, during asymmetric liqudity Additions \
         \               using the Boost fee computed via virtual swaps, \
         \               as detailed in the Asymmetric Liquidity Deficit Tax documentation \
         \   DERIVATION  Corresponds to the Boost fee portion from the Virtual Swap Engine (VSE) swaps \
@@ -409,13 +409,13 @@
         \               The Fee Value computed in pool Tokens, is converted to Token A equivalents using the Pool ratio \
         \               which are then converted to an IGNIS amount value. \
         \       REASONING \
-        \               The Boost fee reflects swap processing costs, redirected to increase the value of LKDA \
+        \               The Boost fee reflects swap processing costs, redirected to increase the value of SSTOA \
         \   APPLICATION Resulted IGNIS is compressed to OURO, \
-        \               which is then further used to fuel the LKDA-OURO-WKDA Primal Ouronet Pool, \
-        \               while burning an equivalent amount of LKDA, thus increasing the LiquidIndex \
-        \               which further increases LKDA value in WKDA \
+        \               which is then further used to fuel the SSTOA-OURO-WSTOA Primal Ouronet Pool, \
+        \               while burning an equivalent amount of SSTOA, thus increasing the LiquidIndex \
+        \               which further increases SSTOA value in WSTOA \
         \   SUMMARY     The Boost Tax, based on the Boost fee from the VSE Swaps on the V-POOL \
-        \               supports the Ouronet Ecosystem by increasing the value of LKDA in WKDA \
+        \               supports the Ouronet Ecosystem by increasing the value of SSTOA in WSTOA \
         \               It leverages the Deficit Tax’s swap process, promoting fairness in asymmetric liquidity additions"
         @event
         true
@@ -448,7 +448,7 @@
     ;;
     ;;{F0}  [UR]
     ;;{F1}  [URC]
-    (defun URC|KDA-PID_LpToIgnis:decimal (swpair:string amount:decimal kda-pid:decimal)
+    (defun URC|STOA-PID_LpToIgnis:decimal (swpair:string amount:decimal stoa-pid:decimal)
         (let
             (
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
@@ -457,24 +457,24 @@
                 (pool-value:[decimal] (ref-SWPI::URC_PoolValue swpair))
                 (lp-value-in-dwk:decimal (at 1 pool-value))
             )
-            (floor (fold (*) 100.0 [amount lp-value-in-dwk kda-pid]) 2)
+            (floor (fold (*) 100.0 [amount lp-value-in-dwk stoa-pid]) 2)
         )
     )
-    (defun URC|KDA-PID_TokenToIgnis (id:string amount:decimal kda-pid:decimal)
+    (defun URC|STOA-PID_TokenToIgnis (id:string amount:decimal stoa-pid:decimal)
         (let
             (
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
                 (ignis-prec:integer (URC_IgnisPrecision))
-                (a-price:decimal (ref-SWPI::URC_TokenDollarPrice id kda-pid))
+                (a-price:decimal (ref-SWPI::URC_TokenDollarPrice id stoa-pid))
             )
             (floor (fold (*) 1.0 [100.0 a-price amount]) ignis-prec)
         )
     )
-    (defun URC|KDA-PID_CLAD:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
+    (defun URC|STOA-PID_CLAD:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
         (
             account:string swpair:string ld:object{SwapperLiquidityV1.LiquidityData} 
-            asymmetric-collection:bool gaseous-collection:bool kda-pid:decimal
+            asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
         )
         (let
             (
@@ -530,7 +530,7 @@
                         (asymmetric-lp-fee-amount:decimal (at "asymmetric-fee" ld))
                         (full-asymmetric-deviation:[decimal] (UEV_Liquidity swpair ld))
                         (asymmetric-deviation:decimal (at 0 full-asymmetric-deviation))
-                        (computed-gaseous-fee:decimal (URC|KDA-PID_LpToIgnis swpair asymmetric-lp-fee-amount kda-pid))
+                        (computed-gaseous-fee:decimal (URC|STOA-PID_LpToIgnis swpair asymmetric-lp-fee-amount stoa-pid))
                         (raw-gaseous-fee:decimal
                             (if (< computed-gaseous-fee 50.0)
                                 50.0
@@ -563,7 +563,7 @@
                                 (ref-U|SWP:module{UtilitySwpV1} U|SWP)
                                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                                 (ignis-prec:integer (ref-DPTF::UR_Decimals ignis-id))
-                                (lkda-id:string (ref-DALOS::UR_SilverStoaID))
+                                (sstoa-id:string (ref-DALOS::UR_SilverStoaID))
                                 ;;Compute Asymetric Tax
                                 (asymmetric-tax:object{SwapperLiquidityV1.AsymmetricTax} (URC_AsymmetricTax account swpair ld))
                                 ;;
@@ -575,7 +575,7 @@
                                 (tad-diff-fillup:decimal (+ asymmetric-deviation 0.5))
                                 (tad-diff:decimal (at "tad-diff" asymmetric-tax))
                                 (tad-diff-fillup-as-a:decimal (floor (* tad-diff tad-diff-fillup) a-prec))
-                                (raw-deficit-ignis-tax:decimal (URC|KDA-PID_TokenToIgnis a-id tad-diff-fillup-as-a kda-pid))
+                                (raw-deficit-ignis-tax:decimal (URC|STOA-PID_TokenToIgnis a-id tad-diff-fillup-as-a stoa-pid))
                                 (deficit-ignis-tax:decimal
                                     (if (< raw-deficit-ignis-tax 50.0)
                                         50.0 (ceiling raw-deficit-ignis-tax 2)
@@ -587,7 +587,7 @@
                                 ;;
                                 ;;ASYMMETRIC-LQ-SPECIAL-TAX
                                 (special-as-a:decimal (at "special" asymmetric-tax))
-                                (raw-special-ignis-tax:decimal (URC|KDA-PID_TokenToIgnis a-id special-as-a kda-pid))
+                                (raw-special-ignis-tax:decimal (URC|STOA-PID_TokenToIgnis a-id special-as-a stoa-pid))
                                 (special-ignis-tax:decimal
                                     (if (and (> raw-special-ignis-tax 0.0) (< raw-special-ignis-tax 50.0))
                                         50.0 (ceiling raw-special-ignis-tax 2)
@@ -599,7 +599,7 @@
                                 (raw-lqboost-ignis-tax:decimal 
                                     (if (= boost-as-a 0.0)
                                         0.0
-                                        (URC|KDA-PID_TokenToIgnis a-id boost-as-a kda-pid)
+                                        (URC|STOA-PID_TokenToIgnis a-id boost-as-a stoa-pid)
                                     )
                                 )
                                 (lqboost-ignis-tax:decimal
@@ -646,11 +646,11 @@
                                     )
                                 )
                                 (ico6:object{IgnisCollectorV1.OutputCumulator}
-                                    ;;Used for LKDA Burn (2)
+                                    ;;Used for SSTOA Burn (2)
                                     (ref-IGNIS::UDC_ConstructOutputCumulator 
                                         (ref-DALOS::UR_UsagePrice "ignis|small") 
                                         SWP|SC_NAME 
-                                        (ref-IGNIS::URC_ZeroGAS lkda-id account) []
+                                        (ref-IGNIS::URC_ZeroGAS sstoa-id account) []
                                     )
                                 )
                                 (ico56:object{IgnisCollectorV1.OutputCumulator}
@@ -698,7 +698,7 @@
                                 )
                                 (if (= lqboost-ignis-tax 0.0)
                                     "Without Asym-Liq.LqBoost-TAX, as Global Liquid Boost is disabled"
-                                    (format "{} IGNIS fueling LKDA LiquidIndex, as Asym-Liq.LqBoost-TAX"
+                                    (format "{} IGNIS fueling SSTOA LiquidIndex, as Asym-Liq.LqBoost-TAX"
                                         [lqboost-ignis-tax]
                                     )
                                 )
@@ -1763,9 +1763,9 @@
     ;;{F6}  [C]
     ;;{F7}  [X]
     ;;
-    (defun XE|KDA-PID_AddLiqudity
+    (defun XE|STOA-PID_AddLiqudity
         (
-            account:string swpair:string asymmetric-collection:bool gaseous-collection:bool kda-pid:decimal
+            account:string swpair:string asymmetric-collection:bool gaseous-collection:bool stoa-pid:decimal
             ld:object{SwapperLiquidityV1.LiquidityData} clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
         )
         @doc "#59L note: every branch below calls XE_UpdateSupplies (reserve bump) BEFORE \
@@ -1827,7 +1827,7 @@
                                 ;;
                                 (ignis-id:string (ref-DALOS::UR_IgnisID))
                                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
-                                (lkda-id:string (ref-DALOS::UR_SilverStoaID))
+                                (sstoa-id:string (ref-DALOS::UR_SilverStoaID))
                                 (primordial-swpair:string (ref-SWP::UR_PrimordialPool))
                                 (lqboost-ignis-tax:decimal (at "lqboost-ignis-tax" clad))
                                 (primordial-supplies:[decimal] (ref-SWP::UR_PoolTokenSupplies primordial-swpair))
@@ -1844,10 +1844,10 @@
                                     (ref-U|SWP::UDC_DirectSwapInputData
                                         [ouro-id]
                                         [ouro-mint-amount]
-                                        lkda-id
+                                        sstoa-id
                                     )
                                 )
-                                (lkda-burn-amount:decimal 
+                                (sstoa-burn-amount:decimal 
                                     (if (= lqboost-ignis-tax 0.0)
                                         0.0
                                         (ref-SWPI::URC_Swap primordial-swpair dsid false)
@@ -1872,10 +1872,10 @@
                                 (do
                                     (ref-DPTF::C_Burn ignis-id SWP|SC_NAME lqboost-ignis-tax)
                                     (ref-DPTF::C_Mint ouro-id SWP|SC_NAME ouro-mint-amount false)
-                                    (ref-DPTF::C_Burn lkda-id SWP|SC_NAME lkda-burn-amount)
+                                    (ref-DPTF::C_Burn sstoa-id SWP|SC_NAME sstoa-burn-amount)
                                     (ref-SWP::XE_UpdateSupplies 
                                         primordial-swpair 
-                                        (zip (+) primordial-supplies [(- 0.0 lkda-burn-amount) ouro-mint-amount 0.0])
+                                        (zip (+) primordial-supplies [(- 0.0 sstoa-burn-amount) ouro-mint-amount 0.0])
                                     )
                                 )
                                 true

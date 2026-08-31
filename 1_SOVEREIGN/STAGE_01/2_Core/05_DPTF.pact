@@ -187,7 +187,7 @@
     (defun URCi_UpdateSpecialTrueFungible:object{IgnisCollectorV1.OutputCumulator} (main-dptf:string))
     (defun URCi_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (id:string toggle:bool))
     (defun URCi_IssueGas:decimal (token-count:integer))
-    (defun URCi_IssueKda:decimal (token-count:integer))
+    (defun URCi_IssueStoa:decimal (token-count:integer))
     (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;
     ;;  [X]
@@ -1777,10 +1777,10 @@
     (defun URCi_IssueGas:decimal (token-count:integer)
         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "ignis|token-issue")))
     )
-    (defun URCi_IssueKda:decimal (token-count:integer)
+    (defun URCi_IssueStoa:decimal (token-count:integer)
         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (* (dec token-count) (ref-DALOS::UR_UsagePrice "dptf")))
     )
-    ;;  UpgradeBranding: KDA price is unconditionally months x "blue" (BRD's XE_UpgradeBranding returns the same).
+    ;;  UpgradeBranding: STOA price is unconditionally months x "blue" (BRD's XE_UpgradeBranding returns the same).
     (defun URCi_UpgradeBranding:decimal (months:integer)
         (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
     )
@@ -1808,11 +1808,11 @@
                 (parent:string (URC_Parent entity-id))
                 (parent-owner:string (UR_Konto parent))
             )
-            ;;Perform the branding upgrade (side effect); bill the KDA via the URCi (== XE_UpgradeBranding's price)
+            ;;Perform the branding upgrade (side effect); bill the STOA via the URCi (== XE_UpgradeBranding's price)
             (with-capability (DPTF|C>UPGRADE-BRD entity-id)
                 (ref-BRD::XE_UpgradeBranding entity-id parent-owner months)
             )
-            (ref-IGNIS::KDA|C_CollectWT patron (URCi_UpgradeBranding months) false)
+            (ref-IGNIS::STOA|C_CollectWT patron (URCi_UpgradeBranding months) false)
         )
     )
     ;;
@@ -1825,14 +1825,14 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (l1:integer (length name))
                 (tl:[bool] (make-list l1 false))
-                (kda-costs:decimal (URCi_IssueKda l1))
+                (stoa-costs:decimal (URCi_IssueStoa l1))
                 (ico:object{IgnisCollectorV1.OutputCumulator}
                     (with-capability (SECURE)
                         (XB_IssueFree account name ticker decimals can-upgrade can-change-owner can-add-special-role can-freeze can-wipe can-pause tl)
                     )
                 )
             )
-            (ref-IGNIS::KDA|C_Collect patron kda-costs)
+            (ref-IGNIS::STOA|C_Collect patron stoa-costs)
             ico
         )
     )
@@ -1949,14 +1949,14 @@
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (toggle-costs:[decimal] (XI_ToggleFeeLock id toggle))
-                    (kda-costs:decimal (at 1 toggle-costs))
+                    (stoa-costs:decimal (at 1 toggle-costs))
                     ;;URCi computed HERE — reads fee-unlocks BEFORE XI_IncrementFeeUnlocks below mutates it
                     (cumulator:object{IgnisCollectorV1.OutputCumulator} (URCi_ToggleFeeLock id toggle))
                 )
-                (if (> kda-costs 0.0)
+                (if (> stoa-costs 0.0)
                     (do
                         (XI_IncrementFeeUnlocks id)
-                        (ref-IGNIS::KDA|C_Collect patron kda-costs)
+                        (ref-IGNIS::STOA|C_Collect patron stoa-costs)
                     )
                     true
                 )

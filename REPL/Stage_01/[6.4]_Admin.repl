@@ -185,7 +185,7 @@
 (print "")
 ;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
 (print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
-(format "<<<<<<<STEP 002 Admin Tests {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<STEP 002 Admin Tests {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -220,8 +220,8 @@
         (patron:string KST.ANHD)
         (months:integer 3)
         (dec-months:decimal (dec months))
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 patron
                 (* (ref-DALOS::UR_UsagePrice "blue") dec-months)
             )
@@ -236,22 +236,22 @@
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ]
             }
@@ -342,7 +342,7 @@
     ;(ref-TS01-C1::DALOS|C_RotateGuard
     ;    patron patron new-patron-guard true
     ;)
-    ;(ref-TS01-C1::DALOS|C_RotateKadena
+    ;(ref-TS01-C1::DALOS|C_RotateStoa
     ;    patron patron "k:ecaeae048b6e4b1d4cd9b5ba41041b39e05ac3a7b32f495a12823cb1c5ad0f48"
     ;)
     ;(ref-TS01-C1::DALOS|C_RotateSovereign
@@ -351,7 +351,7 @@
 
     [
         (format "Smart Patron properties are: {}" [(ref-DALOS::UR_AccountProperties smart-patron)])
-        (format "Ah Kadena is {}" [(ref-DALOS::UR_AccountKadena patron)])
+        (format "Ah Stoa is {}" [(ref-DALOS::UR_AccountStoa patron)])
         (format "Smart AH Sovereign is {}" [(ref-DALOS::UR_AccountSovereign smart-patron)])
     ]
 )
@@ -360,7 +360,7 @@
 (print "")
 ;;==== SWP TX 001 - Admin Tests · 03 · gas echo ==== ==============================================
 (print "--- [SWP TX 001 - Admin Tests · 03 · gas echo] ---")
-(format "<<<<<<<STEP 002 Admin Tests {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<STEP 002 Admin Tests {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -395,8 +395,8 @@
         (emma:string KST.EMMA)
         (months:integer 3)
         (dec-months:decimal (dec months))
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 patron
                 (* (ref-DALOS::UR_UsagePrice "blue") dec-months)
             )
@@ -412,22 +412,22 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -545,7 +545,7 @@
 (print "")
 ;;==== DPTF - Tests · 03 · gas echo ==== ==========================================================
 (print "--- [DPTF - Tests · 03 · gas echo] ---")
-(format "<<<<<<<STEP 002 Admin Tests {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<STEP 002 Admin Tests {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")

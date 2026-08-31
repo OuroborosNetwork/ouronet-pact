@@ -165,7 +165,7 @@
             \ Calling this function runs the Step 0 of 2. To finalize SWPair creation, Steps 1 and 2 must also be executed \
             \ \
             \ Step 0: Data Validation, makes sure the input data is correct for SWPair Creation \
-            \ Step 1: Collects IGNIS, KDA, and fuels LiquidStaking Index with collected KDA \
+            \ Step 1: Collects IGNIS, STOA, and fuels LiquidStaking Index with collected STOA \
             \ Step 2: Executes the actual Pool Creation, Issuing the LP Token, Creating the SWPair, minting the LP Token Supply \
             \   transfering it to its creator, and saves all other relevant data when a Pool Creation takes place"
         (with-capability (P|TS)
@@ -205,12 +205,12 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddStandardLiquidity 
-                    patron account swpair input-amounts kda-pid
+                    patron account swpair input-amounts stoa-pid
                 )
             )
         )
@@ -220,12 +220,12 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddIcedLiquidity 
-                    patron account swpair input-amounts kda-pid
+                    patron account swpair input-amounts stoa-pid
                 )
             )
         )
@@ -235,12 +235,12 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddGlacialLiquidity 
-                    patron account swpair input-amounts kda-pid
+                    patron account swpair input-amounts stoa-pid
                 )
             )
         )
@@ -250,12 +250,12 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddFrozenLiquidity
-                    patron account swpair frozen-dptf input-amount kda-pid
+                    patron account swpair frozen-dptf input-amount stoa-pid
                 )
             )
         )
@@ -265,12 +265,12 @@
         (with-capability (P|TS)
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
-                    (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (ref-MTX-SWP:module{SwapperMtxV3} MTX-SWP)
                 )
                 (ref-MTX-SWP::C_AddSleepingLiquidity
-                    patron account swpair sleeping-dpof nonce kda-pid
+                    patron account swpair sleeping-dpof nonce stoa-pid
                 )
             )
         )

@@ -79,7 +79,7 @@
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
             (UC|GasPrice gas-cost (ref-IGNIS::URC_IsVirtualGasZero)))
     )
-    ;;{F2}  [SKP|URC]  — Simple Kadena Price: a native UsagePrice charge behind the native-gas gate
+    ;;{F2}  [SKP|URC]  — Simple Stoa Price: a native UsagePrice charge behind the native-gas gate
     (defun SKP|URC_Standard:decimal (multiplier:decimal)
         @doc "Native STOA 'standard' × multiplier behind the native-gas toggle (anchor issue: mult 2 when acnoi)."
         (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
@@ -215,7 +215,7 @@
                  "Executes via TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor."]
                 [(format "Anchor '{}' issued on DPTF {}." [anchor-name dptf-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed 1000.0))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
                 []
             )
         )
@@ -234,7 +234,7 @@
                  "Executes via TS02-C3.AQP-ANK|C_IssueSemiFungibleAnchor."]
                 [(format "Anchor '{}' issued on DPSF {} nonce {}." [anchor-name dpsf-id dpsf-nonce])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed 1000.0))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
                 []
             )
         )
@@ -253,7 +253,7 @@
                  "Executes via TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor."]
                 [(format "Anchor '{}' issued on DPNF {} trait {}={}." [anchor-name dpnf-id dpnf-trait-key dpnf-trait-value])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed 1000.0))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
                 []
             )
         )
@@ -272,7 +272,7 @@
                  "Executes via TS02-C3.AQP-ANK|C_IssueNonFungibleSetAnchor."]
                 [(format "Anchor '{}' issued on DPNF {} nonce-class {}." [anchor-name dpnf-id dpnf-nonce-class])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed 1000.0))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
                 []
             )
         )
@@ -289,7 +289,7 @@
                  "Executes via TS02-C3.AQP-ANK|C_RevokeAnchor."]
                 [(format "Anchor {} revoked." [anchor-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -306,7 +306,7 @@
                  "Executes via TS02-C3.AQP-ANK|C_RevokeBoostClass."]
                 [(format "BoostClass {} revoked." [boost-class-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -323,7 +323,7 @@
                 ["Operation: Create a class-0 (Liquidity) score." "Executes via TS02-C3.AQP-SCR|C_IssueLiquidityScore."]
                 [(format "Liquidity score '{}' issued for {}." [score-name owner-konto])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
                 []))
     )
     (defun AQP-SCR|INFO_IssueTrueFungibleScore:object{OuronetInfoV1.ClientInfo}
@@ -334,7 +334,7 @@
                 ["Operation: Create a class-1 (True-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueTrueFungibleScore."]
                 [(format "True-Fungible score '{}' issued for {}." [score-name owner-konto])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
                 []))
     )
     (defun AQP-SCR|INFO_IssueOrtoFungibleScore:object{OuronetInfoV1.ClientInfo}
@@ -345,7 +345,7 @@
                 ["Operation: Create a class-2 (Orto-Fungible / special) score." "Executes via TS02-C3.AQP-SCR|C_IssueOrtoFungibleScore."]
                 [(format "Orto-Fungible score '{}' issued for {}." [score-name owner-konto])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
                 []))
     )
     (defun AQP-SCR|INFO_IssueSemiFungibleScore:object{OuronetInfoV1.ClientInfo}
@@ -356,7 +356,7 @@
                 ["Operation: Create a class-3 (Semi-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueSemiFungibleScore."]
                 [(format "Semi-Fungible score '{}' issued for {}." [score-name owner-konto])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
                 []))
     )
     (defun AQP-SCR|INFO_IssueNonFungibleScore:object{OuronetInfoV1.ClientInfo}
@@ -367,7 +367,7 @@
                 ["Operation: Create a class-4 (Non-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleScore."]
                 [(format "Non-Fungible score '{}' issued for {}." [score-name owner-konto])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
                 []))
     )
     (defun AQP-SCR|INFO_RotateScoreOwnership:object{OuronetInfoV1.ClientInfo}
@@ -378,7 +378,7 @@
                 ["Operation: Transfer a score's owner-konto." "Executes via TS02-C3.AQP-SCR|C_RotateScoreOwnership."]
                 [(format "Score {} ownership moved to {}." [score-id new-owner-konto])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-SCR|INFO_ControlScore:object{OuronetInfoV1.ClientInfo}
@@ -389,7 +389,7 @@
                 ["Operation: Set a score's can-upgrade / can-change-owner flags." "Executes via TS02-C3.AQP-SCR|C_ControlScore."]
                 [(format "Score {} control flags updated." [score-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-SCR|INFO_CreateScoreBoostClassLink:object{OuronetInfoV1.ClientInfo}
@@ -400,7 +400,7 @@
                 ["Operation: Link a score to a BoostClass (once)." "Executes via TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink."]
                 [(format "Score {} linked to BoostClass {}." [score-id boost-class-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-SCR|INFO_CreateScoreBoostLink:object{OuronetInfoV1.ClientInfo}
@@ -411,7 +411,7 @@
                 ["Operation: Link a score to a boost-score (once)." "Executes via TS02-C3.AQP-SCR|C_CreateScoreBoostLink."]
                 [(format "Score {} boost-linked to {}." [score-id boost-score-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-SCR|INFO_EnableDebBoost:object{OuronetInfoV1.ClientInfo}
@@ -422,7 +422,7 @@
                 ["Operation: Enable deb-boost on a score (irreversible)." "Executes via TS02-C3.AQP-SCR|C_EnableDebBoost."]
                 [(format "Score {} deb-boost enabled." [score-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-SCR|INFO_IssueTriplet:object{OuronetInfoV1.ClientInfo}
@@ -433,7 +433,7 @@
                 ["Operation: Bundle three scores into one triplet (T|bronze|silver|golden)." "Executes via TS02-C3.AQP-SCR|C_IssueTriplet."]
                 [(format "Triplet issued from {} / {} / {}." [bronze-score-id silver-score-id golden-score-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-TRIPLET))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-SCR|INFO_IssueSingleScoreModel:object{OuronetInfoV1.ClientInfo}
@@ -444,7 +444,7 @@
                 ["Operation: Define a SINGLE score-entity model." "Executes via TS02-C3.AQP-SCR|C_IssueSingleScoreModel."]
                 [(format "Single score model '{}' defined (class {})." [model-name score-class])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE-MODEL))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-SCR|INFO_CombineTripletScoreModel:object{OuronetInfoV1.ClientInfo}
@@ -455,7 +455,7 @@
                 ["Operation: Combine three SINGLE models into a TRIPLET model." "Executes via TS02-C3.AQP-SCR|C_CombineTripletScoreModel."]
                 [(format "Triplet score model '{}' combined." [model-name])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE-MODEL))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-SCR|INFO_IssueScoreFromModel:object{OuronetInfoV1.ClientInfo}
@@ -466,7 +466,7 @@
                 ["Operation: Issue a score/triplet entity conforming to a model." "Executes via TS02-C3.AQP-SCR|C_IssueScoreFromModel."]
                 [(format "Entity '{}' issued from model {} for {}." [agency-name model-id owner-konto])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE-MODEL))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-SCR|INFO_IssueSemiFungibleScoreDefinition:object{OuronetInfoV1.ClientInfo}
@@ -484,7 +484,7 @@
                 ["Operation: Write Semi-Fungible score definition rows (one per nonce)." "Executes via TS02-C3.AQP-SCR|C_IssueSemiFungibleScoreDefinition."]
                 [(format "Wrote {} SF score-definition rows on score {}." [(length nonces) score-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-SCR|INFO_IssueNonFungibleScoreDefinition:object{OuronetInfoV1.ClientInfo}
@@ -501,7 +501,7 @@
                 ["Operation: Write Non-Fungible trait-score definition rows (one per trait)." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleScoreDefinition."]
                 [(format "Wrote {} NF trait-score rows on score {}." [(length trait-keys) score-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-SCR|INFO_IssueNonFungibleSetScoreDefinition:object{OuronetInfoV1.ClientInfo}
@@ -518,7 +518,7 @@
                 ["Operation: Write Non-Fungible SET score definition rows (one per nonce-class)." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleSetScoreDefinition."]
                 [(format "Wrote {} NF set score-definition rows on score {}." [(length dpnf-nonce-classes) score-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     ;;
@@ -533,7 +533,7 @@
                 ["Operation: Create a new staking pool over an asset." "Executes via TS02-C3.AQP-POOL|C_Issue."]
                 [(format "Pool '{}' created over asset {} (class {})." [pool-name asset-id aqp-class])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|ISSUE-POOL))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
                 []))
     )
     (defun AQP-POOL|INFO_AddScore:object{OuronetInfoV1.ClientInfo}
@@ -544,7 +544,7 @@
                 ["Operation: Assign a score to the pool's first free slot." "Executes via TS02-C3.AQP-POOL|C_AddScore."]
                 [(format "Score {} added to pool {}." [score-id pool-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|ADD-SCORE))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-POOL|INFO_RevokeScore:object{OuronetInfoV1.ClientInfo}
@@ -555,7 +555,7 @@
                 ["Operation: Clear a score from its pool slot." "Executes via TS02-C3.AQP-POOL|C_RevokeScore."]
                 [(format "Score {} revoked from pool {}." [score-id pool-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|REVOKE-SCORE))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-POOL|INFO_EnablePoolStake:object{OuronetInfoV1.ClientInfo}
@@ -566,7 +566,7 @@
                 ["Operation: Re-enable new stakes on a pool." "Executes via TS02-C3.AQP-POOL|C_EnablePoolStake."]
                 [(format "Pool {} staking enabled." [pool-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|SET-POOL-STAKE))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-POOL|INFO_DisablePoolStake:object{OuronetInfoV1.ClientInfo}
@@ -577,7 +577,7 @@
                 ["Operation: Pause new stakes on a pool." "Executes via TS02-C3.AQP-POOL|C_DisablePoolStake."]
                 [(format "Pool {} staking disabled." [pool-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|SET-POOL-STAKE))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-POOL|INFO_SyncTrueFungibleAnchors:object{OuronetInfoV1.ClientInfo}
@@ -590,7 +590,7 @@
                  "Executes via TS02-C3.AQP-POOL|C_SyncTrueFungibleAnchors."]
                 [(format "TF anchors synced for {} on DPTF {}." [beneficiary-id dptf-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|SYNC-TF-ANCHORS))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-POOL|INFO_SyncSemiFungibleAnchors:object{OuronetInfoV1.ClientInfo}
@@ -603,7 +603,7 @@
                  "Executes via TS02-C3.AQP-POOL|C_SyncSemiFungibleAnchors."]
                 [(format "SF anchors synced for {} on DPSF {}." [beneficiary-id dpsf-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|SYNC-COLLECTABLE-ANCHORS))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-POOL|INFO_SyncNonFungibleAnchors:object{OuronetInfoV1.ClientInfo}
@@ -616,7 +616,7 @@
                  "Executes via TS02-C3.AQP-POOL|C_SyncNonFungibleAnchors."]
                 [(format "NF anchors synced for {} on DPNF {}." [beneficiary-id dpnf-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|SYNC-COLLECTABLE-ANCHORS))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     ;;<---- stake / unstake (multi-leg reconstructed cost) ---->
@@ -631,7 +631,7 @@
                 [(format "Staked {} of {} into pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (URC_TrueFungibleStakeFlowIfp pool-id owner-id beneficiary-id dptf-id amount true))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
     (defun AQP-POOL|INFO_UnstakeTrueFungible:object{OuronetInfoV1.ClientInfo}
@@ -645,7 +645,7 @@
                 [(format "Unstaked {} of {} from pool {} for {}." [amount dptf-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (URC_TrueFungibleStakeFlowIfp pool-id owner-id beneficiary-id dptf-id amount false))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
     (defun AQP-POOL|INFO_StakeOrtoFungible:object{OuronetInfoV1.ClientInfo}
@@ -659,7 +659,7 @@
                 [(format "Staked {} nonces of {} into pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (URC_OrtoFungibleStakeFlowIfp pool-id owner-id beneficiary-id dpof-id nonces true))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)]))
     )
     (defun AQP-POOL|INFO_UnstakeOrtoFungible:object{OuronetInfoV1.ClientInfo}
@@ -672,7 +672,7 @@
                 [(format "Unstaked {} nonces of {} from pool {} for {}." [(length nonces) dpof-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (URC_OrtoFungibleStakeFlowIfp pool-id owner-id beneficiary-id dpof-id nonces false))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)]))
     )
     (defun AQP-POOL|INFO_StakeSemiFungibleCollectable:object{OuronetInfoV1.ClientInfo}
@@ -687,7 +687,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id true nonces
                         (DPDC.UR_AccountNoncesSupplies owner-id collectable-id true nonces) true))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)]))
     )
     (defun AQP-POOL|INFO_UnstakeSemiFungibleCollectable:object{OuronetInfoV1.ClientInfo}
@@ -701,7 +701,7 @@
                 [(format "Unstaked {} DPSF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id true nonces nonce-amounts false))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)]))
     )
     (defun AQP-POOL|INFO_StakeNonFungibleCollectable:object{OuronetInfoV1.ClientInfo}
@@ -716,7 +716,7 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id false nonces
                         (DPDC.UR_AccountNoncesSupplies owner-id collectable-id false nonces) true))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)]))
     )
     (defun AQP-POOL|INFO_UnstakeNonFungibleCollectable:object{OuronetInfoV1.ClientInfo}
@@ -730,7 +730,7 @@
                 [(format "Unstaked {} DPNF nonces of {} from pool {} for {}." [(length nonces) collectable-id pool-id beneficiary-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
                     (URC_CollectableStakeFlowIfp pool-id owner-id beneficiary-id collectable-id false nonces nonce-amounts false))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(length nonces)]))
     )
     ;;<---- vacate lifecycle (fixed-cost endpoints) ---->
@@ -743,7 +743,7 @@
                  "Executes via TS02-C3.AQP-POOL|C_FinalizeVacate."]
                 [(format "Finalized vacate on pool {}." [pool-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-POOL|INFO_AbortVacate:object{OuronetInfoV1.ClientInfo}
@@ -756,7 +756,7 @@
                  "Executes via TS02-C3.AQP-POOL|C_AbortVacate."]
                 [(format "Aborted vacate on pool {}." [pool-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     ;;
@@ -771,7 +771,7 @@
                 ["Operation: Create a Farm / Vault / Treasury." "Executes via TS02-C3.AQP-FVT|C_Issue."]
                 [(format "FVT '{}' created (class {}) for {}." [fvt-name fvt-class owner-konto])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ISSUE-FVT))
-                (ref-I|OURONET::OI|UDC_DynamicKadenaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
                 []))
     )
     (defun AQP-FVT|INFO_RotateOwnership:object{OuronetInfoV1.ClientInfo}
@@ -782,7 +782,7 @@
                 ["Operation: Transfer an FVT's owner-konto." "Executes via TS02-C3.AQP-FVT|C_RotateOwnership."]
                 [(format "FVT {} ownership moved to {}." [fvt-id new-owner-konto])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_Control:object{OuronetInfoV1.ClientInfo}
@@ -793,7 +793,7 @@
                 ["Operation: Set an FVT's can-upgrade / can-change-owner flags." "Executes via TS02-C3.AQP-FVT|C_Control."]
                 [(format "FVT {} control flags updated." [fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_SetCommonDenominator:object{OuronetInfoV1.ClientInfo}
@@ -804,7 +804,7 @@
                 ["Operation: Set a farm's common-denominator (before any links)." "Executes via TS02-C3.AQP-FVT|C_SetCommonDenominator."]
                 [(format "FVT {} common-denominator set to {}." [fvt-id common-denominator])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-COMMON-DENOMINATOR))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_SetMosaic:object{OuronetInfoV1.ClientInfo}
@@ -815,7 +815,7 @@
                 ["Operation: Toggle a farm's mosaic membership policy." "Executes via TS02-C3.AQP-FVT|C_SetMosaic."]
                 [(format "FVT {} mosaic set to {}." [fvt-id mosaic])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-MOSAIC))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_SetSplitMode:object{OuronetInfoV1.ClientInfo}
@@ -827,7 +827,7 @@
                 ["Operation: Set a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size)." "Executes via TS02-C3.AQP-FVT|C_SetSplitMode."]
                 [(format "Farm {} reward-split mode: {} -> {}." [fvt-id (AQP-FVT.UR_FVT|SplitMode fvt-id) split-mode])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-SPLIT-MODE))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_AddScoreEntity:object{OuronetInfoV1.ClientInfo}
@@ -838,7 +838,7 @@
                 ["Operation: Register a score (type 1) or triplet (type 3) on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddScoreEntity."]
                 [(format "Score-entity {} (type {}) registered on FVT {}." [score-entity-id score-entity-type fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ADD-SCORE-ENTITY))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_ToggleScoreEntityLink:object{OuronetInfoV1.ClientInfo}
@@ -849,7 +849,7 @@
                 ["Operation: Enable/disable a ScoreEntityLink on an FVT." "Executes via TS02-C3.AQP-FVT|C_ToggleScoreEntityLink."]
                 [(format "FVT {} score-entity {} enabled={}." [fvt-id score-entity-id enabled])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|TOGGLE-SCORE-ENTITY-LINK))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_IssueMultipletFamily:object{OuronetInfoV1.ClientInfo}
@@ -860,7 +860,7 @@
                 ["Operation: Issue a chain-wide MultipletFamily reward ladder." "Executes via TS02-C3.AQP-FVT|C_IssueMultipletFamily."]
                 [(format "MultipletFamily issued: {} -> {} -> {}." [token-0-id token-1-id token-2-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ISSUE-MULTIPLET-FAMILY))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_AddRewardLink:object{OuronetInfoV1.ClientInfo}
@@ -871,7 +871,7 @@
                 ["Operation: Register a reward DPTF on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddRewardLink."]
                 [(format "Reward {} linked on FVT {} (family {})." [reward-dptf-id fvt-id multiplet-family-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ADD-REWARD-LINK))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_ToggleRewardLink:object{OuronetInfoV1.ClientInfo}
@@ -882,7 +882,7 @@
                 ["Operation: Toggle a reward link's enabled flag." "Executes via TS02-C3.AQP-FVT|C_ToggleRewardLink."]
                 [(format "FVT {} reward {} enabled={}." [fvt-id reward-dptf-id enabled])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|TOGGLE-REWARD-LINK))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_SetQualitySplit:object{OuronetInfoV1.ClientInfo}
@@ -893,7 +893,7 @@
                 ["Operation: Set a MULTIPLET_BASE reward's quality-split mode + matrix." "Executes via TS02-C3.AQP-FVT|C_SetQualitySplit."]
                 [(format "FVT {} reward {} quality-split mode={}." [fvt-id reward-dptf-id mode])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-QUALITY-SPLIT))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_InjectStream:object{OuronetInfoV1.ClientInfo}
@@ -905,7 +905,7 @@
                  "Executes via TS02-C3.AQP-FVT|CC_InjectStream."]
                 [(format "Streaming {} of {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
     (defun AQP-FVT|INFO_CC_Inject:object{OuronetInfoV1.ClientInfo}
@@ -917,7 +917,7 @@
                  "Executes via TS02-C3.AQP-FVT|CC_Inject."]
                 [(format "Fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
     (defun AQP-FVT|INFO_CC_InjectFinalize:object{OuronetInfoV1.ClientInfo}
@@ -929,7 +929,7 @@
                  "Executes via TS02-C3.AQP-FVT|CC_InjectFinalize."]
                 [(format "Finalized fresh inject of {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
     (defun AQP-FVT|INFO_CCp_InjectFixChunk:object{OuronetInfoV1.ClientInfo}
@@ -942,7 +942,7 @@
                  "Executes via TS02-C3.AQP-FVT|CCp_InjectFixChunk."]
                 [(format "Fixed up to {} stale members on FVT {} reward {}." [chunk fvt-id reward-dptf-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_CCp_UnstaleAll:object{OuronetInfoV1.ClientInfo}
@@ -955,7 +955,7 @@
                  "Executes via TS02-C3.AQP-FVT|CCp_UnstaleAll."]
                 [(format "Unstaled up to {} members on FVT {}." [chunk fvt-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_UnstaleMyScores:object{OuronetInfoV1.ClientInfo}
@@ -966,7 +966,7 @@
                 ["Operation: Self-service deb-unstale of your own scores across FVTs." "Executes via TS02-C3.AQP-FVT|CC_UnstaleMyScores."]
                 [(format "Unstaled your scores across {} FVTs." [(length fvt-ids)])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|UNSTALE))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_Collect:object{OuronetInfoV1.ClientInfo}
@@ -980,7 +980,7 @@
                  "Executes via TS02-C3.AQP-FVT|CC_Collect."]
                 [(format "Collected reward token {} from score-entity {}." [reward-dptf-id score-entity-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|COLLECT))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_CC_SweepRevokeAnchor:object{OuronetInfoV1.ClientInfo}
@@ -993,7 +993,7 @@
                  "Executes via TS02-C3.AQP-FVT|CC_SweepRevokeAnchor."]
                 [(format "Swept + retired anchor {}." [anchor-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_CC_SweepBegin:object{OuronetInfoV1.ClientInfo}
@@ -1006,7 +1006,7 @@
                  "Executes via TS02-C3.AQP-FVT|CC_SweepBegin."]
                 [(format "Opened sweep on anchor {}." [anchor-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-FVT|INFO_CCp_SweepRecomputeChunk:object{OuronetInfoV1.ClientInfo}
@@ -1019,7 +1019,7 @@
                  "Executes via TS02-C3.AQP-FVT|CCp_SweepRecomputeChunk."]
                 [(format "Recomputed up to {} holders on anchor {}'s sweep." [chunk anchor-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     ;;
@@ -1034,7 +1034,7 @@
                 ["Operation: Bind a class-0 FVT as a DSA delegation vault." "Executes via TS02-C3.AQP-DSA|A_DefineDelegationVault."]
                 [(format "FVT {} bound as delegation vault (model {})." [fvt-id model-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|DEFINE-VAULT))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_OpenAgency:object{OuronetInfoV1.ClientInfo}
@@ -1048,7 +1048,7 @@
                  "Executes via TS02-C3.AQP-DSA|C_OpenAgency."]
                 [(format "Agency {} opened on vault {} (fee {} per-mille)." [score-entity-id fvt-id fee-per-mille])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|OPEN-AGENCY))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_RecomputeCapture:object{OuronetInfoV1.ClientInfo}
@@ -1059,7 +1059,7 @@
                 ["Operation: Recompute an agency's capture (permissionless; preserves oracle-ts)." "Executes via TS02-C3.AQP-DSA|C_RecomputeCapture."]
                 [(format "Agency {} capture recomputed on vault {}." [score-entity-id fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|RECOMPUTE-CAPTURE))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_SetOracleAuth:object{OuronetInfoV1.ClientInfo}
@@ -1070,7 +1070,7 @@
                 ["Operation: Authorize the delegated oracle key + arm the capture expiry." "Executes via TS02-C3.AQP-DSA|A_SetOracleAuth."]
                 [(format "Oracle authority set on vault {}." [fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|SET-ORACLE-AUTH))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_OracleWrite:object{OuronetInfoV1.ClientInfo}
@@ -1081,7 +1081,7 @@
                 ["Operation: Oracle writes an agency's daily {nodes, uptime} + recomputes its capture." "Executes via TS02-C3.AQP-DSA|A_OracleWrite."]
                 [(format "Oracle wrote nodes {} / uptime {} for agency {}." [nodes uptime score-entity-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|ORACLE-WRITE))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_ToggleExternalOracle:object{OuronetInfoV1.ClientInfo}
@@ -1094,7 +1094,7 @@
                  "Executes via TS02-C3.AQP-DSA|A_ToggleExternalOracle."]
                 [(format "Global external-oracle switch set to {}." [on])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_SetOracleValidity:object{OuronetInfoV1.ClientInfo}
@@ -1107,7 +1107,7 @@
                  "Executes via TS02-C3.AQP-DSA|A_SetOracleValidity."]
                 [(format "Global oracle-validity window set to {} seconds." [seconds])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_WithdrawRoyalty:object{OuronetInfoV1.ClientInfo}
@@ -1118,7 +1118,7 @@
                 ["Operation: Withdraw the whole royalty pool to the FVT owner." "Executes via TS02-C3.AQP-DSA|A_WithdrawRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} withdrawn to owner." [reward-dptf-id fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|WITHDRAW-ROYALTY))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_BurnRoyalty:object{OuronetInfoV1.ClientInfo}
@@ -1129,7 +1129,7 @@
                 ["Operation: Burn the whole royalty pool." "Executes via TS02-C3.AQP-DSA|A_BurnRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} burned." [reward-dptf-id fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|BURN-ROYALTY))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_FuelRoyalty:object{OuronetInfoV1.ClientInfo}
@@ -1140,7 +1140,7 @@
                 ["Operation: Fuel a swap pair with the whole royalty pool (no LP mint)." "Executes via TS02-C3.AQP-DSA|A_FuelRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} fueled into {}." [reward-dptf-id fvt-id swpair])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|FUEL-ROYALTY))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     (defun AQP-DSA|INFO_SetAgencyFee:object{OuronetInfoV1.ClientInfo}
@@ -1151,7 +1151,7 @@
                 ["Operation: Change a delegation agency's operator fee (reprices only future injects)." "Executes via TS02-C3.AQP-DSA|A_SetAgencyFee."]
                 [(format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|SET-AGENCY-FEE))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     ;;
@@ -1167,7 +1167,7 @@
                  "Executes via TS02-C3.MTX-AQP|C_2|Inject."]
                 [(format "2-step fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
     (defun AQP-MTX|INFO_2SweepRevokeAnchor:object{OuronetInfoV1.ClientInfo}
@@ -1180,7 +1180,7 @@
                  "Executes via TS02-C3.MTX-AQP|C_2|SweepRevokeAnchor."]
                 [(format "2-step swept + retired anchor {}." [anchor-id])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
     ;;{F4}  [CAP]

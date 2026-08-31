@@ -53,7 +53,7 @@
     ;;  [SIP|URC] - Simple Ignis Price >> dependent on a single trigger
     ;;
     ;;
-    ;;  [SKP|URC] - Simple Kadena Price 
+    ;;  [SKP|URC] - Simple Stoa Price 
     ;;
     ;;
     ;;  [INFO] - Informational URC Functions
@@ -82,7 +82,7 @@
                 [(format "Operation: Creates {} {} Sets on Account {}" [how-many-sets set-name])]
                 [(format "Successfully generated {} Class {} Sets (Nonce {}) of SFT Collection {} on Account {}" [how-many-sets set-class nonce id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -137,7 +137,7 @@
                 [(format "Operation: Creates a {} Set on Account {}" [set-name sa])]
                 [(format "Successfully generated Class {} Set (Nonce {}) of NFT Collection {} on Account {}" [set-class nonce id sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )

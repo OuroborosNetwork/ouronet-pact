@@ -44,8 +44,8 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 patron
                 (* (ref-DALOS::UR_UsagePrice "dptf") 7.0)
             )
@@ -62,22 +62,22 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -113,7 +113,7 @@
 (print "")
 ;;==== DPTF Tx 001 Issue 7 DPTFs Part 1|3 · 03 · gas echo ==== ====================================
 (print "--- [DPTF Tx 001 Issue 7 DPTFs Part 1|3 · 03 · gas echo] ---")
-(format "<<<<<<<STEP 001 Costs {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<STEP 001 Costs {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -133,8 +133,8 @@
         (patron:string KST.ANHD)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 patron
                 (* (ref-DALOS::UR_UsagePrice "dptf") 7.0)
             )
@@ -151,22 +151,22 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -201,7 +201,7 @@
 (print "")
 ;;==== DPTF Tx 002 Issue 7 DPTFs Part 2|3 · 03 · gas echo ==== ====================================
 (print "--- [DPTF Tx 002 Issue 7 DPTFs Part 2|3 · 03 · gas echo] ---")
-(format "<<<<<<<STEP 002 Costs {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<STEP 002 Costs {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -222,8 +222,8 @@
         (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 patron
                 (* (ref-DALOS::UR_UsagePrice "dptf") 21.0)
             )
@@ -248,22 +248,22 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -310,7 +310,7 @@
 (print "")
 ;;==== DPTF Tx 003 Issue 20 DPTFs Part 3|3 · 03 · gas echo ==== ===================================
 (print "--- [DPTF Tx 003 Issue 20 DPTFs Part 3|3 · 03 · gas echo] ---")
-(format "<<<<<<<STEP 003 Costs {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<STEP 003 Costs {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -385,7 +385,7 @@
 (print "")
 ;;==== DPTF Tx 004 Mint 10 mil of each token · 03 · gas echo ==== =================================
 (print "--- [DPTF Tx 004 Mint 10 mil of each token · 03 · gas echo] ---")
-(format "<<<<<<<STEP 004 Costs {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<STEP 004 Costs {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -427,7 +427,7 @@
 (print "")
 ;;==== SWP|TX 001 - Make 10k DWK · 03 · gas echo ==== =============================================
 (print "--- [SWP|TX 001 - Make 10k DWK · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 001 WrapKadena ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 001 WrapStoa ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -483,7 +483,7 @@
 (print "")
 ;;==== SWP|TX 002 - Coil 5k DLK · 03 · gas echo ==== ==============================================
 (print "--- [SWP|TX 002 - Coil 5k DLK · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 002 Coil DWK ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 002 Coil DWK ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -525,7 +525,7 @@
 (print "")
 ;;==== SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 03 · gas echo ==== ===========================
 (print "--- [SWP|TX 003 - Move 50k OURO from ANHD to AOZ · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 003 Transfer 50k OURO ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 003 Transfer 50k OURO ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -545,8 +545,8 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-SWP:module{SwapperV3} SWP)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -563,22 +563,22 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -610,7 +610,7 @@
 )
 (print "")
 (print "")
-(format "<<<<<<<SWP|TX 004 Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 004 Issue W|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -630,8 +630,8 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-SWP:module{SwapperV3} SWP)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -648,22 +648,22 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -701,7 +701,7 @@
 )
 (print "")
 (print "")
-(format "<<<<<<<SWP|TX 005 Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 005 Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -728,8 +728,8 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-SWP:module{SwapperV3} SWP)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.AOZT
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -744,22 +744,22 @@
                     (coin.TRANSFER 
                         "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -789,7 +789,7 @@
 )
 (print "")
 (print "")
-(format "<<<<<<<SWP|TX 006 Issue P|OURO-98c486052a51|PKOSON-98c486052a51 ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 006 Issue P|OURO-98c486052a51|PKOSON-98c486052a51 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -816,8 +816,8 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-SWP:module{SwapperV3} SWP)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.AOZT
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -832,22 +832,22 @@
                     (coin.TRANSFER 
                         "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:95a59029029524ebb250b2fafe6826ff88bb59c527d661cba3279d09a51d3bdf" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -880,7 +880,7 @@
 
 (print "")
 (print "")
-(format "<<<<<<<SWP|TX 007 Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 007 Issue S|PKOSON-98c486052a51|EKOSON-98c486052a51|AKOSON-98c486052a51 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -907,8 +907,8 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-SWP:module{SwapperV3} SWP)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -923,22 +923,22 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -968,7 +968,7 @@
 )
 (print "")
 (print "")
-(format "<<<<<<<SWP|TX 008 Issue P|OURO-98c486052a51|BUSD-98c486052a51 ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 008 Issue P|OURO-98c486052a51|BUSD-98c486052a51 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1010,7 +1010,7 @@
 (print "")
 ;;==== SWP|TX 009 - Mint 100 mil VST Origin · 03 · gas echo ==== ==================================
 (print "--- [SWP|TX 009 - Mint 100 mil VST Origin · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 009 Origin MInt VST ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 009 Origin MInt VST ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1037,8 +1037,8 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-SWP:module{SwapperV3} SWP)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -1053,22 +1053,22 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -1098,7 +1098,7 @@
 )
 (print "")
 (print "")
-(format "<<<<<<<SWP|TX 010 Issue P|OURO-98c486052a51|VST-98c486052a51 ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 010 Issue P|OURO-98c486052a51|VST-98c486052a51 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1133,8 +1133,8 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-SWP:module{SwapperV3} SWP)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -1149,22 +1149,22 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -1196,7 +1196,7 @@
 )
 (print "")
 (print "")
-(format "<<<<<<<SWP|TX 011 Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 011 Issue P|OURO-98c486052a51|BUSD-98c486052a51|TUSD-98c486052a51|VST-98c486052a51 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1290,7 +1290,7 @@
 (print "")
 ;;==== SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 03 · gas echo ==== ======================
 (print "--- [SWP|TX 012a - Issue Stable 7xUSD via defpact 0|2 · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 012a Issue Stable 7xUSD STEP 0|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 012a Issue Stable 7xUSD STEP 0|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1309,8 +1309,8 @@
 (let
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -1327,22 +1327,22 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -1355,7 +1355,7 @@
 (print "")
 ;;==== SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 03 · gas echo ==== ======================
 (print "--- [SWP|TX 012b - Issue Stable 7xUSD via defpact 1|2 · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 012b Issue Stable 7xUSD STEP 1|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 012b Issue Stable 7xUSD STEP 1|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1382,7 +1382,7 @@
 (print "")
 ;;==== SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 02 · gas echo ==== ======================
 (print "--- [SWP|TX 012c - Issue Stable 7xUSD via defpact 2|2 · 02 · gas echo] ---")
-(format "<<<<<<<SWP|TX 012c Issue Stable 7xUSD STEP 2|2 ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 012c Issue Stable 7xUSD STEP 2|2 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1402,8 +1402,8 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-SWP:module{SwapperV3} SWP)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal] 
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal] 
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -1420,22 +1420,22 @@
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b"
-                        (at 2 split-kda)
+                        (at 2 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e"
-                        (at 0 split-kda)
+                        (at 0 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k"
-                        (at 3 split-kda)
+                        (at 3 split-stoa)
                     )
                     (coin.TRANSFER 
                         "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" 
                         "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU"
-                        (at 1 split-kda)
+                        (at 1 split-stoa)
                     )
                 ] 
             }
@@ -1471,7 +1471,7 @@
 )
 (print "")
 (print "")
-(format "<<<<<<<SWP|TX 013 Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 013 Issue W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51 ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1594,7 +1594,7 @@
 (print "")
 ;;==== SWP|TX 014 - Enable Pools Functionality · 03 · gas echo ==== ===============================
 (print "--- [SWP|TX 014 - Enable Pools Functionality · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 014 Enable Pools Functionality ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 014 Enable Pools Functionality ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1661,7 +1661,7 @@
 (print "")
 ;;==== SWP|TX 015 - C2 Regression: Stable-Swap Newton Domain Guard · 03 · gas echo ==== =============
 (print "--- [SWP|TX 015 - C2 Regression: Stable-Swap Newton Domain Guard · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 015 C2 Regression ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 015 C2 Regression ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1738,7 +1738,7 @@
 (print "")
 ;;==== SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard · 03 · gas echo ====
 (print "--- [SWP|TX 015b - #72C Regression: Stable-Swap Inverse Newton Domain Guard · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 015b #72C Regression ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 015b #72C Regression ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1797,7 +1797,7 @@
 (print "")
 ;;==== SWP|TX 016 - C1 Reproduction: SmartSwap Best-Edge Selection · 03 · gas echo ==== ===============
 (print "--- [SWP|TX 016 - C1 Reproduction: SmartSwap Best-Edge Selection · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 016 C1 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 016 C1 Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1924,7 +1924,7 @@
 (print "")
 ;;==== SWP|TX 017 - C3 Reproduction: Zero-Fee Round-Trip Rounding Bias · 03 · gas echo ==== ===========
 (print "--- [SWP|TX 017 - C3 Reproduction: Zero-Fee Round-Trip Rounding Bias · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 017 C3 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 017 C3 Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -1978,7 +1978,7 @@
 (print "")
 ;;==== SWP|TX 018 - C7 Reproduction: Weight-Modification Guards · 03 · gas echo ==== ====================
 (print "--- [SWP|TX 018 - C7 Reproduction: Weight-Modification Guards · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 018 C7 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 018 C7 Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -2044,7 +2044,7 @@
 (print "")
 ;;==== SWP|TX 019 - C8 Reproduction: Amplifier-Update Guards · 03 · gas echo ==== ========================
 (print "--- [SWP|TX 019 - C8 Reproduction: Amplifier-Update Guards · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 019 C8 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 019 C8 Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -2086,7 +2086,7 @@
 (print "")
 ;;==== SWP|TX 020 - C9 Reproduction: MTX-SWP Issuance Registers SWP|LP · 03 · gas echo ==== ==============
 (print "--- [SWP|TX 020 - C9 Reproduction: MTX-SWP Issuance Registers SWP|LP · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 020 C9 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 020 C9 Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -2146,7 +2146,7 @@
 (print "")
 ;;==== SWP|TX 022 - H11 Reproduction: can-add Never Blocks Removal · 03 · gas echo ==== ===================
 (print "--- [SWP|TX 022 - H11 Reproduction: can-add Never Blocks Removal · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 022 H11 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 022 H11 Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -2170,8 +2170,8 @@
 ;;==== SWP|TX 023 - H6 Reproduction: Primality Gate · 02 · let / invocation ==== =========================
 (print "--- [SWP|TX 023 - H6 Reproduction: Primality Gate · 02 · let / invocation] ---")
 ;;Audit ref: Audit/SWP/ROUND-01-FINDINGS.md #H6 — SWP|C>DEFINE-PRIMORDIAL-POOL bound <primality> but never
-;;included it in the enforce fold; only 5 fully composable conditions (weighted, has-OURO, has-WKDA,
-;;has-LKDA, exactly-3-tokens) actually gated designation. Owner: primality also means exempt from
+;;included it in the enforce fold; only 5 fully composable conditions (weighted, has-OURO, has-WSTOA,
+;;has-SSTOA, exactly-3-tokens) actually gated designation. Owner: primality also means exempt from
 ;;low-liquidity gates / never autonomously disabled — the real guardrail here, silently unenforced.
 ;;
 ;;Attempted a live "lookalike pool" adversarial reproduction (same 3 tokens, different order, p=false)
@@ -2179,10 +2179,10 @@
 ;;issuing a same-token-set pool in a different order; hit "Pool already exists for given Tokens!" from
 ;;SWP::UEV_New/UEV_CheckAgainstMass (15_SWP.pact:1058-1122), which checks new token SETS against every
 ;;existing pool of the same category via pure containment (UEV_CheckAgainst uses `contains`, not
-;;positional equality) — completely order-independent. Once the real OURO|WKDA|LKDA pool exists, no
+;;positional equality) — completely order-independent. Once the real OURO|WSTOA|SSTOA pool exists, no
 ;;second pool sharing that token set can EVER be issued, in any order, with any weights. This confirms
 ;;the owner's assessment directly: the only theoretical exposure window was a one-time bootstrap race
-;;(front-running the very first OURO|WKDA|LKDA pool issuance, before the real one existed) — already
+;;(front-running the very first OURO|WSTOA|SSTOA pool issuance, before the real one existed) — already
 ;;closed on mainnet since the real pool was issued correctly first. Live adversarial reproduction against
 ;;the *current*, populated state is structurally impossible, not just hard to construct.
 (let
@@ -2200,7 +2200,7 @@
 (print "")
 ;;==== SWP|TX 023 - H6 Reproduction: Primality Gate · 03 · gas echo ==== ==================================
 (print "--- [SWP|TX 023 - H6 Reproduction: Primality Gate · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 023 H6 Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 023 H6 Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "")
 (print "")
 (print "===^^^===")
@@ -2224,8 +2224,8 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -2238,10 +2238,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -2264,7 +2264,7 @@
     )
 )
 (print "")
-(format "<<<<<<<SWP|TX 024a Issue S|OURO|AG ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 024a Issue S|OURO|AG ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2287,8 +2287,8 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (* (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp")) 3.0)
             )
@@ -2301,10 +2301,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -2333,7 +2333,7 @@
     )
 )
 (print "")
-(format "<<<<<<<SWP|TX 024a2 Throwaway Anchors ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 024a2 Throwaway Anchors ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2346,8 +2346,8 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -2360,10 +2360,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -2386,7 +2386,7 @@
     )
 )
 (print "")
-(format "<<<<<<<SWP|TX 024b Issue S|AG|AL ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 024b Issue S|AG|AL ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2399,8 +2399,8 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -2413,10 +2413,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -2439,7 +2439,7 @@
     )
 )
 (print "")
-(format "<<<<<<<SWP|TX 024c Issue S|AL|AU ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 024c Issue S|AL|AU ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2452,8 +2452,8 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -2466,10 +2466,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -2492,7 +2492,7 @@
     )
 )
 (print "")
-(format "<<<<<<<SWP|TX 024d Issue S|AU|BI ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 024d Issue S|AU|BI ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2505,8 +2505,8 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -2519,10 +2519,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -2545,7 +2545,7 @@
     )
 )
 (print "")
-(format "<<<<<<<SWP|TX 024e Issue S|BI|CO ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 024e Issue S|BI|CO ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2572,7 +2572,7 @@
 )
 (print "")
 (print "--- [SWP|TX 025 - Enable Chain Pools · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 025 Enable Chain Pools ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 025 Enable Chain Pools ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2614,7 +2614,7 @@
 )
 (print "")
 (print "--- [SWP|TX 026 - #13C Reproduction · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 026 #13C Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 026 #13C Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2627,8 +2627,8 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -2641,10 +2641,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -2676,7 +2676,7 @@
     (ref-TS01-C3::SWP|C_ToggleAddLiquidity KST.ANHD shortcut true)
     (ref-TS01-C3::SWP|C_ToggleSwapCapability KST.ANHD shortcut true)
 )
-(format "<<<<<<<SWP|TX 027 Issue+Enable Shortcut S|AG|CO ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 027 Issue+Enable Shortcut S|AG|CO ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2720,7 +2720,7 @@
 )
 (print "")
 (print "--- [SWP|TX 028 - #19H Reproduction · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 028 #19H Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 028 #19H Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2768,7 +2768,7 @@
 )
 (print "")
 (print "--- [SWP|TX 029 - #20H Reproduction · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 029 #20H Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 029 #20H Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2789,8 +2789,8 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -2803,10 +2803,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -2845,7 +2845,7 @@
 )
 (print "")
 (print "--- [SWP|TX 030 - #11C Reproduction · 04 · gas echo] ---")
-(format "<<<<<<<SWP|TX 030 #11C Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 030 #11C Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2895,7 +2895,7 @@
 )
 (print "")
 (print "--- [SWP|TX 031 - #21H Reproduction · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 031 #21H Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 031 #21H Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2925,7 +2925,7 @@
 )
 (print "")
 (print "--- [SWP|TX 032 - Principal Cap · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 032 Principal Cap ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 032 Principal Cap ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2967,7 +2967,7 @@
 )
 (print "")
 (print "--- [SWP|TX 033 - Principal Cap/Removal-Floor Reproduction · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 033 Principal Cap/Removal-Floor Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 033 Principal Cap/Removal-Floor Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -2980,8 +2980,8 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -2994,10 +2994,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -3024,7 +3024,7 @@
     )
 )
 (print "")
-(format "<<<<<<<SWP|TX 034 Issue P|HG|TE ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 034 Issue P|HG|TE ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -3087,8 +3087,8 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -3100,10 +3100,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -3128,8 +3128,8 @@
     (
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS01-C3:module{TalosStageOne_ClientThreeV3} TS01-C3)
-        (split-kda:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices
+        (split-stoa:[decimal]
+            (ref-DALOS::URC_SplitSTOAPrices
                 KST.ANHD
                 (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))
             )
@@ -3141,10 +3141,10 @@
             { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" ,
               "caps":
                 [
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-kda))
-                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-kda))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-stoa))
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-stoa))
                 ]
             }
         ]
@@ -3169,7 +3169,7 @@
 )
 (print "")
 (print "--- [SWP|TX 035 - Rotate Principal Reproduction · 04 · gas echo] ---")
-(format "<<<<<<<SWP|TX 035 Rotate Principal Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 035 Rotate Principal Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -3232,7 +3232,7 @@
 )
 (print "")
 (print "--- [SWP|TX 035a - Major-Principal Protection · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 035a Major-Principal Protection ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 035a Major-Principal Protection ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -3282,7 +3282,7 @@
 )
 (print "")
 (print "--- [SWP|TX 036 - #24H Reproduction · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 036 #24H Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 036 #24H Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)
@@ -3356,7 +3356,7 @@
 )
 (print "")
 (print "--- [SWP|TX 037 - #26M Reproduction · 03 · gas echo] ---")
-(format "<<<<<<<SWP|TX 037 #26M Reproduction ==> {} KDA GAS>>>>>>>" [(env-gas)])
+(format "<<<<<<<SWP|TX 037 #26M Reproduction ==> {} STOA GAS>>>>>>>" [(env-gas)])
 (print "===^^^===")
 (env-sigs [])
 (commit-tx)

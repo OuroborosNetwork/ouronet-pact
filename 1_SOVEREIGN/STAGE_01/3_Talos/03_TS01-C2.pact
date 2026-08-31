@@ -96,7 +96,7 @@
     (defun VST|C_ToggleTransferRoleHibernatedDPOF (patron:string s-dpof:string target:string toggle:bool))
     ;;
     ;;
-    ;;LQD (Liquid-Staking KDA) Functions
+    ;;LQD (Liquid-Staking STOA) Functions
     (defun LQD|C_UnwrapStoa (patron:string unwrapper:string amount:decimal))
     (defun LQD|C_WrapStoa (patron:string wrapper:string amount:decimal))
     ;;#13H fix: LQD|C_RegisterOuronetAccountForUrstoaHoldings removed (2026-08-27) - see
@@ -280,7 +280,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (ref-B|ATS::C_UpgradeBranding patron entity-id months)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
     )
@@ -308,7 +308,7 @@
                     (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 )
                 (ref-ATS::C_HOT-RBT|UpgradeBranding patron entity-id months)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
     )
@@ -343,7 +343,7 @@
                     )
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 (at "output" ico)
             )
         )
@@ -438,7 +438,7 @@
                     (collect:bool (at 0 (at "output" ico)))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XE_ConditionalFuelKDA collect)
+                (ref-TS01-A::XE_ConditionalFuelSTOA collect)
             )
         )
     )
@@ -1048,7 +1048,7 @@
                     (output-id:string (at 0 (at "output" ico)))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 [
                     (format "Succesfully generated a Frozen Link for the DPTF {}, issuing the Frozen DPTF {}" 
                         [dptf output-id]
@@ -1088,7 +1088,7 @@
                     (output-id:string (at 0 (at "output" ico)))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 [
                     (format "Succesfully generated a Reservation Link for the DPTF {}, issuing the Reserved DPTF {}" 
                         [dptf output-id]
@@ -1127,7 +1127,7 @@
                     (output-id:string (at 0 (at "output" ico)))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 [
                     (format "Succesfully generated a Vesting Link for the DPTF {}, issuing the Vested DPOF {}" 
                         [dptf output-id]
@@ -1166,7 +1166,7 @@
                     (output-id:string (at 0 (at "output" ico)))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 [
                     (format "Succesfully generated a Sleeping Link for the DPTF {}, issuing the Sleeping DPOF {}" 
                         [dptf output-id]
@@ -1202,7 +1202,7 @@
                     (output-id:string (at 0 (at "output" ico)))
                 )
                 (ref-IGNIS::C_Collect patron ico)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 [
                     (format "Succesfully generated a Hibernation Link for the DPTF {}, issuing the Hibernated DPTF {}" 
                         [dptf output-id]
@@ -1648,7 +1648,7 @@
     )
     (defun LQD|C_UnwrapUrStoa (patron:string unwrapper:string amount:decimal)
         @doc "Unwrapper is the Ouronet Account doing the Unwrapping. \
-            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work. \
+            \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
             \ account with the real signer's own (read-keyset \"ks\") immediately before this \
             \ call, the same pattern already used for native Stoa unwrap - there is no \
@@ -1672,7 +1672,7 @@
     )
     (defun LQD|C_WrapUrStoa (patron:string wrapper:string amount:decimal)
         @doc "Wrapper is the Ouronet Account doing the Wrapping. \
-            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work. \
+            \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
             \ account with the real signer's own (read-keyset \"ks\") immediately before this \
             \ call, the same pattern already used for native Stoa unwrap - there is no \

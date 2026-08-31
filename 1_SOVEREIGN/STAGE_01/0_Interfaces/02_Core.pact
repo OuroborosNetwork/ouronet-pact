@@ -84,7 +84,7 @@
     (defun DALOS|URCi_ControlSmartAccount:object{OutputCumulator} (account:string))
     (defun DALOS|URCi_RotateGovernor:object{OutputCumulator} (account:string))
     (defun DALOS|URCi_RotateGuard:object{OutputCumulator} (account:string))
-    (defun DALOS|URCi_RotateKadena:object{OutputCumulator} (account:string))
+    (defun DALOS|URCi_RotateStoa:object{OutputCumulator} (account:string))
     (defun DALOS|URCi_RotateSovereign:object{OutputCumulator} (account:string))
     (defun DALOS|URCi_UpdateEliteAccount:object{OutputCumulator} (patron:string))
     (defun DALOS|URCi_UpdateEliteAccountSquared:object{OutputCumulator} (patron:string))
@@ -101,13 +101,13 @@
     ;;
     (defun C_TransferDalosFuel (sender:string receiver:string amount:decimal))
     (defun C_Collect  (patron:string input-output-cumulator:object{OutputCumulator}))
-    (defun KDA|C_Collect (sender:string amount:decimal))
-    (defun KDA|C_CollectWT (sender:string amount:decimal trigger:bool))
+    (defun STOA|C_Collect (sender:string amount:decimal))
+    (defun STOA|C_CollectWT (sender:string amount:decimal trigger:bool))
     ;;
 )
 (interface IgnisCollectorV2
     @doc "Additive IGNIS surface — opt-in per consumer; does not replace IgnisCollectorV1."
-    (defun KDA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool))
+    (defun STOA|C_CollectWTEx (payer:string discount-account:string amount:decimal trigger:bool))
 )
 (interface OuronetInfoV1
     @doc "Holds Information Schemas"
@@ -118,7 +118,7 @@
         pre-text:[string]
         post-text:[string]
         ignis:object{ClientIgnisCosts}
-        kadena:object{ClientKadenaCosts}
+        stoa:object{ClientStoaCosts}
         output:list
     )
     (defschema ClientIgnisCosts
@@ -127,13 +127,13 @@
         ignis-need:decimal
         ignis-text:string
     )
-    (defschema ClientKadenaCosts
-        kadena-discount:decimal
-        kadena-full:decimal
-        kadena-need:decimal
-        kadena-split:[decimal]
-        kadena-targets:[string]
-        kadena-text:string
+    (defschema ClientStoaCosts
+        stoa-discount:decimal
+        stoa-full:decimal
+        stoa-need:decimal
+        stoa-split:[decimal]
+        stoa-targets:[string]
+        stoa-text:string
     )
     ;;
     ;;
@@ -148,19 +148,19 @@
     ;;
     ;;  [UR] Functions
     ;;
-    (defun OI|UR_KadenaTargets:[string] ())
+    (defun OI|UR_StoaTargets:[string] ())
     ;;
     ;;
     ;;  [UDC] Functions
     ;;
-    (defun OI|UDC_ClientInfo:object{ClientInfo} (a:[string] b:[string] c:object{ClientIgnisCosts} d:object{ClientKadenaCosts} e:list))
+    (defun OI|UDC_ClientInfo:object{ClientInfo} (a:[string] b:[string] c:object{ClientIgnisCosts} d:object{ClientStoaCosts} e:list))
     (defun OI|UDC_ClientIgnisCosts:object{ClientIgnisCosts} (a:decimal b:decimal c:decimal d:string))
-    (defun OI|UDC_ClientKadenaCosts:object{ClientKadenaCosts} (a:decimal b:decimal c:decimal d:[decimal] e:[string] f:string))
+    (defun OI|UDC_ClientStoaCosts:object{ClientStoaCosts} (a:decimal b:decimal c:decimal d:[decimal] e:[string] f:string))
         ;;
-    (defun OI|UDC_FullKadenaCosts:object{ClientKadenaCosts} (kfp:decimal))
-    (defun OI|UDC_KadenaCosts:object{ClientKadenaCosts} (patron:string kfp:decimal))
-    (defun OI|UDC_NoKadenaCosts:object{ClientKadenaCosts} ())
-    (defun OI|UDC_DynamicKadenaCost:object{ClientKadenaCosts} (patron:string kfp:decimal))
+    (defun OI|UDC_FullStoaCosts:object{ClientStoaCosts} (kfp:decimal))
+    (defun OI|UDC_StoaCosts:object{ClientStoaCosts} (patron:string kfp:decimal))
+    (defun OI|UDC_NoStoaCosts:object{ClientStoaCosts} ())
+    (defun OI|UDC_DynamicStoaCost:object{ClientStoaCosts} (patron:string kfp:decimal))
         ;;
     (defun OI|UDC_IgnisCosts:object{ClientIgnisCosts} (patron:string ifp:decimal))
     (defun OI|UDC_NoIgnisCosts:object{ClientIgnisCosts} ())
@@ -696,7 +696,7 @@
     (defun URD_ListActivatedApiKeys:[object] ())
     (defun URD_ListInactiveApiKeys:[object] ())
     ;;
-    ;; [INFO] UI previews — deploy/rename: STOA via KDA|C_CollectWTEx in TS01-C4
+    ;; [INFO] UI previews — deploy/rename: STOA via STOA|C_CollectWTEx in TS01-C4
     (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
         ( patron:string
           owner-account:string
@@ -762,7 +762,7 @@
     (defun URD_ListActivatedApiKeys:[object] ())
     (defun URD_ListInactiveApiKeys:[object] ())
     ;;
-    ;; [INFO] UI previews — deploy/rename: STOA via KDA|C_CollectWTEx; deactivate: IGNIS via C_Collect
+    ;; [INFO] UI previews — deploy/rename: STOA via STOA|C_CollectWTEx; deactivate: IGNIS via C_Collect
     (defun PYTHIA|INFO_DeployApiKey:object{OuronetInfoV1.ClientInfo}
         ( patron:string
           owner-account:string

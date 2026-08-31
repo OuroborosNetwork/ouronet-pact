@@ -682,7 +682,7 @@
         (aqp-class:integer 4)
         (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -801,7 +801,7 @@
         (aqp-class:integer 4)
         (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -978,7 +978,7 @@
         (aqp-class:integer 4)
         (pre-count:integer (length (ref-DPDC::URD_AccountNonces source dpnf-id false)))
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     (env-sigs
@@ -1592,7 +1592,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     ;; --- dedicated class-1 TF pool + TF score + vault (so its 3 legs are exactly ours) ---
@@ -1798,7 +1798,7 @@
         (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
         (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     ;; --- dedicated class-1 TF pool + TF score + vault; 2 scored legs (ben ANHD / EMMA) ---

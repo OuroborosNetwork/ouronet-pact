@@ -249,8 +249,8 @@
     ;;{F6}  [C]
     (defun DEMIPAD|C_Withdraw (patron:string asset-id:string type:integer destination:string)
         @doc "Withdraws all cumulated Tokens in the Launchpad, gathered through sale \
-            \ Type 1 = WKDA \
-            \ Type 2 = LKDA \
+            \ Type 1 = WSTOA \
+            \ Type 2 = SSTOA \
             \ Type 3 = OURO "
         (with-capability (P|TS)
             (let
@@ -393,7 +393,7 @@
                     (ref-SPARK:module{SparksV1} DEMIPAD-SPARK)
                 )
                 (ref-SPARK::C_BuySparks patron buyer sparks-amount iz-native max-cost)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
     )
@@ -427,7 +427,7 @@
                     (ref-SNAKES:module{SaleSnakesV1} DEMIPAD-SNAKES)
                 )
                 (ref-SNAKES::C_Acquire patron buyer nonce amount iz-native max-cost)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
     )
@@ -440,7 +440,7 @@
                     (ref-CUSTODIANS:module{SaleCustodiansV1} DEMIPAD-CUSTODIANS)
                 )
                 (ref-CUSTODIANS::C_Acquire patron buyer nonce amount iz-native max-cost)
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
             )
         )
     )
@@ -453,7 +453,7 @@
                     (ref-KPAY:module{StoicPayV2} DEMIPAD-STOICPAY)
                     (acquisition-text:string (ref-KPAY::C_BuyStoicPay patron buyer kpay-amount iz-native max-cost))
                 )
-                (ref-TS01-A::XB_DynamicFuelKDA)
+                (ref-TS01-A::XB_DynamicFuelSTOA)
                 acquisition-text
             )
         )

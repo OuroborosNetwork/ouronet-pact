@@ -127,7 +127,7 @@
         @doc "Computes DPTF unlock price (audit finding #27L / L9: doc said 'ATS', a copy- \
             \ paste from U_ATS - the code itself is a correct shared-core wrapper, not a \
             \ duplicate-logic bug). \
-            \ Outputs [virtual-gas-costs (IGNIS) native-gas-cost(KDA)]"
+            \ Outputs [virtual-gas-costs (IGNIS) native-gas-cost(STOA)]"
         (let
             (
                 (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)

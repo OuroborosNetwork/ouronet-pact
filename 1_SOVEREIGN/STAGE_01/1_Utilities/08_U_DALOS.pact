@@ -180,12 +180,12 @@
         )
     )
     (defun UC_GasCost (base-cost:decimal major:integer minor:integer native:bool)
-        @doc "Computes gas costs (ignis or kda) based on input <base-cost> and <minor> and <major> Elite Tier"
+        @doc "Computes gas costs (ignis or stoa) based on input <base-cost> and <minor> and <major> Elite Tier"
         (* (/ (- 100.0 (UC_GasDiscount major minor native)) 100.0) base-cost)
     )
     (defun UC_GasDiscount (major:integer minor:integer native:bool)
         @doc "Computes the discount applied to base gas cost \
-        \ Native <true> = 24.5% Reduction maximum at Tier 7.7 for KDA Costs \
+        \ Native <true> = 24.5% Reduction maximum at Tier 7.7 for STOA Costs \
         \ Not Native <false> = 49.5% Reduction maximum at Tier 7.7 for IGNIS Costs"
         (if (= major 0)
             0.0

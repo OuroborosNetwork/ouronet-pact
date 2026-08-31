@@ -359,7 +359,7 @@
         ;(format "Emma has {} Sleeping Vesta" [(ref-DPOF::UR_AccountSupply s-vst emma)])
         ;(format "AH has {} Sleeping Vesta" [(ref-DPOF::UR_AccountSupply s-vst patron)])
         (format "AH DWK supply is {}" [(ref-DPTF::UR_AccountSupply dwk patron)])
-        (format "AH Native KDA is {}" [(ref-coin::get-balance (ref-DALOS::UR_AccountKadena patron))])
+        (format "AH Native STOA is {}" [(ref-coin::get-balance (ref-DALOS::UR_AccountStoa patron))])
 
         ;(format "Emma Sleeping VST Units are: {}" [(ref-DPOF::UR_AccountUnit s-vst emma)])
     ]

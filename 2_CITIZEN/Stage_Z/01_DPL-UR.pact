@@ -16,8 +16,8 @@
     (defun URC_TrueFungibleAmountPrice:decimal (id:string amount:decimal price:decimal))
     (defun URC_PrimordialIDs:[string] ())
     (defun URC_PrimordialPrices:[decimal] ())
-    (defun URC_KadenaCollectionReceivers:[string] ())
-    (defun URC_SplitKdaPriceForReceivers (price:decimal))
+    (defun URC_StoaCollectionReceivers:[string] ())
+    (defun URC_SplitStoaPriceForReceivers (price:decimal))
     (defun URC_ReverseSwapOutputAmount:decimal (swpair:string output-id:string promille:decimal))
     (defun URC_SWPairCoreRead (swpair:string))
     (defun URC_MaxRecoveryAmount:decimal (ats:string recoverer:string))
@@ -323,34 +323,34 @@
                 (ignis:string (ref-DALOS::UR_IgnisID))
                 (auryn:string (ref-DALOS::UR_AurynID))
                 (elite-auryn:string (ref-DALOS::UR_EliteAurynID))
-                (wkda:string (ref-DALOS::UR_WrappedStoaID))
-                (lkda:string (ref-DALOS::UR_SilverStoaID))
+                (wstoa:string (ref-DALOS::UR_WrappedStoaID))
+                (sstoa:string (ref-DALOS::UR_SilverStoaID))
             )
-            [ouro ignis auryn elite-auryn wkda lkda]
+            [ouro ignis auryn elite-auryn wstoa sstoa]
         )
     )
     (defun URC_PrimordialPrices:[decimal] ()
         @doc "Returns the Prices for Ouronet Primordial Tokens \
-        \ [WKDA LKDA OURO AURYN ELITEAURYN]"
+        \ [WSTOA SSTOA OURO AURYN ELITEAURYN]"
         (let
             (
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 (p-ids:[string] (URC_PrimordialIDs))
                 (ouro:string (at 0 p-ids))
                 (ignis:string (at 1 p-ids))
                 (auryn:string (at 2 p-ids))
                 (elite-auryn:string (at 3 p-ids))
-                (wkda:string (at 4 p-ids))
-                (lkda:string (at 5 p-ids))
+                (wstoa:string (at 4 p-ids))
+                (sstoa:string (at 5 p-ids))
                 ;;
-                (wkda:string (ref-DALOS::UR_WrappedStoaID))
-                (lkda:string (ref-DALOS::UR_SilverStoaID))
+                (wstoa:string (ref-DALOS::UR_WrappedStoaID))
+                (sstoa:string (ref-DALOS::UR_SilverStoaID))
                 (ouro:string (ref-DALOS::UR_OuroborosID))
                 (auryn:string (ref-DALOS::UR_AurynID))
                 (elite-auryn:string (ref-DALOS::UR_EliteAurynID))
@@ -364,31 +364,31 @@
                 (dollar-ignis:decimal 0.01)
                 (dollar-auryn:decimal (floor (* auryndex-value dollar-ouro) 24))
                 (dollar-elite-auryn:decimal (floor (* elite-auryndex-value dollar-auryn) 24))
-                (dollar-wkda:decimal (ref-SWPI::URC_TokenDollarPrice wkda kda-pid))
-                (dollar-lkda:decimal (ref-SWPI::URC_TokenDollarPrice lkda kda-pid))
+                (dollar-wstoa:decimal (ref-SWPI::URC_TokenDollarPrice wstoa stoa-pid))
+                (dollar-sstoa:decimal (ref-SWPI::URC_TokenDollarPrice sstoa stoa-pid))
             )
-            [dollar-ouro dollar-ignis dollar-auryn dollar-elite-auryn dollar-wkda dollar-lkda]
+            [dollar-ouro dollar-ignis dollar-auryn dollar-elite-auryn dollar-wstoa dollar-sstoa]
         )
     )
-    (defun URC_KadenaCollectionReceivers:[string] ()
+    (defun URC_StoaCollectionReceivers:[string] ()
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (r1:string (ref-DALOS::UR_AccountKadena (at 2 (ref-DALOS::UR_DemiurgoiID))))
-                (r2:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|DALOS|SC_NAME)))
-                (r3:string (ref-DALOS::UR_AccountKadena (at 1 (ref-DALOS::UR_DemiurgoiID))))
-                (r4:string (ref-DALOS::UR_AccountKadena (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
+                (r1:string (ref-DALOS::UR_AccountStoa (at 2 (ref-DALOS::UR_DemiurgoiID))))
+                (r2:string (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|DALOS|SC_NAME)))
+                (r3:string (ref-DALOS::UR_AccountStoa (at 1 (ref-DALOS::UR_DemiurgoiID))))
+                (r4:string (ref-DALOS::UR_AccountStoa (ref-DALOS::GOV|OUROBOROS|SC_NAME)))
             )
             [r1 r2 r3 r4]
         )
     )
-    (defun URC_SplitKdaPriceForReceivers (price:decimal)
+    (defun URC_SplitStoaPriceForReceivers (price:decimal)
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
                 (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
-                (kp:integer (ref-U|CT::CT_KDA_PRECISION))
-                (receivers:[string] (URC_KadenaCollectionReceivers))
+                (kp:integer (ref-U|CT::CT_STOA_PRECISION))
+                (receivers:[string] (URC_StoaCollectionReceivers))
                 (prices:[decimal] (ref-U|DALOS::UC_TenTwentyThirtyFourtySplit price kp))
             )
             {"10%-r"    : (at 0 receivers)
@@ -417,7 +417,7 @@
     (defun URC_SWPairCoreRead (swpair:string)
         (let
             (
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
@@ -427,7 +427,7 @@
                 (pool-value:[decimal] (ref-SWPI::URC_PoolValue swpair))
                 (pool-value-in-dwk:decimal (at 0 pool-value))
                 (lp-value-in-dwk:decimal (at 1 pool-value))
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
             )
             {"pool-type"                        : (at 0 ptp)
             ,"pool-type-word"                   : (at 1 ptp)
@@ -438,8 +438,8 @@
             ,"special-fee-targets"              : (ref-SWP::UR_SpecialFeeTargets swpair)
             ,"pool-value-in-dwk"                : pool-value-in-dwk
             ,"lp-value-in-dwk"                  : lp-value-in-dwk
-            ,"pool-value-pid"                   : (UC_ConvertPrice (* pool-value-in-dwk kda-pid))
-            ,"lp-value-pid"                     : (UC_ConvertPrice (* lp-value-in-dwk kda-pid))
+            ,"pool-value-pid"                   : (UC_ConvertPrice (* pool-value-in-dwk stoa-pid))
+            ,"lp-value-pid"                     : (UC_ConvertPrice (* lp-value-in-dwk stoa-pid))
             }
         )
     )
@@ -502,7 +502,7 @@
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-ELITE:module{EliteV1} ELITE)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
@@ -514,10 +514,10 @@
                 (OuroID:string "OURO-8Nh-JO8JO4F5")
                 (AurynID:string "AURYN-8Nh-JO8JO4F5")
                 (EAurynID:string "ELITEAURYN-8Nh-JO8JO4F5")
-                (WkdaID:string "WSTOA-8Nh-JO8JO4F5")
-                (LkdaID:string "SSTOA-8Nh-JO8JO4F5")
-                (PkdaID:string "GSTOA-8Nh-JO8JO4F5")
-                (HpkdaID:string "H|GSTOA-8Nh-JO8JO4F5")
+                (WstoaID:string "WSTOA-8Nh-JO8JO4F5")
+                (SstoaID:string "SSTOA-8Nh-JO8JO4F5")
+                (PstoaID:string "GSTOA-8Nh-JO8JO4F5")
+                (HpstoaID:string "H|GSTOA-8Nh-JO8JO4F5")
                 ;;
                 (Auryndex:string "Auryndex-O136CBn22ncY")
                 (EAuryndex:string "EliteAuryndex-O136CBn22ncY")
@@ -532,7 +532,7 @@
                 (price-ouro:decimal (ref-SWPI::URC_OuroPrimordialPrice))
                 (price-auryn:decimal (floor (* price-ouro ih-auryndex) 24))
                 (price-elite-auryn:decimal (floor (* price-auryn ih-elite-auryndex) 24))
-                (price-wstoa:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (price-wstoa:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 (price-sstoa:decimal (floor (* price-wstoa ih-liquid) 24))
                 (price-gstoa:decimal (floor (* price-sstoa ih-kori) 24))
                 ;;
@@ -592,8 +592,8 @@
             ,"z2-v3"                            : (UC_FormatIndex ih-liquid)
             ,"z2-t4"                            : (ref-ATS::UR_IndexName KoriIndex)
             ,"z2-v4"                            : (UC_FormatIndex ih-kori)
-            ,"z2-t5"                            : (format "{} Global Nonces:" [HpkdaID])
-            ,"z2-v5"                            : (ref-DPOF::UR_NoncesUsed HpkdaID)
+            ,"z2-t5"                            : (format "{} Global Nonces:" [HpstoaID])
+            ,"z2-v5"                            : (ref-DPOF::UR_NoncesUsed HpstoaID)
             ;;Zone 3
             ,"z3-t1"                            : "Ouronet Accounts:"
             ,"z3-v1"                            : (length (keys DALOS.DALOS|AccountTable))
@@ -703,7 +703,7 @@
                         [(* (- 1.0 ignis-discount) 100.0) (* ignis-discount 100.0)]
                     )
                 )
-                (stoa-discount:decimal (ref-DALOS::URC_KadenaGasDiscount account))
+                (stoa-discount:decimal (ref-DALOS::URC_StoaGasDiscount account))
                 (stoa-discount-text:string
                     (format 
                         "STOA Discount {}% (You pay only {}% of STOA costs)"
@@ -748,7 +748,7 @@
                 (wallet-wurstoa:decimal (ref-DPTF::UR_AccountSupply wurstoa-id account))
                 (ref-coin:module{stoa-ns.stoic-fungible-v1} coin)
                 (ref-urcoin:module{stoa-ns.ur-stoic-fungible-v1} coin)
-                (payment-key:string (ref-DALOS::UR_AccountKadena account))
+                (payment-key:string (ref-DALOS::UR_AccountStoa account))
                 (urstoa-vault-earnings:decimal (coin.URC_URV|ClaimableRewards payment-key))
                 (urstoa-vault:string "c:GjYbBFM0vxMs5FcmnFUW-LFoycd3Ef8wuP28vR6FG3k")
                 (urstoa-vault-stoa-supply:decimal (ref-coin::UR_Balance urstoa-vault))
@@ -1031,13 +1031,13 @@
         @doc "Supports native DPTFs, Frozen DPTFs, and Reserved DPTFs"
         (let
             (
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
                 (ignis-id:string (ref-DALOS::UR_IgnisID))
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 (dptf-id:string (ref-DPTF::URC_Parent dptf))
                 (wallet-supply:decimal (ref-DPTF::UR_AccountSupply dptf account))
                 (dptf-supply:decimal (ref-DPTF::UR_Supply dptf))
@@ -1110,7 +1110,7 @@
             )
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                     (ref-SWP:module{SwapperV3} SWP)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
@@ -1121,7 +1121,7 @@
                             lp-id-frozen-counterpart
                         )
                     )
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (wallet-supply:decimal (ref-DPTF::UR_AccountSupply lp-id-used account))
                     (lp-supply:decimal (ref-DPTF::UR_Supply lp-id-used))
                     ;;
@@ -1186,11 +1186,11 @@
     (defun URC_0009a_OrtoFungibleEntry (account:string dpof-id:string)
         (let
             (
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 (ref-SWPI:module{SwapperIssueV3} SWPI)
                 ;;
-                (stoa-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 ;;
                 (dptf-id:string (ref-DPOF::URC_Parent dpof-id))
                 (wallet-supply:decimal (ref-DPOF::UR_AccountSupply dpof-id account))
@@ -1257,11 +1257,11 @@
             (enforce (!= BAR lp-id-sleeping-counterpart) "Sleeping LP must be defined for this usage")
             (let
                 (
-                    (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                    (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                     (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                     (ref-SWPI:module{SwapperIssueV3} SWPI)
                     ;;
-                    (stoa-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                    (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                     (wallet-supply:decimal (ref-DPOF::UR_AccountSupply lp-id-sleeping-counterpart account))
                     (lp-supply:decimal(ref-DPOF::UR_Supply lp-id-sleeping-counterpart))
                     (wallet-nonces:[integer] (ref-DPOF::URD_AccountNonces account lp-id-sleeping-counterpart))
@@ -2229,7 +2229,7 @@
                 )
                 (payment-key:string
                     (if iz-activated
-                        (ref-DALOS::UR_AccountKadena account)
+                        (ref-DALOS::UR_AccountStoa account)
                         BAR
                     )
                 )
@@ -2263,7 +2263,7 @@
                 )
                 (stoa-d
                     (if iz-activated
-                        (ref-DALOS::URC_KadenaGasDiscount account)
+                        (ref-DALOS::URC_StoaGasDiscount account)
                         false
                     )
                 )
@@ -2429,17 +2429,17 @@
                 )
                 (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
                 (kfp:decimal (ref-DALOS::UR_UsagePrice "standard"))
-                (no-costs:object{OuronetInfoV1.ClientKadenaCosts} (ref-I|OURONET::OI|UDC_NoKadenaCosts))
-                (stoa-costs:object{OuronetInfoV1.ClientKadenaCosts}
+                (no-costs:object{OuronetInfoV1.ClientStoaCosts} (ref-I|OURONET::OI|UDC_NoStoaCosts))
+                (stoa-costs:object{OuronetInfoV1.ClientStoaCosts}
                     (if iz-activated
                         no-costs
-                        (if is-stoa-zero no-costs (ref-I|OURONET::OI|UDC_FullKadenaCosts kfp))
+                        (if is-stoa-zero no-costs (ref-I|OURONET::OI|UDC_FullStoaCosts kfp))
                     )
                 )
             )
             {"global-administrative-pause"      : (ref-DALOS::UR_GAP)
             ,"iz-selected-activated"            : iz-activated
-            ,"stoa-costs"                       : (at "kadena-need" stoa-costs)}
+            ,"stoa-costs"                       : (at "stoa-need" stoa-costs)}
         )
     )
     (defun URC_0030_StoicPay (account:string)
@@ -2530,11 +2530,11 @@
             ;;
             ;;Single Costs
             ,"kpay-pid"             : (at "pid" single-costs)
-            ,"kpay-wkda"            : (at "wkda" single-costs)
+            ,"kpay-wstoa"            : (at "wstoa" single-costs)
             ;;
             ;;Native Buy Maxes
             ,"native-buy-max"       : (ref-SP::URC_GetMaxBuy account true)
-            ,"wkda-buy-max"         : (ref-SP::URC_GetMaxBuy account false)
+            ,"wstoa-buy-max"         : (ref-SP::URC_GetMaxBuy account false)
             ;;
             ;;Misc and Direct Values
             ,"kpay-id"              : KpayID
@@ -2655,7 +2655,7 @@
                 (elite-auryn-dispo-locked:bool (< ouro-balance 0.0))
                 ;;
                 (ignis-cost-multiplier:decimal (ref-DALOS::URC_IgnisGasDiscount account))
-                (stoa-cost-multiplier:decimal (ref-DALOS::URC_KadenaGasDiscount account))
+                (stoa-cost-multiplier:decimal (ref-DALOS::URC_StoaGasDiscount account))
                 (ignis-discount-percent:decimal (ref-U|DALOS::UC_GasDiscount major minor false))
                 (stoa-discount-percent:decimal (ref-U|DALOS::UC_GasDiscount major minor true))
                 ;; DEX LP/special/boost fees use the IGNIS (non-native) gas curve — SWPI.URC_EliteFeeReduction

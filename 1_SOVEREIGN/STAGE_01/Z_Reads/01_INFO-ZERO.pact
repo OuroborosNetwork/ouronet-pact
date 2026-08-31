@@ -18,7 +18,7 @@
     (defun DALOS-INFO|URC_DeployStandardAccount:object{OuronetInfoV1.ClientInfo} (account:string))
     (defun DALOS-INFO|URC_RotateGovernor:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
     (defun DALOS-INFO|URC_RotateGuard:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
-    (defun DALOS-INFO|URC_RotateKadena:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_RotateStoa:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
     (defun DALOS-INFO|URC_RotateSovereign:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
     (defun DALOS-INFO|URC_UpdateEliteAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
     (defun DALOS-INFO|URC_UpdateEliteAccountSquared:object{OuronetInfoV1.ClientInfo} (patron:string sender:string receiver:string))
@@ -143,7 +143,7 @@
                 ["Operation: Execute Smart Account Control."]
                 [(format "Smart Ouronet Account {} controlled succesfully" [sa])]
                 (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -163,7 +163,7 @@
                 ["Operation: Deploy a Smart Ouronet Account."]
                 [(format "Smart Ouronet Account {} deployed succesfully" [sa])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (if is-stoa-zero (ref-I|OURONET::OI|UDC_NoKadenaCosts) (ref-I|OURONET::OI|UDC_FullKadenaCosts kfp))
+                (if is-stoa-zero (ref-I|OURONET::OI|UDC_NoStoaCosts) (ref-I|OURONET::OI|UDC_FullStoaCosts kfp))
                 []
             )
         )
@@ -183,7 +183,7 @@
                 ["Operation: Deploy a Standard Ouronet Account."]
                 [(format "Standard Ouronet Account {} deployed succesfully" [sa])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (if is-stoa-zero (ref-I|OURONET::OI|UDC_NoKadenaCosts) (ref-I|OURONET::OI|UDC_FullKadenaCosts kfp))
+                (if is-stoa-zero (ref-I|OURONET::OI|UDC_NoStoaCosts) (ref-I|OURONET::OI|UDC_FullStoaCosts kfp))
                 []
             )
         )
@@ -203,7 +203,7 @@
                 ["Operation: Rotate the Governor-Guard of an Ouronet Account."]
                 [(format "Ouronet Account {} Governor-Guard rotated succesfully!" [sa])]
                 (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -223,12 +223,12 @@
                 ["Operation: Rotate the Primary-Guard of an Ouronet Account."]
                 [(format "Ouronet Account {} Primary-Guard rotated succesfully!" [sa])]
                 (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
     )
-    (defun DALOS-INFO|URC_RotateKadena:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun DALOS-INFO|URC_RotateStoa:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -236,14 +236,14 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateKadena account)))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateStoa account)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
-                ["Operation: Rotate the Attached KDA-Address of an Ouronet Account."]
-                [(format "Ouronet Account {} Attached Kadena-Address rotated succesfully!" [sa])]
+                ["Operation: Rotate the Attached STOA-Address of an Ouronet Account."]
+                [(format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [sa])]
                 (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -263,7 +263,7 @@
                 ["Operation: Rotate the Sovereign of a Smart Ouronet Account."]
                 [(format "Smart Ouronet Account {} Sovereign rotated succesfully!" [sa])]
                 (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -283,7 +283,7 @@
                 ["Operation: Update Elite Account Data for a single Ouronet Account"]
                 [(format "Elite Account Data for {} updated succesfully!" [sa])]
                 (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
@@ -304,7 +304,7 @@
                 ["Operation: Update Elite Account Data for a two Ouronet Accounts"]
                 [(format "Elite Account Data for {} and {} updated succesfully!" [sa1 sa2])]
                 (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
-                (ref-I|OURONET::OI|UDC_NoKadenaCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )

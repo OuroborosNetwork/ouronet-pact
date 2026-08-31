@@ -167,8 +167,8 @@
         (defconst KADN_NAME_0003 "k:a3506391811789fe88c4b8507069016eeb9946f3cb6d0b6214e700c343187c98")
         (defconst KADN_PBKY_0003 (drop 2 KADN_NAME_0003))
         (defconst DPTS_NAME_0003 "Σ.śκν9₿ŻşYЙΣJΘÊO9jпF₿wŻ¥уPэõΣÑïoγΠθßÙzěŃ∇éÖиțșφΦτşэßιBιśiĘîéòюÚY$êFЬŤØ$868дyβT0ςъëÁwRγПŠτËMĚRПMaäЗэiЪiςΨoÞDŮěŠβLé4čØHπĂŃŻЫΣÀmăĐЗżłÄăiĞ₿йÎEσțłGΛЖΔŞx¥ÁiÙNğÅÌlγ¢ĎwдŃ")
-        (defconst KADENALS DPTS_NAME_0003)
-        (defconst DPTS_PBKY_0003 "PK_KadenaLiquidStaking")
+        (defconst STOALS DPTS_NAME_0003)
+        (defconst DPTS_PBKY_0003 "PK_StoaLiquidStaking")
 
         (defconst KADN_NAME_0004 "k:89faf537ec7282d55488de28c454448a20659607adc52f875da30a4fd4ed2d12")
         (defconst KADN_PBKY_0004 (drop 2 KADN_NAME_0004))
@@ -246,17 +246,17 @@
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
     (env-data
         {
-            "KEY_KDA_AncientHodler": { "keys": [KC.KADN_PBKY_0000]},
-            "KEY_KDA_Florian": { "keys": [KC.KADN_PBKY_000a]},
-            "KEY_KDA_Emma": { "keys": [KC.KADN_PBKY_000b]},
-            "KEY_KDA_Byta": { "keys": [KC.KADN_PBKY_000c]},
-            "KEY_KDA_Lumy": { "keys": [KC.KADN_PBKY_000d]},
-            "KEY_KDA_Coca": { "keys": [KC.KADN_PBKY_000e]},
-            "KEY_KDA_Kiss": { "keys": [KC.KADN_PBKY_000f]},
-            "KEY_KDA_Plcs": { "keys": [KC.KADN_PBKY_000g]},
-            "KEY_KDA_Nani": { "keys": [KC.KADN_PBKY_000h]},
-            "KEY_KDA_AOZ": { "keys": [KC.KADN_PBKY_000i]},
-            "KEY_KDA_BM": { "keys": [KC.KADN_PBKY_000j]}
+            "KEY_STOA_AncientHodler": { "keys": [KC.KADN_PBKY_0000]},
+            "KEY_STOA_Florian": { "keys": [KC.KADN_PBKY_000a]},
+            "KEY_STOA_Emma": { "keys": [KC.KADN_PBKY_000b]},
+            "KEY_STOA_Byta": { "keys": [KC.KADN_PBKY_000c]},
+            "KEY_STOA_Lumy": { "keys": [KC.KADN_PBKY_000d]},
+            "KEY_STOA_Coca": { "keys": [KC.KADN_PBKY_000e]},
+            "KEY_STOA_Kiss": { "keys": [KC.KADN_PBKY_000f]},
+            "KEY_STOA_Plcs": { "keys": [KC.KADN_PBKY_000g]},
+            "KEY_STOA_Nani": { "keys": [KC.KADN_PBKY_000h]},
+            "KEY_STOA_AOZ": { "keys": [KC.KADN_PBKY_000i]},
+            "KEY_STOA_BM": { "keys": [KC.KADN_PBKY_000j]}
         }
     )
     ;;
@@ -286,17 +286,17 @@
         )
         ;; `alice` on Stoa root `coin` is created in `00_StoaSandbox/stoa-env/init-phase-06-test-accounts.repl`.
         ;; Idempotent: read-only `try` + `details`; `if` needs bool — missing account iff `try` yields default `false`.
-        (if (= (try false (ref-coin::details KC.KADN_NAME_0000)) false) (ref-coin::create-account KC.KADN_NAME_0000 (read-keyset "KEY_KDA_AncientHodler")) "")  ;;Fuel KDA
-        (if (= (try false (ref-coin::details KC.KADN_NAME_000a)) false) (ref-coin::create-account KC.KADN_NAME_000a (read-keyset "KEY_KDA_Florian")) "")
-        (if (= (try false (ref-coin::details KC.KADN_NAME_000b)) false) (ref-coin::create-account KC.KADN_NAME_000b (read-keyset "KEY_KDA_Emma")) "")           ;;Fuel KDA
-        (if (= (try false (ref-coin::details KC.KADN_NAME_000c)) false) (ref-coin::create-account KC.KADN_NAME_000c (read-keyset "KEY_KDA_Byta")) "")
-        (if (= (try false (ref-coin::details KC.KADN_NAME_000d)) false) (ref-coin::create-account KC.KADN_NAME_000d (read-keyset "KEY_KDA_Lumy")) "")
-        (if (= (try false (ref-coin::details KC.KADN_NAME_000e)) false) (ref-coin::create-account KC.KADN_NAME_000e (read-keyset "KEY_KDA_Coca")) "")
-        (if (= (try false (ref-coin::details KC.KADN_NAME_000f)) false) (ref-coin::create-account KC.KADN_NAME_000f (read-keyset "KEY_KDA_Kiss")) "")
-        (if (= (try false (ref-coin::details KC.KADN_NAME_000g)) false) (ref-coin::create-account KC.KADN_NAME_000g (read-keyset "KEY_KDA_Plcs")) "")
-        (if (= (try false (ref-coin::details KC.KADN_NAME_000h)) false) (ref-coin::create-account KC.KADN_NAME_000h (read-keyset "KEY_KDA_Nani")) "")
-        (if (= (try false (ref-coin::details KC.KADN_NAME_000i)) false) (ref-coin::create-account KC.KADN_NAME_000i (read-keyset "KEY_KDA_AOZ")) "")            ;;Fuel KDA
-        (if (= (try false (ref-coin::details KC.KADN_NAME_000j)) false) (ref-coin::create-account KC.KADN_NAME_000j (read-keyset "KEY_KDA_BM")) "")             ;;Fuel KDA
+        (if (= (try false (ref-coin::details KC.KADN_NAME_0000)) false) (ref-coin::create-account KC.KADN_NAME_0000 (read-keyset "KEY_STOA_AncientHodler")) "")  ;;Fuel STOA
+        (if (= (try false (ref-coin::details KC.KADN_NAME_000a)) false) (ref-coin::create-account KC.KADN_NAME_000a (read-keyset "KEY_STOA_Florian")) "")
+        (if (= (try false (ref-coin::details KC.KADN_NAME_000b)) false) (ref-coin::create-account KC.KADN_NAME_000b (read-keyset "KEY_STOA_Emma")) "")           ;;Fuel STOA
+        (if (= (try false (ref-coin::details KC.KADN_NAME_000c)) false) (ref-coin::create-account KC.KADN_NAME_000c (read-keyset "KEY_STOA_Byta")) "")
+        (if (= (try false (ref-coin::details KC.KADN_NAME_000d)) false) (ref-coin::create-account KC.KADN_NAME_000d (read-keyset "KEY_STOA_Lumy")) "")
+        (if (= (try false (ref-coin::details KC.KADN_NAME_000e)) false) (ref-coin::create-account KC.KADN_NAME_000e (read-keyset "KEY_STOA_Coca")) "")
+        (if (= (try false (ref-coin::details KC.KADN_NAME_000f)) false) (ref-coin::create-account KC.KADN_NAME_000f (read-keyset "KEY_STOA_Kiss")) "")
+        (if (= (try false (ref-coin::details KC.KADN_NAME_000g)) false) (ref-coin::create-account KC.KADN_NAME_000g (read-keyset "KEY_STOA_Plcs")) "")
+        (if (= (try false (ref-coin::details KC.KADN_NAME_000h)) false) (ref-coin::create-account KC.KADN_NAME_000h (read-keyset "KEY_STOA_Nani")) "")
+        (if (= (try false (ref-coin::details KC.KADN_NAME_000i)) false) (ref-coin::create-account KC.KADN_NAME_000i (read-keyset "KEY_STOA_AOZ")) "")            ;;Fuel STOA
+        (if (= (try false (ref-coin::details KC.KADN_NAME_000j)) false) (ref-coin::create-account KC.KADN_NAME_000j (read-keyset "KEY_STOA_BM")) "")             ;;Fuel STOA
         ;;
         ;;
         ;;Fuel Accounts:

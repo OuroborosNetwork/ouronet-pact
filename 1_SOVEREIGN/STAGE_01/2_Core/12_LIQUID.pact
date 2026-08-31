@@ -6,7 +6,7 @@
     @doc "Exposes the functions needed for Stoa Liquid Staking, Wrap and Unwrap STOA \
         \ as well as their URSTOA Counterparts"
     ;;
-    (defun GOV|LIQUID|SC_KDA-NAME ())
+    (defun GOV|LIQUID|SC_STOA-NAME ())
     (defun GOV|LIQUID|GUARD ())
     ;;
     ;;  [UR]
@@ -19,7 +19,7 @@
     ;;
     ;;  [A]
     ;;
-    (defun A_MigrateLiquidFunds:decimal (migration-target-kda-account:string))
+    (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string))
     ;;
     ;;  [C]
     ;;
@@ -49,7 +49,7 @@
     ;;
     (defconst LIQUID|SC_KEY         (GOV|LiquidKey))
     (defconst LIQUID|SC_NAME        (GOV|LIQUID|SC_NAME))
-    (defconst LIQUID|SC_KDA-NAME    (GOV|LIQUID|SC_KDA-NAME))
+    (defconst LIQUID|SC_STOA-NAME    (GOV|LIQUID|SC_STOA-NAME))
     ;;{G2}
     (defcap GOV ()                  (compose-capability (GOV|LIQUID_ADMIN)))
     (defcap GOV|LIQUID_ADMIN ()
@@ -66,14 +66,14 @@
         true
     )
     (defcap LIQUID|NATIVE-AUTOMATIC ()
-        @doc "Autonomic management of <kadena-konto> of LIQUID Smart Account"
+        @doc "Autonomic management of <stoa-konto> of LIQUID Smart Account"
         true
     )
     ;;{G3}
     (defun GOV|Demiurgoi ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|Demiurgoi)))
     (defun GOV|LiquidKey ()         (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|LiquidKey)))
     (defun GOV|LIQUID|SC_NAME ()    (let ((ref-DALOS:module{OuronetDalosV1} DALOS)) (ref-DALOS::GOV|LIQUID|SC_NAME)))
-    (defun GOV|LIQUID|SC_KDA-NAME () (create-principal (GOV|LIQUID|GUARD)))
+    (defun GOV|LIQUID|SC_STOA-NAME () (create-principal (GOV|LIQUID|GUARD)))
     (defun GOV|LIQUID|GUARD ()      (create-capability-guard (LIQUID|NATIVE-AUTOMATIC)))
     ;;
     ;;<====>
@@ -170,17 +170,17 @@
     ;;{C2}
     ;;{C3}
     ;;{C4}
-    (defcap GOV|MIGRATE (migration-target-kda-account:string)
+    (defcap GOV|MIGRATE (migration-target-stoa-account:string)
         @event
         (let
             (
                 (ref-coin:module{stoa-ns.fungible-v1} coin)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (target-balance:decimal (ref-coin::get-balance migration-target-kda-account))
+                (target-balance:decimal (ref-coin::get-balance migration-target-stoa-account))
                 (gap:bool (ref-DALOS::UR_GAP))
             )
             (enforce gap (format "Migration can only be executed when Global Administrative Pause is offline"))
-            (enforce (= target-balance 0.0) "Migration can only be executed to an empty kda account")
+            (enforce (= target-balance 0.0) "Migration can only be executed to an empty stoa account")
             (compose-capability (GOV|LIQUID_ADMIN))
             (compose-capability (LIQUID|NATIVE-AUTOMATIC))
         )
@@ -233,8 +233,8 @@
             (
                 (ref-ur-coin:module{stoa-ns.ur-stoic-fungible-v1} coin)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (kadena-patron:string (ref-DALOS::UR_AccountKadena ouronet-account))
-                (trial (try false (ref-ur-coin::UR_UR|Details kadena-patron)))
+                (stoa-patron:string (ref-DALOS::UR_AccountStoa ouronet-account))
+                (trial (try false (ref-ur-coin::UR_UR|Details stoa-patron)))
             )
             (if (= (typeof trial) "bool") false true)
         )
@@ -247,32 +247,32 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (w-kda:string (ref-DALOS::UR_WrappedStoaID))
-                (l-kda:string (ref-DALOS::UR_SilverStoaID))
+                (w-stoa:string (ref-DALOS::UR_WrappedStoaID))
+                (l-stoa:string (ref-DALOS::UR_SilverStoaID))
             )
-            (enforce (!= w-kda BAR) "Wrapped-Kadena is not set")
-            (enforce (!= l-kda BAR) "Liquid-Kadena is not set")
+            (enforce (!= w-stoa BAR) "Wrapped-Stoa is not set")
+            (enforce (!= l-stoa BAR) "Liquid-Stoa is not set")
             (let
                 (
-                    (w-kda-as-rt:[string] (ref-DPTF::UR_RewardToken w-kda))
-                    (l-kda-as-rbt:[string] (ref-DPTF::UR_RewardBearingToken l-kda))
+                    (w-stoa-as-rt:[string] (ref-DPTF::UR_RewardToken w-stoa))
+                    (l-stoa-as-rbt:[string] (ref-DPTF::UR_RewardBearingToken l-stoa))
                 )
-                (enforce (= (length w-kda-as-rt) 1) "Wrapped-Kadena cannot ever be part of another ATS-Pair")
-                (enforce (= (length l-kda-as-rbt) 1) "Liquid-Kadena cannot ever be part of another ATS-Pair")
-                (enforce (= (at 0 w-kda-as-rt) (at 0 l-kda-as-rbt)) "Wrapped and Liquid Kadena are not part of the same ASTS Pair")
+                (enforce (= (length w-stoa-as-rt) 1) "Wrapped-Stoa cannot ever be part of another ATS-Pair")
+                (enforce (= (length l-stoa-as-rbt) 1) "Liquid-Stoa cannot ever be part of another ATS-Pair")
+                (enforce (= (at 0 w-stoa-as-rt) (at 0 l-stoa-as-rbt)) "Wrapped and Liquid Stoa are not part of the same ASTS Pair")
             )
         )
     )
     (defun UEV_Amount (amount:decimal)
-        @doc "Enforces amount to coin (Kadena) Precision, which uses 12 decimal"
+        @doc "Enforces amount to coin (Stoa) Precision, which uses 12 decimal"
         (let
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
-                (kda-prec:integer (ref-U|CT::CT_KDA_PRECISION))
+                (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
             )
             (enforce
-                (= (floor amount kda-prec) amount)
-                (format "{} is not conform with KDA prec." [amount])
+                (= (floor amount stoa-prec) amount)
+                (format "{} is not conform with STOA prec." [amount])
             )
         )
     )
@@ -280,19 +280,19 @@
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]
-    (defun A_MigrateLiquidFunds:decimal (migration-target-kda-account:string)
+    (defun A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
         (UEV_IMC)
-        (with-capability (GOV|MIGRATE migration-target-kda-account)
+        (with-capability (GOV|MIGRATE migration-target-stoa-account)
             (let
                 (
                     (ref-coin:module{stoa-ns.fungible-v1} coin)    
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (lq-kda:string LIQUID|SC_KDA-NAME)
-                    (present-kda-balance:decimal (ref-coin::get-balance lq-kda))
+                    (lq-stoa:string LIQUID|SC_STOA-NAME)
+                    (present-stoa-balance:decimal (ref-coin::get-balance lq-stoa))
                 )
-                (install-capability (ref-coin::TRANSFER lq-kda migration-target-kda-account present-kda-balance))
-                (ref-DALOS::C_TransferDalosFuel lq-kda migration-target-kda-account present-kda-balance)
-                present-kda-balance
+                (install-capability (ref-coin::TRANSFER lq-stoa migration-target-stoa-account present-stoa-balance))
+                (ref-DALOS::C_TransferDalosFuel lq-stoa migration-target-stoa-account present-stoa-balance)
+                present-stoa-balance
             )
         )
     )
@@ -308,8 +308,8 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
-                (lq-kda:string LIQUID|SC_KDA-NAME)
-                (kadena-patron:string (ref-DALOS::UR_AccountKadena unwrapper))
+                (lq-stoa:string LIQUID|SC_STOA-NAME)
+                (stoa-patron:string (ref-DALOS::UR_AccountStoa unwrapper))
                 (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
             )
             (with-capability (LIQUID|C>UNWRAP unwrapper)
@@ -326,9 +326,9 @@
                             
                         )
                     )
-                    ;;(install-capability (ref-coin::TRANSFER lq-kda kadena-patron amount))
+                    ;;(install-capability (ref-coin::TRANSFER lq-stoa stoa-patron amount))
                     ;;Capability is added instead in the JavaCode
-                    (ref-IGNIS::C_TransferDalosFuel lq-kda kadena-patron amount)
+                    (ref-IGNIS::C_TransferDalosFuel lq-stoa stoa-patron amount)
                     output
                 )
             )
@@ -344,9 +344,9 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
-                (lq-kda:string LIQUID|SC_KDA-NAME)
-                (kadena-patron:string (ref-DALOS::UR_AccountKadena wrapper))
-                (w-kda-id:string (ref-DALOS::UR_WrappedStoaID))
+                (lq-stoa:string LIQUID|SC_STOA-NAME)
+                (stoa-patron:string (ref-DALOS::UR_AccountStoa wrapper))
+                (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
             )
             (with-capability (LIQUID|C>WRAP wrapper)
                 (let
@@ -354,14 +354,14 @@
                         (output:object{IgnisCollectorV1.OutputCumulator}
                             (ref-IGNIS::UDC_ConcatenateOutputCumulators
                                 [
-                                    (ref-DPTF::C_Mint w-kda-id lq-sc amount false)
-                                    (ref-TFT::C_Transfer w-kda-id lq-sc wrapper amount true)
+                                    (ref-DPTF::C_Mint w-stoa-id lq-sc amount false)
+                                    (ref-TFT::C_Transfer w-stoa-id lq-sc wrapper amount true)
                                 ]
                                 []
                             )
                         )
                     )
-                    (ref-IGNIS::C_TransferDalosFuel kadena-patron lq-kda amount)
+                    (ref-IGNIS::C_TransferDalosFuel stoa-patron lq-stoa amount)
                     output
                 )
             )
@@ -370,7 +370,7 @@
     (defun C_UnwrapUrStoa:object{IgnisCollectorV1.OutputCumulator}
         (unwrapper:string amount:decimal)
         @doc "Unwrapper is the Ouronet Account doing the Unwrapping. \
-            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work. \
+            \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
             \ account with the real signer's own (read-keyset \"ks\") immediately before this \
             \ call, the same pattern already used for native Stoa unwrap - there is no \
@@ -384,8 +384,8 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
-                (lq-kda:string LIQUID|SC_KDA-NAME)
-                (kadena-patron:string (ref-DALOS::UR_AccountKadena unwrapper))
+                (lq-stoa:string LIQUID|SC_STOA-NAME)
+                (stoa-patron:string (ref-DALOS::UR_AccountStoa unwrapper))
                 (w-ur-stoa-id:string (ref-DALOS::UR_UrStoaID))
             )
             (with-capability (LIQUID|C>UR-UNWRAP unwrapper)
@@ -402,9 +402,9 @@
                             
                         )
                     )
-                    ;;(install-capability (ref-ur-coin::UR|TRANSFER lq-kda kadena-patron amount))
+                    ;;(install-capability (ref-ur-coin::UR|TRANSFER lq-stoa stoa-patron amount))
                     ;;Capability is added instead in the JavaCode - NOT NEEDED because TRANSMIT is used.
-                    (ref-ur-coin::C_UR|Transmit lq-kda kadena-patron amount)
+                    (ref-ur-coin::C_UR|Transmit lq-stoa stoa-patron amount)
                     output
                 )
             )
@@ -413,7 +413,7 @@
     (defun C_WrapUrStoa:object{IgnisCollectorV1.OutputCumulator}
         (wrapper:string amount:decimal)
         @doc "Wrapper is the Ouronet Account doing the Wrapping. \
-            \ Its attached Kadena address k:xxx must be registered in the UrStoa Account Table for this to work. \
+            \ Its attached Stoa address k:xxx must be registered in the UrStoa Account Table for this to work. \
             \ If its not registered there yet, the UI constructs a bespoke tx that creates the \
             \ account with the real signer's own (read-keyset \"ks\") immediately before this \
             \ call, the same pattern already used for native Stoa unwrap - there is no \
@@ -427,8 +427,8 @@
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (lq-sc:string LIQUID|SC_NAME)
-                (lq-kda:string LIQUID|SC_KDA-NAME)
-                (kadena-patron:string (ref-DALOS::UR_AccountKadena wrapper))
+                (lq-stoa:string LIQUID|SC_STOA-NAME)
+                (stoa-patron:string (ref-DALOS::UR_AccountStoa wrapper))
                 (w-ur-stoa-id:string (ref-DALOS::UR_UrStoaID))
             )
             (with-capability (LIQUID|C>UR-WRAP wrapper)
@@ -444,7 +444,7 @@
                             )
                         )
                     )
-                    (ref-ur-coin::C_UR|Transfer kadena-patron lq-kda amount)
+                    (ref-ur-coin::C_UR|Transfer stoa-patron lq-stoa amount)
                     output
                 )
             )

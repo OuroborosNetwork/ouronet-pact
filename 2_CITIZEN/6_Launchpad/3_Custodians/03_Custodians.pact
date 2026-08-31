@@ -206,20 +206,20 @@
     (defun URC_QuintessenceCosts:object{DemiourgosLaunchpadV1.Costs} ()
         (let
             (
-                (ref-U|CT|DIA:module{DiaKdaPidV1} U|CT)
+                (ref-U|CT|DIA:module{DiaStoaPidV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 ;;
                 (q-pid:decimal (UR_QuitessencePrice))
-                (kda-pid:decimal (ref-U|CT|DIA::UR|KDA-PID))
+                (stoa-pid:decimal (ref-U|CT|DIA::UR|STOA-PID))
                 ;;
-                (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wkda-prec:integer (ref-DPTF::UR_Decimals wkda-id))
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
             )
             (ref-DEMIPAD::UDC_Costs
                 q-pid
-                (floor (/ q-pid kda-pid) wkda-prec)
+                (floor (/ q-pid stoa-pid) wstoa-prec)
             )
         )
     )
@@ -233,12 +233,12 @@
                 (q-costs:object{DemiourgosLaunchpadV1.Costs} (URC_QuintessenceCosts))
                 (nonce-value-in-quintessence:integer (UC_NonceQuintessence nonce))
                 ;;
-                (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wkda-prec:integer (ref-DPTF::UR_Decimals wkda-id))
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
             )
             (ref-DEMIPAD::UDC_Costs
                 (floor (* (at "pid" q-costs) (dec nonce-value-in-quintessence)) 2)
-                (floor (* (at "wkda" q-costs) (dec nonce-value-in-quintessence)) wkda-prec)
+                (floor (* (at "wstoa" q-costs) (dec nonce-value-in-quintessence)) wstoa-prec)
             )
         )
     )
@@ -251,12 +251,12 @@
                 ;;
                 (nonce-costs:object{DemiourgosLaunchpadV1.Costs} (URC_NonceCosts nonce))
                 ;;
-                (wkda-id:string (ref-DALOS::UR_WrappedStoaID))
-                (wkda-prec:integer (ref-DPTF::UR_Decimals wkda-id))
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                (wstoa-prec:integer (ref-DPTF::UR_Decimals wstoa-id))
             )
             (ref-DEMIPAD::UDC_Costs
                 (floor (* (at "pid" nonce-costs) (dec amount)) 2)
-                (floor (* (at "wkda" nonce-costs) (dec amount)) wkda-prec)
+                (floor (* (at "wstoa" nonce-costs) (dec amount)) wstoa-prec)
             )
         )       
     )

@@ -32,7 +32,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart")))
         )
     )
     (defschema vacate-chunk-payload
@@ -79,7 +79,7 @@
     (defun UC_SynthAccounts:[string] (count:integer)
         (map UC_SynthAccount (enumerate 1 count))
     )
-    (defun UC_KadenaForIdx:string (idx:integer)
+    (defun UC_StoaForIdx:string (idx:integer)
         (format "k:vacgas-{}" [(int-to-str 10 idx)])
     )
     (defun XI_DeploySynthAccount:string (idx:integer)
@@ -88,7 +88,7 @@
                 (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 (acct:string (UC_SynthAccount idx))
             )
-            (ref-TS01-A::DALOS|A_DeployStandardAccount acct SYNTH-GUARD (UC_KadenaForIdx idx) acct)
+            (ref-TS01-A::DALOS|A_DeployStandardAccount acct SYNTH-GUARD (UC_StoaForIdx idx) acct)
         )
     )
     (defun XI_DeploySynthRange:string (start:integer count:integer)
@@ -897,10 +897,10 @@
         (ref-DALOS:module{OuronetDalosV1} DALOS)
         (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
         (split-std:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "standard")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "standard")))
         )
         (split-smart:[decimal]
-            (ref-DALOS::URC_SplitKDAPrices patron (ref-DALOS::UR_UsagePrice "smart")))
+            (ref-DALOS::URC_SplitSTOAPrices patron (ref-DALOS::UR_UsagePrice "smart")))
     )
     (env-sigs
         [

@@ -2148,7 +2148,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dptf-id boost-class-id)
-                (ref-IGNIS::KDA|C_Collect patron (* standard stoa-multiplier))
+                (ref-IGNIS::STOA|C_Collect patron (* standard stoa-multiplier))
                 (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
                     (if acnoi [anchor-id boost-class-id] [anchor-id])
                 )
@@ -2180,7 +2180,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpsf-id boost-class-id)
-                (ref-IGNIS::KDA|C_Collect patron (* standard stoa-multiplier))
+                (ref-IGNIS::STOA|C_Collect patron (* standard stoa-multiplier))
                 (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
                     (if acnoi [anchor-id boost-class-id] [anchor-id])
                 )
@@ -2212,7 +2212,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
-                (ref-IGNIS::KDA|C_Collect patron (* standard stoa-multiplier))
+                (ref-IGNIS::STOA|C_Collect patron (* standard stoa-multiplier))
                 (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
                     (if acnoi [anchor-id boost-class-id] [anchor-id])
                 )
@@ -2244,7 +2244,7 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
-                (ref-IGNIS::KDA|C_Collect patron (* standard stoa-multiplier))
+                (ref-IGNIS::STOA|C_Collect patron (* standard stoa-multiplier))
                 (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
                     (if acnoi [anchor-id boost-class-id] [anchor-id])
                 )
