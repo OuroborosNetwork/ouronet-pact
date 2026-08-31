@@ -154,7 +154,7 @@
             )
             (fold (+) 0.0
                 [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 transfer (dir-indep)
-                      (DPOF.UC_MoveCumulator dpof-id nonces false)))
+                      (DPOF.URCi_MoveCumulator dpof-id nonces false)))
                   (* (SIP|URC_Medium) nn)                                                          ;; 1.2 tracker (medium × |nonces|)
                   (SIP|URC_Fixed (AQP-FVT.URC_SettleStakePendingIgnis settle-scores distinct-fvts));; 2   RPS settle
                   (SIP|URC_Fixed (URC_StakeScoreDeltaSumForClasses pool-id [0 2]))                 ;; 4   score delta (class ∈ {0,2})
@@ -735,7 +735,7 @@
     )
     ;;<---- vacate lifecycle (fixed-cost endpoints) ---->
     (defun URC_VacateTfBatchCostIfp:decimal
-        (pool-id:string dptf-id:string legs:[object{AcquisitionVacateV1.VCT|VacateTfLeg}])
+        (pool-id:string dptf-id:string legs:[object{AQP-VCT.VCT|VacateTfLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchVacateTrueFungible, fed the SAME \
             \ dirty-read <legs> the exec receives (owner's exact-preview / dirty-read-fed rule). \
             \ Mirrors XI_VacateTrueFungibleFromLegs byte-for-byte: per-leg tracker-zero (medium) \
@@ -773,7 +773,7 @@
         )
     )
     (defun AQP-POOL|INFO_BatchVacateTrueFungible:object{OuronetInfoV1.ClientInfo}
-        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionVacateV1.VCT|VacateTfLeg}])
+        (patron:string pool-id:string dptf-id:string legs:[object{AQP-VCT.VCT|VacateTfLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateTrueFungible. Multi-leg IGNIS (per-leg \
             \ tracker-zero + per-beneficiary unwind + one bulk transfer); no STOA. Fed the same \
             \ dirty-read <legs> slice the exec is fed."
@@ -788,7 +788,7 @@
                 []))
     )
     (defun URC_VacateOfBatchCostIfp:decimal
-        (pool-id:string dpof-id:string legs:[object{AcquisitionVacateV1.VCT|VacateNonceLeg}])
+        (pool-id:string dpof-id:string legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchVacateOrtoFungible, fed the same \
             \ dirty-read nonce <legs> the exec receives. Mirrors XI_VacateOrtoFungibleBatch: the \
             \ one bulk DPOF whole-nonce transfer (URCi_MoveCumulator over all nonces) + per-owner- \
@@ -798,10 +798,10 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (nonces-array:[[integer]] (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
+                (nonces-array:[[integer]] (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
                 (unique-benefs:[string]
                     (AQP-VCT.UC_VacateUniqueBeneficiaries
-                        (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
+                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
                 (all-nonces:[integer] (fold (+) [] nonces-array))
                 (score-delta:decimal (URC_StakeScoreDeltaSumForClasses pool-id [0 2]))
             )
@@ -823,7 +823,7 @@
         )
     )
     (defun AQP-POOL|INFO_BatchVacateOrtoFungible:object{OuronetInfoV1.ClientInfo}
-        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionVacateV1.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string dpof-id:string legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateOrtoFungible. Multi-leg IGNIS (bulk DPOF \
             \ transfer + per-nonce tracker + per-beneficiary score unwind); no STOA. Fed the same \
             \ dirty-read nonce <legs> slice the exec is fed."
@@ -838,7 +838,7 @@
                 []))
     )
     (defun URC_VacateCollBatchCostIfp:decimal
-        (pool-id:string collectable-id:string son:bool legs:[object{AcquisitionVacateV1.VCT|VacateNonceLeg}])
+        (pool-id:string collectable-id:string son:bool legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchVacateCollectables (son=DPSF/DPNF), \
             \ fed the same dirty-read nonce <legs> the exec receives. Mirrors XI_VacateCollectable \
             \ Batch: the one bulk DPDC-T transfer + per-owner-row (tracker medium×|nonces| + rollup \
@@ -848,20 +848,20 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (nonces-array:[[integer]] (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
+                (nonces-array:[[integer]] (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
                 (amounts-array:[[integer]]
-                    (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg})
+                    (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg})
                             (map (lambda (q:decimal) (floor q)) (at "amounts" l))) legs))
                 (unique-benefs:[string]
                     (AQP-VCT.UC_VacateUniqueBeneficiaries
-                        (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
+                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
                 (score-delta:decimal (URC_StakeScoreDeltaSumForClasses pool-id (if son [3] [4])))
                 (anchor-flat:decimal (+ (SIP|URC_Medium) (SIP|URC_Biggest)))
             )
             (fold (+) 0.0
                 [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                       ;; bulk DPDC-T transfer
                       (DPDC-T.URCi_BulkTransferCumulator collectable-id son AQP-POOL.AQP|SC_NAME
-                          (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                          (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
                           nonces-array amounts-array)))
                   (* (* 2.0 (SIP|URC_Medium)) (dec (length (fold (+) [] nonces-array))))            ;; per-row tracker + rollup (each medium×|nonces|)
                   (fold (+) 0.0
@@ -879,7 +879,7 @@
         )
     )
     (defun AQP-POOL|INFO_BatchVacateCollectables:object{OuronetInfoV1.ClientInfo}
-        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionVacateV1.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchVacateCollectables (son=DPSF true / DPNF false). \
             \ Multi-leg IGNIS (bulk transfer + per-nonce tracker + rollup + flat anchor + per- \
             \ beneficiary class-matched score unwind); no STOA. Fed the dirty-read nonce <legs>."
@@ -894,7 +894,7 @@
                 []))
     )
     (defun URC_DrainTfBatchCostIfp:decimal
-        (pool-id:string dptf-id:string legs:[object{AcquisitionVacateV1.VCT|VacateTfLeg}])
+        (pool-id:string dptf-id:string legs:[object{AQP-VCT.VCT|VacateTfLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchDrainTrueFungible, fed the same dirty- \
             \ read <legs> the exec receives. Mirrors XI_DrainTrueFungibleFromLegs: score-FREE. \
             \ Phase A per-leg = tracker-zero (medium) + rollup (biggest). Phase B settle-triple \
@@ -917,7 +917,7 @@
                       (map
                           (lambda (benef:string)
                               (if (= (- (AQP-POOL.UR_AQP|UserUnn pool-id benef)
-                                        (length (filter (lambda (l:object{AcquisitionVacateV1.VCT|VacateTfLeg}) (= (at "beneficiary-id" l) benef)) legs)))
+                                        (length (filter (lambda (l:object{AQP-VCT.VCT|VacateTfLeg}) (= (at "beneficiary-id" l) benef)) legs)))
                                      0)
                                   (+ (SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef))))
@@ -931,7 +931,7 @@
         )
     )
     (defun AQP-POOL|INFO_BatchDrainTrueFungible:object{OuronetInfoV1.ClientInfo}
-        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionVacateV1.VCT|VacateTfLeg}])
+        (patron:string pool-id:string dptf-id:string legs:[object{AQP-VCT.VCT|VacateTfLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainTrueFungible. Score-free drain: per-leg \
             \ tracker-zero + rollup, settle-on-last-drain only for beneficiaries fully drained \
             \ this round (live UserUnn), then one bulk transfer; no STOA. Fed the dirty-read legs."
@@ -946,7 +946,7 @@
                 []))
     )
     (defun URC_DrainOfBatchCostIfp:decimal
-        (pool-id:string dpof-id:string legs:[object{AcquisitionVacateV1.VCT|VacateNonceLeg}])
+        (pool-id:string dpof-id:string legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchDrainOrtoFungible, fed the same dirty- \
             \ read nonce <legs> the exec receives. Mirrors XI_DrainOrtoFungibleBatch (score-free): \
             \ bulk DPOF transfer + per-owner-row tracker (medium × total-nonces) + settle-on-last- \
@@ -958,8 +958,8 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (unique-benefs:[string]
                     (AQP-VCT.UC_VacateUniqueBeneficiaries
-                        (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
-                (all-nonces:[integer] (fold (+) [] (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "nonces" l)) legs)))
+                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
+                (all-nonces:[integer] (fold (+) [] (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "nonces" l)) legs)))
                 (checkpoint:decimal (SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis)))
             )
             (fold (+) 0.0
@@ -970,8 +970,8 @@
                       (map
                           (lambda (benef:string)
                               (if (= (- (AQP-POOL.UR_AQP|UserUnn pool-id benef)
-                                        (fold (+) 0 (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (length (at "nonces" l)))
-                                                         (filter (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (= (at "beneficiary-id" l) benef)) legs))))
+                                        (fold (+) 0 (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (length (at "nonces" l)))
+                                                         (filter (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (= (at "beneficiary-id" l) benef)) legs))))
                                      0)
                                   (+ (SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef))))
@@ -982,7 +982,7 @@
         )
     )
     (defun AQP-POOL|INFO_BatchDrainOrtoFungible:object{OuronetInfoV1.ClientInfo}
-        (patron:string pool-id:string dpof-id:string legs:[object{AcquisitionVacateV1.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string dpof-id:string legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainOrtoFungible. Score-free drain: bulk DPOF \
             \ transfer + per-nonce tracker + settle-on-last-drain (no anchor); no STOA. Fed the legs."
         (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
@@ -996,7 +996,7 @@
                 []))
     )
     (defun URC_DrainCollBatchCostIfp:decimal
-        (pool-id:string collectable-id:string son:bool legs:[object{AcquisitionVacateV1.VCT|VacateNonceLeg}])
+        (pool-id:string collectable-id:string son:bool legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchDrainCollectable, fed the same dirty- \
             \ read nonce <legs> the exec receives. Mirrors XI_DrainCollectableBatch (score-free): \
             \ bulk DPDC-T transfer + per-owner-row Phase A = tracker (medium×|nonces|) + rollup \
@@ -1006,19 +1006,19 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (nonces-array:[[integer]] (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
+                (nonces-array:[[integer]] (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
                 (amounts-array:[[integer]]
-                    (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg})
+                    (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg})
                             (map (lambda (q:decimal) (floor q)) (at "amounts" l))) legs))
                 (unique-benefs:[string]
                     (AQP-VCT.UC_VacateUniqueBeneficiaries
-                        (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
+                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
                 (checkpoint:decimal (SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis)))
             )
             (fold (+) 0.0
                 [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                       ;; bulk DPDC-T transfer
                       (DPDC-T.URCi_BulkTransferCumulator collectable-id son AQP-POOL.AQP|SC_NAME
-                          (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                          (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
                           nonces-array amounts-array)))
                   (* (* 2.0 (SIP|URC_Medium)) (dec (length (fold (+) [] nonces-array))))            ;; per-leg tracker + rollup
                   (* (+ (SIP|URC_Medium) (SIP|URC_Biggest)) (dec (length legs)))                    ;; per-leg flat anchor refresh
@@ -1026,8 +1026,8 @@
                       (map
                           (lambda (benef:string)
                               (if (= (- (AQP-POOL.UR_AQP|UserUnn pool-id benef)
-                                        (fold (+) 0 (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (length (at "nonces" l)))
-                                                         (filter (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (= (at "beneficiary-id" l) benef)) legs))))
+                                        (fold (+) 0 (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (length (at "nonces" l)))
+                                                         (filter (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (= (at "beneficiary-id" l) benef)) legs))))
                                      0)
                                   (+ (SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
                                         (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef))))
@@ -1038,7 +1038,7 @@
         )
     )
     (defun AQP-POOL|INFO_BatchDrainCollectable:object{OuronetInfoV1.ClientInfo}
-        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionVacateV1.VCT|VacateNonceLeg}])
+        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AQP-VCT.VCT|VacateNonceLeg}])
         @doc "Cost preview for AQP-POOL|CCp_BatchDrainCollectable (son=DPSF true / DPNF false). \
             \ Score-free drain: bulk transfer + per-leg tracker + rollup + flat anchor + settle- \
             \ on-last-drain; no STOA. Fed the dirty-read nonce <legs>."
@@ -1054,9 +1054,9 @@
     )
     (defun URC_FullVacateCostIfp:decimal
         (pool-id:string
-         tf-lanes:[object{AcquisitionVacateV1.VCT|VacateTfLane}]
-         of-lanes:[object{AcquisitionVacateV1.VCT|VacateNonceLane}]
-         coll-lanes:[object{AcquisitionVacateV1.VCT|VacateNonceLane}]
+         tf-lanes:[object{AQP-VCT.VCT|VacateTfLane}]
+         of-lanes:[object{AQP-VCT.VCT|VacateNonceLane}]
+         coll-lanes:[object{AQP-VCT.VCT|VacateNonceLane}]
          coll-son:bool)
         @doc "Variant-A shared cost estimator for CC_FullVacate, fed the same dirty-read lane \
             \ plan the exec's PHASE-1 scan produces. CC_FullVacate = Σ over lanes of the per-asset \
@@ -1067,21 +1067,21 @@
             \ = of; class-3/4 = coll with son). Reuses the three per-batch vacate readers."
         (fold (+) 0.0
             [ (fold (+) 0.0
-                  (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateTfLane})
+                  (map (lambda (l:object{AQP-VCT.VCT|VacateTfLane})
                           (URC_VacateTfBatchCostIfp pool-id (at "asset-id" l) (at "legs" l))) tf-lanes))
               (fold (+) 0.0
-                  (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLane})
+                  (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLane})
                           (URC_VacateOfBatchCostIfp pool-id (at "asset-id" l) (at "legs" l))) of-lanes))
               (fold (+) 0.0
-                  (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLane})
+                  (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLane})
                           (URC_VacateCollBatchCostIfp pool-id (at "asset-id" l) coll-son (at "legs" l))) coll-lanes))
             ])
     )
     (defun AQP-POOL|INFO_FullVacate:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string
-         tf-lanes:[object{AcquisitionVacateV1.VCT|VacateTfLane}]
-         of-lanes:[object{AcquisitionVacateV1.VCT|VacateNonceLane}]
-         coll-lanes:[object{AcquisitionVacateV1.VCT|VacateNonceLane}]
+         tf-lanes:[object{AQP-VCT.VCT|VacateTfLane}]
+         of-lanes:[object{AQP-VCT.VCT|VacateNonceLane}]
+         coll-lanes:[object{AQP-VCT.VCT|VacateNonceLane}]
          coll-son:bool)
         @doc "Cost preview for AQP-POOL|CC_FullVacate — the single-tx whole-pool vacate. Sums the \
             \ per-asset vacate cost across every dirty-read lane (TF + OF satellites + collectables); \

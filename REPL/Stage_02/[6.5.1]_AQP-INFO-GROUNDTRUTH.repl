@@ -281,4 +281,65 @@
 )
 (commit-tx)
 (print "")
-(print "=== [6.5.1] AQP-INFO GROUND TRUTH — TF + OF + SF stake/unstake cost-equality complete ===")
+;;
+;;==== TX907 · 01 · TF batch-vacate cost equality (dirty-read legs -> real GAS delta) ====
+(begin-tx "TX-INFO-GT-TF-VACATE - INFO_BatchVacateTrueFungible.ignis-need == real GAS delta")
+(print "--- [TX907 · 01 · TF batch-vacate cost equality] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string          KST.ANHD)
+        (owner-id:string        KST.ANHD)
+        (beneficiary-id:string  KST.ANHD)
+        (ouro-id:string         "OURO-98c486052a51")
+        (gas-id:string          "GAS-98c486052a51")
+        (amount:decimal         100.0)
+        (ref-U|DALOS:module{UtilityDalosV1}                 U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1}      DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1}    TS02-C3)
+        (pool-id:string         (ref-U|DALOS::UDC_Makeid "TfStakePool"))
+    )
+    ;; 1) Re-stake a fresh TF position so there is something to vacate (TfStakePool is restakeable).
+    (print (format "<(re-stake)> => \"{}\""
+        [(ref-TS02-C3::AQP-POOL|CC_StakeTrueFungible patron pool-id owner-id beneficiary-id ouro-id amount)]))
+    ;; 2) PREVIEW on the post-stake state, fed the SAME dirty-read legs the exec will build.
+    ;;    Vacate requires the FULL tracked balance (TfStakePool carries residual from the earlier
+    ;;    stake/unstake tests), so read the real per-pool DPTF tracker balance and vacate exactly that.
+    (let
+        (
+            (staked-bal:decimal (AQP-POOL.UR_AQP|DPTFTrackerBalance pool-id ouro-id owner-id beneficiary-id))
+        )
+        (let
+            (
+                (legs:[object{AQP-VCT.VCT|VacateTfLeg}]
+                    (AQP-VCT.UC_TfLegsFromParallelArrays [owner-id] [beneficiary-id] [staked-bal]))
+            )
+        (let
+            (
+                (predicted:decimal
+                    (at "ignis-need" (at "ignis"
+                        (AQP-INFO.AQP-POOL|INFO_BatchVacateTrueFungible patron pool-id ouro-id legs))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+            )
+            (print (format "<(INFO_BatchVacateTrueFungible)> predicted ignis-need = {} ; staked-bal = {} ; patron pre-gas = {}"
+                [predicted staked-bal pre-gas]))
+            ;; 3) EXECUTE the real batch-vacate (bills the patron the exact flow cost).
+            (print (format "<(TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible)> => \"{}\""
+                [(ref-TS02-C3::AQP-POOL|CCp_BatchVacateTrueFungible
+                    patron pool-id ouro-id [owner-id] [beneficiary-id] [staked-bal])]))
+            ;; 4) ASSERT predicted == actual GAS balance delta.
+            (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
+                (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
+                (map print
+                    [ (expect (format "TX-INFO-GT-TF-VACATE: INFO predicted {} == real GAS delta {}"
+                          [predicted (- pre-gas post-gas)])
+                        predicted (- pre-gas post-gas)) ]))
+        )
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== [6.5.1] AQP-INFO GROUND TRUTH — TF + OF + SF stake/unstake + TF vacate cost-equality complete ===")
