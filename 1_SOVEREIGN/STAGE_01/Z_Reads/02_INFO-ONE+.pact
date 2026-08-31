@@ -87,15 +87,15 @@
     ;;
     ;;  [DALOS-INFO]  (relocated from the now-tombstoned INFO-ZERO; DALOS client-op previews wrapping IGNIS's DALOS|URCi_*)
     ;;
-    (defun DALOS-INFO|URC_ControlSmartAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
-    (defun DALOS-INFO|URC_DeploySmartAccount:object{OuronetInfoV1.ClientInfo} (account:string))
-    (defun DALOS-INFO|URC_DeployStandardAccount:object{OuronetInfoV1.ClientInfo} (account:string))
-    (defun DALOS-INFO|URC_RotateGovernor:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
-    (defun DALOS-INFO|URC_RotateGuard:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
-    (defun DALOS-INFO|URC_RotateStoa:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
-    (defun DALOS-INFO|URC_RotateSovereign:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
-    (defun DALOS-INFO|URC_UpdateEliteAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
-    (defun DALOS-INFO|URC_UpdateEliteAccountSquared:object{OuronetInfoV1.ClientInfo} (patron:string sender:string receiver:string))
+    (defun URC_DALOS|ControlSmartAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun URC_DALOS|DeploySmartAccount:object{OuronetInfoV1.ClientInfo} (account:string))
+    (defun URC_DALOS|DeployStandardAccount:object{OuronetInfoV1.ClientInfo} (account:string))
+    (defun URC_DALOS|RotateGovernor:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun URC_DALOS|RotateGuard:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun URC_DALOS|RotateStoa:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun URC_DALOS|RotateSovereign:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun URC_DALOS|UpdateEliteAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun URC_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV1.ClientInfo} (patron:string sender:string receiver:string))
 )
 ;;LIQUID|INFO_UnwrapStoa
 ;;LIQUID|INFO_WrapStoa
@@ -2915,7 +2915,7 @@
     ;;<======================>
     ;;[DALOS-INFO] — relocated from INFO-ZERO (Phase 1.2). Pure presentation; wrap IGNIS's DALOS|URCi_*.
     ;;<======================>
-    (defun DALOS-INFO|URC_ControlSmartAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun URC_DALOS|ControlSmartAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -2935,7 +2935,7 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_DeploySmartAccount:object{OuronetInfoV1.ClientInfo} (account:string)
+    (defun URC_DALOS|DeploySmartAccount:object{OuronetInfoV1.ClientInfo} (account:string)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -2955,7 +2955,7 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_DeployStandardAccount:object{OuronetInfoV1.ClientInfo} (account:string)
+    (defun URC_DALOS|DeployStandardAccount:object{OuronetInfoV1.ClientInfo} (account:string)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -2975,7 +2975,7 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_RotateGovernor:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun URC_DALOS|RotateGovernor:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -2995,7 +2995,7 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_RotateGuard:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun URC_DALOS|RotateGuard:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -3015,7 +3015,7 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_RotateStoa:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun URC_DALOS|RotateStoa:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -3035,7 +3035,7 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_RotateSovereign:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun URC_DALOS|RotateSovereign:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -3055,7 +3055,7 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_UpdateEliteAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+    (defun URC_DALOS|UpdateEliteAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
@@ -3075,7 +3075,7 @@
             )
         )
     )
-    (defun DALOS-INFO|URC_UpdateEliteAccountSquared:object{OuronetInfoV1.ClientInfo} (patron:string sender:string receiver:string)
+    (defun URC_DALOS|UpdateEliteAccountSquared:object{OuronetInfoV1.ClientInfo} (patron:string sender:string receiver:string)
         (let
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
