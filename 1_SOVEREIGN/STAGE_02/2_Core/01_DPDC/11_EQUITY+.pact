@@ -35,6 +35,7 @@
     )
     (defun C_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
     (defun URCi_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    (defun URCi_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator} ())
 )
 (module EQUITY GOV
     ;;
@@ -362,6 +363,45 @@
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
+    (defun URCi_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator} ()
+        @doc "Cost preview for C_IssueShareholderCollection's IGNIS cumulator (the collection- \
+            \ issue STOA price previews separately via DPDC-I::URCi_IssueCollectionStoa). Two legs, \
+            \ ARG-INDEPENDENT: \
+            \ ico1 = the digital-collection issue (URCi_IssueDigitalCollection son=true on the DPDC \
+            \ SC, which owns every Equity collection — owner-account is C_IssueDigitalCollection's \
+            \ 3rd arg = dpdc); \
+            \ ico2 = the 8-nonce populate at the DISCOUNTED first-Elite-SFT price. \
+            \ The discount is CODE-PROVEN to fire at exec time: XI_IssueDigitalCollection inits the \
+            \ collection with nonces-used=0 and creates NO nonce, so the immediately-following \
+            \ C_CreateNewNonces runs while nonces-used is still 0; the id is Elite (UC_EquityID forces \
+            \ an 'E|' ticker and UDC_Makeid=concat[ticker '-' hash] so take-2 of the id is 'E|'); and \
+            \ son=true. So URCi_RegisterCollectablesPrice's [ft='E|' & son & nu=0] branch applies the \
+            \ /1000 discount: populate = smallest * 1,000,000 / 1000 = smallest * 1000 (only Nonce 1 \
+            \ carries supply; Nonces 2-8 are 0). Output ([equity-id]) is empty here (write product). \
+            \ NOTE: the SWPI-style ground-truth (compare vs the real reader post-issue) does NOT apply \
+            \ — post-populate nonces-used=8, so a live URCi_CreateNewNonces reads the UNdiscounted \
+            \ price; the equality is code-proven, not test-arbitrated. A GAS-delta harness on the \
+            \ real DPSF|C_IssueCompany would confirm empirically. The discount itself (equity always \
+            \ Elite) is intended-behavior to confirm under task #76 (IGNIS re-pricing)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC-I:module{DpdcIssueV1} DPDC-I)
+                ;;
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                (populate-price:decimal (/ (* (ref-DALOS::UR_UsagePrice "ignis|smallest") 1000000.0) 1000.0))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPDC-I::URCi_IssueDigitalCollection true dpdc)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator populate-price dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
+                ]
+                []
+            )
+        )
+    )
     (defun C_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator}
         (
             patron:string creator-account:string collection-name:string collection-ticker:string
