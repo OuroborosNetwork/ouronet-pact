@@ -45,6 +45,11 @@
     (defun C_CreateHibernatingLink:object{IgnisCollectorV1.OutputCumulator} (patron:string dptf:string))
         ;;
     (defun C_Freeze:object{IgnisCollectorV1.OutputCumulator} (freezer:string freeze-output:string dptf:string amount:decimal))
+    (defun URCi_Freeze:object{IgnisCollectorV1.OutputCumulator} (freezer:string freeze-output:string dptf:string amount:decimal))
+    (defun URCi_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV1.OutputCumulator} (s-dptf:string))
+    (defun URCi_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV1.OutputCumulator} (s-dptf:string))
+    (defun URCi_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV1.OutputCumulator} (s-dpof:string))
+    (defun URCi_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV1.OutputCumulator} (s-dpof:string))
     (defun C_RepurposeFrozen:object{IgnisCollectorV1.OutputCumulator} (dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
     (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV1.OutputCumulator} (s-dptf:string target:string toggle:bool))
         ;;
@@ -755,6 +760,30 @@
         )
     )
     ;;  [Frozen Token Actions]
+    (defun URCi_Freeze:object{IgnisCollectorV1.OutputCumulator}
+        (freezer:string freeze-output:string dptf:string amount:decimal)
+        @doc "Cost preview for C_Freeze: (conditional) freezer->VST transfer + mint of \
+            \ the frozen wrapper + VST->freeze-output transfer, re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (f-dptf:string (ref-DPTF::UR_Frozen dptf))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (if (!= freezer VST|SC_NAME)
+                        (ref-TFT::URCi_Transfer dptf freezer VST|SC_NAME amount)
+                        EOC
+                    )
+                    (ref-DPTF::URCi_Mint f-dptf VST|SC_NAME false)
+                    (ref-TFT::URCi_Transfer f-dptf VST|SC_NAME freeze-output amount)
+                ]
+                []
+            )
+        )
+    )
     (defun C_Freeze:object{IgnisCollectorV1.OutputCumulator}
         (freezer:string freeze-output:string dptf:string amount:decimal)
         (UEV_IMC)
@@ -788,6 +817,13 @@
         (UEV_IMC)
         (with-capability (VST|C>REPURPOSE-FROZEN-TF dptf-to-repurpose repurpose-from repurpose-to)
             (XI_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)
+        )
+    )
+    (defun URCi_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV1.OutputCumulator}
+        (s-dptf:string)
+        @doc "Cost preview for C_ToggleTransferRoleFrozenDPTF (single DPTF transfer-role toggle)."
+        (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF))
+            (ref-DPTF::URCi_ToggleTransferRole s-dptf)
         )
     )
     (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV1.OutputCumulator}
@@ -861,6 +897,13 @@
         (UEV_IMC)
         (with-capability (VST|C>REPURPOSE-RESERVED-TF dptf-to-repurpose repurpose-from repurpose-to)
             (XI_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)
+        )
+    )
+    (defun URCi_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV1.OutputCumulator}
+        (s-dptf:string)
+        @doc "Cost preview for C_ToggleTransferRoleReservedDPTF (single DPTF transfer-role toggle)."
+        (let ((ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF))
+            (ref-DPTF::URCi_ToggleTransferRole s-dptf)
         )
     )
     (defun C_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV1.OutputCumulator}
@@ -1070,6 +1113,13 @@
             (XI_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)
         )
     )
+    (defun URCi_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV1.OutputCumulator}
+        (s-dpof:string)
+        @doc "Cost preview for C_ToggleTransferRoleSleepingDPOF (single DPOF transfer-role toggle)."
+        (let ((ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF))
+            (ref-DPOF::URCi_ToggleTransferRole s-dpof)
+        )
+    )
     (defun C_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV1.OutputCumulator}
         (s-dpof:string target:string toggle:bool)
         (UEV_IMC)
@@ -1201,6 +1251,13 @@
         (UEV_IMC)
         (with-capability (VST|C>REPURPOSE-HIBERNATING-MF dpof-to-repurpose nonce repurpose-from repurpose-to)
             (XI_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)
+        )
+    )
+    (defun URCi_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV1.OutputCumulator}
+        (s-dpof:string)
+        @doc "Cost preview for C_ToggleTransferRoleHibernatingDPOF (single DPOF transfer-role toggle)."
+        (let ((ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF))
+            (ref-DPOF::URCi_ToggleTransferRole s-dpof)
         )
     )
     (defun C_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV1.OutputCumulator}
