@@ -70,15 +70,15 @@ irreducible issue-hybrid / heavy-AMM / AQP-#74 tier below.
     URCi_Issue IFP == real DPTF/TFT readers on the now-existing LP (4509==4509). The
     ground-truth pattern: after issue the token exists, so compare the pre-existence
     reconstruction to the real readers post-issue.
-  - **EQUITY::C_IssueShareholderCollection — DEFERRED (unresolved discount ambiguity).**
-    Built a reader (owner=dpdc, populate = smallest*1M with the first-Elite `E|`/1000
-    discount since exec bills at nonces-used=0), but the ground-truth FAILED to arbitrate:
-    the "real" leg re-reads `URCi_CreateNewNonces` AFTER the 8 nonces exist (nonces-used=8
-    => NO discount), so it can't confirm whether the exec actually billed discounted
-    (nu=0, smallest*1000) or not (smallest*1M). Reverted rather than ship a possibly-wrong
-    reader. Needs a real GAS-delta harness (measure C_IssueShareholderCollection's actual
-    IGNIS spend) to settle the discount, OR a Variant-A core refactor so exec bills through
-    a shared reader. Do NOT rebuild by guessing the discount.
+  - **EQUITY::C_IssueShareholderCollection — DONE, CODE-PROVEN** (commit de8a9dc). The
+    discount ambiguity is SETTLED by reading the exec: XI_IssueDigitalCollection inits the
+    collection at nonces-used=0 and creates NO nonce (UDC_DPDC|Properties trailing 0 =
+    nonces-used, 01_DPDC-UDC:130), so the 8-nonce populate runs at nu=0; equity ids are
+    Elite ('E|' via UC_EquityID + UDC_Makeid=concat[ticker '-' hash]) and son=true => the
+    [ft='E|' & son & nu=0] /1000 discount FIRES at exec time. Populate = smallest*1000.
+    The SWPI-style post-issue ground-truth does NOT apply (nonces-used=8 post-populate reads
+    the UNdiscounted price) — equality is code-proven not test-arbitrated; a GAS-delta
+    harness on DPSF|C_IssueCompany would confirm. Discount economics -> task #76.
 - **MTX-SWP** (16): defpact swap/issue orchestration — composes SWPI/SWPU, inherits their
   hybrid/heavy nature.
 - **AQP family** (ANK/SCORE/POOL/FVT/VCT/DSA, ~40+): guided by the AQP-INFO map (task #74,
