@@ -34,6 +34,9 @@
     ;;
     (defun C_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool))
+    (defun URCi_UpdatePendingBrandingLPs:object{IgnisCollectorV1.OutputCumulator} (swpair:string entity-pos:integer))
+    (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
+    (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool))
         ;;
     (defun C|STOA-PID_AddStandardLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun C|STOA-PID_AddIcedLiquidity:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
@@ -432,6 +435,26 @@
     ;;{F5}  [A]
     ;;{F6}  [C]
     ;;LP DPTF Branding
+    (defun URCi_UpdatePendingBrandingLPs:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string entity-pos:integer)
+        @doc "Cost preview for C_UpdatePendingBrandingLPs: the fixed branding cumulator (2.0) \
+            \ billed on the entity owner, re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (entity-id:string (URC_EntityPosToID swpair entity-pos))
+                (entity-owner:string
+                    (if (= entity-pos 3)
+                        (ref-DPOF::UR_Konto entity-id)
+                        (ref-DPTF::UR_Konto entity-id)
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_BrandingCumulator entity-owner 2.0)
+        )
+    )
     (defun C_UpdatePendingBrandingLPs:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string entity-pos:integer logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
         (UEV_IMC)
@@ -474,6 +497,47 @@
         )
     )
     ;;LQ Functions
+    (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string toggle:bool)
+        @doc "Cost preview for C_ToggleAddLiquidity: delegates to SWP's add-or-swap toggle \
+            \ cost (add-or-swap = true)."
+        (let ((ref-SWP:module{SwapperV3} SWP))
+            (ref-SWP::URCi_ToggleAddOrSwap swpair toggle true)
+        )
+    )
+    (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator}
+        (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool)
+        @doc "Cost preview for C_Fuel: a direct fuel bills the multi-transfer of the non-zero \
+            \ input tokens into the pool; an indirect fuel only updates supplies (EOC). The \
+            \ XE_UpdateSupplies aggregate write carries no cumulator cost. Re-derived purely."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                ;;
+                (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
+                (has-zeros:bool (contains 0.0 input-amounts))
+                (input-ids-for-transfer:[string]
+                    (if has-zeros
+                        (ref-SWPI::URC_TrimIdsWithZeroAmounts swpair input-amounts)
+                        pool-tokens
+                    )
+                )
+                (input-amounts-for-transfer:[decimal]
+                    (if has-zeros
+                        (ref-U|LST::UC_RemoveItem input-amounts 0.0)
+                        input-amounts
+                    )
+                )
+            )
+            (if direct-or-indirect
+                (ref-TFT::URCi_MultiTransferCumulator input-ids-for-transfer account SWP|SC_NAME input-amounts-for-transfer)
+                EOC
+            )
+        )
+    )
     (defun C_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string toggle:bool)
         (UEV_IMC)

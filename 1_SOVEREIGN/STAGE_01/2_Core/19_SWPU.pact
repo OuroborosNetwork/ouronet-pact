@@ -104,6 +104,7 @@
     ;;
     ;;
     (defun C_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
+    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
     (defun CC_SmartSwap:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
     ;;#34 Phase 8: the bundle-based, dirty-read-injected SmartSwap — performs zero
     ;;internal searching (route, boost-path and stoa-paths are all supplied by the
@@ -795,6 +796,14 @@
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
+    (defun URCi_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string toggle:bool)
+        @doc "Cost preview for C_ToggleSwapCapability: delegates to SWP's add-or-swap toggle \
+            \ cost (add-or-swap = false)."
+        (let ((ref-SWP:module{SwapperV3} SWP))
+            (ref-SWP::URCi_ToggleAddOrSwap swpair toggle false)
+        )
+    )
     (defun C_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator}
         (swpair:string toggle:bool)
         (UEV_IMC)
