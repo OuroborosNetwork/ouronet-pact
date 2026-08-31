@@ -60,12 +60,25 @@ irreducible issue-hybrid / heavy-AMM / AQP-#74 tier below.
   leg `XI_LiquidIndexPump` → `XI_RawLiquidPump`, which does an internal route search to
   SSTOA and executes a sub-swap. Need a pure `URCi_LiquidIndexPump` (reproduce the boost
   route's cost) before these are buildable. That's the crux.
-- **Issue-hybrids** (the shared blocker): a token is issued (block-hash id = write product)
-  and a LATER leg operates on that fresh id whose cost is state-dependent and not
-  previewable — `SWPI::C_Issue` (fresh-LP transfer *class*), `EQUITY::C_IssueShareholderCollection`
-  (populate price reads fresh equity-id konto + Elite-prefix). Both need the issue-flavor-A
-  price treatment (single-source a `:decimal` price, empty output) rather than exact
-  cumulator reproduction. Contrast VST Create (toggle on fresh id = FIXED cost → buildable).
+- **Issue-hybrids**: a token is issued (block-hash id = write product) and a LATER leg
+  operates on that fresh id. KEY INSIGHT (from SWPI): the fresh-id cost readers mostly do
+  string compares not table reads, and `URC_IsVirtualGasZeroAbsolutely(non-gas-id)` is
+  GLOBAL, so many "unpreviewable" triggers reduce to `URC_IsVirtualGasZero()`.
+  - **SWPI::C_Issue — DONE + GROUND-TRUTH PROVEN** (commit 452a9f4/ef8309c). `URCi_Issue`
+    reconstructs the 5 legs (ico1/ico2/ico5 real readers; ico3 mint=biggest, ico4 fresh-LP
+    class-1=smallest from XE_IssueLP's fixed fee-toggle-off invariant). Test [6.2+3] TX04b:
+    URCi_Issue IFP == real DPTF/TFT readers on the now-existing LP (4509==4509). The
+    ground-truth pattern: after issue the token exists, so compare the pre-existence
+    reconstruction to the real readers post-issue.
+  - **EQUITY::C_IssueShareholderCollection — DEFERRED (unresolved discount ambiguity).**
+    Built a reader (owner=dpdc, populate = smallest*1M with the first-Elite `E|`/1000
+    discount since exec bills at nonces-used=0), but the ground-truth FAILED to arbitrate:
+    the "real" leg re-reads `URCi_CreateNewNonces` AFTER the 8 nonces exist (nonces-used=8
+    => NO discount), so it can't confirm whether the exec actually billed discounted
+    (nu=0, smallest*1000) or not (smallest*1M). Reverted rather than ship a possibly-wrong
+    reader. Needs a real GAS-delta harness (measure C_IssueShareholderCollection's actual
+    IGNIS spend) to settle the discount, OR a Variant-A core refactor so exec bills through
+    a shared reader. Do NOT rebuild by guessing the discount.
 - **MTX-SWP** (16): defpact swap/issue orchestration — composes SWPI/SWPU, inherits their
   hybrid/heavy nature.
 - **AQP family** (ANK/SCORE/POOL/FVT/VCT/DSA, ~40+): guided by the AQP-INFO map (task #74,
