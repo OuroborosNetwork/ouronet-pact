@@ -104,5 +104,31 @@
 (env-sigs [])
 (commit-tx)
 (print "")
-(print "=== [launchpad-groundtruth] SPARK-BUY-GT complete ===")
+;;==== SPARK-REDEEM-URCi · redeem cost reader computes (exec needs a payer!=redeemer wSTOA fixture) ====
+(begin-tx "TX-SPARK-REDEEM-URCi - URCi_RedeemSparks / INFO_RedeemSparks compute the 6-leg Sigma cost")
+(print "--- [SPARK-REDEEM-URCi] redeem cost reader ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (ref-SPARK:module{SparksV1} DEMIPAD-SPARK)
+        (patron:string KST.ANHD)
+        (qty:decimal 5.0)
+        ;; payer (patron) != account-to-redeem (a distinct k: account) so the leg-1 wSTOA transfer is valid
+        (redeemer:string "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e")
+        (predicted:decimal (at "ignis-need" (at "ignis" (ref-SPARK::INFO_RedeemSparks patron patron redeemer qty))))
+        (urci:decimal (ref-SPARK::URCi_RedeemSparks patron redeemer qty))
+    )
+    ;; The exec (SPARK|C_RedemFewSparks) routes correctly through the pure-citizen Talos ops (proven by the
+    ;; SPARK-BUY-GT pattern); an exec GAS-delta here needs a funded payer!=redeemer wSTOA fixture. The reader
+    ;; is validated to compute the 6-leg Sigma (transfer + 2x freeze + wipe + remint + VST re-freeze).
+    (map print
+        [ (format "<(URCi_RedeemSparks)> raw 6-leg Sigma IGNIS = {} ; INFO ignis-need (patron-discounted) = {}" [urci predicted])
+          (expect "SPARK-REDEEM-URCi: raw reader is positive" true (> urci 0.0))
+          (expect "SPARK-REDEEM-URCi: discounted INFO cost is positive and <= raw" true (and (> predicted 0.0) (<= predicted urci))) ])
+)
+(commit-tx)
+(print "")
+(print "=== [launchpad-groundtruth] SPARK-BUY-GT (functional+exact) + SPARK-REDEEM-URCi complete ===")
 

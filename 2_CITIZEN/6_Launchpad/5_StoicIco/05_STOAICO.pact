@@ -617,6 +617,50 @@
             )
         )
     )
+    ;;{F1b}  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
+    (defun URCi_Collect:decimal (account:string)
+        @doc "Pure-citizen IGNIS cost preview for C_Collect = Sigma of the sovereign Talos ops XI_CollectFor \
+            \ fires: DPTF remint of urSTOA + the reward payout — a MultiTransfer (wSTOA+urSTOA) when urSTOA \
+            \ is non-zero, else a single wSTOA Transfer. Data-dependent, dirty-read-fed from the live vault."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (wSTOA-supply:decimal (URC_ClaimableRewards account))
+                (urSTOA-supply:decimal (dec (UR_User2 account)))
+                (wSTOA-id:string (UR_Global8))
+                (urSTOA-id:string (UR_Global9))
+            )
+            (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_Mint urSTOA-id DEMIPAD|SC_NAME false))
+               (if (!= urSTOA-supply 0.0)
+                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                       (ref-TFT::URCi_MultiTransferCumulator [wSTOA-id urSTOA-id] DEMIPAD|SC_NAME account [wSTOA-supply urSTOA-supply]))
+                   (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                       (ref-TFT::URCi_Transfer wSTOA-id DEMIPAD|SC_NAME account wSTOA-supply))))
+        )
+    )
+    (defun INFO_Collect:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+        @doc "Cost preview for the STOAICO|C_Collect pure-citizen reward collect (sole gas-funded path = \
+            \ the TS02-CPAD Talos wrapper). IGNIS = URCi_Collect. No protocol STOA fee; the collect DELIVERS \
+            \ wSTOA + urSTOA rewards to the account (a payout, not a cost)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (wSTOA-supply:decimal (URC_ClaimableRewards account))
+                (urSTOA-supply:decimal (dec (UR_User2 account)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [ (format "Operation: Collect distribution rewards for {} (pure-citizen, Sigma-billed)." [sa])
+                  (format "Delivers {} wSTOA + {} urSTOA to the account (a payout, not a cost)." [wSTOA-supply urSTOA-supply]) ]
+                [ (format "Collected {} wSTOA + {} urSTOA." [wSTOA-supply urSTOA-supply]) ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (URCi_Collect account))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
     ;;{F6}  [C]
     (defun C_Collect (patron:string account:string)
         @doc "Self-collect from the distribution Vault — once per distribution-round, by the <account> owner. \

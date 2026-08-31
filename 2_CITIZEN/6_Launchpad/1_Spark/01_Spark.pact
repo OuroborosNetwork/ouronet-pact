@@ -28,6 +28,8 @@
     ;;
     (defun URCi_BuySparks:decimal (buyer:string sparks-amount:integer iz-native:bool))
     (defun INFO_BuySparks:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string sparks-amount:integer iz-native:bool))
+    (defun URCi_RedeemSparks:decimal (redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
+    (defun INFO_RedeemSparks:object{OuronetInfoV1.ClientInfo} (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
     ;;
 )
 (module DEMIPAD-SPARK GOV
@@ -413,6 +415,55 @@
                   "Executes via TS02-CPAD.SPARK|C_BuySparks (the sole gas-funded path)." ]
                 [ (format "Acquired {} {} Sparks." [sparks-amount spark-id]) ]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (URCi_BuySparks buyer sparks-amount iz-native))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URCi_RedeemSparks:decimal (redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
+        @doc "Pure-citizen IGNIS cost preview for C_Redem*Sparks = Sigma of the six SOVEREIGN Talos ops' \
+            \ IGNIS (each self-collects): wSTOA transfer + freeze + wipe + unfreeze + remint + VST re-freeze. \
+            \ Per-op costs are fee-class based; fed the same redemption-quantity the exec receives."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-VST:module{VestingV1} VST)
+                (spark-id:string (UR_SparkID))
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                (redemption-value:decimal (floor (* (URC_SparkRedemptionCost) redemption-quantity) 12))
+            )
+            (fold (+) 0.0
+                [ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                      (ref-TFT::URCi_Transfer wstoa-id redemption-payer account-to-redeem redemption-value))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleFreezeAccount spark-id))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_WipeSlim spark-id))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleFreezeAccount spark-id))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_Mint spark-id DEMIPAD|SC_NAME false))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                      (ref-VST::URCi_Freeze DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)) ])
+        )
+    )
+    (defun INFO_RedeemSparks:object{OuronetInfoV1.ClientInfo} (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
+        @doc "Cost preview for the SPARK|C_RedemAll/FewSparks pure-citizen redeem (sole gas-funded path = \
+            \ the TS02-CPAD Talos wrapper). IGNIS = URCi_RedeemSparks (Sigma of the six Talos ops). No \
+            \ protocol STOA fee; the redeem RETURNS wSTOA to the account (a refund, not a cost)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (spark-id:string (UR_SparkID))
+                (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                (redemption-value:decimal (floor (* (URC_SparkRedemptionCost) redemption-quantity) 12))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account-to-redeem))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [ (format "Operation: Redeem {} {} from {} (pure-citizen, Sigma-billed)." [redemption-quantity spark-id sa])
+                  (format "Returns {} {} to the account (a refund, not a cost)." [redemption-value wstoa-id]) ]
+                [ (format "Redeemed {} {} for {} {}." [redemption-quantity spark-id redemption-value wstoa-id]) ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (URCi_RedeemSparks redemption-payer account-to-redeem redemption-quantity))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )

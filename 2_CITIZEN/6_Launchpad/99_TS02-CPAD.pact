@@ -18,6 +18,7 @@
     (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
     (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
     (defun KPAY|C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal))
+    (defun STOAICO|C_Collect (patron:string account:string))
     ;;
 )
 ;;
@@ -231,6 +232,13 @@
                 (ref-TS01-A::XB_DynamicFuelSTOA)
                 acquisition-text
             )
+        )
+    )
+    (defun STOAICO|C_Collect (patron:string account:string)
+        @doc "Gas-funded entry for the StoicIco reward self-collect. No STOA inflow (it is a payout), so \
+            \ no XB_DynamicFuelSTOA refuel. Cost preview: STOAICO.URCi_Collect / STOAICO.INFO_Collect."
+        (with-capability (P|TS)
+            (STOAICO.C_Collect patron account)
         )
     )
     ;;{F7}  [X]
