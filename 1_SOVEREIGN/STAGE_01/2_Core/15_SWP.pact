@@ -117,6 +117,9 @@
     (defun URCi_UpdateFee:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
     (defun URCi_UpdateSpecialFeeTargets:object{IgnisCollectorV1.OutputCumulator} (swpair:string))
     (defun URCi_ToggleFeeLock:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
+    (defun URCi_EnableFrozenLP:object{IgnisCollectorV1.OutputCumulator} (patron:string swpair:string))
+    (defun URCi_EnableSleepingLP:object{IgnisCollectorV1.OutputCumulator} (patron:string swpair:string))
+    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool add-or-swap:bool))
     (defun URCi_UpgradeBranding:decimal (months:integer))
     ;;
     (defun XB_ModifyWeights (swpair:string new-weights:[decimal]))
@@ -1489,6 +1492,131 @@
                 (XI_ChangeOwnership swpair new-owner)
                 (URCi_ChangeOwnership swpair)
             )
+        )
+    )
+    (defun URCi_EnableFrozenLP:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string swpair:string)
+        @doc "Cost preview for C_EnableFrozenLP: if no frozen link exists yet, the VST \
+            \ create-frozen-link cost; otherwise the medium IGNIS price on the pool owner \
+            \ (output == existing link). Re-derived purely (XI_EnableFrozenLP is a free write)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-VST:module{VestingV1} VST)
+                (lp-id:string (UR_TokenLP swpair))
+                (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
+            )
+            (if (= current-frozen-link BAR)
+                (ref-VST::URCi_CreateSpecialTrueFungibleLink lp-id)
+                (ref-IGNIS::UDC_ConstructOutputCumulator
+                    (ref-DALOS::UR_UsagePrice "ignis|medium")
+                    (UR_OwnerKonto swpair)
+                    (ref-IGNIS::URC_IsVirtualGasZero)
+                    [current-frozen-link]
+                )
+            )
+        )
+    )
+    (defun URCi_EnableSleepingLP:object{IgnisCollectorV1.OutputCumulator}
+        (patron:string swpair:string)
+        @doc "Cost preview for C_EnableSleepingLP: if no sleeping link exists yet, the VST \
+            \ create-sleeping-link (vzh-tag 2) cost; otherwise the medium IGNIS price on the \
+            \ pool owner (output == existing link). Re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-VST:module{VestingV1} VST)
+                (lp-id:string (UR_TokenLP swpair))
+                (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
+            )
+            (if (= current-sleeping-link BAR)
+                (ref-VST::URCi_CreateSpecialOrtoFungibleLink lp-id 2)
+                (ref-IGNIS::UDC_ConstructOutputCumulator
+                    (ref-DALOS::UR_UsagePrice "ignis|medium")
+                    (UR_OwnerKonto swpair)
+                    (ref-IGNIS::URC_IsVirtualGasZero)
+                    [current-sleeping-link]
+                )
+            )
+        )
+    )
+    (defun URCi_ToggleAddOrSwap:object{IgnisCollectorV1.OutputCumulator}
+        (swpair:string toggle:bool add-or-swap:bool)
+        @doc "Cost preview for C_ToggleAddOrSwap: the base 5x-biggest IGNIS price (ico0) plus, \
+            \ when enabling add-liquidity (toggle), the one-time LP burn/mint + per-pool-token \
+            \ fee-exemption role bootstrap that only bills for roles not already set (ico1). \
+            \ Role costs use DPTF's own toggle-role cumulators; XE_CanAddOrSwapToggle is a free \
+            \ write. Re-derived purely from the live role states."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                (price:decimal (* 5.0 biggest))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ico0:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price (UR_OwnerKonto swpair) trigger [])
+                )
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (if toggle
+                        (let
+                            (
+                                (pt-ids:[string] (UR_PoolTokens swpair))
+                                (amp:decimal (UR_Amplifier swpair))
+                                (ptts:[string]
+                                    (if (= amp -1.0)
+                                        (drop 1 pt-ids)
+                                        pt-ids
+                                    )
+                                )
+                                (lp-id:string (UR_TokenLP swpair))
+                                (lp-burn-role:bool (ref-DPTF::UR_AccountRoleBurn lp-id SWP|SC_NAME))
+                                (lp-mint-role:bool (ref-DPTF::UR_AccountRoleMint lp-id SWP|SC_NAME))
+                                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                                    (if (not lp-burn-role)
+                                        (ref-DPTF::URCi_ToggleBurnRole lp-id)
+                                        EOC
+                                    )
+                                )
+                                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                                    (if (not lp-mint-role)
+                                        (ref-DPTF::URCi_ToggleMintRole lp-id)
+                                        EOC
+                                    )
+                                )
+                                (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
+                                    (fold
+                                        (lambda
+                                            (acc:[object{IgnisCollectorV1.OutputCumulator}] idx:integer)
+                                            (ref-U|LST::UC_AppL
+                                                acc
+                                                (if (not (ref-DPTF::UR_AccountRoleFeeExemption (at idx ptts) SWP|SC_NAME))
+                                                    (ref-DPTF::URCi_ToggleFeeExemptionRole (at idx ptts))
+                                                    EOC
+                                                )
+                                            )
+                                        )
+                                        []
+                                        (enumerate 0 (- (length ptts) 1))
+                                    )
+                                )
+                                (ico4:object{IgnisCollectorV1.OutputCumulator}
+                                    (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+                                )
+                            )
+                            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico2 ico3 ico4] [])
+                        )
+                        EOC
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1] [])
         )
     )
     (defun C_EnableFrozenLP:object{IgnisCollectorV1.OutputCumulator}
