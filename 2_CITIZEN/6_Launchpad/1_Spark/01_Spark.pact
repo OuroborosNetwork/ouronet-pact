@@ -519,11 +519,9 @@
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-VST:module{VestingV1} VST)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 ;;
                 (spark-id:string (UR_SparkID))
@@ -532,25 +530,19 @@
                 (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
                 (sa-atr:string (ref-I|OURONET::OI|UC_ShortAccount account-to-redeem))
             )
-            (ref-IGNIS::C_Collect patron
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                    [
-                        ;;1]Move Wrapped Stoa to Target
-                        (ref-TFT::C_Transfer wstoa-id redemption-payer account-to-redeem redemption-value true)
-                        ;;2]Freeze <account-to-redeem>
-                        (ref-DPTF::C_ToggleFreezeAccount spark-id account-to-redeem true)
-                        ;;3]Partial Wipe <spark-id>
-                        (ref-DPTF::C_WipeSlim spark-id account-to-redeem redemption-quantity)
-                        ;;4]Unfreeze <account-to-redeem>
-                        (ref-DPTF::C_ToggleFreezeAccount spark-id account-to-redeem false)
-                        ;;5]Remint wiped amount to <DEMIPAD|SC_NAME>
-                        (ref-DPTF::C_Mint spark-id DEMIPAD|SC_NAME redemption-quantity false)
-                        ;;6]Freeze it to back to <account-to-redeem>
-                        (ref-VST::C_Freeze DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
-                    ]
-                    []
-                )
-            )
+            ;;PURE CITIZEN: six SOVEREIGN Talos ops, each self-collecting IGNIS on patron (Sigma-billed).
+            ;;1]Move Wrapped Stoa to Target
+            (ref-TS01-C1::DPTF|C_Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
+            ;;2]Freeze <account-to-redeem>
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem true)
+            ;;3]Partial Wipe <spark-id>
+            (ref-TS01-C1::DPTF|C_WipeSlim patron spark-id account-to-redeem redemption-quantity)
+            ;;4]Unfreeze <account-to-redeem>
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem false)
+            ;;5]Remint wiped amount to <DEMIPAD|SC_NAME>
+            (ref-TS01-C1::DPTF|C_Mint patron spark-id DEMIPAD|SC_NAME redemption-quantity false)
+            ;;6]Freeze it back to <account-to-redeem>
+            (ref-TS01-C2::VST|C_Freeze patron DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
             (format "Succesfully Redeemed {} {} for {} {} on Account {}"
                 [redemption-quantity spark-id redemption-value wstoa-id sa-atr]
             )
@@ -563,11 +555,9 @@
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ref-VST:module{VestingV1} VST)
+                (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
                 ;;
                 (spark-id:string (UR_SparkID))
@@ -576,25 +566,19 @@
                 (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
                 (sa-atr:string (ref-I|OURONET::OI|UC_ShortAccount account-to-redeem))
             )
-            (ref-IGNIS::C_Collect patron
-                (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                    [
-                        ;;1]Move Wrapped Stoa to Target
-                        (ref-TFT::C_Transfer wstoa-id redemption-payer account-to-redeem redemption-value true)
-                        ;;2]Freeze <account-to-redeem>
-                        (ref-DPTF::C_ToggleFreezeAccount spark-id account-to-redeem true)
-                        ;;3]Partial Wipe <spark-id>
-                        (ref-DPTF::C_WipeSlim spark-id account-to-redeem redemption-quantity)
-                        ;;4]Unfreeze <account-to-redeem>
-                        (ref-DPTF::C_ToggleFreezeAccount spark-id account-to-redeem false)
-                        ;;5]Remint wiped amount to <DEMIPAD|SC_NAME>
-                        (ref-DPTF::C_Mint spark-id DEMIPAD|SC_NAME redemption-quantity false)
-                        ;;6]Freeze it to back to <account-to-redeem>
-                        (ref-VST::C_Freeze DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
-                    ]
-                    []
-                )
-            )
+            ;;PURE CITIZEN: six SOVEREIGN Talos ops, each self-collecting IGNIS on patron (Sigma-billed).
+            ;;1]Move Wrapped Stoa to Target
+            (ref-TS01-C1::DPTF|C_Transfer patron wstoa-id redemption-payer account-to-redeem redemption-value true)
+            ;;2]Freeze <account-to-redeem>
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem true)
+            ;;3]Partial Wipe <spark-id>
+            (ref-TS01-C1::DPTF|C_WipeSlim patron spark-id account-to-redeem redemption-quantity)
+            ;;4]Unfreeze <account-to-redeem>
+            (ref-TS01-C1::DPTF|C_ToggleFreezeAccount patron spark-id account-to-redeem false)
+            ;;5]Remint wiped amount to <DEMIPAD|SC_NAME>
+            (ref-TS01-C1::DPTF|C_Mint patron spark-id DEMIPAD|SC_NAME redemption-quantity false)
+            ;;6]Freeze it back to <account-to-redeem>
+            (ref-TS01-C2::VST|C_Freeze patron DEMIPAD|SC_NAME account-to-redeem spark-id redemption-quantity)
             (format "Succesfully Redeemed {} {} for {} {} on Account {}"
                 [redemption-quantity spark-id redemption-value wstoa-id sa-atr]
             )

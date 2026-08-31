@@ -19,6 +19,11 @@
     ;;  [C]
     ;;
     (defun C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal))
+    ;;
+    ;;  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
+    ;;
+    (defun URCi_BuyStoicPay:decimal (buyer:string kpay-amount:integer iz-native:bool))
+    (defun INFO_BuyStoicPay:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string kpay-amount:integer iz-native:bool))
 
 )
 (module DEMIPAD-STOICPAY GOV
@@ -370,6 +375,57 @@
             )
         )
     )
+    (defun URCi_BuyStoicPay:decimal (buyer:string kpay-amount:integer iz-native:bool)
+        @doc "Pure-citizen IGNIS cost preview for C_BuyStoicPay = Sigma of the three SOVEREIGN Talos \
+            \ ops' IGNIS (each self-collects): DEMIPAD deposit + DPTF StoicPay-out transfer + DPTF \
+            \ multi-bulk venture-split transfer."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (KpayID:string (UR_KpayID))
+                (pid:decimal (at "pid" (URC_KpayAmountCosts kpay-amount 0.0)))
+                (type:integer (if iz-native 0 1))
+                (ten-p:decimal (* 0.25 (dec kpay-amount)))
+                (twenty-p:decimal (* 0.5 (dec kpay-amount)))
+            )
+            (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                   (ref-DEMIPAD::URCi_Deposit buyer KpayID pid type false))
+               (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                      (ref-TFT::URCi_Transfer KpayID DEMIPAD|SC_NAME buyer (dec kpay-amount)))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                      (ref-TFT::URCi_MultiBulkTransferCumulator [KpayID] DEMIPAD|SC_NAME
+                          [[(GOV|COMPANY) (GOV|VENTURE1) (GOV|VENTURE2) (GOV|VENTURE3) (GOV|VENTURE4)]]
+                          [[twenty-p ten-p ten-p ten-p ten-p]]))))
+        )
+    )
+    (defun INFO_BuyStoicPay:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string kpay-amount:integer iz-native:bool)
+        @doc "Cost preview for the KPAY|C_BuyStoicPay pure-citizen buy (sole gas-funded path = the \
+            \ TS02-CPAD Talos wrapper). IGNIS = URCi_BuyStoicPay (Sigma of the three Talos ops). \
+            \ Launchpad ops carry NO protocol STOA fee; the ACQUISITION cost (dollar pid + STOA wstoa) \
+            \ is declared as the good bought (protocol stoa = none)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (KpayID:string (UR_KpayID))
+                (costs:object{DemiourgosLaunchpadV1.Costs} (URC_KpayAmountCosts kpay-amount 0.0))
+                (pid:decimal (at "pid" costs))
+                (wstoa:decimal (at "wstoa" costs))
+                (pay:string (if iz-native "Native STOA" "OWS (Wrapped STOA)"))
+                (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [ (format "Operation: Buy {} {} StoicPay for {} (pure-citizen, Sigma-billed)." [kpay-amount KpayID sb])
+                  (format "Acquisition cost: {} $ paid as {} {} (not a protocol fee)." [pid wstoa pay])
+                  "Executes via TS02-CPAD.KPAY|C_BuyStoicPay (the sole gas-funded path)." ]
+                [ (format "Acquired {} {} StoicPay." [kpay-amount KpayID]) ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (URCi_BuyStoicPay buyer kpay-amount iz-native))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]
     ;;{F4}  [CAP]
@@ -379,40 +435,31 @@
     (defun C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> is the buyer's slippage ceiling in dollars (Variant 1); pass a sentinel below \
             \ zero for the slippage-off path (Variant 2)."
-        (UEV_IMC)
         (with-capability (KPAY|C>BUY kpay-amount)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
-                    (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
                     ;;
                     (KpayID:string (UR_KpayID))
                     (costs:object{DemiourgosLaunchpadV1.Costs} (URC_KpayAmountCosts kpay-amount 0.0))
                     (pid:decimal (at "pid" costs))
                     (type:integer (if iz-native 0 1))
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DEMIPAD::C_Deposit buyer KpayID pid type false max-cost)
-                    )
-                    (ico2:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-TFT::C_Transfer KpayID DEMIPAD|SC_NAME buyer (dec kpay-amount) true)
-                    )
                     (ten-p:decimal (* 0.25 (dec kpay-amount)))
                     (twenty-p:decimal (* 0.5 (dec kpay-amount)))
-                    (ico3:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-TFT::C_MultiBulkTransfer [KpayID] DEMIPAD|SC_NAME
-                            [[(GOV|COMPANY) (GOV|VENTURE1) (GOV|VENTURE2) (GOV|VENTURE3) (GOV|VENTURE4)]]
-                            [[twenty-p ten-p ten-p ten-p ten-p]]
-                        )
-                    )
                     (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
                     (present-kpay-price:decimal (UR_KpayPID 0.0))
                     (paid:decimal (at "wstoa" costs))
                 )
-                (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
-                )
+                ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
+                (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer KpayID pid type false max-cost)
+                ;;2] SOVEREIGN DPTF transfer Talos op — StoicPay from the Launchpad SC to the buyer; self-collects IGNIS
+                (ref-TS01-C1::DPTF|C_Transfer patron KpayID DEMIPAD|SC_NAME buyer (dec kpay-amount) true)
+                ;;3] SOVEREIGN DPTF multi-bulk transfer Talos op — venture split (company 50% + 4 ventures); self-collects IGNIS
+                (ref-TS01-C1::DPTF|C_MultiBulkTransfer patron [KpayID] DEMIPAD|SC_NAME
+                    [[(GOV|COMPANY) (GOV|VENTURE1) (GOV|VENTURE2) (GOV|VENTURE3) (GOV|VENTURE4)]]
+                    [[twenty-p ten-p ten-p ten-p ten-p]])
                 (if iz-native
                     (format "Account {} succesfully acquired {} STOICPAY at {} $ per Unit with {} Native STOA"
                         [sb kpay-amount present-kpay-price paid]
