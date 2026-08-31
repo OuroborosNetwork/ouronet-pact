@@ -53,6 +53,9 @@
     (defun URCi_Reserve:object{IgnisCollectorV1.OutputCumulator} (reserver:string dptf:string amount:decimal))
     (defun URCi_Unreserve:object{IgnisCollectorV1.OutputCumulator} (unreserver:string r-dptf:string amount:decimal))
     (defun URCi_Vest:object{IgnisCollectorV1.OutputCumulator} (vester:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer))
+    (defun URCi_Sleep:object{IgnisCollectorV1.OutputCumulator} (sleeper:string target-account:string dptf:string amount:decimal duration:integer))
+    (defun URCi_Unsleep:object{IgnisCollectorV1.OutputCumulator} (unsleeper:string dpof:string nonce:integer))
+    (defun URCi_Hibernate:object{IgnisCollectorV1.OutputCumulator} (hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
     (defun C_RepurposeFrozen:object{IgnisCollectorV1.OutputCumulator} (dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
     (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV1.OutputCumulator} (s-dptf:string target:string toggle:bool))
         ;;
@@ -1102,6 +1105,33 @@
         )
     )
     ;;  [Sleeping Token Actions]
+    (defun URCi_Sleep:object{IgnisCollectorV1.OutputCumulator}
+        (sleeper:string target-account:string dptf:string amount:decimal duration:integer)
+        @doc "Cost preview for C_Sleep: DPOF mint of the sleeping token + (conditional) \
+            \ sleeper->VST DPTF transfer + DPOF nonce transfer to target. Re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (dpof-id:string (ref-DPTF::UR_Sleeping dptf))
+                (nonce:integer (+ (ref-DPOF::UR_NoncesUsed dpof-id) 1))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPOF::URCi_Mint dpof-id)
+                    (if (!= sleeper VST|SC_NAME)
+                        (ref-TFT::URCi_Transfer dptf sleeper VST|SC_NAME amount)
+                        EOC
+                    )
+                    (ref-DPOF::URCi_MoveCumulator dpof-id [nonce] false)
+                ]
+                []
+            )
+        )
+    )
     (defun C_Sleep:object{IgnisCollectorV1.OutputCumulator}
         (sleeper:string target-account:string dptf:string amount:decimal duration:integer)
         (UEV_IMC)
@@ -1133,6 +1163,29 @@
                     ]
                     []
                 )
+            )
+        )
+    )
+    (defun URCi_Unsleep:object{IgnisCollectorV1.OutputCumulator}
+        (unsleeper:string dpof:string nonce:integer)
+        @doc "Cost preview for C_Unsleep: unsleeper->VST DPOF nonce transfer + DPOF burn \
+            \ + VST->unsleeper DPTF transfer of the released underlying. Re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
+                (dptf-id:string (ref-DPOF::UR_Sleeping dpof))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPOF::URCi_MoveCumulator dpof [nonce] false)
+                    (ref-DPOF::URCi_Burn dpof)
+                    (ref-TFT::URCi_Transfer dptf-id VST|SC_NAME unsleeper nonce-supply)
+                ]
+                []
             )
         )
     )
@@ -1209,6 +1262,34 @@
         )
     )
     ;;
+    (defun URCi_Hibernate:object{IgnisCollectorV1.OutputCumulator}
+        (hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
+        @doc "Cost preview for C_Hibernate: DPOF mint of the hibernating token + \
+            \ (conditional) hibernator->VST DPTF transfer + DPOF nonce transfer to target. \
+            \ Re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (dpof-id:string (ref-DPTF::UR_Hibernation dptf))
+                (nonce:integer (+ (ref-DPOF::UR_NoncesUsed dpof-id) 1))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPOF::URCi_Mint dpof-id)
+                    (if (!= hibernator VST|SC_NAME)
+                        (ref-TFT::URCi_Transfer dptf hibernator VST|SC_NAME amount)
+                        EOC
+                    )
+                    (ref-DPOF::URCi_MoveCumulator dpof-id [nonce] false)
+                ]
+                []
+            )
+        )
+    )
     (defun C_Hibernate:object{IgnisCollectorV1.OutputCumulator}
         (hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
         (UEV_IMC)
