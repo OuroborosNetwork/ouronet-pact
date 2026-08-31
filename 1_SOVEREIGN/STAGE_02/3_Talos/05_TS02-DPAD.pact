@@ -1,8 +1,15 @@
 ;; Deploy: load THIS file — interface(s) + module ship together.
 ;; History/shared registry: 1_SOVEREIGN/STAGE_02/0_Interfaces/03_Talos.pact
 ;;
+;; SOVEREIGN launchpad Talos. Holds ONLY the sovereign DEMIPAD orchestration
+;; (asset registration/config + deposit/fuel/retrieve/withdraw). The per-sale
+;; CITIZEN user wrappers (SPARK|/SNAKES|/CUSTODIANS|/KPAY|/STOAICO|) live in the
+;; citizen Talos 2_CITIZEN/6_Launchpad/99_TS02-CPAD.pact, deployed AFTER the
+;; citizen sales. Deploy order: DEMIPAD core -> TS02-C1/C2/C3 -> THIS (sovereign)
+;; -> citizen sales -> TS02-CPAD (citizen Talos).
+;;
 (interface TalosStageTwo_DemiPadV1
-    @doc "Exposes Ouronet Stage Two Demipad Client Functions"
+    @doc "Exposes Ouronet Stage Two Demipad SOVEREIGN Client Functions"
     ;;
     ;;  [A]
     ;;
@@ -12,6 +19,8 @@
     (defun A_ToggleRetrieval (asset-id:string toggle:bool))
     ;;
     ;;  [C]
+    ;;
+    (defun DEMIPAD|C_Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
     ;;
     (defun DEMIPAD|C_Withdraw (patron:string asset-id:string type:integer destination:string))
     ;;
@@ -25,16 +34,10 @@
     (defun DEMIPAD|C_RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
     (defun DEMIPAD|C_RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
     ;;
-    (defun SPARK|C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal))
-    (defun SPARK|C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string))
-    (defun SPARK|C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal))
-    (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
-    (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
-    ;;
 )
 ;;
 (module TS02-DPAD GOV
-    @doc "TALOS Stage 2 Demiourgos Launchpad Functions"
+    @doc "TALOS Stage 2 Demiourgos Launchpad SOVEREIGN Functions"
     ;;
     (implements OuronetPolicyV1)
     (implements TalosStageTwo_DemiPadV1)
@@ -104,26 +107,19 @@
         )
     )
     (defun P|A_Define ()
+        @doc "Registers THIS sovereign launchpad Talos' summoner guard as a trusted IMP peer of the \
+            \ sovereign modules it drives (DEMIPAD core + DPDC for direct XB_DeployAccount). The \
+            \ per-sale CITIZEN modules are registered by the citizen Talos (TS02-CPAD)."
         (let
             (
                 (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-                (ref-P|SPARK:module{OuronetPolicyV1} DEMIPAD-SPARK)
-                (ref-P|SNAKES:module{OuronetPolicyV1} DEMIPAD-SNAKES)
-                (ref-P|CUSTODIANS:module{OuronetPolicyV1} DEMIPAD-CUSTODIANS)
-                (ref-P|KPAY:module{OuronetPolicyV1} DEMIPAD-STOICPAY)
-                (ref-P|STOAICO:module{OuronetPolicyV1} STOAICO)
                 (ref-P|DPDC:module{OuronetPolicyV1} DPDC)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
             (ref-P|TS01-A::P|A_AddIMP mg)
             (ref-P|DPAD::P|A_AddIMP mg)
-            (ref-P|SPARK::P|A_AddIMP mg)
-            (ref-P|SNAKES::P|A_AddIMP mg)
-            (ref-P|CUSTODIANS::P|A_AddIMP mg)
-            (ref-P|KPAY::P|A_AddIMP mg)
-            (ref-P|STOAICO::P|A_AddIMP mg)
-            ;;DPDC Audit #35M: TS02-DPAD now calls DPDC::XB_DeployAccountSFT/NFT directly (the removed
+            ;;DPDC Audit #35M: TS02-DPAD calls DPDC::XB_DeployAccountSFT/NFT directly (the removed
             ;;DPSF|C_DeployAccount/DPNF|C_DeployAccount Talos wrappers previously carried TS02-C1/C2's
             ;;own registered guard through the call chain instead) -- register this module's own guard
             ;;as a trusted DPDC peer so UEV_IMC recognizes the direct call.
@@ -247,6 +243,28 @@
         )
     )
     ;;{F6}  [C]
+    (defun DEMIPAD|C_Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
+        @doc "Sovereign launchpad DEPOSIT Talos op — the citizen sales call this to move a buyer's \
+            \ STOA/OURS working-token into the Launchpad against <asset-id>. <type> 0 = Native STOA \
+            \ (wrapped), 1 = OWS; <max-cost> is the buyer's dollar slippage ceiling (sentinel < 0 = \
+            \ slippage off). IGNIS billed on patron here; the sale composes it Sigma-wise with its \
+            \ asset-transfer Talos op."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor))
+                )
+                (ref-IGNIS::C_Collect patron
+                    (ref-DEMIPAD::C_Deposit donor asset-id amount-in-dollars type direct-injection max-cost)
+                )
+                (format "Succesfuly deposited {} $ worth against {} into Demipad from {}." [amount-in-dollars asset-id sd])
+            )
+        )
+    )
+    ;;
     (defun DEMIPAD|C_Withdraw (patron:string asset-id:string type:integer destination:string)
         @doc "Withdraws all cumulated Tokens in the Launchpad, gathered through sale \
             \ Type 1 = WSTOA \
@@ -283,7 +301,7 @@
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 )
                 (ref-DEMIPAD::C_TransmitTrueFungible patron client asset-id amount true)
-            )      
+            )
         )
     )
     (defun DEMIPAD|C_FuelOrtoFungible (patron:string client:string asset-id:string nonces:[integer])
@@ -293,7 +311,7 @@
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 )
                 (ref-DEMIPAD::C_TransmitOrtoFungible patron client asset-id nonces true)
-            )      
+            )
         )
     )
     (defun DEMIPAD|C_FuelSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
@@ -309,7 +327,7 @@
                     (ref-DEMIPAD::C_TransmitSemiFungibles client asset-id nonces amounts true)
                 )
                 (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
-            )      
+            )
         )
     )
     (defun DEMIPAD|C_FuelNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
@@ -325,7 +343,7 @@
                     (ref-DEMIPAD::C_TransmitNonFungibles client asset-id nonces amounts true)
                 )
                 (format "Succesfuly fueled {} Nonces {} with Amounts {} to Demiourgos Launchpad from Account {}" [asset-id nonces amounts c])
-            )      
+            )
         )
     )
     ;;
@@ -336,7 +354,7 @@
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 )
                 (ref-DEMIPAD::C_TransmitTrueFungible patron client asset-id amount false)
-            )      
+            )
         )
     )
     (defun DEMIPAD|C_RetrieveOrtoFungible (patron:string client:string asset-id:string nonces:[integer])
@@ -346,7 +364,7 @@
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 )
                 (ref-DEMIPAD::C_TransmitOrtoFungible patron client asset-id nonces false)
-            )      
+            )
         )
     )
     (defun DEMIPAD|C_RetrieveSemiFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
@@ -362,7 +380,7 @@
                     (ref-DEMIPAD::C_TransmitSemiFungibles client asset-id nonces amounts false)
                 )
                 (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])
-            )      
+            )
         )
     )
     (defun DEMIPAD|C_RetrieveNonFungible (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
@@ -378,83 +396,6 @@
                     (ref-DEMIPAD::C_TransmitNonFungibles client asset-id nonces amounts false)
                 )
                 (format "Succesfuly retrieved {} Nonces {} with Amounts {} from Demiourgos Launchpad to Account {}" [asset-id nonces amounts c])
-            )      
-        )
-    )
-    ;;
-    ;;
-    (defun SPARK|C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
-        @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Pass a sentinel < 0 for slippage \
-            \ off (Variant 2, live price via install-capability, UI-warned)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-SPARK:module{SparksV1} DEMIPAD-SPARK)
-                )
-                (ref-SPARK::C_BuySparks patron buyer sparks-amount iz-native max-cost)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-            )
-        )
-    )
-    (defun SPARK|C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string)
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-SPARK:module{SparksV1} DEMIPAD-SPARK)
-                )
-                (ref-SPARK::C_RedemAllSparks patron redemption-payer account-to-redeem)
-            )
-        )
-    )
-    (defun SPARK|C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-SPARK:module{SparksV1} DEMIPAD-SPARK)
-                )
-                (ref-SPARK::C_RedemFewSparks patron redemption-payer account-to-redeem redemption-quantity)
-            )
-        )
-    )
-    ;;
-    (defun SNAKES|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
-        @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-SNAKES:module{SaleSnakesV1} DEMIPAD-SNAKES)
-                )
-                (ref-SNAKES::C_Acquire patron buyer nonce amount iz-native max-cost)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-            )
-        )
-    )
-    (defun CUSTODIANS|C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
-        @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-CUSTODIANS:module{SaleCustodiansV1} DEMIPAD-CUSTODIANS)
-                )
-                (ref-CUSTODIANS::C_Acquire patron buyer nonce amount iz-native max-cost)
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-            )
-        )
-    )
-    (defun KPAY|C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal)
-        @doc "<max-cost> = buyer's dollar slippage ceiling (Variant 1). Sentinel < 0 = slippage off (Variant 2)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-TS01-A:module{TalosStageOne_AdminV1} TS01-A)
-                    (ref-KPAY:module{StoicPayV2} DEMIPAD-STOICPAY)
-                    (acquisition-text:string (ref-KPAY::C_BuyStoicPay patron buyer kpay-amount iz-native max-cost))
-                )
-                (ref-TS01-A::XB_DynamicFuelSTOA)
-                acquisition-text
             )
         )
     )

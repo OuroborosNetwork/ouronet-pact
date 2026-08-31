@@ -82,6 +82,8 @@
         (ref-P|TS02-C1:module{OuronetPolicyV1}    TS02-C1)
         (ref-P|TS02-C2:module{OuronetPolicyV1}    TS02-C2)
         (ref-P|TS02-C3:module{OuronetPolicyV1}    TS02-C3)
+        (ref-P|TS02-DPAD:module{OuronetPolicyV1}  TS02-DPAD)
+        (ref-P|TS02-CPAD:module{OuronetPolicyV1}  TS02-CPAD)
         ;;
         (ref-P|MTX-AQP:module{OuronetPolicyV1}    MTX-AQP)
         (ref-P|DSA:module{OuronetPolicyV1}        AQP-DSA)
@@ -106,6 +108,9 @@
         (ref-P|TS02-C1::P|A_Define)
         (ref-P|TS02-C2::P|A_Define)
         (ref-P|TS02-C3::P|A_Define)
+        ;;Launchpad: sovereign TS02-DPAD registers into DEMIPAD/DPDC; citizen TS02-CPAD registers into the 5 sales
+        (ref-P|TS02-DPAD::P|A_Define)
+        (ref-P|TS02-CPAD::P|A_Define)
         ;;
         ;;MTX-AQP — registers its caller guard in AQP-FVT's IMP so the MTX|n|C_Inject defpact's XE_ calls pass UEV_IMC
         (ref-P|MTX-AQP::P|A_Define)
