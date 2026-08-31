@@ -893,6 +893,58 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
+    (defun URC_DrainTfBatchCostIfp:decimal
+        (pool-id:string dptf-id:string legs:[object{AcquisitionVacateV1.VCT|VacateTfLeg}])
+        @doc "Variant-A shared cost estimator for CCp_BatchDrainTrueFungible, fed the same dirty- \
+            \ read <legs> the exec receives. Mirrors XI_DrainTrueFungibleFromLegs: score-FREE. \
+            \ Phase A per-leg = tracker-zero (medium) + rollup (biggest). Phase B settle-triple \
+            \ (book + checkpoint + anchor-refresh[ANK per-live + XB biggest]) fires ONLY for \
+            \ beneficiaries whose UserUnn hits 0 this round — DATA-DEPENDENT: simulate the drain \
+            \ read-only as pre-unn minus this batch's leg-count for that beneficiary == 0. Then the \
+            \ one bulk DPTF multi-transfer. NO score-delta (drain leaves the score live for finalize)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (unique-benefs:[string] (AQP-VCT.UC_VacateUniqueBeneficiariesFromLegs legs))
+                (n-live:integer (length (AQP-ANK.UR_ANK|AnchorsForAsset dptf-id)))
+                (bulk-arr:object (AQP-VCT.UC_VacateTfLegsToTftBulkArrays legs))
+                (anchor-ifp:decimal (+ (SIP|URC_Fixed (AQP-ANK.URC_TrueFungibleStakeAnchorRefreshIgnis n-live)) (SIP|URC_Biggest)))
+                (checkpoint:decimal (SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis)))
+            )
+            (fold (+) 0.0
+                [ (* (dec (length legs)) (+ (SIP|URC_Medium) (SIP|URC_Biggest)))                    ;; Phase A per-leg tracker-zero + rollup
+                  (fold (+) 0.0
+                      (map
+                          (lambda (benef:string)
+                              (if (= (- (AQP-POOL.UR_AQP|UserUnn pool-id benef)
+                                        (length (filter (lambda (l:object{AcquisitionVacateV1.VCT|VacateTfLeg}) (= (at "beneficiary-id" l) benef)) legs)))
+                                     0)
+                                  (+ (SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
+                                        (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef))))
+                                     (+ checkpoint anchor-ifp))
+                                  0.0))
+                          unique-benefs))
+                  (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                       ;; bulk DPTF multi-transfer
+                      (TFT.URCi_MultiBulkTransferCumulator [dptf-id] AQP-POOL.AQP|SC_NAME
+                          (at "receiver-array" bulk-arr) (at "transfer-amount-array" bulk-arr))))
+                ])
+        )
+    )
+    (defun AQP-POOL|INFO_BatchDrainTrueFungible:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionVacateV1.VCT|VacateTfLeg}])
+        @doc "Cost preview for AQP-POOL|CCp_BatchDrainTrueFungible. Score-free drain: per-leg \
+            \ tracker-zero + rollup, settle-on-last-drain only for beneficiaries fully drained \
+            \ this round (live UserUnn), then one bulk transfer; no STOA. Fed the dirty-read legs."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Batch-drain one DPTF asset's owner-legs out of the pool (score-free)."
+                 "Executes via TS02-C3.AQP-POOL|CCp_BatchDrainTrueFungible."]
+                [(format "Batch-drained {} legs of {} from pool {}." [(length legs) dptf-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_DrainTfBatchCostIfp pool-id dptf-id legs))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []))
+    )
     (defun AQP-POOL|INFO_FinalizeVacate:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string)
         @doc "Cost preview for AQP-POOL|C_FinalizeVacate. IGNIS one flat 'ignis|medium' tier (05_VCT:3016); no STOA."
