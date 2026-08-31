@@ -150,6 +150,55 @@ FULL tracked balance — read `AQP-POOL.UR_AQP|DPTFTrackerBalance`; cost is amou
 returned. (4) coll drain leg carries an `amounts` field → `CCp_BatchDrainCollectable` needs the
 `(map (map floor (at "amounts")) legs)` array too. Commits e42137a, b689926, 27e0f5b, 62b3ac9, 2fd6a8e.
 
+## Citizen launchpad — PURE-CITIZEN conversion (task #94) + proven working
+Owner ruling: the launchpad "baron/of-the-house" citizens (which composed bare-core
+cumulators to save gas under Kadena's 150k cap) become PURE citizens as the reference PoC:
+they call ONLY Talos ops (each self-collects IGNIS), so billing is Sigma (once per op) — a
+citizen cannot fold cumulators (no permission for bare uncollected core funcs; the compose
+permission is inseparable from the write permission, and granting it would break the gas
+boundary). The kicker: citizen C_ stay callable directly, but ONLY the Talos wrapper is the
+gas-funded path. Composition privilege name (if ever revived): "Patrician" (privileged citizen).
+
+STRUCTURE (Phase 1, commit ae1f9b6): TS02-DPAD split ->
+- SOVEREIGN `1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact`: DEMIPAD|* orchestration +
+  new `DEMIPAD|C_Deposit`; P|A_Define registers DEMIPAD/DPDC/TS01-A.
+- CITIZEN `2_CITIZEN/6_Launchpad/99_TS02-CPAD.pact` (interface CitizenLaunchpadTalosV1, deployed
+  LAST): all SPARK|/SNAKES|/CUSTODIANS|/KPAY| user wrappers; P|A_Define registers the 5 sales'
+  IMP + **TS01-A** (so the wrappers' XB_DynamicFuelSTOA gas refuel passes UEV_IMC).
+- Deploy reorder: DEMIPAD core -> TS02-C1/C2/C3 -> TS02-DPAD(sov) -> citizen sales -> TS02-CPAD.
+  [2.2]_DemiPad loads only DEMIPAD core; [3]_Talos loads sov Talos + the 5 sales + TS02-CPAD;
+  [4.0] runs both split P|A_Define. P|TALOS-SUMMONER=true so a pure citizen may call any Talos op.
+
+CONVERSIONS (Phase 2, commits a481624/44acf82/e052aed): each C_ now calls Talos ops, Sigma-billed,
++ URCi_<op> (Sigma of per-op IGNIS via URCi_Deposit + the transfer readers) + INFO_<op>
+(acquisition cost declared in the description as the good bought; protocol stoa = NoStoaCosts —
+launchpad ops carry NO protocol STOA fee, only IGNIS):
+- Spark buy: DEMIPAD|C_Deposit + DPTF|C_Transfer. Redeems (6-leg): DPTF|C_Transfer + 2x
+  ToggleFreezeAccount + WipeSlim + Mint + TS01-C2.VST|C_Freeze.
+- Snakes/Custodians acquire: DEMIPAD|C_Deposit + TS02-C1.DPDC|C_MultiTransfer.
+- StoicPay buy (3-leg): DEMIPAD|C_Deposit + DPTF|C_Transfer + DPTF|C_MultiBulkTransfer (venture split).
+- StoicIco was ALREADY pure (XI_CollectFor calls TS01-C1.DPTF|* Talos ops) — no conversion.
+
+**FUNCTIONAL PROOF (commit e052aed):** `REPL/launchpad-groundtruth.repl` SPARK-BUY-GT — boots
+base + [5.3], buys 25 sparks via TS02-CPAD.SPARK|C_BuySparks (native STOA / type 0). Buyer
+receives 25 sparks AND INFO_BuySparks.ignis-need == real IGNIS balance delta = **2.65 exactly**.
+Proves SC->buyer transfer authorizes through Talos + Sigma-billing is exact. The acquisition
+payment sigs = URC_Prices(asset,pid,type) -> sign coin.TRANSFER for wrap(non-env) + 4-way env
+split (c:iQQ/k:0cb/k:50d/c:XM) — the DEMIPAD C_Deposit env/coding/remainder model.
+
+TWO REAL LATENT BUGS fixed (never caught — launchpad buys were never runtime-tested in Z; the
+functional tests [5.3]/[6.1]/[6.3] are commented out of the gate):
+1. INFO-ZERO (implements DalosInfoV1) was bound as module{OuronetInfoV1} throughout the launchpad
+   -> runtime typecheck failure the moment any such fn runs. Rebind to real IGNIS (implements
+   OuronetInfoV1), matching AQP-INFO. (0 remain in 2_CITIZEN/6_Launchpad.)
+2. TS02-CPAD summoner guard not registered into TS01-A -> XB_DynamicFuelSTOA UEV_IMC failed.
+
+REMAINING polish (gated / analogous): Snakes/Custodians/StoicPay buy functional proofs need the
+E|DH equity collection funded, which only [6.1.1]/[6.1] provide (bit-rotted — task #95); their
+conversions are analogous to the proven Spark path + load green. Spark-redeem URCi/INFO and
+StoicIco collect URCi/INFO + a STOAICO|C_Collect wrapper are not yet added. Task #93: Stage-1
+citizens (AOZ + DSP dispenser) — owner still deciding incorporation.
+
 ## Deferred structural cleanup
 - **Task #90**: reorder inline `URCi_` into a canonical band + rename mis-prefixed `X_`
   internal writers to `XI_` (`X_KickStart`, `X_RemoveSecondary`, `X_TransmitCollectables`).
