@@ -1052,6 +1052,51 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
+    (defun URC_FullVacateCostIfp:decimal
+        (pool-id:string
+         tf-lanes:[object{AcquisitionVacateV1.VCT|VacateTfLane}]
+         of-lanes:[object{AcquisitionVacateV1.VCT|VacateNonceLane}]
+         coll-lanes:[object{AcquisitionVacateV1.VCT|VacateNonceLane}]
+         coll-son:bool)
+        @doc "Variant-A shared cost estimator for CC_FullVacate, fed the same dirty-read lane \
+            \ plan the exec's PHASE-1 scan produces. CC_FullVacate = Σ over lanes of the per-asset \
+            \ vacate recipe (XI_Vacate{TrueFungible,OrtoFungible,Collectables}PoolLegs each run the \
+            \ per-asset FromLegs consumer per lane and concat). The auto MaybeFinalizeVacate write's \
+            \ cumulator is discarded by the exec, so it is NOT part of this total. Caller supplies \
+            \ only the lanes non-empty for the pool's class (TF-family = tf + of satellites; class-2 \
+            \ = of; class-3/4 = coll with son). Reuses the three per-batch vacate readers."
+        (fold (+) 0.0
+            [ (fold (+) 0.0
+                  (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateTfLane})
+                          (URC_VacateTfBatchCostIfp pool-id (at "asset-id" l) (at "legs" l))) tf-lanes))
+              (fold (+) 0.0
+                  (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLane})
+                          (URC_VacateOfBatchCostIfp pool-id (at "asset-id" l) (at "legs" l))) of-lanes))
+              (fold (+) 0.0
+                  (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLane})
+                          (URC_VacateCollBatchCostIfp pool-id (at "asset-id" l) coll-son (at "legs" l))) coll-lanes))
+            ])
+    )
+    (defun AQP-POOL|INFO_FullVacate:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string
+         tf-lanes:[object{AcquisitionVacateV1.VCT|VacateTfLane}]
+         of-lanes:[object{AcquisitionVacateV1.VCT|VacateNonceLane}]
+         coll-lanes:[object{AcquisitionVacateV1.VCT|VacateNonceLane}]
+         coll-son:bool)
+        @doc "Cost preview for AQP-POOL|CC_FullVacate — the single-tx whole-pool vacate. Sums the \
+            \ per-asset vacate cost across every dirty-read lane (TF + OF satellites + collectables); \
+            \ no STOA. Fed the same lane plan the exec's phase-1 scan builds."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Fully vacate a pool in a single transaction (all assets, all owners)."
+                 "Executes via TS02-C3.AQP-POOL|CC_FullVacate."]
+                [(format "Fully vacated pool {} ({} TF + {} OF + {} collectable lanes)."
+                    [pool-id (length tf-lanes) (length of-lanes) (length coll-lanes)])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_FullVacateCostIfp pool-id tf-lanes of-lanes coll-lanes coll-son))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []))
+    )
     (defun AQP-POOL|INFO_FinalizeVacate:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string)
         @doc "Cost preview for AQP-POOL|C_FinalizeVacate. IGNIS one flat 'ignis|medium' tier (05_VCT:3016); no STOA."
