@@ -20,6 +20,11 @@
     (defun A_UpdateSharePrice (price:decimal))
     (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal))
     ;;
+    ;;  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
+    ;;
+    (defun URCi_Acquire:decimal (buyer:string nonce:integer amount:integer iz-native:bool))
+    (defun INFO_Acquire:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool))
+    ;;
 )
 (module DEMIPAD-SNAKES GOV
     @doc "Module defining the Sale Mechanics for Demiourgos Share Holder Collection"
@@ -250,6 +255,51 @@
             )
         )
     )
+    (defun URCi_Acquire:decimal (buyer:string nonce:integer amount:integer iz-native:bool)
+        @doc "Pure-citizen IGNIS cost preview for C_Acquire = Sigma of the two SOVEREIGN Talos ops' \
+            \ IGNIS (each self-collects): DEMIPAD deposit + DPDC-T SFT nonce transfer. Amount-independent \
+            \ deposit; the transfer cost depends only on the collectable fee class."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                (asset:string (UR_AssetID))
+                (pid:decimal (at "pid" (URC_NonceAmountCosts nonce amount)))
+                (type:integer (if iz-native 0 1))
+            )
+            (+ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                   (ref-DEMIPAD::URCi_Deposit buyer asset pid type false))
+               (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
+                   (ref-DPDC-T::URCi_MultiTransferCumulator [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]])))
+        )
+    )
+    (defun INFO_Acquire:object{OuronetInfoV1.ClientInfo} (patron:string buyer:string nonce:integer amount:integer iz-native:bool)
+        @doc "Cost preview for the SNAKES|C_Acquire pure-citizen buy (sole gas-funded path = the \
+            \ TS02-CPAD Talos wrapper). IGNIS = URCi_Acquire (Sigma of the two Talos ops). Launchpad ops \
+            \ carry NO protocol STOA fee; the ACQUISITION cost (dollar pid + STOA wstoa) is declared in \
+            \ the description as the good bought, not a fee-to-execute (protocol stoa = none)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (asset:string (UR_AssetID))
+                (costs:object{DemiourgosLaunchpadV1.Costs} (URC_NonceAmountCosts nonce amount))
+                (pid:decimal (at "pid" costs))
+                (wstoa:decimal (at "wstoa" costs))
+                (pay:string (if iz-native "Native STOA" "OWS (Wrapped STOA)"))
+                (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [ (format "Operation: Acquire {} of {} nonce {} for {} (pure-citizen, Sigma-billed)." [amount asset nonce sb])
+                  (format "Acquisition cost: {} $ paid as {} {} (not a protocol fee)." [pid wstoa pay])
+                  "Executes via TS02-CPAD.SNAKES|C_Acquire (the sole gas-funded path)." ]
+                [ (format "Acquired {} of {} nonce {}." [amount asset nonce]) ]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (URCi_Acquire buyer nonce amount iz-native))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
     (defun URC_Acquire:[string]
         (buyer:string nonce:integer amount:integer iz-native:bool slippage:decimal)
         @doc "Variant 1 (with slippage) — coin.TRANSFER caps the UI signs, padded by (1 + slippage/100)."
@@ -301,26 +351,20 @@
         (with-capability (SNAKES|ACQUIRE nonce amount)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
-                    (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
-                    (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+                    (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
                     ;;
                     (asset:string (UR_AssetID))
                     (costs:object{DemiourgosLaunchpadV1.Costs} (URC_NonceAmountCosts nonce amount))
                     (pid:decimal (at "pid" costs))
                     (type:integer (if iz-native 0 1))
-                    (ico1:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DEMIPAD::C_Deposit buyer asset pid type false max-cost)
-                    )
-                    (ico2:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DPDC-T::C_Transfer [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)
-                    )
                     (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
                 )
-                (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] [])
-                )
+                ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
+                (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer asset pid type false max-cost)
+                ;;2] SOVEREIGN DPDC collectable transfer Talos op — SFT nonce(s) from the Launchpad SC to the buyer; self-collects IGNIS
+                (ref-TS02-C1::DPDC|C_MultiTransfer patron [asset] [true] DEMIPAD|SC_NAME buyer [[nonce]] [[amount]] true)
                 (format "User {} succesfuly acquired {} Nonce {} {} SFTs" [sb amount nonce asset])
             )
         )

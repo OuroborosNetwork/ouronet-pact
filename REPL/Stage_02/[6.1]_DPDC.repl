@@ -662,7 +662,7 @@
     [
         (format "Patron has {} IGNIS" [(ref-DALOS::UR_TF_AccountSupply patron false)])
         (format "Summed Ignis Royalty is {}" [(ref-DPDC-T::URC_SummedIgnisRoyalty patron id true [1] [7])])
-        (format "Transfer Cumulator is {}" [(ref-DPDC-T::UDC_MultiTransferCumulator [id] [true] patron emma [[1]] [[7]])])
+        (format "Transfer Cumulator is {}" [(ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] patron emma [[1]] [[7]])])
         (ref-TS02-C1::DPSF|C_TransferNonce patron id patron lumy 1 7 false)
         (format "Patron has after transfer {} IGNIS" [(ref-DALOS::UR_TF_AccountSupply patron false)])
         (ref-DPDC::URD_AccountNoncesWithSupplies lumy id true)
@@ -1128,6 +1128,8 @@
         (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
         (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
         (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+        (ref-TS02-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
+        (ref-DPTF-GT:module{DemiourgosPactTrueFungibleV1} DPTF)
         ;;
         (total-stoa-amount:decimal 5000.0)
         ;;
@@ -1213,8 +1215,22 @@
         [
             ;;iz native False requires unwrapping, therefore the proper transfer capability must be set
             ;;<iz-native> = false => input WSTOA, which will be unwrapped to STOA to satisfz enviroment
-            (ref-TS02-DPAD::SNAKES|C_Acquire patron patron 4 1 false -1.0)
-            ;(ref-TS02-DPAD::SPARK|C_BuySparks patron patron 25 false)
+            ;;PURE-CITIZEN GAS-delta ground truth: INFO_Acquire.ignis-need == real IGNIS balance delta
+            ;;of the Sigma-billed SNAKES|C_Acquire (DEMIPAD|C_Deposit + DPDC|C_MultiTransfer).
+            (let
+                (
+                    (predicted-gt:decimal
+                        (at "ignis-need" (at "ignis" (DEMIPAD-SNAKES.INFO_Acquire patron patron 4 1 false))))
+                    (pre-gas-gt:decimal (ref-DPTF-GT::UR_AccountSupply "GAS-98c486052a51" patron))
+                )
+                (ref-TS02-CPAD::SNAKES|C_Acquire patron patron 4 1 false -1.0)
+                (let ((post-gas-gt:decimal (ref-DPTF-GT::UR_AccountSupply "GAS-98c486052a51" patron)))
+                    (map print
+                        [ (format "<(SNAKES-BUY-GT)> predicted ignis-need = {} ; real GAS delta = {}"
+                            [predicted-gt (- pre-gas-gt post-gas-gt)])
+                          (expect (format "SNAKES-BUY-GT: INFO predicted {} == real GAS delta {}"
+                                [predicted-gt (- pre-gas-gt post-gas-gt)])
+                            predicted-gt (- pre-gas-gt post-gas-gt)) ])))
         ]
         [
             (format "AH has Native Stoa after purchse {}" [(ref-coin::get-balance patron-stoa)])

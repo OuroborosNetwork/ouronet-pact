@@ -27,3 +27,11 @@
 (load "Stage_02/[5.3]_Launchpad.repl")
 (print "")
 (print "=== [launchpad-groundtruth] boot + setup complete ===")
+;;
+;; NOTE: the SNAKES-BUY-GT GAS-delta lives in [6.1]_DPDC (TX 015), scaffolded there
+;; (ref->TS02-CPAD + INFO_Acquire predicted == real gas delta). It cannot run yet
+;; because [6.1]_DPDC has accumulated pre-existing bit-rot from being disabled in Z
+;; (e.g. a stale DPDC-T.UDC_MultiTransferCumulator ref [now fixed], and a DPNF nonce
+;; transfer state failure at line ~719). Repairing [6.1] to green is a separate task;
+;; once it is, load [6.1.1]/[6.1.2]/[6.1.3]/[6.1] here to run the functional GAS-delta.
+
