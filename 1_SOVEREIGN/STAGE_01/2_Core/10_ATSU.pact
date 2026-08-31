@@ -31,7 +31,9 @@
     (defun C_WithdrawRoyalties:object{IgnisCollectorV1.OutputCumulator}(ats:string target:string))
         ;;
     (defun C_KickStart:object{IgnisCollectorV1.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
+    (defun URCi_KickStart:object{IgnisCollectorV1.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
+    (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
     (defun C_Coil:object{IgnisCollectorV1.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
     (defun URCi_Coil:object{IgnisCollectorV1.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
     (defun C_Curl:object{IgnisCollectorV1.OutputCumulator} (curler:string ats1:string ats2:string rt:string amount:decimal))
@@ -717,6 +719,43 @@
             (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [index])
         )
     )
+    (defun URCi_KickStart:object{IgnisCollectorV1.OutputCumulator}
+        (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
+        @doc "Cost preview for C_KickStart / A_KickStart (both delegate to X_KickStart): \
+            \ one reward-token transfer per rt (mapped purely), plus cold-mint + \
+            \ cold-transfer. Cost-equivalent to X_KickStart; the [index] output is the \
+            \ pre-kickstart index (the exec value reflects post-write state)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
+                (rbt-id:string (ref-ATS::UR_ColdRewardBearingToken ats))
+                (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
+                (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
+                    (map
+                        (lambda (idx:integer)
+                            (ref-TFT::URCi_Transfer (at idx rt-lst) kickstarter ATS|SC_NAME (at idx rt-amounts))
+                        )
+                        (enumerate 0 (- (length rt-lst) 1))
+                    )
+                )
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+                )
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPTF::URCi_Mint rbt-id ATS|SC_NAME false)
+                )
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_Transfer rbt-id ATS|SC_NAME kickstarter rbt-request-amount)
+                )
+                (index:decimal (ref-ATS::URC_Index ats))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [index])
+        )
+    )
     (defun C_KickStart:object{IgnisCollectorV1.OutputCumulator}
         (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal)
         @doc "Owner-facing variant. Fix (audit finding #11M / M2): resulting index now \
@@ -734,6 +773,16 @@
         (UEV_IMC)
         (with-capability (ATSU|C>ADMINISTRATIVE-KICKSTART kickstarter ats rt-amounts rbt-request-amount)
             (X_KickStart kickstarter ats rt-amounts rbt-request-amount)
+        )
+    )
+    (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator}
+        (fueler:string ats:string reward-token:string amount:decimal)
+        @doc "Cost preview for C_Fuel — a single reward-token transfer into the ATS SC."
+        (let
+            (
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+            )
+            (ref-TFT::URCi_Transfer reward-token fueler ATS|SC_NAME amount)
         )
     )
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator}
