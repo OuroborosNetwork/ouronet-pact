@@ -561,4 +561,226 @@
 )
 (commit-tx)
 (print "")
-(print "=== [6.5.1] AQP-INFO GROUND TRUTH — TF/OF/SF stake+unstake + TF/OF/SF vacate + TF drain cost-equality complete ===")
+;;
+;;==== TX912 · 01 · fresh OF DRAIN fixture (own pool + fresh MVST nonce) ====
+(begin-tx "TX-INFO-GT-OF-DRAIN-FIXTURE - fresh OF score/pool/vault + mint MVST")
+(print "--- [TX912 · 01 · fresh OF drain fixture] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD) (owner-konto:string KST.ANHD)
+        (dpof-id:string "MVST-98c486052a51") (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "InfoGtOfDrScore") (fvt-name:string "InfoGtOfDrVault") (pool-name:string "InfoGtOfDrPool")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (split-smart:[decimal] (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart"))))
+    )
+    (env-sigs
+        [ { "key": "PK_AncientHodler", "caps": [] }
+          { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+            "caps":
+              [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart)) ] } ])
+    ;; reuse an owned MVST nonce (the OF vacate returned its nonce to the owner) — drain takes the full tracked position
+    (ref-TS02-C3::AQP-SCR|C_IssueOrtoFungibleScore patron owner-konto score-name 12 1.0 1.0)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpof-id 2)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    (print "<(fresh OF drain fixture provisioned)>")
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;==== TX912 · 02 · stake the fresh MVST nonce into the OF drain pool ====
+(begin-tx "TX-INFO-GT-OF-DRAIN-STAKE")
+(print "--- [TX912 · 02 · stake into OF drain pool] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD) (dpof-id:string "MVST-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtOfDrPool"))
+        (owned:[integer] (ref-DPOF::URD_AccountNonces patron dpof-id))
+    )
+    ;; stake an owned MVST nonce (returned to owner by the earlier OF vacate)
+    (enforce (> (length owned) 0) "TX912: ANHD needs an MVST nonce")
+    (let ((fresh-nonce:integer (at 0 owned)))
+        (print (format "<(stake nonce {})> => \"{}\""
+            [fresh-nonce (ref-TS02-C3::AQP-POOL|CC_StakeOrtoFungible patron pool-id patron patron dpof-id [fresh-nonce])])))
+)
+(commit-tx)
+(print "")
+;;==== TX912 · 03 · OF batch-DRAIN cost equality ====
+(begin-tx "TX-INFO-GT-OF-DRAIN - INFO_BatchDrainOrtoFungible.ignis-need == real GAS delta")
+(print "--- [TX912 · 03 · OF batch-drain cost equality] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD) (gas-id:string "GAS-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtOfDrPool"))
+    )
+    (let ((lane:object{AQP-VCT.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateOrtoFungiblePoolLegs pool-id))))
+        (let
+            (
+                (dpof-id:string (at "asset-id" lane))
+                (legs:[object{AQP-VCT.VCT|VacateNonceLeg}] (at "legs" lane))
+            )
+            (let
+                (
+                    (predicted:decimal
+                        (at "ignis-need" (at "ignis"
+                            (AQP-INFO.AQP-POOL|INFO_BatchDrainOrtoFungible patron pool-id dpof-id legs))))
+                    (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                )
+                (print (format "<(INFO_BatchDrainOrtoFungible)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
+                    [predicted (length legs) pre-gas]))
+                (print (format "<(CCp_BatchDrainOrtoFungible)> => \"{}\""
+                    [(ref-TS02-C3::AQP-POOL|CCp_BatchDrainOrtoFungible
+                        patron pool-id dpof-id
+                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
+                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "nonces" l)) legs))]))
+                (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
+                    (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
+                    (map print
+                        [ (expect (format "TX-INFO-GT-OF-DRAIN: INFO predicted {} == real GAS delta {}"
+                              [predicted (- pre-gas post-gas)])
+                            predicted (- pre-gas post-gas)) ]))
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+;;==== TX913 · 01 · fresh SF DRAIN fixture (class-3 collectable) ====
+(begin-tx "TX-INFO-GT-SF-DRAIN-FIXTURE - fresh SF score/pool/vault (DHCD)")
+(print "--- [TX913 · 01 · fresh SF drain fixture] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (patron:string KST.ANHD) (owner-konto:string KST.ANHD)
+        (dpsf-id:string "DHCD-98c486052a51") (ouro-id:string "OURO-98c486052a51")
+        (score-name:string "InfoGtSfDrScore") (fvt-name:string "InfoGtSfDrVault") (pool-name:string "InfoGtSfDrPool")
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
+        (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
+        (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
+        (split-smart:[decimal] (ref-DALOS::URC_SplitSTOAPrices patron (* 2.0 (ref-DALOS::UR_UsagePrice "smart"))))
+    )
+    (env-sigs
+        [ { "key": "PK_AncientHodler", "caps": [] }
+          { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+            "caps":
+              [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" (at 2 split-smart))
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" (at 0 split-smart))
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" (at 3 split-smart))
+                (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                    "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" (at 1 split-smart)) ] } ])
+    (ref-TS02-C3::AQP-SCR|C_IssueSemiFungibleScore patron owner-konto score-name 3 true)
+    (ref-TS02-C3::AQP-POOL|C_Issue patron pool-name dpsf-id 3)
+    (ref-TS02-C3::AQP-POOL|C_AddScore patron pool-id score-id)
+    (ref-TS02-C3::AQP-FVT|REPL_BootstrapVault patron fvt-id patron score-id ouro-id)
+    (print "<(fresh SF drain fixture provisioned)>")
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+;;==== TX913 · 02 · stake a DHCD nonce into the SF drain pool ====
+(begin-tx "TX-INFO-GT-SF-DRAIN-STAKE")
+(print "--- [TX913 · 02 · stake into SF drain pool] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD) (dpsf-id:string "DHCD-98c486052a51")
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPDC:module{DpdcV1} DPDC)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtSfDrPool"))
+        (owned:[integer] (ref-DPDC::URD_AccountNonces patron dpsf-id true))
+    )
+    (enforce (> (length owned) 0) "TX913: ANHD needs a DHCD nonce")
+    (let ((fresh-nonce:integer (at 0 owned)))
+        (print (format "<(stake nonce {})> => \"{}\""
+            [fresh-nonce (ref-TS02-C3::AQP-POOL|CC_StakeSemiFungibleCollectable patron pool-id patron patron dpsf-id [fresh-nonce])])))
+)
+(commit-tx)
+(print "")
+;;==== TX913 · 03 · SF/coll batch-DRAIN cost equality ====
+(begin-tx "TX-INFO-GT-SF-DRAIN - INFO_BatchDrainCollectable.ignis-need == real GAS delta")
+(print "--- [TX913 · 03 · SF batch-drain cost equality] ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (patron:string KST.ANHD) (gas-id:string "GAS-98c486052a51") (son:bool true)
+        (ref-U|DALOS:module{UtilityDalosV1} U|DALOS)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TS02-C3:module{TalosStageTwo_ClientThreeV1} TS02-C3)
+        (pool-id:string (ref-U|DALOS::UDC_Makeid "InfoGtSfDrPool"))
+    )
+    (let ((lane:object{AQP-VCT.VCT|VacateNonceLane} (at 0 (AQP-VCT.URH_VacateCollectablesPoolLegs pool-id son))))
+        (let
+            (
+                (coll-id:string (at "asset-id" lane))
+                (legs:[object{AQP-VCT.VCT|VacateNonceLeg}] (at "legs" lane))
+            )
+            (let
+                (
+                    (predicted:decimal
+                        (at "ignis-need" (at "ignis"
+                            (AQP-INFO.AQP-POOL|INFO_BatchDrainCollectable patron pool-id coll-id son legs))))
+                    (pre-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron))
+                )
+                (print (format "<(INFO_BatchDrainCollectable)> predicted ignis-need = {} ; legs = {} ; pre-gas = {}"
+                    [predicted (length legs) pre-gas]))
+                (print (format "<(CCp_BatchDrainCollectable)> => \"{}\""
+                    [(ref-TS02-C3::AQP-POOL|CCp_BatchDrainCollectable
+                        patron pool-id coll-id son
+                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)
+                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg}) (at "nonces" l)) legs)
+                        (map (lambda (l:object{AQP-VCT.VCT|VacateNonceLeg})
+                                (map (lambda (q:decimal) (floor q)) (at "amounts" l))) legs))]))
+                (let ((post-gas:decimal (ref-DPTF::UR_AccountSupply gas-id patron)))
+                    (print (format "<(post-gas)> = {} ; actual delta = {}" [post-gas (- pre-gas post-gas)]))
+                    (map print
+                        [ (expect (format "TX-INFO-GT-SF-DRAIN: INFO predicted {} == real GAS delta {}"
+                              [predicted (- pre-gas post-gas)])
+                            predicted (- pre-gas post-gas)) ]))
+            )
+        )
+    )
+)
+(commit-tx)
+(print "")
+(print "=== [6.5.1] AQP-INFO GROUND TRUTH — TF/OF/SF stake+unstake + TF/OF/SF vacate + TF/OF/SF drain cost-equality complete ===")
