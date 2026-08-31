@@ -29,6 +29,7 @@
         (remover:string ats:string reward-token:string)
     )
     (defun C_WithdrawRoyalties:object{IgnisCollectorV1.OutputCumulator}(ats:string target:string))
+    (defun URCi_WithdrawRoyalties:object{IgnisCollectorV1.OutputCumulator} (ats:string target:string))
         ;;
     (defun C_KickStart:object{IgnisCollectorV1.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     (defun URCi_KickStart:object{IgnisCollectorV1.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
@@ -627,6 +628,32 @@
         (UEV_IMC)
         (with-capability (ATSU|C>REMOVE-SECONDARY ats reward-token)
             (X_RemoveSecondary remover ats reward-token)
+        )
+    )
+    (defun URCi_WithdrawRoyalties:object{IgnisCollectorV1.OutputCumulator}
+        (ats:string target:string)
+        @doc "Cost preview for C_WithdrawRoyalties — a single multi-transfer of the \
+            \ pool's nonzero-royalty reward-token legs to <target>, re-derived purely \
+            \ via TFT URCi_MultiTransferCumulator (same nonzero-royalty filter as exec)."
+        (let
+            (
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
+                (royalties:[decimal] (ref-ATS::UR_RewardTokenRUR ats 3))
+                (nonzero-idx:[integer]
+                    (filter
+                        (lambda (index:integer) (> (at index royalties) 0.0))
+                        (enumerate 0 (- (length reward-tokens) 1))
+                    )
+                )
+            )
+            (ref-TFT::URCi_MultiTransferCumulator
+                (map (lambda (index:integer) (at index reward-tokens)) nonzero-idx)
+                ATS|SC_NAME
+                target
+                (map (lambda (index:integer) (at index royalties)) nonzero-idx)
+            )
         )
     )
     (defun C_WithdrawRoyalties:object{IgnisCollectorV1.OutputCumulator}
