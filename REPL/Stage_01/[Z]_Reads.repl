@@ -21,3 +21,23 @@
 (print "")
 (commit-tx)
 (print "")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+(begin-tx "TX-Z02 [Z] - INFO-ONE+ Module (relocated from 2_Core; wraps Stage-1 URCi readers)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-Z02 [Z] - INFO-ONE+ Module · 01 · env-sigs (caps) ==== ==================================
+(print "--- [TX-Z02 [Z] - INFO-ONE+ Module · 01 · env-sigs (caps)] ---")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-Z02 [Z] - INFO-ONE+ Module · 02 · load module ==== ======================================
+(print "--- [TX-Z02 [Z] - INFO-ONE+ Module · 02 · load module] ---")
+(load "../../1_SOVEREIGN/STAGE_01/Z_Reads/02_INFO-ONE+.pact")
+;;==== TX-Z02 [Z] - INFO-ONE+ Module · 03 · gas echo ==== =========================================
+(print "--- [TX-Z02 [Z] - INFO-ONE+ Module · 03 · gas echo] ---")
+(format "<<<<<<<INFO-ONE Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")

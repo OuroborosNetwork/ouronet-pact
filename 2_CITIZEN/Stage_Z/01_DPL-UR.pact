@@ -273,7 +273,7 @@
         (let
             (
                 (ref-U|LST:module{StringProcessorV1} U|LST)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (fold
                 (lambda
@@ -2421,7 +2421,7 @@
             (
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 ;;
                 (public-key:string (try BAR (ref-DALOS::UR_AccountPublicKey selected-ouronet-account)))
                 (iz-activated:bool
