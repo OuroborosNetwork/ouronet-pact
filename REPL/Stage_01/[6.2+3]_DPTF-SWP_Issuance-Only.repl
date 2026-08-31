@@ -460,12 +460,12 @@
         (dwk-id:string (ref-DALOS::UR_WrappedStoaID))
         (dlk-id:string (ref-DALOS::UR_SilverStoaID))
         (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk-id))
-        (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
+        (stoaliquindex:string (at 0 ats-pairs-with-dlk-id))
     )
     (ref-TS01-C2::ATS|C_Coil
         KST.ANHD
         KST.ANHD
-        kdaliquindex
+        stoaliquindex
         dwk-id
         10000.0
     )

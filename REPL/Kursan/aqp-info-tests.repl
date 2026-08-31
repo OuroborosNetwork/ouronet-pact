@@ -2,7 +2,7 @@
 ;; FILE  REPL/Kursan/aqp-info-tests.repl
 ;; ----------------------------------------------------------------
 ;; AQP-INFO cost-preview verification. For each AQP-<MOD>|INFO_* function, assert its
-;; reported cost (ignis-full / kadena-full) equals the EXACT source the execution bills
+;; reported cost (ignis-full / stoa-full) equals the EXACT source the execution bills
 ;; (the GAS| constant read cross-module, or UR_UsagePrice tier × multiplier). Billing is
 ;; enabled (DALOS|A_IgnisToggle) so the magnitudes are the real, non-subsidised numbers.
 ;;
@@ -24,7 +24,7 @@
 (commit-tx)
 ;;
 ;;|| NEXT >
-;;|| Billing (virtual IGNIS + native KADENA) is already enabled by the standard boot, so the info
+;;|| Billing (virtual IGNIS + native STOA) is already enabled by the standard boot, so the info
 ;;|| magnitudes below are the real, non-subsidised numbers. Assert virtual billing is live first.
 ;;
 (begin-tx "AQP-INFO - confirm billing live")
@@ -65,13 +65,13 @@
                 (expect "<<ANK>> SF issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-sf)))
                 (expect "<<ANK>> NF issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-nf)))
                 (expect "<<ANK>> NFSet issue ignis-full == 1000" 1000.0 (at "ignis-full" (at "ignis" i-nfs)))
-                ;; STOA: standard × (2 if acnoi else 1) — the exact ANK KDA|C_Collect amount
-                (expect "<<ANK>> TF issue (link) kadena-full == standard" standard (at "kadena-full" (at "kadena" i-tf-link)))
-                (expect "<<ANK>> TF issue (acnoi) kadena-full == 2×standard" (* 2.0 standard) (at "kadena-full" (at "kadena" i-tf-new)))
-                (expect "<<ANK>> NF issue (acnoi) kadena-full == 2×standard" (* 2.0 standard) (at "kadena-full" (at "kadena" i-nf)))
+                ;; STOA: standard × (2 if acnoi else 1) — the exact ANK STOA|C_Collect amount
+                (expect "<<ANK>> TF issue (link) stoa-full == standard" standard (at "stoa-full" (at "stoa" i-tf-link)))
+                (expect "<<ANK>> TF issue (acnoi) stoa-full == 2×standard" (* 2.0 standard) (at "stoa-full" (at "stoa" i-tf-new)))
+                (expect "<<ANK>> NF issue (acnoi) stoa-full == 2×standard" (* 2.0 standard) (at "stoa-full" (at "stoa" i-nf)))
                 ;; revokes: biggest-tier IGNIS, no STOA
                 (expect "<<ANK>> RevokeAnchor ignis-full == ignis|biggest" biggest (at "ignis-full" (at "ignis" i-rev-a)))
-                (expect "<<ANK>> RevokeAnchor no STOA" 0.0 (at "kadena-full" (at "kadena" i-rev-a)))
+                (expect "<<ANK>> RevokeAnchor no STOA" 0.0 (at "stoa-full" (at "stoa" i-rev-a)))
                 (expect "<<ANK>> RevokeBoostClass ignis-full == ignis|biggest" biggest (at "ignis-full" (at "ignis" i-rev-bc)))
                 ;; the account-specific need is discount × full (non-negative, ≤ full)
                 (expect "<<ANK>> TF issue ignis-need ≤ full" true (<= (at "ignis-need" (at "ignis" i-tf-link)) 1000.0))
@@ -112,7 +112,7 @@
         (map print
             [
                 (expect "<<SCR>> issue ignis-full == GAS|ISSUE-SCORE (1000)" AQP-SCORE.GAS|ISSUE-SCORE (at "ignis-full" (at "ignis" i-issue)))
-                (expect "<<SCR>> issue kadena-full == smart" smart (at "kadena-full" (at "kadena" i-issue)))
+                (expect "<<SCR>> issue stoa-full == smart" smart (at "stoa-full" (at "stoa" i-issue)))
                 (expect "<<SCR>> rotate ignis-full == ignis|medium" medium (at "ignis-full" (at "ignis" i-rotate)))
                 (expect "<<SCR>> boost-class-link ignis-full == ignis|biggest" biggest (at "ignis-full" (at "ignis" i-bclink)))
                 (expect "<<SCR>> enable-deb-boost ignis-full == ignis|medium" medium (at "ignis-full" (at "ignis" i-deb)))
@@ -122,8 +122,8 @@
                 (expect "<<SCR>> SF def ignis-full == 3 × ignis|big" (* 3.0 big) (at "ignis-full" (at "ignis" i-sfdef)))
                 (expect "<<SCR>> NF def ignis-full == 2 × ignis|biggest" (* 2.0 biggest) (at "ignis-full" (at "ignis" i-nfdef)))
                 ;; all score ops carry no STOA except the issue ops
-                (expect "<<SCR>> rotate no STOA" 0.0 (at "kadena-full" (at "kadena" i-rotate)))
-                (expect "<<SCR>> model no STOA" 0.0 (at "kadena-full" (at "kadena" i-model)))
+                (expect "<<SCR>> rotate no STOA" 0.0 (at "stoa-full" (at "stoa" i-rotate)))
+                (expect "<<SCR>> model no STOA" 0.0 (at "stoa-full" (at "stoa" i-model)))
             ]
         )
     )
@@ -154,13 +154,13 @@
         (map print
             [
                 (expect "<<POOL>> issue ignis-full == GAS|ISSUE-POOL (1000)" AQP-POOL.GAS|ISSUE-POOL (at "ignis-full" (at "ignis" i-issue)))
-                (expect "<<POOL>> issue kadena-full == smart" smart (at "kadena-full" (at "kadena" i-issue)))
+                (expect "<<POOL>> issue stoa-full == smart" smart (at "stoa-full" (at "stoa" i-issue)))
                 (expect "<<POOL>> add-score ignis-full == GAS|ADD-SCORE (500)" AQP-POOL.GAS|ADD-SCORE (at "ignis-full" (at "ignis" i-add)))
                 (expect "<<POOL>> revoke-score ignis-full == GAS|REVOKE-SCORE (500)" AQP-POOL.GAS|REVOKE-SCORE (at "ignis-full" (at "ignis" i-rev)))
                 (expect "<<POOL>> enable-stake ignis-full == GAS|SET-POOL-STAKE (500)" AQP-POOL.GAS|SET-POOL-STAKE (at "ignis-full" (at "ignis" i-en)))
                 (expect "<<POOL>> sync-TF base ignis-full == GAS|SYNC-TF-ANCHORS (50)" AQP-POOL.GAS|SYNC-TF-ANCHORS (at "ignis-full" (at "ignis" i-tf)))
                 (expect "<<POOL>> sync-SF base ignis-full == GAS|SYNC-COLLECTABLE-ANCHORS (50)" AQP-POOL.GAS|SYNC-COLLECTABLE-ANCHORS (at "ignis-full" (at "ignis" i-sf)))
-                (expect "<<POOL>> add-score no STOA" 0.0 (at "kadena-full" (at "kadena" i-add)))
+                (expect "<<POOL>> add-score no STOA" 0.0 (at "stoa-full" (at "stoa" i-add)))
             ]
         )
     )
@@ -196,13 +196,13 @@
         (map print
             [
                 (expect "<<FVT>> issue ignis-full == GAS|ISSUE-FVT (1000)" AQP-FVT.GAS|ISSUE-FVT (at "ignis-full" (at "ignis" i-issue)))
-                (expect "<<FVT>> issue kadena-full == smart" smart (at "kadena-full" (at "kadena" i-issue)))
+                (expect "<<FVT>> issue stoa-full == smart" smart (at "stoa-full" (at "stoa" i-issue)))
                 (expect "<<FVT>> rotate ignis-full == ignis|medium" medium (at "ignis-full" (at "ignis" i-rot)))
                 (expect "<<FVT>> add-score-entity ignis-full == GAS|ADD-SCORE-ENTITY (500)" AQP-FVT.GAS|ADD-SCORE-ENTITY (at "ignis-full" (at "ignis" i-scent)))
                 (expect "<<FVT>> add-reward-link ignis-full == GAS|ADD-REWARD-LINK (500)" AQP-FVT.GAS|ADD-REWARD-LINK (at "ignis-full" (at "ignis" i-rwd)))
                 (expect "<<FVT>> set-quality-split ignis-full == GAS|SET-QUALITY-SPLIT (500)" AQP-FVT.GAS|SET-QUALITY-SPLIT (at "ignis-full" (at "ignis" i-qs)))
                 (expect "<<FVT>> inject ignis-full == GAS|INJECT (500)" AQP-FVT.GAS|INJECT (at "ignis-full" (at "ignis" i-inj)))
-                (expect "<<FVT>> inject no STOA (custody only)" 0.0 (at "kadena-full" (at "kadena" i-inj)))
+                (expect "<<FVT>> inject no STOA (custody only)" 0.0 (at "stoa-full" (at "stoa" i-inj)))
                 (expect "<<FVT>> collect base ignis-full == GAS|COLLECT (500)" AQP-FVT.GAS|COLLECT (at "ignis-full" (at "ignis" i-col)))
                 (expect "<<FVT>> unstale ignis-full == GAS|UNSTALE (500)" AQP-FVT.GAS|UNSTALE (at "ignis-full" (at "ignis" i-unst)))
                 ;; subsidised ops: zero to the patron

@@ -154,12 +154,12 @@
         (dwk-id:string (ref-DALOS::UR_WrappedStoaID))
         (dlk-id:string (ref-DALOS::UR_SilverStoaID))
         (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk-id))
-        (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
+        (stoaliquindex:string (at 0 ats-pairs-with-dlk-id))
     )
     (ref-TS01-C2::ATS|C_Coil
         KST.ANHD
         KST.ANHD
-        kdaliquindex
+        stoaliquindex
         dwk-id
         10000.0
     )
@@ -2380,8 +2380,8 @@
 
         (sstoa-id:string (ref-DALOS::UR_SilverStoaID))
         (ats-pairs-with-sstoa-id:[string] (ref-DPTF::UR_RewardBearingToken sstoa-id))
-        (kdaliquindex:string (at 0 ats-pairs-with-sstoa-id))
-        (index-value:decimal (ref-ATS::URC_Index kdaliquindex))
+        (stoaliquindex:string (at 0 ats-pairs-with-sstoa-id))
+        (index-value:decimal (ref-ATS::URC_Index stoaliquindex))
 
     )
     [
@@ -2449,8 +2449,8 @@
 
             (dlk-id:string (ref-DALOS::UR_SilverStoaID))
             (ats-pairs-with-dlk-id:[string] (ref-DPTF::UR_RewardBearingToken dlk-id))
-            (kdaliquindex:string (at 0 ats-pairs-with-dlk-id))
-            (index-value:decimal (ref-ATS::URC_Index kdaliquindex))
+            (stoaliquindex:string (at 0 ats-pairs-with-dlk-id))
+            (index-value:decimal (ref-ATS::URC_Index stoaliquindex))
         )
         [
             (format "Initial Liquindex is {}, Projected Liquindex is {}, from {} STOA to be used for fueling" [(at 0 indices) (at 1 indices) (at 2 indices)])

@@ -44,7 +44,7 @@
 (begin-tx "SCALE-VAC-01 - TF pool + 50 synth stakers")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 900000000)(env-gas 0)
-;; gas-station KDA fuel: PK_AncientHodler for the Ouronet ops + ANHD's kadena key with
+;; gas-station STOA fuel: PK_AncientHodler for the Ouronet ops + ANHD's stoa key with
 ;; coin.TRANSFER caps to the 4 gas-station accounts (generous ceilings to cover 50 stakes).
 (env-sigs
     [
