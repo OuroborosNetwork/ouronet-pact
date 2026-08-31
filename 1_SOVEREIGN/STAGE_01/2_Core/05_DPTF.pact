@@ -189,6 +189,8 @@
     (defun URCi_IssueGas:decimal (token-count:integer))
     (defun URCi_IssueStoa:decimal (token-count:integer))
     (defun URCi_UpgradeBranding:decimal (months:integer))
+    (defun URCi_DeployAccount:object{IgnisCollectorV1.OutputCumulator} (account:string))
+    (defun URCi_ToggleFeeLockStoa:decimal (id:string toggle:bool))
     ;;
     ;;  [X]
     ;;
@@ -1783,6 +1785,18 @@
     ;;  UpgradeBranding: STOA price is unconditionally months x "blue" (BRD's XE_UpgradeBranding returns the same).
     (defun URCi_UpgradeBranding:decimal (months:integer)
         (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
+    )
+    ;;  DeployAccount: CORE C_DeployAccount returns no cumulator; the ignis|small toll is billed
+    ;;  by Talos keyed on the deployed account. This reader single-sources that toll for exec + INFO.
+    (defun URCi_DeployAccount:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator account))
+    )
+    ;;  ToggleFeeLock STOA leg: the unlock price rail (0.0 when locking); mirrors the STOA amount
+    ;;  C_ToggleFeeLock collects (= (at 1 (UC_UnlockPrice (UR_FeeUnlocks id)))). Pure — no mutation.
+    (defun URCi_ToggleFeeLockStoa:decimal (id:string toggle:bool)
+        (let ((ref-U|DPTF:module{UtilityDptfV1} U|DPTF))
+            (if toggle 0.0 (at 1 (ref-U|DPTF::UC_UnlockPrice (UR_FeeUnlocks id))))
+        )
     )
     ;;{F6}  [C]
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}

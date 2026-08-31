@@ -637,7 +637,7 @@
                 (ref-DALOS::CAP_EnforceAccountOwnership account)
                 (ref-DPTF::C_DeployAccount id account)
                 (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_SmallCumulator account)
+                    (ref-DPTF::URCi_DeployAccount account)
                 )
                 (format "DPTF {} added to {} Ouronet Account succesfully!" [id sa])
             )

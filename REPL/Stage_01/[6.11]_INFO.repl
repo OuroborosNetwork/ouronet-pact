@@ -35,4 +35,43 @@
 (print "")
 (commit-tx)
 (print "")
-(print "=== [6.11]_INFO — DALOS block complete ===")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;==== TX-I02 · 01 · DPTF INFO — URC_DPTF|* return well-formed ClientInfo ====
+(begin-tx "TX-I02 - INFO DPTF: URC_DPTF|* previews return well-formed ClientInfo (URCi-sourced)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-I02 · 01 · DPTF INFO smoke] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (p:string KST.ANHD)
+        (a:string KST.ANHD)
+        (ouro:string (DALOS.UR_OuroborosID))
+    )
+    (map print
+        ;; IGNIS-cumulator ops (previously SIP tier buckets → now exact DPTF|URCi_*)
+        [ (expect "URC_DPTF|Control -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Control p ouro)))
+          (expect "URC_DPTF|Burn -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Burn p ouro a 1.0)))
+          (expect "URC_DPTF|Mint -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Mint p ouro a 1.0 false)))
+          (expect "URC_DPTF|SetFee -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|SetFee p ouro 5.0)))
+          (expect "URC_DPTF|SetMinMove -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|SetMinMove p ouro 1.0)))
+          (expect "URC_DPTF|TogglePause -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|TogglePause p ouro true)))
+          (expect "URC_DPTF|ToggleReservation -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleReservation p ouro true)))
+          (expect "URC_DPTF|UpdatePendingBranding -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|UpdatePendingBranding p ouro)))
+          ;; cost-mismatch fixes (Medium/Biggest → Big at exec): verify still well-formed
+          (expect "URC_DPTF|RotateOwnership -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|RotateOwnership p ouro a)))
+          (expect "URC_DPTF|ToggleFreezeAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleFreezeAccount p ouro a true)))
+          (expect "URC_DPTF|ToggleTransferRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleTransferRole p ouro a true)))
+          ;; gap ops now sourced from new core readers
+          (expect "URC_DPTF|DeployAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|DeployAccount p ouro a)))
+          (expect "URC_DPTF|ToggleFeeLock -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DPTF|ToggleFeeLock p ouro false 0)))
+          ;; STOA / dual-leg ops
+          (expect "URC_DPTF|UpgradeBranding -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DPTF|UpgradeBranding p ouro 3)))
+          (expect "URC_DPTF|Issue -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Issue p a ["testtoken"]))) ]))
+(print "")
+(commit-tx)
+(print "")
+(print "=== [6.11]_INFO — DALOS + DPTF blocks complete ===")

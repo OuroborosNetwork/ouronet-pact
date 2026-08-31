@@ -1976,7 +1976,7 @@
         (format "{} h-fr is {}" [ps (ref-ATS::UR_HotRecoveryFeeRedirection ps)])
     ]
     [
-        (INFO-ONE.DPTF|INFO_Transfer patron auryn patron emma 22.0 )
+        (INFO-ONE.URC_DPTF|Transfer patron auryn patron emma 22.0 )
         (ref-TS01-C1::DPTF|C_Transfer
             "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
             "DWK-98c486052a51"
