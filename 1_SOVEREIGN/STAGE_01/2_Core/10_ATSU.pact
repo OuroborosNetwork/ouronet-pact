@@ -41,7 +41,9 @@
     (defun C_Cull:object{IgnisCollectorV1.OutputCumulator}(culler:string ats:string))
         ;;
     (defun C_HotRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun URCi_HotRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
     (defun C_Recover:object{IgnisCollectorV1.OutputCumulator} (recoverer:string id:string nonce:integer))
+    (defun URCi_Recover:object{IgnisCollectorV1.OutputCumulator} (recoverer:string id:string nonce:integer))
     (defun C_Redeem:object{IgnisCollectorV1.OutputCumulator} (redeemer:string id:string nonce:integer))
         ;;
     (defun C_DirectRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
@@ -1094,6 +1096,48 @@
         )
     )
     ;;
+    (defun URCi_HotRecovery:object{IgnisCollectorV1.OutputCumulator}
+        (recoverer:string ats:string ra:decimal)
+        @doc "Cost preview for C_HotRecovery (flavor-B composer): fixed 3x-biggest \
+            \ construct + cold-transfer + cold-burn + hot-mint + hot-transfer, re-derived \
+            \ purely via sub-op cost readers. Cost-equivalent to C_HotRecovery."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
+                (h-rbt:string (ref-ATS::UR_HotRewardBearingToken ats))
+                (new-nonce:integer (+ (ref-DPOF::UR_NoncesUsed h-rbt) 1))
+                ;;
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConstructOutputCumulator
+                        (* 3.0 (ref-DALOS::UR_UsagePrice "ignis|biggest"))
+                        ATS|SC_NAME
+                        (ref-IGNIS::URC_IsVirtualGasZero)
+                        []
+                    )
+                )
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_Transfer c-rbt recoverer ATS|SC_NAME ra)
+                )
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPTF::URCi_Burn c-rbt ATS|SC_NAME)
+                )
+                (ico4:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPOF::URCi_Mint h-rbt)
+                )
+                (ico5:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPOF::URCi_MoveCumulator h-rbt [new-nonce] false)
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [])
+        )
+    )
     (defun C_HotRecovery:object{IgnisCollectorV1.OutputCumulator}
         (recoverer:string ats:string ra:decimal)
         (UEV_IMC)
@@ -1140,6 +1184,39 @@
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4 ico5] [])
                 )
             )
+        )
+    )
+    (defun URCi_Recover:object{IgnisCollectorV1.OutputCumulator}
+        (recoverer:string id:string nonce:integer)
+        @doc "Cost preview for C_Recover (flavor-B composer): DPOF nonce-transfer + \
+            \ DPOF burn + cold-mint + cold-transfer, re-derived purely via sub-op cost \
+            \ readers. Cost-equivalent to C_Recover."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (ats:string (ref-DPOF::UR_RewardBearingToken id))
+                (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
+                (nonce-supply:decimal (ref-DPOF::UR_NonceSupply id nonce))
+                ;;
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPOF::URCi_MoveCumulator id [nonce] false)
+                )
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPOF::URCi_Burn id)
+                )
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPTF::URCi_Mint c-rbt ATS|SC_NAME false)
+                )
+                (ico4:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_Transfer c-rbt ATS|SC_NAME recoverer nonce-supply)
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4] [])
         )
     )
     (defun C_Recover:object{IgnisCollectorV1.OutputCumulator}
