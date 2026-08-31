@@ -49,6 +49,7 @@
     (defun C_Recover:object{IgnisCollectorV1.OutputCumulator} (recoverer:string id:string nonce:integer))
     (defun URCi_Recover:object{IgnisCollectorV1.OutputCumulator} (recoverer:string id:string nonce:integer))
     (defun C_Redeem:object{IgnisCollectorV1.OutputCumulator} (redeemer:string id:string nonce:integer))
+    (defun URCi_Redeem:object{IgnisCollectorV1.OutputCumulator} (redeemer:string id:string nonce:integer))
         ;;
     (defun C_DirectRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
     (defun URCi_DirectRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
@@ -1393,6 +1394,74 @@
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4] [])
                 )
             )
+        )
+    )
+    (defun URCi_Redeem:object{IgnisCollectorV1.OutputCumulator}
+        (redeemer:string id:string nonce:integer)
+        @doc "Cost preview for C_Redeem: DPOF nonce-transfer + DPOF burn + a \
+            \ multi-transfer of the decay-earned reward-token split, plus (when a decay \
+            \ fee is retained and not redirected) fee-leg burns. Re-derives the decay math \
+            \ purely (same as exec); sub-op costs via URCi readers, no writes."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (precision:integer (ref-DPOF::UR_Decimals id))
+                (nonce-supply:decimal (ref-DPOF::UR_NonceSupply id nonce))
+                (meta-data-chain:[object] (ref-DPOF::UR_NonceMetaData id nonce))
+                (birth-date:time (at "mint-time" (at 0 meta-data-chain)))
+                (present-time:time (at "block-time" (chain-data)))
+                (elapsed-time:decimal (diff-time present-time birth-date))
+                ;;
+                (ats:string (ref-DPOF::UR_RewardBearingToken id))
+                (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
+                (h-promile:decimal (ref-ATS::UR_HotRecoveryStartingFeePromile ats))
+                (h-decay:integer (ref-ATS::UR_HotRecoveryDecayPeriod ats))
+                (h-fr:bool (ref-ATS::UR_HotRecoveryFeeRedirection ats))
+                (total-time:decimal (* 86400.0 (dec h-decay)))
+                (earned-rbt:decimal
+                    (if (>= elapsed-time total-time)
+                        nonce-supply
+                        (floor (* nonce-supply (/ (- 1000.0 (* h-promile (- 1.0 (/ elapsed-time total-time)))) 1000.0)) precision)
+                    )
+                )
+                (earned-rts:[decimal] (ref-ATS::URC_RTSplitAmounts ats earned-rbt))
+                (total-rts:[decimal] (ref-ATS::URC_RTSplitAmounts ats nonce-supply))
+                (fee-rts:[decimal] (zip (lambda (x:decimal y:decimal) (- x y)) total-rts earned-rts))
+                (have-fee-rts:bool (!= (fold (+) 0.0 fee-rts) 0.0))
+                ;;
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPOF::URCi_MoveCumulator id [nonce] false)
+                )
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPOF::URCi_Burn id)
+                )
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_MultiTransferCumulator rt-lst ATS|SC_NAME redeemer earned-rts)
+                )
+                (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
+                    (if have-fee-rts
+                        (map
+                            (lambda (idx:integer)
+                                (ref-DPTF::URCi_Burn (at idx rt-lst) ATS|SC_NAME)
+                            )
+                            (enumerate 0 (- (length rt-lst) 1))
+                        )
+                        [EOC]
+                    )
+                )
+                (ico4:object{IgnisCollectorV1.OutputCumulator}
+                    (if (and (not h-fr) (!= earned-rbt nonce-supply))
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+                        EOC
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 ico4] [])
         )
     )
     (defun C_Redeem:object{IgnisCollectorV1.OutputCumulator}
