@@ -130,5 +130,76 @@
 )
 (commit-tx)
 (print "")
-(print "=== [launchpad-groundtruth] SPARK-BUY-GT (functional+exact) + SPARK-REDEEM-URCi complete ===")
+;;==== STOICPAY-BUY-GT · pure-citizen 3-leg buy functional + GAS-delta ground truth ====
+(begin-tx "TX-STOICPAY-BUY-GT - pure-citizen KPAY|C_BuyStoicPay + INFO_BuyStoicPay == real gas delta")
+(print "--- [STOICPAY-BUY-GT] pure-citizen StoicPay buy (deposit + transfer + venture split) + GAS-delta ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (ref-DPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+        (ref-KPAY:module{StoicPayV2} DEMIPAD-STOICPAY)
+        (patron:string KST.ANHD)
+        (kpay-id:string (DEMIPAD-STOICPAY.UR_KpayID))
+        (amount:integer 100)
+        (iz-native:bool true)
+        (type:integer 0)
+        (correct-pid:decimal (at "pid" (ref-KPAY::URC_KpayAmountCosts amount 0.0)))
+        (prices-obj:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} (ref-DPAD::URC_Prices kpay-id correct-pid type))
+    )
+    (let
+        (
+            (a1:decimal (at "amount-one" prices-obj))
+            (a2:decimal (at "amount-two" prices-obj))
+            (a3:decimal (at "amount-three" prices-obj))
+            (a4:decimal (at "amount-four" prices-obj))
+            (env-amount:decimal (at "enviroment-amount" prices-obj))
+            (non-enviroment:decimal (+ (at "coding-amount" prices-obj) (at "remainder-amount" prices-obj)))
+        )
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+                "caps":
+                  [ (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" non-enviroment)
+                    (coin.TRANSFER "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI"
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" env-amount)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" a1)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" a2)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" a3)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" a4) ] } ])
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TS02-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
+                (predicted:decimal (at "ignis-need" (at "ignis" (ref-KPAY::INFO_BuyStoicPay patron patron amount iz-native))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))
+                (pre-kpay:decimal (ref-DPTF::UR_AccountSupply kpay-id patron))
+            )
+            (print (format "<(INFO_BuyStoicPay)> predicted ignis-need = {} ; pre-gas = {} ; pre-kpay = {}"
+                [predicted pre-gas pre-kpay]))
+            (print (format "<(TS02-CPAD.KPAY|C_BuyStoicPay)> => \"{}\""
+                [(ref-TS02-CPAD::KPAY|C_BuyStoicPay patron patron amount iz-native -1.0)]))
+            (let
+                (
+                    (post-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))
+                    (post-kpay:decimal (ref-DPTF::UR_AccountSupply kpay-id patron))
+                )
+                (print (format "<(post)> gas = {} ; kpay = {} ; gas-delta = {}"
+                    [post-gas post-kpay (- pre-gas post-gas)]))
+                (map print
+                    [ (expect (format "STOICPAY-BUY-GT: buyer received {} StoicPay" [amount]) (dec amount) (- post-kpay pre-kpay))
+                      (expect (format "STOICPAY-BUY-GT: INFO predicted {} == real GAS delta {}" [predicted (- pre-gas post-gas)])
+                        predicted (- pre-gas post-gas)) ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== [launchpad-groundtruth] SPARK-BUY-GT + STOICPAY-BUY-GT (functional+exact) + SPARK-REDEEM-URCi complete ===")
 
