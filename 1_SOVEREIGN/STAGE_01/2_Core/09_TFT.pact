@@ -49,6 +49,7 @@
     (defun URCi_UnityTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (sender:string receiver:string amount:decimal))
         ;;
     (defun URCi_TransferCumulator:object{IgnisCollectorV1.OutputCumulator} (type:integer id:string sender:string receiver:string))
+    (defun URCi_Transfer:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string receiver:string transfer-amount:decimal))
     (defun URCi_SmallTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string receiver:string))
     (defun URCi_MediumTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string sender:string receiver:string))
     (defun URCi_LargeTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (sender:string receiver:string))
@@ -989,6 +990,17 @@
         )
     )
     ;;
+    (defun URCi_Transfer:object{IgnisCollectorV1.OutputCumulator}
+        (id:string sender:string receiver:string transfer-amount:decimal)
+        @doc "Pure cost of a single C_Transfer, keyed on the SAME inputs C_Transfer takes: \
+            \ compute the transfer class then dispatch via URCi_TransferCumulator. Lets \
+            \ composers (e.g. ATSU URCi_Coil) total transfer cost WITHOUT performing the \
+            \ transfer — the flavor-B preview counterpart of C_Transfer's billed cost."
+        (URCi_TransferCumulator
+            (at "type" (URC_TransferClasses id sender receiver transfer-amount))
+            id sender receiver
+        )
+    )
     (defun URCi_TransferCumulator:object{IgnisCollectorV1.OutputCumulator}
         (type:integer id:string sender:string receiver:string)
         (cond

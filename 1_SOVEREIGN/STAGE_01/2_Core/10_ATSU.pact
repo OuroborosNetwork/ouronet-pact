@@ -33,6 +33,7 @@
     (defun C_KickStart:object{IgnisCollectorV1.OutputCumulator} (kickstarter:string ats:string rt-amounts:[decimal] rbt-request-amount:decimal))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} (fueler:string ats:string reward-token:string amount:decimal))
     (defun C_Coil:object{IgnisCollectorV1.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
+    (defun URCi_Coil:object{IgnisCollectorV1.OutputCumulator} (coiler:string ats:string rt:string amount:decimal))
     (defun C_Curl:object{IgnisCollectorV1.OutputCumulator} (curler:string ats1:string ats2:string rt:string amount:decimal))
         ;;
     (defun C_ColdRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
@@ -745,6 +746,40 @@
                 (ref-ATS::XE_UpdateRUR ats reward-token 1 true amount)
                 (ref-TFT::C_Transfer reward-token fueler ATS|SC_NAME amount true)
             )
+        )
+    )
+    (defun URCi_Coil:object{IgnisCollectorV1.OutputCumulator}
+        (coiler:string ats:string rt:string amount:decimal)
+        @doc "Cost preview for C_Coil (flavor-B composer). Re-derives C_Coil's \
+            \ Concatenate[transfer, mint, transfer] purely — calling each sub-op's \
+            \ own cost reader (TFT URCi_Transfer, DPTF URCi_Mint) instead of the write \
+            \ C_ — so it totals the IGNIS cost WITHOUT performing the coil. \
+            \ Cost-equivalent to C_Coil's billed cumulator (same IGNIS; output list \
+            \ mirrors the exec [c-rbt-amount])."
+        (let
+            (
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                ;;
+                (coil-data:object{AutostakeV2.CoilData}
+                    (ref-ATS::URC_RewardBearingTokenAmounts ats rt amount)
+                )
+                (c-rbt:string (at "rbt-id" coil-data))
+                (c-rbt-amount:decimal (at "rbt-amount" coil-data))
+                ;;
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_Transfer rt coiler ATS|SC_NAME amount)
+                )
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPTF::URCi_Mint c-rbt ATS|SC_NAME false)
+                )
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_Transfer c-rbt ATS|SC_NAME coiler c-rbt-amount)
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [c-rbt-amount])
         )
     )
     (defun C_Coil:object{IgnisCollectorV1.OutputCumulator}
