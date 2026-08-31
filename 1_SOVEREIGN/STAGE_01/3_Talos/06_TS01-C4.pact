@@ -2,7 +2,7 @@
 ;; Deploy: load THIS file — TalosStageOne_ClientFourV7 + TS01-C4 module ship together.
 ;; Historical registry: 1_SOVEREIGN/STAGE_01/0_Interfaces/03_Talos.pact (ClientFour V1–V5 + V6BlockTime).
 ;; Prior live ClientFourV6 lived only in this file (superseded by V7 — patronless A_RevokeLink).
-;; Prerequisite: PYTHIA module deployed (23_PYTHIA.pact ships PythiaV4 + PythiaLedgerV2).
+;; Prerequisite: PYTHIA module deployed (22_PYTHIA.pact ships PythiaV4 + PythiaLedgerV2).
 ;; REPL: REPL/Stage_01/[6.10]_PYTHIA.repl
 ;;
 (interface TalosStageOne_ClientFourV7

@@ -906,7 +906,7 @@
     (defun URD_ListPythDaily:[object{PYTHIA|S|PythDaily}] (from:integer to:integer))
 )
 (interface PythiaLedgerV2BlockTime
-    @doc "Frozen — never deployed. Block-time calendar day; single six-metric flush (superseded by batch PythiaLedgerV2 in 23_PYTHIA.pact)."
+    @doc "Frozen — never deployed. Block-time calendar day; single six-metric flush (superseded by batch PythiaLedgerV2 in 22_PYTHIA.pact)."
     ;;
     (defschema PYTHIA|S|PythMetrics
         petitions:integer
