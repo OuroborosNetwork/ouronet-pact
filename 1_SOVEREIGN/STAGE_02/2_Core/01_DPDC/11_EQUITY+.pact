@@ -34,6 +34,7 @@
         )
     )
     (defun C_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
+    (defun URCi_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator} (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
 )
 (module EQUITY GOV
     ;;
@@ -463,6 +464,69 @@
                     )
                 ]
                 [equity-id]
+            )
+        )
+    )
+    (defun URCi_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator}
+        (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
+        @doc "Cost preview for C_MorphPackageShares, mirroring its three branches: Make \
+            \ (input-nonce=1: transfer-in + add-quantity + transfer-out), Break (output-nonce=1: \
+            \ transfer-in + burn + transfer-out) and Convert (transfer-in + burn + add-quantity + \
+            \ transfer-out). Output matches exec ([[in-nonce out-nonce][in-amt out-amt]]). Purely derived."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC-MNG:module{DpdcManagementV1} DPDC-MNG)
+                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+            )
+            (if (= input-nonce 1)
+                ;;Make: shares (nonce 1) -> package-share-tier (output-nonce)
+                (let
+                    (
+                        (output-amount:integer (URC_MakeSharePackage id input-amount (- output-nonce 1)))
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] account dpdc [[1]] [[input-amount]])
+                            (ref-DPDC-MNG::URCi_AddQuantity id)
+                            (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] dpdc account [[output-nonce]] [[output-amount]])
+                        ]
+                        [[1 output-nonce] [input-amount output-amount]]
+                    )
+                )
+                (if (= output-nonce 1)
+                    ;;Break: package-share-tier (input-nonce) -> shares (nonce 1)
+                    (let
+                        (
+                            (output-shares:integer (* (URC_SingleSharePerMillions id (- input-nonce 1)) input-amount))
+                        )
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                            [
+                                (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] account dpdc [[input-nonce]] [[input-amount]])
+                                (ref-DPDC-MNG::URCi_BurnSFT id)
+                                (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] dpdc account [[1]] [[output-shares]])
+                            ]
+                            [[input-nonce 1] [input-amount output-shares]]
+                        )
+                    )
+                    ;;Convert: package-share-tier (input-nonce) -> package-share-tier (output-nonce)
+                    (let
+                        (
+                            (output-amount:integer (UC_Convert id (- input-nonce 1) input-amount (- output-nonce 1)))
+                        )
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                            [
+                                (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] account dpdc [[input-nonce]] [[input-amount]])
+                                (ref-DPDC-MNG::URCi_BurnSFT id)
+                                (ref-DPDC-MNG::URCi_AddQuantity id)
+                                (ref-DPDC-T::URCi_MultiTransferCumulator [id] [true] dpdc account [[output-nonce]] [[output-amount]])
+                            ]
+                            [[input-nonce output-nonce] [input-amount output-amount]]
+                        )
+                    )
+                )
             )
         )
     )
