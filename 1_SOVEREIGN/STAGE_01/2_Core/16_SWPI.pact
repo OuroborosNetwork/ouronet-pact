@@ -171,6 +171,7 @@
     ;;
     ;;
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool))
+    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (account:string pool-tokens:[object{SwapperV3.PoolTokens}]))
     ;;
     ;;
     ;;  [X] Functions
@@ -2445,6 +2446,48 @@
         )
     )
     ;;{F6}  [C]
+    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator}
+        (account:string pool-tokens:[object{SwapperV3.PoolTokens}])
+        @doc "Cost preview for C_Issue's IGNIS cumulator (the STOA dptf+swp usage prices are \
+            \ billed separately). Five legs, matching C_Issue's concat: \
+            \ ico1 = LP-token issue gas (URCi_IssueGas 1 on SWP); \
+            \ ico2 = the account->SWP pool-token multi-transfer (EXISTING tokens, real reader); \
+            \ ico3 = the genesis LP mint (origin -> biggest on SWP); \
+            \ ico4 = the SWP->account LP transfer-out (fresh LP is fee-toggle-off => class-1 \
+            \        Simple => smallest); \
+            \ ico5 = the flat swp-issue gas. \
+            \ ico3/ico4 are reconstructed from XE_IssueLP's FIXED LP invariants (issued via \
+            \ XB_IssueFree with fee-toggle off, so a fresh LP always transfers as class 1) rather \
+            \ than calling URCi_Mint/URCi_Transfer, because the LP id is a block-hash write product \
+            \ that does not exist at preview time. Every trigger reduces to the GLOBAL \
+            \ URC_IsVirtualGasZero: URC_IsVirtualGasZeroAbsolutely on a non-gas id is global, \
+            \ SWP is not in GAS_EXCEPTION, and <account> is a normal (non-exempt) account. \
+            \ Output ([swpair token-lp]) is empty here (write products)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-SWP:module{SwapperV3} SWP)
+                ;;
+                (pool-token-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
+                (pool-token-amounts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (swp-sc:string SWP|SC_NAME)
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DPTF::URCi_IssueGas 1) swp-sc trigger [])
+                    (ref-TFT::URCi_MultiTransferCumulator pool-token-ids account swp-sc pool-token-amounts)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|biggest") swp-sc trigger [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|smallest") swp-sc trigger [])
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|swp-issue") swp-sc trigger [])
+                ]
+                []
+            )
+        )
+    )
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
         (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] amp:decimal p:bool)
         @doc "Issues a new SWPair (Liquidty Pool). \
