@@ -473,7 +473,7 @@
         (with-capability (STOAICO|ADD-CONTRIBUTION account v-usd-amount)
             (let
                 (
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
                     (v-usd-id:string (UR_Global10))
                     (user-score:decimal (UR_User1 account))
@@ -526,7 +526,7 @@
         (with-capability (STOAICO|REMOVE-CONTRIBUTION account v-usd-amount)
             (let
                 (
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
                     (v-usd-id:string (UR_Global10))
                     (user-score:decimal (UR_User1 account))
@@ -634,7 +634,7 @@
         (require-capability (SECURE))
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
                 (wSTOA-supply:decimal (URC_ClaimableRewards account))
                 (urSTOA-supply:decimal (dec (UR_User2 account)))
