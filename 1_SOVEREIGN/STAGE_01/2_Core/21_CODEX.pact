@@ -16,6 +16,11 @@
     (defun UC_ValidateCompositeCodexId:bool (codex-id:string))
     (defun UC_ArweaveTrackerKey:string (codex-id:string arweave-tx-id:string))
     ;;
+    ;; [URCi] cost single-source readers — one raw toll per cost-bearing client op;
+    ;; consumed by BOTH the TS01-C4 exec collect and the INFO preview layer.
+    (defun URCi_RegisterStoicTag:decimal (tag-name:string))
+    (defun URCi_ReleaseStoicTag:decimal (tag-name:string))
+    ;;
     (defun A_RegisterCodexIdentity:string
         ( codex-id:string
           public-standard:string
@@ -382,6 +387,17 @@
     (defun UC_StoicTagStoaFee:decimal (tag-name:string)
         @doc "Native STOA due for registering <tag-name>: exactly 1 STOA per glyph (= string length). E.g. bytales → 7.0 STOA."
         (dec (length tag-name))
+    )
+    (defun URCi_RegisterStoicTag:decimal (tag-name:string)
+        @doc "Cost single-source for CODEX|C_RegisterStoicTag — RAW native STOA toll \
+            \ (1/glyph). Elite discount is applied at collect against the tagged account, \
+            \ so this returns the pre-discount amount. Consumed by TS01-C4 exec + INFO."
+        (UC_StoicTagStoaFee tag-name)
+    )
+    (defun URCi_ReleaseStoicTag:decimal (tag-name:string)
+        @doc "Cost single-source for CODEX|C_ReleaseStoicTag — flat IGNIS toll (1/glyph), \
+            \ collected via IGNIS::C_Collect in TS01-C4. Consumed by exec + INFO."
+        (UC_StoicTagStoaFee tag-name)
     )
     (defun UC_ValidateStoicTagName:bool (tag-name:string)
         @doc "True when tag-name is 3–256 glyphs from DALOS|CHARSET (U|DALOS)."

@@ -35,6 +35,12 @@
     (defun UC_ChainEpoch:integer (block-height:integer))
     (defun UC_CurrentChainEpoch:integer ())
     ;;
+    ;; [URCi] cost single-source readers — one raw toll per cost-bearing client op;
+    ;; consumed by BOTH the TS01-C4 exec collect and the INFO preview layer.
+    (defun URCi_DeployApiKey:decimal ())
+    (defun URCi_UpdateDualConsumerLane:decimal ())
+    (defun URCi_RevokeLink:decimal ())
+    ;;
     (defun A_LinkDualApiKey:string (standard-apollo:string smart-apollo:string))
         ;; Cronoton: create+activate (auto PYTHIA-<hash12> lane) or flip inactive→true
     (defun A_RevokeDualLink:string (dual-link-key:string))
@@ -481,6 +487,23 @@
         @doc "Fixed IGNIS toll for owner or Cronoton dual-link revoke (1 IGNIS; collected in TS01-C4)."
         PYTHIA|REVOKE-IGNIS-FEE
     )
+    (defun URCi_DeployApiKey:decimal ()
+        @doc "Cost single-source for PYTHIA|C_DeployApiKey — RAW native STOA toll \
+            \ (UC_DeployPrice, default 500). Discount anchor is BAR (no Elite discount). \
+            \ Consumed by TS01-C4 exec collect + INFO preview."
+        (UC_DeployPrice)
+    )
+    (defun URCi_UpdateDualConsumerLane:decimal ()
+        @doc "Cost single-source for PYTHIA|C_UpdateDualConsumerLane — RAW native STOA \
+            \ rename toll (UC_RenamePrice). Consumed by exec collect + INFO preview."
+        (UC_RenamePrice)
+    )
+    (defun URCi_RevokeLink:decimal ()
+        @doc "Cost single-source for PYTHIA|C_RevokeLink — flat IGNIS toll \
+            \ (UC_RevokeIgnisFee), collected via IGNIS::C_Collect in TS01-C4. \
+            \ Consumed by exec + INFO."
+        (UC_RevokeIgnisFee)
+    )
     (defun UC_DualLinkKey:string (standard-apollo:string smart-apollo:string)
         @doc "Composite dual-link key: Standard ₱. + BAR + Smart Π."
         (+ standard-apollo (+ BAR smart-apollo))
@@ -660,8 +683,19 @@
     ;;
     ;; [5] PYTHIA|T|PythDaily  (PythiaLedgerV2.PYTHIA|S|PythDaily)  Key = <day ordinal string>
     (defun UR_PythDay:object{PythiaLedgerV2.PYTHIA|S|PythDaily} (day:integer)
-        @doc "Full Pyth daily delta row for day ordinal."
-        (read PYTHIA|T|PythDaily (UCK_PythDaily day))
+        @doc "Full Pyth daily delta row for day ordinal; zeroed row for un-flushed / gap \
+            \ days (never aborts, so range reads survive holes in the ledger)."
+        (with-default-read PYTHIA|T|PythDaily (UCK_PythDaily day)
+            { "day":         day
+            , "flushed-at":  PYTHIA|LEDGER-EPOCH-START
+            , "iz-sealed":   false
+            , "metrics":     (UDC_PythMetrics|Zero) }
+            { "day"        := d
+            , "flushed-at" := fa
+            , "iz-sealed"  := iz
+            , "metrics"    := m }
+            (UDC_PythDaily d fa iz m)
+        )
     )
     ;;
     ;; [6] PYTHIA|T|PythTotal  (PythiaLedgerV2.PYTHIA|S|PythTotal)  Key = PYTHIA|STOACHAIN
@@ -707,16 +741,13 @@
     )
     (defun UR_PythDailyExists:bool (day:integer)
         @doc "True when PYTHIA|T|PythDaily has a row for day ordinal."
-        ;; Avoid (keys ...) enumeration: it is disallowed in some capability/guard modes.
-        ;; Instead, attempt a read and use `try` to turn "row missing" into false.
-        (try
-            false
-            (let
-                (
-                    (row:object{PythiaLedgerV2.PYTHIA|S|PythDaily} (UR_PythDay day))
-                )
-                true
-            )
+        ;; Avoid (keys ...) enumeration (disallowed in some capability/guard modes) AND
+        ;; do not rely on UR_PythDay throwing (it now defaults). Probe a sentinel `day`
+        ;; of -1: a real row always carries day >= 1, so present <=> read day != -1.
+        (with-default-read PYTHIA|T|PythDaily (UCK_PythDaily day)
+            { "day": -1 }
+            { "day" := d }
+            (!= d -1)
         )
     )
     ;;

@@ -228,7 +228,7 @@
                     (ref-CODEX:module{CodexV1} CODEX)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
-                    (stoa-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
+                    (stoa-fee:decimal (ref-CODEX::URCi_RegisterStoicTag tag-name))
                     (msg:string
                         (ref-CODEX::C_RegisterStoicTag tag-name account-address)
                     )
@@ -245,7 +245,7 @@
                 (
                     (ref-CODEX:module{CodexV1} CODEX)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (tag-fee:decimal (ref-CODEX::UC_StoicTagStoaFee tag-name))
+                    (tag-fee:decimal (ref-CODEX::URCi_ReleaseStoicTag tag-name))
                     (msg:string (ref-CODEX::C_ReleaseStoicTag tag-name))
                 )
                 (ref-IGNIS::C_Collect patron
@@ -272,7 +272,7 @@
                     (ref-PYTHIA:module{PythiaV4} PYTHIA)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
-                    (deploy-fee:decimal (ref-PYTHIA::UC_DeployPrice))
+                    (deploy-fee:decimal (ref-PYTHIA::URCi_DeployApiKey))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
                         (ref-PYTHIA::C_DeployApolloPythiaApiKey
@@ -296,7 +296,7 @@
                     (ref-PYTHIA:module{PythiaV4} PYTHIA)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     (ref-IGNIS|V2:module{IgnisCollectorV2} IGNIS)
-                    (rename-fee:decimal (ref-PYTHIA::UC_RenamePrice))
+                    (rename-fee:decimal (ref-PYTHIA::URCi_UpdateDualConsumerLane))
                     (fee-anchor:string (ref-PYTHIA::UC_FeeDiscountAnchor))
                     (msg:string
                         (ref-PYTHIA::C_UpdateDualConsumerLane
@@ -337,7 +337,7 @@
                 (
                     (ref-PYTHIA:module{PythiaV4} PYTHIA)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (revoke-fee:decimal (ref-PYTHIA::UC_RevokeIgnisFee))
+                    (revoke-fee:decimal (ref-PYTHIA::URCi_RevokeLink))
                     (msg:string
                         (ref-PYTHIA::C_RevokeDualLink dual-link-key)
                     )
