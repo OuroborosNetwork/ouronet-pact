@@ -270,7 +270,7 @@
             \ IGNIS (each self-collects): DEMIPAD deposit + DPDC-T SFT nonce transfer."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
                 (asset:string (UR_AssetID))
@@ -290,7 +290,7 @@
             \ the good bought (protocol stoa = none)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (asset:string (UR_AssetID))
                 (costs:object{DemiourgosLaunchpadV1.Costs} (URC_NonceAmountCosts nonce amount))
                 (pid:decimal (at "pid" costs))
@@ -370,7 +370,7 @@
         (with-capability (CUSTODIANS|ACQUIRE nonce amount)
             (let
                 (
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
                     (ref-TS02-C1:module{TalosStageTwo_ClientOneV1} TS02-C1)
                     ;;

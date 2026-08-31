@@ -156,7 +156,7 @@
     (defun UC_ShortAccount:string (account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )
@@ -253,7 +253,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                     (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor))
                 )
@@ -274,7 +274,7 @@
             (let
                 (
                     (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                     (retrieval-amount:decimal (ref-DEMIPAD::UR_Funds asset-id type))
                     (working-id:string
@@ -319,7 +319,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
@@ -335,7 +335,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
@@ -372,7 +372,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )
@@ -388,7 +388,7 @@
             (let
                 (
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                     (c:string (ref-I|OURONET::OI|UC_ShortAccount client))
                 )

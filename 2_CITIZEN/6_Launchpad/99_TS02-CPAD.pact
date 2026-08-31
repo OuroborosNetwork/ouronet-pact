@@ -97,6 +97,7 @@
             \ recognizes calls from this Talos."
         (let
             (
+                (ref-P|TS01-A:module{TalosStageOne_AdminV1} TS01-A)
                 (ref-P|SPARK:module{OuronetPolicyV1} DEMIPAD-SPARK)
                 (ref-P|SNAKES:module{OuronetPolicyV1} DEMIPAD-SNAKES)
                 (ref-P|CUSTODIANS:module{OuronetPolicyV1} DEMIPAD-CUSTODIANS)
@@ -104,11 +105,14 @@
                 (ref-P|STOAICO:module{OuronetPolicyV1} STOAICO)
                 (mg:guard (create-capability-guard (P|TALOS-SUMMONER)))
             )
+            ;;register into the sale modules (their UEV_IMC recognizes this Talos)
             (ref-P|SPARK::P|A_AddIMP mg)
             (ref-P|SNAKES::P|A_AddIMP mg)
             (ref-P|CUSTODIANS::P|A_AddIMP mg)
             (ref-P|KPAY::P|A_AddIMP mg)
             (ref-P|STOAICO::P|A_AddIMP mg)
+            ;;register into TS01-A so the wrappers' XB_DynamicFuelSTOA gas-station refuel passes UEV_IMC
+            (ref-P|TS01-A::P|A_AddIMP mg)
         )
     )
     (defun UEV_IMC ()
@@ -141,7 +145,7 @@
     (defun UC_ShortAccount:string (account:string)
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
             )
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )

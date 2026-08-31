@@ -27,11 +27,82 @@
 (load "Stage_02/[5.3]_Launchpad.repl")
 (print "")
 (print "=== [launchpad-groundtruth] boot + setup complete ===")
+(print "")
 ;;
-;; NOTE: the SNAKES-BUY-GT GAS-delta lives in [6.1]_DPDC (TX 015), scaffolded there
-;; (ref->TS02-CPAD + INFO_Acquire predicted == real gas delta). It cannot run yet
-;; because [6.1]_DPDC has accumulated pre-existing bit-rot from being disabled in Z
-;; (e.g. a stale DPDC-T.UDC_MultiTransferCumulator ref [now fixed], and a DPNF nonce
-;; transfer state failure at line ~719). Repairing [6.1] to green is a separate task;
-;; once it is, load [6.1.1]/[6.1.2]/[6.1.3]/[6.1] here to run the functional GAS-delta.
+;;==== SPARK-BUY-GT · pure-citizen buy functional + GAS-delta ground truth ====
+(begin-tx "TX-SPARK-BUY-GT - pure-citizen SPARK|C_BuySparks executes + INFO_BuySparks == real gas delta")
+(print "--- [SPARK-BUY-GT] pure-citizen Spark buy + GAS-delta ---")
+(namespace "ouronet-ns")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-DPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+        (ref-SPARK:module{SparksV1} DEMIPAD-SPARK)
+        (patron:string KST.ANHD)
+        (spark-id:string "SPARK-98c486052a51")
+        (amount:integer 25)
+        (iz-native:bool true)
+        (type:integer 0)
+        (correct-pid:decimal (at "pid" (ref-SPARK::URC_SparkAmountCosts amount)))
+        (prices-obj:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} (ref-DPAD::URC_Prices spark-id correct-pid type))
+    )
+    (let
+        (
+            (a1:decimal (at "amount-one" prices-obj))
+            (a2:decimal (at "amount-two" prices-obj))
+            (a3:decimal (at "amount-three" prices-obj))
+            (a4:decimal (at "amount-four" prices-obj))
+            (env-amount:decimal (at "enviroment-amount" prices-obj))
+            (non-enviroment:decimal (+ (at "coding-amount" prices-obj) (at "remainder-amount" prices-obj)))
+        )
+        (env-sigs
+            [ { "key": "PK_AncientHodler", "caps": [] }
+              { "key": "6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263",
+                "caps":
+                  [ ;;native:true -> non-enviroment wrapped via C_WrapStoa
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI" non-enviroment)
+                    ;;native:false -> env unwrapped via C_UnwrapStoa (harmless when unused)
+                    (coin.TRANSFER "c:ZNfuj3iZI83n7MUSKGuoXoSxFg1cyMxCzB3szUHVvrI"
+                        "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263" env-amount)
+                    ;;env split (10/20/30/40) to the four STOA targets
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:iQQFWj6gWtpGEzhM_O5ekW1QtnQQy55R8BRPGhj_0FU" a1)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:0cb30c0121ff919266121a99ff9359871818932211df94dae4137c29bc0e8f7e" a2)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "k:50d6c59b21e5e6e55baecaa75a1007de37576bde12d8230dc82459cc01b9484b" a3)
+                    (coin.TRANSFER "k:6fa1d9c3e5078a54038159c9a6bd7182301e16d6f280615eddb18b8bd2d6c263"
+                        "c:XM-pkmuB5XUQlp87ZYSbfKt8qzmHY6O2EHAzMRVBt3k" a4) ] } ])
+        (let
+            (
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TS02-CPAD:module{CitizenLaunchpadTalosV1} TS02-CPAD)
+                (predicted:decimal (at "ignis-need" (at "ignis" (ref-SPARK::INFO_BuySparks patron patron amount iz-native))))
+                (pre-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))
+                (pre-sparks:decimal (ref-DPTF::UR_AccountSupply spark-id patron))
+            )
+            (print (format "<(INFO_BuySparks)> predicted ignis-need = {} ; pre-gas = {} ; pre-sparks = {}"
+                [predicted pre-gas pre-sparks]))
+            (print (format "<(TS02-CPAD.SPARK|C_BuySparks)> => \"{}\""
+                [(ref-TS02-CPAD::SPARK|C_BuySparks patron patron amount iz-native -1.0)]))
+            (let
+                (
+                    (post-gas:decimal (ref-DPTF::UR_AccountSupply "GAS-98c486052a51" patron))
+                    (post-sparks:decimal (ref-DPTF::UR_AccountSupply spark-id patron))
+                )
+                (print (format "<(post)> gas = {} ; sparks = {} ; gas-delta = {}"
+                    [post-gas post-sparks (- pre-gas post-gas)]))
+                (map print
+                    [ (expect (format "SPARK-BUY-GT: buyer received {} sparks" [amount]) (dec amount) (- post-sparks pre-sparks))
+                      (expect (format "SPARK-BUY-GT: INFO predicted {} == real GAS delta {}" [predicted (- pre-gas post-gas)])
+                        predicted (- pre-gas post-gas)) ]))
+        )
+    )
+)
+(env-sigs [])
+(commit-tx)
+(print "")
+(print "=== [launchpad-groundtruth] SPARK-BUY-GT complete ===")
 

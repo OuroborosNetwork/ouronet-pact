@@ -379,7 +379,7 @@
             \ amount-independent; the transfer cost depends only on the DPTF fee class of Sparks."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (spark-id:string (UR_SparkID))
@@ -399,7 +399,7 @@
             \ in the description as the good being bought, not a fee-to-execute (protocol stoa = none)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (spark-id:string (UR_SparkID))
                 (costs:object{DemiourgosLaunchpadV1.Costs} (URC_SparkAmountCosts sparks-amount))
                 (pid:decimal (at "pid" costs))
@@ -459,7 +459,7 @@
         (with-capability (SPARK|C>BUY sparks-amount)
             (let
                 (
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
                     ;;
@@ -519,7 +519,7 @@
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
                 (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))
@@ -555,7 +555,7 @@
             (
                 (ref-U|CT:module{OuronetConstantsV1} U|CT)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
                 (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
                 (stoa-prec:integer (ref-U|CT::CT_STOA_PRECISION))

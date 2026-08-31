@@ -381,7 +381,7 @@
             \ multi-bulk venture-split transfer."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
                 (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (KpayID:string (UR_KpayID))
@@ -407,7 +407,7 @@
             \ is declared as the good bought (protocol stoa = none)."
         (let
             (
-                (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (KpayID:string (UR_KpayID))
                 (costs:object{DemiourgosLaunchpadV1.Costs} (URC_KpayAmountCosts kpay-amount 0.0))
                 (pid:decimal (at "pid" costs))
@@ -438,7 +438,7 @@
         (with-capability (KPAY|C>BUY kpay-amount)
             (let
                 (
-                    (ref-I|OURONET:module{OuronetInfoV1} INFO-ZERO)
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                     (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
                     (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
                     ;;
