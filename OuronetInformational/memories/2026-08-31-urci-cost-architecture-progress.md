@@ -53,13 +53,31 @@ exec billing path and the INFO preview call, so they can't drift.
 **=> Every mechanically-composable module is now complete.** What remains is the
 irreducible issue-hybrid / heavy-AMM / AQP-#74 tier below.
 
-## REMAINING (heavy — needs dedicated single-source design, NOT mechanical)
-- **SWPU swaps**: `C_Swap`, `C_SmartSwap`, `CC_SmartSwap`. Swap cost is MOSTLY mechanical
-  (multi-transfer in + `SWPLC::URCi_Fuel` indirect=EOC + special-fee-target transfer +
-  netto transfer, all off `UC_BareboneSwapWithFeez` pure math) EXCEPT the liquid-boost
-  leg `XI_LiquidIndexPump` → `XI_RawLiquidPump`, which does an internal route search to
-  SSTOA and executes a sub-swap. Need a pure `URCi_LiquidIndexPump` (reproduce the boost
-  route's cost) before these are buildable. That's the crux.
+## OWNER DIRECTION (2026-08-31): EXACT previews, dirty-read-fed
+"Exact — it's read-only so we can derive exactly. If the exec is fed dirty-read data
+(a bundle/path/plan), the URCi/info function is fed the SAME dirty-read data." So swap
+URCi take the bundle (route + boost-path + stoa-paths); vacate/drain URCi take the
+dirty-read plan; self-searching variants take the dirty-read boost-path. All read-only.
+BOOST CRACK: XI_RawLiquidPump's cost is ONE fixed SSTOA burn (or EOC if no active route)
+REGARDLESS of route length — the search only decides existence + amount (read-only),
+never the cumulator. This makes swaps fully, exactly derivable.
+
+## SWPU swaps
+- **`C_Swap` (direct) — DONE, exact** (commit 7726cc1): `URCi_Swap` + `URCi_SwapCore`
+  + `URCi_RawLiquidPump`. Slippage gate (read-only `URC_Swap` vs client bounds) → 4 legs
+  off the PURE `UC_BareboneSwapWithFeez`: multi-transfer in, LP fuel (indirect=EOC),
+  output leg (special-fee bulk split or netto transfer), boost (one SSTOA burn/EOC).
+  Exact by composition of already-proven sub-readers; execs unchanged.
+- **`C_SmartSwap` (bundle) / `CC_SmartSwap` (self-searching) — REMAINING, scoped.**
+  Multi-hop: reproduce `XI_SmartSwap`'s input transfer + `XI_SmartSwapCore`'s per-hop
+  fold cost + final concat, fed the bundle's swap-route/boost-path (or NO_PATH for the
+  self-searching variant, which re-derives read-only). Intricacies to preserve exactly:
+  special-fee-target payment is BATCHED to the LAST hop (one C_MultiBulkTransfer), and the
+  liquid boost is priced-and-burned ONCE on the last hop against the accumulated total
+  (not per-hop). Per-hop swap math = the same pure `UC_BareboneSwapWithFeez`. Each hop's
+  cost legs = the same shape as `URCi_SwapCore` (reuse it per hop). Ranges: XI_SmartSwap
+  1343, XI_SmartSwapCore 1398, XI_SmartSwapExplicitRoute 1183 (bundle), XI_SmartSwapRouter
+  985 (self-search). Mechanical given the boost crack; large careful build → fresh context.
 - **Issue-hybrids**: a token is issued (block-hash id = write product) and a LATER leg
   operates on that fresh id. KEY INSIGHT (from SWPI): the fresh-id cost readers mostly do
   string compares not table reads, and `URC_IsVirtualGasZeroAbsolutely(non-gas-id)` is
