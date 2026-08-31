@@ -734,6 +734,59 @@
                 [(length nonces)]))
     )
     ;;<---- vacate lifecycle (fixed-cost endpoints) ---->
+    (defun URC_VacateTfBatchCostIfp:decimal
+        (pool-id:string dptf-id:string legs:[object{AcquisitionVacateV1.VCT|VacateTfLeg}])
+        @doc "Variant-A shared cost estimator for CCp_BatchVacateTrueFungible, fed the SAME \
+            \ dirty-read <legs> the exec receives (owner's exact-preview / dirty-read-fed rule). \
+            \ Mirrors XI_VacateTrueFungibleFromLegs byte-for-byte: per-leg tracker-zero (medium) \
+            \ + per-unique-beneficiary unwind (rollup biggest + free RPS-prezero + anchor-refresh \
+            \ [ANK per-live + XB biggest] + score-delta + book(that benef's distinct-fvts) + \
+            \ checkpoint) + the one bulk DPTF multi-transfer. Reuses the identical phase readers \
+            \ the stake INFO is ground-truth-proven against."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (unique-benefs:[string] (AQP-VCT.UC_VacateUniqueBeneficiariesFromLegs legs))
+                (n-live:integer (length (AQP-ANK.UR_ANK|AnchorsForAsset dptf-id)))
+                (bulk-arr:object (AQP-VCT.UC_VacateTfLegsToTftBulkArrays legs))
+                (score-delta:decimal (URC_StakeScoreDeltaSum pool-id))
+            )
+            (fold (+) 0.0
+                [ (* (SIP|URC_Medium) (dec (length legs)))                                         ;; per-leg tracker-zero
+                  (fold (+) 0.0
+                      (map
+                          (lambda (benef:string)
+                              (fold (+) 0.0
+                                  [ (SIP|URC_Biggest)                                              ;; rollup
+                                    (SIP|URC_Fixed (AQP-ANK.URC_TrueFungibleStakeAnchorRefreshIgnis n-live)) ;; anchor refresh
+                                    (SIP|URC_Biggest)                                              ;; XB sync-count flat
+                                    (SIP|URC_Fixed score-delta)                                    ;; apply stake delta
+                                    (SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
+                                        (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef)))) ;; book
+                                    (SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis))          ;; checkpoint
+                                  ]))
+                          unique-benefs))
+                  (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                       ;; bulk DPTF multi-transfer
+                      (TFT.URCi_MultiBulkTransferCumulator [dptf-id] AQP-POOL.AQP|SC_NAME
+                          (at "receiver-array" bulk-arr) (at "transfer-amount-array" bulk-arr))))
+                ])
+        )
+    )
+    (defun AQP-POOL|INFO_BatchVacateTrueFungible:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string dptf-id:string legs:[object{AcquisitionVacateV1.VCT|VacateTfLeg}])
+        @doc "Cost preview for AQP-POOL|CCp_BatchVacateTrueFungible. Multi-leg IGNIS (per-leg \
+            \ tracker-zero + per-beneficiary unwind + one bulk transfer); no STOA. Fed the same \
+            \ dirty-read <legs> slice the exec is fed."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Batch-vacate one DPTF asset's owner-legs out of the pool."
+                 "Executes via TS02-C3.AQP-POOL|CCp_BatchVacateTrueFungible."]
+                [(format "Batch-vacated {} legs of {} from pool {}." [(length legs) dptf-id pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_VacateTfBatchCostIfp pool-id dptf-id legs))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []))
+    )
     (defun AQP-POOL|INFO_FinalizeVacate:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string)
         @doc "Cost preview for AQP-POOL|C_FinalizeVacate. IGNIS one flat 'ignis|medium' tier (05_VCT:3016); no STOA."
