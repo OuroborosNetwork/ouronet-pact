@@ -837,6 +837,62 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
+    (defun URC_VacateCollBatchCostIfp:decimal
+        (pool-id:string collectable-id:string son:bool legs:[object{AcquisitionVacateV1.VCT|VacateNonceLeg}])
+        @doc "Variant-A shared cost estimator for CCp_BatchVacateCollectables (son=DPSF/DPNF), \
+            \ fed the same dirty-read nonce <legs> the exec receives. Mirrors XI_VacateCollectable \
+            \ Batch: the one bulk DPDC-T transfer + per-owner-row (tracker medium×|nonces| + rollup \
+            \ medium×|nonces|) + per-unique-beneficiary score unwind = free RPS-prezero + FLAT anchor \
+            \ refresh (medium+biggest) + ApplyCollectableDelta (class-matched: SF [3] / NF [4]) + \
+            \ book + checkpoint. Collectable units are whole (amounts floored, matching exec)."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (nonces-array:[[integer]] (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "nonces" l)) legs))
+                (amounts-array:[[integer]]
+                    (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg})
+                            (map (lambda (q:decimal) (floor q)) (at "amounts" l))) legs))
+                (unique-benefs:[string]
+                    (AQP-VCT.UC_VacateUniqueBeneficiaries
+                        (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "beneficiary-id" l)) legs)))
+                (score-delta:decimal (URC_StakeScoreDeltaSumForClasses pool-id (if son [3] [4])))
+                (anchor-flat:decimal (+ (SIP|URC_Medium) (SIP|URC_Biggest)))
+            )
+            (fold (+) 0.0
+                [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                       ;; bulk DPDC-T transfer
+                      (DPDC-T.URCi_BulkTransferCumulator collectable-id son AQP-POOL.AQP|SC_NAME
+                          (map (lambda (l:object{AcquisitionVacateV1.VCT|VacateNonceLeg}) (at "owner-id" l)) legs)
+                          nonces-array amounts-array)))
+                  (* (* 2.0 (SIP|URC_Medium)) (dec (length (fold (+) [] nonces-array))))            ;; per-row tracker + rollup (each medium×|nonces|)
+                  (fold (+) 0.0
+                      (map
+                          (lambda (benef:string)
+                              (fold (+) 0.0
+                                  [ (SIP|URC_Fixed anchor-flat)                                     ;; flat anchor refresh
+                                    (SIP|URC_Fixed score-delta)                                     ;; apply collectable delta [son?3:4]
+                                    (SIP|URC_Fixed (AQP-FVT.URC_BookStakeUnclaimedIgnis
+                                        (at "distinct-fvts" (AQP-FVT.URHC_BuildStakeSettleBundle pool-id benef)))) ;; book
+                                    (SIP|URC_Fixed (AQP-FVT.URC_CheckpointStakeRpsIgnis))           ;; checkpoint
+                                  ]))
+                          unique-benefs))
+                ])
+        )
+    )
+    (defun AQP-POOL|INFO_BatchVacateCollectables:object{OuronetInfoV1.ClientInfo}
+        (patron:string pool-id:string collectable-id:string son:bool legs:[object{AcquisitionVacateV1.VCT|VacateNonceLeg}])
+        @doc "Cost preview for AQP-POOL|CCp_BatchVacateCollectables (son=DPSF true / DPNF false). \
+            \ Multi-leg IGNIS (bulk transfer + per-nonce tracker + rollup + flat anchor + per- \
+            \ beneficiary class-matched score unwind); no STOA. Fed the dirty-read nonce <legs>."
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Batch-vacate one collectable collection's owner nonce-legs out of the pool."
+                 "Executes via TS02-C3.AQP-POOL|CCp_BatchVacateCollectables."]
+                [(format "Batch-vacated {} nonce-legs of {} (son={}) from pool {}." [(length legs) collectable-id son pool-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron
+                    (URC_VacateCollBatchCostIfp pool-id collectable-id son legs))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []))
+    )
     (defun AQP-POOL|INFO_FinalizeVacate:object{OuronetInfoV1.ClientInfo}
         (patron:string pool-id:string)
         @doc "Cost preview for AQP-POOL|C_FinalizeVacate. IGNIS one flat 'ignis|medium' tier (05_VCT:3016); no STOA."
