@@ -40,8 +40,18 @@ exec billing path and the INFO preview call, so they can't drift.
 - **DPDC-N / DPDC-MNG already complete** (verified): all 7 UpdateNonce* ops share
   `URCi_UpdateNonceField`; all 4 Wipe ops share `URCi_WipeCumulator` (via C_WipePure).
   Name-diffs are misleading — these are single-sourced through shared readers.
+- **SWPLC liquidity family** — `URCi_RemoveLiquidity` + all 5 `Add*Liquidity`
+  (Standard/Iced/Glacial/Frozen/Sleeping). The LP math is mechanical: `URC|STOA-PID_CLAD`
+  is a pure reader carrying the perfect-ignis-fee cumulator + primary/secondary LP + tax;
+  VST freeze/sleep legs use `URCi_Freeze`/`URCi_Sleep`. => **SWPLC fully done.**
+- **DEMIPAD 3** — `URCi_Deposit` (wrap/unwrap + working-token transfer off `URC_Prices`),
+  `URCi_TransmitSemiFungibles`/`NonFungibles` (shared `URCi_TransmitCollectables`).
+  Withdraw/TransmitTF/TransmitOF are bare Talos-routed (no cumulator).
 - Earlier (prior sessions): rest of DPDC family (R/02/MNG/N/F/C/I/T), BRD, TFT
   `URCi_Transfer`, ATSU flavor-B (11). => **DPDC family fully done.**
+
+**=> Every mechanically-composable module is now complete.** What remains is the
+irreducible issue-hybrid / heavy-AMM / AQP-#74 tier below.
 
 ## REMAINING (heavy — needs dedicated single-source design, NOT mechanical)
 - **SWPU swaps**: `C_Swap`, `C_SmartSwap`, `CC_SmartSwap`. Swap cost is MOSTLY mechanical
@@ -50,10 +60,14 @@ exec billing path and the INFO preview call, so they can't drift.
   leg `XI_LiquidIndexPump` → `XI_RawLiquidPump`, which does an internal route search to
   SSTOA and executes a sub-swap. Need a pure `URCi_LiquidIndexPump` (reproduce the boost
   route's cost) before these are buildable. That's the crux.
-- **SWPLC**: `C_RemoveLiquidity`, and the `C|STOA-PID_Add*Liquidity` family (LP mint math).
-- **SWPI**: `C_Issue` (pool creation, issue flavor-A + init transfers).
-- **EQUITY**: `C_IssueShareholderCollection` (issue + populate on fresh id).
-- **MTX-SWP** (16): defpact swap orchestration.
+- **Issue-hybrids** (the shared blocker): a token is issued (block-hash id = write product)
+  and a LATER leg operates on that fresh id whose cost is state-dependent and not
+  previewable — `SWPI::C_Issue` (fresh-LP transfer *class*), `EQUITY::C_IssueShareholderCollection`
+  (populate price reads fresh equity-id konto + Elite-prefix). Both need the issue-flavor-A
+  price treatment (single-source a `:decimal` price, empty output) rather than exact
+  cumulator reproduction. Contrast VST Create (toggle on fresh id = FIXED cost → buildable).
+- **MTX-SWP** (16): defpact swap/issue orchestration — composes SWPI/SWPU, inherits their
+  hybrid/heavy nature.
 - **AQP family** (ANK/SCORE/POOL/FVT/VCT/DSA, ~40+): guided by the AQP-INFO map (task #74,
   in progress). Mix of mechanical config/toggles and heavy reward-settlement / vacate-drain
   / inject-stream / heavy-read (`URD_`) ops. Coordinate URCi with the #74 INFO map.
