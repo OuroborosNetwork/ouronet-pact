@@ -117,6 +117,7 @@
         )
     )
     (defun C_Swap:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
+    (defun URCi_Swap:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{Slippage}))
 )
 ;;
 (module SWPU GOV
@@ -924,6 +925,151 @@
                 "no registration — swap did not execute"
             )
             [ico stoa-results]
+        )
+    )
+    (defun URCi_RawLiquidPump:object{IgnisCollectorV1.OutputCumulator}
+        (id:string amount:decimal boost-path:object{SwapperUsageV2.CachedPathOrMiss})
+        @doc "Exact cost of XI_RawLiquidPump's boost leg. The whole boost — regardless of route \
+            \ length — is ONE SSTOA burn on SWP (or EOC when there is no active route to SSTOA). \
+            \ The route search only decides existence + amount, both read-only; it never changes \
+            \ the cumulator. Mirrors the exec exactly: direct burn when id==SSTOA; otherwise \
+            \ NO_PATH sentinel => URC_HopperActiveShortest search, or a validated bundle-supplied \
+            \ path => URC_HopperForKnownRoute; empty output-values => EOC."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (sstoa:string (ref-DALOS::UR_SilverStoaID))
+            )
+            (if (= id sstoa)
+                (ref-DPTF::URCi_Burn sstoa SWP|SC_NAME)
+                (let
+                    (
+                        (ref-SWPI:module{SwapperIssueV3} SWPI)
+                        (is-sentinel:bool (= (at "nodes" boost-path) [BAR]))
+                    )
+                    (let
+                        (
+                            (ovs:[decimal]
+                                (if is-sentinel
+                                    (at "output-values" (ref-SWPI::URC_HopperActiveShortest id sstoa amount))
+                                    (if (and
+                                            (ref-SWPI::URC_ValidatePathActive (at "nodes" boost-path) (at "edges" boost-path))
+                                            (and
+                                                (= (at 0 (at "nodes" boost-path)) id)
+                                                (= (at (- (length (at "nodes" boost-path)) 1) (at "nodes" boost-path)) sstoa)
+                                            )
+                                        )
+                                        (at "output-values" (ref-SWPI::URC_HopperForKnownRoute (at "nodes" boost-path) (at "edges" boost-path) amount))
+                                        []
+                                    )
+                                )
+                            )
+                        )
+                        (if (= (length ovs) 0)
+                            EOC
+                            (ref-DPTF::URCi_Burn sstoa SWP|SC_NAME)
+                        )
+                    )
+                )
+            )
+        )
+    )
+    (defun URCi_SwapCore:object{IgnisCollectorV1.OutputCumulator}
+        (account:string swpair:string dsid:object{UtilitySwpV1.DirectSwapInputData} boost-path:object{SwapperUsageV2.CachedPathOrMiss})
+        @doc "Exact cost of a single XI_Swap: input multi-transfer in + LP fuel (indirect => EOC) \
+            \ + the output leg (special-fee bulk split or a plain netto transfer) + the liquid \
+            \ boost. All amounts come from the PURE UC_BareboneSwapWithFeez swap math; output == \
+            \ [o-id-netto]. The XE_UpdateSupplies / autonomous-swap-management writes carry no cost."
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
+                ;;
+                (input-ids:[string] (at "input-ids" dsid))
+                (input-amounts:[decimal] (at "input-amounts" dsid))
+                (output-id:string (at "output-id" dsid))
+                ;;
+                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+                (fees:object{UtilitySwpV1.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
+                (A:decimal (ref-SWP::UR_Amplifier swpair))
+                (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
+                (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
+                (input-positions:[integer] (ref-SWPI::URC_PoolTokenPositions swpair input-ids))
+                (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair output-id))
+                (W:[decimal] (ref-SWP::UR_Weigths swpair))
+                ;;
+                (dtso:object{UtilitySwpV1.DirectTaxedSwapOutput}
+                    (ref-SWPI::UC_BareboneSwapWithFeez account pool-type dsid fees A X X-prec input-positions output-position W))
+                (lp-fuel:[decimal] (at "lp-fuel" dtso))
+                (o-id-special:decimal (at "o-id-special" dtso))
+                (o-id-liquid:decimal (at "o-id-liquid" dtso))
+                (o-id-netto:decimal (at "o-id-netto" dtso))
+                ;;
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_MultiTransferCumulator input-ids account SWP|SC_NAME input-amounts))
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-SWPLC::URCi_Fuel account swpair lp-fuel false))
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (if (!= o-id-special 0.0)
+                        (let
+                            (
+                                (o-prec:integer (at output-position X-prec))
+                                (target-proportions:[decimal] (ref-SWP::UR_SpecialFeeTargetsProportions swpair))
+                                (target-amounts:[decimal] (ref-U|SWP::UC_SpecialFeeOutputs target-proportions o-id-special o-prec))
+                                (fsft:list (UC_FilterSelfFromTargets account (ref-SWP::UR_SpecialFeeTargets swpair) target-amounts))
+                                (f-targets:[string] (at 0 fsft))
+                                (f-amounts:[decimal] (at 1 fsft))
+                                (adjusted-netto:decimal (+ o-id-netto (at 2 fsft)))
+                            )
+                            (if (!= (length f-targets) 0)
+                                (ref-TFT::URCi_MultiBulkTransferCumulator
+                                    [output-id] SWP|SC_NAME [(+ [account] f-targets)] [(+ [adjusted-netto] f-amounts)])
+                                (ref-TFT::URCi_Transfer output-id SWP|SC_NAME account adjusted-netto)
+                            )
+                        )
+                        (ref-TFT::URCi_Transfer output-id SWP|SC_NAME account o-id-netto)
+                    )
+                )
+                (boost:object{IgnisCollectorV1.OutputCumulator}
+                    (if (!= o-id-liquid 0.0)
+                        (URCi_RawLiquidPump output-id o-id-liquid boost-path)
+                        EOC
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3 boost] [o-id-netto])
+        )
+    )
+    (defun URCi_Swap:object{IgnisCollectorV1.OutputCumulator}
+        (account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV2.Slippage})
+        @doc "Exact cost preview for C_Swap (direct single/multi-pool swap; the STOA-pid OPU is a \
+            \ free write). When slippage != -1.0, the read-only URC_Swap actual output is checked \
+            \ against the client-supplied (dirty-read) slippage-bounds min — exactly as the exec — \
+            \ and a below-floor swap returns the zero-cost exceed cumulator without executing. The \
+            \ direct swap self-searches its boost route, so NO_PATH is passed (URCi_SwapCore then \
+            \ re-derives the route read-only)."
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (dsid:object{UtilitySwpV1.DirectSwapInputData}
+                    (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id))
+            )
+            (if (= slippage -1.0)
+                (URCi_SwapCore account swpair dsid NO_PATH)
+                (if (>= (ref-SWPI::URC_Swap swpair dsid true) (at 0 (UC_SlippageMinMax slippage-bounds)))
+                    (URCi_SwapCore account swpair dsid NO_PATH)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [])
+                )
+            )
         )
     )
     (defun C_Swap:object{IgnisCollectorV1.OutputCumulator}
