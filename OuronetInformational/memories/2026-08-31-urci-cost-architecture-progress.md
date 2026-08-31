@@ -104,10 +104,28 @@ never the cumulator. This makes swaps fully, exactly derivable.
     harness on DPSF|C_IssueCompany would confirm. Discount economics -> task #76.
 - **MTX-SWP** (16): defpact swap/issue orchestration — composes SWPI/SWPU, inherits their
   hybrid/heavy nature.
-- **AQP family** (ANK/SCORE/POOL/FVT/VCT/DSA, ~40+): guided by the AQP-INFO map (task #74,
-  in progress). Mix of mechanical config/toggles and heavy reward-settlement / vacate-drain
-  / inject-stream / heavy-read (`URD_`) ops. Coordinate URCi with the #74 INFO map.
-- **DEMIPAD composites**.
+- **AQP family** — Option-A already: exec + INFO share `URC_*Ignis` readers. AQP-INFO
+  (08_AQP-INFO.pact) holds them; INFO fns named `AQP-POOL|INFO_*`. BUILT: all stake/unstake
+  (TF/OF/SF/NF, ground-truth-proven), Finalize/Abort vacate, config, sync, issue.
+  - **TF batch-vacate — DONE** (commit 50b2e59): `URC_VacateTfBatchCostIfp` +
+    `INFO_BatchVacateTrueFungible`, fed the dirty-read `legs`. Reuses SIP|URC_* + the same
+    phase readers as stake; VCT leg helpers via direct `AQP-VCT.fn` ref (no interface change).
+  - **REMAINING (6): OF/coll batch-vacate + 3 drains + FullVacate.** All same method (dirty-
+    read-plan-fed, compose proven readers). Traced specs:
+    · OF vacate (XI_VacateOrtoFungibleBatch 2456): bulk `DPOF::C_BulkTransfer` + per-nonce-leg
+      tracker (medium×|nonces|) + per-benef unwind = RpsPreZero(free) + ApplyOFDelta(class
+      {0,2} via URC_StakeScoreDeltaSumForClasses [0 2]) + book + checkpoint. NO rollup/anchor.
+    · Coll vacate (XI_VacateCollectableBatch 2487): bulk `DPDC-T::C_BulkTransfer` + tracker
+      (medium×|nonces|) + rollup(medium×|nonces|) + FLAT anchor (medium+biggest) + per-benef
+      unwind class-matched (SF [3] / NF [4]) + book + checkpoint.
+    · DRAIN (TF/OF/coll): score-free mirror — OMITS ApplyStakeDelta; the per-benef settle-
+      triple (anchor+book+checkpoint) fires ONLY for beneficiaries whose UserUnn hits 0 (their
+      last position drained). DATA-DEPENDENT subset — the hard part: read each benef's unn and
+      simulate the per-leg decrement, count who reaches 0. Fed the dirty-read legs.
+    · FullVacate = Σ over lanes of the batch recipe (TF lanes + OF lanes + coll lanes).
+    Need DPOF/DPDC-T bulk-transfer cost readers (URCi_Bulk*). Deserves fresh context for the
+    drain subset.
+- **DEMIPAD composites** — done earlier (Deposit + transmits).
 
 ## Deferred structural cleanup
 - **Task #90**: reorder inline `URCi_` into a canonical band + rename mis-prefixed `X_`
