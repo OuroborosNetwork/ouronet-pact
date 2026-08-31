@@ -33,17 +33,31 @@ exec billing path and the INFO preview call, so they can't drift.
   ToggleAddOrSwap (role-bootstrap fold via DPTF toggle-role readers).
 - **SWPLC 3, SWPU 1** — UpdatePendingBrandingLPs, ToggleAddLiquidity, Fuel;
   ToggleSwapCapability. (All delegate to SWP `URCi_ToggleAddOrSwap` / branding / multi-transfer.)
-- Earlier (prior sessions): DPDC family, BRD, TFT `URCi_Transfer`, ATSU flavor-B (11).
+- **DPDC-S 10/10** — Make/Break SFT+NFT sets, Define Primordial/Composite/Hybrid,
+  EnableSetClassFragmentation, ToggleSet, RenameSet.
+- **EQUITY** — `URCi_MorphPackageShares` (Make/Break/Convert). `C_IssueShareholderCollection`
+  DEFERRED (issue + 8-nonce populate; populate price reads the block-hash equity-id).
+- **DPDC-N / DPDC-MNG already complete** (verified): all 7 UpdateNonce* ops share
+  `URCi_UpdateNonceField`; all 4 Wipe ops share `URCi_WipeCumulator` (via C_WipePure).
+  Name-diffs are misleading — these are single-sourced through shared readers.
+- Earlier (prior sessions): rest of DPDC family (R/02/MNG/N/F/C/I/T), BRD, TFT
+  `URCi_Transfer`, ATSU flavor-B (11). => **DPDC family fully done.**
 
 ## REMAINING (heavy — needs dedicated single-source design, NOT mechanical)
-- **SWPU swaps**: `C_Swap`, `C_SmartSwap`, `CC_SmartSwap` — BFS path search + per-hop
-  LP/special/boost fee legs + slippage; cost is embedded in `XI_SmartSwapRouter` /
-  `XI_SmartSwapExplicitRoute`. Re-deriving purely ≈ the AMM engine itself.
+- **SWPU swaps**: `C_Swap`, `C_SmartSwap`, `CC_SmartSwap`. Swap cost is MOSTLY mechanical
+  (multi-transfer in + `SWPLC::URCi_Fuel` indirect=EOC + special-fee-target transfer +
+  netto transfer, all off `UC_BareboneSwapWithFeez` pure math) EXCEPT the liquid-boost
+  leg `XI_LiquidIndexPump` → `XI_RawLiquidPump`, which does an internal route search to
+  SSTOA and executes a sub-swap. Need a pure `URCi_LiquidIndexPump` (reproduce the boost
+  route's cost) before these are buildable. That's the crux.
 - **SWPLC**: `C_RemoveLiquidity`, and the `C|STOA-PID_Add*Liquidity` family (LP mint math).
 - **SWPI**: `C_Issue` (pool creation, issue flavor-A + init transfers).
+- **EQUITY**: `C_IssueShareholderCollection` (issue + populate on fresh id).
 - **MTX-SWP** (16): defpact swap orchestration.
-- **AQP family** (~48): guided by the AQP-INFO map; stake/unstake/vacate/inject.
-- **DPDC-S, EQUITY, DEMIPAD composites**.
+- **AQP family** (ANK/SCORE/POOL/FVT/VCT/DSA, ~40+): guided by the AQP-INFO map (task #74,
+  in progress). Mix of mechanical config/toggles and heavy reward-settlement / vacate-drain
+  / inject-stream / heavy-read (`URD_`) ops. Coordinate URCi with the #74 INFO map.
+- **DEMIPAD composites**.
 
 ## Deferred structural cleanup
 - **Task #90**: reorder inline `URCi_` into a canonical band + rename mis-prefixed `X_`
