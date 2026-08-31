@@ -84,6 +84,18 @@
     (defun SWP|INFO_GlacialLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun SWP|INFO_FrozenLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
     (defun SWP|INFO_SleepingLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
+    ;;
+    ;;  [DALOS-INFO]  (relocated from the now-tombstoned INFO-ZERO; DALOS client-op previews wrapping IGNIS's DALOS|URCi_*)
+    ;;
+    (defun DALOS-INFO|URC_ControlSmartAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_DeploySmartAccount:object{OuronetInfoV1.ClientInfo} (account:string))
+    (defun DALOS-INFO|URC_DeployStandardAccount:object{OuronetInfoV1.ClientInfo} (account:string))
+    (defun DALOS-INFO|URC_RotateGovernor:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_RotateGuard:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_RotateStoa:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_RotateSovereign:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_UpdateEliteAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
+    (defun DALOS-INFO|URC_UpdateEliteAccountSquared:object{OuronetInfoV1.ClientInfo} (patron:string sender:string receiver:string))
 )
 ;;LIQUID|INFO_UnwrapStoa
 ;;LIQUID|INFO_WrapStoa
@@ -2899,6 +2911,191 @@
         ,"hibernating-fee"          : f}
     )
     ;;{F4}  [CAP]
+    ;;
+    ;;<======================>
+    ;;[DALOS-INFO] — relocated from INFO-ZERO (Phase 1.2). Pure presentation; wrap IGNIS's DALOS|URCi_*.
+    ;;<======================>
+    (defun DALOS-INFO|URC_ControlSmartAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_ControlSmartAccount account)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Execute Smart Account Control."]
+                [(format "Smart Ouronet Account {} controlled succesfully" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun DALOS-INFO|URC_DeploySmartAccount:object{OuronetInfoV1.ClientInfo} (account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                ;;
+                (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
+                (kfp:decimal (ref-IGNIS::DALOS|URCi_DeploySmartAccount))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Deploy a Smart Ouronet Account."]
+                [(format "Smart Ouronet Account {} deployed succesfully" [sa])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (if is-stoa-zero (ref-I|OURONET::OI|UDC_NoStoaCosts) (ref-I|OURONET::OI|UDC_FullStoaCosts kfp))
+                []
+            )
+        )
+    )
+    (defun DALOS-INFO|URC_DeployStandardAccount:object{OuronetInfoV1.ClientInfo} (account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                ;;
+                (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
+                (kfp:decimal (ref-IGNIS::DALOS|URCi_DeployStandardAccount))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Deploy a Standard Ouronet Account."]
+                [(format "Standard Ouronet Account {} deployed succesfully" [sa])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (if is-stoa-zero (ref-I|OURONET::OI|UDC_NoStoaCosts) (ref-I|OURONET::OI|UDC_FullStoaCosts kfp))
+                []
+            )
+        )
+    )
+    (defun DALOS-INFO|URC_RotateGovernor:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateGovernor account)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Rotate the Governor-Guard of an Ouronet Account."]
+                [(format "Ouronet Account {} Governor-Guard rotated succesfully!" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun DALOS-INFO|URC_RotateGuard:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateGuard account)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Rotate the Primary-Guard of an Ouronet Account."]
+                [(format "Ouronet Account {} Primary-Guard rotated succesfully!" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun DALOS-INFO|URC_RotateStoa:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateStoa account)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Rotate the Attached STOA-Address of an Ouronet Account."]
+                [(format "Ouronet Account {} Attached Stoa-Address rotated succesfully!" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun DALOS-INFO|URC_RotateSovereign:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_RotateSovereign account)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Rotate the Sovereign of a Smart Ouronet Account."]
+                [(format "Smart Ouronet Account {} Sovereign rotated succesfully!" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun DALOS-INFO|URC_UpdateEliteAccount:object{OuronetInfoV1.ClientInfo} (patron:string account:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_UpdateEliteAccount patron)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Update Elite Account Data for a single Ouronet Account"]
+                [(format "Elite Account Data for {} updated succesfully!" [sa])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun DALOS-INFO|URC_UpdateEliteAccountSquared:object{OuronetInfoV1.ClientInfo} (patron:string sender:string receiver:string)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                ;;
+                (is-ignis-zero:bool (ref-IGNIS::URC_IsVirtualGasZero))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-IGNIS::DALOS|URCi_UpdateEliteAccountSquared patron)))
+                (sa1:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                (sa2:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                ["Operation: Update Elite Account Data for a two Ouronet Accounts"]
+                [(format "Elite Account Data for {} and {} updated succesfully!" [sa1 sa2])]
+                (if is-ignis-zero (ref-I|OURONET::OI|UDC_NoIgnisCosts) (ref-I|OURONET::OI|UDC_IgnisCosts patron ifp))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
