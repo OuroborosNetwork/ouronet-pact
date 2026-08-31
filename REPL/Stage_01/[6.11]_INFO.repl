@@ -1,0 +1,38 @@
+;;
+;; REPL/Stage_01/[6.11]_INFO.repl — INFO-layer (#78) per-module smoke tests.
+;;   INFO functions are URC_<MOD>|<Op> thin wrappers over the <MOD>|URCi_ readers,
+;;   living in INFO-ONE (Stage-1) / INFO-TWO (Stage-2). Each returns an
+;;   object{OuronetInfoV1.ClientInfo}. Runs AFTER [4.0]_Sovereign-Executor (usage
+;;   prices, incl ignis|medium, must be populated). Add a block per module as the
+;;   rehaul proceeds (DALOS -> DPTF -> DPOF -> VST -> ATS -> SWP -> LIQUID -> ORBR).
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/Stage_01/[6.11]_INFO.repl")
+(print "================================================================")
+(print "")
+;;==== TX-I01 · 01 · DALOS INFO — URC_DALOS|* return well-formed ClientInfo ====
+(begin-tx "TX-I01 - INFO DALOS: URC_DALOS|* previews return well-formed ClientInfo")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-I01 · 01 · DALOS INFO smoke] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+(let
+    (
+        (p:string KST.ANHD)
+        (a:string KST.ANHD)
+    )
+    (map print
+        [ (expect "URC_DALOS|ControlSmartAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|ControlSmartAccount p a)))
+          (expect "URC_DALOS|DeploySmartAccount -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DALOS|DeploySmartAccount a)))
+          (expect "URC_DALOS|DeployStandardAccount -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DALOS|DeployStandardAccount a)))
+          (expect "URC_DALOS|RotateGovernor -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|RotateGovernor p a)))
+          (expect "URC_DALOS|RotateGuard -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|RotateGuard p a)))
+          (expect "URC_DALOS|RotateStoa -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|RotateStoa p a)))
+          (expect "URC_DALOS|RotateSovereign -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|RotateSovereign p a)))
+          (expect "URC_DALOS|UpdateEliteAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|UpdateEliteAccount p a)))
+          (expect "URC_DALOS|UpdateEliteAccountSquared -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|UpdateEliteAccountSquared p a a))) ]))
+(print "")
+(commit-tx)
+(print "")
+(print "=== [6.11]_INFO — DALOS block complete ===")
