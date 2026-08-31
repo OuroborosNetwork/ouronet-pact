@@ -50,8 +50,10 @@
     (defun C_Redeem:object{IgnisCollectorV1.OutputCumulator} (redeemer:string id:string nonce:integer))
         ;;
     (defun C_DirectRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun URCi_DirectRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
         ;;
     (defun C_Syphon:object{IgnisCollectorV1.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
+    (defun URCi_Syphon:object{IgnisCollectorV1.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
     ;;
 )
 ;;
@@ -1426,6 +1428,43 @@
         )
     )
     ;;
+    (defun URCi_DirectRecovery:object{IgnisCollectorV1.OutputCumulator}
+        (recoverer:string ats:string ra:decimal)
+        @doc "Cost preview for C_DirectRecovery: cold-transfer + cold-burn + a \
+            \ multi-transfer of the fee-adjusted reward-token split back to recoverer, \
+            \ re-derived purely via sub-op cost readers."
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
+                (fee:decimal (ref-ATS::UR_DirectRecoveryFee ats))
+                (c-rbt-remainder:decimal
+                    (if (= fee 0.0)
+                        ra
+                        (at 0 (ref-U|ATS::UC_PromilleSplit fee ra (ref-DPTF::UR_Decimals c-rbt)))
+                    )
+                )
+                (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
+                (release-amounts:[decimal] (ref-ATS::URC_RTSplitAmounts ats c-rbt-remainder))
+                ;;
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_Transfer c-rbt recoverer ATS|SC_NAME ra)
+                )
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPTF::URCi_Burn c-rbt ATS|SC_NAME)
+                )
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_MultiTransferCumulator reward-tokens ATS|SC_NAME recoverer release-amounts)
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2 ico3] [])
+        )
+    )
     (defun C_DirectRecovery:object{IgnisCollectorV1.OutputCumulator}
         (recoverer:string ats:string ra:decimal)
         (UEV_IMC)
@@ -1473,6 +1512,33 @@
         )
     )
     ;;
+    (defun URCi_Syphon:object{IgnisCollectorV1.OutputCumulator}
+        (syphon-target:string ats:string syphon-amounts:[decimal])
+        @doc "Cost preview for C_Syphon: one transfer per reward-token whose \
+            \ syphon-amount is > 0 (EOC for zero legs), mapped purely over the pool's \
+            \ reward-token list. Cost-equivalent to C_Syphon."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
+                (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
+                    (map
+                        (lambda (idx:integer)
+                            (if (> (at idx syphon-amounts) 0.0)
+                                (ref-TFT::URCi_Transfer (at idx rt-lst) ATS|SC_NAME syphon-target (at idx syphon-amounts))
+                                EOC
+                            )
+                        )
+                        (enumerate 0 (- (length rt-lst) 1))
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+        )
+    )
     (defun C_Syphon:object{IgnisCollectorV1.OutputCumulator}
         (syphon-target:string ats:string syphon-amounts:[decimal])
         (UEV_IMC)
