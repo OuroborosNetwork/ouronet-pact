@@ -34,6 +34,7 @@
     (defun C_RepurposeCollectable:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
     )
+    (defun URCi_RepurposeCollectable:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool amounts:[integer]))
     (defun C_Transfer:object{IgnisCollectorV1.OutputCumulator} (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]] method:bool))
     (defun C_IgnisRoyaltyCollector:object{AggregatedRoyalties} (patron:string sender:string ids:[string] sons:[bool] nonces-array:[[integer]] amounts-array:[[integer]]))
 )
@@ -598,6 +599,25 @@
     ;;{F4}  [CAP]
     ;;
     ;;{F5}  [A]
+    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
+    ;;  (URCi_MultiTransferCumulator / URCi_BulkTransferCumulator, below, cover the transfers.)
+    (defun URCi_RepurposeCollectable:object{IgnisCollectorV1.OutputCumulator}
+        (id:string son:bool amounts:[integer])
+        @doc "Cost preview for C_RepurposeCollectable: per-nonce construct priced \
+            \ (if son small else medium) * (1 + sum amounts) on owner-konto, empty output."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (owner:string (ref-DPDC::UR_OwnerKonto id son))
+                (p:decimal (if son (ref-DALOS::UR_UsagePrice "ignis|small") (ref-DALOS::UR_UsagePrice "ignis|medium")))
+                (sum-amounts:decimal (dec (fold (+) 1 amounts)))
+                (price:decimal (* p sum-amounts))
+            )
+            (ref-IGNIS::UDC_ConstructOutputCumulator price owner (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
     ;;{F6}  [C]
     (defun C_RepurposeCollectable:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
@@ -652,7 +672,7 @@
                     )
                 )
                 ;;3]Output Cumulator
-                (ref-IGNIS::UDC_ConstructOutputCumulator price owner trigger [])
+                (URCi_RepurposeCollectable id son amounts)
             )
         )
     )
