@@ -43,6 +43,7 @@
     (defun C_ColdRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
     (defun URCi_ColdRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
     (defun C_Cull:object{IgnisCollectorV1.OutputCumulator}(culler:string ats:string))
+    (defun URCi_Cull:object{IgnisCollectorV1.OutputCumulator} (culler:string ats:string))
         ;;
     (defun C_HotRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
     (defun URCi_HotRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
@@ -1175,6 +1176,54 @@
                     )
                 )
             )
+        )
+    )
+    (defun URCi_Cull:object{IgnisCollectorV1.OutputCumulator}
+        (culler:string ats:string)
+        @doc "Cost preview for C_Cull: flat 2x-biggest construct + one transfer per \
+            \ reward-token whose cumulative cull weight is nonzero. Cull weights are \
+            \ derived purely via URC_MultiCull/URC_SingleCull (the same values the exec \
+            \ XI_*Cull writers return), so this is output-exact, not just cost-equivalent."
+        (let
+            (
+                (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
+                (c0:[decimal] (at "summed-culled-values" (URC_MultiCull ats culler)))
+                (c1:[decimal] (URC_SingleCull ats culler 1))
+                (c2:[decimal] (URC_SingleCull ats culler 2))
+                (c3:[decimal] (URC_SingleCull ats culler 3))
+                (c4:[decimal] (URC_SingleCull ats culler 4))
+                (c5:[decimal] (URC_SingleCull ats culler 5))
+                (c6:[decimal] (URC_SingleCull ats culler 6))
+                (c7:[decimal] (URC_SingleCull ats culler 7))
+                (ca:[[decimal]] [c0 c1 c2 c3 c4 c5 c6 c7])
+                (cw:[decimal] (ref-U|DEC::UC_AddHybridArray ca))
+                ;;
+                (price:decimal (* 2.0 (ref-DALOS::UR_UsagePrice "ignis|biggest")))
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                )
+                (folded-obj:[object{IgnisCollectorV1.OutputCumulator}]
+                    (map
+                        (lambda (idx:integer)
+                            (if (!= (at idx cw) 0.0)
+                                (ref-TFT::URCi_Transfer (at idx rt-lst) ATS|SC_NAME culler (at idx cw))
+                                EOC
+                            )
+                        )
+                        (enumerate 0 (- (length rt-lst) 1))
+                    )
+                )
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico1 ico2] cw)
         )
     )
     (defun C_Cull:object{IgnisCollectorV1.OutputCumulator}
