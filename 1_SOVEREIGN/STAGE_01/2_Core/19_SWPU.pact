@@ -106,6 +106,8 @@
     (defun C_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
     (defun URCi_ToggleSwapCapability:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
     (defun CC_SmartSwap:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal stoa-pid:decimal slippage-bounds:object{Slippage}))
+    (defun URCi_SmartSwap:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage}))
+    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV1.OutputCumulator} (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{Slippage} bundle:object{SmartSwapPathBundle}))
     ;;#34 Phase 8: the bundle-based, dirty-read-injected SmartSwap — performs zero
     ;;internal searching (route, boost-path and stoa-paths are all supplied by the
     ;;caller, per SmartSwapPathBundle), built alongside CC_SmartSwap for direct gas
@@ -814,6 +816,200 @@
             )
             (with-capability (SPWU|C>TOGGLE-SWAP swpair toggle)
                 (ref-SWP::C_ToggleAddOrSwap swpair toggle false)
+            )
+        )
+    )
+    (defun URCi_SmartSwapCore:list
+        (account:string input-amount:decimal ico-input:object{IgnisCollectorV1.OutputCumulator} nodes:[string] edges:[string] boost-path:object{SwapperUsageV2.CachedPathOrMiss})
+        @doc "Exact cost of XI_SmartSwapCore's hop fold. Intermediate hops keep tokens inside \
+            \ SWP and contribute only EOC; only the LAST hop emits the batched special-fee flush \
+            \ (URCi_MultiBulkTransferCumulator over every earlier hop's targets), its own output \
+            \ payout, and the single liquid-boost burn against the accumulated carried boost. \
+            \ The cost is amount-INDEPENDENT (which tokens/pools + each pool's fee config decide \
+            \ every leg); amounts are still threaded via the PURE swap math so output == exec. \
+            \ Returns [final-netto all-icos]. The dra/new-balances/XE_UpdateSupplies writes and \
+            \ the per-hop FEED-SPECIAL-TARGETS events carry no cumulator cost and are omitted."
+        (let
+            (
+                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-SWP:module{SwapperV3} SWP)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
+                (le:integer (length edges))
+            )
+            (take 2
+                (fold
+                    (lambda
+                        (acc:list idx:integer)
+                        (let*
+                            (
+                                (current-input:decimal (at 0 acc))
+                                (acc-icos:[object{IgnisCollectorV1.OutputCumulator}] (at 1 acc))
+                                (carried-boost-in:decimal (at 2 acc))
+                                (sp-id-lst-in:[string] (at 3 acc))
+                                (sp-receiver-arr-in:[[string]] (at 4 acc))
+                                (sp-amount-arr-in:[[decimal]] (at 5 acc))
+                                (i-id:string (at idx nodes))
+                                (o-id:string (at (+ idx 1) nodes))
+                                (swpair:string (at idx edges))
+                                (iz-last:bool (= idx (- le 1)))
+                                ;;
+                                (pool-type:string (ref-U|SWP::UC_PoolType swpair))
+                                (fees:object{UtilitySwpV1.SwapFeez} (ref-SWPL::UDC_PoolFees swpair))
+                                (A:decimal (ref-SWP::UR_Amplifier swpair))
+                                (X:[decimal] (ref-SWP::UR_PoolTokenSupplies swpair))
+                                (X-prec:[integer] (ref-SWP::UR_PoolTokenPrecisions swpair))
+                                (input-positions:[integer] (ref-SWPI::URC_PoolTokenPositions swpair [i-id]))
+                                (output-position:integer (ref-SWP::UR_PoolTokenPosition swpair o-id))
+                                (W:[decimal] (ref-SWP::UR_Weigths swpair))
+                                (dtso:object{UtilitySwpV1.DirectTaxedSwapOutput}
+                                    (ref-SWPI::UC_BareboneSwapWithFeez account pool-type
+                                        (ref-U|SWP::UDC_DirectSwapInputData [i-id] [current-input] o-id)
+                                        fees A X X-prec input-positions output-position W))
+                                (lp-fuel:[decimal] (at "lp-fuel" dtso))
+                                (o-id-special:decimal (at "o-id-special" dtso))
+                                (o-id-liquid:decimal (at "o-id-liquid" dtso))
+                                (o-id-netto:decimal (at "o-id-netto" dtso))
+                                ;;
+                                (ico-fuel:object{IgnisCollectorV1.OutputCumulator}
+                                    (ref-SWPLC::URCi_Fuel account swpair lp-fuel false))
+                                (carried-boost-out:decimal
+                                    (+
+                                        (if (= carried-boost-in 0.0)
+                                            0.0
+                                            (ref-SWPI::URC_Swap swpair (ref-U|SWP::UDC_DirectSwapInputData [i-id] [carried-boost-in] o-id) false)
+                                        )
+                                        o-id-liquid
+                                    )
+                                )
+                                (sp-hop-targets:list
+                                    (if (and (!= o-id-special 0.0) (not iz-last))
+                                        (let
+                                            (
+                                                (fsft:list (UC_FilterSelfFromTargets account (ref-SWP::UR_SpecialFeeTargets swpair)
+                                                    (ref-U|SWP::UC_SpecialFeeOutputs (ref-SWP::UR_SpecialFeeTargetsProportions swpair) o-id-special (at output-position X-prec))))
+                                            )
+                                            [(at 0 fsft) (at 1 fsft)]
+                                        )
+                                        [[] []]
+                                    )
+                                )
+                                (hop-f-targets:[string] (at 0 sp-hop-targets))
+                                (hop-f-amounts:[decimal] (at 1 sp-hop-targets))
+                                (sp-id-lst-out:[string]
+                                    (if (!= (length hop-f-targets) 0) (+ sp-id-lst-in [o-id]) sp-id-lst-in))
+                                (sp-receiver-arr-out:[[string]]
+                                    (if (!= (length hop-f-targets) 0) (+ sp-receiver-arr-in [hop-f-targets]) sp-receiver-arr-in))
+                                (sp-amount-arr-out:[[decimal]]
+                                    (if (!= (length hop-f-targets) 0) (+ sp-amount-arr-in [hop-f-amounts]) sp-amount-arr-in))
+                                (sp-flush:object{IgnisCollectorV1.OutputCumulator}
+                                    (if (and iz-last (!= (length sp-id-lst-in) 0))
+                                        (ref-TFT::URCi_MultiBulkTransferCumulator sp-id-lst-in SWP|SC_NAME sp-receiver-arr-in sp-amount-arr-in)
+                                        EOC))
+                                (ico-special:object{IgnisCollectorV1.OutputCumulator}
+                                    (if iz-last
+                                        (if (!= o-id-special 0.0)
+                                            (let
+                                                (
+                                                    (fsft:list (UC_FilterSelfFromTargets account (ref-SWP::UR_SpecialFeeTargets swpair)
+                                                        (ref-U|SWP::UC_SpecialFeeOutputs (ref-SWP::UR_SpecialFeeTargetsProportions swpair) o-id-special (at output-position X-prec))))
+                                                )
+                                                (let
+                                                    (
+                                                        (f-targets:[string] (at 0 fsft))
+                                                        (adjusted-netto:decimal (+ o-id-netto (at 2 fsft)))
+                                                    )
+                                                    (if (!= (length f-targets) 0)
+                                                        (ref-TFT::URCi_MultiBulkTransferCumulator [o-id] SWP|SC_NAME [(+ [account] f-targets)] [(+ [adjusted-netto] (at 1 fsft))])
+                                                        (ref-TFT::URCi_Transfer o-id SWP|SC_NAME account adjusted-netto)
+                                                    )
+                                                )
+                                            )
+                                            (ref-TFT::URCi_Transfer o-id SWP|SC_NAME account o-id-netto)
+                                        )
+                                        EOC))
+                                (boost:object{IgnisCollectorV1.OutputCumulator}
+                                    (if (and iz-last (!= carried-boost-out 0.0))
+                                        (URCi_RawLiquidPump o-id carried-boost-out boost-path)
+                                        EOC))
+                            )
+                            [
+                                o-id-netto
+                                (+ acc-icos [ico-fuel sp-flush ico-special boost])
+                                carried-boost-out
+                                sp-id-lst-out
+                                sp-receiver-arr-out
+                                sp-amount-arr-out
+                            ]
+                        )
+                    )
+                    [input-amount [ico-input] 0.0 [] [] []]
+                    (enumerate 0 (- le 1))
+                )
+            )
+        )
+    )
+    (defun URCi_SmartSwapExec:object{IgnisCollectorV1.OutputCumulator}
+        (account:string input-id:string input-amount:decimal output-id:string nodes:[string] edges:[string] boost-path:object{SwapperUsageV2.CachedPathOrMiss})
+        @doc "Exact cost of XI_SmartSwap: the user->SWP input transfer + the hop-fold cost + the \
+            \ [final-netto hops pools distinct-edges] output. The STOA-pid OPU is a free write."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (hop-result:list
+                    (URCi_SmartSwapCore account input-amount
+                        (ref-TFT::URCi_Transfer input-id account SWP|SC_NAME input-amount)
+                        nodes edges boost-path))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                (at 1 hop-result)
+                [(at 0 hop-result) (length edges) (length (distinct edges)) (distinct edges)]
+            )
+        )
+    )
+    (defun URCi_SmartSwap:object{IgnisCollectorV1.OutputCumulator}
+        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV2.Slippage})
+        @doc "Exact cost preview for CC_SmartSwap (self-searching). Traces the route read-only via \
+            \ URC_HopperActive, applies the same fee-less-output slippage floor vs the client-supplied \
+            \ bounds, then prices the hop fold with NO_PATH (the boost route is re-derived read-only)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (h-obj:object{SwapperIssueV3.Hopper} (ref-SWPI::URC_HopperActive input-id output-id input-amount))
+            )
+            (if (!= slippage -1.0)
+                (if (>= (at 0 (take -1 (at "output-values" h-obj))) (at 0 (UC_SlippageMinMax slippage-bounds)))
+                    (URCi_SmartSwapExec account input-id input-amount output-id (at "nodes" h-obj) (at "edges" h-obj) NO_PATH)
+                    (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [])
+                )
+                (URCi_SmartSwapExec account input-id input-amount output-id (at "nodes" h-obj) (at "edges" h-obj) NO_PATH)
+            )
+        )
+    )
+    (defun URCi_SmartSwapWithBundle:object{IgnisCollectorV1.OutputCumulator}
+        (account:string input-id:string input-amount:decimal output-id:string slippage:decimal slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+        @doc "Exact cost preview for C_SmartSwap (bundle-based). Uses the dirty-read bundle's own \
+            \ swap-route + boost-path (fed identically to exec and preview), validates the fee-less \
+            \ output vs the client bounds, then prices the hop fold with the supplied boost-path. \
+            \ Returns the OutputCumulator only (C_SmartSwap's extra stoa-results is a Talos-side \
+            \ precompute, not a cumulator cost)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (nodes:[string] (at "nodes" (at "swap-route" bundle)))
+                (edges:[string] (at "edges" (at "swap-route" bundle)))
+            )
+            (if (!= slippage -1.0)
+                (if (>= (at 0 (take -1 (at "output-values" (ref-SWPI::URC_HopperForKnownRoute nodes edges input-amount)))) (at 0 (UC_SlippageMinMax slippage-bounds)))
+                    (URCi_SmartSwapExec account input-id input-amount output-id nodes edges (at "boost-path" bundle))
+                    (ref-IGNIS::UDC_ConstructOutputCumulator 0.0 BAR true [])
+                )
+                (URCi_SmartSwapExec account input-id input-amount output-id nodes edges (at "boost-path" bundle))
             )
         )
     )
