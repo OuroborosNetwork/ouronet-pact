@@ -1060,7 +1060,7 @@
                 (ref-DALOS::CAP_EnforceAccountOwnership account)
                 (ref-DPOF::C_DeployAccount id account)
                 (ref-IGNIS::C_Collect patron
-                    (ref-IGNIS::UDC_SmallCumulator account)
+                    (ref-DPOF::URCi_DeployAccount account)
                 )
                 (format "Succesfully deployed a New DPOF Account for DPOF {} on Ouronet Account {}" [id sa])
             )

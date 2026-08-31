@@ -74,4 +74,31 @@
 (print "")
 (commit-tx)
 (print "")
-(print "=== [6.11]_INFO — DALOS + DPTF blocks complete ===")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;==== TX-I03 · 01 · DPOF INFO — URC_DPOF|* return well-formed ClientInfo ====
+(begin-tx "TX-I03 - INFO DPOF: URC_DPOF|* previews return well-formed ClientInfo (URCi-sourced)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-I03 · 01 · DPOF INFO smoke] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; NOTE: [6.11] loads before any DPOF is issued, so id-dependent DPOF readers (Control/Mint/
+;; AddQuantity/Burn/UpdatePendingBranding) have no valid DPOF id here. They mirror the proven
+;; DPTF UDC_*Cumulator(UR_Konto id) pattern exactly (green in TX-I02). Assert the id-independent
+;; readers (Issue / DeployAccount / UpgradeBranding), which fully exercise the URCi wiring.
+(let
+    (
+        (p:string KST.ANHD)
+        (a:string KST.ANHD)
+    )
+    (map print
+        [ (expect "URC_DPOF|Issue -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPOF|Issue p a ["testorto"])))
+          (expect "URC_DPOF|Issue -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DPOF|Issue p a ["testorto"])))
+          (expect "URC_DPOF|DeployAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPOF|DeployAccount p "ORTO-x" a)))
+          (expect "URC_DPOF|UpgradeBranding -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DPOF|UpgradeBranding p "ORTO-x" 3))) ]))
+(print "")
+(commit-tx)
+(print "")
+(print "=== [6.11]_INFO — DALOS + DPTF + DPOF blocks complete ===")

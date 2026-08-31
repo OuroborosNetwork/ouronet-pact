@@ -54,15 +54,14 @@
     (defun URC_DPTF|BulkTransfer:object{OuronetInfoV1.ClientInfo} (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
     (defun URC_DPTF|MultiBulkTransfer:object{OuronetInfoV1.ClientInfo} (patron:string id-lst:[string] sender:string receiver-array:[[string]] transfer-amount-array:[[decimal]]))
     ;;
-    (defun DPOF|INFO_UpdatePendingBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string))
-    (defun DPOF|INFO_UpgradeBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string months:integer))
-    (defun DPOF|INFO_AddQuantity:object{OuronetInfoV1.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
-    (defun DPOF|INFO_Burn:object{OuronetInfoV1.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
-    (defun DPOF|INFO_Control:object{OuronetInfoV1.ClientInfo} (patron:string id:string))
-    (defun DPOF|INFO_Create:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string))
-    (defun DPOF|INFO_DeployAccount:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string))
-    (defun DPOF|INFO_Issue:object{OuronetInfoV1.ClientInfo} (patron:string account:string name:[string]))
-    (defun DPOF|INFO_Mint:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string amount:decimal))
+    (defun URC_DPOF|UpdatePendingBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string))
+    (defun URC_DPOF|UpgradeBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun URC_DPOF|AddQuantity:object{OuronetInfoV1.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
+    (defun URC_DPOF|Burn:object{OuronetInfoV1.ClientInfo} (patron:string id:string nonce:integer account:string amount:decimal))
+    (defun URC_DPOF|Control:object{OuronetInfoV1.ClientInfo} (patron:string id:string))
+    (defun URC_DPOF|DeployAccount:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string))
+    (defun URC_DPOF|Issue:object{OuronetInfoV1.ClientInfo} (patron:string account:string name:[string]))
+    (defun URC_DPOF|Mint:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string amount:decimal))
     ;;
     (defun VST|INFO_Hibernate:object{OuronetInfoV1.ClientInfo} (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
     ;;
@@ -1332,124 +1331,117 @@
         )
     )
     ;;  [DPOF]
-    (defun DPOF|INFO_UpdatePendingBranding:object{OuronetInfoV1.ClientInfo}
+    (defun URC_DPOF|UpdatePendingBranding:object{OuronetInfoV1.ClientInfo}
         (patron:string entity-id:string)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Update Pending Branding for {} DPOF" [entity-id])]
                 [(format "Pending Branding for DPOF {} updated succesfully" [entity-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_UpdatePendingBranding 1.5))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_UpdatePendingBranding entity-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
     )
-    (defun DPOF|INFO_UpgradeBranding:object{OuronetInfoV1.ClientInfo}
+    (defun URC_DPOF|UpgradeBranding:object{OuronetInfoV1.ClientInfo}
         (patron:string entity-id:string months:integer)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Upgrade Branding for {} DPOF for {} month(s)" [entity-id months])]
                 [(format "DPOF {} succesfully upgraded for {} months(s)!" [entity-id months])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_UpgradeBranding months))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPOF::URCi_UpgradeBranding months))
                 []
             )
         )
     )
-    (defun DPOF|INFO_AddQuantity:object{OuronetInfoV1.ClientInfo}
+    (defun URC_DPOF|AddQuantity:object{OuronetInfoV1.ClientInfo}
         (patron:string id:string nonce:integer account:string amount:decimal)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Adds {} to DPOF {} Nonce {} on Account {}" [amount id nonce sa])]
                 [(format "Succesfully increased DPOF {} nonce {} quantity on Account {} by {}" [id nonce sa amount])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_AddQuantity id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]
             )
         )
     )
-    (defun DPOF|INFO_Burn:object{OuronetInfoV1.ClientInfo}
+    (defun URC_DPOF|Burn:object{OuronetInfoV1.ClientInfo}
         (patron:string id:string nonce:integer account:string amount:decimal)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Burns {} Units of DPOF {} Nonce {} on Account {}" [amount id nonce sa])]
                 [(format "Succesfully burned {} Units of DPOF {} Nonce {} on Account {}" [amount id nonce sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_Burn id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]
             )
         )
     )
-    (defun DPOF|INFO_Control:object{OuronetInfoV1.ClientInfo}
+    (defun URC_DPOF|Control:object{OuronetInfoV1.ClientInfo}
         (patron:string id:string)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Controls DPOF {} Boolean Properties" [id])]
                 [(format "Succesfully controlled DPOF {} Boolean Properties" [id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_Control id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
     )
-    (defun DPOF|INFO_Create:object{OuronetInfoV1.ClientInfo}
+    ;; NOTE: the former DPOF|INFO_Create was an orphan preview — DPOF has no C_Create client
+    ;; op (create-without-quantity is not a gas-funded path; Mint creates+adds in one op).
+    ;; Dropped in the URCi rehaul; re-add alongside a real client op if one is ever introduced.
+    (defun URC_DPOF|DeployAccount:object{OuronetInfoV1.ClientInfo}
         (patron:string id:string account:string)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                ;;
-                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
-            )
-            (ref-I|OURONET::OI|UDC_ClientInfo
-                [(format "Operation: Creates a new Batch for the DPOF {} without quantity on Account {}" [id sa])]
-                [(format "Succesfully created a new Batch for DPOF {} on Account {}" [id sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                []
-            )
-        )
-    )
-    (defun DPOF|INFO_DeployAccount:object{OuronetInfoV1.ClientInfo}
-        (patron:string id:string account:string)
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Deploy a DPOF Account for DPOF {} on Ouronet Account {}" [id sa])]
                 [(format "Succesfully deployed a New DPOF Account for DPOF {} on Ouronet Account {}" [id sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Small))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_DeployAccount account)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
     )
-    (defun DPOF|INFO_Issue:object{OuronetInfoV1.ClientInfo}
+    (defun URC_DPOF|Issue:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string name:[string])
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 ;;
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
@@ -1459,25 +1451,26 @@
                     (format "Also issues DPTF Accounts on {} Account" [sa])
                 ]
                 [(format "DPOF Issuance of {} succesfully completed" [name])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Issue name))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Issue name false))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-DPOF::URCi_IssueGas (length name)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPOF::URCi_IssueStoa (length name)))
                 []
             )
         )
     )
-    (defun DPOF|INFO_Mint:object{OuronetInfoV1.ClientInfo} 
+    (defun URC_DPOF|Mint:object{OuronetInfoV1.ClientInfo}
         (patron:string id:string account:string amount:decimal)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
                 ;;
-                (medium:decimal (SIP|URC_Medium))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_Mint id)))
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Mint {} {} on Account {}, on a new Nonce" [amount id sa])]
                 [(format "Succesfully minted {} {} on Account {}, on a new Nonce" [amount id sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron medium)
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)]
             )

@@ -40,6 +40,7 @@
     (defun URCi_IssueGas:decimal (token-count:integer))
     (defun URCi_IssueStoa:decimal (token-count:integer))
     (defun URCi_UpgradeBranding:decimal (months:integer))
+    (defun URCi_DeployAccount:object{IgnisCollectorV1.OutputCumulator} (account:string))
     ;;
     ;;  [UR]
     ;;
@@ -1783,6 +1784,11 @@
     )
     (defun URCi_UpgradeBranding:decimal (months:integer)
         (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
+    )
+    ;;  DeployAccount: CORE C_DeployAccount returns no cumulator; the ignis|small toll is billed
+    ;;  by Talos keyed on the deployed account. This reader single-sources that toll for exec + INFO.
+    (defun URCi_DeployAccount:object{IgnisCollectorV1.OutputCumulator} (account:string)
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS)) (ref-IGNIS::UDC_SmallCumulator account))
     )
     ;;{F6}  [C]
     (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
