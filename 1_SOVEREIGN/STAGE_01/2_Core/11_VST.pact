@@ -50,6 +50,9 @@
     (defun URCi_ToggleTransferRoleReservedDPTF:object{IgnisCollectorV1.OutputCumulator} (s-dptf:string))
     (defun URCi_ToggleTransferRoleSleepingDPOF:object{IgnisCollectorV1.OutputCumulator} (s-dpof:string))
     (defun URCi_ToggleTransferRoleHibernatingDPOF:object{IgnisCollectorV1.OutputCumulator} (s-dpof:string))
+    (defun URCi_Reserve:object{IgnisCollectorV1.OutputCumulator} (reserver:string dptf:string amount:decimal))
+    (defun URCi_Unreserve:object{IgnisCollectorV1.OutputCumulator} (unreserver:string r-dptf:string amount:decimal))
+    (defun URCi_Vest:object{IgnisCollectorV1.OutputCumulator} (vester:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer))
     (defun C_RepurposeFrozen:object{IgnisCollectorV1.OutputCumulator} (dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
     (defun C_ToggleTransferRoleFrozenDPTF:object{IgnisCollectorV1.OutputCumulator} (s-dptf:string target:string toggle:bool))
         ;;
@@ -839,6 +842,30 @@
         )
     )
     ;;  [Reserve Token Actions]
+    (defun URCi_Reserve:object{IgnisCollectorV1.OutputCumulator}
+        (reserver:string dptf:string amount:decimal)
+        @doc "Cost preview for C_Reserve: (conditional) reserver->VST transfer + mint of \
+            \ the reserved wrapper + VST->reserver transfer, re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (r-dptf:string (ref-DPTF::UR_Reservation dptf))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (if (!= reserver VST|SC_NAME)
+                        (ref-TFT::URCi_Transfer dptf reserver VST|SC_NAME amount)
+                        EOC
+                    )
+                    (ref-DPTF::URCi_Mint r-dptf VST|SC_NAME false)
+                    (ref-TFT::URCi_Transfer r-dptf VST|SC_NAME reserver amount)
+                ]
+                []
+            )
+        )
+    )
     (defun C_Reserve:object{IgnisCollectorV1.OutputCumulator}
         (reserver:string dptf:string amount:decimal)
         (UEV_IMC)
@@ -864,6 +891,27 @@
                     ]
                     []
                 )
+            )
+        )
+    )
+    (defun URCi_Unreserve:object{IgnisCollectorV1.OutputCumulator}
+        (unreserver:string r-dptf:string amount:decimal)
+        @doc "Cost preview for C_Unreserve: unreserver->VST transfer of the reserved \
+            \ wrapper + burn + VST->unreserver transfer of the underlying, re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (dptf:string (ref-DPTF::UR_Reservation r-dptf))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-TFT::URCi_Transfer r-dptf unreserver VST|SC_NAME amount)
+                    (ref-DPTF::URCi_Burn r-dptf VST|SC_NAME)
+                    (ref-TFT::URCi_Transfer dptf VST|SC_NAME unreserver amount)
+                ]
+                []
             )
         )
     )
@@ -919,6 +967,34 @@
         )
     )
     ;;  [Vesting Token Actions]
+    (defun URCi_Vest:object{IgnisCollectorV1.OutputCumulator}
+        (vester:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer)
+        @doc "Cost preview for C_Vest: DPOF mint of the vested token + (conditional) \
+            \ vester->VST DPTF transfer + DPOF transfer of the vested nonce to target. \
+            \ Re-derived purely; offset/duration/milestones affect only meta, not cost."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (dpof-id:string (ref-DPTF::UR_Vesting dptf))
+                (nonce:integer (+ (ref-DPOF::UR_NoncesUsed dpof-id) 1))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-DPOF::URCi_Mint dpof-id)
+                    (if (!= vester VST|SC_NAME)
+                        (ref-TFT::URCi_Transfer dptf vester VST|SC_NAME amount)
+                        EOC
+                    )
+                    (ref-DPOF::URCi_MoveCumulator dpof-id [nonce] false)
+                ]
+                []
+            )
+        )
+    )
     (defun C_Vest:object{IgnisCollectorV1.OutputCumulator}
         (vester:string target-account:string dptf:string amount:decimal offset:integer duration:integer milestones:integer)
         (UEV_IMC)
