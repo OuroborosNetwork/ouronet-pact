@@ -1,0 +1,29 @@
+;;
+;; REPL/launchpad-groundtruth.repl — full-boot cost-equality ground truth for the pure-citizen
+;; launchpad buys. Boots the base stack through [4.0] (which now deploys the split sovereign
+;; TS02-DPAD + citizen TS02-CPAD in the correct order), loads [5.3]_Launchpad (issues/funds/opens
+;; the Spark sale), then asserts INFO_BuySparks.ignis-need == the real IGNIS balance delta of the
+;; pure-citizen SPARK|C_BuySparks execution (Sigma-billed across DEMIPAD|C_Deposit + DPTF|C_Transfer).
+;;
+;; Run:  cd REPL && pact launchpad-groundtruth.repl
+;;
+(print "")
+(print "================================================================")
+(print "FILE  REPL/launchpad-groundtruth.repl")
+(print "================================================================")
+(print "LAUNCHPAD GROUND TRUTH START")
+(print "")
+;; ---- boot ----
+(load "Stage00_Sanboxes.repl")
+(load "Stage01_Tester.repl")
+(load "Stage_02/[0.1]_Interfaces.repl")
+(load "Stage_02/[2.1]_DpdcCore.repl")
+(load "Stage_02/[2.2]_DemiPad.repl")
+(load "Stage_02/[2.3]_EarningPools.repl")
+(load "Stage_02/[3]_Talos.repl")
+(load "Stage_02/[4.0]_Sovereign-Executor.repl")
+(print "")
+(print "=== LAUNCHPAD SETUP — [5.3]_Launchpad (issues/funds/opens Spark + others) ===")
+(load "Stage_02/[5.3]_Launchpad.repl")
+(print "")
+(print "=== [launchpad-groundtruth] boot + setup complete ===")
