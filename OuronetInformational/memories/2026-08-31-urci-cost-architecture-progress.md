@@ -68,16 +68,21 @@ never the cumulator. This makes swaps fully, exactly derivable.
   off the PURE `UC_BareboneSwapWithFeez`: multi-transfer in, LP fuel (indirect=EOC),
   output leg (special-fee bulk split or netto transfer), boost (one SSTOA burn/EOC).
   Exact by composition of already-proven sub-readers; execs unchanged.
-- **`C_SmartSwap` (bundle) / `CC_SmartSwap` (self-searching) — REMAINING, scoped.**
-  Multi-hop: reproduce `XI_SmartSwap`'s input transfer + `XI_SmartSwapCore`'s per-hop
-  fold cost + final concat, fed the bundle's swap-route/boost-path (or NO_PATH for the
-  self-searching variant, which re-derives read-only). Intricacies to preserve exactly:
-  special-fee-target payment is BATCHED to the LAST hop (one C_MultiBulkTransfer), and the
-  liquid boost is priced-and-burned ONCE on the last hop against the accumulated total
-  (not per-hop). Per-hop swap math = the same pure `UC_BareboneSwapWithFeez`. Each hop's
-  cost legs = the same shape as `URCi_SwapCore` (reuse it per hop). Ranges: XI_SmartSwap
-  1343, XI_SmartSwapCore 1398, XI_SmartSwapExplicitRoute 1183 (bundle), XI_SmartSwapRouter
-  985 (self-search). Mechanical given the boost crack; large careful build → fresh context.
+- **`C_SmartSwap` (bundle) / `CC_SmartSwap` (self-searching) — DONE, exact** (commit
+  bac44fc): `URCi_SmartSwapCore` (hop fold) + `URCi_SmartSwapExec` + `URCi_SmartSwap`
+  (self-searching, route via read-only URC_HopperActive, NO_PATH boost) +
+  `URCi_SmartSwapWithBundle` (dirty-read bundle's route + boost-path). Intermediate hops
+  cost only EOC; last hop = batched special-fee flush + output payout + one boost burn.
+  Amount-INDEPENDENT cost; output threaded via the pure swap math. Exact by composition.
+- **MTX-SWP (16 defpact ops) — COVERED, no new work.** `MTX|C_Issue` calls the SAME
+  `SWPI::XE_IssueWrite` as `SWPI::C_Issue` (#36M/M5 unification) and `MTX|C_AddLiquidity`
+  wraps the same SWPLC add-liquidity; both are bare gas-limited defpacts (no cumulator
+  return). Their cost preview IS `SWPI::URCi_Issue` / `SWPLC::URCi_Add*Liquidity` (already
+  built) — the INFO layer (task #78) calls those sovereign readers directly.
+
+**=> THE ENTIRE SWP FAMILY (SWP/SWPI/SWPL/SWPLC/SWPU/MTX-SWP) IS URCi-COMPLETE.**
+
+## RESOLVED issue-hybrids (kept for method reference)
 - **Issue-hybrids**: a token is issued (block-hash id = write product) and a LATER leg
   operates on that fresh id. KEY INSIGHT (from SWPI): the fresh-id cost readers mostly do
   string compares not table reads, and `URC_IsVirtualGasZeroAbsolutely(non-gas-id)` is
