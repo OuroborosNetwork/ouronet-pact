@@ -41,6 +41,7 @@
     (defun URCi_Curl:object{IgnisCollectorV1.OutputCumulator} (curler:string ats1:string ats2:string rt:string amount:decimal))
         ;;
     (defun C_ColdRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
+    (defun URCi_ColdRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
     (defun C_Cull:object{IgnisCollectorV1.OutputCumulator}(culler:string ats:string))
         ;;
     (defun C_HotRecovery:object{IgnisCollectorV1.OutputCumulator} (recoverer:string ats:string ra:decimal))
@@ -1003,6 +1004,67 @@
         )
     )
     ;;
+    (defun URCi_ColdRecovery:object{IgnisCollectorV1.OutputCumulator}
+        (recoverer:string ats:string ra:decimal)
+        @doc "Cost preview for C_ColdRecovery: flat 2x-biggest construct + cold-transfer \
+            \ + cold-burn + (unlimited-uncoil when position=-1) + (fee-leg burns when a \
+            \ non-redirected c-rbt fee exists). Re-derived purely via URC_ reads + sub-op \
+            \ cost readers; the exec fold's XE_UpdateRUR side-writes don't affect cost."
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (usable-cold-recovery-position:integer (ref-ATS::URC_WhichPosition ats ra recoverer))
+                (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
+                (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
+                (c-rbt-precision:integer (ref-DPTF::UR_Decimals c-rbt))
+                (fee-promile:decimal (ref-ATS::URC_ColdRecoveryFee ats ra usable-cold-recovery-position))
+                (c-rbt-fee-split:[decimal] (ref-U|ATS::UC_PromilleSplit fee-promile ra c-rbt-precision))
+                (c-rbt-fee:decimal (at 1 c-rbt-fee-split))
+                (c-fr:bool (ref-ATS::UR_ColdRecoveryFeeRedirection ats))
+                (price:decimal (* 2.0 (ref-DALOS::UR_UsagePrice "ignis|biggest")))
+                ;;
+                (ico0:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                )
+                (ico1:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-TFT::URCi_Transfer c-rbt recoverer ATS|SC_NAME ra)
+                )
+                (ico2:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-DPTF::URCi_Burn c-rbt ATS|SC_NAME)
+                )
+                (ico3:object{IgnisCollectorV1.OutputCumulator}
+                    (if (!= usable-cold-recovery-position -1)
+                        EOC
+                        (URCi_UnlimitedUncoilCumulator ats recoverer)
+                    )
+                )
+                (ico4:object{IgnisCollectorV1.OutputCumulator}
+                    (if (= c-rbt-fee 0.0)
+                        EOC
+                        (if c-fr
+                            EOC
+                            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                                (map
+                                    (lambda (idx:integer)
+                                        (ref-DPTF::URCi_Burn (at idx rt-lst) ATS|SC_NAME)
+                                    )
+                                    (enumerate 0 (- (length rt-lst) 1))
+                                )
+                                []
+                            )
+                        )
+                    )
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico0 ico1 ico2 ico3 ico4] [])
+        )
+    )
     (defun C_ColdRecovery:object{IgnisCollectorV1.OutputCumulator}
         (recoverer:string ats:string ra:decimal)
         (UEV_IMC)
