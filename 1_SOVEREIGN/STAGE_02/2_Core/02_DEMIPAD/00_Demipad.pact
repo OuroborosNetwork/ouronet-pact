@@ -140,6 +140,15 @@
     (defun C_TransmitNonFungibles:object{IgnisCollectorV1.OutputCumulator}
         (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
     )
+    (defun URCi_Deposit:object{IgnisCollectorV1.OutputCumulator}
+        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
+    )
+    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV1.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+    )
+    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV1.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+    )
     ;;
 )
 (module DEMIPAD GOV
@@ -1031,6 +1040,77 @@
         )
     )
     ;;{F6}  [C]
+    (defun URCi_Deposit:object{IgnisCollectorV1.OutputCumulator}
+        (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool)
+        @doc "Cost preview for C_Deposit: (type 0) wrap-STOA of the non-environment amount, \
+            \ (type 1) unwrap-STOA of the environment amount, and (unless direct-injection) the \
+            \ donor->launchpad transfer of the working token. The Satisfy/Deposit writes are \
+            \ free. Re-derived purely from URC_Prices."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
+                ;;
+                (prices:object{DemiourgosLaunchpadV1.DEMIPAD|Prices} (URC_Prices asset-id amount-in-dollars type))
+                (working-id:string
+                    (if (or (= type 0) (= type 1))
+                        (ref-DALOS::UR_WrappedStoaID)
+                        (if (= type 2)
+                            (ref-DALOS::UR_SilverStoaID)
+                            (ref-DALOS::UR_OuroborosID)
+                        )
+                    )
+                )
+                (env:decimal (at "enviroment-amount" prices))
+                (non-enviroment:decimal (+ (at "coding-amount" prices) (at "remainder-amount" prices)))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (if (= type 0)
+                        (ref-LIQUID::URCi_WrapStoa donor non-enviroment)
+                        EOC
+                    )
+                    (if (= type 1)
+                        (ref-LIQUID::URCi_UnwrapStoa donor env)
+                        EOC
+                    )
+                    (if (not direct-injection)
+                        (ref-TFT::URCi_Transfer working-id donor DEMIPAD|SC_NAME non-enviroment)
+                        EOC
+                    )
+                ]
+                []
+            )
+        )
+    )
+    (defun URCi_TransmitSemiFungibles:object{IgnisCollectorV1.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        @doc "Cost preview for C_TransmitSemiFungibles: the single collectable multi-transfer \
+            \ (client->launchpad on fuel, launchpad->client on retrieve), son=true."
+        (URCi_TransmitCollectables client asset-id true nonces amounts fuel-or-retrieve)
+    )
+    (defun URCi_TransmitNonFungibles:object{IgnisCollectorV1.OutputCumulator}
+        (client:string asset-id:string nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        @doc "Cost preview for C_TransmitNonFungibles: as URCi_TransmitSemiFungibles with son=false."
+        (URCi_TransmitCollectables client asset-id false nonces amounts fuel-or-retrieve)
+    )
+    (defun URCi_TransmitCollectables:object{IgnisCollectorV1.OutputCumulator}
+        (client:string asset-id:string son:bool nonces:[integer] amounts:[integer] fuel-or-retrieve:bool)
+        @doc "Shared cost preview for the collectable transmit legs (mirrors X_TransmitCollectables): \
+            \ one DPDC-T multi-transfer, sender/receiver flipped by fuel-or-retrieve."
+        (let
+            (
+                (ref-DPDC-T:module{DpdcTransferV1} DPDC-T)
+                (lpad:string DEMIPAD|SC_NAME)
+            )
+            (if fuel-or-retrieve
+                (ref-DPDC-T::URCi_MultiTransferCumulator [asset-id] [son] client lpad [nonces] [amounts])
+                (ref-DPDC-T::URCi_MultiTransferCumulator [asset-id] [son] lpad client [nonces] [amounts])
+            )
+        )
+    )
     (defun C_Deposit:object{IgnisCollectorV1.OutputCumulator}
         (donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Deposits Funds into the Launchpad, for a registered Asset \
