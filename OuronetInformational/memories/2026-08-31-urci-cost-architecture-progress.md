@@ -162,7 +162,7 @@ gas-funded path. Composition privilege name (if ever revived): "Patrician" (priv
 STRUCTURE (Phase 1, commit ae1f9b6): TS02-DPAD split ->
 - SOVEREIGN `1_SOVEREIGN/STAGE_02/3_Talos/05_TS02-DPAD.pact`: DEMIPAD|* orchestration +
   new `DEMIPAD|C_Deposit`; P|A_Define registers DEMIPAD/DPDC/TS01-A.
-- CITIZEN `2_CITIZEN/6_Launchpad/99_TS02-CPAD.pact` (interface CitizenLaunchpadTalosV1, deployed
+- CITIZEN `2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact` (interface CitizenLaunchpadTalosV1, deployed
   LAST): all SPARK|/SNAKES|/CUSTODIANS|/KPAY| user wrappers; P|A_Define registers the 5 sales'
   IMP + **TS01-A** (so the wrappers' XB_DynamicFuelSTOA gas refuel passes UEV_IMC).
 - Deploy reorder: DEMIPAD core -> TS02-C1/C2/C3 -> TS02-DPAD(sov) -> citizen sales -> TS02-CPAD.
@@ -190,7 +190,7 @@ TWO REAL LATENT BUGS fixed (never caught — launchpad buys were never runtime-t
 functional tests [5.3]/[6.1]/[6.3] are commented out of the gate):
 1. INFO-ZERO (implements DalosInfoV1) was bound as module{OuronetInfoV1} throughout the launchpad
    -> runtime typecheck failure the moment any such fn runs. Rebind to real IGNIS (implements
-   OuronetInfoV1), matching AQP-INFO. (0 remain in 2_CITIZEN/6_Launchpad.)
+   OuronetInfoV1), matching AQP-INFO. (0 remain in 2_CITIZEN/7_Launchpad.)
 2. TS02-CPAD summoner guard not registered into TS01-A -> XB_DynamicFuelSTOA UEV_IMC failed.
 
 REMAINING polish (gated / analogous): Snakes/Custodians/StoicPay buy functional proofs need the

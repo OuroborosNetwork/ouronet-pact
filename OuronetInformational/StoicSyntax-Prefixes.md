@@ -27,13 +27,12 @@ A name is `PREFIX_Name` (or `PREFIX_Scope|Name`). The prefix is read left-to-rig
     one place all real paths already share. Introduced 2026-08-24 (SWP audit L56) — retroactively also
     covers the `U|LST` bounds-guard exception from v1.9.0/§6.1 (L41), now a named category instead of an
     ad-hoc carve-out.
-  - `cap` → the function **installs a capability** (`install-capability`) into the transaction — a
-    **deliberate tx-capability side effect**. This is the **one lowercase role that introduces a side
-    effect**; the base class still names the read/compute it does to *derive* the cap arguments, and `cap`
-    flags that it then installs them rather than returning them. Introduced 2026-08-30 (DEMIPAD audit #17L)
-    for the launchpad's no-signature ("slippage-off") payment setup — the client-side sibling of a `URC_`
-    that returns cap-description strings for the UI to sign. Colour: its **own** family (CAP-INSTALL), never
-    the calm READ hue, because it mutates tx state.
+  - ~~`cap`~~ → **RETIRED 2026-08-31.** A function that installs a capability now uses the **`CAP_`** prefix —
+    a defcap-installing enforce is exactly what `CAP_` denotes — so it folds into the **ENFORCE / Validate**
+    family and drops the former `URCcap_` specialization and its own colour. (History: introduced 2026-08-30,
+    DEMIPAD audit #17L, for the launchpad's no-signature "slippage-off" payment setup, as a `URC_` that
+    `install-capability`s instead of returning cap-description strings; retired on the 7-class colour
+    consolidation — it is extremely rare and `CAP_` fits it perfectly.)
   - `i` → the function **emits an IGNIS cost** — a `URCi_` cost reader (a `URC_` specialization). Pure, no
     `enforce`; a **leaf** returns a cost cumulator (`object{IgnisCollectorV1.OutputCumulator}`) or fair-price
     `decimal`, a **composer** totals a `C_`/`CC_`/`A_`. Unlike `cap` it has **no** side effect — it is the
@@ -67,7 +66,7 @@ because it does no reads. A conditionally-heavy function takes the heavy prefix 
 | `URC_`  | read+compute | Point read **+ derive** (no `enforce`) | yes | **READ** |
 | `URCx_` | read+compute·aux | `URC_` **auxiliary** | yes | **READ** (dim) |
 | `URCv_` | read+compute·validating | `URC_` whose `enforce` is intrinsic to its own computation (§1 `v`) | yes | **READ** |
-| `URCcap_` | read+compute·cap-install | `URC_` that **installs** the capabilities it derives (`install-capability`) instead of returning them — the no-signature client-side payment setup (a deliberate tx-cap **side effect**; §1 `cap`). Reachable from outside (UI-called) → belongs in the interface | yes | **CAP-INSTALL** |
+| ~~`URCcap_`~~ | *removed → `CAP_`* | **Removed 2026-08-31.** A cap-installing helper uses the **`CAP_`** prefix (Validate/ENFORCE) — installing a defcap is what `CAP_` denotes. (Was a `URC_` that `install-capability`s instead of returning cap strings — the no-signature client-side payment setup; UI-called, so still interface-declared as `CAP_`.) | yes | **ENFORCE** |
 | `URCi_` | read+compute·cost | **Cost-emitting** reader (§1 `i` = IGNIS cost). Pure, **no `enforce`**; a **leaf** returns an IGNIS cost cumulator (`object{IgnisCollectorV1.OutputCumulator}`) or a native fair-price `decimal`, a **composer** totals a `C_`/`CC_`/`A_`. The single source both the exec path (billing) **and** INFO (preview) call, so they cannot drift. Cross-module ones belong in the interface | yes | **COST** |
 | `URU_`  | read·upgrade | Read helper for **version-upgrade / migration** paths | admin only | **READ** (dim) |
 | `URH_`  | heavy-read | **Scan** read (`select` / `keys`) — expensive/unbounded | **NO — off-path only** | **HEAVY-READ ⚠** |
@@ -198,7 +197,7 @@ their base, optionally **dimmed / desaturated / italic** to signal "specializati
 |--------|----------|----------------------|
 | **COMPUTE**    | `UC_ UCk_ UCx_` | cheap, pure, side-effect-free — calm/neutral |
 | **READ**       | `UR_ URC_ URCx_ URU_` | bounded point reads — safe read hue |
-| **CAP-INSTALL** | `URCcap_` | derives + **installs** a capability into the tx — a side effect; distinct hue (e.g. teal/violet), never the calm READ blue |
+| ~~**CAP-INSTALL**~~ | *removed → `CAP_`* | Folded into **ENFORCE** on 2026-08-31 — the cap-installing helper uses `CAP_` and never warranted its own hue (extremely rare). |
 | **COST**       | `URCi_` | the IGNIS **cost layer** — leaf/composer cumulator readers that billing and preview share; its own "money" hue (e.g. gold), distinct from the HEAVY-READ warning |
 | **HEAVY-READ ⚠** | `URH_ URHx_ URHC_ URHCx_` | **scan / expensive — must flinch**; off-path only (warning hue: amber/orange) |
 | **ENFORCE**    | `UEV_ CAP_` | can abort the tx — alert hue (red family) |
@@ -229,9 +228,10 @@ interface are callable from outside the module.** Therefore:
 >
 > **Corollary — these MUST appear in the interface** (they are reachable from outside):
 > `XE_` and `XB_` (external / both), `C_` / `CC_` / `A_` recipes, and all unprotected readers/validators/
-> constructors/compute (`UR_`, `URC_`, `URCcap_`, `URH_`, `URHC_`, `UEV_`, `CAP_`, `UDC_`, `UC_`, `UCk_`)
-> **unless** they hit exclusion #4 (module-schema return). (`URCcap_` is client-facing — the UI calls it to
-> install the payment caps — so it is always interface-declared.)
+> constructors/compute (`UR_`, `URC_`, `URH_`, `URHC_`, `UEV_`, `CAP_`, `UDC_`, `UC_`, `UCk_`)
+> **unless** they hit exclusion #4 (module-schema return). (The cap-installing helper — formerly `URCcap_`,
+> now a `CAP_` — is client-facing, the UI calls it to install the payment caps, so it is always
+> interface-declared.)
 
 So an `XE_`/`XB_` missing from the interface is a **bug** (it's callable from outside but undeclared);
 a `URH_` reader used by the UI/another module belongs in the interface (subject to #4); a `URH_` reader
@@ -239,29 +239,90 @@ used only inside its own module does not.
 
 ---
 
-## 5.1 Canonical within-module ORDER (and interface mirror)
+## 5.1 Canonical module structure & ORDER (and interface mirror)
 
-A module reads strictly **bottom-up**: every dependency precedes what composes it, so the file
-culminates in its **public recipes**. Five blocks:
+**There is NO load-order constraint inside a module.** Pact resolves every intra-module reference
+regardless of definition order, so a module's contents are ordered **purely by the canonical scheme
+below** — the colour/strength order — never forced by dependency. The single exception is a genuine
+*definition* dependency (a `defconst` that calls a `CT_` const-helper defun needs it defined *above*),
+which lives in region 3 and takes precedence there. Everywhere else the order is free, so we **fix** it —
+giving every module (and interface) one identical, deterministic shape.
 
-1. **Schemas / tables / constants** — const-helper defuns (e.g. `CT_Bar` feeding `(defconst BAR (CT_Bar))`)
-   stay here; a `defconst` that calls a defun needs it defined *above* the const.
-2. **Capabilities** — bands C1–C4.
-3. **Utility functions** (the "first round" — all auxiliaries), in family order:
-   `UC / UCk` → `UR / URC / URU` → `URH / URHC` → `UEV` → `CAP` → `UDC` → **`W` (`WU / WU2-4 / WW / WI`)**.
-   `W` is **last** in this block; each `…x` auxiliary sits directly beneath its base function.
-4. **X — auxiliary orchestration**: `XI` → `XE` → `XB` (sub-tiering observed).
-5. **User functions** (the complete/final recipes — **LAST**): `A_ / AA_ / Ap_ / AAp_` → `C_ / CC_ / Cp_ / CCp_`
-   (weight by letter-doubling, mode by `p` suffix; within a base, solo before parallel)
-   (admin = a user fn needing admin rights; client = a user fn anyone may call).
+**A module has FIVE code regions, in this order:**
 
-The **interface mirrors this order**, dropping the four excluded kinds (§5):
-`UC/UCk → UR/URC/URU → URH/URHC → UEV → CAP → UDC → XE/XB → A → C`.
+1. **Governance** — the module governance capability (`GOV`) and its keyset/keys.
+2. **Policy** — policy capabilities + policy-registry functions (`P|*`; the IMC guard registry).
+3. **Schemas · tables · constants** — `defschema`, `deftable`, `defconst`; a `CT_` const-helper defun
+   feeding a `defconst` stays here, directly **above** the const that uses it.
+4. **Capabilities** — in bands **C1 → C2 → C3 → C4** (§5.2).
+5. **Functions** — the prefixed functions, in the **canonical function order** (§5.1.1).
 
-> **Amendment (2026-08).** Two corrections to earlier canon: (a) `W` writers moved to the **tail of
-> block 3** (were loosely placed); (b) `X` is an *auxiliary* layer, so it now precedes the user
-> functions — the old `A → C → X` becomes `… → X → A → C`, and the module ends on `A_/C_`. Worked
-> reference for the amended order: `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_MTX-AQP.pact`.
+### 5.1.1 Canonical function order (region 5)
+
+The seven classes in build order; **within each class strongest → lightest** (bold lead ▸ shades ▸
+`…x` aux *italic* ▸ cost accent). This is exactly the colour order (§4/§6) **and** the write order:
+
+| # | Class | Prefixes, in order |
+|---|-------|--------------------|
+| 1 | **Construct**     | `UDC_` · `UDCx_` |
+| 2 | **Compute**       | `UC_` · `UCk_` · `UCv_` · `UCx_` · `UCkx_` |
+| 3 | **Read**          | `URH_` · `URHC_` · `URHx_` · `URHCx_` · `UR_` · `URC_` · `URU_` · `URCv_` · `URCx_` · `URCi_` |
+| 4 | **Validate**      | `UEV_` · `CAP_` |
+| 5 | **Write**         | `WW_` · `WU_` · `WU2_` · `WU3_` · `WU4_` · `WI_` |
+| 6 | **Aux/Protected** | `XI_` · `XE_` · `XB_` |
+| 7 | **User**          | `AU_` · `A_` · `AA_` · `Ap_` · `AAp_` · `C_` · `CC_` · `Cp_` · `CCp_` |
+
+Each `…x` auxiliary still sits **directly beneath the function it serves** (§1 positioning) — that
+gluing wins over the class-internal rank when a concrete aux would otherwise float up to the class list.
+
+### 5.1.2 Interface mirror
+
+The interface observes the **same region order**, with these differences:
+
+- **No region 1 (Governance)** and **no region 2 (Policy)**.
+- **Region 3** — schemas + constants may appear, but **never `deftable`** (tables are module-only).
+- **Region 4** — capabilities may appear (those that are part of the cross-module contract).
+- **Region 5** — functions may appear in the canonical order, **minus the four excluded kinds** (§5:
+  `…x` auxiliaries, `W…` writers, `XI_`, and any `object{module-schema}`-returning function).
+
+So the interface's function order is the §5.1.1 order with exclusions dropped:
+`UDC → UC/UCk/UCv → URH/URHC → UR/URC/URU/URCv/URCi → UEV/CAP → XE/XB → A…/C…`.
+
+### 5.2 Capability bands (region 4)
+
+Capabilities are written in four bands, in order **C1 → C2 → C3 → C4**, each with a **metallic** colour:
+
+- **C1 — true / simple → bronze.** `true`-only capabilities (trivial/unconditional), **and** capabilities
+  that compose **only** other simple-`true` capabilities.
+- **C2 — custom, non-composing → silver.** Non-simple capabilities with their own custom body (enforce /
+  reads / guards) that **compose no other capability**.
+- **C3 — custom, composing → silver.** Non-simple capabilities that **also compose** other capabilities.
+- **C4 — ownership / governance → gold.** Capabilities that prove **ownership or governance** of something
+  (account-ownership, admin / governance authority) — the heaviest "authority" smell, so it sorts **last**.
+
+> **Reorder (2026-08-31).** C3 and C4 swapped from the initial listing: **composed** caps are now **C3**
+> (silver, grouped with C2), and **ownership / governance** caps are **C4** (gold), so the authority band
+> closes the capability region. Colour: **C1 bronze · C2/C3 silver · C4 gold — all metallic** (rendered as
+> a gradient-clipped brushed-metal sheen, distinct from the neutral silver used for type annotations).
+
+### 5.3 Body-statement order (deterministic when order is free)
+
+Inside any body — a capability **or** a function — when the statements are **order-independent**, order them:
+
+1. **Pact built-ins** first (`enforce`, `enforce-guard`, `at`, `read`, `map`, `fold`, …).
+2. **Cross-module (mod-ref) calls** next — from the **most distant** module (deepest in the dependency
+   stack) **up to the closest** (the module just below the one we are in).
+3. **Same-module functions** last — in the **canonical function order** (§5.1.1).
+
+A genuine data dependency **takes precedence** — this rule only fixes order when it is otherwise free,
+making the written structure exact and deterministic across the whole codebase.
+
+> **Amendment (2026-08-31).** Supersedes the prior bottom-up ordering: (a) a module is now defined as the
+> five regions above; (b) **Construct (`UDC_`) now LEADS the function region** (was late, after `CAP_`),
+> per the 7-class colour/build order; (c) "no intra-module load-order constraint" is made explicit —
+> functions are ordered by canon, not dependency; (d) capability bands **C1–C4** and the **body-statement
+> order** are now specified (they were referenced but undefined). The earlier worked reference
+> `1_SOVEREIGN/STAGE_02/2_Core/03_AQP/06_MTX-AQP.pact` predates the Construct-first order.
 
 ---
 
@@ -278,13 +339,13 @@ The **interface mirrors this order**, dropping the four excluded kinds (§5):
 
 Every function/cap prefix, grouped by colour family. `_` marks the class boundary; `|` scopes and
 module/table names are **not** prefixes (colour the class token, not the scope). Match **longest prefix
-first** (e.g. `URCcap_` before `URC_`, `URHC_` before `URH_`, `CC_` before `C_`, `AAp_` before `AA_`).
+first** (e.g. `URHC_` before `URH_`, `URCi_` before `URC_` before `UR_`, `CC_` before `C_`, `AAp_` before `AA_`).
 
 | Family | Prefixes (match longest-first) |
 |--------|--------------------------------|
 | **COMPUTE**      | `UCkx_` `UCk_` `UCx_` `UCv_` `UC_` |
 | **READ**         | `URCx_` `URCv_` `URC_` `URU_` `UR_` |
-| **CAP-INSTALL**  | `URCcap_` |
+| ~~**CAP-INSTALL**~~  | *removed 2026-08-31 → `CAP_`* (folds into ENFORCE) |
 | **COST**         | `URCi_` |
 | **HEAVY-READ ⚠** | `URHCx_` `URHC_` `URHx_` `URH_` |
 | **ENFORCE**      | `UEV_IMC` (structural, see below) · `UEV_` `CAP_` |
@@ -296,6 +357,6 @@ first** (e.g. `URCcap_` before `URC_`, `URHC_` before `URH_`, `CC_` before `C_`,
 | **STRUCTURAL**   | `GOV` `GOV\|` `P\|` `SECURE` `UEV_IMC` |
 
 **Lowercase specialization markers** (appended to a class, take the base hue, usually dimmed — except
-`cap`/`i`): `k` key-build · `x` auxiliary · `v` intrinsic-validating · `cap` **installs a capability (own
-CAP-INSTALL hue)** · `i` **IGNIS-cost-emitting (own COST hue)** · `p` Hydra-parallel-slice (on recipes) ·
+`i`): `k` key-build · `x` auxiliary · `v` intrinsic-validating · ~~`cap`~~ **retired 2026-08-31 → use `CAP_`**
+(ENFORCE) · `i` **IGNIS-cost-emitting (own COST hue)** · `p` Hydra-parallel-slice (on recipes) ·
 doubled base letter (`CC`/`AA`) = heavy.

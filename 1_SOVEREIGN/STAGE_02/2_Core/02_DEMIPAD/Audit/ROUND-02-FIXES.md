@@ -464,7 +464,7 @@ look sovereign/core.
   `99_TS02-DPAD.pact` — the sovereign orchestrator, deployed last); `Stage_01/` (AOZ+/DSP+) and `Stage_Z/`
   (DPL-UR/EXPLORER) preserved.
 - Moved the 5 launchpad sale modules out of `2_Core/02_DEMIPAD/` (now sovereign `00_Demipad` only) and
-  `TS02-DPAD` out of `3_Talos/` into `2_CITIZEN/6_Launchpad/`. `.pact` files reference each other by
+  `TS02-DPAD` out of `3_Talos/` into `2_CITIZEN/7_Launchpad/`. `.pact` files reference each other by
   module name (`::` modrefs), so **no Pact code changed** — only ~40 REPL `(load …)` paths + docs
   (CLAUDE.md, README, MODULE-INDEX, CONTEXT, AQP-BOOT links) repointed. Historical Audit round-docs left
   as accurate-when-written.
@@ -500,7 +500,7 @@ on the readable phrase goes red. Restored → green, 0 load failures.
 ## #17L — interface omission + `URCI_` mis-prefix → FIXED (formalized `URCcap_`, renamed, declared) (2026-08-30)
 
 **Files:** `OuronetInformational/StoicSyntax-Prefixes.md` (registry) · `00_Demipad.pact` +
-`2_CITIZEN/6_Launchpad/{1_Spark,2_Snakes,3_Custodians,4_StoicPay}/*` (rename + interface decls).
+`2_CITIZEN/7_Launchpad/{1_Spark,2_Snakes,3_Custodians,4_StoicPay}/*` (rename + interface decls).
 
 **Two residuals.** (a) The sale-module interfaces + `DemiourgosLaunchpadV1` omitted `URC_Acquire` /
 `URCI_Acquire` (refuted as a blocker — `::` modref dispatch resolves them undeclared, suite green — but a

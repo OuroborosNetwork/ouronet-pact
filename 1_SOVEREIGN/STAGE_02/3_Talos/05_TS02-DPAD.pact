@@ -4,7 +4,7 @@
 ;; SOVEREIGN launchpad Talos. Holds ONLY the sovereign DEMIPAD orchestration
 ;; (asset registration/config + deposit/fuel/retrieve/withdraw). The per-sale
 ;; CITIZEN user wrappers (SPARK|/SNAKES|/CUSTODIANS|/KPAY|/STOAICO|) live in the
-;; citizen Talos 2_CITIZEN/6_Launchpad/99_TS02-CPAD.pact, deployed AFTER the
+;; citizen Talos 2_CITIZEN/7_Launchpad/99_TS02-CPAD.pact, deployed AFTER the
 ;; citizen sales. Deploy order: DEMIPAD core -> TS02-C1/C2/C3 -> THIS (sovereign)
 ;; -> citizen sales -> TS02-CPAD (citizen Talos).
 ;;

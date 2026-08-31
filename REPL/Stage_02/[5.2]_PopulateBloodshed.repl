@@ -56,7 +56,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-01 [2] - BSD-L Module · 02 · load module ==== ===========================================
 (print "--- [TX-01 [2] - BSD-L Module · 02 · load module] ---")
-(load "../../2_CITIZEN/1_BloodshedMinter/01_BSD-L.pact")
+(load "../../2_CITIZEN/2_BloodshedMinter/01_BSD-L.pact")
 ;;==== TX-01 [2] - BSD-L Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-01 [2] - BSD-L Module · 03 · gas echo] ---")
 (format "<<<<<<<BSD-L Costs {} GAS>>>>>>>" [(env-gas)])
@@ -76,7 +76,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-02 [2] - BSD-E Module · 02 · load module ==== ===========================================
 (print "--- [TX-02 [2] - BSD-E Module · 02 · load module] ---")
-(load "../../2_CITIZEN/1_BloodshedMinter/02_BSD-E.pact")
+(load "../../2_CITIZEN/2_BloodshedMinter/02_BSD-E.pact")
 ;;==== TX-02 [2] - BSD-E Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-02 [2] - BSD-E Module · 03 · gas echo] ---")
 (format "<<<<<<<BSD-E Costs {} GAS>>>>>>>" [(env-gas)])
@@ -96,7 +96,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-03 [2] - BSD-R Module · 02 · load module ==== ===========================================
 (print "--- [TX-03 [2] - BSD-R Module · 02 · load module] ---")
-(load "../../2_CITIZEN/1_BloodshedMinter/03_BSD-R.pact")
+(load "../../2_CITIZEN/2_BloodshedMinter/03_BSD-R.pact")
 ;;==== TX-03 [2] - BSD-R Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-03 [2] - BSD-R Module · 03 · gas echo] ---")
 (format "<<<<<<<BSD-R Costs {} GAS>>>>>>>" [(env-gas)])
@@ -116,7 +116,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-04 [2] - BSD-C Module · 02 · load module ==== ===========================================
 (print "--- [TX-04 [2] - BSD-C Module · 02 · load module] ---")
-(load "../../2_CITIZEN/1_BloodshedMinter/04_BSD-C.pact")
+(load "../../2_CITIZEN/2_BloodshedMinter/04_BSD-C.pact")
 ;;==== TX-04 [2] - BSD-C Module · 03 · gas echo ==== ==============================================
 (print "--- [TX-04 [2] - BSD-C Module · 03 · gas echo] ---")
 (format "<<<<<<<BSD-C Costs {} GAS>>>>>>>" [(env-gas)])
@@ -136,7 +136,7 @@
   [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
 ;;==== TX-05 [2] - BSD-SETS Module · 02 · load module ==== ========================================
 (print "--- [TX-05 [2] - BSD-SETS Module · 02 · load module] ---")
-(load "../../2_CITIZEN/1_BloodshedMinter/05_BSD-SETS.pact")
+(load "../../2_CITIZEN/2_BloodshedMinter/05_BSD-SETS.pact")
 ;;==== TX-05 [2] - BSD-SETS Module · 03 · gas echo ==== ===========================================
 (print "--- [TX-05 [2] - BSD-SETS Module · 03 · gas echo] ---")
 (format "<<<<<<<BSD-SETS Costs {} GAS>>>>>>>" [(env-gas)])

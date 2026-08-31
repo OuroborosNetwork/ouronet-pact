@@ -99,7 +99,7 @@ original numbering never shifts. Cross-reference `README.md` (status tracker), `
 　　→ Owner confirmed 2026-08-18: "This is okay to be left as is for now, once audits are over we're going to do a rehaul sweep of all modules to the new variant of stoic syntax, so it will be fixed in that pass." Same deferral pattern as `#20L`. No code change.
 
 #31L — [NOT A BUG, left as-is] — Talos names the wrapper ATS|C_SetHotRecoveryFee (singular) while the core function is C_SetHotRecoveryFees (plural) — cosmetic naming asymmetry only.
-　　→ **LEFT AS-IS**, owner decided 2026-08-18, after being shown the real scope: renaming would cascade into a new `TalosStageOne_ClientTwoV2` interface plus updates to both live citizen-module consumers (`2_CITIZEN/Stage_01/01_AOZ+.pact`, which calls it by its current name, and `02_DSP+.pact`) and a coordinated redeploy - not worth it for a cosmetic naming asymmetry. "Let's let the naming sit as is." No code change.
+　　→ **LEFT AS-IS**, owner decided 2026-08-18, after being shown the real scope: renaming would cascade into a new `TalosStageOne_ClientTwoV2` interface plus updates to both live citizen-module consumers (`2_CITIZEN/1_AOZ/01_AOZ+.pact`, which calls it by its current name, and `02_DSP+.pact`) and a coordinated redeploy - not worth it for a cosmetic naming asymmetry. "Let's let the naming sit as is." No code change.
 
 ---
 

@@ -5,7 +5,7 @@ Ouronet is a Pact-based protocol suite organized as staged sovereign modules plu
 ## Repository scope
 
 - `1_SOVEREIGN/` contains core canonical modules by stage.
-- `2_CITIZEN/` contains citizen (extension) modules that consume sovereign APIs. The per-asset launchpad sales live under `2_CITIZEN/6_Launchpad/`.
+- `2_CITIZEN/` contains citizen (extension) modules that consume sovereign APIs. The per-asset launchpad sales live under `2_CITIZEN/7_Launchpad/`.
 - `REPL/` contains staged deploy/test harnesses (`Z.repl` for full-chain load).
 - `OuronetInformational/` contains persistent architecture and working-context documentation.
 

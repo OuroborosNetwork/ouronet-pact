@@ -107,7 +107,7 @@ green on pact 5.4.1, and snapshot the live interface versions. **PHASE COMPLETE 
       wins beyond bug fixes:** (i) **#12M launchpad slippage subsystem** — SWP-mirrored, uniform across
       all sale paths, both variants (signed padded caps `URC_Acquire` + on-chain `UEV_SlippageCost` ·
       install-path `URCcap_Acquire`); (ii) **#15M launchpad-sales-are-CITIZEN reclassification** — the
-      per-asset sales moved out of sovereign core to `2_CITIZEN/6_Launchpad/`, `2_SLAVE→2_CITIZEN`
+      per-asset sales moved out of sovereign core to `2_CITIZEN/7_Launchpad/`, `2_SLAVE→2_CITIZEN`
       restructure + folder scheme, "slave" term retired codebase-wide (closes #88 / subphase 1.1.4); (iii)
       **#17L StoicSyntax `URCcap_` formalization** — new `cap` marker + CAP-INSTALL colour family + flat
       prefix index (§6) for the highlighter + `URCi_` reserved. Full `Z.repl` green throughout. Carry-over
@@ -203,7 +203,7 @@ execution cost and INFO preview move together, module by module in deploy order.
       Ouronet's site names the two module classes **Sovereign** (canonical core) and **Citizen** (built by
       anyone, on top of sovereign public APIs — never adds core capabilities). Done as part of the DEMIPAD
       audit #15L restructure: folder renamed + reorganised into numbered citizen folders, the launchpad
-      sales relocated to `2_CITIZEN/6_Launchpad/`, and the legacy terminology retired codebase-wide (word +
+      sales relocated to `2_CITIZEN/7_Launchpad/`, and the legacy terminology retired codebase-wide (word +
       `2_CITIZEN` path token across all `.md`/`.repl`/`.pact` + the `CITIZEN_AND_SAMPLES.md` doc rename).
       `Z.repl` green, 0 load failures. (task #88)
 
@@ -577,10 +577,13 @@ system-account deploys). Seam (TFT/DPOF/DPTF/IGNIS signatures my AQP-INFO calls)
 
 #### 4.2.5 · Subphase — DEMIPAD audit carry-over
 Source: `1_SOVEREIGN/STAGE_02/2_Core/02_DEMIPAD/Audit/` (DONE on main 2026-08-30).
-- [ ] ❌ **STOAICO folder placement (open sub-decision).** Placed under `2_CITIZEN/6_Launchpad/5_StoicIco/`
+- [ ] ❌ **STOAICO folder placement (open sub-decision).** Placed under `2_CITIZEN/7_Launchpad/5_StoicIco/`
       (staking-ICO alongside the KPAY sale). Confirm that vs a standalone citizen folder — owner call.
-- [ ] ❌ **AOZ+/DSP+ + DPL-UR/EXPLORER naming.** Kept in `2_CITIZEN/Stage_01/` + `Stage_Z/` (outside the
-      numbered `N_XMinter` scheme). Rename into the scheme later if wanted (cosmetic).
+- [x] ✅ **AOZ+/DSP+ naming — DONE.** AOZ moved to its own citizen-#1 folder `2_CITIZEN/1_AOZ/`;
+      all minter folders shifted +1 (`2_BloodshedMinter` … `7_Launchpad`). DSP moved into
+      `2_CITIZEN/Stage_Z/03_DSP+.pact` (dispenser automaton — reads AOZ, conceptually deployed last).
+      Deploy order unchanged (AOZ via `[5.1]_Aoz+`, DSP via `[5.2]_Dispenser+`); folder move only; Z green.
+      DPL-UR/EXPLORER stay in `Stage_Z/`. Both AOZ + DSP were already pure-citizen (Talos-only calls).
 - [ ] ❌ **AQP-royalty direct-injection (#8M follow-up) — POST-AQP feature.** `direct-injection` is
       hard-blocked (`UEV_DirectInjection`) until built: route the `cod` royalty into an AQP injection
       **profile** (owner design: 50% Demiurgos Holdings / 50% Coding-Division score, both Deb-free) —
