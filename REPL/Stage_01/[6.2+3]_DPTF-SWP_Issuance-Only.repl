@@ -620,6 +620,79 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
+(begin-tx "SWP|TX 04b - URCi_Issue ground-truth (reconstruction == real readers on the now-existing LP)")
+(namespace "ouronet-ns")
+;;==== SWP|TX 04b · 01 · URCi_Issue == real-reader reconstruction ====
+(print "--- [SWP|TX 04b · 01 · URCi_Issue == real-reader reconstruction] ---")
+(let
+    (
+        (ref-DALOS:module{OuronetDalosV1} DALOS)
+        (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+        (ref-SWP:module{SwapperV3} SWP)
+        (ref-SWPI:module{SwapperIssueV3} SWPI)
+        (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+        (ref-TFT:module{TrueFungibleTransferV1} TFT)
+        (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+    )
+    (let
+        (
+            (pool-tokens
+                [
+                    { "token-id":  (ref-DALOS::UR_SilverStoaID), "token-supply": 3200.0}
+                    { "token-id":  (ref-DALOS::UR_OuroborosID), "token-supply": 10000.0}
+                    { "token-id":  (ref-DALOS::UR_WrappedStoaID), "token-supply": 6000.0}
+                ]
+            )
+            (swpair:string (at 0 (ref-SWP::URC_Swpairs)))
+            (swp-sc:string (ref-SWP::GOV|SWP|SC_NAME))
+            (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+        )
+        (let
+            (
+                (lp:string (ref-SWP::UR_TokenLP swpair))
+                (pt-ids:[string] (ref-SWP::UC_ExtractTokens pool-tokens))
+                (pt-amts:[decimal] (ref-SWP::UC_ExtractTokenSupplies pool-tokens))
+                (preview:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-SWPI::URCi_Issue KST.ANHD pool-tokens))
+            )
+            ;;<real> rebuilds the same 5-leg concat but sources ico3 (LP mint) and ico4 (LP
+            ;;transfer-out) from the ACTUAL DPTF/TFT cost readers on the now-EXISTING <lp>
+            ;;(GENESIS_LP_SUPPLY = 10000000.0). ico1/ico2/ico5 are identical to URCi_Issue, so
+            ;;the IFP equality isolates the fresh-LP reconstruction (biggest mint + class-1
+            ;;smallest transfer + global trigger) against ground truth.
+            (let
+                (
+                    (real:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                            [
+                                (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DPTF::URCi_IssueGas 1) swp-sc trigger [])
+                                (ref-TFT::URCi_MultiTransferCumulator pt-ids KST.ANHD swp-sc pt-amts)
+                                (ref-DPTF::URCi_Mint lp swp-sc true)
+                                (ref-TFT::URCi_Transfer lp swp-sc KST.ANHD 10000000.0)
+                                (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|swp-issue") swp-sc trigger [])
+                            ]
+                            []))
+                )
+                (map print
+                    [
+                        (expect
+                            (format "URCi_Issue IFP {} == real-reader reconstruction IFP {} (fresh-LP mint/transfer invariants hold)"
+                                [(ref-I|OURONET::OI|UC_IfpFromOutputCumulator preview)
+                                 (ref-I|OURONET::OI|UC_IfpFromOutputCumulator real)])
+                            (ref-I|OURONET::OI|UC_IfpFromOutputCumulator real)
+                            (ref-I|OURONET::OI|UC_IfpFromOutputCumulator preview))
+                    ]
+                )
+                ""
+            )
+        )
+    )
+)
+(commit-tx)
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
 (begin-tx "SWP|TX 005 - Issue S|DLK-98c486052a51|OURO-98c486052a51|DWK-98c486052a51")
 (namespace "ouronet-ns")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
