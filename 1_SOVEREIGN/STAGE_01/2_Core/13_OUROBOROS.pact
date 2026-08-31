@@ -18,6 +18,11 @@
     ;;
     (defun C_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
     (defun XB_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
+    (defun URCi_Compress:object{IgnisCollectorV1.OutputCumulator} (client:string ignis-amount:decimal))
+    (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator} ())
+    (defun URCi_Sublimate:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
+    (defun URCi_SublimateV2:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
+    (defun URCi_WithdrawFees:object{IgnisCollectorV1.OutputCumulator} (id:string target:string))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} ())
     (defun C_Sublimate:object{IgnisCollectorV1.OutputCumulator} (client:string target:string ouro-amount:decimal))
     ;;#23H fix: C_SublimateV2 was already live/actively-used (TS01-C2's ORBR|C_SublimateV2,
@@ -347,6 +352,33 @@
     ;;
     ;;{F5}  [A]
     ;;{F6}  [C]
+    (defun URCi_Compress:object{IgnisCollectorV1.OutputCumulator}
+        (client:string ignis-amount:decimal)
+        @doc "Cost preview for C_Compress (and cost-identical XB_Compress): client->ORBR IGNIS \
+            \ transfer + IGNIS burn + OURO mint + ORBR->client OURO transfer. Output == \
+            \ [ouro-remainder-amount], re-derived purely."
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (ouro-remainder-amount:decimal (at 0 (URC_Compress ignis-amount)))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-TFT::URCi_Transfer ignis-id client ORBR|SC_NAME ignis-amount)
+                    (ref-DPTF::URCi_Burn ignis-id ORBR|SC_NAME)
+                    (ref-DPTF::URCi_Mint ouro-id ORBR|SC_NAME false)
+                    (ref-TFT::URCi_Transfer ouro-id ORBR|SC_NAME client ouro-remainder-amount)
+                ]
+                [ouro-remainder-amount]
+            )
+        )
+    )
     (defun C_Compress:object{IgnisCollectorV1.OutputCumulator}
         (client:string ignis-amount:decimal)
         (UEV_IMC)
@@ -415,6 +447,38 @@
             )
         )
     )
+    (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator} ()
+        @doc "Cost preview for C_Fuel: when wrapped-STOA exists and the ORBR STOA balance is \
+            \ positive, the wrap + ATSU fuel legs; otherwise EOC (no-op). Re-derived purely."
+        (let
+            (
+                (ref-coin:module{stoa-ns.fungible-v1} coin)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-ATSU:module{AutostakeUsageV1} ATSU)
+                (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID)
+                (orb-sc ORBR|SC_NAME)
+                (present-stoa-balance:decimal (ref-coin::get-balance (ref-DALOS::UR_AccountStoa orb-sc)))
+                (w-stoa:string (ref-DALOS::UR_WrappedStoaID))
+            )
+            (if (and (!= w-stoa BAR) (> present-stoa-balance 0.0))
+                (let
+                    (
+                        (liquid-idx:string (at 0 (ref-DPTF::UR_RewardToken w-stoa)))
+                    )
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [
+                            (ref-LIQUID::URCi_WrapStoa orb-sc present-stoa-balance)
+                            (ref-ATSU::URCi_Fuel orb-sc liquid-idx w-stoa present-stoa-balance)
+                        ]
+                        []
+                    )
+                )
+                EOC
+            )
+        )
+    )
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} ()
         (UEV_IMC)
         (let
@@ -455,6 +519,36 @@
             )
         )
     )
+    (defun URCi_Sublimate:object{IgnisCollectorV1.OutputCumulator}
+        (client:string target:string ouro-amount:decimal)
+        @doc "Cost preview for C_Sublimate: client->ORBR OURO transfer + OURO burn + IGNIS mint \
+            \ + ORBR->target IGNIS transfer. Output == [ignis-amount], re-derived purely."
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
+                ;;
+                (ouro-remainder-amount:decimal (at 0 (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision)))
+                (ignis-amount:decimal (URC_Sublimate ouro-remainder-amount))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-TFT::URCi_Transfer ouro-id client ORBR|SC_NAME ouro-amount)
+                    (ref-DPTF::URCi_Burn ouro-id ORBR|SC_NAME)
+                    (ref-DPTF::URCi_Mint ignis-id ORBR|SC_NAME false)
+                    (ref-TFT::URCi_Transfer ignis-id ORBR|SC_NAME target ignis-amount)
+                ]
+                [ignis-amount]
+            )
+        )
+    )
     (defun C_Sublimate:object{IgnisCollectorV1.OutputCumulator}
         (client:string target:string ouro-amount:decimal)
         (UEV_IMC)
@@ -488,6 +582,42 @@
                     ]
                     [ignis-amount]
                 )
+            )
+        )
+    )
+    (defun URCi_SublimateV2:object{IgnisCollectorV1.OutputCumulator}
+        (client:string target:string ouro-amount:decimal)
+        @doc "Cost preview for C_SublimateV2: (conditional) freeze client + wipe-slim the OURO \
+            \ + unfreeze + IGNIS mint + ORBR->target IGNIS transfer. Output == [ignis-amount], \
+            \ re-derived purely."
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (ignis-id:string (ref-DALOS::UR_IgnisID))
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ouro-precision:integer (ref-DPTF::UR_Decimals ouro-id))
+                ;;
+                (ouro-remainder-amount:decimal (at 0 (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount ouro-precision)))
+                (ignis-amount:decimal (URC_Sublimate ouro-remainder-amount))
+                (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ouro-id client))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (if (not frozen-state)
+                        (ref-DPTF::URCi_ToggleFreezeAccount ouro-id)
+                        EOC
+                    )
+                    (ref-DPTF::URCi_WipeSlim ouro-id)
+                    (ref-DPTF::URCi_ToggleFreezeAccount ouro-id)
+                    (ref-DPTF::URCi_Mint ignis-id ORBR|SC_NAME false)
+                    (ref-TFT::URCi_Transfer ignis-id ORBR|SC_NAME target ignis-amount)
+                ]
+                [ignis-amount]
             )
         )
     )
@@ -530,6 +660,29 @@
                     ]
                     [ignis-amount]
                 )
+            )
+        )
+    )
+    (defun URCi_WithdrawFees:object{IgnisCollectorV1.OutputCumulator}
+        (id:string target:string)
+        @doc "Cost preview for C_WithdrawFees: the base token-issue IGNIS price + the ORBR-> \
+            \ target transfer of the accrued fee supply, re-derived purely."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (withdraw-amount:decimal (ref-DPTF::UR_AccountSupply id ORBR|SC_NAME))
+                (price:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
+                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator price ORBR|SC_NAME trigger [])
+                    (ref-TFT::URCi_Transfer id ORBR|SC_NAME target withdraw-amount)
+                ]
+                []
             )
         )
     )
