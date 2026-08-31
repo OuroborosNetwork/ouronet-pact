@@ -101,4 +101,30 @@
 (print "")
 (commit-tx)
 (print "")
-(print "=== [6.11]_INFO — DALOS + DPTF + DPOF blocks complete ===")
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+;;|| NEXT                   >
+;;||>>>>>>>>>>>>>>>>>>>>>>>>>
+(print "")
+;;==== TX-I04 · 01 · VST INFO — URC_VST|* return well-formed ClientInfo ====
+(begin-tx "TX-I04 - INFO VST: URC_VST|* previews return well-formed ClientInfo (URCi-sourced)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+(print "--- [TX-I04 · 01 · VST INFO smoke] ---")
+(env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
+;; NOTE: [6.11] loads before any VST special-link / vesting / sleeping / hibernating state is
+;; created, so the state-dependent VST readers have nothing to read here. All 27 URC_VST|* are
+;; wiring-verified at load; their cost is the exec single-source (URCi_*), exercised by [6.7]_VST.
+;; The two TrueFungible-link readers only read the underlying DPTF Konto (OURO exists), so they
+;; execute end-to-end here and confirm the URC_VST| wrapper shape.
+(let
+    (
+        (p:string KST.ANHD)
+        (ouro:string (DALOS.UR_OuroborosID))
+    )
+    (map print
+        [ (expect "URC_VST|CreateFrozenLink -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_VST|CreateFrozenLink p ouro)))
+          (expect "URC_VST|CreateReservationLink -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_VST|CreateReservationLink p ouro))) ]))
+(print "")
+(commit-tx)
+(print "")
+(print "=== [6.11]_INFO — DALOS + DPTF + DPOF + VST blocks complete ===")

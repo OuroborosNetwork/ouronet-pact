@@ -63,7 +63,33 @@
     (defun URC_DPOF|Issue:object{OuronetInfoV1.ClientInfo} (patron:string account:string name:[string]))
     (defun URC_DPOF|Mint:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string amount:decimal))
     ;;
-    (defun VST|INFO_Hibernate:object{OuronetInfoV1.ClientInfo} (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
+    (defun URC_VST|CreateFrozenLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string))
+    (defun URC_VST|CreateReservationLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string))
+    (defun URC_VST|CreateVestingLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string))
+    (defun URC_VST|CreateSleepingLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string))
+    (defun URC_VST|CreateHibernatingLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string))
+    (defun URC_VST|Freeze:object{OuronetInfoV1.ClientInfo} (patron:string freezer:string freeze-output:string dptf:string amount:decimal))
+    (defun URC_VST|RepurposeFrozen:object{OuronetInfoV1.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun URC_VST|ToggleTransferRoleFrozenDPTF:object{OuronetInfoV1.ClientInfo} (patron:string s-dptf:string target:string toggle:bool))
+    (defun URC_VST|Reserve:object{OuronetInfoV1.ClientInfo} (patron:string reserver:string dptf:string amount:decimal))
+    (defun URC_VST|Unreserve:object{OuronetInfoV1.ClientInfo} (patron:string unreserver:string r-dptf:string amount:decimal))
+    (defun URC_VST|RepurposeReserved:object{OuronetInfoV1.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string))
+    (defun URC_VST|ToggleTransferRoleReservedDPTF:object{OuronetInfoV1.ClientInfo} (patron:string s-dptf:string target:string toggle:bool))
+    (defun URC_VST|Vest:object{OuronetInfoV1.ClientInfo} (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer))
+    (defun URC_VST|Unvest:object{OuronetInfoV1.ClientInfo} (patron:string unvester:string dpof:string nonce:integer))
+    (defun URC_VST|RepurposeVested:object{OuronetInfoV1.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun URC_VST|Sleep:object{OuronetInfoV1.ClientInfo} (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer))
+    (defun URC_VST|Unsleep:object{OuronetInfoV1.ClientInfo} (patron:string unsleeper:string dpof:string nonce:integer))
+    (defun URC_VST|Merge:object{OuronetInfoV1.ClientInfo} (patron:string merger:string dpof:string nonces:[integer]))
+    (defun URC_VST|RepurposeMerge:object{OuronetInfoV1.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
+    (defun URC_VST|RepurposeSleeping:object{OuronetInfoV1.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun URC_VST|ToggleTransferRoleSleepingDPOF:object{OuronetInfoV1.ClientInfo} (patron:string s-dpof:string target:string toggle:bool))
+    (defun URC_VST|Hibernate:object{OuronetInfoV1.ClientInfo} (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer))
+    (defun URC_VST|Awake:object{OuronetInfoV1.ClientInfo} (patron:string awaker:string dpof:string nonce:integer))
+    (defun URC_VST|Slumber:object{OuronetInfoV1.ClientInfo} (patron:string merger:string dpof:string nonces:[integer]))
+    (defun URC_VST|RepurposeSlumber:object{OuronetInfoV1.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string))
+    (defun URC_VST|RepurposeHibernating:object{OuronetInfoV1.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
+    (defun URC_VST|ToggleTransferRoleHibernatingDPOF:object{OuronetInfoV1.ClientInfo} (patron:string s-dpof:string target:string toggle:bool))
     ;;
     (defun ATS|INFO_Coil:object{OuronetInfoV1.ClientInfo} (patron:string coiler:string ats:string rt:string amount:decimal))
     (defun ATS|INFO_Constrict:object{OuronetInfoV1.ClientInfo}(patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
@@ -1477,27 +1503,14 @@
         )
     )
     ;;  [VST]
-    (defun VST|INFO_Hibernate:object{OuronetInfoV1.ClientInfo}
+    (defun URC_VST|Hibernate:object{OuronetInfoV1.ClientInfo}
         (patron:string hibernator:string target-account:string dptf:string amount:decimal dayz:integer)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-VST:module{VestingV1} VST)
-                (vst-sc:string (ref-VST::GOV|VST|SC_NAME))
                 ;;
-                ;;Operation 1 Mint DPOF
-                (ifp1:decimal (SIP|URC_Medium))
-                ;;Operation 2 Transfer DPTF
-                (wt2:integer (at "type" (ref-TFT::URC_TransferClasses dptf hibernator vst-sc amount)))
-                (ico2:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator wt2 dptf hibernator vst-sc)
-                )
-                (ifp2:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico2))
-                ;;Operation 3 Transfer DPOF
-                (ifp3:decimal (SIP|URC_Small))
-                (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3]))
-                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Hibernate hibernator target-account dptf amount dayz)))
                 (sa-hibernator:string (ref-I|OURONET::OI|UC_ShortAccount hibernator))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -1513,17 +1526,15 @@
             )
         )
     )
-    (defun VST|INFO_Awake:object{OuronetInfoV1.ClientInfo}
+    (defun URC_VST|Awake:object{OuronetInfoV1.ClientInfo}
         (patron:string awaker:string dpof:string nonce:integer)
         (let
             (
                 (ref-U|ATS:module{UtilityAtsV2} U|ATS)
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-VST:module{VestingV1} VST)
                 ;;
-                (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
                 (dptf-id:string (ref-DPOF::UR_Hibernation dpof))
                 (precision:integer (ref-DPOF::UR_Decimals dpof))
                 (nonce-supply:decimal (ref-DPOF::UR_NonceSupply dpof nonce))
@@ -1542,7 +1553,7 @@
                         (floor (- 800.0 (* 800.0 (/ elapsed-time hibernating-period))) 4)
                     )
                 )
-                (remainder:decimal 
+                (remainder:decimal
                     (if (= hibernating-fee-promile 0.0)
                         nonce-supply
                         (at 0 (ref-U|ATS::UC_PromilleSplit hibernating-fee-promile nonce-supply precision))
@@ -1550,23 +1561,7 @@
                 )
                 (hibernating-fee:decimal (- nonce-supply remainder))
                 ;;
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-DPOF::UC_MoveCumulator dpof [nonce] false)
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                (ifp2:decimal (SIP|URC_Small))
-                (wt3:integer (at "type" (ref-TFT::URC_TransferClasses dptf-id vst-sc awaker remainder)))
-                (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator wt3 dptf-id vst-sc awaker)
-                )
-                (ifp3:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico3))
-                (ifp4:decimal
-                    (if (!= hibernating-fee 0.0)
-                        (SIP|URC_Burn dptf-id vst-sc)
-                        0.0
-                    )
-                )
-                (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3 ifp4]))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Awake awaker dpof nonce)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -1586,29 +1581,19 @@
             )
         )
     )
-    (defun VST|INFO_Slumber:object{OuronetInfoV1.ClientInfo}
+    (defun URC_VST|Slumber:object{OuronetInfoV1.ClientInfo}
         (patron:string merger:string dpof:string nonces:[integer])
         (let
             (
-                
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-VST:module{VestingV1} VST)
                 ;;
-                (vst-sc:string (ref-DALOS::GOV|VST|SC_NAME))
                 (dptf:string (ref-DPOF::UR_Hibernation dpof))
                 (sm:string (ref-I|OURONET::OI|UC_ShortAccount merger))
                 ;;
-                (nonces-used:integer (ref-DPOF::UR_NoncesUsed dpof))
                 (nonces-supplies:[decimal] (ref-DPOF::UR_NoncesSupplies dpof nonces))
-                (sum:decimal (fold (+) 0.0 nonces-supplies))
                 (how-many:decimal (dec (length nonces)))
-                (biggest:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
-                (price:decimal (* how-many biggest))
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 ;;
                 (stu:[decimal] (ref-VST::URC_SecondsToUnlock dpof nonces))
                 (compute-merge-all:[decimal] (ref-VST::UC_MergeAll nonces-supplies stu))
@@ -1617,40 +1602,7 @@
                 (locked-amount:decimal (at 1 compute-merge-all))
                 (weigthed-locked-amount-in-seconds:integer (floor (at 2 compute-merge-all)))
                 ;;
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-IGNIS::UDC_ConstructOutputCumulator price vst-sc trigger [])
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                (ifp2:decimal (* 2.0 (SIP|URC_Biggest)))
-                (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-DPOF::UC_WipeCumulator dpof 
-                        (ref-DPOF::UDC_RemovableNonces nonces nonces-supplies )
-                    )
-                )
-                (ifp3:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico3))
-                (ifp4:decimal
-                    (if (!= free-amount 0.0)
-                        (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                            (ref-TFT::URCi_TransferCumulator 
-                                (at "type" (ref-TFT::URC_TransferClasses dptf vst-sc merger free-amount))
-                                dptf vst-sc merger
-                            )
-                        )
-                        0.0
-                    )
-                )
-                (ifp5:decimal
-                    (if (!= locked-amount 0.0)
-                        (+
-                            (SIP|URC_Medium)
-                            (ref-I|OURONET::OI|UC_IfpFromOutputCumulator
-                                (ref-DPOF::UC_MoveCumulator dpof [(+ 1 nonces-used)] false)
-                            )
-                        )
-                        0.0
-                    )
-                )
-                (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3 ifp4 ifp5]))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof merger nonces 3)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -1677,6 +1629,406 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
+            )
+        )
+    )
+    ;; ---- Special-link creation (IGNIS only; STOA auto-fuel is protocol, not a patron charge) ----
+    (defun URC_VST|CreateFrozenLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialTrueFungibleLink dptf)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Creates the Frozen Special-DPTF link for {}" [dptf])]
+                [(format "Frozen Special-DPTF link for {} created succesfully" [dptf])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|CreateReservationLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialTrueFungibleLink dptf)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Creates the Reservation Special-DPTF link for {}" [dptf])]
+                [(format "Reservation Special-DPTF link for {} created succesfully" [dptf])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|CreateVestingLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialOrtoFungibleLink dptf 1)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Creates the Vesting Special-DPOF link for {}" [dptf])]
+                [(format "Vesting Special-DPOF link for {} created succesfully" [dptf])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|CreateSleepingLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialOrtoFungibleLink dptf 2)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Creates the Sleeping Special-DPOF link for {}" [dptf])]
+                [(format "Sleeping Special-DPOF link for {} created succesfully" [dptf])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|CreateHibernatingLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_CreateSpecialOrtoFungibleLink dptf 3)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Creates the Hibernating Special-DPOF link for {}" [dptf])]
+                [(format "Hibernating Special-DPOF link for {} created succesfully" [dptf])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    ;; ---- Frozen family ----
+    (defun URC_VST|Freeze:object{OuronetInfoV1.ClientInfo} (patron:string freezer:string freeze-output:string dptf:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Freeze freezer freeze-output dptf amount)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount freezer))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Freezes {} {} on Account {}" [amount dptf sa])]
+                [(format "Succesfully froze {} {} on Account {}" [amount dptf sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)]
+            )
+        )
+    )
+    (defun URC_VST|RepurposeFrozen:object{OuronetInfoV1.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Frozen {} from {} to {}" [dptf-to-repurpose repurpose-from repurpose-to])]
+                [(format "Frozen {} repurposed from {} to {} succesfully" [dptf-to-repurpose repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|ToggleTransferRoleFrozenDPTF:object{OuronetInfoV1.ClientInfo} (patron:string s-dptf:string target:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleFrozenDPTF s-dptf)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Transfer Role for Frozen {} to {}" [s-dptf sa]) (format "Operation: Removes Transfer Role for Frozen {} to {}" [s-dptf sa]))]
+                [(if toggle (format "Transfer Role for Frozen {} added to {}" [s-dptf sa]) (format "Transfer Role for Frozen {} removed from {}" [s-dptf sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    ;; ---- Reserved family ----
+    (defun URC_VST|Reserve:object{OuronetInfoV1.ClientInfo} (patron:string reserver:string dptf:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Reserve reserver dptf amount)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount reserver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Reserves {} {} on Account {}" [amount dptf sa])]
+                [(format "Succesfully reserved {} {} on Account {}" [amount dptf sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)]
+            )
+        )
+    )
+    (defun URC_VST|Unreserve:object{OuronetInfoV1.ClientInfo} (patron:string unreserver:string r-dptf:string amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Unreserve unreserver r-dptf amount)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount unreserver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Unreserves {} {} on Account {}" [amount r-dptf sa])]
+                [(format "Succesfully unreserved {} {} on Account {}" [amount r-dptf sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)]
+            )
+        )
+    )
+    (defun URC_VST|RepurposeReserved:object{OuronetInfoV1.ClientInfo} (patron:string dptf-to-repurpose:string repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeTrueFungible dptf-to-repurpose repurpose-from repurpose-to)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Reserved {} from {} to {}" [dptf-to-repurpose repurpose-from repurpose-to])]
+                [(format "Reserved {} repurposed from {} to {} succesfully" [dptf-to-repurpose repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|ToggleTransferRoleReservedDPTF:object{OuronetInfoV1.ClientInfo} (patron:string s-dptf:string target:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleReservedDPTF s-dptf)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Transfer Role for Reserved {} to {}" [s-dptf sa]) (format "Operation: Removes Transfer Role for Reserved {} to {}" [s-dptf sa]))]
+                [(if toggle (format "Transfer Role for Reserved {} added to {}" [s-dptf sa]) (format "Transfer Role for Reserved {} removed from {}" [s-dptf sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    ;; ---- Vested family ----
+    (defun URC_VST|Vest:object{OuronetInfoV1.ClientInfo} (patron:string vester:string target-account:string dptf:string amount:decimal offset:integer seconds:integer milestones:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Vest vester target-account dptf amount offset seconds milestones)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Vests {} {} to {} across {} milestone(s)" [amount dptf sa milestones])]
+                [(format "Succesfully vested {} {} to {} across {} milestone(s)" [amount dptf sa milestones])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount) milestones]
+            )
+        )
+    )
+    (defun URC_VST|Unvest:object{OuronetInfoV1.ClientInfo} (patron:string unvester:string dpof:string nonce:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Unvest unvester dpof nonce)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Unvests {} Nonce {}, releasing its matured underlying DPTF" [dpof nonce])]
+                [(format "Succesfully unvested {} Nonce {}" [dpof nonce])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|RepurposeVested:object{OuronetInfoV1.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Vested {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                [(format "Vested {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    ;; ---- Sleeping family ----
+    (defun URC_VST|Sleep:object{OuronetInfoV1.ClientInfo} (patron:string sleeper:string target-account:string dptf:string amount:decimal seconds:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Sleep sleeper target-account dptf amount seconds)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sleeps {} {} to {} for {} second(s)" [amount dptf sa seconds])]
+                [(format "Succesfully slept {} {} to {} for {} second(s)" [amount dptf sa seconds])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount amount) seconds]
+            )
+        )
+    )
+    (defun URC_VST|Unsleep:object{OuronetInfoV1.ClientInfo} (patron:string unsleeper:string dpof:string nonce:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Unsleep unsleeper dpof nonce)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Unsleeps {} Nonce {}, returning its underlying DPTF" [dpof nonce])]
+                [(format "Succesfully unslept {} Nonce {}" [dpof nonce])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|Merge:object{OuronetInfoV1.ClientInfo} (patron:string merger:string dpof:string nonces:[integer])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof merger nonces 2)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount merger))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Merges Sleeping {} Nonces {} on Account {}" [dpof nonces sa])]
+                [(format "Succesfully merged Sleeping {} Nonces {} on Account {}" [dpof nonces sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|RepurposeMerge:object{OuronetInfoV1.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof-to-repurpose repurpose-to nonces 2)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes-merges Sleeping {} Nonces {} from {} to {}" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
+                [(format "Sleeping {} Nonces {} repurpose-merged from {} to {} succesfully" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|RepurposeSleeping:object{OuronetInfoV1.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Sleeping {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                [(format "Sleeping {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|ToggleTransferRoleSleepingDPOF:object{OuronetInfoV1.ClientInfo} (patron:string s-dpof:string target:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleSleepingDPOF s-dpof)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Transfer Role for Sleeping {} to {}" [s-dpof sa]) (format "Operation: Removes Transfer Role for Sleeping {} to {}" [s-dpof sa]))]
+                [(if toggle (format "Transfer Role for Sleeping {} added to {}" [s-dpof sa]) (format "Transfer Role for Sleeping {} removed from {}" [s-dpof sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    ;; ---- Hibernating family (Hibernate/Awake/Slumber above) ----
+    (defun URC_VST|RepurposeSlumber:object{OuronetInfoV1.ClientInfo} (patron:string dpof-to-repurpose:string nonces:[integer] repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_MergeNonces dpof-to-repurpose repurpose-to nonces 3)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes-slumbers Hibernating {} Nonces {} from {} to {}" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
+                [(format "Hibernating {} Nonces {} repurpose-slumbered from {} to {} succesfully" [dpof-to-repurpose nonces repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|RepurposeHibernating:object{OuronetInfoV1.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible dpof-to-repurpose nonce repurpose-from repurpose-to)))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Hibernating {} Nonce {} from {} to {}" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                [(format "Hibernating {} Nonce {} repurposed from {} to {} succesfully" [dpof-to-repurpose nonce repurpose-from repurpose-to])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_VST|ToggleTransferRoleHibernatingDPOF:object{OuronetInfoV1.ClientInfo} (patron:string s-dpof:string target:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-VST:module{VestingV1} VST)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_ToggleTransferRoleHibernatingDPOF s-dpof)))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Transfer Role for Hibernating {} to {}" [s-dpof sa]) (format "Operation: Removes Transfer Role for Hibernating {} to {}" [s-dpof sa]))]
+                [(if toggle (format "Transfer Role for Hibernating {} added to {}" [s-dpof sa]) (format "Transfer Role for Hibernating {} removed from {}" [s-dpof sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
             )
         )
     )
@@ -1830,7 +2182,7 @@
                 ;;Operation 2 - Mint
                 (ifp2:decimal (SIP|URC_Mint c-rbt ats-sc false))
                 ;;Operation 3 - Hibernate
-                (ifp3:decimal (at "ignis-full" (at "ignis" (VST|INFO_Hibernate patron ats-sc constricter c-rbt c-rbt-amount dayz))))
+                (ifp3:decimal (at "ignis-full" (at "ignis" (URC_VST|Hibernate patron ats-sc constricter c-rbt c-rbt-amount dayz))))
                 (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3]))
                 ;;
                 (sa-constricter:string (ref-I|OURONET::OI|UC_ShortAccount constricter))
@@ -1981,7 +2333,7 @@
                 ;;Operation 3 - Mint
                 (ifp3:decimal (SIP|URC_Mint c-rbt2 ats-sc false))
                 ;;Operation 4 - Hibernate
-                (ifp4:decimal (at "ignis-full" (at "ignis" (VST|INFO_Hibernate patron ats-sc brumator c-rbt2 c-rbt2-amount dayz))))
+                (ifp4:decimal (at "ignis-full" (at "ignis" (URC_VST|Hibernate patron ats-sc brumator c-rbt2 c-rbt2-amount dayz))))
                 (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3 ifp4]))
                 ;;
                 (sa-brumator:string (ref-I|OURONET::OI|UC_ShortAccount brumator))
