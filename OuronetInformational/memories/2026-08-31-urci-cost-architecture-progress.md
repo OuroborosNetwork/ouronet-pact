@@ -127,6 +127,29 @@ remain: GAS-delta ground-truth harnesses for the AQP vacate/drain + EQUITY-issue
 (analytically/code-proven; empirical lock is belt-and-suspenders), and task #90 (StoicSyntax
 ordering/placement sweep — reorder inline URCi into bands, X_->XI_ rename).
 
+## GAS-delta ground truth — ALL AQP vacate/drain EMPIRICALLY LOCKED (2026-08-31)
+Runner: `cd REPL && ~/.local/bin/pact aqp-info-groundtruth.repl` (NOT loaded by Z; standalone).
+Method: `predicted = (at "ignis-need" (at "ignis" info))`; `delta = pre-gas - post-gas` where
+gas = `DPTF::UR_AccountSupply "GAS-98c486052a51" patron`; assert `predicted == delta`.
+Dirty-read scan pattern (owner's principle — SAME data fed to INFO and exec): call
+`AQP-VCT.URH_Vacate{TrueFungible,OrtoFungible,Collectables}PoolLegs pool-id [son]`, take the
+lane(s), feed `legs` to `INFO_Batch*` and the parallel `(map (at "field") legs)` arrays to the
+`CCp_Batch*` exec. Each vacate/drain CONSUMES + disables its pool, so every test needs a FRESH
+pool (issue score + `C_Issue` + `C_AddScore` + `REPL_BootstrapVault` + stake). Fixture STOA sigs =
+4 `coin.TRANSFER` caps on split-STOA recipients from `URC_SplitSTOAPrices patron (* 2.0 UsagePrice"smart")`.
+Proven EXACT (all in REPL/Stage_02/[6.5.1]_AQP-INFO-GROUNDTRUTH.repl):
+- stake: TF 23.32 / OF 15.9 / SF 551.2 ; unstake: TF 23.32
+- vacate: TF 19.08 / OF 11.66 / SF(coll) 546.96
+- drain (score-free, settle-triple where UserUnn hits 0): TF 16.43 / OF 9.01 / SF(coll) 544.31
+- FullVacate (Σ over lanes; class-1 → tf+of lanes only, coll-lanes=[] — CC_FullVacate NEVER
+  scans collectables for class {0,1}): 19.08 == single TF-lane vacate.
+Gotchas locked: (1) VCT Vacate* schemas are MODULE-local — reference `object{AQP-VCT.VCT|Vacate*}`,
+NOT `AcquisitionVacateV1.VCT|*` (that fails in the runner though Z hid it). (2) TF vacate needs the
+FULL tracked balance — read `AQP-POOL.UR_AQP|DPTFTrackerBalance`; cost is amount-independent.
+(3) fresh 2nd MVST mint fails (add-quantity role) — reuse an owner-held MVST nonce the prior vacate
+returned. (4) coll drain leg carries an `amounts` field → `CCp_BatchDrainCollectable` needs the
+`(map (map floor (at "amounts")) legs)` array too. Commits e42137a, b689926, 27e0f5b, 62b3ac9, 2fd6a8e.
+
 ## Deferred structural cleanup
 - **Task #90**: reorder inline `URCi_` into a canonical band + rename mis-prefixed `X_`
   internal writers to `XI_` (`X_KickStart`, `X_RemoveSecondary`, `X_TransmitCollectables`).
