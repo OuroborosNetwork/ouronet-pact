@@ -91,13 +91,13 @@
     (defun URC_VST|RepurposeHibernating:object{OuronetInfoV1.ClientInfo} (patron:string dpof-to-repurpose:string nonce:integer repurpose-from:string repurpose-to:string))
     (defun URC_VST|ToggleTransferRoleHibernatingDPOF:object{OuronetInfoV1.ClientInfo} (patron:string s-dpof:string target:string toggle:bool))
     ;;
-    (defun ATS|INFO_Coil:object{OuronetInfoV1.ClientInfo} (patron:string coiler:string ats:string rt:string amount:decimal))
-    (defun ATS|INFO_Constrict:object{OuronetInfoV1.ClientInfo}(patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
-    (defun ATS|INFO_Curl:object{OuronetInfoV1.ClientInfo} (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
-    (defun ATS|INFO_Brumate:object{OuronetInfoV1.ClientInfo} (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
-    (defun ATS|INFO_ColdRecovery:object{OuronetInfoV1.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
-    (defun ATS|INFO_Cull:object{OuronetInfoV1.ClientInfo} (patron:string culler:string ats:string))
-    (defun ATS|INFO_DirectRecovery:object{OuronetInfoV1.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
+    (defun URC_ATS|Coil:object{OuronetInfoV1.ClientInfo} (patron:string coiler:string ats:string rt:string amount:decimal))
+    (defun URC_ATS|Constrict:object{OuronetInfoV1.ClientInfo} (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer))
+    (defun URC_ATS|Curl:object{OuronetInfoV1.ClientInfo} (patron:string curler:string ats1:string ats2:string rt:string amount:decimal))
+    (defun URC_ATS|Brumate:object{OuronetInfoV1.ClientInfo} (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer))
+    (defun URC_ATS|ColdRecovery:object{OuronetInfoV1.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
+    (defun URC_ATS|Cull:object{OuronetInfoV1.ClientInfo} (patron:string culler:string ats:string))
+    (defun URC_ATS|DirectRecovery:object{OuronetInfoV1.ClientInfo} (patron:string recoverer:string ats:string ra:decimal))
     ;;
     (defun SWP|INFO_ChangeOwnership:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-owner:string))
     (defun SWP|INFO_ModifyCanChangeOwner:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-boolean:bool))
@@ -2088,39 +2088,22 @@
         )
     )
     ;;  [ATS]
-    (defun ATS|INFO_Coil:object{OuronetInfoV1.ClientInfo}
+    (defun URC_ATS|Coil:object{OuronetInfoV1.ClientInfo}
         (patron:string coiler:string ats:string rt:string amount:decimal)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-ATS:module{AutostakeV2} ATS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
+                (ref-ATSU:module{AutostakeUsageV1} ATSU)
                 ;;
                 (coil-data:object{AutostakeV2.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats rt amount)
                 )
-                (input-amount:decimal (at "first-input-amount" coil-data))
                 (royalty-fee:decimal (at "royalty-fee" coil-data))
                 (c-rbt:string (at "rbt-id" coil-data))
                 (c-rbt-amount:decimal (at "rbt-amount" coil-data))
                 ;;
-                ;;Operation 1 - Transfer
-                (wt1:integer (at "type" (ref-TFT::URC_TransferClasses rt coiler ats-sc amount)))
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator wt1 rt coiler ats-sc)
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                ;;Operation 2 - Mint
-                (ifp2:decimal (SIP|URC_Mint c-rbt ats-sc false))
-                ;;Operation 3 - Transfer
-                (wt3:integer (at "type" (ref-TFT::URC_TransferClasses c-rbt ats-sc coiler c-rbt-amount)))
-                (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator wt3 c-rbt ats-sc coiler)
-                )
-                (ifp3:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico3))
-                (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3]))
-                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Coil coiler ats rt amount)))
                 (sa-coiler:string (ref-I|OURONET::OI|UC_ShortAccount coiler))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2142,30 +2125,26 @@
             )
         )
     )
-    (defun ATS|INFO_Constrict:object{OuronetInfoV1.ClientInfo}
+    (defun URC_ATS|Constrict:object{OuronetInfoV1.ClientInfo}
         (patron:string constricter:string ats:string rt:string amount:decimal dayz:integer)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
+                (ref-VST:module{VestingV1} VST)
                 ;;
-                (coil-data:object{AutostakeV2.CoilData} 
+                (coil-data:object{AutostakeV2.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmountsWithHibernation ats rt amount dayz)
                 )
-                (input-amount:decimal (at "first-input-amount" coil-data))
                 (royalty-fee:decimal (at "royalty-fee" coil-data))
                 (c-rbt:string (at "rbt-id" coil-data))
                 (c-rbt-amount:decimal (at "rbt-amount" coil-data))
                 ;;
                 (peak:decimal (ref-ATS::UR_PeakHibernatePromile ats))
                 (decay:decimal (ref-ATS::UR_HibernateDecay ats))
-                (dec-dayz:decimal (dec dayz))
-                (v1:decimal (* dec-dayz decay))
-                (v2:decimal (- peak v1))
-                (fee-promile:decimal 
+                (v2:decimal (- peak (* (dec dayz) decay)))
+                (fee-promile:decimal
                     (if (<= v2 0.0)
                         0.0
                         v2
@@ -2173,18 +2152,7 @@
                 )
                 (hibernate-entry-percent:string (format "{}%" [(/ fee-promile 10.0)]))
                 ;;
-                ;;Operation 1 - Transfer
-                (wt1:integer (at "type" (ref-TFT::URC_TransferClasses rt constricter ats-sc amount)))
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator wt1 rt constricter ats-sc)
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                ;;Operation 2 - Mint
-                (ifp2:decimal (SIP|URC_Mint c-rbt ats-sc false))
-                ;;Operation 3 - Hibernate
-                (ifp3:decimal (at "ignis-full" (at "ignis" (URC_VST|Hibernate patron ats-sc constricter c-rbt c-rbt-amount dayz))))
-                (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3]))
-                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Constrict constricter ats rt amount dayz)))
                 (sa-constricter:string (ref-I|OURONET::OI|UC_ShortAccount constricter))
                 (ht:string (ref-DPTF::UR_Hibernation c-rbt))
             )
@@ -2208,51 +2176,31 @@
             )
         )
     )
-    (defun ATS|INFO_Curl:object{OuronetInfoV1.ClientInfo}
+    (defun URC_ATS|Curl:object{OuronetInfoV1.ClientInfo}
         (patron:string curler:string ats1:string ats2:string rt:string amount:decimal)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-ATS:module{AutostakeV2} ATS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
+                (ref-ATSU:module{AutostakeUsageV1} ATSU)
                 ;;
                 ;;<ats1>
-                (coil1-data:object{AutostakeV2.CoilData} 
+                (coil1-data:object{AutostakeV2.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount)
                 )
-                (input1-amount:decimal (at "first-input-amount" coil1-data))
                 (royalty1-fee:decimal (at "royalty-fee" coil1-data))
                 (c-rbt1:string (at "rbt-id" coil1-data))
                 (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
                 ;;
                 ;;<ats2>
-                (coil2-data:object{AutostakeV2.CoilData} 
+                (coil2-data:object{AutostakeV2.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats2 c-rbt1 c-rbt1-amount)
                 )
-                (input2-amount:decimal (at "first-input-amount" coil2-data))
                 (royalty2-fee:decimal (at "royalty-fee" coil2-data))
                 (c-rbt2:string (at "rbt-id" coil2-data))
                 (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
                 ;;
-                ;;Operation 1 - Transfer
-                (wt1:integer (at "type" (ref-TFT::URC_TransferClasses rt curler ats-sc amount)))
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator wt1 rt curler ats-sc)
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                ;;Operation 2 - Mint
-                (ifp2:decimal (SIP|URC_Mint c-rbt1 ats-sc false))
-                ;;Operation 3 - Mint
-                (ifp3:decimal (SIP|URC_Mint c-rbt2 ats-sc false))
-                ;;Operation 4 - Transfer
-                (wt4:integer (at "type" (ref-TFT::URC_TransferClasses c-rbt2 ats-sc curler c-rbt2-amount)))
-                (ico4:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator wt4 c-rbt2 ats-sc curler)
-                )
-                (ifp4:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico4))
-                (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3 ifp4]))
-                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Curl curler ats1 ats2 rt amount)))
                 (sa-curler:string (ref-I|OURONET::OI|UC_ShortAccount curler))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
@@ -2281,40 +2229,35 @@
             )
         )
     )
-    (defun ATS|INFO_Brumate:object{OuronetInfoV1.ClientInfo}
+    (defun URC_ATS|Brumate:object{OuronetInfoV1.ClientInfo}
         (patron:string brumator:string ats1:string ats2:string rt:string amount:decimal dayz:integer)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
+                (ref-VST:module{VestingV1} VST)
                 ;;
                 ;;<ats1>
-                (coil1-data:object{AutostakeV2.CoilData} 
+                (coil1-data:object{AutostakeV2.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmounts ats1 rt amount)
                 )
-                (input1-amount:decimal (at "first-input-amount" coil1-data))
                 (royalty1-fee:decimal (at "royalty-fee" coil1-data))
                 (c-rbt1:string (at "rbt-id" coil1-data))
                 (c-rbt1-amount:decimal (at "rbt-amount" coil1-data))
                 ;;
                 ;;<ats2>
-                (coil2-data:object{AutostakeV2.CoilData} 
+                (coil2-data:object{AutostakeV2.CoilData}
                     (ref-ATS::URC_RewardBearingTokenAmountsWithHibernation ats2 c-rbt1 c-rbt1-amount dayz)
                 )
-                (input2-amount:decimal (at "first-input-amount" coil2-data))
                 (royalty2-fee:decimal (at "royalty-fee" coil2-data))
                 (c-rbt2:string (at "rbt-id" coil2-data))
                 (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
                 ;;
                 (peak:decimal (ref-ATS::UR_PeakHibernatePromile ats2))
                 (decay:decimal (ref-ATS::UR_HibernateDecay ats2))
-                (dec-dayz:decimal (dec dayz))
-                (v1:decimal (* dec-dayz decay))
-                (v2:decimal (- peak v1))
-                (fee-promile:decimal 
+                (v2:decimal (- peak (* (dec dayz) decay)))
+                (fee-promile:decimal
                     (if (<= v2 0.0)
                         0.0
                         v2
@@ -2322,20 +2265,7 @@
                 )
                 (hibernate-entry-percent:string (format "{}%" [(/ fee-promile 10.0)]))
                 ;;
-                ;;Operation 1 - Transfer
-                (wt1:integer (at "type" (ref-TFT::URC_TransferClasses rt brumator ats-sc amount)))
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator wt1 rt brumator ats-sc)
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                ;;Operation 2 - Mint
-                (ifp2:decimal (SIP|URC_Mint c-rbt1 ats-sc false))
-                ;;Operation 3 - Mint
-                (ifp3:decimal (SIP|URC_Mint c-rbt2 ats-sc false))
-                ;;Operation 4 - Hibernate
-                (ifp4:decimal (at "ignis-full" (at "ignis" (URC_VST|Hibernate patron ats-sc brumator c-rbt2 c-rbt2-amount dayz))))
-                (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3 ifp4]))
-                ;;
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_Brumate brumator ats1 ats2 rt amount dayz)))
                 (sa-brumator:string (ref-I|OURONET::OI|UC_ShortAccount brumator))
                 (ht:string (ref-DPTF::UR_Hibernation c-rbt2))
             )
@@ -2366,7 +2296,7 @@
             )
         )
     )
-    (defun ATS|INFO_ColdRecovery:object{OuronetInfoV1.ClientInfo}
+    (defun URC_ATS|ColdRecovery:object{OuronetInfoV1.ClientInfo}
         (patron:string recoverer:string ats:string ra:decimal)
         (let
             (
@@ -2374,9 +2304,8 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-ATSU:module{AutostakeUsageV1} ATSU)
-                (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
                 ;;
                 (index-name:string (ref-ATS::UR_IndexName ats))
                 (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
@@ -2391,8 +2320,7 @@
                 (c-rbt-remainder:decimal (at 0 c-rbt-fee-split))
                 (c-rbt-fee:decimal (at 1 c-rbt-fee-split))
                 ;;
-                ;;Time Computation for Cold Recovery
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                ;;Time Computation for Cold Recovery (display: recoverable-after hours)
                 (major:integer (ref-DALOS::UR_Elite-Tier-Major recoverer))
                 (minor:integer (ref-DALOS::UR_Elite-Tier-Minor recoverer))
                 (position:integer
@@ -2404,35 +2332,7 @@
                 (crd:[integer] (ref-ATS::UR_ColdRecoveryDuration ats))
                 (h:integer (at position crd))
                 ;;
-                ;;IGNIS Costs
-                ;;Operation 1 10 IGNIS Flat Fee for Cold Recovery
-                (ifp1:decimal 10.0)
-                ;;Operation 2 - 1 IGNIS per existing used Recovery Positions when in unlimited Mode
-                (ico2:object{IgnisCollectorV1.OutputCumulator}
-                    (if (!= usable-cold-recovery-position -1)
-                        EOC
-                        (try EOC (ref-ATSU::URCi_UnlimitedUncoilCumulator ats recoverer))
-                    )
-                )
-                (ifp2:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico2))
-                ;;Operation 3 - Transfer
-                (wt3:integer (at "type" (ref-TFT::URC_TransferClasses c-rbt recoverer ats-sc ra)))
-                (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator wt3 c-rbt recoverer ats-sc)
-                )
-                (ifp3:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico3))
-                ;;Operation 3 - Burn
-                (ifp3:decimal (SIP|URC_Burn c-rbt ats-sc))
-                (ifp4:decimal
-                    (if (= c-rbt-fee 0.0)
-                        0.0
-                        (if c-fr
-                            0.0
-                            (* (dec (length rt-lst)) ifp3)
-                        )
-                    )
-                )
-                (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3 ifp4]))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_ColdRecovery recoverer ats ra)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -2468,17 +2368,14 @@
             )
         )
     )
-    (defun ATS|INFO_Cull:object{OuronetInfoV1.ClientInfo}
+    (defun URC_ATS|Cull:object{OuronetInfoV1.ClientInfo}
         (patron:string culler:string ats:string)
         (let
             (
                 (ref-U|DEC:module{OuronetDecimalsV1} U|DEC)
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-ATS:module{AutostakeV2} ATS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-ATSU:module{AutostakeUsageV1} ATSU)
-                (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
                 ;;
                 (c0:[decimal] (at "summed-culled-values" (ref-ATSU::URC_MultiCull ats culler)))
                 (c1:[decimal] (ref-ATSU::URC_SingleCull ats culler 1))
@@ -2495,15 +2392,7 @@
                 (how-many-tokens:integer (length rt-lst))
                 (empty:[decimal] (make-list how-many-tokens 0.0))
                 ;;
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (if (= cw empty)
-                        EOC
-                        (ref-TFT::URCi_MultiTransferCumulator rt-lst ats-sc culler cw)
-                    )
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                (ifp2:decimal (* 2.0 (ref-DALOS::UR_UsagePrice "ignis|biggest")))
-                (ifp:decimal (+ ifp1 ifp2))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_Cull culler ats)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -2522,7 +2411,7 @@
             )
         )
     )
-    (defun ATS|INFO_DirectRecovery:object{OuronetInfoV1.ClientInfo}
+    (defun URC_ATS|DirectRecovery:object{OuronetInfoV1.ClientInfo}
         (patron:string recoverer:string ats:string ra:decimal)
         (let
             (
@@ -2530,8 +2419,7 @@
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (ats-sc:string (ref-ATS::GOV|ATS|SC_NAME))
+                (ref-ATSU:module{AutostakeUsageV1} ATSU)
                 ;;
                 (c-rbt:string (ref-ATS::UR_ColdRewardBearingToken ats))
                 (fee:decimal (ref-ATS::UR_DirectRecoveryFee ats))
@@ -2544,20 +2432,7 @@
                 (reward-tokens:[string] (ref-ATS::UR_RewardTokenList ats))
                 (release-amounts:[decimal] (ref-ATS::URC_RTSplitAmounts ats c-rbt-remainder))
                 ;;
-                ;;Operation 1 Transfer
-                (wt1:integer (at "type" (ref-TFT::URC_TransferClasses c-rbt recoverer ats-sc ra)))
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator wt1 c-rbt recoverer ats-sc)
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                ;;Operation 2 Burn DPTF
-                (ifp2:decimal (SIP|URC_Burn c-rbt ats-sc))
-                ;;Operation 3 Multi Transfer
-                (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_MultiTransferCumulator reward-tokens ats-sc recoverer release-amounts)
-                )
-                (ifp3:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico3))
-                (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3]))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_DirectRecovery recoverer ats ra)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
