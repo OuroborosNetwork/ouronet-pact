@@ -40,13 +40,14 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_Try (g:guard)
         @doc "Helper function used in <UEV_Any>"
         (try false (enforce-guard g))
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
+    ;;{F3}  Read [UR/URC/URH/URCi]
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_All:bool (guards:[guard])
         @doc "Enforces all guards in GUARDS"
         (map (enforce-guard) guards)
@@ -69,11 +70,9 @@
         (enforce (< 0 (length guards)) "Guard list cannot be empty")
         (create-user-guard (UEV_Any guards))
     )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )
