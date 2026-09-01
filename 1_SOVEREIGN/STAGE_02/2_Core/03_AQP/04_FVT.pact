@@ -238,6 +238,12 @@
     (defun URCi_Inject:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
     (defun URCi_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
     (defun URCi_Collect:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_TrueFungibleStakeFlow:decimal
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool))
+    (defun URCi_OrtoFungibleStakeFlow:decimal
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] direction:bool))
+    (defun URCi_CollectableStakeFlow:decimal
+        (pool-id:string owner-id:string beneficiary-id:string collectable-id:string son:bool nonces:[integer] nonce-amounts:[integer] direction:bool))
 )
 (module AQP-FVT GOV
     ;;
@@ -5772,6 +5778,132 @@
     (defun URCi_Collect:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
         @doc "GAS|COLLECT gas leg (konto = FVT owner); exec concats it with the forced-fix penalty leg and (triplet) the ATS ladder legs."
         (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|COLLECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    ;; [URCi]   multi-leg STAKE/UNSTAKE flow ifp readers — relocated from AQP-INFO (byte-identical ifp sums).
+    ;;   Mirror CC_*StakeFlow leg-for-leg; every leg gated by the virtual-gas toggle so toggle-on -> 0.
+    ;;   Tier gates below reproduce AQP-INFO's SIP|URC_* (UsagePrice tier behind URC_IsVirtualGasZero);
+    ;;   AQP-VCT's vacate readers reach them + the two score-delta sums cross-module. Leg map:
+    ;;   memories/2026-08-27-aqp-info-final17-costmap.md
+    (defun UC|GasPrice:decimal (full-price:decimal trigger:bool)
+        @doc "Full price when live billing is on (trigger=false); 0.0 when the gas toggle zeroes it."
+        (if trigger 0.0 full-price)
+    )
+    (defun SIP|URC_Medium:decimal ()
+        @doc "IGNIS tier 'ignis|medium' behind the virtual-gas toggle."
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
+            (UC|GasPrice (ref-DALOS::UR_UsagePrice "ignis|medium") (ref-IGNIS::URC_IsVirtualGasZero)))
+    )
+    (defun SIP|URC_Biggest:decimal ()
+        @doc "IGNIS tier 'ignis|biggest' behind the virtual-gas toggle."
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS))
+            (UC|GasPrice (ref-DALOS::UR_UsagePrice "ignis|biggest") (ref-IGNIS::URC_IsVirtualGasZero)))
+    )
+    (defun SIP|URC_Fixed:decimal (gas-cost:decimal)
+        @doc "A FIXED IGNIS gas cost behind the virtual-gas toggle."
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+            (UC|GasPrice gas-cost (ref-IGNIS::URC_IsVirtualGasZero)))
+    )
+    (defun URC_StakeScoreDeltaSum:decimal (pool-id:string)
+        @doc "Phase-4 leg: Σ SCORE.URC_StakeScoreDeltaIgnisUnit over POOL.URC_PoolActiveScoreIds (raw, ungated)."
+        (fold (+) 0.0
+            (map (lambda (sid:string) (AQP-SCORE.URC_StakeScoreDeltaIgnisUnit sid))
+                 (AQP-POOL.URC_PoolActiveScoreIds pool-id)))
+    )
+    (defun URC_StakeScoreDeltaSumForClasses:decimal (pool-id:string classes:[integer])
+        @doc "Class-matched phase-4 leg (OF/SF/NF): Σ SCORE.URC_StakeScoreDeltaIgnisUnit over the pool's \
+            \ employed scores whose SCORE.UR_SCR|ScoreClass ∈ classes — mirrors XE_Apply{OrtoFungible, \
+            \ Collectable}StakeDelta, which emit 0.0 for non-matching classes (OF: {0,2}; SF: {3}; NF: {4})."
+        (fold (+) 0.0
+            (map (lambda (sid:string) (AQP-SCORE.URC_StakeScoreDeltaIgnisUnit sid))
+                 (filter (lambda (sid:string) (contains (AQP-SCORE.UR_SCR|ScoreClass sid) classes))
+                         (AQP-POOL.URC_PoolActiveScoreIds pool-id))))
+    )
+    (defun URCi_TrueFungibleStakeFlow:decimal
+        (pool-id:string owner-id:string beneficiary-id:string dptf-id:string amount:decimal direction:bool)
+        @doc "Toggled total IGNIS IFP of CC_TrueFungibleStakeFlow. Legs: transfer + tracker + rollup \
+            \ + RPS-settle + anchor-refresh(ANK per-unit + XB flat) + score-delta + book + checkpoint. \
+            \ direction=true stake (owner→vault), false unstake (vault→owner)."
+        (let*
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (bundle           (URHC_BuildStakeSettleBundle pool-id beneficiary-id))
+                (settle-scores:[string] (at "settle-scores" bundle))
+                (distinct-fvts:[string] (at "distinct-fvts" bundle))
+                (vault:string     AQP-POOL.AQP|SC_NAME)
+                (sender:string    (if direction owner-id vault))
+                (receiver:string  (if direction vault owner-id))
+                (xfer-type:integer (at "type" (TFT.URC_TransferClasses dptf-id sender receiver amount)))
+                (n-live:integer   (length (AQP-ANK.UR_ANK|AnchorsForAsset dptf-id)))
+            )
+            (fold (+) 0.0
+                [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 custody transfer
+                      (TFT.URCi_TransferCumulator xfer-type dptf-id sender receiver)))
+                  (SIP|URC_Medium)                                                                 ;; 1.2 pool tracker (medium ×1)
+                  (SIP|URC_Biggest)                                                                ;; 1.3 ben rollup   (biggest ×1)
+                  (SIP|URC_Fixed (URC_SettleStakePendingIgnis settle-scores distinct-fvts))        ;; 2   RPS settle
+                  (SIP|URC_Fixed (AQP-ANK.URC_TrueFungibleStakeAnchorRefreshIgnis n-live))         ;; 3.1a ANK anchor refresh
+                  (SIP|URC_Biggest)                                                                ;; 3.1b XB sync-count (biggest ×1)
+                  (SIP|URC_Fixed (URC_StakeScoreDeltaSum pool-id))                                 ;; 4   score delta
+                  (SIP|URC_Fixed (URC_BookStakeUnclaimedIgnis distinct-fvts))                      ;; 5.1 book unclaimed
+                  (SIP|URC_Fixed (URC_CheckpointStakeRpsIgnis))                                    ;; 5.2 checkpoint
+                ])
+        )
+    )
+    (defun URCi_OrtoFungibleStakeFlow:decimal
+        (pool-id:string owner-id:string beneficiary-id:string dpof-id:string nonces:[integer] direction:bool)
+        @doc "Toggled total IGNIS IFP of CC_OrtoFungibleStakeFlow. Legs: transfer(DPOF, direction- \
+            \ INDEPENDENT) + tracker(medium × |nonces|) + RPS-settle + score-delta(class ∈ {0,2}) + \
+            \ book + checkpoint. NO 1.3 rollup, NO anchor leg."
+        (let*
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (bundle           (URHC_BuildStakeSettleBundle pool-id beneficiary-id))
+                (settle-scores:[string] (at "settle-scores" bundle))
+                (distinct-fvts:[string] (at "distinct-fvts" bundle))
+                (nn:decimal       (dec (length nonces)))
+            )
+            (fold (+) 0.0
+                [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 transfer (dir-indep)
+                      (DPOF.URCi_MoveCumulator dpof-id nonces false)))
+                  (* (SIP|URC_Medium) nn)                                                          ;; 1.2 tracker (medium × |nonces|)
+                  (SIP|URC_Fixed (URC_SettleStakePendingIgnis settle-scores distinct-fvts))        ;; 2   RPS settle
+                  (SIP|URC_Fixed (URC_StakeScoreDeltaSumForClasses pool-id [0 2]))                 ;; 4   score delta (class ∈ {0,2})
+                  (SIP|URC_Fixed (URC_BookStakeUnclaimedIgnis distinct-fvts))                      ;; 5.1 book unclaimed
+                  (SIP|URC_Fixed (URC_CheckpointStakeRpsIgnis))                                    ;; 5.2 checkpoint
+                ])
+        )
+    )
+    (defun URCi_CollectableStakeFlow:decimal
+        (pool-id:string owner-id:string beneficiary-id:string collectable-id:string son:bool nonces:[integer] nonce-amounts:[integer] direction:bool)
+        @doc "Toggled total IGNIS IFP of CC_CollectableStakeFlow (SF son=true class-3 / NF son=false \
+            \ class-4). Legs: transfer(DPDC-T, direction-dependent) + tracker(medium × |nonces|) + \
+            \ rollup(medium × |nonces|) + RPS-settle + anchor(FLAT medium + biggest) + score-delta \
+            \ (class == son?3:4) + book + checkpoint. nonce-amounts is caller-supplied."
+        (let*
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (bundle           (URHC_BuildStakeSettleBundle pool-id beneficiary-id))
+                (settle-scores:[string] (at "settle-scores" bundle))
+                (distinct-fvts:[string] (at "distinct-fvts" bundle))
+                (vault:string     AQP-POOL.AQP|SC_NAME)
+                (sender:string    (if direction owner-id vault))
+                (receiver:string  (if direction vault owner-id))
+                (nn:decimal       (dec (length nonces)))
+                (tgt-class:integer (if son 3 4))
+            )
+            (fold (+) 0.0
+                [ (SIP|URC_Fixed (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                     ;; 1.1 transfer (dir-dep)
+                      (DPDC-T.URCi_MultiTransferCumulator [collectable-id] [son] sender receiver [nonces] [nonce-amounts])))
+                  (* (SIP|URC_Medium) nn)                                                          ;; 1.2 tracker (medium × |nonces|)
+                  (* (SIP|URC_Medium) nn)                                                          ;; 1.3 rollup  (medium × |nonces|)
+                  (SIP|URC_Fixed (URC_SettleStakePendingIgnis settle-scores distinct-fvts))        ;; 2   RPS settle
+                  (SIP|URC_Medium)                                                                 ;; 3 anchor flat medium
+                  (SIP|URC_Biggest)                                                                ;; 3 anchor flat biggest
+                  (SIP|URC_Fixed (URC_StakeScoreDeltaSumForClasses pool-id [tgt-class]))           ;; 4 score delta (class == son?3:4)
+                  (SIP|URC_Fixed (URC_BookStakeUnclaimedIgnis distinct-fvts))                      ;; 5.1 book unclaimed
+                  (SIP|URC_Fixed (URC_CheckpointStakeRpsIgnis))                                    ;; 5.2 checkpoint
+                ])
+        )
+    )
     ;;
     ;; [C]   client
     ;; --- Lifecycle (FVT|T) ---
