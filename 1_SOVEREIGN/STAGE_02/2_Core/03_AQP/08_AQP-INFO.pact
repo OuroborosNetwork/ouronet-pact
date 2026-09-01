@@ -534,8 +534,8 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Create a new staking pool over an asset." "Executes via TS02-C3.AQP-POOL|C_Issue."]
                 [(format "Pool '{}' created over asset {} (class {})." [pool-name asset-id aqp-class])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|ISSUE-POOL))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_Issue [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-POOL.URCi_IssueStoa))
                 []))
     )
     (defun AQP-POOL|INFO_AddScore:object{OuronetInfoV1.ClientInfo}
@@ -545,7 +545,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Assign a score to the pool's first free slot." "Executes via TS02-C3.AQP-POOL|C_AddScore."]
                 [(format "Score {} added to pool {}." [score-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|ADD-SCORE))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_AddScore [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -556,7 +556,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Clear a score from its pool slot." "Executes via TS02-C3.AQP-POOL|C_RevokeScore."]
                 [(format "Score {} revoked from pool {}." [score-id pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|REVOKE-SCORE))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_RevokeScore [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -567,7 +567,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Re-enable new stakes on a pool." "Executes via TS02-C3.AQP-POOL|C_EnablePoolStake."]
                 [(format "Pool {} staking enabled." [pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|SET-POOL-STAKE))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SetPoolStake [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -578,7 +578,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Pause new stakes on a pool." "Executes via TS02-C3.AQP-POOL|C_DisablePoolStake."]
                 [(format "Pool {} staking disabled." [pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|SET-POOL-STAKE))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SetPoolStake [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -591,7 +591,7 @@
                  "Base IGNIS shown; any per-anchor repair legs are added at execution."
                  "Executes via TS02-C3.AQP-POOL|C_SyncTrueFungibleAnchors."]
                 [(format "TF anchors synced for {} on DPTF {}." [beneficiary-id dptf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|SYNC-TF-ANCHORS))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SyncTrueFungibleAnchors [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -604,7 +604,7 @@
                  "Base IGNIS shown; any per-anchor repair legs are added at execution."
                  "Executes via TS02-C3.AQP-POOL|C_SyncSemiFungibleAnchors."]
                 [(format "SF anchors synced for {} on DPSF {}." [beneficiary-id dpsf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|SYNC-COLLECTABLE-ANCHORS))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SyncCollectableAnchors [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -617,7 +617,7 @@
                  "Base IGNIS shown; any per-anchor repair legs are added at execution."
                  "Executes via TS02-C3.AQP-POOL|C_SyncNonFungibleAnchors."]
                 [(format "NF anchors synced for {} on DPNF {}." [beneficiary-id dpnf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-POOL.GAS|SYNC-COLLECTABLE-ANCHORS))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-POOL.URCi_SyncCollectableAnchors [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )

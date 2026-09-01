@@ -202,6 +202,15 @@
     (defun C_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator}
         (patron:string beneficiary-id:string collectable-id:string son:bool)
     )
+    ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview (config/sync ops)
+    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_IssueStoa:decimal ())
+    (defun URCi_AddScore:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_RevokeScore:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_SetPoolStake:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
 )
 (module AQP-POOL GOV
     ;;
@@ -3002,6 +3011,25 @@
             )
         )
     )
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview (config/sync)
+    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-POOL AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_IssueStoa:decimal ()
+        (let ((d:module{OuronetDalosV1} DALOS)) (d::UR_UsagePrice "smart")))
+    (defun URCi_AddScore:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_RevokeScore:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|REVOKE-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SetPoolStake:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        @doc "GAS|SET-POOL-STAKE (shared by Enable / Disable pool-stake)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-POOL-STAKE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        @doc "GAS|SYNC-TF-ANCHORS gas leg; exec concats it with the anchor-repair + meta legs (state-dependent)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SYNC-TF-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        @doc "GAS|SYNC-COLLECTABLE-ANCHORS gas leg (SF+NF); exec concats it with the anchor-repair + meta legs (state-dependent)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SYNC-COLLECTABLE-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    ;;
     ;; [C]   client
     ;;
     ;;Lifecycle (AQP|T|Pool / AQP|Schema)
@@ -3021,9 +3049,9 @@
                     (pool-id:string (ref-U|DALOS::UDC_Makeid pool-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron smart-price)
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueStoa))
                 (XI_IssuePool pool-id aqp-class asset-id)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-POOL AQP|SC_NAME trigger [pool-id])
+                (URCi_Issue [pool-id])
             )
         )
     )
@@ -3048,7 +3076,7 @@
                     )
                     (ref-SCR::XE_CreateAqpoolLink score-id pool-id)
                     (XI_AddScoreToPool pool-id score-id slot-index)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ADD-SCORE AQP|SC_NAME trigger [pool-id score-id])
+                    (URCi_AddScore [pool-id score-id])
                 )
             )
         )
@@ -3073,7 +3101,7 @@
                     )
                     (ref-SCR::XE_RevokeAqpoolLink score-id pool-id)
                     (XI_RevokeScoreFromPool pool-id slot-index)
-                    (ref-IGNIS::UDC_ConstructOutputCumulator GAS|REVOKE-SCORE AQP|SC_NAME trigger [pool-id score-id])
+                    (URCi_RevokeScore [pool-id score-id])
                 )
             )
         )
@@ -3090,7 +3118,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (XB_SetPoolStakeEnabled pool-id false)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-POOL-STAKE AQP|SC_NAME trigger [pool-id])
+                (URCi_SetPoolStake [pool-id])
             )
         )
     )
@@ -3106,7 +3134,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (XB_SetPoolStakeEnabled pool-id true)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-POOL-STAKE AQP|SC_NAME trigger [pool-id])
+                (URCi_SetPoolStake [pool-id])
             )
         )
     )
@@ -3130,9 +3158,7 @@
                         (XB_SetBenDptfAnkSyncCount beneficiary-id dptf-id)
                     )
                     (ico-gas:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-IGNIS::UDC_ConstructOutputCumulator
-                            GAS|SYNC-TF-ANCHORS AQP|SC_NAME trigger [beneficiary-id dptf-id]
-                        )
+                        (URCi_SyncTrueFungibleAnchors [beneficiary-id dptf-id])
                     )
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas] [])
@@ -3177,10 +3203,7 @@
                             (XB_SetBenCollectableAnkSyncCount beneficiary-id collectable-id son)
                         )
                         (ico-gas:object{IgnisCollectorV1.OutputCumulator}
-                            (ref-IGNIS::UDC_ConstructOutputCumulator
-                                GAS|SYNC-COLLECTABLE-ANCHORS AQP|SC_NAME trigger
-                                [beneficiary-id collectable-id]
-                            )
+                            (URCi_SyncCollectableAnchors [beneficiary-id collectable-id])
                         )
                     )
                     (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas] [])
