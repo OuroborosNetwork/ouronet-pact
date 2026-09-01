@@ -41,6 +41,9 @@
 ;;SOVEREIGN EXECUTOR (DPDC IMC policies + DH collection issue — no mass mint)
 (load "Stage_02/[4.0]_Sovereign-Executor.repl")
 
+;;Z_READS — INFO-TWO (Stage-2 INFO previews), deployed after usage prices exist
+(load "Stage_02/[Z]_Reads.repl")
+
 ;;EQUITY (shareholder package shares) — DPDC Audit #22H: first real, reachable, asserted coverage.
 (load "Stage_02/[6.1.1]_EQUITY.repl")
 

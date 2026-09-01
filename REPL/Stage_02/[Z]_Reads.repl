@@ -1,0 +1,25 @@
+;;================================================================================
+;; FILE  REPL/Stage_02/[Z]_Reads.repl
+;;   Stage-2 Z_Reads layer — pure read-only presentation modules, deployed LAST
+;;   (after all Stage-2 core + Talos + [4.0] usage prices). Currently: INFO-TWO
+;;   (Stage-2 INFO previews: DEMIPAD, DPDC collectables, EQUITY, AQP). Leaf layer —
+;;   nothing references it. Loaded after [4.0]_Sovereign-Executor so usage prices
+;;   (ignis|medium etc.) exist for the URCi cost readers.
+;;================================================================================
+(print "")
+(begin-tx "TX-Z01 [Z] - INFO-TWO Module (Stage-2 INFO previews; wraps Stage-1+2 URCi readers)")
+(env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
+(namespace "ouronet-ns")
+;;==== TX-Z01 [Z] - INFO-TWO Module · 01 · env-sigs (caps) ==== ===================================
+(print "--- [TX-Z01 [Z] - INFO-TWO Module · 01 · env-sigs (caps)] ---")
+(env-sigs
+  [{"key": "1a4e15d3c51e0b73e92644600487ba8eaae312e1a178b91801d54e13c1b350a5", "caps": []}])
+;;==== TX-Z01 [Z] - INFO-TWO Module · 02 · load module ==== =======================================
+(print "--- [TX-Z01 [Z] - INFO-TWO Module · 02 · load module] ---")
+(load "../../1_SOVEREIGN/STAGE_02/Z_Reads/01_INFO-TWO.pact")
+;;==== TX-Z01 [Z] - INFO-TWO Module · 03 · gas echo ==== ==========================================
+(print "--- [TX-Z01 [Z] - INFO-TWO Module · 03 · gas echo] ---")
+(format "<<<<<<<INFO-TWO Costs {} GAS>>>>>>>" [(env-gas)])
+(print "")
+(commit-tx)
+(print "")

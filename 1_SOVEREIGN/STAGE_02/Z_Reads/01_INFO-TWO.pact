@@ -1,6 +1,20 @@
 (interface InfoTwoV1
-    @doc "Exposes Functions from Information One Module"
-    true
+    @doc "Exposes the Stage-2 INFO (ClientInfo preview) surface — DPDC collectables, \
+        \ DEMIPAD launchpad, EQUITY, AQP. Each function wraps a core URCi cost reader."
+    ;;  [DPDC collectables]
+    (defun DPSF|INFO_Make:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer how-many-sets:integer))
+    (defun DPNF|INFO_Make:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string nonces:[integer] set-class:integer))
+    ;;  [DEMIPAD] — sovereign launchpad
+    (defun URC_DEMIPAD|Deposit:object{OuronetInfoV1.ClientInfo} (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal))
+    (defun URC_DEMIPAD|Withdraw:object{OuronetInfoV1.ClientInfo} (patron:string asset-id:string type:integer destination:string))
+    (defun URC_DEMIPAD|FuelTrueFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string amount:decimal))
+    (defun URC_DEMIPAD|RetrieveTrueFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string amount:decimal))
+    (defun URC_DEMIPAD|FuelOrtoFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer]))
+    (defun URC_DEMIPAD|RetrieveOrtoFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer]))
+    (defun URC_DEMIPAD|FuelSemiFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun URC_DEMIPAD|RetrieveSemiFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun URC_DEMIPAD|FuelNonFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    (defun URC_DEMIPAD|RetrieveNonFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
 )
 ;;LIQUID|INFO_UnwrapStoa
 ;;LIQUID|INFO_WrapStoa
@@ -142,6 +156,88 @@
             )
         )
     )
+    ;;
+    ;;  [DEMIPAD] — sovereign launchpad ops (deposit + fuel/retrieve TF/OF/SF/NF + withdraw)
+    (defun URC_DEMIPAD|Deposit:object{OuronetInfoV1.ClientInfo} (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD) (sd:string (ref-I|OURONET::OI|UC_ShortAccount donor)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Deposits {} $ worth against {} into the Launchpad from {}" [amount-in-dollars asset-id sd])]
+                [(format "Succesfully deposited {} $ worth against {} into Demipad from {}" [amount-in-dollars asset-id sd])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_Deposit donor asset-id amount-in-dollars type direct-injection)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_DEMIPAD|Withdraw:object{OuronetInfoV1.ClientInfo} (patron:string asset-id:string type:integer destination:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME))
+                (amount:decimal (ref-DEMIPAD::UR_Funds asset-id type))
+                (working-id:string (if (= type 1) (ref-DALOS::UR_WrappedStoaID) (if (= type 2) (ref-DALOS::UR_SilverStoaID) (ref-DALOS::UR_OuroborosID))))
+                (sd:string (ref-I|OURONET::OI|UC_ShortAccount destination))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Withdraws {} {} accumulated in the Launchpad to {}" [amount working-id sd])]
+                [(format "Succesfully withdrawn {} {} from Demipad to {}" [amount working-id sd])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_Transfer working-id lpad destination amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_DEMIPAD|FuelTrueFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string amount:decimal)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD) (ref-TFT:module{TrueFungibleTransferV1} TFT) (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Fuels {} {} (TrueFungible) to the Launchpad from {}" [amount asset-id sa])]
+                [(format "Succesfully fueled {} {} to the Launchpad from {}" [amount asset-id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_Transfer asset-id client lpad amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_DEMIPAD|RetrieveTrueFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string amount:decimal)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD) (ref-TFT:module{TrueFungibleTransferV1} TFT) (lpad:string (ref-DEMIPAD::GOV|DEMIPAD|SC_NAME)) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Retrieves {} {} (TrueFungible) from the Launchpad to {}" [amount asset-id sa])]
+                [(format "Succesfully retrieved {} {} from the Launchpad to {}" [amount asset-id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_Transfer asset-id lpad client amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_DEMIPAD|FuelOrtoFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer])
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Fuels {} Nonces {} (OrtoFungible) to the Launchpad from {}" [asset-id nonces sa])]
+                [(format "Succesfully fueled {} Nonces {} to the Launchpad from {}" [asset-id nonces sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator asset-id nonces false)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])))
+    (defun URC_DEMIPAD|RetrieveOrtoFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer])
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Retrieves {} Nonces {} (OrtoFungible) from the Launchpad to {}" [asset-id nonces sa])]
+                [(format "Succesfully retrieved {} Nonces {} from the Launchpad to {}" [asset-id nonces sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator asset-id nonces false)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])))
+    (defun URC_DEMIPAD|FuelSemiFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Fuels {} Nonces {} Amounts {} (SemiFungible) to the Launchpad from {}" [asset-id nonces amounts sa])]
+                [(format "Succesfully fueled {} Nonces {} to the Launchpad from {}" [asset-id nonces sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitSemiFungibles client asset-id nonces amounts true)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amounts])))
+    (defun URC_DEMIPAD|RetrieveSemiFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Retrieves {} Nonces {} Amounts {} (SemiFungible) from the Launchpad to {}" [asset-id nonces amounts sa])]
+                [(format "Succesfully retrieved {} Nonces {} from the Launchpad to {}" [asset-id nonces sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitSemiFungibles client asset-id nonces amounts false)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amounts])))
+    (defun URC_DEMIPAD|FuelNonFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Fuels {} Nonces {} (NonFungible) to the Launchpad from {}" [asset-id nonces sa])]
+                [(format "Succesfully fueled {} Nonces {} to the Launchpad from {}" [asset-id nonces sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitNonFungibles client asset-id nonces amounts true)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])))
+    (defun URC_DEMIPAD|RetrieveNonFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer])
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD) (sa:string (ref-I|OURONET::OI|UC_ShortAccount client)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Retrieves {} Nonces {} (NonFungible) from the Launchpad to {}" [asset-id nonces sa])]
+                [(format "Succesfully retrieved {} Nonces {} from the Launchpad to {}" [asset-id nonces sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitNonFungibles client asset-id nonces amounts false)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])))
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]
     ;;{F4}  [CAP]
