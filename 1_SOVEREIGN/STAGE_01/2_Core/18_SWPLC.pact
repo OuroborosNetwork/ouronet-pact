@@ -35,6 +35,7 @@
     (defun C_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
     (defun C_Fuel:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool validation:bool))
     (defun URCi_UpdatePendingBrandingLPs:object{IgnisCollectorV1.OutputCumulator} (swpair:string entity-pos:integer))
+    (defun URCi_UpgradeBrandingLPs:decimal (months:integer))
     (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator} (swpair:string toggle:bool))
     (defun URCi_Fuel:object{IgnisCollectorV1.OutputCumulator} (account:string swpair:string input-amounts:[decimal] direct-or-indirect:bool))
         ;;
@@ -501,6 +502,11 @@
             )
             (ref-IGNIS::STOA|C_CollectWT patron stoa-payment false)
         )
+    )
+    (defun URCi_UpgradeBrandingLPs:decimal (months:integer)
+        @doc "STOA cost single-source for C_UpgradeBrandingLPs — months x branding price. \
+            \ Pure sibling of the impure XE_UpgradeBranding derivation the exec uses."
+        (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
     )
     ;;LQ Functions
     (defun URCi_ToggleAddLiquidity:object{IgnisCollectorV1.OutputCumulator}

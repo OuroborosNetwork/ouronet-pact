@@ -153,11 +153,21 @@
     (defun URC_ATS|AddHotRBT:object{OuronetInfoV1.ClientInfo} (patron:string ats:string hot-rbt:string))
     (defun URC_ATS|RemoveSecondary:object{OuronetInfoV1.ClientInfo} (patron:string remover:string ats:string reward-token:string))
     ;;
-    (defun SWP|INFO_ChangeOwnership:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-owner:string))
-    (defun SWP|INFO_ModifyCanChangeOwner:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-boolean:bool))
-    (defun SWP|INFO_ModifyWeights:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-weights:[decimal]))
-    (defun SWP|INFO_ToggleAddLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string toggle:bool))
-    (defun SWP|INFO_ToggleSwapCapability:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string toggle:bool))
+    (defun URC_SWP|ChangeOwnership:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-owner:string))
+    (defun URC_SWP|ModifyCanChangeOwner:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-boolean:bool))
+    (defun URC_SWP|ModifyWeights:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-weights:[decimal]))
+    (defun URC_SWP|ToggleAddLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string toggle:bool))
+    (defun URC_SWP|ToggleSwapCapability:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string toggle:bool))
+    (defun URC_SWP|EnableFrozenLP:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string))
+    (defun URC_SWP|EnableSleepingLP:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string))
+    (defun URC_SWP|UpdateAmplifier:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string amp:decimal))
+    (defun URC_SWP|UpdateFee:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-fee:decimal lp-or-special:bool))
+    (defun URC_SWP|UpdateSpecialFeeTargets:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string targets:[string]))
+    (defun URC_SWP|ToggleFeeLock:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string toggle:bool))
+    (defun URC_SWP|UpdatePendingBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string))
+    (defun URC_SWP|UpgradeBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun URC_SWP|UpdatePendingBrandingLPs:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string entity-pos:integer))
+    (defun URC_SWP|UpgradeBrandingLPs:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string entity-pos:integer months:integer))
     (defun SWP|INFO_AddLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun SWP|INFO_IcedLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
     (defun SWP|INFO_GlacialLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
@@ -3279,58 +3289,62 @@
         )
     )
     ;;  [SWP]
-    (defun SWP|INFO_ChangeOwnership:object{OuronetInfoV1.ClientInfo}
+    (defun URC_SWP|ChangeOwnership:object{OuronetInfoV1.ClientInfo}
         (patron:string swpair:string new-owner:string)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-SWP:module{SwapperV3} SWP)
                 (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Changes Ownership of SWP-Pair {} to {}" [swpair sa])]
                 [(format "Succesfully changed ownership of SWP-Pair {} to {}" [swpair sa])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_ChangeOwnership swpair)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
     )
-    (defun SWP|INFO_ModifyCanChangeOwner:object{OuronetInfoV1.ClientInfo}
+    (defun URC_SWP|ModifyCanChangeOwner:object{OuronetInfoV1.ClientInfo}
         (patron:string swpair:string new-boolean:bool)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-SWP:module{SwapperV3} SWP)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Modifies <can-change-owner> of SWP-Pair {} to {}" [swpair new-boolean])]
                 [(format "Succesfully updated <can-change-owner> of SWP-Pair {} to {}" [swpair new-boolean])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_ModifyCanChangeOwner swpair)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
     )
-    (defun SWP|INFO_ModifyWeights:object{OuronetInfoV1.ClientInfo}
+    (defun URC_SWP|ModifyWeights:object{OuronetInfoV1.ClientInfo}
         (patron:string swpair:string new-weights:[decimal])
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-SWP:module{SwapperV3} SWP)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Modifies weights of SWP-Pair {} to {}" [swpair new-weights])]
                 [(format "Succesfully updated SWP-Pair {} weights to {}" [swpair new-weights])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_ModifyWeights swpair)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
         )
     )
-    (defun SWP|INFO_ToggleAddLiquidity:object{OuronetInfoV1.ClientInfo}
+    (defun URC_SWP|ToggleAddLiquidity:object{OuronetInfoV1.ClientInfo}
         (patron:string swpair:string toggle:bool)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ifp:decimal (UCX_ToggleAddOrSwapIfp swpair toggle))
+                (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_ToggleAddLiquidity swpair toggle)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -3351,12 +3365,13 @@
             )
         )
     )
-    (defun SWP|INFO_ToggleSwapCapability:object{OuronetInfoV1.ClientInfo}
+    (defun URC_SWP|ToggleSwapCapability:object{OuronetInfoV1.ClientInfo}
         (patron:string swpair:string toggle:bool)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ifp:decimal (UCX_ToggleAddOrSwapIfp swpair toggle))
+                (ref-SWPU:module{SwapperUsageV2} SWPU)
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_ToggleSwapCapability swpair toggle)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -3377,7 +3392,7 @@
             )
         )
     )
-    (defun SWP|INFO_EnableFrozenLP:object{OuronetInfoV1.ClientInfo}
+    (defun URC_SWP|EnableFrozenLP:object{OuronetInfoV1.ClientInfo}
         (patron:string swpair:string)
         (let
             (
@@ -3391,18 +3406,8 @@
                 (current-frozen-link:string (ref-DPTF::UR_Frozen lp-id))
                 (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
                 ;;
-                (ifp-m:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
-                (ifp0:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
-                (ifp1:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
-                (ifp2:decimal (ref-DALOS::UR_UsagePrice "ignis|big"))
-                (ifp-issue:decimal (fold (+) 0.0 [ifp0 ifp1 ifp2]))
                 (kfp-issue:decimal (ref-DALOS::UR_UsagePrice "dptf"))
-                (ifp:decimal
-                    (if (= current-frozen-link BAR)
-                        (+ ifp-m ifp-issue)
-                        ifp-m
-                    )
-                )
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_EnableFrozenLP patron swpair)))
                 (kfp:decimal
                     (if is-stoa-zero
                         0.0
@@ -3441,7 +3446,7 @@
             )
         )
     )
-    (defun SWP|INFO_EnableSleepingLP:object{OuronetInfoV1.ClientInfo}
+    (defun URC_SWP|EnableSleepingLP:object{OuronetInfoV1.ClientInfo}
         (patron:string swpair:string)
         (let
             (
@@ -3455,18 +3460,8 @@
                 (current-sleeping-link:string (ref-DPTF::UR_Sleeping lp-id))
                 (is-stoa-zero:bool (ref-IGNIS::URC_IsNativeGasZero))
                 ;;
-                (ifp-m:decimal (ref-DALOS::UR_UsagePrice "ignis|medium"))
-                (ifp0:decimal (ref-DALOS::UR_UsagePrice "ignis|token-issue"))
-                (ifp1:decimal (ref-DALOS::UR_UsagePrice "ignis|biggest"))
-                (ifp2:decimal (ref-DALOS::UR_UsagePrice "ignis|big"))
-                (ifp-issue:decimal (fold (+) 0.0 [ifp0 ifp1 ifp2]))
                 (kfp-issue:decimal (ref-DALOS::UR_UsagePrice "dpmf"))
-                (ifp:decimal
-                    (if (= current-sleeping-link BAR)
-                        (+ ifp-m ifp-issue)
-                        ifp-m
-                    )
-                )
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_EnableSleepingLP patron swpair)))
                 (kfp:decimal
                     (if is-stoa-zero
                         0.0
@@ -3505,6 +3500,62 @@
             )
         )
     )
+    (defun URC_SWP|UpdateAmplifier:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string amp:decimal)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWP:module{SwapperV3} SWP))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates Amplifier of SWP-Pair {} to {}" [swpair amp])]
+                [(format "Amplifier of SWP-Pair {} succesfully set to {}" [swpair amp])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateAmplifier swpair)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [amp])))
+    (defun URC_SWP|UpdateFee:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-fee:decimal lp-or-special:bool)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWP:module{SwapperV3} SWP))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates {} Fee of SWP-Pair {} to {}" [(if lp-or-special "LP" "Special") swpair new-fee])]
+                [(format "Fee of SWP-Pair {} succesfully set to {}" [swpair new-fee])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateFee swpair)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [new-fee])))
+    (defun URC_SWP|UpdateSpecialFeeTargets:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string targets:[string])
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWP:module{SwapperV3} SWP))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates Special-Fee targets of SWP-Pair {} to {}" [swpair targets])]
+                [(format "Special-Fee targets of SWP-Pair {} succesfully updated" [swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdateSpecialFeeTargets swpair)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [targets])))
+    (defun URC_SWP|ToggleFeeLock:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string toggle:bool)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWP:module{SwapperV3} SWP))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Locks Fee Settings of SWP-Pair {}" [swpair]) (format "Operation: Unlocks Fee Settings of SWP-Pair {}" [swpair]))]
+                [(if toggle (format "Fee Settings of SWP-Pair {} succesfully locked" [swpair]) (format "Fee Settings of SWP-Pair {} succesfully unlocked" [swpair]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_ToggleFeeLock swpair toggle)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [toggle])))
+    (defun URC_SWP|UpdatePendingBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWP:module{SwapperV3} SWP))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates Pending Branding for SWP-Pair {}" [entity-id])]
+                [(format "Pending Branding for SWP-Pair {} updated succesfully" [entity-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWP::URCi_UpdatePendingBranding entity-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_SWP|UpgradeBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string months:integer)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWP:module{SwapperV3} SWP))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Upgrades Branding for SWP-Pair {} for {} month(s)" [entity-id months])]
+                [(format "SWP-Pair {} succesfully upgraded for {} month(s)!" [entity-id months])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWP::URCi_UpgradeBranding months)) [])))
+    (defun URC_SWP|UpdatePendingBrandingLPs:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string entity-pos:integer)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates Pending LP-Branding for SWP-Pair {} entity-position {}" [swpair entity-pos])]
+                [(format "Pending LP-Branding for SWP-Pair {} entity-position {} updated" [swpair entity-pos])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_UpdatePendingBrandingLPs swpair entity-pos)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_SWP|UpgradeBrandingLPs:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string entity-pos:integer months:integer)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Upgrades LP-Branding for SWP-Pair {} entity-position {} for {} month(s)" [swpair entity-pos months])]
+                [(format "LP-Branding for SWP-Pair {} entity-position {} upgraded for {} month(s)!" [swpair entity-pos months])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWPLC::URCi_UpgradeBrandingLPs months)) [])))
     (defun SWP|INFO_Fuel:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal])
         (let
