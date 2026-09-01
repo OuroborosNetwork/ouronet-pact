@@ -1494,7 +1494,7 @@
 ;; #12M: buys compute cost live; the buyer signs a slippage ceiling. Variant 1 (default, with slippage):
 ;;       URC_Acquire returns coin.TRANSFER caps padded by (1 + slippage/100) which the UI signs, and
 ;;       C_Deposit enforces amount-in-dollars <= max-cost (UEV_SlippageCost). Variant 2 (slippage off):
-;;       max-cost sentinel < 0 + URCcap_Acquire installs the live-price caps (UI-warned). Uniform across
+;;       max-cost sentinel < 0 + CAP_Acquire installs the live-price caps (UI-warned). Uniform across
 ;;       Spark/Snakes/Custodians/StoicPay. (The prior TX-015 buy already exercised Variant-1 ACCEPT with
 ;;       max-cost = correct-pid x 1.01.)
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])

@@ -7967,7 +7967,7 @@
             (ref-SWPU::UDC_SpawnSlippageBounds pool ["OURO-98c486052a51"] [20.0] "DLK-98c486052a51" -1.0)
         )
         (ref-TS01-C3::SWP|C_AddLiquidity emma emma pool [0.0 50.0 0.0])
-        (ouronet-ns.DALOS.AUP_OuronetAccounts
+        (ouronet-ns.DALOS.AU_OuronetAccounts
             ["Σ.W∇ЦwÏξБØnζΦψÕłěîбηжÛśTã∇țâĆã4ЬĚIŽȘØíÕlÛřбΩцμCšιÄиMkλ€УщшàфGřÞыÎäY8È₳BDÏÚmßOozBτòÊŸŹjПкцğ¥щóиś4h4ÑþююqςA9ÆúÛȚβжéÑψéУoЭπÄЩψďşõшżíZtZuψ4ѺËxЖψУÌбЧλüșěđΔjÈt0ΛŽZSÿΞЩŠ"]
         )
     ]

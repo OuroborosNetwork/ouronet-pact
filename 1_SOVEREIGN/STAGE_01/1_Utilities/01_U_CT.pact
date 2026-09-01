@@ -6,9 +6,9 @@
     ;;<========>
     ;;GOVERNANCE
     ;;{G1}
-    (defun NS_MAIN ()               (at 0 ["ouronet-ns"]))
-    (defun NS_TEST ()               (at 0 ["free"]))
-    (defun CT_NS_USE  ()            (NS_MAIN))
+    (defun CT_NamespaceMain ()               (at 0 ["ouronet-ns"]))
+    (defun CT_NamespaceTest ()               (at 0 ["free"]))
+    (defun CT_NS_USE  ()            (CT_NamespaceMain))
     ;;
     (defconst GOV|DEMIURGOI         (+ (CT_NS_USE) ".dh_master-keyset"))
     ;;{G2}
@@ -29,13 +29,13 @@
     ;;{1}
     ;;{2}
     ;;{3}
-    ;;#73L fix: removed the tautological `or` - `(NS_TEST)` is itself defined as
-    ;;`(at 0 ["free"])` = "free" (line 10), so `(= (CT_NS_USE) (NS_TEST))` and
+    ;;#73L fix: removed the tautological `or` - `(CT_NamespaceTest)` is itself defined as
+    ;;`(at 0 ["free"])` = "free" (line 10), so `(= (CT_NS_USE) (CT_NamespaceTest))` and
     ;;`(= (CT_NS_USE) "free")` were checking the exact same condition twice. Kept the named
-    ;;`(NS_TEST)` form (clearer, doesn't hardcode the literal). No behavioral change.
+    ;;`(CT_NamespaceTest)` form (clearer, doesn't hardcode the literal). No behavioral change.
     (defun CT_DPTF-FeeLock ()
         (if
-            (= (CT_NS_USE) (NS_TEST))
+            (= (CT_NS_USE) (CT_NamespaceTest))
             1.0
             10000.0
         )

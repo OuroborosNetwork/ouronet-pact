@@ -2856,26 +2856,26 @@
             (compose-capability (SECURE))
         )
     )
-    (defun AUP_UnstakeAccounts (keyz:[string])
+    (defun AU_UnstakeAccounts (keyz:[string])
         @doc "Get <keyz> with <(UR_KEYS)>, or update one a time"
         (with-capability (AHU)
-            (map (AUP_UnstakeAccount) keyz)
+            (map (AU_UnstakeAccount) keyz)
         )
     )
-    (defun AUP_UnstakeAccount (ky:string)
+    (defun AU_UnstakeAccount (ky:string)
         (require-capability (SECURE))
         (update ATS|Ledger ky
             {"id"       : (drop -163 ky)
             ,"account"  : (take -162 ky)}
         )
     )
-    (defun AUP_AutostakePairs (ids:[string])
+    (defun AU_AutostakePairs (ids:[string])
         @doc "Get <ids> with <(UR_P-KEYS)>, or update one a time"
         (with-capability (AHU)
-            (map (AUP_AutostakePair) ids)
+            (map (AU_AutostakePair) ids)
         )
     )
-    (defun AUP_AutostakePair (id:string)
+    (defun AU_AutostakePair (id:string)
         (require-capability (SECURE))
         (update ATS|Pairs id
             {"id"       : id}

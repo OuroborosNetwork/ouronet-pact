@@ -1625,7 +1625,7 @@
         )
     )
     ;;get keys with (URH_AS-Keys son)
-    (defun AUP_SFTs (kis:[string])
+    (defun AU_SFTs (kis:[string])
         (with-capability (AHU)
             (let
                 (
@@ -1667,7 +1667,7 @@
             )
         )
     )
-    (defun AUP_NFTs (kis:[string])
+    (defun AU_NFTs (kis:[string])
         (with-capability (AHU)
             (let
                 (
@@ -1695,38 +1695,38 @@
             )
         )
     )
-    (defun AUP_Accounts (keyz:[string] son:bool)
+    (defun AU_Accounts (keyz:[string] son:bool)
         @doc "Get <keyz> with <(keys (if son DPSF|T|Account DPNF|T|Account))>, or update one a time"
         (with-capability (AHU)
             (map
                 (lambda
                     (idx:integer)
-                    (AUP_Account (at idx keyz) son)
+                    (AU_Account (at idx keyz) son)
                 )
                 (enumerate 0 (- (length keyz) 1))
             )
         )
     )
-    (defun AUP_Account (ky:string son:bool)
+    (defun AU_Account (ky:string son:bool)
         (require-capability (SECURE))
         (update (if son DPSF|T|Account DPNF|T|Account) ky
             {"id"       : (drop -163 ky)
             ,"account"  : (take -162 ky)}
         )
     )
-    (defun AUP_Properties (ids:[string] son:bool)
+    (defun AU_Properties (ids:[string] son:bool)
         @doc "Get <ids> with <(keys (if son DPSF|T|Properties DPNF|T|Properties))>, or update one a time"
         (with-capability (AHU)
             (map
                 (lambda
                     (idx:integer)
-                    (AUP_Property (at idx ids) son)
+                    (AU_Property (at idx ids) son)
                 )
                 (enumerate 0 (- (length ids) 1))
             )
         )
     )
-    (defun AUP_Property (id:string son:bool)
+    (defun AU_Property (id:string son:bool)
         (require-capability (SECURE))
         (update (if son DPSF|T|Properties DPNF|T|Properties) id
             {"id"       : id}

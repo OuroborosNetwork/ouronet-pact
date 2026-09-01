@@ -1544,20 +1544,20 @@
             (compose-capability (SECURE))
         )
     )
-    (defun AUP_OuronetAccounts (accounts:[string])
+    (defun AU_OuronetAccounts (accounts:[string])
         @doc "Get Accounts with <(keys DALOS|AccountTable)>"
         (with-capability (AHU)
-            (map (AUP_OuronetAccount) accounts)
+            (map (AU_OuronetAccount) accounts)
         )
     )
-    (defun AUP_OuronetAccount (account:string)
+    (defun AU_OuronetAccount (account:string)
         (require-capability (SECURE))
         (update DALOS|AccountTable account
-            {"ouroboros"    : (AUPX_UpdateTrueFungibleObject (UR_TrueFungible account true) account)
-            ,"ignis"        : (AUPX_UpdateTrueFungibleObject (UR_TrueFungible account false) account)}
+            {"ouroboros"    : (AUx_UpdateTrueFungibleObject (UR_TrueFungible account true) account)
+            ,"ignis"        : (AUx_UpdateTrueFungibleObject (UR_TrueFungible account false) account)}
         )
     )
-    (defun AUPX_UpdateTrueFungibleObject:object{OuronetDalosV1.DPTF|BalanceSchema}
+    (defun AUx_UpdateTrueFungibleObject:object{OuronetDalosV1.DPTF|BalanceSchema}
         (input-obj:object account:string)
         (let
             (

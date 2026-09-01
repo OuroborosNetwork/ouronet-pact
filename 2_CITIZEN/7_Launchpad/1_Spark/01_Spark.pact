@@ -14,7 +14,7 @@
     (defun URC_SparkRedemptionCost:decimal ())
     (defun URC_AccountRedemptionAmount:decimal (account:string))
     (defun URC_Acquire:[string] (buyer:string amount:integer iz-native:bool slippage:decimal))
-    (defun URCcap_Acquire (buyer:string amount:integer iz-native:bool))
+    (defun CAP_Acquire (buyer:string amount:integer iz-native:bool))
     ;;
     ;;  [C]
     ;;
@@ -482,7 +482,7 @@
             (ref-DEMIPAD::URC_Acquire buyer asset-id pid type slippage)
         )
     )
-    (defun URCcap_Acquire
+    (defun CAP_Acquire
         (buyer:string amount:integer iz-native:bool)
         @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price."
         (let
@@ -492,7 +492,7 @@
                 (type:integer (if iz-native 0 1))
                 (pid:decimal (at "pid" (URC_SparkAmountCosts amount)))
             )
-            (ref-DEMIPAD::URCcap_Acquire buyer asset-id pid type)
+            (ref-DEMIPAD::CAP_Acquire buyer asset-id pid type)
         )
     )
     ;;{F2}  [UEV]

@@ -2114,13 +2114,13 @@
             (compose-capability (SECURE))
         )
     )
-    (defun AUP_SwapPairs (ids:[string])
+    (defun AU_SwapPairs (ids:[string])
         @doc "Get <ids> with <(keys SWP|Pairs)>, or update one a time"
         (with-capability (AHU)
-            (map (AUP_SwapPair) ids)
+            (map (AU_SwapPair) ids)
         )
     )
-    (defun AUP_SwapPair (id:string)
+    (defun AU_SwapPair (id:string)
         (require-capability (SECURE))
         (update SWP|Pairs id
             {"id"       : id}

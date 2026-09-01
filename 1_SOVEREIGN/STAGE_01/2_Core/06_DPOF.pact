@@ -2747,7 +2747,7 @@
     )
     ;;
     ;;{F8}  [AUP - Admin Update Functions]
-    ;;#33M (audit note, 2026-08-28): AHU/AUP_OrtoFungible(s)/AUP_OrtoFungibleAccount(s) are a
+    ;;#33M (audit note, 2026-08-28): AHU/AU_OrtoFungible(s)/AU_OrtoFungibleAccount(s) are a
     ;;HISTORICAL, one-time migration utility used during the DPMF -> DPOF (meta-fungible to
     ;;orto-fungible) migration, to batch-repair "id"/"account" key fields on rows carried over
     ;;from that migration. Not a general-purpose admin backdoor: the hardcoded account (AH,
@@ -2768,26 +2768,26 @@
             (compose-capability (SECURE))
         )
     )
-    (defun AUP_OrtoFungibleAccounts (keyz:[string])
+    (defun AU_OrtoFungibleAccounts (keyz:[string])
         @doc "Get <keyz> with <(UR_KEYS)>, or update one a time"
         (with-capability (AHU)
-            (map (AUP_OrtoFungibleAccount) keyz)
+            (map (AU_OrtoFungibleAccount) keyz)
         )
     )
-    (defun AUP_OrtoFungibleAccount (ky:string)
+    (defun AU_OrtoFungibleAccount (ky:string)
         (require-capability (SECURE))
         (update DPOF|T|AccountRoles ky
             {"id"       : (drop -163 ky)
             ,"account"  : (take -162 ky)}
         )
     )
-    (defun AUP_OrtoFungibles (ids:[string])
+    (defun AU_OrtoFungibles (ids:[string])
         @doc "Get <ids> with <(UR_P-KEYS)>, or update one a time"
         (with-capability (AHU)
-            (map (AUP_OrtoFungible) ids)
+            (map (AU_OrtoFungible) ids)
         )
     )
-    (defun AUP_OrtoFungible (id:string)
+    (defun AU_OrtoFungible (id:string)
         (require-capability (SECURE))
         (update DPOF|T|Properties id
             {"id"       : id}

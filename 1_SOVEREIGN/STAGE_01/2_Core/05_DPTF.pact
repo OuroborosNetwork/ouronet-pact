@@ -2732,11 +2732,11 @@
                     (ref-DALOS::XB_UpdateBalance account (= id (ref-DALOS::UR_OuroborosID)) new-balance)
                 )
                 ;;Updates for Non Core Tokens
-                (XII_UpdateBalance id account new-balance)
+                (WW_UpdateBalance id account new-balance)
             )
         )
     )
-    (defun XII_UpdateBalance (id:string account:string new-balance:decimal)
+    (defun WW_UpdateBalance (id:string account:string new-balance:decimal)
         (require-capability (SECURE))
         (let
             (
@@ -2771,13 +2771,13 @@
             (compose-capability (SECURE))
         )
     )
-    (defun AUP_TrueFungibleAccounts (keyz:[string])
+    (defun AU_TrueFungibleAccounts (keyz:[string])
         @doc "Get <keyz> with <(UR_KEYS)>, or update one a time"
         (with-capability (AHU)
-            (map (AUP_TrueFungibleAccount) keyz)
+            (map (AU_TrueFungibleAccount) keyz)
         )
     )
-    (defun AUP_TrueFungibleAccount (ky:string)
+    (defun AU_TrueFungibleAccount (ky:string)
         (require-capability (SECURE))
         (let
             (
@@ -2805,13 +2805,13 @@
             (write DPTF|BalanceTable ky v3)
         )
     )
-    (defun AUP_TrueFungibles (ids:[string])
+    (defun AU_TrueFungibles (ids:[string])
         @doc "Get <ids> with <(UR_P-KEYS)>, or update one a time"
         (with-capability (AHU)
-            (map (AUP_TrueFungible) ids)
+            (map (AU_TrueFungible) ids)
         )
     )
-    (defun AUP_TrueFungible (id:string)
+    (defun AU_TrueFungible (id:string)
         (require-capability (SECURE))
         (update DPTF|PropertiesTable id
             {"id"       : id}
