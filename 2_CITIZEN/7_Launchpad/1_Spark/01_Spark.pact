@@ -203,7 +203,9 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_SparkID:string ()
         (at "spark-id" (read SPARK|T|Properties SPARK|INFO ["spark-id"]))
     )
@@ -261,7 +263,6 @@
             ,"ignis-collection" : (ref-DALOS::UR_VirtualToggle)}
         )
     )
-    ;;{F1}  [URC]
     (defun URC_GetMaxBuy:integer (account:string native:bool)
         @doc "Returns the maximum amount of Tokens that can still be bought \
             \ Considering the amount left, and the User Funds"
@@ -482,6 +483,7 @@
             (ref-DEMIPAD::URC_Acquire buyer asset-id pid type slippage)
         )
     )
+    ;;{F4}  Validate [UEV/CAP]
     (defun CAP_Acquire
         (buyer:string amount:integer iz-native:bool)
         @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price."
@@ -495,74 +497,8 @@
             (ref-DEMIPAD::CAP_Acquire buyer asset-id pid type)
         )
     )
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    (defun C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
-        @doc "PURE CITIZEN buy. Composes two SOVEREIGN Talos ops — DEMIPAD|C_Deposit (buyer STOA -> \
-            \ Launchpad) then DPTF|C_Transfer (Sparks Launchpad -> buyer) — each self-collecting IGNIS \
-            \ on <patron>. A citizen cannot fold cumulators (no permission for the bare uncollected \
-            \ core funcs), so IGNIS is billed Sigma-wise (once per op). <max-cost> is the buyer's dollar \
-            \ slippage ceiling (sentinel < 0 = slippage off). Preview: URCi_BuySparks / INFO_BuySparks."
-        (with-capability (SPARK|C>BUY sparks-amount)
-            (let
-                (
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                    ;;
-                    (spark-id:string (UR_SparkID))
-                    (costs:object{DemiourgosLaunchpadV1.Costs} (URC_SparkAmountCosts sparks-amount))
-                    (pid:decimal (at "pid" costs))
-                    (type:integer (if iz-native 0 1))
-                    (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
-                )
-                ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
-                (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer spark-id pid type false max-cost)
-                ;;2] SOVEREIGN DPTF transfer Talos op — Sparks from the Launchpad SC to the buyer; self-collects IGNIS
-                (ref-TS01-C1::DPTF|C_Transfer patron spark-id DEMIPAD|SC_NAME buyer (dec sparks-amount) true)
-                (format "User {} succesfuly acquired {} {} Tokens" [sb sparks-amount spark-id])
-            )
-        )
-    )
-    (defun C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string)
-        (with-capability (SPARK|C>REEDEM-ALL account-to-redeem)
-            (let
-                (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (spark-id:string (UR_SparkID))
-                    (supply:decimal (ref-DPTF::UR_AccountSupply spark-id account-to-redeem))
-                )
-                (XI_RedeemSparks patron redemption-payer account-to-redeem supply)
-            )
-        )
-    )
-    (defun C_CustomRedemAllSparks (patron:string redemption-payer:string account-to-redeem:string custom-stoa-pid:decimal)
-        (with-capability (SPARK|C>REEDEM-ALL account-to-redeem)
-            (let
-                (
-                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                    (spark-id:string (UR_SparkID))
-                    (supply:decimal (ref-DPTF::UR_AccountSupply spark-id account-to-redeem))
-                )
-                (XI_CustomRedeemSparks patron redemption-payer account-to-redeem supply custom-stoa-pid)
-            )
-        )
-    )
-    (defun C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
-        (with-capability (SPARK|C>REEDEM-FEW account-to-redeem redemption-quantity)
-            (XI_RedeemSparks patron redemption-payer account-to-redeem redemption-quantity)
-        )
-    )
-    (defun C_CustomRedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal custom-stoa-pid:decimal)
-        (with-capability (SPARK|C>REEDEM-FEW account-to-redeem redemption-quantity)
-            (XI_CustomRedeemSparks patron redemption-payer account-to-redeem redemption-quantity custom-stoa-pid)
-        )
-    )
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     (defun XI_RedeemSparks 
         (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
         (require-capability (SECURE))
@@ -635,6 +571,71 @@
             )
         )
     )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    ;;
+    (defun C_BuySparks (patron:string buyer:string sparks-amount:integer iz-native:bool max-cost:decimal)
+        @doc "PURE CITIZEN buy. Composes two SOVEREIGN Talos ops — DEMIPAD|C_Deposit (buyer STOA -> \
+            \ Launchpad) then DPTF|C_Transfer (Sparks Launchpad -> buyer) — each self-collecting IGNIS \
+            \ on <patron>. A citizen cannot fold cumulators (no permission for the bare uncollected \
+            \ core funcs), so IGNIS is billed Sigma-wise (once per op). <max-cost> is the buyer's dollar \
+            \ slippage ceiling (sentinel < 0 = slippage off). Preview: URCi_BuySparks / INFO_BuySparks."
+        (with-capability (SPARK|C>BUY sparks-amount)
+            (let
+                (
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                    (ref-TS02-DPAD:module{TalosStageTwo_DemiPadV1} TS02-DPAD)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                    ;;
+                    (spark-id:string (UR_SparkID))
+                    (costs:object{DemiourgosLaunchpadV1.Costs} (URC_SparkAmountCosts sparks-amount))
+                    (pid:decimal (at "pid" costs))
+                    (type:integer (if iz-native 0 1))
+                    (sb:string (ref-I|OURONET::OI|UC_ShortAccount buyer))
+                )
+                ;;1] SOVEREIGN deposit Talos op — buyer's STOA into the Launchpad; self-collects IGNIS on patron
+                (ref-TS02-DPAD::DEMIPAD|C_Deposit patron buyer spark-id pid type false max-cost)
+                ;;2] SOVEREIGN DPTF transfer Talos op — Sparks from the Launchpad SC to the buyer; self-collects IGNIS
+                (ref-TS01-C1::DPTF|C_Transfer patron spark-id DEMIPAD|SC_NAME buyer (dec sparks-amount) true)
+                (format "User {} succesfuly acquired {} {} Tokens" [sb sparks-amount spark-id])
+            )
+        )
+    )
+    (defun C_RedemAllSparks (patron:string redemption-payer:string account-to-redeem:string)
+        (with-capability (SPARK|C>REEDEM-ALL account-to-redeem)
+            (let
+                (
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (spark-id:string (UR_SparkID))
+                    (supply:decimal (ref-DPTF::UR_AccountSupply spark-id account-to-redeem))
+                )
+                (XI_RedeemSparks patron redemption-payer account-to-redeem supply)
+            )
+        )
+    )
+    (defun C_CustomRedemAllSparks (patron:string redemption-payer:string account-to-redeem:string custom-stoa-pid:decimal)
+        (with-capability (SPARK|C>REEDEM-ALL account-to-redeem)
+            (let
+                (
+                    (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                    (spark-id:string (UR_SparkID))
+                    (supply:decimal (ref-DPTF::UR_AccountSupply spark-id account-to-redeem))
+                )
+                (XI_CustomRedeemSparks patron redemption-payer account-to-redeem supply custom-stoa-pid)
+            )
+        )
+    )
+    (defun C_RedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal)
+        (with-capability (SPARK|C>REEDEM-FEW account-to-redeem redemption-quantity)
+            (XI_RedeemSparks patron redemption-payer account-to-redeem redemption-quantity)
+        )
+    )
+    (defun C_CustomRedemFewSparks (patron:string redemption-payer:string account-to-redeem:string redemption-quantity:decimal custom-stoa-pid:decimal)
+        (with-capability (SPARK|C>REEDEM-FEW account-to-redeem redemption-quantity)
+            (XI_CustomRedeemSparks patron redemption-payer account-to-redeem redemption-quantity custom-stoa-pid)
+        )
+    )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

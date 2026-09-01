@@ -228,7 +228,18 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
+    ;;{F1}  Construct [UDC]
+    (defun UDC_UserData:object{UserContributionSchema}
+        (a:decimal b:integer c:decimal d:decimal f:integer e:string)
+        {"dollarz"              : a
+        ,"urstoa-earned"        : b
+        ,"last-rps"             : c
+        ,"pending-rewards"      : d
+        ,"last-collected-round" : f
+        ,"owner-id"             : e}
+    )
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_User0:object{UserContributionSchema} (account:string)
         (let
             (
@@ -334,7 +345,6 @@
             (if (= (typeof trial) "bool") false true)
         )
     )
-    ;;{F1}  [URC]
     (defun URC_ClaimableRewards (account:string)
         @doc "Computes Claimable Reward of Account"
         (if (= (UR_Global7) 1)
@@ -356,209 +366,6 @@
             (+ current-pending-rewards gained-pending-rewards)
         )
     )
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    (defun UDC_UserData:object{UserContributionSchema}
-        (a:decimal b:integer c:decimal d:decimal f:integer e:string)
-        {"dollarz"              : a
-        ,"urstoa-earned"        : b
-        ,"last-rps"             : c
-        ,"pending-rewards"      : d
-        ,"last-collected-round" : f
-        ,"owner-id"             : e}
-    )
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    (defun A_InitialiseDistributionVault (account:string)
-        @doc "Initialises the Distribuition Vault by creating and filling all necesary prerequisites"
-        (with-capability (INIT-ICO-DISTRIBUTION)
-            (let
-                (
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                    (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
-                    (dptf-ids:list 
-                        (ref-TS01-C1::DPTF|C_Issue account account
-                            ["WrappedUrStoa" "VirtualIcoDollars"]
-                            ["WURSTOA" "VUSDC"]
-                            [3 2]
-                            [true true]
-                            [true true]
-                            [true true]
-                            [false false]
-                            [false false]
-                            [false false]
-                        )
-                    )
-                    (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
-                    (wurstoa-id:string (at 0 dptf-ids))
-                    (vusd-id:string (at 1 dptf-ids))
-                )
-                ;;1]Issue wURSTOA as DPTF
-                ;;2]Issue vUSD as mockup virtual Dollarz
-                ;;3]Toggle mint and burn roles
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account vusd-id DEMIPAD|SC_NAME true)
-                (ref-TS01-C1::DPTF|C_ToggleBurnRole account vusd-id DEMIPAD|SC_NAME true)
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account wstoa-id account true)
-                (ref-TS01-C1::DPTF|C_ToggleMintRole account wurstoa-id DEMIPAD|SC_NAME true)
-                ;;4]Mint 10 mil wSTOA (injection will follow after ICO concludes)    
-                (ref-TS01-C1::DPTF|C_Mint account wstoa-id account 10000000.0 true)
-                ;;5]Initialises the distribution Vault
-                (XI_InitialiseDistributionVault [wstoa-id wurstoa-id vusd-id])
-                ;;6]Output Message
-                [wurstoa-id vusd-id]
-            )
-        )
-    )
-    (defun A_Inject (patron:string account:string wstoa-amount:decimal)
-        @doc "Injects the ICO wSTOA amount into the Distribution-Vault (D-Vault); \
-            \ the 10 mil from the ICO sale, from <account> \
-            \ Can only be done by the ADMIN"
-        (with-capability (STOAICO|INJECT account)
-            (let
-                (
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                    (wSTOA-ID:string (UR_Global8))
-                    ;;
-                    (vault-score:decimal (UR_Global1))
-                    (zombie:decimal (UR_Global12))
-                )
-                (if (> vault-score 0.0)
-                    ;;=== FLUSH — stakers present: distribute (new amount + any escrowed zombie), open next round.
-                    (let
-                        (
-                            (eff:decimal (+ wstoa-amount zombie))
-                        )
-                        ;;#1C] Inject barrier — a new distribution-round may open ONLY when the previous one is
-                        ;;     fully collected (unclaimed-count == 0). Stragglers are cleared by the admin flush.
-                        (enforce
-                            (= (UR_Global7) 0)
-                            "STOAICO: previous distribution-round not fully collected — flush the stragglers (or wait for collections) before injecting again")
-                        ;;0]Move wSTOA from <account> to the D-Vault
-                        (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
-                        ;;1]Count it in <wstoa-supply> (total held by the vault)
-                        (XI_UpdateVaultSupply wstoa-amount true)
-                        ;;2]Advance <current-rps> by the EFFECTIVE amount (new + escrowed zombie) / vault-score.
-                        ;;  vault-score > 0 here, so the reward-per-share division can never divide by zero.
-                        (XI_UpdateVaultRPS (+ (UR_Global6) (floor (/ eff vault-score) STOA_PREC)))
-                        ;;3]#5M: the escrowed zombie is fully consumed by this flush
-                        (if (> zombie 0.0) (XI_SetZombieRewards 0.0) true)
-                        ;;4]Reset <unclaimed-count> (set it to <nzs-count>)
-                        (XI_ResetUnclaimedCount)
-                        ;;5]#1C: advance the vault to the next distribution-round (opens collection for this round)
-                        (XI_IncrementDistributionRound)
-                    )
-                    ;;=== ESCROW — #5M no stakers (vault-score 0): park the amount as zombie for the NEXT non-zero
-                    ;;    inject (eff = amount + zombie). Nothing is distributed (no rps/round/unclaimed change),
-                    ;;    so the division is never reached with a zero denominator.
-                    (do
-                        ;;0]Move wSTOA from <account> to the D-Vault (held, not yet distributed)
-                        (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
-                        ;;1]Count it in <wstoa-supply> (held by the vault)
-                        (XI_UpdateVaultSupply wstoa-amount true)
-                        ;;2]Escrow: postpone distribution to the next injection when vault-score is non-zero
-                        (XI_SetZombieRewards (+ zombie wstoa-amount))
-                    )
-                )
-            )
-        )
-    )
-    (defun A_Stake (patron:string account:string v-usd-amount:decimal)
-        @doc "Adds a contribution in virtual $ to the Distribution Vault \
-            \ Contributing with v-dollars allows for a piece of the 10 mil wSTOA \
-            \ placed for distribution in this Vault.\
-            \ Also earns urSTOA (up to 300k) \
-            \ Can only be done by the Admin"
-        (with-capability (STOAICO|ADD-CONTRIBUTION account v-usd-amount)
-            (let
-                (
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                    (v-usd-id:string (UR_Global10))
-                    (user-score:decimal (UR_User1 account))
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
-                )
-                ;;0]Mint the v-USD amount to the <DEMIPAD|SC_NAME>
-                (ref-TS01-C1::DPTF|C_Mint patron v-usd-id DEMIPAD|SC_NAME v-usd-amount false)
-                ;;0.1]If New Account
-                (if (not (UR_IzAccount account))
-                    (do
-                        (insert STOAICO|T|User account
-                            ;;#1C: new contributor starts at the CURRENT distribution-round, so a (mis-ordered)
-                            ;;     post-inject stake is not eligible for the already-injected round.
-                            (UDC_UserData 0.0 0 (UR_Global6) 0.0 (UR_Global11) account)
-                        )
-                        ;;Increment Users by one
-                        (update STOAICO|T|General STOAICO|INFO
-                            {"users" : (+ 1 (UR_Global3))}
-                        )
-                    )                
-                    true
-                )
-                ;;1.1]Update Pending Rewards
-                (XI_UpdatePendingRewards account)
-                ;;1.2]If initial <user-score> was 0, increment <nzs-count>
-                (if (= user-score 0.0)
-                    (XI_UpdateNZS true)
-                    true
-                )
-                ;;1.3]Update <last-rps> with D-Vault <current-rps>
-                (XI_UpdateUserRPS account (UR_Global6))
-                ;;1.4]#6M: Earn urSTOA ONLY during the ICO phase (distribution-round 0). After the ICO
-                ;;    concludes (first inject → round >= 1) contributions no longer earn urSTOA; the unsold
-                ;;    remainder of the 250k budget stays unminted (returns to the foundation).
-                (if (= (UR_Global11) 0)
-                    (XI_UpdateUrstoaEarned account v-usd-amount true)
-                    true)
-                ;;1.5]Update Vault Score and User Score
-                (XI_UpdateVaultScore v-usd-amount true)
-                (XI_UpdateUserScore account v-usd-amount true)
-                (format "Succesfully contributed {} $ for Ouronet Account {}"
-                    [v-usd-amount sa]
-                )
-            )
-        )
-    )
-    (defun A_Unstake (patron:string account:string v-usd-amount:decimal)
-        @doc "Removes a contribution of virtual $ from the Distribution Vault for an <account> \
-            \ Can only be done by the ADMIN"
-        (with-capability (STOAICO|REMOVE-CONTRIBUTION account v-usd-amount)
-            (let
-                (
-                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
-                    (v-usd-id:string (UR_Global10))
-                    (user-score:decimal (UR_User1 account))
-                    (remaining:decimal (- user-score v-usd-amount))
-                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
-                )
-                ;;0]Burn the v-USD amount from the <DEMIPAD|SC_NAME> that is to be removed
-                (ref-TS01-C1::DPTF|C_Burn patron v-usd-id DEMIPAD|SC_NAME v-usd-amount)
-                ;;1.1]Update Pending Rewards
-                (XI_UpdatePendingRewards account)
-                ;;1.2]If remaining <user-score> becomes 0, decrement <nzs-count>
-                (if (= remaining 0.0)
-                    (XI_UpdateNZS false)
-                    true
-                )
-                ;;1.3]Update <last-rps> with D-Vault <current-rps>
-                (XI_UpdateUserRPS account (UR_Global6))
-                ;;1.4]#6M: adjust urSTOA earning ONLY during the ICO phase (distribution-round 0); after the
-                ;;    ICO concludes, contributions/withdrawals no longer touch urSTOA earning.
-                (if (= (UR_Global11) 0)
-                    (XI_UpdateUrstoaEarned account v-usd-amount false)
-                    true)
-                ;;1.5]Update Vault Score and User Score
-                (XI_UpdateVaultScore v-usd-amount false)
-                (XI_UpdateUserScore account v-usd-amount false)
-                (format "Succesfully uncontributed {} $ for Ouronet Account {}"
-                    [v-usd-amount sa]
-                )
-            )
-        )
-    )
-    ;;{F5.1} [Flush recipe — #1C]  (URH_ preflight → Ap_ parallel slice → AA_ solo/heavy)
     (defun URH_UncollectedAccounts:[string] ()
         @doc "#1C Hydra preflight — the ONE heavy read: every account that still holds an UNCOLLECTED \
             \ position this distribution-round, i.e. an actual staker (dollarz > 0) whose \
@@ -579,45 +386,6 @@
             )
         )
     )
-    (defun Ap_FlushUncollectedSlice:string (patron:string accounts:[string])
-        @doc "#1C Hydra parallel slice: the admin push-collects ONE slice of uncollected accounts, delivering \
-            \ each its OWN wSTOA + urSTOA (identical to a self-collect — not to the admin, not burned). \
-            \ Order-independent and retryable — an account already collected this round is skipped, so re-runs \
-            \ are idempotent. Drives unclaimed-count toward 0 so the next A_Inject can open the following round."
-        (with-capability (STOAICO|FLUSH)
-            (let
-                (
-                    (cur-round:integer (UR_Global11))
-                )
-                (map
-                    (lambda (account:string)
-                        (if (< (UR_User5 account) cur-round)
-                            (XI_CollectFor patron account)
-                            (format "Account {} already collected — skipped" [account])
-                        )
-                    )
-                    accounts
-                )
-                (format "Flush slice processed {} account(s)" [(length accounts)])
-            )
-        )
-    )
-    (defun AA_FlushUncollected:string (patron:string)
-        @doc "#1C solo/heavy admin flush: push-collect ALL uncollected stragglers in one transaction (reaches \
-            \ the URH_UncollectedAccounts heavy scan — hence AA_). For large contributor sets prefer the \
-            \ parallel URH_UncollectedAccounts preflight + Ap_FlushUncollectedSlice legs. Delivers each \
-            \ straggler its own rewards and clears unclaimed-count so the next inject can proceed."
-        (with-capability (STOAICO|FLUSH)
-            (let
-                (
-                    (accounts:[string] (URH_UncollectedAccounts))
-                )
-                (map (lambda (account:string) (XI_CollectFor patron account)) accounts)
-                (format "Flushed {} uncollected account(s)" [(length accounts)])
-            )
-        )
-    )
-    ;;{F1b}  [URCi] / [INFO]  (pure-citizen cost preview: Sigma of the sovereign Talos ops' IGNIS)
     (defun URCi_Collect:decimal (account:string)
         @doc "Pure-citizen IGNIS cost preview for C_Collect = Sigma of the sovereign Talos ops XI_CollectFor \
             \ fires: DPTF remint of urSTOA + the reward payout — a MultiTransfer (wSTOA+urSTOA) when urSTOA \
@@ -661,14 +429,9 @@
             )
         )
     )
-    ;;{F6}  [C]
-    (defun C_Collect (patron:string account:string)
-        @doc "Self-collect from the distribution Vault — once per distribution-round, by the <account> owner. \
-            \ A new A_Inject opens the next round and re-enables collection (the RPS delta since last collect)."
-        (with-capability (STOAICO|REDEEM-CONTRIBUTION account)
-            (XI_CollectFor patron account)
-        )
-    )
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     (defun XI_CollectFor:string (patron:string account:string)
         @doc "#1C shared settle+deliver core: pays <account> its OWN wSTOA (its RPS delta, or the whole \
             \ remaining wstoa-supply when it is the round's last unclaimed staker — the dust sweep) plus its \
@@ -742,7 +505,6 @@
             )
         )
     )
-    ;;{F7}  [X]
     ;;Admin
     (defun XI_InitialiseDistributionVault (dptf-ids:[string])
         (require-capability (SECURE))
@@ -937,6 +699,244 @@
             )
         )
     )
+    ;;{F7}  User [A]
+    ;;
+    (defun A_InitialiseDistributionVault (account:string)
+        @doc "Initialises the Distribuition Vault by creating and filling all necesary prerequisites"
+        (with-capability (INIT-ICO-DISTRIBUTION)
+            (let
+                (
+                    (ref-DALOS:module{OuronetDalosV1} DALOS)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                    (ref-P|DPAD:module{OuronetPolicyV1} DEMIPAD)
+                    (dptf-ids:list 
+                        (ref-TS01-C1::DPTF|C_Issue account account
+                            ["WrappedUrStoa" "VirtualIcoDollars"]
+                            ["WURSTOA" "VUSDC"]
+                            [3 2]
+                            [true true]
+                            [true true]
+                            [true true]
+                            [false false]
+                            [false false]
+                            [false false]
+                        )
+                    )
+                    (wstoa-id:string (ref-DALOS::UR_WrappedStoaID))
+                    (wurstoa-id:string (at 0 dptf-ids))
+                    (vusd-id:string (at 1 dptf-ids))
+                )
+                ;;1]Issue wURSTOA as DPTF
+                ;;2]Issue vUSD as mockup virtual Dollarz
+                ;;3]Toggle mint and burn roles
+                (ref-TS01-C1::DPTF|C_ToggleMintRole account vusd-id DEMIPAD|SC_NAME true)
+                (ref-TS01-C1::DPTF|C_ToggleBurnRole account vusd-id DEMIPAD|SC_NAME true)
+                (ref-TS01-C1::DPTF|C_ToggleMintRole account wstoa-id account true)
+                (ref-TS01-C1::DPTF|C_ToggleMintRole account wurstoa-id DEMIPAD|SC_NAME true)
+                ;;4]Mint 10 mil wSTOA (injection will follow after ICO concludes)    
+                (ref-TS01-C1::DPTF|C_Mint account wstoa-id account 10000000.0 true)
+                ;;5]Initialises the distribution Vault
+                (XI_InitialiseDistributionVault [wstoa-id wurstoa-id vusd-id])
+                ;;6]Output Message
+                [wurstoa-id vusd-id]
+            )
+        )
+    )
+    (defun A_Inject (patron:string account:string wstoa-amount:decimal)
+        @doc "Injects the ICO wSTOA amount into the Distribution-Vault (D-Vault); \
+            \ the 10 mil from the ICO sale, from <account> \
+            \ Can only be done by the ADMIN"
+        (with-capability (STOAICO|INJECT account)
+            (let
+                (
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                    (wSTOA-ID:string (UR_Global8))
+                    ;;
+                    (vault-score:decimal (UR_Global1))
+                    (zombie:decimal (UR_Global12))
+                )
+                (if (> vault-score 0.0)
+                    ;;=== FLUSH — stakers present: distribute (new amount + any escrowed zombie), open next round.
+                    (let
+                        (
+                            (eff:decimal (+ wstoa-amount zombie))
+                        )
+                        ;;#1C] Inject barrier — a new distribution-round may open ONLY when the previous one is
+                        ;;     fully collected (unclaimed-count == 0). Stragglers are cleared by the admin flush.
+                        (enforce
+                            (= (UR_Global7) 0)
+                            "STOAICO: previous distribution-round not fully collected — flush the stragglers (or wait for collections) before injecting again")
+                        ;;0]Move wSTOA from <account> to the D-Vault
+                        (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
+                        ;;1]Count it in <wstoa-supply> (total held by the vault)
+                        (XI_UpdateVaultSupply wstoa-amount true)
+                        ;;2]Advance <current-rps> by the EFFECTIVE amount (new + escrowed zombie) / vault-score.
+                        ;;  vault-score > 0 here, so the reward-per-share division can never divide by zero.
+                        (XI_UpdateVaultRPS (+ (UR_Global6) (floor (/ eff vault-score) STOA_PREC)))
+                        ;;3]#5M: the escrowed zombie is fully consumed by this flush
+                        (if (> zombie 0.0) (XI_SetZombieRewards 0.0) true)
+                        ;;4]Reset <unclaimed-count> (set it to <nzs-count>)
+                        (XI_ResetUnclaimedCount)
+                        ;;5]#1C: advance the vault to the next distribution-round (opens collection for this round)
+                        (XI_IncrementDistributionRound)
+                    )
+                    ;;=== ESCROW — #5M no stakers (vault-score 0): park the amount as zombie for the NEXT non-zero
+                    ;;    inject (eff = amount + zombie). Nothing is distributed (no rps/round/unclaimed change),
+                    ;;    so the division is never reached with a zero denominator.
+                    (do
+                        ;;0]Move wSTOA from <account> to the D-Vault (held, not yet distributed)
+                        (ref-TS01-C1::DPTF|C_Transfer patron wSTOA-ID account DEMIPAD|SC_NAME wstoa-amount true)
+                        ;;1]Count it in <wstoa-supply> (held by the vault)
+                        (XI_UpdateVaultSupply wstoa-amount true)
+                        ;;2]Escrow: postpone distribution to the next injection when vault-score is non-zero
+                        (XI_SetZombieRewards (+ zombie wstoa-amount))
+                    )
+                )
+            )
+        )
+    )
+    (defun A_Stake (patron:string account:string v-usd-amount:decimal)
+        @doc "Adds a contribution in virtual $ to the Distribution Vault \
+            \ Contributing with v-dollars allows for a piece of the 10 mil wSTOA \
+            \ placed for distribution in this Vault.\
+            \ Also earns urSTOA (up to 300k) \
+            \ Can only be done by the Admin"
+        (with-capability (STOAICO|ADD-CONTRIBUTION account v-usd-amount)
+            (let
+                (
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                    (v-usd-id:string (UR_Global10))
+                    (user-score:decimal (UR_User1 account))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                )
+                ;;0]Mint the v-USD amount to the <DEMIPAD|SC_NAME>
+                (ref-TS01-C1::DPTF|C_Mint patron v-usd-id DEMIPAD|SC_NAME v-usd-amount false)
+                ;;0.1]If New Account
+                (if (not (UR_IzAccount account))
+                    (do
+                        (insert STOAICO|T|User account
+                            ;;#1C: new contributor starts at the CURRENT distribution-round, so a (mis-ordered)
+                            ;;     post-inject stake is not eligible for the already-injected round.
+                            (UDC_UserData 0.0 0 (UR_Global6) 0.0 (UR_Global11) account)
+                        )
+                        ;;Increment Users by one
+                        (update STOAICO|T|General STOAICO|INFO
+                            {"users" : (+ 1 (UR_Global3))}
+                        )
+                    )                
+                    true
+                )
+                ;;1.1]Update Pending Rewards
+                (XI_UpdatePendingRewards account)
+                ;;1.2]If initial <user-score> was 0, increment <nzs-count>
+                (if (= user-score 0.0)
+                    (XI_UpdateNZS true)
+                    true
+                )
+                ;;1.3]Update <last-rps> with D-Vault <current-rps>
+                (XI_UpdateUserRPS account (UR_Global6))
+                ;;1.4]#6M: Earn urSTOA ONLY during the ICO phase (distribution-round 0). After the ICO
+                ;;    concludes (first inject → round >= 1) contributions no longer earn urSTOA; the unsold
+                ;;    remainder of the 250k budget stays unminted (returns to the foundation).
+                (if (= (UR_Global11) 0)
+                    (XI_UpdateUrstoaEarned account v-usd-amount true)
+                    true)
+                ;;1.5]Update Vault Score and User Score
+                (XI_UpdateVaultScore v-usd-amount true)
+                (XI_UpdateUserScore account v-usd-amount true)
+                (format "Succesfully contributed {} $ for Ouronet Account {}"
+                    [v-usd-amount sa]
+                )
+            )
+        )
+    )
+    (defun A_Unstake (patron:string account:string v-usd-amount:decimal)
+        @doc "Removes a contribution of virtual $ from the Distribution Vault for an <account> \
+            \ Can only be done by the ADMIN"
+        (with-capability (STOAICO|REMOVE-CONTRIBUTION account v-usd-amount)
+            (let
+                (
+                    (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                    (ref-TS01-C1:module{TalosStageOne_ClientOneV1} TS01-C1)
+                    (v-usd-id:string (UR_Global10))
+                    (user-score:decimal (UR_User1 account))
+                    (remaining:decimal (- user-score v-usd-amount))
+                    (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+                )
+                ;;0]Burn the v-USD amount from the <DEMIPAD|SC_NAME> that is to be removed
+                (ref-TS01-C1::DPTF|C_Burn patron v-usd-id DEMIPAD|SC_NAME v-usd-amount)
+                ;;1.1]Update Pending Rewards
+                (XI_UpdatePendingRewards account)
+                ;;1.2]If remaining <user-score> becomes 0, decrement <nzs-count>
+                (if (= remaining 0.0)
+                    (XI_UpdateNZS false)
+                    true
+                )
+                ;;1.3]Update <last-rps> with D-Vault <current-rps>
+                (XI_UpdateUserRPS account (UR_Global6))
+                ;;1.4]#6M: adjust urSTOA earning ONLY during the ICO phase (distribution-round 0); after the
+                ;;    ICO concludes, contributions/withdrawals no longer touch urSTOA earning.
+                (if (= (UR_Global11) 0)
+                    (XI_UpdateUrstoaEarned account v-usd-amount false)
+                    true)
+                ;;1.5]Update Vault Score and User Score
+                (XI_UpdateVaultScore v-usd-amount false)
+                (XI_UpdateUserScore account v-usd-amount false)
+                (format "Succesfully uncontributed {} $ for Ouronet Account {}"
+                    [v-usd-amount sa]
+                )
+            )
+        )
+    )
+    (defun Ap_FlushUncollectedSlice:string (patron:string accounts:[string])
+        @doc "#1C Hydra parallel slice: the admin push-collects ONE slice of uncollected accounts, delivering \
+            \ each its OWN wSTOA + urSTOA (identical to a self-collect — not to the admin, not burned). \
+            \ Order-independent and retryable — an account already collected this round is skipped, so re-runs \
+            \ are idempotent. Drives unclaimed-count toward 0 so the next A_Inject can open the following round."
+        (with-capability (STOAICO|FLUSH)
+            (let
+                (
+                    (cur-round:integer (UR_Global11))
+                )
+                (map
+                    (lambda (account:string)
+                        (if (< (UR_User5 account) cur-round)
+                            (XI_CollectFor patron account)
+                            (format "Account {} already collected — skipped" [account])
+                        )
+                    )
+                    accounts
+                )
+                (format "Flush slice processed {} account(s)" [(length accounts)])
+            )
+        )
+    )
+    (defun AA_FlushUncollected:string (patron:string)
+        @doc "#1C solo/heavy admin flush: push-collect ALL uncollected stragglers in one transaction (reaches \
+            \ the URH_UncollectedAccounts heavy scan — hence AA_). For large contributor sets prefer the \
+            \ parallel URH_UncollectedAccounts preflight + Ap_FlushUncollectedSlice legs. Delivers each \
+            \ straggler its own rewards and clears unclaimed-count so the next inject can proceed."
+        (with-capability (STOAICO|FLUSH)
+            (let
+                (
+                    (accounts:[string] (URH_UncollectedAccounts))
+                )
+                (map (lambda (account:string) (XI_CollectFor patron account)) accounts)
+                (format "Flushed {} uncollected account(s)" [(length accounts)])
+            )
+        )
+    )
+    ;;{F8}  User [C]
+    (defun C_Collect (patron:string account:string)
+        @doc "Self-collect from the distribution Vault — once per distribution-round, by the <account> owner. \
+            \ A new A_Inject opens the next round and re-enables collection (the RPS delta since last collect)."
+        (with-capability (STOAICO|REDEEM-CONTRIBUTION account)
+            (XI_CollectFor patron account)
+        )
+    )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
+    ;;
 )
 
 (create-table P|T)

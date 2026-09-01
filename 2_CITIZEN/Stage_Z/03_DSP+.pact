@@ -183,6 +183,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_KosonicAutostakeSplit:[decimal] (input:decimal ip:integer)
         (let
             (
@@ -197,8 +199,7 @@
             [ps cc pp tt sv aa]
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_DailyOURO ()
         (let
             (
@@ -251,11 +252,11 @@
             )
         )
     )
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
     ;;
-    ;;{F5}  [A]
     (defun A_StoicismMinter (stoicism-amounts:[decimal] stoicism-targets:[string])
         (with-capability (DSP|STOICISM-MINTER stoicism-amounts stoicism-targets)
             (let
@@ -508,8 +509,8 @@
             )
         )
     )
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

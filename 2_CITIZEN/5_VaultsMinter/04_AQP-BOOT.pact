@@ -93,6 +93,14 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
     ;;Step 0 - Wire AQP sovereign IMC policies + AQP|SC_NAME vault governor (run once after module deploy)
     ;;Step 1 - Create the Bunny Set Definition
@@ -710,4 +718,6 @@
             )
         )
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
+    ;;
 )

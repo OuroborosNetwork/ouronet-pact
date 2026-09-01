@@ -161,7 +161,9 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_AssetID ()
         (at "asset-id" (read SNAKES|T|Properties SNAKES|INFO ["asset-id"]))
     )
@@ -184,7 +186,6 @@
             (ref-DPDC::UR_AccountNonceSupply lpad asset true nonce)
         )
     )
-    ;;{F1}  [URC]
     (defun URC_NonceValueInShares:integer (nonce:integer)
         (if (= nonce 1)
             1
@@ -313,6 +314,7 @@
             (ref-DEMIPAD::URC_Acquire buyer asset-id pid type slippage)
         )
     )
+    ;;{F4}  Validate [UEV/CAP]
     (defun CAP_Acquire
         (buyer:string nonce:integer amount:integer iz-native:bool)
         @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price."
@@ -326,11 +328,10 @@
             (ref-DEMIPAD::CAP_Acquire buyer asset-id pid type)
         )
     )
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
     ;;
-    ;;{F5}  [A]
     (defun A_UpdateSharePrice (price:decimal)
         @doc "Updates the Share Price"
         (let
@@ -343,7 +344,7 @@
             )
         )
     )
-    ;;{F6}  [C]
+    ;;{F8}  User [C]
     (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
         @doc "Nonce 1 are Pure Shares, Nonces 2-8 are Tier 1-7 PackageShares \
             \ When <iz-native> is set to true, Native STOA is used for buy, which must be wrapped to WSTOA \
@@ -369,7 +370,7 @@
             )
         )
     )
-    ;;{F7}  [X]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

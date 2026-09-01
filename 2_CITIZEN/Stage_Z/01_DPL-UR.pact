@@ -141,6 +141,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_TrimDecimalTrailingZeros:string (number:decimal)
         @doc "Trims trailing zeros from a decimal number"
         (let* 
@@ -303,9 +305,8 @@
             [pool-type pool-type-word]
         )
     )
-    ;;{F0}  [UR]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    ;;{F1}  [URC]
     (defun URC_TrueFungibleAmountPrice:decimal (id:string amount:decimal price:decimal)
         (let
             (
@@ -497,7 +498,6 @@
         )
     )
     ;;
-    ;;{F1}  [URC] [Special Reads]
     (defun URC_0001_HeaderV3 (account:string)
         (let
             (
@@ -2933,12 +2933,11 @@
             )
         )
     )
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )

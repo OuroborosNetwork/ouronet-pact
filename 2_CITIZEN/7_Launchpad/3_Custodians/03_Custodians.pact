@@ -169,6 +169,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_NonceQuintessence:integer (nonce:integer)
         @doc "Pure nonce->quintessence mapping for the three Custodian fragment nonces: \
             \ -1 (Bronze) = 1, -2 (Silver) = 10, -3 (Golden) = 100. No enforce: nonce validity \
@@ -181,7 +183,7 @@
             )
         )
     )
-    ;;{F0}  [UR]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_AssetID ()
         (at "asset-id" (read CUSTODIANS|T|Properties CUSTODIANS|INFO ["asset-id"]))
     )
@@ -207,7 +209,6 @@
             (ref-DPDC::UR_AccountNonceSupply lpad asset true nonce)
         )
     )
-    ;;{F1}  [URC]
     (defun URC_QuintessenceCosts:object{DemiourgosLaunchpadV1.Costs} ()
         (let
             (
@@ -322,6 +323,7 @@
             (ref-DEMIPAD::URC_Acquire buyer asset-id pid type slippage)
         )
     )
+    ;;{F4}  Validate [UEV/CAP]
     (defun CAP_Acquire
         (buyer:string nonce:integer amount:integer iz-native:bool)
         (let
@@ -334,7 +336,6 @@
             (ref-DEMIPAD::CAP_Acquire buyer asset-id pid type)
         )
     )
-    ;;{F2}  [UEV]
     (defun UEV_AcquisitionNonce (nonce:integer)
         (let
             (
@@ -344,10 +345,16 @@
             (enforce iz-acquisition-nonce "Invalid Custodian Acquisition Nonce")
         )
     )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    (defun XI_I|AssetId (asset-id:string)
+        (require-capability (GOV|CUSTODIANS_ADMIN))
+        (insert CUSTODIANS|T|Properties CUSTODIANS|INFO
+            {"asset-id"     : asset-id}
+        )
+    )
+    ;;{F7}  User [A]
     ;;
-    ;;{F5}  [A]
     (defun A_UpdateQuintessencePrice (price:decimal)
         @doc "Updates the Quintessence Price"
         (let
@@ -360,7 +367,7 @@
             )
         )
     )
-    ;;{F6}  [C]
+    ;;{F8}  User [C]
     (defun C_Acquire (patron:string buyer:string nonce:integer amount:integer iz-native:bool max-cost:decimal)
         @doc "Only Nonce -3 -2 -1 can be used, and these are Bronze/Silver/Golden Fragment Nonces. \
             \ <max-cost> is the buyer's slippage ceiling in dollars (sentinel < 0 = slippage off)."
@@ -388,13 +395,7 @@
             )
         )
     )
-    ;;{F7}  [X]
-    (defun XI_I|AssetId (asset-id:string)
-        (require-capability (GOV|CUSTODIANS_ADMIN))
-        (insert CUSTODIANS|T|Properties CUSTODIANS|INFO
-            {"asset-id"     : asset-id}
-        )
-    )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

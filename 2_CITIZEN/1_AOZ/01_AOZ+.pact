@@ -132,10 +132,12 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_Str:string (n:integer)
         (int-to-str 10 n)
     )
-    ;;{F0}  [UR]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_CountPrimalTrueFungibles:integer ()
         (at "primal-tfs" (read AOZ|T|AssetCounter AOZ|COUNTER ["primal-tfs"]))
     )
@@ -179,89 +181,9 @@
     (defun UR_NonFungible:string (position:integer)
         (at "sf-asset" (read AOZ|T|NonFungibles (UC_Str position) ["sf-asset"]))
     )
-    ;;
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    (defun A_InitialiseCounters ()
-        (with-capability (GOV|AOZ_ADMIN)
-            (insert AOZ|T|AssetCounter AOZ|COUNTER
-                {"primal-tfs"   : 0
-                ,"primal-ofs"   : 0
-                ,"atspairs"     : 0
-                ,"tfs"          : 0
-                ,"ofs"          : 0
-                ,"sfs"          : 0
-                ,"nfs"          : 0
-                }
-            )
-        )
-    )
-    (defun A_RegisterPrimalTrueFungible (id:string)
-        (with-capability (SECURE-ADMIN)
-            (XI_W|PrimalTrueFungible id (+ (UR_CountPrimalTrueFungibles) 1))
-            (XI_IncrementPrimalTrueFungiblesCounter)
-        )
-    )
-    (defun A_RegisterPrimalOrtoFungible (id:string)
-        (with-capability (SECURE-ADMIN)
-            (XI_W|PrimalOrtoFungible id (+ (UR_CountPrimalOrtoFungibles) 1))
-            (XI_IncrementPrimalOrtoFungiblesCounter)
-        )
-    )
-    (defun A_RegisterAutostakePair (id:string)
-        (with-capability (SECURE-ADMIN)
-            (XI_W|AutostakePair id (+ (UR_CountATSPairs) 1))
-            (XI_IncrementATSPairsCounter)
-        )
-    )
-    (defun A_RegisterTrueFungible (id:string)
-        (with-capability (SECURE-ADMIN)
-            (XI_W|TrueFungible id (+ (UR_CountTrueFungibles) 1))
-            (XI_IncrementTrueFungiblesCounter)
-        )
-    )
-    (defun A_RegisterOrtoFungible (id:string)
-        (with-capability (SECURE-ADMIN)
-            (XI_W|OrtoFungible id (+ (UR_CountOrtoFungibles) 1))
-            (XI_IncrementOrtoFungiblesCounter)
-        )
-    )
-    (defun A_RegisterSemiFungible (id:string)
-        (with-capability (SECURE-ADMIN)
-            (XI_W|SemiFungible id (+ (UR_CountSemiFungibles) 1))
-            (XI_IncrementSemiFungiblesCounter)
-        )
-    )
-    (defun A_RegisterNonFungible (id:string)
-        (with-capability (SECURE-ADMIN)
-            (XI_W|NonFungible id (+ (UR_CountNonFungibles) 1))
-            (XI_IncrementNonFungiblesCounter)
-        )
-    )
-    ;;{F6}  [C]
-    (defun C_SetupKosonicATS (index-name:string hot-rbt:string decay:integer)
-        (let
-            (
-                (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
-                (patron:string AOZ|SC_NAME)
-                (EsothericKosonID:string (UR_PrimalTrueFungible 2))
-                (AncientKosonID:string (UR_PrimalTrueFungible 3))
-            )
-            (ref-TS01-C2::ATS|C_AddSecondary patron index-name EsothericKosonID false)
-            (ref-TS01-C2::ATS|C_AddSecondary patron index-name AncientKosonID false)
-            (ref-TS01-C2::ATS|C_AddHotRBT patron index-name hot-rbt)
-            (if (!= decay 0)
-                (ref-TS01-C2::ATS|C_SetHotRecoveryFee patron index-name 900.0 decay)
-                true
-            )
-            (ref-TS01-C2::ATS|C_SwitchHotRecovery patron index-name true)
-        )
-    )
-    ;;{F7}  [X]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     ;;
     (defun XI_IncrementPrimalTrueFungiblesCounter ()
         (require-capability (SECURE))
@@ -369,6 +291,85 @@
             {"nf-asset" : id}
         )
     )
+    ;;{F7}  User [A]
+    ;;
+    ;;
+    (defun A_InitialiseCounters ()
+        (with-capability (GOV|AOZ_ADMIN)
+            (insert AOZ|T|AssetCounter AOZ|COUNTER
+                {"primal-tfs"   : 0
+                ,"primal-ofs"   : 0
+                ,"atspairs"     : 0
+                ,"tfs"          : 0
+                ,"ofs"          : 0
+                ,"sfs"          : 0
+                ,"nfs"          : 0
+                }
+            )
+        )
+    )
+    (defun A_RegisterPrimalTrueFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|PrimalTrueFungible id (+ (UR_CountPrimalTrueFungibles) 1))
+            (XI_IncrementPrimalTrueFungiblesCounter)
+        )
+    )
+    (defun A_RegisterPrimalOrtoFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|PrimalOrtoFungible id (+ (UR_CountPrimalOrtoFungibles) 1))
+            (XI_IncrementPrimalOrtoFungiblesCounter)
+        )
+    )
+    (defun A_RegisterAutostakePair (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|AutostakePair id (+ (UR_CountATSPairs) 1))
+            (XI_IncrementATSPairsCounter)
+        )
+    )
+    (defun A_RegisterTrueFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|TrueFungible id (+ (UR_CountTrueFungibles) 1))
+            (XI_IncrementTrueFungiblesCounter)
+        )
+    )
+    (defun A_RegisterOrtoFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|OrtoFungible id (+ (UR_CountOrtoFungibles) 1))
+            (XI_IncrementOrtoFungiblesCounter)
+        )
+    )
+    (defun A_RegisterSemiFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|SemiFungible id (+ (UR_CountSemiFungibles) 1))
+            (XI_IncrementSemiFungiblesCounter)
+        )
+    )
+    (defun A_RegisterNonFungible (id:string)
+        (with-capability (SECURE-ADMIN)
+            (XI_W|NonFungible id (+ (UR_CountNonFungibles) 1))
+            (XI_IncrementNonFungiblesCounter)
+        )
+    )
+    ;;{F8}  User [C]
+    (defun C_SetupKosonicATS (index-name:string hot-rbt:string decay:integer)
+        (let
+            (
+                (ref-TS01-C2:module{TalosStageOne_ClientTwoV1} TS01-C2)
+                (patron:string AOZ|SC_NAME)
+                (EsothericKosonID:string (UR_PrimalTrueFungible 2))
+                (AncientKosonID:string (UR_PrimalTrueFungible 3))
+            )
+            (ref-TS01-C2::ATS|C_AddSecondary patron index-name EsothericKosonID false)
+            (ref-TS01-C2::ATS|C_AddSecondary patron index-name AncientKosonID false)
+            (ref-TS01-C2::ATS|C_AddHotRBT patron index-name hot-rbt)
+            (if (!= decay 0)
+                (ref-TS01-C2::ATS|C_SetHotRecoveryFee patron index-name 900.0 decay)
+                true
+            )
+            (ref-TS01-C2::ATS|C_SwitchHotRecovery patron index-name true)
+        )
+    )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 

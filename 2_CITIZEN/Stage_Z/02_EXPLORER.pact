@@ -40,7 +40,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UC]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_FormatTokenAmount:string (amount:decimal)
         @doc "Token amount display helper (aligned with DPL-UR)."
         (let
@@ -70,7 +71,7 @@
             )
         )
     )
-    ;;{F0b}  [UR]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_0001_AccountNonce:integer (account:string)
         @doc "Patron IGNIS client-op counter (proxies DALOS|UR_AccountNonce)."
         (let
@@ -80,7 +81,6 @@
             (ref-DALOS::UR_AccountNonce account)
         )
     )
-    ;;{F1}  [URC]
     (defun URC_0001_LandingPage ()
         @doc "Explorer landing: global z3 stats, OURO/AURYN/ELITEAURYN/IGNIS supplies, Auryn index pair."
         (let
@@ -131,12 +131,11 @@
             }
         )
     )
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )

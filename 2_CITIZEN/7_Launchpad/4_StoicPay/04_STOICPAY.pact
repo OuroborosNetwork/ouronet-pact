@@ -176,7 +176,9 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_KpayID:string ()
         (at "asset-id" (read KPAY|T|Properties KPAY|INFO ["asset-id"]))
     )
@@ -270,7 +272,6 @@
         @doc "Launchpad ledger account (DPTF holder) for StoicPay inventory."
         DEMIPAD|SC_NAME
     )
-    ;;{F1}  [URC]
     (defun URC_KpayAmountCosts:object{DemiourgosLaunchpadV1.Costs} (amount:integer offset:decimal)
         @doc "Computes Prices;"
         (let
@@ -303,20 +304,6 @@
                 (pid:decimal (at "pid" (URC_KpayAmountCosts amount 900.0)))
             )
             (ref-DEMIPAD::URC_Acquire buyer KpayID pid type slippage)
-        )
-    )
-    (defun CAP_Acquire
-        (buyer:string amount:integer iz-native:bool)
-        @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price; the \
-            \ UI does NOT sign them and warns the buyer the mined price may differ."
-        (let
-            (
-                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
-                (KpayID:string (UR_KpayID))
-                (type:integer (if iz-native 0 1))
-                (pid:decimal (at "pid" (URC_KpayAmountCosts amount 900.0)))
-            )
-            (ref-DEMIPAD::CAP_Acquire buyer KpayID pid type)
         )
     )
     (defun URC_GetMaxBuy:integer (account:string native:bool)
@@ -426,12 +413,26 @@
             )
         )
     )
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F4}  Validate [UEV/CAP]
+    (defun CAP_Acquire
+        (buyer:string amount:integer iz-native:bool)
+        @doc "Variant 2 (slippage off) — installs the coin.TRANSFER caps in-code at the live price; the \
+            \ UI does NOT sign them and warns the buyer the mined price may differ."
+        (let
+            (
+                (ref-DEMIPAD:module{DemiourgosLaunchpadV1} DEMIPAD)
+                (KpayID:string (UR_KpayID))
+                (type:integer (if iz-native 0 1))
+                (pid:decimal (at "pid" (URC_KpayAmountCosts amount 900.0)))
+            )
+            (ref-DEMIPAD::CAP_Acquire buyer KpayID pid type)
+        )
+    )
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
     (defun C_BuyStoicPay (patron:string buyer:string kpay-amount:integer iz-native:bool max-cost:decimal)
         @doc "<max-cost> is the buyer's slippage ceiling in dollars (Variant 1); pass a sentinel below \
             \ zero for the slippage-off path (Variant 2)."
@@ -471,7 +472,7 @@
             )
         )
     )
-    ;;{F7}  [X]
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 
