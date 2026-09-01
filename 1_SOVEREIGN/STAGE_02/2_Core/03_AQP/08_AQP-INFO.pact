@@ -747,7 +747,7 @@
                 ["Operation: Finalize a vacate — nuke employed scores, unfreeze FVTs, re-enable stake."
                  "Executes via TS02-C3.AQP-POOL|C_FinalizeVacate."]
                 [(format "Finalized vacate on pool {}." [pool-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-VCT.URCi_FinalizeVacate)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )

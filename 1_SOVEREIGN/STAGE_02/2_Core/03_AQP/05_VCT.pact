@@ -966,6 +966,9 @@
     ;;   ifp sums). Fed the SAME dirty-read legs/lanes the exec receives. Tier gates + the two score-delta
     ;;   sums are reached cross-module on AQP-FVT (AQP-FVT.SIP|URC_* / AQP-FVT.URC_StakeScoreDeltaSum*),
     ;;   the single source they share with the stake readers. INFO repoints here; execs are unchanged.
+    (defun URCi_FinalizeVacate:object{IgnisCollectorV1.OutputCumulator} ()
+        @doc "Flat 'ignis|medium' tier on AQP|SC_NAME — single source for C_FinalizeVacate + its INFO preview."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator AQP|SC_NAME)))
     (defun URCi_BatchVacateTrueFungible:decimal
         (pool-id:string dptf-id:string legs:[object{VCT|VacateTfLeg}])
         @doc "Variant-A shared cost estimator for CCp_BatchVacateTrueFungible. Mirrors \
@@ -3260,7 +3263,7 @@
                 (ref-AQP::XE_SetVacateJobState pool-id false)
                 (ref-AQP::XB_SetPoolStakeEnabled pool-id true)
                 (XI_SetPoolFvtsVacateFrozen pool-id false)
-                (ref-IGNIS::UDC_MediumCumulator AQP|SC_NAME)
+                (URCi_FinalizeVacate)
             )
         )
     )
