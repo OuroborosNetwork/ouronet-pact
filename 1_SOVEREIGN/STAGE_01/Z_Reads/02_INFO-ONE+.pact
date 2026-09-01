@@ -48,7 +48,12 @@
     (defun URC_DPTF|ToggleReservation:object{OuronetInfoV1.ClientInfo} (patron:string id:string toggle:bool))
     (defun URC_DPTF|ToggleTransferRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool))
     (defun URC_DPTF|Wipe:object{OuronetInfoV1.ClientInfo} (patron:string id:string atbw:string))
-    (defun URC_DPTF|WipePartial:object{OuronetInfoV1.ClientInfo} (patron:string id:string atbw:string amtbw:decimal))
+    (defun URC_DPTF|WipeSlim:object{OuronetInfoV1.ClientInfo} (patron:string id:string atbw:string amtbw:decimal))
+    (defun URC_DPTF|ToggleBurnRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun URC_DPTF|ToggleMintRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun URC_DPTF|ToggleFeeExemptionRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun URC_DPTF|Transmute:object{OuronetInfoV1.ClientInfo} (patron:string id:string transmuter:string transmute-amount:decimal))
+    (defun URC_DPTF|ClearDispo:object{OuronetInfoV1.ClientInfo} (patron:string account:string))
     (defun URC_DPTF|Transfer:object{OuronetInfoV1.ClientInfo} (patron:string id:string sender:string receiver:string transfer-amount:decimal))
     (defun URC_DPTF|MultiTransfer:object{OuronetInfoV1.ClientInfo} (patron:string id-lst:[string] sender:string receiver:string transfer-amount-lst:[decimal]))
     (defun URC_DPTF|BulkTransfer:object{OuronetInfoV1.ClientInfo} (patron:string id:string sender:string receiver-lst:[string] transfer-amount-lst:[decimal]))
@@ -1102,7 +1107,7 @@
             )
         )
     )
-    (defun URC_DPTF|WipePartial:object{OuronetInfoV1.ClientInfo}
+    (defun URC_DPTF|WipeSlim:object{OuronetInfoV1.ClientInfo}
         (patron:string id:string atbw:string amtbw:decimal)
         (let
             (
@@ -1294,53 +1299,39 @@
             )
         )
     )
-    (defun DPTF|INFO_ClearDispo:object{OuronetInfoV1.ClientInfo}
+    (defun URC_DPTF|ClearDispo:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
                 (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
                 (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 ;;
                 (ouro-id:string (ref-DALOS::UR_OuroborosID))
                 (a-id:string (ref-DALOS::UR_AurynID))
                 (ea-id:string (ref-DALOS::UR_EliteAurynID))
                 (ouro-a:decimal (ref-DPTF::UR_AccountSupply ouro-id account))
-                (ouro-amount:decimal (abs ouro-a)) 
+                (ouro-amount:decimal (abs ouro-a))
             )
             (enforce (< ouro-a 0.0) "Dispo Clear requires Negative OURO")
             (let
                 (
-                    (account-ea-supply:decimal (ref-DPTF::UR_AccountSupply ea-id account))
-                    (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ea-id account))
                     ;;
                     (auryndex:string (at 0 (ref-DPTF::UR_RewardToken ouro-id)))
                     (elite-auryndex:string (at 0 (ref-DPTF::UR_RewardToken a-id)))
                     (auryndex-value:decimal (ref-ATS::URC_Index auryndex))
                     (elite-auryndex-value:decimal (ref-ATS::URC_Index elite-auryndex))
                     ;;
-                    (o-prec:integer (ref-DPTF::UR_Decimals ouro-id))
                     (a-prec:integer (ref-DPTF::UR_Decimals a-id))
                     (ea-prec:integer (ref-DPTF::UR_Decimals ea-id))
                     ;;
                     (burn-auryn-amount:decimal (floor (/ ouro-amount auryndex-value) a-prec))
                     (burn-elite-auryn-amount:decimal (floor (/ burn-auryn-amount elite-auryndex-value) ea-prec))
                     (total-ea:decimal (floor (* burn-elite-auryn-amount 2.5) ea-prec))
-                    (ats-sc:string (ref-DALOS::GOV|ATS|SC_NAME))
                     ;;
-                    (ifp1:decimal
-                        (if (not frozen-state)
-                            (SIP|URC_Biggest)
-                            0.0
-                        )
-                    )
-                    (ifp2:decimal (SIP|URC_Biggest))
-                    (ifp3:decimal (SIP|URC_Biggest))
-                    (ifp4:decimal (SIP|URC_Burn a-id ats-sc))
-                    (ifp5:decimal (SIP|URC_Burn ouro-id ats-sc))
-                    (ifp:decimal (fold (+) 0.0 [ifp1 ifp2 ifp3 ifp4 ifp5]))
+                    (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_ClearDispo account)))
                 )
                 (ref-I|OURONET::OI|UDC_ClientInfo
                     [
@@ -1353,6 +1344,78 @@
                     (ref-I|OURONET::OI|UDC_NoStoaCosts)
                     []
                 )
+            )
+        )
+    )
+    (defun URC_DPTF|ToggleBurnRole:object{OuronetInfoV1.ClientInfo}
+        (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Burn Role for {} to {}" [id sa]) (format "Operation: Removes Burn Role for {} to {}" [id sa]))]
+                [(if toggle (format "Burn Role succesfuly added for {} to {}" [id sa]) (format "Burn Role succesfuly removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleBurnRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun URC_DPTF|ToggleMintRole:object{OuronetInfoV1.ClientInfo}
+        (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Mint Role for {} to {}" [id sa]) (format "Operation: Removes Mint Role for {} to {}" [id sa]))]
+                [(if toggle (format "Mint Role succesfuly added for {} to {}" [id sa]) (format "Mint Role succesfuly removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleMintRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun URC_DPTF|ToggleFeeExemptionRole:object{OuronetInfoV1.ClientInfo}
+        (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Fee-Exemption Role for {} to {}" [id sa]) (format "Operation: Removes Fee-Exemption Role for {} to {}" [id sa]))]
+                [(if toggle (format "Fee-Exemption Role succesfuly added for {} to {}" [id sa]) (format "Fee-Exemption Role succesfuly removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPTF::URCi_ToggleFeeExemptionRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun URC_DPTF|Transmute:object{OuronetInfoV1.ClientInfo}
+        (patron:string id:string transmuter:string transmute-amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                ;;
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount transmuter))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Transmutes {} {} on Account {}" [transmute-amount id sa])]
+                [(format "Succesfully transmuted {} {} on Account {}" [transmute-amount id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-TFT::URCi_Transmute id transmuter)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount transmute-amount)]
             )
         )
     )

@@ -70,7 +70,12 @@
           (expect "URC_DPTF|ToggleFeeLock -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DPTF|ToggleFeeLock p ouro false 0)))
           ;; STOA / dual-leg ops
           (expect "URC_DPTF|UpgradeBranding -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DPTF|UpgradeBranding p ouro 3)))
-          (expect "URC_DPTF|Issue -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Issue p a ["testtoken"]))) ]))
+          (expect "URC_DPTF|Issue -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Issue p a ["testtoken"])))
+          ;; entity-completion: role toggles + transmute (previously had no INFO)
+          (expect "URC_DPTF|ToggleBurnRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleBurnRole p ouro a true)))
+          (expect "URC_DPTF|ToggleMintRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleMintRole p ouro a true)))
+          (expect "URC_DPTF|ToggleFeeExemptionRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleFeeExemptionRole p ouro a true)))
+          (expect "URC_DPTF|Transmute -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Transmute p ouro a 10.0))) ]))
 (print "")
 (commit-tx)
 (print "")

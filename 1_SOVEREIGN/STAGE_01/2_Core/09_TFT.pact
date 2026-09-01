@@ -46,6 +46,8 @@
     (defun UDC_GetDispoData:object{UtilityDptfV1.DispoData} (account:string))
     (defun URCi_SmallTransmuteCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string transmuter:string))
     (defun URCi_LargeTransmuteCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string transmuter:string))
+    (defun URCi_Transmute:object{IgnisCollectorV1.OutputCumulator} (id:string transmuter:string))
+    (defun URCi_ClearDispo:object{IgnisCollectorV1.OutputCumulator} (account:string))
     (defun URCi_UnityTransferCumulator:object{IgnisCollectorV1.OutputCumulator} (sender:string receiver:string amount:decimal))
         ;;
     (defun URCi_TransferCumulator:object{IgnisCollectorV1.OutputCumulator} (type:integer id:string sender:string receiver:string))
@@ -966,6 +968,48 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator
                 (ref-DALOS::UR_UsagePrice "ignis|medium") transmuter
                 (ref-IGNIS::URC_IsVirtualGasZeroAbsolutely id) []
+            )
+        )
+    )
+    (defun URCi_Transmute:object{IgnisCollectorV1.OutputCumulator}
+        (id:string transmuter:string)
+        @doc "Cost single-source for C_Transmute — the same class choice C_Transmute makes: \
+            \ Elite-Auryn transmute bills the Large (ignis|medium) rail, else the Small \
+            \ (ignis|small) rail. Consumed by INFO (C_Transmute already returns this cumulator)."
+        (if (URC_IzTrueFungibleEliteAuryn id)
+            (URCi_LargeTransmuteCumulator id transmuter)
+            (URCi_SmallTransmuteCumulator id transmuter)
+        )
+    )
+    (defun URCi_ClearDispo:object{IgnisCollectorV1.OutputCumulator}
+        (account:string)
+        @doc "Cost single-source for C_ClearDispo — pure re-derivation of the 5-leg concat: \
+            \ (conditional EA freeze) + EA WipeSlim + (conditional EA unfreeze) + Auryn burn + \
+            \ Ouroboros burn. Freeze legs are EOC when the EA account is already frozen."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (a-id:string (ref-DALOS::UR_AurynID))
+                (ea-id:string (ref-DALOS::UR_EliteAurynID))
+                (ats-sc:string (ref-DALOS::GOV|ATS|SC_NAME))
+                (frozen-state:bool (ref-DPTF::UR_AccountFrozenState ea-id account))
+                (toggle-leg:object{IgnisCollectorV1.OutputCumulator}
+                    (if (not frozen-state) (ref-DPTF::URCi_ToggleFreezeAccount ea-id) EOC)
+                )
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    toggle-leg
+                    (ref-DPTF::URCi_WipeSlim ea-id)
+                    toggle-leg
+                    (ref-DPTF::URCi_Burn a-id ats-sc)
+                    (ref-DPTF::URCi_Burn ouro-id ats-sc)
+                ]
+                []
             )
         )
     )
