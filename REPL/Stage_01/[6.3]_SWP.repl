@@ -6334,7 +6334,7 @@
         (pool8:string "W|OURO-98c486052a51|TEUR-98c486052a51|EURT-98c486052a51|EURC-98c486052a51|EURD-98c486052a51|AEUR-98c486052a51|CEUR-98c486052a51")
         (ia:[decimal] [730.0 250.0 330.0 450.0 554.0 332.0 450.0])
         ;(liq-info:object{OuronetInfoV1.ClientInfo} 
-        ;    (ouronet-ns.INFO-ONE.URC_SWP|AddLiquidity
+        ;    (ouronet-ns.INFO-ONE.INFO_SWP|AddLiquidity
         ;        patron patron pool8 ia 1.0
         ;    )
         ;)
@@ -6449,7 +6449,7 @@
         (ias:[decimal] [200.0 1000.0])
         (ias2:[decimal] [0.0 1000.0])
         ;(liq-info:object{OuronetInfoV1.ClientInfo} 
-        ;    (ouronet-ns.INFO-ONE.URC_SWP|AddLiquidity
+        ;    (ouronet-ns.INFO-ONE.INFO_SWP|AddLiquidity
         ;        patron patron pool8 ia 1.0
         ;    )
         ;)
@@ -6626,12 +6626,12 @@
         (s-vst:string "Z|VST-98c486052a51")
         (s-ouro:string "Z|OURO-98c486052a51")
         ;(liq-info:object{OuronetInfoV1.ClientInfo} 
-        ;    (ouronet-ns.INFO-ONE.URC_SWP|AddLiquidity
+        ;    (ouronet-ns.INFO-ONE.INFO_SWP|AddLiquidity
         ;        patron patron pool8 ia 1.0
         ;    )
         ;)
         (sleeping-info:object{OuronetInfoV1.ClientInfo}
-            (ouronet-ns.INFO-ONE.URC_SWP|AddSleepingLiquidity
+            (ouronet-ns.INFO-ONE.INFO_SWP|AddSleepingLiquidity
                 patron emma pool8 s-ouro 1 1.0
             )
         )
@@ -6753,12 +6753,12 @@
         (pool:string "P|OURO-98c486052a51|VST-98c486052a51")
         (f-vst:string "F|VST-98c486052a51")
         ;(liq-info:object{OuronetInfoV1.ClientInfo} 
-        ;    (ouronet-ns.INFO-ONE.URC_SWP|AddLiquidity
+        ;    (ouronet-ns.INFO-ONE.INFO_SWP|AddLiquidity
         ;        patron patron pool8 ia 1.0
         ;    )
         ;)
         (frozen-info:object{OuronetInfoV1.ClientInfo}
-            (ouronet-ns.INFO-ONE.URC_SWP|AddFrozenLiquidity
+            (ouronet-ns.INFO-ONE.INFO_SWP|AddFrozenLiquidity
                 patron patron pool f-vst 50000.0 1.0
             )
         )

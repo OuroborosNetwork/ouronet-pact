@@ -1976,7 +1976,7 @@
         (format "{} h-fr is {}" [ps (ref-ATS::UR_HotRecoveryFeeRedirection ps)])
     ]
     [
-        (INFO-ONE.URC_DPTF|Transfer patron auryn patron emma 22.0 )
+        (INFO-ONE.INFO_DPTF|Transfer patron auryn patron emma 22.0 )
         (ref-TS01-C1::DPTF|C_Transfer
             "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
             "DWK-98c486052a51"
@@ -1985,9 +1985,9 @@
             25.0
             false
         )
-        ;(INFO-ONE.URC_ATS|Coil patron patron a-idx ouro 20.0)
-        ;(INFO-ONE.URC_ATS|Curl patron patron a-idx ea-idx ouro 20.0)
-        (INFO-ONE.URC_ATS|Brumate
+        ;(INFO-ONE.INFO_ATS|Coil patron patron a-idx ouro 20.0)
+        ;(INFO-ONE.INFO_ATS|Curl patron patron a-idx ea-idx ouro 20.0)
+        (INFO-ONE.INFO_ATS|Brumate
             "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
             "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
             "StoaLiquindex-98c486052a51"
@@ -1996,7 +1996,7 @@
             200.0
             5000
         )
-        ;(n_7d40ccda457e374d8eb07b658fd38c282c545038.INFO-ONE.URC_ATS|Curl
+        ;(n_7d40ccda457e374d8eb07b658fd38c282c545038.INFO-ONE.INFO_ATS|Curl
         ;    "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
         ;    "Ѻ.éXødVțrřĄθ7ΛдUŒjeßćιiXTПЗÚĞqŸœÈэαLżØôćmч₱ęãΛě$êůáØCЗшõyĂźςÜãθΘзШË¥şEÈnxΞЗÚÏÛjDVЪжγÏŽнăъçùαìrпцДЖöŃȘâÿřh£1vĎO£κнβдłпČлÿáZiĐą8ÊHÂßĎЩmEBцÄĎвЙßÌ5Ï7ĘŘùrÑckeñëδšПχÌàî"
         ;    "Auryndex-ds4il5rO7vDC"

@@ -11,8 +11,8 @@
 (print "FILE  REPL/Stage_01/[6.11]_INFO.repl")
 (print "================================================================")
 (print "")
-;;==== TX-I01 · 01 · DALOS INFO — URC_DALOS|* return well-formed ClientInfo ====
-(begin-tx "TX-I01 - INFO DALOS: URC_DALOS|* previews return well-formed ClientInfo")
+;;==== TX-I01 · 01 · DALOS INFO — INFO_DALOS|* return well-formed ClientInfo ====
+(begin-tx "TX-I01 - INFO DALOS: INFO_DALOS|* previews return well-formed ClientInfo")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-I01 · 01 · DALOS INFO smoke] ---")
@@ -23,15 +23,15 @@
         (a:string KST.ANHD)
     )
     (map print
-        [ (expect "URC_DALOS|ControlSmartAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|ControlSmartAccount p a)))
-          (expect "URC_DALOS|DeploySmartAccount -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DALOS|DeploySmartAccount a)))
-          (expect "URC_DALOS|DeployStandardAccount -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DALOS|DeployStandardAccount a)))
-          (expect "URC_DALOS|RotateGovernor -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|RotateGovernor p a)))
-          (expect "URC_DALOS|RotateGuard -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|RotateGuard p a)))
-          (expect "URC_DALOS|RotateStoa -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|RotateStoa p a)))
-          (expect "URC_DALOS|RotateSovereign -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|RotateSovereign p a)))
-          (expect "URC_DALOS|UpdateEliteAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|UpdateEliteAccount p a)))
-          (expect "URC_DALOS|UpdateEliteAccountSquared -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DALOS|UpdateEliteAccountSquared p a a))) ]))
+        [ (expect "INFO_DALOS|ControlSmartAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|ControlSmartAccount p a)))
+          (expect "INFO_DALOS|DeploySmartAccount -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.INFO_DALOS|DeploySmartAccount a)))
+          (expect "INFO_DALOS|DeployStandardAccount -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.INFO_DALOS|DeployStandardAccount a)))
+          (expect "INFO_DALOS|RotateGovernor -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|RotateGovernor p a)))
+          (expect "INFO_DALOS|RotateGuard -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|RotateGuard p a)))
+          (expect "INFO_DALOS|RotateStoa -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|RotateStoa p a)))
+          (expect "INFO_DALOS|RotateSovereign -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|RotateSovereign p a)))
+          (expect "INFO_DALOS|UpdateEliteAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|UpdateEliteAccount p a)))
+          (expect "INFO_DALOS|UpdateEliteAccountSquared -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DALOS|UpdateEliteAccountSquared p a a))) ]))
 (print "")
 (commit-tx)
 (print "")
@@ -39,8 +39,8 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-;;==== TX-I02 · 01 · DPTF INFO — URC_DPTF|* return well-formed ClientInfo ====
-(begin-tx "TX-I02 - INFO DPTF: URC_DPTF|* previews return well-formed ClientInfo (URCi-sourced)")
+;;==== TX-I02 · 01 · DPTF INFO — INFO_DPTF|* return well-formed ClientInfo ====
+(begin-tx "TX-I02 - INFO DPTF: INFO_DPTF|* previews return well-formed ClientInfo (URCi-sourced)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-I02 · 01 · DPTF INFO smoke] ---")
@@ -53,29 +53,29 @@
     )
     (map print
         ;; IGNIS-cumulator ops (previously SIP tier buckets → now exact DPTF|URCi_*)
-        [ (expect "URC_DPTF|Control -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Control p ouro)))
-          (expect "URC_DPTF|Burn -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Burn p ouro a 1.0)))
-          (expect "URC_DPTF|Mint -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Mint p ouro a 1.0 false)))
-          (expect "URC_DPTF|SetFee -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|SetFee p ouro 5.0)))
-          (expect "URC_DPTF|SetMinMove -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|SetMinMove p ouro 1.0)))
-          (expect "URC_DPTF|TogglePause -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|TogglePause p ouro true)))
-          (expect "URC_DPTF|ToggleReservation -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleReservation p ouro true)))
-          (expect "URC_DPTF|UpdatePendingBranding -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|UpdatePendingBranding p ouro)))
+        [ (expect "INFO_DPTF|Control -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|Control p ouro)))
+          (expect "INFO_DPTF|Burn -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|Burn p ouro a 1.0)))
+          (expect "INFO_DPTF|Mint -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|Mint p ouro a 1.0 false)))
+          (expect "INFO_DPTF|SetFee -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|SetFee p ouro 5.0)))
+          (expect "INFO_DPTF|SetMinMove -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|SetMinMove p ouro 1.0)))
+          (expect "INFO_DPTF|TogglePause -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|TogglePause p ouro true)))
+          (expect "INFO_DPTF|ToggleReservation -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|ToggleReservation p ouro true)))
+          (expect "INFO_DPTF|UpdatePendingBranding -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|UpdatePendingBranding p ouro)))
           ;; cost-mismatch fixes (Medium/Biggest → Big at exec): verify still well-formed
-          (expect "URC_DPTF|RotateOwnership -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|RotateOwnership p ouro a)))
-          (expect "URC_DPTF|ToggleFreezeAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleFreezeAccount p ouro a true)))
-          (expect "URC_DPTF|ToggleTransferRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleTransferRole p ouro a true)))
+          (expect "INFO_DPTF|RotateOwnership -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|RotateOwnership p ouro a)))
+          (expect "INFO_DPTF|ToggleFreezeAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|ToggleFreezeAccount p ouro a true)))
+          (expect "INFO_DPTF|ToggleTransferRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|ToggleTransferRole p ouro a true)))
           ;; gap ops now sourced from new core readers
-          (expect "URC_DPTF|DeployAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|DeployAccount p ouro a)))
-          (expect "URC_DPTF|ToggleFeeLock -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DPTF|ToggleFeeLock p ouro false 0)))
+          (expect "INFO_DPTF|DeployAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|DeployAccount p ouro a)))
+          (expect "INFO_DPTF|ToggleFeeLock -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.INFO_DPTF|ToggleFeeLock p ouro false 0)))
           ;; STOA / dual-leg ops
-          (expect "URC_DPTF|UpgradeBranding -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DPTF|UpgradeBranding p ouro 3)))
-          (expect "URC_DPTF|Issue -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Issue p a ["testtoken"])))
+          (expect "INFO_DPTF|UpgradeBranding -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.INFO_DPTF|UpgradeBranding p ouro 3)))
+          (expect "INFO_DPTF|Issue -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|Issue p a ["testtoken"])))
           ;; entity-completion: role toggles + transmute (previously had no INFO)
-          (expect "URC_DPTF|ToggleBurnRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleBurnRole p ouro a true)))
-          (expect "URC_DPTF|ToggleMintRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleMintRole p ouro a true)))
-          (expect "URC_DPTF|ToggleFeeExemptionRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|ToggleFeeExemptionRole p ouro a true)))
-          (expect "URC_DPTF|Transmute -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPTF|Transmute p ouro a 10.0))) ]))
+          (expect "INFO_DPTF|ToggleBurnRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|ToggleBurnRole p ouro a true)))
+          (expect "INFO_DPTF|ToggleMintRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|ToggleMintRole p ouro a true)))
+          (expect "INFO_DPTF|ToggleFeeExemptionRole -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|ToggleFeeExemptionRole p ouro a true)))
+          (expect "INFO_DPTF|Transmute -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPTF|Transmute p ouro a 10.0))) ]))
 (print "")
 (commit-tx)
 (print "")
@@ -83,8 +83,8 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-;;==== TX-I03 · 01 · DPOF INFO — URC_DPOF|* return well-formed ClientInfo ====
-(begin-tx "TX-I03 - INFO DPOF: URC_DPOF|* previews return well-formed ClientInfo (URCi-sourced)")
+;;==== TX-I03 · 01 · DPOF INFO — INFO_DPOF|* return well-formed ClientInfo ====
+(begin-tx "TX-I03 - INFO DPOF: INFO_DPOF|* previews return well-formed ClientInfo (URCi-sourced)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-I03 · 01 · DPOF INFO smoke] ---")
@@ -99,10 +99,10 @@
         (a:string KST.ANHD)
     )
     (map print
-        [ (expect "URC_DPOF|Issue -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPOF|Issue p a ["testorto"])))
-          (expect "URC_DPOF|Issue -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DPOF|Issue p a ["testorto"])))
-          (expect "URC_DPOF|DeployAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_DPOF|DeployAccount p "ORTO-x" a)))
-          (expect "URC_DPOF|UpgradeBranding -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.URC_DPOF|UpgradeBranding p "ORTO-x" 3))) ]))
+        [ (expect "INFO_DPOF|Issue -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPOF|Issue p a ["testorto"])))
+          (expect "INFO_DPOF|Issue -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.INFO_DPOF|Issue p a ["testorto"])))
+          (expect "INFO_DPOF|DeployAccount -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_DPOF|DeployAccount p "ORTO-x" a)))
+          (expect "INFO_DPOF|UpgradeBranding -> ClientInfo{stoa}" true (contains "stoa" (INFO-ONE.INFO_DPOF|UpgradeBranding p "ORTO-x" 3))) ]))
 (print "")
 (commit-tx)
 (print "")
@@ -110,25 +110,25 @@
 ;;|| NEXT                   >
 ;;||>>>>>>>>>>>>>>>>>>>>>>>>>
 (print "")
-;;==== TX-I04 · 01 · VST INFO — URC_VST|* return well-formed ClientInfo ====
-(begin-tx "TX-I04 - INFO VST: URC_VST|* previews return well-formed ClientInfo (URCi-sourced)")
+;;==== TX-I04 · 01 · VST INFO — INFO_VST|* return well-formed ClientInfo ====
+(begin-tx "TX-I04 - INFO VST: INFO_VST|* previews return well-formed ClientInfo (URCi-sourced)")
 (env-gasmodel "table")(env-gaslimit 10000000)(env-gas 0)
 (namespace "ouronet-ns")
 (print "--- [TX-I04 · 01 · VST INFO smoke] ---")
 (env-sigs [{ "key": "PK_AncientHodler", "caps": [] }])
 ;; NOTE: [6.11] loads before any VST special-link / vesting / sleeping / hibernating state is
-;; created, so the state-dependent VST readers have nothing to read here. All 27 URC_VST|* are
+;; created, so the state-dependent VST readers have nothing to read here. All 27 INFO_VST|* are
 ;; wiring-verified at load; their cost is the exec single-source (URCi_*), exercised by [6.7]_VST.
 ;; The two TrueFungible-link readers only read the underlying DPTF Konto (OURO exists), so they
-;; execute end-to-end here and confirm the URC_VST| wrapper shape.
+;; execute end-to-end here and confirm the INFO_VST| wrapper shape.
 (let
     (
         (p:string KST.ANHD)
         (ouro:string (DALOS.UR_OuroborosID))
     )
     (map print
-        [ (expect "URC_VST|CreateFrozenLink -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_VST|CreateFrozenLink p ouro)))
-          (expect "URC_VST|CreateReservationLink -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.URC_VST|CreateReservationLink p ouro))) ]))
+        [ (expect "INFO_VST|CreateFrozenLink -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_VST|CreateFrozenLink p ouro)))
+          (expect "INFO_VST|CreateReservationLink -> ClientInfo{ignis}" true (contains "ignis" (INFO-ONE.INFO_VST|CreateReservationLink p ouro))) ]))
 (print "")
 (commit-tx)
 (print "")
