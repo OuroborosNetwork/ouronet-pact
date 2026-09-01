@@ -177,6 +177,12 @@
     (defun URC_SWP|RemoveLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string lp-amount:decimal))
     (defun URC_SWP|Fuel:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal]))
     (defun URC_SWP|Firestarter:object{OuronetInfoV1.ClientInfo} (firestarter:string))
+    (defun URC_SWP|IssueStable:object{OuronetInfoV1.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun URC_SWP|IssueStandard:object{OuronetInfoV1.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
+    (defun URC_SWP|IssueWeighted:object{OuronetInfoV1.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun URC_SWP|IssueStablePool:object{OuronetInfoV1.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
+    (defun URC_SWP|IssueStandardPool:object{OuronetInfoV1.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
+    (defun URC_SWP|IssueWeightedPool:object{OuronetInfoV1.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
     ;;
     ;;  [DALOS-INFO]  (relocated from the now-tombstoned INFO-ZERO; DALOS client-op previews wrapping IGNIS's DALOS|URCi_*)
     ;;
@@ -3641,6 +3647,55 @@
         )
     )
     ;;
+    ;; ---- SWP entity-completion: issue ops (all share SWPI|URCi_Issue [IGNIS] + dptf+swp [STOA]) ----
+    (defun URC_SWP|IssueStable:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS) (ref-SWPI:module{SwapperIssueV3} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Stable SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Stable SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
+    (defun URC_SWP|IssueStandard:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS) (ref-SWPI:module{SwapperIssueV3} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Standard SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Standard SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
+    (defun URC_SWP|IssueWeighted:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS) (ref-SWPI:module{SwapperIssueV3} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Weighted SWP-Pair with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Weighted SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
+    (defun URC_SWP|IssueStablePool:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS) (ref-SWPI:module{SwapperIssueV3} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Stable SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Stable SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
+    (defun URC_SWP|IssueStandardPool:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS) (ref-SWPI:module{SwapperIssueV3} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Standard SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Standard SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
+    (defun URC_SWP|IssueWeightedPool:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DALOS:module{OuronetDalosV1} DALOS) (ref-SWPI:module{SwapperIssueV3} SWPI) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues a Weighted SWP-Pair (multistep) with {} pool-tokens on Account {}" [(length pool-tokens) sa])]
+                [(format "Weighted SWP-Pair issued succesfully on Account {}" [sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
     (defun SWP|INFO_SinglePoolSwap:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string)
         (let
