@@ -207,15 +207,15 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Issue a True-Fungible (DPTF) anchor for pool boosting."
                  (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
                  "Executes via TS02-C3.AQP-ANK|C_IssueTrueFungibleAnchor."]
                 [(format "Anchor '{}' issued on DPTF {}." [anchor-name dptf-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed 1000.0))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
                 []
             )
         )
@@ -226,15 +226,15 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Issue a Semi-Fungible (DPSF) anchor for pool boosting."
                  (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
                  "Executes via TS02-C3.AQP-ANK|C_IssueSemiFungibleAnchor."]
                 [(format "Anchor '{}' issued on DPSF {} nonce {}." [anchor-name dpsf-id dpsf-nonce])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed 1000.0))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
                 []
             )
         )
@@ -245,15 +245,15 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Issue a Non-Fungible (DPNF) trait-anchor for pool boosting."
                  (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
                  "Executes via TS02-C3.AQP-ANK|C_IssueNonFungibleAnchor."]
                 [(format "Anchor '{}' issued on DPNF {} trait {}={}." [anchor-name dpnf-id dpnf-trait-key dpnf-trait-value])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed 1000.0))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
                 []
             )
         )
@@ -264,15 +264,15 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Issue a Non-Fungible (DPNF) set-anchor (by nonce-class) for pool boosting."
                  (if acnoi "Creates a new BoostClass inline (2x STOA)." "Links to an existing BoostClass (1x STOA).")
                  "Executes via TS02-C3.AQP-ANK|C_IssueNonFungibleSetAnchor."]
                 [(format "Anchor '{}' issued on DPNF {} nonce-class {}." [anchor-name dpnf-id dpnf-nonce-class])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed 1000.0))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Standard (if acnoi 2.0 1.0)))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_IssueAnchor [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-ANK::URCi_IssueAnchorStoa acnoi))
                 []
             )
         )
@@ -283,12 +283,13 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Revoke an anchor and update its BoostClass bookkeeping."
                  "Executes via TS02-C3.AQP-ANK|C_RevokeAnchor."]
                 [(format "Anchor {} revoked." [anchor-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_RevokeAnchor)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
@@ -300,12 +301,13 @@
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Revoke an empty BoostClass."
                  "Executes via TS02-C3.AQP-ANK|C_RevokeBoostClass."]
                 [(format "BoostClass {} revoked." [boost-class-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ANK::URCi_RevokeBoostClass)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )

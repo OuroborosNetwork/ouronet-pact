@@ -103,6 +103,12 @@
         (patron:string anchor-name:string dpnf-id:string acnoi:bool boost-class-name-or-id:string anchor-precision:integer anchor-promile:decimal dpnf-nonce-class:integer)
     )
     (defun C_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} (anchor-id:string))
+    ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_IssueAnchor:object{IgnisCollectorV1.OutputCumulator} (output:[string]))
+    (defun URCi_IssueAnchorStoa:decimal (acnoi:bool))
+    (defun URCi_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} ())
+    (defun URCi_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator} ())
 )
 (module AQP-ANK GOV
     ;; REPL observability: REPL/Stage_02/[6.2.1]_AQP-ANK.repl tags each intra-tx group as TXnnn · mm · <slug> in ;;==== … ==== and (print "--- [TXnnn · mm · …] ---"); mm is 01.. within each begin-tx.
@@ -2107,6 +2113,24 @@
             )
         )
     )
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_IssueAnchor:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        @doc "IGNIS cost for the 4 anchor-issue ops (flat GAS 1000; <output> carries anchor-id[+boost-class-id])."
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+            (ref-IGNIS::UDC_ConstructOutputCumulator 1000.0 AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) output)))
+    (defun URCi_IssueAnchorStoa:decimal (acnoi:bool)
+        @doc "STOA cost for anchor-issue: 'standard' usage price x(2 if acnoi else 1)."
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS))
+            (* (ref-DALOS::UR_UsagePrice "standard") (if acnoi 2.0 1.0))))
+    (defun URCi_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} ()
+        @doc "IGNIS cost for C_RevokeAnchor (biggest tier)."
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)))
+    (defun URCi_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator} ()
+        @doc "IGNIS cost for C_RevokeBoostClass (biggest tier)."
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)))
+    ;;
     ;; [C]   client
     ;;
     (defun C_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator}
@@ -2114,13 +2138,8 @@
         @doc "Revokes an empty BoostClass."
         (UEV_IMC)
         (with-capability (ANK|C>REVOKE-BOOST-CLASS boost-class-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                )
-                (WU_BoostClass|Active boost-class-id false)
-                (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
-            )
+            (WU_BoostClass|Active boost-class-id false)
+            (URCi_RevokeBoostClass)
         )
     )
     (defun C_IssueTrueFungibleAnchor:object{IgnisCollectorV1.OutputCumulator}
@@ -2131,13 +2150,8 @@
         (with-capability (ANK|C>ISSUE-DPTF anchor-name dptf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dptf-amount)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     ;;
-                    (gas-costs:decimal 1000.0)
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (standard:decimal (ref-DALOS::UR_UsagePrice "standard"))
-                    (stoa-multiplier:decimal (if acnoi 2.0 1.0))
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
                     (fungibility:[bool] [true true])
                     (anchor-id:string
@@ -2148,10 +2162,8 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dptf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (* standard stoa-multiplier))
-                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
-                    (if acnoi [anchor-id boost-class-id] [anchor-id])
-                )
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (URCi_IssueAnchor (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
     )
@@ -2163,13 +2175,8 @@
         (with-capability (ANK|C>ISSUE-DPSF anchor-name dpsf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpsf-nonce)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     ;;
-                    (gas-costs:decimal 1000.0)
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (standard:decimal (ref-DALOS::UR_UsagePrice "standard"))
-                    (stoa-multiplier:decimal (if acnoi 2.0 1.0))
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
                     (fungibility:[bool] [false true])
                     (anchor-id:string
@@ -2180,10 +2187,8 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpsf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (* standard stoa-multiplier))
-                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
-                    (if acnoi [anchor-id boost-class-id] [anchor-id])
-                )
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (URCi_IssueAnchor (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
     )
@@ -2195,13 +2200,8 @@
         (with-capability (ANK|C>ISSUE-DPNF anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-trait-key dpnf-trait-value)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     ;;
-                    (gas-costs:decimal 1000.0)
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (standard:decimal (ref-DALOS::UR_UsagePrice "standard"))
-                    (stoa-multiplier:decimal (if acnoi 2.0 1.0))
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
                     (fungibility:[bool] [false false])
                     (anchor-id:string
@@ -2212,10 +2212,8 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (* standard stoa-multiplier))
-                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
-                    (if acnoi [anchor-id boost-class-id] [anchor-id])
-                )
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (URCi_IssueAnchor (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
     )
@@ -2227,13 +2225,8 @@
         (with-capability (ANK|C>ISSUE-DPNF-SET anchor-name dpnf-id acnoi boost-class-name-or-id anchor-precision anchor-promile dpnf-nonce-class)
             (let
                 (
-                    (ref-DALOS:module{OuronetDalosV1} DALOS)
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                     ;;
-                    (gas-costs:decimal 1000.0)
-                    (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                    (standard:decimal (ref-DALOS::UR_UsagePrice "standard"))
-                    (stoa-multiplier:decimal (if acnoi 2.0 1.0))
                     (boost-class-id:string (if acnoi (XI_IssueBoostClass boost-class-name-or-id) boost-class-name-or-id))
                     (fungibility:[bool] [false false])
                     (anchor-id:string
@@ -2244,10 +2237,8 @@
                     )
                 )
                 (XI_PlaceAnchorInBookkeeping anchor-id dpnf-id boost-class-id)
-                (ref-IGNIS::STOA|C_Collect patron (* standard stoa-multiplier))
-                (ref-IGNIS::UDC_ConstructOutputCumulator gas-costs AQP|SC_NAME trigger
-                    (if acnoi [anchor-id boost-class-id] [anchor-id])
-                )
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueAnchorStoa acnoi))
+                (URCi_IssueAnchor (if acnoi [anchor-id boost-class-id] [anchor-id]))
             )
         )
     )
@@ -2256,14 +2247,9 @@
         @doc "Revokes an anchor and updates BoostClass and AssetAnchors bookkeeping."
         (UEV_IMC)
         (with-capability (ANK|C>REVOKE anchor-id)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                )
-                (WU_Anchor|State anchor-id false)
-                (XI_RevokeAnchorBookkeeping anchor-id)
-                (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)
-            )
+            (WU_Anchor|State anchor-id false)
+            (XI_RevokeAnchorBookkeeping anchor-id)
+            (URCi_RevokeAnchor)
         )
     )
     ;;
