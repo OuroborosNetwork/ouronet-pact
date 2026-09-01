@@ -15,7 +15,24 @@ CLASSES = [
     ("F6", "Aux/Protected [X]",            ["XI_","XE_","XB_"]),
     ("F7", "User [A]",                     ["AAp_","AA_","Ap_","AUx_","AU_","A_"]),
     ("F8", "User [C]",                     ["CCp_","CC_","Cp_","C_"]),
+    ("F9", "REPL (test-only, stripped at mainnet) [REPL]", ["REPL_"]),
 ]
+
+def paren_delta(line, in_str):
+    """Net '(' - ')' over CODE only, skipping string contents and ;; line comments."""
+    d=0; i=0; n=len(line)
+    while i < n:
+        c=line[i]
+        if in_str:
+            if c=='\\': i+=2; continue
+            if c=='"': in_str=False
+            i+=1; continue
+        if c=='"': in_str=True; i+=1; continue
+        if c==';' and i+1<n and line[i+1]==';': break  # rest is comment
+        if c=='(': d+=1
+        elif c==')': d-=1
+        i+=1
+    return d, in_str
 AUX_MARK = ("UCx_","UCkx_","UCxx_","URCx_","URHx_","URHCx_","URCix_","UDCx_","AUx_")
 
 def prefix_of(name):
@@ -59,11 +76,12 @@ def main(path):
         m = re.match(r'\s*\(def(un|pact)\s+([^\s\(\):]+)', line)
         if m:
             name = m.group(2)
-            # balanced-paren scan
-            depth=0; j=i; buf=[]
+            # balanced-paren scan (string/comment-aware)
+            depth=0; j=i; buf=[]; in_str=False
             while j < len(region):
                 buf.append(region[j])
-                depth += region[j].count('(') - region[j].count(')')
+                dd,in_str = paren_delta(region[j], in_str)
+                depth += dd
                 j+=1
                 if depth<=0: break
             forms.append({"name":name, "comments":pending_comments, "body":buf})

@@ -161,7 +161,9 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [URC] sweep recompute-set sizing (read-only; the freeze keeps it fixed across steps)
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_SweepTotalPresent:integer (score-ids:[string])
         @doc "Total present holders across every FVT member employing the swept boost-class — the paginated \
             \ recompute-set size. Read-only; sweep-in-progress keeps it fixed across defpact steps."
@@ -176,7 +178,9 @@
                     score-ids))
         )
     )
-    ;;{F1}  [X] paginated window recompute — advances by GLOBAL offset over the fixed flattened present set
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     (defun XI_SweepRecomputeWindow:integer
         (score-ids:[string] boost-class-id:string win-lo:integer win-hi:integer)
         @doc "Recompute holders whose GLOBAL flattened index — present users concatenated across score-ids in order \
@@ -220,7 +224,8 @@
                 {"seen": 0, "processed": 0}
                 score-ids))
     )
-    ;;{F2}  [C] client wrappers — acquire the flow cap, then run the defpact
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     (defun C_2|Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "2-step enforced-fresh inject (spike fallback for AQP-FVT::CC_Inject; handles up to 2×N_FIX stale \
             \ stakers). Acquires MTX-AQP|C>INJECT, then runs the MTX|2|C_Inject defpact. Advance with \
@@ -240,7 +245,6 @@
             (MTX|2|C_SweepRevokeAnchor patron anchor-id)
         )
     )
-    ;;{F3}  [MTX|C] client defpacts
     (defpact MTX|2|C_Inject (patron:string fvt-id:string reward-dptf-id:string amount:decimal)
         @doc "Enforced-fresh vault/treasury inject as a 2-step defpact: each step's opening stale scan IS the \
             \ pre-inject freshness proof — atomically fixing a whole scanned set of size <= N_FIX leaves zero \
@@ -368,6 +372,7 @@
                                 (ref-FVT::XE_SweepEnd anchor-id)
                                 (format "MTX Sweep 2|2: recomputed {} remaining holder(s) — anchor {} retired." [n anchor-id])))))))
     )
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
     ;;
 )
 (create-table P|T)

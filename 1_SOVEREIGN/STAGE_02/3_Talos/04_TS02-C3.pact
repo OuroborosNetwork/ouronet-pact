@@ -495,6 +495,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_ShortAccount:string (account:string)
         (let
             (
@@ -628,14 +630,225 @@
             ]
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    (defun AQP-POOL|XB_VacateTrueFungible:string
+        (patron:string pool-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of a pool's TrueFungible leg only (one tx; used standalone or by \
+            \ the agnostic CC_FullVacate for a class-1 TF+OF pool). Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateTrueFungible pool-id))
+                (format "Successfully vacated the TrueFungible leg of Pool {}." [pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|XB_VacateOrtoFungible:string
+        (patron:string pool-id:string dpof-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of ONE OrtoFungible asset of a pool (one tx; standalone or per \
+            \ class-1 satellite). Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateOrtoFungible pool-id dpof-id))
+                (format "Successfully vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|XB_VacateSemiFungible:string
+        (patron:string pool-id:string dpsf-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of the DPSF (semi-fungible) collection of a class-3 pool (one tx). \
+            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateSemiFungible pool-id dpsf-id))
+                (format "Successfully vacated SemiFungible {} of Pool {}." [dpsf-id pool-id])
+            )
+        )
+    )
+    (defun AQP-POOL|XB_VacateNonFungible:string
+        (patron:string pool-id:string dpnf-id:string)
+        @doc "Vacate rehaul — pool-owner vacate of the DPNF (non-fungible) collection of a class-4 pool (one tx). \
+            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
+                )
+                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateNonFungible pool-id dpnf-id))
+                (format "Successfully vacated NonFungible {} of Pool {}." [dpnf-id pool-id])
+            )
+        )
+    )
+    ;;{F7}  User [A]
+    (defun AQP-DSA|A_DefineDelegationVault:string
+        (patron:string fvt-id:string model-id:string unit-score:integer)
+        @doc "DSA (Talos): bind a class-0 FVT as a delegation vault (score-entity model + unit-score); collects \
+            \ IGNIS on patron. Only the FVT owner may run it."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_DefineDelegationVault patron fvt-id model-id unit-score)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "DSA vault defined on FVT {} (model {}, unit-score {})." [fvt-id model-id unit-score])
+            )
+        )
+    )
+    (defun AQP-DSA|A_SetOracleAuth:string
+        (patron:string fvt-id:string oracle-guard:guard)
+        @doc "DSA (Talos): owner authorizes the delegated oracle key for a vault + arms the 25h capture expiry; \
+            \ collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_SetOracleAuth patron fvt-id oracle-guard)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Oracle authority set + oracle-on armed on FVT {}." [fvt-id])
+            )
+        )
+    )
+    (defun AQP-DSA|A_OracleWrite:string
+        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
+        @doc "DSA (Talos): the delegated oracle writes an agency's daily {nodes, uptime} + recomputes its capture \
+            \ (fresh oracle-ts); collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_OracleWrite patron fvt-id score-entity-id nodes uptime)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Oracle wrote nodes {} / uptime {}‰ for agency {}." [nodes uptime score-entity-id])
+            )
+        )
+    )
+    (defun AQP-DSA|A_WithdrawRoyalty:string
+        (patron:string fvt-id:string reward-dptf-id:string)
+        @doc "DSA (Talos): the FVT owner withdraws the whole royalty pool of <reward-dptf-id> on vault <fvt-id> to \
+            \ the owner konto; collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_WithdrawRoyalty patron fvt-id reward-dptf-id)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Royalty pool of {} on FVT {} withdrawn to the owner." [reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-DSA|A_BurnRoyalty:string
+        (patron:string fvt-id:string reward-dptf-id:string)
+        @doc "DSA (Talos): the FVT owner BURNS the whole royalty pool of <reward-dptf-id> on vault <fvt-id>; \
+            \ collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_BurnRoyalty patron fvt-id reward-dptf-id)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Royalty pool of {} on FVT {} burned." [reward-dptf-id fvt-id])
+            )
+        )
+    )
+    (defun AQP-DSA|A_FuelRoyalty:string
+        (patron:string fvt-id:string reward-dptf-id:string swpair:string)
+        @doc "DSA (Talos): the FVT owner FUELS <swpair> with the whole royalty pool of <reward-dptf-id> on vault \
+            \ <fvt-id> (adds liquidity, no LP mint); collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_FuelRoyalty patron fvt-id reward-dptf-id swpair)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Royalty pool of {} on FVT {} fueled into swpair {}." [reward-dptf-id fvt-id swpair])
+            )
+        )
+    )
+    (defun AQP-DSA|A_SetAgencyFee:string
+        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "DSA (Talos): the FVT owner changes a delegation agency's operator fee (reprices only future injects); \
+            \ collects IGNIS on patron."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                    (ico:object{IgnisCollectorV1.OutputCumulator}
+                        (ref-DSA::A_SetAgencyFee patron fvt-id score-entity-id fee-per-mille)
+                    )
+                )
+                (ref-IGNIS::C_Collect patron ico)
+                (format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])
+            )
+        )
+    )
+    (defun AQP-DSA|A_ToggleExternalOracle:string (on:bool)
+        @doc "DSA (Talos): MODULE ADMIN (GOV) flip of the SINGULAR GLOBAL external-oracle switch for ALL agencies. \
+            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                )
+                (ref-DSA::A_ToggleExternalOracle on)
+                (format "Global external-oracle switch set to {}." [on])
+            )
+        )
+    )
+    (defun AQP-DSA|A_SetOracleValidity:string (seconds:integer)
+        @doc "DSA (Talos): MODULE ADMIN (GOV) set of the GLOBAL oracle-validity window (freshness horizon, seconds). \
+            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-DSA:module{DsaV1} AQP-DSA)
+                )
+                (ref-DSA::A_SetOracleValidity seconds)
+                (format "Global oracle-validity window set to {} seconds." [seconds])
+            )
+        )
+    )
+    ;;{F8}  User [C]
     ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
     (defun AQP-ANK|C_RevokeBoostClass:string
         (patron:string boost-class-id:string)
         @doc "Revokes an empty BoostClass."
@@ -1541,66 +1754,6 @@
             )
         )
     )
-    (defun AQP-POOL|XB_VacateTrueFungible:string
-        (patron:string pool-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of a pool's TrueFungible leg only (one tx; used standalone or by \
-            \ the agnostic CC_FullVacate for a class-1 TF+OF pool). Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateTrueFungible pool-id))
-                (format "Successfully vacated the TrueFungible leg of Pool {}." [pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|XB_VacateOrtoFungible:string
-        (patron:string pool-id:string dpof-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of ONE OrtoFungible asset of a pool (one tx; standalone or per \
-            \ class-1 satellite). Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateOrtoFungible pool-id dpof-id))
-                (format "Successfully vacated OrtoFungible {} of Pool {}." [dpof-id pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|XB_VacateSemiFungible:string
-        (patron:string pool-id:string dpsf-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of the DPSF (semi-fungible) collection of a class-3 pool (one tx). \
-            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateSemiFungible pool-id dpsf-id))
-                (format "Successfully vacated SemiFungible {} of Pool {}." [dpsf-id pool-id])
-            )
-        )
-    )
-    (defun AQP-POOL|XB_VacateNonFungible:string
-        (patron:string pool-id:string dpnf-id:string)
-        @doc "Vacate rehaul — pool-owner vacate of the DPNF (non-fungible) collection of a class-4 pool (one tx). \
-            \ Owner enforced in VCT|C>VACATE; IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-VCT:module{AcquisitionVacateV1} AQP-VCT)
-                )
-                (ref-IGNIS::C_Collect patron (ref-VCT::XB_VacateNonFungible pool-id dpnf-id))
-                (format "Successfully vacated NonFungible {} of Pool {}." [dpnf-id pool-id])
-            )
-        )
-    )
     (defun AQP-POOL|C_SyncTrueFungibleAnchors:string
         (patron:string beneficiary-id:string dptf-id:string)
         @doc "Pool-agnostic TF anchor repair for beneficiary × dptf-id. Talos shell → AQP-POOL::C_SyncTrueFungibleAnchors."
@@ -2124,51 +2277,6 @@
             )
         )
     )
-    ;;
-    ;; --- REPL dry-run (P|TS client shell → AQP-FVT::REPL_BootstrapVault under GOV|FVT_ADMIN) ---
-    (defun AQP-FVT|REPL_BootstrapVault:string
-        (patron:string fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
-        @doc "REPL-only Talos shell: composes P|TS for SCR XE IMC; forwards to AQP-FVT::REPL_BootstrapVault."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-FVT::REPL_BootstrapVault fvt-id owner-konto score-id reward-dptf-id)
-            )
-        )
-    )
-    (defun AQP-FVT|REPL_BootstrapTreasury:string
-        (patron:string fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
-        @doc "REPL-only Talos shell: class-2 treasury bootstrap for OF score pools."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                )
-                (ref-FVT::REPL_BootstrapTreasury fvt-id owner-konto score-id reward-dptf-id)
-            )
-        )
-    )
-    ;;{F6b}  [DSA]
-    (defun AQP-DSA|A_DefineDelegationVault:string
-        (patron:string fvt-id:string model-id:string unit-score:integer)
-        @doc "DSA (Talos): bind a class-0 FVT as a delegation vault (score-entity model + unit-score); collects \
-            \ IGNIS on patron. Only the FVT owner may run it."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DSA::A_DefineDelegationVault patron fvt-id model-id unit-score)
-                    )
-                )
-                (ref-IGNIS::C_Collect patron ico)
-                (format "DSA vault defined on FVT {} (model {}, unit-score {})." [fvt-id model-id unit-score])
-            )
-        )
-    )
     (defun AQP-DSA|C_OpenAgency:string
         (patron:string fvt-id:string pool-id:string score-entity-id:string fee-per-mille:integer
          collectable-id:string stake-nonces:[integer])
@@ -2217,141 +2325,33 @@
             )
         )
     )
-    (defun AQP-DSA|A_SetOracleAuth:string
-        (patron:string fvt-id:string oracle-guard:guard)
-        @doc "DSA (Talos): owner authorizes the delegated oracle key for a vault + arms the 25h capture expiry; \
-            \ collects IGNIS on patron."
+    ;;{F9}  REPL (test-only, stripped at mainnet) [REPL]
+    ;;
+    ;; --- REPL dry-run (P|TS client shell → AQP-FVT::REPL_BootstrapVault under GOV|FVT_ADMIN) ---
+    (defun AQP-FVT|REPL_BootstrapVault:string
+        (patron:string fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
+        @doc "REPL-only Talos shell: composes P|TS for SCR XE IMC; forwards to AQP-FVT::REPL_BootstrapVault."
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DSA::A_SetOracleAuth patron fvt-id oracle-guard)
-                    )
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
-                (ref-IGNIS::C_Collect patron ico)
-                (format "Oracle authority set + oracle-on armed on FVT {}." [fvt-id])
+                (ref-FVT::REPL_BootstrapVault fvt-id owner-konto score-id reward-dptf-id)
             )
         )
     )
-    (defun AQP-DSA|A_OracleWrite:string
-        (patron:string fvt-id:string score-entity-id:string nodes:integer uptime:integer)
-        @doc "DSA (Talos): the delegated oracle writes an agency's daily {nodes, uptime} + recomputes its capture \
-            \ (fresh oracle-ts); collects IGNIS on patron."
+    (defun AQP-FVT|REPL_BootstrapTreasury:string
+        (patron:string fvt-id:string owner-konto:string score-id:string reward-dptf-id:string)
+        @doc "REPL-only Talos shell: class-2 treasury bootstrap for OF score pools."
         (with-capability (P|TS)
             (let
                 (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DSA::A_OracleWrite patron fvt-id score-entity-id nodes uptime)
-                    )
+                    (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
                 )
-                (ref-IGNIS::C_Collect patron ico)
-                (format "Oracle wrote nodes {} / uptime {}‰ for agency {}." [nodes uptime score-entity-id])
+                (ref-FVT::REPL_BootstrapTreasury fvt-id owner-konto score-id reward-dptf-id)
             )
         )
     )
-    (defun AQP-DSA|A_WithdrawRoyalty:string
-        (patron:string fvt-id:string reward-dptf-id:string)
-        @doc "DSA (Talos): the FVT owner withdraws the whole royalty pool of <reward-dptf-id> on vault <fvt-id> to \
-            \ the owner konto; collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DSA::A_WithdrawRoyalty patron fvt-id reward-dptf-id)
-                    )
-                )
-                (ref-IGNIS::C_Collect patron ico)
-                (format "Royalty pool of {} on FVT {} withdrawn to the owner." [reward-dptf-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-DSA|A_BurnRoyalty:string
-        (patron:string fvt-id:string reward-dptf-id:string)
-        @doc "DSA (Talos): the FVT owner BURNS the whole royalty pool of <reward-dptf-id> on vault <fvt-id>; \
-            \ collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DSA::A_BurnRoyalty patron fvt-id reward-dptf-id)
-                    )
-                )
-                (ref-IGNIS::C_Collect patron ico)
-                (format "Royalty pool of {} on FVT {} burned." [reward-dptf-id fvt-id])
-            )
-        )
-    )
-    (defun AQP-DSA|A_FuelRoyalty:string
-        (patron:string fvt-id:string reward-dptf-id:string swpair:string)
-        @doc "DSA (Talos): the FVT owner FUELS <swpair> with the whole royalty pool of <reward-dptf-id> on vault \
-            \ <fvt-id> (adds liquidity, no LP mint); collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DSA::A_FuelRoyalty patron fvt-id reward-dptf-id swpair)
-                    )
-                )
-                (ref-IGNIS::C_Collect patron ico)
-                (format "Royalty pool of {} on FVT {} fueled into swpair {}." [reward-dptf-id fvt-id swpair])
-            )
-        )
-    )
-    (defun AQP-DSA|A_SetAgencyFee:string
-        (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)
-        @doc "DSA (Talos): the FVT owner changes a delegation agency's operator fee (reprices only future injects); \
-            \ collects IGNIS on patron."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                    (ico:object{IgnisCollectorV1.OutputCumulator}
-                        (ref-DSA::A_SetAgencyFee patron fvt-id score-entity-id fee-per-mille)
-                    )
-                )
-                (ref-IGNIS::C_Collect patron ico)
-                (format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])
-            )
-        )
-    )
-    (defun AQP-DSA|A_ToggleExternalOracle:string (on:bool)
-        @doc "DSA (Talos): MODULE ADMIN (GOV) flip of the SINGULAR GLOBAL external-oracle switch for ALL agencies. \
-            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                )
-                (ref-DSA::A_ToggleExternalOracle on)
-                (format "Global external-oracle switch set to {}." [on])
-            )
-        )
-    )
-    (defun AQP-DSA|A_SetOracleValidity:string (seconds:integer)
-        @doc "DSA (Talos): MODULE ADMIN (GOV) set of the GLOBAL oracle-validity window (freshness horizon, seconds). \
-            \ No IGNIS billing (pure governance, master-signed, no OutputCumulator)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-DSA:module{DsaV1} AQP-DSA)
-                )
-                (ref-DSA::A_SetOracleValidity seconds)
-                (format "Global oracle-validity window set to {} seconds." [seconds])
-            )
-        )
-    )
-    ;;{F7}  [X]
     ;;
 )
 
