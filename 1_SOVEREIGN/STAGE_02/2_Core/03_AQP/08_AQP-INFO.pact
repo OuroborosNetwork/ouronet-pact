@@ -1398,7 +1398,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Bind a class-0 FVT as a DSA delegation vault." "Executes via TS02-C3.AQP-DSA|A_DefineDelegationVault."]
                 [(format "FVT {} bound as delegation vault (model {})." [fvt-id model-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|DEFINE-VAULT))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_DefineDelegationVault patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1412,7 +1412,7 @@
                  "Base IGNIS shown; the operator collateral stake adds its legs at execution."
                  "Executes via TS02-C3.AQP-DSA|C_OpenAgency."]
                 [(format "Agency {} opened on vault {} (fee {} per-mille)." [score-entity-id fvt-id fee-per-mille])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|OPEN-AGENCY))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_OpenAgency patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1423,7 +1423,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Recompute an agency's capture (permissionless; preserves oracle-ts)." "Executes via TS02-C3.AQP-DSA|C_RecomputeCapture."]
                 [(format "Agency {} capture recomputed on vault {}." [score-entity-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|RECOMPUTE-CAPTURE))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_RecomputeCapture patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1434,7 +1434,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Authorize the delegated oracle key + arm the capture expiry." "Executes via TS02-C3.AQP-DSA|A_SetOracleAuth."]
                 [(format "Oracle authority set on vault {}." [fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|SET-ORACLE-AUTH))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_SetOracleAuth patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1445,7 +1445,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Oracle writes an agency's daily {nodes, uptime} + recomputes its capture." "Executes via TS02-C3.AQP-DSA|A_OracleWrite."]
                 [(format "Oracle wrote nodes {} / uptime {} for agency {}." [nodes uptime score-entity-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|ORACLE-WRITE))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_OracleWrite patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1482,7 +1482,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Withdraw the whole royalty pool to the FVT owner." "Executes via TS02-C3.AQP-DSA|A_WithdrawRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} withdrawn to owner." [reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|WITHDRAW-ROYALTY))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_WithdrawRoyalty patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1493,7 +1493,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Burn the whole royalty pool." "Executes via TS02-C3.AQP-DSA|A_BurnRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} burned." [reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|BURN-ROYALTY))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_BurnRoyalty patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1504,7 +1504,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Fuel a swap pair with the whole royalty pool (no LP mint)." "Executes via TS02-C3.AQP-DSA|A_FuelRoyalty."]
                 [(format "Royalty pool of reward {} on FVT {} fueled into {}." [reward-dptf-id fvt-id swpair])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|FUEL-ROYALTY))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_FuelRoyalty patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1515,7 +1515,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Change a delegation agency's operator fee (reprices only future injects)." "Executes via TS02-C3.AQP-DSA|A_SetAgencyFee."]
                 [(format "Agency {} fee set to {} per-mille." [score-entity-id fee-per-mille])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-DSA.GAS|SET-AGENCY-FEE))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-DSA.URCi_SetAgencyFee patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )

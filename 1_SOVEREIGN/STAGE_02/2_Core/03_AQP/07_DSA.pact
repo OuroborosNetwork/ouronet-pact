@@ -37,6 +37,17 @@
     (defun A_ToggleExternalOracle:string (on:bool))
     (defun A_SetOracleValidity:string (seconds:integer))
     ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_OpenAgency:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_RecomputeCapture:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_SetOracleAuth:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_OracleWrite:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_SetAgencyFee:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    ;;
 )
 ;;
 (module AQP-DSA GOV
@@ -528,6 +539,31 @@
                 units (UC_CaptureWeight units (UR_DSA-AGN|Uptime fvt-id score-entity-id)) oracle-ts)
         )
     )
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    ;;   (flat GAS legs; the 3 royalty readers return the GAS leg the exec concats with the custody-move XE_)
+    (defun URCi_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|DEFINE-VAULT patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_OpenAgency:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        @doc "GAS leg for the core admit (C_AdmitAgency); the Talos open flow additionally stakes operator collateral."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|OPEN-AGENCY patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_RecomputeCapture:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|RECOMPUTE-CAPTURE patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SetOracleAuth:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-ORACLE-AUTH patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_OracleWrite:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ORACLE-WRITE patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_WithdrawRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        @doc "GAS leg only; exec concats this with the custody-move IGNIS (FVT::XE_WithdrawRoyalty, state-dependent)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|WITHDRAW-ROYALTY patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_BurnRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        @doc "GAS leg only; exec concats this with the burn's IGNIS (FVT::XE_BurnRoyalty, state-dependent)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|BURN-ROYALTY patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_FuelRoyalty:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        @doc "GAS leg only; exec concats this with the fuel's IGNIS (FVT::XE_FuelRoyalty, state-dependent)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|FUEL-ROYALTY patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SetAgencyFee:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-AGENCY-FEE patron (r::URC_IsVirtualGasZero) output)))
+    ;;
     ;; [A]   admin
     (defun A_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string model-id:string unit-score:integer)
@@ -541,7 +577,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (WI_Template fvt-id (UDC_DSA|Template model-id unit-score true fvt-id))
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|DEFINE-VAULT patron trigger [fvt-id])
+                (URCi_DefineDelegationVault patron [fvt-id])
             )
         )
     )
@@ -560,7 +596,7 @@
                 )
                 (WI_OracleAuth fvt-id (UDC_DSA|OracleAuth oracle-guard fvt-id))
                 (ref-FVT::XE_SetFvtOracleOn fvt-id true)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-ORACLE-AUTH patron trigger [fvt-id])
+                (URCi_SetOracleAuth patron [fvt-id])
             )
         )
     )
@@ -578,7 +614,7 @@
                 )
                 (WU_Agency-Oracle fvt-id score-entity-id nodes uptime)
                 (XI_ApplyCapture fvt-id score-entity-id (at "block-time" (chain-data)))
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ORACLE-WRITE patron trigger [score-entity-id])
+                (URCi_OracleWrite patron [score-entity-id])
             )
         )
     )
@@ -622,7 +658,7 @@
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                    [ (ref-IGNIS::UDC_ConstructOutputCumulator GAS|WITHDRAW-ROYALTY patron (ref-IGNIS::URC_IsVirtualGasZero) [fvt-id])
+                    [ (URCi_WithdrawRoyalty patron [fvt-id])
                       (ref-FVT::XE_WithdrawRoyalty fvt-id reward-dptf-id (ref-FVT::UR_FVT|OwnerKonto fvt-id)) ]
                     [fvt-id])
             )
@@ -641,7 +677,7 @@
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                    [ (ref-IGNIS::UDC_ConstructOutputCumulator GAS|BURN-ROYALTY patron (ref-IGNIS::URC_IsVirtualGasZero) [fvt-id])
+                    [ (URCi_BurnRoyalty patron [fvt-id])
                       (ref-FVT::XE_BurnRoyalty fvt-id reward-dptf-id) ]
                     [fvt-id])
             )
@@ -660,7 +696,7 @@
                     (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
                 )
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators
-                    [ (ref-IGNIS::UDC_ConstructOutputCumulator GAS|FUEL-ROYALTY patron (ref-IGNIS::URC_IsVirtualGasZero) [fvt-id])
+                    [ (URCi_FuelRoyalty patron [fvt-id])
                       (ref-FVT::XE_FuelRoyalty fvt-id reward-dptf-id swpair) ]
                     [fvt-id])
             )
@@ -682,7 +718,7 @@
                 )
                 (WU_Agency-Fee fvt-id score-entity-id fee-per-mille)
                 (ref-FVT::XE_SetAgencyFee fvt-id score-entity-id (UR_DSA-AGN|Operator fvt-id score-entity-id) fee-per-mille)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-AGENCY-FEE patron trigger [score-entity-id])
+                (URCi_SetAgencyFee patron [score-entity-id])
             )
         )
     )
@@ -709,7 +745,7 @@
                 (WI_Agency fvt-id score-entity-id (UDC_DSA|Agency patron fee-per-mille 0 DSA_UPTIME_FULL fvt-id score-entity-id))
                 ;; mirror the operator + fee onto the FVT member so the inject settle can apply the fee split locally
                 (ref-FVT::XE_SetAgencyFee fvt-id score-entity-id patron fee-per-mille)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|OPEN-AGENCY patron trigger [score-entity-id])
+                (URCi_OpenAgency patron [score-entity-id])
             )
         )
     )
@@ -727,7 +763,7 @@
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
                 (XI_ApplyCapture fvt-id score-entity-id (ref-FVT::UR_FVT-SEL|OracleTs fvt-id score-entity-id))
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|RECOMPUTE-CAPTURE patron trigger [score-entity-id])
+                (URCi_RecomputeCapture patron [score-entity-id])
             )
         )
     )
