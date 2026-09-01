@@ -67,6 +67,20 @@
     (defun URC_DPOF|DeployAccount:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string))
     (defun URC_DPOF|Issue:object{OuronetInfoV1.ClientInfo} (patron:string account:string name:[string]))
     (defun URC_DPOF|Mint:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string amount:decimal))
+    (defun URC_DPOF|RotateOwnership:object{OuronetInfoV1.ClientInfo} (patron:string id:string new-owner:string))
+    (defun URC_DPOF|MoveCreateRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string receiver:string))
+    (defun URC_DPOF|ToggleAddQuantityRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun URC_DPOF|ToggleBurnRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun URC_DPOF|ToggleFreezeAccount:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun URC_DPOF|TogglePause:object{OuronetInfoV1.ClientInfo} (patron:string id:string toggle:bool))
+    (defun URC_DPOF|ToggleTransferRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool))
+    (defun URC_DPOF|Transfer:object{OuronetInfoV1.ClientInfo} (patron:string id:string nonces:[integer] sender:string receiver:string method:bool))
+    (defun URC_DPOF|Transmit:object{OuronetInfoV1.ClientInfo} (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool))
+    (defun URC_DPOF|BulkTransfer:object{OuronetInfoV1.ClientInfo} (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool))
+    (defun URC_DPOF|WipeSlim:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string nonce:integer amount:decimal))
+    (defun URC_DPOF|WipePure:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV1.RemovableNonces}))
+    (defun URC_DPOF|WipeHeavy:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string))
+    (defun URC_DPOF|WipeClean:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string nonces:[integer]))
     ;;
     (defun URC_VST|CreateFrozenLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string))
     (defun URC_VST|CreateReservationLink:object{OuronetInfoV1.ClientInfo} (patron:string dptf:string))
@@ -1562,6 +1576,235 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [(ref-I|OURONET::OI|UC_FormatTokenAmount amount)]
+            )
+        )
+    )
+    ;; ---- DPOF entity-completion: ownership/role toggles (1:1 URCi) ----
+    (defun URC_DPOF|RotateOwnership:object{OuronetInfoV1.ClientInfo} (patron:string id:string new-owner:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount new-owner))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Changes Ownership for DPOF {} to {}" [id sa])]
+                [(format "DPOF {} Ownership succesfully set to {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_RotateOwnership id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_DPOF|MoveCreateRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string receiver:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Moves the Create-Role of DPOF {} to {}" [id sa])]
+                [(format "Create-Role of DPOF {} succesfully moved to {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCreateRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_DPOF|ToggleAddQuantityRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Add-Quantity Role for {} to {}" [id sa]) (format "Operation: Removes Add-Quantity Role for {} to {}" [id sa]))]
+                [(if toggle (format "Add-Quantity Role added for {} to {}" [id sa]) (format "Add-Quantity Role removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_ToggleAddQuantityRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun URC_DPOF|ToggleBurnRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Burn Role for {} to {}" [id sa]) (format "Operation: Removes Burn Role for {} to {}" [id sa]))]
+                [(if toggle (format "Burn Role added for {} to {}" [id sa]) (format "Burn Role removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_ToggleBurnRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun URC_DPOF|ToggleFreezeAccount:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Freezes DPOF {} on Account {}" [id sa]) (format "Operation: Unfreezes DPOF {} on Account {}" [id sa]))]
+                [(if toggle (format "Account {} succesfully frozen for {}" [sa id]) (format "Account {} succesfully unfrozen for {}" [sa id]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_ToggleFreezeAccount id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun URC_DPOF|TogglePause:object{OuronetInfoV1.ClientInfo} (patron:string id:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Pauses DPOF {}" [id]) (format "Operation: Unpauses DPOF {}" [id]))]
+                [(if toggle (format "DPOF {} succesfully paused" [id]) (format "DPOF {} succesfully unpaused" [id]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_TogglePause id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    (defun URC_DPOF|ToggleTransferRole:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string toggle:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(if toggle (format "Operation: Adds Transfer Role for {} to {}" [id sa]) (format "Operation: Removes Transfer Role for {} to {}" [id sa]))]
+                [(if toggle (format "Transfer Role added for {} to {}" [id sa]) (format "Transfer Role removed for {} to {}" [id sa]))]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_ToggleTransferRole id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [toggle]
+            )
+        )
+    )
+    ;; ---- DPOF entity-completion: transfer family (URCi_MoveCumulator: transmit=ignis|small, transfer=ignis|smallest per nonce) ----
+    (defun URC_DPOF|Transfer:object{OuronetInfoV1.ClientInfo} (patron:string id:string nonces:[integer] sender:string receiver:string method:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Transfers DPOF {} Nonces {} from {} to {}" [id nonces sa-s sa-r])]
+                [(format "Succesfully transferred DPOF {} Nonces {} from {} to {}" [id nonces sa-s sa-r])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator id nonces false)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [nonces]
+            )
+        )
+    )
+    (defun URC_DPOF|Transmit:object{OuronetInfoV1.ClientInfo} (patron:string id:string nonces:[integer] amounts:[decimal] sender:string receiver:string method:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                (sa-r:string (ref-I|OURONET::OI|UC_ShortAccount receiver))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Transmits DPOF {} Nonces {} Amounts {} from {} to {}" [id nonces amounts sa-s sa-r])]
+                [(format "Succesfully transmitted DPOF {} Nonces {} from {} to {}" [id nonces sa-s sa-r])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator id nonces true)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [nonces amounts]
+            )
+        )
+    )
+    (defun URC_DPOF|BulkTransfer:object{OuronetInfoV1.ClientInfo} (patron:string id:string nonces-array:[[integer]] sender:string receiver-lst:[string] method:bool)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa-s:string (ref-I|OURONET::OI|UC_ShortAccount sender))
+                (all-nonces:[integer] (fold (+) [] nonces-array))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Bulk-transfers DPOF {} from {} to {} Receivers" [id sa-s (length receiver-lst)])]
+                [(format "Succesfully bulk-transferred DPOF {} from {} to {} Receivers" [id sa-s (length receiver-lst)])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_MoveCumulator id all-nonces false)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [receiver-lst]
+            )
+        )
+    )
+    ;; ---- DPOF entity-completion: wipe family (WipeSlim flat; Pure/Heavy/Clean per-nonce via URCi_WipeCumulator) ----
+    (defun URC_DPOF|WipeSlim:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string nonce:integer amount:decimal)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Wipes {} of DPOF {} Nonce {} from Account {}" [amount id nonce sa])]
+                [(format "Succesfully wiped {} of DPOF {} Nonce {} from Account {}" [amount id nonce sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeSlim id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [amount]
+            )
+        )
+    )
+    (defun URC_DPOF|WipePure:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string removable-nonces-obj:object{DpofUdcV1.RemovableNonces})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Pure-wipes DPOF {} on Account {} (pre-read removable nonces)" [id sa])]
+                [(format "Succesfully pure-wiped DPOF {} on Account {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id removable-nonces-obj)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_DPOF|WipeHeavy:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Heavy-wipes all viable DPOF {} Nonces from Account {}" [id sa])]
+                [(format "Succesfully heavy-wiped DPOF {} from Account {}" [id sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id (ref-DPOF::URDC_WipePure account id))))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_DPOF|WipeClean:object{OuronetInfoV1.ClientInfo} (patron:string id:string account:string nonces:[integer])
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Clean-wipes DPOF {} Nonces {} from Account {}" [id nonces sa])]
+                [(format "Succesfully clean-wiped DPOF {} Nonces {} from Account {}" [id nonces sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_WipeCumulator id (ref-DPOF::UDC_RemovableNonces nonces (ref-DPOF::UR_NoncesSupplies id nonces)))))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [nonces]
             )
         )
     )
