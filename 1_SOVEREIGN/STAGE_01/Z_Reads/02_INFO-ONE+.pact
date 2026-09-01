@@ -145,6 +145,11 @@
     (defun URC_ATS|Reverse:object{OuronetInfoV1.ClientInfo} (patron:string recoverer:string id:string nonce:integer))
     (defun URC_ATS|Syphon:object{OuronetInfoV1.ClientInfo} (patron:string syphon-target:string ats:string syphon-amounts:[decimal]))
     (defun URC_ATS|WithdrawRoyalties:object{OuronetInfoV1.ClientInfo} (patron:string ats:string target:string))
+    (defun URC_ATS|VestedCoil:object{OuronetInfoV1.ClientInfo} (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
+    (defun URC_ATS|VestedCurl:object{OuronetInfoV1.ClientInfo} (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer))
+    (defun URC_ATS|HOT-RBT|UpdatePendingBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string))
+    (defun URC_ATS|HOT-RBT|UpgradeBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string months:integer))
+    (defun URC_ATS|HOT-RBT|Repurpose:object{OuronetInfoV1.ClientInfo} (patron:string hot-rbt:string nonce:integer repurpose-to:string))
     ;;
     (defun SWP|INFO_ChangeOwnership:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-owner:string))
     (defun SWP|INFO_ModifyCanChangeOwner:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-boolean:bool))
@@ -2983,6 +2988,82 @@
                 [(format "Operation: Withdraws accrued Royalties of ATS-Pair {} to {}" [ats sa])]
                 [(format "Succesfully withdrew Royalties of ATS-Pair {} to {}" [ats sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_WithdrawRoyalties ats target)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    ;; ---- ATS entity-completion: composite / hot-rbt ops (reuse existing readers) ----
+    (defun URC_ATS|VestedCoil:object{OuronetInfoV1.ClientInfo}
+        (patron:string coiler-vester:string ats:string coil-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-ATSU:module{AutostakeUsageV1} ATSU)
+                (ref-VST:module{VestingV1} VST)
+                ;;
+                (coil-data:object{AutostakeV2.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats coil-token amount))
+                (c-rbt:string (at "rbt-id" coil-data))
+                (c-rbt-amount:decimal (at "rbt-amount" coil-data))
+                (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [ (ref-ATSU::URCi_Coil coiler-vester ats coil-token amount)
+                          (ref-VST::URCi_Vest coiler-vester target-account c-rbt c-rbt-amount offset duration milestones) ] []))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Coils {} {} on ATS-Pair {} and Vests the {} output to {} across {} milestone(s)" [amount coil-token ats c-rbt sa milestones])]
+                [(format "Succesfully coiled and vested {} {} generating {} {} to {}" [amount coil-token c-rbt-amount c-rbt sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt-amount) milestones])))
+    (defun URC_ATS|VestedCurl:object{OuronetInfoV1.ClientInfo}
+        (patron:string curler-vester:string ats1:string ats2:string curl-token:string amount:decimal target-account:string offset:integer duration:integer milestones:integer)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-ATSU:module{AutostakeUsageV1} ATSU)
+                (ref-VST:module{VestingV1} VST)
+                ;;
+                (coil1-data:object{AutostakeV2.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats1 curl-token amount))
+                (coil2-data:object{AutostakeV2.CoilData} (ref-ATS::URC_RewardBearingTokenAmounts ats2 (at "rbt-id" coil1-data) (at "rbt-amount" coil1-data)))
+                (c-rbt2:string (at "rbt-id" coil2-data))
+                (c-rbt2-amount:decimal (at "rbt-amount" coil2-data))
+                (ico:object{IgnisCollectorV1.OutputCumulator}
+                    (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                        [ (ref-ATSU::URCi_Curl curler-vester ats1 ats2 curl-token amount)
+                          (ref-VST::URCi_Vest curler-vester target-account c-rbt2 c-rbt2-amount offset duration milestones) ] []))
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico))
+                (sa:string (ref-I|OURONET::OI|UC_ShortAccount target-account))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Curls {} {} across ATS-Pairs {} and {} and Vests the {} output to {} across {} milestone(s)" [amount curl-token ats1 ats2 c-rbt2 sa milestones])]
+                [(format "Succesfully curled and vested {} {} generating {} {} to {}" [amount curl-token c-rbt2-amount c-rbt2 sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                [(ref-I|OURONET::OI|UC_FormatTokenAmount c-rbt2-amount) milestones])))
+    (defun URC_ATS|HOT-RBT|UpdatePendingBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Updates Pending Branding for Hot-RBT {}" [entity-id])]
+                [(format "Pending Branding for Hot-RBT {} updated succesfully" [entity-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DPOF::URCi_UpdatePendingBranding entity-id)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_ATS|HOT-RBT|UpgradeBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string months:integer)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Upgrades Branding for Hot-RBT {} for {} month(s)" [entity-id months])]
+                [(format "Hot-RBT {} succesfully upgraded for {} month(s)!" [entity-id months])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-DPOF::URCi_UpgradeBranding months)) [])))
+    (defun URC_ATS|HOT-RBT|Repurpose:object{OuronetInfoV1.ClientInfo} (patron:string hot-rbt:string nonce:integer repurpose-to:string)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF) (ref-VST:module{VestingV1} VST)
+              (nonce-holder:string (ref-DPOF::UR_NonceHolder hot-rbt nonce)) (sa:string (ref-I|OURONET::OI|UC_ShortAccount repurpose-to)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Repurposes Hot-RBT {} Nonce {} to {}" [hot-rbt nonce sa])]
+                [(format "Hot-RBT {} Nonce {} succesfully repurposed to {}" [hot-rbt nonce sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible hot-rbt nonce nonce-holder repurpose-to)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
     ;; [LIQUID]
     (defun LIQUID|INFO_UnwrapUrStoa:object{OuronetInfoV1.ClientInfo}
