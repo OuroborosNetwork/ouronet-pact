@@ -287,6 +287,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_ShortAccount:string (account:string)
         (let
             (
@@ -295,14 +297,13 @@
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
     ;;
     ;;  [2] DPDC
     ;;
@@ -1516,8 +1517,6 @@
             )
         )
     )
-    ;;
-    ;;{F7}  [X]
     ;;
 )
 

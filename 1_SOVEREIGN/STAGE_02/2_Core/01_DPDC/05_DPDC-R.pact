@@ -277,14 +277,10 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    ;;{F5}  [A]
-    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
     (defun URCi_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string)
         @doc "Cost preview for C_ToggleAddQuantityRole (Big tier on owner-konto)."
@@ -406,7 +402,130 @@
             (ref-IGNIS::UDC_BiggestCumulator (ref-DPDC::UR_OwnerKonto id son))
         )
     )
-    ;;{F6}  [C]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    (defun XI_ToggleAddQuantityRole (id:string account:string toggle:bool)
+        (require-capability (DPDC|C>TG_ADD-QTY-R id account toggle))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|Rnaq id account toggle)
+            (ref-DPDC::XE_U|VerumRoles id true 3 toggle account)
+        )
+    )
+    (defun XI_ToggleFreezeAccount (id:string son:bool account:string toggle:bool)
+        (require-capability (DPDC|C>FRZ-ACC id son account toggle))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
+            )
+            (ref-DPDC::XE_U|Frozen id son account toggle)
+            (ref-DPDC::XE_U|VerumRoles id son 1 toggle account)
+        )
+    )
+    (defun XI_ToggleExemptionRole (id:string son:bool account:string toggle:bool)
+        (require-capability (DPDC|C>TG_EXEMPTION-R id son account toggle))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                ;;
+            )
+            (ref-DPDC::XE_U|Exemption id son account toggle)
+            (ref-DPDC::XE_U|VerumRoles id son 2 toggle account)
+        )
+    )
+    (defun XI_ToggleBurnRole (id:string son:bool account:string toggle:bool)
+        (require-capability (DPDC|C>TG_BURN-R id son account toggle))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|Burn id son account toggle)
+            (ref-DPDC::XE_U|VerumRoles id son 4 toggle account)
+        )
+    )
+    (defun XI_ToggleUpdateRole (id:string son:bool account:string toggle:bool)
+        (require-capability (DPDC|C>TG_UPDATE-R id son account toggle))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|Update id son account toggle)
+            (ref-DPDC::XE_U|VerumRoles id son 7 toggle account)
+        )
+    )
+    (defun XI_ToggleModifyCreatorRole (id:string son:bool account:string toggle:bool)
+        (require-capability (DPDC|C>TG_MODIFY-CREATOR-R id son account toggle))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|ModifyCreator id son account toggle)
+            (ref-DPDC::XE_U|VerumRoles id son 8 toggle account)
+        )
+    )
+    (defun XI_ToggleModifyRoyaltiesRole (id:string son:bool account:string toggle:bool)
+        (require-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son account toggle))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|ModifyRoyalties id son account toggle)
+            (ref-DPDC::XE_U|VerumRoles id son 9 toggle account)
+        )
+    )
+    (defun XI_ToggleTransferRole (id:string son:bool account:string toggle:bool)
+        (require-capability (DPDC|C>TG_TRANSFER-R id son account toggle))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|Transfer id son account toggle)
+            (ref-DPDC::XE_U|VerumRoles id son 11 toggle account)
+        )
+    )
+    ;;
+    (defun XI_MoveCreateRole (id:string son:bool old-account:string new-account:string)
+        (require-capability (DPDC|C>MV_CREATE-R id son old-account new-account))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|Create id son old-account false)
+            (ref-DPDC::XE_U|VerumRoles id son 5 false old-account)
+            (ref-DPDC::XE_U|Create id son new-account true)
+            (ref-DPDC::XE_U|VerumRoles id son 5 true new-account)
+        )
+    )
+    (defun XI_MoveRecreateRole (id:string son:bool old-account:string new-account:string)
+        (require-capability (DPDC|C>MV_RECREATE-R id son old-account new-account))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|Recreate id son old-account false)
+            (ref-DPDC::XE_U|VerumRoles id son 6 false old-account)
+            (ref-DPDC::XE_U|Recreate id son new-account true)
+            (ref-DPDC::XE_U|VerumRoles id son 6 true new-account)
+        )
+    )
+    (defun XI_MoveSetUriRole (id:string son:bool old-account:string new-account:string)
+        (require-capability (DPDC|C>MV_SET-URI-R id son old-account new-account))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|SetNewUri id son old-account false)
+            (ref-DPDC::XE_U|VerumRoles id son 10 false old-account)
+            (ref-DPDC::XE_U|SetNewUri id son new-account true)
+            (ref-DPDC::XE_U|VerumRoles id son 10 true new-account)
+        )
+    )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;Role Toggling
     (defun C_ToggleAddQuantityRole:object{IgnisCollectorV1.OutputCumulator}
         (id:string account:string toggle:bool)
@@ -575,126 +694,6 @@
                 (XI_MoveSetUriRole id son old-account new-account)
                 (URCi_MoveSetUriRole id son)
             )
-        )
-    )
-    ;;{F7}  [X]
-    (defun XI_ToggleAddQuantityRole (id:string account:string toggle:bool)
-        (require-capability (DPDC|C>TG_ADD-QTY-R id account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|Rnaq id account toggle)
-            (ref-DPDC::XE_U|VerumRoles id true 3 toggle account)
-        )
-    )
-    (defun XI_ToggleFreezeAccount (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>FRZ-ACC id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                ;;
-            )
-            (ref-DPDC::XE_U|Frozen id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 1 toggle account)
-        )
-    )
-    (defun XI_ToggleExemptionRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_EXEMPTION-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                ;;
-            )
-            (ref-DPDC::XE_U|Exemption id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 2 toggle account)
-        )
-    )
-    (defun XI_ToggleBurnRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_BURN-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|Burn id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 4 toggle account)
-        )
-    )
-    (defun XI_ToggleUpdateRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_UPDATE-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|Update id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 7 toggle account)
-        )
-    )
-    (defun XI_ToggleModifyCreatorRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_MODIFY-CREATOR-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|ModifyCreator id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 8 toggle account)
-        )
-    )
-    (defun XI_ToggleModifyRoyaltiesRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_MODIFY-ROYALTIES-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|ModifyRoyalties id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 9 toggle account)
-        )
-    )
-    (defun XI_ToggleTransferRole (id:string son:bool account:string toggle:bool)
-        (require-capability (DPDC|C>TG_TRANSFER-R id son account toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|Transfer id son account toggle)
-            (ref-DPDC::XE_U|VerumRoles id son 11 toggle account)
-        )
-    )
-    ;;
-    (defun XI_MoveCreateRole (id:string son:bool old-account:string new-account:string)
-        (require-capability (DPDC|C>MV_CREATE-R id son old-account new-account))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|Create id son old-account false)
-            (ref-DPDC::XE_U|VerumRoles id son 5 false old-account)
-            (ref-DPDC::XE_U|Create id son new-account true)
-            (ref-DPDC::XE_U|VerumRoles id son 5 true new-account)
-        )
-    )
-    (defun XI_MoveRecreateRole (id:string son:bool old-account:string new-account:string)
-        (require-capability (DPDC|C>MV_RECREATE-R id son old-account new-account))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|Recreate id son old-account false)
-            (ref-DPDC::XE_U|VerumRoles id son 6 false old-account)
-            (ref-DPDC::XE_U|Recreate id son new-account true)
-            (ref-DPDC::XE_U|VerumRoles id son 6 true new-account)
-        )
-    )
-    (defun XI_MoveSetUriRole (id:string son:bool old-account:string new-account:string)
-        (require-capability (DPDC|C>MV_SET-URI-R id son old-account new-account))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|SetNewUri id son old-account false)
-            (ref-DPDC::XE_U|VerumRoles id son 10 false old-account)
-            (ref-DPDC::XE_U|SetNewUri id son new-account true)
-            (ref-DPDC::XE_U|VerumRoles id son 10 true new-account)
         )
     )
     ;;

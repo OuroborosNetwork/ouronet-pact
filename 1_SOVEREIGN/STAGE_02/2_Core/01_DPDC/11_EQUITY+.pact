@@ -180,6 +180,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_Name:[string] (collection-name:string)
         (let
             (
@@ -231,7 +233,7 @@
             )
         )
     )
-    ;;{F0}  [UR]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun UR_TierSupplies:[integer] (id:string)
         @doc "Total outstanding supply of each package tier (nonces 2-8, in tier-unit counts, not \
             \ share-equivalents), in tier order."
@@ -252,7 +254,6 @@
             )
         )
     )
-    ;;{F1}  [URC]
     (defun URC_MakeSharePackage:integer (id:string shares-amount:integer package-share-tier:integer)
         @doc "Converts a raw <shares-amount> into the equivalent whole number of <package-share-tier> \
             \ units. Assumes even divisibility -- UEV_ShareAmountsForMaking enforces that before this \
@@ -292,77 +293,7 @@
             (- half-shares shares-in-package-nonces)
         )
     )
-    ;;{F2}  [UEV]
-    (defun UEV_SharePackageTier (package-share-tier:integer)
-        (let
-            (
-                (share-tiers:[integer] (enumerate 1 7))
-                (iz-contained:bool (contains package-share-tier share-tiers))
-            )
-            (enforce iz-contained "Invalid Package Share Tier")
-        )
-    )
-    (defun UEV_ShareAmountsForMaking (id:string shares-amount:integer package-share-tier:integer)
-        (UEV_SharePackageTier package-share-tier)
-        (let
-            (
-                (sspm:integer (URC_SingleSharePerMillions id package-share-tier))
-                (mod-check:integer (mod shares-amount sspm))
-                (capacity:integer (URC_CombineCapacity id))
-            )
-            (enforce 
-                (<= shares-amount capacity) 
-                (format "Insufficient Capacity Left ({}) to combine {} Individual Shares" [capacity shares-amount])
-            )
-            (enforce 
-                (= mod-check 0) 
-                (format "{} Shares is an invalid amount for making a Tier {} Share Packge for EQUITY-SFT Collection {}" [shares-amount package-share-tier id])
-            )
-        )
-    )
-    (defun UEV_EquitySemiFungibleID (id:string)
-        (let
-            (
-                (ft:string (take 2 id))
-                (sh:string "E|")
-            )
-            (enforce (= ft sh) "Only EQUITY SFT Collections allowed")
-        )
-    )
-    (defun UEV_Convert (id:string input-tier:integer input-tier-amount:integer output-tier:integer)
-        (UEV_SharePackageTier input-tier)
-        (UEV_SharePackageTier output-tier)
-        (let
-            (
-                (spm:[integer] (URC_SharesPerMillion id))
-                (input-share-value:integer (at (- input-tier 1) spm))
-                (output-share-value:integer (at (- output-tier 1) spm))
-                (total-input-shares:integer (* input-share-value input-tier-amount))
-                (mod-check (mod total-input-shares output-share-value))
-            )
-            (enforce (!= input-tier output-tier) "Input Tier and Output Tier must be different for Conversion")
-            (enforce 
-                (= mod-check 0) 
-                (format "{} Tier {} Shares cannot be completly Converted to Tier {} Shares For Equity ID {}" [input-tier input-tier-amount output-tier id])
-            )
-        )
-    )
-    (defun UEV_Morph (input-nonce:integer output-nonce:integer)
-        (let
-            (
-                (allowed-nonces:[integer] (enumerate 1 8))
-                (iz-input:bool (contains input-nonce allowed-nonces))
-                (iz-output:bool (contains output-nonce allowed-nonces))
-            )
-            (enforce (and iz-input iz-output) "Invalid Input or Output Nonces for Morphing")
-            (enforce (!= input-nonce output-nonce) "Input and Output Nonces must be different for Morphing")
-        )
-    )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
     ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
     (defun URCi_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator} ()
         @doc "Cost preview for C_IssueShareholderCollection's IGNIS cumulator (the collection- \
             \ issue STOA price previews separately via DPDC-I::URCi_IssueCollectionStoa). Two legs, \
@@ -399,111 +330,6 @@
                     (ref-IGNIS::UDC_ConstructOutputCumulator populate-price dpdc (ref-IGNIS::URC_IsVirtualGasZero) [])
                 ]
                 []
-            )
-        )
-    )
-    (defun C_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator}
-        (
-            patron:string creator-account:string collection-name:string collection-ticker:string
-            royalty:decimal ignis-royalty:decimal ipfs-links:[string]
-        )
-        @doc "Royalty is the standard Royalty for the Whole Collection \
-            \ While <ignis-royalty> is the ignis Royalty for 1% of Company Shares"
-        (UEV_IMC)
-        (let
-            (
-                (ref-U|VST:module{UtilityVstV1} U|VST)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
-                (ref-DPDC-I:module{DpdcIssueV1} DPDC-I)
-                ;;
-                (special-sft:[string] (ref-U|VST::UC_EquityID collection-name collection-ticker))
-                (name:string (at 0 special-sft))
-                (ticker:string (at 1 special-sft))
-                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
-                ;;
-                (b:string BAR)
-                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
-                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
-                (n:[string] (UC_Name collection-name))
-                (d:[string] (UC_Description collection-name))
-                (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
-                ;;
-                (ico:object{IgnisCollectorV1.OutputCumulator}
-                    ;;1]Issue Equity SFT Collection; <dpdc> automatically gets <role-nft-add-quantity> and <role-nft-burn>
-                    (ref-DPDC-I::C_IssueDigitalCollection
-                        patron true
-                        dpdc creator-account name ticker
-                        false false true true
-                        true true true false
-                        true
-                    )
-                )
-                (equity-id:string (at 0 (at "output" ico)))
-                (l:integer (length ipfs-links))
-            )
-            (enforce (= l 24) "24 IPFS links must be provided for an Equity Collection")
-            (ref-IGNIS::UDC_ConcatenateOutputCumulators 
-                [
-                    ico
-                    ;;2]Populate Equity SFT Collection
-                    (ref-DPDC-C::C_CreateNewNonces
-                        equity-id true [1000000 0 0 0 0 0 0 0]
-                        [
-                            ;;Barebone Share, Nonce 1
-                            (ref-DPDC-UDC::UDC_NonceData royalty 0.001 (at 0 n) (at 0 d) md type
-                                (ref-DPDC-UDC::UDC_URI|Data (at 0 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 8 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 16 ipfs-links) b b b b b b)
-                            )
-                            ;;0.1 Promille representing 100 Shares per Million, Nonce 2
-                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 100.0) (at 1 n) (at 1 d) md type
-                                (ref-DPDC-UDC::UDC_URI|Data (at 1 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 9 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 17 ipfs-links) b b b b b b)
-                            )
-                            ;;0.2 Promille representing 200 Shares per Million, Nonce 3
-                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 50.0) (at 2 n) (at 2 d) md type
-                                (ref-DPDC-UDC::UDC_URI|Data (at 2 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 10 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 18 ipfs-links) b b b b b b)
-                            )
-                            ;;0.5 Promille representing 500 Shares per Million, Nonce 4
-                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 20.0) (at 3 n) (at 3 d) md type
-                                (ref-DPDC-UDC::UDC_URI|Data (at 3 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 11 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 19 ipfs-links) b b b b b b)
-                            )
-                            ;;1 Promille representing 1000 Shares per Million, Nonce 5
-                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 10.0) (at 4 n) (at 4 d) md type
-                                (ref-DPDC-UDC::UDC_URI|Data (at 4 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 12 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 20 ipfs-links) b b b b b b)
-                            )
-                            ;;2 Promille representing 2000 Shares per Million, Nonce 6
-                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 5.0) (at 5 n) (at 5 d) md type
-                                (ref-DPDC-UDC::UDC_URI|Data (at 5 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 13 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 21 ipfs-links) b b b b b b)
-                            )
-                            ;;5 Promille representing 5000 Shares per Million, Nonce 7
-                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 2.0) (at 6 n) (at 6 d) md type
-                                (ref-DPDC-UDC::UDC_URI|Data (at 6 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 14 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 22 ipfs-links) b b b b b b)
-                            )
-                            ;;1 Percent representing 10000 Shares per Million, Nonce 8
-                            (ref-DPDC-UDC::UDC_NonceData royalty ignis-royalty (at 7 n) (at 7 d) md type
-                                (ref-DPDC-UDC::UDC_URI|Data (at 7 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 15 ipfs-links) b b b b b b)
-                                (ref-DPDC-UDC::UDC_URI|Data (at 23 ipfs-links) b b b b b b)
-                            )
-                        ]
-                    )
-                ]
-                [equity-id]
             )
         )
     )
@@ -570,24 +396,74 @@
             )
         )
     )
-    (defun C_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator}
-        (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
-        (UEV_IMC)
-        (UEV_Morph input-nonce output-nonce)
-        (with-capability (SECURE)
-            (if (= input-nonce 1)
-                ;;Make Package Shares
-                (XI_MakePackageShares account id input-amount (- output-nonce 1))
-                (if (= output-nonce 1)
-                    ;;Brake Package Shares
-                    (XI_BreakPackageShares account id (- input-nonce 1) input-amount)
-                    ;;Convert Package Shares
-                    (XI_ConvertPackageShares account id (- input-nonce 1) input-amount (- output-nonce 1))
-                )
+    ;;{F4}  Validate [UEV/CAP]
+    (defun UEV_SharePackageTier (package-share-tier:integer)
+        (let
+            (
+                (share-tiers:[integer] (enumerate 1 7))
+                (iz-contained:bool (contains package-share-tier share-tiers))
+            )
+            (enforce iz-contained "Invalid Package Share Tier")
+        )
+    )
+    (defun UEV_ShareAmountsForMaking (id:string shares-amount:integer package-share-tier:integer)
+        (UEV_SharePackageTier package-share-tier)
+        (let
+            (
+                (sspm:integer (URC_SingleSharePerMillions id package-share-tier))
+                (mod-check:integer (mod shares-amount sspm))
+                (capacity:integer (URC_CombineCapacity id))
+            )
+            (enforce 
+                (<= shares-amount capacity) 
+                (format "Insufficient Capacity Left ({}) to combine {} Individual Shares" [capacity shares-amount])
+            )
+            (enforce 
+                (= mod-check 0) 
+                (format "{} Shares is an invalid amount for making a Tier {} Share Packge for EQUITY-SFT Collection {}" [shares-amount package-share-tier id])
             )
         )
     )
-    ;;{F7}  [X]
+    (defun UEV_EquitySemiFungibleID (id:string)
+        (let
+            (
+                (ft:string (take 2 id))
+                (sh:string "E|")
+            )
+            (enforce (= ft sh) "Only EQUITY SFT Collections allowed")
+        )
+    )
+    (defun UEV_Convert (id:string input-tier:integer input-tier-amount:integer output-tier:integer)
+        (UEV_SharePackageTier input-tier)
+        (UEV_SharePackageTier output-tier)
+        (let
+            (
+                (spm:[integer] (URC_SharesPerMillion id))
+                (input-share-value:integer (at (- input-tier 1) spm))
+                (output-share-value:integer (at (- output-tier 1) spm))
+                (total-input-shares:integer (* input-share-value input-tier-amount))
+                (mod-check (mod total-input-shares output-share-value))
+            )
+            (enforce (!= input-tier output-tier) "Input Tier and Output Tier must be different for Conversion")
+            (enforce 
+                (= mod-check 0) 
+                (format "{} Tier {} Shares cannot be completly Converted to Tier {} Shares For Equity ID {}" [input-tier input-tier-amount output-tier id])
+            )
+        )
+    )
+    (defun UEV_Morph (input-nonce:integer output-nonce:integer)
+        (let
+            (
+                (allowed-nonces:[integer] (enumerate 1 8))
+                (iz-input:bool (contains input-nonce allowed-nonces))
+                (iz-output:bool (contains output-nonce allowed-nonces))
+            )
+            (enforce (and iz-input iz-output) "Invalid Input or Output Nonces for Morphing")
+            (enforce (!= input-nonce output-nonce) "Input and Output Nonces must be different for Morphing")
+        )
+    )
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     (defun XI_ConvertPackageShares:object{IgnisCollectorV1.OutputCumulator}
         (account:string id:string input-package-share-tier:integer input-package-share-tier-amount:integer output-package-share-tier:integer)
         @doc "Converts any Nonce to [2 3 4 5 6 7 8] to any Nonce [2 3 4 5 6 7 8]"
@@ -705,6 +581,130 @@
                 (ref-IGNIS::UDC_ConcatenateOutputCumulators 
                     [ico1 ico2 ico3] 
                     [[nonce-to-break 1][amount output-shares]]
+                )
+            )
+        )
+    )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    (defun C_IssueShareholderCollection:object{IgnisCollectorV1.OutputCumulator}
+        (
+            patron:string creator-account:string collection-name:string collection-ticker:string
+            royalty:decimal ignis-royalty:decimal ipfs-links:[string]
+        )
+        @doc "Royalty is the standard Royalty for the Whole Collection \
+            \ While <ignis-royalty> is the ignis Royalty for 1% of Company Shares"
+        (UEV_IMC)
+        (let
+            (
+                (ref-U|VST:module{UtilityVstV1} U|VST)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
+                (ref-DPDC-I:module{DpdcIssueV1} DPDC-I)
+                ;;
+                (special-sft:[string] (ref-U|VST::UC_EquityID collection-name collection-ticker))
+                (name:string (at 0 special-sft))
+                (ticker:string (at 1 special-sft))
+                (dpdc:string (ref-DPDC::GOV|DPDC|SC_NAME))
+                ;;
+                (b:string BAR)
+                (zd:object{DpdcUdcV1.URI|Data} (ref-DPDC-UDC::UDC_ZeroURI|Data))
+                (md:object{DpdcUdcV1.NonceMetaData} (ref-DPDC-UDC::UDC_NoMetaData))
+                (n:[string] (UC_Name collection-name))
+                (d:[string] (UC_Description collection-name))
+                (type:object{DpdcUdcV1.URI|Type} (ref-DPDC-UDC::UDC_URI|Type true false false false false false false))
+                ;;
+                (ico:object{IgnisCollectorV1.OutputCumulator}
+                    ;;1]Issue Equity SFT Collection; <dpdc> automatically gets <role-nft-add-quantity> and <role-nft-burn>
+                    (ref-DPDC-I::C_IssueDigitalCollection
+                        patron true
+                        dpdc creator-account name ticker
+                        false false true true
+                        true true true false
+                        true
+                    )
+                )
+                (equity-id:string (at 0 (at "output" ico)))
+                (l:integer (length ipfs-links))
+            )
+            (enforce (= l 24) "24 IPFS links must be provided for an Equity Collection")
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators 
+                [
+                    ico
+                    ;;2]Populate Equity SFT Collection
+                    (ref-DPDC-C::C_CreateNewNonces
+                        equity-id true [1000000 0 0 0 0 0 0 0]
+                        [
+                            ;;Barebone Share, Nonce 1
+                            (ref-DPDC-UDC::UDC_NonceData royalty 0.001 (at 0 n) (at 0 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 0 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 8 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 16 ipfs-links) b b b b b b)
+                            )
+                            ;;0.1 Promille representing 100 Shares per Million, Nonce 2
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 100.0) (at 1 n) (at 1 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 1 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 9 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 17 ipfs-links) b b b b b b)
+                            )
+                            ;;0.2 Promille representing 200 Shares per Million, Nonce 3
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 50.0) (at 2 n) (at 2 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 2 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 10 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 18 ipfs-links) b b b b b b)
+                            )
+                            ;;0.5 Promille representing 500 Shares per Million, Nonce 4
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 20.0) (at 3 n) (at 3 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 3 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 11 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 19 ipfs-links) b b b b b b)
+                            )
+                            ;;1 Promille representing 1000 Shares per Million, Nonce 5
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 10.0) (at 4 n) (at 4 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 4 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 12 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 20 ipfs-links) b b b b b b)
+                            )
+                            ;;2 Promille representing 2000 Shares per Million, Nonce 6
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 5.0) (at 5 n) (at 5 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 5 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 13 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 21 ipfs-links) b b b b b b)
+                            )
+                            ;;5 Promille representing 5000 Shares per Million, Nonce 7
+                            (ref-DPDC-UDC::UDC_NonceData royalty (/ ignis-royalty 2.0) (at 6 n) (at 6 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 6 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 14 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 22 ipfs-links) b b b b b b)
+                            )
+                            ;;1 Percent representing 10000 Shares per Million, Nonce 8
+                            (ref-DPDC-UDC::UDC_NonceData royalty ignis-royalty (at 7 n) (at 7 d) md type
+                                (ref-DPDC-UDC::UDC_URI|Data (at 7 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 15 ipfs-links) b b b b b b)
+                                (ref-DPDC-UDC::UDC_URI|Data (at 23 ipfs-links) b b b b b b)
+                            )
+                        ]
+                    )
+                ]
+                [equity-id]
+            )
+        )
+    )
+    (defun C_MorphPackageShares:object{IgnisCollectorV1.OutputCumulator}
+        (account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
+        (UEV_IMC)
+        (UEV_Morph input-nonce output-nonce)
+        (with-capability (SECURE)
+            (if (= input-nonce 1)
+                ;;Make Package Shares
+                (XI_MakePackageShares account id input-amount (- output-nonce 1))
+                (if (= output-nonce 1)
+                    ;;Brake Package Shares
+                    (XI_BreakPackageShares account id (- input-nonce 1) input-amount)
+                    ;;Convert Package Shares
+                    (XI_ConvertPackageShares account id (- input-nonce 1) input-amount (- output-nonce 1))
                 )
             )
         )

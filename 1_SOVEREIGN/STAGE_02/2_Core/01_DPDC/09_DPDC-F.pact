@@ -198,47 +198,10 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    (defun UEV_IzNonceFragmented:bool (id:string son:bool nonce:integer)
-        @doc "Checks if a nonce is fragmented. For non 0 nonce-classes, the set class is checked instead for fragmentation"
-        (enforce (> nonce 0) "Only greater than 0 nonces can be checked for fragmentation")
-        (let
-            (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (sd:object{DpdcUdcV1.DPDC|NonceData} (ref-DPDC::UR_SplitNonceData id son nonce))
-                (zd:object{DpdcUdcV1.DPDC|NonceData} (ref-DPDC-UDC::UDC_ZeroNonceData))
-                (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
-            )
-            (if (!= sd zd) 
-                true
-                (if (!= nonce-class 0)
-                    (let
-                        (
-                            (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
-                        )
-                        (ref-DPDC-S::UEV_IzSetClassFragmented id son nonce-class)
-                    )
-                    false
-                )
-            )
-        )
-    )
-    (defun UEV_Fragmentation (id:string son:bool nonce:integer)
-        (let
-            (
-                (iz-fragmented:bool (UEV_IzNonceFragmented id son nonce))
-            )
-            (enforce iz-fragmented "Nonce must be fragmented for operation")
-        )
-    )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;
-    ;;{F5}  [A]
-    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
     (defun URCi_RepurposeCollectableFragments:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool fragment-amounts:[integer])
         @doc "Cost preview for C_RepurposeCollectableFragments: per-fragment construct \
@@ -294,7 +257,57 @@
             (ref-IGNIS::UDC_SmallestCumulator (ref-DPDC::UR_CreatorKonto id son))
         )
     )
-    ;;{F6}  [C]
+    ;;{F4}  Validate [UEV/CAP]
+    (defun UEV_IzNonceFragmented:bool (id:string son:bool nonce:integer)
+        @doc "Checks if a nonce is fragmented. For non 0 nonce-classes, the set class is checked instead for fragmentation"
+        (enforce (> nonce 0) "Only greater than 0 nonces can be checked for fragmentation")
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (sd:object{DpdcUdcV1.DPDC|NonceData} (ref-DPDC::UR_SplitNonceData id son nonce))
+                (zd:object{DpdcUdcV1.DPDC|NonceData} (ref-DPDC-UDC::UDC_ZeroNonceData))
+                (nonce-class:integer (ref-DPDC::UR_NonceClass id son nonce))
+            )
+            (if (!= sd zd) 
+                true
+                (if (!= nonce-class 0)
+                    (let
+                        (
+                            (ref-DPDC-S:module{DpdcSetsV1} DPDC-S)
+                        )
+                        (ref-DPDC-S::UEV_IzSetClassFragmented id son nonce-class)
+                    )
+                    false
+                )
+            )
+        )
+    )
+    (defun UEV_Fragmentation (id:string son:bool nonce:integer)
+        (let
+            (
+                (iz-fragmented:bool (UEV_IzNonceFragmented id son nonce))
+            )
+            (enforce iz-fragmented "Nonce must be fragmented for operation")
+        )
+    )
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    (defun XI_EnableNonceFragmentation 
+        (
+            id:string son:bool nonce:integer
+            fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}
+        )
+        (require-capability (DPDC-F|C>ENABLE-FRAGMENTATION id son nonce fragmentation-ind))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|NonceOrSplitData id son nonce false fragmentation-ind)
+        )
+    )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     (defun C_RepurposeCollectableFragments:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool repurpose-from:string repurpose-to:string fragment-nonces:[integer] fragment-amounts:[integer])
         (UEV_IMC)
@@ -425,20 +438,6 @@
                 (ref-DPDC::XE_DeployAccountWNE dpdc id son)
                 (URCi_EnableNonceFragmentation id son)
             )
-        )
-    )
-    ;;{F7}  [X]
-    (defun XI_EnableNonceFragmentation 
-        (
-            id:string son:bool nonce:integer
-            fragmentation-ind:object{DpdcUdcV1.DPDC|NonceData}
-        )
-        (require-capability (DPDC-F|C>ENABLE-FRAGMENTATION id son nonce fragmentation-ind))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|NonceOrSplitData id son nonce false fragmentation-ind)
         )
     )
     ;;

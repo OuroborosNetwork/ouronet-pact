@@ -153,6 +153,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_ShortAccount:string (account:string)
         (let
             (
@@ -161,13 +163,12 @@
             (ref-I|OURONET::OI|UC_ShortAccount account)
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
     ;;
-    ;;{F5}  [A]
     (defun A_RegisterAssetToLaunchpad (patron:string asset-id:string fungibility:[bool])
         @doc "Registers an Asset to Launchpad; \
             \ An Asset can be a DPTF, DPMF, DPSF or DPNF \
@@ -242,7 +243,7 @@
             )
         )
     )
-    ;;{F6}  [C]
+    ;;{F8}  User [C]
     (defun DEMIPAD|C_Deposit (patron:string donor:string asset-id:string amount-in-dollars:decimal type:integer direct-injection:bool max-cost:decimal)
         @doc "Sovereign launchpad DEPOSIT Talos op — the citizen sales call this to move a buyer's \
             \ STOA/OURS working-token into the Launchpad against <asset-id>. <type> 0 = Native STOA \
@@ -399,7 +400,6 @@
             )
         )
     )
-    ;;{F7}  [X]
     ;;
 )
 

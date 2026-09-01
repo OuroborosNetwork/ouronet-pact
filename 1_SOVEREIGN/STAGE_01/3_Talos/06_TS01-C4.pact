@@ -172,13 +172,14 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
     ;;
-    ;;{F5}  [A]
     (defun CODEX|A_RegisterCodexIdentity:string
         ( codex-id:string
           public-standard:string
@@ -197,7 +198,54 @@
             )
         )
     )
-    ;;{F6}  [C]
+    (defun PYTHIA|A_Link:string (standard-apollo:string smart-apollo:string)
+        @doc "Cronoton activates dual link after off-chain Apollo proof (no fee)."
+        (with-capability (P|TS)
+            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
+                (ref-PYTHIA::A_LinkDualApiKey standard-apollo smart-apollo)
+            )
+        )
+    )
+    (defun PYTHIA|A_RevokeLink:string (dual-link-key:string)
+        @doc "Cronoton revokes active dual link (no fee; patronless)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-PYTHIA:module{PythiaV4} PYTHIA)
+                )
+                (ref-PYTHIA::A_RevokeDualLink dual-link-key)
+            )
+        )
+    )
+    (defun PYTHIA|A_Flush:string
+        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}])
+        @doc "Khronoton batch Pyth ledger flush (order-independent day entries; no fee)."
+        (with-capability (P|TS)
+            (let
+                (
+                    (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
+                )
+                (ref-LEDGER::A_Flush entries)
+            )
+        )
+    )
+    (defun PYTHIA|A_UpdateDeployPrice:string (new-price:decimal)
+        @doc "Updates the PYTHIA Codex/Apollo deploy price (no fee)."
+        (with-capability (P|TS)
+            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
+                (ref-PYTHIA::A_UpdateDeployPrice new-price)
+            )
+        )
+    )
+    (defun PYTHIA|A_UpdateRenamePrice:string (new-price:decimal)
+        @doc "Updates the PYTHIA Codex/Apollo rename price (no fee)."
+        (with-capability (P|TS)
+            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
+                (ref-PYTHIA::A_UpdateRenamePrice new-price)
+            )
+        )
+    )
+    ;;{F8}  User [C]
     (defun CODEX|C_RotateCodexGuard:string (codex-id:string new-codex-guard:guard)
         @doc "Rotate codex-guard for <codex-id>."
         (with-capability (P|TS)
@@ -320,14 +368,6 @@
             )
         )
     )
-    (defun PYTHIA|A_Link:string (standard-apollo:string smart-apollo:string)
-        @doc "Cronoton activates dual link after off-chain Apollo proof (no fee)."
-        (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
-                (ref-PYTHIA::A_LinkDualApiKey standard-apollo smart-apollo)
-            )
-        )
-    )
     (defun PYTHIA|C_RevokeLink:string
         ( patron:string
           dual-link-key:string )
@@ -351,45 +391,6 @@
                     )
                 )
                 msg
-            )
-        )
-    )
-    (defun PYTHIA|A_RevokeLink:string (dual-link-key:string)
-        @doc "Cronoton revokes active dual link (no fee; patronless)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-PYTHIA:module{PythiaV4} PYTHIA)
-                )
-                (ref-PYTHIA::A_RevokeDualLink dual-link-key)
-            )
-        )
-    )
-    (defun PYTHIA|A_Flush:string
-        (entries:[object{PythiaLedgerV2.PYTHIA|S|PythFlushEntry}])
-        @doc "Khronoton batch Pyth ledger flush (order-independent day entries; no fee)."
-        (with-capability (P|TS)
-            (let
-                (
-                    (ref-LEDGER:module{PythiaLedgerV2} PYTHIA)
-                )
-                (ref-LEDGER::A_Flush entries)
-            )
-        )
-    )
-    (defun PYTHIA|A_UpdateDeployPrice:string (new-price:decimal)
-        @doc "Updates the PYTHIA Codex/Apollo deploy price (no fee)."
-        (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
-                (ref-PYTHIA::A_UpdateDeployPrice new-price)
-            )
-        )
-    )
-    (defun PYTHIA|A_UpdateRenamePrice:string (new-price:decimal)
-        @doc "Updates the PYTHIA Codex/Apollo rename price (no fee)."
-        (with-capability (P|TS)
-            (let ((ref-PYTHIA:module{PythiaV4} PYTHIA))
-                (ref-PYTHIA::A_UpdateRenamePrice new-price)
             )
         )
     )

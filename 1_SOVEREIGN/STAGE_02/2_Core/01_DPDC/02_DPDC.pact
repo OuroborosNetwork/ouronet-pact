@@ -340,6 +340,27 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    (defun UDC_Control:object{DpdcUdcV1.DPDC|Properties}
+        (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
+        (let
+            (
+                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
+            )
+            (ref-DPDC-UDC::UDC_DPDC|Properties
+                id
+                (UR_OwnerKonto id son)
+                (UR_CreatorKonto id son)
+                (UR_Name id son)
+                (UR_Ticker id son)
+                cu cco ccc casr ctncr cf cw cp
+                (UR_IsPaused id son)
+                (UR_NoncesUsed id son)
+                (UR_SetClassesUsed id son)
+            )
+        )
+    )
+    ;;{F2}  Compute [UC]
     (defun UC_ParseSignedInteger:integer (value:string)
         @doc "Converts an integer written as string, to integer, working for negative values aswell."
         (let
@@ -354,7 +375,7 @@
             )
         )
     )
-    ;;{F0}  [UR]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;DPDC Audit #55L: renamed from UR_AS-KEYS -- a full (keys ...) table scan belongs under the URH_
     ;;prefix (dirty/scan-tier reads), not UR_ (point reads); matches this file's other URH_* scans.
     (defun URH_AS-Keys:[string] (son:bool)
@@ -661,7 +682,6 @@
             )
         ) 
     )
-    ;;{F1}  [URC]
     ;;
     ;;  [URD]
     ;;
@@ -741,7 +761,25 @@
             )
         )
     )
-    ;;{F2}  [UEV]
+    ;;
+    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
+        (entity-id:string son:bool)
+        @doc "Cost preview for C_UpdatePendingBranding (Branding tier; son->4.0 else 5.0)."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (owner:string (UR_OwnerKonto entity-id son))
+                (multiplier:decimal (if son 4.0 5.0))
+            )
+            (ref-IGNIS::UDC_BrandingCumulator owner multiplier)
+        )
+    )
+    (defun URCi_UpgradeBranding:decimal (months:integer)
+        @doc "Cost preview for C_UpgradeBranding (delegates to BRD single source; \
+            \ the exec path bills the same value via ref-BRD::XE_UpgradeBranding)."
+        (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
+    )
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_id (id:string son:bool)
         (if son
             (with-default-read DPSF|T|Properties id
@@ -1078,28 +1116,7 @@
             (enumerate 0 (- (length nonces) 1))
         )
     )
-    ;;{F3}  [UDC]
-    (defun UDC_Control:object{DpdcUdcV1.DPDC|Properties}
-        (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
-        (let
-            (
-                (ref-DPDC-UDC:module{DpdcUdcV1} DPDC-UDC)
-            )
-            (ref-DPDC-UDC::UDC_DPDC|Properties
-                id
-                (UR_OwnerKonto id son)
-                (UR_CreatorKonto id son)
-                (UR_Name id son)
-                (UR_Ticker id son)
-                cu cco ccc casr ctncr cf cw cp
-                (UR_IsPaused id son)
-                (UR_NoncesUsed id son)
-                (UR_SetClassesUsed id son)
-            )
-        )
-    )
     ;;
-    ;;{F4}  [CAP]
     (defun CAP_Owner (id:string son:bool)
         @doc "Enforces DPSF or DPNF Token ID Ownership"
         (let
@@ -1128,62 +1145,9 @@
             ]
         )
     )
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
     ;;
-    ;;{F5}  [A]
-    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
-    (defun URCi_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
-        (entity-id:string son:bool)
-        @doc "Cost preview for C_UpdatePendingBranding (Branding tier; son->4.0 else 5.0)."
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (owner:string (UR_OwnerKonto entity-id son))
-                (multiplier:decimal (if son 4.0 5.0))
-            )
-            (ref-IGNIS::UDC_BrandingCumulator owner multiplier)
-        )
-    )
-    (defun URCi_UpgradeBranding:decimal (months:integer)
-        @doc "Cost preview for C_UpgradeBranding (delegates to BRD single source; \
-            \ the exec path bills the same value via ref-BRD::XE_UpgradeBranding)."
-        (let ((ref-BRD:module{BrandingV1} BRD)) (ref-BRD::URCi_UpgradeBranding months))
-    )
-    ;;{F6}  [C]
-    (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
-        (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
-        (UEV_IMC)
-        (let
-            (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-BRD:module{BrandingV1} BRD)
-                (owner:string (UR_OwnerKonto entity-id son))
-                (multiplier:decimal (if son 4.0 5.0))
-            )
-            (with-capability (DPDC|C>UPDATE-BRD entity-id son)
-                (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
-                (URCi_UpdatePendingBranding entity-id son)
-            )
-        )
-    )
-    (defun C_UpgradeBranding (patron:string entity-id:string son:bool months:integer)
-        (UEV_IMC)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-BRD:module{BrandingV1} BRD)
-                (owner:string (UR_OwnerKonto entity-id son))
-                (stoa-payment:decimal
-                    (with-capability (DPDC|C>UPGRADE-BRD entity-id son)
-                        (ref-BRD::XE_UpgradeBranding entity-id owner months)
-                    )
-                )
-            )
-            (ref-IGNIS::STOA|C_CollectWT patron stoa-payment false)
-        )
-    )
-    ;;
-    ;;{F7}  [X]
     ;; [<AccountsTable> Writings] [0]
     (defun XB_DeployAccountSFT
         (
@@ -1611,8 +1575,8 @@
             
         )
     )
+    ;;{F7}  User [A]
     ;;
-    ;;{F8}  [AUP - Admin Update Functions]
     ;;
     (defcap AHU ()
         (let
@@ -1730,6 +1694,40 @@
         (require-capability (SECURE))
         (update (if son DPSF|T|Properties DPNF|T|Properties) id
             {"id"       : id}
+        )
+    )
+    ;;{F8}  User [C]
+    (defun C_UpdatePendingBranding:object{IgnisCollectorV1.OutputCumulator}
+        (entity-id:string son:bool logo:string description:string website:string social:[object{BrandingV1.SocialSchema}])
+        (UEV_IMC)
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-BRD:module{BrandingV1} BRD)
+                (owner:string (UR_OwnerKonto entity-id son))
+                (multiplier:decimal (if son 4.0 5.0))
+            )
+            (with-capability (DPDC|C>UPDATE-BRD entity-id son)
+                (ref-BRD::XE_UpdatePendingBranding entity-id logo description website social)
+                (URCi_UpdatePendingBranding entity-id son)
+            )
+        )
+    )
+    (defun C_UpgradeBranding (patron:string entity-id:string son:bool months:integer)
+        (UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-BRD:module{BrandingV1} BRD)
+                (owner:string (UR_OwnerKonto entity-id son))
+                (stoa-payment:decimal
+                    (with-capability (DPDC|C>UPGRADE-BRD entity-id son)
+                        (ref-BRD::XE_UpgradeBranding entity-id owner months)
+                    )
+                )
+            )
+            (ref-IGNIS::STOA|C_CollectWT patron stoa-payment false)
         )
     )
     ;;

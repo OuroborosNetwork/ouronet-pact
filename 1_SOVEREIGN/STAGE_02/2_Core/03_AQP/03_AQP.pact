@@ -783,6 +783,151 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;; [UDC] construct
+    ;;
+    ;; Default tracker and attribution rows for UR with-default-read.
+    (defun UDC_AQP|TrueFungibleTracker:object{AQP|TrueFungibleTracker}
+        (bal:decimal pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
+        @doc "Default DPTF tracker row (zero balance, key fields from arguments)."
+        {"balance"          : bal
+        ,"pool-id"          : pool-id
+        ,"dptf-id"          : dptf-id
+        ,"owner-id"         : owner-id
+        ,"beneficiary-id"   : beneficiary-id}
+    )
+    (defun UDC_AQP|OrtoFungibleTracker:object{AQP|OrtoFungibleTracker}
+        (bal:decimal pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Default DPOF tracker row (zero balance, key fields from arguments)."
+        {"balance"          : bal
+        ,"pool-id"          : pool-id
+        ,"dpof-id"          : dpof-id
+        ,"owner-id"         : owner-id
+        ,"beneficiary-id"   : beneficiary-id
+        ,"nonce"            : nonce}
+    )
+    (defun UDC_AQP|SemiFungibleTracker:object{AQP|SemiFungibleTracker}
+        (bal:decimal pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Default DPSF tracker row (zero balance, key fields from arguments)."
+        {"balance"          : bal
+        ,"pool-id"          : pool-id
+        ,"dpsf-id"          : dpsf-id
+        ,"owner-id"         : owner-id
+        ,"beneficiary-id"   : beneficiary-id
+        ,"nonce"            : nonce}
+    )
+    (defun UDC_AQP|NonFungibleTracker:object{AQP|NonFungibleTracker}
+        (bal:decimal pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
+        @doc "Default DPNF tracker row (zero balance, key fields from arguments)."
+        {"balance"          : bal
+        ,"pool-id"          : pool-id
+        ,"dpnf-id"          : dpnf-id
+        ,"owner-id"         : owner-id
+        ,"beneficiary-id"   : beneficiary-id
+        ,"nonce"            : nonce}
+    )
+    (defun UDC_AQP|BenDptfTotal:object{AQP|BenDptfTotal}
+        (total:decimal sync-count:integer beneficiary-id:string dptf-id:string)
+        @doc "Default beneficiary DPTF rollup row (zero total, never synced)."
+        {"total-balance"        : total
+        ,"last-ank-sync-count"  : sync-count
+        ,"beneficiary-id"       : beneficiary-id
+        ,"dptf-id"              : dptf-id}
+    )
+    (defun UDC_AQP|BenDpsfNonceTotal:object{AQP|BenDpsfNonceTotal}
+        (amount:integer beneficiary-id:string dpsf-id:string nonce:integer)
+        @doc "Default DPSF per-nonce rollup row (zero amount)."
+        {"amount"           : amount
+        ,"beneficiary-id"   : beneficiary-id
+        ,"dpsf-id"          : dpsf-id
+        ,"nonce"            : nonce}
+    )
+    (defun UDC_AQP|BenDpnfNonceTotal:object{AQP|BenDpnfNonceTotal}
+        (amount:integer beneficiary-id:string dpnf-id:string nonce:integer)
+        @doc "Default DPNF per-nonce rollup row (zero amount)."
+        {"amount"           : amount
+        ,"beneficiary-id"   : beneficiary-id
+        ,"dpnf-id"          : dpnf-id
+        ,"nonce"            : nonce}
+    )
+    (defun UDC_AQP|BenDpsfAnkMeta:object{AQP|BenDpsfAnkMeta}
+        (sync-count:integer active-nonce-count:integer beneficiary-id:string dpsf-id:string)
+        @doc "Default DPSF ANK meta row (never synced, no active nonces)."
+        {"last-ank-sync-count"  : sync-count
+        ,"active-nonce-count"   : active-nonce-count
+        ,"beneficiary-id"       : beneficiary-id
+        ,"dpsf-id"              : dpsf-id}
+    )
+    (defun UDC_AQP|BenDpnfAnkMeta:object{AQP|BenDpnfAnkMeta}
+        (sync-count:integer active-nonce-count:integer beneficiary-id:string dpnf-id:string)
+        @doc "Default DPNF ANK meta row (never synced, no active nonces)."
+        {"last-ank-sync-count"  : sync-count
+        ,"active-nonce-count"   : active-nonce-count
+        ,"beneficiary-id"       : beneficiary-id
+        ,"dpnf-id"              : dpnf-id}
+    )
+    (defun UDC_AQP|UserOccupancy:object{AQP|UserOccupancy}
+        (unn:integer pool-id:string beneficiary-id:string)
+        @doc "Vacate-v2 §4: default per (pool, beneficiary) occupancy row (unn = 0 when absent)."
+        {"unn"                  : unn
+        ,"pool-id"              : pool-id
+        ,"beneficiary-id"       : beneficiary-id}
+    )
+    (defun UDC_AQP|Schema:object{AQP|Schema}
+        (aqp-class:integer asset-id:string aqp-id:string)
+        @doc "Default new pool row: all seven score slots BAR; aqp-id equals pool-id (table key). #FP1 universal \
+            \ nns: starts -1 only for LP pools (class 0, complex multi-leg — still nzs-based finalize) and 0 for \
+            \ occupancy-tracked pools (class 1 TF legs, 2/3/4 OF/SF/NF nonce positions)."
+        {"aqp-class"            : aqp-class
+        ,"asset-id"             : asset-id
+        ,"score-primary"        : BAR
+        ,"score-secondary"      : BAR
+        ,"score-tertiary"       : BAR
+        ,"score-quaternary"     : BAR
+        ,"score-quinary"        : BAR
+        ,"score-senary"         : BAR
+        ,"score-septenary"      : BAR
+        ,"stake-enabled"        : true
+        ,"vacate-in-progress"   : false
+        ,"sweep-in-progress"    : false
+        ,"nns"                  : (if (< aqp-class 1) -1 0)
+        ,"aqp-id"               : aqp-id}
+    )
+    (defun UDC_AQP|SchemaWithScoreSlots:object{AQP|Schema}
+        (pool:object{AQP|Schema}
+            score-primary:string
+            score-secondary:string
+            score-tertiary:string
+            score-quaternary:string
+            score-quinary:string
+            score-senary:string
+            score-septenary:string
+        )
+        @doc "Returns pool row with all seven score slots replaced (+ merge on existing row)."
+        (+ pool
+            {"score-primary"    : score-primary
+            ,"score-secondary"  : score-secondary
+            ,"score-tertiary"   : score-tertiary
+            ,"score-quaternary" : score-quaternary
+            ,"score-quinary"    : score-quinary
+            ,"score-senary"     : score-senary
+            ,"score-septenary"  : score-septenary}
+        )
+    )
+    (defun UDC_AQP|SchemaWithScoreAtSlot:object{AQP|Schema}
+        (pool:object{AQP|Schema} slot-index:integer score-id:string)
+        @doc "Returns pool row with score-id written into slot-index (0=primary .. 6=septenary)."
+        (UDC_AQP|SchemaWithScoreSlots pool
+            (if (= slot-index 0) score-id (at "score-primary" pool))
+            (if (= slot-index 1) score-id (at "score-secondary" pool))
+            (if (= slot-index 2) score-id (at "score-tertiary" pool))
+            (if (= slot-index 3) score-id (at "score-quaternary" pool))
+            (if (= slot-index 4) score-id (at "score-quinary" pool))
+            (if (= slot-index 5) score-id (at "score-senary" pool))
+            (if (= slot-index 6) score-id (at "score-septenary" pool))
+        )
+    )
+    ;;{F2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_DPTFTracker:string (pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
         @doc "Composite key for AQP|T|DPTFTracker: pool-id | dptf-id | owner-id | beneficiary-id."
@@ -847,6 +992,7 @@
             )
         )
     )
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     (defun UR_AQP|Pool:object{AQP|Schema} (pool-id:string)
         @doc "Reads full pool definition row from AQP|T|Pool."
@@ -1823,6 +1969,72 @@
                     (where "beneficiary-id" (= beneficiary-id))))
         )
     )
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview (config/sync)
+    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-POOL AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_IssueStoa:decimal ()
+        (let ((d:module{OuronetDalosV1} DALOS)) (d::UR_UsagePrice "smart")))
+    (defun URCi_AddScore:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_RevokeScore:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|REVOKE-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SetPoolStake:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        @doc "GAS|SET-POOL-STAKE (shared by Enable / Disable pool-stake)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-POOL-STAKE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        @doc "GAS|SYNC-TF-ANCHORS gas leg; exec concats it with the anchor-repair + meta legs (state-dependent)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SYNC-TF-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        @doc "GAS|SYNC-COLLECTABLE-ANCHORS gas leg (SF+NF); exec concats it with the anchor-repair + meta legs (state-dependent)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SYNC-COLLECTABLE-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SyncTrueFungibleAnchorsFull:decimal (beneficiary-id:string dptf-id:string)
+        @doc "FULL reconstructed IGNIS ifp of C_SyncTrueFungibleAnchors: the read-only mirror of the exec's \
+            \ UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas]. ico-ank = ANK anchor-refresh (ignis|small \
+            \ x n-live, n-live = live TF anchors on dptf-id) reproducing XE_UpdateTrueFungibleUserAnchorValues; \
+            \ ico-meta = the biggest-tier sync-count stamp (XB_SetBenDptfAnkSyncCount); ico-gas = URCi_SyncTrueFungibleAnchors."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                ;;
+                (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset dptf-id)))
+            )
+            (fold (+) 0.0
+                [ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-ank
+                      (ref-IGNIS::UDC_ConstructOutputCumulator
+                          (ref-ANK::URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
+                          AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-meta
+                      (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
+                      (URCi_SyncTrueFungibleAnchors [beneficiary-id dptf-id]))
+                ])))
+    (defun URCi_SyncCollectableAnchorsFull:decimal (beneficiary-id:string collectable-id:string)
+        @doc "FULL reconstructed IGNIS ifp of C_SyncCollectableAnchors (SF son=true / NF son=false — cost is \
+            \ son-independent). Read-only mirror of the exec's UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas]. \
+            \ ico-ank = ANK anchor-refresh (ignis|small x n-live, n-live = live anchors on collectable-id) reproducing \
+            \ XE_Resync{Semi,Non}FungibleUserAnchorValues (both use URC_TrueFungibleStakeAnchorRefreshIgnis); ico-meta = \
+            \ the biggest-tier sync-count stamp (XB_SetBenCollectableAnkSyncCount); ico-gas = URCi_SyncCollectableAnchors."
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
+                ;;
+                (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset collectable-id)))
+            )
+            (fold (+) 0.0
+                [ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-ank
+                      (ref-IGNIS::UDC_ConstructOutputCumulator
+                          (ref-ANK::URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
+                          AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-meta
+                      (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME))
+                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
+                      (URCi_SyncCollectableAnchors [beneficiary-id collectable-id]))
+                ])))
+    ;;{F4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_IssuePoolClassAndAsset (aqp-class:integer asset-id:string)
         @doc "aqp-class 0..4 and asset-id existence / shape for that class (native id only at issue)."
@@ -2047,149 +2259,7 @@
             (ref-DALOS::CAP_EnforceAccountOwnership owner-id)
         )
     )
-    ;; [UDC] construct
-    ;;
-    ;; Default tracker and attribution rows for UR with-default-read.
-    (defun UDC_AQP|TrueFungibleTracker:object{AQP|TrueFungibleTracker}
-        (bal:decimal pool-id:string dptf-id:string owner-id:string beneficiary-id:string)
-        @doc "Default DPTF tracker row (zero balance, key fields from arguments)."
-        {"balance"          : bal
-        ,"pool-id"          : pool-id
-        ,"dptf-id"          : dptf-id
-        ,"owner-id"         : owner-id
-        ,"beneficiary-id"   : beneficiary-id}
-    )
-    (defun UDC_AQP|OrtoFungibleTracker:object{AQP|OrtoFungibleTracker}
-        (bal:decimal pool-id:string dpof-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Default DPOF tracker row (zero balance, key fields from arguments)."
-        {"balance"          : bal
-        ,"pool-id"          : pool-id
-        ,"dpof-id"          : dpof-id
-        ,"owner-id"         : owner-id
-        ,"beneficiary-id"   : beneficiary-id
-        ,"nonce"            : nonce}
-    )
-    (defun UDC_AQP|SemiFungibleTracker:object{AQP|SemiFungibleTracker}
-        (bal:decimal pool-id:string dpsf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Default DPSF tracker row (zero balance, key fields from arguments)."
-        {"balance"          : bal
-        ,"pool-id"          : pool-id
-        ,"dpsf-id"          : dpsf-id
-        ,"owner-id"         : owner-id
-        ,"beneficiary-id"   : beneficiary-id
-        ,"nonce"            : nonce}
-    )
-    (defun UDC_AQP|NonFungibleTracker:object{AQP|NonFungibleTracker}
-        (bal:decimal pool-id:string dpnf-id:string owner-id:string beneficiary-id:string nonce:integer)
-        @doc "Default DPNF tracker row (zero balance, key fields from arguments)."
-        {"balance"          : bal
-        ,"pool-id"          : pool-id
-        ,"dpnf-id"          : dpnf-id
-        ,"owner-id"         : owner-id
-        ,"beneficiary-id"   : beneficiary-id
-        ,"nonce"            : nonce}
-    )
-    (defun UDC_AQP|BenDptfTotal:object{AQP|BenDptfTotal}
-        (total:decimal sync-count:integer beneficiary-id:string dptf-id:string)
-        @doc "Default beneficiary DPTF rollup row (zero total, never synced)."
-        {"total-balance"        : total
-        ,"last-ank-sync-count"  : sync-count
-        ,"beneficiary-id"       : beneficiary-id
-        ,"dptf-id"              : dptf-id}
-    )
-    (defun UDC_AQP|BenDpsfNonceTotal:object{AQP|BenDpsfNonceTotal}
-        (amount:integer beneficiary-id:string dpsf-id:string nonce:integer)
-        @doc "Default DPSF per-nonce rollup row (zero amount)."
-        {"amount"           : amount
-        ,"beneficiary-id"   : beneficiary-id
-        ,"dpsf-id"          : dpsf-id
-        ,"nonce"            : nonce}
-    )
-    (defun UDC_AQP|BenDpnfNonceTotal:object{AQP|BenDpnfNonceTotal}
-        (amount:integer beneficiary-id:string dpnf-id:string nonce:integer)
-        @doc "Default DPNF per-nonce rollup row (zero amount)."
-        {"amount"           : amount
-        ,"beneficiary-id"   : beneficiary-id
-        ,"dpnf-id"          : dpnf-id
-        ,"nonce"            : nonce}
-    )
-    (defun UDC_AQP|BenDpsfAnkMeta:object{AQP|BenDpsfAnkMeta}
-        (sync-count:integer active-nonce-count:integer beneficiary-id:string dpsf-id:string)
-        @doc "Default DPSF ANK meta row (never synced, no active nonces)."
-        {"last-ank-sync-count"  : sync-count
-        ,"active-nonce-count"   : active-nonce-count
-        ,"beneficiary-id"       : beneficiary-id
-        ,"dpsf-id"              : dpsf-id}
-    )
-    (defun UDC_AQP|BenDpnfAnkMeta:object{AQP|BenDpnfAnkMeta}
-        (sync-count:integer active-nonce-count:integer beneficiary-id:string dpnf-id:string)
-        @doc "Default DPNF ANK meta row (never synced, no active nonces)."
-        {"last-ank-sync-count"  : sync-count
-        ,"active-nonce-count"   : active-nonce-count
-        ,"beneficiary-id"       : beneficiary-id
-        ,"dpnf-id"              : dpnf-id}
-    )
-    (defun UDC_AQP|UserOccupancy:object{AQP|UserOccupancy}
-        (unn:integer pool-id:string beneficiary-id:string)
-        @doc "Vacate-v2 §4: default per (pool, beneficiary) occupancy row (unn = 0 when absent)."
-        {"unn"                  : unn
-        ,"pool-id"              : pool-id
-        ,"beneficiary-id"       : beneficiary-id}
-    )
-    (defun UDC_AQP|Schema:object{AQP|Schema}
-        (aqp-class:integer asset-id:string aqp-id:string)
-        @doc "Default new pool row: all seven score slots BAR; aqp-id equals pool-id (table key). #FP1 universal \
-            \ nns: starts -1 only for LP pools (class 0, complex multi-leg — still nzs-based finalize) and 0 for \
-            \ occupancy-tracked pools (class 1 TF legs, 2/3/4 OF/SF/NF nonce positions)."
-        {"aqp-class"            : aqp-class
-        ,"asset-id"             : asset-id
-        ,"score-primary"        : BAR
-        ,"score-secondary"      : BAR
-        ,"score-tertiary"       : BAR
-        ,"score-quaternary"     : BAR
-        ,"score-quinary"        : BAR
-        ,"score-senary"         : BAR
-        ,"score-septenary"      : BAR
-        ,"stake-enabled"        : true
-        ,"vacate-in-progress"   : false
-        ,"sweep-in-progress"    : false
-        ,"nns"                  : (if (< aqp-class 1) -1 0)
-        ,"aqp-id"               : aqp-id}
-    )
-    (defun UDC_AQP|SchemaWithScoreSlots:object{AQP|Schema}
-        (pool:object{AQP|Schema}
-            score-primary:string
-            score-secondary:string
-            score-tertiary:string
-            score-quaternary:string
-            score-quinary:string
-            score-senary:string
-            score-septenary:string
-        )
-        @doc "Returns pool row with all seven score slots replaced (+ merge on existing row)."
-        (+ pool
-            {"score-primary"    : score-primary
-            ,"score-secondary"  : score-secondary
-            ,"score-tertiary"   : score-tertiary
-            ,"score-quaternary" : score-quaternary
-            ,"score-quinary"    : score-quinary
-            ,"score-senary"     : score-senary
-            ,"score-septenary"  : score-septenary}
-        )
-    )
-    (defun UDC_AQP|SchemaWithScoreAtSlot:object{AQP|Schema}
-        (pool:object{AQP|Schema} slot-index:integer score-id:string)
-        @doc "Returns pool row with score-id written into slot-index (0=primary .. 6=septenary)."
-        (UDC_AQP|SchemaWithScoreSlots pool
-            (if (= slot-index 0) score-id (at "score-primary" pool))
-            (if (= slot-index 1) score-id (at "score-secondary" pool))
-            (if (= slot-index 2) score-id (at "score-tertiary" pool))
-            (if (= slot-index 3) score-id (at "score-quaternary" pool))
-            (if (= slot-index 4) score-id (at "score-quinary" pool))
-            (if (= slot-index 5) score-id (at "score-senary" pool))
-            (if (= slot-index 6) score-id (at "score-septenary" pool))
-        )
-    )
+    ;;{F5}  Write [W]
     ;; [W]   write
     ;;
     ;; Twelve blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
@@ -2433,6 +2503,7 @@
             (UDC_AQP|BenDpnfAnkMeta sync-count (at "active-nonce-count" row) beneficiary-id dpnf-id)
         )
     )
+    ;;{F6}  Aux/Protected [X]
     ;; [XI]
     (defun XI_IssuePool:string
         (pool-id:string aqp-class:integer asset-id:string)
@@ -3011,71 +3082,8 @@
             )
         )
     )
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview (config/sync)
-    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-POOL AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_IssueStoa:decimal ()
-        (let ((d:module{OuronetDalosV1} DALOS)) (d::UR_UsagePrice "smart")))
-    (defun URCi_AddScore:object{IgnisCollectorV1.OutputCumulator} (output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_RevokeScore:object{IgnisCollectorV1.OutputCumulator} (output:[string])
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|REVOKE-SCORE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_SetPoolStake:object{IgnisCollectorV1.OutputCumulator} (output:[string])
-        @doc "GAS|SET-POOL-STAKE (shared by Enable / Disable pool-stake)."
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-POOL-STAKE AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_SyncTrueFungibleAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string])
-        @doc "GAS|SYNC-TF-ANCHORS gas leg; exec concats it with the anchor-repair + meta legs (state-dependent)."
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SYNC-TF-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_SyncCollectableAnchors:object{IgnisCollectorV1.OutputCumulator} (output:[string])
-        @doc "GAS|SYNC-COLLECTABLE-ANCHORS gas leg (SF+NF); exec concats it with the anchor-repair + meta legs (state-dependent)."
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SYNC-COLLECTABLE-ANCHORS AQP|SC_NAME (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_SyncTrueFungibleAnchorsFull:decimal (beneficiary-id:string dptf-id:string)
-        @doc "FULL reconstructed IGNIS ifp of C_SyncTrueFungibleAnchors: the read-only mirror of the exec's \
-            \ UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas]. ico-ank = ANK anchor-refresh (ignis|small \
-            \ x n-live, n-live = live TF anchors on dptf-id) reproducing XE_UpdateTrueFungibleUserAnchorValues; \
-            \ ico-meta = the biggest-tier sync-count stamp (XB_SetBenDptfAnkSyncCount); ico-gas = URCi_SyncTrueFungibleAnchors."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                ;;
-                (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset dptf-id)))
-            )
-            (fold (+) 0.0
-                [ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-ank
-                      (ref-IGNIS::UDC_ConstructOutputCumulator
-                          (ref-ANK::URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
-                          AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []))
-                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-meta
-                      (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME))
-                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
-                      (URCi_SyncTrueFungibleAnchors [beneficiary-id dptf-id]))
-                ])))
-    (defun URCi_SyncCollectableAnchorsFull:decimal (beneficiary-id:string collectable-id:string)
-        @doc "FULL reconstructed IGNIS ifp of C_SyncCollectableAnchors (SF son=true / NF son=false — cost is \
-            \ son-independent). Read-only mirror of the exec's UDC_ConcatenateOutputCumulators [ico-ank ico-meta ico-gas]. \
-            \ ico-ank = ANK anchor-refresh (ignis|small x n-live, n-live = live anchors on collectable-id) reproducing \
-            \ XE_Resync{Semi,Non}FungibleUserAnchorValues (both use URC_TrueFungibleStakeAnchorRefreshIgnis); ico-meta = \
-            \ the biggest-tier sync-count stamp (XB_SetBenCollectableAnkSyncCount); ico-gas = URCi_SyncCollectableAnchors."
-        (let
-            (
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-ANK:module{AcquisitionAnchorsV1} AQP-ANK)
-                ;;
-                (n-live:integer (length (ref-ANK::UR_ANK|AnchorsForAsset collectable-id)))
-            )
-            (fold (+) 0.0
-                [ (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-ank
-                      (ref-IGNIS::UDC_ConstructOutputCumulator
-                          (ref-ANK::URC_TrueFungibleStakeAnchorRefreshIgnis n-live)
-                          AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) []))
-                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-meta
-                      (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME))
-                  (ref-I|OURONET::OI|UC_IfpFromOutputCumulator                                     ;; ico-gas
-                      (URCi_SyncCollectableAnchors [beneficiary-id collectable-id]))
-                ])))
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
     ;; [C]   client
     ;;

@@ -311,6 +311,8 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
     (defun UC_AndTruths:bool (truths:[bool])
         (fold (and) true truths)
     )
@@ -384,8 +386,7 @@
             )
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URC_TransferRoleChecker:bool (id:string son:bool sender:string)
         (let
             (
@@ -475,62 +476,6 @@
             )
         )
     )
-    ;;{F2}  [UEV]
-    (defun UEV_TransferRoles (id:string son:bool sender:string receiver:string)
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (trc:bool (URC_TransferRoleChecker id son sender))
-                (s:bool (ref-DPDC::UR_CA|R-Transfer id son sender))
-                ;; DPDC Audit #16H: was reading <sender> twice (copy-paste) — the receiver-side check
-                ;; needs the receiver's own role, matching DPOF's correct sibling pattern
-                ;; (UEV_MoveRoleCheck, 06_DPOF.pact:1618-1619).
-                (r:bool (ref-DPDC::UR_CA|R-Transfer id son receiver))
-            )
-            (UEV_TransferRoleChecker trc s r)
-        )
-    )
-    (defun UEV_TransferRoleChecker (trc:bool s:bool r:bool)
-        (if
-            trc
-            (enforce-one
-                "Invalid TR"
-                [
-                    (enforce s "Invalid TR Sender")
-                    (enforce r "Invalid TR Receiver")
-                ]
-            )
-            true
-        )
-    )
-    (defun UEV_AmountsForTransfer (id:string son:bool nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (l1:integer (length nonces))
-                (l2:integer (length amounts))
-            )
-            (enforce (= l1 l2) "Invalid Nonces|Amounts Pair for Collectable Transfer")
-            (map
-                (lambda
-                    (idx:integer)
-                    (let
-                        (
-                            (nonce:integer (at idx nonces))
-                            (amount:integer (at idx amounts))
-                            (nonce-supply:integer (ref-DPDC::UR_NonceSupply id son nonce))
-                        )
-                        (if (and (not son) (> nonce 0))
-                            (enforce (= amount 1) "When transfering Native NFT Nonces, their amount must be 1")
-                            true
-                        )
-                    )
-                )
-                (enumerate 0 (- (length nonces) 1))
-            )
-        )
-    )
-    ;;{F3}  [UDC]
     (defun URCi_MultiTransferCumulator:object{IgnisCollectorV1.OutputCumulator}
         (ids:[string] sons:[bool] sender:string receiver:string nonces-array:[[integer]] amounts-array:[[integer]])
         (let
@@ -596,10 +541,7 @@
         {"creators"         : a
         ,"ignis-royalties"  : b}
     )
-    ;;{F4}  [CAP]
     ;;
-    ;;{F5}  [A]
-    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
     ;;  (URCi_MultiTransferCumulator / URCi_BulkTransferCumulator, below, cover the transfers.)
     (defun URCi_RepurposeCollectable:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool amounts:[integer])
@@ -618,7 +560,185 @@
             (ref-IGNIS::UDC_ConstructOutputCumulator price owner (ref-IGNIS::URC_IsVirtualGasZero) [])
         )
     )
-    ;;{F6}  [C]
+    ;;{F4}  Validate [UEV/CAP]
+    (defun UEV_TransferRoles (id:string son:bool sender:string receiver:string)
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (trc:bool (URC_TransferRoleChecker id son sender))
+                (s:bool (ref-DPDC::UR_CA|R-Transfer id son sender))
+                ;; DPDC Audit #16H: was reading <sender> twice (copy-paste) — the receiver-side check
+                ;; needs the receiver's own role, matching DPOF's correct sibling pattern
+                ;; (UEV_MoveRoleCheck, 06_DPOF.pact:1618-1619).
+                (r:bool (ref-DPDC::UR_CA|R-Transfer id son receiver))
+            )
+            (UEV_TransferRoleChecker trc s r)
+        )
+    )
+    (defun UEV_TransferRoleChecker (trc:bool s:bool r:bool)
+        (if
+            trc
+            (enforce-one
+                "Invalid TR"
+                [
+                    (enforce s "Invalid TR Sender")
+                    (enforce r "Invalid TR Receiver")
+                ]
+            )
+            true
+        )
+    )
+    (defun UEV_AmountsForTransfer (id:string son:bool nonces:[integer] amounts:[integer])
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (l1:integer (length nonces))
+                (l2:integer (length amounts))
+            )
+            (enforce (= l1 l2) "Invalid Nonces|Amounts Pair for Collectable Transfer")
+            (map
+                (lambda
+                    (idx:integer)
+                    (let
+                        (
+                            (nonce:integer (at idx nonces))
+                            (amount:integer (at idx amounts))
+                            (nonce-supply:integer (ref-DPDC::UR_NonceSupply id son nonce))
+                        )
+                        (if (and (not son) (> nonce 0))
+                            (enforce (= amount 1) "When transfering Native NFT Nonces, their amount must be 1")
+                            true
+                        )
+                    )
+                )
+                (enumerate 0 (- (length nonces) 1))
+            )
+        )
+    )
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    (defun XI_TransferNonces (id:string son:bool sender:string receiver:string nonces:[integer] amounts:[integer])
+        (let
+            (
+                (ref-U|INT:module{OuronetIntegersV1} U|INT)
+                (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
+                ;;
+                (split:object{OuronetIntegersV1.NonceSplitter} (ref-U|INT::UC_NonceSplitter nonces amounts))
+                (negative-nonces:[integer] (at "negative-nonces" split))
+                (positive-nonces:[integer] (at "positive-nonces" split))
+                (negative-counterparts:[integer] (at "negative-counterparts" split))
+                (positive-counterparts:[integer] (at "positive-counterparts" split))
+                ;;
+                (n0:integer (at 0 nonces))
+                (a0:integer (at 0 amounts))
+                (l1:integer (length nonces))
+                (l2:integer (length amounts))
+                (negatives:integer (length negative-nonces))
+                (positives:integer (length positive-nonces))
+                ;;
+                (isg:bool (and (= l1 1) (= l2 1)))                  ;;iz-single
+                (inn:bool (< n0 0))                                 ;;iz-nonce-negative
+                (ong:bool (and (> negatives 0) (= positives 0)))    ;;only-negatives
+                (onp:bool (and (> positives 0) (= negatives 0)))    ;;only-positives
+            )
+            (cond
+                ;;SINGLE
+                ;;Transfer Native Nonce
+                ((UC_AndTruths [isg (not inn) son])
+                    (do
+                        (ref-DPDC-C::XE_DebitSFT-Nonce sender id n0 a0 false)
+                        (ref-DPDC-C::XB_CreditSFT-Nonce receiver id n0 a0)
+                    )
+                )
+                ((UC_AndTruths [isg (not inn) (not son)])
+                    (do
+                        (ref-DPDC-C::XE_DebitNFT-Nonce sender id n0 a0 false)
+                        (ref-DPDC-C::XB_CreditNFT-Nonce receiver id n0 a0)
+                    )
+                )
+                ;;Trasnfer Fragment Nonce
+                ((UC_AndTruths [isg inn son])
+                    (do
+                        (ref-DPDC-C::XE_DebitSFT-FragmentNonce sender id n0 a0 false)
+                        (ref-DPDC-C::XE_CreditSFT-FragmentNonce receiver id n0 a0)
+                    )
+                )
+                ((UC_AndTruths [isg inn (not son)])
+                    (do
+                        (ref-DPDC-C::XE_DebitNFT-FragmentNonce sender id n0 a0 false)
+                        (ref-DPDC-C::XE_CreditNFT-FragmentNonce receiver id n0 a0)
+                    )
+                )
+                ;;
+                ;;MULTI
+                ;;Transfer Native Nonces
+                ((UC_AndTruths [(not isg) (not ong) onp son])
+                    (do
+                        (ref-DPDC-C::XE_DebitSFT-Nonces sender id nonces amounts false)
+                        (ref-DPDC-C::XB_CreditSFT-Nonces receiver id nonces amounts)
+                    )
+                )
+                ((UC_AndTruths [(not isg) (not ong) onp (not son)])
+                    (do
+                        (ref-DPDC-C::XE_DebitNFT-Nonces sender id nonces amounts false)
+                        (ref-DPDC-C::XB_CreditNFT-Nonces receiver id nonces amounts)
+                    )
+                )
+                ;;Transfer Fragment Nonces
+                ((UC_AndTruths [(not isg) ong son])
+                    (do
+                        (ref-DPDC-C::XE_DebitSFT-FragmentNonces sender id nonces amounts false)
+                        (ref-DPDC-C::XE_CreditSFT-FragmentNonces receiver id nonces amounts)
+                    )
+                )
+                ((UC_AndTruths [(not isg) ong (not son)])
+                    (do
+                        (ref-DPDC-C::XE_DebitNFT-FragmentNonces sender id nonces amounts false)
+                        (ref-DPDC-C::XE_CreditNFT-FragmentNonces receiver id nonces amounts)
+                    )
+                )
+                ;;Transfer Hybrid (Native and Fragment) Nonces
+                ((UC_AndTruths [(not isg) (not ong) (not onp) son])
+                    (do
+                        (ref-DPDC-C::XE_DebitSFT-HybridNonces sender id nonces amounts)
+                        (ref-DPDC-C::XE_CreditSFT-HybridNonces receiver id nonces amounts)
+                    )
+                )
+                ((UC_AndTruths [(not isg) (not ong) (not onp) (not son)])
+                    (do
+                        (ref-DPDC-C::XE_DebitNFT-HybridNonces sender id nonces amounts)
+                        (ref-DPDC-C::XE_CreditNFT-HybridNonces receiver id nonces amounts)
+                    )
+                )
+            )
+        )
+    )
+    ;;
+    (defun XI_IgnisTransfer (sender:string receiver:string ta:decimal)
+        (require-capability (IGNIS|C>ROYALTY sender receiver ta))
+        (XI_IgnisDebit sender ta)
+        (XI_IgnisCredit receiver ta)
+    )
+    (defun XI_IgnisCredit (receiver:string ta:decimal)
+        (require-capability (IGNIS|C>CREDIT receiver))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::XB_UpdateBalance receiver false (+ (ref-DALOS::UR_TF_AccountSupply receiver false) ta))
+        )
+    )
+    (defun XI_IgnisDebit (sender:string ta:decimal)
+        (require-capability (IGNIS|C>DEBIT sender ta))
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (ref-DALOS::XB_UpdateBalance sender false (- (ref-DALOS::UR_TF_AccountSupply sender false) ta))
+        )
+    )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     (defun C_RepurposeCollectable:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool repurpose-from:string repurpose-to:string nonces:[integer] amounts:[integer])
         (UEV_IMC)
@@ -768,127 +888,6 @@
                     (UDCx_AggregatedRoyalties agg-creators agg-royalties)
                 )
             )
-        )
-    )
-    ;;{F7}  [X]
-    (defun XI_TransferNonces (id:string son:bool sender:string receiver:string nonces:[integer] amounts:[integer])
-        (let
-            (
-                (ref-U|INT:module{OuronetIntegersV1} U|INT)
-                (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
-                ;;
-                (split:object{OuronetIntegersV1.NonceSplitter} (ref-U|INT::UC_NonceSplitter nonces amounts))
-                (negative-nonces:[integer] (at "negative-nonces" split))
-                (positive-nonces:[integer] (at "positive-nonces" split))
-                (negative-counterparts:[integer] (at "negative-counterparts" split))
-                (positive-counterparts:[integer] (at "positive-counterparts" split))
-                ;;
-                (n0:integer (at 0 nonces))
-                (a0:integer (at 0 amounts))
-                (l1:integer (length nonces))
-                (l2:integer (length amounts))
-                (negatives:integer (length negative-nonces))
-                (positives:integer (length positive-nonces))
-                ;;
-                (isg:bool (and (= l1 1) (= l2 1)))                  ;;iz-single
-                (inn:bool (< n0 0))                                 ;;iz-nonce-negative
-                (ong:bool (and (> negatives 0) (= positives 0)))    ;;only-negatives
-                (onp:bool (and (> positives 0) (= negatives 0)))    ;;only-positives
-            )
-            (cond
-                ;;SINGLE
-                ;;Transfer Native Nonce
-                ((UC_AndTruths [isg (not inn) son])
-                    (do
-                        (ref-DPDC-C::XE_DebitSFT-Nonce sender id n0 a0 false)
-                        (ref-DPDC-C::XB_CreditSFT-Nonce receiver id n0 a0)
-                    )
-                )
-                ((UC_AndTruths [isg (not inn) (not son)])
-                    (do
-                        (ref-DPDC-C::XE_DebitNFT-Nonce sender id n0 a0 false)
-                        (ref-DPDC-C::XB_CreditNFT-Nonce receiver id n0 a0)
-                    )
-                )
-                ;;Trasnfer Fragment Nonce
-                ((UC_AndTruths [isg inn son])
-                    (do
-                        (ref-DPDC-C::XE_DebitSFT-FragmentNonce sender id n0 a0 false)
-                        (ref-DPDC-C::XE_CreditSFT-FragmentNonce receiver id n0 a0)
-                    )
-                )
-                ((UC_AndTruths [isg inn (not son)])
-                    (do
-                        (ref-DPDC-C::XE_DebitNFT-FragmentNonce sender id n0 a0 false)
-                        (ref-DPDC-C::XE_CreditNFT-FragmentNonce receiver id n0 a0)
-                    )
-                )
-                ;;
-                ;;MULTI
-                ;;Transfer Native Nonces
-                ((UC_AndTruths [(not isg) (not ong) onp son])
-                    (do
-                        (ref-DPDC-C::XE_DebitSFT-Nonces sender id nonces amounts false)
-                        (ref-DPDC-C::XB_CreditSFT-Nonces receiver id nonces amounts)
-                    )
-                )
-                ((UC_AndTruths [(not isg) (not ong) onp (not son)])
-                    (do
-                        (ref-DPDC-C::XE_DebitNFT-Nonces sender id nonces amounts false)
-                        (ref-DPDC-C::XB_CreditNFT-Nonces receiver id nonces amounts)
-                    )
-                )
-                ;;Transfer Fragment Nonces
-                ((UC_AndTruths [(not isg) ong son])
-                    (do
-                        (ref-DPDC-C::XE_DebitSFT-FragmentNonces sender id nonces amounts false)
-                        (ref-DPDC-C::XE_CreditSFT-FragmentNonces receiver id nonces amounts)
-                    )
-                )
-                ((UC_AndTruths [(not isg) ong (not son)])
-                    (do
-                        (ref-DPDC-C::XE_DebitNFT-FragmentNonces sender id nonces amounts false)
-                        (ref-DPDC-C::XE_CreditNFT-FragmentNonces receiver id nonces amounts)
-                    )
-                )
-                ;;Transfer Hybrid (Native and Fragment) Nonces
-                ((UC_AndTruths [(not isg) (not ong) (not onp) son])
-                    (do
-                        (ref-DPDC-C::XE_DebitSFT-HybridNonces sender id nonces amounts)
-                        (ref-DPDC-C::XE_CreditSFT-HybridNonces receiver id nonces amounts)
-                    )
-                )
-                ((UC_AndTruths [(not isg) (not ong) (not onp) (not son)])
-                    (do
-                        (ref-DPDC-C::XE_DebitNFT-HybridNonces sender id nonces amounts)
-                        (ref-DPDC-C::XE_CreditNFT-HybridNonces receiver id nonces amounts)
-                    )
-                )
-            )
-        )
-    )
-    ;;
-    (defun XI_IgnisTransfer (sender:string receiver:string ta:decimal)
-        (require-capability (IGNIS|C>ROYALTY sender receiver ta))
-        (XI_IgnisDebit sender ta)
-        (XI_IgnisCredit receiver ta)
-    )
-    (defun XI_IgnisCredit (receiver:string ta:decimal)
-        (require-capability (IGNIS|C>CREDIT receiver))
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (ref-DALOS::XB_UpdateBalance receiver false (+ (ref-DALOS::UR_TF_AccountSupply receiver false) ta))
-        )
-    )
-    (defun XI_IgnisDebit (sender:string ta:decimal)
-        (require-capability (IGNIS|C>DEBIT sender ta))
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (ref-DALOS::XB_UpdateBalance sender false (- (ref-DALOS::UR_TF_AccountSupply sender false) ta))
         )
     )
     ;;

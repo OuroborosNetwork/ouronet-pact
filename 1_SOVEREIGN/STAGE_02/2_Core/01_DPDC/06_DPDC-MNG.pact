@@ -380,6 +380,13 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    (defun UDC_RemovableNonces:object{DpdcManagementV1.RemovableNonces}
+        (a:[integer] b:[integer])
+        {"r-nonces"     : a
+        ,"r-amounts"    : b}
+    )
+    ;;{F2}  Compute [UC]
     (defun UC_TakePureWipe:object{DpdcManagementV1.RemovableNonces} (input:object{DpdcManagementV1.RemovableNonces} size:integer)
         @doc "Takes <size> and returns a smaller |object{DpdcManagementV1.RemovableNonces}|"
         (let
@@ -395,6 +402,7 @@
             )
         )
     )
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     (defun URCi_WipeCumulator:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool removable-nonces-obj:object{DpdcManagementV1.RemovableNonces})
         (let
@@ -415,8 +423,6 @@
             )
         )
     )
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
     (defun URHC_WipePure:object{DpdcManagementV1.RemovableNonces} (account:string id:string son:bool)
         @doc "Uses Expensive Read Functions to obtain a |object{DpdcManagementV1.RemovableNonces}| that can be used \
         \ to execute a <C_WipePure>, bypassing the expensive gas costs of using (keys...) or (select...) functions"
@@ -486,17 +492,7 @@
             )
         )
     )
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    (defun UDC_RemovableNonces:object{DpdcManagementV1.RemovableNonces}
-        (a:[integer] b:[integer])
-        {"r-nonces"     : a
-        ,"r-amounts"    : b}
-    )
-    ;;{F4}  [CAP]
     ;;
-    ;;{F5}  [A]
-    ;;{F5.5}  [URCi]  Cost readers — single source for exec billing + INFO preview
     ;;  (URCi_WipeCumulator, above, covers the multiple-debit wipe family.)
     (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool)
@@ -588,7 +584,99 @@
             (if son (ref-IGNIS::UDC_SmallCumulator owner) (ref-IGNIS::UDC_BigCumulator owner))
         )
     )
-    ;;{F6}  [C]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    (defun XI_Control (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
+        (require-capability (DPDC-MNG|S>CTRL id son))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|Specs id son 
+                (ref-DPDC::UDC_Control id son cu cco ccc casr ctncr cf cw cp)
+            )
+        )
+    )
+    (defun XI_TogglePause (id:string son:bool toggle:bool)
+        (require-capability (DPDC-MNG|S>TG_PAUSE id son toggle))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+            )
+            (ref-DPDC::XE_U|IsPaused id son toggle)
+        )
+    )
+    ;;
+    (defun XI_IncreaseClassZeroSemiFungible (account:string id:string nonce:integer amount:integer)
+        (require-capability (DPDC-MNG|C>ADD-QUANTITY account id nonce amount))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
+                (nonce-supply:integer (ref-DPDC::UR_NonceSupply id true nonce))
+            )
+            ;;Credit SFT Nonce
+            (ref-DPDC-C::XB_CreditSFT-Nonce account id nonce amount)
+            ;;Update Nonce Supplies
+            (ref-DPDC::XE_U|NonceSupply id nonce (+ amount nonce-supply))
+        )
+    )
+    (defun XI_DecreaseClassZeroSemiFungibles
+        (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
+        @doc "Only Positive, Class 0 Nonces can be burned directly with this function \
+            \ Negative (Fragment Nonces) and Class Non-0 Nonces (Set Nonces) are protected by direct burning."
+        (require-capability (DPDC-MNG|C>IZ-CLASS-ZERO id true nonces))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
+                ;;
+                (l1:integer (length nonces))
+            )
+            ;;Debit SFT Nonce(s)
+            (if (= l1 1)
+                (ref-DPDC-C::XE_DebitSFT-Nonce account id (at 0 nonces) (at 0 amounts) wipe-mode)
+                (ref-DPDC-C::XE_DebitSFT-Nonces account id nonces amounts wipe-mode)
+            )
+            ;;Update Nonce Supplies
+            (map
+                (lambda
+                    (idx:integer)
+                    (let
+                        (
+                            (nonce:integer (at idx nonces))
+                            (amount:integer (at idx amounts))
+                            (nonce-supply:integer (ref-DPDC::UR_NonceSupply id true nonce))
+                        )
+                        ;;Update Nonce Supply
+                        (ref-DPDC::XE_U|NonceSupply id nonce (- nonce-supply amount))
+                    )
+                )
+                (enumerate 0 (- l1 1))
+            )
+        )
+    )
+    ;;
+    (defun XI_DecreaseClassZeroNonFungibles
+        (account:string id:string nonces:[integer] wipe-mode:bool)
+        (require-capability (DPDC-MNG|C>IZ-CLASS-ZERO id false nonces))
+        (let
+            (
+                (ref-DPDC:module{DpdcV1} DPDC)
+                (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
+                ;;
+                (l1:integer (length nonces))
+            )
+            ;;Debit NFT Nonce(s)
+            (if (= l1 1)
+                (ref-DPDC-C::XE_DebitNFT-Nonce account id (at 0 nonces) 1 wipe-mode)
+                (ref-DPDC-C::XE_DebitNFT-Nonces account id nonces (make-list l1 1) wipe-mode)
+            )
+        )
+    )
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
         (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
         (UEV_IMC)
@@ -795,95 +883,6 @@
         @doc "Wipes <id> select <nonces> of an SFT or NFT <account> (at least 1 nonce must be viable)"
         (UEV_IMC)
         (C_WipePure account id son (URC_FilterAccountViableNonces account id son nonces))
-    )
-    ;;{F7}  [X]
-    (defun XI_Control (id:string son:bool cu:bool cco:bool ccc:bool casr:bool ctncr:bool cf:bool cw:bool cp:bool)
-        (require-capability (DPDC-MNG|S>CTRL id son))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|Specs id son 
-                (ref-DPDC::UDC_Control id son cu cco ccc casr ctncr cf cw cp)
-            )
-        )
-    )
-    (defun XI_TogglePause (id:string son:bool toggle:bool)
-        (require-capability (DPDC-MNG|S>TG_PAUSE id son toggle))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-            )
-            (ref-DPDC::XE_U|IsPaused id son toggle)
-        )
-    )
-    ;;
-    (defun XI_IncreaseClassZeroSemiFungible (account:string id:string nonce:integer amount:integer)
-        (require-capability (DPDC-MNG|C>ADD-QUANTITY account id nonce amount))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
-                (nonce-supply:integer (ref-DPDC::UR_NonceSupply id true nonce))
-            )
-            ;;Credit SFT Nonce
-            (ref-DPDC-C::XB_CreditSFT-Nonce account id nonce amount)
-            ;;Update Nonce Supplies
-            (ref-DPDC::XE_U|NonceSupply id nonce (+ amount nonce-supply))
-        )
-    )
-    (defun XI_DecreaseClassZeroSemiFungibles
-        (account:string id:string nonces:[integer] amounts:[integer] wipe-mode:bool)
-        @doc "Only Positive, Class 0 Nonces can be burned directly with this function \
-            \ Negative (Fragment Nonces) and Class Non-0 Nonces (Set Nonces) are protected by direct burning."
-        (require-capability (DPDC-MNG|C>IZ-CLASS-ZERO id true nonces))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
-                ;;
-                (l1:integer (length nonces))
-            )
-            ;;Debit SFT Nonce(s)
-            (if (= l1 1)
-                (ref-DPDC-C::XE_DebitSFT-Nonce account id (at 0 nonces) (at 0 amounts) wipe-mode)
-                (ref-DPDC-C::XE_DebitSFT-Nonces account id nonces amounts wipe-mode)
-            )
-            ;;Update Nonce Supplies
-            (map
-                (lambda
-                    (idx:integer)
-                    (let
-                        (
-                            (nonce:integer (at idx nonces))
-                            (amount:integer (at idx amounts))
-                            (nonce-supply:integer (ref-DPDC::UR_NonceSupply id true nonce))
-                        )
-                        ;;Update Nonce Supply
-                        (ref-DPDC::XE_U|NonceSupply id nonce (- nonce-supply amount))
-                    )
-                )
-                (enumerate 0 (- l1 1))
-            )
-        )
-    )
-    ;;
-    (defun XI_DecreaseClassZeroNonFungibles
-        (account:string id:string nonces:[integer] wipe-mode:bool)
-        (require-capability (DPDC-MNG|C>IZ-CLASS-ZERO id false nonces))
-        (let
-            (
-                (ref-DPDC:module{DpdcV1} DPDC)
-                (ref-DPDC-C:module{DpdcCreateV1} DPDC-C)
-                ;;
-                (l1:integer (length nonces))
-            )
-            ;;Debit NFT Nonce(s)
-            (if (= l1 1)
-                (ref-DPDC-C::XE_DebitNFT-Nonce account id (at 0 nonces) 1 wipe-mode)
-                (ref-DPDC-C::XE_DebitNFT-Nonces account id nonces (make-list l1 1) wipe-mode)
-            )
-        )
     )
     ;;
 )

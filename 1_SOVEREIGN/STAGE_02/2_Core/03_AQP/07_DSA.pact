@@ -375,6 +375,33 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;; [UDC] construct
+    (defun UDC_DSA|Template:object{DSA|Template}
+        (model-id:string unit-score:integer active:bool fvt-id:string)
+        @doc "Core constructor for object{DSA|Template}."
+        {"model-id"            : model-id
+        ,"unit-score"          : unit-score
+        ,"active"              : active
+        ,"fvt-id"              : fvt-id}
+    )
+    (defun UDC_DSA|Agency:object{DSA|Agency}
+        (operator-konto:string fee-per-mille:integer nodes:integer uptime:integer fvt-id:string score-entity-id:string)
+        @doc "Core constructor for object{DSA|Agency}."
+        {"operator-konto" : operator-konto
+        ,"fee-per-mille"  : fee-per-mille
+        ,"nodes"          : nodes
+        ,"uptime"         : uptime
+        ,"fvt-id"         : fvt-id
+        ,"score-entity-id": score-entity-id}
+    )
+    (defun UDC_DSA|OracleAuth:object{DSA|OracleAuth}
+        (oracle-guard:guard fvt-id:string)
+        @doc "Core constructor for object{DSA|OracleAuth}."
+        {"oracle-guard" : oracle-guard
+        ,"fvt-id"       : fvt-id}
+    )
+    ;;{F2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_Agency:string (fvt-id:string score-entity-id:string)
         @doc "Composite key for DSA|T|Agency: fvt-id | score-entity-id."
@@ -386,6 +413,7 @@
             \ per-mille [0..1000]; /1000 is exact in decimal, so no rounding is needed."
         (* capture-units (/ (dec uptime) (dec DSA_UPTIME_FULL)))
     )
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     (defun UR_DSA-TMP|Template:object{DSA|Template} (fvt-id:string)
         @doc "Reads the full DSA template row for a vault."
@@ -464,81 +492,6 @@
             (dec (if (< raw nodes) raw nodes))
         )
     )
-    ;; [UEV] enforce
-    (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string)
-        @doc "Terminal open gate — after the operator's initial stake, the agency quintessence must clear \
-            \ unit-score/2. The Talos AQP-DSA|C_OpenAgency flow calls this at the END of the atomic open (admit → \
-            \ stake → THIS); a short operator stake fails here and rolls the whole open back. Unprotected read+enforce."
-        (enforce (>= (URC_AgencyQuintessence score-entity-id) (/ (dec (UR_DSA-TMP|UnitScore fvt-id)) 2.0))
-            "Open gate: operator must stake quintessence >= unit-score/2 to open")
-    )
-    ;; [UDC] construct
-    (defun UDC_DSA|Template:object{DSA|Template}
-        (model-id:string unit-score:integer active:bool fvt-id:string)
-        @doc "Core constructor for object{DSA|Template}."
-        {"model-id"            : model-id
-        ,"unit-score"          : unit-score
-        ,"active"              : active
-        ,"fvt-id"              : fvt-id}
-    )
-    (defun UDC_DSA|Agency:object{DSA|Agency}
-        (operator-konto:string fee-per-mille:integer nodes:integer uptime:integer fvt-id:string score-entity-id:string)
-        @doc "Core constructor for object{DSA|Agency}."
-        {"operator-konto" : operator-konto
-        ,"fee-per-mille"  : fee-per-mille
-        ,"nodes"          : nodes
-        ,"uptime"         : uptime
-        ,"fvt-id"         : fvt-id
-        ,"score-entity-id": score-entity-id}
-    )
-    (defun UDC_DSA|OracleAuth:object{DSA|OracleAuth}
-        (oracle-guard:guard fvt-id:string)
-        @doc "Core constructor for object{DSA|OracleAuth}."
-        {"oracle-guard" : oracle-guard
-        ,"fvt-id"       : fvt-id}
-    )
-    ;; [W]   write
-    (defun WI_Template:string (fvt-id:string row:object{DSA|Template})
-        @doc "Insert a DSA vault template row. require SECURE."
-        (require-capability (SECURE))
-        (insert DSA|T|Template fvt-id row)
-    )
-    (defun WI_Agency:string (fvt-id:string score-entity-id:string row:object{DSA|Agency})
-        @doc "Insert a DSA agency row. require SECURE."
-        (require-capability (SECURE))
-        (insert DSA|T|Agency (UCk_Agency fvt-id score-entity-id) row)
-    )
-    (defun WU_Agency-Oracle:string (fvt-id:string score-entity-id:string nodes:integer uptime:integer)
-        @doc "Update an agency's oracle inputs {nodes, uptime}. require SECURE."
-        (require-capability (SECURE))
-        (update DSA|T|Agency (UCk_Agency fvt-id score-entity-id) {"nodes" : nodes, "uptime" : uptime})
-    )
-    (defun WU_Agency-Fee:string (fvt-id:string score-entity-id:string fee-per-mille:integer)
-        @doc "Update an agency's operator fee-per-mille. require SECURE."
-        (require-capability (SECURE))
-        (update DSA|T|Agency (UCk_Agency fvt-id score-entity-id) {"fee-per-mille" : fee-per-mille})
-    )
-    (defun WI_OracleAuth:string (fvt-id:string row:object{DSA|OracleAuth})
-        @doc "Write (set / rotate) a DSA vault's oracle authority row. require SECURE."
-        (require-capability (SECURE))
-        (write DSA|T|OracleAuth fvt-id row)
-    )
-    ;; [XI]
-    (defun XI_ApplyCapture:string (fvt-id:string score-entity-id:string oracle-ts:time)
-        @doc "Recompute an agency's capture from CURRENT Q / nodes / uptime and write it onto the FVT member \
-            \ (XE_SetMemberCapture), stamping the given oracle-ts. Callers hold P|SECURE-CALLER (⇒ SECURE + the \
-            \ DSA IMC guard the FVT XE_ requires); a stake recompute passes the PRESERVED oracle-ts, an oracle \
-            \ write passes NOW."
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
-                (units:decimal (URC_CaptureUnits fvt-id score-entity-id))
-            )
-            (ref-FVT::XE_SetMemberCapture fvt-id score-entity-id
-                units (UC_CaptureWeight units (UR_DSA-AGN|Uptime fvt-id score-entity-id)) oracle-ts)
-        )
-    )
     ;; [URCi]   cost readers — single source for exec billing + INFO preview
     ;;   (flat GAS legs; the 3 royalty readers return the GAS leg the exec concats with the custody-move XE_)
     (defun URCi_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
@@ -594,6 +547,60 @@
                (ref-FVT::URCi_FuelRoyaltyCustody fvt-id reward-dptf-id swpair))))
     (defun URCi_SetAgencyFee:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
         (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-AGENCY-FEE patron (r::URC_IsVirtualGasZero) output)))
+    ;;{F4}  Validate [UEV/CAP]
+    ;; [UEV] enforce
+    (defun UEV_OpenGate:bool (fvt-id:string score-entity-id:string)
+        @doc "Terminal open gate — after the operator's initial stake, the agency quintessence must clear \
+            \ unit-score/2. The Talos AQP-DSA|C_OpenAgency flow calls this at the END of the atomic open (admit → \
+            \ stake → THIS); a short operator stake fails here and rolls the whole open back. Unprotected read+enforce."
+        (enforce (>= (URC_AgencyQuintessence score-entity-id) (/ (dec (UR_DSA-TMP|UnitScore fvt-id)) 2.0))
+            "Open gate: operator must stake quintessence >= unit-score/2 to open")
+    )
+    ;;{F5}  Write [W]
+    ;; [W]   write
+    (defun WI_Template:string (fvt-id:string row:object{DSA|Template})
+        @doc "Insert a DSA vault template row. require SECURE."
+        (require-capability (SECURE))
+        (insert DSA|T|Template fvt-id row)
+    )
+    (defun WI_Agency:string (fvt-id:string score-entity-id:string row:object{DSA|Agency})
+        @doc "Insert a DSA agency row. require SECURE."
+        (require-capability (SECURE))
+        (insert DSA|T|Agency (UCk_Agency fvt-id score-entity-id) row)
+    )
+    (defun WU_Agency-Oracle:string (fvt-id:string score-entity-id:string nodes:integer uptime:integer)
+        @doc "Update an agency's oracle inputs {nodes, uptime}. require SECURE."
+        (require-capability (SECURE))
+        (update DSA|T|Agency (UCk_Agency fvt-id score-entity-id) {"nodes" : nodes, "uptime" : uptime})
+    )
+    (defun WU_Agency-Fee:string (fvt-id:string score-entity-id:string fee-per-mille:integer)
+        @doc "Update an agency's operator fee-per-mille. require SECURE."
+        (require-capability (SECURE))
+        (update DSA|T|Agency (UCk_Agency fvt-id score-entity-id) {"fee-per-mille" : fee-per-mille})
+    )
+    (defun WI_OracleAuth:string (fvt-id:string row:object{DSA|OracleAuth})
+        @doc "Write (set / rotate) a DSA vault's oracle authority row. require SECURE."
+        (require-capability (SECURE))
+        (write DSA|T|OracleAuth fvt-id row)
+    )
+    ;;{F6}  Aux/Protected [X]
+    ;; [XI]
+    (defun XI_ApplyCapture:string (fvt-id:string score-entity-id:string oracle-ts:time)
+        @doc "Recompute an agency's capture from CURRENT Q / nodes / uptime and write it onto the FVT member \
+            \ (XE_SetMemberCapture), stamping the given oracle-ts. Callers hold P|SECURE-CALLER (⇒ SECURE + the \
+            \ DSA IMC guard the FVT XE_ requires); a stake recompute passes the PRESERVED oracle-ts, an oracle \
+            \ write passes NOW."
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-FVT:module{AcquisitionFarmsVaultsTreasuriesV1} AQP-FVT)
+                (units:decimal (URC_CaptureUnits fvt-id score-entity-id))
+            )
+            (ref-FVT::XE_SetMemberCapture fvt-id score-entity-id
+                units (UC_CaptureWeight units (UR_DSA-AGN|Uptime fvt-id score-entity-id)) oracle-ts)
+        )
+    )
+    ;;{F7}  User [A]
     ;;
     ;; [A]   admin
     (defun A_DefineDelegationVault:object{IgnisCollectorV1.OutputCumulator}
@@ -753,6 +760,7 @@
             )
         )
     )
+    ;;{F8}  User [C]
     ;; [C]   client
     (defun C_AdmitAgency:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-id:string fee-per-mille:integer)

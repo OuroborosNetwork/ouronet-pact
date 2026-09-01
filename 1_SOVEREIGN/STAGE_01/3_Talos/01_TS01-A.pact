@@ -203,13 +203,51 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
-    ;;{F1}  [URC]
-    ;;{F2}  [UEV]
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;  [Fueling Functions]
+    (defun XB_DynamicFuelSTOA ()
+        (UEV_IMC)
+        (let
+            (
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+            )
+            (if (ref-DALOS::UR_AutoFuel)
+                (with-capability (SECURE)
+                    (XI_DirectFuelSTOA)
+                )
+                true
+            )
+        )
+    )
     ;;
-    ;;{F5}  [A]
+    (defun XE_ConditionalFuelSTOA (condition:bool)
+        (UEV_IMC)
+        (if condition
+            (with-capability (SECURE)
+                (XB_DynamicFuelSTOA)
+            )
+            true
+        )
+    )
+    ;;
+    (defun XI_DirectFuelSTOA ()
+        (require-capability (SECURE))
+        (let
+            (
+                (ref-ORBR:module{OuroborosV1} OUROBOROS)
+            )
+            (with-capability (P|TS)
+                (ref-ORBR::C_Fuel)
+            )
+        )
+    )
+    ;;{F7}  User [A]
+    ;;
     ;;  [DALOS_Administrator]
     (defun DALOS|A_MigrateLiquidFunds:decimal (migration-target-stoa-account:string)
         @doc "Migrates Ouronet Gas Station Funds, to another stoa adress, \
@@ -631,45 +669,7 @@
             )
         )
     )
-    ;;{F6}  [C]
-    ;;{F7}  [X]
-    ;;  [Fueling Functions]
-    (defun XB_DynamicFuelSTOA ()
-        (UEV_IMC)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-            )
-            (if (ref-DALOS::UR_AutoFuel)
-                (with-capability (SECURE)
-                    (XI_DirectFuelSTOA)
-                )
-                true
-            )
-        )
-    )
-    ;;
-    (defun XE_ConditionalFuelSTOA (condition:bool)
-        (UEV_IMC)
-        (if condition
-            (with-capability (SECURE)
-                (XB_DynamicFuelSTOA)
-            )
-            true
-        )
-    )
-    ;;
-    (defun XI_DirectFuelSTOA ()
-        (require-capability (SECURE))
-        (let
-            (
-                (ref-ORBR:module{OuroborosV1} OUROBOROS)
-            )
-            (with-capability (P|TS)
-                (ref-ORBR::C_Fuel)
-            )
-        )
-    )
+    ;;{F8}  User [C]
     ;;
 )
 

@@ -609,6 +609,294 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;; [UDC] construct
+    (defun UDC_ANK|Schema:object{ANK|Schema}
+        (a:string b:[bool] c:string d:integer e:bool f:decimal g:decimal h:integer i:string j:string k:integer l:string)
+        @doc "Constructs anchor definition row for ANK|T|Anchor."
+        {"ank-asset"            : a
+        ,"ank-fungibility"      : b
+        ,"boost-class-id"       : c
+        ,"ank-precision"        : d
+        ,"ank-active"           : e
+        ,"ank-promile"          : f
+        ,"dptf-amount"          : g
+        ,"dpsf-nonce"           : h
+        ,"dpnf-trait-key"       : i
+        ,"dpnf-trait-value"     : j
+        ,"dpnf-nonce-class"     : k
+        ,"anchor-id"            : l}
+    )
+    (defun UDC_BoostClass:object{ANK|BoostClass}
+        (a:string b:string c:string d:string e:string f:string g:string h:integer i:bool j:string)
+        @doc "Constructs BoostClass object."
+        {"anchor-primary"       : a
+        ,"anchor-secondary"     : b
+        ,"anchor-tertiary"      : c
+        ,"anchor-quaternary"    : d
+        ,"anchor-quinary"       : e
+        ,"anchor-senary"        : f
+        ,"anchor-septenary"     : g
+        ,"anchors"              : h
+        ,"class-active"         : i
+        ,"boost-class-id"       : j}
+    )
+    (defun UDC_EmptyInternalGroup:object{ANK|InternalGroup} ()
+        @doc "Constructs empty InternalGroup (all BAR, anchors=0)."
+        {"anchor-primary"       : BAR
+        ,"anchor-secondary"     : BAR
+        ,"anchor-tertiary"      : BAR
+        ,"anchor-quaternary"    : BAR
+        ,"anchor-quinary"       : BAR
+        ,"anchor-senary"        : BAR
+        ,"anchor-septenary"     : BAR
+        ,"anchors"              : 0}
+    )
+    (defun UDC_IG|WithAddedAnchor:object{ANK|InternalGroup}
+        (ig:object{ANK|InternalGroup} new-anchor-id:string)
+        @doc "Adds anchor-id to first free slot in an InternalGroup."
+        (let
+            (
+                (a1:string (at "anchor-primary" ig))
+                (a2:string (at "anchor-secondary" ig))
+                (a3:string (at "anchor-tertiary" ig))
+                (a4:string (at "anchor-quaternary" ig))
+                (a5:string (at "anchor-quinary" ig))
+                (a6:string (at "anchor-senary" ig))
+                (a7:string (at "anchor-septenary" ig))
+                (n:integer (at "anchors" ig))
+            )
+            (cond
+                ((= a1 BAR) {"anchor-primary": new-anchor-id, "anchor-secondary": a2, "anchor-tertiary": a3, "anchor-quaternary": a4, "anchor-quinary": a5, "anchor-senary": a6, "anchor-septenary": a7, "anchors": (+ n 1)})
+                ((= a2 BAR) {"anchor-primary": a1, "anchor-secondary": new-anchor-id, "anchor-tertiary": a3, "anchor-quaternary": a4, "anchor-quinary": a5, "anchor-senary": a6, "anchor-septenary": a7, "anchors": (+ n 1)})
+                ((= a3 BAR) {"anchor-primary": a1, "anchor-secondary": a2, "anchor-tertiary": new-anchor-id, "anchor-quaternary": a4, "anchor-quinary": a5, "anchor-senary": a6, "anchor-septenary": a7, "anchors": (+ n 1)})
+                ((= a4 BAR) {"anchor-primary": a1, "anchor-secondary": a2, "anchor-tertiary": a3, "anchor-quaternary": new-anchor-id, "anchor-quinary": a5, "anchor-senary": a6, "anchor-septenary": a7, "anchors": (+ n 1)})
+                ((= a5 BAR) {"anchor-primary": a1, "anchor-secondary": a2, "anchor-tertiary": a3, "anchor-quaternary": a4, "anchor-quinary": new-anchor-id, "anchor-senary": a6, "anchor-septenary": a7, "anchors": (+ n 1)})
+                ((= a6 BAR) {"anchor-primary": a1, "anchor-secondary": a2, "anchor-tertiary": a3, "anchor-quaternary": a4, "anchor-quinary": a5, "anchor-senary": new-anchor-id, "anchor-septenary": a7, "anchors": (+ n 1)})
+                ((= a7 BAR) {"anchor-primary": a1, "anchor-secondary": a2, "anchor-tertiary": a3, "anchor-quaternary": a4, "anchor-quinary": a5, "anchor-senary": a6, "anchor-septenary": new-anchor-id, "anchors": (+ n 1)})
+                ig
+            )
+        )
+    )
+    (defun UDC_IG|WithRemovedAnchor:object{ANK|InternalGroup}
+        (ig:object{ANK|InternalGroup} revoked-anchor-id:string)
+        @doc "Removes anchor-id from group, compacts slots."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                ;;
+                (lst:[string]
+                    [(at "anchor-primary" ig)
+                     (at "anchor-secondary" ig)
+                     (at "anchor-tertiary" ig)
+                     (at "anchor-quaternary" ig)
+                     (at "anchor-quinary" ig)
+                     (at "anchor-senary" ig)
+                     (at "anchor-septenary" ig)]
+                )
+                (position-to-remove:integer
+                    (cond
+                        ((= revoked-anchor-id (at 0 lst)) 0)
+                        ((= revoked-anchor-id (at 1 lst)) 1)
+                        ((= revoked-anchor-id (at 2 lst)) 2)
+                        ((= revoked-anchor-id (at 3 lst)) 3)
+                        ((= revoked-anchor-id (at 4 lst)) 4)
+                        ((= revoked-anchor-id (at 5 lst)) 5)
+                        ((= revoked-anchor-id (at 6 lst)) 6)
+                        -1
+                    )
+                )
+                (lst-v1 (ref-U|LST::UC_RemoveItemAt lst position-to-remove))
+                (lst-v2 (ref-U|LST::UC_AppL lst-v1 BAR))
+                (n:integer (at "anchors" ig))
+            )
+            {"anchor-primary"   : (at 0 lst-v2)
+            ,"anchor-secondary" : (at 1 lst-v2)
+            ,"anchor-tertiary"  : (at 2 lst-v2)
+            ,"anchor-quaternary": (at 3 lst-v2)
+            ,"anchor-quinary"   : (at 4 lst-v2)
+            ,"anchor-senary"    : (at 5 lst-v2)
+            ,"anchor-septenary" : (at 6 lst-v2)
+            ,"anchors"          : (- n 1)}
+        )
+    )
+    (defun UDC_BC|WithAddedAnchor:object{ANK|BoostClass}
+        (bc:object{ANK|BoostClass} new-anchor-id:string)
+        @doc "Adds anchor-id to first free slot in a BoostClass."
+        (let
+            (
+                (a1:string (at "anchor-primary" bc))
+                (a2:string (at "anchor-secondary" bc))
+                (a3:string (at "anchor-tertiary" bc))
+                (a4:string (at "anchor-quaternary" bc))
+                (a5:string (at "anchor-quinary" bc))
+                (a6:string (at "anchor-senary" bc))
+                (a7:string (at "anchor-septenary" bc))
+                (n:integer (at "anchors" bc))
+                (ca:bool (at "class-active" bc))
+                (bcid:string (at "boost-class-id" bc))
+            )
+            (cond
+                ((= a1 BAR) (UDC_BoostClass new-anchor-id a2 a3 a4 a5 a6 a7 (+ n 1) ca bcid))
+                ((= a2 BAR) (UDC_BoostClass a1 new-anchor-id a3 a4 a5 a6 a7 (+ n 1) ca bcid))
+                ((= a3 BAR) (UDC_BoostClass a1 a2 new-anchor-id a4 a5 a6 a7 (+ n 1) ca bcid))
+                ((= a4 BAR) (UDC_BoostClass a1 a2 a3 new-anchor-id a5 a6 a7 (+ n 1) ca bcid))
+                ((= a5 BAR) (UDC_BoostClass a1 a2 a3 a4 new-anchor-id a6 a7 (+ n 1) ca bcid))
+                ((= a6 BAR) (UDC_BoostClass a1 a2 a3 a4 a5 new-anchor-id a7 (+ n 1) ca bcid))
+                ((= a7 BAR) (UDC_BoostClass a1 a2 a3 a4 a5 a6 new-anchor-id (+ n 1) ca bcid))
+                bc
+            )
+        )
+    )
+    (defun UDC_BC|WithRemovedAnchor:object{ANK|BoostClass}
+        (bc:object{ANK|BoostClass} revoked-anchor-id:string)
+        @doc "Removes anchor-id from BoostClass, compacts slots."
+        (let
+            (
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                ;;
+                (lst:[string]
+                    [(at "anchor-primary" bc)
+                     (at "anchor-secondary" bc)
+                     (at "anchor-tertiary" bc)
+                     (at "anchor-quaternary" bc)
+                     (at "anchor-quinary" bc)
+                     (at "anchor-senary" bc)
+                     (at "anchor-septenary" bc)]
+                )
+                (position-to-remove:integer
+                    (cond
+                        ((= revoked-anchor-id (at 0 lst)) 0)
+                        ((= revoked-anchor-id (at 1 lst)) 1)
+                        ((= revoked-anchor-id (at 2 lst)) 2)
+                        ((= revoked-anchor-id (at 3 lst)) 3)
+                        ((= revoked-anchor-id (at 4 lst)) 4)
+                        ((= revoked-anchor-id (at 5 lst)) 5)
+                        ((= revoked-anchor-id (at 6 lst)) 6)
+                        -1
+                    )
+                )
+                (lst-v1 (ref-U|LST::UC_RemoveItemAt lst position-to-remove))
+                (lst-v2 (ref-U|LST::UC_AppL lst-v1 BAR))
+                (n:integer (at "anchors" bc))
+                (ca:bool (at "class-active" bc))
+                (bcid:string (at "boost-class-id" bc))
+            )
+            (UDC_BoostClass (at 0 lst-v2) (at 1 lst-v2) (at 2 lst-v2) (at 3 lst-v2)
+                (at 4 lst-v2) (at 5 lst-v2) (at 6 lst-v2) (- n 1) ca bcid
+            )
+        )
+    )
+    (defun UDC_AA|PlaceAnchor:object{ANK|AssetAnchors}
+        (aa:object{ANK|AssetAnchors} new-anchor-id:string)
+        @doc "Places anchor in first group with a free slot; creates new group if needed. \
+            \ Pure constructor — no enforce. Caller (issue caps via UEV_*) must ensure \
+            \ anchors-active < 49 (implies a free group slot exists under 7×7)."
+        (let
+            (
+                (ga:integer (at "groups-active" aa))
+                (ta:integer (at "anchors-active" aa))
+                (aid:string (at "asset-id" aa))
+            )
+            (let
+                (
+                    (result:list
+                        (fold
+                            (lambda (acc:list gi:integer)
+                                (if (= (at 1 acc) 1)
+                                    acc
+                                    (let
+                                        (
+                                            (grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
+                                            (gn:integer (at "anchors" grp))
+                                        )
+                                        (if (< gn 7)
+                                            [(UDC_IG|WithAddedAnchor grp new-anchor-id) 1 gi]
+                                            acc
+                                        )
+                                    )
+                                )
+                            )
+                            [(UDC_EmptyInternalGroup) 0 -1]
+                            (enumerate 0 6)
+                        )
+                    )
+                    (placed:integer (at 1 result))
+                )
+                (if (= placed 1)
+                    (let
+                        (
+                            (updated-grp:object{ANK|InternalGroup} (at 0 result))
+                            (slot:integer (at 2 result))
+                            (prev-grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot aa slot))
+                            (new-ga:integer
+                                (if (and (= (at "anchors" prev-grp) 0) (> (at "anchors" updated-grp) 0))
+                                    (if (> ga (+ slot 1)) ga (+ slot 1))
+                                    ga
+                                )
+                            )
+                        )
+                        (URC_AA|SetGroupAtSlot aa updated-grp slot (+ ta 1) new-ga false)
+                    )
+                    (let
+                        (
+                            (new-grp:object{ANK|InternalGroup} (UDC_IG|WithAddedAnchor (UDC_EmptyInternalGroup) new-anchor-id))
+                        )
+                        (URC_AA|SetGroupAtSlot aa new-grp ga (+ ta 1) ga true)
+                    )
+                )
+            )
+        )
+    )
+    (defun UDC_AA|RemoveAnchor:object{ANK|AssetAnchors}
+        (aa:object{ANK|AssetAnchors} revoked-anchor-id:string)
+        @doc "Removes anchor from its group in AssetAnchors."
+        (let
+            (
+                (ga:integer (at "groups-active" aa))
+                (ta:integer (at "anchors-active" aa))
+                (aid:string (at "asset-id" aa))
+            )
+            (fold
+                (lambda (acc:object{ANK|AssetAnchors} gi:integer)
+                    (let
+                        (
+                            (grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot acc gi))
+                        )
+                        (if (URC_IG|ContainsAnchor grp revoked-anchor-id)
+                            (let
+                                (
+                                    (updated-grp:object{ANK|InternalGroup} (UDC_IG|WithRemovedAnchor grp revoked-anchor-id))
+                                    (was-ga:integer (at "groups-active" acc))
+                                    (was-ta:integer (at "anchors-active" acc))
+                                    (grp-now-empty:bool (= (at "anchors" updated-grp) 0))
+                                )
+                                (URC_AA|SetGroupAtSlot acc updated-grp gi (- was-ta 1) was-ga grp-now-empty)
+                            )
+                            acc
+                        )
+                    )
+                )
+                aa
+                (enumerate 0 6)
+            )
+        )
+    )
+    (defun UDC_AccountAnchor:object{ANK|UserSchema}
+        (a:decimal b:string c:string)
+        @doc "Constructs user-anchor contribution object."
+        {"promile"              : a
+        ,"ouronet-account"      : b
+        ,"anchor-id"            : c}
+    )
+    (defun UDC_UserBoost:object{ANK|UserBoostSchema}
+        (aggregate-promile:decimal ouronet-account:string boost-class-id:string)
+        @doc "Constructs user-boost aggregate row for ANK|T|UserBoost."
+        {"aggregate-promile"   : aggregate-promile
+        ,"ouronet-account"     : ouronet-account
+        ,"boost-class-id"      : boost-class-id}
+    )
+    ;;{F2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_Anchors:string
         (account:string anchor-id:string)
@@ -620,6 +908,7 @@
         @doc "Composite key for ANK|T|UserBoost (account BAR boost-class-id)."
         (concat [account BAR boost-class-id])
     )
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     ;; Reads follow schema order: (1) ANK|Schema (2) ANK|BoostClass (3) ANK|AssetAnchors (4) ANK|UserSchema (5) ANK|UserBoostSchema
     ;; Policy P|T, P|MT — not ANK rows; use P|Info, P|UR, P|UR_IMP above.
@@ -1140,6 +1429,24 @@
         @doc "Returns all row keys from ANK|T|BoostClass."
         (keys ANK|T|BoostClass)
     )
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_IssueAnchor:object{IgnisCollectorV1.OutputCumulator} (output:[string])
+        @doc "IGNIS cost for the 4 anchor-issue ops (flat GAS 1000; <output> carries anchor-id[+boost-class-id])."
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+            (ref-IGNIS::UDC_ConstructOutputCumulator 1000.0 AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) output)))
+    (defun URCi_IssueAnchorStoa:decimal (acnoi:bool)
+        @doc "STOA cost for anchor-issue: 'standard' usage price x(2 if acnoi else 1)."
+        (let ((ref-DALOS:module{OuronetDalosV1} DALOS))
+            (* (ref-DALOS::UR_UsagePrice "standard") (if acnoi 2.0 1.0))))
+    (defun URCi_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} ()
+        @doc "IGNIS cost for C_RevokeAnchor (biggest tier)."
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)))
+    (defun URCi_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator} ()
+        @doc "IGNIS cost for C_RevokeBoostClass (biggest tier)."
+        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
+            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)))
+    ;;{F4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_AnkFungibility (asset-fungibility:[bool])
         @doc "Validates asset-fungibility tuple (TF/SF/NF discriminator) for anchor-class / asset-summary tables."
@@ -1248,292 +1555,7 @@
             (ref-DALOS::CAP_EnforceAccountOwnership owner)
         )
     )
-    ;; [UDC] construct
-    (defun UDC_ANK|Schema:object{ANK|Schema}
-        (a:string b:[bool] c:string d:integer e:bool f:decimal g:decimal h:integer i:string j:string k:integer l:string)
-        @doc "Constructs anchor definition row for ANK|T|Anchor."
-        {"ank-asset"            : a
-        ,"ank-fungibility"      : b
-        ,"boost-class-id"       : c
-        ,"ank-precision"        : d
-        ,"ank-active"           : e
-        ,"ank-promile"          : f
-        ,"dptf-amount"          : g
-        ,"dpsf-nonce"           : h
-        ,"dpnf-trait-key"       : i
-        ,"dpnf-trait-value"     : j
-        ,"dpnf-nonce-class"     : k
-        ,"anchor-id"            : l}
-    )
-    (defun UDC_BoostClass:object{ANK|BoostClass}
-        (a:string b:string c:string d:string e:string f:string g:string h:integer i:bool j:string)
-        @doc "Constructs BoostClass object."
-        {"anchor-primary"       : a
-        ,"anchor-secondary"     : b
-        ,"anchor-tertiary"      : c
-        ,"anchor-quaternary"    : d
-        ,"anchor-quinary"       : e
-        ,"anchor-senary"        : f
-        ,"anchor-septenary"     : g
-        ,"anchors"              : h
-        ,"class-active"         : i
-        ,"boost-class-id"       : j}
-    )
-    (defun UDC_EmptyInternalGroup:object{ANK|InternalGroup} ()
-        @doc "Constructs empty InternalGroup (all BAR, anchors=0)."
-        {"anchor-primary"       : BAR
-        ,"anchor-secondary"     : BAR
-        ,"anchor-tertiary"      : BAR
-        ,"anchor-quaternary"    : BAR
-        ,"anchor-quinary"       : BAR
-        ,"anchor-senary"        : BAR
-        ,"anchor-septenary"     : BAR
-        ,"anchors"              : 0}
-    )
-    (defun UDC_IG|WithAddedAnchor:object{ANK|InternalGroup}
-        (ig:object{ANK|InternalGroup} new-anchor-id:string)
-        @doc "Adds anchor-id to first free slot in an InternalGroup."
-        (let
-            (
-                (a1:string (at "anchor-primary" ig))
-                (a2:string (at "anchor-secondary" ig))
-                (a3:string (at "anchor-tertiary" ig))
-                (a4:string (at "anchor-quaternary" ig))
-                (a5:string (at "anchor-quinary" ig))
-                (a6:string (at "anchor-senary" ig))
-                (a7:string (at "anchor-septenary" ig))
-                (n:integer (at "anchors" ig))
-            )
-            (cond
-                ((= a1 BAR) {"anchor-primary": new-anchor-id, "anchor-secondary": a2, "anchor-tertiary": a3, "anchor-quaternary": a4, "anchor-quinary": a5, "anchor-senary": a6, "anchor-septenary": a7, "anchors": (+ n 1)})
-                ((= a2 BAR) {"anchor-primary": a1, "anchor-secondary": new-anchor-id, "anchor-tertiary": a3, "anchor-quaternary": a4, "anchor-quinary": a5, "anchor-senary": a6, "anchor-septenary": a7, "anchors": (+ n 1)})
-                ((= a3 BAR) {"anchor-primary": a1, "anchor-secondary": a2, "anchor-tertiary": new-anchor-id, "anchor-quaternary": a4, "anchor-quinary": a5, "anchor-senary": a6, "anchor-septenary": a7, "anchors": (+ n 1)})
-                ((= a4 BAR) {"anchor-primary": a1, "anchor-secondary": a2, "anchor-tertiary": a3, "anchor-quaternary": new-anchor-id, "anchor-quinary": a5, "anchor-senary": a6, "anchor-septenary": a7, "anchors": (+ n 1)})
-                ((= a5 BAR) {"anchor-primary": a1, "anchor-secondary": a2, "anchor-tertiary": a3, "anchor-quaternary": a4, "anchor-quinary": new-anchor-id, "anchor-senary": a6, "anchor-septenary": a7, "anchors": (+ n 1)})
-                ((= a6 BAR) {"anchor-primary": a1, "anchor-secondary": a2, "anchor-tertiary": a3, "anchor-quaternary": a4, "anchor-quinary": a5, "anchor-senary": new-anchor-id, "anchor-septenary": a7, "anchors": (+ n 1)})
-                ((= a7 BAR) {"anchor-primary": a1, "anchor-secondary": a2, "anchor-tertiary": a3, "anchor-quaternary": a4, "anchor-quinary": a5, "anchor-senary": a6, "anchor-septenary": new-anchor-id, "anchors": (+ n 1)})
-                ig
-            )
-        )
-    )
-    (defun UDC_IG|WithRemovedAnchor:object{ANK|InternalGroup}
-        (ig:object{ANK|InternalGroup} revoked-anchor-id:string)
-        @doc "Removes anchor-id from group, compacts slots."
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                ;;
-                (lst:[string]
-                    [(at "anchor-primary" ig)
-                     (at "anchor-secondary" ig)
-                     (at "anchor-tertiary" ig)
-                     (at "anchor-quaternary" ig)
-                     (at "anchor-quinary" ig)
-                     (at "anchor-senary" ig)
-                     (at "anchor-septenary" ig)]
-                )
-                (position-to-remove:integer
-                    (cond
-                        ((= revoked-anchor-id (at 0 lst)) 0)
-                        ((= revoked-anchor-id (at 1 lst)) 1)
-                        ((= revoked-anchor-id (at 2 lst)) 2)
-                        ((= revoked-anchor-id (at 3 lst)) 3)
-                        ((= revoked-anchor-id (at 4 lst)) 4)
-                        ((= revoked-anchor-id (at 5 lst)) 5)
-                        ((= revoked-anchor-id (at 6 lst)) 6)
-                        -1
-                    )
-                )
-                (lst-v1 (ref-U|LST::UC_RemoveItemAt lst position-to-remove))
-                (lst-v2 (ref-U|LST::UC_AppL lst-v1 BAR))
-                (n:integer (at "anchors" ig))
-            )
-            {"anchor-primary"   : (at 0 lst-v2)
-            ,"anchor-secondary" : (at 1 lst-v2)
-            ,"anchor-tertiary"  : (at 2 lst-v2)
-            ,"anchor-quaternary": (at 3 lst-v2)
-            ,"anchor-quinary"   : (at 4 lst-v2)
-            ,"anchor-senary"    : (at 5 lst-v2)
-            ,"anchor-septenary" : (at 6 lst-v2)
-            ,"anchors"          : (- n 1)}
-        )
-    )
-    (defun UDC_BC|WithAddedAnchor:object{ANK|BoostClass}
-        (bc:object{ANK|BoostClass} new-anchor-id:string)
-        @doc "Adds anchor-id to first free slot in a BoostClass."
-        (let
-            (
-                (a1:string (at "anchor-primary" bc))
-                (a2:string (at "anchor-secondary" bc))
-                (a3:string (at "anchor-tertiary" bc))
-                (a4:string (at "anchor-quaternary" bc))
-                (a5:string (at "anchor-quinary" bc))
-                (a6:string (at "anchor-senary" bc))
-                (a7:string (at "anchor-septenary" bc))
-                (n:integer (at "anchors" bc))
-                (ca:bool (at "class-active" bc))
-                (bcid:string (at "boost-class-id" bc))
-            )
-            (cond
-                ((= a1 BAR) (UDC_BoostClass new-anchor-id a2 a3 a4 a5 a6 a7 (+ n 1) ca bcid))
-                ((= a2 BAR) (UDC_BoostClass a1 new-anchor-id a3 a4 a5 a6 a7 (+ n 1) ca bcid))
-                ((= a3 BAR) (UDC_BoostClass a1 a2 new-anchor-id a4 a5 a6 a7 (+ n 1) ca bcid))
-                ((= a4 BAR) (UDC_BoostClass a1 a2 a3 new-anchor-id a5 a6 a7 (+ n 1) ca bcid))
-                ((= a5 BAR) (UDC_BoostClass a1 a2 a3 a4 new-anchor-id a6 a7 (+ n 1) ca bcid))
-                ((= a6 BAR) (UDC_BoostClass a1 a2 a3 a4 a5 new-anchor-id a7 (+ n 1) ca bcid))
-                ((= a7 BAR) (UDC_BoostClass a1 a2 a3 a4 a5 a6 new-anchor-id (+ n 1) ca bcid))
-                bc
-            )
-        )
-    )
-    (defun UDC_BC|WithRemovedAnchor:object{ANK|BoostClass}
-        (bc:object{ANK|BoostClass} revoked-anchor-id:string)
-        @doc "Removes anchor-id from BoostClass, compacts slots."
-        (let
-            (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
-                ;;
-                (lst:[string]
-                    [(at "anchor-primary" bc)
-                     (at "anchor-secondary" bc)
-                     (at "anchor-tertiary" bc)
-                     (at "anchor-quaternary" bc)
-                     (at "anchor-quinary" bc)
-                     (at "anchor-senary" bc)
-                     (at "anchor-septenary" bc)]
-                )
-                (position-to-remove:integer
-                    (cond
-                        ((= revoked-anchor-id (at 0 lst)) 0)
-                        ((= revoked-anchor-id (at 1 lst)) 1)
-                        ((= revoked-anchor-id (at 2 lst)) 2)
-                        ((= revoked-anchor-id (at 3 lst)) 3)
-                        ((= revoked-anchor-id (at 4 lst)) 4)
-                        ((= revoked-anchor-id (at 5 lst)) 5)
-                        ((= revoked-anchor-id (at 6 lst)) 6)
-                        -1
-                    )
-                )
-                (lst-v1 (ref-U|LST::UC_RemoveItemAt lst position-to-remove))
-                (lst-v2 (ref-U|LST::UC_AppL lst-v1 BAR))
-                (n:integer (at "anchors" bc))
-                (ca:bool (at "class-active" bc))
-                (bcid:string (at "boost-class-id" bc))
-            )
-            (UDC_BoostClass (at 0 lst-v2) (at 1 lst-v2) (at 2 lst-v2) (at 3 lst-v2)
-                (at 4 lst-v2) (at 5 lst-v2) (at 6 lst-v2) (- n 1) ca bcid
-            )
-        )
-    )
-    (defun UDC_AA|PlaceAnchor:object{ANK|AssetAnchors}
-        (aa:object{ANK|AssetAnchors} new-anchor-id:string)
-        @doc "Places anchor in first group with a free slot; creates new group if needed. \
-            \ Pure constructor — no enforce. Caller (issue caps via UEV_*) must ensure \
-            \ anchors-active < 49 (implies a free group slot exists under 7×7)."
-        (let
-            (
-                (ga:integer (at "groups-active" aa))
-                (ta:integer (at "anchors-active" aa))
-                (aid:string (at "asset-id" aa))
-            )
-            (let
-                (
-                    (result:list
-                        (fold
-                            (lambda (acc:list gi:integer)
-                                (if (= (at 1 acc) 1)
-                                    acc
-                                    (let
-                                        (
-                                            (grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot aa gi))
-                                            (gn:integer (at "anchors" grp))
-                                        )
-                                        (if (< gn 7)
-                                            [(UDC_IG|WithAddedAnchor grp new-anchor-id) 1 gi]
-                                            acc
-                                        )
-                                    )
-                                )
-                            )
-                            [(UDC_EmptyInternalGroup) 0 -1]
-                            (enumerate 0 6)
-                        )
-                    )
-                    (placed:integer (at 1 result))
-                )
-                (if (= placed 1)
-                    (let
-                        (
-                            (updated-grp:object{ANK|InternalGroup} (at 0 result))
-                            (slot:integer (at 2 result))
-                            (prev-grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot aa slot))
-                            (new-ga:integer
-                                (if (and (= (at "anchors" prev-grp) 0) (> (at "anchors" updated-grp) 0))
-                                    (if (> ga (+ slot 1)) ga (+ slot 1))
-                                    ga
-                                )
-                            )
-                        )
-                        (URC_AA|SetGroupAtSlot aa updated-grp slot (+ ta 1) new-ga false)
-                    )
-                    (let
-                        (
-                            (new-grp:object{ANK|InternalGroup} (UDC_IG|WithAddedAnchor (UDC_EmptyInternalGroup) new-anchor-id))
-                        )
-                        (URC_AA|SetGroupAtSlot aa new-grp ga (+ ta 1) ga true)
-                    )
-                )
-            )
-        )
-    )
-    (defun UDC_AA|RemoveAnchor:object{ANK|AssetAnchors}
-        (aa:object{ANK|AssetAnchors} revoked-anchor-id:string)
-        @doc "Removes anchor from its group in AssetAnchors."
-        (let
-            (
-                (ga:integer (at "groups-active" aa))
-                (ta:integer (at "anchors-active" aa))
-                (aid:string (at "asset-id" aa))
-            )
-            (fold
-                (lambda (acc:object{ANK|AssetAnchors} gi:integer)
-                    (let
-                        (
-                            (grp:object{ANK|InternalGroup} (URC_AA|GroupAtSlot acc gi))
-                        )
-                        (if (URC_IG|ContainsAnchor grp revoked-anchor-id)
-                            (let
-                                (
-                                    (updated-grp:object{ANK|InternalGroup} (UDC_IG|WithRemovedAnchor grp revoked-anchor-id))
-                                    (was-ga:integer (at "groups-active" acc))
-                                    (was-ta:integer (at "anchors-active" acc))
-                                    (grp-now-empty:bool (= (at "anchors" updated-grp) 0))
-                                )
-                                (URC_AA|SetGroupAtSlot acc updated-grp gi (- was-ta 1) was-ga grp-now-empty)
-                            )
-                            acc
-                        )
-                    )
-                )
-                aa
-                (enumerate 0 6)
-            )
-        )
-    )
-    (defun UDC_AccountAnchor:object{ANK|UserSchema}
-        (a:decimal b:string c:string)
-        @doc "Constructs user-anchor contribution object."
-        {"promile"              : a
-        ,"ouronet-account"      : b
-        ,"anchor-id"            : c}
-    )
-    (defun UDC_UserBoost:object{ANK|UserBoostSchema}
-        (aggregate-promile:decimal ouronet-account:string boost-class-id:string)
-        @doc "Constructs user-boost aggregate row for ANK|T|UserBoost."
-        {"aggregate-promile"   : aggregate-promile
-        ,"ouronet-account"     : ouronet-account
-        ,"boost-class-id"      : boost-class-id}
-    )
+    ;;{F5}  Write [W]
     ;; [W]   write
     ;; Five blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
@@ -1656,6 +1678,7 @@
             (UDC_UserBoost aggregate-promile account boost-class-id)
         )
     )
+    ;;{F6}  Aux/Protected [X]
     ;; [XI]
     ;;
     ;; Depth: C_* → XI_* (depth 0) → XI_1|* … ; XE_* / XB_* → XI_1|* (depth 1) → XI_2|* …
@@ -2114,23 +2137,8 @@
             )
         )
     )
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueAnchor:object{IgnisCollectorV1.OutputCumulator} (output:[string])
-        @doc "IGNIS cost for the 4 anchor-issue ops (flat GAS 1000; <output> carries anchor-id[+boost-class-id])."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
-            (ref-IGNIS::UDC_ConstructOutputCumulator 1000.0 AQP|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) output)))
-    (defun URCi_IssueAnchorStoa:decimal (acnoi:bool)
-        @doc "STOA cost for anchor-issue: 'standard' usage price x(2 if acnoi else 1)."
-        (let ((ref-DALOS:module{OuronetDalosV1} DALOS))
-            (* (ref-DALOS::UR_UsagePrice "standard") (if acnoi 2.0 1.0))))
-    (defun URCi_RevokeAnchor:object{IgnisCollectorV1.OutputCumulator} ()
-        @doc "IGNIS cost for C_RevokeAnchor (biggest tier)."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
-            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)))
-    (defun URCi_RevokeBoostClass:object{IgnisCollectorV1.OutputCumulator} ()
-        @doc "IGNIS cost for C_RevokeBoostClass (biggest tier)."
-        (let ((ref-IGNIS:module{IgnisCollectorV1} IGNIS))
-            (ref-IGNIS::UDC_BiggestCumulator AQP|SC_NAME)))
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
     ;; [C]   client
     ;;

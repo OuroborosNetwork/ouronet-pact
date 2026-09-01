@@ -48,10 +48,11 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0-F2}  [UC/SIP/SKP]  — REMOVED. Every AQP INFO now sources its cost from a core URCi_ reader
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;;   (AQP-{ANK,SCORE,POOL,FVT,VCT,DSA}.URCi_*, via OI|UC_IfpFromOutputCumulator / OI|UDC_DynamicStoaCost),
     ;;   so the local price-tier gates (UC|GasPrice / SIP|URC_* / SKP|URC_*) are no longer used here.
-    ;;{F3}  [INFO]  — one per AQP user/admin entrypoint, grouped by source module
     ;;
     ;;<====================>
     ;;[AQP-ANK] Anchors
@@ -1152,8 +1153,10 @@
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
-    ;;{F4}  [CAP]
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F4}  Validate [UEV/CAP]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
+    ;;
 )

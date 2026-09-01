@@ -1260,6 +1260,150 @@
     )
     ;;<=======>
     ;;FUNCTIONS
+    ;;{F1}  Construct [UDC]
+    ;; [UDC] construct
+    ;;
+    ;; Early UDC: SCR|UserSchema constructor is required before UR_U-SCR|UserScore (with-default-read default object).
+    (defun UDC_SCR|UserSchema:object{SCR|UserSchema}
+        (a:decimal b:decimal c:decimal c1:decimal c2:decimal g:integer d:string e:string f:string)
+        @doc "Core constructor for object{SCR|UserSchema}. c1=base-deb-score, c2=boosted-deb-score (M3); \
+            \ g=stamped-generation (vacate-v2 §5)."
+        {"base-score"           : a
+        ,"boosted-score"        : b
+        ,"deb-score"            : c
+        ,"base-deb-score"       : c1
+        ,"boosted-deb-score"    : c2
+        ,"stamped-generation"   : g
+        ,"ouronet-account"      : d
+        ,"pool-id"              : e
+        ,"score-id"             : f}
+    )
+    (defun UDC_SCR|SingularUserScoreDelta:object{SCR|SingularUserScoreDelta}
+        (
+            new-user-base-score:decimal
+            new-user-boosted-score:decimal
+            new-user-deb-score:decimal
+            new-user-base-deb-score:decimal
+            new-user-boosted-deb-score:decimal
+            nz-delta:integer
+            delta-global-base-score:decimal
+            delta-global-boosted-score:decimal
+            delta-global-deb-score:decimal
+            delta-global-base-deb-score:decimal
+            delta-global-boosted-deb-score:decimal
+        )
+        @doc "Constructor for URC_SingularUserScoreDeltaFromSignedUserBase result (named user + aggregate deltas)."
+        {"new-user-base-score"              : new-user-base-score
+        ,"new-user-boosted-score"           : new-user-boosted-score
+        ,"new-user-deb-score"               : new-user-deb-score
+        ,"new-user-base-deb-score"          : new-user-base-deb-score
+        ,"new-user-boosted-deb-score"       : new-user-boosted-deb-score
+        ,"nz-delta"                         : nz-delta
+        ,"delta-global-base-score"          : delta-global-base-score
+        ,"delta-global-boosted-score"       : delta-global-boosted-score
+        ,"delta-global-deb-score"           : delta-global-deb-score
+        ,"delta-global-base-deb-score"      : delta-global-base-deb-score
+        ,"delta-global-boosted-deb-score"   : delta-global-boosted-deb-score}
+    )
+    ;;
+    (defun UDC_SCR|Schema:object{SCR|Schema}
+        (a:string b:bool c:bool d:string e:string f:string g:string v:bool w:string h:bool i:integer j:decimal k:decimal l:decimal l1:decimal l2:decimal m:integer m2:integer n:integer o:string p:decimal q:decimal r:decimal s:bool t:integer u:string)
+        @doc "Core constructor for object{SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers). l1=total-base-deb-score, l2=total-boosted-deb-score (M3); m2=vacate-generation (vacate-v2 §5)."
+        {"owner-konto"          : a
+        ,"can-upgrade"          : b
+        ,"can-change-owner"     : c
+        ,"boost-class-link"     : d
+        ,"boost-link"           : e
+        ,"aqpool-link"          : f
+        ,"fvt-link"             : g
+        ,"triplet"              : v
+        ,"triplet-id"           : w
+        ,"deb-boost"            : h
+        ,"precision"            : i
+        ,"total-base-score"     : j
+        ,"total-boosted-score"  : k
+        ,"total-deb-score"      : l
+        ,"total-base-deb-score"    : l1
+        ,"total-boosted-deb-score" : l2
+        ,"nzs-count"            : m
+        ,"vacate-generation"    : m2
+        ,"score-class"          : n
+        ,"lp-denominator"       : o
+        ,"mx-frozen"            : p
+        ,"mx-sleeping"          : q
+        ,"mx-hibernated"        : r
+        ,"sft-equality"         : s
+        ,"nft-score-model"      : t
+        ,"score-id"             : u}
+    )
+    (defun UDC_SCR|SF|Schema:object{SCR|SF|Schema}
+        (a:decimal b:string c:string d:integer)
+        @doc "Core constructor for object{SCR|SF|Schema}."
+        {"nonce-score-value" : a
+        ,"score-id"          : b
+        ,"dpsf-id"           : c
+        ,"nonce"             : d}
+    )
+    (defun UDC_SCR|SF|DefRevision:object{SCR|SF|DefRevision}
+        (a:integer b:string c:string)
+        @doc "Core constructor for object{SCR|SF|DefRevision}."
+        {"revision-nonce" : a
+        ,"score-id"       : b
+        ,"dpsf-id"        : c}
+    )
+    (defun UDC_SCR|NF|TraitSchema:object{SCR|NF|TraitSchema}
+        (a:decimal b:string c:string d:string e:string)
+        @doc "Core constructor for object{SCR|NF|TraitSchema}: trait-score-value, score-id, dpnf-id, trait-key, trait-value."
+        {"trait-score-value" : a
+        ,"score-id"          : b
+        ,"dpnf-id"           : c
+        ,"trait-key"         : d
+        ,"trait-value"       : e}
+    )
+    (defun UDC_SCR|NF|ClassSchema:object{SCR|NF|ClassSchema}
+        (a:decimal b:string c:string d:integer)
+        @doc "Core constructor for object{SCR|NF|ClassSchema}: trait-score-value, score-id, dpnf-id, dpnf-nonce-class."
+        {"trait-score-value"  : a
+        ,"score-id"           : b
+        ,"dpnf-id"            : c
+        ,"dpnf-nonce-class"   : d}
+    )
+    (defun UDC_SCR|NF|DefRevision:object{SCR|NF|DefRevision}
+        (ga:integer tr:integer cl:integer score-id:string dpnf-id:string)
+        @doc "Core constructor for object{SCR|NF|DefRevision}: global, trait, class revision nonces plus keys."
+        {"global-revision-nonce" : ga
+        ,"trait-revision-nonce"  : tr
+        ,"class-revision-nonce"  : cl
+        ,"score-id"              : score-id
+        ,"dpnf-id"               : dpnf-id}
+    )
+    (defun UDC_SCR|Triplet:object{SCR|Triplet}
+        (bronze-score-id:string silver-score-id:string golden-score-id:string triplet-category:string triplet-id:string true-triplet:bool)
+        @doc "Core constructor for object{SCR|Triplet}."
+        {"bronze-score-id"  : bronze-score-id
+        ,"silver-score-id"  : silver-score-id
+        ,"golden-score-id"  : golden-score-id
+        ,"triplet-category" : triplet-category
+        ,"triplet-id"       : triplet-id
+        ,"true-triplet"     : true-triplet}
+    )
+    (defun UDC_SCR|ScoreEntityModel:object{SCR|ScoreEntityModel}
+        (entity-type:integer score-class:integer collectable-id:string precision:integer
+         nonces:[integer] nonce-score-values:[decimal]
+         bronze-model-id:string silver-model-id:string golden-model-id:string model-id:string)
+        @doc "Core constructor for object{SCR|ScoreEntityModel}."
+        {"entity-type"        : entity-type
+        ,"score-class"        : score-class
+        ,"collectable-id"     : collectable-id
+        ,"precision"          : precision
+        ,"nonces"             : nonces
+        ,"nonce-score-values" : nonce-score-values
+        ,"bronze-model-id"    : bronze-model-id
+        ,"silver-model-id"    : silver-model-id
+        ,"golden-model-id"    : golden-model-id
+        ,"model-id"           : model-id}
+    )
+    ;;{F2}  Compute [UC]
     ;; [UC]  compute
     (defun UCk_UserScore:string (ouronet-account:string pool-id:string score-id:string)
         @doc "Composite key for SCR|T|UserScore: account | pool | score."
@@ -1333,6 +1477,7 @@
             )
         )
     )
+    ;;{F3}  Read [UR/URC/URH/URCi/INFO]
     ;; [UR]  read
     (defun URC_NFTraitKeysList:[string] (score-id:string dpnf-id:string)
         @doc "The distinct defined trait-keys for (score-id, dpnf-id); [] when none defined. Point read \
@@ -2291,6 +2436,43 @@
         @doc "Returns all row keys from SCR|T|Score."
         (keys SCR|T|Score)
     )
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_IssueScore:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string])
+        @doc "IGNIS cost for the 5 score-issue ops (flat GAS|ISSUE-SCORE, konto = the new score's owner)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE owner-konto (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_IssueScoreStoa:decimal ()
+        @doc "STOA cost for score-issue: UR_UsagePrice 'smart'."
+        (let ((d:module{OuronetDalosV1} DALOS)) (d::UR_UsagePrice "smart")))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
+        @doc "Medium tier on the (pre-rotate) score owner."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+    (defun URCi_CreateBoostLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+    (defun URCi_EnableDebBoost:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+    (defun URCi_IssueTriplet:object{IgnisCollectorV1.OutputCumulator} (silver-score-id:string output:[string])
+        @doc "GAS|ISSUE-TRIPLET, konto = the silver score's owner."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-TRIPLET (UR_SCR|ScoreOwnerKonto silver-score-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string nonces:[integer])
+        @doc "IGNIS = |nonces| x UsagePrice('ignis|big'), konto = score owner."
+        (let ((r:module{IgnisCollectorV1} IGNIS) (d:module{OuronetDalosV1} DALOS))
+            (r::UDC_ConstructOutputCumulator (* (dec (length nonces)) (d::UR_UsagePrice "ignis|big")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
+    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string trait-keys:[string])
+        @doc "IGNIS = |trait-keys| x UsagePrice('ignis|biggest'), konto = score owner."
+        (let ((r:module{IgnisCollectorV1} IGNIS) (d:module{OuronetDalosV1} DALOS))
+            (r::UDC_ConstructOutputCumulator (* (dec (length trait-keys)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
+    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer])
+        @doc "IGNIS = |nonce-classes| x UsagePrice('ignis|biggest'), konto = score owner."
+        (let ((r:module{IgnisCollectorV1} IGNIS) (d:module{OuronetDalosV1} DALOS))
+            (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
+    (defun URCi_IssueScoreModel:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        @doc "GAS|ISSUE-SCORE-MODEL (shared by IssueSingleScoreModel / CombineTripletScoreModel / IssueScoreFromModel)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron (r::URC_IsVirtualGasZero) output)))
+    ;;{F4}  Validate [UEV/CAP]
     ;; [UEV] enforce
     (defun UEV_LpStakeScoreContext
         (ouronet-account:string pool-id:string score-id:string lp-id:string)
@@ -2552,148 +2734,7 @@
             )
         )
     )
-    ;; [UDC] construct
-    ;;
-    ;; Early UDC: SCR|UserSchema constructor is required before UR_U-SCR|UserScore (with-default-read default object).
-    (defun UDC_SCR|UserSchema:object{SCR|UserSchema}
-        (a:decimal b:decimal c:decimal c1:decimal c2:decimal g:integer d:string e:string f:string)
-        @doc "Core constructor for object{SCR|UserSchema}. c1=base-deb-score, c2=boosted-deb-score (M3); \
-            \ g=stamped-generation (vacate-v2 §5)."
-        {"base-score"           : a
-        ,"boosted-score"        : b
-        ,"deb-score"            : c
-        ,"base-deb-score"       : c1
-        ,"boosted-deb-score"    : c2
-        ,"stamped-generation"   : g
-        ,"ouronet-account"      : d
-        ,"pool-id"              : e
-        ,"score-id"             : f}
-    )
-    (defun UDC_SCR|SingularUserScoreDelta:object{SCR|SingularUserScoreDelta}
-        (
-            new-user-base-score:decimal
-            new-user-boosted-score:decimal
-            new-user-deb-score:decimal
-            new-user-base-deb-score:decimal
-            new-user-boosted-deb-score:decimal
-            nz-delta:integer
-            delta-global-base-score:decimal
-            delta-global-boosted-score:decimal
-            delta-global-deb-score:decimal
-            delta-global-base-deb-score:decimal
-            delta-global-boosted-deb-score:decimal
-        )
-        @doc "Constructor for URC_SingularUserScoreDeltaFromSignedUserBase result (named user + aggregate deltas)."
-        {"new-user-base-score"              : new-user-base-score
-        ,"new-user-boosted-score"           : new-user-boosted-score
-        ,"new-user-deb-score"               : new-user-deb-score
-        ,"new-user-base-deb-score"          : new-user-base-deb-score
-        ,"new-user-boosted-deb-score"       : new-user-boosted-deb-score
-        ,"nz-delta"                         : nz-delta
-        ,"delta-global-base-score"          : delta-global-base-score
-        ,"delta-global-boosted-score"       : delta-global-boosted-score
-        ,"delta-global-deb-score"           : delta-global-deb-score
-        ,"delta-global-base-deb-score"      : delta-global-base-deb-score
-        ,"delta-global-boosted-deb-score"   : delta-global-boosted-deb-score}
-    )
-    ;;
-    (defun UDC_SCR|Schema:object{SCR|Schema}
-        (a:string b:bool c:bool d:string e:string f:string g:string v:bool w:string h:bool i:integer j:decimal k:decimal l:decimal l1:decimal l2:decimal m:integer m2:integer n:integer o:string p:decimal q:decimal r:decimal s:bool t:integer u:string)
-        @doc "Core constructor for object{SCR|Schema}: every schema field is an explicit argument (use for custom UDC wrappers). l1=total-base-deb-score, l2=total-boosted-deb-score (M3); m2=vacate-generation (vacate-v2 §5)."
-        {"owner-konto"          : a
-        ,"can-upgrade"          : b
-        ,"can-change-owner"     : c
-        ,"boost-class-link"     : d
-        ,"boost-link"           : e
-        ,"aqpool-link"          : f
-        ,"fvt-link"             : g
-        ,"triplet"              : v
-        ,"triplet-id"           : w
-        ,"deb-boost"            : h
-        ,"precision"            : i
-        ,"total-base-score"     : j
-        ,"total-boosted-score"  : k
-        ,"total-deb-score"      : l
-        ,"total-base-deb-score"    : l1
-        ,"total-boosted-deb-score" : l2
-        ,"nzs-count"            : m
-        ,"vacate-generation"    : m2
-        ,"score-class"          : n
-        ,"lp-denominator"       : o
-        ,"mx-frozen"            : p
-        ,"mx-sleeping"          : q
-        ,"mx-hibernated"        : r
-        ,"sft-equality"         : s
-        ,"nft-score-model"      : t
-        ,"score-id"             : u}
-    )
-    (defun UDC_SCR|SF|Schema:object{SCR|SF|Schema}
-        (a:decimal b:string c:string d:integer)
-        @doc "Core constructor for object{SCR|SF|Schema}."
-        {"nonce-score-value" : a
-        ,"score-id"          : b
-        ,"dpsf-id"           : c
-        ,"nonce"             : d}
-    )
-    (defun UDC_SCR|SF|DefRevision:object{SCR|SF|DefRevision}
-        (a:integer b:string c:string)
-        @doc "Core constructor for object{SCR|SF|DefRevision}."
-        {"revision-nonce" : a
-        ,"score-id"       : b
-        ,"dpsf-id"        : c}
-    )
-    (defun UDC_SCR|NF|TraitSchema:object{SCR|NF|TraitSchema}
-        (a:decimal b:string c:string d:string e:string)
-        @doc "Core constructor for object{SCR|NF|TraitSchema}: trait-score-value, score-id, dpnf-id, trait-key, trait-value."
-        {"trait-score-value" : a
-        ,"score-id"          : b
-        ,"dpnf-id"           : c
-        ,"trait-key"         : d
-        ,"trait-value"       : e}
-    )
-    (defun UDC_SCR|NF|ClassSchema:object{SCR|NF|ClassSchema}
-        (a:decimal b:string c:string d:integer)
-        @doc "Core constructor for object{SCR|NF|ClassSchema}: trait-score-value, score-id, dpnf-id, dpnf-nonce-class."
-        {"trait-score-value"  : a
-        ,"score-id"           : b
-        ,"dpnf-id"            : c
-        ,"dpnf-nonce-class"   : d}
-    )
-    (defun UDC_SCR|NF|DefRevision:object{SCR|NF|DefRevision}
-        (ga:integer tr:integer cl:integer score-id:string dpnf-id:string)
-        @doc "Core constructor for object{SCR|NF|DefRevision}: global, trait, class revision nonces plus keys."
-        {"global-revision-nonce" : ga
-        ,"trait-revision-nonce"  : tr
-        ,"class-revision-nonce"  : cl
-        ,"score-id"              : score-id
-        ,"dpnf-id"               : dpnf-id}
-    )
-    (defun UDC_SCR|Triplet:object{SCR|Triplet}
-        (bronze-score-id:string silver-score-id:string golden-score-id:string triplet-category:string triplet-id:string true-triplet:bool)
-        @doc "Core constructor for object{SCR|Triplet}."
-        {"bronze-score-id"  : bronze-score-id
-        ,"silver-score-id"  : silver-score-id
-        ,"golden-score-id"  : golden-score-id
-        ,"triplet-category" : triplet-category
-        ,"triplet-id"       : triplet-id
-        ,"true-triplet"     : true-triplet}
-    )
-    (defun UDC_SCR|ScoreEntityModel:object{SCR|ScoreEntityModel}
-        (entity-type:integer score-class:integer collectable-id:string precision:integer
-         nonces:[integer] nonce-score-values:[decimal]
-         bronze-model-id:string silver-model-id:string golden-model-id:string model-id:string)
-        @doc "Core constructor for object{SCR|ScoreEntityModel}."
-        {"entity-type"        : entity-type
-        ,"score-class"        : score-class
-        ,"collectable-id"     : collectable-id
-        ,"precision"          : precision
-        ,"nonces"             : nonces
-        ,"nonce-score-values" : nonce-score-values
-        ,"bronze-model-id"    : bronze-model-id
-        ,"silver-model-id"    : silver-model-id
-        ,"golden-model-id"    : golden-model-id
-        ,"model-id"           : model-id}
-    )
+    ;;{F5}  Write [W]
     ;; [W]   write
     ;; Nine blocks — one per deftable (table order). Within each block: WI → WW → WU → WU2+ (only when needed).
     ;; WU lists every schema field: defun when used; comment when [.], select key, or mutates via WW_*.
@@ -2911,6 +2952,7 @@
         (require-capability (SECURE))
         (insert SCR|T|ScoreEntityModel model-id row)
     )
+    ;;{F6}  Aux/Protected [X]
     ;; [XI]
     ;;
     ;; Depth: C_* → XI_* (depth 0) → XI_1|* … ; XE_* / XB_* → XI_1|* (depth 1) → XI_2|* …
@@ -3557,42 +3599,8 @@
         )
         fvt-id
     )
-    ;; [URCi]   cost readers — single source for exec billing + INFO preview
-    (defun URCi_IssueScore:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string])
-        @doc "IGNIS cost for the 5 score-issue ops (flat GAS|ISSUE-SCORE, konto = the new score's owner)."
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE owner-konto (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_IssueScoreStoa:decimal ()
-        @doc "STOA cost for score-issue: UR_UsagePrice 'smart'."
-        (let ((d:module{OuronetDalosV1} DALOS)) (d::UR_UsagePrice "smart")))
-    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
-        @doc "Medium tier on the (pre-rotate) score owner."
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
-    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
-    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))))
-    (defun URCi_CreateBoostLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))))
-    (defun URCi_EnableDebBoost:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
-    (defun URCi_IssueTriplet:object{IgnisCollectorV1.OutputCumulator} (silver-score-id:string output:[string])
-        @doc "GAS|ISSUE-TRIPLET, konto = the silver score's owner."
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-TRIPLET (UR_SCR|ScoreOwnerKonto silver-score-id) (r::URC_IsVirtualGasZero) output)))
-    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string nonces:[integer])
-        @doc "IGNIS = |nonces| x UsagePrice('ignis|big'), konto = score owner."
-        (let ((r:module{IgnisCollectorV1} IGNIS) (d:module{OuronetDalosV1} DALOS))
-            (r::UDC_ConstructOutputCumulator (* (dec (length nonces)) (d::UR_UsagePrice "ignis|big")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
-    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string trait-keys:[string])
-        @doc "IGNIS = |trait-keys| x UsagePrice('ignis|biggest'), konto = score owner."
-        (let ((r:module{IgnisCollectorV1} IGNIS) (d:module{OuronetDalosV1} DALOS))
-            (r::UDC_ConstructOutputCumulator (* (dec (length trait-keys)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
-    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer])
-        @doc "IGNIS = |nonce-classes| x UsagePrice('ignis|biggest'), konto = score owner."
-        (let ((r:module{IgnisCollectorV1} IGNIS) (d:module{OuronetDalosV1} DALOS))
-            (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
-    (defun URCi_IssueScoreModel:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
-        @doc "GAS|ISSUE-SCORE-MODEL (shared by IssueSingleScoreModel / CombineTripletScoreModel / IssueScoreFromModel)."
-        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron (r::URC_IsVirtualGasZero) output)))
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
     ;; [C]   client
     ;;
