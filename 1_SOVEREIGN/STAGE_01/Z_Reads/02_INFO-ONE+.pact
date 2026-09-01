@@ -168,11 +168,15 @@
     (defun URC_SWP|UpgradeBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string months:integer))
     (defun URC_SWP|UpdatePendingBrandingLPs:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string entity-pos:integer))
     (defun URC_SWP|UpgradeBrandingLPs:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string entity-pos:integer months:integer))
-    (defun SWP|INFO_AddLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun SWP|INFO_IcedLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun SWP|INFO_GlacialLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
-    (defun SWP|INFO_FrozenLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
-    (defun SWP|INFO_SleepingLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
+    (defun URC_SWP|AddLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URC_SWP|AddStandardLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URC_SWP|AddIcedLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URC_SWP|AddGlacialLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal))
+    (defun URC_SWP|AddFrozenLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal))
+    (defun URC_SWP|AddSleepingLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal))
+    (defun URC_SWP|RemoveLiquidity:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string lp-amount:decimal))
+    (defun URC_SWP|Fuel:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-amounts:[decimal]))
+    (defun URC_SWP|Firestarter:object{OuronetInfoV1.ClientInfo} (firestarter:string))
     ;;
     ;;  [DALOS-INFO]  (relocated from the now-tombstoned INFO-ZERO; DALOS client-op previews wrapping IGNIS's DALOS|URCi_*)
     ;;
@@ -3556,40 +3560,16 @@
                 [(format "LP-Branding for SWP-Pair {} entity-position {} upgraded for {} month(s)!" [swpair entity-pos months])]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (ref-SWPLC::URCi_UpgradeBrandingLPs months)) [])))
-    (defun SWP|INFO_Fuel:object{OuronetInfoV1.ClientInfo}
+    (defun URC_SWP|Fuel:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal])
         (let
             (
-                (ref-U|LST:module{StringProcessorV1} U|LST)
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-SWP:module{SwapperV3} SWP)
-                (ref-SWPI:module{SwapperIssueV3} SWPI)
+                (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                 ;;
-                (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))
                 (pool-tokens:[string] (ref-SWP::UR_PoolTokens swpair))
-                (has-zeros:bool (contains 0.0 input-amounts))
-                (input-ids-for-transfer:[string]
-                    (if has-zeros
-                        (ref-SWPI::URC_TrimIdsWithZeroAmounts swpair input-amounts)
-                        pool-tokens
-                    )
-                )
-                (input-amounts-for-transfer:[decimal]
-                    (if has-zeros
-                        (ref-U|LST::UC_RemoveItem input-amounts 0.0)
-                        input-amounts
-                    )
-                )
-                (ico:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_MultiTransferCumulator 
-                        input-ids-for-transfer account swp-sc input-amounts-for-transfer
-                    )
-                )
-                (ifp:decimal
-                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico)
-                )
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_Fuel account swpair input-amounts true)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
@@ -3605,7 +3585,7 @@
             )
         )
     )
-    (defun SWP|INFO_Firestarter:object{OuronetInfoV1.ClientInfo}
+    (defun URC_SWP|Firestarter:object{OuronetInfoV1.ClientInfo}
         (firestarter:string)
         (let
             (
@@ -3686,122 +3666,68 @@
         )
     )
     ;;
-    (defun SWP|INFO_AddLiquidity:object{OuronetInfoV1.ClientInfo}
+    (defun URC_SWP|AddLiquidity:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (UCX_AddLiquidity patron account swpair input-amounts true true stoa-pid)
-    )
-    (defun SWP|INFO_IcedLiquidity:object{OuronetInfoV1.ClientInfo}
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Adds Standard (native-LP) Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                [(format "Succesfully added Standard Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddStandardLiquidity account swpair input-amounts stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])))
+    (defun URC_SWP|AddStandardLiquidity:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (UCX_AddLiquidity patron account swpair input-amounts false true stoa-pid)
-    )
-    (defun SWP|INFO_GlacialLiquidity:object{OuronetInfoV1.ClientInfo}
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Adds Standard (native-LP) Liquidity to SWP-Pair {} with amounts {} (multistep)" [swpair input-amounts])]
+                [(format "Succesfully added Standard Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddStandardLiquidity account swpair input-amounts stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])))
+    (defun URC_SWP|AddIcedLiquidity:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
-        (UCX_AddLiquidity patron account swpair input-amounts false false stoa-pid)
-    )
-    (defun SWP|INFO_FrozenLiquidity:object{OuronetInfoV1.ClientInfo}
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Adds Iced Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                [(format "Succesfully added Iced Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddIcedLiquidity account swpair input-amounts stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])))
+    (defun URC_SWP|AddGlacialLiquidity:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Adds Glacial Liquidity to SWP-Pair {} with amounts {}" [swpair input-amounts])]
+                [(format "Succesfully added Glacial Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddGlacialLiquidity account swpair input-amounts stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [input-amounts])))
+    (defun URC_SWP|AddFrozenLiquidity:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string frozen-dptf:string input-amount:decimal stoa-pid:decimal)
-        (let
-            (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-SWP:module{SwapperV3} SWP)
-                (ref-SWPL:module{SwapperLiquidityV1} SWPL)
-                ;;
-                (dptf:string (ref-DPTF::UR_Frozen frozen-dptf))
-                (ptp:integer (ref-SWP::UR_PoolTokenPosition swpair dptf))
-                (lq-lst:[decimal] (ref-U|SWP::UC_MakeLiquidityList swpair ptp input-amount))
-                (ld:object{SwapperLiquidityV1.LiquidityData}
-                    (ref-SWPL::URC_LD swpair lq-lst)
-                )
-                ;;
-                ;;Compute Liquidity Addition Data
-                (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                    (ref-SWPL::URC|STOA-PID_CLAD account swpair ld false false stoa-pid)
-                )
-                (ifp:decimal 
-                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator 
-                        (at "perfect-ignis-fee" (at "clad-op" clad))
-                    )
-                )
-            )
-            (UCXX_AddLiquidityClientInfo patron ifp swpair (ref-DALOS::UR_IgnisID) clad false false true)
-        )
-    )
-    (defun SWP|INFO_SleepingLiquidity:object{OuronetInfoV1.ClientInfo}
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Adds Frozen Liquidity ({} {}) to SWP-Pair {}" [input-amount frozen-dptf swpair])]
+                [(format "Succesfully added Frozen Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddFrozenLiquidity account swpair frozen-dptf input-amount stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [(ref-I|OURONET::OI|UC_FormatTokenAmount input-amount)])))
+    (defun URC_SWP|AddSleepingLiquidity:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string sleeping-dpof:string nonce:integer stoa-pid:decimal)
-        (let
-            (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
-                (ref-SWP:module{SwapperV3} SWP)
-                (ref-SWPL:module{SwapperLiquidityV1} SWPL)
-                ;;
-                (dptf:string (ref-DPOF::UR_Sleeping sleeping-dpof))
-                (ptp:integer (ref-SWP::UR_PoolTokenPosition swpair dptf))
-                (batch-amount:decimal (ref-DPOF::UR_NonceSupply sleeping-dpof nonce))
-                (lq-lst:[decimal] (ref-U|SWP::UC_MakeLiquidityList swpair ptp batch-amount))
-                (ld:object{SwapperLiquidityV1.LiquidityData}
-                    (ref-SWPL::URC_LD swpair lq-lst)
-                )
-                ;;
-                ;;Compute Liquidity Addition Data
-                (clad:object{SwapperLiquidityV1.CompleteLiquidityAdditionData}
-                    (ref-SWPL::URC|STOA-PID_CLAD account swpair ld true true stoa-pid)
-                )
-                (ifp:decimal 
-                    (ref-I|OURONET::OI|UC_IfpFromOutputCumulator 
-                        (at "perfect-ignis-fee" (at "clad-op" clad))
-                    )
-                )
-            )
-            (UCXX_AddLiquidityClientInfo patron ifp swpair (ref-DALOS::UR_IgnisID) clad true true false)
-        )
-    )
-    (defun SWP|INFO_RemoveLiquidity:object{OuronetInfoV1.ClientInfo}
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Adds Sleeping Liquidity ({} Nonce {}) to SWP-Pair {}" [sleeping-dpof nonce swpair])]
+                [(format "Succesfully added Sleeping Liquidity to SWP-Pair {} from Account {}" [swpair sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_AddSleepingLiquidity account swpair sleeping-dpof nonce stoa-pid)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonce])))
+    (defun URC_SWP|RemoveLiquidity:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string lp-amount:decimal)
         (let
             (
                 (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
                 (ref-SWP:module{SwapperV3} SWP)
                 (ref-SWPL:module{SwapperLiquidityV1} SWPL)
+                (ref-SWPLC:module{SwapperLiquidityClientV1} SWPLC)
                 ;;
                 (pool-token-ids:[string] (ref-SWP::UR_PoolTokens swpair))
                 (lp-id:string (ref-SWP::UR_TokenLP swpair))
                 (pt-output-amounts:[decimal] (ref-SWPL::URC_LpBreakAmounts swpair lp-amount))
                 ;;
-                (swp-sc:string (ref-DALOS::GOV|SWP|SC_NAME))
-                (flat-ignis-lq-rm-fee:decimal 1000.0)
-                (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
-                (ico-flat:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-IGNIS::UDC_ConstructOutputCumulator flat-ignis-lq-rm-fee swp-sc trigger [])
-                )
-                ;;
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator 
-                        (at "type" (ref-TFT::URC_TransferClasses lp-id account swp-sc lp-amount))
-                        lp-id account swp-sc
-                    )
-                )
-                (ifp2:decimal (SIP|URC_Burn lp-id swp-sc))
-                (ico3:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_MultiTransferCumulator pool-token-ids swp-sc account pt-output-amounts)
-                )
-                (ifp:decimal 
-                    (+
-                        ifp2
-                        (ref-I|OURONET::OI|UC_IfpFromOutputCumulator 
-                            (ref-IGNIS::UDC_ConcatenateOutputCumulators [ico-flat ico1 ico3] [])
-                        )
-                    )
-                )
+                (ifp:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPLC::URCi_RemoveLiquidity account swpair lp-amount)))
             )
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [
