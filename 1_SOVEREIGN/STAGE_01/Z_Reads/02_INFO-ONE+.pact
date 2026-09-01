@@ -191,6 +191,14 @@
     (defun URC_SWP|SmartSwapWithSlippage:object{OuronetInfoV1.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
     (defun URC_SWP|SmartSwapNoSlippageBundle:object{OuronetInfoV1.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV2.SmartSwapPathBundle}))
     (defun URC_SWP|SmartSwapWithSlippageBundle:object{OuronetInfoV1.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle}))
+    (defun URC_LIQUID|WrapStoa:object{OuronetInfoV1.ClientInfo} (patron:string wrapper:string amount:decimal))
+    (defun URC_LIQUID|UnwrapStoa:object{OuronetInfoV1.ClientInfo} (patron:string unwrapper:string amount:decimal))
+    (defun URC_LIQUID|WrapUrStoa:object{OuronetInfoV1.ClientInfo} (patron:string wrapper:string amount:decimal))
+    (defun URC_LIQUID|UnwrapUrStoa:object{OuronetInfoV1.ClientInfo} (patron:string unwrapper:string amount:decimal))
+    (defun URC_ORBR|Compress:object{OuronetInfoV1.ClientInfo} (client:string ignis-amount:decimal))
+    (defun URC_ORBR|Sublimate:object{OuronetInfoV1.ClientInfo} (client:string target:string ouro-amount:decimal))
+    (defun URC_ORBR|SublimateV2:object{OuronetInfoV1.ClientInfo} (client:string target:string ouro-amount:decimal))
+    (defun URC_ORBR|WithdrawFees:object{OuronetInfoV1.ClientInfo} (patron:string id:string target:string))
     ;;
     ;;  [DALOS-INFO]  (relocated from the now-tombstoned INFO-ZERO; DALOS client-op previews wrapping IGNIS's DALOS|URCi_*)
     ;;
@@ -3110,140 +3118,40 @@
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_RemoveSecondary remover ats reward-token)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
     ;; [LIQUID]
-    (defun LIQUID|INFO_UnwrapUrStoa:object{OuronetInfoV1.ClientInfo}
+    (defun URC_LIQUID|UnwrapUrStoa:object{OuronetInfoV1.ClientInfo}
         (patron:string unwrapper:string amount:decimal)
-        (let
-            (
-                (ref-urcoin:module{stoa-ns.ur-stoic-fungible-v1} coin)
-                ;;
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
-                ;;
-                (trial (try false (ref-urcoin::UR_UR|Balance (ref-DALOS::UR_AccountStoa unwrapper))))
-                (iz-target-unregistered (= (typeof trial) "bool"))
-                (lq-sc:string (ref-DALOS::GOV|LIQUID|SC_NAME))
-                (w-urstoa-id:string (ref-DALOS::UR_UrStoaID))
-                (what-type:integer (at "type" (ref-TFT::URC_TransferClasses w-urstoa-id unwrapper lq-sc amount)))
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator what-type w-urstoa-id unwrapper lq-sc)
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                (ifp2:decimal (SIP|URC_Burn w-urstoa-id lq-sc))
-                (ifp:decimal (+ ifp1 ifp2))
-                (final-ifp:decimal
-                    (if iz-target-unregistered
-                        (+ ifp (* 5.0 (ref-DALOS::UR_UsagePrice "ignis|biggest")))
-                        ifp
-                    )
-                )
-            )
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID) (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper)))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Unwraps {} UrStoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 [(format "Succesfully unwrapped {} UrStoa to the Payment Key of the Unwrapper {}" [amount uw])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron final-ifp)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                []
-            )
-        )
-    )
-    (defun LIQUID|INFO_WrapUrStoa:object{OuronetInfoV1.ClientInfo}
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_UnwrapUrStoa unwrapper amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_LIQUID|WrapUrStoa:object{OuronetInfoV1.ClientInfo}
         (patron:string wrapper:string amount:decimal)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS) 
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
-                ;;
-                (lq-sc:string (ref-DALOS::GOV|LIQUID|SC_NAME))
-                (w-urstoa-id:string (ref-DALOS::UR_UrStoaID))
-                (what-type:integer (at "type" (ref-TFT::URC_TransferClasses w-urstoa-id wrapper lq-sc amount)))
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator what-type w-urstoa-id wrapper lq-sc)
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                (ifp2:decimal (SIP|URC_Mint w-urstoa-id lq-sc false))
-                (ifp:decimal (+ ifp1 ifp2))
-            )
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID) (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper)))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Wraps {} UrStoa to the Payment Key of the Wrapper {}" [amount uw])]
-                [(format "Succesfully wrapped {} UrStoa to the Payment Key of the Unwrapper {}" [amount uw])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                []
-            )
-        )
-    )
-    (defun LIQUID|INFO_UnwrapStoa:object{OuronetInfoV1.ClientInfo}
+                [(format "Succesfully wrapped {} UrStoa to the Payment Key of the Wrapper {}" [amount uw])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_WrapUrStoa wrapper amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_LIQUID|UnwrapStoa:object{OuronetInfoV1.ClientInfo}
         (patron:string unwrapper:string amount:decimal)
-        (let
-            (
-                (ref-coin:module{stoa-ns.fungible-v1} coin)
-                ;;
-                (ref-DALOS:module{OuronetDalosV1} DALOS)
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper))
-                ;;
-                (trial (try false (ref-coin::get-balance (ref-DALOS::UR_AccountStoa unwrapper))))
-                (iz-target-unregistered (= (typeof trial) "bool"))
-                (lq-sc:string (ref-DALOS::GOV|LIQUID|SC_NAME))
-                (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
-                (what-type:integer (at "type" (ref-TFT::URC_TransferClasses w-stoa-id unwrapper lq-sc amount)))
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator what-type w-stoa-id unwrapper lq-sc)
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                (ifp2:decimal (SIP|URC_Burn w-stoa-id lq-sc))
-                (ifp:decimal (+ ifp1 ifp2))
-                (final-ifp:decimal
-                    (if iz-target-unregistered
-                        (+ ifp (* 5.0 (ref-DALOS::UR_UsagePrice "ignis|biggest")))
-                        ifp
-                    )
-                )
-            )
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID) (uw:string (ref-I|OURONET::OI|UC_ShortAccount unwrapper)))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Unwraps {} Stoa to the Payment Key of the Unwrapper {}" [amount uw])]
                 [(format "Succesfully unwrapped {} Stoa to the Payment Key of the Unwrapper {}" [amount uw])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron final-ifp)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                []
-            )
-        )
-    )
-    (defun LIQUID|INFO_WrapStoa:object{OuronetInfoV1.ClientInfo}
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_UnwrapStoa unwrapper amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_LIQUID|WrapStoa:object{OuronetInfoV1.ClientInfo}
         (patron:string wrapper:string amount:decimal)
-        (let
-            (
-                (ref-DALOS:module{OuronetDalosV1} DALOS) 
-                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
-                (ref-TFT:module{TrueFungibleTransferV1} TFT)
-                (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper))
-                ;;
-                (lq-sc:string (ref-DALOS::GOV|LIQUID|SC_NAME))
-                (w-stoa-id:string (ref-DALOS::UR_WrappedStoaID))
-                (what-type:integer (at "type" (ref-TFT::URC_TransferClasses w-stoa-id wrapper lq-sc amount)))
-                (ico1:object{IgnisCollectorV1.OutputCumulator}
-                    (ref-TFT::URCi_TransferCumulator what-type w-stoa-id wrapper lq-sc)
-                )
-                (ifp1:decimal (ref-I|OURONET::OI|UC_IfpFromOutputCumulator ico1))
-                (ifp2:decimal (SIP|URC_Mint w-stoa-id lq-sc false))
-                (ifp:decimal (+ ifp1 ifp2))
-            )
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-LIQUID:module{StoaLiquidStakingV1} LIQUID) (uw:string (ref-I|OURONET::OI|UC_ShortAccount wrapper)))
             (ref-I|OURONET::OI|UDC_ClientInfo
                 [(format "Operation: Wraps {} Stoa to the Payment Key of the Wrapper {}" [amount uw])]
-                [(format "Succesfully wrapped {} Stoa to the Payment Key of the Unwrapper {}" [amount uw])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
-                (ref-I|OURONET::OI|UDC_NoStoaCosts)
-                []
-            )
-        )
-    )
+                [(format "Succesfully wrapped {} Stoa to the Payment Key of the Wrapper {}" [amount uw])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-LIQUID::URCi_WrapStoa wrapper amount)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
     ;;
-    (defun ORBR|INFO_Compress:object{OuronetInfoV1.ClientInfo}
+    (defun URC_ORBR|Compress:object{OuronetInfoV1.ClientInfo}
         (client:string ignis-amount:decimal)
         (let
             (
@@ -3266,7 +3174,7 @@
             )
         )
     )
-    (defun ORBR|INFO_Sublimate:object{OuronetInfoV1.ClientInfo}
+    (defun URC_ORBR|Sublimate:object{OuronetInfoV1.ClientInfo}
         (client:string target:string ouro-amount:decimal)
         (let
             (
@@ -3301,6 +3209,48 @@
                    
                 ]
                 (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_ORBR|SublimateV2:object{OuronetInfoV1.ClientInfo}
+        (client:string target:string ouro-amount:decimal)
+        (let
+            (
+                (ref-U|ATS:module{UtilityAtsV2} U|ATS)
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-DPTF:module{DemiourgosPactTrueFungibleV1} DPTF)
+                (ref-ORBR:module{OuroborosV1} OUROBOROS)
+                (sa1:string (ref-I|OURONET::OI|UC_ShortAccount client))
+                (sa2:string (ref-I|OURONET::OI|UC_ShortAccount target))
+                ;;
+                (ouro-id:string (ref-DALOS::UR_OuroborosID))
+                (ouro-remainder-amount:decimal (at 0 (ref-U|ATS::UC_PromilleSplit 10.0 ouro-amount (ref-DPTF::UR_Decimals ouro-id))))
+                (ignis-amount:decimal (ref-ORBR::URC_Sublimate ouro-remainder-amount))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Sublimates {} Ouroboros (positive-supply V2) from {} generating IGNIS on {} at 99.0% efficiency; 1.0% Sublimation Fee" [ouro-amount sa1 sa2])]
+                [(format "Succesfully sublimated {} Ouro from {} to {}, generating {} Ignis GAS" [ouro-amount sa1 sa2 ignis-amount])]
+                (ref-I|OURONET::OI|UDC_NoIgnisCosts)
+                (ref-I|OURONET::OI|UDC_NoStoaCosts)
+                []
+            )
+        )
+    )
+    (defun URC_ORBR|WithdrawFees:object{OuronetInfoV1.ClientInfo}
+        (patron:string id:string target:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-ORBR:module{OuroborosV1} OUROBOROS)
+                (st:string (ref-I|OURONET::OI|UC_ShortAccount target))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Withdraws collected standard-mode DPTF Fees of {} to {}" [id st])]
+                [(format "Succesfully withdrew DPTF Fees for {} to Account {}" [id st])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ORBR::URCi_WithdrawFees id target)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []
             )
