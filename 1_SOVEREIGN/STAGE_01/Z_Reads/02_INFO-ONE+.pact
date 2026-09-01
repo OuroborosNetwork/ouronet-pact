@@ -183,6 +183,14 @@
     (defun URC_SWP|IssueStablePool:object{OuronetInfoV1.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal amp:decimal p:bool))
     (defun URC_SWP|IssueStandardPool:object{OuronetInfoV1.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal p:bool))
     (defun URC_SWP|IssueWeightedPool:object{OuronetInfoV1.ClientInfo} (patron:string account:string pool-tokens:[object{SwapperV3.PoolTokens}] fee-lp:decimal weights:[decimal] p:bool))
+    (defun URC_SWP|SingleSwapNoSlippage:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string))
+    (defun URC_SWP|SingleSwapWithSlippage:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun URC_SWP|MultiSwapNoSlippage:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string))
+    (defun URC_SWP|MultiSwapWithSlippage:object{OuronetInfoV1.ClientInfo} (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun URC_SWP|SmartSwapNoSlippage:object{OuronetInfoV1.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string))
+    (defun URC_SWP|SmartSwapWithSlippage:object{OuronetInfoV1.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage}))
+    (defun URC_SWP|SmartSwapNoSlippageBundle:object{OuronetInfoV1.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV2.SmartSwapPathBundle}))
+    (defun URC_SWP|SmartSwapWithSlippageBundle:object{OuronetInfoV1.ClientInfo} (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle}))
     ;;
     ;;  [DALOS-INFO]  (relocated from the now-tombstoned INFO-ZERO; DALOS client-op previews wrapping IGNIS's DALOS|URCi_*)
     ;;
@@ -3696,30 +3704,111 @@
                 [(format "Weighted SWP-Pair issued succesfully on Account {}" [sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPI::URCi_Issue account pool-tokens)))
                 (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (+ (ref-DALOS::UR_UsagePrice "dptf") (ref-DALOS::UR_UsagePrice "swp"))) [])))
-    (defun SWP|INFO_SinglePoolSwap:object{OuronetInfoV1.ClientInfo}
+    ;; ---- SWP entity-completion: swaps (direct -> SWPU|URCi_Swap ; smart -> URCi_SmartSwap / URCi_SmartSwapWithBundle) ----
+    (defun URC_SWP|SingleSwapNoSlippage:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string)
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (dsid:object{UtilitySwpV1.DirectSwapInputData}
-                    (ref-U|SWP::UDC_DirectSwapInputData [input-id] [input-amount] output-id)
-                )
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-SWPU:module{SwapperUsageV2} SWPU)
+                (bounds:object{SwapperUsageV2.Slippage} (ref-SWPU::UDC_SpawnSlippageBounds swpair [input-id] [input-amount] output-id -1.0))
             )
-            (UCX_Swap patron account swpair dsid)
-        )
-    )
-    (defun SWP|INFO_MultiPoolSwap:object{OuronetInfoV1.ClientInfo}
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Swaps {} {} to {} on SWP-Pair {} (no slippage protection)" [input-amount input-id output-id swpair])]
+                [(format "Succesfully swapped {} {} to {} on SWP-Pair {}" [input-amount input-id output-id swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair [input-id] [input-amount] output-id -1.0 bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_SWP|SingleSwapWithSlippage:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string swpair:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-SWPU:module{SwapperUsageV2} SWPU)
+                (slippage:decimal (at "slippage-percent" slippage-bounds))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Swaps {} {} to {} on SWP-Pair {} (slippage {}%)" [input-amount input-id output-id swpair slippage])]
+                [(format "Succesfully swapped {} {} to {} on SWP-Pair {}" [input-amount input-id output-id swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair [input-id] [input-amount] output-id slippage slippage-bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_SWP|MultiSwapNoSlippage:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string)
         (let
             (
-                (ref-U|SWP:module{UtilitySwpV1} U|SWP)
-                (dsid:object{UtilitySwpV1.DirectSwapInputData}
-                    (ref-U|SWP::UDC_DirectSwapInputData input-ids input-amounts output-id)
-                )
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-SWPU:module{SwapperUsageV2} SWPU)
+                (bounds:object{SwapperUsageV2.Slippage} (ref-SWPU::UDC_SpawnSlippageBounds swpair input-ids input-amounts output-id -1.0))
             )
-            (UCX_Swap patron account swpair dsid)
-        )
-    )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Multi-swaps {} to {} on SWP-Pair {} (no slippage protection)" [input-ids output-id swpair])]
+                [(format "Succesfully multi-swapped {} to {} on SWP-Pair {}" [input-ids output-id swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair input-ids input-amounts output-id -1.0 bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_SWP|MultiSwapWithSlippage:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string swpair:string input-ids:[string] input-amounts:[decimal] output-id:string slippage-bounds:object{SwapperUsageV2.Slippage})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-SWPU:module{SwapperUsageV2} SWPU)
+                (slippage:decimal (at "slippage-percent" slippage-bounds))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Multi-swaps {} to {} on SWP-Pair {} (slippage {}%)" [input-ids output-id swpair slippage])]
+                [(format "Succesfully multi-swapped {} to {} on SWP-Pair {}" [input-ids output-id swpair])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_Swap account swpair input-ids input-amounts output-id slippage slippage-bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_SWP|SmartSwapNoSlippage:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string input-id:string input-amount:decimal output-id:string)
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-SWPU:module{SwapperUsageV2} SWPU)
+                (bounds:object{SwapperUsageV2.Slippage} (ref-SWPU::UDC_SpawnSmartSwapSlippageBounds input-id input-amount output-id -1.0))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Smart-swaps {} {} to {} (auto-routed, no slippage protection)" [input-amount input-id output-id])]
+                [(format "Succesfully smart-swapped {} {} to {}" [input-amount input-id output-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwap account input-id input-amount output-id -1.0 bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_SWP|SmartSwapWithSlippage:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-SWPU:module{SwapperUsageV2} SWPU)
+                (slippage:decimal (at "slippage-percent" slippage-bounds))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Smart-swaps {} {} to {} (auto-routed, slippage {}%)" [input-amount input-id output-id slippage])]
+                [(format "Succesfully smart-swapped {} {} to {}" [input-amount input-id output-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwap account input-id input-amount output-id slippage slippage-bounds)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_SWP|SmartSwapNoSlippageBundle:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string input-id:string input-amount:decimal output-id:string bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-SWPU:module{SwapperUsageV2} SWPU)
+                (bounds:object{SwapperUsageV2.Slippage} (ref-SWPU::UDC_Slippage 0.0 0 0.0))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Smart-swaps {} {} to {} via a provided route bundle (no slippage protection)" [input-amount input-id output-id])]
+                [(format "Succesfully smart-swapped {} {} to {} via bundle" [input-amount input-id output-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwapWithBundle account input-id input-amount output-id -1.0 bounds bundle)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_SWP|SmartSwapWithSlippageBundle:object{OuronetInfoV1.ClientInfo}
+        (patron:string account:string input-id:string input-amount:decimal output-id:string slippage-bounds:object{SwapperUsageV2.Slippage} bundle:object{SwapperUsageV2.SmartSwapPathBundle})
+        (let
+            (
+                (ref-I|OURONET:module{OuronetInfoV1} IGNIS)
+                (ref-SWPU:module{SwapperUsageV2} SWPU)
+                (slippage:decimal (at "slippage-percent" slippage-bounds))
+            )
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Smart-swaps {} {} to {} via a provided route bundle (slippage {}%)" [input-amount input-id output-id slippage])]
+                [(format "Succesfully smart-swapped {} {} to {} via bundle" [input-amount input-id output-id])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-SWPU::URCi_SmartSwapWithBundle account input-id input-amount output-id slippage slippage-bounds bundle)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
     ;;
     (defun URC_SWP|AddLiquidity:object{OuronetInfoV1.ClientInfo}
         (patron:string account:string swpair:string input-amounts:[decimal] stoa-pid:decimal)
