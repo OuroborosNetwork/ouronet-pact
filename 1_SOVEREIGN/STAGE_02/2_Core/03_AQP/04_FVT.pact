@@ -220,6 +220,24 @@
     (defun CC_Collect:object{IgnisCollectorV1.OutputCumulator}
         (patron:string fvt-id:string score-entity-type:integer score-entity-id:string reward-dptf-id:string)
     )
+    ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string]))
+    (defun URCi_IssueStoa:decimal ())
+    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string))
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string))
+    (defun URCi_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_SetMosaic:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_SetSplitMode:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_IssueMultipletFamily:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_AddRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_Inject:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
+    (defun URCi_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
+    (defun URCi_Collect:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string]))
 )
 (module AQP-FVT GOV
     ;;
@@ -4901,9 +4919,7 @@
                     ;; the ESCROW-on-empty case (divisor 0 → hold `amount` as zombie, kept out of the M1 sweep).
                     (XI_DistributeInjectAmount fvt-id reward-dptf-id amount)
                     ;; PHASE 4.1 — Do not reset unclaimed-count · UrStoa comment-only slot
-                    (ref-IGNIS::UDC_ConstructOutputCumulator
-                        GAS|INJECT owner-konto trigger [fvt-id reward-dptf-id (format "{}" [amount])]
-                    )
+                    (URCi_Inject fvt-id [fvt-id reward-dptf-id (format "{}" [amount])])
                 ]
                 []
             )
@@ -4952,9 +4968,7 @@
                             (UC_EmptyOc)
                         )
                         ;; PHASE 3 — GAS (same lane event as an instant inject)
-                        (ref-IGNIS::UDC_ConstructOutputCumulator
-                            GAS|INJECT owner-konto trigger [fvt-id reward-dptf-id (format "{}" [amount])]
-                        )
+                        (URCi_Inject fvt-id [fvt-id reward-dptf-id (format "{}" [amount])])
                     ]
                     []
                 )
@@ -5722,6 +5736,43 @@
             (XI_FvtInjectCore patron fvt-id reward-dptf-id amount)
         )
     )
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_Issue:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-FVT owner-konto (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_IssueStoa:decimal ()
+        (let ((d:module{OuronetDalosV1} DALOS)) (d::UR_UsagePrice "smart")))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string)
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))))
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string)
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_FVT|OwnerKonto fvt-id))))
+    (defun URCi_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-COMMON-DENOMINATOR (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SetMosaic:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-MOSAIC (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SetSplitMode:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-SPLIT-MODE (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_AddScoreEntity:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-SCORE-ENTITY (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|TOGGLE-SCORE-ENTITY-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_IssueMultipletFamily:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-MULTIPLET-FAMILY patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_AddRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ADD-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|TOGGLE-REWARD-LINK (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|SET-QUALITY-SPLIT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_Inject:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        @doc "GAS|INJECT gas leg (konto = FVT owner); shared by instant inject, stream inject, and inject-finalize."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|INJECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_UnstaleMyScores:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        @doc "GAS|UNSTALE gas leg (konto = patron); exec concats it with the per-fvt unstale walk."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|UNSTALE patron (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_Collect:object{IgnisCollectorV1.OutputCumulator} (fvt-id:string output:[string])
+        @doc "GAS|COLLECT gas leg (konto = FVT owner); exec concats it with the forced-fix penalty leg and (triplet) the ATS ladder legs."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|COLLECT (UR_FVT|OwnerKonto fvt-id) (r::URC_IsVirtualGasZero) output)))
+    ;;
     ;; [C]   client
     ;; --- Lifecycle (FVT|T) ---
     (defun C_Issue:object{IgnisCollectorV1.OutputCumulator}
@@ -5739,9 +5790,9 @@
                     (fvt-id:string (ref-U|DALOS::UDC_Makeid fvt-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron smart-price)
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueStoa))
                 (XI_IssueFvt fvt-id fvt-class owner-konto common-denominator)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-FVT owner-konto trigger [fvt-id])
+                (URCi_Issue owner-konto [fvt-id])
             )
         )
     )
@@ -5752,14 +5803,12 @@
         (UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                ;;
-                (owner-pre-rotate:string (UR_FVT|OwnerKonto fvt-id))
+                (ico:object{IgnisCollectorV1.OutputCumulator} (URCi_RotateOwnership fvt-id))
             )
             (with-capability (FVT|C>ROTATE-OWNERSHIP-FVT fvt-id new-owner-konto)
                 (XI_RotateOwnership fvt-id new-owner-konto)
             )
-            (ref-IGNIS::UDC_MediumCumulator owner-pre-rotate)
+            ico
         )
     )
     (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
@@ -5775,7 +5824,7 @@
             (with-capability (FVT|C>CONTROL-FVT fvt-id new-can-upgrade new-can-change-owner)
                 (XI_Control fvt-id new-can-upgrade new-can-change-owner)
             )
-            (ref-IGNIS::UDC_MediumCumulator owner-konto)
+            (URCi_Control fvt-id)
         )
     )
     (defun C_SetCommonDenominator:object{IgnisCollectorV1.OutputCumulator}
@@ -5792,7 +5841,7 @@
             (with-capability (FVT|C>SET-COMMON-DENOMINATOR fvt-id common-denominator)
                 (XI_SetCommonDenominator fvt-id common-denominator)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-COMMON-DENOMINATOR owner-konto trigger [fvt-id])
+            (URCi_SetCommonDenominator fvt-id [fvt-id])
         )
     )
     (defun C_SetMosaic:object{IgnisCollectorV1.OutputCumulator}
@@ -5809,7 +5858,7 @@
             (with-capability (FVT|C>SET-MOSAIC fvt-id mosaic)
                 (XI_SetMosaic fvt-id mosaic)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-MOSAIC owner-konto trigger [fvt-id])
+            (URCi_SetMosaic fvt-id [fvt-id])
         )
     )
     (defun C_SetSplitMode:object{IgnisCollectorV1.OutputCumulator}
@@ -5828,7 +5877,7 @@
             (with-capability (FVT|C>SET-SPLIT-MODE fvt-id split-mode)
                 (XI_SetSplitMode fvt-id split-mode)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-SPLIT-MODE owner-konto trigger [fvt-id split-mode])
+            (URCi_SetSplitMode fvt-id [fvt-id split-mode])
         )
     )
     ;; --- Score membership (FVT|T|ScoreEntityLink) ---
@@ -5862,7 +5911,7 @@
                 )
                 (XI_AddScoreEntity fvt-id score-entity-type score-entity-id swpair ghost-weight)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ADD-SCORE-ENTITY owner-konto trigger [fvt-id score-entity-id])
+            (URCi_AddScoreEntity fvt-id [fvt-id score-entity-id])
         )
     )
     (defun C_ToggleScoreEntityLink:object{IgnisCollectorV1.OutputCumulator}
@@ -5878,7 +5927,7 @@
             (with-capability (FVT|C>TOGGLE-SCORE-ENTITY-LINK fvt-id score-entity-type score-entity-id enabled)
                 (XI_ToggleScoreEntityLink fvt-id score-entity-id enabled)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|TOGGLE-SCORE-ENTITY-LINK owner-konto trigger [fvt-id score-entity-id])
+            (URCi_ToggleScoreEntityLink fvt-id [fvt-id score-entity-id])
         )
     )
     (defun C_IssueMultipletFamily:object{IgnisCollectorV1.OutputCumulator}
@@ -5902,7 +5951,7 @@
             (with-capability (FVT|C>ISSUE-MULTIPLET-FAMILY token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id)
                 (XI_IssueMultipletFamily token-0-id token-1-id token-2-id ats-0-1-id ats-1-2-id)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-MULTIPLET-FAMILY patron trigger [family-id])
+            (URCi_IssueMultipletFamily patron [family-id])
         )
     )
     ;; --- Reward token registration (FVT|T|RPS|Global) — atomic one row per reward DPTF ---
@@ -5928,7 +5977,7 @@
             (with-capability (FVT|C>ADD-REWARD-LINK fvt-id reward-dptf-id segmentation reward-kind multiplet-family-id)
                 (XI_AddRewardLink fvt-id reward-dptf-id segmentation reward-kind multiplet-family-id)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ADD-REWARD-LINK owner-konto trigger [fvt-id reward-dptf-id multiplet-family-id])
+            (URCi_AddRewardLink fvt-id [fvt-id reward-dptf-id multiplet-family-id])
         )
     )
     (defun C_ToggleRewardLink:object{IgnisCollectorV1.OutputCumulator}
@@ -5945,7 +5994,7 @@
             (with-capability (FVT|C>TOGGLE-REWARD-LINK fvt-id reward-dptf-id enabled)
                 (XI_ToggleRewardLink fvt-id reward-dptf-id enabled)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|TOGGLE-REWARD-LINK owner-konto trigger [fvt-id reward-dptf-id])
+            (URCi_ToggleRewardLink fvt-id [fvt-id reward-dptf-id])
         )
     )
     (defun C_SetQualitySplit:object{IgnisCollectorV1.OutputCumulator}
@@ -5965,7 +6014,7 @@
             (with-capability (FVT|C>SET-QUALITY-SPLIT fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
                 (WI_QualitySplit fvt-id reward-dptf-id mode bronze-split silver-split gold-split)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|SET-QUALITY-SPLIT owner-konto trigger [fvt-id reward-dptf-id mode])
+            (URCi_SetQualitySplit fvt-id [fvt-id reward-dptf-id mode])
         )
     )
     ;;RPS economics (FVT|T|RPS|Global / FVT|T|RPS|User)
@@ -6343,7 +6392,7 @@
                             (map (lambda (fvt-id:string) (XI_FixUserFvtDeb patron fvt-id)) fvt-ids)
                             (UC_EmptyOc))
                         ;; GAS — the user pays for their own refresh
-                        (ref-IGNIS::UDC_ConstructOutputCumulator GAS|UNSTALE patron trigger [(format "{}" [(length fvt-ids)])])
+                        (URCi_UnstaleMyScores patron [(format "{}" [(length fvt-ids)])])
                     ]
                     []
                 )
@@ -6454,9 +6503,7 @@
                                 )
                             )
                         )
-                        (ref-IGNIS::UDC_ConstructOutputCumulator
-                            GAS|COLLECT owner-konto trigger [fvt-id score-entity-id reward-dptf-id]
-                        )
+                        (URCi_Collect fvt-id [fvt-id score-entity-id reward-dptf-id])
                     ]
                     []
                 )

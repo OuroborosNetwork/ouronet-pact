@@ -1135,8 +1135,8 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Create a Farm / Vault / Treasury." "Executes via TS02-C3.AQP-FVT|C_Issue."]
                 [(format "FVT '{}' created (class {}) for {}." [fvt-name fvt-class owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ISSUE-FVT))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_Issue owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-FVT.URCi_IssueStoa))
                 []))
     )
     (defun AQP-FVT|INFO_RotateOwnership:object{OuronetInfoV1.ClientInfo}
@@ -1146,7 +1146,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Transfer an FVT's owner-konto." "Executes via TS02-C3.AQP-FVT|C_RotateOwnership."]
                 [(format "FVT {} ownership moved to {}." [fvt-id new-owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_RotateOwnership fvt-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1157,7 +1157,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Set an FVT's can-upgrade / can-change-owner flags." "Executes via TS02-C3.AQP-FVT|C_Control."]
                 [(format "FVT {} control flags updated." [fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_Control fvt-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1168,7 +1168,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Set a farm's common-denominator (before any links)." "Executes via TS02-C3.AQP-FVT|C_SetCommonDenominator."]
                 [(format "FVT {} common-denominator set to {}." [fvt-id common-denominator])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-COMMON-DENOMINATOR))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_SetCommonDenominator fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1179,7 +1179,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Toggle a farm's mosaic membership policy." "Executes via TS02-C3.AQP-FVT|C_SetMosaic."]
                 [(format "FVT {} mosaic set to {}." [fvt-id mosaic])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-MOSAIC))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_SetMosaic fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1191,7 +1191,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Set a farm's reward-split mode (SPLIT|STAKED participation | SPLIT|TVL pool-size)." "Executes via TS02-C3.AQP-FVT|C_SetSplitMode."]
                 [(format "Farm {} reward-split mode: {} -> {}." [fvt-id (AQP-FVT.UR_FVT|SplitMode fvt-id) split-mode])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-SPLIT-MODE))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_SetSplitMode fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1202,7 +1202,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Register a score (type 1) or triplet (type 3) on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddScoreEntity."]
                 [(format "Score-entity {} (type {}) registered on FVT {}." [score-entity-id score-entity-type fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ADD-SCORE-ENTITY))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_AddScoreEntity fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1213,7 +1213,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Enable/disable a ScoreEntityLink on an FVT." "Executes via TS02-C3.AQP-FVT|C_ToggleScoreEntityLink."]
                 [(format "FVT {} score-entity {} enabled={}." [fvt-id score-entity-id enabled])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|TOGGLE-SCORE-ENTITY-LINK))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_ToggleScoreEntityLink fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1224,7 +1224,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Issue a chain-wide MultipletFamily reward ladder." "Executes via TS02-C3.AQP-FVT|C_IssueMultipletFamily."]
                 [(format "MultipletFamily issued: {} -> {} -> {}." [token-0-id token-1-id token-2-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ISSUE-MULTIPLET-FAMILY))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_IssueMultipletFamily patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1235,7 +1235,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Register a reward DPTF on an FVT." "Executes via TS02-C3.AQP-FVT|C_AddRewardLink."]
                 [(format "Reward {} linked on FVT {} (family {})." [reward-dptf-id fvt-id multiplet-family-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|ADD-REWARD-LINK))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_AddRewardLink fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1246,7 +1246,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Toggle a reward link's enabled flag." "Executes via TS02-C3.AQP-FVT|C_ToggleRewardLink."]
                 [(format "FVT {} reward {} enabled={}." [fvt-id reward-dptf-id enabled])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|TOGGLE-REWARD-LINK))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_ToggleRewardLink fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1257,7 +1257,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Set a MULTIPLET_BASE reward's quality-split mode + matrix." "Executes via TS02-C3.AQP-FVT|C_SetQualitySplit."]
                 [(format "FVT {} reward {} quality-split mode={}." [fvt-id reward-dptf-id mode])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|SET-QUALITY-SPLIT))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_SetQualitySplit fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1269,7 +1269,7 @@
                 ["Operation: Inject reward tokens as a linear time-stream over the given duration."
                  "Executes via TS02-C3.AQP-FVT|CC_InjectStream."]
                 [(format "Streaming {} of {} into FVT {} over {}s." [amount reward-dptf-id fvt-id duration])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_Inject fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
@@ -1281,7 +1281,7 @@
                 ["Operation: Enforced-fresh single-tx inject (fixes all stale members first)."
                  "Executes via TS02-C3.AQP-FVT|CC_Inject."]
                 [(format "Fresh-injected {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_Inject fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
@@ -1293,7 +1293,7 @@
                 ["Operation: Finalize a paginated fresh inject (zero-stale gate, then inject)."
                  "Executes via TS02-C3.AQP-FVT|CC_InjectFinalize."]
                 [(format "Finalized fresh inject of {} of {} into FVT {}." [amount reward-dptf-id fvt-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|INJECT))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_Inject fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 [amount]))
     )
@@ -1330,7 +1330,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Self-service deb-unstale of your own scores across FVTs." "Executes via TS02-C3.AQP-FVT|CC_UnstaleMyScores."]
                 [(format "Unstaled your scores across {} FVTs." [(length fvt-ids)])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|UNSTALE))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_UnstaleMyScores patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -1344,7 +1344,7 @@
                  "Base IGNIS shown; a triplet MULTIPLET reward adds ladder (Coil/Curl) legs at execution."
                  "Executes via TS02-C3.AQP-FVT|CC_Collect."]
                 [(format "Collected reward token {} from score-entity {}." [reward-dptf-id score-entity-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-FVT.GAS|COLLECT))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-FVT.URCi_Collect fvt-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
