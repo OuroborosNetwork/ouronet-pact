@@ -48,6 +48,12 @@
     (defun URCi_WipeSlim:object{IgnisCollectorV1.OutputCumulator} (id:string))
     (defun URCi_BurnNFT:object{IgnisCollectorV1.OutputCumulator} (id:string))
     (defun URCi_WipeNonce:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool))
+    (defun URCi_WipeCumulator:object{IgnisCollectorV1.OutputCumulator} (id:string son:bool removable-nonces-obj:object{RemovableNonces}))
+    ;;
+    ;;  [URDC/URC/UDC]  RemovableNonces builders (dirty-read helpers, also used by INFO preview)
+    (defun URDC_WipePure:object{RemovableNonces} (account:string id:string son:bool))
+    (defun URC_FilterAccountViableNonces:object{RemovableNonces} (account:string id:string son:bool nonces:[integer]))
+    (defun UDC_RemovableNonces:object{RemovableNonces} (a:[integer] b:[integer]))
 )
 ;;
 (module DPDC-MNG GOV
