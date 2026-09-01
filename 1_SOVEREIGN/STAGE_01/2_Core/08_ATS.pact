@@ -200,6 +200,7 @@
     (defun URCi_SetDirectRecoveryFee:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
     (defun URCi_SwitchDirectRecovery:object{IgnisCollectorV1.OutputCumulator} (atspair:string))
     (defun URCi_AddSecondary:object{IgnisCollectorV1.OutputCumulator} ())
+    (defun URCi_AddHotRBT:object{IgnisCollectorV1.OutputCumulator} (atspair:string hot-rbt:string))
     (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} ())
     (defun URCi_ToggleParameterLock:object{IgnisCollectorV1.OutputCumulator} (atspair:string toggle:bool))
     (defun URCi_IssueGas:decimal (token-count:integer))
@@ -1928,6 +1929,26 @@
                 (ref-DALOS:module{OuronetDalosV1} DALOS)
             )
             (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|token-issue") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+        )
+    )
+    (defun URCi_AddHotRBT:object{IgnisCollectorV1.OutputCumulator} (atspair:string hot-rbt:string)
+        @doc "Cost preview for C_AddHotRBT — pure re-derivation of its 3-leg concat: an \
+            \ AddSecondary leg + a conditional hot-rbt RotateOwnership (only when the hot-rbt \
+            \ is not already owned by ATS|SC_NAME) + the hot-rbt Control lock."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DPOF:module{DemiourgosPactOrtoFungibleV1} DPOF)
+                (hot-rbt-owner:string (ref-DPOF::UR_Konto hot-rbt))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (URCi_AddSecondary)
+                    (if (!= hot-rbt-owner ATS|SC_NAME) (ref-DPOF::URCi_RotateOwnership hot-rbt) EOC)
+                    (ref-DPOF::URCi_Control hot-rbt)
+                ]
+                []
+            )
         )
     )
     (defun URCi_SetColdRecoveryFees:object{IgnisCollectorV1.OutputCumulator} ()

@@ -57,6 +57,7 @@
         ;;
     (defun C_Syphon:object{IgnisCollectorV1.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
     (defun URCi_Syphon:object{IgnisCollectorV1.OutputCumulator} (syphon-target:string ats:string syphon-amounts:[decimal]))
+    (defun URCi_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator} (remover:string ats:string reward-token:string))
     ;;
 )
 ;;
@@ -1717,6 +1718,38 @@
                 )
             )
             (ref-IGNIS::UDC_ConcatenateOutputCumulators folded-obj [])
+        )
+    )
+    (defun URCi_RemoveSecondary:object{IgnisCollectorV1.OutputCumulator}
+        (remover:string ats:string reward-token:string)
+        @doc "Cost preview for C_RemoveSecondary — pure re-derivation of its 3-leg concat: one \
+            \ ignis|token-issue construct + two full-amount transfers (reward-token in to \
+            \ remover, primal-rt out from remover), moving the combined resident+unbound+ \
+            \ royalty balance at the removed reward-token position."
+        (let
+            (
+                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
+                (ref-DALOS:module{OuronetDalosV1} DALOS)
+                (ref-ATS:module{AutostakeV2} ATS)
+                (ref-TFT:module{TrueFungibleTransferV1} TFT)
+                (ref-U|LST:module{StringProcessorV1} U|LST)
+                ;;
+                (rt-lst:[string] (ref-ATS::UR_RewardTokenList ats))
+                (remove-position:integer (at 0 (ref-U|LST::UC_Search rt-lst reward-token)))
+                (primal-rt:string (at 0 rt-lst))
+                (resident-sum:decimal (at remove-position (ref-ATS::UR_RewardTokenRUR ats 1)))
+                (unbound-sum:decimal (at remove-position (ref-ATS::UR_RewardTokenRUR ats 2)))
+                (royalty-sum:decimal (at remove-position (ref-ATS::UR_RewardTokenRUR ats 3)))
+                (remove-sum:decimal (+ (+ resident-sum unbound-sum) royalty-sum))
+            )
+            (ref-IGNIS::UDC_ConcatenateOutputCumulators
+                [
+                    (ref-IGNIS::UDC_ConstructOutputCumulator (ref-DALOS::UR_UsagePrice "ignis|token-issue") ATS|SC_NAME (ref-IGNIS::URC_IsVirtualGasZero) [])
+                    (ref-TFT::URCi_Transfer reward-token ATS|SC_NAME remover remove-sum)
+                    (ref-TFT::URCi_Transfer primal-rt remover ATS|SC_NAME remove-sum)
+                ]
+                []
+            )
         )
     )
     (defun C_Syphon:object{IgnisCollectorV1.OutputCumulator}

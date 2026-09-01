@@ -150,6 +150,8 @@
     (defun URC_ATS|HOT-RBT|UpdatePendingBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string))
     (defun URC_ATS|HOT-RBT|UpgradeBranding:object{OuronetInfoV1.ClientInfo} (patron:string entity-id:string months:integer))
     (defun URC_ATS|HOT-RBT|Repurpose:object{OuronetInfoV1.ClientInfo} (patron:string hot-rbt:string nonce:integer repurpose-to:string))
+    (defun URC_ATS|AddHotRBT:object{OuronetInfoV1.ClientInfo} (patron:string ats:string hot-rbt:string))
+    (defun URC_ATS|RemoveSecondary:object{OuronetInfoV1.ClientInfo} (patron:string remover:string ats:string reward-token:string))
     ;;
     (defun SWP|INFO_ChangeOwnership:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-owner:string))
     (defun SWP|INFO_ModifyCanChangeOwner:object{OuronetInfoV1.ClientInfo} (patron:string swpair:string new-boolean:bool))
@@ -3064,6 +3066,20 @@
                 [(format "Operation: Repurposes Hot-RBT {} Nonce {} to {}" [hot-rbt nonce sa])]
                 [(format "Hot-RBT {} Nonce {} succesfully repurposed to {}" [hot-rbt nonce sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-VST::URCi_RepurposeOrtoFungible hot-rbt nonce nonce-holder repurpose-to)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_ATS|AddHotRBT:object{OuronetInfoV1.ClientInfo} (patron:string ats:string hot-rbt:string)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-ATS:module{AutostakeV2} ATS))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Adds Hot-RBT {} to ATS-Pair {}" [hot-rbt ats])]
+                [(format "Hot-RBT {} succesfully added to ATS-Pair {}" [hot-rbt ats])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATS::URCi_AddHotRBT ats hot-rbt)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_ATS|RemoveSecondary:object{OuronetInfoV1.ClientInfo} (patron:string remover:string ats:string reward-token:string)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-ATSU:module{AutostakeUsageV1} ATSU) (sa:string (ref-I|OURONET::OI|UC_ShortAccount remover)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Removes Secondary Reward-Token {} from ATS-Pair {}" [reward-token ats])]
+                [(format "Secondary Reward-Token {} succesfully removed from ATS-Pair {} (balance returned to {})" [reward-token ats sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-ATSU::URCi_RemoveSecondary remover ats reward-token)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
     ;; [LIQUID]
     (defun LIQUID|INFO_UnwrapUrStoa:object{OuronetInfoV1.ClientInfo}
