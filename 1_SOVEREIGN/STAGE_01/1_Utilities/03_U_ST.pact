@@ -40,7 +40,9 @@
     ;;
     ;;<=======>
     ;;FUNCTIONS
-    ;;{F0}  [UR]
+    ;;{F1}  Construct [UDC]
+    ;;{F2}  Compute [UC]
+    ;;{F3}  Read [UR/URC/URH/URCi]
     (defun UR_chain-gas-price ()
         @doc "Return gas price from chain-data"
         (at 'gas-price (chain-data))
@@ -49,12 +51,11 @@
         @doc "Return gas limit from chain-data"
         (at 'gas-limit (chain-data))
     )
-    ;;{F1}  [URC]
     (defun URC_chain-gas-notional ()
         @doc "Return gas limit * gas price from chain-data"
         (* (UR_chain-gas-price) (UR_chain-gas-limit))
     )
-    ;;{F2}  [UEV]
+    ;;{F4}  Validate [UEV/CAP]
     (defun UEV_max-gas-notional:guard (gasNotional:decimal)
         @doc "Guard to enforce gas price * gas limit is smaller than or equal to GAS"
         (create-user-guard
@@ -103,11 +104,9 @@
             (format "Gas Limit must be smaller than or equal to {}" [gasLimit])
         )
     )
-    ;;{F3}  [UDC]
-    ;;{F4}  [CAP]
-    ;;
-    ;;{F5}  [A]
-    ;;{F6}  [C]
-    ;;{F7}  [X]
+    ;;{F5}  Write [W]
+    ;;{F6}  Aux/Protected [X]
+    ;;{F7}  User [A]
+    ;;{F8}  User [C]
     ;;
 )
