@@ -157,6 +157,20 @@
     (defun C_IssueScoreFromModel:object{IgnisCollectorV1.OutputCumulator}
         (patron:string owner-konto:string model-id:string agency-name:string)
     )
+    ;;
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_IssueScore:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string]))
+    (defun URCi_IssueScoreStoa:decimal ())
+    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
+    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
+    (defun URCi_CreateBoostLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
+    (defun URCi_EnableDebBoost:object{IgnisCollectorV1.OutputCumulator} (score-id:string))
+    (defun URCi_IssueTriplet:object{IgnisCollectorV1.OutputCumulator} (silver-score-id:string output:[string]))
+    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string nonces:[integer]))
+    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string trait-keys:[string]))
+    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer]))
+    (defun URCi_IssueScoreModel:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string]))
 )
 (module AQP-SCORE GOV
     @doc "AQP-SCORE — sovereign acquisition scoring for AQP pools. Owns global score configuration and totals (SCR|T|Score), per (ouronet-account, pool-id, score-id) user triples (SCR|T|UserScore), semi-fungible nonce weights (SCR|T|SF|Score) and SF DefRevision, and non-fungible definitions on SCR|T|NF|TraitScore vs SCR|T|NF|ClassScore with NF DefRevision split into global-, trait-, and class-revision nonces so trackers and URCX stake math can gate expensive selects. \
@@ -3543,6 +3557,43 @@
         )
         fvt-id
     )
+    ;; [URCi]   cost readers — single source for exec billing + INFO preview
+    (defun URCi_IssueScore:object{IgnisCollectorV1.OutputCumulator} (owner-konto:string output:[string])
+        @doc "IGNIS cost for the 5 score-issue ops (flat GAS|ISSUE-SCORE, konto = the new score's owner)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE owner-konto (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_IssueScoreStoa:decimal ()
+        @doc "STOA cost for score-issue: UR_UsagePrice 'smart'."
+        (let ((d:module{OuronetDalosV1} DALOS)) (d::UR_UsagePrice "smart")))
+    (defun URCi_RotateOwnership:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
+        @doc "Medium tier on the (pre-rotate) score owner."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+    (defun URCi_Control:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+    (defun URCi_CreateBoostClassLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+    (defun URCi_CreateBoostLink:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_BiggestCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+    (defun URCi_EnableDebBoost:object{IgnisCollectorV1.OutputCumulator} (score-id:string)
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_MediumCumulator (UR_SCR|ScoreOwnerKonto score-id))))
+    (defun URCi_IssueTriplet:object{IgnisCollectorV1.OutputCumulator} (silver-score-id:string output:[string])
+        @doc "GAS|ISSUE-TRIPLET, konto = the silver score's owner."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-TRIPLET (UR_SCR|ScoreOwnerKonto silver-score-id) (r::URC_IsVirtualGasZero) output)))
+    (defun URCi_IssueSemiFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string nonces:[integer])
+        @doc "IGNIS = |nonces| x UsagePrice('ignis|big'), konto = score owner."
+        (let ((r:module{IgnisCollectorV1} IGNIS) (d:module{OuronetDalosV1} DALOS))
+            (r::UDC_ConstructOutputCumulator (* (dec (length nonces)) (d::UR_UsagePrice "ignis|big")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
+    (defun URCi_IssueNonFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string trait-keys:[string])
+        @doc "IGNIS = |trait-keys| x UsagePrice('ignis|biggest'), konto = score owner."
+        (let ((r:module{IgnisCollectorV1} IGNIS) (d:module{OuronetDalosV1} DALOS))
+            (r::UDC_ConstructOutputCumulator (* (dec (length trait-keys)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
+    (defun URCi_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV1.OutputCumulator} (score-id:string dpnf-nonce-classes:[integer])
+        @doc "IGNIS = |nonce-classes| x UsagePrice('ignis|biggest'), konto = score owner."
+        (let ((r:module{IgnisCollectorV1} IGNIS) (d:module{OuronetDalosV1} DALOS))
+            (r::UDC_ConstructOutputCumulator (* (dec (length dpnf-nonce-classes)) (d::UR_UsagePrice "ignis|biggest")) (UR_SCR|ScoreOwnerKonto score-id) (r::URC_IsVirtualGasZero) [])))
+    (defun URCi_IssueScoreModel:object{IgnisCollectorV1.OutputCumulator} (patron:string output:[string])
+        @doc "GAS|ISSUE-SCORE-MODEL (shared by IssueSingleScoreModel / CombineTripletScoreModel / IssueScoreFromModel)."
+        (let ((r:module{IgnisCollectorV1} IGNIS)) (r::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron (r::URC_IsVirtualGasZero) output)))
+    ;;
     ;; [C]   client
     ;;
     ;;Issue by score-class (SCR|T|Score / SCR|Schema)
@@ -3561,9 +3612,9 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron smart-price)
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 0 lp-denominator mx-frozen mx-sleeping 1.0 true -1)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE owner-konto trigger [score-id])
+                (URCi_IssueScore owner-konto [score-id])
             )
         )
     )
@@ -3582,9 +3633,9 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron smart-price)
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 1 BAR mx-frozen 1.0 1.0 true -1)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE owner-konto trigger [score-id])
+                (URCi_IssueScore owner-konto [score-id])
             )
         )
     )
@@ -3604,9 +3655,9 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron smart-price)
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 2 BAR 2.0 mx-sleeping mx-hibernated true -1)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE owner-konto trigger [score-id])
+                (URCi_IssueScore owner-konto [score-id])
             )
         )
     )
@@ -3625,9 +3676,9 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron smart-price)
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 3 BAR 2.0 1.0 1.0 sft-equality -1)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE owner-konto trigger [score-id])
+                (URCi_IssueScore owner-konto [score-id])
             )
         )
     )
@@ -3646,9 +3697,9 @@
                     (score-id:string (ref-U|DALOS::UDC_Makeid score-name))
                     (trigger:bool (ref-IGNIS::URC_IsVirtualGasZero))
                 )
-                (ref-IGNIS::STOA|C_Collect patron smart-price)
+                (ref-IGNIS::STOA|C_Collect patron (URCi_IssueScoreStoa))
                 (XI_Issue score-name owner-konto precision 4 BAR 2.0 1.0 1.0 true nft-score-model)
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE owner-konto trigger [score-id])
+                (URCi_IssueScore owner-konto [score-id])
             )
         )
     )
@@ -3659,14 +3710,12 @@
         (UEV_IMC)
         (let
             (
-                (ref-IGNIS:module{IgnisCollectorV1} IGNIS)
-                ;;
-                (owner-pre-rotate:string (UR_SCR|ScoreOwnerKonto score-id))
+                (ico:object{IgnisCollectorV1.OutputCumulator} (URCi_RotateOwnership score-id))
             )
             (with-capability (SCR|C>ROTATE-OWNERSHIP-SCORE score-id new-owner-konto)
                 (XI_RotateOwnership score-id new-owner-konto)
             )
-            (ref-IGNIS::UDC_MediumCumulator owner-pre-rotate)
+            ico
         )
     )
     (defun C_Control:object{IgnisCollectorV1.OutputCumulator}
@@ -3682,7 +3731,7 @@
             (with-capability (SCR|C>CONTROL-SCORE score-id new-can-upgrade new-can-change-owner)
                 (XI_Control score-id new-can-upgrade new-can-change-owner)
             )
-            (ref-IGNIS::UDC_MediumCumulator owner-konto)
+            (URCi_Control score-id)
         )
     )
     ;;Post-issuance: only C_EnableDebBoost (deb-boost defaults false). Multipliers, sft-equality, nft-score-model, links [..] set at issue.
@@ -3699,7 +3748,7 @@
             (with-capability (SCR|C>CREATE-BOOST-CLASS-LINK-SCORE score-id boost-class-id)
                 (XI_CreateBoostClassLink score-id boost-class-id)
             )
-            (ref-IGNIS::UDC_BiggestCumulator owner-konto)
+            (URCi_CreateBoostClassLink score-id)
         )
     )
     (defun C_CreateBoostLink:object{IgnisCollectorV1.OutputCumulator}
@@ -3715,7 +3764,7 @@
             (with-capability (SCR|C>CREATE-BOOST-LINK-SCORE score-id boost-score-id)
                 (XI_CreateBoostLink score-id boost-score-id)
             )
-            (ref-IGNIS::UDC_BiggestCumulator owner-konto)
+            (URCi_CreateBoostLink score-id)
         )
     )
     (defun C_EnableDebBoost:object{IgnisCollectorV1.OutputCumulator}
@@ -3731,7 +3780,7 @@
             (with-capability (SCR|C>ENABLE-DEB-BOOST-SCORE score-id)
                 (XI_EnableDebBoost score-id)
             )
-            (ref-IGNIS::UDC_MediumCumulator owner-konto)
+            (URCi_EnableDebBoost score-id)
         )
     )
     (defun C_IssueTriplet:object{IgnisCollectorV1.OutputCumulator}
@@ -3748,7 +3797,7 @@
             (with-capability (SCR|C>ISSUE-TRIPLET bronze-score-id silver-score-id golden-score-id)
                 (XI_IssueTriplet bronze-score-id silver-score-id golden-score-id)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-TRIPLET owner-konto trigger
+            (URCi_IssueTriplet silver-score-id
                 [(UC_ComputeTripletId bronze-score-id silver-score-id golden-score-id)]
             )
         )
@@ -3772,7 +3821,7 @@
             (with-capability (SCR|C>ISSUE-SF-SCORE-DEFINITION score-id dpsf-id nonces nonce-score-values)
                 (XI_IssueSemiFungibleScoreDefinition score-id dpsf-id nonces nonce-score-values)
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator price owner-konto trigger [])
+            (URCi_IssueSemiFungibleScoreDefinition score-id nonces)
         )
     )
     (defun C_IssueNonFungibleScoreDefinition:object{IgnisCollectorV1.OutputCumulator}
@@ -3795,7 +3844,7 @@
                     score-id dpnf-id true trait-keys trait-values trait-score-values [] []
                 )
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator price owner-konto trigger [])
+            (URCi_IssueNonFungibleScoreDefinition score-id trait-keys)
         )
     )
     (defun C_IssueNonFungibleSetScoreDefinition:object{IgnisCollectorV1.OutputCumulator}
@@ -3818,7 +3867,7 @@
                     score-id dpnf-id false [] [] [] dpnf-nonce-classes class-score-values
                 )
             )
-            (ref-IGNIS::UDC_ConstructOutputCumulator price owner-konto trigger [])
+            (URCi_IssueNonFungibleSetScoreDefinition score-id dpnf-nonce-classes)
         )
     )
     (defun C_IssueSingleScoreModel:object{IgnisCollectorV1.OutputCumulator}
@@ -3836,7 +3885,7 @@
                 )
                 (WI_ScoreEntityModel model-id
                     (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_SINGLE score-class collectable-id precision nonces nonce-score-values BAR BAR BAR model-id))
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron trigger [model-id])
+                (URCi_IssueScoreModel patron [model-id])
             )
         )
     )
@@ -3855,7 +3904,7 @@
                 )
                 (WI_ScoreEntityModel model-id
                     (UDC_SCR|ScoreEntityModel CT_SCORE_MODEL_TRIPLET 0 BAR 0 [] [] bronze-model-id silver-model-id golden-model-id model-id))
-                (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron trigger [model-id])
+                (URCi_IssueScoreModel patron [model-id])
             )
         )
     )
@@ -3896,7 +3945,7 @@
                             )
                         )
                     )
-                    (ref-IGNIS::UDC_ConstructOutputCumulator GAS|ISSUE-SCORE-MODEL patron trigger [result-id])
+                    (URCi_IssueScoreModel patron [result-id])
                 )
             )
         )

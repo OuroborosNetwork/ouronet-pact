@@ -324,8 +324,8 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Create a class-0 (Liquidity) score." "Executes via TS02-C3.AQP-SCR|C_IssueLiquidityScore."]
                 [(format "Liquidity score '{}' issued for {}." [score-name owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
                 []))
     )
     (defun AQP-SCR|INFO_IssueTrueFungibleScore:object{OuronetInfoV1.ClientInfo}
@@ -335,8 +335,8 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Create a class-1 (True-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueTrueFungibleScore."]
                 [(format "True-Fungible score '{}' issued for {}." [score-name owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
                 []))
     )
     (defun AQP-SCR|INFO_IssueOrtoFungibleScore:object{OuronetInfoV1.ClientInfo}
@@ -346,8 +346,8 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Create a class-2 (Orto-Fungible / special) score." "Executes via TS02-C3.AQP-SCR|C_IssueOrtoFungibleScore."]
                 [(format "Orto-Fungible score '{}' issued for {}." [score-name owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
                 []))
     )
     (defun AQP-SCR|INFO_IssueSemiFungibleScore:object{OuronetInfoV1.ClientInfo}
@@ -357,8 +357,8 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Create a class-3 (Semi-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueSemiFungibleScore."]
                 [(format "Semi-Fungible score '{}' issued for {}." [score-name owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
                 []))
     )
     (defun AQP-SCR|INFO_IssueNonFungibleScore:object{OuronetInfoV1.ClientInfo}
@@ -368,8 +368,8 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Create a class-4 (Non-Fungible) score." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleScore."]
                 [(format "Non-Fungible score '{}' issued for {}." [score-name owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE))
-                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (SKP|URC_Smart))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScore owner-konto [])))
+                (ref-I|OURONET::OI|UDC_DynamicStoaCost patron (AQP-SCORE.URCi_IssueScoreStoa))
                 []))
     )
     (defun AQP-SCR|INFO_RotateScoreOwnership:object{OuronetInfoV1.ClientInfo}
@@ -379,7 +379,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Transfer a score's owner-konto." "Executes via TS02-C3.AQP-SCR|C_RotateScoreOwnership."]
                 [(format "Score {} ownership moved to {}." [score-id new-owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_RotateOwnership score-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -390,7 +390,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Set a score's can-upgrade / can-change-owner flags." "Executes via TS02-C3.AQP-SCR|C_ControlScore."]
                 [(format "Score {} control flags updated." [score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_Control score-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -401,7 +401,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Link a score to a BoostClass (once)." "Executes via TS02-C3.AQP-SCR|C_CreateScoreBoostClassLink."]
                 [(format "Score {} linked to BoostClass {}." [score-id boost-class-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_CreateBoostClassLink score-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -412,7 +412,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Link a score to a boost-score (once)." "Executes via TS02-C3.AQP-SCR|C_CreateScoreBoostLink."]
                 [(format "Score {} boost-linked to {}." [score-id boost-score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Biggest))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_CreateBoostLink score-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -423,7 +423,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Enable deb-boost on a score (irreversible)." "Executes via TS02-C3.AQP-SCR|C_EnableDebBoost."]
                 [(format "Score {} deb-boost enabled." [score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Medium))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_EnableDebBoost score-id)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -434,7 +434,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Bundle three scores into one triplet (T|bronze|silver|golden)." "Executes via TS02-C3.AQP-SCR|C_IssueTriplet."]
                 [(format "Triplet issued from {} / {} / {}." [bronze-score-id silver-score-id golden-score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-TRIPLET))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueTriplet silver-score-id [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -445,7 +445,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Define a SINGLE score-entity model." "Executes via TS02-C3.AQP-SCR|C_IssueSingleScoreModel."]
                 [(format "Single score model '{}' defined (class {})." [model-name score-class])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE-MODEL))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -456,7 +456,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Combine three SINGLE models into a TRIPLET model." "Executes via TS02-C3.AQP-SCR|C_CombineTripletScoreModel."]
                 [(format "Triplet score model '{}' combined." [model-name])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE-MODEL))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -467,7 +467,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Issue a score/triplet entity conforming to a model." "Executes via TS02-C3.AQP-SCR|C_IssueScoreFromModel."]
                 [(format "Entity '{}' issued from model {} for {}." [agency-name model-id owner-konto])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (SIP|URC_Fixed AQP-SCORE.GAS|ISSUE-SCORE-MODEL))
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueScoreModel patron [])))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -485,7 +485,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Write Semi-Fungible score definition rows (one per nonce)." "Executes via TS02-C3.AQP-SCR|C_IssueSemiFungibleScoreDefinition."]
                 [(format "Wrote {} SF score-definition rows on score {}." [(length nonces) score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueSemiFungibleScoreDefinition score-id nonces)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -502,7 +502,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Write Non-Fungible trait-score definition rows (one per trait)." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleScoreDefinition."]
                 [(format "Wrote {} NF trait-score rows on score {}." [(length trait-keys) score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueNonFungibleScoreDefinition score-id trait-keys)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
@@ -519,7 +519,7 @@
             (ref-I|OURONET::OI|UDC_ClientInfo
                 ["Operation: Write Non-Fungible SET score definition rows (one per nonce-class)." "Executes via TS02-C3.AQP-SCR|C_IssueNonFungibleSetScoreDefinition."]
                 [(format "Wrote {} NF set score-definition rows on score {}." [(length dpnf-nonce-classes) score-id])]
-                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron ifp)
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (AQP-SCORE.URCi_IssueNonFungibleSetScoreDefinition score-id dpnf-nonce-classes)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts)
                 []))
     )
