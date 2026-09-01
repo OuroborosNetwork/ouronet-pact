@@ -15,6 +15,9 @@
     (defun URC_DEMIPAD|RetrieveSemiFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
     (defun URC_DEMIPAD|FuelNonFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
     (defun URC_DEMIPAD|RetrieveNonFungible:object{OuronetInfoV1.ClientInfo} (patron:string client:string asset-id:string nonces:[integer] amounts:[integer]))
+    ;;  [EQUITY]
+    (defun URC_EQUITY|IssueCompany:object{OuronetInfoV1.ClientInfo} (patron:string creator-account:string collection-name:string))
+    (defun URC_EQUITY|MorphEquity:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer))
 )
 ;;LIQUID|INFO_UnwrapStoa
 ;;LIQUID|INFO_WrapStoa
@@ -238,6 +241,22 @@
                 [(format "Succesfully retrieved {} Nonces {} from the Launchpad to {}" [asset-id nonces sa])]
                 (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-DEMIPAD::URCi_TransmitNonFungibles client asset-id nonces amounts false)))
                 (ref-I|OURONET::OI|UDC_NoStoaCosts) [nonces])))
+    ;;
+    ;;  [EQUITY] — shareholder/company SFT collection (exposed via DPSF Talos)
+    (defun URC_EQUITY|IssueCompany:object{OuronetInfoV1.ClientInfo} (patron:string creator-account:string collection-name:string)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-EQUITY:module{EquityV1} EQUITY) (sa:string (ref-I|OURONET::OI|UC_ShortAccount creator-account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Issues the 8-element Shareholder (Equity) SFT Collection '{}' on Account {}" [collection-name sa])]
+                [(format "Shareholder Collection '{}' issued succesfully on Account {}" [collection-name sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-EQUITY::URCi_IssueShareholderCollection)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
+    (defun URC_EQUITY|MorphEquity:object{OuronetInfoV1.ClientInfo} (patron:string account:string id:string input-nonce:integer input-amount:integer output-nonce:integer)
+        (let ((ref-I|OURONET:module{OuronetInfoV1} IGNIS) (ref-EQUITY:module{EquityV1} EQUITY) (sa:string (ref-I|OURONET::OI|UC_ShortAccount account)))
+            (ref-I|OURONET::OI|UDC_ClientInfo
+                [(format "Operation: Morphs {} shares of {} Nonce {} into Nonce {} on Account {}" [input-amount id input-nonce output-nonce sa])]
+                [(format "Succesfully morphed {} {} Nonce {} shares into Nonce {} on {}" [input-amount id input-nonce output-nonce sa])]
+                (ref-I|OURONET::OI|UDC_DynamicIgnisCost patron (ref-I|OURONET::OI|UC_IfpFromOutputCumulator (ref-EQUITY::URCi_MorphPackageShares account id input-nonce input-amount output-nonce)))
+                (ref-I|OURONET::OI|UDC_NoStoaCosts) [])))
     ;;{F2}  [UEV]
     ;;{F3}  [UDC]
     ;;{F4}  [CAP]
